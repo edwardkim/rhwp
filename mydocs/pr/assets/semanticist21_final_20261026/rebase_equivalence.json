@@ -1,0 +1,33 @@
+{
+  "old_head": "53ef4bcfc611ea2a61ab7e8accd992f282dda5b7",
+  "old_base": "238de6de41a208648f4ade6b494fe433a81c1fce",
+  "new_base": "4e690c930105fa09fef484787ed0a2e5e182d444",
+  "changed_base_paths": [
+    "THIRD_PARTY.md"
+  ],
+  "before_trees": {
+    "src": "5094a0dfaf49612446bf9c05c7641349c66e72af",
+    "crates": "d09ea822a2d9e459ee26c39038ee87a01a4a94f4",
+    "tests": "6ccdf6bab518383b5479f2f13ccf3d91517207f2",
+    "scripts": "74aa113e0e4c47c3d7cdeb739207abdaadcb1052",
+    "rhwp-studio": "f85878c0eff2c050b3709953db171da0f7b75278",
+    "npm": "ed182175368f15954efbda8742fb516ed556546c",
+    "Cargo.toml": "4dca3237cced23822c51b72e9be6485ec8ddba6c",
+    "Cargo.lock": "36d552daf02b7aa4e595947b3a5bacbd68350f20"
+  },
+  "exit_code": 0,
+  "new_head": "d6ea10837218e7e490b166ed76af221490b61ba2",
+  "after_trees": {
+    "src": "5094a0dfaf49612446bf9c05c7641349c66e72af",
+    "crates": "d09ea822a2d9e459ee26c39038ee87a01a4a94f4",
+    "tests": "6ccdf6bab518383b5479f2f13ccf3d91517207f2",
+    "scripts": "74aa113e0e4c47c3d7cdeb739207abdaadcb1052",
+    "rhwp-studio": "f85878c0eff2c050b3709953db171da0f7b75278",
+    "npm": "ed182175368f15954efbda8742fb516ed556546c",
+    "Cargo.toml": "4dca3237cced23822c51b72e9be6485ec8ddba6c",
+    "Cargo.lock": "36d552daf02b7aa4e595947b3a5bacbd68350f20"
+  },
+  "code_test_trees_unchanged": true,
+  "base_ancestor": true,
+  "remaining_diff_from_pre_rebase": "THIRD_PARTY.md"
+}

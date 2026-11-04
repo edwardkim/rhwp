@@ -2,14 +2,10 @@
 //!
 //! [`IngestDocument`]를 시험문제 표준 layout의 [`Document`] IR로 변환한다.
 //!
-//! 본 단계(#660)는 **텍스트 위주**:
-//! - 지문(stem) + 선택지(①~⑤) 텍스트 직접 포함 (spike #654 결정 정책)
-//! - 이미지는 `[이미지: <ref>]` placeholder 텍스트로 대체
-//! - 공유 지문과 `<보기>` 박스는 schema 의미가 보존되도록 텍스트/문단 스타일로 매핑
-//!
-//! 후속 단계:
-//! - #661: placement 4모드 IR 매핑 + Picture/BinData 빌드 (단 출력은 #182 의존)
-//! - #182: HWPX writer Picture 직렬화 분기 추가 (별도 작업자)
+//! [`build_exam_paper`]는 기존 텍스트/placeholder projection 계약을 유지한다.
+//! [`build_exam_paper_with_images`]는 호스트가 검증한 이미지 바이트를 받아
+//! 실제 Picture/BinData와 문장 내 text/image runs를 구성한다(#665).
+//! 두 API 모두 공유 지문과 `<보기>` 문단 서식을 보존한다.
 
 use std::collections::{HashMap, HashSet};
 
@@ -242,6 +238,18 @@ fn render_question_block(
     style_ids: &ExamStyleIds,
 ) {
     match block {
+        StemBlock::Paragraph { runs } => {
+            let text = inline_runs_text(runs);
+            let text = if apply_prefix {
+                apply_number_prefix(q, &text)
+            } else {
+                text
+            };
+            out.push(make_text_para_with_shape(
+                &text,
+                style_ids.normal_para_shape_id,
+            ));
+        }
         StemBlock::Text { text } => {
             let rendered = if apply_prefix {
                 apply_number_prefix(q, text)
@@ -281,6 +289,10 @@ fn render_blocks(
 ) {
     for block in blocks {
         match block {
+            StemBlock::Paragraph { runs } => out.push(make_text_para_with_shape(
+                &inline_runs_text(runs),
+                para_shape_id,
+            )),
             StemBlock::Text { text } => out.push(make_text_para_with_shape(text, para_shape_id)),
             StemBlock::Image { ref_, .. } => out.push(make_text_para_with_shape(
                 &format!("[이미지: {ref_}]"),
@@ -407,4 +419,19 @@ fn make_text_para_with_shape(text: &str, para_shape_id: u16) -> Paragraph {
         has_para_text: true,
         ..Default::default()
     }
+}
+
+#[path = "exam_paper_images.rs"]
+mod images;
+pub use images::{
+    build_exam_paper_with_images, ingest_image_references, IngestImage, IngestImageLimits,
+};
+
+fn inline_runs_text(runs: &[crate::parser::ingest::schema::InlineRun]) -> String {
+    runs.iter()
+        .map(|run| match run {
+            crate::parser::ingest::schema::InlineRun::Text { text } => text.clone(),
+            crate::parser::ingest::schema::InlineRun::Image { ref_ } => format!("[이미지: {ref_}]"),
+        })
+        .collect()
 }

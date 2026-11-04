@@ -1,0 +1,39 @@
+{
+  "source": "ubuntu-ted3 2d44695b14576d8c9204e6d9d8317649d8828a48",
+  "merge_base": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "note": "three-way merge retains current branch font-program/intrinsic and WOFF tests; observed-font receipt requires WASM APIs when actually used; not claimed available on current WASM",
+  "file_sha256": {
+    "scripts/visual_sweep.py": "9be99fdf45ac7f755aa15fd3d3e7787132453acaaa221f01635b87aca6de1102",
+    "scripts/visual_sweep_pdf.py": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+    "scripts/visual_sweep_png.py": "ebf61c33e95d032ae3a8616838aa580ffcdaf769aeb4a8e22fc5ca4cd0f83541",
+    "scripts/export-wasm-png-for-sweep.mjs": "fd255e10ef00fa3a9371255f5f0840ea0461ae0b9c0fbdb1616d5d545af6d481",
+    "scripts/visual-sweep-font-registration.mjs": "0fe96a5da7ddfbd13dc6db2b0a10a85439b9bfd40164774bfa9508653f05ea1a",
+    "scripts/visual-sweep-font-environment.mjs": "f5eccd9a94e1c4b4697f26df476042f35112f61084b0476fab3f86f7bf52f8d4",
+    "scripts/tests/test_visual_sweep.py": "5c08f8dc7a67b90d4bdd8c227be78d75c79b1e4618a6152c0c0151e7264706b1",
+    "scripts/tests/test_visual_sweep_alpha.py": "a602bd21eed8e810c24cda65404e1d12ea274b4c2b23e00f9c1d4a5088014b75",
+    "scripts/tests/test_visual_sweep_raw_gate.py": "e05f08e02dd7153e581edd2829b2da8784515f3f757e82dab9c2f79730884bfd",
+    "scripts/tests/test_visual_sweep_pdfium.py": "3fac6d1ddf6c23a526428876aa61a8228ff2558c3bfc06397346cca392640c56",
+    "scripts/tests/test_visual_sweep_png.py": "44f9593f82f909877cc5ab6c581e0fa0816faaff54db4555ddd6148d6a62f912",
+    "scripts/tests/test_visual_sweep_generation.py": "fc5a67abc6f8677869d4bcacf0580af0e5cff14e88c612285affe09b78d1532a",
+    "scripts/tests/visual-sweep-observed-fonts.test.mjs": "2731f30b3c3e2ab88f3778cfed903f1b8fbb322aec3cab94c04600d8e2d4e468"
+  },
+  "positive_test_log_sha256": {
+    "ted3-font-merge-node.log": "2820f90e3764df5904605d8a8a1b22b36d1a9f8e0ba14dc5cb81e9f01cd6ab97",
+    "ted3-font-merge-python.log": "35b8a351c331fd31612e0c508674c9022253a9e32b6e9c2e530d09f0a3ebe113"
+  },
+  "tests": "Node 2 passed; Python 15 passed",
+  "wasm_smoke": {
+    "input": "samples/issue8271/tac_picture_topandbottom_textbox.hwpx",
+    "pdf": "pdf/issue8271/tac_picture_topandbottom_textbox-2020.pdf",
+    "pages": 1,
+    "raw": 100.0,
+    "log_sha256": "4f6ebf35767250b2a0d6b815968dbb2d77bc9f407a4e61e4f0500aef42ffdb2a",
+    "manifest_sha256": "85b6da1a83c7f9a0dd8230ebd3f846c5a92eca5b39511398d9ec69128946b730",
+    "observed_receipt": "not requested"
+  },
+  "dpi_raw_tests": {
+    "summary": "4 passed",
+    "log_sha256": "ab6318e1330a7adcb5e9824c1215ecec8a71d27a6f60ece6f2da5f53d1eaa653",
+    "note": "first invocation failed to import sibling modules; retry set PYTHONPATH=scripts/tests"
+  }
+}

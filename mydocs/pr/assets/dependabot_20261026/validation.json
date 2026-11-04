@@ -1,0 +1,534 @@
+{
+  "scope": "Dependabot 21개 통합의 실제 로컬 검증 및 사용자 승인에 따른 충돌 없는 리베이스 결과 재사용",
+  "validated_head": "d612e9f1710e6bf72f8bd21538820eeb41f9529c",
+  "rust_input_anchor": "36f255768fbfca2601a9a5499b1e92166212c0e1",
+  "rebase": {
+    "before": "d612e9f1710e6bf72f8bd21538820eeb41f9529c",
+    "base": "49bc935a149c20b942d3045c2f5c733aeccf57d0",
+    "branch": "review/integration-20261026-dependabot-updates-r2",
+    "started_at": "2026-10-26T12:27:18.399932+00:00",
+    "official_test_result": {
+      "passed": 11573,
+      "skipped": 45,
+      "exit": 0
+    },
+    "user_instruction": "충돌 없는 리베이스는 기존 회귀 공식 인정, 재실행하지 않음",
+    "exit": 0,
+    "after": "648ed728b8f0514cbf16cc7d5775b5a12787db59",
+    "unresolved": [],
+    "conflicts_encountered": false,
+    "official_results_adopted": true,
+    "repeated_tests": false,
+    "product_inputs_equal": true,
+    "checked_paths": [
+      "Cargo.toml",
+      "Cargo.lock",
+      "src",
+      "crates",
+      "bindings",
+      "tools",
+      "tests",
+      ".cargo",
+      "build.rs",
+      "rhwp-studio",
+      "rhwp-chrome",
+      "rhwp-firefox",
+      "rhwp-vscode",
+      "npm",
+      "rhwp-shared"
+    ],
+    "post_rebase_changed_paths": [
+      ".github/workflows/refresh-nextest-duration.yml",
+      "mydocs/manual/github_operations.md",
+      "mydocs/orders/20261026.md",
+      "mydocs/pr/archives/pr_8278_review.md",
+      "scripts/tests/test_postmerge_duration_workflow.py"
+    ]
+  },
+  "source_prs": [
+    {
+      "pr": 8241,
+      "sourceHead": "6abde855288dad72b42be68ac9f2a25fc5c29867",
+      "exit": 0,
+      "appliedSha": "6e2ac46c931aa8d41acd6ef20a28d324db730b41",
+      "beforeRebaseAppliedSha": "6d1668e9c5049b331bf1c1ae2a882868090ccbb1"
+    },
+    {
+      "pr": 8242,
+      "sourceHead": "ea4ee557ec1dddeb99219f90a7774c2201ef80c6",
+      "exit": 0,
+      "appliedSha": "fa78c37fb4dbb2271a75fe7791717ed3088f86c5",
+      "beforeRebaseAppliedSha": "ed9c59d227d56fc7c8e3af9cbc3762f599cdc9e8"
+    },
+    {
+      "pr": 8243,
+      "sourceHead": "d9f5713786817202a400dfac553be5f503065bb7",
+      "exit": 0,
+      "appliedSha": "a1dcc0b0ba89770bbdcc501217685c456aa098e9",
+      "beforeRebaseAppliedSha": "4d8af2f166a49ad296caf744980ead51adf3fff1"
+    },
+    {
+      "pr": 8244,
+      "sourceHead": "d579b8d47929346e89e2d812ce15838402cd9421",
+      "exit": 0,
+      "appliedSha": "fe91ac495bcbbc51012224accf6a07fbdb12c758",
+      "beforeRebaseAppliedSha": "440d5ce3e5c7a384e5ce9d84f69ff0f7929af322"
+    },
+    {
+      "pr": 8245,
+      "sourceHead": "97894d388b61344334c012480a2bdf52bcd7576a",
+      "exit": 0,
+      "appliedSha": "851ade02e7e4ae08363ffe8a2a00f7f0dbd8905f",
+      "beforeRebaseAppliedSha": "9b4249717db96896e65db21e255fd33e746a6207"
+    },
+    {
+      "pr": 8246,
+      "sourceHead": "6a205a14f5890b2cde35ee10b4d2d606c9c0f252",
+      "exit": 0,
+      "appliedSha": "4ecd612ac73bc7dc36be523dd0b20ff23fe33ec9",
+      "beforeRebaseAppliedSha": "08484248e204013748bea0d93d67ef3dbd5e7192"
+    },
+    {
+      "pr": 8247,
+      "sourceHead": "1c2f11fbefea498251f45b19eba2fb0e3ecd245c",
+      "exit": 0,
+      "appliedSha": "2d41ae8026b329d531fa918266cd44144c630bbc",
+      "beforeRebaseAppliedSha": "7a19a3d66452802556d01c09d6585a42ec9c16b9"
+    },
+    {
+      "pr": 8248,
+      "sourceHead": "8612331ffb3167a77dbf55e8a338f74a063e98b5",
+      "exit": 0,
+      "appliedSha": "7c5c68e210ae6f292997bd332e3c12bcb0630289",
+      "conflicts": [
+        "Cargo.toml"
+      ],
+      "resolution": "rerere 해소 결과를 이전 파일 전체와 비교: read-fonts 0.46 보존, skera 0.9만 적용",
+      "beforeRebaseAppliedSha": "d477a8e868a20906bcab1ff1810a5d8fa152dfb6"
+    },
+    {
+      "pr": 8249,
+      "sourceHead": "f0a9c0c71eaa7bd00b91d9603e78debfeae3329a",
+      "exit": 0,
+      "appliedSha": "24890c79118e53e3f9b31f538bbef43fd22421b3",
+      "beforeRebaseAppliedSha": "4065b00163d3482a57aae54e173bec152e54e769"
+    },
+    {
+      "pr": 8250,
+      "sourceHead": "be55d654a85340383771e4d7b5725f56f7cddd4c",
+      "exit": 0,
+      "appliedSha": "3999ce9b0de124a04415d274cc4993f52f4b2528",
+      "beforeRebaseAppliedSha": "016c2ca69b2546a376240af810f5701a821127e4"
+    },
+    {
+      "pr": 8251,
+      "sourceHead": "4886fb003aa40a5a9075ce61cc06d749f3a3b8e6",
+      "exit": 0,
+      "appliedSha": "f697ea7332acdacc6f58bc60ac2535e6ad73d6ad",
+      "beforeRebaseAppliedSha": "5e07601025f9519855f0c15a1030f02da650c837"
+    },
+    {
+      "pr": 8252,
+      "sourceHead": "b284c60df1cf3fad0d69c478be103f4a3c41f2c4",
+      "exit": 0,
+      "conflicts": [
+        "rhwp-studio/package.json"
+      ],
+      "appliedSha": "db54f241468d6dc119bf9ea7db7d723bd9f00af0",
+      "resolution": "puppeteer-core 25.16.0과 vite 8.3.5를 유지하고 @types/chrome 0.3.6 적용",
+      "beforeRebaseAppliedSha": "e78706d748b4b81b6d469b454f86caaac5513eb7"
+    },
+    {
+      "pr": 8253,
+      "sourceHead": "b9f9a7b9361bc4de771d2c8e575acb838036de24",
+      "exit": 0,
+      "appliedSha": "aaa3592c9f85a97ad7bd325d831f5bbd467afed7",
+      "beforeRebaseAppliedSha": "d1fecb3a30c904325c5c67ffd3fa0d9e20757905"
+    },
+    {
+      "pr": 8254,
+      "sourceHead": "81abf49cd2a1ade119e5ae22d24b3cc75d5966b5",
+      "exit": 0,
+      "appliedSha": "36e972c8a17fb7cafd94b3cf80da83f081a1aad6",
+      "beforeRebaseAppliedSha": "06548b1fbf47521651e44ab7da2ed43432e5e3c7"
+    },
+    {
+      "pr": 8255,
+      "sourceHead": "b6646a38774d54fcb3f8bf91ca5543020027052c",
+      "exit": 0,
+      "appliedSha": "1bbd1b65e003a0949fc029392c43e6c6fa4365c2",
+      "beforeRebaseAppliedSha": "8c0ab62f15b4bfe94057f9b044d451ccc605b697"
+    },
+    {
+      "pr": 8256,
+      "sourceHead": "97b73c91bb54853ff1930874241931a8c595f634",
+      "exit": 0,
+      "conflicts": [
+        "Cargo.lock"
+      ],
+      "appliedSha": "776a07c714730982bd1998545696c856d6d18fba",
+      "resolution": "proptest의 rand_core 단일 버전 정규화를 적용하고 read-fonts 0.46.0을 보존",
+      "beforeRebaseAppliedSha": "72c26c3fc038db559d32f7a0f59368942c768998"
+    },
+    {
+      "pr": 8257,
+      "sourceHead": "45b87dcac8a8cb794c798a368c46cd1fafd884e4",
+      "exit": 0,
+      "conflicts": [
+        "Cargo.lock"
+      ],
+      "appliedSha": "304e096053f0a4d52920c5269eba8aa8c2ae7cd2",
+      "resolution": "getrandom 0.4.3 단일 버전 상태의 정규화된 참조를 보존하고 sha2 0.11.1 적용",
+      "beforeRebaseAppliedSha": "1e90527989e7c85af28be93f15fca1f9091b438d"
+    },
+    {
+      "pr": 8258,
+      "sourceHead": "37df0d004768590dd531c718b075bd86be38fceb",
+      "exit": 0,
+      "appliedSha": "06eb3deb8dd198fe6e2643f23152b2f3e478950e",
+      "beforeRebaseAppliedSha": "4fdd0f478051c5e0db87e7a372ff4c9cf54be539"
+    },
+    {
+      "pr": 8259,
+      "sourceHead": "cc6a5a10e972502160cb2a6dd9e75250d0ae36c4",
+      "exit": 0,
+      "appliedSha": "59fb6167a7bcc79fbe5cef05e5ca438f8a967fb4",
+      "beforeRebaseAppliedSha": "11e8f1b58640ba299943d0eb94ebf3c0be674e1c"
+    },
+    {
+      "pr": 8260,
+      "sourceHead": "2f2c5f3b9ae9a0c75863dc2007f83f19aa89142f",
+      "exit": 0,
+      "appliedSha": "9ae83f9ea45d1b30aadc4806440641c11d5d7db7",
+      "beforeRebaseAppliedSha": "b1f960d8706da1d8f9e03317b8ee8787f4dd848d"
+    },
+    {
+      "pr": 8261,
+      "sourceHead": "101f2ae74f552f264ea6ac0c4904260858b5ca71",
+      "exit": 0,
+      "appliedSha": "5776f13ff812c877bae63b30aed4c3751e258449",
+      "beforeRebaseAppliedSha": "5d309c517f42866b560b4b82327e93a8ac91a110"
+    }
+  ],
+  "rust": [
+    {
+      "step": "manifest-prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "head": "36f255768fbfca2601a9a5499b1e92166212c0e1",
+      "exit": 0,
+      "seconds": 2.92
+    },
+    {
+      "step": "cargo-fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "head": "36f255768fbfca2601a9a5499b1e92166212c0e1",
+      "exit": 0,
+      "seconds": 51.84
+    },
+    {
+      "step": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "head": "36f255768fbfca2601a9a5499b1e92166212c0e1",
+      "exit": 0,
+      "seconds": 265.33
+    },
+    {
+      "step": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "head": "36f255768fbfca2601a9a5499b1e92166212c0e1",
+      "exit": 0,
+      "seconds": 260.84
+    },
+    {
+      "step": "build-workspace",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review"
+      ],
+      "head": "36f255768fbfca2601a9a5499b1e92166212c0e1",
+      "exit": 0,
+      "seconds": 317.65
+    },
+    {
+      "step": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "head": "36f255768fbfca2601a9a5499b1e92166212c0e1",
+      "exit": 0,
+      "seconds": 286.28
+    },
+    {
+      "step": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "01ced3d42724285c8f9765a453393ab6af326617"
+      ],
+      "head": "36f255768fbfca2601a9a5499b1e92166212c0e1",
+      "exit": 0,
+      "seconds": 2.55
+    },
+    {
+      "step": "nextest-full",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "head": "36f255768fbfca2601a9a5499b1e92166212c0e1",
+      "exit": 0,
+      "seconds": 6772.59,
+      "exit_evidence": "Linux wait status from completed nextest process before reaping",
+      "kernel_wait_status": 0
+    }
+  ],
+  "npm": [
+    {
+      "step": "rhwp-studio-ci",
+      "cwd": "rhwp-studio",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exit": 0,
+      "seconds": 17.77
+    },
+    {
+      "step": "rhwp-chrome-ci",
+      "cwd": "rhwp-chrome",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exit": 0,
+      "seconds": 16.31
+    },
+    {
+      "step": "rhwp-firefox-ci",
+      "cwd": "rhwp-firefox",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exit": 0,
+      "seconds": 2.39
+    },
+    {
+      "step": "rhwp-vscode-ci",
+      "cwd": "rhwp-vscode",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exit": 0,
+      "seconds": 9.33
+    },
+    {
+      "step": "studio-test",
+      "cwd": "rhwp-studio",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exit": 0,
+      "seconds": 38.43
+    },
+    {
+      "step": "studio-build",
+      "cwd": "rhwp-studio",
+      "command": [
+        "npm",
+        "run",
+        "build:no-hwpctrl"
+      ],
+      "exit": 0,
+      "seconds": 18.75
+    },
+    {
+      "step": "chrome-build",
+      "cwd": "rhwp-chrome",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "seconds": 6.21
+    },
+    {
+      "step": "firefox-build",
+      "cwd": "rhwp-firefox",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "seconds": 5.18
+    },
+    {
+      "step": "vscode-compile",
+      "cwd": "rhwp-vscode",
+      "command": [
+        "npm",
+        "run",
+        "compile"
+      ],
+      "exit": 0,
+      "seconds": 26.56
+    }
+  ],
+  "workflow": [
+    {
+      "step": "actionlint-final",
+      "exit": 0,
+      "seconds": 0.14,
+      "command": [
+        "actionlint",
+        "-shellcheck=",
+        "-pyflakes=",
+        ".github/workflows/adapter-diff.yml",
+        ".github/workflows/build-nextest-archives.yml",
+        ".github/workflows/ci.yml",
+        ".github/workflows/codeql.yml",
+        ".github/workflows/fuzz-smoke.yml",
+        ".github/workflows/layout-anomaly-advisory.yml",
+        ".github/workflows/oracle-public-advisory.yml",
+        ".github/workflows/proptest-roundtrip.yml",
+        ".github/workflows/release-binary.yml",
+        ".github/workflows/release-operations-contracts.yml",
+        ".github/workflows/run-nextest-archives.yml",
+        ".github/workflows/skill-router-gate.yml"
+      ]
+    },
+    {
+      "step": "workflow-contracts-final",
+      "exit": 0,
+      "seconds": 28.07,
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests",
+        "-p",
+        "test_*workflow.py"
+      ]
+    }
+  ],
+  "ci_impact_contracts": {
+    "passed": 334,
+    "log_sha256": "371c3d1debdac01f59ed1fd48a859626ef340ed4265b3947e86528f39537b9cf"
+  },
+  "browser": [
+    {
+      "step": "ai-panel",
+      "log": "studio-ai-panel-corrected.log",
+      "sha256": "93a1d8f22038e26abe62d4289a60fdc67bdd568160ce0b833414974456f233eb",
+      "pass_assertions": 94,
+      "failure_markers": []
+    },
+    {
+      "step": "ai-settings",
+      "log": "studio-ai-settings-corrected.log",
+      "sha256": "72ce77addf964ee05f3f1db4a0b6898d2aebdd48f7d30fd3f8dc156aaf065238",
+      "pass_assertions": 20,
+      "failure_markers": []
+    },
+    {
+      "step": "chrome-smoke",
+      "log": "chrome-smoke.log",
+      "sha256": "7cec90dd794a6cefaaeba4f830fa029935c39e0f9bd8c2d625d8f2a3b2d1893a",
+      "pass_assertions": 1,
+      "failure_markers": []
+    },
+    {
+      "step": "firefox-download",
+      "log": "firefox-download-shared-profile.log",
+      "sha256": "c9672de7fc28d443b58ef8db3c0c751e0cc3cabe10240dc3623e6a7eccf0575b",
+      "pass_assertions": 0,
+      "failure_markers": []
+    }
+  ],
+  "full_regression": {
+    "passed": 11573,
+    "skipped": 45,
+    "slow": 149,
+    "exit": 0,
+    "execution_seconds": 4740.241,
+    "log_path": "/home/tsjang/rhwp/output/pr-review/dependabot-20261026-r2/nextest-full.log",
+    "log_sha256": "007939afb515b589ce39fde0429f6d0889ec169439a3fb1315a0cf1a20640db0"
+  },
+  "not_executed": [
+    "추가 Native 전체 배치",
+    "fresh WASM 빌드와 sample16 384쪽 재산출 배치"
+  ],
+  "retest_policy": "사용자 명시 지시: 현재 회귀 완료 후 최신 devel 리베이스에 충돌이 없으면 현재 결과를 공식 인정하고 재실행하지 않는다."
+}

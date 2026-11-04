@@ -176,11 +176,22 @@ type SourceGlyphKey = ([u8; 32], u32, u16);
 /// 호스트가 실제 FontFace에 적재한 프로그램만 보관한다. 파일 이름으로 다시 찾지 않는다.
 #[derive(Clone, Default)]
 pub(crate) struct HftOutlineFonts {
+    pub(crate) pua_coverage: super::pua_glyph::FontCoverage,
     faces: HashMap<String, Arc<SourceFace>>,
+    #[cfg(target_arch = "wasm32")]
+    print_faces: HashMap<(String, u16), Arc<SourceFace>>,
     cache: Arc<Mutex<ContourCache<SourceGlyphKey>>>,
 }
 
 impl HftOutlineFonts {
+    pub(crate) fn clear_family(&mut self, family: &str) {
+        self.pua_coverage.clear_family(family);
+        self.faces.remove(&first_family(family).to_lowercase());
+        #[cfg(target_arch = "wasm32")]
+        self.print_faces
+            .retain(|(name, _), _| name != &first_family(family).to_lowercase());
+    }
+
     pub(crate) fn register(
         &mut self,
         family: &str,
@@ -257,5 +268,111 @@ impl HftOutlineFonts {
         self.cache.lock().ok()?.get_or_build(key, || {
             contour(face.tables().cff.as_ref()?, glyph, face.units_per_em())
         })
+    }
+
+    /// 실제 공급 목록이 선택한 정적 TTF 대체 face의 unhinted 윤곽이다.
+    /// 원 face의 정상 글리프·조판 전진·문맥 shaping은 바꾸지 않는다.
+    #[cfg(target_arch = "wasm32")]
+    pub(crate) fn print_fallback_glyph(
+        &self,
+        style: &TextStyle,
+        character: char,
+    ) -> Option<Arc<[PathCommand]>> {
+        if !style.source_font_is_ttf
+            || style.is_visually_bold()
+            || style.italic
+            || style.outline_type != 0
+            || style.shadow_type != 0
+            || style.emboss
+            || style.engrave
+        {
+            return None;
+        }
+        let families = super::canvas_text_font::family_chain(style);
+        let selected =
+            self.pua_coverage
+                .text_faces
+                .select(&families, &character.to_string(), false, false)?;
+        if selected.family == first_family(&style.font_family).to_lowercase() {
+            return None;
+        }
+        let source = self.print_faces.get(&(selected.family, selected.weight))?;
+        let face = Face::parse(&source.bytes, source.face_index).ok()?;
+        face.tables().glyf.as_ref()?;
+        let glyph = face.glyph_index(character)?;
+        if glyph.0 == 0 {
+            return None;
+        }
+        self.cache
+            .lock()
+            .ok()?
+            .get_or_build((source.digest, source.face_index, glyph.0), || {
+                let mut builder = ContourBuilder {
+                    scale: 1.0 / f64::from(face.units_per_em()),
+                    current: (0.0, 0.0),
+                    commands: Vec::new(),
+                    invalid: false,
+                };
+                face.outline_glyph(glyph, &mut builder)?;
+                (!builder.invalid && !builder.commands.is_empty()).then_some(builder.commands)
+            })
+    }
+
+    /// 호스트가 실제 적재한 TTF만 보조 캐시에 둔다. 한도를 넘으면 원 painter를 유지한다.
+    #[cfg(target_arch = "wasm32")]
+    pub(crate) fn register_print_font(&mut self, family: &str, bytes: &[u8], index: u32) {
+        let family = first_family(family).to_lowercase();
+        let usable = || {
+            if bytes.len() > MAX_SOURCE_BYTES {
+                return None;
+            }
+            let face = Face::parse(bytes, index).ok()?;
+            (face.tables().glyf.is_some()
+                && !face.is_variable()
+                && !face.is_bold()
+                && !face.is_italic()
+                && face.tables().colr.is_none()
+                && face.tables().svg.is_none())
+            .then_some(face.weight().to_number())
+        };
+        let Some(weight) = usable() else {
+            self.print_faces.retain(|(name, _), _| name != &family);
+            return;
+        };
+        let key = (family, weight);
+        let digest: [u8; 32] = Sha256::digest(bytes).into();
+        if self
+            .print_faces
+            .get(&key)
+            .is_some_and(|old| old.digest == digest && old.face_index == index)
+        {
+            return;
+        }
+        let mut programs = HashSet::from([digest]);
+        let mut total = bytes.len();
+        for (name, source) in &self.print_faces {
+            if name != &key && programs.insert(source.digest) {
+                total += source.bytes.len();
+            }
+        }
+        if total > MAX_TOTAL_BYTES
+            || (!self.print_faces.contains_key(&key) && self.print_faces.len() >= MAX_FAMILIES)
+        {
+            self.print_faces.remove(&key);
+            return;
+        }
+        let source = self
+            .print_faces
+            .values()
+            .find(|source| source.digest == digest && source.face_index == index)
+            .cloned()
+            .unwrap_or_else(|| {
+                Arc::new(SourceFace {
+                    digest,
+                    bytes: Arc::from(bytes),
+                    face_index: index,
+                })
+            });
+        self.print_faces.insert(key, source);
     }
 }

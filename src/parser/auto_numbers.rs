@@ -69,6 +69,15 @@ impl AutoNumberCounters {
             return None;
         }
         let category = match control {
+            // 공통 속성의 원본 범주 6은 일반 NONE(0)이 아니다. HWP5
+            // 독립 Print에서 이 표들은 캡션 없는 개체까지 표 순번을 소비한다.
+            // 공개 enum으로 낮추면서 미정의 값이 NONE이 된 경우에만 원본을 쓴다.
+            Control::Table(table)
+                if table.common.numbering_type == ObjectNumberingType::None
+                    && (table.common.attr >> 26) & 7 == 6 =>
+            {
+                ObjectNumberingType::Table
+            }
             Control::Table(table) => table.common.numbering_type,
             Control::Picture(picture) => picture.common.numbering_type,
             Control::Shape(shape) => shape.common().numbering_type,

@@ -1,0 +1,15 @@
+{
+  "reference_rows": 2153,
+  "unique_document_pages": 1770,
+  "parts": 50,
+  "missing": 0,
+  "drops": [],
+  "git_heads": [
+    "0fdbbf87cc2c999499ad86c26fa676d8434daffd",
+    "76f837c37f5de58767360b244c60dce1efd5a8b6",
+    "b48e69a5ef9e988fb47cdf53592b174d749b29a3"
+  ],
+  "binary_sha256": "585f455e83f3e1e7ba4fe91ce24fb313dc0347dc281a265fe8b178a49a97a9d0",
+  "result_tsv_sha256": "bda2c89b66e80fefb2f9038fd61567ef1cc7857c9e1bd4075440f0e8dd185f3c",
+  "note": "후속 inline 후보 전 실행 파일; 그림·PDF 해시와 각 묶음 완료 상태 재검증"
+}

@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-29",
+  "scope": "원 PR이 제시한 특정 쪽의 기여자 원본 이미지와 현재 저장소 blob 일치 확인",
+  "images": [
+    {
+      "pr": 8133,
+      "source_commit": "465d85f13cab961628ec07247ea6ade82e0cbc46",
+      "path": "mydocs/report/skia_subpixel_stroke_hairline/calendar_year_p1_head_review.png",
+      "git_blob": "f2c6926aab3d46ce60b476a061a2a05bdd295740",
+      "sha256": "cfa54365d5d1b78a3412bdd6fcd9cd2095ca85ab7ba6774067d6fd517b7edb64"
+    },
+    {
+      "pr": 8133,
+      "source_commit": "465d85f13cab961628ec07247ea6ade82e0cbc46",
+      "path": "mydocs/report/skia_subpixel_stroke_hairline/calendar_year_p1_wasm_review.png",
+      "git_blob": "cbae93142bc24a7be4839d53a6be3c6540eb07f1",
+      "sha256": "a4c0d3c6e3295e2eda53b8319fb0c236ffaf65916323196bd643bcbbb24045b7"
+    },
+    {
+      "pr": 8133,
+      "source_commit": "465d85f13cab961628ec07247ea6ade82e0cbc46",
+      "path": "mydocs/report/skia_subpixel_stroke_hairline/issue1937_p49_head_review.png",
+      "git_blob": "ee9c90eda363ce8a5fb7a871e8dfbd25c31c66f7",
+      "sha256": "b31d3f9c95fa79d0d37c35f8bf41273f141ab73fd1a67805b16cafe8b6f1c3b3"
+    },
+    {
+      "pr": 8133,
+      "source_commit": "465d85f13cab961628ec07247ea6ade82e0cbc46",
+      "path": "mydocs/report/skia_subpixel_stroke_hairline/issue1937_p49_head_overlay.png",
+      "git_blob": "cc96e63df830c4b680916ef2ee64907c0f6a88db",
+      "sha256": "4a6ba57e72e88310538120a4f7dfdb8bbf8246928cacdead33707a103775093e"
+    },
+    {
+      "pr": 8115,
+      "source_commit": "a47a41d3004a0458873cf1a00e90a356f19f2fa5",
+      "path": "mydocs/report/issue1937_footnote_boundary/i1937_p044_wasm_review.png",
+      "git_blob": "a61807f036e92109aa913097cf41a00c932715cc",
+      "sha256": "c1f449f1b079c8a9bfe6efecbfb289485685be179753132865c7de0ac4464a46"
+    },
+    {
+      "pr": 8115,
+      "source_commit": "a47a41d3004a0458873cf1a00e90a356f19f2fa5",
+      "path": "mydocs/report/issue1937_footnote_boundary/i1937_p044_wasm_overlay.png",
+      "git_blob": "a6bdd125428b4d1844ffc5a3c0c75d0ee2453862",
+      "sha256": "c6d8d4a2998a804eb20972e3e2257d4cce470d523356791e3fa0d1894573c5b1"
+    },
+    {
+      "pr": 8202,
+      "source_commit": "d0f6adbeef179e17d0431eb84c38443d318a887a",
+      "path": "mydocs/report/issue8167_tac_shape_line/nopwx_p18_native_head_review.png",
+      "git_blob": "7ef0d98dd558c1d675cdb5c43cd590c6c5e61a2b",
+      "sha256": "b67235cc95faf86a6b959c6138e41339c67d9995edf8d5dddfd8ec62977b3bb0"
+    },
+    {
+      "pr": 8202,
+      "source_commit": "d0f6adbeef179e17d0431eb84c38443d318a887a",
+      "path": "mydocs/report/issue8167_tac_shape_line/nopwx_p18_wasm_head_review.png",
+      "git_blob": "a81cd5e3b4ddbc935796f8f9afbebdece5b568cd",
+      "sha256": "abee3fc202342a8e3ea967378d289d5fde287f635c01624cbacdd3730ccb2646"
+    }
+  ],
+  "limitations": [
+    "이미지 파일의 출처와 동일성만 확인한다. 이미지가 최종 후보 실행의 최신 결과라는 의미가 아니다.",
+    "측정 수치와 글줄·개체 소속은 각 PR의 별도 기록으로 검토한다."
+  ]
+}

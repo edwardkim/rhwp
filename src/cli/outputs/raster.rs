@@ -249,6 +249,32 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
 }
 
 #[cfg(feature = "native-skia")]
+fn png_font_environment_metadata(
+    mut metadata: serde_json::Value,
+    core: &rhwp::DocumentCore,
+    source_data: &[u8],
+    supply: &super::OutputFontSupply,
+) -> serde_json::Value {
+    if let Some(report) = &supply.report {
+        metadata["nativeFontSupply"] = report.clone();
+    }
+    if let Some(environment) = core.resolved_font_environment() {
+        metadata["fontEnvironment"] = serde_json::json!(environment);
+    }
+    if !core.observed_font_fallbacks().is_empty() {
+        use sha2::{Digest, Sha256};
+        metadata["observedFontFallbacks"] = serde_json::json!(core.observed_font_fallbacks());
+        metadata["declaredFontEnvironment"] = serde_json::json!(core.font_environment());
+        let source_sha256: String = Sha256::digest(source_data)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect();
+        metadata["sourceSha256"] = serde_json::json!(source_sha256);
+    }
+    metadata
+}
+
+#[cfg(feature = "native-skia")]
 pub(crate) fn export_png(args: &[String]) -> i32 {
     use rhwp::document_core::queries::rendering::PngExportOptions;
 
@@ -260,7 +286,7 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         file_path,
         output_dir,
         target_pages,
-        font_paths,
+        mut font_paths,
         scale,
         max_dimension,
         vlm_target,
@@ -273,14 +299,6 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
     } = match parse_export_png_args(&filtered_args) {
         Ok(options) => options,
         Err(code) => return code,
-    };
-
-    let png_options = PngExportOptions {
-        scale,
-        max_dimension,
-        vlm_target,
-        dpi,
-        font_paths: font_paths.clone(),
     };
 
     let data = match fs::read(file_path) {
@@ -302,10 +320,21 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
     // 실제 공급 글꼴은 SVG/PDF와 같은 환경에서 측정·쪽수·paint에 사용한다.
     // Skia에만 font_paths를 넘기면 원본 HFT 호환 폭으로 조판한 뒤 TrueType
     // 글리프를 그려, 전각 작은따옴표의 잉크가 뒤 글자와 겹칠 수 있다.
-    if let Err(e) = super::apply_font_environment(&mut core, font_environment, &font_paths) {
-        eprintln!("오류: PNG 글꼴 환경을 적용할 수 없습니다: {e}");
-        return EXIT_RUNTIME;
-    }
+    let font_supply =
+        match super::apply_font_environment(&mut core, font_environment, &mut font_paths) {
+            Ok(supply) => supply,
+            Err(e) => {
+                eprintln!("오류: PNG 글꼴 환경을 적용할 수 없습니다: {e}");
+                return EXIT_RUNTIME;
+            }
+        };
+    let png_options = PngExportOptions {
+        scale,
+        max_dimension,
+        vlm_target,
+        dpi,
+        font_paths: font_paths.clone(),
+    };
 
     // [#3302] 외부 연결 그림(HWP3 pic_type=0 등)의 같은 디렉터리 자동 적재 — export-svg
     // 의 #741 규칙과 동일. 누락 시 skia 렌더가 회색 placeholder 를 그린다 (SO-SUEOP 1쪽 실측).
@@ -363,16 +392,21 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         println!(
             "{}",
             rhwp::provenance::marked(
-                serde_json::json!({
-                    "schemaVersion": rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION,
-                    "tool": "export-png",
-                    "backend": "native-skia",
-                    "source": file_path,
-                    "pageCount": page_count,
-                    "renderedCount": 0,
-                    "metadataOnly": true,
-                    "pages": [],
-                }),
+                png_font_environment_metadata(
+                    serde_json::json!({
+                        "schemaVersion": rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION,
+                        "tool": "export-png",
+                        "backend": "native-skia",
+                        "source": file_path,
+                        "pageCount": page_count,
+                        "renderedCount": 0,
+                        "metadataOnly": true,
+                        "pages": [],
+                    }),
+                    &core,
+                    &data,
+                    &font_supply
+                ),
                 "export-png"
             )
         );
@@ -456,18 +490,23 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         println!(
             "{}",
             rhwp::provenance::marked(
-                serde_json::json!({
-                    "schemaVersion": rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION,
-                    "tool": "export-png",
-                    "source": file_path,
-                    "backend": "native-skia",
-                    "comparisonProfile": profile,
-                    "layoutGeneration": if hangul2024_compat { "2024" } else { "2022" },
-                    "outputDir": output_dir,
-                    "pageCount": page_count,
-                    "renderedCount": success,
-                    "pages": exported_pages,
-                }),
+                png_font_environment_metadata(
+                    serde_json::json!({
+                        "schemaVersion": rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION,
+                        "tool": "export-png",
+                        "source": file_path,
+                        "backend": "native-skia",
+                        "comparisonProfile": profile,
+                        "layoutGeneration": if hangul2024_compat { "2024" } else { "2022" },
+                        "outputDir": output_dir,
+                        "pageCount": page_count,
+                        "renderedCount": success,
+                        "pages": exported_pages,
+                    }),
+                    &core,
+                    &data,
+                    &font_supply
+                ),
                 "export-png"
             )
         );

@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-28",
+  "method": "PDF horizontal stroke coordinates in points * 96/72; direct side-by-side inspection",
+  "tolerance_px": 2,
+  "cases": [
+    {
+      "input": "samples/pic-in-table-with-toggle.hwp",
+      "pdf": "pdf/pic-in-table-with-toggle-2020.pdf",
+      "pdf_sha256": "ee92c9183ad5afa9f16fe92d3a2a9f1c420493310d19245e29e5196d295f8c1b",
+      "page": 1,
+      "boundaries": [
+        {
+          "y_pt": 102.00799560546875,
+          "y_96dpi_px": 136.01066080729166,
+          "x0_pt": 87.79299926757812,
+          "x1_pt": 507.4469909667969
+        },
+        {
+          "y_pt": 489.42498779296875,
+          "y_96dpi_px": 652.566650390625,
+          "x0_pt": 87.79299926757812,
+          "x1_pt": 507.4469909667969
+        }
+      ]
+    },
+    {
+      "input": "samples/issue6032/2912695_civil_petition_form.hwp",
+      "pdf": "pdf/2912695_civil_petition_form-2020.pdf",
+      "pdf_sha256": "2e85455f13d0e911b495a7a152f1c799ffb2fc37dd2051312cafa4359c810f89",
+      "page": 2,
+      "boundaries": [
+        {
+          "y_pt": 82.71002197265625,
+          "y_96dpi_px": 110.280029296875,
+          "x0_pt": 71.84100341796875,
+          "x1_pt": 502.1700134277344
+        },
+        {
+          "y_pt": 657.1209716796875,
+          "y_96dpi_px": 876.1612955729166,
+          "x0_pt": 71.84100341796875,
+          "x1_pt": 502.1700134277344
+        },
+        {
+          "y_pt": 665.990966796875,
+          "y_96dpi_px": 887.9879557291666,
+          "x0_pt": 72.20099639892578,
+          "x1_pt": 500.97100830078125
+        }
+      ]
+    }
+  ],
+  "visual_inspection": {
+    "path": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/outer-margin-print-crops.png",
+    "sha256": "3dadb202a34fa1bd1095ea6ea2d36dc76bcee14340319a40aa5d514a44891bbc"
+  }
+}

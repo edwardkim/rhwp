@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-23
+last_verified: 2026-11-04
 ---
 
 # PR 접수와 리뷰 기록
@@ -245,6 +245,12 @@ DPI/좌표계와 Native/fresh WASM 증거를 함께 대조한다.
 
 ## 2.8 검증 입력 커밋 확인
 
+**조판·렌더링·페이지 배치에 영향을 주는 PR에 검증할 HWP/HWPX가 첨부되지 않았으면 PR을
+보류한다.** [기여자의 검증 입력 첨부 의무](../../../CONTRIBUTING.md#조판-변경-pr의-검증-입력-첨부)에
+따라 실제 입력의 검토 대상 commit 포함과 본문의 SHA 고정 다운로드 링크를 확인한다.
+스크린샷·PDF·TSV·생성 코드만으로는 이 조건을 충족하지 않는다. 공개 가능한 대체 재현 입력은
+동일 결함의 수정 전후 검증을 확인하고 대체 여부를 표시한다. 파일 제공 전에는 승인·통합하지 않는다.
+
 이 항목도 역할·작성자와 관계없이 모든 정식 PR review에 적용한다. 직접 검증에 사용한 HWP/HWPX와
 50 MiB 미만 기준·비교 PDF는 **수용 판정 전에 검토 대상 commit에 포함**되어야 한다.
 **50 MiB(52,428,800바이트) 이상 PDF는 로컬에만 보관하고 PR에서 제외**하며 아래 별도 확인을 적용한다.
@@ -254,6 +260,8 @@ DPI/좌표계와 Native/fresh WASM 증거를 함께 대조한다.
 
 1. 시각 검증, focused 회귀, Native/WASM 비교 등에 실제 사용한 입력과 기준 PDF를 열거한다.
    입력 파일을 만들지 않고 코드에서 생성·소비하는 단위 테스트는 별도 파일을 만들 필요가 없다.
+   단, 조판 변경 PR의 입력 첨부 의무는 별개다. 단위 테스트만으로 이를 면제하지 않으며,
+   생성 문서도 재검증 가능한 HWP/HWPX로 저장해 제공한다.
 2. 위 커밋 대상 중 기존에 커밋된 동일 파일은 그 경로를 재사용한다. 누락한 원본·PDF와 파일로 사용한 합성·축소 변형은
    [원본 fixture 보존 절차](visual_fixture_evidence.md#원본-fixture와-기준-pdf-보존)에 따라 같은 검토 branch에 추가한다.
 3. 최종 검증 명령은 저장소 경로를 사용한다. 외부 경로에서 먼저 실행했다면 저장소 파일 및 commit과
@@ -281,6 +289,9 @@ maintainer 일반 경로는 처리 중 active 경로에 작성하고, 완료 후
 collaborator self-merge와 collaborator 매개 외부 PR은 해당 기본 경로 문서가 정한 archive 경로를 처음부터 쓴다.
 PR 번호는 PR 생성 시점에 확정하며 생성 전에 예측하지 않는다. collaborator self-merge는 PR을 생성해
 번호를 받은 뒤 self-review 기록을 번호 기반 review 문서로 작성하고 같은 PR의 후속 commit으로 추가한다.
+
+단, CI 실행 정의·판정 정책 변경 PR의 기록은 [옵션 2](post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)로
+병합 후 별도 기록 PR에 반영한다. 실제 검토와 원 PR의 최신 code head CI·merge 승인 조건은 생략하지 않는다.
 
 ~~~text
 mydocs/pr/pr_N_review.md
@@ -318,6 +329,13 @@ review 문서에는 최소한 다음을 포함한다.
 `mydocs/pr/assets/` 안정 경로, `<merge-commit-sha>` 고정 raw image URL 형식, merge 뒤 `--body-file` 게시 및
 API 재조회 조건을 적는다. 이는 게시 승인이나 사전 comment를 뜻하지 않는다. asset이 devel에 반영되고 merge
 SHA가 확정된 뒤에만 [merge 후속 처리](post_merge.md)의 실제 게시 단계로 진행한다.
+
+시각 결과를 원 PR의 review 또는 일반 comment에 제시할 때는 첫 게시 전에 원 PR의 각 주장과
+실제 문서·페이지·출력 경로를 대응시킨다. 각 주장에 맞는 review·overlay PNG를 직접 판독하고
+정확한 commit SHA로 고정한 raw 이미지 URL을 첫 comment에 표시한다. 다른 PR이나 다른 페이지의
+대표 그림으로 대체하지 않는다. URL 응답·이미지·원본 해시를 확인하고 게시 후 API와 화면도
+재확인한다. 증적이 미비하면 먼저 준비하며 게시 승인은 별도로 따른다. 상세는
+[시각 comment 정본](../verification/visual_sweep_guide.md#github-merge-comment)을 따른다.
 
 또한 reviewer는 merge 전 PR 본문에서 실제 Visual Sweep 증적이 보이는지 확인한다. 최종 PR head의
 repository·SHA로 고정한 Native/fresh WASM review·overlay 이미지가 실행한 출력 경로별로 표시되어야 하며,

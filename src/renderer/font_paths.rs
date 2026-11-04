@@ -30,6 +30,7 @@ pub const FONT_PATH_ENV: &str = "RHWP_FONT_PATH";
 
 /// 저장소 번들 오픈소스 폰트 — 최후 폴백(#2293 한국어 드롭 방지).
 pub const BUNDLED_OPENSOURCE_DIR: &str = "ttfs/opensource";
+pub(crate) const MAX_NATIVE_CUSTOM_FONT_BYTES: u64 = 64 * 1024 * 1024;
 
 /// `RHWP_FONT_PATH` 를 읽어 경로 목록으로 나눈다.
 ///
@@ -75,10 +76,27 @@ pub fn system_font_dirs() -> Vec<PathBuf> {
     }
     #[cfg(target_os = "linux")]
     {
-        vec![
+        // Fontconfig이 사용하는 사용자 설치 위치도 복구 검색에 포함한다.
+        // Skia가 영문 대표 이름만 열거한 글꼴의 현지화 family를 찾을 때 필요하다.
+        let mut dirs = Vec::new();
+        let home = std::env::var_os("HOME")
+            .filter(|home| !home.is_empty())
+            .map(PathBuf::from);
+        let data_home = std::env::var_os("XDG_DATA_HOME")
+            .filter(|path| !path.is_empty())
+            .map(PathBuf::from)
+            .or_else(|| home.as_ref().map(|home| home.join(".local/share")));
+        if let Some(data_home) = data_home {
+            dirs.push(data_home.join("fonts"));
+        }
+        if let Some(home) = home {
+            dirs.push(home.join(".fonts"));
+        }
+        dirs.extend([
             PathBuf::from("/usr/share/fonts"),
             PathBuf::from("/usr/local/share/fonts"),
-        ]
+        ]);
+        dirs
     }
     #[cfg(target_os = "windows")]
     {
@@ -212,6 +230,22 @@ mod tests {
             Some(&PathBuf::from(BUNDLED_OPENSOURCE_DIR)),
             "번들 오픈소스 폰트가 최후 폴백이어야 한다"
         );
+        #[cfg(target_os = "linux")]
+        {
+            let home = std::env::var_os("HOME")
+                .filter(|value| !value.is_empty())
+                .map(PathBuf::from);
+            let data_home = std::env::var_os("XDG_DATA_HOME")
+                .filter(|value| !value.is_empty())
+                .map(PathBuf::from)
+                .or_else(|| home.as_ref().map(|path| path.join(".local/share")));
+            if let Some(data_home) = data_home {
+                assert!(dirs.contains(&data_home.join("fonts")));
+            }
+            if let Some(home) = home {
+                assert!(dirs.contains(&home.join(".fonts")));
+            }
+        }
         #[cfg(target_os = "macos")]
         if let Some(home) = std::env::var_os("HOME").filter(|home| !home.is_empty()) {
             let user_dir = PathBuf::from(home).join("Library/Fonts");

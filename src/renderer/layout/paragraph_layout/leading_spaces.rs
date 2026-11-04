@@ -3,18 +3,25 @@
 use super::{compute_char_positions, effective_text_for_metrics, ComposedLine, TextStyle};
 use crate::renderer::composer::ComposedTextRun;
 
-/// 표시 확장이 원문의 선두 ASCII 공백을 보존했는지 확인한다.
+/// 줄 선두에서 본문 배분을 받지 않는 들여쓰기 공백이다.
+pub(super) fn is_leading_indentation_space(ch: char) -> bool {
+    matches!(ch, ' ' | '\u{00a0}')
+}
+
+/// 표시 확장이 원문의 선두 들여쓰기 공백을 보존했는지 확인한다.
 /// PUA 표시 확장과 모델 한 칸을 다른 문자열로 바꾸는 필드를 구분한다.
 pub(super) fn source_leading_spaces(run: &ComposedTextRun) -> Option<usize> {
     if run.char_overlap.is_some() || run.footnote_marker.is_some() || run.inserted_control_text {
         return None;
     }
-    let source = run.text.chars().take_while(|&ch| ch == ' ').count();
+    let source = run
+        .text
+        .chars()
+        .take_while(|&ch| is_leading_indentation_space(ch));
     let displayed = effective_text_for_metrics(run)
         .chars()
-        .take_while(|&ch| ch == ' ')
-        .count();
-    (source == displayed).then_some(source)
+        .take_while(|&ch| is_leading_indentation_space(ch));
+    source.clone().eq(displayed).then(|| source.count())
 }
 
 pub(super) struct LeadingSpaces {
@@ -66,7 +73,7 @@ pub(super) fn natural_leading_positions(
         .nth(count)
         .map_or(text.len(), |(index, _)| index);
     let (prefix, suffix) = text.split_at(split);
-    if prefix.chars().count() != count || !prefix.chars().all(|character| character == ' ') {
+    if prefix.chars().count() != count || !prefix.chars().all(is_leading_indentation_space) {
         return None;
     }
     let original = compute_char_positions(text, style);

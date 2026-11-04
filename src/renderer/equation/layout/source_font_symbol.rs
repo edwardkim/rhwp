@@ -85,8 +85,14 @@ pub(super) fn layout(text: &str, fs: f64, dpi: f64) -> Option<LayoutBox> {
             width,
             height: fs,
             baseline: fs * 0.8,
-            // 공개 표시 글꼴의 정체 기호를 유지하고 논리 전진을 공유한다.
-            kind: LayoutKind::Symbol(text.to_string()),
+            // 현대 Print의 수학 PUA다. 구형 Type3 원문 %나 본문 ASCII %와
+            // 다른 실제 글리프를 같은 논리 전진 결과에 보존한다.
+            kind: LayoutKind::FontGlyph {
+                text: "\u{e042}".to_string(),
+                font_family: "HYhwpEQ, Latin Modern Math, STIX Two Math, serif",
+                paint: None,
+                outline: None,
+            },
         });
     }
     if matches!(text, "±" | "∓" | "∙" | "⋅") {

@@ -1,0 +1,86 @@
+{
+  "sourceRuntime": "98c2a364e68731e4f4911d765756904a0258dd46",
+  "dpi": 96,
+  "coordinates": "CSS px from independent PDF vector border centerlines; no PNG resizing or alignment",
+  "coordinateTolerancePx": 2,
+  "qualification": {
+    "nativeRawMinimum": 100,
+    "freshWasmRawMinimum": 100,
+    "referencePageCount": 1,
+    "nativeTSV": "tsv/native229/<key>.tsv",
+    "freshWasmTSV": "tsv/wasm065/<key>.tsv",
+    "directRead": "whole review/overlay plus ancestor borders, text origins, external child occupancy"
+  },
+  "cases": [
+    {
+      "key": "flat",
+      "input": "mydocs/pr/assets/pr_7833_cell_axis_diagnostic_20261025/inputs/flat-true-tables-true-format-2.hwpx",
+      "inputSha256": "0581033861bb6316ae6bf0e01be0566eafd3191f62fb06cd590686ee07baf26e",
+      "pdf": "pdf/pr7833-cell-axis-diagnostic/flat-true-tables-true-format-2-2020.pdf",
+      "pdfSha256": "157895d08e42e72d3ac26f3e4378a91c5927d9cf70daee0b636fc5def8c2b1e6",
+      "pages": 1,
+      "ancestorHeights": [
+        275.378662
+      ],
+      "x": 117.2173360188802,
+      "y": 157.26798502604166,
+      "width": 559.0586649576823,
+      "inlineTableX": 127.77067057291667,
+      "inlineTables": [
+        {
+          "y": 184.278646,
+          "height": 16.941325
+        },
+        {
+          "y": 238.139974,
+          "height": 17.1014
+        },
+        {
+          "y": 334.67334,
+          "height": 17.101318
+        },
+        {
+          "y": 388.534668,
+          "height": 17.101318
+        }
+      ],
+      "expectedText": "머리가🦦나다라중간앞뒤끝말중간"
+    },
+    {
+      "key": "nested",
+      "input": "mydocs/pr/assets/pr_7833_cell_axis_diagnostic_20261025/inputs/flat-false-tables-true-format-2.hwpx",
+      "inputSha256": "9959547e50f0614cb2902fb644008ef268d9f255c8252dd7feb47a4ed5820487",
+      "pdf": "pdf/pr7833-cell-axis-diagnostic/flat-false-tables-true-format-2-2020.pdf",
+      "pdfSha256": "11e1a3abc260b1dee8e15937fc8a57b28b1404bcbfcc42c2ddcc572ca60479e2",
+      "pages": 1,
+      "ancestorHeights": [
+        38.35734,
+        38.35734,
+        275.378662
+      ],
+      "x": 117.2173360188802,
+      "y": 157.26798502604166,
+      "width": 559.0586649576823,
+      "inlineTableX": 127.77067057291667,
+      "inlineTables": [
+        {
+          "y": 184.278646,
+          "height": 16.941325
+        },
+        {
+          "y": 238.139974,
+          "height": 17.1014
+        },
+        {
+          "y": 334.67334,
+          "height": 17.101318
+        },
+        {
+          "y": 388.534668,
+          "height": 17.101318
+        }
+      ],
+      "expectedText": "머리가🦦나다라중간앞뒤끝말중간중간중간중간중간"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "commit": "076b19d364a552b5c38da1a9639e48587f6f8b1e",
+  "commit": "678ba12d1695bddb81becc393f0a396e21285ee3",
   "passed": true,
   "files": [
     {
@@ -602,5 +602,6 @@
       "git_blob": "cb168a9199f86c9f935af695af055bfa382e9e8b",
       "commit_bytes_identical": true
     }
-  ]
+  ],
+  "merged_commit": "2546c8b2ab7041399fb15fe82e0f50c1ade21724"
 }

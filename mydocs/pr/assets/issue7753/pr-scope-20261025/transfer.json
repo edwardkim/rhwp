@@ -1,0 +1,27 @@
+{
+  "source_commit": "ee05c8f28f83d7d541382f423d57092e2dca90e5",
+  "source_path": "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs",
+  "git_blob": "c08a79c824f402b4d39e6947e32e3eb0e47d9715",
+  "sha256": "d27647bbd389d8354be94c6f3051552b4fa7522e4632c948b1c9d2fd58936912",
+  "preserved_path": "mydocs/pr/assets/issue7753/pr-scope-20261025/issue_7379_rowbreak_table_footnote_reservation.rs.txt",
+  "removed_tests": [
+    "unproven_empty_picture_table_frame_keeps_measured_flow_origin"
+  ],
+  "active_remaining_tests": [
+    "terminal_caption_margin_budget_preserves_rows_and_footer_space",
+    "terminal_caption_withholds_the_last_rowspan_unit_together",
+    "terminal_caption_last_single_row_defers_without_consuming_it",
+    "opening_caption_last_single_row_reserves_its_full_object_frame",
+    "paragraph_caption_frame_preserves_positive_vertical_offset",
+    "intra_row_cut_does_not_publish_a_later_line_footnote",
+    "footnote_free_rowbreak_table_keeps_splitting",
+    "small_note_queue_reserves_the_actual_painted_footnote_area",
+    "body_note_repeated_page_top_survives_hwpx_parser",
+    "figure11_closed_frame_preserves_units_across_body_budgets",
+    "captioned_closed_empty_host_frame_preserves_rows_and_caption_when_budget_requires_split",
+    "actual_cell_edit_preserves_reflowed_table_payload_and_budget_hwpx",
+    "actual_cell_edit_preserves_reflowed_table_payload_and_budget_hwp"
+  ],
+  "reason": "사용자가 기존 #7445 미완료 문서의 PR 보정·검토 제외를 지정함. #7753의 같은 정책연구 원본에서 현재 실패한 한 함수를 분리하며 정상 다른 검사는 유지.",
+  "restore_condition": "#7753에서 같은 원본·독립 Print 전쪽 Native/fresh raw>=90% 및 직접 판독 후 독립 계약을 확인해 복원."
+}

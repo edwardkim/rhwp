@@ -1,0 +1,28 @@
+{
+  "status": "diagnostic_only",
+  "prior_source": "3a2a081a418a38a2fb696136835d0f721b216972",
+  "input": "samples/3-09월_교육_통합_2022.hwp",
+  "page": 20,
+  "historical_raw": 96.35945,
+  "current_environment": {
+    "default": {
+      "raw": 95.30078,
+      "tsv_sha256": "6657b76a91b0d83bee8cd54d577215f9ce0d3c271978f32e4024684413deedb3"
+    },
+    "reject_three": {
+      "raw": 95.30078,
+      "tsv_sha256": "6657b76a91b0d83bee8cd54d577215f9ce0d3c271978f32e4024684413deedb3"
+    },
+    "reject_added_font_directory": {
+      "raw": 95.30078,
+      "tsv_sha256": "6657b76a91b0d83bee8cd54d577215f9ce0d3c271978f32e4024684413deedb3",
+      "additional_system_font_files_excluded": 220
+    }
+  },
+  "note": "추가 설치 경로의 시스템 글꼴 220개까지 제외해도 미주 20쪽과 중첩 셀 1쪽의 이전 소스 재현값은 같았다. 과거 빌드의 코드 생성 단위 16 및 실제 선택 글꼴 재현은 아직 필요하다.",
+  "additional_cell_control": {
+    "historical_raw": 98.57262,
+    "rebuild_reject_three_raw": 98.35047,
+    "rebuild_reject_added_directory_raw": 98.35047
+  }
+}

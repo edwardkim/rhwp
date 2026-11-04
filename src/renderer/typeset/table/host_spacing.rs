@@ -199,22 +199,7 @@ pub(super) fn resolve(
             // Preserve the stack rule for edited/reflowed or synthetic input.
             let source_frame_reset = profile().hwp5_stored_pagination_layout()
                 && !profile().session_edited()
-                && matches!(
-                    table.page_break,
-                    crate::model::table::TablePageBreak::RowBreak
-                )
-                && !para.stored_text_partition_is_dirty()
-                && !para.cell_format_vpos_dirty
-                && !p.stored_text_partition_is_dirty()
-                && !p.cell_format_vpos_dirty
-                && para.line_segs.len() == 1
-                && p.line_segs.len() == 1
-                && [&para.line_segs[0], &p.line_segs[0]].iter().all(|line| {
-                    line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                        && line.vertical_pos >= 0
-                        && line.line_height > 0
-                })
-                && p.line_segs[0].vertical_pos < para.line_segs[0].vertical_pos;
+                && crate::renderer::stored_float_anchor::stored_anchor_successor_rewinds(para, p);
             is_table_anchor && !source_frame_reset
         })
         .unwrap_or(false);
@@ -294,7 +279,10 @@ pub(super) fn resolve(
     let after = sa + outer_bottom + host_line_tail + positive_empty_host_rowbreak_tail;
     let host_spacing = HostSpacing {
         before,
+        // 위 세 갈래 모두 단 상단에서는 바깥 위 여백만 남는다.
+        column_top_before: outer_top,
         after,
+        host_line_spacing,
         // 저장 원점이 없는 개체는 뒤 저장 줄로 종료 여백을 복원할 수 없다.
         // 전체 표와 같은 바깥여백을 마지막 조각 뒤 흐름에 한 번 전달한다.
         // 호스트 줄간격은 첫 조각의 계약이므로 여기서 반복하지 않는다.

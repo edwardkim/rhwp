@@ -1,0 +1,16 @@
+{
+  "status": "invalid_stale_chart_dependency",
+  "source_commit": "f5c3972844442d7d2c74496bfd4db06cec26615b",
+  "wasm_sha256": "3c9fb1cd813e74638fc4e23051879a75622e51f83be3dd6f2d9fad1dc0c6ecdc",
+  "prior_wasm_sha256": "7f99d8e4c5b21c6fbd765c7fc098baa19b1feef5c1958eaa9ceeeb5e9e9afd09",
+  "pdf_sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+  "pages": 9,
+  "minimum": 96.48108,
+  "page8_before": 99.8804,
+  "page8_after": 99.95485,
+  "drops_ge_0_1pp": 0,
+  "before_tsv_sha256": "9f8b6945e1d9c16406af77fea12ea50e0197f07647c4f11e3996a2182429f843",
+  "after_tsv_sha256": "d736eb9d86aacba3b6462894a910aabd8d14ab73e5032a34c2c2909b7639d99e",
+  "note": "#3308에 한정한 중간 결과. 원본 67건과 #8319의 새 WASM 전쪽은 별도 검증 중.",
+  "invalidation_note": "현재 WASM의 차트 출력은 87.98250%이고 #8319 기준은 99.66483%다. 빌드 target의 차트 의존성 기록이 이전 worktree 소스에 해당함을 확인했으므로 현재 소스의 통과 증거로 인정하지 않는다."
+}

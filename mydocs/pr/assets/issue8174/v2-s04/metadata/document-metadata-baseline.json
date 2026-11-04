@@ -1,0 +1,15 @@
+{
+  "baseline": "485565e95d",
+  "existingErrors": 20,
+  "existingFiles": 5,
+  "allExistingErrorFilesByteIdenticalToBaseline": true,
+  "changedDocuments": [
+    "mydocs/manual/README.md",
+    "mydocs/manual/pdf_image_codecs.md",
+    "mydocs/manual/pdf_resource_policies.md",
+    "mydocs/manual/rhwp_studio_ui_conventions.md",
+    "mydocs/manual/security_feature_limits.md",
+    "mydocs/manual/studio_document_features.md"
+  ],
+  "newErrors": 0
+}

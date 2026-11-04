@@ -1,0 +1,6 @@
+{
+  "pid": 1317030,
+  "reason": "Remove unnecessary decorative floating-shape occupancy from common row fit; keep original row-only ownership before final validation.",
+  "signal": "SIGTERM",
+  "product_failure_claimed": false
+}

@@ -1,0 +1,68 @@
+{
+  "success": true,
+  "source_sha": "24484260bb7e374176147fd136ae9848d0f49a6c",
+  "profile": "release",
+  "artifacts": {
+    "rhwp.js": {
+      "sha256": "013afb1fd2b8f3b696ec918c30671b7160924f9ec358ad611799ccbd4b74eff8",
+      "bytes": 518658
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "8545edf30ed554a6bd0a964ac4f55774ae2fcdd548654ffb1bf2b3503fa5782b",
+      "bytes": 27680748
+    },
+    "rhwp.d.ts": {
+      "sha256": "9a023164a1ffbe6dbea23e73f7ea909a821789fc363bb79d630918eefa33051c",
+      "bytes": 207500
+    },
+    "rhwp_bg.wasm.d.ts": {
+      "sha256": "c21c89d10d136e910e7b95ea18a98f4e2583bcf8c2cffc42cd13646990a30b9b",
+      "bytes": 72327
+    }
+  },
+  "source_dirty_files": {
+    "src/document_core/commands/object_ops/table.rs": "0d08882bf3ea2d5f91fb1586be971c830baf81d3eae96f5337d287385ae65fea",
+    "src/document_core/commands/object_ops/table/creation_line.rs": "b42978ee46b67f88b51c6def3cde863e46ff07567d646f51c4abe1fb4a1582d1"
+  },
+  "source_note": "Built from source_sha plus exactly these two product-source modifications. Generated Studio JS is a build artifact; test/evidence metadata changes do not alter this product source.",
+  "toolVersions": {
+    "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+    "wasmPack": "wasm-pack 0.15.0",
+    "wasmBindgen": "wasm-bindgen 0.2.127",
+    "wasmOpt": "wasm-opt version 117 (version_117)",
+    "node": "v24.15.0",
+    "versionCapturedAfterBuild": true
+  },
+  "observedOptimizationArguments": [
+    "wasm-opt",
+    "pkg/rhwp_bg.wasm",
+    "-o",
+    "pkg/rhwp_bg.wasm-opt.wasm",
+    "-O"
+  ],
+  "buildCommand": {
+    "name": "candidate-wasm-build",
+    "command": [
+      "bash",
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--release",
+      "--mode",
+      "no-install"
+    ],
+    "exit": 0,
+    "seconds": 658.39,
+    "logSha256": "e62830fe7641be19862842b125f2b5c31c2a0bf5d6a56ccb2925cc5bc4dec338"
+  },
+  "nativeBinary": {
+    "sha256": "02dae1270b97632988febdfd23dd7e16032f6ac6799788f1e1dd4d9080851c37",
+    "profile": "release-test",
+    "features": [
+      "native-skia"
+    ]
+  },
+  "bindingSynchronization": "All four package/public artifacts match. The tracked JS/types are generated from the tested fresh package; no build-wrapper or CI policy changes."
+}

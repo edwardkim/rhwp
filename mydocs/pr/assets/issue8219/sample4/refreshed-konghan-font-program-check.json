@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-29",
+  "source": "win10-ted 최종 중간공한을 다시 배포한 버전",
+  "font_sha256": "e19def2bac01355fb0f4b5cc732dbcbf983e890b017b38d9c9f8f1d65f352a80",
+  "pdf": "pdf/hwp3-sample4-2020.pdf",
+  "pdf_sha256": "61d63da58638b4a28900a15694779b35766f4ff5b3e0ed41d959a97f2599bb60",
+  "page": 1,
+  "pdf_font": "/T1 Type3",
+  "glyph_count": 108,
+  "advance_equal_count": 108,
+  "normalized_path_exact_equal_count": 30,
+  "normalized_path_nonidentical_count": 78,
+  "normalization": "닫힌 윤곽의 시작점·방향·같은 직선상의 중간점을 정규화하여 이동·선·3차 곡선 제어점의 좌표를 비교",
+  "limitations": [
+    "78개는 위 경로 표현이 다르다는 뜻이며 곡선 분할이나 경로 정리로 같은 모양일 가능성을 배제하지 못한다. 시각적으로 글꼴이 잘못됐다는 판정이 아니다.",
+    "이전 108개 경로 일치 결론은 SHA adb0346c...인 이전 파일에 대한 결과이며 이번 새 파일에 그대로 적용하지 않는다.",
+    "실제 1쪽·전체 문서 일치율은 이번 버전으로 다시 측정하지 않았다."
+  ],
+  "geometry_log_sha256": "2090a9ec8dc1888e0e48cd77ef50d3eaed48b0f4e7dd23156653211f6d364523",
+  "width_log_sha256": "713d276ee46fb49e0b400ff0104820c01af17c12a8079bbc9d78a113bd50ef03",
+  "previous_version_evidence": "mydocs/pr/assets/issue8219/sample4/final-konghan-font-program-identity.json"
+}

@@ -66,6 +66,8 @@ pub struct Tokenizer {
     last_had_space: bool,
     /// 저장 문서의 한컴 명령 해석과 공개 LaTeX 호환 해석을 구분한다.
     document_commands: bool,
+    /// 빈 버전의 구형 사전에는 COLOR가 없으며 COL의 붙은 인자로 해석된다.
+    legacy_document_commands: bool,
 }
 
 impl Tokenizer {
@@ -75,6 +77,7 @@ impl Tokenizer {
             pos: 0,
             last_had_space: false,
             document_commands: false,
+            legacy_document_commands: false,
         }
     }
 
@@ -82,6 +85,13 @@ impl Tokenizer {
         Self {
             document_commands: true,
             ..Self::new(script)
+        }
+    }
+
+    pub(crate) fn for_legacy_document(script: &str) -> Self {
+        Self {
+            legacy_document_commands: true,
+            ..Self::for_document(script)
         }
     }
 
@@ -258,6 +268,19 @@ impl Tokenizer {
                 self.pos += 1;
             } else {
                 break;
+            }
+        }
+
+        // COL 계열도 붙은 피연산자와 분리한다. 현대 사전의 COLOR는 더 긴 별도 명령이다.
+        // 따옴표·백슬래시 문자 전환과 공개 호환 tokenizer에는 적용하지 않는다.
+        let modern_color =
+            !self.legacy_document_commands && value.to_ascii_uppercase().starts_with("COLOR");
+        if self.document_commands && !modern_color {
+            for name in ["LCOL", "RCOL", "COL"] {
+                if value.len() > name.len() && value[..name.len()].eq_ignore_ascii_case(name) {
+                    self.pos = start + name.len();
+                    return Token::new(TokenType::Command, value[..name.len()].to_string(), start);
+                }
             }
         }
 
@@ -696,8 +719,17 @@ fn longest_keyword_prefix(value: &str) -> Option<usize> {
     if value.len() < 3 || is_eq_keyword(value) {
         return None;
     }
-    // 최장 우선 (len-1 .. 2), allowlist 만 분리
-    (2..value.len()).rev().find(|&k| is_glue_safe(&value[..k]))
+    // 최장 우선 (len-1 .. 2), allowlist 만 분리. 알려진 키워드보다 긴 접두사는 볼 필요가 없다.
+    // 긴 식별자(예: 8,000자 x)에서 모든 접두사를 해시하면 문자 수의 제곱만큼 느려진다.
+    let longest = GLUE_SAFE
+        .iter()
+        .map(|keyword| keyword.len())
+        .max()
+        .unwrap_or(0)
+        .max(super::symbols::max_symbol_name_len());
+    (2..value.len().min(longest + 1))
+        .rev()
+        .find(|&k| is_glue_safe(&value[..k]))
 }
 
 /// 수식 스크립트를 토큰 리스트로 변환

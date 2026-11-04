@@ -1,0 +1,39 @@
+{
+  "status": "diagnostic_only",
+  "note": "과거 대표 PNG는 현재 같은 PDF의 픽셀과 비교해 과거 TSV 값을 재현한다. 이전 소스 재빌드의 51개 글꼴 원본과 PDF 해시는 같지만 실제 글자 잉크가 달라져 있으며 원인은 미확정.",
+  "rows": [
+    {
+      "input": "endnotes-september",
+      "page": 20,
+      "historical_image": "mydocs/working/assets/review_integration_20261026/validation/representative/wasm/endnotes-september-p020.png",
+      "historical_image_sha256": "4dc385cd6aaeeb8f652ec32bd67d941885faeed47ae489e5ab36c7d1b789be58",
+      "reference_png_sha256": "ed886665fe306a5cdd7cbb81804660e96c4e15235b2b470f7ca5c38144f82ff0",
+      "historical_raw_recomputed": 96.35945,
+      "candidate_raw": 95.32108,
+      "candidate_image_sha256": "21af915422da57cbb70203a3f9aa6869aa4e1feadbb736d4a1ea49ccf5dfd480",
+      "historical_vs_candidate_raw": 100.0
+    },
+    {
+      "input": "endnotes-november",
+      "page": 21,
+      "historical_image": "mydocs/working/assets/review_integration_20261026/validation/representative/wasm/endnotes-november-p021.png",
+      "historical_image_sha256": "f823079e73be794eb5d9aba13c7695fa1bf3df4f6ccaf39b6f48a888aa4c5cbf",
+      "reference_png_sha256": "84b7606787231ae6b530193c6fe81fbce82e34e20cffa924fcd4139ec0b25a97",
+      "historical_raw_recomputed": 91.32974,
+      "candidate_raw": 90.84255,
+      "candidate_image_sha256": "ac71341ab053fff94916a9e679d4d89b976d0e340b644e4e49e88346b574decc",
+      "historical_vs_candidate_raw": 99.91146
+    },
+    {
+      "input": "rebase8116-cell_nested_table_rows",
+      "page": 1,
+      "historical_image": "mydocs/working/assets/review_integration_20261026/validation/representative/wasm/rebase8116-cell_nested_table_rows-p001.png",
+      "historical_image_sha256": "f0d052a9098d75afe6cc4307b35c7e4d65d47bce5e295b23c02694cd3c74ff38",
+      "reference_png_sha256": "241cc97ba73a733de63bb9a08dd54ea8dd4efe80d792a7ef50c16d37ab81ed75",
+      "historical_raw_recomputed": 98.57262,
+      "candidate_raw": 98.35045,
+      "candidate_image_sha256": "8765f248cc190e91e5031139e70e3909502d124fafc01cc50f58c5b554f82e9b",
+      "historical_vs_candidate_raw": 100.0
+    }
+  ]
+}

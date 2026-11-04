@@ -4,7 +4,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 
 use resvg::usvg::fontdb::{Database, Family, Source, Style, Weight, ID};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use super::metafile_surface::SurfaceCache;
 
@@ -22,12 +22,102 @@ pub(crate) struct MetafileFonts {
     requests: Arc<Mutex<Option<(u32, String)>>>,
 }
 
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct FontRequest {
     pub families: Vec<String>,
     pub weight: u16,
     pub italic: bool,
     pub text: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct PageFontRequests {
+    metafile: Vec<FontRequest>,
+    text_effects: Vec<FontRequest>,
+}
+
+/// 현재 인쇄 트리가 실제로 소비하는 그림·문자 효과의 글꼴만 요청한다.
+/// 다른 쪽의 원본 BinData·글자 모양은 이 쪽의 paint 자원 예산을 소비하지 않는다.
+pub(crate) fn page_requests(
+    root: &crate::renderer::render_tree::RenderNode,
+    hangul2024: bool,
+) -> Result<PageFontRequests, &'static str> {
+    use crate::renderer::render_tree::RenderNodeType;
+    let mut metafile = Vec::new();
+    let mut effects = BTreeMap::<(Vec<String>, u16, bool), std::collections::BTreeSet<char>>::new();
+    let mut pending = vec![root];
+    let mut work = 1_000_000usize;
+    while let Some(node) = pending.pop() {
+        work = work
+            .checked_sub(1)
+            .ok_or("페이지 글꼴 요청의 순회 한도를 초과했습니다")?;
+        if !node.visible || node.editor_only {
+            continue;
+        }
+        match &node.node_type {
+            RenderNodeType::Image(image) => {
+                if let Some(data) = image.data.as_deref().filter(|data| {
+                    crate::renderer::image_resolver::detect_image_mime_type(data) == "image/x-wmf"
+                }) {
+                    if let Some(items) = crate::renderer::svg::convert_wmf_to_svg(data)
+                        .and_then(|svg| requests(&svg))
+                    {
+                        metafile.extend(items);
+                    }
+                }
+            }
+            RenderNodeType::RawSvg(svg) => {
+                if let Some(items) = requests(svg.svg.as_bytes()) {
+                    metafile.extend(items);
+                }
+            }
+            RenderNodeType::TextRun(run) if hangul2024 => {
+                let shadow = run.style.shadow_type == 2 && !run.is_vertical;
+                let leader = super::dot_leader::needs_font_program(node);
+                if shadow || leader {
+                    let families =
+                        crate::renderer::internal_font_family_members(&run.style.font_family)
+                            .into_iter()
+                            .map(str::to_owned)
+                            .collect::<Vec<_>>();
+                    let weight = match run.style.css_font_weight() {
+                        Some("bold") => 700,
+                        Some(value) => value.parse().unwrap_or(400),
+                        None => 400,
+                    };
+                    let chars = effects
+                        .entry((families, weight, run.style.italic))
+                        .or_default();
+                    if shadow {
+                        chars.extend(run.display_or_text().chars().filter(|c| !c.is_control()));
+                    }
+                    if leader {
+                        chars.insert('·');
+                    }
+                    if chars.len() > super::MAX_PORTABLE_GLYPHS_PER_RUN {
+                        return Err("페이지 텍스트 효과의 글리프 요청 한도를 초과했습니다");
+                    }
+                }
+            }
+            _ => (),
+        }
+        pending.extend(node.children.iter().rev());
+    }
+    let text_effects = effects
+        .into_iter()
+        .filter(|((names, _, _), chars)| !names.is_empty() && !chars.is_empty())
+        .map(|((families, weight, italic), chars)| FontRequest {
+            families,
+            weight,
+            italic,
+            text: chars.into_iter().collect(),
+        })
+        .collect();
+    Ok(PageFontRequests {
+        metafile,
+        text_effects,
+    })
 }
 
 pub(super) fn family(name: &str) -> Family<'_> {
@@ -64,15 +154,19 @@ pub(crate) fn requests(svg: &[u8]) -> Option<Vec<FontRequest>> {
             .descendants()
             .filter_map(|n| n.is_text().then(|| n.text()).flatten())
         {
-            chars.extend(
-                text.chars()
-                    .filter(|c| !c.is_whitespace() && !c.is_control()),
-            );
+            // XML 공백은 SVG에서 공백 문자로 처리될 수 있다. 공백만 있는
+            // 장식 텍스트도 실제 공급 글꼴의 cmap을 확인하도록 보존한다.
+            chars.extend(text.chars().filter_map(|c| match c {
+                '\t' | '\n' | '\r' => Some(' '),
+                c if !c.is_control() => Some(c),
+                _ => None,
+            }));
         }
     }
     Some(
         groups
             .into_iter()
+            .filter(|(_, chars)| !chars.is_empty())
             .map(|((families, weight, italic), chars)| {
                 let mut chars = chars.into_iter().collect::<Vec<_>>();
                 chars.sort_unstable();
@@ -143,6 +237,39 @@ fn default_database() -> Arc<Database> {
 }
 
 impl MetafileFonts {
+    /// 세션에 명시적으로 공급한 프로그램만 새 텍스트 효과의 근거로 쓴다.
+    pub(super) fn is_supplied_face(&self, id: ID) -> bool {
+        self.aliases
+            .values()
+            .any(|(_, _, supplied)| *supplied == id)
+    }
+
+    /// 텍스트 효과는 같은 family/style 해소와 명시 공급 프로그램만 소비한다.
+    pub(super) fn supplied_faces_for_style(&self, style: &crate::renderer::TextStyle) -> Vec<ID> {
+        let database = self.database();
+        let weight = match style.css_font_weight() {
+            Some("bold") => 700,
+            Some(value) => value.parse().unwrap_or(400),
+            None => 400,
+        };
+        crate::renderer::internal_font_family_members(&style.font_family)
+            .into_iter()
+            .filter_map(|name| {
+                database.query(&resvg::usvg::fontdb::Query {
+                    families: &[Family::Name(name)],
+                    weight: Weight(weight),
+                    style: if style.italic {
+                        Style::Italic
+                    } else {
+                        Style::Normal
+                    },
+                    ..Default::default()
+                })
+            })
+            .filter(|id| self.is_supplied_face(*id))
+            .collect()
+    }
+
     pub(crate) fn cached_requests(&self, epoch: u32) -> Option<String> {
         self.requests
             .lock()

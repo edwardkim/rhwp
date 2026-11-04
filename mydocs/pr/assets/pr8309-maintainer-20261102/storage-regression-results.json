@@ -1,0 +1,18 @@
+{
+  "before_runtime": "c88657d9c30b57d8481de40f74fd76fd3e2a0af7",
+  "after_runtime": "01e9f4ff012acceaa477c7f4f0a085b86747ef42",
+  "same_assertions": true,
+  "before_failures": [
+    "hwp_keeps_other_list_attr_bits",
+    "new_textbox_is_top_aligned_in_hwp_and_hwpx",
+    "tb_vertical_align_change_reaches_hwp"
+  ],
+  "after_passes": [
+    "hwp_keeps_other_list_attr_bits",
+    "new_textbox_is_top_aligned_in_hwp_and_hwpx",
+    "tb_vertical_align_change_reaches_hwp"
+  ],
+  "minimal_font_program_count": 5,
+  "before_summary": "test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 302 filtered out; finished in 0.01s",
+  "after_summary": "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 302 filtered out; finished in 0.02s"
+}

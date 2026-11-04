@@ -1,0 +1,18 @@
+[
+  {
+    "stage": "rejected-prototype",
+    "sourceTreeSha256": "1f2c8db7d99036c784b50070c364ba14b2c58b0e6e2370a5c748d2aa8424fec2",
+    "topGapPx": 1.9000000000000057,
+    "minimumFromSourcePaddingAndMarginPx": 5.653333333333333,
+    "roundingTolerancePx": 0.2,
+    "relationPass": false
+  },
+  {
+    "stage": "final",
+    "sourceTreeSha256": "309a19d168c5e21d1b2e9336654ce87bcd32bc74aec0e4ba50f19e305fe82f71",
+    "topGapPx": 5.700000000000017,
+    "minimumFromSourcePaddingAndMarginPx": 5.653333333333333,
+    "roundingTolerancePx": 0.2,
+    "relationPass": true
+  }
+]

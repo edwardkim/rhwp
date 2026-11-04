@@ -1,0 +1,270 @@
+{
+  "date": "2026-10-28",
+  "visual_sweep_source": "ubuntu-ted3 2d44695b14576d8c9204e6d9d8317649d8828a48",
+  "source_commit": "81f2428cf8",
+  "note": "TSV의 두 자리 표시가 아닌 각 silhouette_manifest의 정밀 raw 값을 기록한다.",
+  "backends": {
+    "native": {
+      "input": "samples/hwpx_sample2.hwp",
+      "input_sha256": "ca66d521d070ac8442e09fd3f283e17611eb9efb45eb4bf6c3a8f65e604f6b5f",
+      "pdf": "pdf/hwpx_sample2-2020.pdf",
+      "pdf_sha256": "3d792e4116183a9cbf9f31b6abe561d040565f2e16af30ab57eb449732f99c78",
+      "compat": "2022",
+      "pages": 29,
+      "minimum": 96.12298,
+      "page_metrics": [
+        {
+          "page": 1,
+          "raw": 96.21876
+        },
+        {
+          "page": 2,
+          "raw": 99.39923
+        },
+        {
+          "page": 3,
+          "raw": 98.90725
+        },
+        {
+          "page": 4,
+          "raw": 99.96855
+        },
+        {
+          "page": 5,
+          "raw": 99.74563
+        },
+        {
+          "page": 6,
+          "raw": 99.52591
+        },
+        {
+          "page": 7,
+          "raw": 99.95557
+        },
+        {
+          "page": 8,
+          "raw": 96.12298
+        },
+        {
+          "page": 9,
+          "raw": 99.17065
+        },
+        {
+          "page": 10,
+          "raw": 99.9859
+        },
+        {
+          "page": 11,
+          "raw": 98.94923
+        },
+        {
+          "page": 12,
+          "raw": 99.75551
+        },
+        {
+          "page": 13,
+          "raw": 99.20585
+        },
+        {
+          "page": 14,
+          "raw": 97.48489
+        },
+        {
+          "page": 15,
+          "raw": 99.84799
+        },
+        {
+          "page": 16,
+          "raw": 99.54946
+        },
+        {
+          "page": 17,
+          "raw": 99.84881
+        },
+        {
+          "page": 18,
+          "raw": 99.25534
+        },
+        {
+          "page": 19,
+          "raw": 99.91241
+        },
+        {
+          "page": 20,
+          "raw": 99.74263
+        },
+        {
+          "page": 21,
+          "raw": 99.72064
+        },
+        {
+          "page": 22,
+          "raw": 99.19327
+        },
+        {
+          "page": 23,
+          "raw": 99.974
+        },
+        {
+          "page": 24,
+          "raw": 99.94963
+        },
+        {
+          "page": 25,
+          "raw": 99.90521
+        },
+        {
+          "page": 26,
+          "raw": 99.95156
+        },
+        {
+          "page": 27,
+          "raw": 98.50447
+        },
+        {
+          "page": 28,
+          "raw": 99.9709
+        },
+        {
+          "page": 29,
+          "raw": 99.96556
+        }
+      ],
+      "tsv_sha256": "35bdd44b7535c5c1dc3bcdbf6e1a9ac9784661c32e16dabb354a16671391035b",
+      "manifest_sha256": "d51c6a5a53fa3a116441b79076c52649abfa28fe5e0cf9f7c85a8127e5cb7208",
+      "native_sha256": "2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0",
+      "wasm_sha256": null
+    },
+    "wasm": {
+      "input": "samples/hwpx_sample2.hwp",
+      "input_sha256": "ca66d521d070ac8442e09fd3f283e17611eb9efb45eb4bf6c3a8f65e604f6b5f",
+      "pdf": "pdf/hwpx_sample2-2020.pdf",
+      "pdf_sha256": "3d792e4116183a9cbf9f31b6abe561d040565f2e16af30ab57eb449732f99c78",
+      "compat": "2022",
+      "pages": 29,
+      "minimum": 95.97915,
+      "page_metrics": [
+        {
+          "page": 1,
+          "raw": 96.30033
+        },
+        {
+          "page": 2,
+          "raw": 99.42955
+        },
+        {
+          "page": 3,
+          "raw": 98.94675
+        },
+        {
+          "page": 4,
+          "raw": 99.99325
+        },
+        {
+          "page": 5,
+          "raw": 99.7936
+        },
+        {
+          "page": 6,
+          "raw": 99.74092
+        },
+        {
+          "page": 7,
+          "raw": 100.0
+        },
+        {
+          "page": 8,
+          "raw": 95.97915
+        },
+        {
+          "page": 9,
+          "raw": 99.19796
+        },
+        {
+          "page": 10,
+          "raw": 99.99655
+        },
+        {
+          "page": 11,
+          "raw": 98.93787
+        },
+        {
+          "page": 12,
+          "raw": 99.74036
+        },
+        {
+          "page": 13,
+          "raw": 99.23664
+        },
+        {
+          "page": 14,
+          "raw": 97.73002
+        },
+        {
+          "page": 15,
+          "raw": 99.90596
+        },
+        {
+          "page": 16,
+          "raw": 99.582
+        },
+        {
+          "page": 17,
+          "raw": 99.86373
+        },
+        {
+          "page": 18,
+          "raw": 99.30031
+        },
+        {
+          "page": 19,
+          "raw": 99.94545
+        },
+        {
+          "page": 20,
+          "raw": 99.87618
+        },
+        {
+          "page": 21,
+          "raw": 99.83946
+        },
+        {
+          "page": 22,
+          "raw": 99.22991
+        },
+        {
+          "page": 23,
+          "raw": 100.0
+        },
+        {
+          "page": 24,
+          "raw": 99.99815
+        },
+        {
+          "page": 25,
+          "raw": 100.0
+        },
+        {
+          "page": 26,
+          "raw": 100.0
+        },
+        {
+          "page": 27,
+          "raw": 98.68191
+        },
+        {
+          "page": 28,
+          "raw": 99.98637
+        },
+        {
+          "page": 29,
+          "raw": 99.98341
+        }
+      ],
+      "tsv_sha256": "278ec3a91f06a55fb9de059ad800cc67c2eb51b85c9045088f90994d9af098ce",
+      "manifest_sha256": "bd35a4b3e6676290e98b4b29a5ced7f35698cf3dc62b2ac54ff1cde754d8780b",
+      "native_sha256": "2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0",
+      "wasm_sha256": "05bab1b50e9a17b380582e562e992c7189fc3d2e9c85a01187ef069c24ff56e7"
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { RecoveryCipher } from '../../recovery/recovery-crypto';
 import type { CommandDef, CommandServices } from '../types';
 import {
   buildHtmlExportFile,
@@ -216,6 +217,13 @@ async function tryFileSystemSave(
   }
 }
 
+function publishSaveProtection(services: CommandServices, protectedFile: boolean,
+  cipher: RecoveryCipher | null, generation: number): void {
+  if (services.wasm.documentGeneration !== generation) throw new Error('DOCUMENT_CHANGED_DURING_SAVE');
+  if (protectedFile !== Boolean(cipher)) throw new Error('RECOVERY_PROTECTION_NOT_READY');
+  services.wasm.setRecoveryCipher?.(cipher);
+}
+
 function completeHandleSave(
   services: CommandServices,
   sourceFormat: string,
@@ -223,7 +231,10 @@ function completeHandleSave(
   result: SaveDocumentResult,
   reason: 'save' | 'save-as',
   passwordProtected = false,
+  cipher: RecoveryCipher | null = null,
+  generation = services.wasm.documentGeneration,
 ): void {
+  publishSaveProtection(services, passwordProtected, cipher, generation);
   if (sourceFormat === 'hml') markConvertedHmlSaveHandle(result.handle);
   if (sourceFormat === 'pdf') markConvertedPdfSaveHandle(result.handle);
   services.wasm.currentFileHandle = result.handle;
@@ -312,6 +323,8 @@ async function promptSaveAsOptions(
 
 async function saveAsFormat(services: CommandServices, format: SaveFormat): Promise<void> {
   let password: string | null = null;
+  let recoveryCipher: RecoveryCipher | null = null;
+  const generation = services.wasm.documentGeneration;
   try {
     const sourceFormat = services.wasm.getSourceFormat();
     const options = await promptSaveAsOptions(services, format);
@@ -320,6 +333,8 @@ async function saveAsFormat(services: CommandServices, format: SaveFormat): Prom
 
     flushDeferredPaginationBeforeExplicitOutput(services, 'save-as');
     const saveName = options.fileName;
+    recoveryCipher = password !== null ? await RecoveryCipher.create(password) : null;
+    if (services.wasm.documentGeneration !== generation) throw new Error('DOCUMENT_CHANGED_DURING_SAVE');
     const payload = createSavePayload(services, format, password ?? undefined);
     const originalHandle = sourceFormat === 'hml' || sourceFormat === 'pdf'
       ? services.wasm.currentFileHandle : null;
@@ -340,7 +355,7 @@ async function saveAsFormat(services: CommandServices, format: SaveFormat): Prom
         format,
         saveResult as SaveDocumentResult,
         'save-as',
-        password !== null,
+        password !== null, recoveryCipher, generation,
       ),
       showExportContentLoss,
     );
@@ -354,6 +369,7 @@ async function saveAsFormat(services: CommandServices, format: SaveFormat): Prom
       payload.contentLoss,
       () => downloadBlob(payload.blob, downloadName),
       () => {
+        publishSaveProtection(services, password !== null, recoveryCipher, generation);
         // download 시작이 실패하면 현재 backing copy의 보호 의도를 유지한다 (#5986).
         services.wasm.fileName = downloadName;
         void addRecentDoc({
@@ -370,6 +386,7 @@ async function saveAsFormat(services: CommandServices, format: SaveFormat): Prom
   } catch (error) {
     reportSaveError('file:save-as', error);
   } finally {
+    if (services.wasm.recoveryCipher !== recoveryCipher) recoveryCipher?.dispose();
     password = '';
   }
 }
@@ -384,6 +401,8 @@ export type SaveCurrentDocumentResult = 'saved' | 'cancelled' | 'failed' | 'unsu
 
 export async function saveCurrentDocument(services: CommandServices): Promise<SaveCurrentDocumentResult> {
   let password: string | null = null;
+  let recoveryCipher: RecoveryCipher | null = null;
+  const generation = services.wasm.documentGeneration;
   try {
     flushDeferredPaginationBeforeExplicitOutput(services, 'save');
     const sourceFormat = services.wasm.getSourceFormat();
@@ -408,6 +427,8 @@ export async function saveCurrentDocument(services: CommandServices): Promise<Sa
       password = await showHwpSavePasswordDialog(fileNameForFormat(services.wasm.fileName, passwordFormat));
       if (password === null) return 'cancelled';
     }
+    recoveryCipher = password !== null ? await RecoveryCipher.create(password) : null;
+    if (services.wasm.documentGeneration !== generation) throw new Error('DOCUMENT_CHANGED_DURING_SAVE');
     const payload = createSavePayload(services, target.format, password ?? undefined);
     const result = await persistWithContentLoss(
       payload.contentLoss,
@@ -426,7 +447,7 @@ export async function saveCurrentDocument(services: CommandServices): Promise<Sa
         target.format,
         saveResult as SaveDocumentResult,
         'save',
-        password !== null,
+        password !== null, recoveryCipher, generation,
       ),
       showExportContentLoss,
     );
@@ -440,6 +461,7 @@ export async function saveCurrentDocument(services: CommandServices): Promise<Sa
       payload.contentLoss,
       () => downloadBlob(payload.blob, downloadName),
       () => {
+        publishSaveProtection(services, password !== null, recoveryCipher, generation);
         services.wasm.requiresPasswordForSave = password !== null;
         services.documentState.markClean('save');
       },
@@ -450,6 +472,7 @@ export async function saveCurrentDocument(services: CommandServices): Promise<Sa
     reportSaveError('file:save', error);
     return 'failed';
   } finally {
+    if (services.wasm.recoveryCipher !== recoveryCipher) recoveryCipher?.dispose();
     password = '';
   }
 }

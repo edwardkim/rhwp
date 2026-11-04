@@ -1,6 +1,7 @@
 //! 한컴 Print에서 확인한 그림의 인코딩 RGB 색조. 모든 출력 경로가 같은 픽셀을 쓴다.
 
 use super::{decode_image_with_format_limited, memoized, Conversion, Cursor, ImageEffect};
+use crate::renderer::render_tree::PageBackgroundImage;
 
 fn supports_adjustment(effect: ImageEffect, brightness: i8, contrast: i8) -> bool {
     (brightness != 0 || contrast != 0)
@@ -9,6 +10,22 @@ fn supports_adjustment(effect: ImageEffect, brightness: i8, contrast: i8) -> boo
             ImageEffect::RealPic | ImageEffect::GrayScale | ImageEffect::BlackWhite
         )
         && !(effect == ImageEffect::BlackWhite && brightness != 0 && contrast != 0)
+}
+
+/// 쪽 배경의 RealPic도 저장된 밝기·대비를 원본 해상도에서 한 번만 적용한다.
+/// 독립 Print는 보정된 RGB를 불투명으로 전달하며 별도의 워터마크 alpha를 쓰지 않는다.
+/// 원본 model은 보존하고, 모든 backend가 소비할 render-node 픽셀과 인자만 정규화한다.
+pub(crate) fn resolve_page_background_tone(mut image: PageBackgroundImage) -> PageBackgroundImage {
+    if image.effect == ImageEffect::RealPic {
+        let (brightness, contrast) = image.display_brightness_contrast();
+        if let Some(data) = adjusted_picture_bytes(&image.data, image.effect, brightness, contrast)
+        {
+            image.data = data;
+            image.brightness = 0;
+            image.contrast = 0;
+        }
+    }
+    image
 }
 
 /// Inline payload와 지연 로딩 키가 공유하는 일반 raster 색조 조건이다.

@@ -22,7 +22,7 @@ export const MUTATING_METHODS: readonly string[] = [
   // 쪽/구역/다단
   'setPageDef', 'setPageMargin', 'setSectionDef', 'setSectionDefAll', 'setPageBorderFill', 'setColumnDef',
   // 본문 텍스트/문단
-  'insertText', 'replaceBodyTextLocal', 'deleteText', 'deleteRange', 'splitParagraph', 'mergeParagraph',
+  'insertText', 'insertTextLogical', 'replaceBodyTextLocal', 'deleteText', 'deleteRange', 'splitParagraph', 'mergeParagraph',
   'insertPageBreak', 'insertColumnBreak', 'insertNewNumber', 'setNumberingRestart',
   // 셀 텍스트/문단
   'insertTextInCell', 'insertTextInCellDeferredPagination', 'deleteTextInCell',
@@ -31,7 +31,7 @@ export const MUTATING_METHODS: readonly string[] = [
   'splitParagraphInCell', 'mergeParagraphInCell', 'splitParagraphInCellByPath',
   'mergeParagraphInCellByPath',
   // 표 구조/속성
-  'createTable', 'createTableEx', 'deleteTableControl', 'insertTableRow', 'splitTable', 'mergeTableWithNext',
+  'createTable', 'createTableEx', 'createTableInCellByPath', 'deleteTableControl', 'insertTableRow', 'splitTable', 'mergeTableWithNext',
   'insertTableColumn', 'deleteTableRow', 'deleteTableColumn', 'mergeTableCells',
   'splitTableCell', 'splitTableCellInto', 'splitTableCellsInRange', 'resizeTableCells',
   'resizeTableCellsByPath', // [#7189] 중첩 표 셀 크기 조절 — 평면 resizeTableCells 의 경로 변형
@@ -61,6 +61,7 @@ export const MUTATING_METHODS: readonly string[] = [
   'setCharShapeIdInCell', 'setCharShapeIdInCellByPath',
   'setCharShapeRuns', 'setCharShapeRunsInCellByPath',
   'applyParaFormat', 'setParaShapeId', 'applyParaFormatInCell', 'setCellParaShapeId',
+  'applyParaFormatInCellByPath', 'setCellParaShapeIdByPath',
   // 스타일/번호 정의 (DocInfo 변이 포함)
   'updateStyle', 'updateStyleShapes', 'createStyle', 'deleteStyle', 'applyStyle',
   'applyCellStyle', 'createNumbering', 'ensureDefaultNumbering', 'ensureDefaultBullet',
@@ -73,7 +74,7 @@ export const MUTATING_METHODS: readonly string[] = [
   // 필드/양식/찾아바꾸기/책갈피
   'insertHyperlink', 'updateHyperlink', 'replaceHyperlinkText', 'removeHyperlink',
   'setFieldValue', 'setFieldValueByName', 'removeFieldAt', 'insertClickHereField',
-  'updateClickHereProps', 'setFormValue', 'setFormValueInCell',
+  'updateClickHereProps', 'setFormValue', 'setFormValueInCell', 'applyFormActionUpdates',
   'replaceText', 'replaceOne', 'replaceAll',
   'addBookmark', 'deleteBookmark', 'renameBookmark',
   // lineseg 재계산 (#177 — 저장 lineseg 를 실제로 변경)

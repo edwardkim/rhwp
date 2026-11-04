@@ -115,6 +115,17 @@ fn empty_paragraph_fallback_line_metrics(
     para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
     hwp3_legacy_caps: bool,
 ) -> Option<(f64, f64)> {
+    if let Some((height, leading, _)) =
+        crate::renderer::reflow_float_host_line::neutral_anchor_metrics(
+            para,
+            styles,
+            para_style,
+            hwp3_legacy_caps,
+            DEFAULT_DPI,
+        )
+    {
+        return Some((height, leading));
+    }
     // 글앞으로/글뒤로/어울림(비자리차지) 앵커 도형·그림만
     // 가진 빈 문단은 한글이 텍스트 관점의 빈 문단과 동일하게 완전한 em 줄박스를
     // 부여한다 (사용안내 실측: Square 그림 앵커 빈 문단 pi1/pi6 이 0~5.3px 로 붕괴
@@ -194,6 +205,7 @@ struct TableBreakToken {
     /// 인트라-로우 분할 시 각 셀의 콘텐츠 오프셋
     cell_content_offsets: Option<Vec<f64>>,
 }
+crate::storage::clone_fields!(TableBreakToken, {start_row, cell_content_offsets});
 
 /// RowBreak 표가 page boundary를 넘을 때 queue가 source order로 등록할 셀 각주.
 ///
@@ -209,6 +221,7 @@ struct TableCellFootnote {
     content_height: f64,
     fragment_split: Option<NativeHwp5FootnoteFragmentSplit>,
 }
+crate::storage::clone_fields!(TableCellFootnote, {number, cell_path, row, content_height, fragment_split});
 
 // ========================================================
 // FormattedTable — 표의 format() 결과
@@ -218,6 +231,8 @@ struct TableCellFootnote {
 /// 기존 MeasuredTable + host_spacing을 통합하여 측정-배치 일원화.
 #[derive(Debug)]
 struct FormattedTable {
+    /// 부모 프레임과 외부 자식의 공동 앵커 점유. 소스 행/컷 원장과 구분한다.
+    external_flow: Option<crate::renderer::float_placement::ReflowExternalTableFlow>,
     /// 행별 높이 (px)
     row_heights: Vec<f64>,
     /// 행간 간격 (px)
@@ -260,6 +275,7 @@ struct VisibleFloatExclusion {
     top: f64,
     bottom: f64,
 }
+crate::storage::clone_copy!(VisibleFloatExclusion);
 
 /// 다음 physical page의 본문 시작에 배치할 non-TAC Square picture control.
 ///
@@ -277,13 +293,26 @@ struct DeferredSquarePictureControl {
     wrap_target_para_indices: Vec<usize>,
     wrap_anchor: crate::renderer::pagination::WrapAnchorRef,
 }
+crate::storage::clone_fields!(DeferredSquarePictureControl, {para_index, control_index, wrap_target_para_indices, wrap_anchor});
 
-/// 완전한 저장 프레임으로 다음 쪽 상단 소유가 확인된 개체.
+/// 저장 정보 또는 확정한 계산 프레임으로 다음 쪽 상단 소유가 확인된 개체.
 #[derive(Debug, Clone)]
 enum DeferredStoredFrameKind {
     Picture,
     Table,
     AbsoluteShape,
+}
+impl crate::storage::CloneWithStorage for DeferredStoredFrameKind {
+    fn clone_with_storage<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<Self, S::Error> {
+        match self {
+            Self::Picture => Ok(Self::Picture),
+            Self::Table => Ok(Self::Table),
+            Self::AbsoluteShape => Ok(Self::AbsoluteShape),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -295,6 +324,7 @@ struct DeferredStoredFrameControl {
     /// This original zero-origin body starts after the deferred object's page.
     following_body_para_index: Option<usize>,
 }
+crate::storage::clone_fields!(DeferredStoredFrameControl, {kind, para_index, control_index, placement, following_body_para_index});
 
 /// 호스트 문단의 spacing (표 전/후)
 #[derive(Debug, Clone, Copy)]
@@ -303,6 +333,11 @@ struct HostSpacing {
     before: f64,
     /// 표 뒤 spacing (spacing_after + outer_margin_bottom + host_line_spacing)
     after: f64,
+    /// 단 상단에서 열 때의 `before` — 문단 앞 간격 없이 바깥 위 여백만. 앞 쪽에서 포맷한
+    /// 표를 이월해 새 단 첫머리에 놓으면 이 값을 쓴다.
+    column_top_before: f64,
+    /// `after` 에 든 host 문단 줄간격(표-표 스택 간격, #1133).
+    host_line_spacing: f64,
     /// spacing_after만 (마지막 fragment용 — Paginator와 동일)
     spacing_after_only: f64,
     /// 재조판한 흐름 개체의 마지막 조각 뒤에서 닫을 아래 바깥여백.
@@ -312,6 +347,7 @@ struct HostSpacing {
     /// 한글 괘선 실측 vs hwpspec 178쪽 핀(#1086) 동시 충족).
     after_for_fit: f64,
 }
+crate::storage::clone_copy!(HostSpacing);
 
 /// 단일 패스 조판 엔진
 pub struct TypesetEngine {
@@ -333,6 +369,8 @@ pub struct TypesetEngine {
     format_next_stored_vpos: std::cell::Cell<Option<i32>>,
     render_normalization:
         std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
+    /// 같은 상태 세대에서 반복된 미주 단 측정 결과.
+    endnote_measure_memo: std::cell::RefCell<notes::endnotes::measure_memo::EndnoteMeasureMemo>,
 }
 
 /// 조판 중 현재 페이지/단 상태
@@ -608,6 +646,39 @@ fn partial_rowbreak_fragment_spacing_px(
         0.0
     };
     (before, bottom)
+}
+
+/// [#8149] 글 없는 host 의 문단 기준 자리차지 표가 쪽 바닥에서 나뉘면 한/글은 첫 조각
+/// 아래에 그 표의 바깥 아래 여백과 (아래 캡션이면) 캡션 자리를 남긴다 — 한/글 2020 저장·
+/// Print 합성 `samples/issue8149/gen_rowfit.py` 16사례: 캡션 없음·여백 0 은 본문 끝까지,
+/// 여백 1984HU 는 여백만, 아래 캡션은 `여백 + 캡션 간격 + 캡션 줄` 을 남긴다. 첫 행이
+/// 들어가는지 보는 이월 판정과 첫 조각 행 예산이 같은 값을 쓴다 — 한글문서파일형식 32쪽
+/// 표 199 는 제목 행 19.5px 만 남은 22px 에 들어가 보였지만 이 예약 50.5px 를 넣으면 들지
+/// 않아 한/글처럼 표 전체가 33쪽으로 넘어간다. 조각마다 반복하는 바깥 아래 여백
+/// (`fragment_outer_bottom`)이 이미 있거나 원본 글 프레임이 첫 조각을 정하면 쓰지 않는다.
+fn empty_host_float_first_fragment_reserve_px(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    fragment_outer_bottom: f64,
+    has_source_text_first_frame: bool,
+    caption_overhead: f64,
+    caption_is_top: bool,
+    dpi: f64,
+) -> f64 {
+    if fragment_outer_bottom > 0.0
+        || has_source_text_first_frame
+        || !is_para_topbottom_float(&table.common)
+        || signed_hwpunit(table.common.vertical_offset) != 0
+        || para_has_non_whitespace_text(para)
+    {
+        return 0.0;
+    }
+    hwpunit_to_px(table.outer_margin_bottom as i32, dpi).max(0.0)
+        + if caption_is_top {
+            0.0
+        } else {
+            caption_overhead
+        }
 }
 
 /// [Task #853] ColumnDef 의 "디자인 spacing"(px): 1단이면 `간격`, 다단이면 0.
@@ -982,9 +1053,22 @@ fn para_is_pre_paper_page_square_table_scaffold(para_idx: usize, paragraphs: &[P
         return false;
     }
 
-    paragraphs
+    let Some(next) = paragraphs
         .get(para_idx + 1)
-        .is_some_and(para_is_paper_page_square_empty_table_anchor)
+        .filter(|next| para_is_paper_page_square_empty_table_anchor(next))
+    else {
+        return false;
+    };
+    // 원본 저장 사다리가 이 빈 문단을 지나며 앞으로 나아갔다면 한/글은 이 문단에 줄을
+    // 줬다(표 앞 빈 줄도 본문 흐름을 차지한다). 그 경우는 스캐폴드로 감추지 않는다.
+    // 합성 줄은 이 증거로 쓰지 않는다.
+    !matches!(
+        (para.line_segs.last(), next.line_segs.first()),
+        (Some(own), Some(following))
+            if own.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && following.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && following.vertical_pos > own.vertical_pos
+    )
 }
 
 fn para_is_post_paper_page_square_table_scaffold(
@@ -1379,22 +1463,33 @@ fn equation_only_tac_line_assignment(
     para: &Paragraph,
     comp: &ComposedParagraph,
 ) -> Option<Vec<usize>> {
+    match equation_only_tac_line_assignment_with_storage(para, comp, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+fn equation_only_tac_line_assignment_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    comp: &ComposedParagraph,
+    storage: &S,
+) -> Result<Option<Vec<usize>>, S::Error> {
     let n_lines = comp.lines.len();
     if n_lines <= 1 || comp.tac_controls.is_empty() {
-        return None;
+        return Ok(None);
     }
     if !comp.lines.iter().all(|line| line.runs.is_empty()) {
-        return None;
+        return Ok(None);
     }
     let degenerate = comp
         .lines
         .windows(2)
         .any(|w| w[1].char_start <= w[0].char_start);
     if !degenerate {
-        return None;
+        return Ok(None);
     }
 
-    let mut assign = vec![n_lines - 1; comp.tac_controls.len()];
+    let mut assign = storage.filled(comp.tac_controls.len(), n_lines - 1)?;
     let mut line_idx = 0usize;
     let mut tac_idx = 0usize;
     while tac_idx < comp.tac_controls.len() {
@@ -1413,12 +1508,13 @@ fn equation_only_tac_line_assignment(
         while line_idx < n_lines && comp.lines[line_idx].char_start == pos {
             line_idx += 1;
         }
-        let line_candidates: Vec<usize> = (line_start..line_idx).collect();
-        let filtered_candidates: Vec<usize> = line_candidates
-            .iter()
-            .copied()
-            .filter(|idx| !line_is_leading_empty_equation_tac_guide(para, comp, *idx))
-            .collect();
+        let line_candidates: Vec<usize> = storage.collect(line_start..line_idx)?;
+        let filtered_candidates: Vec<usize> = storage.collect(
+            line_candidates
+                .iter()
+                .copied()
+                .filter(|idx| !line_is_leading_empty_equation_tac_guide(para, comp, *idx)),
+        )?;
         let line_targets = if tac_count > 1 && line_candidates.len() >= tac_count {
             // 같은 char_start에 여러 TAC 수식이 있고 저장 LINE_SEG도 같은 수만큼 있으면
             // 선행 빈 guide 줄도 한컴의 물리 수식 줄로 보존한다.
@@ -1438,7 +1534,7 @@ fn equation_only_tac_line_assignment(
         }
     }
 
-    Some(assign)
+    Ok(Some(assign))
 }
 
 fn tac_control_indices_for_line(
@@ -1446,29 +1542,44 @@ fn tac_control_indices_for_line(
     comp: &ComposedParagraph,
     line_idx: usize,
 ) -> Vec<usize> {
+    match tac_control_indices_for_line_with_storage(
+        para,
+        comp,
+        line_idx,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+fn tac_control_indices_for_line_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    comp: &ComposedParagraph,
+    line_idx: usize,
+    storage: &S,
+) -> Result<Vec<usize>, S::Error> {
     let Some(line) = comp.lines.get(line_idx) else {
-        return Vec::new();
+        return Ok(Vec::new());
     };
     if comp.tac_controls.is_empty() {
-        return Vec::new();
+        return Ok(Vec::new());
     }
 
-    if let Some(assign) = crate::renderer::composer::composed_tac_line_assignment(para, comp) {
-        return assign
-            .into_iter()
-            .filter_map(|(ci, owner)| (owner == line_idx).then_some(ci))
-            .collect();
+    if let Some(assign) =
+        crate::renderer::composer::composed_tac_line_assignment_with_storage(para, comp, storage)?
+    {
+        return storage.collect(
+            assign
+                .into_iter()
+                .filter_map(|(ci, owner)| (owner == line_idx).then_some(ci)),
+        );
     }
 
-    if let Some(assign) = equation_only_tac_line_assignment(para, comp) {
-        return comp
-            .tac_controls
-            .iter()
-            .enumerate()
-            .filter_map(|(idx, (_, _, ci))| {
-                (assign.get(idx).copied() == Some(line_idx)).then_some(*ci)
-            })
-            .collect();
+    if let Some(assign) = equation_only_tac_line_assignment_with_storage(para, comp, storage)? {
+        return storage.collect(comp.tac_controls.iter().enumerate().filter_map(
+            |(idx, (_, _, ci))| (assign.get(idx).copied() == Some(line_idx)).then_some(*ci),
+        ));
     }
 
     if line.runs.is_empty() {
@@ -1478,11 +1589,11 @@ fn tac_control_indices_for_line(
             .get(line_idx + 1)
             .map(|next| next.char_start)
             .unwrap_or(usize::MAX);
-        return comp
-            .tac_controls
-            .iter()
-            .filter_map(|(pos, _, ci)| (*pos >= start && *pos < end).then_some(*ci))
-            .collect();
+        return storage.collect(
+            comp.tac_controls
+                .iter()
+                .filter_map(|(pos, _, ci)| (*pos >= start && *pos < end).then_some(*ci)),
+        );
     }
 
     let next_start = comp.lines.get(line_idx + 1).map(|next| next.char_start);
@@ -1495,12 +1606,12 @@ fn tac_control_indices_for_line(
         let allow_end_tac = run_idx == line.runs.len() - 1 && !next_line_starts_at_run_end;
         for (pos, _, ci) in &comp.tac_controls {
             if *pos >= run_start && (*pos < run_end || (allow_end_tac && *pos == run_end)) {
-                hits.push(*ci);
+                storage.push(&mut hits, *ci)?;
             }
         }
         run_start = run_end;
     }
-    hits
+    Ok(hits)
 }
 
 fn line_has_tac_equation_control(
@@ -1557,7 +1668,19 @@ fn line_has_visible_text_or_tac_equation(
 }
 
 fn line_has_tac_control(para: &Paragraph, comp: &ComposedParagraph, line_idx: usize) -> bool {
-    !tac_control_indices_for_line(para, comp, line_idx).is_empty()
+    match line_has_tac_control_with_storage(para, comp, line_idx, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+fn line_has_tac_control_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    comp: &ComposedParagraph,
+    line_idx: usize,
+    storage: &S,
+) -> Result<bool, S::Error> {
+    Ok(!tac_control_indices_for_line_with_storage(para, comp, line_idx, storage)?.is_empty())
 }
 
 fn line_tac_picture_or_shape_height(
@@ -1566,13 +1689,34 @@ fn line_tac_picture_or_shape_height(
     line_idx: usize,
     dpi: f64,
 ) -> Option<f64> {
-    tac_control_indices_for_line(para, comp, line_idx)
-        .iter()
-        .find_map(|ci| {
-            para.controls
-                .get(*ci)
-                .and_then(|ctrl| crate::renderer::tac_object_flow_height_px(ctrl, dpi))
-        })
+    match line_tac_picture_or_shape_height_with_storage(
+        para,
+        comp,
+        line_idx,
+        dpi,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+fn line_tac_picture_or_shape_height_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    comp: &ComposedParagraph,
+    line_idx: usize,
+    dpi: f64,
+    storage: &S,
+) -> Result<Option<f64>, S::Error> {
+    Ok(
+        tac_control_indices_for_line_with_storage(para, comp, line_idx, storage)?
+            .iter()
+            .find_map(|ci| {
+                para.controls
+                    .get(*ci)
+                    .and_then(|ctrl| crate::renderer::tac_object_flow_height_px(ctrl, dpi))
+            }),
+    )
 }
 
 fn text_line_is_picture_lead_in(
@@ -1583,26 +1727,52 @@ fn text_line_is_picture_lead_in(
     max_fs: f64,
     dpi: f64,
 ) -> bool {
+    match text_line_is_picture_lead_in_with_storage(
+        para,
+        comp,
+        line_idx,
+        raw_lh,
+        max_fs,
+        dpi,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+fn text_line_is_picture_lead_in_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    comp: &ComposedParagraph,
+    line_idx: usize,
+    raw_lh: f64,
+    max_fs: f64,
+    dpi: f64,
+    storage: &S,
+) -> Result<bool, S::Error> {
     if max_fs <= 0.0 || raw_lh <= max_fs * 2.0 {
-        return false;
+        return Ok(false);
     }
     let Some(line) = comp.lines.get(line_idx) else {
-        return false;
+        return Ok(false);
     };
     if line.runs.iter().all(|run| run.text.trim().is_empty())
-        || line_tac_picture_or_shape_height(para, comp, line_idx, dpi).is_some()
+        || line_tac_picture_or_shape_height_with_storage(para, comp, line_idx, dpi, storage)?
+            .is_some()
     {
-        return false;
+        return Ok(false);
     }
     let Some(next) = comp.lines.get(line_idx + 1) else {
-        return false;
+        return Ok(false);
     };
     if !next.runs.iter().all(|run| run.text.trim().is_empty()) {
-        return false;
+        return Ok(false);
     }
-    line_tac_picture_or_shape_height(para, comp, line_idx + 1, dpi)
-        .map(|height| (raw_lh - height).abs() <= 8.0)
-        .unwrap_or(false)
+    Ok(
+        line_tac_picture_or_shape_height_with_storage(para, comp, line_idx + 1, dpi, storage)?
+            .map(|height| (raw_lh - height).abs() <= 8.0)
+            .unwrap_or(false),
+    )
 }
 
 /// 큰 inline `TopAndBottom` 그림 바로 앞 native HWP5 본문 문단의 physical-page
@@ -1765,46 +1935,6 @@ fn is_stored_anchor_picture_table(table: &crate::model::table::Table) -> bool {
         )
         && (is_single_noninline_picture_table(table)
             || is_two_row_picture_caption_rowbreak_table(table))
-}
-
-/// 측정기와 렌더러가 풀어 쓰는 빈 1×1 래퍼 표의 실제 행 기하를 돌려준다.
-///
-/// 래퍼의 page-anchor·caption·PageItem 메타데이터는 원본 표에 남아 있어야 한다.
-/// 반면 `MeasuredTable`과 행 컷(`advance_row_cut`)은 내부 표의 행을 기준으로
-/// 동작한다. 두 경로가 다른 표를 참조하면 행 수가 1 대 N으로 갈라져, 보이지
-/// 않는 래퍼 행 높이가 쪽 소비에 더해진다. `table_layout` 및
-/// `HeightMeasurer::measure_table_impl`의 unwrap 조건과 의도적으로 동일하다.
-///
-/// [Issue #4326] fallback `Paginator`(`pagination/engine.rs`)도 같은 unwrap 여부를
-/// `PageItem::PartialTable::row_cursor_is_nested`에 실어야 하므로 crate 내부에 공개한다.
-pub(crate) fn row_geometry_table(
-    table: &crate::model::table::Table,
-) -> &crate::model::table::Table {
-    let mut effective = table;
-    loop {
-        if effective.row_count != 1 || effective.col_count != 1 || effective.cells.len() != 1 {
-            return effective;
-        }
-        let cell = &effective.cells[0];
-        if cell.paragraphs.len() != 1 {
-            return effective;
-        }
-        let para = &cell.paragraphs[0];
-        let has_visible_text = para
-            .text
-            .chars()
-            .any(|ch| !ch.is_whitespace() && ch != '\r' && ch != '\n');
-        if has_visible_text {
-            return effective;
-        }
-        let Some(nested) = para.controls.iter().find_map(|control| match control {
-            Control::Table(table) => Some(table.as_ref()),
-            _ => None,
-        }) else {
-            return effective;
-        };
-        effective = nested;
-    }
 }
 
 /// 1×1 RowBreak 표의 실측 높이가 선언 객체 높이와 같은 범위인지 판별한다.
@@ -3107,6 +3237,7 @@ pub(crate) struct DumpFormattedParagraphHeight {
     pub spacing_after: f64,
     pub line_spacing_sum: f64,
 }
+crate::storage::clone_copy!(DumpFormattedParagraphHeight);
 
 mod controls;
 #[path = "typeset/inline_flow.rs"]
@@ -3223,12 +3354,6 @@ fn ladder_spacing_omitted_signature(
         }
         if (step - bare).abs() < 2.0 && step + 1.0 < bare + spacing_around {
             hits += 1;
-            if std::env::var("RHWP_DIAG_OMITSIG").is_ok() {
-                eprintln!(
-                    "DIAG_OMITSIG hit step={:.1} bare={:.1} sa={:.1} sb={:.1} cur_v={} next_v={}",
-                    step, bare, sa, sb, cur_last.vertical_pos, next_first.vertical_pos
-                );
-            }
             if hits >= 2 {
                 spacing_omitted = true;
                 if has_page_reset {
@@ -3288,6 +3413,20 @@ impl Issue2424TypesetProfile {
 
 impl TypesetEngine {
     pub fn new(dpi: f64) -> Self {
+        Self::new_with_render_normalization(
+            dpi,
+            std::sync::Arc::new(
+                crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
+            ),
+        )
+    }
+
+    pub(crate) fn new_with_render_normalization(
+        dpi: f64,
+        render_normalization: std::sync::Arc<
+            crate::renderer::render_normalization::RenderNormalizationOverlay,
+        >,
+    ) -> Self {
         Self {
             dpi,
             profile: std::cell::Cell::new(Default::default()),
@@ -3295,9 +3434,8 @@ impl TypesetEngine {
             uniform_filler_ladder: std::cell::Cell::new(false),
             float_carve_evidence: std::cell::RefCell::new(Vec::new()),
             format_next_stored_vpos: std::cell::Cell::new(None),
-            render_normalization: std::sync::Arc::new(
-                crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
-            ),
+            render_normalization,
+            endnote_measure_memo: Default::default(),
         }
     }
 
@@ -3648,7 +3786,7 @@ impl TypesetEngine {
         force_break_before: &std::collections::HashSet<usize>,
         endnote_deferral: EndnoteDeferral<'_>,
     ) -> PaginationResult {
-        self.run_section(
+        match self.typeset_section_with_variant_with_storage(
             paragraphs,
             composed,
             styles,
@@ -3664,6 +3802,50 @@ impl TypesetEngine {
             endnote_shape,
             force_break_before,
             endnote_deferral,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn typeset_section_with_variant_with_storage<S: crate::storage::Storage>(
+        &self,
+        paragraphs: &[Paragraph],
+        composed: &[ComposedParagraph],
+        styles: &ResolvedStyleSet,
+        page_def: &PageDef,
+        column_def: &ColumnDef,
+        section_index: usize,
+        measured_tables: &[MeasuredTable],
+        hide_empty_line: bool,
+        profile: crate::model::provenance::LayoutCompatibilityProfile,
+        skip_spacing_before_prededuct: bool,
+        hwp3_origin_page_tolerance: bool,
+        footnote_shape: Option<&FootnoteShape>,
+        endnote_shape: Option<&FootnoteShape>,
+        force_break_before: &std::collections::HashSet<usize>,
+        endnote_deferral: EndnoteDeferral<'_>,
+        storage: &S,
+    ) -> Result<PaginationResult, S::Error> {
+        self.run_section_with_storage(
+            paragraphs,
+            composed,
+            styles,
+            page_def,
+            column_def,
+            section_index,
+            measured_tables,
+            hide_empty_line,
+            profile,
+            skip_spacing_before_prededuct,
+            hwp3_origin_page_tolerance,
+            footnote_shape,
+            endnote_shape,
+            force_break_before,
+            endnote_deferral,
+            storage,
         )
     }
 
@@ -3689,21 +3871,23 @@ impl TypesetEngine {
         )
     }
 
-    fn format_paragraph_with_known_square_band(
+    fn format_paragraph_with_known_square_band_with_storage<S: crate::storage::Storage>(
         &self,
         para: &Paragraph,
         composed: Option<&ComposedParagraph>,
         styles: &ResolvedStyleSet,
         column_width_px: Option<f64>,
         known_square_band: bool,
-    ) -> FormattedParagraph {
-        self.format_paragraph_for_flow(
+        storage: &S,
+    ) -> Result<FormattedParagraph, S::Error> {
+        self.format_paragraph_for_flow_with_storage(
             para,
             composed,
             styles,
             column_width_px,
             styles.hwp3_variant,
             known_square_band,
+            storage,
         )
     }
 
@@ -3716,6 +3900,30 @@ impl TypesetEngine {
         hwp3_body_reflow: bool,
         known_square_band: bool,
     ) -> FormattedParagraph {
+        match self.format_paragraph_for_flow_with_storage(
+            para,
+            composed,
+            styles,
+            column_width_px,
+            hwp3_body_reflow,
+            known_square_band,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    fn format_paragraph_for_flow_with_storage<S: crate::storage::Storage>(
+        &self,
+        para: &Paragraph,
+        composed: Option<&ComposedParagraph>,
+        styles: &ResolvedStyleSet,
+        column_width_px: Option<f64>,
+        hwp3_body_reflow: bool,
+        known_square_band: bool,
+        storage: &S,
+    ) -> Result<FormattedParagraph, S::Error> {
         let context = paragraph::context::ParagraphFormatContext::new(
             self.dpi,
             &self.profile,
@@ -3723,7 +3931,7 @@ impl TypesetEngine {
             &self.float_carve_evidence,
             self.format_next_stored_vpos.get(),
         );
-        paragraph::format::format_paragraph_for_flow(
+        paragraph::format::format_paragraph_for_flow_with_storage(
             &context,
             para,
             composed,
@@ -3731,6 +3939,7 @@ impl TypesetEngine {
             column_width_px,
             hwp3_body_reflow,
             known_square_band,
+            storage,
         )
     }
 
@@ -3750,7 +3959,33 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         is_last_in_section: bool,
     ) {
-        paragraph::flow::place(
+        match self.typeset_paragraph_with_storage(
+            st,
+            para_idx,
+            para,
+            fmt,
+            paragraphs,
+            styles,
+            is_last_in_section,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    fn typeset_paragraph_with_storage<S: crate::storage::Storage>(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        para: &Paragraph,
+        fmt: &FormattedParagraph,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        is_last_in_section: bool,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        paragraph::flow::place_with_storage(
             st,
             paragraph::flow::ParagraphFlowInput {
                 para_idx,
@@ -3761,7 +3996,10 @@ impl TypesetEngine {
                 is_last_in_section,
             },
             self,
-        );
+            storage,
+        )?;
+
+        Ok(())
     }
 
     // ========================================================
@@ -3783,7 +4021,43 @@ impl TypesetEngine {
         next_para: Option<&Paragraph>,
         is_column_top: bool,
     ) -> FormattedTable {
-        table::format(
+        match self.format_table_with_storage(
+            para,
+            para_idx,
+            ctrl_idx,
+            table,
+            measured_tables,
+            styles,
+            composed,
+            next_para,
+            is_column_top,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    fn format_table_with_storage<S: crate::storage::Storage>(
+        &self,
+        para: &Paragraph,
+        para_idx: usize,
+        ctrl_idx: usize,
+        table: &crate::model::table::Table,
+        measured_tables: &[MeasuredTable],
+        styles: &ResolvedStyleSet,
+        composed: Option<&ComposedParagraph>,
+        next_para: Option<&Paragraph>,
+        is_column_top: bool,
+        storage: &S,
+    ) -> Result<FormattedTable, S::Error> {
+        let frame_engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
+        self.prime_section_cell_context(&frame_engine);
+        frame_engine.set_layout_profile(self.profile.get());
+        frame_engine
+            .set_render_normalization_overlay(std::sync::Arc::clone(&self.render_normalization));
+        let external_flow = frame_engine.reflow_unrestricted_table_flow(table, styles);
+        table::format_with_storage(
             table::TableFormatInput {
                 para,
                 para_idx,
@@ -3794,10 +4068,12 @@ impl TypesetEngine {
                 composed,
                 next_para,
                 is_column_top,
+                external_flow,
             },
             self.dpi,
             || self.profile.get(),
             || self.uses_tac_table_flow(table),
+            storage,
         )
     }
 
@@ -3862,7 +4138,40 @@ impl TypesetEngine {
         paragraphs_all: &[Paragraph],
         composed_all: &[ComposedParagraph],
     ) {
-        controls::paragraph_flow::place(
+        match self.typeset_table_paragraph_with_storage(
+            st,
+            para_idx,
+            para,
+            composed,
+            next_para,
+            styles,
+            measured_tables,
+            _page_def, // [Task #1753] 지연 이월 표의 후속 문단 prefill 용 전체 슬라이스.
+            paragraphs_all,
+            composed_all,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    fn typeset_table_paragraph_with_storage<S: crate::storage::Storage>(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        para: &Paragraph,
+        composed: Option<&ComposedParagraph>,
+        next_para: Option<&Paragraph>,
+        styles: &ResolvedStyleSet,
+        measured_tables: &[MeasuredTable],
+        _page_def: &PageDef,
+        // [Task #1753] 지연 이월 표의 후속 문단 prefill 용 전체 슬라이스.
+        paragraphs_all: &[Paragraph],
+        composed_all: &[ComposedParagraph],
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        controls::paragraph_flow::place_with_storage(
             self,
             st,
             controls::paragraph_flow::TableParagraphInput {
@@ -3875,7 +4184,10 @@ impl TypesetEngine {
                 paragraphs_all,
                 composed_all,
             },
-        );
+            storage,
+        )?;
+
+        Ok(())
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -3895,7 +4207,7 @@ impl TypesetEngine {
         lanes: &mut FloatLaneSet,
         paragraphs: &[Paragraph],
     ) -> bool {
-        if self.stored_two_line_row_frames_require_split(table, styles) {
+        if self.stored_cell_page_frames_require_split(table, styles) {
             return false;
         }
         // 앞 조각의 새 문자 줄로 현재 단의 흐름이 바뀌었으면 후속 표의
@@ -4468,7 +4780,8 @@ impl TypesetEngine {
             if tac_table_line_idx.is_some_and(|owner| {
                 crate::renderer::composer::ordinary_tac_prefix_rows(para, owner)
             }) && before_text > 0.0
-                && st.current_height + before_text <= available
+                && st.current_height + fmt.line_content_height(0..tac_table_line_idx.unwrap(), 0.0)
+                    <= available
                 && !st.pre_emitted_host_paras.contains(&para_idx)
             {
                 // Consume the real prefix on this page before carrying only
@@ -4610,9 +4923,11 @@ impl TypesetEngine {
             fmt,
             ft.effective_height,
             st.profile,
+            self.render_normalization.inline_host_frame_expanded(table),
             st.current_height,
             leading_spacing,
             st.available_height(),
+            st.stored_tac_line_frame(para, next_para, styles),
             self.dpi,
         ) {
             // 회피로 확정한 가로 원점도 보존한다. 흐름 끝을 paint에 전달하고
@@ -4643,7 +4958,8 @@ impl TypesetEngine {
             // 한 번 엄격하게 적합성을 판정해야 다음 쪽으로 올바르게 이월된다.
             ft.strict_following_plain_text_fit
                 || hwpx_rowbreak_tac_missing_owned_line
-                || unstored_cell_band,
+                || unstored_cell_band
+                || self.render_normalization.inline_host_frame_expanded(table),
             styles,
         );
         if let Some(end) = side_wrap_placement.and_then(|placement| placement.advance_end) {
@@ -4791,7 +5107,13 @@ impl TypesetEngine {
                 crate::renderer::composer::ordinary_tac_prefix_rows(para, line)
                     && crate::renderer::layout::control_line_seg_index(para, ctrl_idx) == Some(line)
             });
-        let pre_table_end_line = if !is_visible_para_float
+        let split_host_prefix = st
+            .paragraph_float_placements
+            .get(&(para_idx, ctrl_idx))
+            .and_then(|placement| placement.split_host_prefix());
+        let pre_table_end_line = if let Some(prefix) = split_host_prefix {
+            prefix
+        } else if !is_visible_para_float
             && signed_vertical_offset > 0
             && !para.text.is_empty()
             && !whitespace_host_line_covers_table
@@ -4848,6 +5170,9 @@ impl TypesetEngine {
         // pre-table 텍스트 (첫 번째 표에서만)
         // [참고2 fix] 배열순서가 아닌 배치순서 기준 (typeset_table_paragraph 산출).
         let is_first_table = is_first_placed;
+        if split_host_prefix.is_some() {
+            st.finish_deferred_host_line();
+        }
         let defer_host_line = st.defer_host_line_item_para == Some(para_idx);
         let pre_height: f64 = if pre_table_end_line > 0
             && is_first_table
@@ -5083,6 +5408,25 @@ impl TypesetEngine {
             && is_first_table
             && pre_height <= 0.0
             && (fmt.square_host_plan.is_some() || no_lineseg_square_band.is_some());
+        // 저장 줄이 없는 **빈** host 의 전폭 Square 표: 표는 오프셋·바깥여백 위 아래에
+        // 놓이고 host 빈 줄은 표 아래로 내려간다(layout 과 같은 helper).
+        let empty_square_host_geometry = (is_wrap_around_table && is_first_table)
+            .then(|| {
+                let col_w_px = st
+                    .layout
+                    .column_areas
+                    .get(st.current_column as usize)
+                    .map_or(st.layout.body_area.width, |area| area.width);
+                crate::renderer::unstored_empty_square_table_host_geometry_px(
+                    para,
+                    table,
+                    col_w_px,
+                    styles,
+                    styles.para_styles.get(para.para_shape_id as usize),
+                    self.dpi,
+                )
+            })
+            .flatten();
         if no_lineseg_band_host {
             let v_off_px = crate::renderer::hwpunit_to_px(signed_vertical_offset, self.dpi);
             let host_h = if fmt.square_host_plan.is_some() {
@@ -5101,6 +5445,8 @@ impl TypesetEngine {
                 plan.relative_to(0.0, -host_origin);
                 st.record_square_host_flow(para_idx, plan);
             }
+        } else if let Some((table_top, below)) = empty_square_host_geometry {
+            st.advance_flow_by(pre_height + table_top + table_total_height + below);
         } else if page_anchored_square {
             // [#7548] 쪽·종이 기준 어울림 표는 앵커 흐름 밖(절대 위치)에 놓인다 — 흐름에는
             // host 본문만 전진하고 표 높이를 예약하지 않는다(layout 의 절대 배치와 짝).
@@ -5223,11 +5569,14 @@ impl TypesetEngine {
             };
             // 단 오른쪽 밖 개체는 배제 영역도 만들지 않는다 — 배제 영역을 만들면
             // 뒤따르는 본문 표가 그만큼 밀려 마지막 블록이 다음 쪽으로 넘어간다.
-            if signed_vertical_offset > 0 {
+            if resolved.is_some_and(|placement| placement.split_host_prefix().is_some()) {
+                // 앞 줄의 예약·표·뒤 줄은 이미 한 소유 계획으로 확정됐다.
+                st.align_flow_to(table_bottom);
+            } else if signed_vertical_offset > 0 {
                 if table_bottom > table_top + 0.5 {
                     st.add_visible_float_exclusion(VisibleFloatExclusion {
                         para_index: para_idx,
-                        top: table_top,
+                        top: resolved.map_or(table_top, |p| p.exclusion_top(table, self.dpi)),
                         bottom: table_bottom,
                     });
                 }
@@ -5240,9 +5589,16 @@ impl TypesetEngine {
                     st.advance_flow_by(pre_height);
                 }
             } else {
+                let resolved_frame_consumes_flow = resolved.is_some_and(|placement| {
+                    placement.flow
+                        == crate::renderer::float_placement::ParagraphFloatFlow::CoanchoredTable
+                });
                 let following_non_positive =
                     has_following_non_positive_visible_float(para, ctrl_idx);
-                let inter_float_gap = if st.profile.hwpx_stored_layout() && following_non_positive {
+                let inter_float_gap = if !resolved_frame_consumes_flow
+                    && st.profile.hwpx_stored_layout()
+                    && following_non_positive
+                {
                     para_line_spacing_px(para, self.dpi)
                 } else {
                     0.0
@@ -5260,7 +5616,20 @@ impl TypesetEngine {
         {
             // 빈 저장 호스트도 닫힌 원본 프레임을 소유할 수 있다.
             // 수용한 물리 하단을 소비하며 호스트·안내 줄을 다시 전진시키지 않는다.
-            st.align_flow_to(placement.occupied_bottom);
+            if let crate::renderer::float_placement::ParagraphFloatFlow::ComputedEmptyHost {
+                outer_box_top,
+                ..
+            } = placement.flow
+            {
+                st.add_visible_float_exclusion(VisibleFloatExclusion {
+                    para_index: para_idx,
+                    top: outer_box_top,
+                    bottom: placement.occupied_bottom,
+                });
+                st.align_flow_to(placement.paragraph_end(st.current_height, fmt.spacing_after));
+            } else {
+                st.align_flow_to(placement.occupied_bottom);
+            }
         } else if let Some(end) = computed_table_row_end {
             st.align_flow_to(end);
         } else if tac_wrap_split {
@@ -5518,7 +5887,8 @@ impl TypesetEngine {
             let stored_host_origin = st
                 .paragraph_float_placements
                 .get(&(para_idx, ctrl_idx))
-                .and_then(|placement| placement.stored_host_origin);
+                .and_then(|placement| placement.stored_host_origin)
+                .filter(|_| post_table_start == 0);
             if let Some(origin) = stored_host_origin {
                 // The host was resolved before fit, even though its text item is
                 // emitted after the floating table. Consume that same origin.
@@ -5538,6 +5908,27 @@ impl TypesetEngine {
             // [#2808] 소비 조건을 layout 의 same_owner_table_precedes 와 동일하게
             // 다중 co-anchored float host 로 한정 — 단일 표 host post-text 는 기존
             // 앵커 유지(#1549) 경로로 남긴다.
+            // 오프셋 안에 글줄이 들어가지 않는 host 는 표 아래에서 글을 잇는다 —
+            // 출력(layout)의 같은 판정과 함께 표 점유 끝으로 흐름을 옮긴다.
+            if is_visible_para_float
+                && crate::renderer::float_placement::visible_host_text_flows_below_offset_float(
+                    para,
+                    table,
+                    st.next_para_first_stored_vpos,
+                )
+            {
+                if let Some(bottom) = st
+                    .visible_float_exclusions
+                    .iter()
+                    .filter(|zone| zone.para_index == para_idx)
+                    .map(|zone| zone.bottom)
+                    .reduce(f64::max)
+                {
+                    if bottom > st.current_height {
+                        st.align_flow_to(bottom);
+                    }
+                }
+            }
             if is_visible_para_float && has_preceding_coanchored_float {
                 // [#2439] 다중 visible-host float 의 host 텍스트가 마지막 표 뒤에서
                 // emit 되는 경우, 같은 문단 소유 exclusion 도 post-text 에는 적용한다.
@@ -5568,12 +5959,17 @@ impl TypesetEngine {
             // 하한을 넘으면 문구를 새 쪽으로 보낸다. 저장 형상 열람은 저장 vpos를
             // 신뢰하므로 제외한다(셀 끝 Enter 재현: 하단 문구·로고가 페이지
             // 밖으로 잘리던 구간).
-            let session_grown_topbottom_spill = self.profile.get().session_edited()
+            let session_grown_topbottom_spill = (self.profile.get().session_edited()
+                || split_host_prefix.is_some())
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common);
+            // 쪽 끝의 마지막 줄은 글줄의 점유 끝으로 수용한다. 줄 뒤 간격은
+            // 다음 흐름에는 보존하지만, 그 간격만 용지 밖에 남는다는 이유로
+            // 본문에 들어가는 줄을 다음 쪽으로 옮기지 않는다.
+            let post_content_height = fmt.line_content_height(post_table_start..total_lines, 0.0);
             if (self.tac_table_line_index(para, table, fmt) == Some(0)
                 || session_grown_topbottom_spill)
-                && st.current_height + post_height > st.available_height() + 0.5
+                && st.current_height + post_content_height > st.available_height() + 0.5
                 && !st.current_items.is_empty()
             {
                 st.advance_column_or_new_page();
@@ -5732,6 +6128,24 @@ impl TypesetEngine {
         let has_following_tac_table = para.controls.iter().skip(ctrl_idx + 1).any(|control| {
             matches!(control, Control::Table(next) if self.is_effective_tac_table(para, next, fmt))
         });
+        // 표 줄 뒤에 컨트롤만 남은 저장 줄(쪽 번호 감추기 등)은 post-text 로 나가지 않지만
+        // 한/글은 그 줄 상자를 쌓는다. 표 줄 간격과 그 줄들을 여기서 더하고, 마지막 줄
+        // 간격은 아래 terminal 복원이 더한다.
+        let control_only_tail_px = (is_tac
+            && !has_post_text
+            && !has_following_tac_table
+            && tac_table_count == 1
+            && total_lines == para.line_segs.len()
+            && self.tac_table_line_index(para, table, fmt) == Some(0))
+        .then(|| crate::renderer::tac_host_control_only_tail_hu(para, 0))
+        .flatten()
+        .zip(para.line_segs.first().zip(para.line_segs.last()))
+        .map(|(tail, (first, last))| {
+            hwpunit_to_px(first.line_spacing + tail - last.line_spacing, self.dpi)
+        });
+        if let Some(advance) = control_only_tail_px {
+            st.advance_flow_by(advance);
+        }
         let restore_terminal_tac_spacing = is_tac && !has_post_text && !has_following_tac_table;
         if restore_terminal_tac_spacing {
             st.advance_flow_by(fmt.total_height - fmt.height_for_fit);
@@ -5879,60 +6293,10 @@ impl TypesetEngine {
         composed_all: &[ComposedParagraph],
         styles: &ResolvedStyleSet,
     ) -> bool {
-        if st.col_count != 1 || st.current_items.is_empty() || !para_has_visible_text(para) {
+        if !para_has_visible_text(para) {
             return false;
         }
-        if st.pre_emitted_host_paras.contains(&para_idx) {
-            return true;
-        }
-        let already_emitted = st.current_items.iter().any(|item| {
-            matches!(item, PageItem::FullParagraph { para_index }
-                | PageItem::PartialParagraph { para_index, start_line: 0, .. }
-                if *para_index == para_idx)
-        });
-        if already_emitted {
-            st.mark_pre_emitted_host(para_idx);
-            return true;
-        }
-        let col_w = st
-            .layout
-            .column_areas
-            .get(st.current_column as usize)
-            .map(|a| a.width)
-            .unwrap_or(st.layout.body_area.width);
-        let host_fmt = self.format_paragraph(para, composed_all.get(para_idx), styles, Some(col_w));
-        let host_lines = host_fmt.line_heights.len();
-        let host_h = host_fmt.line_advances_sum(0..host_lines);
-        // [Task #1763] 저장 flow 로 같은 쪽 후보임이 확인된 경우와 동일하게, host
-        // 줄 자체는 추가 안전마진 없이 본문 가용 높이로 판정한다.
-        //
-        // [#6184] 단 **fit 판정에는 말미 줄간격을 빼고** 잰다 — 쪽 마지막 줄 뒤에는
-        // 다음 줄이 없으므로 그 간격은 쪽을 채우지 않는다(#359 의 `height_for_fit`
-        // 규약이고, 바로 아래 후속 문단 루프도 이미 그 값을 쓴다). 포함해서 재면
-        // 156489124 pi=324 가 24.0px 로 잡혀 잔여 16.6px 를 넘겨 탈락하고, 줄이
-        // 표와 함께 다음 쪽으로 밀려 그 쪽 흐름표 위에 겹쳐 그려진다. 한글은 같은
-        // 줄을 1031.2..1047.2 로 본문 하단(1046.9)을 0.3px 넘겨 놓는다 — 말미
-        // 간격을 요구하지 않는다는 뜻이다. 누적(advance)은 종전대로 전량.
-        let host_fit = host_fmt.height_for_fit.min(host_h);
-        if host_lines == 0 || st.current_height + host_fit > st.available_height() {
-            return false;
-        }
-        st.append_item(PageItem::PartialParagraph {
-            para_index: para_idx,
-            start_line: 0,
-            end_line: host_lines,
-        });
-        st.advance_flow_by(host_h);
-        st.mark_pre_emitted_host(para_idx);
-        // [#2015] vert_offset 이중계상 보정용 host 높이 기록.
-        let host_trailing_spacing = host_fmt
-            .line_spacings
-            .last()
-            .copied()
-            .unwrap_or(0.0)
-            .max(0.0);
-        st.record_pre_emitted_host_height(para_idx, host_h, host_h - host_trailing_spacing);
-        true
+        self.pre_emit_deferred_host_lines(st, para_idx, para, composed_all, styles)
     }
 
     /// [#7677] 쪽을 넘긴 자리차지(PARA·TopAndBottom) RowBreak 표의 **마지막 조각 뒤** host 글줄을
@@ -6048,7 +6412,7 @@ impl TypesetEngine {
         composed_all: &[ComposedParagraph],
         styles: &ResolvedStyleSet,
     ) {
-        const MAX_PREFILL: usize = 8;
+        use table::deferred_float_flow::MAX_PREFILL;
         if st.col_count != 1 || st.current_items.is_empty() {
             return;
         }
@@ -6096,12 +6460,6 @@ impl TypesetEngine {
         if host_vpos < 0 || host_vpos > body_h_hu {
             return; // 누적좌표 등 — 저장 flow 로 같은 쪽 여부를 알 수 없음
         }
-        let col_w = st
-            .layout
-            .column_areas
-            .get(st.current_column as usize)
-            .map(|a| a.width)
-            .unwrap_or(st.layout.body_area.width);
         if !pre_emit_before_vpos_check
             && !self.pre_emit_visible_rowbreak_host_text(st, para_idx, para, composed_all, styles)
         {
@@ -6122,33 +6480,15 @@ impl TypesetEngine {
             {
                 break;
             }
-            let fmt_n =
-                self.format_paragraph(next, composed_all.get(next_idx), styles, Some(col_w));
-            if st.current_height + fmt_n.height_for_fit > st.available_height() {
+            if !self.try_append_prefilled_paragraph(
+                st,
+                next_idx,
+                paragraphs_all,
+                composed_all,
+                styles,
+            ) {
                 break;
             }
-            let trim_sb =
-                !st.profile.hwp3_layout() && !para_near_rowbreak_table(paragraphs_all, next_idx);
-            st.append_item(PageItem::FullParagraph {
-                para_index: next_idx,
-            });
-            st.advance_flow_by(fmt_n.flow_advance_height(
-                next,
-                st.col_count,
-                trim_sb,
-                st.vpos_ladder_dirty
-                    || st.vpos_page_base.or(st.vpos_lazy_base).is_none()
-                    || !spacing_trim_restorable(paragraphs_all, next_idx)
-                    || next_boundary_reverts_spacing_trim(
-                        st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
-                        paragraphs_all,
-                        styles,
-                        next_idx,
-                        self.dpi,
-                    ),
-                false,
-            ));
-            st.mark_prefilled_paragraph(next_idx);
         }
     }
 
@@ -6380,6 +6720,7 @@ mod issue_3780_line_advance_oob {
             computed_paragraph: None,
             tail_line_remaining_width: None,
             computed_host_lines: None,
+            host_composition: None,
             square_host_plan: None,
             total_height: 0.0,
             line_heights: vec![10.0; lines],
@@ -7413,6 +7754,7 @@ mod tests {
     #[test]
     fn issue2424_block_table_context_owns_step_lifecycle() {
         let prepared = BlockTableContinuationPreparedState {
+            computed_host_tail: None,
             first_anchor_offset_consumed: false,
             opening_rowspan_block_cuts_after_first_row: false,
             host_placement: None,
@@ -7539,6 +7881,7 @@ mod tests {
                 inline_placements: Default::default(),
                 inline_flow_plans: Default::default(),
                 stored_paragraph_flow_ends: Default::default(),
+                host_compositions: Default::default(),
                 stored_column_top_spacings: Default::default(),
                 paragraph_float_placements: Default::default(),
                 float_pushed_line_spacings: Default::default(),

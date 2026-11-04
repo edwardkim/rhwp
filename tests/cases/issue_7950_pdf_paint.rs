@@ -279,11 +279,15 @@ fn inferred_table_cannot_cover_its_labels_with_retained_positional_paint() {
             .collect();
         assert_eq!(pngs.len(), 1, "{name}: all cells belong to one source page");
         let image = image::open(&pngs[0]).unwrap().into_rgba8();
-        // Independent input geometry: MediaBox 300x200 pt, columns 40/150/260,
-        // rows 40/100/160. Exclude the grid strokes and inspect each cell's
-        // interior. No expected coordinate is taken from the lowered model.
+        // 원본 PDF의 독립 좌표: MediaBox 300×200pt, 열 40/150/260, 행 40/100/160.
+        // 격자 획을 제외한 각 셀 내부를 검사하며, 변환된 모델에서 기대 좌표를 얻지 않는다.
         let scale = f64::from(image.width()) / 300.0;
         for (bottom, top) in [(40.0, 100.0), (100.0, 160.0)] {
+            let background = if colored && bottom == 100.0 {
+                [0, 128, 255]
+            } else {
+                [255; 3]
+            };
             for (left, right) in [(40.0, 150.0), (150.0, 260.0)] {
                 let x0 = ((left + 10.0) * scale).ceil() as u32;
                 let x1 = ((right - 10.0) * scale).floor() as u32;
@@ -294,7 +298,19 @@ fn inferred_table_cannot_cover_its_labels_with_retained_positional_paint() {
                 for y in y0..y1 {
                     for x in x0..x1 {
                         let p = image.get_pixel(x, y);
-                        ink += usize::from(p[3] > 128 && p[0] < 80 && p[1] < 80 && p[2] < 80);
+                        // 검은 글자는 원본 배경의 양수 성분을 어둡게 한다. 획의 절대 농도를
+                        // 고정하면 얇은 대체 글꼴을 글자 가림으로 오판하므로 색상 관계를 쓴다.
+                        // 배경만 남거나 투명한 픽셀은 글자 잉크로 세지 않는다.
+                        ink += usize::from(
+                            p[3] > 128
+                                && p.0[..3].iter().zip(background).all(|(&value, base)| {
+                                    if base == 0 {
+                                        value == 0
+                                    } else {
+                                        value < base
+                                    }
+                                }),
+                        );
                         blue += usize::from(
                             p[3] > 250 && p[0] < 3 && p[1].abs_diff(128) < 3 && p[2] > 252,
                         );

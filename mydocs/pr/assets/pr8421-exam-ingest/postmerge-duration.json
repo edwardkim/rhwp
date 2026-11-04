@@ -1,0 +1,28 @@
+{
+  "run_id": 41435573859,
+  "job_id": 125244371843,
+  "conclusion": "success",
+  "collection": {
+    "ready": true,
+    "reason": "successful-pr-worker-measurements",
+    "pullNumber": 8421,
+    "sourceRunId": 41431435836,
+    "latestRunAttempt": 1,
+    "measurementAttempts": {
+      "b": 1,
+      "c": 1,
+      "d": 1,
+      "e": 1
+    },
+    "testedMergeSha": "465660fc6c4e99a546813f2344b7eeee23f37599",
+    "sourceHeadSha": "fe915543091ea964e5c691b391e890cd028e5a91",
+    "artifactIds": [
+      13135458958,
+      13135922806,
+      13135522704,
+      13135772410
+    ]
+  },
+  "published_metrics_branch": "ci-metrics/nextest-target-durations",
+  "published_metrics_commit": "d0697115c75c96b7591500f031756b680c57d1cf"
+}

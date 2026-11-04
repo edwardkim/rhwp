@@ -3,6 +3,7 @@
 //! 단계 12 범위: 드로잉(선/사각형/타원/호/패스/폴리라인16). 텍스트·비트맵은 단계 13.
 
 use std::fmt::Write;
+use std::hash::{Hash, Hasher};
 
 use crate::emf::parser::objects::{Header, LogBrush, LogPen, PenWidthKind, PointL, RectL, XForm};
 use crate::emf::parser::records::{ExtTextOut, Record, StretchDIBits};
@@ -28,6 +29,7 @@ pub struct Player {
     path_d: String,
     /// [#6577] 이미 방출한 `<clipPath>` 의 사각형 → id 사상.
     clip_ids: std::collections::BTreeMap<(i32, i32, i32, i32), String>,
+    pattern_count: usize,
 }
 
 impl Player {
@@ -44,6 +46,7 @@ impl Player {
             path_active: false,
             path_d: String::new(),
             clip_ids: std::collections::BTreeMap::new(),
+            pattern_count: 0,
         }
     }
 
@@ -110,6 +113,13 @@ impl Player {
             Record::CreateBrushIndirect { handle, brush } => {
                 self.objects.insert(*handle, GraphicsObject::Brush(*brush))
             }
+            Record::CreateDibPatternBrush { handle, brush } => {
+                self.objects.remove(*handle);
+                if let Some(pattern) = super::pattern_brush::decode(brush) {
+                    self.objects
+                        .insert(*handle, GraphicsObject::PatternBrush(pattern));
+                }
+            }
             Record::ExtCreateFontIndirectW { handle, font } => self
                 .objects
                 .insert(*handle, GraphicsObject::Font(font.clone())),
@@ -142,6 +152,11 @@ impl Player {
             Record::SetViewportExtEx(s) => self.dc_stack.current_mut().viewport_ext = (s.cx, s.cy),
             Record::SetViewportOrgEx(p) => self.dc_stack.current_mut().viewport_org = (p.x, p.y),
             Record::SetBkMode(v) => self.dc_stack.current_mut().bk_mode = *v,
+            Record::SetPolyFillMode(v) if matches!(v, 1 | 2) => {
+                self.dc_stack.current_mut().poly_fill_mode = *v;
+            }
+            Record::SetPolyFillMode(_) => {}
+            Record::SetBrushOrgEx(p) => self.dc_stack.current_mut().brush_origin = (p.x, p.y),
             Record::SetTextAlign(v) => self.dc_stack.current_mut().text_align = *v,
             Record::SetTextColor(v) => self.dc_stack.current_mut().text_color = *v,
             Record::SetBkColor(v) => self.dc_stack.current_mut().bk_color = *v,
@@ -171,6 +186,7 @@ impl Player {
             Record::Pie { rect, start, end } => self.emit_arc_like(rect, start, end, ArcKind::Pie),
             Record::Polyline16 { points, .. } => self.emit_polyline16(points, false),
             Record::Polygon16 { points, .. } => self.emit_polyline16(points, true),
+            Record::PolyPolygon16 { polygons, .. } => self.emit_poly_polygon16(polygons),
             Record::PolyBezier16 { points, .. } => self.emit_polybezier16(points),
             Record::PolylineTo16 { points, .. } => self.emit_polyline_to16(points),
             Record::PolyBezierTo16 { points, .. } => self.emit_polybezier_to16(points),
@@ -217,7 +233,8 @@ impl Player {
                 self.emit_path(None, Some(self.stroke_spec()));
             }
             Record::StrokeAndFillPath(_) => {
-                self.emit_path(self.fill_spec(), Some(self.stroke_spec()));
+                let fill = self.fill_spec();
+                self.emit_path(fill, Some(self.stroke_spec()));
             }
 
             // 텍스트
@@ -316,23 +333,26 @@ impl Player {
     }
 
     fn select_object(&mut self, handle: u32) {
-        if handle & 0x8000_0000 != 0 {
-            if let Some(obj) = Self::stock_object(handle & 0x7FFF_FFFF) {
-                match obj {
-                    GraphicsObject::Pen(p) => self.dc_stack.current_mut().pen = Some(p),
-                    GraphicsObject::Brush(b) => self.dc_stack.current_mut().brush = Some(b),
-                    GraphicsObject::Font(f) => self.dc_stack.current_mut().font = Some(f),
-                }
-            }
-            return;
-        }
-        let Some(obj) = self.objects.get(handle) else {
+        let object = if handle & 0x8000_0000 != 0 {
+            Self::stock_object(handle & 0x7FFF_FFFF)
+        } else {
+            self.objects.get(handle).cloned()
+        };
+        let Some(obj) = object else {
             return;
         };
+        let dc = self.dc_stack.current_mut();
         match obj {
-            GraphicsObject::Pen(p) => self.dc_stack.current_mut().pen = Some(*p),
-            GraphicsObject::Brush(b) => self.dc_stack.current_mut().brush = Some(*b),
-            GraphicsObject::Font(f) => self.dc_stack.current_mut().font = Some(f.clone()),
+            GraphicsObject::Pen(p) => dc.pen = Some(p),
+            GraphicsObject::Brush(b) => {
+                dc.brush = Some(b);
+                dc.pattern_brush = None;
+            }
+            GraphicsObject::PatternBrush(pattern) => {
+                dc.brush = None;
+                dc.pattern_brush = Some(pattern);
+            }
+            GraphicsObject::Font(f) => dc.font = Some(f),
         }
     }
 
@@ -362,7 +382,35 @@ impl Player {
         }
     }
 
-    fn fill_spec(&self) -> Option<String> {
+    fn fill_spec(&mut self) -> Option<String> {
+        if let Some(pattern) = self.dc_stack.current().pattern_brush.clone() {
+            let dc = self.dc_stack.current();
+            let page = page_xform(dc).map_or(super::device_stroke::IDENTITY, |m| m.map(f64::from));
+            let w = dc.world_xform;
+            let world = [w.m11, w.m12, w.m21, w.m22, w.dx, w.dy].map(f64::from);
+            let matrix = super::device_stroke::compose(page, world);
+            let inverse = super::device_stroke::inverse(matrix)?;
+            let origin = [
+                1.0,
+                0.0,
+                0.0,
+                1.0,
+                f64::from(dc.brush_origin.0),
+                f64::from(dc.brush_origin.1),
+            ];
+            let transform = super::device_stroke::compose(inverse, origin);
+            // 같은 SVG 안에 여러 OLE fragment가 있어도 다른 타일의 ID가 충돌하지 않는다.
+            let mut hash = std::collections::hash_map::DefaultHasher::new();
+            pattern.hash(&mut hash);
+            for value in transform {
+                value.to_bits().hash(&mut hash);
+            }
+            let id = format!("emf-pattern-{:016x}-{}", hash.finish(), self.pattern_count);
+            self.pattern_count += 1;
+            self.svg
+                .push(&super::pattern_brush::definition(&pattern, &id, transform));
+            return Some(format!("url(#{id})"));
+        }
         if let Some(b) = self.dc_stack.current().brush {
             if b.style == 1 {
                 None
@@ -373,6 +421,14 @@ impl Player {
             }
         } else {
             Some("none".into())
+        }
+    }
+
+    fn polygon_fill_rule(&self) -> &'static str {
+        if self.dc_stack.current().poly_fill_mode == 2 {
+            "nonzero"
+        } else {
+            "evenodd"
         }
     }
 
@@ -472,9 +528,37 @@ impl Player {
         let tag = if close { "polygon" } else { "polyline" };
         let stroke_color = stroke.color.as_deref().unwrap_or("none");
         let node = format!(
-            "<{tag} points=\"{pts}\" fill=\"{fill}\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
+            "<{tag} points=\"{pts}\" fill=\"{fill}\" fill-rule=\"{}\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
+            self.polygon_fill_rule(),
             stroke.width,
         );
+        self.push_stroked(&node, &stroke);
+    }
+
+    /// 중첩된 윤곽도 하나의 채움 영역으로 해석하므로 다각형을 따로 칠하지 않는다.
+    fn emit_poly_polygon16(&mut self, polygons: &[Vec<(i16, i16)>]) {
+        let mut d = String::new();
+        for polygon in polygons {
+            let Some((x, y)) = polygon.first() else {
+                continue;
+            };
+            let _ = write!(d, "M{x} {y}");
+            for (x, y) in &polygon[1..] {
+                let _ = write!(d, " L{x} {y}");
+            }
+            d.push_str(" Z ");
+        }
+        if d.is_empty() {
+            return;
+        }
+        if self.path_active {
+            self.path_d.push_str(&d);
+            return;
+        }
+        let fill = self.fill_spec().unwrap_or_else(|| "none".into());
+        let stroke = self.stroke_spec();
+        let color = stroke.color.as_deref().unwrap_or("none");
+        let node = format!("<path d=\"{d}\" fill=\"{fill}\" fill-rule=\"{}\" stroke=\"{color}\" stroke-width=\"{}\"/>", self.polygon_fill_rule(), stroke.width);
         self.push_stroked(&node, &stroke);
     }
 
@@ -491,6 +575,11 @@ impl Player {
             let (ex, ey) = points[i + 2];
             let _ = write!(d, " C{c1x} {c1y} {c2x} {c2y} {ex} {ey}");
             i += 3;
+        }
+        if self.path_active {
+            self.path_d.push(' ');
+            self.path_d.push_str(&d);
+            return;
         }
         let stroke = self.stroke_spec();
         let stroke_color = stroke.color.as_deref().unwrap_or("none");
@@ -683,8 +772,9 @@ impl Player {
             (s.color.as_deref().unwrap_or("none"), s.width)
         });
         let node = format!(
-            "<path d=\"{}\" fill=\"{fill_attr}\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
+            "<path d=\"{}\" fill=\"{fill_attr}\" fill-rule=\"{}\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
             self.path_d.trim(),
+            self.polygon_fill_rule(),
             stroke_width,
         );
         if let Some(stroke) = &stroke {
@@ -780,7 +870,7 @@ pub struct StrokeSpec {
 /// [Task #860] SVG renderer (rsvg-convert, 브라우저) 가 `data:image/bmp` URI 미지원 →
 /// `data:image/png` 로 재인코딩 (svg.rs:1118 / shape_layout.rs:1063 과 동일 정책).
 /// BMP decode 실패 시 fallback 으로 BMP URI 반환 (graceful degradation).
-fn dib_to_bmp_data_url(bmi: &[u8], bits: &[u8]) -> String {
+pub(super) fn dib_to_bmp_data_url(bmi: &[u8], bits: &[u8]) -> String {
     let bmi_size = bmi.len() as u32;
     let bits_size = bits.len() as u32;
     let file_size = 14 + bmi_size + bits_size;

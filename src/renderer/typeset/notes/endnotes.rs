@@ -14,6 +14,7 @@ pub(in crate::renderer::typeset) mod fit;
 mod flow_table;
 pub(in crate::renderer::typeset) mod format;
 pub(in crate::renderer::typeset) mod measure;
+pub(in crate::renderer::typeset) mod measure_memo;
 pub(in crate::renderer::typeset) mod metrics;
 pub(in crate::renderer::typeset) mod paragraph;
 pub(in crate::renderer::typeset) mod prepare;

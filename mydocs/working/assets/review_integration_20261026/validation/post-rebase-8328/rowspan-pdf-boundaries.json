@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-28",
+  "input": "samples/rowspan-band-fit/rowspan-band-fit.hwp",
+  "pdf": "pdf/rowspan-band-fit/rowspan-band-fit-2020.pdf",
+  "pdf_sha256": "3581e48fc76b65e292d3668a27fc5dbbdb905b37b40b11c58b5abd122dba00a9",
+  "page": 9,
+  "method": "PDF vector horizontal stroke y in points * 96/72; direct side-by-side 96dpi print inspection",
+  "boundaries": [
+    {
+      "x0_pt": 56.4900016784668,
+      "x1_pt": 466.66900634765625,
+      "y_pt": 70.7230224609375,
+      "y_96dpi_px": 94.29736328125
+    },
+    {
+      "x0_pt": 56.4900016784668,
+      "x1_pt": 466.66900634765625,
+      "y_pt": 99.49102783203125,
+      "y_96dpi_px": 132.65470377604166
+    },
+    {
+      "x0_pt": 56.4900016784668,
+      "x1_pt": 466.66900634765625,
+      "y_pt": 119.50897216796875,
+      "y_96dpi_px": 159.34529622395834
+    },
+    {
+      "x0_pt": 56.4900016784668,
+      "x1_pt": 466.66900634765625,
+      "y_pt": 139.5269775390625,
+      "y_96dpi_px": 186.03597005208334
+    },
+    {
+      "x0_pt": 56.4900016784668,
+      "x1_pt": 466.66900634765625,
+      "y_pt": 159.426025390625,
+      "y_96dpi_px": 212.56803385416666
+    }
+  ],
+  "visual_inspection": {
+    "path": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/rowspan-print-crop.png",
+    "sha256": "7a38da8911e72c6478afb0e0700b3ad14bcb42671d5f2efd72836b1e84df7f92"
+  }
+}

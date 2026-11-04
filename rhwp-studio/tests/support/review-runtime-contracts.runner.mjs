@@ -126,6 +126,11 @@ if (mode.startsWith('history-')) {
     set font(value) { this._font = value; }
   }
   globalThis.CanvasRenderingContext2D = CanvasContext;
+  const snapshot = JSON.stringify({ version: 1, detectedAt: '2026-01-01T00:00:00Z',
+    source: 'local-font-access', families: ['HY중고딕', 'HYGothic', 'HYGothic-Medium'] });
+  globalThis.localStorage = { getItem: () => snapshot, setItem() {}, removeItem() {} };
+  const localFonts = await import(pathToFileURL(join(src, 'core/local-fonts.ts')));
+  await localFonts.loadStoredLocalFonts();
   const bridge = new WasmBridge();
   await bridge.initialize();
   const { parseCssFontFamilyList, fontFamilyCandidatesForDisplay } =
@@ -143,8 +148,13 @@ if (mode.startsWith('history-')) {
   assert.ok(!selected.includes('휴먼명조'), 'EXCLUDED_FACE_REINTRODUCED: 표시 정책이 제외한 원 face는 fallback 앞에 복귀하면 안 된다');
   context.font = '12px "A, B", "Alias", "alias", sans-serif';
   const escaped = parseCssFontFamilyList(context.font.split('px ')[1]);
-  assert.ok(escaped.includes('A, B'));
+  assert.ok(!escaped.includes('A, B'), '승인되지 않은 원본 face는 자동 사용하지 않는다');
   assert.equal(escaped.filter(n => n.toLowerCase() === 'alias').length, 1);
+  await localFonts.clearStoredLocalFonts();
+  context.font = '16px "딸기", "Strawberry", sans-serif';
+  const unapproved = parseCssFontFamilyList(context.font.split('px ')[1]);
+  assert.ok(!unapproved.includes('딸기') && !unapproved.includes('Strawberry'),
+    '감지 승인 전 원본과 설치 별칭을 통해 로컬 face가 선택되지 않는다');
 } else {
   throw new Error(`알 수 없는 검사 ${mode}`);
 }

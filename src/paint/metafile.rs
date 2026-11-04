@@ -51,9 +51,7 @@ pub(super) fn image_payload(
     if crop_w <= 0.0 || crop_h <= 0.0 {
         return crate::renderer::image_resolver::resolve_image_payload(image);
     }
-    let target = image
-        .transform
-        .effective_image_bbox(&image.paint_bbox(&bbox));
+    let target = image.transformed_paint_bbox(&bbox);
     let mode = image.fill_mode.unwrap_or(ImageFillMode::FitToSize);
     let (width, height) = match mode {
         ImageFillMode::FitToSize | ImageFillMode::Total => (

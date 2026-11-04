@@ -6,13 +6,32 @@ use crate::paint::{
     LayerNode, LayerNodeKind, PaintOp, TextDecorationKind, TextDecorationPaintGeometry,
 };
 use crate::renderer::image_resolver::detect_image_mime_type;
-use crate::renderer::render_tree::{BoundingBox, ImageNode, RenderNode};
+use crate::renderer::render_tree::{
+    BoundingBox, ImageNode, RectangleNode, RenderNode, RenderNodeType,
+};
+use crate::renderer::{hwpunit_to_px, DEFAULT_DPI, HWPUNIT_PER_INCH};
+
+/// 원래 정수 HU를 정확히 재현하는 px만 정수 단위로 되돌린다.
+/// 역변환 오차로 반 장치 픽셀의 위/아래가 바뀌지 않게 하며 연속 좌표는 보존한다.
+fn source_device_coordinate(px: f64, pixel: f64) -> f64 {
+    let hu = (px * HWPUNIT_PER_INCH / DEFAULT_DPI).round() as i32;
+    if hwpunit_to_px(hu, DEFAULT_DPI).to_bits() == px.to_bits() {
+        f64::from(hu) / (pixel * HWPUNIT_PER_INCH / DEFAULT_DPI)
+    } else {
+        px / pixel
+    }
+}
 
 #[derive(Clone, Copy)]
 pub(crate) struct PagePaintContext {
     print: bool,
     logical_size: (f64, f64),
     output_size: (f64, f64),
+    axis_aligned_graphics: bool,
+    print_paper: Option<super::print_paper::PrintPaper>,
+    image_column_origin: Option<(f64, f64)>,
+    image_column_blocked: bool,
+    table_fill_origin: super::table_fill_origin::TableFillOrigin,
 }
 
 impl PagePaintContext {
@@ -28,11 +47,51 @@ impl PagePaintContext {
             } else {
                 (width, height)
             },
+            axis_aligned_graphics: true,
+            print_paper: None,
+            image_column_origin: None,
+            image_column_blocked: false,
+            table_fill_origin: Default::default(),
         }
+    }
+
+    pub(crate) fn with_hangul2024_print(mut self, enabled: bool) -> Self {
+        if self.print && enabled {
+            self.print_paper =
+                super::print_paper::PrintPaper::from_css(self.logical_size.0, self.logical_size.1);
+            if let Some(paper) = self.print_paper {
+                self.output_size = paper.size;
+            }
+        }
+        self
     }
 
     pub(crate) fn output_size(self) -> (f64, f64) {
         self.output_size
+    }
+
+    /// 글줄 그림은 실제 소유 단의 원점과 상대 위치를 따로 장치 정수로 변환한다.
+    /// 셀·글상자·각주·별도 개체 좌표계를 본문 단의 좌표계로 간주하지 않는다.
+    pub(crate) fn for_children(mut self, node: &RenderNode) -> Self {
+        self.table_fill_origin = self.table_fill_origin.for_children(node);
+        self.image_column_blocked |= node.layer.is_some()
+            || matches!(
+                &node.node_type,
+                RenderNodeType::MasterPage
+                    | RenderNodeType::Header
+                    | RenderNodeType::Footer
+                    | RenderNodeType::FootnoteArea
+                    | RenderNodeType::TableCell(_)
+                    | RenderNodeType::TextBox
+            )
+            || matches!(&node.node_type,
+                RenderNodeType::Group(group) if group.paint_transform.is_some());
+        if self.image_column_blocked {
+            self.image_column_origin = None;
+        } else if matches!(&node.node_type, RenderNodeType::Column(_)) {
+            self.image_column_origin = Some((node.bbox.x, node.bbox.y));
+        }
+        self
     }
 
     /// 표 괘선은 논리 조판 상자를 유지하되 물리 Print 종이의 정밀 CTM을 쓴다.
@@ -45,7 +104,15 @@ impl PagePaintContext {
         let ratio = |extent: f64| {
             (extent * 0.75 + 1e-9).floor() / (extent * 600.0 / 96.0).round() * (600.0 / 72.0)
         };
-        let (sx, sy) = (ratio(self.logical_size.0), ratio(self.logical_size.1));
+        let (sx, sy) = self.print_paper.map_or_else(
+            || (ratio(self.logical_size.0), ratio(self.logical_size.1)),
+            |paper| {
+                (
+                    paper.device_units.0 * (600.0 / 96.0),
+                    paper.device_units.1 * (600.0 / 96.0),
+                )
+            },
+        );
         if ![sx, sy]
             .into_iter()
             .all(|value| value.is_finite() && value > 0.0)
@@ -103,7 +170,15 @@ impl PagePaintContext {
         }
         let ratio =
             |px: f64| (px * 0.75 + 1e-9).floor() / (px * 600.0 / 96.0).round() * (600.0 / 72.0);
-        let (sx, sy) = (ratio(self.logical_size.0), ratio(self.logical_size.1));
+        let (sx, sy) = self.print_paper.map_or_else(
+            || (ratio(self.logical_size.0), ratio(self.logical_size.1)),
+            |paper| {
+                (
+                    paper.device_units.0 * (600.0 / 96.0),
+                    paper.device_units.1 * (600.0 / 96.0),
+                )
+            },
+        );
         if ![sx, sy].iter().all(|v| v.is_finite() && *v > 0.0) {
             return;
         }
@@ -346,8 +421,15 @@ impl PagePaintContext {
             let point_extent = (px * 0.75 + 1e-9).floor();
             point_extent / device_extent * (600.0 / 72.0)
         };
-        let sx = ratio(self.logical_size.0);
-        let sy = ratio(self.logical_size.1);
+        let (sx, sy) = self.print_paper.map_or_else(
+            || (ratio(self.logical_size.0), ratio(self.logical_size.1)),
+            |paper| {
+                (
+                    paper.device_units.0 * (600.0 / 96.0),
+                    paper.device_units.1 * (600.0 / 96.0),
+                )
+            },
+        );
         if ![sx, sy].iter().all(|x| x.is_finite() && *x > 0.0) {
             return;
         }
@@ -408,7 +490,231 @@ impl PagePaintContext {
         }
     }
 
-    pub(crate) fn image_frame(self, node: &RenderNode, image: &ImageNode) -> BoundingBox {
+    /// 양쪽 backend가 실제로 재생할 그림 frame에서 장치 압축의 너비를 얻는다.
+    pub(crate) fn image_codec_width_points(
+        self,
+        image: &ImageNode,
+        frame: BoundingBox,
+    ) -> Option<f64> {
+        if !self.print || !self.axis_aligned_graphics || image.transform.has_transform() {
+            return None;
+        }
+        let width = image.paint_bbox(&frame).width * 0.75;
+        (width.is_finite() && width > 0.0).then_some(width)
+    }
+
+    /// 회전/affine 아래의 좌표는 최종 장치 좌표가 아니므로 이 계약을 적용하지 않는다.
+    pub(crate) fn without_rectangle_mapping(mut self) -> Self {
+        self.axis_aligned_graphics = false;
+        self
+    }
+
+    /// 시작·끝을 같은 원본 참조에서 변환한다. PAPER/PAGE 축은 절대 좌표를 유지한다.
+    fn fill_device_coordinate(
+        self,
+        value: f64,
+        pixel: f64,
+        axis: usize,
+        table_background: bool,
+    ) -> f64 {
+        if let Some(origin) = self
+            .table_fill_origin
+            .axis(axis)
+            .filter(|_| table_background && self.print_paper.is_some())
+        {
+            super::print_coordinate::relative_device(origin, 0.0, pixel).round()
+                + super::print_coordinate::relative_device(value, origin, pixel).round()
+        } else {
+            source_device_coordinate(value, pixel).round()
+        }
+    }
+
+    /// 원래 글상자·테두리 프레임과 별개로 Print 단색 채움의 중첩을 결정한다.
+    pub(crate) fn rectangle_fill_frame(
+        self,
+        frame: BoundingBox,
+        rect: &RectangleNode,
+        device_pixel: Option<f64>,
+    ) -> Option<BoundingBox> {
+        if !self.print || !self.axis_aligned_graphics {
+            return None;
+        }
+        super::rectangle_fill::frame(frame, rect, device_pixel?)
+    }
+
+    /// 불투명 단색 채움의 최종 끝점을 Print 장치에서 물리 종이에 대응한다.
+    /// NORMAL 선의 채움 중첩 이후에 소비하며 원래 조판·테두리·텍스트 상자는 유지한다.
+    pub(crate) fn solid_fill_frame(
+        self,
+        bounds: BoundingBox,
+        rect: &RectangleNode,
+        device_pixel: Option<f64>,
+        node: &RenderNode,
+    ) -> BoundingBox {
+        let Some(pixel) = device_pixel.filter(|p| p.is_finite() && *p > 0.0) else {
+            return bounds;
+        };
+        if !self.print
+            || !self.axis_aligned_graphics
+            || rect.transform.has_transform()
+            || !super::device_fill::eligible(rect)
+            || ![bounds.x, bounds.y, bounds.width, bounds.height]
+                .into_iter()
+                .all(f64::is_finite)
+            || bounds.width <= 0.0
+            || bounds.height <= 0.0
+        {
+            return bounds;
+        }
+        let devices = (
+            (self.logical_size.0 / pixel).round(),
+            (self.logical_size.1 / pixel).round(),
+        );
+        if ![devices.0, devices.1, self.output_size.0, self.output_size.1]
+            .into_iter()
+            .all(|extent| extent.is_finite() && extent > 0.0)
+        {
+            return bounds;
+        }
+        let (x_unit, y_unit) = self.print_paper.map_or(
+            (
+                self.output_size.0 / devices.0,
+                self.output_size.1 / devices.1,
+            ),
+            |paper| paper.device_units,
+        );
+        let background = node.table_background_paint;
+        let (x, width) = if node.layer.is_some_and(|layer| layer.master_page) {
+            // 바탕쪽의 가로 프레임은 rectangle_frame에서 이미 확정했다.
+            (bounds.x, bounds.width)
+        } else {
+            let left = self.fill_device_coordinate(bounds.x, pixel, 0, background);
+            let right = self.fill_device_coordinate(bounds.x + bounds.width, pixel, 0, background);
+            (left * x_unit, (right - left) * x_unit)
+        };
+        let top = self.fill_device_coordinate(bounds.y, pixel, 1, background);
+        let bottom = self.fill_device_coordinate(bounds.y + bounds.height, pixel, 1, background);
+        BoundingBox::new(x, top * y_unit, width, (bottom - top) * y_unit)
+    }
+
+    /// 독립 Print의 실선 그림 테두리는 채운 띠와 장치 한 픽셀의 외곽 pen을 갖는다.
+    /// 원본 HU·논리 프레임은 유지하고 양쪽 backend가 소비할 인쇄 선폭만 만든다.
+    pub(crate) fn picture_border_pen(self, rect: &mut RectangleNode, pixel: Option<f64>) {
+        let (Some(width_hu), Some(pixel)) = (
+            rect.picture_border_width_hu,
+            pixel.filter(|p| p.is_finite() && *p > 0.0),
+        ) else {
+            return;
+        };
+        if !self.print
+            || !self.axis_aligned_graphics
+            || rect.transform.has_transform()
+            || rect.image_frame_owner.is_none()
+            || rect.style.stroke_dash != crate::renderer::StrokeDash::Solid
+            || width_hu < 0
+            || !rect.style.stroke_width.is_finite()
+        {
+            return;
+        }
+        // 선언 폭 0은 화면용 0.1mm 기본값이 아니라 인쇄 장치의 cosmetic pen이다.
+        let declared = if width_hu == 0 {
+            0.0
+        } else {
+            rect.style.stroke_width / pixel
+        };
+        let band = declared.round().max(1.0);
+        rect.print_picture_pen = Some([band * pixel, pixel]);
+        rect.style.stroke_width = (band + 1.0) * pixel;
+        // 빈 명시적 반복 구간은 실선이다. 재생기는 확정한 장치 선폭을 그대로 소비한다.
+        rect.style.stroke_dash = crate::renderer::StrokeDash::Explicit([0.0; 6]);
+    }
+
+    /// 그림의 중심선 경로는 source 경계의 각 끝점을 장치 정수로 변환한다.
+    /// 선언 폭 0의 Print 경로에는 화면용 기본 폭의 안쪽 겹침이 없다.
+    pub(crate) fn picture_border_frame(
+        self,
+        bounds: BoundingBox,
+        rect: &RectangleNode,
+    ) -> Option<BoundingBox> {
+        let paper = self.print_paper?;
+        if !self.print
+            || !self.axis_aligned_graphics
+            || rect.print_picture_pen.is_none()
+            || rect.transform.has_transform()
+            || ![bounds.x, bounds.y, bounds.width, bounds.height]
+                .into_iter()
+                .all(f64::is_finite)
+            || bounds.width <= 0.0
+            || bounds.height <= 0.0
+        {
+            return None;
+        }
+        let device = 600.0 / 96.0;
+        let left = (bounds.x * device).round();
+        let top = (bounds.y * device).round();
+        let right = ((bounds.x + bounds.width) * device).round();
+        let bottom = ((bounds.y + bounds.height) * device).round();
+        Some(BoundingBox::new(
+            left * paper.device_units.0,
+            top * paper.device_units.1,
+            (right - left) * paper.device_units.0,
+            (bottom - top) * paper.device_units.1,
+        ))
+    }
+
+    /// 정수 장치 좌표 → 물리 종이 viewport의 가로 축 변환.
+    /// 원본 종이/그림자/텍스트 배치나 세로 축을 이 결과로 덮어쓰지 않는다.
+    /// 근거: issue8153의 두 종이·15개 독립 Print 사각형 원시 연산.
+    pub(crate) fn rectangle_frame(
+        self,
+        node: &RenderNode,
+        rect: &mut RectangleNode,
+        device_pixel: Option<f64>,
+    ) -> BoundingBox {
+        let Some(pixel) = device_pixel.filter(|p| p.is_finite() && *p > 0.0) else {
+            return node.bbox;
+        };
+        if !self.print
+            || !self.axis_aligned_graphics
+            || !node.layer.as_ref().is_some_and(|layer| layer.master_page)
+            || rect.transform.has_transform()
+        {
+            return node.bbox;
+        }
+        let bounds = node.bbox;
+        let (width, _) = self.logical_size;
+        let (output_width, _) = self.output_size;
+        if ![bounds.x, bounds.width, width, output_width]
+            .into_iter()
+            .all(f64::is_finite)
+            || bounds.width < 0.0
+            || width <= 0.0
+            || output_width <= 0.0
+        {
+            return bounds;
+        }
+        let device_width = (width / pixel).round();
+        if device_width <= 0.0 {
+            return bounds;
+        }
+        let left = (bounds.x / pixel).round();
+        let right = ((bounds.x + bounds.width) / pixel).round().max(left + 1.0);
+        let unit = self
+            .print_paper
+            .map_or(output_width / device_width, |paper| paper.device_units.0);
+        // 한컴의 퇴화 사각형도 장치의 한 픽셀 폭을 갖는다. 원본의 0폭은 보존한다.
+        if rect.style.stroke_width.is_finite() && rect.style.stroke_width > 0.0 {
+            rect.style.stroke_width = (rect.style.stroke_width / pixel).round().max(1.0) * pixel;
+        }
+        BoundingBox::new(left * unit, bounds.y, (right - left) * unit, bounds.height)
+    }
+
+    pub(crate) fn image_frame(
+        self,
+        node: &RenderNode,
+        image: &ImageNode,
+        _device_pixel: Option<f64>,
+    ) -> BoundingBox {
         let bbox = node.bbox;
         let is_master = node.layer.as_ref().is_some_and(|layer| layer.master_page);
         let raster = image.data.as_deref().is_some_and(|bytes| {
@@ -457,7 +763,10 @@ impl PagePaintContext {
         let device_per_css = 600.0 / 96.0;
         let point_to_css = 96.0 / 72.0;
         let ctm = |extent: f64| (extent * 0.75 + 1e-9).floor() / (extent * device_per_css).round();
-        let (sx, sy) = (ctm(width) * point_to_css, ctm(height) * point_to_css);
+        let (sx, sy) = self.print_paper.map_or_else(
+            || (ctm(width) * point_to_css, ctm(height) * point_to_css),
+            |paper| paper.device_units,
+        );
         if ![sx, sy]
             .into_iter()
             .all(|value| value.is_finite() && value > 0.0)
@@ -469,18 +778,133 @@ impl PagePaintContext {
         // 앞 장치 경계를 공유한다. 전체 원본과 뒤쪽만 자른 축은 기존
         // 첫 픽셀 원점을 유지하며, crop 단위나 내용으로 대상을 추정하지 않는다.
         let (left, top) = image.crop.map_or((0, 0), |(left, top, _, _)| (left, top));
-        let origin = |value: f64, clipped_start: bool| {
+        let column = self.image_column_origin.filter(|(x, y)| {
+            self.print_paper.is_some()
+                && !self.image_column_blocked
+                && self.axis_aligned_graphics
+                && x.is_finite()
+                && y.is_finite()
+                && node.layer.is_none()
+                && image.fill_mode.is_none()
+                && !image.transform.has_transform()
+                && image.content_inset.is_none()
+                && image.cell_context.is_none()
+                && image.header_footer_ref.is_none()
+                && left == 0
+                && top == 0
+        });
+        // 원본이 글자처럼 취급한 셀 그림은 표의 실제 참조 축을 상속한다.
+        // 셀·표 레이어가 있다는 이유로 본문 단의 소유를 버리지 않는다.
+        // 중첩 표·별도 좌표계는 TableFillOrigin이 독립적으로 차단한다.
+        let inline_cell = self.print_paper.is_some()
+            && self.axis_aligned_graphics
+            && node.source_inline_picture
+            && node.layer.is_none()
+            && image.cell_context.is_some()
+            && image.header_footer_ref.is_none()
+            && image.fill_mode.is_none()
+            && image.content_inset.is_none()
+            && !image.transform.has_transform();
+        let axis = |index| {
+            column
+                .map(|(x, y)| if index == 0 { x } else { y })
+                .or_else(|| {
+                    inline_cell
+                        .then(|| self.table_fill_origin.inline_picture_axis(index))
+                        .flatten()
+                })
+        };
+        let origin = |value: f64, clipped_start: bool, column_origin: Option<f64>| {
             if clipped_start {
                 (value * device_per_css + 1e-9).floor()
+            } else if let Some(anchor) = column_origin {
+                // 원본 단 원점과 글줄 안 상대 위치는 각각의 정수 장치 좌표다.
+                // 더한 뒤 ceil/round하면 서로 다른 소유 단계의 반올림이 사라진다.
+                (anchor * device_per_css).round() + ((value - anchor) * device_per_css).round()
             } else {
                 (value * device_per_css - 1e-9).ceil()
             }
         };
         BoundingBox::new(
-            origin(bbox.x, left > 0) * sx,
-            origin(bbox.y, top > 0) * sy,
+            origin(bbox.x, left > 0, axis(0)) * sx,
+            origin(bbox.y, top > 0, axis(1)) * sy,
             (bbox.width * device_per_css).round() * sx,
             (bbox.height * device_per_css).round() * sy,
+        )
+    }
+
+    /// 영역 맞춤 배경의 재생 그림과 원래 채움 clip을 함께 확정한다.
+    pub(super) fn bitmap_fill_frame(
+        self,
+        node: &RenderNode,
+        image: &ImageNode,
+        device_pixel: Option<f64>,
+    ) -> Option<super::bitmap_fill_frame::BitmapFillFrame> {
+        use crate::model::style::ImageFillMode;
+        use crate::renderer::image_header::{
+            canvaskit_encoded_image_header, CanvasKitEncodedImageFormat,
+        };
+        let pixel = device_pixel.filter(|p| p.is_finite() && *p > 0.0)?;
+        if !self.print
+            || !self.axis_aligned_graphics
+            || image.transform.has_transform()
+            || image.crop.is_some()
+            || image.content_inset.is_some()
+        {
+            return None;
+        }
+        let header = canvaskit_encoded_image_header(image.data.as_deref()?)?;
+        if !header.is_within_decode_limits()
+            || !matches!(
+                header.format,
+                CanvasKitEncodedImageFormat::Bmp
+                    | CanvasKitEncodedImageFormat::Png
+                    | CanvasKitEncodedImageFormat::Jpeg
+            )
+        {
+            return None;
+        }
+        let bounds = node.bbox;
+        // 가운데 채움의 원본이 양축 모두 채움 영역보다 큰 경우에는
+        // 한컴 Print가 영역에 맞춘 채움과 같은 장치 프레임을 사용한다.
+        // 원본 크기가 명시된 도형과 한 축이라도 영역에 들어가는 그림은
+        // 가운데 정렬 계약이 다르므로 기존 경로에서 처리한다.
+        let fills_area = matches!(
+            image.fill_mode,
+            Some(ImageFillMode::FitToSize | ImageFillMode::Total)
+        ) || (image.fill_mode == Some(ImageFillMode::Center)
+            && image.original_size.is_none()
+            && bounds.width < f64::from(header.width)
+            && bounds.height < f64::from(header.height));
+        if !fills_area {
+            return None;
+        }
+        let background = node.table_background_paint;
+        let left = self.fill_device_coordinate(bounds.x, pixel, 0, background);
+        let top = self.fill_device_coordinate(bounds.y, pixel, 1, background);
+        let width =
+            if background && self.print_paper.is_some() && self.table_fill_origin.axis(0).is_some()
+            {
+                self.fill_device_coordinate(bounds.x + bounds.width, pixel, 0, background) - left
+            } else {
+                source_device_coordinate(bounds.width, pixel).round()
+            };
+        let height =
+            if background && self.print_paper.is_some() && self.table_fill_origin.axis(1).is_some()
+            {
+                self.fill_device_coordinate(bounds.y + bounds.height, pixel, 1, background) - top
+            } else {
+                source_device_coordinate(bounds.height, pixel).round()
+            };
+        super::bitmap_fill_frame::map(
+            BoundingBox::new(left, top, width, height),
+            (header.width, header.height),
+            (
+                (self.logical_size.0 / pixel).round(),
+                (self.logical_size.1 / pixel).round(),
+            ),
+            self.output_size,
+            self.print_paper.map(|paper| paper.device_units),
         )
     }
 }

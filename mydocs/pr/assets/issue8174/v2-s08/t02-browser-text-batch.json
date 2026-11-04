@@ -1,0 +1,22 @@
+[
+  {
+    "name": "text-consecutive-moves",
+    "format": "hwp",
+    "pages": 3
+  },
+  {
+    "name": "text-consecutive-moves",
+    "format": "hwpx",
+    "pages": 3
+  },
+  {
+    "name": "batch-operator-control",
+    "format": "hwp",
+    "pages": 2
+  },
+  {
+    "name": "batch-operator-control",
+    "format": "hwpx",
+    "pages": 2
+  }
+]

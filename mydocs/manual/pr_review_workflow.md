@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-23
+last_verified: 2026-11-04
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -17,8 +17,8 @@ PR review를 시작하는 에이전트는 이 문서와 [조건별 가이드 선
 ## 1. 공통 계약
 
 새 PR 준비·생성 전에는 [본인 미병합 PR 우선 처리](codex/docs_and_git_workflow.md#새-pr-생성-전에-확인할-항목)를
-먼저 수행한다. **이미 리뷰어가 지정된 PR은 예외**로 구분하고, 나머지 기존 PR의 lint 실패를
-최우선으로 보정한다. 충돌·base 문제는 최신 `upstream/devel`로 rebase해 커밋·필수 검증·최신
+먼저 수행한다. **이미 리뷰어가 지정된 PR은 예외**로 구분하고, 나머지 기존 PR의 lint를 포함한
+모든 CI 실패·오류를 신규 PR보다 우선 보정한다. 충돌·base 문제는 최신 `upstream/devel`로 rebase해 커밋·필수 검증·최신
 head CI를 완료한 뒤 신규 PR을 진행한다. 메인터너 보정 요청과 원격 승인 조건도 위 정본을 따른다.
 
 리베이스로 새 devel의 PR을 반영하면 **현재 작업의 개선과 반영 PR의 기능 유지·개선**을 함께
@@ -34,7 +34,7 @@ head CI를 완료한 뒤 신규 PR을 진행한다. 메인터너 보정 요청�
 collaborator 매개 외부 PR 모두 같은 기준을 사용하며, CI 통과가 이 검토를 대체하지 않는다.
 
 조판·렌더링 영향 PR은 최신 SHA를 고정한 `upstream/devel`의 전쪽 Native/fresh WASM TSV를
-후보 head와 같은 조건·페이지로 비교한다. **한 쪽·한 경로라도 2%p 이상 하락하면90% 이상이어도
+후보 head와 같은 조건·페이지로 비교한다. **한 쪽·한 경로라도 2%p 초과 하락하면 90% 이상이어도
 PR을 재검토하고 승인·통합을 보류한다.** 평균 상승·CI 통과로 상쇄하지 않는다.
 계산·증거·base 갱신은 [devel 대비 실루엣 하락 재검토](verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
 
@@ -108,6 +108,10 @@ merge 전 조건을 먼저 보여주고, 접수 정보·검증·증적은 아래
 
 PR 번호는 PR을 생성할 때 채번된다. 따라서 collaborator self PR의 번호 기반 review 기록은
 다음 순서로 같은 PR에 포함한다.
+
+단, 원 PR에 CI workflow·action·CI 실행/재사용 판정 정책 변경이 포함되면 아래 trailing 경로 대신
+[옵션 2: 원 PR 병합 후 별도 후속 기록 PR](pr_review/post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)을
+적용한다. 원 코드의 Full CI와 실제 검토·merge 승인 조건은 그대로 충족한다.
 
 1. 구현과 [로컬 사전 검증](pr_review/local_validation.md) 4.3 및 해당 보조 절차의 필수 검증을
    빠짐없이 완료한 후보 commit을 원격 작업 branch에 push한다. 실패·미실행은 PR CI에 넘기지 않는다.

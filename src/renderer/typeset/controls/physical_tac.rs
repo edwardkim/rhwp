@@ -5,7 +5,10 @@ use super::stored_tac::StoredTacControlPlacement;
 use crate::model::{
     control::Control, paragraph::Paragraph, provenance::LayoutCompatibilityProfile,
 };
-use crate::renderer::{float_placement::InlineBoxPlacement, hwpunit_to_px};
+use crate::renderer::{
+    float_placement::{InlineBoxPlacement, StoredColumnFrame},
+    hwpunit_to_px,
+};
 
 #[allow(clippy::too_many_arguments)]
 pub(in crate::renderer::typeset) fn prepare(
@@ -16,12 +19,17 @@ pub(in crate::renderer::typeset) fn prepare(
     fmt: &FormattedParagraph,
     measured_body_height: f64,
     profile: LayoutCompatibilityProfile,
+    source_frame_expanded: bool,
     flow_origin: f64,
     leading_spacing: f64,
     available_height: f64,
+    source_frame: Option<StoredColumnFrame>,
     dpi: f64,
 ) -> Option<StoredTacControlPlacement> {
-    if profile.session_edited()
+    // 투영으로 커진 줄은 원본의 물리 프레임이 아니다. 이 단축에서
+    // 저장 줄로 승인하면 일반 배치의 뒤 본문 strict fit을 건너뛴다.
+    if source_frame_expanded
+        || profile.session_edited()
         || !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
         || para.cell_format_vpos_dirty
         || para.line_segs.len() != 1
@@ -82,7 +90,8 @@ pub(in crate::renderer::typeset) fn prepare(
             resolved_x: false,
             advance_end: Some(end),
             stored_horizontal_pen: None,
-            stored_column_frame: None,
+            stored_column_frame: source_frame
+                .filter(|frame| frame.accepts_line_origin(seg.vertical_pos, origin, dpi)),
         },
         end,
         rebase_line_origin: false,

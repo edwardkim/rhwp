@@ -1,0 +1,65 @@
+{
+  "status": "incomplete; no PR submission",
+  "production_source_commit": "1c885d3110b768799eb9463c61a2be7a1f862755",
+  "base_commit": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+  "comparison_threshold_drop_pp": 0.1,
+  "original_cases_completed_at_checkpoint": 58,
+  "declines": [
+    {
+      "key": "nested-height-cache",
+      "page": 3,
+      "prior": 99.79139,
+      "candidate": 99.40903,
+      "delta_percentage_points": -0.38236
+    },
+    {
+      "key": "newsletter-korean",
+      "page": 2,
+      "prior": 93.09499,
+      "candidate": 92.74015,
+      "delta_percentage_points": -0.35484
+    },
+    {
+      "key": "hwp5-spec-official",
+      "page": 20,
+      "prior": 99.9956,
+      "candidate": 78.31096,
+      "delta_percentage_points": -21.68464
+    },
+    {
+      "key": "hwp5-spec-official",
+      "page": 21,
+      "prior": 99.58762,
+      "candidate": 99.11991,
+      "delta_percentage_points": -0.46771
+    },
+    {
+      "key": "hwp5-spec-official",
+      "page": 24,
+      "prior": 99.75514,
+      "candidate": 76.71379,
+      "delta_percentage_points": -23.04135
+    },
+    {
+      "key": "hwpml-spec-2020",
+      "page": 23,
+      "prior": 99.99389,
+      "candidate": 99.69138,
+      "delta_percentage_points": -0.30251
+    },
+    {
+      "key": "hwpml-spec-2020",
+      "page": 24,
+      "prior": 99.88729,
+      "candidate": 99.45262,
+      "delta_percentage_points": -0.43467
+    }
+  ],
+  "errors": [],
+  "base_hwp5_spec_pages": 83,
+  "candidate_hwp5_spec_pages": 71,
+  "reference_hwp5_spec_pages": 71,
+  "hwp5_spec_hancom2020_mcp_attempts": "first failed because server temporary file in use, retry failed Print action unavailable; no new PDF produced",
+  "hwp5_spec_hancom2024_mcp_diagnostic": "PrintToPDFEx action creation failed; no new PDF produced",
+  "cause": "in investigation; no source fix claimed"
+}

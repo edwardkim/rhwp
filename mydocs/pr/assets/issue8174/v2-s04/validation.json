@@ -1,0 +1,1317 @@
+{
+  "scope": "V2-S04 local completion. S05 packaging/independent consumption and remaining MD05 audit are not complete. No remote writes.",
+  "startingHead": "485565e95d",
+  "baseSha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "consumerSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+  "cohorts": {
+    "allRustObjectsIdentical": true,
+    "sources": {
+      "nativeProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "gitObjects": {
+          "src": "d1da6e2cbd72722085497e2caffe49c27c8eef39",
+          "vendor": "e6c8726b71ba7b46503e9d9c5d4ebb1ccb0c4610",
+          "crates": "efdb9422a6c9838bfb221e3561c3c2e9b0fa9ef3",
+          "Cargo.toml": "f566ab63d2d2f957d26e6611313498638d453952",
+          "Cargo.lock": "cdac7775dbbead86b64b2ba7f8b8ed2a9f755207",
+          "tests/cases/issue_8174_form_actions.rs": "07e246de5bc949ee5b4f7d9cd6b9367ec488e994"
+        }
+      },
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "gitObjects": {
+          "src": "d1da6e2cbd72722085497e2caffe49c27c8eef39",
+          "vendor": "e6c8726b71ba7b46503e9d9c5d4ebb1ccb0c4610",
+          "crates": "efdb9422a6c9838bfb221e3561c3c2e9b0fa9ef3",
+          "Cargo.toml": "f566ab63d2d2f957d26e6611313498638d453952",
+          "Cargo.lock": "cdac7775dbbead86b64b2ba7f8b8ed2a9f755207",
+          "tests/cases/issue_8174_form_actions.rs": "07e246de5bc949ee5b4f7d9cd6b9367ec488e994"
+        }
+      },
+      "fullRustGate": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "gitObjects": {
+          "src": "d1da6e2cbd72722085497e2caffe49c27c8eef39",
+          "vendor": "e6c8726b71ba7b46503e9d9c5d4ebb1ccb0c4610",
+          "crates": "efdb9422a6c9838bfb221e3561c3c2e9b0fa9ef3",
+          "Cargo.toml": "f566ab63d2d2f957d26e6611313498638d453952",
+          "Cargo.lock": "cdac7775dbbead86b64b2ba7f8b8ed2a9f755207",
+          "tests/cases/issue_8174_form_actions.rs": "07e246de5bc949ee5b4f7d9cd6b9367ec488e994"
+        }
+      },
+      "finalFrontend": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "gitObjects": {
+          "src": "d1da6e2cbd72722085497e2caffe49c27c8eef39",
+          "vendor": "e6c8726b71ba7b46503e9d9c5d4ebb1ccb0c4610",
+          "crates": "efdb9422a6c9838bfb221e3561c3c2e9b0fa9ef3",
+          "Cargo.toml": "f566ab63d2d2f957d26e6611313498638d453952",
+          "Cargo.lock": "cdac7775dbbead86b64b2ba7f8b8ed2a9f755207",
+          "tests/cases/issue_8174_form_actions.rs": "07e246de5bc949ee5b4f7d9cd6b9367ec488e994"
+        }
+      }
+    },
+    "generatedDeclarations": "Only version/init_panic_hook declaration order changed; tested generated files match fresh producer hashes. Runtime JS glue is byte-identical to the prior source."
+  },
+  "rustGates": [
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "productSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "focused-issue_8174_form_actions",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8174_form_actions",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 245.6643231420312
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "productSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "focused-issue_5128_spec_page_roundtrip",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_5128_spec_page_roundtrip",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 1.7928185310447589
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "productSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "build-producers",
+      "command": [
+        "python3",
+        "$REPO/output/pr-review/issue8174/v2-s04-20261025/build_producers.py"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 875.177019477007
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "productSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 33.91320574900601
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "productSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--profile",
+        "release-test",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 73.48464610998053
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "productSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "clippy-root",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 73.64827998599503
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "productSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "build-workspace",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--workspace",
+        "--target-dir",
+        "$REPO/target/pr-review"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 259.2205270730192
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "productSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 104.5430563580012
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "productSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "nextest-final",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--features",
+        "native-skia",
+        "--tests",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 1943.3524125940166
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "productSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "native-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "4"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 34.677317757043056
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "productSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "native-issue_2225_missing_picture_placeholder",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast",
+        "--features",
+        "native-skia"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 1.7824509789934382
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "productSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "native-render_p37_direct_pdf_export",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast",
+        "--features",
+        "native-skia"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 0.9871623709332198
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "productSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "native-skia_native_glyph_replay",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "skia_native_glyph_replay",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast",
+        "--features",
+        "native-skia"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 1.6143968550022691
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "productSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "reduced-wasm-check",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--no-default-features",
+        "--features",
+        "wasm-api",
+        "--lib"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 57.428018880891614
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "productSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "manifest-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 0.7317098430357873
+    }
+  ],
+  "frontendGates": [
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "frontend-bindings-final",
+      "command": [
+        "node",
+        "--test",
+        "scripts/frontend-wasm-bindings.test.mjs"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 0.13723176601342857
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "typescript-final",
+      "command": [
+        "npx",
+        "--no-install",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "$REPO/rhwp-studio",
+      "exit": 0,
+      "seconds": 1.8372099259868264
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "studio-node-final",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "cwd": "$REPO/rhwp-studio",
+      "exit": 0,
+      "seconds": 18.064552075928077
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "studio-build-final",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "$REPO/rhwp-studio",
+      "exit": 0,
+      "seconds": 5.7457617580657825
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "wasm-runtime-final",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/pdf-import-wasm.test.mjs"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 13.016910856938921
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "codec-runtime-final",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/pdf-codec-wasm.test.mjs"
+      ],
+      "cwd": "$REPO",
+      "exit": 0,
+      "seconds": 4.153681374969892
+    }
+  ],
+  "freshRuntimeGates": [
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "files": {
+          "rhwp.js": {
+            "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+            "bytes": 490527
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+            "bytes": 23453911
+          },
+          "rhwp.d.ts": {
+            "sha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+            "bytes": 196632
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "sha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+            "bytes": 67721
+          },
+          "package.json": {
+            "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+            "bytes": 429
+          }
+        }
+      },
+      "name": "fresh-browser-forms",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-forms.mjs"
+      ],
+      "exit": 0,
+      "seconds": 16.56613507005386
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "files": {
+          "rhwp.js": {
+            "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+            "bytes": 490527
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+            "bytes": 23453911
+          },
+          "rhwp.d.ts": {
+            "sha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+            "bytes": 196632
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "sha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+            "bytes": 67721
+          },
+          "package.json": {
+            "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+            "bytes": 429
+          }
+        }
+      },
+      "name": "fresh-browser-pdf",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-pdf.mjs"
+      ],
+      "exit": 0,
+      "seconds": 12.775679524056613
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "files": {
+          "rhwp.js": {
+            "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+            "bytes": 490527
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+            "bytes": 23453911
+          },
+          "rhwp.d.ts": {
+            "sha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+            "bytes": 196632
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "sha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+            "bytes": 67721
+          },
+          "package.json": {
+            "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+            "bytes": 429
+          }
+        }
+      },
+      "name": "fresh-browser-svg",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-svg.mjs"
+      ],
+      "exit": 0,
+      "seconds": 5.808375730062835
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "files": {
+          "rhwp.js": {
+            "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+            "bytes": 490527
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+            "bytes": 23453911
+          },
+          "rhwp.d.ts": {
+            "sha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+            "bytes": 196632
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "sha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+            "bytes": 67721
+          },
+          "package.json": {
+            "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+            "bytes": 429
+          }
+        }
+      },
+      "name": "fresh-browser-links",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-links.mjs"
+      ],
+      "exit": 0,
+      "seconds": 16.08267104800325
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "files": {
+          "rhwp.js": {
+            "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+            "bytes": 490527
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+            "bytes": 23453911
+          },
+          "rhwp.d.ts": {
+            "sha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+            "bytes": 196632
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "sha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+            "bytes": 67721
+          },
+          "package.json": {
+            "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+            "bytes": 429
+          }
+        }
+      },
+      "name": "fresh-browser-recovery",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-recovery.mjs"
+      ],
+      "exit": 0,
+      "seconds": 12.46029130590614
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "files": {
+          "rhwp.js": {
+            "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+            "bytes": 490527
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+            "bytes": 23453911
+          },
+          "rhwp.d.ts": {
+            "sha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+            "bytes": 196632
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "sha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+            "bytes": 67721
+          },
+          "package.json": {
+            "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+            "bytes": 429
+          }
+        }
+      },
+      "name": "fresh-browser-recovery-races",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-recovery-races.mjs"
+      ],
+      "exit": 0,
+      "seconds": 6.424290503025986
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "files": {
+          "rhwp.js": {
+            "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+            "bytes": 490527
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+            "bytes": 23453911
+          },
+          "rhwp.d.ts": {
+            "sha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+            "bytes": 196632
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "sha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+            "bytes": 67721
+          },
+          "package.json": {
+            "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+            "bytes": 429
+          }
+        }
+      },
+      "name": "fresh-browser-recovery-open-races",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-recovery-open-races.mjs"
+      ],
+      "exit": 0,
+      "seconds": 8.852496616076678
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "files": {
+          "rhwp.js": {
+            "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+            "bytes": 490527
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+            "bytes": 23453911
+          },
+          "rhwp.d.ts": {
+            "sha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+            "bytes": 196632
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "sha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+            "bytes": 67721
+          },
+          "package.json": {
+            "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+            "bytes": 429
+          }
+        }
+      },
+      "name": "fresh-browser-matrix",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-matrix.mjs"
+      ],
+      "exit": 0,
+      "seconds": 29.540709452005103
+    }
+  ],
+  "portableReproductionGates": [
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "files": {
+          "rhwp.js": {
+            "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+            "bytes": 490527
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+            "bytes": 23453911
+          },
+          "rhwp.d.ts": {
+            "sha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+            "bytes": 196632
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "sha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+            "bytes": 67721
+          },
+          "package.json": {
+            "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+            "bytes": 429
+          }
+        }
+      },
+      "name": "fresh-browser-forms",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-forms.mjs"
+      ],
+      "exit": 0,
+      "seconds": 16.56613507005386
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "files": {
+          "rhwp.js": {
+            "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+            "bytes": 490527
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+            "bytes": 23453911
+          },
+          "rhwp.d.ts": {
+            "sha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+            "bytes": 196632
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "sha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+            "bytes": 67721
+          },
+          "package.json": {
+            "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+            "bytes": 429
+          }
+        }
+      },
+      "name": "fresh-browser-pdf",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-pdf.mjs"
+      ],
+      "exit": 0,
+      "seconds": 12.775679524056613
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "files": {
+          "rhwp.js": {
+            "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+            "bytes": 490527
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+            "bytes": 23453911
+          },
+          "rhwp.d.ts": {
+            "sha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+            "bytes": 196632
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "sha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+            "bytes": 67721
+          },
+          "package.json": {
+            "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+            "bytes": 429
+          }
+        }
+      },
+      "name": "fresh-browser-svg",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-svg.mjs"
+      ],
+      "exit": 0,
+      "seconds": 5.808375730062835
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "files": {
+          "rhwp.js": {
+            "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+            "bytes": 490527
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+            "bytes": 23453911
+          },
+          "rhwp.d.ts": {
+            "sha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+            "bytes": 196632
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "sha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+            "bytes": 67721
+          },
+          "package.json": {
+            "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+            "bytes": 429
+          }
+        }
+      },
+      "name": "fresh-browser-links",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-links.mjs"
+      ],
+      "exit": 0,
+      "seconds": 16.08267104800325
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "files": {
+          "rhwp.js": {
+            "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+            "bytes": 490527
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+            "bytes": 23453911
+          },
+          "rhwp.d.ts": {
+            "sha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+            "bytes": 196632
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "sha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+            "bytes": 67721
+          },
+          "package.json": {
+            "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+            "bytes": 429
+          }
+        }
+      },
+      "name": "fresh-browser-recovery",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-recovery.mjs"
+      ],
+      "exit": 0,
+      "seconds": 12.46029130590614
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "files": {
+          "rhwp.js": {
+            "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+            "bytes": 490527
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+            "bytes": 23453911
+          },
+          "rhwp.d.ts": {
+            "sha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+            "bytes": 196632
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "sha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+            "bytes": 67721
+          },
+          "package.json": {
+            "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+            "bytes": 429
+          }
+        }
+      },
+      "name": "fresh-browser-recovery-races",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-recovery-races.mjs"
+      ],
+      "exit": 0,
+      "seconds": 6.424290503025986
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "files": {
+          "rhwp.js": {
+            "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+            "bytes": 490527
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+            "bytes": 23453911
+          },
+          "rhwp.d.ts": {
+            "sha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+            "bytes": 196632
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "sha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+            "bytes": 67721
+          },
+          "package.json": {
+            "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+            "bytes": 429
+          }
+        }
+      },
+      "name": "fresh-browser-recovery-open-races",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-recovery-open-races.mjs"
+      ],
+      "exit": 0,
+      "seconds": 8.852496616076678
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "wasmProducer": {
+        "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+        "files": {
+          "rhwp.js": {
+            "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+            "bytes": 490527
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+            "bytes": 23453911
+          },
+          "rhwp.d.ts": {
+            "sha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+            "bytes": 196632
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "sha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+            "bytes": 67721
+          },
+          "package.json": {
+            "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+            "bytes": 429
+          }
+        }
+      },
+      "name": "fresh-browser-matrix",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-matrix.mjs"
+      ],
+      "exit": 0,
+      "seconds": 29.540709452005103
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "final-browser-production",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-production.mjs"
+      ],
+      "exit": 0,
+      "seconds": 6.999866344034672
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "final-browser-direct-matrix",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-direct-matrix.mjs"
+      ],
+      "exit": 0,
+      "seconds": 18.414229067973793
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "final-browser-distribution",
+      "command": [
+        "node",
+        "$REPO/mydocs/pr/assets/issue8174/v2-s04/reproduce/browser-distribution.mjs"
+      ],
+      "exit": 0,
+      "seconds": 3.225889806984924
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "canonical-modal-e2e-final",
+      "command": [
+        "node",
+        "e2e/issue8174-modal-focus.test.mjs",
+        "--mode=headless"
+      ],
+      "exit": 0,
+      "seconds": 3.2702627719845623
+    },
+    {
+      "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "name": "independent-svg-references",
+      "command": [
+        "node",
+        "$REPO/output/pr-review/issue8174/v2-s04-20261025/svg_references.mjs"
+      ],
+      "exit": 0,
+      "seconds": 0.8662709359778091
+    }
+  ],
+  "portableMatrixComparison": [
+    {
+      "name": "icc-cmyk-jpeg",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "icc-cmyk",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "icc-gray",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "icc-indexed",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "icc-indirect-filter",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "icc-jpeg",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "icc-path-cmyk",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "icc-path-rgb",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "icc-rgb",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "jpx-cmyk-alpha-boxed",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "jpx-cmyk-alpha",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "jpx-cmyk-premult-boxed",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "jpx-cmyk-premult",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "jpx-indexed-alpha-boxed",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "jpx-indexed-alpha",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "jpx-indexed-icc-premult-boxed",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "jpx-indexed-icc-premult",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "jpx-indexed-palette-premult-boxed",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "jpx-indexed-palette-premult",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "jpx-indexed-premult-boxed",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "jpx-indexed-premult",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-jbig2-generic_template0",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-jbig2-mask",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-jbig2-symbol_global",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-jbig2",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-jpx-alpha",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-jpx-indexed",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-jpx-mask",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-jpx-palette",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-jpx-premult",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-jpx-tiles",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-jpx",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-scan-jbig2-200",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-scan-jbig2",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-scan-jpeg-control-200",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-scan-jpeg-control",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-scan-jpx-200",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "old-scan-jpx",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "recovery-fake-header",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "recovery-incremental",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    },
+    {
+      "name": "recovery-missing-xref",
+      "matchesDirect": true,
+      "matchesBeforeDistributionCorrection": true
+    }
+  ],
+  "performanceGate": {
+    "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+    "command": [
+      "node",
+      "mydocs/pr/assets/issue8174/v2-s04/reproduce/performance.mjs"
+    ],
+    "exit": 0,
+    "seconds": 31.72860726295039,
+    "cargoGatesCompleteBeforeStart": true
+  },
+  "counts": {
+    "nextestSummary": "Summary [1199.844s] 11804 tests run: 11804 passed (8 slow), 45 skipped",
+    "nativeLib": [
+      {
+        "passed": 3863,
+        "failed": 0,
+        "ignored": 12
+      },
+      {
+        "passed": 15,
+        "failed": 0,
+        "ignored": 0
+      },
+      {
+        "passed": 165,
+        "failed": 0,
+        "ignored": 0
+      },
+      {
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0
+      }
+    ],
+    "studioNodePassed": 2458,
+    "studioNodeSkipped": 2,
+    "formFocusedPassed": 6,
+    "actualWasmAssertions": 240,
+    "actualWasmWorkers": 12,
+    "codecCases": 19,
+    "codecChecks": 158,
+    "canonicalModalAssertions": 4,
+    "issue_2225_missing_picture_placeholder": 2,
+    "render_p37_direct_pdf_export": 14,
+    "skia_native_glyph_replay": 10
+  },
+  "documentValidation": {
+    "internalLinksDocuments": 640,
+    "internalLinksExit": 0,
+    "affectedMetadataDocuments": 7,
+    "affectedMetadataErrors": 0,
+    "existingGlobalMetadataErrors": 20,
+    "existingGlobalMetadataFiles": 5,
+    "existingErrorFilesUnchangedFromBaseline": true
+  }
+}

@@ -1,6 +1,10 @@
 > **PR base 브랜치가 `devel` 인지 확인해주세요** (`main` 아님 — GitHub 기본 선택이 main 일 수 있습니다).
 > 작업 브랜치는 최신 `upstream/devel` 에서 생성합니다. 상세: [CONTRIBUTING.md](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md)
 
+> **조판 변경은 실제 검증할 HWP/HWPX 첨부가 필수입니다. 미첨부 시 PR을 보류합니다.**
+> 검토 대상 commit에 입력 파일을 포함하고 본문에 SHA 고정 다운로드 링크를 적어주세요.
+> 기존 저장소 파일은 그 경로를 재사용합니다. 스크린샷·PDF·TSV·생성 코드만으로 대신할 수 없습니다.
+
 > **조판 변경: 전체 페이지 TSV에서 한 페이지라도 90% 미만이면 PR을 재검토하세요.**
 > 정확히 90%는 통과합니다. 미달·누락·측정 불가·전체 쪽수 불일치는 새 PR 생성과 열린 PR의
 > 승인·통합을 보류하고, 수정한 새 head에서 재검증합니다. 평균값·대표 페이지 점수로 대신하지 않습니다.
@@ -30,6 +34,7 @@ Refs #
 - [ ] [변경 범위별 필수 검증](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md#pr-전-체크리스트)을 수행하고, 제출 HEAD가 검증한 commit과 같음을 확인
 - [ ] Rust source·test/baseline helper·Rust 검증 입력 변경 시: [별도 worktree 준비](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md#rust-검증-worktree-준비와-실행) 후 `cargo fmt --all -- --check`, native·WASM32·workspace all-target Clippy 통과
 - [ ] Rust 변경 시: 범위에 해당하는 focused·전체 integration·Native Skia 회귀 및 시각 검증 수행
+- [ ] 조판 영향 변경 시: 실제 검증할 HWP/HWPX를 검토 대상 commit에 포함하고 본문에 SHA 고정 다운로드 링크·재현 상태·대응 페이지를 기재함. 생성 입력도 HWP/HWPX로 저장해 제공하며 입력 미첨부 시 PR을 보류함
 - [ ] 조판 영향 여부를 실제 소비 경로로 판단했고, 영향이 있으면 Native/fresh WASM Visual Sweep·페이지별 TSV·직접 review/overlay 확인 완료 (한 페이지라도 **90% 미만** 또는 측정 불가이면 본인 branch에서 수정·재실행; 정확히 90%는 통과)
 - [ ] 전체 Native/fresh WASM TSV 원문을 본문에 넣고 게시 후 API로 확인했거나, 본문 크기 제한 시 asset 원본의 SHA 고정 raw 링크를 넣고 다운로드 바이트·SHA-256이 생성 원본과 같은지 확인함 ([저장소 보존·링크 예시](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#tsv-원문-본문-삽입과-저장소-링크))
 - [ ] 렌더링 회귀 추가·변경 시: 같은 원본·독립 한컴 Print PDF의 관련 모든 페이지에서 Native/fresh WASM 최저 **90% 이상**을 먼저 확인했고, 절대 px 좌표·고정 px 영역 대신 문단·줄·개체의 소유·순서·보존·포함·겹침 관계를 검사함 (기존 회귀 실패 시 **원본 출력 보정 → 90% 이상 확인 → 필요한 검사 변경**; 글꼴 예외로 이 선행 조건을 면제하지 않음)

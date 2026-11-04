@@ -19,15 +19,29 @@ pub fn effective_text_for_metrics(run: &ComposedTextRun) -> &str {
     if run.text.contains('\u{F081C}') {
         return &run.text;
     }
-    display_projection_metric_text(&run.text, run.display_text.as_deref().unwrap_or(&run.text))
+    display_projection_metric_text(
+        &run.text,
+        run.display_text.as_deref().unwrap_or(&run.text),
+        run.literal_soft_hyphen,
+    )
 }
 
 /// 일대일 표시 투영은 source 프로그램의 메트릭을 유지한다. 필드 값·옛한글
 /// 확장처럼 별도 표시 문자열인 경우는 표시 문자열 자체의 폭을 사용한다.
-pub(crate) fn display_projection_metric_text<'a>(source: &'a str, display: &'a str) -> &'a str {
+pub(crate) fn display_projection_metric_text<'a>(
+    source: &'a str,
+    display: &'a str,
+    literal_soft_hyphen: bool,
+) -> &'a str {
     if source
         .chars()
-        .map(single_scalar_display_char)
+        .map(|ch| {
+            if literal_soft_hyphen && ch == '\u{00AD}' {
+                '-'
+            } else {
+                single_scalar_display_char(ch)
+            }
+        })
         .eq(display.chars())
     {
         source
@@ -98,14 +112,24 @@ pub fn decode_pua_overlap_number(chars: &[char]) -> Option<String> {
     Some(s)
 }
 
-/// CharOverlap controls occupy one text-flow position even when their payload
-/// contains multiple glyph components.
-///
-/// Hancom uses this for overlapped two-digit markers such as the boxed 10/11/12
-/// in `table-vpos-01.hwp`: the control stores two PUA glyph components, but
-/// caret movement and line measurement advance by one character box.
-pub fn char_overlap_advance_units(chars: &[char]) -> usize {
-    usize::from(!chars.is_empty())
+/// 구성 글자의 수와 별개로 글자 겹침 컨트롤은 한 글줄·편집 프레임을 점유한다.
+/// 여러 PUA 구성의 두 자리 번호뿐 아니라 빈 HWPX compose도 같은 계약이다.
+/// 독립 한컴 저장본은 빈 compose를 전각 공백 프레임으로 보존한다.
+pub fn char_overlap_advance_units(_chars: &[char]) -> usize {
+    1
+}
+
+/// 빈 구성의 물리 프레임을 파생 run에 남긴다. 문서의 원문 배열은 바꾸지 않는다.
+/// 한컴 저장본의 전각 공백과 같은 캐리어를 기존 겹침 배치·paint 경로가 소비한다.
+pub(crate) fn char_overlap_flow_text<S: crate::storage::Storage>(
+    chars: &[char],
+    storage: &S,
+) -> Result<String, S::Error> {
+    if chars.is_empty() {
+        storage.string("\u{3000}")
+    } else {
+        storage.chars(chars.iter().copied())
+    }
 }
 
 /// 글자겹침(CharOverlap) 내부 글자의 크기 비율.
@@ -123,20 +147,14 @@ pub fn char_overlap_advance_units(chars: &[char]) -> usize {
 /// - 관세청 월간 수출입 현황 p1 — 테두리 없음(0), `charSz=-4` → 축소 없음. 한컴 PDF
 ///   content stream 에서 마커와 본문이 같은 `101 Tf`, 같은 baseline 으로 나온다.
 ///
-/// 음수 영역의 10% step 해석은 PR #1101 의 실측 가설을 그대로 둔다.
+/// 독립 한컴 Print에서 양수도 같은 부호 있는 10% 단계임을 확인했다.
+/// 본문 10pt에 -3/0/10/20/50을 적용하면 약 7/10/20/30/60pt다.
+/// 양수 값을 절대 백분율로 읽으면 확대가 축소로 바뀐다.
 pub fn char_overlap_size_ratio(effective_border: u8, inner_char_size: i8) -> f64 {
     if effective_border == 0 {
         return 1.0;
     }
-    if inner_char_size > 0 {
-        // 양수 → percent ratio (HWPX 양수 case 보존: 50 = 0.5)
-        inner_char_size as f64 / 100.0
-    } else if inner_char_size < 0 {
-        // 음수 → 10% step 축소 (한컴 정합: charSz=-3 → 1.0 + (-3)×0.10 = 0.70)
-        1.0 + inner_char_size as f64 * 0.10
-    } else {
-        1.0
-    }
+    1.0 + f64::from(inner_char_size) * 0.10
 }
 
 /// 글자겹침(CharOverlap) 한 글자의 **표시 문자열**을 정한다.
@@ -240,6 +258,10 @@ pub(crate) fn hancom_symbol_display_key(ch: char) -> char {
 /// 다문자 확장과 글자겹침 숫자는 각 구성 owner의 계약을 유지한다.
 pub(crate) fn single_scalar_display_char(ch: char) -> char {
     let key = hancom_symbol_display_key(ch);
+    // 합성 기호는 정규화한 원 키 자체가 표시 기호다. paint가 테두리와 안쪽 글자를 그린다.
+    if super::enclosed_pua(key).is_some() {
+        return key;
+    }
     if let Some(display) = pua_plain_text_display(key) {
         let mut chars = display.chars();
         if let Some(first) = chars.next() {
@@ -277,11 +299,26 @@ fn tone_mark_display(ch: char) -> Option<char> {
 /// CharOverlap 전용 숫자(`U+F02CE..=U+F02E1`)는 여기서 확장하지 않는다.
 /// 해당 문자는 `pua_to_display_text()`가 글자겹침 렌더러에서만 처리한다.
 pub fn expand_pua_display_text(text: &str) -> String {
-    expand_pua_surface(text, None, true)
+    match expand_pua_display_text_with_storage(text, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn expand_pua_display_text_with_storage<S: crate::storage::Storage>(
+    text: &str,
+    storage: &S,
+) -> Result<String, S::Error> {
+    try_expand_pua_surface(text, None, true, storage)
 }
 
 pub fn expand_pua_render_text_in_style(text: &str, style: &TextStyle) -> String {
-    expand_pua_surface(text, style.native_pua_metrics.as_deref(), false)
+    if style.literal_soft_hyphen && text.contains('\u{00AD}') {
+        let visible = text.replace('\u{00AD}', "-");
+        expand_pua_surface(&visible, style.native_pua_metrics.as_deref(), false)
+    } else {
+        expand_pua_surface(text, style.native_pua_metrics.as_deref(), false)
+    }
 }
 
 fn expand_pua_surface(
@@ -289,29 +326,46 @@ fn expand_pua_surface(
     program: Option<&super::native_pua_fonts::NativePuaMetrics>,
     flow: bool,
 ) -> String {
+    match try_expand_pua_surface(text, program, flow, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+fn try_expand_pua_surface<S: crate::storage::Storage>(
+    text: &str,
+    program: Option<&super::native_pua_fonts::NativePuaMetrics>,
+    flow: bool,
+    storage: &S,
+) -> Result<String, S::Error> {
     use super::pua_oldhangul::map_pua_old_hangul;
 
-    let mut out = String::with_capacity(text.len());
+    let mut out = storage.string("")?;
     for ch in text.chars() {
         // [#5800] HWP5 원시 기호값을 먼저 평면-15 키로 정규화한다.
         let ch = hancom_symbol_display_key(ch);
-        if program.is_some_and(|program| program.advance_em(ch).is_some()) {
-            out.push(ch);
+        // 실제 공급 원 glyph와 렌더러 합성 기호(#8201)는 Unicode 표시 대체보다 우선한다.
+        if program.is_some_and(|program| program.advance_em(ch).is_some())
+            || super::enclosed_pua(ch).is_some()
+        {
+            storage.push_char(&mut out, ch)?;
         } else if let Some(dot) = tone_mark_display(ch) {
-            out.push(dot);
+            storage.push_char(&mut out, dot)?;
         } else if let Some(replacement) = if flow {
             pua_flow_text_display(ch)
         } else {
             pua_plain_text_display(ch)
         } {
-            out.push_str(replacement);
+            storage.push_str(&mut out, replacement)?;
         } else if let Some(jamos) = map_pua_old_hangul(ch) {
-            out.extend(jamos.iter().copied());
+            for &jamo in jamos {
+                storage.push_char(&mut out, jamo)?;
+            }
         } else {
-            out.push(super::layout::map_pua_bullet_char(ch));
+            storage.push_char(&mut out, super::layout::map_pua_bullet_char(ch))?;
         }
     }
-    out
+    Ok(out)
 }
 
 /// 실제 paint는 원본 점선 U+F081C도 표시한다. 흐름이 비어도 잉크는 남는다.
@@ -411,15 +465,27 @@ fn text_surface_replacement(ch: char) -> Option<String> {
 /// - reflow_line_segs()의 텍스트 측정과 레이아웃 폭 계산이 일치
 /// - 두 자리 숫자(10~20)도 1글자 = 1박스 = font_size 폭
 ///   실제 표시 문자열(PUA → "1", "10" 등) 변환은 draw_char_overlap()에서 수행한다.
-fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
+fn try_convert_pua_enclosed_numbers<S: crate::storage::Storage>(
+    composed: &mut ComposedParagraph,
+    storage: &S,
+) -> Result<(), S::Error> {
     for line in composed.lines.iter_mut() {
-        let mut new_runs: Vec<ComposedTextRun> = Vec::new();
+        if !line.runs.iter().any(|run| {
+            run.char_overlap.is_none()
+                && run
+                    .text
+                    .chars()
+                    .any(|ch| pua_enclosed_border_type(ch).is_some())
+        }) {
+            continue;
+        }
+        let mut new_runs: Vec<ComposedTextRun> = storage.vec(0)?;
         let mut changed = false;
 
         for run in line.runs.iter() {
             // 이미 CharOverlap인 런은 그대로 유지
             if run.char_overlap.is_some() {
-                new_runs.push(run.clone());
+                storage.push(&mut new_runs, run.try_clone(storage)?)?;
                 continue;
             }
 
@@ -429,7 +495,7 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                 .chars()
                 .any(|ch| pua_enclosed_border_type(ch).is_some());
             if !has_pua {
-                new_runs.push(run.clone());
+                storage.push(&mut new_runs, run.try_clone(storage)?)?;
                 continue;
             }
 
@@ -440,12 +506,40 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                 if let Some(border_type) = pua_enclosed_border_type(ch) {
                     // buf에 쌓인 일반 텍스트를 먼저 런으로 추가
                     if !buf.is_empty() {
-                        new_runs.push(ComposedTextRun {
-                            text: buf.clone(),
+                        storage.push(
+                            &mut new_runs,
+                            ComposedTextRun {
+                                text: storage.string(&buf)?,
+                                char_style_id: run.char_style_id,
+                                lang_index: run.lang_index,
+                                neutral_space_origin: None,
+                                char_overlap: None,
+                                footnote_marker: None,
+                                display_text: None,
+                                supplemental_metrics_blocked: run.supplemental_metrics_blocked,
+                                inserted_control_text: run.inserted_control_text,
+                                space_metric: run.space_metric,
+                                regenerated_font_metrics: run.regenerated_font_metrics,
+                                literal_figure_space: run.literal_figure_space,
+                                literal_soft_hyphen: run.literal_soft_hyphen,
+                            },
+                        )?;
+                        buf.clear();
+                    }
+                    // PUA 문자 그대로 유지 + CharOverlapInfo 부착
+                    storage.push(
+                        &mut new_runs,
+                        ComposedTextRun {
+                            text: storage.chars(std::iter::once(ch))?,
                             char_style_id: run.char_style_id,
                             lang_index: run.lang_index,
                             neutral_space_origin: None,
-                            char_overlap: None,
+                            char_overlap: Some(CharOverlapInfo {
+                                border_type,
+                                inner_char_size: 0,
+                                composition: None,
+                                empty_ink: false,
+                            }),
                             footnote_marker: None,
                             display_text: None,
                             supplemental_metrics_blocked: run.supplemental_metrics_blocked,
@@ -453,19 +547,24 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                             space_metric: run.space_metric,
                             regenerated_font_metrics: run.regenerated_font_metrics,
                             literal_figure_space: run.literal_figure_space,
-                        });
-                        buf.clear();
-                    }
-                    // PUA 문자 그대로 유지 + CharOverlapInfo 부착
-                    new_runs.push(ComposedTextRun {
-                        text: ch.to_string(),
+                            literal_soft_hyphen: run.literal_soft_hyphen,
+                        },
+                    )?;
+                } else {
+                    storage.push_char(&mut buf, ch)?;
+                }
+            }
+
+            // 남은 일반 텍스트
+            if !buf.is_empty() {
+                storage.push(
+                    &mut new_runs,
+                    ComposedTextRun {
+                        text: buf,
                         char_style_id: run.char_style_id,
                         lang_index: run.lang_index,
                         neutral_space_origin: None,
-                        char_overlap: Some(CharOverlapInfo {
-                            border_type,
-                            inner_char_size: 0,
-                        }),
+                        char_overlap: None,
                         footnote_marker: None,
                         display_text: None,
                         supplemental_metrics_blocked: run.supplemental_metrics_blocked,
@@ -473,28 +572,9 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                         space_metric: run.space_metric,
                         regenerated_font_metrics: run.regenerated_font_metrics,
                         literal_figure_space: run.literal_figure_space,
-                    });
-                } else {
-                    buf.push(ch);
-                }
-            }
-
-            // 남은 일반 텍스트
-            if !buf.is_empty() {
-                new_runs.push(ComposedTextRun {
-                    text: buf,
-                    char_style_id: run.char_style_id,
-                    lang_index: run.lang_index,
-                    neutral_space_origin: None,
-                    char_overlap: None,
-                    footnote_marker: None,
-                    display_text: None,
-                    supplemental_metrics_blocked: run.supplemental_metrics_blocked,
-                    inserted_control_text: run.inserted_control_text,
-                    space_metric: run.space_metric,
-                    regenerated_font_metrics: run.regenerated_font_metrics,
-                    literal_figure_space: run.literal_figure_space,
-                });
+                        literal_soft_hyphen: run.literal_soft_hyphen,
+                    },
+                )?;
             }
         }
 
@@ -502,4 +582,5 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
             line.runs = new_runs;
         }
     }
+    Ok(())
 }

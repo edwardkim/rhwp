@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-28",
+  "input": "samples/hwpx_sample2.hwp",
+  "pdf": "pdf/hwpx_sample2-2020.pdf",
+  "pdf_sha256": "3d792e4116183a9cbf9f31b6abe561d040565f2e16af30ab57eb449732f99c78",
+  "page": 19,
+  "method": "PDF text line bounding boxes in points * 96/72; direct side-by-side inspection",
+  "first_line": {
+    "text": "* 소명방법 : 건축물대장 또는 건물 등기부등본이 없는 경우, 해당 ",
+    "bbox_pt": [
+      302.47607421875,
+      728.6165771484375,
+      557.0401000976562,
+      737.1244506835938
+    ],
+    "top_96dpi_px": 971.48876953125
+  },
+  "last_line": {
+    "text": "부터 받아서 제출",
+    "bbox_pt": [
+      302.47607421875,
+      792.9812622070312,
+      366.5213623046875,
+      801.0146484375
+    ],
+    "bottom_96dpi_px": 1068.01953125
+  },
+  "visual_inspection": {
+    "path": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/sample2-p19-print-crop.png",
+    "sha256": "5f3f56619883e287fb5ae5cc777ba2b968287f1ab92236eb59d83a01c8cb5cb1"
+  }
+}

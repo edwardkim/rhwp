@@ -184,10 +184,12 @@ mod huffman;
 mod idct;
 #[cfg(fuzzing)]
 pub mod idct;
+mod image_info;
 mod marker;
 mod mcu;
 mod mcu_prog;
 mod misc;
+pub mod transforms;
 mod unsafe_utils;
 mod unsafe_utils_avx2;
 mod unsafe_utils_neon;

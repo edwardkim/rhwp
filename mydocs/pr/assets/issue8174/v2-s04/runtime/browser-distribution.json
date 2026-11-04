@@ -1,0 +1,10 @@
+{
+  "checked": [
+    "public distribution HWP exports through actual product WASM",
+    "reopened export preserves source text and existing relative page-count contract"
+  ],
+  "textSame": true,
+  "beforePages": 83,
+  "afterPages": 83,
+  "scope": "Data/roundtrip preservation only. Independent PDF fidelity is not asserted and no layout expectation changes."
+}

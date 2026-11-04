@@ -1,5 +1,7 @@
 //! 편집 화면의 공백·탭·문단 끝 표시를 본문 출력과 별도로 그린다.
-use super::super::font_lookup::{legacy_typeface_for_style, match_system_family_style};
+use super::super::font_lookup::{
+    legacy_typeface_for_style, match_supplied_family, match_system_family_style,
+};
 use super::SkiaTextReplay;
 use crate::renderer::{render_tree::BoundingBox, TextStyle};
 use skia_safe::{font, Color, Font, FontStyle, Paint};
@@ -30,6 +32,20 @@ pub(super) fn draw(
             FontStyle::normal(),
         )
         .or_else(|| legacy_typeface_for_style(replay.font_mgr, FontStyle::normal()))
+        .or_else(|| {
+            ["RHWP Public Batang", "Noto Sans KR"]
+                .into_iter()
+                .find_map(|family| {
+                    match_supplied_family(replay.custom_typefaces, family, FontStyle::normal())
+                        .or_else(|| {
+                            match_supplied_family(
+                                replay.bundled_typefaces,
+                                family,
+                                FontStyle::normal(),
+                            )
+                        })
+                })
+        })
         .map(|tf| Font::new(tf, size))
         .unwrap_or_else(|| {
             let mut font = Font::default();
@@ -65,19 +81,29 @@ pub(super) fn draw(
     if !text.is_empty() && !is_marker {
         let char_positions =
             crate::renderer::replay_positions_or_compute(text, style, layout_positions);
+        let visual = crate::renderer::text_direction::VisualTextPositions::for_style(
+            text,
+            &char_positions,
+            style,
+        );
+        let origin = |index: usize| {
+            visual
+                .as_ref()
+                .and_then(|p| p.span_origin(index, index + 1))
+                .unwrap_or_else(|| char_positions.get(index).copied().unwrap_or(0.0))
+        };
         for (index, ch) in text.chars().enumerate() {
             if ch == ' ' {
-                let x = bbox.x + char_positions.get(index).copied().unwrap_or(0.0);
+                let x = bbox.x + origin(index);
                 let next_x = if index + 1 < char_positions.len() {
-                    bbox.x + char_positions[index + 1]
+                    x + char_positions[index + 1] - char_positions[index]
                 } else {
                     bbox.x + bbox.width
                 };
                 let mark_x = ((x + next_x) / 2.0) as f32 - font_size * 0.125;
                 canvas.draw_str("\u{2228}", (mark_x, y as f32), &font, &mark_paint);
             } else if ch == '\t' {
-                let mark_x =
-                    bbox.x as f32 + char_positions.get(index).copied().unwrap_or(0.0) as f32;
+                let mark_x = bbox.x as f32 + origin(index) as f32;
                 canvas.draw_str("\u{2192}", (mark_x, y as f32), &font, &mark_paint);
             }
         }

@@ -9,7 +9,7 @@ const SUPERSCRIPT_BOTTOM_MIN: f64 = 0.108;
 /// 한컴의 Latin 대문자 뒤 위첨자는 정체/이탤릭 모두 0.15em을 예약한다.
 /// 명시 공백 또는 닫는 구분자 뒤에는 이 문자 전진을 중복 추가하지 않는다.
 fn ends_with_uppercase_letter(node: &EqNode) -> bool {
-    match node {
+    match node.ungrouped() {
         EqNode::Text(text) => text
             .chars()
             .last()
@@ -24,7 +24,7 @@ impl EqLayout {
     /// 빈 본체도 첨자의 기준선 프레임을 소유한다. 잉크와 전진폭은 없다.
     /// 일반 Empty나 공개 LaTeX의 배치를 빈 글줄로 바꾸지 않는다.
     pub(super) fn layout_script_base(&self, base: &EqNode, fs: f64) -> LayoutBox {
-        let mut value = if self.hancom_math_face && matches!(base, EqNode::Empty) {
+        let mut value = if self.hancom_math_face && matches!(base.ungrouped(), EqNode::Empty) {
             self.layout_row(&[], fs)
         } else {
             self.layout_node(base, fs)
@@ -82,7 +82,7 @@ impl EqLayout {
     }
 
     pub(super) fn layout_superscript(&self, base: &EqNode, sup: &EqNode, fs: f64) -> LayoutBox {
-        if matches!(base, EqNode::MathSymbol(symbol) if is_integral_symbol(symbol)) {
+        if matches!(base.ungrouped(), EqNode::MathSymbol(symbol) if is_integral_symbol(symbol)) {
             return self
                 .integral_placement(base, None, Some(sup), fs)
                 .into_script(fs);
@@ -114,7 +114,7 @@ impl EqLayout {
         }
     }
     pub(super) fn layout_subscript(&self, base: &EqNode, sub: &EqNode, fs: f64) -> LayoutBox {
-        if matches!(base, EqNode::MathSymbol(symbol) if is_integral_symbol(symbol)) {
+        if matches!(base.ungrouped(), EqNode::MathSymbol(symbol) if is_integral_symbol(symbol)) {
             return self
                 .integral_placement(base, Some(sub), None, fs)
                 .into_script(fs);
@@ -155,7 +155,7 @@ impl EqLayout {
         sup: &EqNode,
         fs: f64,
     ) -> LayoutBox {
-        if matches!(base, EqNode::MathSymbol(symbol) if is_integral_symbol(symbol)) {
+        if matches!(base.ungrouped(), EqNode::MathSymbol(symbol) if is_integral_symbol(symbol)) {
             return self
                 .integral_placement(base, Some(sub), Some(sup), fs)
                 .into_script(fs);

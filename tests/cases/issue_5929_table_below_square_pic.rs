@@ -9,6 +9,13 @@
 //! 후속 T&B 표만 그 하단으로 민다. 본문 텍스트는 옆 흐름을 유지한다.
 #![cfg(not(target_arch = "wasm32"))]
 
+mod svg_image_frames {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/common/svg_image_frames.rs"
+    ));
+}
+
 use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
@@ -21,15 +28,8 @@ fn load_doc() -> DocumentCore {
 }
 
 fn image_box(svg: &str) -> Option<(f64, f64, f64, f64)> {
-    let rest = svg.split("<image ").nth(1)?;
-    let head = rest.split('>').next()?;
-    let attr = |name: &str| -> Option<f64> {
-        let key = format!("{name}=\"");
-        let s = head.find(&key)? + key.len();
-        let e = s + head[s..].find('"')?;
-        head[s..e].parse().ok()
-    };
-    Some((attr("x")?, attr("y")?, attr("width")?, attr("height")?))
+    let [x, y, w, h] = *svg_image_frames::image_frames(svg).first()?;
+    Some((x, y, w, h))
 }
 
 fn first_table_top(svg: &str) -> Option<f64> {

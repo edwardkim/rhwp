@@ -1,0 +1,81 @@
+{
+  "latest_base": "0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0",
+  "contributor_head": "a9836a959015e9f4709d1b659994b7316f812289",
+  "first_compatibility_merge": "dda384eadc4148ff4c939efdf1a184aacd0e59fa",
+  "semantic_writer_correction": "01e9f4ff012acceaa477c7f4f0a085b86747ef42",
+  "latest_compatibility_merge": "c4686b913cb13ed7a161f941b8e6eadb2be37171",
+  "previous_validation_artifact_commit": "67501ea78bd34c7f6b1f0dd9c4bd99bdaae9282c",
+  "runtime_source": "c4686b913cb13ed7a161f941b8e6eadb2be37171",
+  "visual_tools_source": "0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0",
+  "base_build": {
+    "runtime_source": "0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0",
+    "native_sha256": "dd902cab6625af2e95da9b5e63337989c2e5bd3299912c8b2f8aa9e464e9f494",
+    "optimized": true,
+    "files": {
+      "rhwp.js": "d5a84985620c90581d6078773cb46445a3237075a3b216a04130fe7e7e18c25b",
+      "rhwp_bg.wasm": "4ac5f4022146819136965192e81491ca86f42c6360e2f3d8b35c1c70f0699e70",
+      "rhwp.d.ts": "8980cdae730e732bcb374a48ffb48d36d09b043c4c0da38a0677abcebdd35f99",
+      "rhwp_bg.wasm.d.ts": "d7b8efbb4e34d9f1cf645033e75c332938e94683d58c12e0fdfbf82555bf4c19"
+    }
+  },
+  "candidate_build": {
+    "runtime_source": "c4686b913cb13ed7a161f941b8e6eadb2be37171",
+    "native_sha256": "30b73a64c52be1a01ed8b2da12f92f3046d51c7e64b74e014be21470a6e91e7d",
+    "optimized": true,
+    "files": {
+      "rhwp.js": "d5a84985620c90581d6078773cb46445a3237075a3b216a04130fe7e7e18c25b",
+      "rhwp_bg.wasm": "4734ed402f46493c92ccc107a6a29d78b2e3b66cee22a39b0b237ef38832f255",
+      "rhwp.d.ts": "8980cdae730e732bcb374a48ffb48d36d09b043c4c0da38a0677abcebdd35f99",
+      "rhwp_bg.wasm.d.ts": "d7b8efbb4e34d9f1cf645033e75c332938e94683d58c12e0fdfbf82555bf4c19"
+    }
+  },
+  "base_build_snapshot": {
+    "git_head": "c4686b913cb13ed7a161f941b8e6eadb2be37171",
+    "runtime_source_byte_equivalent_to": "0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0",
+    "only_two_product_files_temporarily_replaced": true,
+    "restored_in_finally": true
+  },
+  "environment": {
+    "os": "Linux x86_64 (WSL2)",
+    "rust": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+    "node": "v24.15.0",
+    "nextest": "cargo-nextest 0.9.137 (75ddba7e9 2026-05-26)\nrelease: 0.9.137\ncommit-hash: 75ddba7e911b44c5c0700dac0415d824403de9bd\ncommit-date: 2026-05-26\nhost: x86_64-unknown-linux-gnu",
+    "wasm_pack": "0.15.0",
+    "wasm_opt": "117",
+    "chrome": "155.0.8059.79",
+    "dpi": 96,
+    "profile": "print",
+    "default_compat": "2024",
+    "legacy_compat": "2022"
+  },
+  "fidelity_fonts": [
+    {
+      "family": "HCRBatang / 함초롬바탕",
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8309-latest/fonts/HANBatang.ttf",
+      "sha256": "d85550717552101699122adc5b948e8129881f39ffcf802cafe62aac3b1ced40",
+      "source": "https://raw.githubusercontent.com/dsolver-el/hwpx-template-engine/d3018c859da225ea8b0f71408ce30ac48de862f6/src/main/resources/fonts/hcr/HANBatang.ttf"
+    },
+    {
+      "family": "HCRDotum / 함초롬돋움",
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8309-latest/fonts/HANDotum.ttf",
+      "sha256": "0dfe708556a36379ed1aaa37d4a9ec62b860939e84dd3ccdbeb0c0ad5314cd14",
+      "source": "https://raw.githubusercontent.com/dsolver-el/hwpx-template-engine/d3018c859da225ea8b0f71408ce30ac48de862f6/src/main/resources/fonts/hcr/HANDotum.ttf"
+    },
+    {
+      "family": "바탕",
+      "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+      "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+      "source": null
+    },
+    {
+      "family": "굴림",
+      "path": "/home/edward/mygithub/ttfs/windows/gulim.ttc",
+      "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+      "source": null
+    }
+  ],
+  "font_programs_committed": false,
+  "test_file_sha256": "37e3de88db22949b1905fa43f506d8ccc6fc49d11b306f0686042e4bee5ba846",
+  "recorded_at": "2026-11-02T01:47:54.231654+00:00",
+  "test_assertions_unchanged": true
+}

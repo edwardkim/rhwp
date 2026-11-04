@@ -1,0 +1,2203 @@
+{
+  "metric": {
+    "threshold": 232,
+    "symmetric_radius_pixels": 2,
+    "white_pad": true
+  },
+  "pages_checked": 64,
+  "raw100": 2,
+  "failed": [
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 1,
+      "candidate_png_sha256": "b2ec2c1f9fd090534904f72e5949c5e250da1c727a1feb1fb268b1bb19435144",
+      "reference_png_sha256": "3f69541cf83800f281bddb559be9e5c63561d2c00fb6e33dd28ee8c06a2c280f",
+      "candidate_unmatched": 256,
+      "reference_unmatched": 192,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 2,
+      "candidate_png_sha256": "ec0e1faf171d84fa3c24bb703b724765ed54ea76dede2943f12b2b1da17a1e2b",
+      "reference_png_sha256": "cbf59139a54a8dc2b846b8f0c22576ffea53ab44bdd740ced2fa178ba9c9d43d",
+      "candidate_unmatched": 54,
+      "reference_unmatched": 2,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 3,
+      "candidate_png_sha256": "6813c4fe9d3dde202a2b051538e0599ff27966f4c52fbfd5e399a32ed144dc9b",
+      "reference_png_sha256": "8e54d6380fcafcf1ccac9ecdfa605c8619f0d1900cafd5e1be3b243f70e996cb",
+      "candidate_unmatched": 89,
+      "reference_unmatched": 30,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 4,
+      "candidate_png_sha256": "e586ae5d492367b1eff5617c4562a4172e23a87c5417af3f19979833945b63bb",
+      "reference_png_sha256": "4f7ad8d52c91a7bc584f214eace564c68af391bd2aeb83b9d55deda59788adf2",
+      "candidate_unmatched": 427,
+      "reference_unmatched": 86,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 5,
+      "candidate_png_sha256": "2e2bdf038955fa45ef738f08107454630a407372177dde5771213784a486a13b",
+      "reference_png_sha256": "c1d0d6fbd7cd75323b8f0b208d1d42136ddc966b714c95626e1ce18ed554e930",
+      "candidate_unmatched": 87,
+      "reference_unmatched": 23,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 6,
+      "candidate_png_sha256": "4e9acc3e26ee7257cd30933992babb7cd92b9e6a01c466739aa9f7cb0605175f",
+      "reference_png_sha256": "fcc619052678a22d5813f62f6f18dca47f7adb3a65618c9e69cedf1b4c552da0",
+      "candidate_unmatched": 87,
+      "reference_unmatched": 34,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 7,
+      "candidate_png_sha256": "0ddddd25742bdabd23aaa907dcd5d3adb1dac7269f124b69f51a754b61657c7a",
+      "reference_png_sha256": "a626c3dbacd2b4f14824ac24233fee3ab8bd9162e7249f5fe77d888c394446ab",
+      "candidate_unmatched": 44,
+      "reference_unmatched": 17,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 8,
+      "candidate_png_sha256": "22bfcf008e014c7aaf7f4c2bf1e398ac70a3419a8f1bd56b684ef5f39739812c",
+      "reference_png_sha256": "e81fb610fe28c704e9f1bc95fc026d40129690b37e6db1edf67a434a41dc7dbf",
+      "candidate_unmatched": 38,
+      "reference_unmatched": 8,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 9,
+      "candidate_png_sha256": "d6cf386a89eea6750f7da99a8ce2b4741bbe9ecd9f2fa7f9ad37193e2ad734ab",
+      "reference_png_sha256": "e7477d684d334b63e0600e1358829eb1194d9a86e3ccf4eb5e3850ee13024b27",
+      "candidate_unmatched": 71,
+      "reference_unmatched": 82,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 10,
+      "candidate_png_sha256": "41c2a95a2fb9ab39235b5f398bb7f67c864c04c5023a97c5ab254d0cd251e8f0",
+      "reference_png_sha256": "32ec2382010da3453d74b115547d9842d92bebe38dc224f6928820300aa8690f",
+      "candidate_unmatched": 153,
+      "reference_unmatched": 53,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 11,
+      "candidate_png_sha256": "32e8aef9ada86ed67f5acc22b11ce9a834c49c470a81940b5c538454ecbc4b06",
+      "reference_png_sha256": "8ce8d4c0d03bbff7dc076b96d4c396d2400bf325dbeb64e6f0b6a92a16f12d5e",
+      "candidate_unmatched": 184,
+      "reference_unmatched": 77,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 12,
+      "candidate_png_sha256": "2f0763be40f957b9858bd77fd1c630e2e7cd1bf78c7c3f3dffe22efe6c7d9dbd",
+      "reference_png_sha256": "bf994d4e8fbe481ae003ac331bea006bc6265a83b98794adcc51780771b6323f",
+      "candidate_unmatched": 267,
+      "reference_unmatched": 105,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 13,
+      "candidate_png_sha256": "d96708c9344514467f877b960bfa5a64143e2b2eabc830a8d757a2e82d7794e3",
+      "reference_png_sha256": "847f68fae9ee09a3760ff6cbce29643781094315864131348b0a1cdca6bab954",
+      "candidate_unmatched": 124,
+      "reference_unmatched": 52,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 14,
+      "candidate_png_sha256": "954362c4c28be099e2339d7015e5e6f3ed3f85037af919ac04596a115f509864",
+      "reference_png_sha256": "3ed37f2c1c932511568190e48cbab35bc6857cd43c402a49bf2a319efe7b5c99",
+      "candidate_unmatched": 215,
+      "reference_unmatched": 87,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 15,
+      "candidate_png_sha256": "c8cfcd5e97e40978617ba8ded9feadd71bf6c6a74fb6a49144ba3a378c193726",
+      "reference_png_sha256": "23c58a4e929f3d8596007756284526341de77c92556d6e9bddd237859a1e4d6c",
+      "candidate_unmatched": 147,
+      "reference_unmatched": 60,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 16,
+      "candidate_png_sha256": "47bf1f8ace31fd738990ac5f744b8e5447b24668810096ba968decc7539535e3",
+      "reference_png_sha256": "2485cb25b784a4394ce52de5a0370d4883f126217791d0f99fa15349cbe45918",
+      "candidate_unmatched": 65,
+      "reference_unmatched": 25,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 17,
+      "candidate_png_sha256": "a9b113656060de036717a79e54dde5baf68bb794f3f2e51316f73134e64b22f6",
+      "reference_png_sha256": "8ae0842f6e3ad8b39c7f99c3c6f0db3e433eea15110c05ff373fd4576b55bcc2",
+      "candidate_unmatched": 342,
+      "reference_unmatched": 87,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 18,
+      "candidate_png_sha256": "caeba0cd26875e2224be81530054a2b0ed29321118bd375ec87182e8b57f0ef0",
+      "reference_png_sha256": "aab16eda8d4a24cee008a16fbbff5c48a7319ad776da6f00241e8926e001c2a0",
+      "candidate_unmatched": 327,
+      "reference_unmatched": 180,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 19,
+      "candidate_png_sha256": "d1117d7c25ba225845a1c7f306915caf5c7b1d64211c87c4fdcc0c1ed78f896b",
+      "reference_png_sha256": "94dd530dc93c58235f12ab8f0f7c46c8eb832dea6ac1303c2947b063dcd537bd",
+      "candidate_unmatched": 476,
+      "reference_unmatched": 258,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 20,
+      "candidate_png_sha256": "f7443fc503ae1bb5fe84d8a054dc9c4354bccb88c6447ac78bcaffb3f9d85089",
+      "reference_png_sha256": "603715132d2c9f1a19acc740232085beb723fc37e28640790634ee448d567727",
+      "candidate_unmatched": 126,
+      "reference_unmatched": 24,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 21,
+      "candidate_png_sha256": "7ea00f629f47061b6d0d876046a4885723447f56987f19fefc97e4d7c29335a9",
+      "reference_png_sha256": "ea008ad8577e7669ce7769d1ca73772f1b8bd4567c0cf9b3808c0e5128bde630",
+      "candidate_unmatched": 145,
+      "reference_unmatched": 51,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 22,
+      "candidate_png_sha256": "86e56961a02737a7d59da7ede4749975cf36e1f6388b9805bb004ebdc7719ce9",
+      "reference_png_sha256": "a18a8ac8d54ce09dd5913616165a62e0e4668e39f19459ec6b3beac904a4ccf5",
+      "candidate_unmatched": 824,
+      "reference_unmatched": 1237,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 23,
+      "candidate_png_sha256": "e9f14c304f8effaaa65426fb83886039dc6eb927fb4a73fa321913116d3dd338",
+      "reference_png_sha256": "f2461ed2a28426385af148dbebb0f1ef44d4f4b5cde7603eba4e3a414c887c91",
+      "candidate_unmatched": 83,
+      "reference_unmatched": 18,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 24,
+      "candidate_png_sha256": "c3318cce421f0667f1670cef0a658280ac2b6fb7a8f120a4c231ca1b56b037ad",
+      "reference_png_sha256": "d242e9128b3543cf5198751e2f2a8a9c7f00b10d3b7c2aabbb8fdbfa3953f884",
+      "candidate_unmatched": 47,
+      "reference_unmatched": 9,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 25,
+      "candidate_png_sha256": "3d2cd56da8ad1d71eeefc73f546ee2a316c833e6c93024334c8da5855720e6b3",
+      "reference_png_sha256": "a622f08a25c4ee3234a0c6c0959bef7b550b9e07680d4138304cf677ed83d3bd",
+      "candidate_unmatched": 99,
+      "reference_unmatched": 40,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 26,
+      "candidate_png_sha256": "186a7aa5617333e84399b9e8288e6b0370297474c2f52839a11f6f8f70007768",
+      "reference_png_sha256": "a26bcb8dba383e969ef6a1f16b882261c594535c089d7030ccd3071a02c36c01",
+      "candidate_unmatched": 149,
+      "reference_unmatched": 85,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 27,
+      "candidate_png_sha256": "481be4f04a8c51989f4a6850d1a5bc46937d2f509010a01731da56cd4d4f9ca6",
+      "reference_png_sha256": "39aa66870111b06accb4a6a0d6dc3a18094923f10dc0e336508d403e7f780d02",
+      "candidate_unmatched": 76,
+      "reference_unmatched": 29,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 28,
+      "candidate_png_sha256": "9ba88c5956705c977e5989e4e1f3a55c16a86ded5a012142b935dffeff63db14",
+      "reference_png_sha256": "056a663a656dae6f0715a2be50eb81c5b857a58c8df02a40775408b58d696fa6",
+      "candidate_unmatched": 550,
+      "reference_unmatched": 143,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 29,
+      "candidate_png_sha256": "2001adb7f08379d4108fe5f1c198ce3875784aba9d5de41fcf8e11ce550e3957",
+      "reference_png_sha256": "05acd1bd963d55e43fb20bcfc62c8743a08188f9b2a9ee2b4457de8989231a90",
+      "candidate_unmatched": 301,
+      "reference_unmatched": 68,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 30,
+      "candidate_png_sha256": "5ac35c76178ffab2efd10aa5a0f7891d2441a97ba63a350f0e5bba172be41ee0",
+      "reference_png_sha256": "eeaa731a5d60b216140b7f72257a8e16123893a76beeb40a7ec607a019640581",
+      "candidate_unmatched": 435,
+      "reference_unmatched": 54,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 31,
+      "candidate_png_sha256": "38deae9a73f1001b8bb63109b35ef82cf189a4d177a8087006aee3848706efb6",
+      "reference_png_sha256": "8178aea9088df4e7b8447ecdc2619522b0b426753a508fa03b0bac7175d94c9a",
+      "candidate_unmatched": 421,
+      "reference_unmatched": 104,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 32,
+      "candidate_png_sha256": "6626ffa05bdceecf76bad63cdeae8e98f2761952c57d43460cc79c0fae9b444a",
+      "reference_png_sha256": "e46218a939dfca94edeb1f27317bd3c85b512c8e065c77aa20c254a62b28824b",
+      "candidate_unmatched": 87,
+      "reference_unmatched": 31,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 33,
+      "candidate_png_sha256": "2cfe44e2ee782209474489b86d3c09e49519213c3bf208ee5659ad7f802c3a68",
+      "reference_png_sha256": "b3eb8e667180b01acc538d3ee6dbed55e5e273135e7b2cda355bc3c9e23998e2",
+      "candidate_unmatched": 278,
+      "reference_unmatched": 70,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 34,
+      "candidate_png_sha256": "20edd793ccced79d12adc0bc2c84fe38321593f61c701c8b2be9fdd88024ca68",
+      "reference_png_sha256": "4217346223d76b6cf4a348a5a8b09a360c20e08d1e7f31cc85689eb3ab034b58",
+      "candidate_unmatched": 141,
+      "reference_unmatched": 16,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 35,
+      "candidate_png_sha256": "fb15fbc90159560173f717c6d6f6585a07d4b7d00487d1fe11378a29018ba4f5",
+      "reference_png_sha256": "14b40bf618d60f660a94e406aa0381aefa86763569a00a31883c7a441db96d9b",
+      "candidate_unmatched": 36,
+      "reference_unmatched": 6,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 36,
+      "candidate_png_sha256": "990b72321a96913d5aa9e2f3ccf5365df318f0a859c31a08186c45380ad57488",
+      "reference_png_sha256": "217b40889c0d8e64f979453444eab19e90f226d0dcdb80daa7902bdb52c5b8dc",
+      "candidate_unmatched": 38,
+      "reference_unmatched": 1,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 37,
+      "candidate_png_sha256": "7e57b7b134849f49071cc1b2b527539d038057e9966d94f7cc49980064f7520c",
+      "reference_png_sha256": "95631462d7204c987f3fec8750b07b6a47b8edeca0488ab5ffd9203851c4a56a",
+      "candidate_unmatched": 23,
+      "reference_unmatched": 8,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 38,
+      "candidate_png_sha256": "af0c80c5b8ac6cf42ce7b7a931b208839d972435b448017e030aa0e9432e475a",
+      "reference_png_sha256": "cf75b7c7b08506dff60378fcdf11d0700ea5404dbc8ab3f5f0057d9e80e09d74",
+      "candidate_unmatched": 409,
+      "reference_unmatched": 238,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 39,
+      "candidate_png_sha256": "8116fe5db4d94993212a5706b8bcdc7b064df1ab9f55832ef97267c284a2eb67",
+      "reference_png_sha256": "82e55db398093b6779923650d8eef32e299a643aaca50fd3ad7d8811208e1b5e",
+      "candidate_unmatched": 14,
+      "reference_unmatched": 2,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 40,
+      "candidate_png_sha256": "d5f011bdf3788ed96014cd4466802dbee78906b060754b8ba0ff52210af1a040",
+      "reference_png_sha256": "bc30dc846e5f5643df034f6fb46e84a430b2ac653faea9102c6cb91ca41856f5",
+      "candidate_unmatched": 91,
+      "reference_unmatched": 35,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 41,
+      "candidate_png_sha256": "4fba63e9a700deda3a7a7c14b6ebc84a7995bf42db548a6aabf620e9e956add7",
+      "reference_png_sha256": "058c36d0c99697d73dfc5ab8b25aa7af7e6bfd879bee92fb1f36e36aed04415b",
+      "candidate_unmatched": 11,
+      "reference_unmatched": 0,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 42,
+      "candidate_png_sha256": "fb53056e5ed2c2509e95380ccd621edc00d03f12f76c94fbc452ad3c84f6660f",
+      "reference_png_sha256": "049e2de516bbf56a24e1d13e80a9dd14e016e632b87da3d09073402dbe6fa523",
+      "candidate_unmatched": 27,
+      "reference_unmatched": 68,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 43,
+      "candidate_png_sha256": "66745f26ac04fa25fd4ca2af24b5a614f811a3a166af2fa9cf689990ad14ce9e",
+      "reference_png_sha256": "d77980364ecee3ea2da9ff01aea2d382132d37d4971875af55def7a2c1614393",
+      "candidate_unmatched": 32,
+      "reference_unmatched": 14,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 44,
+      "candidate_png_sha256": "3a6793fd0c3b838ba04503f66032171e8f743e2963600265cce09f661580d12e",
+      "reference_png_sha256": "9063d3fe3a145aab760e52abb1a35c351c6c8f5dc53832ea70db9b6c97d06481",
+      "candidate_unmatched": 21,
+      "reference_unmatched": 7,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 45,
+      "candidate_png_sha256": "fd0ed1e5b2a8ba7b01495718246f1ee224b960ddc0746122355ea89d7157eaf5",
+      "reference_png_sha256": "a228c5ac78a3ccb16cf53d93d56e170c8782a45a1e2203d7b73ad873196d7bcf",
+      "candidate_unmatched": 51,
+      "reference_unmatched": 16,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 46,
+      "candidate_png_sha256": "118b8c69d93da60c099a1bc332728a9cb248124c26a44ec6fa2e6753f618e6ea",
+      "reference_png_sha256": "e07543c68d0adadaa2b4b48134efa00168d5d2791cc5000e3196e35b0b47d6e2",
+      "candidate_unmatched": 211,
+      "reference_unmatched": 95,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 47,
+      "candidate_png_sha256": "6fd490a4d0b350a1799063a7e05e41e34bf56d717ea6b668cc114ef9ce3e9cfc",
+      "reference_png_sha256": "5149faa0066eb840f4129697f57d350ceb087faf4ecba4f40c89751363b9bd63",
+      "candidate_unmatched": 140,
+      "reference_unmatched": 59,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 48,
+      "candidate_png_sha256": "e552fad46274393a257234fcd9ba081c1e0e8fc4ba2cfc15d67b356b072111f6",
+      "reference_png_sha256": "a3b54a73018221506c526ec0939c9e80014622a62c103e24c8e1231f3209ff19",
+      "candidate_unmatched": 120,
+      "reference_unmatched": 27,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 49,
+      "candidate_png_sha256": "1a73272ddf868a200e36f4916271bf1847cf887a9aafa23680f9bb359bcfdffe",
+      "reference_png_sha256": "fc14acc6d7413cfc7b94c6d611fd3096395fcf6bd94e3b641ffd4a326ae4de83",
+      "candidate_unmatched": 141,
+      "reference_unmatched": 49,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 50,
+      "candidate_png_sha256": "8520aca3b9700cd49a2ee9bae39c2a339806dcf61ab46bdef1e598b8d383bb38",
+      "reference_png_sha256": "22239de68b259e85e904c76ea9508ba8a24d8e8ddac46689b9cf65ecb0ed2cc0",
+      "candidate_unmatched": 181,
+      "reference_unmatched": 55,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 51,
+      "candidate_png_sha256": "bb281416bf7b21a36591d5dccf9f1269ffa3e724840e4a9b55f361bb4a77fed0",
+      "reference_png_sha256": "05ed018989befca8de88a8cf730fbea76f200a55c677c409e2d0ab0d9f4c9b66",
+      "candidate_unmatched": 21,
+      "reference_unmatched": 62,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 52,
+      "candidate_png_sha256": "6e775c94600e95152cfc9f81704fd58a6359f708476aea2cb3c77d6d1e241024",
+      "reference_png_sha256": "509a35ffc99bfcfeb97ff79734594a4166ee41a90eae07fc60e92dea694e7498",
+      "candidate_unmatched": 4,
+      "reference_unmatched": 0,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 53,
+      "candidate_png_sha256": "15f86e9f68745a342cd6cf6ee55d451cdc37eec916905585fefafa68fd702f49",
+      "reference_png_sha256": "f848510cc5ae779b317ab587572d7fd99dafb616dc337f5f229b0e06f2abd644",
+      "candidate_unmatched": 160,
+      "reference_unmatched": 60,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 54,
+      "candidate_png_sha256": "77df117fce7ee4d512b8b12cc6b32282e40fb257d8042a9f49355757ac474593",
+      "reference_png_sha256": "e46e0a489702e767619f226972f1f1dfbcbb67901e08b4a0305e625b926e1dd1",
+      "candidate_unmatched": 3,
+      "reference_unmatched": 0,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 55,
+      "candidate_png_sha256": "46a8cbe1cbc6d31399e7ef2234fdfe67d482a28bce1330a259d97d89f64e94d8",
+      "reference_png_sha256": "3b3c147e42426d905a7b88fe3bae59276964caf7d0938046bb0bf5a48149711d",
+      "candidate_unmatched": 37,
+      "reference_unmatched": 34,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 56,
+      "candidate_png_sha256": "17071e2bea32abc1bc805961471d54f40bdd421234c83395bf6ddb520ee00e4a",
+      "reference_png_sha256": "2e43d7eac8d4f4d78348beddea0497273f227795e81edbd86debb5200aeeda42",
+      "candidate_unmatched": 3,
+      "reference_unmatched": 0,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 57,
+      "candidate_png_sha256": "1c9ce85934263535e6c9c9bfb5d6d0d241e1dea2c54e3f070f3a7ad772e471b7",
+      "reference_png_sha256": "9a32381125f60b52b72e1a2df9f3d88bea2b1a8b5be9b369e0960a501e5830b4",
+      "candidate_unmatched": 48,
+      "reference_unmatched": 52,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 58,
+      "candidate_png_sha256": "39a8f65d0bae4ce609d9545d47cf929638b0e984dd9e633410ca02d9fe7426ee",
+      "reference_png_sha256": "e4d22542d19dadf8369b861656809e0449705a9f9ddb4469f57617f00c8b08dc",
+      "candidate_unmatched": 7,
+      "reference_unmatched": 0,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 59,
+      "candidate_png_sha256": "34f8ed15d48a4d6cce4630b3e5850477a8a9b5e064b69f6d61e4337e55e09cbd",
+      "reference_png_sha256": "a8668c157487c8ea359ceb5512b4992c83d5327a08b02fc707b169562814efdc",
+      "candidate_unmatched": 107,
+      "reference_unmatched": 66,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 60,
+      "candidate_png_sha256": "2ae666a211d2a634664ff260a50f64b86a702372bf92beb87fe791e517c3cd7a",
+      "reference_png_sha256": "0a81bd5322d9f7219aa0d4a4521333c0b4e97d8acd50920bfa7d5978c6a9ef92",
+      "candidate_unmatched": 43,
+      "reference_unmatched": 33,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 61,
+      "candidate_png_sha256": "bd4362f98885618be4e56fb131a50ed9099e1e80105997718786e41452531242",
+      "reference_png_sha256": "0181f2b4f266f2c1df3d1ae4cdb05511a3d392b6b882e846c26dcac1742c1462",
+      "candidate_unmatched": 36,
+      "reference_unmatched": 22,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 62,
+      "candidate_png_sha256": "141d3933044f06b86b9c8385a74ea43350d52b3167c12e2c727fd909a633ec42",
+      "reference_png_sha256": "0e2f88e7c43ee1d6fd6466d4e32082640f1e572a35f691df655326a68a78648c",
+      "candidate_unmatched": 9,
+      "reference_unmatched": 7,
+      "raw100": false
+    }
+  ],
+  "manifest_sha256": "e151178a952c061413028aafd0d676a7951d0cd4c5a0915c6abc30590e7c3641",
+  "provenance": {
+    "hwp": {
+      "path": "samples/hwp3-sample16-hwp5-2010.hwp",
+      "sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+    },
+    "pdf": {
+      "path": "pdf/hwp3-sample16-hwp5-2010-issue7723-mcp-2024.pdf",
+      "sha256": "4b03e8f1325654b423f4e2975890309c44b70cf3a1b1083879097aff2ad09c6a"
+    },
+    "git_head": "455583f61c9ad9af4363848f763f396ed8a498a1",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "e05edaacad9ae7b9954b95b3c26fb97a20686e35a4502349ae64a0d4fb8af4e1"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_v1",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "script_sha256": "eda5cb9561ea417f55efdf2a36510a5db2563d4382adf2b5ef564389f6736faf",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-20261026/rebase-8328/fixed-native-rhwp",
+      "path": "output/pr-review/planet6897-20261026/rebase-8328/fixed-native-rhwp",
+      "sha256": "5a8c2ef8a95330e685ab61073cdf149d256f253310fd946005ff63010fe84f2e"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "2452e778993bc6d45521b6d7813bcf0fc2971c1703e8b04d130344af082cebf7",
+    "layout_generation": "2024",
+    "font_environment": {
+      "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-diagnostic-font-env-2024.json",
+      "sha256": "a665e92d8bae13cf3aef2f471a6186f3bac23e51c374138db63718db96f322a3"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0000/hanyang-original-complete-symbols.otf",
+          "sha256": "04264432d4d3d30eb2b4d0174b4c191b0418ebc2729bdeee8978305ceb8b14d1"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0001/poppy-original-complete-symbols.otf",
+          "sha256": "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0002/gulim.ttc",
+          "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0003/RHWPLegacyEquation-Original.otf",
+          "sha256": "f92ff78fe7eaf2914e9879966e6a8383d3c525242339b781a117b755df70034a"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0004/Baloo-Regular.ttf",
+          "sha256": "718843345772c5dac9e57dd51803f818455b427366906f637b3cb4df1b365da6"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0005/Diplomata-Regular.ttf",
+          "sha256": "a02adc3d8790dfac28e3ff841a63529024c93233fd6acdede0b044ce1a425477"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0006/FZSong_Super.TTF",
+          "sha256": "cbf26cf7c72522e4de508373fec17d3499bb4a7c47b0a501fd175b0222c57fc7"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0007/FZSong_Super_simple.TTF",
+          "sha256": "1443b5814d24b479427928eee03fb92df8094913922c200422b5d2b05567feba"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0008/H2HDRM.TTF",
+          "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0009/HANBaekB.ttf",
+          "sha256": "b9eeeff695317cfcca238b932fbc8a66b5555cb140116e321d811bda58f58f1d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0010/HANBaekM.ttf",
+          "sha256": "5fe7f3ff8c1f7f619f034c2cef5bd3cf1f546a29719e0cf4adb18e93d7f17726"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0011/HANCooljazzB.ttf",
+          "sha256": "3546f1afc91cbf53f4726bb1a2124533e0f183e77ada0a829b9fc563562d2f1d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0012/HANCooljazzL.ttf",
+          "sha256": "71d7d8b186b5435a03006e9536d52e6e14cceb3bd19a795164bc9feb62920f43"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0013/HANCooljazzM.ttf",
+          "sha256": "40ec74881ded71b93b1a2cbf99a1cfb39d6c55df64839f3a28e508e010eb6ea2"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0014/HANSaleB.ttf",
+          "sha256": "16011d8cad602ee77bf8966ce2bef337b47edaf017d20e39a6943dad20d5630f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0015/HANSaleM.ttf",
+          "sha256": "bba583683c6afd14c5cf1df8ae38254aa4c5016a733258b4431be7c7b6dedb80"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0016/HANSolB.ttf",
+          "sha256": "1e8de8463d9b8d3537d9f648d289258d8c54eeae6c16e43d812480b81bde84df"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0017/HANSolM.ttf",
+          "sha256": "710650873dd6802d383868df494a022d624cefa11bfd0304d8f5a77093a3b002"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0018/HANSomaB.ttf",
+          "sha256": "25cca9e486a5f700f1827fe8eb46fc2008723069518c7ca148d60c9ec59574bb"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0019/HANSomaM.ttf",
+          "sha256": "2649474ff0014b8192bfc195b11a25319ca431716bbc2a67e2fb76acd138942b"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0020/HANYGO230.ttf",
+          "sha256": "cdf746176aba807cbf9b168c2d749be6270f44f4b80568b9e18b05d1ba53a200"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0021/HANYGO240.ttf",
+          "sha256": "ed3fbb8f3af1866a7fe31478e4f62ef409f74f65d0db1bf60538f4649e564e4d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0022/HANYGO250.ttf",
+          "sha256": "7e86818a4310bc4f29fddf34e4490a074aaa366984676fbdb881dc21e19ae75b"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0023/HANYheadB.ttf",
+          "sha256": "1984e8c30aecd04af2bc204ff5fe5bcf1f8fe98451d2d8944122d3235bc1d2f4"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0024/HANYheadL.ttf",
+          "sha256": "c6fc079008e92419dc46f86a3a77b5e131cd717da9cd132d6f628453f7d33ce8"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0025/HANYheadM.ttf",
+          "sha256": "211ea74d327fcb0190833791bf79328cb895c44fa43ae31c90ad53c37e757584"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0026/HANYoonGothic720.ttf",
+          "sha256": "68d56b9946b077d69f150a0889dd508972445e17c3a5917fba9b8b06628f288d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0027/HANYoonGothic740.ttf",
+          "sha256": "ff227ca64858b4cd6f657da587515c95931841dcba19a579aef06daec97f7057"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0028/HANYoonGothic760.ttf",
+          "sha256": "ae10465357537a2aa73d123df949a169791e295bb97a84393bb8e0ccae79bb0e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0029/HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0030/HDOTUM.TTF",
+          "sha256": "2989f37963a66f865ff9875bb5da668593dd297da03a0d6a727d8da3c093eb8b"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0031/HYBDAL.TTF",
+          "sha256": "e418f439658680da75e5c9ed2a665123925ba801315f259ff0684a9e60bb0c84"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0032/HYBDAM.TTF",
+          "sha256": "555367f75d9ad77ade99efacac6d0efcc26cab1f2ee6366f4180f78ebfbd56fd"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0033/HYDNKB.TTF",
+          "sha256": "da24992e369b46fee38c02520b6901f49af16107c6a35ee3d34cd89154f60e31"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0034/HYDNKM.TTF",
+          "sha256": "7ce310f7d24b95844a0188943cdb4dac95bc496e96c876d3ca731e72c578dd48"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0035/HYKANB.TTF",
+          "sha256": "cfd21db0edd632dcff6e6d9179f0266e2febb63586947fffa9dcffa34833e85e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0036/HYKANM.TTF",
+          "sha256": "896a7b5e562f5d5ee0694ec547b3d1a10587b882a94850fb39e62d5fc5eb8c6d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0037/HYNAMB.TTF",
+          "sha256": "728450078ea1263e88b5f815777ba526d081be603975c21171aafeb323a39b5b"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0038/HYNAML.TTF",
+          "sha256": "426444500b76ef980f0a933bde22769b50c6b6371f4118995b704c6430a9428a"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0039/HYNAMM.TTF",
+          "sha256": "6448359d4a640184a0224b4a403ae11fd25e7f770c70f5ff5ef9ceca36d494f5"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0040/HYSANB.TTF",
+          "sha256": "5c4ded4685db7f24523391253656f128a42b437aaf6660a3737e54e7aa30a288"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0041/HYSUPB.TTF",
+          "sha256": "3ac03d75b2e752546044990917fab57b415780ca119751e8bfa0136765772071"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0042/HYSUPM.TTF",
+          "sha256": "e36a1f1b97db4c2f71d1d177d573702f2e8cb19a52aa929fc5501a7f79fa70b7"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0043/HYTBRB.TTF",
+          "sha256": "4f7650a93ef862a2ee69d6fdc5a0e9ce94a47ab683cd810961e18cab27ce61a2"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0044/HYWULB.TTF",
+          "sha256": "c48939f1dac8d1946d64d2063adf6e47c6dcecfb978548d52d9e47d1f70ff61a"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0045/HYWULM.TTF",
+          "sha256": "b6e5c595d3b8986aa31830c228cdf30abefcb182bcfe1c016f464fd8395679b0"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0046/Limelight-Regular.ttf",
+          "sha256": "f5bf8a9159adfc5b9c756c85d812a4fd1299b8916fefdf39ad4b24ade6d8d0cf"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0047/NanumBrush.ttf",
+          "sha256": "5fe0e02f74c58aa25ba49908fb6775bcb7d00d19ddd68b480b51a926f5ca12ec"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0048/OleoScriptSwashCaps-Regular.ttf",
+          "sha256": "b8811c803202bbc80e6124200666080a62b63df3b52e1833456189ec1f798c31"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0049/Rochester-Regular.ttf",
+          "sha256": "268abe034fc69f090b6cd241a429e26f7fac1e4648c7bbcca39e883aa3b19abb"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0050/Schoolbell.ttf",
+          "sha256": "1a3ae62329871c20600217f19f3472ba8f253c11a7df6cb9a9e6e88ced95ee0a"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0051/VastShadow-Regular.ttf",
+          "sha256": "98bdf7f93c2330697078ece27e48dea7d97b253a547d699bf7afc4bdfa641a93"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0052/ahn_b.ttf",
+          "sha256": "2b09bfc55a665e4b0431f79f08c518db434d50c0d8d29c7042729f95a1f2d033"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0053/ahn_l.ttf",
+          "sha256": "40cb56d66504efb5b8a082d6fccfca415cc38d9d030d04b5b417d16e593cefa4"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0054/ahn_m.ttf",
+          "sha256": "8ac417c371a64d49189b18ff60dd7d717313a5a47652027869be325d9c21f746"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0055/Along.ttf",
+          "sha256": "21ebd1cf5458d20b0b707fc82b1e93a9d3d8856db597d4e8316342013ed67f65"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0056/Art.ttf",
+          "sha256": "ebf68345f69b92c618d0db2e1fe8671f3fd31f138eae47c281e3042ff73b11ca"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0057/ENBERNF.TTF",
+          "sha256": "0ad88056a8866af6826ebf30110a540cb9091a694637b949c8ee13c08b88ce3d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0058/ENBLBK.TTF",
+          "sha256": "6025f9b7fc6ff79269050ab0320fa5d99bcade7e123b810e54c0ab035502aa34"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0059/ENBODB.TTF",
+          "sha256": "ae65d2f1a0711d075b816a2c64c93a176c4b2c2cc8fd7aa89378ba4a55d3c2c9"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0060/ENBODBI.TTF",
+          "sha256": "34e546560ea6f0ec820912c0a6d8855c21b004980eb4ee88f373f7a79ad88b4d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0061/ENBODBK.TTF",
+          "sha256": "814967fddca9479f35bff5c3701eb5b41123cb8720520f6a9b87dc453abb51f0"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0062/ENBODBKI.TTF",
+          "sha256": "7781edd9c807fb707ad2c4bb9d6b2d347140d87fc5ccc621df52286f97c2c3d9"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0063/ENBRODWY.TTF",
+          "sha256": "ba843d0b65d7ecd2fea052bec7e7e7f565cbdb229d793ab0b08be65fbb5b048f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0064/ENBRUSH.TTF",
+          "sha256": "06ae1708ae7e87b166dccf3d742389342ca0515e9b9b7dbf78b8492f04217279"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0065/ENCOBK.TTF",
+          "sha256": "eae41b1b4423a28329aa906bf4187a0dacbdc3041545608a6dc06acf3cf4219c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0066/ENCOBKI.TTF",
+          "sha256": "98ff37e47d3002f2c24aaab5e89eea4b80a6ba085ae6f0bf9dc56dde1a2e26b9"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0067/ENCOSCPT.TTF",
+          "sha256": "b033b9c8960646038015329f41c903f1efcfe7cef51d915b27d86ed519c3bb8b"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0068/ENCR10B.TTF",
+          "sha256": "e4c0b52508d7cf5e0ba89e30f5fb8b83c80ed3770d6091975baf571dac877c9e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0069/ENCR10BI.TTF",
+          "sha256": "8d2a93d6bac3c1005d5b6ad74e1623bb32e07b14184ce1f3e5de88d386694c71"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0070/ENCSCH.TTF",
+          "sha256": "214d6d2e89a8c8c432cb1bf33d3981702f13207245e04c8d48a983de7328bcaa"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0071/ENCSCHB.TTF",
+          "sha256": "e7f90aac53222f04eb711ca32e1b0782813007c220b4f3435d1eedbf28f5ce70"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0072/ENCSCHBI.TTF",
+          "sha256": "b7ed15847563373a956317e7858b057d16d5f4459e29e32ff16ad72bd3b29e26"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0073/ENCSCHI.TTF",
+          "sha256": "30df16012ebbf92579d1b37f4aec1b5da4beece665fb76d03bc8ea697215090f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0074/ENDOMCA.TTF",
+          "sha256": "cb8f3f35a47de30c38c8cc83e45caeb963c6842f413ce307d9bb0ab058b51b7a"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0075/ENFREEHD.TTF",
+          "sha256": "1b3e621ab0246f32bee1ad0176e5d263a3dac17aa0f181a8c00b739e31fc4cfb"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0076/ENFUTUBK.TTF",
+          "sha256": "dff4c5ad61d76e863c4ca72467c153c4eaca9e2b095d0f1fff7607014d072bf4"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0077/ENGARM.TTF",
+          "sha256": "865ef7de7a80c0c045efa12a9d5aa4addf9620a25b72bbf7dfe7890fe68f734c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0078/ENGARMB.TTF",
+          "sha256": "93b051bc1e391fd8403fc346978d839496cdde8ccbeb69e2e7b2aa12d3012634"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0079/ENGARMBI.TTF",
+          "sha256": "18b4733435b05a3f01d7245e927dc09cdf3560bf9ee2a587d29ac33073036476"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0080/ENGARMI.TTF",
+          "sha256": "f2193d35fc38eda98fb95afcaee5df67eb223a084b30864792830caa606dd913"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0081/ENGDOS.TTF",
+          "sha256": "2e9597977f44fa49d6edd956747c0b6acfea6e5e019c4372193b68dc3ff248a2"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0082/ENGDOSB.TTF",
+          "sha256": "fa28d8027011b8934a21f870c869162f423ecf1cc6d56c135e9dc6a4d53d5c9c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0083/ENGDOSBI.TTF",
+          "sha256": "37f10e013c2187ac76885efff27b11b458e0a0bbd488984e7dd27d0bc6dc3c9d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0084/ENGDOSI.TTF",
+          "sha256": "e376b5f1b480ea9cba8c57581672cd7a8884e4dd66eccc1ff5788bc21de91b64"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0085/ENHOBO.TTF",
+          "sha256": "52e628215bc76c375733891b4879ca6fa6770f2ac01cc2adef9e4859e786e25c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0086/ENLIBRTY.TTF",
+          "sha256": "5239deff17f19afaa080b2d70c9a581d5e0db452d9be1790c97952c8602e8d0e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0087/ENMUHB.TTF",
+          "sha256": "38ec236cd2d579f55b9482de680dbe8c2805056fa753be22cbeb47f9fee9e54d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0088/ENOCRA.TTF",
+          "sha256": "ba5bb6d273fa991590ea30a69d66dcd204b51c29708b8f952853adad5ce790b7"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0089/ENOCRB10.TTF",
+          "sha256": "a0c9161e265257236faa7b3c0b6d787218ea05befa179a5f6dfdcbe0f1293e40"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0090/ENORAT10.TTF",
+          "sha256": "271d911994353485c44302eacf8b2255751445ef289d87c43b37a553fe937a2a"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0091/ENORBITB.TTF",
+          "sha256": "d936a4b5e80a6ab1b3888e2d62d42389b8192db164f6dde35c66bd07ad4fbb90"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0092/ENPKAV.TTF",
+          "sha256": "5419a7354b744c4e24928960ed7512b66f737762d5eeeb1a0be42c10751e0a08"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0093/ENS721LI.TTF",
+          "sha256": "5e53762163be5aae5176b9b0e4a1c5d2ef10e800a0b6a1b0f8d1e6d943be22bb"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0094/ENSTEN.TTF",
+          "sha256": "375fb99ec6e5c61789099bee2b581d4ec93e83d6b453147523ad2c7cd4cedffb"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0095/ENSW721L.TTF",
+          "sha256": "15e9ef1143fb27343cdf759ed3e92d0d690b4bbee9bfe3360af5668b38eb4863"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0096/Easop.ttf",
+          "sha256": "880e8a970db1287ef9f24bfc21df9221ddeb874aafe3f5f5d949fc68cff1d8ed"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0097/Gaesung.ttf",
+          "sha256": "95ab4e7051ec134c072e4daf534b748ad4925e5288dff227941aba377ba82578"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0098/HMKBA.TTF",
+          "sha256": "cc22cac573873a21c4bff0ad9d73f8ceb7ebb8cc193489c34bbb4389bbbcdf88"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0099/HMKBP.TTF",
+          "sha256": "213bc87a8084630de5bfb52c3baa008168e6af8b3e6a4e896237926fa5a436eb"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0100/HMKBS.TTF",
+          "sha256": "efb71564a8e46b080b7435ca80b7ecef173fa46a543144ba619dd0a3f04ed0ec"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0101/HMKLA.TTF",
+          "sha256": "bc49a5c560d24619b2b2e7271be09759ed0775d1fb947d4233cba61621e27a92"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0102/HMKLP.TTF",
+          "sha256": "144ac8b82cb3731561a7c977a4cb96a127a00d00e37b2af1d8ca7f4fb331a80e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0103/HMKLS.TTF",
+          "sha256": "be2468b6f1a911ecf32dc5df2aafd7ff48c3702c03e49579942721ba86179575"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0104/HMKMA.TTF",
+          "sha256": "70bf51ed923da6f1a95fe551c0ce5bff1c094f67ef74acba3fef11c9790ddd5b"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0105/HMKMG.TTF",
+          "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0106/HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0107/HMKMOLD.TTF",
+          "sha256": "5d30232f01d0cf5be49d3f1660a0db95aef2a0b992deb716affadb95e0fc42cc"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0108/HMKMP.TTF",
+          "sha256": "d384088bca9ff77a1066900421a1f6f0693a31ebe89de57b393d6d8f1a52ae1f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0109/HMKMS.TTF",
+          "sha256": "ee6a20e72056e7bd8dd0f3cf0dae3bd28c17363f3ae8be1830d824c07b89a5ce"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0110/HYBSRB.TTF",
+          "sha256": "74f2ae9ab8e0ad36175344a759721cd616a7623613853973a0adfe99ebe79862"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0111/HYCYSM.TTF",
+          "sha256": "769537a52d27d648e90a30029deab686f604dfc767382cc8c74ae42cb44df5aa"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0112/HYGPRM.TTF",
+          "sha256": "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0113/HYGSRB.TTF",
+          "sha256": "b41cef3386d034040704b1a143ef13a63c5b9f1ec4222a7579c1796ea05517f6"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0114/HYGTRE.TTF",
+          "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0115/HYMJRE.TTF",
+          "sha256": "a101a7a219ffd57273374a423e734adfba1529e5eaf2e9a7476f7150708ea506"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0116/HYMPRL.TTF",
+          "sha256": "6bd4066d8dd5ad7296a5d5e826032872bdf4b5343dbbf20073dec67d6b7d4f28"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0117/HYPORM.TTF",
+          "sha256": "c59429a54a1aa0bcb71c2b35e3a1a8990752d3993dbf905018a5b0b91cf7cd2f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0118/HYSNRL.TTF",
+          "sha256": "c676038d3cf13121dd974c2e7ee99c0c81eea04a4a493bc3dc60c9f32b791dc6"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0119/Sol.ttf",
+          "sha256": "1c2a17ef22a9a4d51b6e9af8c6542f28df4c4a10e37f35c0f8ebd88dbd52297c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0120/UNI_HSR.TTF",
+          "sha256": "6db51feddcdc42e6b6240325acd2b335eb81b871831c96e954d7aa74d235c2de"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0121/YBLA05.TTF",
+          "sha256": "d9a9b607f1c49d832811222163822a99f2175e8a304341721624db7b6d3a725e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0122/YBLO05.TTF",
+          "sha256": "1b791ad4b7f5a9023b3ff7de6231ffe35520645036083c94a53042a6c37f0c0c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0123/YBMG05.TTF",
+          "sha256": "12ef56e1d9f7b857dcf30207384a67585806e76e6daf346964e001ca97b9f859"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0124/YBUU02.TTF",
+          "sha256": "688ee65c9ee477084fc4fde4b8317137971475c950ab7f73eefac6e126892cef"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0125/YCHM08.TTF",
+          "sha256": "2f14bf261a71911ebd9bbef52e11bddd7bfe8bf40a5db42cc3ecc649ed3d34bd"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0126/YDOO08.TTF",
+          "sha256": "d05ee6613702210cdb233bd33543d51188fc59e3cbc9602df25cb33725ad05a2"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0127/YDUG05.TTF",
+          "sha256": "4a5e0c6baf71f4b62089625c94cfd07edd2151c4ed6d2d68dc96552774b2d612"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0128/YDWM05.TTF",
+          "sha256": "07e12531a46f092e76aa73e51fc5fa2b905c36d7b7866a09308bd6e862740be4"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0129/YGBI08.TTF",
+          "sha256": "f652e4dabd7b81c4e2b4e1ba0c2ec6f2a8a48fbaea2b95f3fb9c0428bf5f63d7"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0130/YGGE05.TTF",
+          "sha256": "84f65bfb8dfff0dd59135dde8d2e58b940ec105919c3d5faa8f15d3be90aa4d0"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0131/YINJ05.TTF",
+          "sha256": "b1b31b4d2397a120c4373c90009e8a9799fcfad0419554f0cbccff6702dfee43"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0132/YINP05.TTF",
+          "sha256": "43698214bd77cfffbf34aa68ad929dea6c18c28223f6ba8b5ba8eb59271ab63d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0133/YMAE07.TTF",
+          "sha256": "8f3c3e07ad0d77347aecc4bd8578cfbf271bf1369d7b29893a85720569913da1"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0134/YNCH05.TTF",
+          "sha256": "d398aac5b56ab85b49343a3815ddad857e8b4dee01bc4f6c07eabe518faf2be9"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0135/YSHN05.TTF",
+          "sha256": "356b8bf6e33c76a41b5fae84dc477b711984b5355e5ecad45796cd12a109623b"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0136/YSOS07.TTF",
+          "sha256": "bbcf9c8957dfb984a729ad11dc25e3352d3d9fa6aaa82c2c05d657c1e7000666"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0137/YTTE08.TTF",
+          "sha256": "5d94f438ff41fdf898dcc74582e33b437943bd5267c93394917830ddde7873a0"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0138/YWDA05.TTF",
+          "sha256": "af56d2e0afd17e2f17edb5d08a14588cdc818606123165cc42c6b91b1d388a8d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0139/Calibri.ttf",
+          "sha256": "596303d75b0c9a700c3c1aa0e8c55e09d120e9eb1479e284e5941dc0ac26585c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0140/Cambria_M.ttf",
+          "sha256": "d5a0da88030e642fa453ccf521c40c36331dac48c5fab20459dcae517a5bd130"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0141/Gulim.TTF",
+          "sha256": "4abfd6251c6077ddbc265eabb5fae822093cbd43142cbe1711b791ea48310e68"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0142/Gungsuh.TTF",
+          "sha256": "27c429bed5366bb68d12ca457ca1763ba10993d8f2614ca7ce2a723237b3e7cb"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0143/HANBatang.ttf",
+          "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0144/HANBatangB.ttf",
+          "sha256": "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0145/HANBatangExt.ttf",
+          "sha256": "f88d957a26dd5a6360424e37b6d25b4192a83d922b7ac1fa9fb92d34e579afe4"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0146/HANBatangExtB.ttf",
+          "sha256": "c9c8ec1f6c295be9254157fdbddef9df93f5f4b6c55e8683214b50368c50c381"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0147/HANBatangExtBB.ttf",
+          "sha256": "594860a83ffb618c76f1a08ab1708b2ad62bf533c919065e2527d7fbe69c497d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0148/HANDotum.ttf",
+          "sha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0149/HANDotumB.ttf",
+          "sha256": "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0150/HANDotumExt.ttf",
+          "sha256": "a2828746031f9e725b667ab1e5c96b553b6b42d24d55669a4472605692f8807c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0151/HANSymbol.ttf",
+          "sha256": "78875aa904c4c0dd4994699049b7b13812605ebe7cfa38315c55551b1a3deff7"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0152/HANWeb.ttf",
+          "sha256": "26f5d15304899e28bc4cc9ef1c0a7020963cbb124cbbb40b9c08bbadd4e3426f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0153/HANWing2.ttf",
+          "sha256": "ea1138df0143c26a1b8150b67a4c4a16e1839fa77cfbf7d8655fd6d3dd497f52"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0154/HANWing3.ttf",
+          "sha256": "70507ccf146e4d3242a444f2a246357198d97ef9e0ccdf62fadadb6de936bd30"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0155/HANWings.ttf",
+          "sha256": "c72b3e7b243a9f67ad7a8310a8040780a906e697fea20707a2c9aa83371e0ee9"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0156/HYHWPEQ.TTF",
+          "sha256": "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0157/HanGT GB.ttf",
+          "sha256": "d235fbcd5a9e3a5e3b2b9967f93a75b555a432c3defddfd69c056a22c64b712f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0158/HanMJ GB.ttf",
+          "sha256": "f5250c622f81614b8253c2ddd8e9cb8fc33654227542eb9830bcb8547770bc1d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0159/HanSantteutDotum-Bold.ttf",
+          "sha256": "b7c90dadfc6459cba605d8556ac281bc205141c5e58c51b6d9fa9e8c5f78c5bc"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0160/HanSantteutDotum-Regular.ttf",
+          "sha256": "423874746eb96c13b5255599135447312ed50c624d252eea1c6f3c67a83b681d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0161/Hancom Gothic Bold.ttf",
+          "sha256": "387905d447e92bce4d12462c7f90820d859d17a17151f822d907984867317ad9"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0162/Hancom Gothic Regular.ttf",
+          "sha256": "4a80e6a87aae6c779ccdf85116f4e8cb5b0027f71a28f538bb01a953265e6649"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0163/HancomEQN.ttf",
+          "sha256": "c249c422e4acbafe2757c0f4a5d714414f84305c728776d889224f6116186e35"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0164/JUMJA.TTF",
+          "sha256": "ece5a3763808ab0fa9db58cba4e4b0131bfec7ff814d371270ce7ac9e130d143"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0165/KBIZ한마음고딕 B.ttf",
+          "sha256": "9d10cb57d77e00aa91a595564ea5203e2331a3f9ed7754a0b28d66e479df520c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0166/KBIZ한마음고딕 M.ttf",
+          "sha256": "e2bce8417607883ff46af83f4a6e5b279287cba0196a5d6c042c981adf8ec468"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0167/KBIZ한마음고딕 R.ttf",
+          "sha256": "67f3fe61ea3405f00f382b317c671683765930549a8b17675d7476e6d6e0475c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0168/KBIZ한마음명조 B.ttf",
+          "sha256": "175b1b9426a6a430965fdd17b280168981f501bc480676587439f2a27a769dcf"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0169/KBIZ한마음명조 M.ttf",
+          "sha256": "c2284e998fc04d537f742b1c1a8230882f3b8d40eeb2446d040df97c6438b1ed"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0170/KBIZ한마음명조 R.ttf",
+          "sha256": "041135687c01f20fa1eead161eed1a5f4cd7c8bcf5a9b3566d98e3004225d5e3"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0171/MB.TTF",
+          "sha256": "f8e1bf06fe9488b362732483fae0d762f2081bcf9c67c2e748ca0f898585e26d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0172/MG.TTF",
+          "sha256": "7a91c5c5bca026d7a8c4889622e9693ab95faa85794875b3b6c9d4d4a8377ffd"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0173/MH.TTF",
+          "sha256": "fecb68a0d41ed7b6c81d05f02d884cc5072394161d8b56f7463d0bb479abe060"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0174/MJ.TTF",
+          "sha256": "fd7cc3f969d51b660161735c365b4a8cddc0ce93fd4a0a519010f4a6ec5d3984"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0175/MK.TTF",
+          "sha256": "627eb4feb8560cdf3434c3aee98d16e095b1e7623e50bcc13ce79c5afff22074"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0176/MM.TTF",
+          "sha256": "edf1ebd5d1bb4d92975c0fdcce599149a70ef60183598e21459f71beef512151"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0177/MN.TTF",
+          "sha256": "dbf1d1d9f4a4bf26d9170de17fb5e12783030c03c48e6a8ab82f75664123bf31"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0178/MP.TTF",
+          "sha256": "8bf11816f2e327481558a7a47cc42132385b54dbd4291c2954609214e98d9e50"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0179/MT.TTF",
+          "sha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0180/arial.ttf",
+          "sha256": "b23742143bae95dfaf50d8d530e798c7863336b254b899024b0b12b09c93abfd"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0181/batangche.ttf",
+          "sha256": "3bb6a723dd098d5e07b880c1b7519f694cb3a9f60afaec4bd99c33b06b53a434"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0182/cour.ttf",
+          "sha256": "0e4ea8a0cee5b26d9981ed831aea481485c3b23813fb023693249eceb5309265"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0183/dotumche.ttf",
+          "sha256": "097a83c15227aa0b01bba1c446d2cf67ac04694052e60d41fef557ed5a0a8a62"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0184/gulimche.ttf",
+          "sha256": "a04c68a8f0daacda69edeb3784b53c9053d09d9a864ffde95451902c07e32f0a"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0185/gungsuhche.ttf",
+          "sha256": "37f6cb33c2b810da8385a100cbdc43bd7be4c508a4cfda62259202611c6f28d2"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0186/lt_70346.ttf",
+          "sha256": "277f0c38197be4b6eecaa9da19ece1ea3389896ccf62e55a7b8c584ea7c0ce3c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0187/malgun.ttf",
+          "sha256": "6706a05313c7fafb3fd8fda9538c9ecabac7cede30076b3ea85be7716f356702"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0188/mtsorts_.ttf",
+          "sha256": "ef3dd0c3358584e61650b9e5d78fae280f9c3851d50632346e82ce1dd3330e67"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0189/pala.ttf",
+          "sha256": "6f98bd91b902a1b8ef86c53b084d61d40282f1c1260fce08be7dd7034713f8ad"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0190/tahoma.ttf",
+          "sha256": "d3314ffa8ecc803a44dbfa1b0943dc11e340c45ebeef2e375efd66cbb05a8357"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0191/times.ttf",
+          "sha256": "d713af89fbadd537f4bdf217f43a16dd11e9ec21f371e82ad93898afbb35374e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0192/verdana.ttf",
+          "sha256": "42854b9cdb787cd65da48aabf5d1c9eac3aa454f41640e153a7465836f70be58"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0193/경기천년바탕_Bold.ttf",
+          "sha256": "df13902fb156d207d8b9f3e63e21099311e77cdb4de6e7868fe24ce941bbe6e3"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0194/경기천년바탕_Regular.ttf",
+          "sha256": "bb6c078983dc2f4e1db2c3e3c307f3408805fda1347903e1ba20c7e99968c3b3"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0195/경기천년제목V_Bold.ttf",
+          "sha256": "e3043b1abdf85558a570380d9fdf456d4f80244e5b2ba103d1cb4dbdce47cad6"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0196/경기천년제목_Bold.ttf",
+          "sha256": "f490194d9bf161f70076d01c9fb0a24d0019a324102de46c5fef579188ee96e6"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0197/경기천년제목_Light.ttf",
+          "sha256": "7b6e388d92d1ba8a146d4124d8e2ba2728ca8810979c128c275ac1b85df2f41d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0198/경기천년제목_Medium.ttf",
+          "sha256": "11a877937389617c0fa4ba621d0a75da2e36b22556d0faded51401697ff29fb0"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0199/전주완판본 각B.ttf",
+          "sha256": "64f602ebbd82b0ad58e88c42aca0dc70230a61fd598bbd34e0712ad3ca970ddd"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0200/전주완판본 각L.ttf",
+          "sha256": "a42220109801a7552c97bbd4554a1573b63520dabfac0c783e5984fc8e730b83"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0201/전주완판본 각R.ttf",
+          "sha256": "1f283b85d409670bfe33b3204563995a1af06fbf01ecbfcfe2a91ab51306d904"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0202/전주완판본 순B.ttf",
+          "sha256": "5247f40b21c1a9833a73d03fa14834f65b4153dfd2b6a0ca9a4e43274a9a03d7"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0203/전주완판본 순L.ttf",
+          "sha256": "ae2b21093d15394a0faff4fb6ba0ff5f6a3bb6a32ae1df136844d3eac49855db"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0204/전주완판본 순R.ttf",
+          "sha256": "30d616d3fa73ef77ca6380dfd0994a01908dc968ad8ee1bdf7a357496e22375f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0205/KoPub Batang Bold.ttf",
+          "sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0206/KoPub Batang Light.ttf",
+          "sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0207/KoPub Batang Medium.ttf",
+          "sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0208/KoPub Dotum Bold.ttf",
+          "sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0209/KoPub Dotum Light.ttf",
+          "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0210/KoPub Dotum Medium.ttf",
+          "sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0211/KoPubWorld Batang Bold.ttf",
+          "sha256": "72122f815cad001c97269bb99337647336b5597d2c3f749a49fb879c9e6ae9ff"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0212/KoPubWorld Batang Light.ttf",
+          "sha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0213/KoPubWorld Batang Medium.ttf",
+          "sha256": "f2c31ffd195ea0fe74c9e720592930ed528c52ee7876baffaeff24d42c133d6d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0214/KoPubWorld Dotum Bold.ttf",
+          "sha256": "896a4952ab3c28108c095c638548989a82295cf644bcced1d4c53f5616a90db6"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0215/KoPubWorld Dotum Light.ttf",
+          "sha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/strict8188-exact-font-supply/0216/KoPubWorld Dotum Medium.ttf",
+          "sha256": "6269624bd0c5ae8746a8e731b8087f056088af930a7bbc0efb76902bf732a293"
+        }
+      ]
+    }
+  },
+  "pages": [
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 1,
+      "candidate_png_sha256": "b2ec2c1f9fd090534904f72e5949c5e250da1c727a1feb1fb268b1bb19435144",
+      "reference_png_sha256": "3f69541cf83800f281bddb559be9e5c63561d2c00fb6e33dd28ee8c06a2c280f",
+      "candidate_unmatched": 256,
+      "reference_unmatched": 192,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 2,
+      "candidate_png_sha256": "ec0e1faf171d84fa3c24bb703b724765ed54ea76dede2943f12b2b1da17a1e2b",
+      "reference_png_sha256": "cbf59139a54a8dc2b846b8f0c22576ffea53ab44bdd740ced2fa178ba9c9d43d",
+      "candidate_unmatched": 54,
+      "reference_unmatched": 2,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 3,
+      "candidate_png_sha256": "6813c4fe9d3dde202a2b051538e0599ff27966f4c52fbfd5e399a32ed144dc9b",
+      "reference_png_sha256": "8e54d6380fcafcf1ccac9ecdfa605c8619f0d1900cafd5e1be3b243f70e996cb",
+      "candidate_unmatched": 89,
+      "reference_unmatched": 30,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 4,
+      "candidate_png_sha256": "e586ae5d492367b1eff5617c4562a4172e23a87c5417af3f19979833945b63bb",
+      "reference_png_sha256": "4f7ad8d52c91a7bc584f214eace564c68af391bd2aeb83b9d55deda59788adf2",
+      "candidate_unmatched": 427,
+      "reference_unmatched": 86,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 5,
+      "candidate_png_sha256": "2e2bdf038955fa45ef738f08107454630a407372177dde5771213784a486a13b",
+      "reference_png_sha256": "c1d0d6fbd7cd75323b8f0b208d1d42136ddc966b714c95626e1ce18ed554e930",
+      "candidate_unmatched": 87,
+      "reference_unmatched": 23,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 6,
+      "candidate_png_sha256": "4e9acc3e26ee7257cd30933992babb7cd92b9e6a01c466739aa9f7cb0605175f",
+      "reference_png_sha256": "fcc619052678a22d5813f62f6f18dca47f7adb3a65618c9e69cedf1b4c552da0",
+      "candidate_unmatched": 87,
+      "reference_unmatched": 34,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 7,
+      "candidate_png_sha256": "0ddddd25742bdabd23aaa907dcd5d3adb1dac7269f124b69f51a754b61657c7a",
+      "reference_png_sha256": "a626c3dbacd2b4f14824ac24233fee3ab8bd9162e7249f5fe77d888c394446ab",
+      "candidate_unmatched": 44,
+      "reference_unmatched": 17,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 8,
+      "candidate_png_sha256": "22bfcf008e014c7aaf7f4c2bf1e398ac70a3419a8f1bd56b684ef5f39739812c",
+      "reference_png_sha256": "e81fb610fe28c704e9f1bc95fc026d40129690b37e6db1edf67a434a41dc7dbf",
+      "candidate_unmatched": 38,
+      "reference_unmatched": 8,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 9,
+      "candidate_png_sha256": "d6cf386a89eea6750f7da99a8ce2b4741bbe9ecd9f2fa7f9ad37193e2ad734ab",
+      "reference_png_sha256": "e7477d684d334b63e0600e1358829eb1194d9a86e3ccf4eb5e3850ee13024b27",
+      "candidate_unmatched": 71,
+      "reference_unmatched": 82,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 10,
+      "candidate_png_sha256": "41c2a95a2fb9ab39235b5f398bb7f67c864c04c5023a97c5ab254d0cd251e8f0",
+      "reference_png_sha256": "32ec2382010da3453d74b115547d9842d92bebe38dc224f6928820300aa8690f",
+      "candidate_unmatched": 153,
+      "reference_unmatched": 53,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 11,
+      "candidate_png_sha256": "32e8aef9ada86ed67f5acc22b11ce9a834c49c470a81940b5c538454ecbc4b06",
+      "reference_png_sha256": "8ce8d4c0d03bbff7dc076b96d4c396d2400bf325dbeb64e6f0b6a92a16f12d5e",
+      "candidate_unmatched": 184,
+      "reference_unmatched": 77,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 12,
+      "candidate_png_sha256": "2f0763be40f957b9858bd77fd1c630e2e7cd1bf78c7c3f3dffe22efe6c7d9dbd",
+      "reference_png_sha256": "bf994d4e8fbe481ae003ac331bea006bc6265a83b98794adcc51780771b6323f",
+      "candidate_unmatched": 267,
+      "reference_unmatched": 105,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 13,
+      "candidate_png_sha256": "d96708c9344514467f877b960bfa5a64143e2b2eabc830a8d757a2e82d7794e3",
+      "reference_png_sha256": "847f68fae9ee09a3760ff6cbce29643781094315864131348b0a1cdca6bab954",
+      "candidate_unmatched": 124,
+      "reference_unmatched": 52,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 14,
+      "candidate_png_sha256": "954362c4c28be099e2339d7015e5e6f3ed3f85037af919ac04596a115f509864",
+      "reference_png_sha256": "3ed37f2c1c932511568190e48cbab35bc6857cd43c402a49bf2a319efe7b5c99",
+      "candidate_unmatched": 215,
+      "reference_unmatched": 87,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 15,
+      "candidate_png_sha256": "c8cfcd5e97e40978617ba8ded9feadd71bf6c6a74fb6a49144ba3a378c193726",
+      "reference_png_sha256": "23c58a4e929f3d8596007756284526341de77c92556d6e9bddd237859a1e4d6c",
+      "candidate_unmatched": 147,
+      "reference_unmatched": 60,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 16,
+      "candidate_png_sha256": "47bf1f8ace31fd738990ac5f744b8e5447b24668810096ba968decc7539535e3",
+      "reference_png_sha256": "2485cb25b784a4394ce52de5a0370d4883f126217791d0f99fa15349cbe45918",
+      "candidate_unmatched": 65,
+      "reference_unmatched": 25,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 17,
+      "candidate_png_sha256": "a9b113656060de036717a79e54dde5baf68bb794f3f2e51316f73134e64b22f6",
+      "reference_png_sha256": "8ae0842f6e3ad8b39c7f99c3c6f0db3e433eea15110c05ff373fd4576b55bcc2",
+      "candidate_unmatched": 342,
+      "reference_unmatched": 87,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 18,
+      "candidate_png_sha256": "caeba0cd26875e2224be81530054a2b0ed29321118bd375ec87182e8b57f0ef0",
+      "reference_png_sha256": "aab16eda8d4a24cee008a16fbbff5c48a7319ad776da6f00241e8926e001c2a0",
+      "candidate_unmatched": 327,
+      "reference_unmatched": 180,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 19,
+      "candidate_png_sha256": "d1117d7c25ba225845a1c7f306915caf5c7b1d64211c87c4fdcc0c1ed78f896b",
+      "reference_png_sha256": "94dd530dc93c58235f12ab8f0f7c46c8eb832dea6ac1303c2947b063dcd537bd",
+      "candidate_unmatched": 476,
+      "reference_unmatched": 258,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 20,
+      "candidate_png_sha256": "f7443fc503ae1bb5fe84d8a054dc9c4354bccb88c6447ac78bcaffb3f9d85089",
+      "reference_png_sha256": "603715132d2c9f1a19acc740232085beb723fc37e28640790634ee448d567727",
+      "candidate_unmatched": 126,
+      "reference_unmatched": 24,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 21,
+      "candidate_png_sha256": "7ea00f629f47061b6d0d876046a4885723447f56987f19fefc97e4d7c29335a9",
+      "reference_png_sha256": "ea008ad8577e7669ce7769d1ca73772f1b8bd4567c0cf9b3808c0e5128bde630",
+      "candidate_unmatched": 145,
+      "reference_unmatched": 51,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 22,
+      "candidate_png_sha256": "86e56961a02737a7d59da7ede4749975cf36e1f6388b9805bb004ebdc7719ce9",
+      "reference_png_sha256": "a18a8ac8d54ce09dd5913616165a62e0e4668e39f19459ec6b3beac904a4ccf5",
+      "candidate_unmatched": 824,
+      "reference_unmatched": 1237,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 23,
+      "candidate_png_sha256": "e9f14c304f8effaaa65426fb83886039dc6eb927fb4a73fa321913116d3dd338",
+      "reference_png_sha256": "f2461ed2a28426385af148dbebb0f1ef44d4f4b5cde7603eba4e3a414c887c91",
+      "candidate_unmatched": 83,
+      "reference_unmatched": 18,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 24,
+      "candidate_png_sha256": "c3318cce421f0667f1670cef0a658280ac2b6fb7a8f120a4c231ca1b56b037ad",
+      "reference_png_sha256": "d242e9128b3543cf5198751e2f2a8a9c7f00b10d3b7c2aabbb8fdbfa3953f884",
+      "candidate_unmatched": 47,
+      "reference_unmatched": 9,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 25,
+      "candidate_png_sha256": "3d2cd56da8ad1d71eeefc73f546ee2a316c833e6c93024334c8da5855720e6b3",
+      "reference_png_sha256": "a622f08a25c4ee3234a0c6c0959bef7b550b9e07680d4138304cf677ed83d3bd",
+      "candidate_unmatched": 99,
+      "reference_unmatched": 40,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 26,
+      "candidate_png_sha256": "186a7aa5617333e84399b9e8288e6b0370297474c2f52839a11f6f8f70007768",
+      "reference_png_sha256": "a26bcb8dba383e969ef6a1f16b882261c594535c089d7030ccd3071a02c36c01",
+      "candidate_unmatched": 149,
+      "reference_unmatched": 85,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 27,
+      "candidate_png_sha256": "481be4f04a8c51989f4a6850d1a5bc46937d2f509010a01731da56cd4d4f9ca6",
+      "reference_png_sha256": "39aa66870111b06accb4a6a0d6dc3a18094923f10dc0e336508d403e7f780d02",
+      "candidate_unmatched": 76,
+      "reference_unmatched": 29,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 28,
+      "candidate_png_sha256": "9ba88c5956705c977e5989e4e1f3a55c16a86ded5a012142b935dffeff63db14",
+      "reference_png_sha256": "056a663a656dae6f0715a2be50eb81c5b857a58c8df02a40775408b58d696fa6",
+      "candidate_unmatched": 550,
+      "reference_unmatched": 143,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 29,
+      "candidate_png_sha256": "2001adb7f08379d4108fe5f1c198ce3875784aba9d5de41fcf8e11ce550e3957",
+      "reference_png_sha256": "05acd1bd963d55e43fb20bcfc62c8743a08188f9b2a9ee2b4457de8989231a90",
+      "candidate_unmatched": 301,
+      "reference_unmatched": 68,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 30,
+      "candidate_png_sha256": "5ac35c76178ffab2efd10aa5a0f7891d2441a97ba63a350f0e5bba172be41ee0",
+      "reference_png_sha256": "eeaa731a5d60b216140b7f72257a8e16123893a76beeb40a7ec607a019640581",
+      "candidate_unmatched": 435,
+      "reference_unmatched": 54,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 31,
+      "candidate_png_sha256": "38deae9a73f1001b8bb63109b35ef82cf189a4d177a8087006aee3848706efb6",
+      "reference_png_sha256": "8178aea9088df4e7b8447ecdc2619522b0b426753a508fa03b0bac7175d94c9a",
+      "candidate_unmatched": 421,
+      "reference_unmatched": 104,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 32,
+      "candidate_png_sha256": "6626ffa05bdceecf76bad63cdeae8e98f2761952c57d43460cc79c0fae9b444a",
+      "reference_png_sha256": "e46218a939dfca94edeb1f27317bd3c85b512c8e065c77aa20c254a62b28824b",
+      "candidate_unmatched": 87,
+      "reference_unmatched": 31,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 33,
+      "candidate_png_sha256": "2cfe44e2ee782209474489b86d3c09e49519213c3bf208ee5659ad7f802c3a68",
+      "reference_png_sha256": "b3eb8e667180b01acc538d3ee6dbed55e5e273135e7b2cda355bc3c9e23998e2",
+      "candidate_unmatched": 278,
+      "reference_unmatched": 70,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 34,
+      "candidate_png_sha256": "20edd793ccced79d12adc0bc2c84fe38321593f61c701c8b2be9fdd88024ca68",
+      "reference_png_sha256": "4217346223d76b6cf4a348a5a8b09a360c20e08d1e7f31cc85689eb3ab034b58",
+      "candidate_unmatched": 141,
+      "reference_unmatched": 16,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 35,
+      "candidate_png_sha256": "fb15fbc90159560173f717c6d6f6585a07d4b7d00487d1fe11378a29018ba4f5",
+      "reference_png_sha256": "14b40bf618d60f660a94e406aa0381aefa86763569a00a31883c7a441db96d9b",
+      "candidate_unmatched": 36,
+      "reference_unmatched": 6,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 36,
+      "candidate_png_sha256": "990b72321a96913d5aa9e2f3ccf5365df318f0a859c31a08186c45380ad57488",
+      "reference_png_sha256": "217b40889c0d8e64f979453444eab19e90f226d0dcdb80daa7902bdb52c5b8dc",
+      "candidate_unmatched": 38,
+      "reference_unmatched": 1,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 37,
+      "candidate_png_sha256": "7e57b7b134849f49071cc1b2b527539d038057e9966d94f7cc49980064f7520c",
+      "reference_png_sha256": "95631462d7204c987f3fec8750b07b6a47b8edeca0488ab5ffd9203851c4a56a",
+      "candidate_unmatched": 23,
+      "reference_unmatched": 8,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 38,
+      "candidate_png_sha256": "af0c80c5b8ac6cf42ce7b7a931b208839d972435b448017e030aa0e9432e475a",
+      "reference_png_sha256": "cf75b7c7b08506dff60378fcdf11d0700ea5404dbc8ab3f5f0057d9e80e09d74",
+      "candidate_unmatched": 409,
+      "reference_unmatched": 238,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 39,
+      "candidate_png_sha256": "8116fe5db4d94993212a5706b8bcdc7b064df1ab9f55832ef97267c284a2eb67",
+      "reference_png_sha256": "82e55db398093b6779923650d8eef32e299a643aaca50fd3ad7d8811208e1b5e",
+      "candidate_unmatched": 14,
+      "reference_unmatched": 2,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 40,
+      "candidate_png_sha256": "d5f011bdf3788ed96014cd4466802dbee78906b060754b8ba0ff52210af1a040",
+      "reference_png_sha256": "bc30dc846e5f5643df034f6fb46e84a430b2ac653faea9102c6cb91ca41856f5",
+      "candidate_unmatched": 91,
+      "reference_unmatched": 35,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 41,
+      "candidate_png_sha256": "4fba63e9a700deda3a7a7c14b6ebc84a7995bf42db548a6aabf620e9e956add7",
+      "reference_png_sha256": "058c36d0c99697d73dfc5ab8b25aa7af7e6bfd879bee92fb1f36e36aed04415b",
+      "candidate_unmatched": 11,
+      "reference_unmatched": 0,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 42,
+      "candidate_png_sha256": "fb53056e5ed2c2509e95380ccd621edc00d03f12f76c94fbc452ad3c84f6660f",
+      "reference_png_sha256": "049e2de516bbf56a24e1d13e80a9dd14e016e632b87da3d09073402dbe6fa523",
+      "candidate_unmatched": 27,
+      "reference_unmatched": 68,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 43,
+      "candidate_png_sha256": "66745f26ac04fa25fd4ca2af24b5a614f811a3a166af2fa9cf689990ad14ce9e",
+      "reference_png_sha256": "d77980364ecee3ea2da9ff01aea2d382132d37d4971875af55def7a2c1614393",
+      "candidate_unmatched": 32,
+      "reference_unmatched": 14,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 44,
+      "candidate_png_sha256": "3a6793fd0c3b838ba04503f66032171e8f743e2963600265cce09f661580d12e",
+      "reference_png_sha256": "9063d3fe3a145aab760e52abb1a35c351c6c8f5dc53832ea70db9b6c97d06481",
+      "candidate_unmatched": 21,
+      "reference_unmatched": 7,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 45,
+      "candidate_png_sha256": "fd0ed1e5b2a8ba7b01495718246f1ee224b960ddc0746122355ea89d7157eaf5",
+      "reference_png_sha256": "a228c5ac78a3ccb16cf53d93d56e170c8782a45a1e2203d7b73ad873196d7bcf",
+      "candidate_unmatched": 51,
+      "reference_unmatched": 16,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 46,
+      "candidate_png_sha256": "118b8c69d93da60c099a1bc332728a9cb248124c26a44ec6fa2e6753f618e6ea",
+      "reference_png_sha256": "e07543c68d0adadaa2b4b48134efa00168d5d2791cc5000e3196e35b0b47d6e2",
+      "candidate_unmatched": 211,
+      "reference_unmatched": 95,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 47,
+      "candidate_png_sha256": "6fd490a4d0b350a1799063a7e05e41e34bf56d717ea6b668cc114ef9ce3e9cfc",
+      "reference_png_sha256": "5149faa0066eb840f4129697f57d350ceb087faf4ecba4f40c89751363b9bd63",
+      "candidate_unmatched": 140,
+      "reference_unmatched": 59,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 48,
+      "candidate_png_sha256": "e552fad46274393a257234fcd9ba081c1e0e8fc4ba2cfc15d67b356b072111f6",
+      "reference_png_sha256": "a3b54a73018221506c526ec0939c9e80014622a62c103e24c8e1231f3209ff19",
+      "candidate_unmatched": 120,
+      "reference_unmatched": 27,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 49,
+      "candidate_png_sha256": "1a73272ddf868a200e36f4916271bf1847cf887a9aafa23680f9bb359bcfdffe",
+      "reference_png_sha256": "fc14acc6d7413cfc7b94c6d611fd3096395fcf6bd94e3b641ffd4a326ae4de83",
+      "candidate_unmatched": 141,
+      "reference_unmatched": 49,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 50,
+      "candidate_png_sha256": "8520aca3b9700cd49a2ee9bae39c2a339806dcf61ab46bdef1e598b8d383bb38",
+      "reference_png_sha256": "22239de68b259e85e904c76ea9508ba8a24d8e8ddac46689b9cf65ecb0ed2cc0",
+      "candidate_unmatched": 181,
+      "reference_unmatched": 55,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 51,
+      "candidate_png_sha256": "bb281416bf7b21a36591d5dccf9f1269ffa3e724840e4a9b55f361bb4a77fed0",
+      "reference_png_sha256": "05ed018989befca8de88a8cf730fbea76f200a55c677c409e2d0ab0d9f4c9b66",
+      "candidate_unmatched": 21,
+      "reference_unmatched": 62,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 52,
+      "candidate_png_sha256": "6e775c94600e95152cfc9f81704fd58a6359f708476aea2cb3c77d6d1e241024",
+      "reference_png_sha256": "509a35ffc99bfcfeb97ff79734594a4166ee41a90eae07fc60e92dea694e7498",
+      "candidate_unmatched": 4,
+      "reference_unmatched": 0,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 53,
+      "candidate_png_sha256": "15f86e9f68745a342cd6cf6ee55d451cdc37eec916905585fefafa68fd702f49",
+      "reference_png_sha256": "f848510cc5ae779b317ab587572d7fd99dafb616dc337f5f229b0e06f2abd644",
+      "candidate_unmatched": 160,
+      "reference_unmatched": 60,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 54,
+      "candidate_png_sha256": "77df117fce7ee4d512b8b12cc6b32282e40fb257d8042a9f49355757ac474593",
+      "reference_png_sha256": "e46e0a489702e767619f226972f1f1dfbcbb67901e08b4a0305e625b926e1dd1",
+      "candidate_unmatched": 3,
+      "reference_unmatched": 0,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 55,
+      "candidate_png_sha256": "46a8cbe1cbc6d31399e7ef2234fdfe67d482a28bce1330a259d97d89f64e94d8",
+      "reference_png_sha256": "3b3c147e42426d905a7b88fe3bae59276964caf7d0938046bb0bf5a48149711d",
+      "candidate_unmatched": 37,
+      "reference_unmatched": 34,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 56,
+      "candidate_png_sha256": "17071e2bea32abc1bc805961471d54f40bdd421234c83395bf6ddb520ee00e4a",
+      "reference_png_sha256": "2e43d7eac8d4f4d78348beddea0497273f227795e81edbd86debb5200aeeda42",
+      "candidate_unmatched": 3,
+      "reference_unmatched": 0,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 57,
+      "candidate_png_sha256": "1c9ce85934263535e6c9c9bfb5d6d0d241e1dea2c54e3f070f3a7ad772e471b7",
+      "reference_png_sha256": "9a32381125f60b52b72e1a2df9f3d88bea2b1a8b5be9b369e0960a501e5830b4",
+      "candidate_unmatched": 48,
+      "reference_unmatched": 52,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 58,
+      "candidate_png_sha256": "39a8f65d0bae4ce609d9545d47cf929638b0e984dd9e633410ca02d9fe7426ee",
+      "reference_png_sha256": "e4d22542d19dadf8369b861656809e0449705a9f9ddb4469f57617f00c8b08dc",
+      "candidate_unmatched": 7,
+      "reference_unmatched": 0,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 59,
+      "candidate_png_sha256": "34f8ed15d48a4d6cce4630b3e5850477a8a9b5e064b69f6d61e4337e55e09cbd",
+      "reference_png_sha256": "a8668c157487c8ea359ceb5512b4992c83d5327a08b02fc707b169562814efdc",
+      "candidate_unmatched": 107,
+      "reference_unmatched": 66,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 60,
+      "candidate_png_sha256": "2ae666a211d2a634664ff260a50f64b86a702372bf92beb87fe791e517c3cd7a",
+      "reference_png_sha256": "0a81bd5322d9f7219aa0d4a4521333c0b4e97d8acd50920bfa7d5978c6a9ef92",
+      "candidate_unmatched": 43,
+      "reference_unmatched": 33,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 61,
+      "candidate_png_sha256": "bd4362f98885618be4e56fb131a50ed9099e1e80105997718786e41452531242",
+      "reference_png_sha256": "0181f2b4f266f2c1df3d1ae4cdb05511a3d392b6b882e846c26dcac1742c1462",
+      "candidate_unmatched": 36,
+      "reference_unmatched": 22,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 62,
+      "candidate_png_sha256": "141d3933044f06b86b9c8385a74ea43350d52b3167c12e2c727fd909a633ec42",
+      "reference_png_sha256": "0e2f88e7c43ee1d6fd6466d4e32082640f1e572a35f691df655326a68a78648c",
+      "candidate_unmatched": 9,
+      "reference_unmatched": 7,
+      "raw100": false
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 63,
+      "candidate_png_sha256": "8d6f54ace331724674f3a9939916a06b6fa2e09d5ab979d58e59933d41f3d630",
+      "reference_png_sha256": "e3abcb41f1d6425bf178aacd7d128d40d5336e019f949529dc13e1395895c516",
+      "candidate_unmatched": 0,
+      "reference_unmatched": 0,
+      "raw100": true
+    },
+    {
+      "backend": "native",
+      "document": "issue7723",
+      "page": 64,
+      "candidate_png_sha256": "345859c807c7198cf2509d8f6bd30db4bc41d8ee5d8cd77ad7768e0578b0c12e",
+      "reference_png_sha256": "a7bb6dacc3b4389760b8f01fc760328b361ff481cc1da710c982e4738dd398a9",
+      "candidate_unmatched": 0,
+      "reference_unmatched": 0,
+      "raw100": true
+    }
+  ],
+  "status": "native-not-100-wasm-pending",
+  "source_commit": "94a868b34d",
+  "native_binary_sha256": "5a8c2ef8a95330e685ab61073cdf149d256f253310fd946005ff63010fe84f2e"
+}

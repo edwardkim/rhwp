@@ -1,3 +1,14 @@
+//! 검사 유형: 관계형·고정형.
+//! 2026-10-24 측정 raw(96dpi, PDFium, source 1f54c3df):
+//! 55쪽 Native 100.00000% / fresh WASM 100.00000%; 63쪽 Native 99.95399% / fresh WASM 99.95399%.
+//! 125쪽 Native 100.00000% / fresh WASM 100.00000%; 143쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 146쪽 Native 100.00000% / fresh WASM 100.00000%; 147쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 148쪽 Native 100.00000% / fresh WASM 100.00000%; 154쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 155쪽 Native 99.98997% / fresh WASM 99.98995%; 168쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 172쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 전205쪽 최저 Native 98.42761% / fresh WASM 98.42748%.
+//! 근거: mydocs/pr/assets/issue7445/completed-20261009/final-20261024/README.md.
+//!
 //! #7445 지정 댓글의 생물독 원본: 독립 PDF 205쪽 전수 시각 수용 후 복구한 회귀.
 //! C84 Native/fresh WASM 전205쪽96DPI raw 최저97.13499/97.13158%, 미달0.
 //! 원본 셀·문단·그림의 소속, 내용 보존과 상대 배치를 검사하고, 양쪽98% 이상인
@@ -479,7 +490,10 @@ fn gray_grid_keeps_its_print_coverage_cell_owners_and_pdf_origin() {
     assert!((table.bbox.x + table.bbox.width - 707.78).abs() <= 2.0);
 
     // C80의 같은 회색 grid 경계143쪽: 양쪽 raw99.97632/99.97501%.
-    // 독립 PDF를96DPI로 인쇄 raster한 내부 선은 x700에서 RGB224다.
+    // 한/글 2024(13.0.0.564)가 직접 그린 같은 쪽(CreatePageImage 96DPI)의 내부 선은
+    // x700 y257·273·336·399에서 한 화소를 채운 RGB191이다. 같은 독립 PDF를 다른
+    // rasterizer로 그리면 값이 갈린다(poppler 한 화소 191, pdfium 두 화소 211~234)
+    // — 기대값은 한/글 출력을 따른다(#8125).
     // 모델 좌표만 검사하면 두 픽셀에 분산되어 사라진 회색 선을 놓치므로
     // 최종 Native paint에서 같은 독립 위치±2px와 AA 색 차이8을 확인한다.
     let layer = core
@@ -490,7 +504,7 @@ fn gray_grid_keeps_its_print_coverage_cell_owners_and_pdf_origin() {
     for expected_y in [257, 273, 336, 399] {
         let visible = (expected_y - 2..=expected_y + 2).any(|y| {
             let color = pixels.get_pixel(700, y).0;
-            color.into_iter().all(|value| value.abs_diff(224) <= 8)
+            color.into_iter().all(|value| value.abs_diff(191) <= 8)
         });
         assert!(
             visible,

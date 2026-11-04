@@ -1,3 +1,12 @@
+//! 검사 유형: 관계형·고정형.
+//! 2026-10-28 측정 raw(96dpi, PDFium):
+//! hwpx_sample2.hwp: 19쪽 Native 99.91241% / fresh WASM 99.94545%; 전29쪽 최저 96.12298% / 95.97915%.
+//! issue2007_nested_cell_pagination_42065.hwp: 11쪽 Native 98.82265% / fresh WASM 98.87353%; 전17쪽 최저 94.47057% / 94.39749%.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/sample2-ted3-visual-evidence.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//! 19쪽 독립 Print 글줄 좌표: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/sample2-p19-pdf-coordinates.json.
+//!
 //! [Issue #4068] **안 잘린 중첩 칸이 선언된 세로 정렬을 잃는다.**
 //!
 //! `table_layout.rs` 의 `effective_valign` 은 네 가지 잘림 조건에서 `Top` 으로 수렴한다.
@@ -26,8 +35,8 @@
 //! 안높이보다 커서 정렬 몫이 0 이다(아래 `the_cell_without_alignment_slack_stays_put`
 //! 가 그것을 잠근다). 이 시험이 잠그는 것은 "칸 정렬 오판" 하나다.
 //!
-//! 아래 셋이 **양쪽을 잠근다** — 정렬을 못 받으면 ①이, 여유 없는 칸까지 밀면 ②가,
-//! 진짜 잘림 보호가 무너지면 ③이 깨진다.
+//! 선언 정렬, 여유 없는 칸, 실제 부모 잘림과 온전한 continuation 칸을 각각 검사한다.
+//! 과거 잘림 핀 대신 독립 Print가 보존한 원본 정렬·내용 포함 관계를 보호한다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -45,7 +54,7 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 /// 중첩 표를 담은 정식 회귀 입력 — 그림 칸과 글자 칸이 한 행에 나란히 있다.
 const NESTED_SAMPLE: &str = "samples/hwpx_sample2.hwp";
-/// `#2007` 의 **진짜** 쪽-잘림 보호 문서. 이 수정에 영향받지 않아야 한다.
+/// `#2007` 원본의 이어지는 쪽. 독립 Print는 두 내부 칸의 Center 정렬을 보존한다.
 const CLIP_SAMPLE: &str = "samples/basic/issue2007_nested_cell_pagination_42065.hwp";
 
 /// `walk` 은 자기 자신을 세므로 최상위 표의 칸이 1, 그 안의 중첩 표 칸이 2 다.
@@ -239,6 +248,7 @@ struct CellContent {
     cell_y: f64,
     cell_h: f64,
     first_line_y: f64,
+    last_line_bottom: f64,
 }
 
 impl CellContent {
@@ -263,6 +273,17 @@ fn nested_cell_contents(node: &RenderNode, min_depth: usize) -> Vec<CellContent>
         best
     }
 
+    fn last_line_bottom(node: &RenderNode) -> Option<f64> {
+        let own = matches!(node.node_type, RenderNodeType::TextLine(_))
+            .then_some(node.bbox.y + node.bbox.height);
+        node.children
+            .iter()
+            .filter_map(last_line_bottom)
+            .fold(own, |best, end| {
+                Some(best.map_or(end, |bottom| bottom.max(end)))
+            })
+    }
+
     fn walk(node: &RenderNode, depth: usize, min_depth: usize, out: &mut Vec<CellContent>) {
         let is_cell = matches!(node.node_type, RenderNodeType::TableCell(_));
         let depth = depth + usize::from(is_cell);
@@ -273,6 +294,7 @@ fn nested_cell_contents(node: &RenderNode, min_depth: usize) -> Vec<CellContent>
                     cell_y: node.bbox.y,
                     cell_h: node.bbox.height,
                     first_line_y: y,
+                    last_line_bottom: last_line_bottom(node).expect("첫 줄이 있는 칸의 마지막 줄"),
                 });
             }
         }
@@ -410,6 +432,18 @@ fn source_row_metrics() -> (f64, f64, f64) {
 fn an_unclipped_nested_cell_keeps_its_declared_center_alignment() {
     let (picture_cell, text_cell, page_bottom) = nested_row();
 
+    // 같은 원본의 한컴 Print 19쪽 텍스트 글줄 상·하단(96dpi, ±2px).
+    assert!(
+        (text_cell.first_line_y - 971.49).abs() <= 2.0,
+        "독립 Print 첫 글줄 윗변: {:.2}px",
+        text_cell.first_line_y
+    );
+    assert!(
+        (text_cell.last_line_bottom - 1068.02).abs() <= 2.0,
+        "독립 Print 마지막 글줄 아랫변: {:.2}px",
+        text_cell.last_line_bottom
+    );
+
     // 전제: 두 칸 모두 페이지 안에 **온전히** 들어간다 — 이 수정이 보는 바로 그 조건.
     for cell in [picture_cell, text_cell] {
         assert!(
@@ -452,30 +486,28 @@ fn the_cell_without_alignment_slack_stays_put() {
     );
 }
 
-/// ③ **반례** — `#2007` 의 쪽-잘림 보호 문서는 이 수정에 흔들리지 않는다.
+/// ③ 이어지는 쪽의 완전한 물리 칸은 원본 Center와 내용 포함을 보존한다.
 ///
-/// `42065` 11쪽(0-based 10)의 중첩 칸 두 개는 수정 전후 **같은 자리**다(전/후 SVG
-/// 비교에서 차이는 1e-13px 부동소수 잡음뿐이었다). 이 수정이 잘림 보호까지 걷어냈다면
-/// 여기 오프셋이 움직인다.
+/// 과거 [1.88, 3.76] 핀은 축소된 칸의 Top 배치를 보호했다. 같은 원본의 새 Hancom
+/// 2020 Print와 전쪽 Native/fresh WASM 검증 뒤 정정한다. 두 칸의 위·아래 안 여백은
+/// 같으므로 실제 첫 줄 위와 마지막 줄 아래의 빈 공간도 같아야 한다. 진짜 부모 clip은
+/// 별도의 parent_viewport_trims_nested_cell_before_alignment 검사가 보호한다.
 #[test]
-fn the_page_clip_protected_document_is_unaffected() {
-    let (root, _) = page_tree(CLIP_SAMPLE, 10);
-    let cells: Vec<CellContent> = nested_cell_contents(&root, NESTED_DEPTH_42065)
-        .into_iter()
-        .filter(|c| c.cell_h > 100.0)
-        .collect();
-    assert_eq!(
-        cells.len(),
-        2,
-        "이 시험의 전제는 큰 중첩 칸 두 개다: {cells:?}"
-    );
+fn continuation_cells_keep_center_alignment_and_all_visible_lines() {
+    let (root, page_bottom) = page_tree(CLIP_SAMPLE, 10);
+    let cells = nested_cell_contents(&root, NESTED_DEPTH_42065);
+    assert_eq!(cells.len(), 2, "원본 소유 깊이의 내부 칸 두 개: {cells:?}");
 
-    let offsets: Vec<f64> = cells.iter().map(|c| c.offset()).collect();
-    for (got, want) in offsets.iter().zip([1.88_f64, 3.76_f64]) {
+    for cell in cells {
+        let below = cell.cell_y + cell.cell_h - cell.last_line_bottom;
+        assert!(cell.cell_y >= root.bbox.y && cell.cell_y + cell.cell_h <= page_bottom);
         assert!(
-            (got - want).abs() <= 0.5,
-            "#2007 보호 문서의 칸 내용이 움직였다 — 기대 {want:.2}px, 실측 {got:.2}px \
-             (전체 {offsets:?})"
+            cell.offset() >= 0.0 && below >= 0.0,
+            "칸 안에 원본 글줄 전체 포함: {cell:?}"
+        );
+        assert!(
+            (cell.offset() - below).abs() <= 0.5,
+            "Center 칸의 위·아래 빈 공간이 같아야 한다: {cell:?}, below={below}"
         );
     }
 }

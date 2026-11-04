@@ -22,6 +22,8 @@ pub const RESOURCE_KEY_ALGORITHM: &str = "blake3";
 pub struct ResourceArena {
     /// 그림 신원 키에 섞는 문서 단위 세대. 기존 공개 `PageLayerTree` 모양은 바꾸지 않는다.
     source_image_epoch: u32,
+    /// 문서가 명시한 Print 래스터 세대. 직접 만든 layer는 기존 기본값을 쓴다.
+    print_2024_raster: Option<bool>,
     image_bytes: Vec<Vec<u8>>,
     image_hashes: Vec<u64>,
     image_fingerprints: Vec<[u8; 16]>,
@@ -42,6 +44,13 @@ pub struct ResourceArena {
 }
 
 impl ResourceArena {
+    pub(crate) fn set_print_2024_raster(&mut self, enabled: Option<bool>) {
+        self.print_2024_raster = enabled;
+    }
+
+    pub(crate) fn print_2024_raster(&self) -> Option<bool> {
+        self.print_2024_raster
+    }
     pub(crate) fn set_source_image_epoch(&mut self, epoch: u32) {
         self.source_image_epoch = epoch;
     }
@@ -333,6 +342,26 @@ pub fn source_image_key(
         "bin:{bin_data_epoch}:{}:{}",
         image.bin_data_id, tag
     ))
+}
+
+/// 창·장치별 바이트는 원본 bin 재조회로 복원할 수 없다.
+pub(crate) fn source_image_key_for_payload(
+    bin_data_epoch: u32,
+    image: &crate::renderer::render_tree::ImageNode,
+    resolved: Option<&crate::paint::ResolvedImagePayload>,
+) -> Option<String> {
+    if resolved.is_some_and(|p| {
+        matches!(
+            p.kind,
+            crate::paint::ResolvedImageKind::OutputDevice
+                | crate::paint::ResolvedImageKind::OutputDeviceWindow
+                | crate::paint::ResolvedImageKind::SourceWindow
+        )
+    }) {
+        None
+    } else {
+        source_image_key(bin_data_epoch, image)
+    }
 }
 
 /// `source_image_key` 의 variant — 같은 원본에서 다른 바이트가 나오는 갈림 (Task #3315).

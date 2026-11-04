@@ -1,0 +1,170 @@
+[
+  {
+    "region": "p66-frame",
+    "page": 66,
+    "backend": "pdf",
+    "box_96dpi": [
+      58,
+      125,
+      676,
+      329
+    ],
+    "integer_zoom": 2,
+    "method": "unmodified raster crop / nearest-neighbor enlargement",
+    "source_sha256": "a53fd19910e94a028ebcf71de7c429da15af398a11aa68ec0da854a0b4356fca"
+  },
+  {
+    "region": "p66-frame",
+    "page": 66,
+    "backend": "native",
+    "box_96dpi": [
+      58,
+      125,
+      676,
+      329
+    ],
+    "integer_zoom": 2,
+    "method": "unmodified raster crop / nearest-neighbor enlargement",
+    "source_sha256": "8269772cf0bc85ef7926abbcc18f4a2fc808e9b319e204787da30c34ba23d6c3"
+  },
+  {
+    "region": "p66-frame",
+    "page": 66,
+    "backend": "wasm",
+    "box_96dpi": [
+      58,
+      125,
+      676,
+      329
+    ],
+    "integer_zoom": 2,
+    "method": "unmodified raster crop / nearest-neighbor enlargement",
+    "source_sha256": "23ef03d974e80a5d87cef5a5c8a7c4c7cf7cf0bdd14bae9bd1232192649f6ae5"
+  },
+  {
+    "region": "p66-spacing",
+    "page": 66,
+    "backend": "pdf",
+    "box_96dpi": [
+      165,
+      315,
+      675,
+      610
+    ],
+    "integer_zoom": 2,
+    "method": "unmodified raster crop / nearest-neighbor enlargement",
+    "source_sha256": "a53fd19910e94a028ebcf71de7c429da15af398a11aa68ec0da854a0b4356fca"
+  },
+  {
+    "region": "p66-spacing",
+    "page": 66,
+    "backend": "native",
+    "box_96dpi": [
+      165,
+      315,
+      675,
+      610
+    ],
+    "integer_zoom": 2,
+    "method": "unmodified raster crop / nearest-neighbor enlargement",
+    "source_sha256": "8269772cf0bc85ef7926abbcc18f4a2fc808e9b319e204787da30c34ba23d6c3"
+  },
+  {
+    "region": "p66-spacing",
+    "page": 66,
+    "backend": "wasm",
+    "box_96dpi": [
+      165,
+      315,
+      675,
+      610
+    ],
+    "integer_zoom": 2,
+    "method": "unmodified raster crop / nearest-neighbor enlargement",
+    "source_sha256": "23ef03d974e80a5d87cef5a5c8a7c4c7cf7cf0bdd14bae9bd1232192649f6ae5"
+  },
+  {
+    "region": "p66-signature",
+    "page": 66,
+    "backend": "pdf",
+    "box_96dpi": [
+      365,
+      785,
+      675,
+      890
+    ],
+    "integer_zoom": 3,
+    "method": "unmodified raster crop / nearest-neighbor enlargement",
+    "source_sha256": "a53fd19910e94a028ebcf71de7c429da15af398a11aa68ec0da854a0b4356fca"
+  },
+  {
+    "region": "p66-signature",
+    "page": 66,
+    "backend": "native",
+    "box_96dpi": [
+      365,
+      785,
+      675,
+      890
+    ],
+    "integer_zoom": 3,
+    "method": "unmodified raster crop / nearest-neighbor enlargement",
+    "source_sha256": "8269772cf0bc85ef7926abbcc18f4a2fc808e9b319e204787da30c34ba23d6c3"
+  },
+  {
+    "region": "p66-signature",
+    "page": 66,
+    "backend": "wasm",
+    "box_96dpi": [
+      365,
+      785,
+      675,
+      890
+    ],
+    "integer_zoom": 3,
+    "method": "unmodified raster crop / nearest-neighbor enlargement",
+    "source_sha256": "23ef03d974e80a5d87cef5a5c8a7c4c7cf7cf0bdd14bae9bd1232192649f6ae5"
+  },
+  {
+    "region": "p65-cut",
+    "page": 65,
+    "backend": "pdf",
+    "box_96dpi": [
+      58,
+      947,
+      675,
+      1046
+    ],
+    "integer_zoom": 2,
+    "method": "unmodified raster crop / nearest-neighbor enlargement",
+    "source_sha256": "b80067de2834e0279c5dc380680394029924094fdaa47729d12cd2af4ad7a51a"
+  },
+  {
+    "region": "p65-cut",
+    "page": 65,
+    "backend": "native",
+    "box_96dpi": [
+      58,
+      947,
+      675,
+      1046
+    ],
+    "integer_zoom": 2,
+    "method": "unmodified raster crop / nearest-neighbor enlargement",
+    "source_sha256": "233a9327d80df19a767f0b28c0e9173daa736f09bd336f8c93ca115992e9d4da"
+  },
+  {
+    "region": "p65-cut",
+    "page": 65,
+    "backend": "wasm",
+    "box_96dpi": [
+      58,
+      947,
+      675,
+      1046
+    ],
+    "integer_zoom": 2,
+    "method": "unmodified raster crop / nearest-neighbor enlargement",
+    "source_sha256": "5c399678288ae2466fc2e9678bc174cece221ac7a95db48b3ad18868924a612c"
+  }
+]

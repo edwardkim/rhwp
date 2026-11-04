@@ -2,7 +2,7 @@
 
 use crate::error::{Error, Result};
 use std::io::{Read, Write};
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
 
 /// Shared input ceiling for the frontend and this decoder policy.
@@ -76,7 +76,7 @@ impl From<String> for StreamData {
 }
 
 /// Explicit limits for one PDF import; zero never means unlimited.
-#[derive(Clone, Copy, Debug, serde::Serialize)]
+#[derive(Clone, Copy, Debug, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PdfImportLimits {
     /// Input byte limit checked before the constructor's copy.
@@ -88,7 +88,7 @@ pub struct PdfImportLimits {
     /// Maximum cumulative work units in opted-in image decoders.
     pub codec_work_units: usize,
     /// Cumulative decoded/copy/predictor bytes, including failed attempts.
-    pub decoded_bytes: usize,
+    pub decoded_bytes: u64,
     /// Maximum number of filters in one pipeline.
     pub filters: usize,
     /// Maximum lexical nesting and xref-chain depth.
@@ -113,7 +113,8 @@ pub struct PdfImportLimits {
     pub cmap_entries: usize,
     /// Maximum conservative byte-scan work across CMap parses.
     pub cmap_scan_bytes: usize,
-    /// Maximum CID metric and TrueType mapping expansion work across fonts.
+    /// Maximum cumulative font metric, encoding, Unicode memo and owned
+    /// copy-on-write entry work. Resource/cache indices use `entries` instead.
     pub font_entries: usize,
     /// Maximum page-tree edge depth and concurrent indirect-object loads.
     pub reference_depth: usize,
@@ -168,11 +169,11 @@ pub struct ImportLimitFailure {
     /// Stable category of the first failed reservation.
     pub reason: &'static str,
     /// Successful charges at that counter before the rejected operation.
-    pub used: Option<usize>,
+    pub used: Option<u64>,
     /// Amount rejected before it was charged or allocated.
-    pub requested: Option<usize>,
+    pub requested: Option<u64>,
     /// Applicable counter ceiling; absent for non-counter rejections.
-    pub limit: Option<usize>,
+    pub limit: Option<u64>,
 }
 
 /// Request-local work observations, not process live heap/RSS measurements.
@@ -180,9 +181,9 @@ pub struct ImportLimitFailure {
 #[serde(rename_all = "camelCase")]
 pub struct ImportBudgetSnapshot {
     /// Cumulative decoded/copy/predictor work successfully charged.
-    pub decoded_bytes: usize,
+    pub decoded_bytes: u64,
     /// Cumulative private codec storage requested, including released blocks.
-    pub codec_allocated_bytes: usize,
+    pub codec_allocated_bytes: u64,
     /// Work units consumed by opted-in image decoders, not CPU time.
     pub codec_work_units: usize,
     /// Parsed object values charged by this request.
@@ -211,17 +212,24 @@ pub struct ImportBudgetSnapshot {
     pub failure: Option<ImportLimitFailure>,
 }
 
+/// An optional owner check is cooperative; it cannot preempt opaque work.
+pub trait ImportWorkGuard: std::fmt::Debug + Send + Sync {
+    /// Return false to reject subsequent work in the current request.
+    fn permits_work(&self) -> bool;
+}
+
 /// Shared accounting with a sticky fatal state; not a global allocation tracker.
 #[derive(Debug)]
 pub struct ImportBudget {
     /// Immutable request policy.
     pub limits: PdfImportLimits,
-    decoded: AtomicUsize,
-    decoded_limit: AtomicUsize,
+    work_guard: Option<Arc<dyn ImportWorkGuard>>,
+    decoded: AtomicU64,
+    decoded_limit: AtomicU64,
     operator_limit: AtomicUsize,
     span_limit: AtomicUsize,
     entry_limit: AtomicUsize,
-    codec_allocated: AtomicUsize,
+    codec_allocated: AtomicU64,
     codec_work: AtomicUsize,
     objects: AtomicUsize,
     entries: AtomicUsize,
@@ -254,7 +262,6 @@ impl ImportBudget {
             limits.stream_bytes,
             limits.codec_allocation_bytes,
             limits.codec_work_units,
-            limits.decoded_bytes,
             limits.filters,
             limits.nesting,
             limits.objects,
@@ -274,17 +281,19 @@ impl ImportBudget {
             limits.xobject_visits,
         ]
         .contains(&0)
+            || limits.decoded_bytes == 0
         {
             return Err(Error::ImportResourceLimit("zero import budget"));
         }
         Ok(Self {
             limits,
-            decoded: AtomicUsize::new(0),
-            decoded_limit: AtomicUsize::new(limits.decoded_bytes),
+            work_guard: None,
+            decoded: AtomicU64::new(0),
+            decoded_limit: AtomicU64::new(limits.decoded_bytes),
             operator_limit: AtomicUsize::new(limits.operators),
             span_limit: AtomicUsize::new(limits.spans),
             entry_limit: AtomicUsize::new(limits.entries),
-            codec_allocated: AtomicUsize::new(0),
+            codec_allocated: AtomicU64::new(0),
             codec_work: AtomicUsize::new(0),
             objects: AtomicUsize::new(0),
             entries: AtomicUsize::new(0),
@@ -312,7 +321,7 @@ impl ImportBudget {
     /// Narrow work ceilings once the host knows the selected pages. Existing
     /// consumption and the first failure remain intact; this can never raise a
     /// limit. Call before starting extraction workers.
-    pub fn restrict_work_limits(&self, decoded: usize, operators: usize) -> Result<()> {
+    pub fn restrict_work_limits(&self, decoded: u64, operators: usize) -> Result<()> {
         self.check()?;
         if decoded == 0 || operators == 0 {
             return Err(self.reject("zero work budget"));
@@ -326,6 +335,12 @@ impl ImportBudget {
             self.operator_limit.load(Ordering::Relaxed),
             "content operators",
         )
+    }
+
+    /// Install an owner check while the request is still exclusively owned.
+    pub fn with_work_guard(mut self, guard: Arc<dyn ImportWorkGuard>) -> Self {
+        self.work_guard = Some(guard);
+        self
     }
 
     /// Narrow output/metadata work without clearing previously consumed values.
@@ -381,6 +396,12 @@ impl ImportBudget {
                     .as_ref()
                     .map_or("request budget exhausted", |failure| failure.reason),
             ))
+        } else if self
+            .work_guard
+            .as_ref()
+            .is_some_and(|guard| !guard.permits_work())
+        {
+            Err(self.reject("request execution boundary"))
         } else {
             Ok(())
         }
@@ -422,9 +443,9 @@ impl ImportBudget {
             .map_err(|used| {
                 self.reject_reservation(ImportLimitFailure {
                     reason,
-                    used: Some(used),
-                    requested: Some(amount),
-                    limit: Some(cap),
+                    used: Some(used as u64),
+                    requested: Some(amount as u64),
+                    limit: Some(cap as u64),
                 })
             })
     }
@@ -434,8 +455,8 @@ impl ImportBudget {
     pub fn snapshot(&self) -> ImportBudgetSnapshot {
         let read = |value: &AtomicUsize| value.load(Ordering::Relaxed);
         ImportBudgetSnapshot {
-            decoded_bytes: read(&self.decoded),
-            codec_allocated_bytes: read(&self.codec_allocated),
+            decoded_bytes: self.decoded.load(Ordering::Relaxed),
+            codec_allocated_bytes: self.codec_allocated.load(Ordering::Relaxed),
             codec_work_units: read(&self.codec_work),
             parsed_objects: read(&self.objects),
             collection_entries: read(&self.entries),
@@ -474,12 +495,12 @@ impl ImportBudget {
     }
 
     /// Successfully charged decoded/copy bytes so far, including failed attempts.
-    pub fn decoded_bytes(&self) -> usize {
+    pub fn decoded_bytes(&self) -> u64 {
         self.decoded.load(Ordering::Relaxed)
     }
 
     /// Requested private codec bytes charged before allocation, including freed buffers.
-    pub fn codec_allocated_bytes(&self) -> usize {
+    pub fn codec_allocated_bytes(&self) -> u64 {
         self.codec_allocated.load(Ordering::Relaxed)
     }
 
@@ -516,7 +537,6 @@ impl ImportBudget {
         }
     }
 
-    #[cfg(any(feature = "jbig2", feature = "jpeg2000"))]
     pub(crate) fn charge_codec_work(&self, units: usize) -> Result<()> {
         self.charge(&self.codec_work, units, self.limits.codec_work_units, "codec work units")
     }
@@ -527,18 +547,28 @@ impl ImportBudget {
             return Err(self.reject("codec allocation bytes"));
         }
         self.charge_decoded(amount)?;
-        self.codec_allocated.fetch_add(amount, Ordering::Relaxed);
+        self.codec_allocated
+            .fetch_add(amount as u64, Ordering::Relaxed);
         Ok(())
     }
 
     /// Charge before allocating or extending an output buffer.
     pub fn charge_decoded(&self, amount: usize) -> Result<()> {
-        self.charge(
-            &self.decoded,
-            amount,
-            self.decoded_limit.load(Ordering::Relaxed),
-            "document decoded bytes",
-        )
+        self.check()?;
+        let cap = self.decoded_limit.load(Ordering::Relaxed);
+        self.decoded
+            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |used| {
+                used.checked_add(amount as u64).filter(|&next| next <= cap)
+            })
+            .map(|_| ())
+            .map_err(|used| {
+                self.reject_reservation(ImportLimitFailure {
+                    reason: "document decoded bytes",
+                    used: Some(used),
+                    requested: Some(amount as u64),
+                    limit: Some(cap),
+                })
+            })
     }
 
     /// Charge the requested flat and owned payload bytes before a cache copy.

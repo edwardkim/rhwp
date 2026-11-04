@@ -1,0 +1,12 @@
+{
+  "production_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+  "native_source_receipt": "v14-native-source-reconciliation.json",
+  "wasm_build_head": "e03784afc4978e211488c7f8ac0bf2e4a06cfb1e",
+  "all_native_and_wasm_build_source_hashes_match": true,
+  "source_paths": 1828,
+  "pkg_public_hashes_match": true,
+  "webassembly_module_compile": "passed",
+  "frontend_source_byte_identical_to_previously_validated_3ae": true,
+  "rust_validation": "pending",
+  "actual_current_wasm_ui_and_all_page_visuals": "pending"
+}

@@ -1,0 +1,103 @@
+{
+  "status": "failed_regression_investigating",
+  "source_commit": "f5c3972844442d7d2c74496bfd4db06cec26615b",
+  "wasm_sha256": "dc7dd9a1a9a725a486064356ad583032d02394ad75cb64de8f1809ccfe87248b",
+  "release_codegen_units": 16,
+  "chart_current": 99.66483,
+  "chart_base": 99.66483,
+  "threshold_drop_pp": 0.1,
+  "declines": [
+    {
+      "key": "rebase8116-cell_nested_table_rows",
+      "page": 1,
+      "historical": 98.57262,
+      "current": 98.35045,
+      "drop_pp": 0.22217,
+      "baseline": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/rebase8116-cell_nested_table_rows.tsv",
+      "baseline_sha256": "f72eb34829d09fdffd3e910f84590866735c5281bd66698f3656c2616bab5379",
+      "current_tsv_sha256": "58eb34393240f718c65dca5331b8223bc30d0a137a678c0210c86724cd3a5b58"
+    },
+    {
+      "key": "onsemiro-hwp",
+      "page": 19,
+      "historical": 97.7889,
+      "current": 97.67924,
+      "drop_pp": 0.10966,
+      "baseline": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/onsemiro-hwp.tsv",
+      "baseline_sha256": "c4c450f1d1c5df453ad1fd1ec6897268c832a84d4685fca98bc1b7a56cbaf7bb",
+      "current_tsv_sha256": "9d37745c7ce6e5af3d836caf24e8f03e906b3f806e952a6f97df5e564d523be9"
+    },
+    {
+      "key": "onsemiro-hwp",
+      "page": 26,
+      "historical": 94.25851,
+      "current": 93.94558,
+      "drop_pp": 0.31293,
+      "baseline": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/onsemiro-hwp.tsv",
+      "baseline_sha256": "c4c450f1d1c5df453ad1fd1ec6897268c832a84d4685fca98bc1b7a56cbaf7bb",
+      "current_tsv_sha256": "9d37745c7ce6e5af3d836caf24e8f03e906b3f806e952a6f97df5e564d523be9"
+    },
+    {
+      "key": "onsemiro-hwp",
+      "page": 33,
+      "historical": 97.81353,
+      "current": 97.70492,
+      "drop_pp": 0.10861,
+      "baseline": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/onsemiro-hwp.tsv",
+      "baseline_sha256": "c4c450f1d1c5df453ad1fd1ec6897268c832a84d4685fca98bc1b7a56cbaf7bb",
+      "current_tsv_sha256": "9d37745c7ce6e5af3d836caf24e8f03e906b3f806e952a6f97df5e564d523be9"
+    },
+    {
+      "key": "onsemiro-hwp",
+      "page": 38,
+      "historical": 93.89759,
+      "current": 93.7303,
+      "drop_pp": 0.16729,
+      "baseline": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/onsemiro-hwp.tsv",
+      "baseline_sha256": "c4c450f1d1c5df453ad1fd1ec6897268c832a84d4685fca98bc1b7a56cbaf7bb",
+      "current_tsv_sha256": "9d37745c7ce6e5af3d836caf24e8f03e906b3f806e952a6f97df5e564d523be9"
+    },
+    {
+      "key": "newsletter-korean",
+      "page": 1,
+      "historical": 98.00674,
+      "current": 97.55086,
+      "drop_pp": 0.45588,
+      "baseline": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/newsletter-korean.tsv",
+      "baseline_sha256": "c8eaac97e19aab727f9048f5b7203a1008a7b899231aa0cb172e69a43a1b1b43",
+      "current_tsv_sha256": "ff7527736a21b6f84360f68bde7cda63e7f7d92ba21ae6a15f1534446c9be8b9"
+    },
+    {
+      "key": "endnotes-november",
+      "page": 21,
+      "historical": 91.32974,
+      "current": 90.84255,
+      "drop_pp": 0.48719,
+      "baseline": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/endnotes-november.tsv",
+      "baseline_sha256": "25e63f7a5565d510c8ebe5306caac196efff3730e9dd7c85755a99723504b728",
+      "current_tsv_sha256": "d8084a78c87eb7bf3ef2182bbdf2dd0d3df428517536297deec59612e4f6d63e"
+    },
+    {
+      "key": "endnotes-september",
+      "page": 20,
+      "historical": 96.35945,
+      "current": 95.32108,
+      "drop_pp": 1.03837,
+      "baseline": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/endnotes-september.tsv",
+      "baseline_sha256": "e473e15f2b465cc75f2dc94c86dbf441d4daf5aed6d31e92e920b7406cd6eed7",
+      "current_tsv_sha256": "7b05eeb41480e22023754cd368d3a105eabea946be0fd897b10b341c649f7073"
+    }
+  ],
+  "diagnostics": {
+    "same_51_font_files_in_recorded_order": true,
+    "nested_cell_hint_none_and_full_raw": 98.35045,
+    "nested_cell_hint_none_and_full_same_png_sha256": "8765f248cc190e91e5031139e70e3909502d124fafc01cc50f58c5b554f82e9b",
+    "removing_extra_light_family_raw": 98.35045,
+    "note": "힌팅 변경과 ExtraLight family 제외는 재현 PNG를 바꾸지 않았다. 과거 생산 바이너리는 로컬에 없어 원인 단정 불가."
+  },
+  "browser_checks": {
+    "ai_providers_assertions": 34,
+    "pdf_layout_ui_assertions": 24
+  },
+  "remaining": "원인 식별과 보정, 전체 WASM 측정 및 전체 Rust 검사"
+}

@@ -1,0 +1,68 @@
+{
+  "version": "1",
+  "default_font": "Arial",
+  "header_text": "Exam images",
+  "footer_text": "1/1",
+  "form_label": "Type A",
+  "questions": [
+    {
+      "number": 1,
+      "stem": "Mixed resources.",
+      "stem_blocks": [
+        {
+          "type": "paragraph",
+          "runs": [
+            {
+              "type": "text",
+              "text": "Color A "
+            },
+            {
+              "type": "image",
+              "ref": "img/diagram.png"
+            },
+            {
+              "type": "text",
+              "text": " then B "
+            },
+            {
+              "type": "image",
+              "ref": "img/second.png"
+            },
+            {
+              "type": "text",
+              "text": " and repeat "
+            },
+            {
+              "type": "image",
+              "ref": "img/diagram.png"
+            },
+            {
+              "type": "text",
+              "text": "."
+            }
+          ]
+        }
+      ],
+      "choices": [
+        {
+          "label": "A.",
+          "text": "Keep both colors."
+        }
+      ],
+      "media": [
+        {
+          "id": "img/diagram.png",
+          "natural_w": 640,
+          "natural_h": 160,
+          "target_w_mm": 20
+        },
+        {
+          "id": "img/second.png",
+          "natural_w": 320,
+          "natural_h": 160,
+          "target_w_mm": 20
+        }
+      ]
+    }
+  ]
+}

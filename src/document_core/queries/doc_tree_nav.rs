@@ -74,7 +74,7 @@ fn classify_navigable(ctrl: &Control) -> Option<bool> {
             // TextBox 없거나 비어있는 TAC 도형만 표처럼 1칸 건너뛰기
             s.common().treat_as_char.then_some(false)
         }
-        Control::Table(_) | Control::Picture(_) | Control::Equation(_)
+        Control::Table(_) | Control::Picture(_) | Control::Equation(_) | Control::Form(_)
             if is_treat_as_char_object_control(ctrl) =>
         {
             Some(false)

@@ -1,0 +1,61 @@
+{
+  "started_at": "2026-10-27T01:33:13.675178+00:00",
+  "steps": [
+    {
+      "name": "issue_6312_float_anchor_line_uses_source_vpos",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6312_float_anchor_line_uses_source_vpos",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 519.0699099471094,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v13-focused-issue_6312_float_anchor_line_uses_source_vpos.log"
+    },
+    {
+      "name": "issue_7642_missing_lineseg_picture_flow",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7642_missing_lineseg_picture_flow",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 30.101762973004952,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v13-focused-issue_7642_missing_lineseg_picture_flow.log"
+    },
+    {
+      "name": "source_frame_control_ownership",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "source_frame_control_ownership",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 31.596330801025033,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v13-focused-source_frame_control_ownership.log"
+    }
+  ],
+  "completed_at": "2026-10-27T01:42:54.445527+00:00",
+  "status": "passed"
+}

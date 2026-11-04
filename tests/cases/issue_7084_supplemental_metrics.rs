@@ -289,18 +289,18 @@ fn canvas_registration_rejects_invalid_units_without_changing_paint_defaults() {
 }
 
 #[test]
-fn missing_advance_is_shared_by_total_and_following_positions() {
+fn backend_advance_preserves_relative_positions_of_following_source_text() {
     let original = style();
-    // observed generic 0.5em path on the Hancom device grid (#7702): 187.5 → 188 units × 4/75
-    let fallback = 188.0 * 4.0 / 75.0;
-    near(positions("😀", &original)[1], fallback);
+    let old = positions("😀A한", &original);
     let mut prepared = original.clone();
     let _store = bound(&mut prepared, vec![measured(&original, "😀", 27.5)]);
-    let old = positions("😀A한", &original);
     let new = positions("😀A한", &prepared);
+    assert_eq!(new.len(), old.len(), "원문 경계의 누락·중복 방지");
+    near(new[0], old[0]);
     near(new[1], 27.5);
     for i in 1..new.len() {
-        near(new[i] - old[i], 27.5 - fallback);
+        // 독립 provider 폭은 적용하되 뒤 문자 사이의 실제 간격은 유지한다.
+        near(new[i] - new[1], old[i] - old[1]);
     }
     // The public estimate intentionally retains its pre-existing integer rounding.
     let total = EmbeddedTextMeasurer.estimate_text_width("😀A한", &prepared);

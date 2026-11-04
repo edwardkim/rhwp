@@ -62,6 +62,7 @@ pub struct Endnote {
     /// 같은 자리에 두고, **어느 이름으로 왔는지**만 기억해 왕복에서 되돌린다.
     pub decoration_is_user_char: bool,
 }
+crate::storage::clone_fields!(Endnote, {number, paragraphs, before_decoration_letter, after_decoration_letter, number_shape, instance_id, list_header_property, decoration_is_user_char});
 
 /// 각주/미주 모양 (HWPTAG_FOOTNOTE_SHAPE)
 #[derive(Debug, Clone, Default, serde::Serialize)]
@@ -113,6 +114,7 @@ pub struct FootnoteShape {
     /// HWPX 파서만 `true` 로 세운다 — HWP5/HWP3 경로는 종전 폴백을 그대로 쓴다.
     pub deco_chars_from_source: bool,
 }
+crate::storage::clone_fields!(FootnoteShape, {attr, number_format, user_char, prefix_char, suffix_char, start_number, separator_length, separator_margin_top, separator_margin_bottom, note_spacing, separator_line_type, separator_line_width, separator_color, numbering, placement, number_code_superscript, print_inline_after_text, raw_unknown, deco_chars_from_source});
 
 impl FootnoteShape {
     /// HWP5 `attr` 비트에서 각주/미주 모양 semantic 필드를 갱신한다.
@@ -287,6 +289,7 @@ pub enum NumberFormat {
     FourSymbol,            // 4가지 문자 반복
     UserChar,              // 사용자 지정 문자 반복
 }
+crate::storage::clone_copy!(NumberFormat);
 
 /// 번호 매기기 방식
 #[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
@@ -299,6 +302,7 @@ pub enum FootnoteNumbering {
     /// 쪽마다 새로 시작 (각주 전용)
     RestartPage,
 }
+crate::storage::clone_copy!(FootnoteNumbering);
 
 /// 배치 방법
 #[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
@@ -311,6 +315,7 @@ pub enum FootnotePlacement {
     /// 가장 오른쪽 단에 배열
     RightColumn,
 }
+crate::storage::clone_copy!(FootnotePlacement);
 
 #[cfg(test)]
 mod tests {

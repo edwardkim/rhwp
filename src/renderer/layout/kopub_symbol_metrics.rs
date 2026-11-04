@@ -4,9 +4,16 @@
 //! 같은 HWP/HWPX 기준 PDF의 SHA-256:
 //! 3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593
 //! 299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e
+//! 원 숫자·원 한글은 바탕·돋움 각 세 굵기의 독립 한컴 Print와 글꼴 전진폭에서 확인했다.
 //! KoPubWorld는 별도 프로그램이므로 이 표에 이름만으로 포함하지 않는다.
 
-pub(super) fn advance_em(dotum: bool, ch: char) -> Option<f64> {
+#[path = "kopub_hanja_metrics.rs"]
+mod hanja;
+
+pub(super) fn advance_em(dotum: bool, bold: bool, ch: char) -> Option<f64> {
+    if let Some(em) = hanja::advance_em(dotum, bold, ch) {
+        return Some(em);
+    }
     let table = if dotum { DOTUM } else { BATANG };
     table
         .binary_search_by_key(&(ch as u32), |entry| entry.0)
@@ -32,6 +39,10 @@ const BATANG: &[(u32, u16)] = &[
     (0x2228, 900),
     (0x223c, 900),
     (0x2299, 900),
+    (0x2460, 900),
+    (0x2461, 900),
+    (0x2462, 900),
+    (0x2463, 900),
     (0x25a0, 900),
     (0x25a1, 900),
     (0x25b2, 900),
@@ -45,7 +56,13 @@ const BATANG: &[(u32, u16)] = &[
     (0x2f83, 900),
     (0x2f9d, 900),
     (0x300c, 450),
+    // 두 독립 편람 Print의 327개씩과 KoPub 세 굵기 hmtx: 900/1000em.
+    (0x318d, 900),
     (0x3262, 900),
+    (0x326e, 900),
+    (0x326f, 900),
+    (0x3270, 900),
+    (0x3271, 900),
     (0x327b, 900),
     (0x339c, 900),
     (0x339d, 900),
@@ -59,6 +76,8 @@ const BATANG: &[(u32, u16)] = &[
 const DOTUM: &[(u32, u16)] = &[
     (0xb7, 319),
     (0xd7, 900),
+    // KoPub Dotum Light TTF와 #7765 독립 Print의 12pt 전진 5.94pt가 일치한다.
+    (0x2013, 495),
     (0x2018, 290),
     (0x2019, 290),
     (0x201c, 410),
@@ -74,6 +93,10 @@ const DOTUM: &[(u32, u16)] = &[
     (0x21d2, 900),
     (0x221a, 900),
     (0x2228, 900),
+    (0x2460, 900),
+    (0x2461, 900),
+    (0x2462, 900),
+    (0x2463, 900),
     (0x25a0, 900),
     (0x25a1, 900),
     (0x25b6, 900),
@@ -88,6 +111,11 @@ const DOTUM: &[(u32, u16)] = &[
     (0x2f9e, 900),
     (0x2fd2, 900),
     (0x300c, 450),
+    (0x318d, 900),
+    (0x326e, 900),
+    (0x326f, 900),
+    (0x3270, 900),
+    (0x3271, 900),
     (0x339c, 900),
     (0x33a1, 900),
     (0xff06, 900),

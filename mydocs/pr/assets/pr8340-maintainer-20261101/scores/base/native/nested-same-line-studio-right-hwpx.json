@@ -1,0 +1,122 @@
+{
+  "key": "nested-same-line-studio-right-hwpx",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1
+  ],
+  "completed_pages": [
+    1
+  ],
+  "missing_pages": [],
+  "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8340/base-native-scores/nested-same-line-studio-right-hwpx/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8340/base-native-scores/nested-same-line-studio-right-hwpx/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "5400d758890a79434f5c381416d26ff0d18c8de9eadb533703e28c6f297a5d47",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8340/base-native-scores/nested-same-line-studio-right-hwpx/pdf_png/pdf-001.png",
+      "pdf_sha256": "41dd9514b10553f7e92c58d9e43bd325f3fae53c7b5ce8752a620d569ef780c3"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 16822,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8340/nested-same-line-studio-right.hwpx",
+      "sha256": "4d0500174706045a6d6bf59bb01938041d88f631f8e8ce9475e3e2ecad52bd8a"
+    },
+    "pdf": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8340/print-new/nested-same-line-studio-right-hwpx-print-2024.pdf",
+      "sha256": "3c67d310300d6262718ca778b2680f5aacf5db9317dbef8d605fef4b7f510e23"
+    },
+    "git_head": "bc4da7875991725d7bdcef78e0e11e2ddf2929ad",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "547ddd0c1553b0066b1b870dd1fd2fabc523f8c91fba2b0ebe6f1776634dedb8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/pr8340/base/rhwp",
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8340/base/rhwp",
+      "sha256": "24ada524541fd768f465dd33b2b5c5df0909dda811c1178a6ff1a48735a9991a"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "257a0134180b34363814058348646346cf83313b97cf42424c014dc864722a5f",
+    "layout_generation": "2024",
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8340/fonts/HANBatang.ttf",
+          "sha256": "d85550717552101699122adc5b948e8129881f39ffcf802cafe62aac3b1ced40"
+        }
+      ]
+    }
+  },
+  "exported_svg_pages": 0,
+  "exported_png_source_pages": 1,
+  "exported_render_tree_pages": 1,
+  "exported_pdf_pages": 1
+}

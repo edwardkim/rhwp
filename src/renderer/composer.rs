@@ -19,9 +19,17 @@ use crate::renderer::layout_frame::LayoutFrame;
 pub use crate::renderer::layout_frame::ParagraphBox;
 
 mod frame_geometry;
+mod inline_table_frame;
 mod nested_table_frames;
+pub(crate) use inline_table_frame::{
+    inline_table_needs_reflow_measurement, inline_table_needs_reflow_measurement_with_storage,
+    inline_table_width_cache_is_stale, inline_table_width_cache_is_stale_with_storage,
+    measured_reflow_inline_table, measured_reflow_inline_table_with_storage,
+    reflow_inline_table_heights, reflow_inline_table_heights_with_storage,
+};
 pub(crate) use nested_table_frames::{
-    recompose_cell_lines_with_nested_tables, table_cells_have_no_stored_lines,
+    recompose_cell_lines_with_nested_tables, recompose_cell_lines_with_nested_tables_with_storage,
+    table_cells_have_no_stored_lines,
 };
 mod inline_frame_admission;
 mod inline_picture_metrics;
@@ -35,24 +43,37 @@ pub(crate) use inline_picture_metrics::{
 };
 pub(crate) use stored_tac_host_frame::stored_tac_host_frame;
 pub(crate) use stored_word_tail::{
-    project_current_body_box_rows, project_current_marker_height_rows,
-    project_current_source_program_rows, project_stored_soft_wraps,
+    project_current_body_box_rows, project_current_body_box_rows_with_storage,
+    project_current_marker_height_rows, project_current_marker_height_rows_with_storage,
+    project_current_source_program_rows, project_current_source_program_rows_with_storage,
+    project_stored_soft_wraps, project_stored_soft_wraps_with_storage,
     projects_current_marker_geometry,
 };
+mod note_line_slots;
 mod punctuation_slots;
+pub(crate) use note_line_slots::NoteLineSlots;
 
 /// 글자겹침(CharOverlap) 렌더링 정보
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct CharOverlapInfo {
     /// 테두리 타입 (0=없음, 1=원, 2=반전원, 3=사각형, 4=반전사각형)
     pub border_type: u8,
-    /// 내부 글자 크기 (%, 기본 100)
+    /// 내부 글자 크기의 부호 있는 10% 단계 (0=원래 크기)
     pub inner_char_size: i8,
+    /// 원문 컨트롤의 문자별 스타일과 펼침. 폰트 인코딩 PUA는 별도 계약을 쓴다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub composition: Option<Box<super::char_overlap::Composition>>,
+    /// 겹침 프레임은 보존하되 구성 글자의 잉크를 출력하지 않는다.
+    #[serde(skip)]
+    pub empty_ink: bool,
 }
+crate::storage::clone_fields!(CharOverlapInfo, {border_type, inner_char_size, composition, empty_ink});
 
 /// 구성된 텍스트 런 (줄 내 동일 스타일 + 동일 언어 구간)
 #[derive(Debug, Clone, Default)]
 pub struct ComposedTextRun {
+    /// 리터럴 소프트 하이픈의 표시 투영은 원문 글자 메트릭을 유지한다.
+    pub literal_soft_hyphen: bool,
     /// 원문 U+2007 리터럴의 숫자 폭 공백 계약이다.
     pub literal_figure_space: bool,
     /// 텍스트 조각
@@ -80,8 +101,13 @@ pub struct ComposedTextRun {
     /// 새 줄 구성의 글자 메트릭 출처. 저장 줄의 원래 전진과 구분한다.
     pub regenerated_font_metrics: bool,
 }
+crate::storage::clone_fields!(ComposedTextRun, {literal_soft_hyphen, literal_figure_space, text, char_style_id, lang_index, neutral_space_origin, char_overlap, footnote_marker, display_text, supplemental_metrics_blocked, inserted_control_text, space_metric, regenerated_font_metrics});
 
 impl ComposedTextRun {
+    /// Copy owned text through the caller's storage policy; metadata is scalar.
+    fn try_clone<S: crate::storage::Storage>(&self, storage: &S) -> Result<Self, S::Error> {
+        crate::storage::try_clone(self, storage)
+    }
     /// 원문 scalar가 없는 control 표제는 뒤 본문의 문자 좌표를 전진시키지 않는다.
     pub(crate) fn source_scalar_count(&self) -> usize {
         if self.inserted_control_text && self.char_overlap.is_none() {
@@ -92,17 +118,31 @@ impl ComposedTextRun {
     }
 
     pub(crate) fn text_style(&self, styles: &ResolvedStyleSet) -> TextStyle {
-        let mut style = resolved_to_text_style(styles, self.char_style_id, self.lang_index);
+        match self.try_text_style(styles, &crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+    pub(crate) fn try_text_style<S: crate::storage::Storage>(
+        &self,
+        styles: &ResolvedStyleSet,
+        storage: &S,
+    ) -> Result<TextStyle, S::Error> {
+        let mut style = super::layout::try_resolved_to_text_style(
+            styles,
+            self.char_style_id,
+            self.lang_index,
+            storage,
+        )?;
         if let Some(origin) = self.neutral_space_origin {
             punctuation_slots::apply_space_origin(&mut style, styles, self.char_style_id, origin);
         }
         if mapped_symbol_fonts::owns_shadowed_circle_font(self) {
             // 표시 기호 한 글자만 실제 프로그램을 선택한다. 본문과 IR의 글꼴은 보존한다.
-            style.font_family = format!(
-                "{},{}",
-                mapped_symbol_fonts::SHADOWED_CIRCLE_FONT,
-                style.font_family
-            );
+            let mut family = storage.string(mapped_symbol_fonts::SHADOWED_CIRCLE_FONT)?;
+            storage.push_char(&mut family, ',')?;
+            storage.push_str(&mut family, &style.font_family)?;
+            style.font_family = family;
         }
         if self.supplemental_metrics_blocked {
             style.supplemental_metrics = None;
@@ -111,11 +151,12 @@ impl ComposedTextRun {
         self.space_metric.apply_to_style(&mut style);
         style.regenerated_font_metrics = self.regenerated_font_metrics;
         style.literal_figure_space = self.literal_figure_space;
+        style.literal_soft_hyphen = self.literal_soft_hyphen;
         if self.literal_figure_space {
             style.literal_figure_space_em =
                 styles.literal_figure_space_em(self.char_style_id, self.lang_index);
         }
-        style
+        Ok(style)
     }
 
     /// 줄 상자를 정하는 글자 크기(px). 글자 모양의 **선언 크기**다.
@@ -137,12 +178,17 @@ impl ComposedTextRun {
 
 mod auto_number_projection;
 mod conjoining_jamo;
-pub(crate) use conjoining_jamo::project_stored_rows_with_selected_program;
+pub(crate) use auto_number_projection::project_caption as project_caption_auto_numbers;
+pub(crate) use conjoining_jamo::{
+    project_stored_rows_with_selected_program,
+    project_stored_rows_with_selected_program_with_storage,
+};
 mod equation_line_metrics;
 mod mapped_symbol_fonts;
 mod stored_row_fragments;
 mod text_metric_origin;
 pub(crate) use stored_row_fragments::crosses_physical_frame as stored_rows_cross_physical_frame;
+pub(crate) use text_metric_origin::regenerated_row as line_metrics_regenerated;
 pub(crate) mod stored_row_projection;
 pub(crate) mod supplemental_clusters;
 
@@ -166,6 +212,7 @@ pub struct ComposedLine {
     /// 이 줄의 첫 문자가 para.text 내에서 갖는 절대 char 인덱스
     pub char_start: usize,
 }
+crate::storage::clone_fields!(ComposedLine, {runs, line_height, baseline_distance, segment_width, column_start, line_spacing, has_line_break, char_start});
 
 /// 인라인 컨트롤 종류
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -177,6 +224,7 @@ pub enum InlineControlType {
     /// 기타 (구역정의, 단정의 등)
     Other,
 }
+crate::storage::clone_copy!(InlineControlType);
 
 /// 인라인 컨트롤 위치 정보
 #[derive(Debug, Clone)]
@@ -188,6 +236,7 @@ pub struct InlineControl {
     /// 컨트롤 종류
     pub control_type: InlineControlType,
 }
+crate::storage::clone_fields!(InlineControl, {line_index, control_index, control_type});
 
 /// 구성된 문단
 #[derive(Debug, Clone)]
@@ -217,6 +266,7 @@ pub struct ComposedParagraph {
     pub(crate) horizontal_shaping:
         Option<std::sync::Arc<crate::renderer::shaping_paragraph::HorizontalShapingLineOutcome>>,
 }
+crate::storage::clone_fields!(ComposedParagraph, {lines, para_style_id, inline_controls, numbering_text, tac_controls, footnote_positions, tab_extended, frame_geometry, horizontal_shaping});
 
 /// Renderer-session cache for the expensive stored single-line overflow probe.
 ///
@@ -239,9 +289,28 @@ impl SingleLineOverflowCache {
 
     #[inline]
     fn insert(&self, para: &Paragraph, width_key: u32, overflowed: bool) {
-        self.entries
-            .borrow_mut()
-            .insert((para as *const Paragraph as usize, width_key), overflowed);
+        match self.insert_with_storage(para, width_key, overflowed, &crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn insert_with_storage<S: crate::storage::Storage>(
+        &self,
+        para: &Paragraph,
+        width_key: u32,
+        overflowed: bool,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        {
+            let mut entries = self.entries.borrow_mut();
+            let key = (para as *const Paragraph as usize, width_key);
+            if !entries.contains_key(&key) {
+                storage.reserve_map(&mut entries, 1)?;
+            }
+            entries.insert(key, overflowed);
+        };
+        Ok(())
     }
 
     pub(crate) fn clear(&self) {
@@ -259,19 +328,27 @@ include!("composer/stored_cell_reflow.inc.rs");
 include!("composer/cell_line_breaking.inc.rs");
 include!("composer/pua_surface.inc.rs");
 
+mod empty_line_metrics;
+pub(crate) mod inline_box_rows;
 mod line_breaking;
+pub(crate) use line_breaking::try_reflow_line_segs;
+pub(crate) use line_breaking::{condense_space_savings_px, overflowing_space_cut};
+
 mod picture_anchor_projection;
 pub(crate) use line_breaking::{
-    control_is_width_neutral_marker, frame_metrics_for_line, text_word_ranges,
+    control_is_square_float_object, control_is_width_neutral_marker, frame_metrics_for_line,
+    paragraph_end_font_size_px, text_word_ranges, text_word_ranges_with_storage,
 };
 pub mod lineseg_compare;
 
 pub(crate) use line_breaking::{
-    is_line_end_forbidden, is_line_start_forbidden, layout_paragraph_in_frame,
+    control_owns_body_band, is_line_end_forbidden, is_line_start_forbidden,
+    layout_paragraph_in_frame, layout_paragraph_in_frame_with_storage,
     layout_picture_anchor_in_frame, layout_picture_band, paragraph_flow_end,
     recalculate_section_vpos, reflow_line_segs, reflow_line_segs_after_cell_split,
     reflow_line_segs_after_cell_text_edit, reflow_line_segs_in_stored_section, restamp_indentation,
-    tokenize_paragraph, BreakToken, StoredRowMissPolicy,
+    row_is_carved_from_box, supports_picture_band_frame_controls, tokenize_paragraph, BreakToken,
+    StoredRowMissPolicy,
 };
 
 #[cfg(test)]

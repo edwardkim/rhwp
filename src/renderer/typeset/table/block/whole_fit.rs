@@ -24,7 +24,6 @@ pub(super) struct WholeFitInput {
 
 pub(super) struct WholeFit {
     pub(super) para_has_stored_line_seg: bool,
-    pub(super) single_row_object_height_advance: Option<f64>,
     pub(super) fits_after_overlay_shapes: bool,
     pub(super) stored_rewinding_rowbreak_uses_painted_row_footprint: bool,
     pub(super) whole_fit_table_total: f64,
@@ -36,10 +35,9 @@ pub(super) struct WholeFit {
 }
 
 impl TypesetEngine {
-    /// A complete source cell can own two physical row frames even when
-    /// sequential measurement would fit both. Whole placement must retain
-    /// the same source boundary consumed by the row scanner and paint.
-    pub(in crate::renderer::typeset) fn stored_two_line_row_frames_require_split(
+    /// 완전한 원본 셀도 여러 물리 프레임을 소유할 수 있다. 통째 수용과
+    /// 빈 호스트 빠른 경로가 실제 스캐너의 같은 저장 경계를 보존한다.
+    pub(in crate::renderer::typeset) fn stored_cell_page_frames_require_split(
         &self,
         table: &crate::model::table::Table,
         styles: &crate::renderer::style_resolver::ResolvedStyleSet,
@@ -55,8 +53,9 @@ impl TypesetEngine {
         self.prime_section_cell_context(&engine);
         engine.set_layout_profile(self.profile.get());
         engine.set_render_normalization_overlay(std::sync::Arc::clone(&self.render_normalization));
-        (0..usize::from(table.row_count))
-            .any(|row| engine.native_saved_two_line_row_frame(table, row, styles))
+        engine.native_stored_table_has_intra_paragraph_frames(table, styles)
+            || (0..usize::from(table.row_count))
+                .any(|row| engine.native_saved_two_line_row_frame(table, row, styles))
     }
 
     /// 원본 공동 앵커의 첫 수용 원점과 이월 후 소비된 오프셋을 함께 조회한다.
@@ -263,6 +262,7 @@ impl TypesetEngine {
         table: &crate::model::table::Table,
         effective_height: f64,
         host_spacing_before: f64,
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) -> Option<crate::renderer::float_placement::ParagraphFloatPlacement> {
         if st.col_count != 1
             || !(st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
@@ -329,6 +329,10 @@ impl TypesetEngine {
                     next,
                     table,
                     effective_height,
+                    styles
+                        .para_styles
+                        .get(next.para_shape_id as usize)
+                        .map_or(0.0, |style| style.spacing_before),
                     self.dpi,
                 )
             })
@@ -476,6 +480,7 @@ impl TypesetEngine {
             ft,
             fmt,
             mt,
+            styles,
             paragraphs_all,
             ..
         } = input;
@@ -489,19 +494,6 @@ impl TypesetEngine {
             single_row_object_declared_fits_current,
         } = fit;
         let para_has_stored_line_seg = para.line_segs.iter().any(|ls| !is_synthetic_line_seg(ls));
-        let single_row_object_height_fits_current = single_row_object_declared_fits_current;
-        // HWP5-origin HWPX는 저장 object 높이 기준으로는 현재 쪽에 들어가지만,
-        // cell 내용 측정치는 더 큰 1행 자리차지 표를 쪽 하단까지 차지한 것으로
-        // 기록한다. native HWP는 RowBreak fragment의 실제 소비량을 따라야 하므로
-        // 이 HWPX 호환 보정을 적용하지 않는다.
-        let single_row_object_height_advance =
-            (st.profile.hwp5_origin_hwpx() && single_row_object_height_fits_current).then(|| {
-                if st.current_height + table_total > available {
-                    (available - st.current_height).max(0.0)
-                } else {
-                    declared_object_total
-                }
-            });
 
         let fits_after_overlay_shapes =
             st.current_column_has_only_overlay_shapes() && table_total <= available + 12.0;
@@ -841,11 +833,11 @@ impl TypesetEngine {
                     table,
                     ft.effective_height,
                     fmt.spacing_before,
+                    styles,
                 )
             });
         WholeFit {
             para_has_stored_line_seg,
-            single_row_object_height_advance,
             fits_after_overlay_shapes,
             stored_rewinding_rowbreak_uses_painted_row_footprint,
             whole_fit_table_total,

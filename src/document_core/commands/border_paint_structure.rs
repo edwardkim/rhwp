@@ -884,7 +884,7 @@ impl DocumentCore {
         let measured = crate::renderer::height_measurer::HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(profile.hwp3_layout())
             .with_legacy_hwp3_stored_geometry(profile.legacy_hwp3_stored_geometry())
-            .with_native_hwp5(profile.native_hwp5_layout())
+            .with_native_hwp5(profile.hwp5_stored_pagination_layout())
             .with_hwpx_stored_layout(profile.hwpx_stored_layout())
             .with_session_edited(profile.session_edited())
             .with_hwp3_origin_flow_spacing_before(profile.hwp3_origin_flow_spacing_before())

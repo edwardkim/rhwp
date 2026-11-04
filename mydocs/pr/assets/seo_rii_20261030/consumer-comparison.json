@@ -1,0 +1,86 @@
+[
+  {
+    "key": "body-list-typed",
+    "baseReplays": 3,
+    "baseHits": 0,
+    "candidateReplays": 2,
+    "candidateHits": 1,
+    "pixels": {
+      "full": {
+        "equal": true,
+        "sha256": "94399e7b2e190666b588fc673c96757252efb30379d3e13184555a4370dff9ff"
+      },
+      "prepared": {
+        "equal": true,
+        "sha256": "94399e7b2e190666b588fc673c96757252efb30379d3e13184555a4370dff9ff"
+      },
+      "host": {
+        "equal": true,
+        "sha256": "94399e7b2e190666b588fc673c96757252efb30379d3e13184555a4370dff9ff"
+      }
+    }
+  },
+  {
+    "key": "helvetica-styles",
+    "baseReplays": 3,
+    "baseHits": 0,
+    "candidateReplays": 2,
+    "candidateHits": 1,
+    "pixels": {
+      "full": {
+        "equal": true,
+        "sha256": "01407e24849930386b6c1d556c18d2c854c59030b1afc4325488c8f73b73388f"
+      },
+      "prepared": {
+        "equal": true,
+        "sha256": "01407e24849930386b6c1d556c18d2c854c59030b1afc4325488c8f73b73388f"
+      },
+      "host": {
+        "equal": true,
+        "sha256": "01407e24849930386b6c1d556c18d2c854c59030b1afc4325488c8f73b73388f"
+      }
+    }
+  },
+  {
+    "key": "pic-crop-01",
+    "baseReplays": 3,
+    "baseHits": 0,
+    "candidateReplays": 2,
+    "candidateHits": 1,
+    "pixels": {
+      "full": {
+        "equal": true,
+        "sha256": "cc288e035d46c27fe975c894bb720f1a59a5c77c8e2e985dc7908c0a8eb07653"
+      },
+      "prepared": {
+        "equal": true,
+        "sha256": "cc288e035d46c27fe975c894bb720f1a59a5c77c8e2e985dc7908c0a8eb07653"
+      },
+      "host": {
+        "equal": true,
+        "sha256": "cc288e035d46c27fe975c894bb720f1a59a5c77c8e2e985dc7908c0a8eb07653"
+      }
+    }
+  },
+  {
+    "key": "shape-group-02",
+    "baseReplays": 3,
+    "baseHits": 0,
+    "candidateReplays": 2,
+    "candidateHits": 1,
+    "pixels": {
+      "full": {
+        "equal": true,
+        "sha256": "194f5a8167db27a6c7bbc7d3f5d65acf5bc15522c6ebca857959ce7f5d43b4eb"
+      },
+      "prepared": {
+        "equal": true,
+        "sha256": "194f5a8167db27a6c7bbc7d3f5d65acf5bc15522c6ebca857959ce7f5d43b4eb"
+      },
+      "host": {
+        "equal": true,
+        "sha256": "194f5a8167db27a6c7bbc7d3f5d65acf5bc15522c6ebca857959ce7f5d43b4eb"
+      }
+    }
+  }
+]

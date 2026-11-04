@@ -1,0 +1,66 @@
+[
+  {
+    "case": "saved_bottom",
+    "command": [
+      "/home/edward/mygithub/rhwp/venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--silhouette-only",
+      "--key",
+      "saved_bottom",
+      "--png-pair",
+      "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/saved_bottom/saved_bottom/rhwp_png",
+      "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/saved_bottom/saved_bottom/pdf_png",
+      "--out",
+      "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/tsv-candidate-native/saved_bottom"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "wrapping_A",
+    "command": [
+      "/home/edward/mygithub/rhwp/venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--silhouette-only",
+      "--key",
+      "wrapping_A",
+      "--png-pair",
+      "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/wrapping_A/wrapping_A/rhwp_png",
+      "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/wrapping_A/wrapping_A/pdf_png",
+      "--out",
+      "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/tsv-candidate-native/wrapping_A"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "legacy_textbox",
+    "command": [
+      "/home/edward/mygithub/rhwp/venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--silhouette-only",
+      "--key",
+      "legacy_textbox",
+      "--png-pair",
+      "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/legacy_textbox/legacy_textbox/rhwp_png",
+      "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/legacy_textbox/legacy_textbox/pdf_png",
+      "--out",
+      "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/tsv-candidate-native/legacy_textbox"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "wmf_fixed_face",
+    "command": [
+      "/home/edward/mygithub/rhwp/venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--silhouette-only",
+      "--key",
+      "wmf_fixed_face",
+      "--png-pair",
+      "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/wmf_fixed_face/wmf_fixed_face/rhwp_png",
+      "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/wmf_fixed_face/wmf_fixed_face/pdf_png",
+      "--out",
+      "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/tsv-candidate-native/wmf_fixed_face"
+    ],
+    "exit_code": 0
+  }
+]

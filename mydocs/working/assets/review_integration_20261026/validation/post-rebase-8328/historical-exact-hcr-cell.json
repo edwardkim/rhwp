@@ -1,0 +1,20 @@
+{
+  "status": "pass",
+  "scope": "과거 수치 미달 중 중첩 표 문서 1쪽 하나",
+  "input_sha256": "7756e38c49dbccd961393a5e66f22c5660f2dd2653128a73903923044cb782f9",
+  "pdf_sha256": "e19cb10792a2c25558d95c22eaa75794bad52168a2370a2c9e9ffbeafb7d34d7",
+  "hcr_font_sha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+  "past_wasm_sha256": "c5b25dd8b22efce0d4ecb08291069e3ec625345c40957cbe457cc431f69737d8",
+  "current_wasm_sha256": "3faf7e1bca135d57bf70049d3ee63290c4892cea5be30c2ca6fdf2f772faa01a",
+  "historical_png_sha256": "f0d052a9098d75afe6cc4307b35c7e4d65d47bce5e295b23c02694cd3c74ff38",
+  "reproduced_past_png_sha256": "f0d052a9098d75afe6cc4307b35c7e4d65d47bce5e295b23c02694cd3c74ff38",
+  "candidate_png_sha256": "d95882e38c7d06755c76c75b9d5b44bde7afd807025161698b634bce5b3a66a1",
+  "past_run_manifest_sha256": "74287d5c5ee95182dca29ef609d0aa5e6d07c57ad6c846b53df1bac4c7d71955",
+  "candidate_run_manifest_sha256": "d20cd83d09c7d8e277f2253ec8bcfa3a3c86b90c60dbdcfa98e85e707c8fdc57",
+  "past_tsv_sha256": "f72eb34829d09fdffd3e910f84590866735c5281bd66698f3656c2616bab5379",
+  "candidate_tsv_sha256": "bfe92e0a9bb7fcdca4fbb4dd247ab5747632df1277211370d22a64c2f61e5258",
+  "past_raw_percent": 98.57262,
+  "candidate_raw_percent": 98.57264,
+  "drop_pp": -2e-05,
+  "note": "과거와 후보 양쪽에 동일한 문서 HCR 글꼴을 공급해 비교. 과거 PNG 바이트가 재현됐지만 나머지 문서의 과거 조건 재현은 증명하지 않는다."
+}

@@ -27,11 +27,31 @@
   기존 기준 PDF가 없어 검증 자료로 커밋해야 하는 PDF는 `pdf/<issue-or-topic>/` 등 정식 경로에
   생성하며, untracked 목록에서 숨기려고 `output/`으로 옮기거나 ignore하지 않는다.
   [임시 산출물과 기준 PDF의 저장 위치](mydocs/manual/codex/docs_and_git_workflow.md#임시-산출물과-기준-pdf의-저장-위치)를 따른다.
+- 검토·후속 처리 종료 시 저장소 루트의 `output/` 전체와 기본 작업공간의
+  `target/pr-review/debug`를 정리한다. 유휴 셸의 cwd 참조만으로 정리를 보류하지 않는다.
+  별도 정리 지시나 재승인 없이 자동 삭제하며 추가 백업·압축·이관을 하지 않는다. debug는 빌드·테스트 사용 종료 후
+  삭제하며, 상세 범위·실제 사용 판정·완료 검증은 [종료 정리](mydocs/manual/pr_review/post_merge.md#77-branch-worktree-검토-전용-target-정리)를 따른다.
+
+## 이슈 작업 브랜치 명명
+
+이슈 작업 브랜치는 **`task/<이슈번호>-<영문 설명>`**으로 명명한다.
+예: `task/8153-handbook-raw100`. 이슈 번호 생략·날짜 대체·임의 접두사를 사용하지 않는다.
+세부 적용 범위는 [브랜치 명명 규칙](mydocs/manual/codex/docs_and_git_workflow.md#branch-and-pr-rule)을 따른다.
+
+외부 PR 단독 검토는 `review/pr-<원 PR번호>-<설명>`, 다수 PR 체리픽 통합은
+`review/integration-<대표 이슈번호>-<설명>`을 사용한다. 대표 이슈가 없으면 이슈 번호 대신
+`YYYYMMDD`를 쓴다. 원본 head 보존·SHA 기록 등은
+[체리픽 통합 브랜치 명명](mydocs/manual/codex/docs_and_git_workflow.md#외부-pr-검토와-체리픽-통합-브랜치-명명)을 따른다.
 
 ## PR 제출 전 검증과 Draft 제한
 
+CI workflow·action·CI 실행/재사용 판정 정책 변경 PR의 후속 기록은 **옵션 2**로 처리한다.
+원 PR의 Full CI·검토·승인·병합 뒤 review·오늘할일을 별도 기록 PR로 반영하며, 원 PR에 문서-only
+trailing commit을 추가해 전체 CI를 반복하지 않는다. [정본 절차](mydocs/manual/pr_review/post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)를 따른다.
+
 새 PR 준비·생성 전에는 본인 계정의 열린 PR을 조회한다. **이미 리뷰어가 지정된 PR은 우선
-처리 대상에서 제외**하고 임의로 갱신하지 않는다. 나머지 기존 PR의 lint 실패부터 해결한다.
+처리 대상에서 제외**하고 임의로 갱신하지 않는다. 나머지 기존 PR의 lint를 포함한 모든
+CI 실패·오류부터 해결한다.
 충돌·base 문제는 최신 `upstream/devel`로 rebase한 뒤 보정·커밋·재검증하고, 같은 PR의 최신
 head CI와 충돌 해소를 확인한 뒤 신규 PR을 진행한다. 메인터너 보정 요청과 원격 승인 등은
 [새 PR 생성 전에 확인할 항목](mydocs/manual/codex/docs_and_git_workflow.md#새-pr-생성-전에-확인할-항목)을 따른다.
@@ -42,6 +62,10 @@ PR CI나 Draft로 우회하지 않는다. Draft는 특별한 조기 논의·WIP 
 승인한 경우만 허용하고 목적·미완료 항목·완료 계획을 본문에 적는다. 번호 확보·CI 대기는 사유가 아니다.
 Docker는 필수 설치 조건이 아니며 [환경별 fresh WASM 경로](mydocs/manual/pr_review/local_validation.md#환경에-따른-fresh-wasm-검증)의
 Docker 또는 호스트 빌드를 선택해 동일한 필수 검증을 완료한다.
+
+조판에 영향을 주는 변경이 포함된 PR은 제출 전 최종 head에서 행정업무운영 편람 HWPX Native
+383쪽 `--handbook-gate`를 실행해 통과한다. 일반 Visual Sweep에서는 자동 실행하지 않으며,
+실행과 판정은 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따른다.
 
 ## 리뷰어 지정 후 추가 커밋 제한
 
@@ -95,7 +119,9 @@ CI 성공으로 대체하지 않는다. 후퇴·필수 증거 부족이 남으�
   이슈별·검토별 target, `target/pr-review/<name>`, worktree별 target을 새로 만들지 않는다. Native `release`와 WASM
   `wasm32-unknown-unknown`을 같은 경로에서 재사용해 재빌드를 피한다.
 - `target/pr-review`은 공유 캐시다. 실행 중인 Cargo 작업의 소유·상태를 먼저 확인하고,
-  그 경로를 임의로 삭제·초기화하지 않는다. 별도 target은 사용자가 명시한 경우에만 쓴다.
+  검증 중 그 경로를 임의로 삭제·초기화하지 않는다. 종료 후에는
+  [정리 절차](mydocs/manual/pr_review/post_merge.md#771-검토-전용-target)에 따라 `debug` 전체를
+  삭제하고 나머지 profile은 재사용한다. 별도 target은 사용자가 명시한 경우에만 쓴다.
 - 디스크 공간이 부족하면 빌드 캐시보다 **종료된 검증용 Chromium/Puppeteer 임시 프로필**을
   먼저 정리 후보로 확인한다. 기본 후보는 24시간 이상 지난 미사용 항목이며, 실행 중인
   프로세스의 경로·열린 파일 참조와 잠금 PID를 확인한 뒤 정확한 임시 경로만 삭제한다.
@@ -105,6 +131,7 @@ CI 성공으로 대체하지 않는다. 후퇴·필수 증거 부족이 남으�
   공유 target을 사용하는 Cargo·rustc·wasm-pack·wasm-opt 작업이 모두 종료됐는지 확인한 뒤
   사용하지 않는 정확한 `incremental` 하위 캐시 경로만 삭제하고 목록·확보 공간을 기록한다.
   target 전체·프로필 디렉터리·실행 파일·`deps`·`.fingerprint`와 다른 작업의 산출물은 보존한다.
+  이 증분 캐시 정리와 별도로 검토 종료 시 `target/pr-review/debug` 전체를 정리한다.
 - `rhwp-studio` 개발 서버에서 Rust/WASM 변경을 확인할 때는 반드시 **저장소 루트
   (`scripts/`·`pkg/`·`rhwp-studio/`가 함께 있는 디렉터리)**에서
   `CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" scripts/wasm-pack-locked.sh --target web --out-dir pkg`를
@@ -115,11 +142,36 @@ CI 성공으로 대체하지 않는다. 후퇴·필수 증거 부족이 남으�
 
 ## 수정 전에 확정할 것
 
+- HWP/HWPML/HWPX 처리는 휴리스틱 대신 해당 버전 사양의 단위·속성·계산 규칙과 원본
+  저장값을 따른다. 실제 결과와 다르면 원본 바이트·참조 구현·독립 한컴 출력으로 확인하고,
+  사양 오류가 입증되면 원문 PDF를 보존하면서 사양 설명본·정오표·매뉴얼을 함께 수정한 뒤
+  구현을 재검증한다. 임시 휴리스틱으로 불일치를 우회하거나 확인된 사양 오류의 문서 정정을
+  생략하지 않는다. [공통 처리 절차](mydocs/manual/codex/docs_and_git_workflow.md#사양-우선과-실제-결과-불일치-처리)를 따른다.
 - 기존 이슈·회귀 실패는 [해결 PR의 선행 분석](mydocs/manual/codex/docs_and_git_workflow.md#기존-이슈와-해결-pr의-선행-분석)부터 한다.
   이슈 전체 논의, 원 PR과 실제 통합·메인터너 보정, 독립 기대값·수정 전후 증거를 읽고 현재
   base/head와 대조한다. 여러 실패와 리베이스 반영 기능도 각각 확인한 뒤 코드·기대값·골든을 판정한다.
   필수 근거·보정·재검증을 완료하지 않은 항목은 PR 제출 전에 해결한다. `미검증` 기록이나 범위 밖·
   별도 이슈 분류만으로 승인된 작업을 완료 처리하지 않는다.
+- 회귀 테스트는 실행 시스템에 특정 글꼴이 설치돼 있다는 가정에 의존하지 않는다. 글꼴이
+  없는 환경에서도 검사할 수 있게 작성하고, 글꼴 프로그램 자체를 검증해야 할 때만 저장소에
+  포함된 라이선스 확인 테스트 자원을 명시적으로 공급한다. 설치 여부에 따라 검사를 조용히
+  건너뛰지 않는다. 독립 Print 시각 측정에 사용한 글꼴 환경은 별도로 기록한다.
+  전체·집중 회귀는 [최소 글꼴 환경](mydocs/manual/pr_review/local_validation.md#회귀-테스트의-최소-글꼴-환경)에서 실행하고 실제 노출된 글꼴을 확인한다.
+  OTF를 포함한 글꼴 파일은 출처·라이선스·재배포 권한과 필요한 고지 절차를 확인하기 전에는
+  저장소나 배포물에 넣지 않는다. 시스템에 설치돼 있다는 사실은 배포 허가가 아니다.
+- 새 회귀 테스트 파일은 **첫 줄부터** 실제 시각 측정 결과와 근거를 주석으로 기록한다.
+  Rust 파일은 `//!` 모듈 문서 주석을 사용하며 첫 줄에 관계형 또는 고정형을 구분해 적는다.
+  다음 줄에 주석 갱신의 날짜·시각·시간대를 기록하고, 기존 파일에 처음 추가할 때는 Git에서
+  확인한 직전 파일 변경 커밋의 시각과 SHA도 적는다. 측정 시각과 구분하고 추정하지 않는다.
+  실제 assertion을 확인해 관계형과 고정형을 구분하고 두 검사가 함께 있을 때만 둘 다 적는다.
+  비교 대상 사이의 관계는 관계형, 독립 절대 좌표·고정 영역·쪽수·golden 기대값은 고정형이다.
+  실제 페이지의 절대 px 좌표·고정 영역은 Native/fresh WASM 양쪽 raw 98% 이상과 독립 PDF
+  확대 판독을 완료한 경우에만 ±2px로 고정한다. 양쪽이 100.00%로 표시되는 페이지는
+  독립 좌표를 ±1px로 고정할 수도 있으며, 이는 선택 사항이다. 유형 표기는 조건을 면제하지 않는다.
+  이어서 측정일·raw 측정 방법과 DPI·대상 쪽의
+  Native/fresh WASM 각각의 수치·전체 쪽수와 두 경로의 전쪽 최저값·정식 증거 경로를 적는다.
+  여러 원본은 각각 구분하고, 미측정 수치를 추정하지 않는다. 형식과 확인 사항은
+  [회귀 테스트 파일 첫머리의 측정 근거](mydocs/manual/pr_review/visual_fixture_evidence.md#회귀-테스트-파일-첫머리의-측정-근거)를 따른다.
 - 렌더링·조판·페이지 배치 변경의 새 회귀 테스트나 fixture/golden은 같은 원본·독립 한컴 PDF의
   Native/fresh WASM Visual Sweep에서 검증 범위의 **최저 일치율이 90% 이상**일 때만 추가한다.
   관련 모든 페이지·fixture·출력 경로 중 하나라도 90% 미만이거나 측정 불가이면 추가를 보류하고
@@ -130,6 +182,9 @@ CI 성공으로 대체하지 않는다. 후퇴·필수 증거 부족이 남으�
   역으로 정하지 않는다. 사양, 유효한 기준 문서 또는 독립적인 기존 계약으로 정답을 정한다.
 - 관련 기존 회귀 테스트도 잘못된 기대값을 고정했을 수 있다. 독립 PDF와 수정 전·후 Visual Sweep으로
   [기대값의 적절성](mydocs/manual/pr_review/visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)을 확인하고 실제 회귀·기대값 오류·미검증을 구분한다.
+  새 회귀를 등록할 때도 같은 원본·동작의 기존 검사를 함께 정리한다. 잘못된 기대값은 수정하고,
+  잘못된 전제나 유효한 검증 목적이 없는 assertion은 근거와 보호 범위를 확인해 제거한다.
+  잘못된 기존 검사를 둔 채 새 검사만 추가하지 않는다. 정확한 검사와 시각 선행 조건은 유지한다.
   실패한 렌더링·페이지 검사는 **원 회귀 테스트의 원본 입력 출력 보정 → 버전에 맞는 독립 한컴
   Print PDF와 Native/fresh WASM Visual Sweep에서 관련 모든 페이지가 90% 이상인지 확인 →
   독립 기대값에 따라 필요한 회귀 검사 변경** 순서를 따른다. 쪽수 검사는 전체 페이지를 비교한다.
@@ -151,6 +206,8 @@ CI 성공으로 대체하지 않는다. 후퇴·필수 증거 부족이 남으�
 통과 중이어도 그 문서를 사용하는 절대 px 좌표·고정 영역 검사를 확인하고 관계 검사로
 바꾼다. 다만 완료된 페이지의 Native/fresh WASM `silhouette_raw_match_percent`(색상 경계 보정 전2px 실루엣 일치율)이 각각 98% 이상이고
 독립 PDF와 직접 확대 판독까지 완료됐으면, 해당 쪽의 독립 기대 좌표를 ±2px 오차로 유지·추가할 수 있다.
+양쪽 raw가 소수 둘째 자리에서 각각 100.00%로 표시되는 쪽은 ±1px도 선택할 수 있다.
+100.00%라는 이유만으로 좌표 검사나 전쪽 검사를 의무화하지 않는다.
 문서 전체가 98% 이상일 필요는 없다. [페이지별 px 회귀 조건](mydocs/manual/pr_review/visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다.
 문서마다 변경한 핵심 위치를 보호하며, 같은 핵심 동작을 검증할 수 있는 완료 페이지는
 Native/fresh WASM 양쪽 raw 일치율의 최솟값이 **100% → 99%대 → 98%대**인 순서로 우선 선정한다.
@@ -238,6 +295,9 @@ SHA-256·이전/보존 경로·활성 유지/제거 목록·복원 조건을 기
   reviewer가 실제 결과를 열어 볼 수 있게 대표 review·overlay PNG를 PR 본문에 Markdown 이미지로
   표시한다. 경로·임시 output·review 문서 링크만으로 대신하지 않고, PR head repository와 정확한
   head SHA로 고정한 raw URL을 사용한다. code head가 바뀌면 캡처와 본문 URL도 갱신한다.
+  원 PR의 시각 review·comment는 첫 게시부터 그 PR이 주장한 문서·페이지별 review·overlay 이미지를
+  정확한 commit SHA의 raw URL로 표시한다. 게시 전 입력·페이지·이미지 응답·해시를 대조하고 게시 후
+  본문과 표시를 재확인한다. 증적이 없으면 준비할 때까지 게시를 보류한다. [comment 정본](mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 따른다.
   코드 변경 뒤에는 영향 페이지를 다시 캡처하며, CI 녹색·자동 픽셀 점수만으로 대체하지 않는다.
   `scripts/visual_sweep.py`의 색상 경계 보정 전2px 내용 실루엣 일치율이 대표 review PNG 중 하나라도
   90% 미만이거나 측정 불가이면 새 PR을 만들지 않고 이미 열린 PR은 승인·통합하지 않는다. 기여자가 자기 branch에서

@@ -1,0 +1,32 @@
+{
+  "dpi": 96,
+  "method": "PyMuPDF image rect points × 96/72",
+  "cases": [
+    {
+      "input": "samples/issue8271/tac_picture_topandbottom_textbox.hwpx",
+      "input_sha256": "5caee737321f70a63a396be04cc93cd24526fa4650fb549639dadbee7aedba0f",
+      "pdf": "pdf/issue8271/tac_picture_topandbottom_textbox-2020.pdf",
+      "pdf_sha256": "dc7b94bd0ccc8201713102f3c392256f0f9c9cce354ed0e5b86e5dd26975db02",
+      "page": 1,
+      "image_rect_px": [
+        133.05,
+        132.18,
+        246.43,
+        191.47
+      ]
+    },
+    {
+      "input": "samples/issue8271/tac_picture_behindtext_textbox.hwpx",
+      "input_sha256": "19ac4952c2d2254fce267b950b40dba10cfe607c9c6bf9b6139804dfdbbc7b00",
+      "pdf": "pdf/issue8271/tac_picture_behindtext_textbox-2020.pdf",
+      "pdf_sha256": "fe9dd3caedb3dabc7e38f81de03a3804bbf7430597f9c4fc3c3e86f3ba2e0ab0",
+      "page": 1,
+      "image_rect_px": [
+        133.05,
+        132.18,
+        246.43,
+        191.47
+      ]
+    }
+  ]
+}

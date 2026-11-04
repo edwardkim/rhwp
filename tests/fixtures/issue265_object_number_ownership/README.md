@@ -6,15 +6,15 @@ PDF는 engine2020/Hancom11.0.0.9136, Print method0, one-up, preprocess none이�
 
 |입력|SHA256|독립 Print PDF|PDF SHA256|
 |---|---|---|---|
-|[old-none-hwp.hwp](old-none-hwp.hwp)|`884cebac56260ba7ac53091504dc6be9a646681888694969a559cb47e2dfc3c5`|[issue265-caption-flow-hwp-save-20261020-2020.pdf](/Users/tsjang/rhwp-7445-completed-20261009/mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/old-none-hwp-2020.pdf)|`f13729e187dd000760ca8ee36b3b2cb3f6bac21d98e4c6acc670758c010f2ff1`|
-|[old-none-hwpx.hwpx](old-none-hwpx.hwpx)|`c1d57147e6d7cb22317ad55ea12eed426699d62b46b0a74e88283e6eac09e1e9`|[issue265-caption-flow-hwpx-save-20261020-2020.pdf](/Users/tsjang/rhwp-7445-completed-20261009/mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/old-none-hwpx-2020.pdf)|`ed5126b5b7dfaceb2c904694a31ad0e207229ca0b4887853c907623fd40bd919`|
-|[inline-unbound.hwpx](inline-unbound.hwpx)|`41d23167b4c2d546ac4dc52c7361e9589c4fd2170a7a1de1a82023e2f41bc8f9`|[inline-unbound-2020.pdf](/Users/tsjang/rhwp-7445-completed-20261009/mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/inline-unbound-2020.pdf)|`b69a71e6fcc5150863475a11682aa8ac4ab564acd952a2cd0752e237ce969e22`|
-|[all-picture.hwpx](all-picture.hwpx)|`8ad8665945e45a1f1eacd70c540040b7de4019b6752ac43eb92f15349667efc4`|[all-picture-2020.pdf](/Users/tsjang/rhwp-7445-completed-20261009/mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/all-picture-2020.pdf)|`16e565fab166cc3726ab1e27cb7feaabf6f63ee363c9ce1c79b1937cd7292712`|
-|[mixed-picture-none.hwpx](mixed-picture-none.hwpx)|`557ae42786f5331aab387cf5f7676bffc55e0783e1e44d962ba4c99a3175b6aa`|[mixed-picture-none-2020.pdf](/Users/tsjang/rhwp-7445-completed-20261009/mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/mixed-picture-none-2020.pdf)|`91ab502240acd69034f7db574e4d2319e51eb14e3059bddef3b77525a4926894`|
-|[duplicate-field-owner.hwpx](duplicate-field-owner.hwpx)|`02d9f35d301e3a1239e1de2b3d1549a9de9dee0f8c26e9fc58750142015d8e75`|[duplicate-field-owner-2020.pdf](/Users/tsjang/rhwp-7445-completed-20261009/mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/duplicate-field-owner-2020.pdf)|`92e545d61eb8618ac5003f6ad72c3102b2fde97fb245bebf595a8550fe902bc8`|
-|[none-start7.hwpx](none-start7.hwpx)|`6905f7e56dfaab821c79c49d1dcd10d96607444fa3862c64d841765807a546a5`|[none-start7-2020.pdf](/Users/tsjang/rhwp-7445-completed-20261009/mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/none-start7-2020.pdf)|`c9268270d8f86c74508d423825e60f2c2c5ee4a884925e52b0a7391b76c9b3de`|
-|[picture-start7.hwpx](picture-start7.hwpx)|`cf0ec693c7509eed2d45546cef11b348100ba5c772ef15ee79545a9e7f554b58`|[picture-start7-2020.pdf](/Users/tsjang/rhwp-7445-completed-20261009/mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/picture-start7-2020.pdf)|`23dd06992fb1cf0c39712fc7c1091e791942a9e4318ab11cd165b5d1a1cce4a9`|
-|[cross-caption-category.hwpx](cross-caption-category.hwpx)|`6cceca506261994ee28ebcbc9466ee72fa24f42af0d808c84ab7baa87a8a9b98`|[cross-caption-category-2020.pdf](/Users/tsjang/rhwp-7445-completed-20261009/mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/cross-caption-category-2020.pdf)|`539941dfcb23ef5330e969a7e794cb6a1b8a75fe4a2f97af2fc671da8b458843`|
+|[old-none-hwp.hwp](old-none-hwp.hwp)|`884cebac56260ba7ac53091504dc6be9a646681888694969a559cb47e2dfc3c5`|[issue265-caption-flow-hwp-save-20261020-2020.pdf](../../../mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/old-none-hwp-2020.pdf)|`f13729e187dd000760ca8ee36b3b2cb3f6bac21d98e4c6acc670758c010f2ff1`|
+|[old-none-hwpx.hwpx](old-none-hwpx.hwpx)|`c1d57147e6d7cb22317ad55ea12eed426699d62b46b0a74e88283e6eac09e1e9`|[issue265-caption-flow-hwpx-save-20261020-2020.pdf](../../../mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/old-none-hwpx-2020.pdf)|`ed5126b5b7dfaceb2c904694a31ad0e207229ca0b4887853c907623fd40bd919`|
+|[inline-unbound.hwpx](inline-unbound.hwpx)|`41d23167b4c2d546ac4dc52c7361e9589c4fd2170a7a1de1a82023e2f41bc8f9`|[inline-unbound-2020.pdf](../../../mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/inline-unbound-2020.pdf)|`b69a71e6fcc5150863475a11682aa8ac4ab564acd952a2cd0752e237ce969e22`|
+|[all-picture.hwpx](all-picture.hwpx)|`8ad8665945e45a1f1eacd70c540040b7de4019b6752ac43eb92f15349667efc4`|[all-picture-2020.pdf](../../../mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/all-picture-2020.pdf)|`16e565fab166cc3726ab1e27cb7feaabf6f63ee363c9ce1c79b1937cd7292712`|
+|[mixed-picture-none.hwpx](mixed-picture-none.hwpx)|`557ae42786f5331aab387cf5f7676bffc55e0783e1e44d962ba4c99a3175b6aa`|[mixed-picture-none-2020.pdf](../../../mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/mixed-picture-none-2020.pdf)|`91ab502240acd69034f7db574e4d2319e51eb14e3059bddef3b77525a4926894`|
+|[duplicate-field-owner.hwpx](duplicate-field-owner.hwpx)|`02d9f35d301e3a1239e1de2b3d1549a9de9dee0f8c26e9fc58750142015d8e75`|[duplicate-field-owner-2020.pdf](../../../mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/duplicate-field-owner-2020.pdf)|`92e545d61eb8618ac5003f6ad72c3102b2fde97fb245bebf595a8550fe902bc8`|
+|[none-start7.hwpx](none-start7.hwpx)|`6905f7e56dfaab821c79c49d1dcd10d96607444fa3862c64d841765807a546a5`|[none-start7-2020.pdf](../../../mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/none-start7-2020.pdf)|`c9268270d8f86c74508d423825e60f2c2c5ee4a884925e52b0a7391b76c9b3de`|
+|[picture-start7.hwpx](picture-start7.hwpx)|`cf0ec693c7509eed2d45546cef11b348100ba5c772ef15ee79545a9e7f554b58`|[picture-start7-2020.pdf](../../../mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/picture-start7-2020.pdf)|`23dd06992fb1cf0c39712fc7c1091e791942a9e4318ab11cd165b5d1a1cce4a9`|
+|[cross-caption-category.hwpx](cross-caption-category.hwpx)|`6cceca506261994ee28ebcbc9466ee72fa24f42af0d808c84ab7baa87a8a9b98`|[cross-caption-category-2020.pdf](../../../mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/object-number-ownership/reference/cross-caption-category-2020.pdf)|`539941dfcb23ef5330e969a7e794cb6a1b8a75fe4a2f97af2fc671da8b458843`|
 
 ## 독립 기대값
 
@@ -31,7 +31,9 @@ PDF는 engine2020/Hancom11.0.0.9136, Print method0, one-up, preprocess none이�
 
 ## 시각 선행 증거
 
-[12입력 ×16쪽 ×Native/fresh WASM 전체 결과](/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair611-owned-number-slot-whole/results.json).
+과거 Mac 검증은 12입력 × 16쪽 × Native/fresh WASM 전체 결과다. 당시 로컬 원장은
+`/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair611-owned-number-slot-whole/results.json`에
+보존했으며, 현재 호스트에서 접근 가능한 증적으로 제시하지 않는다. 현재 재검증은 아래 별도 절을 따른다.
 원본 최저95.34478/95.33483%, 다른11입력 최저99.02719/98.92066%,90% 미달0쪽이다.
 canonical PDFium smooth_rgb_v1/192DPI/compat2022/raw2px. 입력·PDF·전체 글꼴 SHA와
 producer의 실제 소스는 같은 폴더 producer.json/source ledger로 추적한다.
@@ -42,3 +44,11 @@ producer의 실제 소스는 같은 폴더 producer.json/source ledger로 추적
 1쪽 Native99.03275%, fresh WASM98.92675%, review/overlay 직접 판독 후 ±2CSSpx를 허용한다.
 동일번호·원문 placeholder 소유·필드 두 개·저장 왕복 관계 검사를 함께 유지한다.
 원본16쪽 전체의 98%를 주장하지 않는다. 이 파일들은 글꼴 바이너리를 포함하지 않는다.
+
+
+## 2026-10-25 현재 통합 후보의 본문 표시 재검증
+
+기존 소유·순번 관계를 유지한 채 본문 자리표의 표시 누락을 공통 경로에서 보정했다.
+원본·본문 필드·캡션 중복 대조군 각각 16쪽의 Native/fresh WASM을 새로 출력했다.
+[현재 전쪽 TSV·대표 PNG·독립 15쪽 좌표와 실제 수정 전후 회귀](../../../mydocs/pr/assets/issue265_body_number_projection_20261025/README.md)를 따른다.
+위 12입력의 과거 Mac 검증과 이번 3입력의 현재 검증을 구분한다.

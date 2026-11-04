@@ -1,0 +1,19 @@
+[
+  {
+    "name": "candidate-native-build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp"
+    ],
+    "exit": 101,
+    "seconds": 110.71,
+    "logSha256": "c7b0c7dad48379f8b799a6b6ce5dc945a9f1ca64f0f4f363f6d065ac909e800d"
+  }
+]

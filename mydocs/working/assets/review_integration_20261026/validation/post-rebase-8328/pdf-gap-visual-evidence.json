@@ -1,0 +1,422 @@
+{
+  "date": "2026-10-28",
+  "dpi": 96,
+  "source": "81f2428cf8",
+  "visual_sweep": "ubuntu-ted3 2d44695b14576d8c9204e6d9d8317649d8828a48",
+  "cases": [
+    {
+      "source_pdf": "pdf/pr7704/6778-square-2020.pdf",
+      "source_sha256": "d4c1fe7a8a3c025b2be3648ba6e2ad1123eff3dde008983edadcef7e8f7b6656",
+      "imported_hwpx_sha256": "abacb272a715215e9204e578f9be159e3900d16ce5a9cede995655ead0937b5c",
+      "import_mode": "fidelity, all source pages; evidence is unedited import, not later edited/reopened variants",
+      "backends": {
+        "native": {
+          "manifest_sha256": "f2a07b2c83eb7b9bc26dbd300a5deed2f2e640f8e558b90ac26001394c0d2013",
+          "pages": 12,
+          "minimum": 99.12224,
+          "page_metrics": [
+            {
+              "page": 1,
+              "raw": 99.57264
+            },
+            {
+              "page": 2,
+              "raw": 99.98811
+            },
+            {
+              "page": 3,
+              "raw": 99.99885
+            },
+            {
+              "page": 4,
+              "raw": 99.85078
+            },
+            {
+              "page": 5,
+              "raw": 99.89992
+            },
+            {
+              "page": 6,
+              "raw": 99.88682
+            },
+            {
+              "page": 7,
+              "raw": 99.98428
+            },
+            {
+              "page": 8,
+              "raw": 99.93169
+            },
+            {
+              "page": 9,
+              "raw": 99.85585
+            },
+            {
+              "page": 10,
+              "raw": 99.76329
+            },
+            {
+              "page": 11,
+              "raw": 99.84472
+            },
+            {
+              "page": 12,
+              "raw": 99.12224
+            }
+          ],
+          "provenance": {
+            "hwp": {
+              "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/pdf-gap-measure/report.hwpx",
+              "sha256": "abacb272a715215e9204e578f9be159e3900d16ce5a9cede995655ead0937b5c"
+            },
+            "pdf": {
+              "path": "/home/tsjang/rhwp/pdf/pr7704/6778-square-2020.pdf",
+              "sha256": "d4c1fe7a8a3c025b2be3648ba6e2ad1123eff3dde008983edadcef7e8f7b6656"
+            },
+            "git_head": "99dd0b9e6cd13f0cfaaab35e680399f2af7b0162",
+            "sweep_script": {
+              "path": "scripts/visual_sweep.py",
+              "sha256": "9be99fdf45ac7f755aa15fd3d3e7787132453acaaa221f01635b87aca6de1102"
+            },
+            "image_decoding": {
+              "alpha_background": "#ffffff",
+              "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+            },
+            "svg_rasterizer": null,
+            "pdf_rasterizer": {
+              "program": "pypdfium2",
+              "backend": "pdfium",
+              "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+              "antialias": {
+                "text": true,
+                "image": true,
+                "path": true
+              },
+              "coordinate_transform": {
+                "scale": "dpi/72 on both axes",
+                "buffer_extent": "ceil(page_points*dpi/72)",
+                "annotations": true
+              },
+              "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "available": true,
+              "executable": "/usr/bin/python3.12",
+              "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+              "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+              "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "version": "153.0.7999.0",
+              "wrapper_version": "5.13.0",
+              "version_exit_code": 0
+            },
+            "comparison_profile": "print",
+            "rhwp_binary": {
+              "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-native-rhwp",
+              "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-native-rhwp",
+              "sha256": "2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0"
+            },
+            "raster_backend": "native-skia",
+            "png_exporter_sha256": "fee440e6c3475fe9b596f87bfa994923704561f93bfcbb45d8c8b343f3532341",
+            "layout_generation": "2022",
+            "font_supply": {
+              "mode": "direct-font-programs",
+              "source": "none",
+              "files": []
+            }
+          }
+        },
+        "wasm": {
+          "manifest_sha256": "029bacf50bbc4a69f680c5776c393c5f08edfef9451bd9437c4c0db7677830e6",
+          "pages": 12,
+          "minimum": 98.95404,
+          "page_metrics": [
+            {
+              "page": 1,
+              "raw": 98.95404
+            },
+            {
+              "page": 2,
+              "raw": 99.98617
+            },
+            {
+              "page": 3,
+              "raw": 100.0
+            },
+            {
+              "page": 4,
+              "raw": 99.83141
+            },
+            {
+              "page": 5,
+              "raw": 99.94753
+            },
+            {
+              "page": 6,
+              "raw": 99.92866
+            },
+            {
+              "page": 7,
+              "raw": 99.96873
+            },
+            {
+              "page": 8,
+              "raw": 99.9676
+            },
+            {
+              "page": 9,
+              "raw": 99.98492
+            },
+            {
+              "page": 10,
+              "raw": 99.80875
+            },
+            {
+              "page": 11,
+              "raw": 99.87511
+            },
+            {
+              "page": 12,
+              "raw": 99.11193
+            }
+          ],
+          "provenance": {
+            "hwp": {
+              "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/pdf-gap-measure/report.hwpx",
+              "sha256": "abacb272a715215e9204e578f9be159e3900d16ce5a9cede995655ead0937b5c"
+            },
+            "pdf": {
+              "path": "/home/tsjang/rhwp/pdf/pr7704/6778-square-2020.pdf",
+              "sha256": "d4c1fe7a8a3c025b2be3648ba6e2ad1123eff3dde008983edadcef7e8f7b6656"
+            },
+            "git_head": "99dd0b9e6cd13f0cfaaab35e680399f2af7b0162",
+            "sweep_script": {
+              "path": "scripts/visual_sweep.py",
+              "sha256": "9be99fdf45ac7f755aa15fd3d3e7787132453acaaa221f01635b87aca6de1102"
+            },
+            "image_decoding": {
+              "alpha_background": "#ffffff",
+              "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+            },
+            "svg_rasterizer": null,
+            "pdf_rasterizer": {
+              "program": "pypdfium2",
+              "backend": "pdfium",
+              "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+              "antialias": {
+                "text": true,
+                "image": true,
+                "path": true
+              },
+              "coordinate_transform": {
+                "scale": "dpi/72 on both axes",
+                "buffer_extent": "ceil(page_points*dpi/72)",
+                "annotations": true
+              },
+              "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "available": true,
+              "executable": "/usr/bin/python3.12",
+              "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+              "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+              "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "version": "153.0.7999.0",
+              "wrapper_version": "5.13.0",
+              "version_exit_code": 0
+            },
+            "comparison_profile": "print",
+            "rhwp_binary": {
+              "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-native-rhwp",
+              "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-native-rhwp",
+              "sha256": "2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0"
+            },
+            "raster_backend": "wasm-canvas2d",
+            "png_exporter_sha256": "fee440e6c3475fe9b596f87bfa994923704561f93bfcbb45d8c8b343f3532341",
+            "layout_generation": "2022",
+            "wasm": {
+              "files": [
+                {
+                  "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-wasm-pkg/rhwp.js",
+                  "sha256": "a48acb46a157950724859baea436fda8d5d3b7c9a0fd10665455c952bf4c2434"
+                },
+                {
+                  "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-wasm-pkg/rhwp_bg.wasm",
+                  "sha256": "05bab1b50e9a17b380582e562e992c7189fc3d2e9c85a01187ef069c24ff56e7"
+                }
+              ],
+              "exporter_sha256": "e382d105a686c35359158f360fb67d3dfe8be73bce3fba0eb1ed7e3f2f59c336",
+              "font_registration_sha256": "75a12ee4bb6a15a3c5093dc80aec195898df4c2fe6fc45db90e021dc0381594e",
+              "comparison_profile": "print",
+              "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+              "render_tree": "WASM getPageRenderTree"
+            },
+            "font_supply": {
+              "mode": "direct-font-programs",
+              "source": "none",
+              "files": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "source_pdf": "pdf/issue7998/body-gap-tab.pdf",
+      "source_sha256": "588282d30e688ca10e118083bd83d369d18a54a716c1ef13fc4124e4e1467cc9",
+      "imported_hwpx_sha256": "c746e7f6df9e811dc71f6b83d79719b31711399542896040181f41be1c425e6c",
+      "import_mode": "fidelity, all source pages; evidence is unedited import, not later edited/reopened variants",
+      "backends": {
+        "native": {
+          "manifest_sha256": "6dd3d4587122ecc2c66832e6b097fdddf00c61abb5f5f64da2c09d2835a468b9",
+          "pages": 1,
+          "minimum": 100.0,
+          "page_metrics": [
+            {
+              "page": 1,
+              "raw": 100.0
+            }
+          ],
+          "provenance": {
+            "hwp": {
+              "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/pdf-gap-measure/body.hwpx",
+              "sha256": "c746e7f6df9e811dc71f6b83d79719b31711399542896040181f41be1c425e6c"
+            },
+            "pdf": {
+              "path": "/home/tsjang/rhwp/pdf/issue7998/body-gap-tab.pdf",
+              "sha256": "588282d30e688ca10e118083bd83d369d18a54a716c1ef13fc4124e4e1467cc9"
+            },
+            "git_head": "99dd0b9e6cd13f0cfaaab35e680399f2af7b0162",
+            "sweep_script": {
+              "path": "scripts/visual_sweep.py",
+              "sha256": "9be99fdf45ac7f755aa15fd3d3e7787132453acaaa221f01635b87aca6de1102"
+            },
+            "image_decoding": {
+              "alpha_background": "#ffffff",
+              "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+            },
+            "svg_rasterizer": null,
+            "pdf_rasterizer": {
+              "program": "pypdfium2",
+              "backend": "pdfium",
+              "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+              "antialias": {
+                "text": true,
+                "image": true,
+                "path": true
+              },
+              "coordinate_transform": {
+                "scale": "dpi/72 on both axes",
+                "buffer_extent": "ceil(page_points*dpi/72)",
+                "annotations": true
+              },
+              "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "available": true,
+              "executable": "/usr/bin/python3.12",
+              "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+              "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+              "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "version": "153.0.7999.0",
+              "wrapper_version": "5.13.0",
+              "version_exit_code": 0
+            },
+            "comparison_profile": "print",
+            "rhwp_binary": {
+              "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-native-rhwp",
+              "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-native-rhwp",
+              "sha256": "2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0"
+            },
+            "raster_backend": "native-skia",
+            "png_exporter_sha256": "fee440e6c3475fe9b596f87bfa994923704561f93bfcbb45d8c8b343f3532341",
+            "layout_generation": "2022",
+            "font_supply": {
+              "mode": "direct-font-programs",
+              "source": "none",
+              "files": []
+            }
+          }
+        },
+        "wasm": {
+          "manifest_sha256": "1ea053cf624eb988c67f9786dd06767716026d4c070554a8f8102f3a3afd3711",
+          "pages": 1,
+          "minimum": 100.0,
+          "page_metrics": [
+            {
+              "page": 1,
+              "raw": 100.0
+            }
+          ],
+          "provenance": {
+            "hwp": {
+              "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/pdf-gap-measure/body.hwpx",
+              "sha256": "c746e7f6df9e811dc71f6b83d79719b31711399542896040181f41be1c425e6c"
+            },
+            "pdf": {
+              "path": "/home/tsjang/rhwp/pdf/issue7998/body-gap-tab.pdf",
+              "sha256": "588282d30e688ca10e118083bd83d369d18a54a716c1ef13fc4124e4e1467cc9"
+            },
+            "git_head": "99dd0b9e6cd13f0cfaaab35e680399f2af7b0162",
+            "sweep_script": {
+              "path": "scripts/visual_sweep.py",
+              "sha256": "9be99fdf45ac7f755aa15fd3d3e7787132453acaaa221f01635b87aca6de1102"
+            },
+            "image_decoding": {
+              "alpha_background": "#ffffff",
+              "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+            },
+            "svg_rasterizer": null,
+            "pdf_rasterizer": {
+              "program": "pypdfium2",
+              "backend": "pdfium",
+              "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+              "antialias": {
+                "text": true,
+                "image": true,
+                "path": true
+              },
+              "coordinate_transform": {
+                "scale": "dpi/72 on both axes",
+                "buffer_extent": "ceil(page_points*dpi/72)",
+                "annotations": true
+              },
+              "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "available": true,
+              "executable": "/usr/bin/python3.12",
+              "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+              "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+              "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "version": "153.0.7999.0",
+              "wrapper_version": "5.13.0",
+              "version_exit_code": 0
+            },
+            "comparison_profile": "print",
+            "rhwp_binary": {
+              "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-native-rhwp",
+              "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-native-rhwp",
+              "sha256": "2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0"
+            },
+            "raster_backend": "wasm-canvas2d",
+            "png_exporter_sha256": "fee440e6c3475fe9b596f87bfa994923704561f93bfcbb45d8c8b343f3532341",
+            "layout_generation": "2022",
+            "wasm": {
+              "files": [
+                {
+                  "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-wasm-pkg/rhwp.js",
+                  "sha256": "a48acb46a157950724859baea436fda8d5d3b7c9a0fd10665455c952bf4c2434"
+                },
+                {
+                  "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-wasm-pkg/rhwp_bg.wasm",
+                  "sha256": "05bab1b50e9a17b380582e562e992c7189fc3d2e9c85a01187ef069c24ff56e7"
+                }
+              ],
+              "exporter_sha256": "e382d105a686c35359158f360fb67d3dfe8be73bce3fba0eb1ed7e3f2f59c336",
+              "font_registration_sha256": "75a12ee4bb6a15a3c5093dc80aec195898df4c2fe6fc45db90e021dc0381594e",
+              "comparison_profile": "print",
+              "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+              "render_tree": "WASM getPageRenderTree"
+            },
+            "font_supply": {
+              "mode": "direct-font-programs",
+              "source": "none",
+              "files": []
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,3 +1,17 @@
+//! 관계형·고정형: 저장 버전별 쪽 소유와 완료 쪽의 독립 좌표를 검사한다.
+//! 주석 갱신: 2026-10-30T06:03:01+09:00; 직전 파일 커밋: 2026-10-26T00:04:48+09:00 (df85dd5967).
+//! HWP3 2026-10-19 raw(96dpi, PDFium, 2px): 23쪽 Native 99.97% / fresh WASM 99.98%; 전 64쪽 최저 96.89% / 96.99%.
+//! HWP5 원본·동일한 2010 별칭의 같은 측정: 21쪽 99.96% / 99.96%, 22쪽 98.37% / 98.38%,
+//! 23쪽 99.97% / 99.98%, 24쪽 99.97% / 99.97%; 전 64쪽 최저 97.74% / 97.69%.
+//! 위 두 원본 근거: mydocs/pr/assets/issue7642/final_sweep_20261019/README.md.
+//! 2018 HWP 2026-10-30 raw(96dpi, PDFium, 2px): 4·6·22·23쪽 Native·fresh WASM 각 100.00%,
+//! 5쪽 99.98% / 99.99%; 전 64쪽 최저 27.39% / 27.38%.
+//! 2018의 기존 관계 검사는 유지하며 18·35쪽 미달은 별도로 기록한다.
+//! 근거: mydocs/pr/assets/issue_8160/hwp2018-historical-20261030/README.md.
+//! 2022 HWP 2026-10-30 raw(96dpi, PDFium, 2px): 5·6·23·24·59쪽 Native·fresh WASM 각 100.00%;
+//! 전 64쪽 최저도 각각 100.00%. 2024 HWP의 4·5·6·22·23쪽은 양쪽 100.00%,
+//! 전 64쪽 최저 99.99% / 99.99%. 근거: mydocs/pr/assets/issue_8160/rebase-ad4bf269-20261030/README.md.
+//! 위 수치는 각 원본의 해당 측정 시점 자료이며 현재 head의 재측정 결과와 구분한다.
 //! #8160: sample16 전용 회귀. 이전 등록: tests/issue_1105.rs
 use std::fs;
 use std::path::Path;
@@ -223,9 +237,7 @@ fn issue_8160_sample16_hwp5_2022_server_requirements_page_matches_hancom() {
         vec![22, 23],
         "클러스터 문단은 한컴과 같은 두 쪽이 소유한다"
     );
-    // 전64쪽 Native/fresh WASM 최저94.59411/94.60213%, 미달0쪽.
-    // 이어받기 경계의 두 완료 쪽 중 양쪽 최솟값이 높은23쪽을 선택했다:
-    // 23쪽99.71668/99.71773%, 24쪽99.46509/99.47145%.
+    // 2026-10-30의 23·24쪽 Native/fresh WASM은 모두 100.00%다.
     // 독립 한컴 Print의 S/W와 다음 한글 원점·기준선(96dpi CSSpx)을 보호한다.
     // source-font-selected-program 증적의192dpi TSV·review/overlay 직접 판독 완료.
     fn program_origins(
@@ -256,12 +268,12 @@ fn issue_8160_sample16_hwp5_2022_server_requirements_page_matches_hancom() {
     assert!(origins[1].0.starts_with("와의 "), "후속 본문 보존");
     for (run, expected_x) in origins.iter().zip([136.64, 167.68]) {
         assert!(
-            (run.1 - expected_x).abs() <= 2.0,
-            "독립 Print의 프로그램 경계 원점 ±2 CSSpx: {run:?}"
+            (run.1 - expected_x).abs() <= 1.0,
+            "독립 Print의 프로그램 경계 원점 ±1 CSSpx: {run:?}"
         );
         assert!(
-            (run.2 - 1040.32).abs() <= 2.0,
-            "독립 Print의 같은 줄 기준선 ±2 CSSpx: {run:?}"
+            (run.2 - 1040.32).abs() <= 1.0,
+            "독립 Print의 같은 줄 기준선 ±1 CSSpx: {run:?}"
         );
     }
     assert!(
@@ -293,8 +305,7 @@ fn issue_8160_sample16_hwp5_2022_server_requirements_page_matches_hancom() {
 }
 
 fn assert_sample16_2022_onepoint_program(core: &rhwp::DocumentCore) {
-    // 전64쪽 Native/fresh 최저91.77231/91.77652%. 같은 한점 리더 동작은
-    // 양쪽 최솟값99.20113%인59쪽이 가장 높아 우선 선택했다(다음60쪽99.14881%).
+    // 2026-10-30의 59쪽 Native/fresh WASM은 모두 100.00%다.
     // 독립 Print T2/HFT97의13개 원점과1em 프로그램, source-program-and-inline-spacing 증적.
     let svg = core.render_page_svg_native(58).expect("독립 Print59쪽");
     let xml = roxmltree::Document::parse(&svg).unwrap();
@@ -342,16 +353,16 @@ fn assert_sample16_2022_onepoint_program(core: &rhwp::DocumentCore) {
         );
         let origin = node.attribute("x").unwrap().parse::<f64>().unwrap();
         assert!(
-            (origin - 136.0).abs() <= 2.0,
-            "독립 Print의 원문 기호 원점 ±2 CSSpx"
+            (origin - 136.0).abs() <= 1.0,
+            "독립 Print의 원문 기호 원점 ±1 CSSpx"
         );
         assert!(
-            (cx - 144.0).abs() <= 2.0,
-            "독립1em 상자 안 기호 중심 ±2 CSSpx"
+            (cx - 144.0).abs() <= 1.0,
+            "독립1em 상자 안 기호 중심 ±1 CSSpx"
         );
         assert!(
-            (cy - (baseline - 16.0 * 0.3475)).abs() <= 2.0,
-            "독립 기호 세로 중심 ±2 CSSpx"
+            (cy - (baseline - 16.0 * 0.3475)).abs() <= 1.0,
+            "독립 기호 세로 중심 ±1 CSSpx"
         );
     }
 }

@@ -1,0 +1,1972 @@
+{
+  "base": "faa885e8b54ffc7cdf4196cd43a3103f362499a2",
+  "production_head": "ae8c413f84a01a4cc4591357056183709f21b150",
+  "metric": "silhouette_raw_match_percent",
+  "decimal_threshold_pp": "2",
+  "new_modes_without_baseline": [
+    "pdf-2010-editable",
+    "pdf-2020-editable",
+    "pdf-mac-editable"
+  ],
+  "baseline_page_count_errors": [
+    {
+      "backend": "native",
+      "key": "cellnotes_plain_N2_L7",
+      "baseline_pages": 12,
+      "reference_pages": 11,
+      "whole_baseline_gate": "re_review_required",
+      "extra_pages": [
+        {
+          "page": 12,
+          "sha256": "089af095eed170bbae6bec9ad85f76ee81823d5a1a51b3b9041a2eb7f5200334"
+        }
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "hwp5-spec-official",
+      "baseline_pages": 83,
+      "reference_pages": 71,
+      "whole_baseline_gate": "re_review_required",
+      "extra_pages": [
+        {
+          "page": 72,
+          "sha256": "559a5729d1f69bfe2275059ae27b095a432638bc382943f7e834b95871da951b"
+        },
+        {
+          "page": 73,
+          "sha256": "cf5ef8e40c89ce33c3c426017874d5a71ba04a86462f037dc10e1edac457d9fd"
+        },
+        {
+          "page": 74,
+          "sha256": "2b97f1d5f24ea9de251c48031eb4e59c38e293d81528bc2b1c4b753801a8abda"
+        },
+        {
+          "page": 75,
+          "sha256": "97b72305344729e46e52183dab4fe2e02c41f7a11dfda7e258a20fc86fd03c5b"
+        },
+        {
+          "page": 76,
+          "sha256": "b0bd32827307d7841ad5fb4f77ad8f62bfcbae23605a62e8de86f7bd2ede5a07"
+        },
+        {
+          "page": 77,
+          "sha256": "f544b22e4c1422cc1ed3070ad73ccde510654d74b47ac70a72c7bbbe4af1e34f"
+        },
+        {
+          "page": 78,
+          "sha256": "b17275efeb1ee9d4dbf92536285639dadc3f928cec340d895f134251112acf58"
+        },
+        {
+          "page": 79,
+          "sha256": "5ca0122d089f71a53ef703bbf993d590c440a6bc0192a1f14ce45cec060d3882"
+        },
+        {
+          "page": 80,
+          "sha256": "560a4fce9cc73147059b1c3706bd0d5de8255288c3a35316e88269046ef00981"
+        },
+        {
+          "page": 81,
+          "sha256": "b0e152794b097b46e03a2db76356bb9c14ac2e3fe864380d480ff0cfa743a0b1"
+        },
+        {
+          "page": 82,
+          "sha256": "8c96f8aa2161d87720179cc6eadf2b4f60102a38f500ad8904abe8af538101af"
+        },
+        {
+          "page": 83,
+          "sha256": "b80e48f1f3cc3d9ca57c2720b40840a302e6feb5696243c4790426489d0aea0a"
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "cellnotes_plain_N2_L7",
+      "baseline_pages": 12,
+      "reference_pages": 11,
+      "whole_baseline_gate": "re_review_required",
+      "extra_pages": [
+        {
+          "page": 12,
+          "sha256": "e0ec0c1b6aba207ae00b48ea5a53e258ed0ba3dffa42cb055ddd2d7c63429c6a"
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "hwp5-spec-official",
+      "baseline_pages": 83,
+      "reference_pages": 71,
+      "whole_baseline_gate": "re_review_required",
+      "extra_pages": [
+        {
+          "page": 72,
+          "sha256": "c14de1c6e9ea94da6d619a42cb75619eabe35667048ce8704698d281ee16bc39"
+        },
+        {
+          "page": 73,
+          "sha256": "bb3faeed3d6e96604dfe404f83c262adbf90f033638abcc91b758b2efd4b3989"
+        },
+        {
+          "page": 74,
+          "sha256": "4775bc789eab7db1a000daa30ce9adea02b3cd1bc462d47b23b2a05497e9154e"
+        },
+        {
+          "page": 75,
+          "sha256": "36743484574499bb5363400320b82ea27268047906ce9451016f52ba62aa6fb4"
+        },
+        {
+          "page": 76,
+          "sha256": "8ce95685b84e00768bd8485346c0c1b9c4927c15ef36ab902f1ddcbe389c5dd5"
+        },
+        {
+          "page": 77,
+          "sha256": "032a83a99a8f73ed4180bb7e75f75519778c1b2016cbf13e45522982a603c076"
+        },
+        {
+          "page": 78,
+          "sha256": "f5b0acdad8ccc701a36a949f94b0a46ab9024b0ee85a8d0737f04485d6bb7c27"
+        },
+        {
+          "page": 79,
+          "sha256": "ace92aa8fd2498888a238196a46695face4f4eea00ea1390101196ec13d84792"
+        },
+        {
+          "page": 80,
+          "sha256": "c89871c2c0f7d3ef7dcedc0f1ec4d6b4712f28ee5f18df9edcf0d9c1c3bde0c6"
+        },
+        {
+          "page": 81,
+          "sha256": "6fb2edcbc902de425f2df69d5b3f88bb5a0c58b8428abbca2caabc57521c8302"
+        },
+        {
+          "page": 82,
+          "sha256": "174df47500a1f8a83b199405296d2a9364fe6f4d03b0be6e3b87356a3fc87e52"
+        },
+        {
+          "page": 83,
+          "sha256": "6ceeef9be7f943a923c938177e7965289b535489aef2161b5c1f7aad6242f5b4"
+        }
+      ]
+    }
+  ],
+  "backends": {
+    "native": {
+      "cases": 64,
+      "paired_reference_pages": 910,
+      "max_drop_pp": "0.00000",
+      "drops_ge_2pp": 0,
+      "any_drop": 0,
+      "records": [
+        {
+          "key": "rebase8116-overlay_table_beside_title",
+          "pages": 5,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/rebase8116-overlay_table_beside_title.tsv",
+          "baseline_tsv_sha256": "8547ee5b5397e7898a3b954d98fd6debc8d8aabc588938df47f0c8796498a2fb",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/rebase8116-overlay_table_beside_title.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "rebase8116-cell_nested_table_rows",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/rebase8116-cell_nested_table_rows.tsv",
+          "baseline_tsv_sha256": "4637c05151417d31f0207a533ffac689d215e07615dc1b071790d8cd0243b100",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/rebase8116-cell_nested_table_rows.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "rebase8116-title_between_floating_shapes",
+          "pages": 4,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/rebase8116-title_between_floating_shapes.tsv",
+          "baseline_tsv_sha256": "5d95dfd95dcf84c418de65aa6e633129c0d9610c8b2f9c5b2b9b0d6b8139adad",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/rebase8116-title_between_floating_shapes.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "rebase8116-picture_cell_row_height",
+          "pages": 5,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/rebase8116-picture_cell_row_height.tsv",
+          "baseline_tsv_sha256": "9f81d77fae0dc9d9ef0231f319a2bb25471e673b1abf5bf315099d912554284f",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/rebase8116-picture_cell_row_height.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "fiscal-anchor",
+          "pages": 4,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/fiscal-anchor.tsv",
+          "baseline_tsv_sha256": "91dc8330a3036569afbe5b99bee8c98e3fd2b12e2131ac418fcbe00f1199f1d7",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/fiscal-anchor.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-normalized-quarter-reflow-false",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-normalized-quarter-reflow-false.tsv",
+          "baseline_tsv_sha256": "d7a9050bedbc4bc983dc60939c17690640f084a45a49873be522c829dd631f68",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-normalized-quarter-reflow-false.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-normalized-quarter-reflow-true",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-normalized-quarter-reflow-true.tsv",
+          "baseline_tsv_sha256": "d7a9050bedbc4bc983dc60939c17690640f084a45a49873be522c829dd631f68",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-normalized-quarter-reflow-true.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-authored-break-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-authored-break-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-authored-break-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-center-row-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-center-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-center-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-column-transition-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-column-transition-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-column-transition-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-mixed-center-row-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-mixed-center-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-mixed-center-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-mixed-end-picture-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-mixed-end-picture-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-mixed-end-picture-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-outer-margin-row-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-outer-margin-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-outer-margin-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-relative-font-row-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-relative-font-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-relative-font-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-same-row-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-same-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-same-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-tail-gap-boundary-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-tail-gap-boundary-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-tail-gap-boundary-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-tail-gap-only-fit-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-tail-gap-only-fit-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-tail-gap-only-fit-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-wrapped-row-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-wrapped-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-wrapped-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "newsletter-chinese",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/newsletter-chinese.tsv",
+          "baseline_tsv_sha256": "acd0464dc3d69a8583d6723084c3a312139ed078f9c65e7bc6c05d81ece9caf4",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/newsletter-chinese.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "onsemiro-hwp",
+          "pages": 46,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/onsemiro-hwp.tsv",
+          "baseline_tsv_sha256": "890ab5f4eb0a629eb23eae98619242f2c7456c847e55a9c47cfeb06b098b66b9",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/onsemiro-hwp.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "onsemiro-hwpx",
+          "pages": 46,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/onsemiro-hwpx.tsv",
+          "baseline_tsv_sha256": "56f59714493ceccaf02e74ea8b6bd55ec227e234d41191b01a7b9c64f75853d6",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/onsemiro-hwpx.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "nested-height-cache",
+          "pages": 17,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/nested-height-cache.tsv",
+          "baseline_tsv_sha256": "e93e646bcc749ea885d13ee9223f7d6c4f33ff0ddefe8a79fd969fe151478655",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/nested-height-cache.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "newsletter-korean",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/newsletter-korean.tsv",
+          "baseline_tsv_sha256": "a788fd92792bb470b86cb8ed76b0ca6c67bc1fb112fc4708817df5cd0e702968",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/newsletter-korean.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "civil-form",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/civil-form.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/civil-form.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "cellnotes_plain_N2_L7",
+          "pages": 11,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/cellnotes_plain_N2_L7.tsv",
+          "baseline_tsv_sha256": "367b78dc2a107e1fddc8eec03c5c4947e98f9e78c1eaf58cf787bb89955cbe99",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/cellnotes_plain_N2_L7.tsv",
+          "baseline_page_count_mismatch": true
+        },
+        {
+          "key": "cellnotes_span_N2",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/cellnotes_span_N2.tsv",
+          "baseline_tsv_sha256": "c3012be45fb93a46cc9835c01f714ee477e92f787f8599626c7f32347979df76",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/cellnotes_span_N2.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "r110_cellnotes_span_N2",
+          "pages": 3,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/r110_cellnotes_span_N2.tsv",
+          "baseline_tsv_sha256": "f43dfab31900d29f4531ce33ec77b3636103a87e109e15c363263aa5c65bb879",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/r110_cellnotes_span_N2.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "trim_n0_F02",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/trim_n0_F02.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/trim_n0_F02.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "trim_n0_h6630_F02",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/trim_n0_h6630_F02.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/trim_n0_h6630_F02.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "trim_n0_h6660_F02",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/trim_n0_h6660_F02.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/trim_n0_h6660_F02.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "trim_n0_l1_big_h6500_F01",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/trim_n0_l1_big_h6500_F01.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/trim_n0_l1_big_h6500_F01.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "trim_n1_F01",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/trim_n1_F01.tsv",
+          "baseline_tsv_sha256": "fcc99e32c6102060c061c14da7e4d3ff67eccfe63c554340989b2f61a4400a0d",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/trim_n1_F01.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "trim_n1_F04",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/trim_n1_F04.tsv",
+          "baseline_tsv_sha256": "7b7101c70df6eca8afedadf261069d13303f3c004822395645937957077060de",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/trim_n1_F04.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "cont_reset_F20_L70_N0",
+          "pages": 3,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/cont_reset_F20_L70_N0.tsv",
+          "baseline_tsv_sha256": "9e83e432d3f2300ef54a44fa7d98ebd345b4830e43bb1ebefd13e639b05b27a9",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/cont_reset_F20_L70_N0.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "cont_reset_F20_L70_N4",
+          "pages": 3,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/cont_reset_F20_L70_N4.tsv",
+          "baseline_tsv_sha256": "a992d2671a7f2a14f129adfed5a275074fc8df3388ab81607546ed40ea7adb03",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/cont_reset_F20_L70_N4.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "cont_reset_F20_L70_N6",
+          "pages": 3,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/cont_reset_F20_L70_N6.tsv",
+          "baseline_tsv_sha256": "6507d5ecca9b94d2f44fec68c79ddf65f9313d8135f1c9910422811129b73af9",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/cont_reset_F20_L70_N6.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "caption-negative-offset",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/caption-negative-offset.tsv",
+          "baseline_tsv_sha256": "e6ac3aacfb01cc2a853b6e04ae16c7423fa342b458a99bcf4b3cfc169f4bb1c4",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/caption-negative-offset.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "rowspan-band-fit",
+          "pages": 9,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/rowspan-band-fit.tsv",
+          "baseline_tsv_sha256": "907d2b2bfc3e802003b6095195850f809f2f94ef8fb04ea0ecae60a0235decff",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/rowspan-band-fit.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "captioned-host-2020",
+          "pages": 3,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/captioned-host-2020.tsv",
+          "baseline_tsv_sha256": "d0e72ff63d57b8fd45903adf053aefb8477dc7517ad03efd0f8b29095c638288",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/captioned-host-2020.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "headerrow-2020",
+          "pages": 31,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/headerrow-2020.tsv",
+          "baseline_tsv_sha256": "27d2c186b5812c529ed68d92ff2dfd4766039c446dcaac640c644b9c6bacf988",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/headerrow-2020.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "reservefit-2020",
+          "pages": 65,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/reservefit-2020.tsv",
+          "baseline_tsv_sha256": "3a275cdec033ac8f47901f79e2d76d0d091bd02f91218dcc2bde28c829f6a786",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/reservefit-2020.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "rowfit-2020",
+          "pages": 33,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/rowfit-2020.tsv",
+          "baseline_tsv_sha256": "0370947d4b82de77b4024a36d0c868925334d3a95935008c29808b8e15333f6b",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/rowfit-2020.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "mcp2020-issue8271-tac_picture_topandbottom_textbox",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/mcp2020-issue8271-tac_picture_topandbottom_textbox.tsv",
+          "baseline_tsv_sha256": "13bc289c14069b3d53786c72ba58c54b9180b9f741a3c0e44993c3f63e4a6b55",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/mcp2020-issue8271-tac_picture_topandbottom_textbox.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "mcp2020-issue8271-tac_picture_behindtext_textbox",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/mcp2020-issue8271-tac_picture_behindtext_textbox.tsv",
+          "baseline_tsv_sha256": "97debe51176d375fb1be2732b0f6c3b052586e85c7101b0371f9cbac4c28a43b",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/mcp2020-issue8271-tac_picture_behindtext_textbox.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "mcp2020-issue8167-tac_rectangle_inline",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/mcp2020-issue8167-tac_rectangle_inline.tsv",
+          "baseline_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/mcp2020-issue8167-tac_rectangle_inline.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "mcp2020-issue8167-tac_textbox_inline",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/mcp2020-issue8167-tac_textbox_inline.tsv",
+          "baseline_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/mcp2020-issue8167-tac_textbox_inline.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above.tsv",
+          "baseline_tsv_sha256": "8e32242ad31e4c47bb2c71e431f5b2cc5051c1d2e079befabb7d5e8410d747ed",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below.tsv",
+          "baseline_tsv_sha256": "833007df0e628fb32e89efb0db4878b41f718bcf6d650259fad89bd69f837af0",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox.tsv",
+          "baseline_tsv_sha256": "46a7078fc75e3aa799a0c027569af305c2c7e617f4834e8995baeef2556f2395",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "mcp2020-issue8168-tac_picture_with_topandbottom_textbox",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/mcp2020-issue8168-tac_picture_with_topandbottom_textbox.tsv",
+          "baseline_tsv_sha256": "6e11aa4bc9c7c2da95d3ccbae768a39772d4727244bed408790be4ccfe3b4c60",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/mcp2020-issue8168-tac_picture_with_topandbottom_textbox.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "issue1937",
+          "pages": 50,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/issue1937.tsv",
+          "baseline_tsv_sha256": "94c368b81689cf81477409961f49f1b78736da81a06bc771fb3601eeb8e64516",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/issue1937.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "hwp5-spec-official",
+          "pages": 71,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/hwp5-spec-official.tsv",
+          "baseline_tsv_sha256": "c35a875296e95d542ee32aae1cfdc1733e782ba0578277455a338c7438bbc047",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hwp5-spec-official.tsv",
+          "baseline_page_count_mismatch": true
+        },
+        {
+          "key": "hwpml-spec-2020",
+          "pages": 178,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/hwpml-spec-2020.tsv",
+          "baseline_tsv_sha256": "d4ed7c0b3644d3b263274f8d6eac563edb3b11ec947bd33d9612ea137abb96cb",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hwpml-spec-2020.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "tac-shape-source",
+          "pages": 24,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/tac-shape-source.tsv",
+          "baseline_tsv_sha256": "2ac02bc542d0798fa683aa4768aad125d9ee5faacde90dbbcbfb6c2fefe24063",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/tac-shape-source.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "equation-lim",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/equation-lim.tsv",
+          "baseline_tsv_sha256": "a9e912190b270cbe38adb15e5e80c5bdc689f7b31a51b53bccc741b15122da07",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/equation-lim.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "endnotes-november",
+          "pages": 21,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/endnotes-november.tsv",
+          "baseline_tsv_sha256": "fec9c147d81617279d8bc83964eb8b0838862d1e6ded849cc40a5f380d69ecd7",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/endnotes-november.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "endnotes-september",
+          "pages": 23,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/endnotes-september.tsv",
+          "baseline_tsv_sha256": "0aede5c24072066deaf7dfe2d22a685cbcbcbaf044aaa8e95480a3e7ba5ae1ea",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/endnotes-september.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "hairline-calendar",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/hairline-calendar.tsv",
+          "baseline_tsv_sha256": "b82ce6718e136619d40a4fc7f81b81fa6a420a88bf44ae61cfc2b7aef25fa1ac",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hairline-calendar.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "hairline-sungeo",
+          "pages": 94,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/hairline-sungeo.tsv",
+          "baseline_tsv_sha256": "e4dab5e286869294fa74cf29ec396790fc0198e30d527e5dfa074a0ad573ed96",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hairline-sungeo.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "topbottom-original",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/topbottom-original.tsv",
+          "baseline_tsv_sha256": "77564a9040197b1a5c3939b32dd0f415f278ea7206166db6379f1fa311ad1ce0",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/topbottom-original.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "rowspan-header-original",
+          "pages": 52,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/rowspan-header-original.tsv",
+          "baseline_tsv_sha256": "1aa5543296f684007af19fe0aa9bedf82796e039a88bf90d45b4f96a237064d7",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/rowspan-header-original.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "pdf-2010-fidelity",
+          "pages": 16,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/pdf-2010-fidelity.tsv",
+          "baseline_tsv_sha256": "9d0fb5f1eacddc6b3b514debe7af2e35543bce5d9603f634546a0d28a297a248",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/pdf-2010-fidelity.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "pdf-2020-fidelity",
+          "pages": 15,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/pdf-2020-fidelity.tsv",
+          "baseline_tsv_sha256": "c7076cee8135ed0b31417d8559d052fd1327b66078acf7e63a06d8c327240884",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/pdf-2020-fidelity.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "pdf-mac-fidelity",
+          "pages": 15,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/pdf-mac-fidelity.tsv",
+          "baseline_tsv_sha256": "2eb81e6ca5f40204bc545d260f5034793e97deff12d3a9142b34a95a3a8c5f19",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/pdf-mac-fidelity.tsv",
+          "baseline_page_count_mismatch": false
+        }
+      ]
+    },
+    "wasm": {
+      "cases": 64,
+      "paired_reference_pages": 910,
+      "max_drop_pp": "0.00000",
+      "drops_ge_2pp": 0,
+      "any_drop": 0,
+      "records": [
+        {
+          "key": "rebase8116-overlay_table_beside_title",
+          "pages": 5,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/rebase8116-overlay_table_beside_title.tsv",
+          "baseline_tsv_sha256": "65914b5b2d31c4a2b23b9489349dfa9d5fa112c235024140e410b3732142c77c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/rebase8116-overlay_table_beside_title.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "rebase8116-cell_nested_table_rows",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/rebase8116-cell_nested_table_rows.tsv",
+          "baseline_tsv_sha256": "f72eb34829d09fdffd3e910f84590866735c5281bd66698f3656c2616bab5379",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/rebase8116-cell_nested_table_rows.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "rebase8116-title_between_floating_shapes",
+          "pages": 4,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/rebase8116-title_between_floating_shapes.tsv",
+          "baseline_tsv_sha256": "667daef6708d4e40b1a6a0fb3820c21ef7b198e66f4057c5f4732a4bcf99d52c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/rebase8116-title_between_floating_shapes.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "rebase8116-picture_cell_row_height",
+          "pages": 5,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/rebase8116-picture_cell_row_height.tsv",
+          "baseline_tsv_sha256": "6afbbaa8d2648429f7b4ac339b21d5f872ac6344fb13b85a891a72192745bb5f",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/rebase8116-picture_cell_row_height.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "fiscal-anchor",
+          "pages": 4,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/fiscal-anchor.tsv",
+          "baseline_tsv_sha256": "39ca4913a0b316925381a7d2a99865193f3d655ae1725638ce701d016419cfcc",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/fiscal-anchor.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-normalized-quarter-reflow-false",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-normalized-quarter-reflow-false.tsv",
+          "baseline_tsv_sha256": "d7a9050bedbc4bc983dc60939c17690640f084a45a49873be522c829dd631f68",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-normalized-quarter-reflow-false.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-normalized-quarter-reflow-true",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-normalized-quarter-reflow-true.tsv",
+          "baseline_tsv_sha256": "d7a9050bedbc4bc983dc60939c17690640f084a45a49873be522c829dd631f68",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-normalized-quarter-reflow-true.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-authored-break-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-authored-break-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-authored-break-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-center-row-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-center-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-center-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-column-transition-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-column-transition-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-column-transition-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-mixed-center-row-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-mixed-center-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-mixed-center-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-mixed-end-picture-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-mixed-end-picture-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-mixed-end-picture-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-outer-margin-row-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-outer-margin-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-outer-margin-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-relative-font-row-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-relative-font-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-relative-font-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-same-row-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-same-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-same-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-tail-gap-boundary-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-tail-gap-boundary-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-tail-gap-boundary-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-tail-gap-only-fit-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-tail-gap-only-fit-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-tail-gap-only-fit-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-wrapped-row-no-ls",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-wrapped-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-wrapped-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "newsletter-chinese",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/newsletter-chinese.tsv",
+          "baseline_tsv_sha256": "fda8f4ad0adfe52cdb0715d71a64d41ad0a0ee462aa71f4d383dbe838e290f43",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/newsletter-chinese.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "onsemiro-hwp",
+          "pages": 46,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/onsemiro-hwp.tsv",
+          "baseline_tsv_sha256": "d4e0464e24a4e6d78520192a1b01b3421cd85573650c810a9b32c45a9860dedb",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/onsemiro-hwp.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "onsemiro-hwpx",
+          "pages": 46,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/onsemiro-hwpx.tsv",
+          "baseline_tsv_sha256": "8788e04e85061bcb52bfe6973f7d95522e4799d83e9c85f5e9180c248f168635",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/onsemiro-hwpx.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "nested-height-cache",
+          "pages": 17,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/nested-height-cache.tsv",
+          "baseline_tsv_sha256": "13c12d8e8b4a78a34ea92cd2994a6f414703faac0e0be68e33dfd2f76755fde1",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/nested-height-cache.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "newsletter-korean",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/newsletter-korean.tsv",
+          "baseline_tsv_sha256": "c8eaac97e19aab727f9048f5b7203a1008a7b899231aa0cb172e69a43a1b1b43",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/newsletter-korean.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "civil-form",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/civil-form.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/civil-form.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "cellnotes_plain_N2_L7",
+          "pages": 11,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/cellnotes_plain_N2_L7.tsv",
+          "baseline_tsv_sha256": "2c85cc8e5e5a75b7a1551861d9fda34dcb335e9b3968fa49e4efe7bffff63262",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/cellnotes_plain_N2_L7.tsv",
+          "baseline_page_count_mismatch": true
+        },
+        {
+          "key": "cellnotes_span_N2",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/cellnotes_span_N2.tsv",
+          "baseline_tsv_sha256": "d05cc0f3e3c342f8eed3b2ccd10cbc2fb99c8a0833255d63db38ba0cca311fd9",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/cellnotes_span_N2.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "r110_cellnotes_span_N2",
+          "pages": 3,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/r110_cellnotes_span_N2.tsv",
+          "baseline_tsv_sha256": "759ab6cfe75c80d65c765cb34cda9501523869d65c098226f044589ac58d8655",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/r110_cellnotes_span_N2.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "trim_n0_F02",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/trim_n0_F02.tsv",
+          "baseline_tsv_sha256": "78e02f698076384c24fc0c45deb8f22ba4fc5f1be5c6631b11640589d6e9eb91",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/trim_n0_F02.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "trim_n0_h6630_F02",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/trim_n0_h6630_F02.tsv",
+          "baseline_tsv_sha256": "50142dc1b222c163c34dd78a98c0f3d3053945af413f555351f335a8d4db994f",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/trim_n0_h6630_F02.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "trim_n0_h6660_F02",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/trim_n0_h6660_F02.tsv",
+          "baseline_tsv_sha256": "6247add40fe4e5c951214582509cdd488b1bd72a8ae840bc541540daf6422833",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/trim_n0_h6660_F02.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "trim_n0_l1_big_h6500_F01",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/trim_n0_l1_big_h6500_F01.tsv",
+          "baseline_tsv_sha256": "6c816ba8fef7b57d88db55b73b51c536b24a46d56cc1bce6a7e5bda868b44a6c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/trim_n0_l1_big_h6500_F01.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "trim_n1_F01",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/trim_n1_F01.tsv",
+          "baseline_tsv_sha256": "bb976cd629e000ac3564b6734ccaec850a1b54fe765b4836c2e296d69fcd0da2",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/trim_n1_F01.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "trim_n1_F04",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/trim_n1_F04.tsv",
+          "baseline_tsv_sha256": "3e68583d9db2d920dcfa37fad5630e9fa4d9ec33be1b2f94b4575a8617da7886",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/trim_n1_F04.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "cont_reset_F20_L70_N0",
+          "pages": 3,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/cont_reset_F20_L70_N0.tsv",
+          "baseline_tsv_sha256": "cbed64b20fd2fc9cfdbfc049794d90b6052a60077b7dbab0c43611d2760273b8",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/cont_reset_F20_L70_N0.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "cont_reset_F20_L70_N4",
+          "pages": 3,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/cont_reset_F20_L70_N4.tsv",
+          "baseline_tsv_sha256": "9f91d18f391f7427c04dff4dd0167b37655f05d49cfd87518339af75194343cf",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/cont_reset_F20_L70_N4.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "cont_reset_F20_L70_N6",
+          "pages": 3,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/cont_reset_F20_L70_N6.tsv",
+          "baseline_tsv_sha256": "3b14531112927ceea8b01946bf09e1f3feaba5ab11dfa4686641f3bb598837d5",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/cont_reset_F20_L70_N6.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "caption-negative-offset",
+          "pages": 2,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/caption-negative-offset.tsv",
+          "baseline_tsv_sha256": "a92176bccc4ff166e6fdb4cc944a8e8299d2fb8842c5fc4cb5a261c441f27a4c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/caption-negative-offset.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "rowspan-band-fit",
+          "pages": 9,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/rowspan-band-fit.tsv",
+          "baseline_tsv_sha256": "df875b925f920096cee87be4783869465fd885b6781c87233637915fa15e6386",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/rowspan-band-fit.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "captioned-host-2020",
+          "pages": 3,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/captioned-host-2020.tsv",
+          "baseline_tsv_sha256": "0a4cd38bc03bc637f4d7dc283610f7acbfa9469d2c826a1bf363104e157dd73a",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/captioned-host-2020.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "headerrow-2020",
+          "pages": 31,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/headerrow-2020.tsv",
+          "baseline_tsv_sha256": "27d2c186b5812c529ed68d92ff2dfd4766039c446dcaac640c644b9c6bacf988",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/headerrow-2020.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "reservefit-2020",
+          "pages": 65,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/reservefit-2020.tsv",
+          "baseline_tsv_sha256": "3a275cdec033ac8f47901f79e2d76d0d091bd02f91218dcc2bde28c829f6a786",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/reservefit-2020.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "rowfit-2020",
+          "pages": 33,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/rowfit-2020.tsv",
+          "baseline_tsv_sha256": "0370947d4b82de77b4024a36d0c868925334d3a95935008c29808b8e15333f6b",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/rowfit-2020.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "mcp2020-issue8271-tac_picture_topandbottom_textbox",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/mcp2020-issue8271-tac_picture_topandbottom_textbox.tsv",
+          "baseline_tsv_sha256": "04c784feff98ff035da5dfee317b2961acea81bee54524615fc5abac5048a8be",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/mcp2020-issue8271-tac_picture_topandbottom_textbox.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "mcp2020-issue8271-tac_picture_behindtext_textbox",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/mcp2020-issue8271-tac_picture_behindtext_textbox.tsv",
+          "baseline_tsv_sha256": "32f8399593cf576d8b7a7f6f941c392fd4cfaf78e4a4599eb7b5068516d095e5",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/mcp2020-issue8271-tac_picture_behindtext_textbox.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "mcp2020-issue8167-tac_rectangle_inline",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/mcp2020-issue8167-tac_rectangle_inline.tsv",
+          "baseline_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/mcp2020-issue8167-tac_rectangle_inline.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "mcp2020-issue8167-tac_textbox_inline",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/mcp2020-issue8167-tac_textbox_inline.tsv",
+          "baseline_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/mcp2020-issue8167-tac_textbox_inline.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above.tsv",
+          "baseline_tsv_sha256": "097401b5d9f41f6bc3453c9221a807f7132ba85d7d4c7a3c497c56e61ae633fc",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below.tsv",
+          "baseline_tsv_sha256": "9b5f73b9cb0ac3d728465649ba70d58bd55e56fc5bae210b844d96eccf0d54ed",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox.tsv",
+          "baseline_tsv_sha256": "f116305f0eaba3206ee33294c4a059ffc4e6d64d4be29924639591e3f8fd47c6",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "mcp2020-issue8168-tac_picture_with_topandbottom_textbox",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/mcp2020-issue8168-tac_picture_with_topandbottom_textbox.tsv",
+          "baseline_tsv_sha256": "de3f91ea5fb5cdda049ceab9ee5667f8a0ede58524fc0249706c23dea14c7e5d",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/mcp2020-issue8168-tac_picture_with_topandbottom_textbox.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "issue1937",
+          "pages": 50,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/issue1937.tsv",
+          "baseline_tsv_sha256": "7bf0d059fc68bae6ec977c84a782dfc163cb41f83e156e1d698c482300cd86c3",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/issue1937.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "hwp5-spec-official",
+          "pages": 71,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/hwp5-spec-official.tsv",
+          "baseline_tsv_sha256": "f1c8994056afd4272c5b70c0cb28e00d80a5559bb75ef2a045e96b7bd5a23611",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/hwp5-spec-official.tsv",
+          "baseline_page_count_mismatch": true
+        },
+        {
+          "key": "hwpml-spec-2020",
+          "pages": 178,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/hwpml-spec-2020.tsv",
+          "baseline_tsv_sha256": "4262236578725bffdbcfb3884d18a251e03e89c5f045e8193c3120a96d7bdeec",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/hwpml-spec-2020.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "tac-shape-source",
+          "pages": 24,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/tac-shape-source.tsv",
+          "baseline_tsv_sha256": "b39231bb405a089a53e67a6b06b788a781533d5671d2d2243ea7be086373cefd",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/tac-shape-source.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "equation-lim",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/equation-lim.tsv",
+          "baseline_tsv_sha256": "c8bfdc6c4e3aa3493e5f14ca67361191066c37dd8807275c1765793f1727d8ad",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/equation-lim.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "endnotes-november",
+          "pages": 21,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/endnotes-november.tsv",
+          "baseline_tsv_sha256": "6521e8149690a3474eedf904a01a07321731b0e478357a7ff789556bd5c5df60",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/endnotes-november.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "endnotes-september",
+          "pages": 23,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/endnotes-september.tsv",
+          "baseline_tsv_sha256": "ecd5a8d65953259d64e31be2e300de99f20cfb7b5eb81a464c01e8707727f75b",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/endnotes-september.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "hairline-calendar",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/hairline-calendar.tsv",
+          "baseline_tsv_sha256": "58b538d15014e6689de8178d3e84bd0307326425b550ec1e78ac1b8589392e3a",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/hairline-calendar.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "hairline-sungeo",
+          "pages": 94,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/hairline-sungeo.tsv",
+          "baseline_tsv_sha256": "08f3bb9dc811f80766737ddc28c0f5ed234c96a298bef8bc46ca976d8d8ad3bf",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/hairline-sungeo.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "topbottom-original",
+          "pages": 1,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/topbottom-original.tsv",
+          "baseline_tsv_sha256": "77564a9040197b1a5c3939b32dd0f415f278ea7206166db6379f1fa311ad1ce0",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/topbottom-original.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "rowspan-header-original",
+          "pages": 52,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/rowspan-header-original.tsv",
+          "baseline_tsv_sha256": "ccb13a6c09fe8d7794b919f6d8bf2b1381b5242573e0a510ccc31ad7b072c47f",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/rowspan-header-original.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "pdf-2010-fidelity",
+          "pages": 16,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/pdf-2010-fidelity.tsv",
+          "baseline_tsv_sha256": "c3bbbb768613603238dc14277c88030a5d99dc62bace3f1ff7d66d9b4ae0301a",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/pdf-2010-fidelity.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "pdf-2020-fidelity",
+          "pages": 15,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/pdf-2020-fidelity.tsv",
+          "baseline_tsv_sha256": "4c0997133ecebdab427e0e39deee33af738b47338eb35b12ac16fb9202944224",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/pdf-2020-fidelity.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "pdf-mac-fidelity",
+          "pages": 15,
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/pdf-mac-fidelity.tsv",
+          "baseline_tsv_sha256": "f73b98ea893a1e5c71ff2530e6d78742c49b4777c415e91a91b3dddfa9dfdb4d",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/pdf-mac-fidelity.tsv",
+          "baseline_page_count_mismatch": false
+        }
+      ]
+    }
+  },
+  "result": "pass",
+  "page_delta_tsv": "mydocs/working/assets/review_integration_20261026/validation/base-head-page-deltas.tsv",
+  "page_delta_tsv_sha256": "ff166420d6eae8646204803f1cd747cd0f9b2b582f9103f0b4c74358a36e3ea8",
+  "paired_conditions_verified": [
+    {
+      "backend": "native",
+      "key": "rebase8116-overlay_table_beside_title",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "rebase8116-cell_nested_table_rows",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "rebase8116-title_between_floating_shapes",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "rebase8116-picture_cell_row_height",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "fiscal-anchor",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-normalized-quarter-reflow-false",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-normalized-quarter-reflow-true",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-authored-break-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-center-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-column-transition-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-mixed-center-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-mixed-end-picture-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-outer-margin-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-relative-font-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-same-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-tail-gap-boundary-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-tail-gap-only-fit-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-wrapped-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "newsletter-chinese",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "onsemiro-hwp",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "onsemiro-hwpx",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "nested-height-cache",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "newsletter-korean",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "civil-form",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "cellnotes_plain_N2_L7",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "cellnotes_span_N2",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "r110_cellnotes_span_N2",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "trim_n0_F02",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "trim_n0_h6630_F02",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "trim_n0_h6660_F02",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "trim_n0_l1_big_h6500_F01",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "trim_n1_F01",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "trim_n1_F04",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "cont_reset_F20_L70_N0",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "cont_reset_F20_L70_N4",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "cont_reset_F20_L70_N6",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "caption-negative-offset",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "rowspan-band-fit",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "captioned-host-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "headerrow-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "reservefit-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "rowfit-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "mcp2020-issue8271-tac_picture_topandbottom_textbox",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "mcp2020-issue8271-tac_picture_behindtext_textbox",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "mcp2020-issue8167-tac_rectangle_inline",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "mcp2020-issue8167-tac_textbox_inline",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "mcp2020-issue8168-tac_picture_with_topandbottom_textbox",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "issue1937",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "hwp5-spec-official",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "hwpml-spec-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "tac-shape-source",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "equation-lim",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "endnotes-november",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "endnotes-september",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "hairline-calendar",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "hairline-sungeo",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "topbottom-original",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "rowspan-header-original",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "pdf-2010-fidelity",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "pdf-2020-fidelity",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "pdf-mac-fidelity",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "rebase8116-overlay_table_beside_title",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "rebase8116-cell_nested_table_rows",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "rebase8116-title_between_floating_shapes",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "rebase8116-picture_cell_row_height",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "fiscal-anchor",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-normalized-quarter-reflow-false",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-normalized-quarter-reflow-true",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-authored-break-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-center-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-column-transition-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-mixed-center-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-mixed-end-picture-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-outer-margin-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-relative-font-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-same-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-tail-gap-boundary-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-tail-gap-only-fit-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-wrapped-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "newsletter-chinese",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "onsemiro-hwp",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "onsemiro-hwpx",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "nested-height-cache",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "newsletter-korean",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "civil-form",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "cellnotes_plain_N2_L7",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "cellnotes_span_N2",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "r110_cellnotes_span_N2",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "trim_n0_F02",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "trim_n0_h6630_F02",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "trim_n0_h6660_F02",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "trim_n0_l1_big_h6500_F01",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "trim_n1_F01",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "trim_n1_F04",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "cont_reset_F20_L70_N0",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "cont_reset_F20_L70_N4",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "cont_reset_F20_L70_N6",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "caption-negative-offset",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "rowspan-band-fit",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "captioned-host-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "headerrow-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "reservefit-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "rowfit-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mcp2020-issue8271-tac_picture_topandbottom_textbox",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mcp2020-issue8271-tac_picture_behindtext_textbox",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mcp2020-issue8167-tac_rectangle_inline",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mcp2020-issue8167-tac_textbox_inline",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mcp2020-issue8168-tac_picture_with_topandbottom_textbox",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "issue1937",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "hwp5-spec-official",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "hwpml-spec-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "tac-shape-source",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "equation-lim",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "endnotes-november",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "endnotes-september",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "hairline-calendar",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "hairline-sungeo",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "topbottom-original",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "rowspan-header-original",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "pdf-2010-fidelity",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "pdf-2020-fidelity",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "pdf-mac-fidelity",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    }
+  ],
+  "all_128_base_head_font_supply_lists_equal": true,
+  "all_128_base_head_reference_pdf_hashes_equal": true
+}

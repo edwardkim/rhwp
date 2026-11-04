@@ -1,0 +1,33 @@
+{
+  "head": "983942b04a09d9237a04667779c2bff741ea80a3",
+  "base": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+  "status": "failed",
+  "build_jobs": 4,
+  "steps": [
+    {
+      "name": "source_frame_control_ownership",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "source_frame_control_ownership",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review"
+      ],
+      "state": "finished",
+      "started_at": "2026-10-27T12:13:32.066678+00:00",
+      "log_path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/focused-source_frame_control_ownership.log",
+      "pid": 1540224,
+      "exit_code": 100,
+      "seconds": 525.9947810280137,
+      "log_sha256": "30d21db8af7c5e494d66dfaba5b3dff643b31807a8c60723526402bbbc9251fe",
+      "summary": [
+        "    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 281 filtered out; finished in 3.41s",
+        "     Summary [   5.627s] 7 tests run: 6 passed, 1 failed, 275 skipped"
+      ]
+    }
+  ],
+  "all_passed": false
+}

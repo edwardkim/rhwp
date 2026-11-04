@@ -1,0 +1,694 @@
+{
+  "base": "cb9c45cf774a03eddb5d56fdb1fd28919f10a969",
+  "candidate": "d189352a1b3b0e09718022f7da47daaa5205fab9",
+  "builds": [
+    {
+      "label": "latest-base",
+      "kind": "native",
+      "source": "cb9c45cf774a03eddb5d56fdb1fd28919f10a969",
+      "hashes": {
+        "rhwp": "0ebc8b0afa26074e00a57c9cf6585e159ec20f991fa8b35c7b289f863c50399a"
+      }
+    },
+    {
+      "label": "latest-base",
+      "kind": "wasm",
+      "source": "cb9c45cf774a03eddb5d56fdb1fd28919f10a969",
+      "hashes": {
+        "pkg/rhwp.js": "248cef6af1ccba826afe12f12f517e56e87638b422a4d9af4d7952d0ae717d8d",
+        "pkg/rhwp_bg.wasm": "a9cdda4950031f4b92fc99e6ef613c352878e0e1aa64e5cd9ab16e59654d64d2"
+      }
+    },
+    {
+      "label": "latest-candidate",
+      "kind": "native",
+      "source": "d189352a1b3b0e09718022f7da47daaa5205fab9",
+      "hashes": {
+        "rhwp": "8114f5e93b0c544a66c7dad8bfe2a533691a9a5d5568c49a71b55915e28503a0"
+      }
+    },
+    {
+      "label": "latest-candidate",
+      "kind": "wasm",
+      "source": "d189352a1b3b0e09718022f7da47daaa5205fab9",
+      "hashes": {
+        "pkg/rhwp.js": "248cef6af1ccba826afe12f12f517e56e87638b422a4d9af4d7952d0ae717d8d",
+        "pkg/rhwp_bg.wasm": "ce942e2d6e3d37dc4fd593cae55423b5b9303f510405d868a91c57bf39196f8d"
+      }
+    }
+  ],
+  "inputs": {
+    "samples/issue8118/empty_para_tac_picture.hwp": "e2ba772fda79e95fe78d752f5f44b0810813ec45306fc67c21de99561fbdca7c",
+    "pdf/issue8118/empty_para_tac_picture-webhwp-print.pdf": "0db89253166885f5de107e1ed11d902f676aefcc7a14c1f773eb972feef9acf4",
+    "samples/issue8122/textbox_valign_no_lineseg.hwp": "de374075cfc2c1ef945d3795bba194b90dc42d759caf8b478c603d4777cfb8ff",
+    "pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf": "0cfca5740c6fc9aaadf9db814e6e0503850d1f56013eb4bdda895bbc80dd0023",
+    "samples/issue8166/form_checkbox_width_1100.hwp": "0a0392bd07039ad9a4e545c6786fd304bcb82a4d885895f0888d53c8eb340dca",
+    "pdf/issue8166/form_checkbox_width_1100-webhwp-print.pdf": "5d4c2036f7ac8dbedfae5284f4e3752b13ac7ffee0908e6c1239d6a89756772a",
+    "samples/issue8166/form_checkbox_width_3000.hwp": "5a7a5fe55b94454124161c7f35f79c20c35fbf5d951d1ae203a278cab8c4d56e",
+    "pdf/issue8166/form_checkbox_width_3000-webhwp-print.pdf": "6144ec117ca21938f966412f98d3938e92416c4edb16f425601cb8f5667f8cf0",
+    "samples/issue8166/form_checkbox_width_9921.hwp": "71c4109b0517e261cf88ba8ab97f20db1cde5bf952e1b3fd692c17ae979b8df6",
+    "pdf/issue8166/form_checkbox_width_9921-webhwp-print.pdf": "c000956a86279820c9329a76225ac1ecaad715d931eccc84384e140376f6858b",
+    "samples/2025 행정업무운영 편람(최종).hwp": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+    "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+    "samples/2025 행정업무운영 편람(최종).hwpx": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+    "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e"
+  },
+  "handbookFontSubset": [
+    {
+      "source": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+      "sourceSha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+      "supplied": "/home/edward/mygithub/rhwp/output/pr-review/davindev-20261030/handbook-fonts/HBATANG.TTF",
+      "suppliedSha256": "a27fd378db52ee18669fa500f0d6ca6ef430137c9686a6e823a37ce7319cde98",
+      "bytes": 465540,
+      "checkedUnicodeOutlineAdvance": 986,
+      "cmapPreservedForRequested": true
+    }
+  ],
+  "nativePixelDiffs": {
+    "empty_para_tac_picture": {
+      "changedPixelBounds": [
+        246,
+        105,
+        542,
+        179
+      ],
+      "allOtherPixelsIdentical": true
+    },
+    "textbox_valign_no_lineseg": {
+      "changedPixelBounds": [
+        246,
+        105,
+        542,
+        179
+      ],
+      "allOtherPixelsIdentical": true
+    },
+    "form_checkbox_width_1100": {
+      "changedPixelBounds": [
+        113,
+        132,
+        208,
+        375
+      ],
+      "allOtherPixelsIdentical": true
+    },
+    "form_checkbox_width_3000": {
+      "changedPixelBounds": [
+        113,
+        132,
+        208,
+        375
+      ],
+      "allOtherPixelsIdentical": true
+    },
+    "form_checkbox_width_9921": {
+      "changedPixelBounds": [
+        113,
+        132,
+        208,
+        375
+      ],
+      "allOtherPixelsIdentical": true
+    }
+  },
+  "files": [
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/empty_para_tac_picture/silhouette.tsv",
+      "sha256": "1cacdc8dde20c479bd43f7d2fbfa8df48c717b44d5ceee45d2d84f669d7ea088"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/empty_para_tac_picture/compare_001.png",
+      "sha256": "6a9729444305d1df946010d830d5bc013dfdf206c8dc9371e40415ca928e1704"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/empty_para_tac_picture/overlay_001.png",
+      "sha256": "6796ef71d476e95a1675486fdb26622baa47a14347faf6aaae5e21839b5d678b"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/empty_para_tac_picture/review_001.png",
+      "sha256": "adb0a4848f7ee49c2fa7db20df6b0814b686f80fe48617ec147c64525ae8ebbe"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/textbox_valign_no_lineseg/silhouette.tsv",
+      "sha256": "125145462663ed630a5570818b84b1c690e3c13b585097d7d5e5ff4124227690"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/textbox_valign_no_lineseg/compare_001.png",
+      "sha256": "6b679bd910cfb43db474b4002312735a9363a1d51485a4a7fb0797a5c8f5554b"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/textbox_valign_no_lineseg/overlay_001.png",
+      "sha256": "cf31794c6a4ad582a666c009f580d7aa815ca81f1976b1de06394e62d9fda4bb"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/textbox_valign_no_lineseg/review_001.png",
+      "sha256": "c50fdb93fe756af42e2d5303b96ce8024b2c31a614ac55a91caee537ce4bd65d"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/form_checkbox_width_1100/silhouette.tsv",
+      "sha256": "9951623b146862465c265a967e3993ab65feb249263a724aae56e73938044f21"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/form_checkbox_width_1100/compare_001.png",
+      "sha256": "a3126deec32b18ab539d814f54ab22ba3a15e17fde70aa554158e6698551464e"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/form_checkbox_width_1100/overlay_001.png",
+      "sha256": "82eeaee42242957bbbe7c61bf84e1635c5a141b5756e5fd9f88b42d0813ab851"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/form_checkbox_width_1100/review_001.png",
+      "sha256": "e50afa18fba6ec38912775d5886bb1be2fdd39f34c7492b1093a86414320966f"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/form_checkbox_width_3000/silhouette.tsv",
+      "sha256": "d87ac0e5f7e8ebf9b72105142fb8688f4ae9eb4a7090fe1dcc04fb67e2a22bb0"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/form_checkbox_width_3000/compare_001.png",
+      "sha256": "c6c1211f9333b086a996de846c1c8ab6bc34e1faa6366402d358b8a31cd4f47e"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/form_checkbox_width_3000/overlay_001.png",
+      "sha256": "55dca26bbfe97b208d3ed46f1edd188551fdb74c0567ddddb7c91c71e2c1758c"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/form_checkbox_width_3000/review_001.png",
+      "sha256": "7b39e7633eaa3a3d64888fe2d10c6e880cacdc7206457395246e77a1f4eed1c1"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/form_checkbox_width_9921/silhouette.tsv",
+      "sha256": "303bd1231f9f2410b651c826d1e6aa8a4de1994575806e43b1ac4add6e8d9569"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/form_checkbox_width_9921/compare_001.png",
+      "sha256": "cfecfb3c86b75dc3ede1ce8bae45d0d260c7a9f14a6df48d64cb0c36828eb2cb"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/form_checkbox_width_9921/overlay_001.png",
+      "sha256": "9db2ec4eec7cf1c990d14867b507d548fbd8b7360fa5ecd24e58bd960a88c480"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/native/form_checkbox_width_9921/review_001.png",
+      "sha256": "dbe8d846406de00d5608163f2721f15e474324775cd886eaff9e32d049ddc7af"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/handbook-native/handbook-hwp/silhouette.tsv",
+      "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/handbook-native/handbook-hwpx/silhouette.tsv",
+      "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/empty_para_tac_picture/silhouette.tsv",
+      "sha256": "d8c994a1304495e8158dfd44c6747f74b512df20de29b172e4828c21306739ab"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/empty_para_tac_picture/compare_001.png",
+      "sha256": "198f05dd79a468ccb812817f6ca2b19b0c9886f12a8e5ae0eb2dab602b8efb29"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/empty_para_tac_picture/overlay_001.png",
+      "sha256": "537a85c2536132716731f2b6d98818ec8b90d112252a9bb8839ff36b3514368b"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/empty_para_tac_picture/review_001.png",
+      "sha256": "4c72502967c3c7161ab9a3cac5ae2a813d9fed4f73d1c4b8436733106c01c17b"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/textbox_valign_no_lineseg/silhouette.tsv",
+      "sha256": "4d876db7d535c71cc607530352eb195a7c50caa8d7ad9544aa2bada845608647"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/textbox_valign_no_lineseg/compare_001.png",
+      "sha256": "1c72b8974b18c4b315e14395064bf7b2b1ac5ec8e165e4fe8ec4ca1f3ec42d20"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/textbox_valign_no_lineseg/overlay_001.png",
+      "sha256": "e09afb800ed4bd06e86be4e734b30c4f96cb0289d46b1d51a35ea14dce727e3c"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/textbox_valign_no_lineseg/review_001.png",
+      "sha256": "9d2a8696516ee6cce3ba22380ac62d948cbc1bc4fa2c947bc5d40dac4e763e95"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/form_checkbox_width_1100/silhouette.tsv",
+      "sha256": "e4a54e7ab2adaab1f241ea48ff0deb5f11d176d313cc362b0766a6fba852e49c"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/form_checkbox_width_1100/compare_001.png",
+      "sha256": "1e885faf31979562e0be410b96395267dfa3c4ec1629924516f373d2f86faf76"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/form_checkbox_width_1100/overlay_001.png",
+      "sha256": "0a81c3bc8f0b8963fef545e9310f717d1274779b1b3ca9bbc01414aed6ffb7cc"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/form_checkbox_width_1100/review_001.png",
+      "sha256": "26932f252aad6a0aca539c4fa2f60e84239362515e41bdf14b6a9a0850924c49"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/form_checkbox_width_3000/silhouette.tsv",
+      "sha256": "88cc3c85b12472011249f652625fb1f2ef1570054fca7d98541c35c30edfb7fb"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/form_checkbox_width_3000/compare_001.png",
+      "sha256": "772f3f37ffb9775fc87ea53682ca036a0580d212cd14aee93597dee91fd6945e"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/form_checkbox_width_3000/overlay_001.png",
+      "sha256": "3734bdbda21f85f92d4cf2c855380bab2494bbcc0cbe38849e48709f75a7f578"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/form_checkbox_width_3000/review_001.png",
+      "sha256": "cf28d0e14ae404929e4debbf775562651a66eb220a6b9fda5182e2766e667354"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/form_checkbox_width_9921/silhouette.tsv",
+      "sha256": "0011a9f995cf02357ee0e734eaa2d107c64579bacbd2ec944d439854527265df"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/form_checkbox_width_9921/compare_001.png",
+      "sha256": "8fba18fd7f20c54ee1258a41aba534dce55d2cdf8213d3f3500d844bc0c798e4"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/form_checkbox_width_9921/overlay_001.png",
+      "sha256": "66e2986f8038aac948fad4151757763a8e00bf680e28a65d2716de08c2385155"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/wasm/form_checkbox_width_9921/review_001.png",
+      "sha256": "e32601e8d400839dc765cc65cb7dccc249ee9a9856ce214faf960a899304e702"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/handbook-wasm/handbook-hwp/silhouette.tsv",
+      "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/base/handbook-wasm/handbook-hwpx/silhouette.tsv",
+      "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/empty_para_tac_picture/silhouette.tsv",
+      "sha256": "ccd3f29f1f5a9e28d8d5baa581e67adb3cb17003bcf8e800e15c8fa2bb3864c8"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/empty_para_tac_picture/compare_001.png",
+      "sha256": "095fb7891a7c117b729f7b1195010ee9318f82c2df883ae63893951764df467b"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/empty_para_tac_picture/overlay_001.png",
+      "sha256": "4f3a4921dbfaf3b776a9cfa47ff58e8bc7c1a63fb128a75766531bfbd6a8722a"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/empty_para_tac_picture/review_001.png",
+      "sha256": "d05f7c1d9b713ea189bcb36b198d85b80571b276591356d2c3e5eae10716ad70"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/textbox_valign_no_lineseg/silhouette.tsv",
+      "sha256": "3d93612f175249a12a085c23427ad4d2f6c811457f9a955d8714730d9d56606f"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/textbox_valign_no_lineseg/compare_001.png",
+      "sha256": "ae751d4e74705122d03d81c9a7367c33f442f4bc9bd2c99a8fb8ffcc985de982"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/textbox_valign_no_lineseg/overlay_001.png",
+      "sha256": "d2b4b7b6c6a9c7f5220afb6e394cd85dfd5a03a8b9fd1acde1fe1321a88d7cde"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/textbox_valign_no_lineseg/review_001.png",
+      "sha256": "46dd1476c00557b3f1156b2d5c4093e6d8fcc5ff03c92774e3d0e84f7e7bff82"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/form_checkbox_width_1100/silhouette.tsv",
+      "sha256": "d75f88b9b3773c20646c68e9613ba5a8a86e2040dcccda6f3994ce37f953db01"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/form_checkbox_width_1100/compare_001.png",
+      "sha256": "be69851052a1585e48ffd15693ca32962b18f18a123cb0738eaa808dfa53fdd0"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/form_checkbox_width_1100/overlay_001.png",
+      "sha256": "6e0064c3135dd97000076836ceeed0472112da005ec85cd6a9fee3146927adea"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/form_checkbox_width_1100/review_001.png",
+      "sha256": "70a26bde61ea3b948176e48d725f2a6254d6b0a24491a925b2cdf99db90feb15"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/form_checkbox_width_3000/silhouette.tsv",
+      "sha256": "e78bf510643e12ce6a26658f318fd793f2cb798deab84a89742b4e89edcd5ca9"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/form_checkbox_width_3000/compare_001.png",
+      "sha256": "b81a7030b27582c69097769866d5e21ed472803b64ad7d282a9442685a566ef3"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/form_checkbox_width_3000/overlay_001.png",
+      "sha256": "8fdcc36a19b8f44cd0ebbae40c7b766470e2326efd6d061563f554cdc3a7d31b"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/form_checkbox_width_3000/review_001.png",
+      "sha256": "c35523cd26a2c6c5702dce4239e71712d7b91ee25397281d385002146867531d"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/form_checkbox_width_9921/silhouette.tsv",
+      "sha256": "f856bc2f0f1d1558c1cdc61a43221138dee5a2365a00a5afcbfcd410efd85cc7"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/form_checkbox_width_9921/compare_001.png",
+      "sha256": "4fc8e3a80336044c34a1138755ff3f144c5a84ac64c53ab22f98e883d8916b28"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/form_checkbox_width_9921/overlay_001.png",
+      "sha256": "9e9d4fa48de6ac7f424b99ec428921326dfa326c4e6ddb98f597c13316f6849a"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/native/form_checkbox_width_9921/review_001.png",
+      "sha256": "90d411ef2f614ddcf768470638e3aa7de98ca1a0e9cea4532a6b8029cc598511"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-native/handbook-hwp/silhouette.tsv",
+      "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-native/handbook-hwpx/silhouette.tsv",
+      "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/empty_para_tac_picture/silhouette.tsv",
+      "sha256": "25d82291eabb758bdac4e798e3c7dc905d6b52e2b6bbb1c302efbf21eea37cf8"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/empty_para_tac_picture/compare_001.png",
+      "sha256": "71f63e42a74564a34066f9e7a1fdf7164c558b8a211550002203f44084b88cf3"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/empty_para_tac_picture/overlay_001.png",
+      "sha256": "3781727a1d6ca9a7d42ad0e47510027f2d6926b94f2afd2caaa6865d56b576bd"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/empty_para_tac_picture/review_001.png",
+      "sha256": "461f047b33faea2abf536c5631950c94f7dfdc757aca2b13326de5c5965a40db"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/textbox_valign_no_lineseg/silhouette.tsv",
+      "sha256": "501b5c64d1f45224d91f336a980e219d2b899389e14fdcdbacd91cc15328cf64"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/textbox_valign_no_lineseg/compare_001.png",
+      "sha256": "c4fdae014870a534b1e52724b81ce4ef229b412dbf3fd00282e68f00130a37ff"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/textbox_valign_no_lineseg/overlay_001.png",
+      "sha256": "22ecc2173bfe513baa544dd8762977f499219a130e533cf0ee195f41a0f7d9dc"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/textbox_valign_no_lineseg/review_001.png",
+      "sha256": "9935017e4f7871dbc3f821f0dc5e70254d5b9251a3c2f7d043a34d34ea56e26a"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/form_checkbox_width_1100/silhouette.tsv",
+      "sha256": "38972c8dcea884e880a92f1681dc6e6c801a68bfed2082b1fb59e9f5c48d9f75"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/form_checkbox_width_1100/compare_001.png",
+      "sha256": "14a4e0f1074310552289815a322bc36008d765cf319b9810a8a290ac505efa6a"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/form_checkbox_width_1100/overlay_001.png",
+      "sha256": "a9e8128633e5b78722f34f63bf98b18d281ea0f850d54f14877b63ed95625201"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/form_checkbox_width_1100/review_001.png",
+      "sha256": "075b6da7c460bae76beed10ae8fa3ee5730a1fb3729716492e08dcccd3e72a3b"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/form_checkbox_width_3000/silhouette.tsv",
+      "sha256": "28c0e0bb1dba32cb2445d0c64aa25d728e19a33783dfecc70ce6a291ffad8eb2"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/form_checkbox_width_3000/compare_001.png",
+      "sha256": "6917c268c4e18cc08d0db6a684e278ff1863ee2b465df4b115b9277e144656d7"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/form_checkbox_width_3000/overlay_001.png",
+      "sha256": "28b703bdba0b46c1027819d52bf96b35fa122d8a51fb66b6735b199e39164a2b"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/form_checkbox_width_3000/review_001.png",
+      "sha256": "98742cf2ca78ccd788f8aa79607c249d3dbcda9ad0d9d97aa1f5ae1c209aed2f"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/form_checkbox_width_9921/silhouette.tsv",
+      "sha256": "6f790ef8244c4113277d6b5618ab8f138d2a98a65d9c0b820682e22dd8141190"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/form_checkbox_width_9921/compare_001.png",
+      "sha256": "7c85d8565236beb6bd2181b911c6852942a8991fae13142fa50adf27b520a55e"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/form_checkbox_width_9921/overlay_001.png",
+      "sha256": "63b92835b5aca3aa48321d085ce35217a82765776f43f96f2a78b678fdf3a981"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/wasm/form_checkbox_width_9921/review_001.png",
+      "sha256": "3bf5cb00bc6df8555ea82766e3c34c78fa2b621c7c766325e2fa11fdee8f0013"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-wasm/handbook-hwp/silhouette.tsv",
+      "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-wasm/handbook-hwpx/silhouette.tsv",
+      "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/svg/empty_para_tac_picture/silhouette.tsv",
+      "sha256": "3a4bccd85758c2397e4e743c465d3ea3195f2eb430692ba7b863d4292576fbc9"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/svg/textbox_valign_no_lineseg/silhouette.tsv",
+      "sha256": "0f2b71b4b5d7169f4389b7de45e10a9617b91ebdfdd5e3f2029bc07d1d0127b6"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/svg/form_checkbox_width_1100/silhouette.tsv",
+      "sha256": "07aaabc33f6cf17890fa7a7eda726deb7cbfa50f842b55c880d9aeaaf88d03dc"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/svg/form_checkbox_width_3000/silhouette.tsv",
+      "sha256": "99f7b41b7a653ae84b4bc0e978547f477b2c6ae1d03ac3d4c4f6bc3ed2066ff4"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/svg/form_checkbox_width_9921/silhouette.tsv",
+      "sha256": "4caea23c886be33b6f2286ec19a820abe458ceed881683152b767412e0bad8b9"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-native/handbook-hwp/compare_130.png",
+      "sha256": "15f00b57d1644392acbdc5cf4cee7b056d00056b61e72ad2f2ca8fa747f96426"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-native/handbook-hwp/compare_205.png",
+      "sha256": "b7a7091724e88091bf3f13ea5261d157be84123045e426f1dd1ccb0e85c7b3f6"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-native/handbook-hwp/overlay_130.png",
+      "sha256": "ac29891310e59048551915f15bce7b7e6f61c47ef768e66cd963633d3f3a2334"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-native/handbook-hwp/overlay_205.png",
+      "sha256": "4b7b4ad23cdeca457e4623a26ae405a709840ae9d2d019ed651ec1ea8fc03586"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-native/handbook-hwp/review_130.png",
+      "sha256": "3b949de6df998615029b28229ace42c8e21ff9a7ed657092b43e94fde5b8296d"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-native/handbook-hwp/review_205.png",
+      "sha256": "155cbb4713d4f7ecfddd4c4a5f4e41b26bfde203a98df3cc4a02e7628cb07301"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-native/handbook-hwpx/compare_130.png",
+      "sha256": "a56d98380ad21b50dba6af0604c75c323dd1d57a2c7b74a151108fe35cbef484"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-native/handbook-hwpx/compare_205.png",
+      "sha256": "4727e7d76f73c892b2cf55bdf0a76a1a2498cb4b193fc189a519f21bfd8d3f2a"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-native/handbook-hwpx/overlay_130.png",
+      "sha256": "569d6d4d0cd3936499f052c23ed1397b325b5a3db732f1608499ae6afbe7cf11"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-native/handbook-hwpx/overlay_205.png",
+      "sha256": "7cd6bd221f88791e8818dbcc055bd5a98ae144d4b683665d8debcc7e1db86776"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-native/handbook-hwpx/review_130.png",
+      "sha256": "027b754ecbc29af4ff53fb8e76754faff2b760f6dfce0054019c31a2875d272e"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-native/handbook-hwpx/review_205.png",
+      "sha256": "97dc14a599410167f6122e452af588a218b4a4a92e166d29d47fdee66f35fadb"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-wasm/handbook-hwp/compare_130.png",
+      "sha256": "d886e1cc1d6534b1aa4b2b7c47f958c49b73ebd2c3ca6c7b29781818f73ba295"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-wasm/handbook-hwp/compare_205.png",
+      "sha256": "ec51e199751f9595d17be9fd7eec08440e1a70db5866817e08718ac50f627712"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-wasm/handbook-hwp/overlay_130.png",
+      "sha256": "78bfc8236937a729e8d683c5a61be770cc7cab9241304a23ccd826ba08746805"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-wasm/handbook-hwp/overlay_205.png",
+      "sha256": "a2931ca8ebeb0782732794e30b33669302498e8716b768ffc3ca244b4e3054c4"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-wasm/handbook-hwp/review_130.png",
+      "sha256": "3a604b3630d85e26c1ca7ea23967733a6ea8d0083a89682c3b517b79f1b8cb03"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-wasm/handbook-hwp/review_205.png",
+      "sha256": "bf243b6916411f94dbbccddf62707e3c2e73b067338fc23c6bdf15c39964f6ad"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-wasm/handbook-hwpx/compare_130.png",
+      "sha256": "31054c04932b4ef6a91ee41ac0036f1bbc3f6cf8cbade01d7b0fc51132a419af"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-wasm/handbook-hwpx/compare_205.png",
+      "sha256": "030fdc88ecf33901568cbd95280c0c44a44360d3aded95377b663e6ebf0ceece"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-wasm/handbook-hwpx/overlay_130.png",
+      "sha256": "d9f66d22b1487bcd017f8e8a59f92d89895329cff2ff64e0703e2ba16a6f906e"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-wasm/handbook-hwpx/overlay_205.png",
+      "sha256": "fe6ce2ae06563b61a91bbadefba8a50938b2827ce02c07e86a96651e2e4afdeb"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-wasm/handbook-hwpx/review_130.png",
+      "sha256": "9cae4f112aaa72e94864dc20ad9d8b8485ef909596e224e17e422b9c264d6f26"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/candidate/handbook-wasm/handbook-hwpx/review_205.png",
+      "sha256": "4729544490737ea559b9052ece68642cb927a5c9b5fca4d5369201b80a56bb6d"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/zoom/empty_para_tac_picture.png",
+      "sha256": "f43209e3bf0b2e194aeea802800800e41ba4ffb268a7b8435baa885fa784c94b"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/zoom/form-before-after.png",
+      "sha256": "b8673fbdbdc5ff416cef9d5620704fad1700894d8cfba4a90e525d563d982411"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/zoom/form_checkbox_width_1100.png",
+      "sha256": "5230b57377cade2565322e7811f558f40abc73a0345129ed2f5b611cc9635e1c"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/zoom/form_checkbox_width_3000.png",
+      "sha256": "e08fae324441470e87191fb9a62f116e2aceb7299892f0424ea770bff361c6a2"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/zoom/form_checkbox_width_9921.png",
+      "sha256": "cf60525b90307fa7af08859c40194d04628ecd242cfe87a208d99965dce2fa6a"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/zoom/handbook-hwp-p130.png",
+      "sha256": "4fe74418519281f2b76c608333f47c807481e1c4cfd3cca4bbb5b25ec43863b7"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/zoom/handbook-hwp-p205.png",
+      "sha256": "0cc5db3199355eb1abe601bd79b8e4eff5277148e31d92127c1ad80806bdd086"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/zoom/handbook-hwpx-p130.png",
+      "sha256": "4fe74418519281f2b76c608333f47c807481e1c4cfd3cca4bbb5b25ec43863b7"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/zoom/handbook-hwpx-p205.png",
+      "sha256": "0cc5db3199355eb1abe601bd79b8e4eff5277148e31d92127c1ad80806bdd086"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/zoom/studio-clipping.png",
+      "sha256": "23ba758b91125d7b9cc2b092c389647ae731ae250d94458f4a8763d3fe56c6ad"
+    },
+    {
+      "path": "mydocs/pr/assets/davindev_20261030/rebase-cb9c45/zoom/textbox_valign_no_lineseg.png",
+      "sha256": "21a7612733094f42e6a15057be3b527b811ddb67c149b14a654aebaa435d706b"
+    }
+  ],
+  "handbookByteComparison": [
+    {
+      "backend": "native",
+      "key": "handbook-hwp",
+      "pages": 383,
+      "byteIdentical": 383,
+      "changed": []
+    },
+    {
+      "backend": "native",
+      "key": "handbook-hwpx",
+      "pages": 383,
+      "byteIdentical": 383,
+      "changed": []
+    },
+    {
+      "backend": "wasm",
+      "key": "handbook-hwp",
+      "pages": 383,
+      "byteIdentical": 383,
+      "changed": []
+    },
+    {
+      "backend": "wasm",
+      "key": "handbook-hwpx",
+      "pages": 383,
+      "byteIdentical": 383,
+      "changed": []
+    }
+  ],
+  "studioChecks": [
+    {
+      "name": "tsc",
+      "exit": 0,
+      "seconds": 1.84
+    },
+    {
+      "name": "unit",
+      "exit": 0,
+      "seconds": 18.94
+    }
+  ],
+  "studioE2e": [
+    {
+      "script": "e2e:renderer-contract",
+      "exit": 0,
+      "seconds": 1.94
+    },
+    {
+      "script": "e2e:canvaskit-font-coverage",
+      "exit": 0,
+      "seconds": 1.07
+    }
+  ],
+  "fontSources": {
+    "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+    "/home/edward/mygithub/ttfs/windows/gulim.ttc": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+    "/home/edward/mygithub/ttfs/kopub/KoPub Batang Bold.ttf": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+    "/home/edward/mygithub/ttfs/kopub/KoPub Batang Medium.ttf": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+    "/home/edward/mygithub/ttfs/kopub/KoPub Dotum Bold.ttf": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+    "/home/edward/mygithub/ttfs/kopub/KoPub Batang Light.ttf": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+    "/home/edward/mygithub/ttfs/kopub/KoPub Dotum Light.ttf": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+    "/home/edward/mygithub/ttfs/kopub/KoPub Dotum Medium.ttf": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+    "/mnt/c/Windows/Fonts/HANBatang.ttf": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+    "/mnt/c/Windows/Fonts/wingding.ttf": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b"
+  }
+}

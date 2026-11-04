@@ -1,0 +1,29 @@
+{
+  "parent_head": "1061286a0dd546a89db47f3bb41bd0f41f944ede",
+  "changed_source": "src/renderer/layout/table_layout/stored_nested_outer_frame.rs",
+  "changed_source_sha256": "3d8f41dbd4f20e8dd767dbbf570979e7df3affdafd14b243e2a04faf07fa16f4",
+  "cli_binary_sha256": "e01d1e9d032ad5bbd0c8830f6a595b88aea5b8b696c2e02558aa6e13fd2a6416",
+  "command": [
+    "node",
+    "scripts/run-rust-test.mjs",
+    "issue_8060_nested_physical_frame_print_boundaries",
+    "--",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "/home/tsjang/rhwp/target/pr-review"
+  ],
+  "exit_code": 0,
+  "tests": 4,
+  "passed": 4,
+  "expectations_changed": false,
+  "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/focused-8060-closed-host-fix.log",
+  "log_sha256": "4f33402d315249e8e48588d3254de84135f331b98e3e583a6718f2e15010f845",
+  "before_fix": {
+    "tests": 4,
+    "passed": 3,
+    "failed": 1,
+    "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/focused-after-issue_8060_nested_physical_frame_print_boundaries.log"
+  },
+  "visual_verification_complete": false
+}

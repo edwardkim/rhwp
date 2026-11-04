@@ -8,6 +8,29 @@ use crate::model::shape::{TextWrap, VertAlign, VertRelTo};
 use crate::model::style::LineSpacingType;
 use crate::model::table::TablePageBreak;
 
+/// 실저장 줄이 다음 줄과 겹치면, 두 줄의 시작 차이가 앞 줄의 흐름 전진이다.
+/// 소유·빈 줄 여부는 호출자가 확인하고 측정과 배치가 같은 사다리를 소비한다.
+pub(crate) fn stored_overlap_advance_hu(
+    para: &Paragraph,
+    line_idx: usize,
+    composed_lines: usize,
+    runs_all_whitespace: bool,
+) -> Option<i64> {
+    if !runs_all_whitespace || composed_lines != para.line_segs.len() {
+        return None;
+    }
+    let current = para.line_segs.get(line_idx)?;
+    let next = para.line_segs.get(line_idx + 1)?;
+    let authored = |seg: &crate::model::paragraph::LineSeg| {
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+    };
+    let current_start = i64::from(current.vertical_pos);
+    let next_start = i64::from(next.vertical_pos);
+    let end = current_start + i64::from(current.line_height) + i64::from(current.line_spacing);
+    (authored(current) && authored(next) && next_start > current_start && next_start < end)
+        .then_some(next_start - current_start)
+}
+
 /// 빈 문단의 자리차지 표는 객체와 양쪽 바깥여백의 점유 띠를 소유한다.
 /// 다른 앵커·글줄 참여·오프셋·캡션은 별도의 위치 계약으로 처리한다.
 fn unaccounted_topbottom_band_hu(para: &Paragraph) -> Option<i64> {

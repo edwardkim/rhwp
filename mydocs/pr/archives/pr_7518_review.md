@@ -339,3 +339,10 @@ review PNG와 연결한다. 시각 판정 통과와 남은 분할 검사 4개·3
 `https://raw.githubusercontent.com/edwardkim/rhwp/<실제-merge-SHA>/mydocs/pr/assets/pr7518_p39_wrapper_flow_20261005/native_review_039.png`
 및 같은 폴더의 `wasm_review_039.png`/`wasm_overlay_039.png`를 Markdown 이미지로
 표시하고, UTF-8 body-file 게시 후 API로 source/asset 및 한글 보존을 확인한다.
+
+
+## NO_LS 공통 프레임 변경 뒤의 이어받기 재검증 — 2026-10-27
+
+기존 `valid_orientation/nested-split.hwp`의 Native270은 4~6쪽에서 raw70.70569/71.07204/18.58964%로 후퇴했다. 원본과 독립 Print·CellUnit은 유지됐지만, 아직 소비하지 않은 다음 표 호스트의 줄이 현재 부분 컷에 미리 예약됐다. 이 소유 오류를 공통 `reflow_cut_content_height`에서 바로잡은 Native271은 전6쪽 최저99.96132%로 회복했고 정상 Native257의 여섯 PNG와 바이트까지 같다.
+
+기존 독립 부모 종료 좌표와 원본 자식 행 소유 회귀 두 검사는 동일한 본문·입력으로 Native270에서 각각 FAIL, Native271에서 각각 PASS다. 기대값이나 허용치를 완화하지 않았다. 기존 정상24조건과 #8188 네 입력256쪽도 PNG SHA-256이 유지됐다. 실제 소스·컷 추적과 종료 결과는 [작업 기록](../../working/task_semanticist21_20261027_fragment_host_ownership.md)에 연결했다. 새 fresh081·최종 전체 Rust/lint·Studio와 원격 CI는 아직 완료하지 않았으므로, 이 Native 중간 결과를 통합 승인으로 확대하지 않는다.

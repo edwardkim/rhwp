@@ -555,25 +555,25 @@ InFrontOfText(글앞으로, text_wrap=3) / BehindText(글뒤로, text_wrap=2) �
 
 ---
 
-## 30. TabDef.position (표 7) — 데이터 좌표일 뿐, 한컴 조판 알고리즘은 비공개
+## 30. TabDef.position — 명시적 정지와 자동 우측 탭을 구분한다
 
-**스펙은 "데이터 포맷" 만 정의 — 한컴은 그 값을 시멘틱적으로 재해석한다.**
+**2026-10-26 정정:** 기존 KTX 사례의 셀 우단 보정을 모든 RIGHT+leader에
+일반화한 설명은 편람의 독립 Print 반례로 기각했다. 공식 사양 자체의 오류가 아니라
+프로젝트 설명본의 과도한 일반화이며 원문 사양은 수정하지 않는다.
 
 | 항목 | 내용 |
-|------|------|
-| 스펙 위치 | 표 7 (TabDef), HWP5 스펙 §4.2.7 |
-| 스펙 기술 | TabDef.tabs[].position (UINT32, HWPUNIT) — 탭 정지 위치 |
-| 실제 동작 | 한컴은 `position` 을 절대 좌표로 신뢰하지 않고, **리더 도트 (`fill_type ≠ 0`) + RIGHT 탭 (`tab_type=1`)** 인 경우 "이 줄 우측 끝까지 채움" 으로 시멘틱 재해석. 셀 안 paragraph 에서는 cell padding_right 영역 침범 금지. 들여쓰기 문단도 페이지번호 right edge 가 동일 위치에 정렬. |
-| 잘못된 구현 | TabDef.position 그대로 사용 시: ① 셀 padding_right 영역 침범, ② 들여쓰기 문단 (소제목) 페이지번호가 좌측으로 어긋남, ③ 한 자리/두 자리 페이지번호 무관 leader 끝이 같은 x 라 페이지번호와 leader 겹침. |
-| 위반 시 결과 | KTX.hwp 목차에서 장제목·소제목 페이지번호 정렬 어긋남, leader 가 페이지번호 안으로 침범, 페이지번호가 셀 padding 영역까지 침범. |
-| 검증 데이터 | KTX.hwp 목차 (셀[10] 안 paragraph, ps_id=109 장제목 / ps_id=111 소제목, tab_def_id=5 RIGHT + fill=점선) |
-| 해결 방향 | 리더 (`fill_type ≠ 0`) RIGHT 탭은 `effective_pos = effective_margin_left + available_width` (cell inner 우측 끝) 로 강제. 페이지번호 폭에 따라 leader.end_x 단축. 공백 only run 은 carry-over. |
-| 수정 파일 | `src/renderer/layout/paragraph_layout.rs::resolve_last_tab_pending` + cross-run RIGHT take 분기 |
-| 참조 문서 | `troubleshootings/toc_leader_right_tab_alignment.md` — Task #279, PR #282 |
-| 기여자 | [@seanshin](https://github.com/seanshin) (Shin hyoun mouk) — 발견·구현 (`tab_type != 1` 클램핑 제외 + dasharray round cap), 메인테이너 — 6가지 추가 결함 식별 및 보강 |
-| 발견일 | 2026-04-25 |
+| --- | --- |
+| 사양 위치 | HWP5 §4.2.7 표 36·37 |
+| 공식 계약 | 탭 위치·종류·채움은 각각의 필드다. 자동 우측 탭 유무도 별도 속성이다. |
+| 독립 반례 | 편람 280쪽의 `\t285`·`\t286`은 자동 우측 탭이 꺼져 있고 명시적 정지가 셀 우단 안에 있다. 실제 한컴 Print는 그 정지에 쪽번호를 맞춘다. |
+| 잘못된 일반화 | 리더가 있다는 이유로 유효한 명시적 정지를 셀 우단으로 덮어쓰면 쪽번호가 원본보다 오른쪽으로 이동한다. |
+| 소비 계약 | 단 안의 명시적 정지는 보존한다. 더 좁은 셀 밖의 정지는 기존 가용 프레임 계약을 따른다. 자동 우측 탭·저장 전진·교차 런의 정렬 단위도 구분한다. |
+| 실제 진단 | 같은 source의 Native paint에서 원본 정지를 소비하면 편람 280쪽 미대응이 164→0픽셀이다. 제품 구현의 최종 검증과 구분한다. |
+| 원 해결 추적 | Task #279·PR #282, Task #874·PR #1021, 공통 측정 통합 `b9075217cc` |
+| 현재 계획 | [같은 런의 오른쪽 탭](../plans/issue_8153_inline_right_tab_20261026.md) |
 
-**핵심 교훈**: HWP 스펙은 **데이터 포맷 스펙이지 조판 알고리즘 스펙이 아니다**. 스펙대로 처리해도 한컴과 다른 결과가 나오면 한컴 시각 결과를 정답으로 삼아 의도를 역공학해야 한다. rhwp 는 "스펙 충실 구현체" 가 아니라 **"한컴 조판 결과를 재현하는 엔진"** 이어야 한다.
+공식 단위·속성·원본 저장값을 우선하고 같은 원본의 독립 출력으로 적용 범위를 확인한다.
+개별 문서에서 필요한 프레임 보정을 사양의 모든 탭에 적용되는 규칙으로 승격하지 않는다.
 
 ---
 
@@ -821,15 +821,150 @@ HWPX 는 같은 현상을 `strikeout shape="3D"` placeholder 로 드러내며, P
 
 ---
 
+## 35. TABLE 쪽 경계 속성 값 2 — 나누지 않음 중복 기재
+
+### 원문과 정정
+
+[공식 HWP5 개정 1.3 PDF](../../pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf)의
+PDF 44쪽 표 76은 TABLE 속성 bit 0~1의 값 0과 2를 모두 `나누지 않음`으로 기재한다.
+값 2의 설명을 **나눔**으로 정정한다. 원문 PDF는 변경하지 않고
+[프로젝트의 사양 설명본](한글문서파일형식_5.0_revision1.3.md)의 표 76을 수정한다.
+
+| 원본 비트 값 | 한컴 UI 의미 | HWPX 속성 | rhwp 내부 이름 |
+| --- | --- | --- | --- |
+| 0 | 나누지 않음 | `NONE` | `None` |
+| 1 | 셀 단위로 나눔: 경계에 걸린 셀 전체를 다음 쪽으로 이동 | `TABLE` | `CellBreak` |
+| 2 | 나눔: 경계에 걸린 글줄부터 다음 쪽으로 이동 | `CELL` | `RowBreak` |
+
+내부 `RowBreak`라는 이름만으로 값 2를 행 경계 전용 정책으로 해석하지 않는다.
+한컴 공식 [표/셀 속성 도움말](https://help.hancom.com/hoffice/multi/ko_kr/hwp/table/tableattribute/table%28table%29.htm)은
+글줄 나눔·셀 전체 이동·나누지 않음을 구분한다.
+[공식 HWPML 문서](../../pdf/hwpspec-2024.pdf)의 TABLE 설명(PDF 149쪽, 인쇄 139쪽)은
+`Table`을 셀을 나누지 않는 표 나눔, `Cell`을 셀 내부 텍스트도 나누는 방식으로 명시한다.
+
+### 교차 확인한 근거
+
+- 선행 해결: Task #1094, `20e532d170f487c7720f35b2fa0d270c37bab4e7`.
+  [완료 보고서 4.2절](../report/archives/task_m100_1094_report.md#42-10페이지-표-나눔)은
+  한컴 정답 HWP의 `0x04000005`와 HWPX `TABLE`의 대응을 바이트 단위로 기록한다.
+- 참조 구현: hwplib
+  [`DivideAtPageBoundary`](https://github.com/neolord0/hwplib/blob/6746c27f17ebf5277493206284aa32044a1839c4/src/main/java/kr/dogfoot/hwplib/object/bodytext/control/table/DivideAtPageBoundary.java)는
+  `NoDivide=0`, `DivideByCell=1`, `Divide=2`를 정의한다. 같은 SHA의 `TableProperty`는
+  bit 0~1을 읽고 bit 2의 제목 반복과 구분한다. 이 라이브러리를 공식 사양으로 부르지 않는다.
+- 현재 원본 바이트 재확인: `samples/2025 행정업무운영 편람(최종).hwp`의
+  `BodyText/Section7`, 최상위 문단 405, TABLE 레코드(해제 스트림 offset 299842)의
+  시작 10바이트는 `06 00 00 00 09 00 03 00 ff 00`이다. attr `0x00000006`의
+  하위 두 비트는 2이며, 같은 문단의 HWPX 표 `id=1612231415`는 `pageBreak="CELL"`,
+  9행·3열·`cellSpacing=255`다. rhwp 모델을 거치지 않은 CFB/레코드 읽기로 확인했다.
+  HWP SHA-256은 `40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f`,
+  HWPX SHA-256은 `c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6`이다.
+- 독립 출력: 기존 `pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf`
+  (SHA-256 `299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e`)
+  240~241쪽에서 같은 표가 이어지고, ⑤ 공개 지표 다음에 ⑥ 활용 지표·⑦ 가점이 보존된다.
+  `나누지 않음`으로 설명할 수 없는 실제 출력이다. 이 사실이 특정 높이 배분식이나 인쇄 장치의
+  해상도까지 입증하는 것은 아니다.
+- 별도 HWP 원본 `samples/2010-01-06.hwp`와
+  `samples/issue2439_zero_offset_coanchored_float_exclusion.hwp`의 Section0에서도
+  TABLE 원시 bit 값 2를 확인했다. 대응 편집·저장 계약은 기존
+  `issue_7288_table_pagebreak_roundtrip`·`issue_7323_table_page_break_save` 검사가 보호한다.
+
+## 36. SHAPE_COMPONENT_CURVE (표 103) — 점 개수·좌표 배열·후행 필드
+
+- **발견일**: 2026-10-24, 이슈 #8153의 161쪽 곡선 조사.
+- **원문**: 보존한 [공식 revision 1.3 PDF](../../pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf)
+  51쪽, 표 103. SHA-256은
+  `1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782`다.
+  점 개수를 `INT16`, 좌표를 x 배열 뒤 y 배열로 기술하며 후행 4바이트를 생략한다.
+- **확인한 구조**: 5.1.1.0 저장본에서 `INT32 cnt` → `(INT32 x, INT32 y) × cnt` →
+  `BYTE × max(cnt-1, 0)` 구간 종류 → 후행 4바이트다. 음수 개수는 유효한 점 배열이 아니다.
+  후행 필드의 상세 의미는 확정하지 않으며, 확인한 원본 값은 모두 0이다.
+  [사양 설명본 표 103](한글문서파일형식_5.0_revision1.3.md#표-103-곡선-개체-속성)을 함께 정정한다.
+
+### 교차 확인한 근거
+
+1. 원본 `samples/2025 행정업무운영 편람(최종).hwp`
+   (SHA-256 `40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f`)의
+   해제한 `BodyText/Section4`, 0부터 센 레코드 1940·2179는 tag 83이다.
+   두 레코드 모두 점 3개·구간 종류 `[1,1]`·34바이트이며 첫 payload는 다음과 같다.
+
+   ```text
+   03000000 9206000000000000 0600000056150000 c1080000662b0000 0101 00000000
+   ```
+
+   4바이트 개수 뒤의 좌표 쌍은 `(1682,0)`, `(6,5462)`, `(2241,11110)`이다.
+   16비트 개수·분리 배열로 읽으면 이 좌표와 구간 신원을 재현할 수 없다.
+2. 대응 HWPX 원본의 SHA-256은
+   `c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6`이다.
+   `Contents/section4.xml`의 curve `instid=568445306`은 같은 세 좌표를 잇는
+   `hp:seg type="CURVE"` 두 개를 보존한다. 두 번째 curve도 양쪽 형식의 점이 같다.
+3. 같은 HWPX를 `engine: 2024`로 별도 HWP 저장한 5.1.1.0 진단 입력
+   (SHA-256 `e78be46ad9c15cec5a1bbed72de88ea2715e04347c43d6f963beb448bc019d58`)에서도
+   두 curve는 모두 같은 34바이트 구조다. 이 진단 입력으로 원본이나 기준 PDF를 대체하지 않는다.
+4. 독립 참조 구현 hwplib의 고정 SHA `6746c27f17ebf5277493206284aa32044a1839c4`에서
+   [reader](https://github.com/neolord0/hwplib/blob/6746c27f17ebf5277493206284aa32044a1839c4/src/main/java/kr/dogfoot/hwplib/reader/bodytext/paragraph/control/gso/ForControlCurve.java)는
+   `readSInt4` 개수와 좌표 쌍, 구간 종류, `skip(4)`를 사용한다.
+   [writer](https://github.com/neolord0/hwplib/blob/6746c27f17ebf5277493206284aa32044a1839c4/src/main/java/kr/dogfoot/hwplib/writer/bodytext/paragraph/control/gso/ForControlCurve.java)도
+   같은 필드를 쓰고 4바이트를 0으로 채운다. 이 구현을 한컴 공식 사양으로 부르지 않는다.
+
+이번 정정은 저장 구조에 관한 것이다. 구간 1을 베지어 제어점 세 개씩의 배열로 해석하거나,
+HWPX에서 구간 종류를 버리는 동작은 별도의 구현 오류다. 보간식·열린 끝·닫힌 곡선의
+동작은 이 표만으로 확정하지 않고 독립 한컴 Print와 정상 대조군으로 검증한다.
+
+<a id="picture-corners-storage"></a>
+
+## 37. SHAPE_COMPONENT_PICTURE (표 107) — 그림 꼭짓점의 저장 순서
+
+- **발견일**: 2026-10-26, 이슈 #8153의 그림 원본 좌표 조사.
+- **원문**: [공식 revision 1.3 PDF](../../pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf)
+  52쪽, 표 107. SHA-256은
+  `1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782`다.
+  원문은 `INT32 x[4]` 다음 `INT32 y[4]`로 기술한다. 원문 PDF는 변경하지 않는다.
+- **확인한 구조**: 5.1.1.0 저장본에서는 `(INT32 x, INT32 y) × 4`다.
+  왼쪽 위 → 오른쪽 위 → 오른쪽 아래 → 왼쪽 아래 순서다.
+  총 32바이트이며 앞의 테두리 속성과 뒤의 crop 오프셋은 변하지 않는다.
+  [사양 설명본 표 107](한글문서파일형식_5.0_revision1.3.md#표-107-그림-개체-속성)을 정정한다.
+
+### 교차 확인한 근거
+
+1. 원본 `samples/2025 행정업무운영 편람(최종).hwp`
+   (SHA-256 `40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f`)의
+   `BodyText/Section3`, 0부터 센 레코드 1135는 tag 85이며 instance ID는
+   `885694781`이다. payload의 `[12,44)`에 있는 INT32 8개는
+   `[0,0,80280,0,80280,30900,0,30900]`이다. 좌표 쌍으로 읽으면
+   `(0,0)`, `(80280,0)`, `(80280,30900)`, `(0,30900)`이다.
+2. 대응 HWPX 원본의 SHA-256은
+   `c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6`이다.
+   `Contents/section3.xml`의 같은 instance ID 그림 `imgRect`는 위의 네 점을
+   보존한다. 구역과 바탕쪽을 포함한 그림 113개 모두 좌표 쌍 해석과 일치하며,
+   x/y 분리 배열 해석과 일치하는 것은 0개다.
+3. 독립 참조 구현 hwplib의 고정 SHA `6746c27f17ebf5277493206284aa32044a1839c4`에서
+   [reader](https://github.com/neolord0/hwplib/blob/6746c27f17ebf5277493206284aa32044a1839c4/src/main/java/kr/dogfoot/hwplib/reader/bodytext/paragraph/control/gso/ForControlPicture.java)와
+   [writer](https://github.com/neolord0/hwplib/blob/6746c27f17ebf5277493206284aa32044a1839c4/src/main/java/kr/dogfoot/hwplib/writer/bodytext/paragraph/control/gso/ForControlPicture.java)는
+   `LeftTop`·`RightTop`·`RightBottom`·`LeftBottom`의 x/y를 번갈아 읽고 쓴다.
+   이 참조 구현을 한컴 공식 사양으로 부르지 않는다.
+
+기존 `Picture.border_x`/`border_y`는 앞뒤 INT32 4개를 보존하는 레거시 필드이며,
+HWPX 파서·직렬화기도 같은 scalar 순서를 소비한다. 이미 보존되는 바이트를 필드명에
+맞춰 재배열하지 않는다. 이 정정은 저장 구조에 관한 것으로, 그림의 Print 정수 창·
+보간·압축·장치 픽셀 계산을 새로 규정하거나 잔여 시각 차이의 해결을 입증하지 않는다.
+분석 원본과 113개 대응표는 ignored
+`output/pr-review/issue8153-handbook-raw100-20261022/remaining-raw100-diagnostic/spec-contract-audit/`
+아래에 있으며, 제품의 실행문은 변경하지 않았다.
+
 ## 검증 원칙
 
-1. **바이너리 우선**: 스펙 문서보다 실제 바이너리 데이터를 신뢰한다
+1. **사양 우선·불일치 교차 검증**: 공식 사양의 단위·속성·규칙을 먼저 따른다. 실제 결과가
+   다르면 원본 바이트·참조 구현·독립 한컴 출력을 교차 확인해 구현 오류와 사양 오류를 구분하며,
+   휴리스틱이나 현재 rhwp 출력만으로 사양을 바꾸지 않는다.
 2. **3단계 교차 검증**: ① HWP 5.0 공식 스펙 → ② hwplib Java 참조 구현 → ③ 실제 HWP 파일 hex dump
 3. **디버그 덤프**: `eprintln!`으로 원시 바이트를 출력하여 검증 후 제거한다
 4. **색상 검증**: 색상값이 정확히 `#000000`(검정)으로 나오는지 확인한다. 근사값(`#010100` 등)은 바이트 오정렬을 의미한다
 5. **다중 파일 교차 검증**: 가능하면 여러 HWP 파일에서 동일 필드를 검증한다
 6. **0/null 반환 시 의심**: 파서가 0 또는 None을 반환하면 "원래 값이 0"이라는 결론은 스펙 원문과 대조 후에만 내린다
 7. **읽기 관대/쓰기 엄격**: HWP 포맷은 읽기는 관대하지만 쓰기에서 1바이트라도 어긋나면 "파일 손상" 판정. 직렬화 코드는 반드시 한컴 정상 파일과 바이트 단위 비교
-8. **발견 즉시 기록**: 새로운 불일치 발견 시 본 문서에 추가한다
+8. **확인한 오류의 문서 정정**: 확인된 사양 오류는 원문 위치·정정·버전·입력 SHA와 근거를
+   본 문서에 기록하고 사양 설명본·관련 매뉴얼·코드 주석도 함께 수정한다. 공식 원문 PDF는
+   보존한다. [공통 절차](../manual/codex/docs_and_git_workflow.md#사양-우선과-실제-결과-불일치-처리)에
+   따라 구현을 재검증하며 미기술·추정은 확인된 사양 오류와 구분한다.
 
 ---

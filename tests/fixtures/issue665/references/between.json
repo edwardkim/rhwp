@@ -1,0 +1,30 @@
+{
+  "version": "1",
+  "default_font": "Arial",
+  "questions": [
+    {
+      "number": 1,
+      "stem": "",
+      "auto_number": false,
+      "stem_blocks": [
+        {
+          "type": "text",
+          "text": "1. Image placement test."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "A. First option."
+        },
+        {
+          "type": "text",
+          "text": "B. Second option."
+        }
+      ],
+      "choices": []
+    }
+  ]
+}

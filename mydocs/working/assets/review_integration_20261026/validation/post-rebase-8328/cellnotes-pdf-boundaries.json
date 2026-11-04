@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-28",
+  "method": "PDF vector table horizontal boundary y in points * 96/72; direct side-by-side inspection",
+  "tolerance_px": 2,
+  "cases": [
+    {
+      "input": "samples/issue1937/cellnotes_plain_N2_L7.hwpx",
+      "pdf": "pdf/issue1937/cellnotes_plain_N2_L7-2020.pdf",
+      "pdf_sha256": "eeef281525705c977f3a51cbc9e0373fbab564ec04a0dde1c66794df68f7ba18",
+      "page": 1,
+      "top_96dpi_px": 115.55,
+      "bottom_96dpi_px": 1023.68
+    },
+    {
+      "input": "samples/issue1937/cellnotes_span_N2.hwpx",
+      "pdf": "pdf/issue1937/cellnotes_span_N2-2020.pdf",
+      "pdf_sha256": "76a875f5ec392a797878caee3e875eaa892bd2a5f595c6a7bd467d3b2ff4e560",
+      "page": 2,
+      "top_96dpi_px": 94.3,
+      "bottom_96dpi_px": 593.75
+    },
+    {
+      "input": "samples/issue1937/r110_cellnotes_span_N2.hwpx",
+      "pdf": "pdf/issue1937/r110_cellnotes_span_N2-2020.pdf",
+      "pdf_sha256": "8f97203f9d60a228daf04d6a67d1b26cdb143c6c7700d21ab4f0aa61c54449e3",
+      "page": 3,
+      "top_96dpi_px": 94.3,
+      "bottom_96dpi_px": 473.88
+    }
+  ],
+  "visual_inspection": {
+    "path": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/cellnotes-print-crops.png",
+    "sha256": "2361aee9fef8f5a0a9be93daf929e4ac002c87239ec145b89287c74bfb1127ed"
+  }
+}

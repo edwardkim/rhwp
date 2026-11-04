@@ -1,0 +1,84 @@
+{
+  "url": "http://127.0.0.1:7706/",
+  "wasm_sha256": "bff12af51b68ac60b07ec91b47bc7787352c69a839ff9587363b0cb834ebf6f8",
+  "source": "01e9f4ff012acceaa477c7f4f0a085b86747ef42",
+  "productionBridgeExports": true,
+  "fileInputReopen": true,
+  "loadCompletionAwaited": true,
+  "fontPromptAnswered": "web-substitute",
+  "states": [
+    {
+      "action": "Top",
+      "format": "hwp",
+      "alignment": "Top",
+      "pages": 1,
+      "textPresent": true,
+      "canvases": 3,
+      "sha256": "8d89632b6734b4b296776ad044be2b0695f6a0cb55184ff2165f246a644efa77"
+    },
+    {
+      "action": "Top",
+      "format": "hwpx",
+      "alignment": "Top",
+      "pages": 1,
+      "textPresent": true,
+      "canvases": 3,
+      "sha256": "1aa9243888fec3cfcffb9212e601957487f1fdcb648310be819b8ed932b87d8d"
+    },
+    {
+      "action": "Center",
+      "format": "hwp",
+      "alignment": "Center",
+      "pages": 1,
+      "textPresent": true,
+      "canvases": 3,
+      "sha256": "ac53b953cd4e667633ff5d67c3a8a3243de3ab7bc0ad797b9fbba96b93ab2b96"
+    },
+    {
+      "action": "Center",
+      "format": "hwpx",
+      "alignment": "Center",
+      "pages": 1,
+      "textPresent": true,
+      "canvases": 3,
+      "sha256": "d7e851d41bcb81073c30eb5bfce57fcd25fffefc477f3e294c00c4f0fa12d1f5"
+    },
+    {
+      "action": "Bottom",
+      "format": "hwp",
+      "alignment": "Bottom",
+      "pages": 1,
+      "textPresent": true,
+      "canvases": 3,
+      "sha256": "e3870ae0929663d5f203367729e3674adba9ccfeb81180e2639dc31b8b3baef3"
+    },
+    {
+      "action": "Bottom",
+      "format": "hwpx",
+      "alignment": "Bottom",
+      "pages": 1,
+      "textPresent": true,
+      "canvases": 3,
+      "sha256": "5e21c5c7c4c137d25c068426b1d9c47c4b09ed84253ad3660cc1729a7287545d"
+    },
+    {
+      "action": "Top",
+      "format": "hwp",
+      "alignment": "Top",
+      "pages": 1,
+      "textPresent": true,
+      "canvases": 3,
+      "sha256": "8d89632b6734b4b296776ad044be2b0695f6a0cb55184ff2165f246a644efa77"
+    },
+    {
+      "action": "Top",
+      "format": "hwpx",
+      "alignment": "Top",
+      "pages": 1,
+      "textPresent": true,
+      "canvases": 3,
+      "sha256": "1aa9243888fec3cfcffb9212e601957487f1fdcb648310be819b8ed932b87d8d"
+    }
+  ],
+  "pageErrors": []
+}

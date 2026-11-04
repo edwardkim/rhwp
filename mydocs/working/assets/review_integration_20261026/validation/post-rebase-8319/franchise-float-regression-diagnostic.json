@@ -1,0 +1,36 @@
+{
+  "status": "failed_regression_investigating",
+  "source_commit": "f5c3972844442d7d2c74496bfd4db06cec26615b",
+  "native_binary_sha256": "3a7b0c02eb624c38e75ef18240abe2c6c39c2aabb24f43d38be4dc0757444b0a",
+  "franchise": {
+    "input": "samples/issue5966/1130000-202100008_franchise_review_report.hwp",
+    "input_sha256": "a1b8299b2554a83873b780474defb02efa949b43c86c63bcc164967f96091e55",
+    "base_pages": 142,
+    "current_pages": 143,
+    "first_changed_page": 118,
+    "base_end_cut": [
+      58
+    ],
+    "current_initial_cut": [
+      57
+    ],
+    "current_extra_page_end_cut": [
+      58
+    ],
+    "base_available_px": 869.307,
+    "current_required_px": 870.387,
+    "current_physical_refit": true,
+    "independent_print_pages": 142,
+    "tests_failing_same_page_count": 7
+  },
+  "float_case": {
+    "input": "mydocs/pr/assets/float_fragment_frames_20261020/inputs/hwp/split-rows-60-policy-1-body-false-flow-false.hwp",
+    "input_sha256": "1970e825317a42533ba8c6d4ed56adbb7060d408f5f483b33871095f5ea78c7b",
+    "expected_next_paragraph_y_px": 310.718017578125,
+    "base_next_paragraph_y_px": 310.7,
+    "current_next_paragraph_y_px": 307.0,
+    "table_grid_unchanged": true,
+    "test": "source_owned_float_fragment_frames::completed_pages_keep_independent_print_grid_and_body_origins_within_two_pixels"
+  },
+  "note": "회귀 원인을 확정하거나 기대값을 완화하지 않고 독립 Print 및 저장 프레임에 근거해 보정한다."
+}

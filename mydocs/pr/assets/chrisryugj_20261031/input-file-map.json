@@ -1,0 +1,34 @@
+{
+  "output/pr-review/chrisryugj-20261031/candidate-edits/tab-insert.hwp": {
+    "retained": "samples/pr8224/lseg-tab-insert.hwp",
+    "sha256": "431084096480f4dbf40359a51fb6918671c81b2170182e8818e6f4b7613513e7"
+  },
+  "output/pr-review/chrisryugj-20261031/print-final/tab-insert-2020.pdf": {
+    "retained": "pdf/pr8224/lseg-tab-insert-2020.pdf",
+    "sha256": "b461923b3f4faf474ae678eee99d54e5d385be30b7a48dc459d174ca484a15e3"
+  },
+  "output/pr-review/chrisryugj-20261031/candidate-edits/tab-delete.hwp": {
+    "retained": "samples/pr8224/lseg-tab-delete.hwp",
+    "sha256": "71c76ad5dc326670ce7b0610efc17a67709660c2826ffaa3c430a1f3a1d5936e"
+  },
+  "output/pr-review/chrisryugj-20261031/print-final/tab-delete-2020.pdf": {
+    "retained": "pdf/pr8224/lseg-tab-delete-2020.pdf",
+    "sha256": "fe9f55b069d784464f10919a0d17830b625e86c564cc1398dcb1811bdc2f0de5"
+  },
+  "output/pr-review/chrisryugj-20261031/candidate-edits/tab-split.hwp": {
+    "retained": "samples/pr8224/lseg-tab-split.hwp",
+    "sha256": "d56775d73d56562654787f11ad4308c77caf0797a445b4438ad1c24e24c70044"
+  },
+  "output/pr-review/chrisryugj-20261031/print-final/tab-split-2020.pdf": {
+    "retained": "pdf/pr8224/lseg-tab-split-2020.pdf",
+    "sha256": "7746e9573cee3e2ed57d31a5924669a4aa59b1f46eae2d411b869cf83b5c7027"
+  },
+  "output/pr-review/chrisryugj-20261031/candidate-edits/tab-split-merge.hwp": {
+    "retained": "samples/pr8224/lseg-tab-split-merge.hwp",
+    "sha256": "63d1c2f0518c047a4b789a2df12c697f265f65d5846a7c1b2906d7fb88fd5867"
+  },
+  "output/pr-review/chrisryugj-20261031/print-final/tab-split-merge-2020.pdf": {
+    "retained": "pdf/pr8224/lseg-tab-split-merge-2020.pdf",
+    "sha256": "00a43d3d98debb0b568ceb49429f4016d3408b5b30376583f5bd247c7575f92e"
+  }
+}

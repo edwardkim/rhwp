@@ -1,0 +1,16 @@
+{
+  "producerSource": "f7ede1d54eb018bea2f49405b3d1cba030e9360d",
+  "dependency": "chacha20 0.10.1",
+  "host": "RHWP T06 visible public host",
+  "plaintext": "T06 compatibility payload 2026",
+  "password": "T06-test-password-only",
+  "agentKeyByte": 42,
+  "publicTestData": true,
+  "files": {
+    "agent.bin": "5c2321b5a7d2cb1791c61c9915966d82b1ce681875d4f5ea23b264fd8143dddc",
+    "password.bin": "8f3a0ac1be10afc16e47ef3139433b7248748a4aba1c2ca3dc9dc0af5fc22194",
+    "pq-private.bin": "fc49be83b7da7cd2d5c204e304272af46e70d7d00002ee2691582edef016c2be",
+    "pq-public.bin": "6d82eb21907132d148e000481e7eaeec81e1303a11971e25b6e42f5aeb9c81f8",
+    "pq.bin": "3620f3a414d85f9265ac337f01c8689c66d5417de05545ce1def8b0c72d85b72"
+  }
+}

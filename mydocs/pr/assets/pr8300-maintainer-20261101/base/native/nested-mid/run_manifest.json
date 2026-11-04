@@ -1,0 +1,72 @@
+{
+  "schema_version": 2,
+  "key": "nested-mid",
+  "provenance": {
+    "hwp": {
+      "path": "mydocs/pr/assets/issue_8262/input/rhwp-nested-mid.hwp",
+      "sha256": "0a4415f92644aa65fae7a854cd1deea11cb99a31fb26b5e82587d6b5f12bdb54"
+    },
+    "pdf": {
+      "path": "mydocs/pr/assets/issue_8262/input/rhwp-nested-mid.pdf",
+      "sha256": "f50fe5232a37221849a816b82659dc7dd586db78309c4191cab38aa79c05f928"
+    },
+    "git_head": "24484260bb7e374176147fd136ae9848d0f49a6c",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "547ddd0c1553b0066b1b870dd1fd2fabc523f8c91fba2b0ebe6f1776634dedb8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/pr8300/bin/base-rhwp",
+      "path": "output/pr-review/pr8300/bin/base-rhwp",
+      "sha256": "0edb323e56cb96717b73d51b92ceb6e06875e83f5b020f272fa1a8792880e678"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "257a0134180b34363814058348646346cf83313b97cf42424c014dc864722a5f",
+    "layout_generation": "2022",
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [],
+  "requested_page_shards": [],
+  "run_state": "incomplete",
+  "document_page_counts": {
+    "rhwp": 1,
+    "pdf": 1
+  }
+}

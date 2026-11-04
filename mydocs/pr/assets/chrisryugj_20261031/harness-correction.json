@@ -1,0 +1,4 @@
+{
+  "excluded": "gate-native-placeholder-stale-manifest.log",
+  "reason": "Harness regeneration after adding the real DocumentCore test changed the suite assignment after the wrapper had selected its filter. Zero tests ran. The original regression and expectations were not changed. Regenerate once, freeze the harness, then rerun the focused gate."
+}

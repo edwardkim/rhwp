@@ -1,0 +1,15 @@
+{
+  "raw_bytes": 25754222,
+  "raw_sha256": "cf0905dac40b67c2056c4ed545f19d44551abaff7dc223a8c7a2d2622243f0fe",
+  "actual_ui_cases": 6,
+  "non_pdf_control": 1,
+  "temporary_detail_not_committed": true,
+  "additional_diagnostic_compaction": {
+    "intermediate_json_bytes": 1142732,
+    "intermediate_json_sha256": "05c804b396491ec38c6dcd2a0fd2fe5b300bcec4b58a6390e2cbdae3d592856c",
+    "formal_json_bytes": 108716,
+    "formal_json_sha256": "e2862753dda1ca1cbf4485338b87b591d5399e7e280fa359d2d5577fb1fd1924",
+    "replaced_large_page_diagnostic_fields": 92,
+    "preserved": "All7 actual browser records, assertions, body paragraph counts, source/output page mappings, source spans counts/hashes, source PDF dimensions, warnings, resource policy, actual exported-byte SHA and WASM SHA."
+  }
+}

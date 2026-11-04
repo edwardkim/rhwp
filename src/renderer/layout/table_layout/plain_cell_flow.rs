@@ -58,7 +58,8 @@ impl super::LayoutEngine {
         tail: f64,
         styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) -> bool {
-        let line = Self::row_cut_cell_order(table, row)
+        let line = self
+            .indexed_row_cut_cell_order(table, row)
             .into_iter()
             .filter_map(|index| {
                 let cell = &table.cells[index];
@@ -222,7 +223,7 @@ impl super::LayoutEngine {
         styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) -> bool {
         if table.page_break != crate::model::table::TablePageBreak::RowBreak
-            || !Self::row_cut_cell_order(table, row).is_empty()
+            || !self.indexed_row_cut_cell_order(table, row).is_empty()
         {
             return false;
         }
@@ -284,7 +285,18 @@ fn blank_tail_is_line_sliver(tail: f64, line: f64, dpi: f64) -> bool {
 }
 
 /// 한 단 설정은 이미 선택한 셀 프레임을 바꾸거나 내용 상자를 추가하지 않는다.
+/// 각주·미주도 같다 — 칸 안에는 줄 속 번호 글자만 남고 본문은 쪽의 주석 영역이 소유한다.
+/// 한/글 2020 Print(`samples/issue1937/gen_cell_notes_multipage.py` LINES=7, 각주가 행 첫
+/// 문단에 있는 행)는 그 행을 쪽 끝에서 자를 때도 각주 없는 행처럼 마지막 줄의 뒤 줄간격을
+/// 빼고 줄을 하나 더 받는다(2쪽 R12 다섯 줄).
 /// 다단 설정이나 독립 개체의 흐름 계약까지 이 판정으로 확대하지 않는다.
 pub(super) fn paragraph_has_plain_flow(paragraph: &Paragraph) -> bool {
-    crate::renderer::cell_paragraph_has_only_single_column_metadata(paragraph)
+    paragraph.controls.iter().all(|control| {
+        crate::renderer::cell_control_is_text_metadata(control)
+            || matches!(
+                control,
+                crate::model::control::Control::Footnote(_)
+                    | crate::model::control::Control::Endnote(_)
+            )
+    })
 }

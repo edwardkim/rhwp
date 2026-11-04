@@ -161,7 +161,7 @@ fn unused_inner_margin_field_is_not_charged() {
     );
 
     // aim=true 는 비정상 크기여도 종전대로 저장값을 쓴다 — 이 규칙은 **쓰이지 않는**
-    // 필드만 겨냥한다. aim=true 의 방어는 `vertical_padding_is_abnormal` 소비처 몫이다.
+    // 필드만 겨냥한다. aim=true 의 안 여백은 행을 키운다.
     let mut applied = Cell::default();
     applied.set_apply_inner_margin(true);
     applied.padding = pad(29693, 10433);

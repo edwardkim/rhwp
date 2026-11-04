@@ -1,0 +1,25 @@
+{
+  "dpi": 96,
+  "page": 1,
+  "coordinate_system": "Independent Print PDF line-center points multiplied by 96/72",
+  "input": "tests/fixtures/inline_cell_physical_width/nested.hwpx",
+  "input_sha256": "29bd118673625ab5f773c46fc81cae9ca4672d809e02453e252050a7b2137e96",
+  "pdf": "pdf/semanticist21-20261019/pr7833-inline-cell-physical-width-2020.pdf",
+  "pdf_sha256": "54812721daf73c93012b359a669d1bb99bfccdb293494dcb2c5364cff17703bb",
+  "native_raw_percent": "100.00000",
+  "fresh_wasm_raw_percent": "100.00000",
+  "x_edges": [
+    127.77067057291667,
+    145.04133097330728,
+    162.47199503580728
+  ],
+  "source_padding_hu": [
+    510,
+    510
+  ],
+  "table_count": 7,
+  "leaf_table_count": 4,
+  "columns": 2,
+  "source_description": "Same existing PR7833 diagnostic input with owner invalidation and parent-sized grids; not the original malformed fixture",
+  "pdf_extraction": "PyMuPDF get_drawings: vertical segment indexes 18/19/20; repeated identically at 27/28/29,36/37/38,45/46/47. Original Print unchanged."
+}

@@ -92,6 +92,88 @@
   overflow-wrap: anywhere;
 }
 
+/* PDF 가져오기: 제목과 조작은 고정하고 설정 영역만 스크롤한다. */
+.dialog-wrap.dialog-pdf-import {
+  display: flex;
+  flex-direction: column;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow: hidden;
+}
+.dialog-pdf-import > .dialog-title,
+.dialog-pdf-import > .dialog-footer { flex: 0 0 auto; }
+.dialog-pdf-import > .dialog-pdf-import-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  line-height: 1.5;
+}
+.dialog-pdf-import-body > * { flex-shrink: 0; }
+.dialog-pdf-import p, .dialog-pdf-import h3, .dialog-pdf-import dl { margin: 0; }
+.dialog-pdf-import-file {
+  padding: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-lighter);
+  border-radius: var(--radius-sm);
+  overflow-wrap: anywhere;
+}
+.dialog-pdf-import-file strong { display: block; margin-bottom: 4px; }
+.dialog-pdf-import-help, .dialog-pdf-import-file p { color: var(--color-text-muted); }
+.dialog-pdf-import-help, .dialog-pdf-import-example { overflow-wrap: anywhere; }
+.dialog-pdf-import-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.dialog-pdf-import-field {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) minmax(0, 2fr);
+  gap: 8px;
+  align-items: center;
+}
+.dialog-pdf-import .dialog-select, .dialog-pdf-import .dialog-input {
+  width: 100%;
+  min-height: 32px;
+  box-sizing: border-box;
+}
+.dialog-pdf-import details {
+  border: 1px solid var(--color-border-lighter);
+  border-radius: var(--radius-sm);
+}
+.dialog-pdf-import summary { padding: 10px 12px; cursor: pointer; font-weight: bold; }
+.dialog-pdf-import summary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+.dialog-pdf-import-settings { display: flex; flex-direction: column; gap: 10px; padding: 0 12px 12px; }
+.dialog-pdf-import h3 { font-size: inherit; }
+.dialog-pdf-import-policy { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+.dialog-pdf-import-policy dd { margin: 0; text-align: right; }
+.dialog-pdf-import-expert .dialog-pdf-import-field { grid-template-columns: 1fr; }
+.dialog-pdf-import-json {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-family: monospace;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+textarea.dialog-pdf-import-json { resize: vertical; min-height: 80px; max-height: 200px; }
+pre.dialog-pdf-import-json { margin: 0; max-height: 160px; overflow: auto; }
+.dialog-pdf-import [aria-invalid="true"] { border-color: var(--ui-danger); }
+.dialog-pdf-import-error {
+  grid-column: 1 / -1;
+  color: var(--ui-danger);
+  padding: 10px;
+  border: 1px solid var(--ui-danger);
+  border-radius: var(--radius-sm);
+  overflow-wrap: anywhere;
+}
+.dialog-pdf-import [role="status"] { overflow-wrap: anywhere; }
+.dialog-pdf-import progress { width: 100%; height: 8px; accent-color: var(--color-primary); }
+
 .dialog-section {
   border: 1px solid var(--color-border-lighter);
   background: var(--color-surface);

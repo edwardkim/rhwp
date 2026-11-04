@@ -52,24 +52,17 @@ mod prep {
         .unwrap();
         let mut runs = vec![];
         collect(&value["root"], &mut runs);
-        let owned: Vec<_> = runs
-            .iter()
-            .filter(|r| {
-                r["source"]["stableSourceKey"] == "section:2/para:38/char:1"
-                    && r["text"]
-                        .as_str()
-                        .is_some_and(|t| t.starts_with("트랜스젠더군이"))
-            })
-            .collect();
-        assert_eq!(owned.len(), 1, "원문 첫 어절은 한 번만 배치한다");
-        let source = &c.document().sections[2].paragraphs[38].text;
-        let rendered: String = runs
+        let paragraph_runs: Vec<_> = runs
             .iter()
             .filter(|r| {
                 r["source"]["stableSourceKey"]
                     .as_str()
-                    .is_some_and(|s| s.starts_with("section:2/para:38/char:"))
+                    .is_some_and(|key| key.starts_with("section:2/para:38/char:"))
             })
+            .collect();
+        let source = &c.document().sections[2].paragraphs[38].text;
+        let rendered: String = paragraph_runs
+            .iter()
             .map(|r| r["text"].as_str().unwrap())
             .collect();
         let norm = |s: &str| {
@@ -78,9 +71,34 @@ mod prep {
                 .collect::<String>()
         };
         assert_eq!(norm(&rendered), norm(source), "원문 순서·누락·중복 보존");
+        assert!(norm(&rendered).starts_with("트랜스젠더군이"));
+        // char:1은 이 입력의 선행 공백이다. 문단 소유와 실제 글리프로 첫 어절을
+        // 찾으며, 공백과 본문의 run이 합쳐지거나 나뉘어도 같은 글자를 검사한다.
+        let (first_run, first_cluster) = paragraph_runs
+            .iter()
+            .find_map(|run| {
+                let text = run["text"].as_str()?;
+                run["clusters"].as_array()?.iter().find_map(|cluster| {
+                    let range = &cluster["textRangeUtf8"];
+                    let start = range["start"].as_u64()? as usize;
+                    let end = range["end"].as_u64()? as usize;
+                    text.get(start..end)?
+                        .chars()
+                        .any(|c| !c.is_whitespace() && !c.is_control())
+                        .then_some((*run, cluster))
+                })
+            })
+            .expect("같은 원문 문단의 첫 실제 글리프");
+        let transform = &first_run["placement"]["runToPage"];
+        let x = first_cluster["origin"]["x"].as_f64().unwrap();
+        let y = first_cluster["origin"]["y"].as_f64().unwrap();
+        let number = |key| transform[key].as_f64().unwrap();
+        let first_glyph = [
+            number("a") * x + number("c") * y + number("e"),
+            number("b") * x + number("d") * y + number("f"),
+        ];
         // 독립 PDF70쪽 KoPubDotumLight, cm0.12, tm(659,5118), MediaBox.top841pt.
-        for (k, expected) in [("e", 105.44), ("f", 818.88)] {
-            let actual = owned[0]["placement"]["runToPage"][k].as_f64().unwrap();
+        for ((k, expected), actual) in [("e", 105.44), ("f", 818.88)].into_iter().zip(first_glyph) {
             assert!(
                 (actual - expected).abs() <= 2.0,
                 "독립 Print 본문 {k}: actual={actual}, expected={expected}, ±2CSSpx"

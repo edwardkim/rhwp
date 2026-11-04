@@ -48,6 +48,8 @@ pub(crate) enum EqCommandClass {
     EqAlign,
     /// `PILE`/`LPILE`/`RPILE`.
     Pile,
+    /// 한컴 문서의 `COL`/`LCOL`/`RCOL` 열 쌓기.
+    Column,
     /// `LEFT` … `RIGHT` 그룹. 뒤 첨자는 그룹 전체에 붙인다.
     LeftDelim,
     /// 짝 없는 `RIGHT`.
@@ -117,6 +119,7 @@ pub(crate) fn classify_command(cmd: &str) -> EqCommandClass {
         "CASES" => EqCommandClass::Cases,
         "EQALIGN" => EqCommandClass::EqAlign,
         "PILE" | "LPILE" | "RPILE" => EqCommandClass::Pile,
+        "COL" | "LCOL" | "RCOL" => EqCommandClass::Column,
         "LEFT" => EqCommandClass::LeftDelim,
         "RIGHT" => EqCommandClass::RightDiscard,
         "REL" | "BUILDREL" => EqCommandClass::Rel,
@@ -147,8 +150,8 @@ pub(crate) fn matrix_style(cmd_upper: &str) -> MatrixStyle {
 /// `PILE` 계열 대문자 이름 → 가로 정렬. 미지 이름은 Center.
 pub(crate) fn pile_align(cmd_upper: &str) -> PileAlign {
     match cmd_upper {
-        "LPILE" => PileAlign::Left,
-        "RPILE" => PileAlign::Right,
+        "LPILE" | "LCOL" => PileAlign::Left,
+        "RPILE" | "RCOL" => PileAlign::Right,
         _ => PileAlign::Center,
     }
 }

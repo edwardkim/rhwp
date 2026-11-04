@@ -11,64 +11,11 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 use serde_json::Value;
-use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::path::Path;
 
-const SAMPLE: &str = "samples/issue7500/picture_band_cell_spaces.hwp";
-
-fn rhwp_bin() -> String {
-    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_owned())
-}
-
-struct TempDir(PathBuf);
-impl TempDir {
-    fn new() -> Self {
-        // macOS 시계의 같은 tick에서 여러 검사가 시작해도 출력 경로를 공유하지 않는다.
-        static NEXT_ID: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-        let path = std::env::temp_dir().join(format!(
-            "rhwp-7518-{}-{}-{}",
-            std::process::id(),
-            NEXT_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_nanos()
-        ));
-        std::fs::create_dir_all(&path).unwrap();
-        Self(path)
-    }
-}
-impl Drop for TempDir {
-    fn drop(&mut self) {
-        let _ = std::fs::remove_dir_all(&self.0);
-    }
-}
-
-fn rendered_pages(input: &Path) -> Vec<Value> {
-    let dir = TempDir::new();
-    let output = Command::new(rhwp_bin())
-        .args(["export-render-tree"])
-        .arg(input)
-        .arg("-o")
-        .arg(&dir.0)
-        .output()
-        .expect("run actual renderer");
-    assert!(output.status.success(), "{output:?}");
-    let mut paths: Vec<_> = std::fs::read_dir(&dir.0)
-        .unwrap()
-        .map(|entry| entry.unwrap().path())
-        .filter(|path| path.extension().is_some_and(|ext| ext == "json"))
-        .collect();
-    paths.sort();
-    paths
-        .iter()
-        .map(|path| serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap())
-        .collect()
-}
-
-fn original_pages() -> Vec<Value> {
-    rendered_pages(&Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE))
-}
+#[path = "../helpers/pr7518_render_tree.rs"]
+mod support;
+use support::*;
 
 // Original NO_LS cells have no saved frame to invalidate. Complete-row
 // reservation still has to own the measured frame painted around their lines.
@@ -199,26 +146,6 @@ fn regulatory_22_legacy_latin_dot_preserves_the_source_word_boundary() {
     );
     assert!(quoted_lines[1].trim_end().ends_with("하다가"));
     assert!(quoted_lines[2].starts_with("회전날"));
-}
-
-fn regulatory_page39() -> (rhwp::model::document::Document, Value) {
-    let input = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/76076_regulatory_analysis.hwp");
-    let source = rhwp::parser::parse_hwp(&std::fs::read(&input).unwrap()).unwrap();
-    (source, rendered_pages(&input)[38].clone())
-}
-
-fn source_table(para: &rhwp::model::paragraph::Paragraph) -> &rhwp::model::table::Table {
-    match para.controls.as_slice() {
-        [rhwp::model::control::Control::Table(table)] => table,
-        _ => panic!("one source table"),
-    }
-}
-
-fn body_node<'a>(page: &'a Value, kind: &str, pi: usize) -> &'a Value {
-    nodes(page)
-        .into_iter()
-        .find(|node| node["type"] == kind && node["pi"] == pi)
-        .expect("source paragraph belongs to page 39")
 }
 
 // Independent Hancom p39 preserves the positive paragraph offset, the
@@ -589,67 +516,6 @@ fn a_block_table_host_does_not_duplicate_its_line_but_keeps_the_following_empty_
     );
 }
 
-fn nodes(node: &Value) -> Vec<&Value> {
-    let mut all = vec![node];
-    if let Some(children) = node["children"].as_array() {
-        for child in children {
-            all.extend(nodes(child));
-        }
-    }
-    all
-}
-
-fn cell_owned_nodes(node: &Value) -> Vec<&Value> {
-    if node["type"] == "Table" {
-        return Vec::new();
-    }
-    let mut all = vec![node];
-    if let Some(children) = node["children"].as_array() {
-        for child in children {
-            all.extend(cell_owned_nodes(child));
-        }
-    }
-    all
-}
-
-fn outer(page: &Value) -> &Value {
-    nodes(page)
-        .into_iter()
-        .find(|node| node["type"] == "Table" && node["pi"] == 3)
-        .expect("original outer table")
-}
-
-fn cell(table: &Value, row: u32, col: u32) -> &Value {
-    table["children"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|node| node["type"] == "Cell" && node["row"] == row && node["col"] == col)
-        .expect("outer cell")
-}
-
-fn coord(node: &Value, key: &str) -> f64 {
-    node["bbox"][key].as_f64().unwrap()
-}
-
-fn bottom(node: &Value) -> f64 {
-    coord(node, "y") + coord(node, "h")
-}
-
-fn nested(owner: &Value) -> &Value {
-    nodes(owner)
-        .into_iter()
-        .find(|node| node["type"] == "Table")
-        .expect("nested table")
-}
-
-fn first_line(owner: &Value) -> &Value {
-    nodes(owner)
-        .into_iter()
-        .find(|node| node["type"] == "TextLine" && node["pi"] == 8)
-        .expect("remaining timeline line")
-}
-
 #[test]
 fn continuation_preserves_declared_row_minimum_and_following_rows() {
     let pages = original_pages();
@@ -804,58 +670,6 @@ fn unsplit_reflow_uses_the_same_nested_anchor_and_flow_lead() {
 }
 
 #[test]
-fn split_nested_rows_reserve_the_lead_once_and_stay_inside_each_page() {
-    let input = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-split.hwp");
-    let pages = rendered_pages(&input);
-    let mut first = true;
-    let mut owned_cells = std::collections::BTreeSet::new();
-    let mut fragments = 0;
-    for page in &pages {
-        let outer = outer(page);
-        let column = nodes(page)
-            .into_iter()
-            .find(|n| n["type"] == "Column")
-            .unwrap();
-        for owner in outer["children"].as_array().unwrap() {
-            if owner["type"] != "Cell" || owner["row"] != 5 || owner["col"] != 1 {
-                continue;
-            }
-            assert!(
-                bottom(owner) <= bottom(column) + 0.2,
-                "remaining content was counted as a physical tail"
-            );
-            for table in nodes(owner).into_iter().filter(|n| n["type"] == "Table") {
-                fragments += 1;
-                let delta = coord(table, "y") - coord(owner, "y") - 141.0 / 75.0;
-                let expected = if first { (1203.0 + 283.0) / 75.0 } else { 0.0 };
-                assert!(
-                    (delta - expected).abs() < 0.2,
-                    "lead was lost or repeated: {delta}"
-                );
-                first = false;
-                for child in table["children"].as_array().unwrap() {
-                    if child["type"] == "Cell" {
-                        let key = (
-                            child["row"].as_u64().unwrap(),
-                            child["col"].as_u64().unwrap(),
-                        );
-                        assert!(owned_cells.insert(key), "nested row/cell replayed: {key:?}");
-                        assert!((coord(child, "h") - 9000.0 / 75.0).abs() < 0.15);
-                    }
-                }
-            }
-        }
-    }
-    assert!(fragments >= 2, "exercise a cut inside the nested table");
-    assert_eq!(
-        owned_cells.len(),
-        20,
-        "all four rows of five cells must survive"
-    );
-}
-
-#[test]
 fn a_complete_content_cut_keeps_center_alignment_before_the_physical_tail() {
     let input = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/pr7518_review_page_budget/terminal-tail.hwp");
@@ -934,67 +748,6 @@ fn terminal_physical_tail_is_drawn_after_the_last_content_unit() {
     assert_eq!(
         follower_count, 1,
         "following text must survive exactly once"
-    );
-}
-
-fn assert_terminal_nested_contents(input: &Path, pages: &[Value]) {
-    use std::collections::BTreeMap;
-    let source = rhwp::parser::parse_hwp(&std::fs::read(input).unwrap()).unwrap();
-    let table = source_table(&source.sections[0].paragraphs[3]);
-    let owner = table
-        .cells
-        .iter()
-        .find(|cell| cell.row == 5 && cell.col == 1)
-        .expect("source owner cell");
-    let child = owner
-        .paragraphs
-        .iter()
-        .flat_map(|para| &para.controls)
-        .find_map(|control| match control {
-            rhwp::model::control::Control::Table(table) => Some(table),
-            _ => None,
-        })
-        .expect("source nested table");
-    let normalize = |text: String| {
-        text.chars()
-            .filter(|c| !c.is_whitespace())
-            .collect::<String>()
-    };
-    let expected: BTreeMap<_, _> = child
-        .cells
-        .iter()
-        .map(|cell| {
-            let text = cell
-                .paragraphs
-                .iter()
-                .map(|para| para.text.as_str())
-                .collect();
-            ((u64::from(cell.row), u64::from(cell.col)), normalize(text))
-        })
-        .collect();
-    let mut actual = BTreeMap::<(u64, u64), String>::new();
-    for page in pages {
-        let owner = cell(outer(page), 5, 1);
-        for table in nodes(owner).into_iter().filter(|n| n["type"] == "Table") {
-            for cell in table["children"].as_array().unwrap() {
-                if cell["type"] != "Cell" {
-                    continue;
-                }
-                let id = (cell["row"].as_u64().unwrap(), cell["col"].as_u64().unwrap());
-                let text = actual.entry(id).or_default();
-                for run in nodes(cell).into_iter().filter(|n| n["type"] == "TextRun") {
-                    text.push_str(run["text"].as_str().unwrap());
-                }
-            }
-        }
-    }
-    let actual: BTreeMap<_, _> = actual
-        .into_iter()
-        .map(|(id, text)| (id, normalize(text)))
-        .collect();
-    assert_eq!(
-        actual, expected,
-        "nested cell ownership/content must survive exactly once"
     );
 }
 
@@ -1116,170 +869,6 @@ fn independently_regenerated_reflow_context_preserves_units_and_following_rows()
     }
 }
 
-fn assert_recursive_reflow_child(input: &str, expected_final_child_rows: usize) {
-    let input = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/pr7518_review_page_budget/valid_orientation")
-        .join(input);
-    let pages = rendered_pages(&input);
-    assert_recursive_child_page_owners(&pages);
-    let source = rhwp::parser::parse_hwp(&std::fs::read(&input).unwrap()).unwrap();
-    let source_outer = source_table(&source.sections[0].paragraphs[3]);
-    let source_owner = source_outer
-        .cells
-        .iter()
-        .find(|cell| cell.row == 5 && cell.col == 1)
-        .unwrap();
-    let source_child = source_table(source_owner.paragraphs.last().unwrap());
-    let normalize = |text: &str| text.split_whitespace().collect::<String>();
-    let expected_following: std::collections::BTreeMap<_, _> = source_outer
-        .cells
-        .iter()
-        .filter(|cell| cell.row == 7)
-        .map(|cell| {
-            (
-                u64::from(cell.col),
-                normalize(
-                    &cell
-                        .paragraphs
-                        .iter()
-                        .map(|p| p.text.as_str())
-                        .collect::<String>(),
-                ),
-            )
-        })
-        .collect();
-    let mut first = true;
-    let mut fragments = 0;
-    let mut source_units = std::collections::BTreeSet::new();
-    let mut final_child_rows = 0;
-    let mut following_content = std::collections::BTreeMap::<u64, String>::new();
-    for page in &pages {
-        let all = nodes(page);
-        let column = all.iter().find(|n| n["type"] == "Column").unwrap();
-        for owner in outer(page)["children"].as_array().unwrap() {
-            if owner["type"] != "Cell" {
-                continue;
-            }
-            if owner["row"] == 7 {
-                let text: String = cell_owned_nodes(owner)
-                    .into_iter()
-                    .filter(|node| node["type"] == "TextRun")
-                    .filter_map(|node| node["text"].as_str())
-                    .collect();
-                following_content
-                    .entry(owner["col"].as_u64().unwrap())
-                    .or_default()
-                    .push_str(&normalize(&text));
-            }
-            if owner["row"] != 5 || owner["col"] != 1 {
-                continue;
-            }
-            assert!(
-                bottom(owner) <= bottom(column) + 0.2,
-                "paint expanded the accepted row budget"
-            );
-            for child in nodes(owner).into_iter().filter(|n| n["type"] == "Table") {
-                fragments += 1;
-                // The PDF repeats the declared outer top at each recursive
-                // fragment. Only the paragraph offset belongs to its first.
-                let lead = (f64::from(source_child.outer_margin_top)
-                    + if first {
-                        f64::from(source_child.common.vertical_offset)
-                    } else {
-                        0.0
-                    })
-                    / 75.0;
-                assert!(
-                    (coord(child, "y") - coord(owner, "y") - 141.0 / 75.0 - lead).abs() < 0.2,
-                    "recursive paint added the paragraph offset twice"
-                );
-                assert!(
-                    (coord(child, "x") - coord(owner, "x") - (141.0 + 283.0 + 341.0) / 75.0).abs()
-                        < 0.2
-                );
-                // Padding is measured from the child cell frame. Table's paint
-                // bbox includes half of the border stroke beyond that frame.
-                let child_frame_bottom = child["children"]
-                    .as_array()
-                    .unwrap()
-                    .iter()
-                    .filter(|node| node["type"] == "Cell")
-                    .map(bottom)
-                    .reduce(f64::max)
-                    .expect("recursive child frame");
-                assert!(child_frame_bottom <= bottom(owner) - 141.0 / 75.0 + 0.2);
-                assert!(
-                    bottom(child) <= bottom(owner) + 0.2,
-                    "child stroke leaves its owner"
-                );
-                first = false;
-                for node in nodes(child) {
-                    if node["type"] != "TextRun" {
-                        continue;
-                    }
-                    let Some(text) = node["text"].as_str() else {
-                        continue;
-                    };
-                    if text.starts_with("UNIT ") {
-                        assert!(source_units.insert(text.to_owned()), "source unit replayed");
-                    }
-                    if text == "FINAL CHILD ROW" {
-                        final_child_rows += 1;
-                    }
-                }
-            }
-        }
-    }
-    assert!(fragments >= 2, "exercise a cut inside the child row");
-    let expected: std::collections::BTreeSet<_> = (0..65).map(|i| format!("UNIT {i:03}")).collect();
-    assert_eq!(
-        source_units, expected,
-        "every child paragraph must survive once"
-    );
-    assert_eq!(final_child_rows, expected_final_child_rows);
-    assert_eq!(
-        following_content, expected_following,
-        "following row content must survive exactly once across its physical fragments"
-    );
-}
-
-fn assert_recursive_child_page_owners(pages: &[Value]) {
-    // Exact-input Hancom 2020 PDFs in valid_orientation and valid_generated:
-    // p4 owns 000..017, p5 018..036, p6 037..055, p7 056..064.
-    // p8 contains the following outer row, not another child unit/blank page.
-    assert_eq!(pages.len(), 8);
-    for (index, page) in pages.iter().enumerate() {
-        let actual: Vec<_> = nodes(page)
-            .into_iter()
-            .filter(|node| node["type"] == "TextRun")
-            .filter_map(|node| node["text"].as_str())
-            .filter(|text| text.starts_with("UNIT "))
-            .map(str::to_owned)
-            .collect();
-        let range = match index {
-            3 => 0..18,
-            4 => 18..37,
-            5 => 37..56,
-            6 => 56..65,
-            _ => 0..0,
-        };
-        let expected: Vec<_> = range.map(|unit| format!("UNIT {unit:03}")).collect();
-        assert_eq!(
-            actual,
-            expected,
-            "Hancom child owners on page {}",
-            index + 1
-        );
-    }
-    let last = pages.last().unwrap();
-    assert!(cell_owned_nodes(cell(outer(last), 7, 1))
-        .into_iter()
-        .any(|node| node["type"] == "TextRun"
-            && node["text"]
-                .as_str()
-                .is_some_and(|text| !text.trim().is_empty())));
-}
-
 #[test]
 fn auto_height_nested_row_shares_its_reserved_origin_and_child_cut() {
     assert_recursive_reflow_child("nested-auto-row.hwp", 1);
@@ -1288,4 +877,122 @@ fn auto_height_nested_row_shares_its_reserved_origin_and_child_cut() {
 #[test]
 fn one_cell_nested_fragments_reuse_the_child_unit_ledger() {
     assert_recursive_reflow_child("nested-mixed-cell.hwp", 0);
+}
+
+#[test]
+fn nested_split_fragments_preserve_source_ownership_and_physical_closure() {
+    use std::collections::BTreeSet;
+    let input = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-split.hwp");
+    let source = rhwp::parser::parse_hwp(&std::fs::read(&input).unwrap()).unwrap();
+    let owner = source_table(&source.sections[0].paragraphs[3])
+        .cells
+        .iter()
+        .find(|cell| cell.row == 5 && cell.col == 1)
+        .unwrap();
+    let source_child = owner
+        .paragraphs
+        .iter()
+        .flat_map(|p| &p.controls)
+        .find_map(|c| match c {
+            rhwp::model::control::Control::Table(t) => Some(t),
+            _ => None,
+        })
+        .unwrap();
+    let pages = rendered_pages(&input);
+    assert_eq!(
+        pages.len(),
+        6,
+        "독립 Print의 여섯 쪽과 내용 소속을 함께 확인한다"
+    );
+    let mut seen = BTreeSet::new();
+    let mut shortened_rows = BTreeSet::new();
+    let mut fragment_rows = Vec::new();
+    for page in &pages {
+        let column = nodes(page)
+            .into_iter()
+            .find(|n| n["type"] == "Column")
+            .unwrap();
+        for owner in outer(page)["children"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|n| n["type"] == "Cell" && n["row"] == 5 && n["col"] == 1)
+        {
+            assert!(
+                bottom(owner) <= bottom(column) + 1.0,
+                "부모 조각이 본문 밖을 점유한다"
+            );
+            for child in nodes(owner).into_iter().filter(|n| n["type"] == "Table") {
+                let first = fragment_rows.is_empty();
+                let expected_lead = f64::from(source_child.outer_margin_top) / 75.0
+                    + if first {
+                        f64::from(source_child.common.vertical_offset) / 75.0
+                    } else {
+                        0.0
+                    };
+                assert!(
+                    (coord(child, "y") - coord(owner, "y") - 141.0 / 75.0 - expected_lead).abs()
+                        < 1.0,
+                    "첫 앵커 오프셋과 이어받기 물리 위 여백을 구분해야 한다"
+                );
+                assert!(
+                    bottom(child) + f64::from(source_child.outer_margin_bottom) / 75.0
+                        <= bottom(owner) - 141.0 / 75.0 + 1.0,
+                    "자식의 닫는 띠가 부모 안에 있어야 한다"
+                );
+                let mut rows = BTreeSet::new();
+                for cell in child["children"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .filter(|n| n["type"] == "Cell")
+                {
+                    let key = (cell["row"].as_u64().unwrap(), cell["col"].as_u64().unwrap());
+                    assert!(seen.insert(key), "같은 원본 셀을 다시 그렸다: {key:?}");
+                    let original = source_child
+                        .cells
+                        .iter()
+                        .find(|c| u64::from(c.row) == key.0 && u64::from(c.col) == key.1)
+                        .unwrap();
+                    let declared = f64::from(original.height) / 75.0;
+                    assert!(
+                        coord(cell, "h") <= declared + 1.0,
+                        "선언된 빈 최소를 늘렸다"
+                    );
+                    if coord(cell, "h") + 1.0 < declared {
+                        shortened_rows.insert(key.0);
+                    }
+                    rows.insert(key.0);
+                    for line in nodes(cell).into_iter().filter(|n| n["type"] == "TextLine") {
+                        assert!(
+                            coord(line, "y") >= coord(cell, "y") - 1.0
+                                && bottom(line) <= bottom(cell) + 1.0,
+                            "빈 최소 보정으로 내용을 잘랐다"
+                        );
+                    }
+                }
+                fragment_rows.push(rows);
+            }
+        }
+    }
+    assert_eq!(
+        seen.len(),
+        source_child.cells.len(),
+        "모든 원본 셀이 정확히 한 번 남아야 한다"
+    );
+    assert_eq!(fragment_rows.len(), 2);
+    assert_eq!(fragment_rows[0], BTreeSet::from([0, 1, 2]));
+    assert_eq!(fragment_rows[1], BTreeSet::from([3]));
+    assert_eq!(
+        shortened_rows,
+        BTreeSet::from([2]),
+        "비끝 조각의 마지막 빈 최소만 줄인다"
+    );
+    assert_terminal_nested_contents(&input, &pages[3..5]);
+}
+
+#[test]
+fn completed_nested_split_pages_keep_independent_print_edges() {
+    assert_independent_nested_print_edges();
 }

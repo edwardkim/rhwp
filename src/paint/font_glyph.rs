@@ -301,10 +301,22 @@ pub fn decode_font_svg_glyph_payload(
     let fragment = std::str::from_utf8(&svg_bytes)
         .map_err(|_| FontSvgGlyphDecodeError::InvalidUtf8)?
         .trim();
-    if !crate::renderer::static_svg::static_svg_fragment_has_path_layer(fragment) {
-        return Err(FontSvgGlyphDecodeError::UnsafeStaticSvg);
+    let mut syntax = Reader::from_str(fragment);
+    for count in 0..=100_000 {
+        if count == 100_000 {
+            return Err(FontSvgGlyphDecodeError::SvgPayloadTooLarge);
+        }
+        match syntax
+            .read_event()
+            .map_err(|_| FontSvgGlyphDecodeError::InvalidSvgXml)?
+        {
+            Event::Eof => break,
+            _ => {}
+        }
     }
-
+    let normalized = crate::renderer::static_svg::normalize_static_svg(fragment)
+        .ok_or(FontSvgGlyphDecodeError::UnsafeStaticSvg)?;
+    let fragment = normalized.as_str();
     let mut reader = Reader::from_str(fragment);
     reader.config_mut().trim_text(true);
     let mut view_box = None;
@@ -651,6 +663,11 @@ impl FontGlyphLowerer<'_, '_> {
             return None;
         }
 
+        let visual_positions = crate::renderer::text_direction::VisualTextPositions::for_style(
+            &run.text,
+            &producer_positions,
+            &run.style,
+        );
         let units_per_em = f64::from(face.units_per_em());
         if units_per_em <= 0.0 || !super::font::glyph_font_size_is_portable(run.style.font_size) {
             self.report.rejected_glyph_runs += 1;
@@ -664,8 +681,17 @@ impl FontGlyphLowerer<'_, '_> {
         let mut utf16_offset = 0_u32;
         let mut max_advance_delta_px = 0.0_f64;
         for (index, character) in characters.iter().copied().enumerate() {
+            let glyph_character = if visual_positions
+                .as_ref()
+                .and_then(|p| p.span_scope(index, index + 1))
+                .is_some_and(|(_, _, rtl)| rtl)
+            {
+                unicode_bidi_mirroring::get_mirrored(character).unwrap_or(character)
+            } else {
+                character
+            };
             let Some(glyph_id) = face
-                .glyph_index(character)
+                .glyph_index(glyph_character)
                 .filter(|glyph_id| glyph_id.0 != 0)
             else {
                 self.report.rejected_glyph_runs += 1;
@@ -685,7 +711,10 @@ impl FontGlyphLowerer<'_, '_> {
                 max_advance_delta_px.max((producer_advance - nominal_advance).abs());
             glyph_ids.push(u32::from(glyph_id.0));
             positions.push(LayerPoint {
-                x: producer_positions[index],
+                x: visual_positions
+                    .as_ref()
+                    .and_then(|p| p.span_origin(index, index + 1))
+                    .unwrap_or(producer_positions[index]),
                 y: 0.0,
             });
             advances.push(LayerVector {
@@ -1290,7 +1319,7 @@ mod tests {
     }
 
     #[test]
-    fn svg_lowering_rejects_unsafe_font_document_without_interning_it() {
+    fn svg_lowering_ignores_restricted_script_and_preserves_valid_artwork() {
         let mut resources = ResourceArena::default();
         let result = decode_font_svg_glyph_payload(
             fixture_font(),
@@ -1303,11 +1332,11 @@ mod tests {
             &mut resources,
         );
 
-        assert!(matches!(
-            result,
-            Err(FontSvgGlyphDecodeError::UnsafeStaticSvg)
-        ));
-        assert_eq!(resources.svg_count(), 0);
+        let payload = result.expect("OpenType ignores restricted script subtrees");
+        let fragment = resources.svg_fragment(payload.svg_ref).unwrap();
+        assert!(!fragment.contains("script"));
+        assert!(fragment.contains("M0 0H16V16H0Z"));
+        assert_eq!(resources.svg_count(), 1);
     }
 
     #[test]

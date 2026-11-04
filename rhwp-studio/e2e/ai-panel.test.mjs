@@ -141,7 +141,9 @@ runTest('AI 대화 패널', async ({ page }) => {
   assert(first.body.fallbacks === 'default'
     && (first.headers['anthropic-beta'] ?? '').includes('server-side-fallback-2026-07-01'), 'TC1: 서버 대체');
   assert(first.body.output_config?.effort === 'medium' && !('thinking' in first.body), 'TC1: 응답 깊이, thinking 생략');
-  assert(first.headers['x-api-key'] === KEY, 'TC1: 키 헤더');
+  assert(first.headers.authorization === `Bearer ${KEY}` && !('x-api-key' in first.headers),
+    'TC1: SDK 1.x Bearer 키 헤더');
+  assert(first.headers['anthropic-version'] === '2026-10-21', 'TC1: SDK 1.x API 버전');
   assert(JSON.stringify(first.body.messages) === JSON.stringify([{ role: 'user', content: [{ type: 'text', text: '표지에 뭐가 있어?' }] }]),
     'TC1: 첫 요청은 질문 하나');
   assert(second.body.messages[1].role === 'assistant'

@@ -1,0 +1,75 @@
+{
+  "date": "2026-10-28",
+  "base_commit": "db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc",
+  "source": "floatfix-wasm-matrix.json",
+  "scope": "새 base와 후보의 동일 조건 비교에서 기존 90% 미달인 쪽의 upstream 기록 확인",
+  "note": "과거 TSV는 당시 환경의 기록이다. 새 base와 후보가 같은 현재 실행 조건에서 같은 점수라는 사실과 과거 점수의 재현을 구분한다. #8049 82쪽만 작업지시자가 이번 검토·보정에서 명시 제외했다.",
+  "pages": [
+    {
+      "document": "claim-8045",
+      "page": 1,
+      "upstream_recorded_raw_percent": 71.10912,
+      "upstream_recorded_tsv": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/source-claims/pr8045/wasm/silhouette.tsv",
+      "upstream_tsv_sha256": "6230712535070619560e711ec8da477ac55a53ad5d736ad1080a6cf85ae63984",
+      "current_base_and_candidate_raw_percent": 71.12076,
+      "current_candidate_equals_base": true,
+      "input_sha256": "4bf58b220d6a70e7efbc9ad5bf7d501e2f1291430a1fff9b9bb3afc9f25fba6c",
+      "pdf_sha256": "6cac0eb2d182787be811ef0f6bd5d1dac56df9c4836c3995b0daaf7f0eeecde2"
+    },
+    {
+      "document": "claim-8049",
+      "page": 10,
+      "upstream_recorded_raw_percent": 87.94137,
+      "upstream_recorded_tsv": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/source-claims/pr8049/wasm/silhouette.tsv",
+      "upstream_tsv_sha256": "f3f856438b71dd536e5f0d1ee94a6faa98414476fecb8525a311ddb44b9a5b30",
+      "current_base_and_candidate_raw_percent": 86.53418,
+      "current_candidate_equals_base": true,
+      "input_sha256": "29018def6969c60e6b0fb5c7cca06c8fd12a3b1239543c8f3eb1d1d03bc4294e",
+      "pdf_sha256": "ddc7df829907d31b0befffc663ca0879efacaa0ceae34f92502fe0e99a9a9859"
+    },
+    {
+      "document": "claim-8049",
+      "page": 82,
+      "upstream_recorded_raw_percent": 26.63057,
+      "upstream_recorded_tsv": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/source-claims/pr8049/wasm/silhouette.tsv",
+      "upstream_tsv_sha256": "f3f856438b71dd536e5f0d1ee94a6faa98414476fecb8525a311ddb44b9a5b30",
+      "current_base_and_candidate_raw_percent": 26.80545,
+      "current_candidate_equals_base": true,
+      "input_sha256": "29018def6969c60e6b0fb5c7cca06c8fd12a3b1239543c8f3eb1d1d03bc4294e",
+      "pdf_sha256": "ddc7df829907d31b0befffc663ca0879efacaa0ceae34f92502fe0e99a9a9859"
+    },
+    {
+      "document": "claim-8056",
+      "page": 11,
+      "upstream_recorded_raw_percent": 66.39946,
+      "upstream_recorded_tsv": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/source-claims/pr8056/wasm/silhouette.tsv",
+      "upstream_tsv_sha256": "8468895c9f13637d0bedd03a5d33d22e9b2586b1f7b6ce9839210d166eccfdcf",
+      "current_base_and_candidate_raw_percent": 68.84481,
+      "current_candidate_equals_base": true,
+      "input_sha256": "56b7a19affa96a586c1db2502f3a8f4d597cbafaf1250b7d4214417b94c31905",
+      "pdf_sha256": "9767f31c631cfe09b4f102acf6ce5dda4e488079bf6fd2b994e357936c98c4eb"
+    },
+    {
+      "document": "claim-8062",
+      "page": 30,
+      "upstream_recorded_raw_percent": 86.6535,
+      "upstream_recorded_tsv": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/source-claims/pr8062/wasm/silhouette.tsv",
+      "upstream_tsv_sha256": "f09471c3fd224e236108d7689670560a56d6a6c9a84d873ae65a7287cb55ec45",
+      "current_base_and_candidate_raw_percent": 86.90675,
+      "current_candidate_equals_base": true,
+      "input_sha256": "28f84a2dd9ea81f87f892b8a61e4f72d54bb9fa128dee354bdd223b735c911ec",
+      "pdf_sha256": "7a064de57333d66e4ae90f7063c1687d096117a4112f3e91f5af902ededf9493"
+    },
+    {
+      "document": "claim-8062",
+      "page": 31,
+      "upstream_recorded_raw_percent": 76.70998,
+      "upstream_recorded_tsv": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/source-claims/pr8062/wasm/silhouette.tsv",
+      "upstream_tsv_sha256": "f09471c3fd224e236108d7689670560a56d6a6c9a84d873ae65a7287cb55ec45",
+      "current_base_and_candidate_raw_percent": 78.24609,
+      "current_candidate_equals_base": true,
+      "input_sha256": "28f84a2dd9ea81f87f892b8a61e4f72d54bb9fa128dee354bdd223b735c911ec",
+      "pdf_sha256": "7a064de57333d66e4ae90f7063c1687d096117a4112f3e91f5af902ededf9493"
+    }
+  ]
+}

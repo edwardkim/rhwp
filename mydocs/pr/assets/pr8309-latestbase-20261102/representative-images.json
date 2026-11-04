@@ -1,0 +1,170 @@
+[
+  {
+    "case": "saved_default",
+    "backend": "native",
+    "kind": "review",
+    "path": "saved_default-p001-native-review.png",
+    "sha256": "ed2dbf69981389e4c6785a26227521980ab783c1b51948e4c40b517dbf940464"
+  },
+  {
+    "case": "saved_default",
+    "backend": "native",
+    "kind": "overlay",
+    "path": "saved_default-p001-native-overlay.png",
+    "sha256": "37795a7f6b83874b09fd5ad5d52b79a3b91f3c1371a981daef6c4761849c72d8"
+  },
+  {
+    "case": "saved_default",
+    "backend": "wasm",
+    "kind": "review",
+    "path": "saved_default-p001-wasm-review.png",
+    "sha256": "7923381abb8fef8624f7addbb206a0855e6b0d50786a25e01b7b87feda631eaa"
+  },
+  {
+    "case": "saved_default",
+    "backend": "wasm",
+    "kind": "overlay",
+    "path": "saved_default-p001-wasm-overlay.png",
+    "sha256": "d9e510807a9fd203026b9b52d3d9eed0d5365b41aba8099f50d654a9bcdb816f"
+  },
+  {
+    "case": "saved_center",
+    "backend": "native",
+    "kind": "review",
+    "path": "saved_center-p001-native-review.png",
+    "sha256": "2ee8aa7aba7f692e2b8a701ed74ad14c66b94590ad224c8b0e9386496d01a073"
+  },
+  {
+    "case": "saved_center",
+    "backend": "native",
+    "kind": "overlay",
+    "path": "saved_center-p001-native-overlay.png",
+    "sha256": "57f80f05dd3f93ff524219f07f68c4143a3d66a915d123ac9b9428da43b501f5"
+  },
+  {
+    "case": "saved_center",
+    "backend": "wasm",
+    "kind": "review",
+    "path": "saved_center-p001-wasm-review.png",
+    "sha256": "7bfbe0de736129c920d273bb08e93f90ee8de94e516207d5ffc62ba35a3709e6"
+  },
+  {
+    "case": "saved_center",
+    "backend": "wasm",
+    "kind": "overlay",
+    "path": "saved_center-p001-wasm-overlay.png",
+    "sha256": "ad6a7a3c065f0e97138b3100c794a82fa56664c2fa81073bf51364b89fdff94c"
+  },
+  {
+    "case": "saved_bottom",
+    "backend": "native",
+    "kind": "review",
+    "path": "saved_bottom-p001-native-review.png",
+    "sha256": "388b29d88d1c63c31e33695390aa35e910659264ca6b6babf753cdd20b93f506"
+  },
+  {
+    "case": "saved_bottom",
+    "backend": "native",
+    "kind": "overlay",
+    "path": "saved_bottom-p001-native-overlay.png",
+    "sha256": "da0dcdd1a4f5d9b23a17f6277c9a7fd55222a357c683d1b7d6015acf00a5909b"
+  },
+  {
+    "case": "saved_bottom",
+    "backend": "wasm",
+    "kind": "review",
+    "path": "saved_bottom-p001-wasm-review.png",
+    "sha256": "ee2f72f9497636d46f554eed2ec624afb88de3dfb221ac7860fcb2236d26bce5"
+  },
+  {
+    "case": "saved_bottom",
+    "backend": "wasm",
+    "kind": "overlay",
+    "path": "saved_bottom-p001-wasm-overlay.png",
+    "sha256": "4004ea8d765d14052fc6b20fc4afa614532efd18472a2469471bd12033398b4e"
+  },
+  {
+    "case": "issue8122",
+    "backend": "native",
+    "kind": "review",
+    "path": "issue8122-p001-native-review.png",
+    "sha256": "3f7c2158e320cf4cd4636fcf39da5e752d78a6465c1fbb5f339fbfb7a6c74c07"
+  },
+  {
+    "case": "issue8122",
+    "backend": "native",
+    "kind": "overlay",
+    "path": "issue8122-p001-native-overlay.png",
+    "sha256": "2dd7cae5658473b1de720622caa8960ee901e371ee90e3ccef327008ea9d570b"
+  },
+  {
+    "case": "issue8122",
+    "backend": "wasm",
+    "kind": "review",
+    "path": "issue8122-p001-wasm-review.png",
+    "sha256": "c38505220e308757f6681a1ddd9a172cfdcfa36af6d6f1ebaba909025a38b3d9"
+  },
+  {
+    "case": "issue8122",
+    "backend": "wasm",
+    "kind": "overlay",
+    "path": "issue8122-p001-wasm-overlay.png",
+    "sha256": "0d2dc67931fafb5569b8b2366ae633ecff28069cd0f397eb8a8cdf253780524d"
+  },
+  {
+    "case": "flow_A_hwp",
+    "backend": "native",
+    "kind": "review",
+    "path": "flow_A_hwp-p001-native-review.png",
+    "sha256": "036de88ae82cc4f50f7cbe3ddcab624c473aab2fbf90b6a170a5aa79faacde81"
+  },
+  {
+    "case": "flow_A_hwp",
+    "backend": "native",
+    "kind": "overlay",
+    "path": "flow_A_hwp-p001-native-overlay.png",
+    "sha256": "4bb8f6086dc3cf8b0b0d47df86652132848f07627ef28b93d1d38c44c7b430db"
+  },
+  {
+    "case": "flow_A_hwp",
+    "backend": "wasm",
+    "kind": "review",
+    "path": "flow_A_hwp-p001-wasm-review.png",
+    "sha256": "9543930ae5ef0b26305d15bedba870f4a6bc9d5c2fb54076756a923a2434f9cc"
+  },
+  {
+    "case": "flow_A_hwp",
+    "backend": "wasm",
+    "kind": "overlay",
+    "path": "flow_A_hwp-p001-wasm-overlay.png",
+    "sha256": "e29f7c6db1be3f2f56137c2f5086bb7eed25bd46184c5ec561694ef73b528deb"
+  },
+  {
+    "case": "flow_D_hwpx",
+    "backend": "native",
+    "kind": "review",
+    "path": "flow_D_hwpx-p001-native-review.png",
+    "sha256": "aa9b4cdad5d7cfffab6b0486f7572f0acfe2682f18a4833e52f2420ad7a920b8"
+  },
+  {
+    "case": "flow_D_hwpx",
+    "backend": "native",
+    "kind": "overlay",
+    "path": "flow_D_hwpx-p001-native-overlay.png",
+    "sha256": "d543a7cebbeedd95acc12124daa96cde7b9c8d4b7b0ee00221f88dffcde82fa9"
+  },
+  {
+    "case": "flow_D_hwpx",
+    "backend": "wasm",
+    "kind": "review",
+    "path": "flow_D_hwpx-p001-wasm-review.png",
+    "sha256": "56fde237b432efd86bd6416b2ffb92211158e3add506251b35991e7cf7b6ea33"
+  },
+  {
+    "case": "flow_D_hwpx",
+    "backend": "wasm",
+    "kind": "overlay",
+    "path": "flow_D_hwpx-p001-wasm-overlay.png",
+    "sha256": "7aec0892c5d05c11e8c6c3d4c85eec045c86ca44901276eeded2a17e20405eeb"
+  }
+]

@@ -1,0 +1,51 @@
+{
+  "product_source": "6d95c45f08ca8fe5302044b5ef2aa136fd50798e",
+  "studio": {
+    "tests": 2694,
+    "passed": 2692,
+    "skipped": 2,
+    "failed": 0
+  },
+  "typescript": "passed",
+  "wasm_clippy": "passed",
+  "optimized_wasm_build": "passed",
+  "native_build": "passed",
+  "browser": "passed",
+  "logs_in_ignored_output": [
+    {
+      "log": "studio-tests-crop.log",
+      "bytes": 265597,
+      "sha256": "781f772809b2ed4d458f7815b9453ece12c21572fa8b367545aa6f72c777cd10"
+    },
+    {
+      "log": "tsc-crop.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "log": "lint-wasm-crop.log",
+      "bytes": 127,
+      "sha256": "b3a8ec77b694a0131fff15001bdfc712ec4fcea41dd593daec57b8949d5e5ba6"
+    },
+    {
+      "log": "build-wasm-crop.log",
+      "bytes": 822,
+      "sha256": "3d0453117044edb269d841ef723a3043cceae4d791ecc64c07e2ce4073ec3dac"
+    },
+    {
+      "log": "build-native-crop.log",
+      "bytes": 122,
+      "sha256": "8a82bfd82c5d60eace15e670fdeab473b0d1bd5ba2975fed6dd3ac4b1f62a7cd"
+    },
+    {
+      "log": "browser-text-preservation-final.log",
+      "bytes": 4470,
+      "sha256": "ec500b62bd83c7e05d5d7a520c62d479d1fef59808e5c5ea4a91b837b4e39d86"
+    },
+    {
+      "log": "document-metadata.log",
+      "bytes": 1623,
+      "sha256": "8b78ebc5c28e095af9397e6759a98060c5a648ef8c7b912f0e1b7a07a7883fb6"
+    }
+  ]
+}

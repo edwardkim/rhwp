@@ -1,0 +1,7 @@
+{
+  "date": "2026-10-28",
+  "scope": "issue8167 삽입 도형과 issue8271 그림 재열기·독립 Print 좌표",
+  "log_sha256": "5e3878dadbf918444dfb7e4bc194e76ed4c5217c63899580447b9e81b0f51f3a",
+  "summary": "Summary [   0.082s] 9 tests run: 9 passed, 559 skipped",
+  "full_regression_rerun": false
+}

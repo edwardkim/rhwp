@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-28",
+  "input": "samples/hwp3-sample10.hwp",
+  "input_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+  "input_format": "hwp3",
+  "rhwp_page_count": 763,
+  "pdf_local_only": "/home/tsjang/rhwp-local-pdf/issue8219/issue8219-hwp3-sample10-2020.pdf",
+  "pdf_sha256": "ea07035a3398558dd337af1c902f167f909959d3d82a9fc88ffb2ce77f6bc79f",
+  "pdf_bytes": 96156406,
+  "pdf_pages": 763,
+  "job_id": "7ba32b87-36c0-4e83-88a0-0e70fcc81041",
+  "engine": "2020",
+  "hancom_version": "11.0.0.9136",
+  "pdf_print_method": 0,
+  "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+  "comparison_page": 1,
+  "native_raw_percent": 27.15694,
+  "native_page_sha256": "1df43e6c551daa2f6b5ea15df3746e230d4dc576b678052d28dc021bca00ec71",
+  "print_page_sha256": "e48a30eeecc605355cb3dc66712ef7491f7baf29787781704692c82b5dc2ee79",
+  "wasm_status": "원본 연결 그림을 로컬 후보로 주입한 뒤 디코드 완료",
+  "interpretation": "원본 HWP3는 서버에 전달되지 않은 외부 파일을 참조한다. 사용자 지시에 따라 그림 컨트롤 상자를 양쪽 비교에서 제외한다. 첫 쪽 제외 비교는 Native 65.65028%, fresh WASM 64.31181%로 모두 90% 미만이며 별도 전쪽 비교 진행 중이다. 제외 상자와 겹친 다른 내용은 검증하지 않는다.",
+  "source_linked_pictures": [
+    {
+      "external_path": "D:\\Work\\Gwjang\\temp\\images\\oracle.gif",
+      "local_candidate": "samples/oracle.gif",
+      "local_candidate_sha256": "464e863dd2c1650fc6997b03a5d96c9413e61bbabaf7337c783db27203cc2761"
+    },
+    {
+      "external_path": "D:\\Work\\Gwjang\\temp\\images\\rdb02.gif",
+      "local_candidate": "samples/rdb02.gif",
+      "local_candidate_sha256": "bfadf4cdbbeeb5f3d8632cb54c8c3696977f405204b651f99a7a24c8f39532cf"
+    },
+    {
+      "external_path": "D:\\Work\\Gwjang\\temp\\images\\s1.jpg",
+      "local_candidate": "samples/s1.jpg",
+      "local_candidate_sha256": "77dea18ce7f8f93b0931e133dec222aec642eef0ed87b8f2031b94dcbea5c514"
+    }
+  ],
+  "masked_comparison": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue8219-linked-p1-comparison.json"
+}

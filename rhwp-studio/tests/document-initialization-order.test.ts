@@ -36,7 +36,7 @@ function localFontsChangedHandlerSource(): string {
 
 test('문서 초기화는 로컬 글꼴 확인 후에만 입력 핸들러를 활성화한다', () => {
   const initializeDocument = initializeDocumentSource();
-  const promptIndex = initializeDocument.indexOf('await promptLocalFontsIfNeeded(docInfo, displayName);');
+  const promptIndex = initializeDocument.indexOf('await promptLocalFontsIfNeeded(displayName);');
   const activateIndex = initializeDocument.indexOf('inputHandler?.activateWithCaretPosition();');
   const completeIndex = initializeDocument.indexOf("documentState.markClean('document-initialized');");
 

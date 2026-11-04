@@ -1,0 +1,84 @@
+{
+  "kind": "linked-image-exclusions-v1",
+  "dpi": 96,
+  "source": {
+    "path": "samples/hwp3-sample10.hwp",
+    "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48"
+  },
+  "pdf": {
+    "path": "/home/tsjang/rhwp-local-pdf/issue8219/issue8219-hwp3-sample10-2020.pdf",
+    "sha256": "ea07035a3398558dd337af1c902f167f909959d3d82a9fc88ffb2ce77f6bc79f"
+  },
+  "regions": [
+    {
+      "page": 1,
+      "rect_px": [
+        124,
+        165,
+        253,
+        207
+      ],
+      "external_path": "D:\\Work\\Gwjang\\temp\\images\\oracle.gif",
+      "control": "section0/para1/control0",
+      "render_bbox_px": {
+        "x": 124.7,
+        "y": 165.0,
+        "w": 128.0,
+        "h": 41.6
+      }
+    },
+    {
+      "page": 1,
+      "rect_px": [
+        220,
+        489,
+        574,
+        675
+      ],
+      "external_path": "D:\\Work\\Gwjang\\temp\\images\\rdb02.gif",
+      "control": "section0/para12/control0",
+      "render_bbox_px": {
+        "x": 220.0,
+        "y": 489.2,
+        "w": 353.8,
+        "h": 185.7
+      }
+    },
+    {
+      "page": 1,
+      "rect_px": [
+        166,
+        899,
+        250,
+        977
+      ],
+      "external_path": "D:\\Work\\Gwjang\\temp\\images\\s1.jpg",
+      "control": "section0/para22/control0",
+      "render_bbox_px": {
+        "x": 166.7,
+        "y": 899.9,
+        "w": 83.1,
+        "h": 77.0
+      }
+    }
+  ],
+  "method": "source picture control coordinates matched by paragraph and control index to Native render tree; floor top-left, ceil bottom-right",
+  "limitation": "외부 그림 상자 내부는 그 그림과 겹친 다른 내용도 제외한다",
+  "assets": [
+    {
+      "name": "oracle.gif",
+      "path": "samples/oracle.gif",
+      "sha256": "464e863dd2c1650fc6997b03a5d96c9413e61bbabaf7337c783db27203cc2761"
+    },
+    {
+      "name": "rdb02.gif",
+      "path": "samples/rdb02.gif",
+      "sha256": "bfadf4cdbbeeb5f3d8632cb54c8c3696977f405204b651f99a7a24c8f39532cf"
+    },
+    {
+      "name": "s1.jpg",
+      "path": "samples/s1.jpg",
+      "sha256": "77dea18ce7f8f93b0931e133dec222aec642eef0ed87b8f2031b94dcbea5c514"
+    }
+  ]
+}

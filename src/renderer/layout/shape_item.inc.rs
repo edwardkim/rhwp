@@ -18,6 +18,13 @@ impl LayoutEngine {
         ctx: &ColumnItemCtx,
         y_offset: f64,
     ) -> f64 {
+        if ctx.inline_flow_plans.get(&para_index).is_some_and(|plan| {
+            plan.floating_shapes
+                .iter()
+                .any(|item| item.control == control_index)
+        }) {
+            return y_offset;
+        }
         let ColumnItemCtx {
             page_content,
             paragraphs,
@@ -285,7 +292,8 @@ impl LayoutEngine {
                                 .get(&(para_index, control_index))
                                 .filter(|placement| matches!(placement.flow,
                                     super::float_placement::ParagraphFloatFlow::StoredPicture { .. }
-                                        | super::float_placement::ParagraphFloatFlow::StoredPictureGroup { .. })
+                                        | super::float_placement::ParagraphFloatFlow::StoredPictureGroup { .. }
+                                        | super::float_placement::ParagraphFloatFlow::InlineHostPicture { .. })
                                     || (placement.flow == super::float_placement::ParagraphFloatFlow::Exclusion
                                         && placement.stored_host_origin.is_some()));
                             let (vpos_accounts_for_height, pic_y) = stored_picture
@@ -349,9 +357,15 @@ impl LayoutEngine {
                             // as samples/복학원서.hwp use an empty first paragraph with a
                             // BehindText logo; preserving the advanced cursor there inserts an
                             // extra line-height before the following table.
+                            //
+                            // Exception: a document with no stored line layout at all (machine
+                            // generated HWPX) has no ladder to testify, so the host line that
+                            // typeset and the FullParagraph path both account for must stay.
                             if matches!(
                                 pic.common.text_wrap,
                                 crate::model::shape::TextWrap::InFrontOfText
+                            ) || textless_synthesized_host_keeps_line_for_behind_text_picture(
+                                para, pic,
                             ) {
                                 result_y = saved_y_offset;
                             }
@@ -458,6 +472,10 @@ impl LayoutEngine {
                                 // 복수 그림의 합집합 계획은 빈 호스트 줄도 이미 소유한다.
                                 && !stored_picture.is_some_and(|placement| matches!(placement.flow,
                                     super::float_placement::ParagraphFloatFlow::StoredPictureGroup { .. }))
+                                // 공동 호스트는 다른 쪽에 남은 TAC 줄도 이미 소유한다.
+                                // 이 그림 뒤에 같은 빈 줄을 다시 더하지 않는다.
+                                && !stored_picture.is_some_and(|placement| matches!(placement.flow,
+                                    super::float_placement::ParagraphFloatFlow::InlineHostPicture { .. }))
                             {
                                 let has_visible_text =
                                     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');

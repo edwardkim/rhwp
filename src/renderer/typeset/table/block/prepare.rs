@@ -6,11 +6,10 @@ use crate::renderer::typeset::{
     is_two_row_picture_caption_rowbreak_table, line_seg_visible_bounds_px,
     native_hwp5_rowbreak_host_precedes_first_fragment, native_terminal_child_host_line_spacing,
     none_table_is_atomic_here, notes, para_has_non_whitespace_text, para_has_visible_text,
-    paragraph, partial_rowbreak_fragment_spacing_px, row_geometry_table,
-    rowbreak_table_has_internal_saved_vpos_reset, stored_square_picture_has_adjacent_text, table,
-    BlockTableContinuationContext, BlockTableContinuationPreparedState,
-    BlockTableContinuationSource, CaptionDirection, Control, PageItem, TypesetEngine, TypesetState,
-    MIN_TOP_KEEP_PX, SINGLE_ROW_DECLARED_TRUST_MAX_RATIO,
+    paragraph, partial_rowbreak_fragment_spacing_px, rowbreak_table_has_internal_saved_vpos_reset,
+    stored_square_picture_has_adjacent_text, table, BlockTableContinuationContext,
+    BlockTableContinuationPreparedState, BlockTableContinuationSource, CaptionDirection, Control,
+    PageItem, TypesetEngine, TypesetState, MIN_TOP_KEEP_PX, SINGLE_ROW_DECLARED_TRUST_MAX_RATIO,
 };
 
 use super::{BlockTableInput, SplitTableEntry};
@@ -40,6 +39,7 @@ impl TypesetEngine {
             ..
         } = input;
         let SplitTableEntry {
+            computed_host_tail,
             mut total_footnote,
             next_starts_new_page,
             next_rewinds_after_table,
@@ -64,7 +64,11 @@ impl TypesetEngine {
         } = entry;
         let row_count = mt.row_heights.len();
         let cs = mt.cell_spacing;
-        let can_intra_split = !mt.cells.is_empty();
+        let can_intra_split = !mt.cells.is_empty()
+            || super::unrestricted_float::independent_child_can_split(
+                input,
+                st.base_available_height(),
+            );
         let base_available = st.base_available_height();
         // 표 조각의 괘선은 실제 본문 영역에 그린다. 쪽 하단 허용치는 글줄 수용에
         // 사용하지만, 행 컷이 이 공간까지 쓰면 표 조각이 꼬리말이나 본문 경계에
@@ -117,12 +121,51 @@ impl TypesetEngine {
                         })
                 })
         };
+        // 저장 줄 없는 빈 문단이 비-TAC 어울림 그림·도형만 앵커한 칸은 cell_units 가
+        // 400HU 자리 줄·개체 높이(오프셋 제외)·뒤 줄을 세로로 쌓는다. 측정과 그리기는
+        // 같은 칸을 `max(글줄, 개체 바닥)` 으로 잰다(height_measurer 의 wrap_bottom).
+        // 온전한 행 높이를 쌓기 값으로 예약하면 표 뒤 흐름이 그 차이만큼 내려간다.
+        // 칸 안에서 앵커 문단 뒤에 다른 문단이 이어질 때만 그 뒤 줄이 개체 옆에 놓여
+        // 쌓기가 과대해진다. 앵커 문단 하나뿐인 그림 앵커 칸은 쌓기 예약을 유지한다 —
+        // 줄이면 다음 작은 표의 머리행이 쪽 끝에 홀로 남는다.
+        let unstored_stamp_table = !row_geometry_table.common.treat_as_char
+            && crate::renderer::para_has_no_stored_line_segs(para)
+            && para.text.trim().is_empty();
+        let row_has_unstored_square_object_anchor = |row: usize| {
+            unstored_stamp_table
+                && layout_engine
+                    .cells_starting_on_row(row_geometry_table, row)
+                    .any(|cell| {
+                        cell.row as usize == row
+                            && cell.row_span == 1
+                            && cell.paragraphs.split_last().is_some_and(|(_, anchors)| {
+                                anchors.iter().any(|cell_para| {
+                                    crate::renderer::para_has_no_stored_line_segs(cell_para)
+                                        && cell_para.text.trim().is_empty()
+                                        && cell_para.controls.iter().any(|control| {
+                                            let common = match control {
+                                                Control::Picture(pic) => &pic.common,
+                                                Control::Shape(shape) => shape.common(),
+                                                _ => return false,
+                                            };
+                                            !common.treat_as_char
+                                                && matches!(
+                                                    common.text_wrap,
+                                                    crate::model::shape::TextWrap::Square
+                                                )
+                                        })
+                                })
+                            })
+                    })
+        };
         let cut_row_h: Vec<f64> = (0..row_count)
             .map(|r| {
                 let has_single_row_cells = layout_engine
                     .cells_starting_on_row(row_geometry_table, r)
                     .any(|c| c.row_span == 1);
-                let row_cut_h = if row_has_stored_square_picture_flow(r) {
+                let row_cut_h = if row_has_stored_square_picture_flow(r)
+                    || row_has_unstored_square_object_anchor(r)
+                {
                     // native HWP5 RowBreak stores the adjacent text LINE_SEG ladder as
                     // the authoritative row height. Recomputing this whole row from
                     // cell_units would add the same Square flow band again.
@@ -519,7 +562,12 @@ impl TypesetEngine {
             || crate::renderer::float_placement::partial_table_opening_host_owns_lead(
                 para, table, ctrl_idx, false,
             );
-        let fragment_host_placement = source_control_frame.or_else(|| {
+        let fragment_host_placement = if computed_host_tail.is_some() {
+            // prefix·표 위 여백은 entry의 같은 계획이 이미 소비했다.
+            // 마지막 호스트 줄의 높이나 양수 offset을 다시 가산하지 않는다.
+            unconstrained_host_placement
+        } else {
+            source_control_frame.or_else(|| {
             unconstrained_host_placement
                 .filter(|_| placement_para_start_height + fmt.height_for_fit <= available)
                 .map(|placement| {
@@ -615,10 +663,14 @@ impl TypesetEngine {
                     }
                     constrain_host_placement.constrain(fragment, st)
                 })
-        });
+        })
+        };
         // 닫힌 폭0 개체 앵커는 표 공간을 소유하며 별도 빈 글줄을 전진시키지 않는다.
         // 실제 호스트 텍스트가 있는 내부 개체는 그 글줄의 기존 소유를 유지한다.
-        let host_owns_text_lines = host_owns_opening_line
+        // 계산한 앞·뒤 줄 계획은 entry와 continuation이 각 범위를 방출한다.
+        // 같은 호스트 전체를 여기서 다시 pre-emit하면 첫 조각과 끝 조각에 중복된다.
+        let host_owns_text_lines = computed_host_tail.is_none()
+            && host_owns_opening_line
             && !crate::renderer::float_placement::empty_table_host_uses_shared_formatted_box(
                 para,
                 table,
@@ -665,13 +717,59 @@ impl TypesetEngine {
         // 일반 행 강제 배치 경로가 통째로 밀어넣어 본문 초과(예: pi=242 vert_off 38px,
         // 잔여 65.4px 로 보였으나 실가용 23.4px < 행0 34.9px). 루프 내 page_avail
         // (host_before_overhead/vert_offset_overhead) 와 동일 overhead 를 가드에도 적용.
+        // 캡션 처리
+        let caption_is_top = para
+            .controls
+            .get(ctrl_idx)
+            .and_then(|c| {
+                if let Control::Table(t) = c {
+                    t.caption
+                        .as_ref()
+                        .map(|cap| matches!(cap.direction, CaptionDirection::Top))
+                } else {
+                    None
+                }
+            })
+            .unwrap_or(false);
+
+        let host_line_spacing_for_caption =
+            crate::renderer::float_placement::block_table_caption_host_spacing_px(
+                para, table, self.dpi,
+            );
+        let caption_base_overhead = {
+            let ch = ft.caption_height;
+            if ch > 0.0 {
+                let cs_val = para
+                    .controls
+                    .get(ctrl_idx)
+                    .and_then(|c| {
+                        if let Control::Table(t) = c {
+                            t.caption
+                                .as_ref()
+                                .map(|cap| hwpunit_to_px(cap.spacing as i32, self.dpi))
+                        } else {
+                            None
+                        }
+                    })
+                    .unwrap_or(0.0);
+                ch + cs_val
+            } else {
+                0.0
+            }
+        };
+        let caption_overhead = if caption_base_overhead > 0.0 && !caption_is_top {
+            caption_base_overhead + host_line_spacing_for_caption
+        } else {
+            caption_base_overhead
+        };
+
         let (first_frag_overhead, first_fragment_outer_bottom) = {
             let (host_before, fragment_outer_bottom) = partial_rowbreak_fragment_spacing_px(
                 table,
                 ft.host_spacing.before,
                 false,
-                ft.strict_following_plain_text_fit,
-                crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
+                ft.strict_following_plain_text_fit || computed_host_tail.is_some(),
+                computed_host_tail.is_some() || crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
                     self.profile.get().hwp5_stored_pagination_layout() || self.profile.get().hwpx_stored_layout(),
                     para,
                     table,
@@ -689,8 +787,39 @@ impl TypesetEngine {
                     0.0
                 }
             };
+            // [#8149] 첫 조각 행 예산과 같은 빈 host 바닥 예약으로 첫 행 수용을 판정한다.
+            // 선언 개체 높이가 첫 조각만 덮으면(#7147) 한/글이 이 표를 거기서 나눴다는 저장
+            // 증거이므로 이월 판정에는 쓰지 않는다 — 한글문서파일형식 51쪽 표 334 는 선언
+            // 19.5px = 제목 행이고 한/글도 제목 행만 51쪽에 둔다. 선언이 모든 행을 덮는
+            // 표 199(선언 117.9px = 7행)는 한/글이 통째로 33쪽에 둔다.
+            let declared_covers_rows = mt.row_heights.iter().sum::<f64>()
+                + cs * row_count.saturating_sub(1) as f64
+                <= hwpunit_to_px(table.common.height.min(i32::MAX as u32) as i32, self.dpi) + 1.0;
+            let has_source_text_first_frame = st.profile.hwp5_stored_pagination_layout()
+                && layout_engine
+                    .native_text_frame_first_fragment_saved_top(
+                        para,
+                        para_idx.checked_sub(1).and_then(|i| paragraphs_all.get(i)),
+                        table,
+                        &st.inline_flow_column(),
+                        styles,
+                    )
+                    .is_some();
+            let empty_host_reserve = if !declared_covers_rows {
+                0.0
+            } else {
+                crate::renderer::typeset::empty_host_float_first_fragment_reserve_px(
+                    para,
+                    table,
+                    fragment_outer_bottom,
+                    has_source_text_first_frame,
+                    caption_overhead,
+                    caption_is_top,
+                    self.dpi,
+                )
+            };
             (
-                host_before + vert_off + fragment_outer_bottom,
+                host_before + vert_off + fragment_outer_bottom + empty_host_reserve,
                 fragment_outer_bottom,
             )
         };
@@ -816,7 +945,11 @@ impl TypesetEngine {
         // 다만 아래 «표 통째» 분할 단위는 값 0 에만 해당한다 — 값 1 은 행 단위다.
         let atomic_rule_applies = (none_table_is_atomic_here(table)
             || cell_unit_row_is_atomic_here(table))
-            && !stored_declares_table_split;
+            && !stored_declares_table_split
+            && !super::unrestricted_float::independent_child_can_split(
+                input,
+                st.base_available_height(),
+            );
         let split_unit_h = if atomic_rule_applies && none_table_is_atomic_here(table) {
             all_rows_h
         } else if first_block_protected {
@@ -834,22 +967,24 @@ impl TypesetEngine {
         // 조각 스캔의 첫 조각 재맞춤(#2097 `FN_REFIT`)과 같은 앵커 위치·같은 예약 몫을
         // 쓴다. 1382000 96쪽: 49×2 표의 각주 3)~5) 앵커는 98쪽 행에 있는데 280px 예약이
         // 잔여를 0 으로 만들어 표 전체가 97쪽으로 갔다(한/글은 96쪽 바닥에 캡션·머리 행·4행).
-        let table_fn_reserved = (total_footnote - st.current_footnote_height).max(0.0)
-            + if st.current_footnote_height <= 0.0 {
-                fn_margin
-            } else {
-                0.0
-            };
+        // [#7732] 표 각주를 이 쪽에서 빼면 남는 각주는 이미 정해진 쪽 각주뿐이라 경계가 확정이다.
+        // 그 경계를 지키는 40px 여유도 함께 되돌린다(한/글은 각주 구분선 바로 위까지 행을 놓는다).
+        // [#7732] 이 쪽에 표가 다 들어가지 않으면 표 각주는 첫 조각 쪽에 오지 않는다 — 한/글은
+        // 행을 칸 각주 때문에 줄이지 않고, 칸 각주는 조각 뒤 남는 공간이나 표가 끝나는 쪽에
+        // 놓는다(합성 `samples/issue1937/gen_cell_notes_multipage.py`, 한/글 2020·2024).
+        let table_fn_reserved = (total_footnote - st.current_footnote_height).max(0.0) + fn_margin;
+        let table_continues_past_page = all_rows_h > remaining_with(table_fn_reserved) + 0.5;
         let first_unit_note_release = if table_fn_reserved > 0.5
             && !ft.table_footnotes.is_empty()
-            && table::footnotes::first_table_footnote_anchor_offset(
-                &layout_engine,
-                row_geometry_table,
-                styles,
-                &cut_row_h,
-                cs,
-            )
-            .is_some_and(|anchor| anchor >= split_unit_h)
+            && (table_continues_past_page
+                || table::footnotes::first_table_footnote_anchor_offset(
+                    &layout_engine,
+                    row_geometry_table,
+                    styles,
+                    &cut_row_h,
+                    cs,
+                )
+                .is_some_and(|anchor| anchor >= split_unit_h))
         {
             table_fn_reserved
         } else {
@@ -913,8 +1048,11 @@ impl TypesetEngine {
             // «셀 단위로 나눔» 은 단위가 한 쪽에도 안 들어갈 때만 불가피하게 자른다.
             // 한/글 정본: 편람 PDF 158→159쪽은 큰 행을 통째로 넘기며 앞쪽 바닥에 빈
             // 공간을 남긴다(값 1), 315→316쪽은 문장 한가운데를 자른다(값 2).
+            let atomic_host_band_h =
+                layout_engine.reflow_cellbreak_row_host_band_height(row_geometry_table, 0, styles);
+            let atomic_band_h = atomic_host_band_h.unwrap_or(split_unit_h);
             let unit_fits_fresh_page =
-                split_unit_h <= (base_available - first_frag_overhead).max(0.0);
+                atomic_band_h <= (base_available - first_frag_overhead).max(0.0);
             let intra_row_cut_here = !atomic_rule_applies || !unit_fits_fresh_page;
             let first_row_splittable = (first_block_is_single_row || !first_block_protected)
                 && can_intra_split
@@ -979,6 +1117,13 @@ impl TypesetEngine {
             } else {
                 f64::MAX
             };
+            // NO_LS 블록 호스트의 작은 글자 상자는 자식 첫 유닛의 수용 근거가
+            // 아니다. 실제 컷이 요구하는 높이까지 들어가야 현재 쪽을 유지한다.
+            let min_content = min_content.max(
+                layout_engine
+                    .reflow_row_opening_cut_height(row_geometry_table, 0, styles)
+                    .unwrap_or(0.0),
+            );
             // [Task #1046 Stage 3] 다행(多行) 표의 비분할 첫 행/블록이 잔여공간엔 안
             // 들어가지만 fresh 페이지엔 통째 들어가면 다음 페이지로 이월한다. 첫 행은
             // 행 내부 분할이 안 되고(=is_row_splittable=false) 표에 후속 행 경계가 있어
@@ -1032,6 +1177,16 @@ impl TypesetEngine {
                 || remaining_on_page_for_first_unit < min_content
                 || multirow_clean_defer
             {
+                if atomic_host_band_h.is_some() {
+                    self.prefill_computed_deferred_float(
+                        st,
+                        para_idx,
+                        para,
+                        paragraphs_all,
+                        composed_all,
+                        styles,
+                    );
+                }
                 // [Task #1753] visible-host 자리차지 RowBreak 표가 다음 쪽으로 이월되기
                 // 직전, 후속 문단을 현재 쪽 잔여 공간에 선행 채움(한글 fill-before-
                 // deferred-float 정합 — 2814765 pi52/53 은 9쪽 하단, 표는 10쪽부터).
@@ -1070,52 +1225,6 @@ impl TypesetEngine {
                 st.advance_column_or_new_page();
             }
         }
-
-        // 캡션 처리
-        let caption_is_top = para
-            .controls
-            .get(ctrl_idx)
-            .and_then(|c| {
-                if let Control::Table(t) = c {
-                    t.caption
-                        .as_ref()
-                        .map(|cap| matches!(cap.direction, CaptionDirection::Top))
-                } else {
-                    None
-                }
-            })
-            .unwrap_or(false);
-
-        let host_line_spacing_for_caption =
-            crate::renderer::float_placement::block_table_caption_host_spacing_px(
-                para, table, self.dpi,
-            );
-        let caption_base_overhead = {
-            let ch = ft.caption_height;
-            if ch > 0.0 {
-                let cs_val = para
-                    .controls
-                    .get(ctrl_idx)
-                    .and_then(|c| {
-                        if let Control::Table(t) = c {
-                            t.caption
-                                .as_ref()
-                                .map(|cap| hwpunit_to_px(cap.spacing as i32, self.dpi))
-                        } else {
-                            None
-                        }
-                    })
-                    .unwrap_or(0.0);
-                ch + cs_val
-            } else {
-                0.0
-            }
-        };
-        let caption_overhead = if caption_base_overhead > 0.0 && !caption_is_top {
-            caption_base_overhead + host_line_spacing_for_caption
-        } else {
-            caption_base_overhead
-        };
 
         // [Task #1831] 한글 float 정합 — **같은 문단에 앵커된 선행 float(표)
         // 아래로 밀려 내려온** 다행(多行) 자리차지 표가 현재 단 잔여 공간에
@@ -1191,15 +1300,16 @@ impl TypesetEngine {
             });
         let native_hwp5_host_precedes_first_fragment = st.profile.hwp5_stored_pagination_layout()
             && native_hwp5_rowbreak_host_precedes_first_fragment(para, table);
-        if (st.profile.hwpx_stored_layout()
-            && host_vpos_is_cumulative
-            && !table.common.treat_as_char
-            && is_para_topbottom_float(&table.common)
-            && matches!(
-                table.page_break,
-                crate::model::table::TablePageBreak::RowBreak
-            ))
-            || native_hwp5_host_precedes_first_fragment
+        if computed_host_tail.is_none()
+            && ((st.profile.hwpx_stored_layout()
+                && host_vpos_is_cumulative
+                && !table.common.treat_as_char
+                && is_para_topbottom_float(&table.common)
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                ))
+                || native_hwp5_host_precedes_first_fragment)
         {
             self.pre_emit_visible_rowbreak_host_text(st, para_idx, para, composed_all, styles);
         }
@@ -1370,7 +1480,16 @@ impl TypesetEngine {
                 occupied_bottom: top + frame.opening_height,
             })
         });
+        // [#8149] 앞 쪽에서 포맷한 표를 이월해 새 단 첫머리에서 열면 host 문단 앞 간격은
+        // 쓰지 않는다(배치도 같은 자리에 그린다). 한글문서파일형식 42쪽 표 270 은 41쪽에서
+        // 포맷돼 앞 간격 6.7px 를 흐름에 더해 뒤 표 271 이 그만큼 내려갔다.
+        let deferred_column_top_released_before = if st.flow_table_column_top() {
+            (ft.host_spacing.before - ft.host_spacing.column_top_before).max(0.0)
+        } else {
+            0.0
+        };
         let prepared = BlockTableContinuationPreparedState {
+            computed_host_tail,
             first_anchor_offset_consumed,
             opening_rowspan_block_cuts_after_first_row,
             host_placement: source_single_cell_first_placement.or(fragment_host_placement),
@@ -1403,8 +1522,8 @@ impl TypesetEngine {
             queue_table_footnotes,
             table_footnotes: ft.table_footnotes.clone(),
             footnote_margin: fn_margin,
-            host_spacing_total,
-            host_spacing_before: ft.host_spacing.before,
+            host_spacing_total: host_spacing_total - deferred_column_top_released_before,
+            host_spacing_before: ft.host_spacing.before - deferred_column_top_released_before,
             host_spacing_after_only: ft.host_spacing.spacing_after_only,
             terminal_outer_bottom_flow: ft.host_spacing.terminal_outer_bottom_flow,
             terminal_host_spacing,

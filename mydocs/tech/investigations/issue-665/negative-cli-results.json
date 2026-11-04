@@ -1,0 +1,118 @@
+[
+  {
+    "case": "missing",
+    "flags": [],
+    "exit": 1,
+    "diagnostic": "INGEST_IMAGE_PATH",
+    "existing_output_preserved": true
+  },
+  {
+    "case": "parent",
+    "flags": [],
+    "exit": 1,
+    "diagnostic": "INGEST_IMAGE_PATH",
+    "existing_output_preserved": true
+  },
+  {
+    "case": "absolute",
+    "flags": [],
+    "exit": 1,
+    "diagnostic": "INGEST_IMAGE_PATH",
+    "existing_output_preserved": true
+  },
+  {
+    "case": "damaged",
+    "flags": [],
+    "exit": 1,
+    "diagnostic": "INGEST_IMAGE_DECODE",
+    "existing_output_preserved": true
+  },
+  {
+    "case": "unsupported",
+    "flags": [],
+    "exit": 1,
+    "diagnostic": "INGEST_IMAGE_FORMAT",
+    "existing_output_preserved": true
+  },
+  {
+    "case": "symlink-outside",
+    "flags": [],
+    "exit": 1,
+    "diagnostic": "INGEST_IMAGE_PATH",
+    "existing_output_preserved": true
+  },
+  {
+    "case": "byte-limit",
+    "flags": [
+      "--max-image-bytes",
+      "1"
+    ],
+    "exit": 1,
+    "diagnostic": "INGEST_IMAGE_LIMIT",
+    "existing_output_preserved": true
+  },
+  {
+    "case": "total-byte-limit",
+    "flags": [
+      "--max-total-image-bytes",
+      "1"
+    ],
+    "exit": 1,
+    "diagnostic": "INGEST_IMAGE_LIMIT",
+    "existing_output_preserved": true
+  },
+  {
+    "case": "pixel-limit",
+    "flags": [
+      "--max-image-pixels",
+      "1"
+    ],
+    "exit": 1,
+    "diagnostic": "INGEST_IMAGE_LIMIT",
+    "existing_output_preserved": true
+  },
+  {
+    "case": "total-pixel-limit",
+    "flags": [
+      "--max-total-image-pixels",
+      "1"
+    ],
+    "exit": 1,
+    "diagnostic": "INGEST_IMAGE_LIMIT",
+    "existing_output_preserved": true
+  },
+  {
+    "case": "instance-limit",
+    "flags": [
+      "--max-image-instances",
+      "1"
+    ],
+    "exit": 1,
+    "diagnostic": "INGEST_IMAGE_LIMIT",
+    "existing_output_preserved": true
+  },
+  {
+    "case": "metadata-mismatch",
+    "flags": [],
+    "exit": 1,
+    "diagnostic": "INGEST_IMAGE_SIZE",
+    "existing_output_preserved": true
+  },
+  {
+    "case": "output-size",
+    "flags": [],
+    "exit": 1,
+    "diagnostic": "INGEST_IMAGE_SIZE",
+    "existing_output_preserved": true
+  },
+  {
+    "case": "bad-option",
+    "flags": [
+      "--max-image-bytes",
+      "0"
+    ],
+    "exit": 2,
+    "diagnostic": "양의 정수",
+    "existing_output_preserved": true
+  }
+]

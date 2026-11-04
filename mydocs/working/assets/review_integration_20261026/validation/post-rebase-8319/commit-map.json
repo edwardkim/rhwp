@@ -1,0 +1,882 @@
+{
+  "old_head": "3a2a081a418a38a2fb696136835d0f721b216972",
+  "old_base": "faa885e8b54ffc7cdf4196cd43a3103f362499a2",
+  "new_base": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+  "rebased_head": "0508d3afcdd233b59ea1f0ff04013291d8b0c254",
+  "rebase_completed": true,
+  "old_preserved_ref": "refs/codex/integration-20261026/pre-8319",
+  "source_pr_count": 20,
+  "extra_cherrypicked_prs": 0,
+  "current_validation_complete": false,
+  "previous_validation_is_historical": true,
+  "commits": [
+    {
+      "old": "38a04b576573b9c88f22d8680af1bb863ac14bd2",
+      "new": "1b27cba3da76cbf099678e1cd3fe359773ac9543",
+      "subject": "docs: 문서 처리 PR 20건 체리픽 통합 계획",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "759db4f377ff985b58992200477aa9c9eb279321",
+      "new": "a82dd0ed1fe59120d90ce142ba190f8032a39694",
+      "subject": "fix(table): 쪽 나눔 표의 쪽 끝 행을 각주 경계까지 싣고 저장 줄 행의 빈 잔여도 같은 상한으로 버린다 (#7732)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "4f578fb4f64795e45a92c04dc54414d3d7b49703",
+      "new": "88a7851a84e01e4f090d3af367161d8d2f094208",
+      "subject": "fix(typeset): 문단 흐름도 각주 경계까지 쓰고 앵커 줄은 자기 각주 첫 줄로 판정 (#7732)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "f66f899fabc656830044eb0b240770bc6ac42890",
+      "new": "321142990bfc7ef8d591688d26a70f1d135a83e4",
+      "subject": "문서: #7732 시각 증적 — code head ff618b7f6 (issue1937 32·33·44쪽, trim_n1_F01 1쪽 · base/head Native·WASM)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "c3ddaf20bc7309550955f548420da9f1795128d4",
+      "new": "5c21ff4d701b15f9858ffb66cb143a2be6af0e94",
+      "subject": "fix(table): 이 쪽에서 끝나지 않는 쪽 나눔 표는 첫 조각에 칸 각주를 예약하지 않는다 (#7732)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "e596ba297eadefaaeaf4b1deaadf7d3dcbaa81ec",
+      "new": "84b18aa7eeba1c239fb709811d88f8d8f46a77e7",
+      "subject": "문서: #7732 칸 각주 시각 증적 — code head ed99bf840 (issue1937 35·36쪽, cellnotes_span_N2 1쪽 · base/head Native·WASM)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "cde916075a4731fb9b4a7f5482e651d9571683ac",
+      "new": "ef9191aa7ec3587cab0f40d0904196cc7fb71fb1",
+      "subject": "fix(table): 각주가 있는 칸 행도 쪽 끝 컷의 마지막 줄 뒤 줄간격을 빼고 계상한다 (#7732)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "e312f514e68724d7c2e7ed9a43447d875c1d46ac",
+      "new": "ff859e46d362f931a62d20e77e4e792c6da81d04",
+      "subject": "문서: #7732 각주 칸 행 컷 시각 증적 — code head c56195cf8 (cellnotes_plain_N2_L7 2쪽 · base 나란히 · head Native·WASM review/overlay)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "8bc81e65f8f96bf3ded6737249e162d779c378b6",
+      "new": "8dc72d990c24c663229287e9ecf8ac5f1ae217ea",
+      "subject": "docs: devel 9418ed0c7 rebase head 기준 시각 증적 재캡처",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "eefefaa535cee1434d044ab6c9765b39d51e1299",
+      "new": "39a633295da8dae3b8e9eb4a68614bc080077333",
+      "subject": "docs: #7732 devel 238de6de4 rebase head 시각 증적 재캡처 · 전쪽 TSV",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "337fa99319b628e03d841e32f4496bc4e9685ec2",
+      "new": "ed9839a806b545433d8688347ae66dbfa0fab204",
+      "subject": "fix(typeset): 이어지는 쪽에서도 같은 문단의 다음 저장 쪽 reset 을 경계로 쓰고 그 조각의 자기 각주를 표시 쪽에 둔다",
+      "patch_equal": false,
+      "author_preserved": true
+    },
+    {
+      "old": "cc7df4ee0b0b5356cf18f4038224a61dee895247",
+      "new": "e7fd2e61e52e52a19b46b478fceb2f157c7c63f0",
+      "subject": "docs(report): 이어지는 쪽 저장 reset·자기 각주 수정 전후 시각 증적 (#8126)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "b6206e05c160d1c9b7335de8d281204f8c1d6197",
+      "new": "e55887ca569b6a949a07784e4d3fb7f1335169e6",
+      "subject": "docs: devel 9418ed0c7 rebase head 기준 시각 증적 재캡처",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "1ff1c0c6e802ee4a7a3982dee095eb5260f04722",
+      "new": "587b50951ad25979fcad3768c70eeebaa33414f9",
+      "subject": "fix(skia): raster 획은 장치 한 칸보다 가늘게 그리지 않는다 (#8125)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "ca3187260c975c30ba791fdbc49e5ac9a84fbf43",
+      "new": "2b67e119e39cb47e54a857614cc8f184ad6a4d7b",
+      "subject": "docs(report): #8125 Native 가는 획 장치 한 칸 — calendar_year·issue1937 p49·sungeo p34 수정 전후 review/overlay",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "700c31a35191bda702cfd8c2b73d4484d4423954",
+      "new": "b71fc2560fb0a693878469844828e258633565aa",
+      "subject": "ci: skia_subpixel_stroke_hairline 를 Native Skia 분류 목록에 등록 (#8125)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "79423873e25fea03b08244f7206c1850b859a753",
+      "new": "ac104d7a623b7fe159b46eedb20555a20f4462ff",
+      "subject": "test: #8125 가는 획 회귀를 기존 Native Skia 검사 파일로 옮긴다",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "0c967a25b520c90fcad764a4628f453487e108f6",
+      "new": "9f9cc785ee0ff5d4595b6b28cfa652176e0a5f85",
+      "subject": "fix(web-canvas): Canvas2D 획도 장치 한 칸보다 가늘게 그리지 않는다 (#8125)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "92254fc828acba08f7a211acd533e455a53b6c65",
+      "new": "dcc4fb7922283beea7d18ba96e32208dd9b98060",
+      "subject": "docs(report): #8125 WASM Canvas2D 가는 획 — calendar_year p1·sungeo p34 수정 전후 fresh WASM review/overlay",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "16437f345a0d55cbbd4c441b027b452f2f1f1ee8",
+      "new": "c8ddc834eaad4765750ea3f3787959972aac3e31",
+      "subject": "fix(canvaskit): 도형·직선 획도 장치 한 칸보다 가늘게 그리지 않는다 (#8125)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "b33071aacdb4534c884f210e987b4d5c1dadb3fe",
+      "new": "534a9c40dce0b25cb4d01371431203b26f80a9c6",
+      "subject": "fix(skia): 인쇄 coverage 계획은 장치 한 칸 하한 전의 선언 굵기로 세운다 (#8125)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "a21da2b8d9a4cbfd6fdab63dc0f7e266ad929592",
+      "new": "4e93eb72464e71f40da93ceeece6fea0635fe48a",
+      "subject": "test: issue_7445 gray_grid 기대 화소를 한/글 직접 출력 값으로 (#8125)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "6279d1fc4ddb41a5e81af745062335eb9ea31635",
+      "new": "62ce311ddc3d69f25b8291a2a9cdd779bf5ceb76",
+      "subject": "docs(report): #8125 devel 9418ed0c7 rebase head 시각 증적 재캡처 · 한/글 직접 출력 대조",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "0ba0b1e1f5cf47212fdac332ad1da1c87befaa62",
+      "new": "3b2b5aeb92e997d6d032eae8bd5b3b9d70dc8b64",
+      "subject": "docs(report): #8125 devel 238de6de4 rebase head 시각 증적 재캡처 · 전쪽 TSV",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "a7a7ce53ef0f88202b1d8ffcfb43e4fe6f7ff0bb",
+      "new": "1665da857bc30b3449a3f864c6669f6213d153cf",
+      "subject": "test: #8125 점선 쪽 테두리도 장치 한 칸을 덮는지 검사 (sungeo 34쪽)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "17a0de309ebcada677e37f368ed168ca15a7f0fd",
+      "new": "6d1f01b3d516d9813b68c79332ae89d2051b41cb",
+      "subject": "fix(typeset): 병합 칸 안쪽 행은 내용이 들어가면 쪽 끝에서 끝낸다",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "93d956ba16aef7e6c3ea9aa9d5254c7395e95fd2",
+      "new": "5e1e2a67841b6eb8fec52ca940cdea5dfd54a548",
+      "subject": "docs: 1342000-202300055 37·38·40·41쪽 전후 시각 증적",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "e99d63ba3bb25932fb3f7f7253db191291a4cb01",
+      "new": "a62f66e4d6cd92488f369b1f793f37750cb88e79",
+      "subject": "docs: rowspan-band-fit 8·9쪽 전후 시각 증적으로 교체",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "cbf8e6100429ea3ec79a28b8cbbba87f30cb6785",
+      "new": "21199acf62461a52020d5b00aadfd25435518de1",
+      "subject": "fix(float): 아래 캡션이 있는 빈 host 자리차지 표도 저장 사다리 상자로 받고, 앞 간격이 흡수된 host 를 인정한다 (#8149)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "d8dbbb2c94282b0b20e267e6fd22cec04112016d",
+      "new": "735eb7212e15813ae85036b3a2ae417ba24f6b56",
+      "subject": "fix(float): 앞 간격 흡수 등식은 바로 앞 빈 host 자리차지 표 상자 끝에서만 인정한다 (#8149)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "2df0904b57c743c8876e073930bb7dc9b39613d5",
+      "new": "5f397c38650ad4a8fc750aba16cb580ebb0439aa",
+      "subject": "fix(float): 저장 사다리로 인증되지 않는 빈 host 자리차지 표도 같은 원점·간격 규칙을 쓴다 (#8149)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "622e0f5bfac20173e2fb8ec8c435fda2e1bf5358",
+      "new": "08d342413fd0e6e0ed77d4638c54abe15b1509da",
+      "subject": "fix(table): 쪽 바닥에서 나뉘는 빈 host 자리차지 표의 첫 조각 예산을 한/글 규칙으로 맞춘다 (#8149)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "8f1bb1cc84e71d09d7c1f06655646bbd54992c85",
+      "new": "2027b1587f98087017280fb615e61c6b61445221",
+      "subject": "fix(typeset): 빈 host 재조판 상자는 문단 윗변에서 세우고, 분할 진입 검사는 첫 줄 앞 간격을 뺀다 (#8149)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "68329b8cdab5eab2530a692fb08c14b8255a05bc",
+      "new": "9ff8c764a320beca11148e307b516a5aaf14e2ce",
+      "subject": "fix(layout): 앞 TAC host 뒤 TAC 표 host 의 문단 위 간격을 HWP5 저장본에서도 배치에 둔다 (#8149)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "d4056dacab50cbbfb7b804d8ede7256786cf6bcc",
+      "new": "2d24454c55114c6fd42a2a9fbe29af8975b9b710",
+      "subject": "fix(layout): TAC 표의 아래 캡션 띠와 TAC 도형 host 뒤 줄간격을 저장 사다리대로 그린다 (#8149)",
+      "patch_equal": false,
+      "author_preserved": true
+    },
+    {
+      "old": "378162362dc502dd0c1fe13b89937723c99c0cfd",
+      "new": "0a3c59b7ff2b777cb79448dd90278e17103df533",
+      "subject": "fix(layout): #8149 빈 host 표 뒤 앞 간격 흡수를 상자 바닥에서 잰다",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "3423f6b342152483c24bd155f5477104f0eef776",
+      "new": "725de2dee0df5aedaf1dca9495ddfa537fb28b4c",
+      "subject": "fix(typeset): #8149 빈 host 표 첫 조각 예약을 첫 행 이월 판정과 공유한다",
+      "patch_equal": false,
+      "author_preserved": true
+    },
+    {
+      "old": "0673c9e37489a1d0fcfb3de9eb6bc3fbca968b09",
+      "new": "28a1a93a6dc0025197053cbd9579e86bc3adadd3",
+      "subject": "fix(typeset): #8149 빈 host 표 저장 상자의 host 줄간격과 단 첫머리 앞 간격",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "53b7eb968aa77d57c89322699a72f4078d4dae26",
+      "new": "e01723a9dd22432394011a5328ec87996d71ea7c",
+      "subject": "fix(float): #8149 단 첫머리 빈 host 표 쪽의 저장 원점을 상자 등식으로 정한다",
+      "patch_equal": false,
+      "author_preserved": true
+    },
+    {
+      "old": "b7f4667f65b467c1fa7ce0ed8745a6c9f2828f8d",
+      "new": "6080b8963fb05b2b9673ee4e35e802169fce4eea",
+      "subject": "test: #8149 쪽 바닥 빈 host 표 분할을 한/글 2020 합성·사양서로 검사한다",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "4ce88676f604d4079c0e0ffa8406098d5656d5c8",
+      "new": "1c80939c79599a5b972222e74e25f1eb8ae0b18b",
+      "subject": "docs: #8149 사양서 33·43·47쪽 review·overlay 증적",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "0142af3ed8ec19c862afcd1058403c858738bc61",
+      "new": "1bc7961bd6c1abf5d3135a61e111cc77753e0258",
+      "subject": "fix(rebase): devel 의 빈 host 저장 사다리 배치 폴백 호출에 앞 간격 흡수 인자를 넘긴다 (#8149)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "15ff514a260dc3598378caa102801da2899edaac",
+      "new": "f50ad7d1b23036974e88839fe6fe682c7bd813ed",
+      "subject": "fix(float): 다음 문단의 저장 첫 줄이 앞 간격을 증언하면 상자 뒤 흡수를 하지 않는다 (#8149)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "3e225817697842c1213925793d87067b99a4a228",
+      "new": "e132e780313e80d6fdaf6513e47d30874bb5ce72",
+      "subject": "fix(float): 상자 뒤 앞 간격 소비량은 다음 문단의 저장 첫 줄이 증언하는 값을 쓴다 (#8149)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "b1c7c0dbb27616ea56f8cf74aabef7e63e3d1c1d",
+      "new": "eb1caa7458096ad1268d2b6ebf6f9a2d85207a6e",
+      "subject": "fix(table): 빈 host 표 바닥 예약은 첫 행 이월 판정에만 쓰고 첫 조각 행 예산에서는 뺀다 (#8149)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "28a88267f4f723925769f104e321294fd1e40fd4",
+      "new": "6d231323c7ad013e48aba80fc96ec6b9fe46c765",
+      "subject": "fix(table): 통째 첫 조각의 흐름 전진은 devel 의 host 간격 합을 쓴다 (#8149)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "2e52dd776212c133445a9beb3107d7b441d737d7",
+      "new": "436b706e69e810d8b26d658822c75917028cbc7a",
+      "subject": "fix(table): 통째 첫 조각 흐름은 host 간격 합에 모자란 끝 점유만 더한다 (#8149)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "8262e9986dfbc173b91278133a083f2d2d171aa4",
+      "new": "c83bd1e4d4f6396e559c1c05c236785573bc4103",
+      "subject": "fix(table): 빈 host 표 바닥 예약을 첫 조각 예산에 되돌리고 꼬리말 여유와 겹치지 않게 한다 (#8149)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "3a43a4f34f21316e632ab03aa74ccf69f4be1c47",
+      "new": "06b8953fceb20520b0322001b356d75392487631",
+      "subject": "docs: #8149 사양서 33·43·47쪽 증적을 devel 9418ed0c7 rebase head 로 다시 캡처",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "17f9bc221ae9da0fac3ecb2d304935750291a73b",
+      "new": "53321f1ae9ddff2c01de8e546a160386af68e4f2",
+      "subject": "fix(rebase): devel 의 재조판 사다리 분기에도 앞 간격 흡수 인자를 잇는다 (#8149)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "0db8d21f93b849f1421fca4481f9a07503f0662c",
+      "new": "d48aa7cf0bda60a64c2e075a23209bc3574a5ebf",
+      "subject": "docs: #8149 사양서 33·43·47쪽 증적을 devel 238de6de4 rebase head 로 다시 캡처",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "2cc4ef3226e377018ba328fd471382a436b5482a",
+      "new": "6217b09aeb4606d230615c584a72ece85e8c2682",
+      "subject": "docs: #8149 devel 238de6de4 rebase head 의 전쪽 Native·fresh WASM 실루엣 TSV",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "fe4c4a1947261d23052e5873d55438992bfd8eb0",
+      "new": "8af45d2480febade820b553c50ff8a79c18daf2f",
+      "subject": "fix(layout): 글자처럼 취급 도형이 자기 줄을 키우고 글자는 그 줄의 기준선에 놓인다 (#8167)",
+      "patch_equal": false,
+      "author_preserved": true
+    },
+    {
+      "old": "bc479a374781fbc573e8b9c173bba5e5f5370082",
+      "new": "8d95e83a2881cad5539b520d0e0b3437a3b967bb",
+      "subject": "docs(report): #8167 HWP5-nopassword hwpx 18쪽 수정 전후 Native/fresh WASM review·overlay (devel 9418ed0c7 기준)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "8542374c2365c12a37e7b12f12503aa150ef3aec",
+      "new": "e79ed1da6ea0ed2b088e570538144575a78d2c51",
+      "subject": "docs(report): #8167 devel 4e690c930 rebase head 의 Native/fresh WASM review·overlay와 전쪽 실루엣 TSV",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "ef12956c1971f864d8d3fea48e85059e24e69079",
+      "new": "00e1f9fdce290cdd7b38cd88b69ca036fd797a91",
+      "subject": "perf(typeset): 미주 단 측정의 수식 재계산과 중복 재생 제거",
+      "patch_equal": false,
+      "author_preserved": true
+    },
+    {
+      "old": "d50c30940e34b4172d54bb07cd7ee47f2948ff8b",
+      "new": "c22c1b8d59f460026ace8c1bf42d8d969043215a",
+      "subject": "test: 수식 편집 뒤 캐시 출력과 새 스레드 첫 출력의 일치 검사",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "9d7baca4a40fd2c453a35796de70acfbc2f49ebb",
+      "new": "f148486574a67decfa3446ff484db78d38abcf4d",
+      "subject": "docs: #8204 대표 review·overlay PNG",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "468d15fd9cda237a690eb7a63ae0c1231b185111",
+      "new": "acb7e29d5043203dccbb2302f00e233fee7250c9",
+      "subject": "fix(layout): 같은 문단의 위아래 개체는 문단 흐름 시작을 차지할 때만 글자처럼 그림을 아래로 보낸다 (#8168)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "e0f7f2676c30baeed27daa0c0f3b4b24acedea5b",
+      "new": "f72edfd41e65ee19246656f8dd9a353d8a988bdf",
+      "subject": "docs(report): #8168 글자처럼 그림 + 종이 기준 위아래 글상자 수정 전후 Native/fresh WASM review·overlay",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "13532fab1ced5b0a30bedaff5f7e141c36c29218",
+      "new": "1d3368e7d2a05d0e56b876859603ae574a7ba52c",
+      "subject": "test: #8168 위아래 개체 예약 반례를 기존 단위 검사에 합친다",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "39c80fc912244ad0a3e89284a44520d90eca5b23",
+      "new": "3eeb9100f46ed085fac3d970cd3c386ee6a55595",
+      "subject": "docs(report): #8168 devel 4e690c930 rebase 재검증 증적과 미검증 경우의 합성 입력",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "b3e02b4657ca534dc7d0980ffd429b9cffe465cc",
+      "new": "e2bd97e67ff8deb1561f172a14884caa91a814e0",
+      "subject": "perf(text): 글자마다 반복하던 KoPub 글꼴 이름 판정을 최근 이름 캐시로",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "8b09ea80ab2e1094b5d437672cb7708a5702629b",
+      "new": "baf0b9fd0313d9a814c755e018e027e9f045352a",
+      "subject": "perf(model): 모델 다이제스트를 버퍼로 모아 해시하고 로드 때 이중 본문 봉인 제거",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "6a9b72e2b24cd71557825926f8f6e93e7bc79bae",
+      "new": "7ce547e825d8c1acd1b81fb86890c1995f78b486",
+      "subject": "perf(composer): HWPX 저장 배치일 때만 셀 문단의 KoPub 글꼴 이름 검사",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "4e1b4a3b7135ed2681046e52e96f08abf2fde830",
+      "new": "b3465810fce3d0377f90ac8af77b2995da4a57a0",
+      "subject": "perf(text): 글자 폭 측정에서 단일 글꼴 이름은 분리·다듬기 없이 사용",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "c073ea740bf284005d437ea89e08f36bfad501f4",
+      "new": "37ba0ec89ad5f0c6483bf1b4346ac94cb0589c0f",
+      "subject": "perf(model): 봉인 다이제스트를 JSON 대신 이진 인코딩으로 해시",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "993d9a5e82491a7136a1d3549a7862dff9ba959f",
+      "new": "b82bb423e63b5e12dc0f2958823525b09754059c",
+      "subject": "docs: #8207 대표 review·overlay PNG",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "f7638637720bd559c2e61f12fb7ca35124588add",
+      "new": "6ed3f3c0459ef7328f36beccda3af81e39b8a09d",
+      "subject": "perf(table): 큰 표 분할 스캔의 표 단위 사실을 행·셀마다 다시 계산하지 않음",
+      "patch_equal": false,
+      "author_preserved": true
+    },
+    {
+      "old": "7bf0cb93e702390c3bb4587e83adf7c42677143c",
+      "new": "4e23403b35484730196f12cd0b63377532b7f63c",
+      "subject": "perf(table): 표 높이 측정에서 측정 셀마다 표 전체를 찾지 않고 (행, 열) 색인 사용",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "53f4072d1429b3c92d8b3869954d2b32e802b875",
+      "new": "70112b4389cd9db49fd68706f2b8c07377eea669",
+      "subject": "docs: #8208 대표 review·overlay PNG",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "b6cd8e2f28c5d013a04e8e224fa6311e7731097a",
+      "new": "1c19cbf9782e461dcfc71d123f519c64b448ab65",
+      "subject": "docs: #8208 devel 238de6de4 rebase head 대표 review·overlay PNG 재캡처",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "8f42004d89d8d6baa5d0a966eca51e772d4ba081",
+      "new": "2989b8030ef089ac94aa74170036d63c9493395e",
+      "subject": "perf(text): 글자 폭 메트릭 조회의 글꼴 이름 해석을 최근 이름 캐시로",
+      "patch_equal": false,
+      "author_preserved": true
+    },
+    {
+      "old": "60f58c28cc76febf6fd373322a5c7bc606ea0e98",
+      "new": "292f8d79697f2702eb7459f7e153c76b618a4d52",
+      "subject": "perf(table): 중첩 표 본체 높이를 표 단위로 한 번만 계산",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "9250712288fa156197d4f63beec5a47f8d11b37d",
+      "new": "c29eb687739081c0a6a9dabfc7b966174f8d450f",
+      "subject": "perf(table): 표 조각 렌더에서 반복 제목행 수를 셀마다 다시 세지 않음",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "59821b6602508f70a74ca4c90ed854409d51db0b",
+      "new": "432fa42fd88dd25b51e09cca44614b6a4e519bef",
+      "subject": "perf(table): 저장 행 본체 판정에서 행마다 표 전체를 훑지 않음",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "aeb22b68520296fc7dd586e38297029ed8d29b43",
+      "new": "423a7538af0643d82dce300b25d1da86457217e3",
+      "subject": "test: 중첩 표 셀 편집 뒤 출력과 새 문서 첫 출력의 일치 검사",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "c3257d2b32f3c2eff4ca6537bcea427cd2ad5e9f",
+      "new": "fe4d8be8bf66d45d6134d52c52a1fbb3ea2334f8",
+      "subject": "docs: #8212 대표 review·overlay PNG",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "ae58d6d9c2afa665da7296747dff1f51e0a2e5bd",
+      "new": "cf625e58a54724b831b623cc7b315d9bb574292d",
+      "subject": "docs: #8212 devel 238de6de4 rebase head 대표 review·overlay PNG 재캡처",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "ecdd732cb0a273ae34ee38f7706a1e5589ea3dc7",
+      "new": "996062b2939346d5600ab84a301e06d0d41b90e8",
+      "subject": "perf(save): HWP5 저장에서 바뀌지 않은 그림은 저장 스트림을 그대로 쓰기",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "d8c698c80b540d1ed7ec663b1978eecc1a8c8ea6",
+      "new": "4c3eb73ea274ac9c003e22a253ecd5ca2356cd1e",
+      "subject": "perf(save): HWPX 저장에서 바뀌지 않은 그림은 원본 deflate 바이트를 옮기기",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "9d0b8b725add93a2bda089b2d6f5d711fe40cfc5",
+      "new": "d78c077bd19f10168320e082fbb3e443e71129cc",
+      "subject": "fix(hwp3): 연결 그림 BinData 를 id 순으로 놓아 저장·렌더를 결정적으로",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "01a5173ed425809ac98fa4256f122bac2d4bd124",
+      "new": "027486a2366518f73e90595dccd65bf0803b1bfd",
+      "subject": "fix(pdf-import): 짧은 끝줄·항목 기호·맞닿은 제목 아래 단에서 문단 경계를 찾는다",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "8a2ff7f34e7d348fd18a68edba4135a9804ece0c",
+      "new": "51c3030ef6dda5e9737e74fb6e7bfcb3e7cdf8d4",
+      "subject": "fix(pdf-import): 공백 없는 본문 줄의 첫 단어를 조각 사이 간격으로 잰다 (#8220)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "bbf2acb80768930d9bf004b2ad33da3181912fe0",
+      "new": "a8b0824c7ada669df03aa5c4c06071cb2cd77035",
+      "subject": "docs: #8220 PDF import 문단 경계 Native·fresh WASM TSV와 대표 review·overlay PNG",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "27387a82999c5569f5106fbad9925485915607ac",
+      "new": "5850a2abfc6e1d648e746b917960fd3872d82bec",
+      "subject": "feat(pdf-import): 본문 문단을 구역 본문 흐름으로 가져오는 편집 우선 배치 옵션 (#8220)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "b82f02dbbd7925c4c01f52041d7295a57c4ea2f8",
+      "new": "9c039f95932ff876fb1cdc744e2b9dfa82da2f64",
+      "subject": "fix(pdf-import): 편집 우선 배치의 구역 첫 문단을 구역·단 정의만 든 빈 줄로 둔다 (#8220)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "b93e68f34c9664c2fb5ced0c3443f0ef4a010902",
+      "new": "ee3756d1820c83fa585df25fab8734aec87d58a5",
+      "subject": "fix(pdf-import): 편집 우선 배치에서 들여쓰기 줄 표지를 문단 모양에 맞춘다 (#8220)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "24c1e2c630d30f586426c2518bf0526a5a5eb863",
+      "new": "c4b144cc295586a28fbf23140dada2ce7dbd5145",
+      "subject": "docs: #8220 편집 우선 배치 Native·fresh WASM TSV와 대표 review·overlay PNG",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "ddf7b77bdbd1c20f8d2f77406788d247e80734de",
+      "new": "f5f867bd52bb63120734c8534e092df060aac12e",
+      "subject": "feat(studio): 환경 설정에 PDF 가져오기 배치(원본 모양 우선/편집 우선) 선택 (#8220)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "86ae2ca94ca7a1c042cfa6722f2a01d73940163e",
+      "new": "34bcaa1f9fe7d874c4b88cbd263ad1eb2575f1e4",
+      "subject": "fix(pdf-import): 단을 나누기 전에 쪽 머리·꼬리 띠를 떼어 낸다 (#8220)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "948f730389b950f00e23bb7c97f5bf2ede4b386b",
+      "new": "db354c5ddfe2bee606cb76c6f37e787d911f1495",
+      "subject": "docs: #8220 머리·꼬리 띠 분리 후 두 배치의 Native·fresh WASM TSV와 2010 대표 PNG",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "dc18c5fe17500184fa0b9a8e43071c0c9e669e28",
+      "new": "dc1c8ab1d92dbf43527ffe0e3bd05f6ca0214cb0",
+      "subject": "feat(studio): AI 도우미에 OpenAI·Gemini 제공자를 추가한다",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "07d872c2764c6584f5847302fdad0a9823b4a8ed",
+      "new": "644c952778a5d3861cec9c885d7c91eabc1247bf",
+      "subject": "fix(layout): 저장 줄 없는 글자처럼 그림 호스트가 줄 폭 중립 부동 개체와 함께여도 현재 프레임에서 재조판된다 (#8271)",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "0c43ad673fa108ba08c94dbcd730726ef5d44461",
+      "new": "3507612f75d80f3cad23ab81673c59e012ea9f6a",
+      "subject": "docs(report): #8271 HWPX 다시 열기 수정 전후 Native/fresh WASM review·overlay와 전쪽 실루엣 TSV",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "0aa7a8c63ab560dc10884158f5ae2b512a492718",
+      "new": "dcac181d864abcb15d83e732c7159b40db29ac7e",
+      "subject": "fix(studio): 청크 사이 CRLF를 한 줄 끝으로 처리",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "450579a4653647d03c4c033b83ef67dd91f3f32f",
+      "new": "493ee6f58289cf0912da185dc973effe91036ece",
+      "subject": "검증: 체리픽 원장과 저장 세대별 한컴 Print 입력 고정",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "a30b10d0967e98771dd8e90d6ad6748b2f14a52e",
+      "new": "01173bba22bd69552dec07f500a4ffd7cea60b97",
+      "subject": "fix(typeset): 적층 PR의 저장 원점 인덱스 호출 호환",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "7e617f4e9d0a9964285a525cd848dafaa09cd8ad",
+      "new": "4ade831052189dbcd8e35b8ebb919b51ac327811",
+      "subject": "fix(studio): CanvasKit 자식 변환의 획 두께와 점선 간격 보정",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "033dbdf205c7adee7011070b64c4b2891360dd23",
+      "new": "e36c1ca07edf706431c4ae34f61b05b208880bbb",
+      "subject": "fix(typeset): 이월 표제어 뒤에 확립된 저장 프레임 경계 보존",
+      "patch_equal": false,
+      "author_preserved": true
+    },
+    {
+      "old": "80e3cb7490e05294283dd45a545e41293bdfb4de",
+      "new": "00c5e3fd3783ce6fa08636b21edf31a605379637",
+      "subject": "fix(typeset): 공동 앵커 호스트의 쪽 소유와 표 종료 간격 보정",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "db096cb48ae1b113cbe9c0d3c6dce7986ac3e9df",
+      "new": "e4f9cf617992ffb8a48fcd67983b0734d2b6ab13",
+      "subject": "fix(layout): 중첩 표의 저장 빈 줄 경계와 첫 조각 오프셋 보존",
+      "patch_equal": false,
+      "author_preserved": true
+    },
+    {
+      "old": "dceccce7947325cb28f02501dabc9a46b2005cb6",
+      "new": "6bb3c6a6df5dc5675e999c5cec79c5bbeab24dfd",
+      "subject": "fix(layout): 중첩 표의 물리 종료 상자와 재귀 예약 소유 보존",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "1785fc69eb278c2aaba82a62a958af62c949e3f8",
+      "new": "7574dbdbad8e39e0f989a822c243b4cafe0638d1",
+      "subject": "fix(layout): 원본 중첩 셀의 종료 행에 실제 내용 최소 높이 반영",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "ffba46071517860ca31a43c45cb320a116370cc6",
+      "new": "f2c3cfbca745b701c6cb426467ad7230fc831d28",
+      "subject": "fix(layout): 재조판 그림 줄의 부동 도형 앵커와 배제 영역 공유",
+      "patch_equal": false,
+      "author_preserved": true
+    },
+    {
+      "old": "a75bd1c867aa10e24338cd4cb4ac6674f7526dac",
+      "new": "0096429d5f7c99ebd265a0d5f23d6f2994f403eb",
+      "subject": "fix(검증): WOFF 공급 프로그램을 공통 SFNT 계약으로 정규화",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "4816eda4121b317d6ade8a9bec1520518795a54f",
+      "new": "ea2d484044068794efb139f0015481588313bcfe",
+      "subject": "fix(layout): 저장 TAC 줄이 소유한 표 최소 높이 보존",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "358e256f92354a1a9686867a38f478a36adde734",
+      "new": "25f6c65eadedf319c156cccf23687d125be66e89",
+      "subject": "통합 보정의 전쪽 검증과 원본 프레임 소유 회귀를 고정",
+      "patch_equal": false,
+      "author_preserved": true
+    },
+    {
+      "old": "391bd72b4cb5c0e67e33c325f2b2d4067150177f",
+      "new": "3adb61fa1747148ca720faa61a952f649034dcc7",
+      "subject": "검증: 기준 무하락과 전체 회귀에서 드러난 보정 경계 기록",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "607c578e3b2cf1bca5c58a0ca0e679be97f23582",
+      "new": "f6417b9ae276b8b1ee71e40040101f530b0dc10a",
+      "subject": "수정: 실제 저장 프레임 재시작을 확인해 소비한 본문 꼬리 보존",
+      "patch_equal": false,
+      "author_preserved": true
+    },
+    {
+      "old": "8fd43e0cadc07674f2a7ad0d4489592381c7bdb1",
+      "new": "e4a2367128c095adbc721ef991c797df024cedac",
+      "subject": "중첩 표의 확정 원점에 세로 오프셋 중복 적용 방지",
+      "patch_equal": false,
+      "author_preserved": true
+    },
+    {
+      "old": "eaa4918972d0d7354641c72b0bc8bf38d5954bed",
+      "new": "d24c60325634cd39839344812def85328c5023b2",
+      "subject": "분할 셀 정렬에서 저장 가로 조각의 줄 높이를 한 번만 소비",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "92f41d036fe4cd9f04348a97e36d5e07b7d3cf0c",
+      "new": "858d00fbe191981fb58579e2f10e7ff28b60a865",
+      "subject": "독립 인쇄에 맞춰 여백 편집 검사를 정정하고 글줄 정렬 회귀 추가",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "1237577af2026127686c2d19f4d1187d5c80e795",
+      "new": "21f5efe3e855d3320281045968d2df09766a863d",
+      "subject": "수정: 글자처럼 그림의 물리 하단으로 쪽 수용 판정",
+      "patch_equal": false,
+      "author_preserved": true
+    },
+    {
+      "old": "57d362f43cc14dc92454e95ceb2615f2e23995f6",
+      "new": "c40cf7034466daa39b90a165e0026c0d8df4d356",
+      "subject": "보정: 그림 줄 수용은 기존 행 상자 소유로 한정",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "71b9abe806ba4bd0cad29a579d3998e9a4dfeee3",
+      "new": "d6ab4a00aeb432d750af78d4521039ea1023e96c",
+      "subject": "검증: 현재 Native 바이너리의 보정 소스 출처 고정",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "f0b70013f4bffc2e270fd295ef292919bb04785a",
+      "new": "a3cb00d92910fe2ca3618f90aa39add9d6d09311",
+      "subject": "검증: 최적화 WASM과 Native 전쪽 결과 고정",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "ae8c413f84a01a4cc4591357056183709f21b150",
+      "new": "99fa975969c0a4c58079933b2f3c88686e866e78",
+      "subject": "검증: 기존 기준 전쪽 통과와 원 PR별 검토 기록 고정",
+      "patch_equal": false,
+      "author_preserved": true
+    },
+    {
+      "old": "3a3f48349b40860f0f709ea4ea3131343cb87fe5",
+      "new": "6fce61c59cfe13663f8c9af41af551ffad0d186a",
+      "subject": "기록: #8116 리베이스 결합과 기능 보존 검증 범위 고정",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "de9602f1b3db4df2c0fd953f33b5af1e3f9a6466",
+      "new": "33dcb77cb4cfec505eb0e22b38e6942673c259d3",
+      "subject": "검증: 리베이스 후 Native 전쪽과 기존 출력 보존 고정",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "523af99acf2c53265e390a4e982eb07dd1071099",
+      "new": "c68e66d1111675b8d600c8178b8f660668c0b310",
+      "subject": "검증: 새 기준 위 최적화 WASM과 소스 동일성 고정",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "2e902abacf328bccdd7780606666ac3b1c5c1ce9",
+      "new": "dbf893c45a8c0f58542ce8b856829cc2ac3bf5ec",
+      "subject": "검증: 새 기준 위 최적화 WASM과 소스 동일성 고정",
+      "patch_equal": true,
+      "author_preserved": true
+    },
+    {
+      "old": "3a2a081a418a38a2fb696136835d0f721b216972",
+      "new": "0508d3afcdd233b59ea1f0ff04013291d8b0c254",
+      "subject": "검토: 리베이스 후 전쪽·회귀 검증과 20건 기록 확정",
+      "patch_equal": true,
+      "author_preserved": true
+    }
+  ],
+  "patch_equal_count": 107,
+  "combined_patch_count": 16,
+  "all_authors_preserved": true,
+  "rejected_intermediate_heads": [
+    "c4c4e0e8fc00b40d4525a249cc1aba04bef8d5d5"
+  ],
+  "own_resolution_error_corrected": "Truncated shape tail restored from new base, squashed into the shape conflict resolution before final history verification."
+}

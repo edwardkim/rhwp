@@ -18,6 +18,7 @@ test('공급한 family가 실제 Canvas advance와 글리프를 결정한다', a
   const bytes = readFileSync(path);
   const server = createSweepServer(new Map([
     ['/font-registration.mjs', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-registration.mjs'))]],
+    ['/rhwp-studio/src/core/canvas-intrinsic-font.mjs', ['application/javascript', readFileSync(join(root, 'rhwp-studio/src/core/canvas-intrinsic-font.mjs'))]],
   ]), new Map([['/font/0', {path, sha256: createHash('sha256').update(bytes).digest('hex')}]]));
   await new Promise((accept, reject) => {
     server.once('error', reject);

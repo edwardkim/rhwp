@@ -1,0 +1,24 @@
+{
+  "samples": [
+    "samples/pr8224/lseg-tab-delete.hwp",
+    "samples/pr8224/lseg-tab-insert.hwp",
+    "samples/pr8224/lseg-tab-split-merge.hwp",
+    "samples/pr8224/lseg-tab-split.hwp"
+  ],
+  "command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--tests",
+    "--test-threads",
+    "8",
+    "--no-fail-fast",
+    "-E",
+    "test(/security_corpus_regression|injection_scan_contract/)"
+  ],
+  "exit": 0,
+  "seconds": 2.77
+}

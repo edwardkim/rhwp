@@ -1,0 +1,16 @@
+{
+  "tools": {
+    "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+    "cargo": "cargo 1.93.1 (083ac5135 2025-12-15)",
+    "node": "v24.15.0",
+    "wasm-pack": "wasm-pack 0.15.0",
+    "qpdf": "qpdf version 11.9.0\nRun qpdf --copyright to see copyright and license information.",
+    "wasm-opt": "wasm-opt version 117 (version_117)"
+  },
+  "cargo_build_jobs": 4,
+  "cargo_target_dir": "$REPO/target/pr-review",
+  "native_profile": "release-test",
+  "wasm_profile": "release, lto=false, codegen-units=16, wasm-opt -O",
+  "reference_base": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "remote_devel_reconfirmed_2026_10_25": true
+}

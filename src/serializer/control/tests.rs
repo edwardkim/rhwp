@@ -1155,6 +1155,7 @@ fn char_overlap_non_bmp_char_roundtrip() {
         inner_char_size: 100,
         expansion: 0,
         char_shape_ids: vec![3],
+        hwp_wire_chars: false,
     };
     let data = serialize_char_overlap(&co);
     let parsed = crate::parser::control::parse_control(tags::CTRL_TCPS, &data, &[]);
@@ -1182,6 +1183,7 @@ fn char_overlap_256_char_shape_ids_no_wraparound() {
         inner_char_size: 100,
         expansion: 0,
         char_shape_ids: (0u32..256).collect(),
+        hwp_wire_chars: false,
     };
     let data = serialize_char_overlap(&co);
     // 카운트 바이트: chars 카운트(2) + WCHAR(2×1) + 테두리(1) + 크기(1) + 펼침(1) = offset 7

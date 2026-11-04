@@ -10,7 +10,9 @@
 use crate::model::header_footer::{HeaderFooterApply, MasterPage};
 
 use super::context::SerializeContext;
-use super::section::{render_hp_p_open, render_paragraph_parts};
+use super::section::{render_hp_p_open_with_storage, render_paragraph_parts_with_storage};
+use super::utils::{xml_error, xml_value};
+use super::SerializeError;
 
 /// `<masterPage>`/section XML 공용 네임스페이스 블록 (empty_section0.xml 와 동일).
 const XMLNS: &str = r#"xmlns:ha="http://www.hancom.co.kr/hwpml/2011/app" xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" xmlns:hp10="http://www.hancom.co.kr/hwpml/2016/paragraph" xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section" xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core" xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head" xmlns:hhs="http://www.hancom.co.kr/hwpml/2011/history" xmlns:hm="http://www.hancom.co.kr/hwpml/2011/master-page" xmlns:hpf="http://www.hancom.co.kr/schema/2011/hpf" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf/" xmlns:ooxmlchart="http://www.hancom.co.kr/hwpml/2016/ooxmlchart" xmlns:hwpunitchar="http://www.hancom.co.kr/hwpml/2016/HwpUnitChar" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:config="urn:oasis:names:tc:opendocument:xmlns:config:1.0""#;
@@ -62,52 +64,97 @@ fn page_duplicate_str(mp: &MasterPage) -> &'static str {
 /// 바탕쪽 1개를 `Contents/masterpage{N}.xml` 내용으로 직렬화한다.
 /// `id` 는 manifest/idRef 와 일치해야 하는 식별자(예: `masterpage0`).
 pub fn render_master_page_xml(mp: &MasterPage, id: &str, ctx: &mut SerializeContext) -> String {
+    render_master_page_xml_with_storage(mp, id, ctx, &crate::storage::Unbounded)
+        .expect("unbounded master-page XML")
+}
+
+pub(crate) fn render_master_page_xml_with_storage<S: crate::storage::Storage>(
+    mp: &MasterPage,
+    id: &str,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    storage.bytes(0).map_err(xml_error)?;
+
     let mut body = String::new();
     let mut vert_cursor: u32 = 0;
     for p in &mp.paragraphs {
-        let (runs, linesegs, advance) = render_paragraph_parts(p, vert_cursor, ctx);
+        let (runs, linesegs, advance) =
+            render_paragraph_parts_with_storage(p, vert_cursor, ctx, storage)?;
+        ctx.check_storage()?;
         vert_cursor = advance;
         let pid = ctx.next_para_id();
         let sid = ctx.effective_style_id(p.style_id);
-        body.push_str(&render_hp_p_open(p, pid, sid));
-        body.push_str(&runs);
-        body.push_str(&linesegs);
-        body.push_str("</hp:p>");
+        storage
+            .push_str(
+                &mut body,
+                &render_hp_p_open_with_storage(p, pid, sid, storage)?,
+            )
+            .map_err(xml_error)?;
+        storage.push_str(&mut body, &runs).map_err(xml_error)?;
+        storage.push_str(&mut body, &linesegs).map_err(xml_error)?;
+        storage.push_str(&mut body, "</hp:p>").map_err(xml_error)?;
     }
 
-    format!(
-        concat!(
-            r#"<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>"#,
-            r#"<masterPage {xmlns} id="{id}" type="{ty}" pageNumber="{pn}" pageDuplicate="{pd}" pageFront="{pf}">"#,
-            r#"<hp:subList id="" textDirection="{td}" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="{tw}" textHeight="{th}" hasTextRef="{tr}" hasNumRef="{nr}">"#,
-            "{body}",
-            r#"</hp:subList></masterPage>"#,
+    xml_value(
+        storage,
+        format_args!(
+            concat!(
+                r#"<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>"#,
+                r#"<masterPage {xmlns} id="{id}" type="{ty}" pageNumber="{pn}" pageDuplicate="{pd}" pageFront="{pf}">"#,
+                r#"<hp:subList id="" textDirection="{td}" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="{tw}" textHeight="{th}" hasTextRef="{tr}" hasNumRef="{nr}">"#,
+                "{body}",
+                r#"</hp:subList></masterPage>"#,
+            ),
+            xmlns = XMLNS,
+            id = id,
+            ty = master_page_type_str(mp),
+            pn = mp.optional_page_number.or(mp.hwpx_page_number).unwrap_or(0),
+            pd = page_duplicate_str(mp),
+            pf = mp.page_front as u8,
+            td = if mp.text_direction == 1 {
+                "VERTICAL"
+            } else {
+                "HORIZONTAL"
+            },
+            tw = mp.text_width,
+            th = mp.text_height,
+            tr = mp.text_ref,
+            nr = mp.num_ref,
+            body = body,
         ),
-        xmlns = XMLNS,
-        id = id,
-        ty = master_page_type_str(mp),
-        pn = mp.optional_page_number.or(mp.hwpx_page_number).unwrap_or(0),
-        pd = page_duplicate_str(mp),
-        pf = mp.page_front as u8,
-        td = if mp.text_direction == 1 {
-            "VERTICAL"
-        } else {
-            "HORIZONTAL"
-        },
-        tw = mp.text_width,
-        th = mp.text_height,
-        tr = mp.text_ref,
-        nr = mp.num_ref,
-        body = body,
     )
 }
 
 /// secPr 내부에 삽입할 `<hp:masterPage idRef="..."/>` 참조 묶음.
 /// `ids` 는 이 섹션 바탕쪽들의 식별자(전역 인덱스 기반).
 pub fn render_master_page_refs(ids: &[String]) -> String {
-    ids.iter()
-        .map(|id| format!(r#"<hp:masterPage idRef="{id}"/>"#))
-        .collect()
+    render_master_page_refs_with_storage(ids, &crate::storage::Unbounded)
+        .expect("unbounded master-page XML")
+}
+
+pub(crate) fn render_master_page_refs_with_storage<S: crate::storage::Storage>(
+    ids: &[String],
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    storage.bytes(0).map_err(xml_error)?;
+
+    let mut out = String::new();
+    for id in ids {
+        storage
+            .push_str(
+                &mut out,
+                &xml_value(storage, format_args!(r#"<hp:masterPage idRef="{id}"/>"#))?,
+            )
+            .map_err(xml_error)?;
+    }
+    Ok(out)
 }
 
 #[cfg(test)]

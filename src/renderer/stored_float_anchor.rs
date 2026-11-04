@@ -39,6 +39,24 @@ fn stored_vpos(para: &Paragraph) -> Option<i64> {
     stored_seg(para).map(|seg| i64::from(seg.vertical_pos))
 }
 
+/// A successor on a new saved page does not authenticate spacing between two
+/// stacked empty anchors. The preceding table's split policy does not change
+/// which frame owns that successor. Both pagination and paint use this query.
+pub(crate) fn stored_anchor_successor_rewinds(para: &Paragraph, next: &Paragraph) -> bool {
+    !para.stored_text_partition_is_dirty()
+        && !para.cell_format_vpos_dirty
+        && !next.stored_text_partition_is_dirty()
+        && !next.cell_format_vpos_dirty
+        && para.line_segs.len() == 1
+        && next.line_segs.len() == 1
+        && [&para.line_segs[0], &next.line_segs[0]].iter().all(|line| {
+            line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && line.vertical_pos >= 0
+                && line.line_height > 0
+        })
+        && next.line_segs[0].vertical_pos < para.line_segs[0].vertical_pos
+}
+
 /// 저장 host 기준의 표 윗변 offset 과 흐름 점유 끝(HWPUNIT).
 ///
 /// 저장 사다리가 무엇을 쟀는지에 따라 `vpos` 의 뜻이 갈린다.

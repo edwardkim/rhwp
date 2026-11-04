@@ -1,0 +1,31 @@
+{
+  "head": "ae8c413f84a01a4cc4591357056183709f21b150",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--features",
+    "native-skia",
+    "--bin",
+    "rhwp",
+    "--target-dir",
+    "/home/tsjang/rhwp/target/pr-review"
+  ],
+  "started_at": "2026-10-27T05:02:39.264813+00:00",
+  "exit": 0,
+  "seconds": 589.2229045929853,
+  "binary": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/candidate-v15-rhwp",
+    "sha256": "a955542c41dfc141c3a8b587aef926070a28627af2d4ad4b181b7b3c0ce74d1b"
+  },
+  "completed_at": "2026-10-27T05:12:29.374753+00:00",
+  "source_paths": 1828,
+  "source_snapshot_sha256": "ede0092d26139d3800bcbaf536e39562b5b8ab2401008825b2ba1f938325b87f",
+  "source_snapshot_match_to_git_commit": true,
+  "temporary_log_sha256": "15b5cfefa59cd198c3fbccbc02027dc469ac0354654a2dedc5b6756287c371ba",
+  "observed_summary": [
+    "    Finished `release-test` profile [optimized] target(s) in 9m 48s"
+  ]
+}

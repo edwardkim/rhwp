@@ -61,9 +61,17 @@ impl<'a> TacFlowQuery<'a> {
         table: &crate::model::table::Table,
         fmt: &FormattedParagraph,
     ) -> Option<usize> {
-        if !table.common.treat_as_char || fmt.line_heights.len() <= 1 {
+        if !table.common.treat_as_char
+            || fmt.line_heights.is_empty()
+            || (fmt.line_heights.len() == 1 && !crate::renderer::para_has_no_stored_line_segs(para))
+        {
             return None;
         }
+
+        // 저장 사다리가 없는 현재 단일 줄도 같은 줄 구성에서 실제 표 높이를
+        // 소유할 수 있다. 아래 높이 대조를 통과한 줄만 사용하며, 별도 쪽 제한
+        // 속성(flowWithText)을 줄 소속의 대용으로 사용하지 않는다. 저장 줄의
+        // #3930 판정은 기존 경로에 남긴다.
 
         // 같은 사다리를 측정하는 경로에서는 실제 제어 슬롯의 소유 줄을 쓴다.
         // 셀 편집으로 표가 커지면 선언 높이와의 매칭은 더 이상 소속 증거가 아니다.

@@ -1,0 +1,1467 @@
+{
+  "branch": "review/integration-20261026-document-updates",
+  "base": "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c",
+  "plan_head": "dd76f824df900cd473fe59cac31ff21c516a130f",
+  "records": [
+    {
+      "pr": 8115,
+      "source": "d23261a2ce4763092c05e648e8610d9d5c6d4732",
+      "patch_id": "cd1e38077030766dafafd5e500f07f811d07e0a6",
+      "kind": "apply",
+      "subject": "fix(table): 쪽 나눔 표의 쪽 끝 행을 각주 경계까지 싣고 저장 줄 행의 빈 잔여도 같은 상한으로 버린다 (#7732)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "8a1e0ffb42dbda42dbcecc318887ed8a208eb456"
+    },
+    {
+      "pr": 8115,
+      "source": "afa916e30402fd395d4b2742f2b4a5883ea58a9f",
+      "patch_id": "66c0f04893479b9e416bc67755dfd8bfd53de4f5",
+      "kind": "apply",
+      "subject": "fix(typeset): 문단 흐름도 각주 경계까지 쓰고 앵커 줄은 자기 각주 첫 줄로 판정 (#7732)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "552f6da8f179bd1cccfcf23ed30fecadd44cbb9e"
+    },
+    {
+      "pr": 8115,
+      "source": "2d46ea9882fb08aa3f451d0cd72bfc9e0e62fcb0",
+      "patch_id": "7b83ccdffa651d7fe568043135b5ac6ee0ad95da",
+      "kind": "apply",
+      "subject": "문서: #7732 시각 증적 — code head ff618b7f6 (issue1937 32·33·44쪽, trim_n1_F01 1쪽 · base/head Native·WASM)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "c2ebab05c1c23a2a3d2eebe5c3d55e543897d3ab"
+    },
+    {
+      "pr": 8115,
+      "source": "bc88ca507fe4256d36f5a6471cc382d539b5c14c",
+      "patch_id": "af8caf10305749030c8c17278248bce2cea74b6b",
+      "kind": "apply",
+      "subject": "fix(table): 이 쪽에서 끝나지 않는 쪽 나눔 표는 첫 조각에 칸 각주를 예약하지 않는다 (#7732)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "c5bda263db7cdb2aa173e184ec5dbe35c0483305"
+    },
+    {
+      "pr": 8115,
+      "source": "93463d0545c294a42e9b891d473302dd978fbbd0",
+      "patch_id": "f0872b79306451bcca3fffdde8a0fc775c4b5c8d",
+      "kind": "apply",
+      "subject": "문서: #7732 칸 각주 시각 증적 — code head ed99bf840 (issue1937 35·36쪽, cellnotes_span_N2 1쪽 · base/head Native·WASM)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "5de4aaef1a4f524599a234683787d17847653bc8"
+    },
+    {
+      "pr": 8115,
+      "source": "ddecddd9da13ea599c22fc0919614fd203190e29",
+      "patch_id": "09fb9267ee5a43a65cab73e4b029a4b625fb50e3",
+      "kind": "apply",
+      "subject": "fix(table): 각주가 있는 칸 행도 쪽 끝 컷의 마지막 줄 뒤 줄간격을 빼고 계상한다 (#7732)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "e6f214b2104b3dfccd925bdb6f0a0a0c377535d4"
+    },
+    {
+      "pr": 8115,
+      "source": "a7aaa28434b875c8d695337ea4c9b053286bd05a",
+      "patch_id": "d1168774de429fa5415c1937974135ec86e101f7",
+      "kind": "apply",
+      "subject": "문서: #7732 각주 칸 행 컷 시각 증적 — code head c56195cf8 (cellnotes_plain_N2_L7 2쪽 · base 나란히 · head Native·WASM review/overlay)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "d22870e9b167d9fea007fcfe2cce30febdbd50bc"
+    },
+    {
+      "pr": 8115,
+      "source": "237ed1f5736f714a5878c93a8640bea343b0b163",
+      "patch_id": "82aacc6be291626952cfbf28802c009bd2db302e",
+      "kind": "apply",
+      "subject": "docs: devel 9418ed0c7 rebase head 기준 시각 증적 재캡처",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "a38dbd2b7a2ad65566bd8ae1a8bda2a5cf4b14dc"
+    },
+    {
+      "pr": 8115,
+      "source": "a47a41d3004a0458873cf1a00e90a356f19f2fa5",
+      "patch_id": "d6186914e6bcbf8abf8dc02c764505dafac2f5e1",
+      "kind": "apply",
+      "subject": "docs: #7732 devel 238de6de4 rebase head 시각 증적 재캡처 · 전쪽 TSV",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "6436d1d68180f7603e6e2f11796db3491b200726"
+    },
+    {
+      "pr": 8128,
+      "source": "f5bcd972fabd84f334319d954416b34bbb43d359",
+      "patch_id": "930f6f48941c21d97a35c135cff7beb01f112c00",
+      "kind": "apply",
+      "subject": "fix(typeset): 이어지는 쪽에서도 같은 문단의 다음 저장 쪽 reset 을 경계로 쓰고 그 조각의 자기 각주를 표시 쪽에 둔다",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "d65dbf187c5bca9c0b9443c3d7472a5e96f94777"
+    },
+    {
+      "pr": 8128,
+      "source": "056bfe6b9e5702d6d43d4a814b7cd16cfbe2d9fc",
+      "patch_id": "ee9c933ef409cc36ff11aaae6df81495715b4215",
+      "kind": "apply",
+      "subject": "docs(report): 이어지는 쪽 저장 reset·자기 각주 수정 전후 시각 증적 (#8126)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "88b17c18aef42db977eb03ed8918bb74b3ee6d56"
+    },
+    {
+      "pr": 8128,
+      "source": "21c40f21c5ee019fdf1ee4e68bdfeed35d3ae26c",
+      "patch_id": "5838ea0715e5afaa96e2a1ea261ac1091e4d1e78",
+      "kind": "apply",
+      "subject": "docs: devel 9418ed0c7 rebase head 기준 시각 증적 재캡처",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "48e6b7c7fea59aa973bfad6a590f6fc02cb8a4ed"
+    },
+    {
+      "pr": 8133,
+      "source": "5fdd263ee9f05cc977d5bee5cabe03849f6d995c",
+      "patch_id": "c28bfe9fbbb2618dc337ab5d97622cad7a3dde62",
+      "kind": "apply",
+      "subject": "fix(skia): raster 획은 장치 한 칸보다 가늘게 그리지 않는다 (#8125)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "827b5648414eadbec889dd4d4068a1785f9bac3b"
+    },
+    {
+      "pr": 8133,
+      "source": "d39696d63cd6c7ff03c65b0ecb429827b91ce252",
+      "patch_id": "53396574b36e1eef2d47c569997b8c0ea5795130",
+      "kind": "apply",
+      "subject": "docs(report): #8125 Native 가는 획 장치 한 칸 — calendar_year·issue1937 p49·sungeo p34 수정 전후 review/overlay",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "efa62c14eccb840a395c0b7da80bf6a52ebb4bbf"
+    },
+    {
+      "pr": 8133,
+      "source": "68e11eb4b78a837e9c935a5ce04d6e9539110618",
+      "patch_id": "3976808b3ac70a11b744815c140190faf93b96e6",
+      "kind": "apply",
+      "subject": "ci: skia_subpixel_stroke_hairline 를 Native Skia 분류 목록에 등록 (#8125)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "11fdf1fb986c94173d6cda84209343efb6edcda9"
+    },
+    {
+      "pr": 8133,
+      "source": "c0b1451409d1e5e529fa5009c3849105440b75a1",
+      "patch_id": "ac2b1a431cfe3f323a407fb70def48b411b93a0b",
+      "kind": "apply",
+      "subject": "test: #8125 가는 획 회귀를 기존 Native Skia 검사 파일로 옮긴다",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "f73494e5517725759c9414785d5e6536f1730285"
+    },
+    {
+      "pr": 8133,
+      "source": "b733b47ec089f72a2a1786635f25dcb9032f6c67",
+      "patch_id": "133459b847bd06a0e4559c2e53307d243d03ca84",
+      "kind": "apply",
+      "subject": "fix(web-canvas): Canvas2D 획도 장치 한 칸보다 가늘게 그리지 않는다 (#8125)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "fed6122337595052b233743687630d784a8cbe82"
+    },
+    {
+      "pr": 8133,
+      "source": "d40fa79b0124c2fc254b466819ad5aaeb5664bac",
+      "patch_id": "0ac634fd4917384aba4d99140b78b701120ff1df",
+      "kind": "apply",
+      "subject": "docs(report): #8125 WASM Canvas2D 가는 획 — calendar_year p1·sungeo p34 수정 전후 fresh WASM review/overlay",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "4cfdacc32c31ceb87c69b99829bbecb998de0563"
+    },
+    {
+      "pr": 8133,
+      "source": "57d2b6d4f56cf9c0d9baf0978f3a65aafc63b7dd",
+      "patch_id": "6ce653039ced3f64898bbaf13c3abafd7d11f5b6",
+      "kind": "apply",
+      "subject": "fix(canvaskit): 도형·직선 획도 장치 한 칸보다 가늘게 그리지 않는다 (#8125)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "845b57e3fdef78f8dddb16dbbf8f1da623d79b6b"
+    },
+    {
+      "pr": 8133,
+      "source": "c273dcecb5e5c475caeed769a77d75829176a61e",
+      "patch_id": "0a24fcd2260fcbedc4e919cf86c9e08221698176",
+      "kind": "apply",
+      "subject": "fix(skia): 인쇄 coverage 계획은 장치 한 칸 하한 전의 선언 굵기로 세운다 (#8125)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "07a14e4fd1b27f9182b6bcb016fdaeefb4819c1f"
+    },
+    {
+      "pr": 8133,
+      "source": "3c31f51f9c656d0070f29fd17b0f669ff763554c",
+      "patch_id": "0be88ba79390d9e802e1d7a3d841638c854809da",
+      "kind": "apply",
+      "subject": "test: issue_7445 gray_grid 기대 화소를 한/글 직접 출력 값으로 (#8125)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "f9a9bf6b73a9ec6136605846447c49ad8340e7c9"
+    },
+    {
+      "pr": 8133,
+      "source": "561f849625c17f63eda6ca84b60ac59fa5dd7025",
+      "patch_id": "1b589d6ad914d627376ccb86b9f4b7275cf023e6",
+      "kind": "apply",
+      "subject": "docs(report): #8125 devel 9418ed0c7 rebase head 시각 증적 재캡처 · 한/글 직접 출력 대조",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "47ba5dfcc26070db1510fc574c976da1434460fd"
+    },
+    {
+      "pr": 8133,
+      "source": "9af0aeceb2331fe5d29bedcfd9535aa6f91d8071",
+      "patch_id": "3de0225ba541f5bf6a21f75bf7f4cd8b99b05acb",
+      "kind": "apply",
+      "subject": "docs(report): #8125 devel 238de6de4 rebase head 시각 증적 재캡처 · 전쪽 TSV",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "d6ae01db05b08230876dc770ccd4b8732b844166"
+    },
+    {
+      "pr": 8133,
+      "source": "465d85f13cab961628ec07247ea6ade82e0cbc46",
+      "patch_id": "2a4add7ba3346064acbcfff0b2def1ee7ecdd65c",
+      "kind": "apply",
+      "subject": "test: #8125 점선 쪽 테두리도 장치 한 칸을 덮는지 검사 (sungeo 34쪽)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "856f7265c702eb57801e21b5c168aa7819ebcf2c"
+    },
+    {
+      "pr": 8142,
+      "source": "a0739675bde46be9db8d8be78edfdc1d7695ac9d",
+      "patch_id": "556fa1d269a346ec691d1fff1c982112e6907154",
+      "kind": "apply",
+      "subject": "fix(typeset): 병합 칸 안쪽 행은 내용이 들어가면 쪽 끝에서 끝낸다",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "534f660be2a297e1ef9a1c2fc110ca0e84fe6c7c"
+    },
+    {
+      "pr": 8142,
+      "source": "b079446c53b07e04557f8c80824637e31e24d024",
+      "patch_id": "1be99c2196f952b9e7f4e050e9f0095df5fe6852",
+      "kind": "apply",
+      "subject": "docs: 1342000-202300055 37·38·40·41쪽 전후 시각 증적",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "5f9f5d3209ae67f264105a86574e692eb0a51093"
+    },
+    {
+      "pr": 8142,
+      "source": "e1abc4c7f149268ea63995eeedeb02cfcc92e5cd",
+      "patch_id": "948b23228d78e91aa0a6c3cc452c0326216f3d5b",
+      "kind": "apply",
+      "subject": "docs: rowspan-band-fit 8·9쪽 전후 시각 증적으로 교체",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "b2d6546f076b9c72bb2e0dc2132fe66a635fd62a"
+    },
+    {
+      "pr": 8184,
+      "source": "17e8267d99eeef5a5d32a304433ef0f84c20ecaf",
+      "patch_id": "907879170a1d8956176bddf304f96357cc15490e",
+      "kind": "apply",
+      "subject": "fix(float): 아래 캡션이 있는 빈 host 자리차지 표도 저장 사다리 상자로 받고, 앞 간격이 흡수된 host 를 인정한다 (#8149)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "94f7f8d88864dd67aef442d3e8dbfaaf8821da0f"
+    },
+    {
+      "pr": 8184,
+      "source": "5918b082bf14f5d2b8fb030087a3da35e545804f",
+      "patch_id": "a3ec75f905ad23735308b128a6718ed831f6be46",
+      "kind": "apply",
+      "subject": "fix(float): 앞 간격 흡수 등식은 바로 앞 빈 host 자리차지 표 상자 끝에서만 인정한다 (#8149)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "c5d52c49d02d32abf9014243753da3c8aa2763db"
+    },
+    {
+      "pr": 8184,
+      "source": "90386d7de39a0092d645184c6ad783d16ae30013",
+      "patch_id": "4aca5e1da9b3d887a0c075b7e5e9f79af4344464",
+      "kind": "apply",
+      "subject": "fix(float): 저장 사다리로 인증되지 않는 빈 host 자리차지 표도 같은 원점·간격 규칙을 쓴다 (#8149)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "7c569a1524cd47df32451a32abd87ec8310de687"
+    },
+    {
+      "pr": 8184,
+      "source": "f7626011e8c48a61ce589f11c93fd84608d149f7",
+      "patch_id": "fecd866109714384378678bbd29b7caf38085f2d",
+      "kind": "apply",
+      "subject": "fix(table): 쪽 바닥에서 나뉘는 빈 host 자리차지 표의 첫 조각 예산을 한/글 규칙으로 맞춘다 (#8149)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "8bbb26833885ca9488fc49abbf4b5d69256bfd93"
+    },
+    {
+      "pr": 8184,
+      "source": "0eab5aef81e66973001241f590af0e84186fe762",
+      "patch_id": "98bb4a873b51049b93ab16edac32d898d159b113",
+      "kind": "apply",
+      "subject": "fix(typeset): 빈 host 재조판 상자는 문단 윗변에서 세우고, 분할 진입 검사는 첫 줄 앞 간격을 뺀다 (#8149)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "a8be358e1dd6cd9de885f981dfe496b26da9dc5c"
+    },
+    {
+      "pr": 8184,
+      "source": "553805f8615f19abaf3190216eb98d7f493b49f7",
+      "patch_id": "f9a33820072e1fe4e7ad965c73fa9653cff49a24",
+      "kind": "apply",
+      "subject": "fix(layout): 앞 TAC host 뒤 TAC 표 host 의 문단 위 간격을 HWP5 저장본에서도 배치에 둔다 (#8149)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "22aa4d8d9ea4bafce10176edca5aa39404562c82"
+    },
+    {
+      "pr": 8184,
+      "source": "05cef5908cf6d7b7a7580f38bfd7ae888b96e16f",
+      "patch_id": "937e4c2a7e347ff0f19ce9d90e585ad24dcb1a28",
+      "kind": "apply",
+      "subject": "fix(layout): TAC 표의 아래 캡션 띠와 TAC 도형 host 뒤 줄간격을 저장 사다리대로 그린다 (#8149)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "ab095bf8b59f0b77ce94175ca9ab2fd3df55f214"
+    },
+    {
+      "pr": 8184,
+      "source": "c255b7320d1ef4eeff93d796877d37bbe8aa99eb",
+      "patch_id": "693dc28b5648e73f4c6914687866f854eb219709",
+      "kind": "apply",
+      "subject": "fix(layout): #8149 빈 host 표 뒤 앞 간격 흡수를 상자 바닥에서 잰다",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "4d882e71b6fd2cf2f7b0f68f29f69a9972bb500c"
+    },
+    {
+      "pr": 8184,
+      "source": "add1ee699818af2a8364dee9ff051425a50da272",
+      "patch_id": "18b8ba7a74578eafad0719102778c6b54d212924",
+      "kind": "apply",
+      "subject": "fix(typeset): #8149 빈 host 표 첫 조각 예약을 첫 행 이월 판정과 공유한다",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "a4e0334f1d853f36dc3085f88f875151ef3ee868"
+    },
+    {
+      "pr": 8184,
+      "source": "2c6ebe553de79a3b21e0adaf5b2942322fd889e9",
+      "patch_id": "10a3dfcd5024e033415dc9f8cd3b6354bb60f3d3",
+      "kind": "apply",
+      "subject": "fix(typeset): #8149 빈 host 표 저장 상자의 host 줄간격과 단 첫머리 앞 간격",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "bb3437efe4261c10c556a6cdf1b16f2260bfd011"
+    },
+    {
+      "pr": 8184,
+      "source": "ca6112a6c91c2eef40f1b46e88e442b7723bdc2c",
+      "patch_id": "41b8bc8cd9b7b549765b8b79aded6fa7bdee91ca",
+      "kind": "apply",
+      "subject": "fix(float): #8149 단 첫머리 빈 host 표 쪽의 저장 원점을 상자 등식으로 정한다",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "9ec584a15132a492fd6dc164649eb7f79aec7d56"
+    },
+    {
+      "pr": 8184,
+      "source": "29dbddf9ce78156860c2625598f4dacda0811ecc",
+      "patch_id": "95082158bb09c4382d6b5b806e64feea52059295",
+      "kind": "apply",
+      "subject": "test: #8149 쪽 바닥 빈 host 표 분할을 한/글 2020 합성·사양서로 검사한다",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "b37c86dde8f65b09dad7351893ee3886c4b38ac4"
+    },
+    {
+      "pr": 8184,
+      "source": "62d23c09b1ff6f430484ddc46d57f2dd036e1ea1",
+      "patch_id": "d09079a99b8cb468bc65028c3e8f164beb9296c1",
+      "kind": "apply",
+      "subject": "docs: #8149 사양서 33·43·47쪽 review·overlay 증적",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "c0a3c74b23754c2a88d490d799ff370ca35d04f2"
+    },
+    {
+      "pr": 8184,
+      "source": "78ba587d11ec911731e1c6eaa5a1a28c956536d3",
+      "patch_id": "bd9d4abb06b354d1da52cb0bfae7636c90e3d36b",
+      "kind": "apply",
+      "subject": "fix(rebase): devel 의 빈 host 저장 사다리 배치 폴백 호출에 앞 간격 흡수 인자를 넘긴다 (#8149)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "22d99f138d8da7ae43a77b760dae356b80420928"
+    },
+    {
+      "pr": 8184,
+      "source": "b9334d5e2039c66261550da0f8bd4333a982d041",
+      "patch_id": "c7ab4e67bc389486a74f1eb6a07024c00693c106",
+      "kind": "apply",
+      "subject": "fix(float): 다음 문단의 저장 첫 줄이 앞 간격을 증언하면 상자 뒤 흡수를 하지 않는다 (#8149)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "635d5eb12ac67e7b19bfd32e90f29f187316a6ed"
+    },
+    {
+      "pr": 8184,
+      "source": "5be3dd4c710f76af75ad9bd1efd92b7b1a02c9ca",
+      "patch_id": "0ba25ab7371f9d2e5be82b70ebd6a5fa09d2ba75",
+      "kind": "apply",
+      "subject": "fix(float): 상자 뒤 앞 간격 소비량은 다음 문단의 저장 첫 줄이 증언하는 값을 쓴다 (#8149)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "e7537e3a93c3ff9b189d8faf146f548da3d719df"
+    },
+    {
+      "pr": 8184,
+      "source": "67525acc3c30cdc91ed78bb92e14db3dcb9f63bf",
+      "patch_id": "1195702cc511c9c0cff3d09a8099bef4b26fd887",
+      "kind": "apply",
+      "subject": "fix(table): 빈 host 표 바닥 예약은 첫 행 이월 판정에만 쓰고 첫 조각 행 예산에서는 뺀다 (#8149)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "906eaf7530277df49e1066582b4c5f79e066c792"
+    },
+    {
+      "pr": 8184,
+      "source": "821ee71a40107fdbec3ba20289e49833e87fb122",
+      "patch_id": "9f0878749bcde0989d88625490703a757f6c29cc",
+      "kind": "apply",
+      "subject": "fix(table): 통째 첫 조각의 흐름 전진은 devel 의 host 간격 합을 쓴다 (#8149)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "d8372d2865a2e2f4dcd159474680c715ebd52998"
+    },
+    {
+      "pr": 8184,
+      "source": "00cd6ef8275bc0c96a08ccbce4a1a7e4150c866a",
+      "patch_id": "d007a84dbc85cdb815b88a0de7a33909c830f7be",
+      "kind": "apply",
+      "subject": "fix(table): 통째 첫 조각 흐름은 host 간격 합에 모자란 끝 점유만 더한다 (#8149)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "95b1418e47dbc878500f26d45b6c01de5a076edb"
+    },
+    {
+      "pr": 8184,
+      "source": "1db32c93f993d1e37bd0f204ac81eca7b86632ec",
+      "patch_id": "d39cb1db8a362d43189dc79bff1a3fd22a9fd214",
+      "kind": "apply",
+      "subject": "fix(table): 빈 host 표 바닥 예약을 첫 조각 예산에 되돌리고 꼬리말 여유와 겹치지 않게 한다 (#8149)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "7f88c15d23fa1ade5540c036908631c653854a01"
+    },
+    {
+      "pr": 8184,
+      "source": "f862393e880095a1fdb8ff356e0f7aa7a3b78110",
+      "patch_id": "abb9461cd44f915c0532cc69fac6dd88437711e8",
+      "kind": "apply",
+      "subject": "docs: #8149 사양서 33·43·47쪽 증적을 devel 9418ed0c7 rebase head 로 다시 캡처",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "6ee44837af1f492b78b021d2c005d2ddc2c0c2f1"
+    },
+    {
+      "pr": 8184,
+      "source": "d878c2ad53a5caca5d1d099fdc2d5da3a718add1",
+      "patch_id": "7750b43aa1da405d1859a3f5e325b4d110a40479",
+      "kind": "apply",
+      "subject": "fix(rebase): devel 의 재조판 사다리 분기에도 앞 간격 흡수 인자를 잇는다 (#8149)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "46dce61d94bb098b1b55409b2f7d454e57aa2b34"
+    },
+    {
+      "pr": 8184,
+      "source": "1aa8a62489894af1b0c8adf2154e4422eb00eea9",
+      "patch_id": "d804aac179e531104169093eb75ab028a1f48398",
+      "kind": "apply",
+      "subject": "docs: #8149 사양서 33·43·47쪽 증적을 devel 238de6de4 rebase head 로 다시 캡처",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "ad8f4e5038f3d7707a9fa78b9e4a7ff65e33439e"
+    },
+    {
+      "pr": 8184,
+      "source": "567ff9d18ac1f7e702e94042eb38a03a44f95943",
+      "patch_id": "fa30779b09c226416fd73a968d13b0813bc53503",
+      "kind": "apply",
+      "subject": "docs: #8149 devel 238de6de4 rebase head 의 전쪽 Native·fresh WASM 실루엣 TSV",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "d8c1bd1d61cf234212f3b8913a77edab616f1d19"
+    },
+    {
+      "pr": 8202,
+      "source": "654ee8d47d4407f6dd88fa3a3f4161163f303072",
+      "patch_id": "d219d9d45808e32236c415c736403bc5d1fe6f8a",
+      "kind": "apply",
+      "subject": "fix(layout): 글자처럼 취급 도형이 자기 줄을 키우고 글자는 그 줄의 기준선에 놓인다 (#8167)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "ca0ed0030147dc2248b9f7ce12a46c805af593cc"
+    },
+    {
+      "pr": 8202,
+      "source": "b1d4305d4340da921448e6d531e7e9e266e74a0f",
+      "patch_id": "7721c2b5aa94da84b1811a331f6d640ea0a86f29",
+      "kind": "apply",
+      "subject": "docs(report): #8167 HWP5-nopassword hwpx 18쪽 수정 전후 Native/fresh WASM review·overlay (devel 9418ed0c7 기준)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "f54f513cb95ad3de98a8b4d144884e3699a770aa"
+    },
+    {
+      "pr": 8202,
+      "source": "d0f6adbeef179e17d0431eb84c38443d318a887a",
+      "patch_id": "a0e06463ad66e8586f9b28ca909aa83bbbf4760f",
+      "kind": "apply",
+      "subject": "docs(report): #8167 devel 4e690c930 rebase head 의 Native/fresh WASM review·overlay와 전쪽 실루엣 TSV",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "951c6b38f53241722228fe2efbd0732704ba08da"
+    },
+    {
+      "pr": 8205,
+      "source": "d254c9bac69ca05c2a1c9eb80a975a9c22a72258",
+      "patch_id": "5a465bc567dc0210e6bf48e283bf2b591234f889",
+      "kind": "apply",
+      "subject": "perf(typeset): 미주 단 측정의 수식 재계산과 중복 재생 제거",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "9e72098ba051625e7528ccb9801ebb4f9d633d72"
+    },
+    {
+      "pr": 8205,
+      "source": "72dca5162c1b8dc3b547923f1c796aa8b7c134ea",
+      "patch_id": "038bb5798a6b0f987aaf98fc28e3f2244a9d714e",
+      "kind": "apply",
+      "subject": "test: 수식 편집 뒤 캐시 출력과 새 스레드 첫 출력의 일치 검사",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "2d643b67f70b00da4998ee536813accd2c811565"
+    },
+    {
+      "pr": 8205,
+      "source": "5de6de6a1586e4ce714ee4c8e51a92a3b4812c97",
+      "patch_id": "55ffc97accb43f4ac77b6cb2b16c363033a9dde9",
+      "kind": "apply",
+      "subject": "docs: #8204 대표 review·overlay PNG",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "ac92aaf41bd4e661e0fbfb78205b8a26a32ed37b"
+    },
+    {
+      "pr": 8206,
+      "source": "69fca8f5003e3ec5a6fd89219e9474ade2638074",
+      "patch_id": "7384aed6615af3e01d4e5c64675a41bf03ae97c4",
+      "kind": "apply",
+      "subject": "fix(layout): 같은 문단의 위아래 개체는 문단 흐름 시작을 차지할 때만 글자처럼 그림을 아래로 보낸다 (#8168)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "d41ff8e87ff76e8fdd7d1b16c6b8899e222ee135"
+    },
+    {
+      "pr": 8206,
+      "source": "251c0b53d2aa22da7764bf32f77e3e5e6165d27f",
+      "patch_id": "fe93304f359ad2566605f0cd51dbfb29dd8632d4",
+      "kind": "apply",
+      "subject": "docs(report): #8168 글자처럼 그림 + 종이 기준 위아래 글상자 수정 전후 Native/fresh WASM review·overlay",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "e3454c94b7ffa873088c256edd269b5836939498"
+    },
+    {
+      "pr": 8206,
+      "source": "6e59ef78f459e1039d2c5fd586df32893965e73d",
+      "patch_id": "40303415efb13aaf16106cf8c1c329d21f97db87",
+      "kind": "apply",
+      "subject": "test: #8168 위아래 개체 예약 반례를 기존 단위 검사에 합친다",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "8ffe6f6014382fc6071876c547bb0cd580775148"
+    },
+    {
+      "pr": 8206,
+      "source": "dd3ad0b29bb55893caf8d618e42a24776d64673f",
+      "patch_id": "054ec42738af02fce0d0c0595a2a68e3a257f661",
+      "kind": "apply",
+      "subject": "docs(report): #8168 devel 4e690c930 rebase 재검증 증적과 미검증 경우의 합성 입력",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "bc6ae034d3deaf22fae6fb5ef2b1c77529a4e279"
+    },
+    {
+      "pr": 8209,
+      "source": "ef089bc668d64e02b10a596d927d9d3b0bc347a6",
+      "patch_id": "52079554bc8eb921c350963986a7d5eb934e22ff",
+      "kind": "apply",
+      "subject": "perf(text): 글자마다 반복하던 KoPub 글꼴 이름 판정을 최근 이름 캐시로",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "81dd6e099e770343f3ba7382654118c6462ac859"
+    },
+    {
+      "pr": 8209,
+      "source": "1091fb933df18e3171b34f048d0de24d4a054562",
+      "patch_id": "493b0245a3181954cbdf82485a6fc77729300138",
+      "kind": "apply",
+      "subject": "perf(model): 모델 다이제스트를 버퍼로 모아 해시하고 로드 때 이중 본문 봉인 제거",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "916048d29b7603305a4c22cf9bb80584e3c52e64"
+    },
+    {
+      "pr": 8209,
+      "source": "ca45a7162a9af5102b10ff941d92ab6625a4cfeb",
+      "patch_id": "74da8d24c683a75d307f3541e2d8b43bf3ace478",
+      "kind": "apply",
+      "subject": "perf(composer): HWPX 저장 배치일 때만 셀 문단의 KoPub 글꼴 이름 검사",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "a410ae27ab05af32132df4c086775ff36ebd8952"
+    },
+    {
+      "pr": 8209,
+      "source": "65f281399bae5457f021585532eaab2276e6540c",
+      "patch_id": "5d0678725d87596474f931e0ef9daf9b4803d699",
+      "kind": "apply",
+      "subject": "perf(text): 글자 폭 측정에서 단일 글꼴 이름은 분리·다듬기 없이 사용",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "799894aecb949109f07a8e85de359d16c4cd0387"
+    },
+    {
+      "pr": 8209,
+      "source": "92c64aef7f4971a5b1fb563c7396c284f1e61a06",
+      "patch_id": "f226f4af8a087e9448d3dbd9120dc06aef941fc6",
+      "kind": "apply",
+      "subject": "perf(model): 봉인 다이제스트를 JSON 대신 이진 인코딩으로 해시",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "a22ed83a746c2f3995cba830d1accf309e85e0e6"
+    },
+    {
+      "pr": 8209,
+      "source": "01588f1e997b37795d2dbafecdf1f015341d553c",
+      "patch_id": "c1d0aee5a6199262bc475b4fefd10e607d9c72dc",
+      "kind": "apply",
+      "subject": "docs: #8207 대표 review·overlay PNG",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "ca638217d50845db03df171a3ef4686e3911f3a6"
+    },
+    {
+      "pr": 8210,
+      "source": "ad6a918fa7e872d84f13f925c4da35e8f0b49819",
+      "patch_id": "52079554bc8eb921c350963986a7d5eb934e22ff",
+      "kind": "duplicate",
+      "same_as": "ef089bc668d64e02b10a596d927d9d3b0bc347a6",
+      "applied": "81dd6e099e770343f3ba7382654118c6462ac859",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8210,
+      "source": "b360b1cd3437327a81304b70cbb32a0af32ff7bf",
+      "patch_id": "493b0245a3181954cbdf82485a6fc77729300138",
+      "kind": "duplicate",
+      "same_as": "1091fb933df18e3171b34f048d0de24d4a054562",
+      "applied": "916048d29b7603305a4c22cf9bb80584e3c52e64",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8210,
+      "source": "ab52479a8e6abd7291c134005356f8a7d775a1c6",
+      "patch_id": "74da8d24c683a75d307f3541e2d8b43bf3ace478",
+      "kind": "duplicate",
+      "same_as": "ca45a7162a9af5102b10ff941d92ab6625a4cfeb",
+      "applied": "a410ae27ab05af32132df4c086775ff36ebd8952",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8210,
+      "source": "3920830577969a6bfbe256d6970a21f3216dc64e",
+      "patch_id": "5d0678725d87596474f931e0ef9daf9b4803d699",
+      "kind": "duplicate",
+      "same_as": "65f281399bae5457f021585532eaab2276e6540c",
+      "applied": "799894aecb949109f07a8e85de359d16c4cd0387",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8210,
+      "source": "e405b57d2a648db40993b74dbeb9bb40fd8a7df9",
+      "patch_id": "f226f4af8a087e9448d3dbd9120dc06aef941fc6",
+      "kind": "duplicate",
+      "same_as": "92c64aef7f4971a5b1fb563c7396c284f1e61a06",
+      "applied": "a22ed83a746c2f3995cba830d1accf309e85e0e6",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8210,
+      "source": "df4b51036e736bf626032c8afe23240987ef3cd1",
+      "patch_id": "c1d0aee5a6199262bc475b4fefd10e607d9c72dc",
+      "kind": "duplicate",
+      "same_as": "01588f1e997b37795d2dbafecdf1f015341d553c",
+      "applied": "ca638217d50845db03df171a3ef4686e3911f3a6",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8210,
+      "source": "e0355691ab52253e4c6b5b4714b5b64a85804869",
+      "patch_id": "9d2167fdeb51c5143a362d15edd1c1d3ed277744",
+      "kind": "apply",
+      "subject": "perf(table): 큰 표 분할 스캔의 표 단위 사실을 행·셀마다 다시 계산하지 않음",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "ce82eee1ef728287db29acc5fce242814ceecbb4"
+    },
+    {
+      "pr": 8210,
+      "source": "ef90aed188c899fb5d67d33725523d057d925765",
+      "patch_id": "f5624ef8f8c59f4f6652f64dc343a6555de046b4",
+      "kind": "apply",
+      "subject": "perf(table): 표 높이 측정에서 측정 셀마다 표 전체를 찾지 않고 (행, 열) 색인 사용",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "830414f3b80368d942166a8d916c6c62255e0c69"
+    },
+    {
+      "pr": 8210,
+      "source": "a6060b598c785cc5a7c1d63a1e3f4ff5e46b62dd",
+      "patch_id": "75170a2d7b2dcada2688297075e0bc8b01ee9dd3",
+      "kind": "apply",
+      "subject": "docs: #8208 대표 review·overlay PNG",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "3c1bc7568404b49491b2c3da06bb6d136fdb9043"
+    },
+    {
+      "pr": 8210,
+      "source": "276d569c2f5abce5b77bfb89aed016951e314bd3",
+      "patch_id": "cd6dde52ae5bbda0f2a580126cd891880fc3ff03",
+      "kind": "apply",
+      "subject": "docs: #8208 devel 238de6de4 rebase head 대표 review·overlay PNG 재캡처",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "fe442c72766b8a7ffcdc6cfbe39691e3c40aef41"
+    },
+    {
+      "pr": 8213,
+      "source": "ad6a918fa7e872d84f13f925c4da35e8f0b49819",
+      "patch_id": "52079554bc8eb921c350963986a7d5eb934e22ff",
+      "kind": "duplicate",
+      "same_as": "ef089bc668d64e02b10a596d927d9d3b0bc347a6",
+      "applied": "81dd6e099e770343f3ba7382654118c6462ac859",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8213,
+      "source": "b360b1cd3437327a81304b70cbb32a0af32ff7bf",
+      "patch_id": "493b0245a3181954cbdf82485a6fc77729300138",
+      "kind": "duplicate",
+      "same_as": "1091fb933df18e3171b34f048d0de24d4a054562",
+      "applied": "916048d29b7603305a4c22cf9bb80584e3c52e64",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8213,
+      "source": "ab52479a8e6abd7291c134005356f8a7d775a1c6",
+      "patch_id": "74da8d24c683a75d307f3541e2d8b43bf3ace478",
+      "kind": "duplicate",
+      "same_as": "ca45a7162a9af5102b10ff941d92ab6625a4cfeb",
+      "applied": "a410ae27ab05af32132df4c086775ff36ebd8952",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8213,
+      "source": "3920830577969a6bfbe256d6970a21f3216dc64e",
+      "patch_id": "5d0678725d87596474f931e0ef9daf9b4803d699",
+      "kind": "duplicate",
+      "same_as": "65f281399bae5457f021585532eaab2276e6540c",
+      "applied": "799894aecb949109f07a8e85de359d16c4cd0387",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8213,
+      "source": "e405b57d2a648db40993b74dbeb9bb40fd8a7df9",
+      "patch_id": "f226f4af8a087e9448d3dbd9120dc06aef941fc6",
+      "kind": "duplicate",
+      "same_as": "92c64aef7f4971a5b1fb563c7396c284f1e61a06",
+      "applied": "a22ed83a746c2f3995cba830d1accf309e85e0e6",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8213,
+      "source": "df4b51036e736bf626032c8afe23240987ef3cd1",
+      "patch_id": "c1d0aee5a6199262bc475b4fefd10e607d9c72dc",
+      "kind": "duplicate",
+      "same_as": "01588f1e997b37795d2dbafecdf1f015341d553c",
+      "applied": "ca638217d50845db03df171a3ef4686e3911f3a6",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8213,
+      "source": "e0355691ab52253e4c6b5b4714b5b64a85804869",
+      "patch_id": "9d2167fdeb51c5143a362d15edd1c1d3ed277744",
+      "kind": "duplicate",
+      "same_as": "e0355691ab52253e4c6b5b4714b5b64a85804869",
+      "applied": "ce82eee1ef728287db29acc5fce242814ceecbb4",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8213,
+      "source": "ef90aed188c899fb5d67d33725523d057d925765",
+      "patch_id": "f5624ef8f8c59f4f6652f64dc343a6555de046b4",
+      "kind": "duplicate",
+      "same_as": "ef90aed188c899fb5d67d33725523d057d925765",
+      "applied": "830414f3b80368d942166a8d916c6c62255e0c69",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8213,
+      "source": "a6060b598c785cc5a7c1d63a1e3f4ff5e46b62dd",
+      "patch_id": "75170a2d7b2dcada2688297075e0bc8b01ee9dd3",
+      "kind": "duplicate",
+      "same_as": "a6060b598c785cc5a7c1d63a1e3f4ff5e46b62dd",
+      "applied": "3c1bc7568404b49491b2c3da06bb6d136fdb9043",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8213,
+      "source": "276d569c2f5abce5b77bfb89aed016951e314bd3",
+      "patch_id": "cd6dde52ae5bbda0f2a580126cd891880fc3ff03",
+      "kind": "duplicate",
+      "same_as": "276d569c2f5abce5b77bfb89aed016951e314bd3",
+      "applied": "fe442c72766b8a7ffcdc6cfbe39691e3c40aef41",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8213,
+      "source": "32301f8a2d3f2b88fe037b37a2af8167f2d81b3c",
+      "patch_id": "8670d120c187369066c27d9d91c63e1410ec70e3",
+      "kind": "apply",
+      "subject": "perf(text): 글자 폭 메트릭 조회의 글꼴 이름 해석을 최근 이름 캐시로",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "626c676302c902fb085756d6d6512a8ec43bf850"
+    },
+    {
+      "pr": 8213,
+      "source": "2e720473b79548a5d5fc38346ab4348447f33384",
+      "patch_id": "aaa3c28d693ee778f974517ebdcf9a0e1625fec9",
+      "kind": "apply",
+      "subject": "perf(table): 중첩 표 본체 높이를 표 단위로 한 번만 계산",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "f510ce652ed39036c5cb101962c5add91942026d"
+    },
+    {
+      "pr": 8213,
+      "source": "d1b4197b988a4117886aa771d297030752d586c6",
+      "patch_id": "08e6d20fdf6912433b33694400439a13395d77ec",
+      "kind": "apply",
+      "subject": "perf(table): 표 조각 렌더에서 반복 제목행 수를 셀마다 다시 세지 않음",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "9603550d08932417e248f29e0ea13716dc376048"
+    },
+    {
+      "pr": 8213,
+      "source": "46f702c76b69c7d4bf3408404b70683b172caf15",
+      "patch_id": "2ee5be0b7802e7f66705be18855b2cbb786e6050",
+      "kind": "apply",
+      "subject": "perf(table): 저장 행 본체 판정에서 행마다 표 전체를 훑지 않음",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "ed00e9d2b24080bb121bdd4205d75d482256e2a7"
+    },
+    {
+      "pr": 8213,
+      "source": "6621445d1510b26b5dc2835c692cda91a7977d29",
+      "patch_id": "648921031a009824391826b9736bd55eb09f0a85",
+      "kind": "apply",
+      "subject": "test: 중첩 표 셀 편집 뒤 출력과 새 문서 첫 출력의 일치 검사",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "11e7e46912e026fdde9d55363052d904c8ae6909"
+    },
+    {
+      "pr": 8213,
+      "source": "2a8142924baa7da16e151a3a4520bf564eb7f354",
+      "patch_id": "53f51717a94cb1a360973a5c9f9dcd3075c495eb",
+      "kind": "apply",
+      "subject": "docs: #8212 대표 review·overlay PNG",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "2edbfb844aae32266d0b35028ae078797e3473eb"
+    },
+    {
+      "pr": 8213,
+      "source": "d9aab2292be0da4c71dc2c28665fd9ddc8c07a59",
+      "patch_id": "7e0526236fb2fbbd920ead2708db889cf567698f",
+      "kind": "apply",
+      "subject": "docs: #8212 devel 238de6de4 rebase head 대표 review·overlay PNG 재캡처",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "c2aebcf431fe69895c3a469182962127f7b54999"
+    },
+    {
+      "pr": 8215,
+      "source": "31e5e700791c89c743feacd84acc55bc034569a3",
+      "patch_id": "b42100cc88107c5a366fa5c1555d3baa75b33ed7",
+      "kind": "apply",
+      "subject": "perf(save): HWP5 저장에서 바뀌지 않은 그림은 저장 스트림을 그대로 쓰기",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "2ad207dbc3eb46a4d192307b1c267e517070f64c"
+    },
+    {
+      "pr": 8217,
+      "source": "b717326395c5e9556f6ccb0ec3dc1c127c2daf49",
+      "patch_id": "60ac9bbc1c61815a9e0456cefd688e86d88ff27c",
+      "kind": "apply",
+      "subject": "perf(save): HWPX 저장에서 바뀌지 않은 그림은 원본 deflate 바이트를 옮기기",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "757d8255146b7aa1cc324260bbb6aaea004bf84d"
+    },
+    {
+      "pr": 8219,
+      "source": "bfe5d44cf1d08806d9ac12aff1096096ed0853c0",
+      "patch_id": "bacc9afbcee237c5bfe92746c2a5dab4307cad50",
+      "kind": "apply",
+      "subject": "fix(hwp3): 연결 그림 BinData 를 id 순으로 놓아 저장·렌더를 결정적으로",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "bc093c0f15dbe353b405f7a9dc0ef0a8923d4f6e"
+    },
+    {
+      "pr": 8221,
+      "source": "b8a0e876d5fad426108ea7173f9c6ab8d7f47e17",
+      "patch_id": "ad11cd6480820e8e2887c5d63f0592b15cfb23af",
+      "kind": "apply",
+      "subject": "fix(pdf-import): 짧은 끝줄·항목 기호·맞닿은 제목 아래 단에서 문단 경계를 찾는다",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "61eced442e0ff0283949c20d7889d018f9d9597b"
+    },
+    {
+      "pr": 8221,
+      "source": "2b3982b028b5b80398d6d0b75bf96716762995a3",
+      "patch_id": "634a11339053fdff6258aa7fb475b410b171900b",
+      "kind": "apply",
+      "subject": "fix(pdf-import): 공백 없는 본문 줄의 첫 단어를 조각 사이 간격으로 잰다 (#8220)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "d065c1abe5644324263f9f43f9b28aae080a7c32"
+    },
+    {
+      "pr": 8221,
+      "source": "1a69db15352e171d2a16b4195d78cc445af2e9e6",
+      "patch_id": "874a1cb0f4b30d3dca5e1b91b23a89fbca1585b6",
+      "kind": "apply",
+      "subject": "docs: #8220 PDF import 문단 경계 Native·fresh WASM TSV와 대표 review·overlay PNG",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "b7b13bab57dc7c892462febc0e42006981b293b2"
+    },
+    {
+      "pr": 8227,
+      "source": "b8a0e876d5fad426108ea7173f9c6ab8d7f47e17",
+      "patch_id": "ad11cd6480820e8e2887c5d63f0592b15cfb23af",
+      "kind": "duplicate",
+      "same_as": "b8a0e876d5fad426108ea7173f9c6ab8d7f47e17",
+      "applied": "61eced442e0ff0283949c20d7889d018f9d9597b",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8227,
+      "source": "2b3982b028b5b80398d6d0b75bf96716762995a3",
+      "patch_id": "634a11339053fdff6258aa7fb475b410b171900b",
+      "kind": "duplicate",
+      "same_as": "2b3982b028b5b80398d6d0b75bf96716762995a3",
+      "applied": "d065c1abe5644324263f9f43f9b28aae080a7c32",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8227,
+      "source": "1a69db15352e171d2a16b4195d78cc445af2e9e6",
+      "patch_id": "874a1cb0f4b30d3dca5e1b91b23a89fbca1585b6",
+      "kind": "duplicate",
+      "same_as": "1a69db15352e171d2a16b4195d78cc445af2e9e6",
+      "applied": "b7b13bab57dc7c892462febc0e42006981b293b2",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8227,
+      "source": "462c3dd380da3e3f617c39082f341efcb8fc6afe",
+      "patch_id": "c5b5274cc8d5879fa30795ce85d9e6a74f6460ed",
+      "kind": "apply",
+      "subject": "feat(pdf-import): 본문 문단을 구역 본문 흐름으로 가져오는 편집 우선 배치 옵션 (#8220)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "2ff52e2d79726a541bf5e6e52780c7abbecfbd15"
+    },
+    {
+      "pr": 8227,
+      "source": "a19b8bc9359d8b80d86c7b497d9d1e7f40c72774",
+      "patch_id": "e3bd3166373b4192929675a3b81e7d53823966de",
+      "kind": "apply",
+      "subject": "fix(pdf-import): 편집 우선 배치의 구역 첫 문단을 구역·단 정의만 든 빈 줄로 둔다 (#8220)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "56870979a454b0335b6f609c56516b1e2400486b"
+    },
+    {
+      "pr": 8227,
+      "source": "6d1ad105f8b56d4639855200e1b6ccf9b7ddc618",
+      "patch_id": "bda29e242dfe9d9eeb18e9dcd009eecb16040448",
+      "kind": "apply",
+      "subject": "fix(pdf-import): 편집 우선 배치에서 들여쓰기 줄 표지를 문단 모양에 맞춘다 (#8220)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "3453e4d4b6505377c06fbeb4ff173b866aae4271"
+    },
+    {
+      "pr": 8227,
+      "source": "a34d1fb70dcdc2e1f692efaa63bfd2d77ee0e74c",
+      "patch_id": "c852ef79527c331eb75f7d7af5fe292b47fb230c",
+      "kind": "apply",
+      "subject": "docs: #8220 편집 우선 배치 Native·fresh WASM TSV와 대표 review·overlay PNG",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "87eacd3484cd9b8009baf395d817da3315bd4916"
+    },
+    {
+      "pr": 8229,
+      "source": "b8a0e876d5fad426108ea7173f9c6ab8d7f47e17",
+      "patch_id": "ad11cd6480820e8e2887c5d63f0592b15cfb23af",
+      "kind": "duplicate",
+      "same_as": "b8a0e876d5fad426108ea7173f9c6ab8d7f47e17",
+      "applied": "61eced442e0ff0283949c20d7889d018f9d9597b",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8229,
+      "source": "2b3982b028b5b80398d6d0b75bf96716762995a3",
+      "patch_id": "634a11339053fdff6258aa7fb475b410b171900b",
+      "kind": "duplicate",
+      "same_as": "2b3982b028b5b80398d6d0b75bf96716762995a3",
+      "applied": "d065c1abe5644324263f9f43f9b28aae080a7c32",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8229,
+      "source": "1a69db15352e171d2a16b4195d78cc445af2e9e6",
+      "patch_id": "874a1cb0f4b30d3dca5e1b91b23a89fbca1585b6",
+      "kind": "duplicate",
+      "same_as": "1a69db15352e171d2a16b4195d78cc445af2e9e6",
+      "applied": "b7b13bab57dc7c892462febc0e42006981b293b2",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8229,
+      "source": "462c3dd380da3e3f617c39082f341efcb8fc6afe",
+      "patch_id": "c5b5274cc8d5879fa30795ce85d9e6a74f6460ed",
+      "kind": "duplicate",
+      "same_as": "462c3dd380da3e3f617c39082f341efcb8fc6afe",
+      "applied": "2ff52e2d79726a541bf5e6e52780c7abbecfbd15",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8229,
+      "source": "a19b8bc9359d8b80d86c7b497d9d1e7f40c72774",
+      "patch_id": "e3bd3166373b4192929675a3b81e7d53823966de",
+      "kind": "duplicate",
+      "same_as": "a19b8bc9359d8b80d86c7b497d9d1e7f40c72774",
+      "applied": "56870979a454b0335b6f609c56516b1e2400486b",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8229,
+      "source": "6d1ad105f8b56d4639855200e1b6ccf9b7ddc618",
+      "patch_id": "bda29e242dfe9d9eeb18e9dcd009eecb16040448",
+      "kind": "duplicate",
+      "same_as": "6d1ad105f8b56d4639855200e1b6ccf9b7ddc618",
+      "applied": "3453e4d4b6505377c06fbeb4ff173b866aae4271",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8229,
+      "source": "a34d1fb70dcdc2e1f692efaa63bfd2d77ee0e74c",
+      "patch_id": "c852ef79527c331eb75f7d7af5fe292b47fb230c",
+      "kind": "duplicate",
+      "same_as": "a34d1fb70dcdc2e1f692efaa63bfd2d77ee0e74c",
+      "applied": "87eacd3484cd9b8009baf395d817da3315bd4916",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8229,
+      "source": "195ce6297541f2136ea02fb55cdc531320d2d714",
+      "patch_id": "f9d2fac7e12dd786554f1c20313a8225ec646616",
+      "kind": "apply",
+      "subject": "feat(studio): 환경 설정에 PDF 가져오기 배치(원본 모양 우선/편집 우선) 선택 (#8220)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "06a80bb429cb2ffa9ba9b9a1e1c5833eb01b7fe0"
+    },
+    {
+      "pr": 8237,
+      "source": "b8a0e876d5fad426108ea7173f9c6ab8d7f47e17",
+      "patch_id": "ad11cd6480820e8e2887c5d63f0592b15cfb23af",
+      "kind": "duplicate",
+      "same_as": "b8a0e876d5fad426108ea7173f9c6ab8d7f47e17",
+      "applied": "61eced442e0ff0283949c20d7889d018f9d9597b",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8237,
+      "source": "2b3982b028b5b80398d6d0b75bf96716762995a3",
+      "patch_id": "634a11339053fdff6258aa7fb475b410b171900b",
+      "kind": "duplicate",
+      "same_as": "2b3982b028b5b80398d6d0b75bf96716762995a3",
+      "applied": "d065c1abe5644324263f9f43f9b28aae080a7c32",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8237,
+      "source": "1a69db15352e171d2a16b4195d78cc445af2e9e6",
+      "patch_id": "874a1cb0f4b30d3dca5e1b91b23a89fbca1585b6",
+      "kind": "duplicate",
+      "same_as": "1a69db15352e171d2a16b4195d78cc445af2e9e6",
+      "applied": "b7b13bab57dc7c892462febc0e42006981b293b2",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8237,
+      "source": "462c3dd380da3e3f617c39082f341efcb8fc6afe",
+      "patch_id": "c5b5274cc8d5879fa30795ce85d9e6a74f6460ed",
+      "kind": "duplicate",
+      "same_as": "462c3dd380da3e3f617c39082f341efcb8fc6afe",
+      "applied": "2ff52e2d79726a541bf5e6e52780c7abbecfbd15",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8237,
+      "source": "a19b8bc9359d8b80d86c7b497d9d1e7f40c72774",
+      "patch_id": "e3bd3166373b4192929675a3b81e7d53823966de",
+      "kind": "duplicate",
+      "same_as": "a19b8bc9359d8b80d86c7b497d9d1e7f40c72774",
+      "applied": "56870979a454b0335b6f609c56516b1e2400486b",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8237,
+      "source": "6d1ad105f8b56d4639855200e1b6ccf9b7ddc618",
+      "patch_id": "bda29e242dfe9d9eeb18e9dcd009eecb16040448",
+      "kind": "duplicate",
+      "same_as": "6d1ad105f8b56d4639855200e1b6ccf9b7ddc618",
+      "applied": "3453e4d4b6505377c06fbeb4ff173b866aae4271",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8237,
+      "source": "a34d1fb70dcdc2e1f692efaa63bfd2d77ee0e74c",
+      "patch_id": "c852ef79527c331eb75f7d7af5fe292b47fb230c",
+      "kind": "duplicate",
+      "same_as": "a34d1fb70dcdc2e1f692efaa63bfd2d77ee0e74c",
+      "applied": "87eacd3484cd9b8009baf395d817da3315bd4916",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8237,
+      "source": "d8728de201a9e4c5f83a3d66c1916eff8dc3fe42",
+      "patch_id": "e2c1e98378c7a07b087bd6c3f9e65973ec01aafd",
+      "kind": "apply",
+      "subject": "fix(pdf-import): 단을 나누기 전에 쪽 머리·꼬리 띠를 떼어 낸다 (#8220)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "57f46feb2892eebff6bb8c4f3a4a1519ce2fb85d"
+    },
+    {
+      "pr": 8237,
+      "source": "f58e857b1294dd1ed0ea1f355f6323fbc5dbcd51",
+      "patch_id": "02416d63535d7a6a89dc9d5af63ceb0a891527a1",
+      "kind": "apply",
+      "subject": "docs: #8220 머리·꼬리 띠 분리 후 두 배치의 Native·fresh WASM TSV와 2010 대표 PNG",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "ee8b055a54b329b8d13b7cbfa51850c7013cfd26"
+    },
+    {
+      "pr": 8265,
+      "source": "65196bb3f97293763b7736438feb6d47a5072922",
+      "patch_id": "d5f9b60ffeb9d44a18ae69dc10f6c1ab7961cdfb",
+      "kind": "apply",
+      "subject": "feat(studio): AI 도우미에 OpenAI·Gemini 제공자를 추가한다",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "cbd4f817838e39a63a5ccffbf614739bf3f725cf"
+    },
+    {
+      "pr": 8283,
+      "source": "ceae2895784b4d5bb81c423782be0a7f038c1ae5",
+      "patch_id": "7384aed6615af3e01d4e5c64675a41bf03ae97c4",
+      "kind": "duplicate",
+      "same_as": "69fca8f5003e3ec5a6fd89219e9474ade2638074",
+      "applied": "d41ff8e87ff76e8fdd7d1b16c6b8899e222ee135",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8283,
+      "source": "edc6d3905f51063fc210c2f5d3fb5beed78f4c6c",
+      "patch_id": "40303415efb13aaf16106cf8c1c329d21f97db87",
+      "kind": "duplicate",
+      "same_as": "6e59ef78f459e1039d2c5fd586df32893965e73d",
+      "applied": "8ffe6f6014382fc6071876c547bb0cd580775148",
+      "disposition": "duplicate-patch"
+    },
+    {
+      "pr": 8283,
+      "source": "ebfa21f277a86347b67df3e8a3b94b97ea27a9da",
+      "patch_id": "b0f438ba068122b82e1ffbc48fe6bca35509bc94",
+      "kind": "apply",
+      "subject": "fix(layout): 저장 줄 없는 글자처럼 그림 호스트가 줄 폭 중립 부동 개체와 함께여도 현재 프레임에서 재조판된다 (#8271)",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "62058ace2b78c8426d109881b7e3d9f0e6c070ee"
+    },
+    {
+      "pr": 8283,
+      "source": "43d7eb24e84c84e6fd7a817dad579b9baebaaae3",
+      "patch_id": "d217ba9ce20f0ef96e9296cc111118986dff963e",
+      "kind": "apply",
+      "subject": "docs(report): #8271 HWPX 다시 열기 수정 전후 Native/fresh WASM review·overlay와 전쪽 실루엣 TSV",
+      "exit": 0,
+      "disposition": "applied",
+      "applied": "be1de8e41ed32f461706f9c8ddcefcfd392b0e5c"
+    }
+  ],
+  "completed_at": "2026-10-26T15:28:00.473991+00:00",
+  "prs": [
+    {
+      "pr": 8115,
+      "source_head": "a47a41d3004a0458873cf1a00e90a356f19f2fa5",
+      "before": "dd76f824df900cd473fe59cac31ff21c516a130f",
+      "expected_tree": "949a957c90142da9c8a839f767794fdb2fde8822",
+      "merge_tree_exit": 0,
+      "after": "6436d1d68180f7603e6e2f11796db3491b200726",
+      "actual_tree": "949a957c90142da9c8a839f767794fdb2fde8822",
+      "tree_matches": true
+    },
+    {
+      "pr": 8128,
+      "source_head": "21c40f21c5ee019fdf1ee4e68bdfeed35d3ae26c",
+      "before": "6436d1d68180f7603e6e2f11796db3491b200726",
+      "expected_tree": "2802a141566c27a40e26503d393ca27f4b8ce7b0",
+      "merge_tree_exit": 0,
+      "after": "48e6b7c7fea59aa973bfad6a590f6fc02cb8a4ed",
+      "actual_tree": "2802a141566c27a40e26503d393ca27f4b8ce7b0",
+      "tree_matches": true
+    },
+    {
+      "pr": 8133,
+      "source_head": "465d85f13cab961628ec07247ea6ade82e0cbc46",
+      "before": "48e6b7c7fea59aa973bfad6a590f6fc02cb8a4ed",
+      "expected_tree": "6f398febf1dfe2f9b800a8d6becf0a9d08f29348",
+      "merge_tree_exit": 0,
+      "after": "856f7265c702eb57801e21b5c168aa7819ebcf2c",
+      "actual_tree": "6f398febf1dfe2f9b800a8d6becf0a9d08f29348",
+      "tree_matches": true
+    },
+    {
+      "pr": 8142,
+      "source_head": "e1abc4c7f149268ea63995eeedeb02cfcc92e5cd",
+      "before": "856f7265c702eb57801e21b5c168aa7819ebcf2c",
+      "expected_tree": "30c33ef5398bab747693bad7d4200cd5a20eb442",
+      "merge_tree_exit": 0,
+      "after": "b2d6546f076b9c72bb2e0dc2132fe66a635fd62a",
+      "actual_tree": "30c33ef5398bab747693bad7d4200cd5a20eb442",
+      "tree_matches": true
+    },
+    {
+      "pr": 8184,
+      "source_head": "567ff9d18ac1f7e702e94042eb38a03a44f95943",
+      "before": "b2d6546f076b9c72bb2e0dc2132fe66a635fd62a",
+      "expected_tree": "124ecc47c3e4c1b26d1a36d26f2fe4560fb95869",
+      "merge_tree_exit": 0,
+      "after": "d8c1bd1d61cf234212f3b8913a77edab616f1d19",
+      "actual_tree": "124ecc47c3e4c1b26d1a36d26f2fe4560fb95869",
+      "tree_matches": true
+    },
+    {
+      "pr": 8202,
+      "source_head": "d0f6adbeef179e17d0431eb84c38443d318a887a",
+      "before": "d8c1bd1d61cf234212f3b8913a77edab616f1d19",
+      "expected_tree": "d725669878cac5cafa679dec2ee6c8939cefe816",
+      "merge_tree_exit": 0,
+      "after": "951c6b38f53241722228fe2efbd0732704ba08da",
+      "actual_tree": "d725669878cac5cafa679dec2ee6c8939cefe816",
+      "tree_matches": true
+    },
+    {
+      "pr": 8205,
+      "source_head": "5de6de6a1586e4ce714ee4c8e51a92a3b4812c97",
+      "before": "951c6b38f53241722228fe2efbd0732704ba08da",
+      "expected_tree": "9837da03b2497eec427cd3f9821abc179e93cf72",
+      "merge_tree_exit": 0,
+      "after": "ac92aaf41bd4e661e0fbfb78205b8a26a32ed37b",
+      "actual_tree": "9837da03b2497eec427cd3f9821abc179e93cf72",
+      "tree_matches": true
+    },
+    {
+      "pr": 8206,
+      "source_head": "dd3ad0b29bb55893caf8d618e42a24776d64673f",
+      "before": "ac92aaf41bd4e661e0fbfb78205b8a26a32ed37b",
+      "expected_tree": "a1183a2a12937c8a8dafbad6795c9a9afb3769fa",
+      "merge_tree_exit": 0,
+      "after": "bc6ae034d3deaf22fae6fb5ef2b1c77529a4e279",
+      "actual_tree": "a1183a2a12937c8a8dafbad6795c9a9afb3769fa",
+      "tree_matches": true
+    },
+    {
+      "pr": 8209,
+      "source_head": "01588f1e997b37795d2dbafecdf1f015341d553c",
+      "before": "bc6ae034d3deaf22fae6fb5ef2b1c77529a4e279",
+      "expected_tree": "a89ba74b632fd5a518582a82bbe2c806baca3f3c",
+      "merge_tree_exit": 0,
+      "after": "ca638217d50845db03df171a3ef4686e3911f3a6",
+      "actual_tree": "a89ba74b632fd5a518582a82bbe2c806baca3f3c",
+      "tree_matches": true
+    },
+    {
+      "pr": 8210,
+      "source_head": "276d569c2f5abce5b77bfb89aed016951e314bd3",
+      "before": "ca638217d50845db03df171a3ef4686e3911f3a6",
+      "expected_tree": "0124761b5c56baa36a6a648770a0aee283a87d8e",
+      "merge_tree_exit": 0,
+      "after": "fe442c72766b8a7ffcdc6cfbe39691e3c40aef41",
+      "actual_tree": "0124761b5c56baa36a6a648770a0aee283a87d8e",
+      "tree_matches": true
+    },
+    {
+      "pr": 8213,
+      "source_head": "d9aab2292be0da4c71dc2c28665fd9ddc8c07a59",
+      "before": "fe442c72766b8a7ffcdc6cfbe39691e3c40aef41",
+      "expected_tree": "6f92ffbc179ee89a046c4dfd1f678e0f29954528",
+      "merge_tree_exit": 0,
+      "after": "c2aebcf431fe69895c3a469182962127f7b54999",
+      "actual_tree": "6f92ffbc179ee89a046c4dfd1f678e0f29954528",
+      "tree_matches": true
+    },
+    {
+      "pr": 8215,
+      "source_head": "31e5e700791c89c743feacd84acc55bc034569a3",
+      "before": "c2aebcf431fe69895c3a469182962127f7b54999",
+      "expected_tree": "71c5b6cc3c85aadf785de7cfdec597b75795400d",
+      "merge_tree_exit": 0,
+      "after": "2ad207dbc3eb46a4d192307b1c267e517070f64c",
+      "actual_tree": "71c5b6cc3c85aadf785de7cfdec597b75795400d",
+      "tree_matches": true
+    },
+    {
+      "pr": 8217,
+      "source_head": "b717326395c5e9556f6ccb0ec3dc1c127c2daf49",
+      "before": "2ad207dbc3eb46a4d192307b1c267e517070f64c",
+      "expected_tree": "2c71136bea3193e915b84f0ce41699e7a9f038c0",
+      "merge_tree_exit": 0,
+      "after": "757d8255146b7aa1cc324260bbb6aaea004bf84d",
+      "actual_tree": "2c71136bea3193e915b84f0ce41699e7a9f038c0",
+      "tree_matches": true
+    },
+    {
+      "pr": 8219,
+      "source_head": "bfe5d44cf1d08806d9ac12aff1096096ed0853c0",
+      "before": "757d8255146b7aa1cc324260bbb6aaea004bf84d",
+      "expected_tree": "3a8364d757515934c35c8d9dc1dff8e09ab35a98",
+      "merge_tree_exit": 0,
+      "after": "bc093c0f15dbe353b405f7a9dc0ef0a8923d4f6e",
+      "actual_tree": "3a8364d757515934c35c8d9dc1dff8e09ab35a98",
+      "tree_matches": true
+    },
+    {
+      "pr": 8221,
+      "source_head": "1a69db15352e171d2a16b4195d78cc445af2e9e6",
+      "before": "bc093c0f15dbe353b405f7a9dc0ef0a8923d4f6e",
+      "expected_tree": "8475fcb89309ff7f748781e30d0361320b4b0b1a",
+      "merge_tree_exit": 0,
+      "after": "b7b13bab57dc7c892462febc0e42006981b293b2",
+      "actual_tree": "8475fcb89309ff7f748781e30d0361320b4b0b1a",
+      "tree_matches": true
+    },
+    {
+      "pr": 8227,
+      "source_head": "a34d1fb70dcdc2e1f692efaa63bfd2d77ee0e74c",
+      "before": "b7b13bab57dc7c892462febc0e42006981b293b2",
+      "expected_tree": "98c17f4e253cdfe10209d6acf5339e0d8944ac95",
+      "merge_tree_exit": 0,
+      "expected_merge_base": "1a69db15352e171d2a16b4195d78cc445af2e9e6",
+      "after": "87eacd3484cd9b8009baf395d817da3315bd4916",
+      "actual_tree": "98c17f4e253cdfe10209d6acf5339e0d8944ac95",
+      "tree_matches": true
+    },
+    {
+      "pr": 8229,
+      "source_head": "195ce6297541f2136ea02fb55cdc531320d2d714",
+      "before": "87eacd3484cd9b8009baf395d817da3315bd4916",
+      "expected_tree": "ec074ebf7e23181d04b7cbc2298f0b4b8f77d60a",
+      "merge_tree_exit": 0,
+      "after": "06a80bb429cb2ffa9ba9b9a1e1c5833eb01b7fe0",
+      "actual_tree": "ec074ebf7e23181d04b7cbc2298f0b4b8f77d60a",
+      "tree_matches": true
+    },
+    {
+      "pr": 8237,
+      "source_head": "f58e857b1294dd1ed0ea1f355f6323fbc5dbcd51",
+      "before": "06a80bb429cb2ffa9ba9b9a1e1c5833eb01b7fe0",
+      "expected_tree": "0b7d342c3f1e70bb04c66a2c630c7ee8d05b1e42",
+      "merge_tree_exit": 0,
+      "expected_merge_base": "a34d1fb70dcdc2e1f692efaa63bfd2d77ee0e74c",
+      "after": "ee8b055a54b329b8d13b7cbfa51850c7013cfd26",
+      "actual_tree": "0b7d342c3f1e70bb04c66a2c630c7ee8d05b1e42",
+      "tree_matches": true
+    },
+    {
+      "pr": 8265,
+      "source_head": "65196bb3f97293763b7736438feb6d47a5072922",
+      "before": "ee8b055a54b329b8d13b7cbfa51850c7013cfd26",
+      "expected_tree": "72402e5ccdab7acc4fb6273f0f30df04ec1fd022",
+      "merge_tree_exit": 0,
+      "after": "cbd4f817838e39a63a5ccffbf614739bf3f725cf",
+      "actual_tree": "72402e5ccdab7acc4fb6273f0f30df04ec1fd022",
+      "tree_matches": true
+    },
+    {
+      "pr": 8283,
+      "source_head": "43d7eb24e84c84e6fd7a817dad579b9baebaaae3",
+      "before": "cbd4f817838e39a63a5ccffbf614739bf3f725cf",
+      "expected_tree": "ef8fff02e215b788f8e3ec70bf15b38540f415ab",
+      "merge_tree_exit": 0,
+      "after": "be1de8e41ed32f461706f9c8ddcefcfd392b0e5c",
+      "actual_tree": "ef8fff02e215b788f8e3ec70bf15b38540f415ab",
+      "tree_matches": true
+    }
+  ]
+}

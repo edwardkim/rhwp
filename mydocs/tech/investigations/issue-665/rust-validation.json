@@ -1,0 +1,209 @@
+{
+  "source": "7cb4ac4bc665ff258134ce7953ac313e38f7db22",
+  "security_inputs": [],
+  "security_input_note": "No samples/ changes; tests/fixtures documents scanned separately with actual CLI",
+  "results": [
+    {
+      "step": "format-final",
+      "exit": 0,
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ]
+    },
+    {
+      "step": "clippy-workspace-all-targets-final",
+      "exit": 0,
+      "seconds": 16.334,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "step": "full-release-test-final",
+      "exit": 0,
+      "seconds": 1113.52,
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ]
+    },
+    {
+      "step": "native-skia-lib",
+      "exit": 0,
+      "seconds": 352.409,
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "4"
+      ]
+    },
+    {
+      "step": "native-missing-picture",
+      "exit": 0,
+      "seconds": 327.047,
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ]
+    },
+    {
+      "step": "native-direct-pdf",
+      "exit": 0,
+      "seconds": 16.091,
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ]
+    }
+  ],
+  "recorded_at": "2026-11-03T00:23:45.796998+09:00",
+  "product_source": "d78048a6f0e5f71aa3bdb7d32e703bd5971e3019",
+  "validation_source_at_end": "ed121f540cb8d14e7d77e83ef71c987cfc7770a6",
+  "task_source_before_report": "e90bb07b09254e8f0655d2f54d9d172179053289",
+  "rust_and_cargo_sources_identical": true,
+  "counts": {
+    "full": {
+      "passed": 12378,
+      "failed": 0,
+      "skipped": 45
+    },
+    "native_lib": {
+      "passed": 4040,
+      "failed": 0,
+      "ignored": 12
+    },
+    "native_missing_picture": {
+      "passed": 2,
+      "failed": 0,
+      "other_suite_tests_filtered": 301
+    },
+    "native_direct_pdf": {
+      "passed": 22,
+      "failed": 0,
+      "other_suite_tests_filtered": 271
+    }
+  },
+  "initial_full_attempt": {
+    "passed": 12376,
+    "failed": 2,
+    "skipped": 45,
+    "failures": [
+      "issue_2724_passthrough_invalidation_guard::invalidation_density_ledger_is_ratcheted",
+      "security_corpus_regression::new_sample_documents_are_clean_across_all_three_detectors"
+    ],
+    "resolution": "Density scan now covers moved model helper; invalid samples-only environment input removed; all 24 purpose-specific documents scanned with actual CLI separately. Full rerun passed."
+  },
+  "format_after_guard_exit": 0,
+  "tool_versions": {
+    "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+    "cargo": "cargo 1.93.1 (083ac5135 2025-12-15)",
+    "nextest": "cargo-nextest 0.9.137 (75ddba7e9 2026-05-26)\nrelease: 0.9.137\ncommit-hash: 75ddba7e911b44c5c0700dac0415d824403de9bd\ncommit-date: 2026-05-26\nhost: x86_64-unknown-linux-gnu"
+  },
+  "log_summaries": {
+    "full-release-test-final": {
+      "sha256": "9fc1066a1d4a15b4c627158f76a02088b8d8d15b72067668f45ffdc12c5f344c",
+      "summary": [
+        "     Summary [ 801.038s] 12378 tests run: 12378 passed (1 slow), 45 skipped"
+      ]
+    },
+    "native-skia-lib": {
+      "sha256": "f59eee45b0c9a1ce6f2388681b27b78a58d62eb91af03b3d8804778eb22c3d96",
+      "summary": [
+        "test result: ok. 3858 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 23.29s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    "native-missing-picture": {
+      "sha256": "6f97ff32a1f4164e866bfe2b8509e92138a03e7827f7ba97b8d00dfedf9bfbf9",
+      "summary": [
+        "     Summary [   0.158s] 2 tests run: 2 passed, 301 skipped"
+      ]
+    },
+    "native-direct-pdf": {
+      "sha256": "c73d602a2a268e1080a1c5d4b96745bbc43ff20dbcc594a8273b66dd8466b407",
+      "summary": [
+        "     Summary [   0.320s] 22 tests run: 22 passed, 271 skipped"
+      ]
+    },
+    "manifest-final": {
+      "sha256": "a7f3a21c982c2ea7aeb133b8e975da98baab3bf317f16024238664a3e5065109",
+      "summary": [
+        "[RustTestSuite] 확인 완료: 1981 sources / 8480 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 1767999..1772718"
+      ]
+    },
+    "unit-tier-final": {
+      "sha256": "2c6dbaab2093a94c2fa3ec11190f384180b922a10025e3466a44f53c6611685c",
+      "summary": [
+        "[RustUnitTier] 확인 완료: 4099 tests / 296 modules / ready 0 / support 85 / white-box 4010 / cfg support items 28"
+      ]
+    },
+    "exam-skill-final": {
+      "sha256": "6531f55e0b7c90b7882dd890307cb9e8988502d4e22087d3dd2b03d6b58b3626",
+      "summary": [
+        "Ran 36 tests in 0.083s"
+      ]
+    },
+    "markdown-links-final": {
+      "sha256": "af8f9cf57e21b098790fadf983fc089cfc7dc11bc4fc2251e5de0e045141d3a3",
+      "summary": [
+        "{",
+        "  \"files\": 43,",
+        "  \"prose_relative_links\": 103,",
+        "  \"errors\": [],",
+        "  \"excludes\": \"fenced and inline code examples\"",
+        "}"
+      ]
+    }
+  }
+}

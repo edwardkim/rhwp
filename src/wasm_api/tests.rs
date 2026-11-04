@@ -21975,14 +21975,23 @@ fn test_task229_field_svg_guide_text() {
     let hwp_doc = HwpDocument::from_bytes(&data).expect("HwpDocument 생성 실패");
     let svg = hwp_doc.render_page_svg_native(0).expect("SVG 렌더링 실패");
 
-    // SVG에 안내문 텍스트가 빨간색 기울임체로 렌더링되는지 확인
+    // 색과 기울임이 같은 안내문에 적용돼야 한다. 별도 글자의 스타일이나
+    // SVG 문자열의 우연한 일치로 통과하지 않으며, 합성 oblique도 기울임이다.
+    let painted = roxmltree::Document::parse(&svg).expect("안내문 SVG 파싱");
+    let guide: String = painted
+        .descendants()
+        .filter(|node| node.has_tag_name("text") && node.attribute("fill") == Some("#ff0000"))
+        .filter(|node| {
+            node.attribute("font-style").is_some_and(|style| {
+                style == "italic" || style.split_whitespace().next() == Some("oblique")
+            })
+        })
+        .filter_map(|node| node.text())
+        .collect();
     assert!(
-        svg.contains("ff0000"),
-        "SVG에 빨간색(#ff0000) 텍스트가 있어야 함"
+        guide.contains("여기에입력"),
+        "같은 안내문에 빨간색과 기울임이 함께 적용되어야 함: {guide:?}"
     );
-    assert!(svg.contains("italic"), "SVG에 기울임체 텍스트가 있어야 함");
-    assert!(svg.contains(">여</text>"), "SVG에 '여' 글자가 있어야 함");
-    assert!(svg.contains(">입</text>"), "SVG에 '입' 글자가 있어야 함");
 }
 
 // ─── Task 230: 필드 WASM API 테스트 ─────────────────────────

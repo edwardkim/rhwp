@@ -124,14 +124,16 @@ class WhitePaperAlphaTests(unittest.TestCase):
                 source.save(left / f"rhwp_{page:03d}.png")
                 Image.new("RGB", (32, 32), "white").save(right / f"pdf_{page:03d}.png")
             result = subprocess.run(
-                [sys.executable, str(MODULE_PATH), "--png-pair", str(left), str(right),
+                [sys.executable, "-c",
+                 "from scripts import visual_sweep as s; s.main()",
+                 "--png-pair", str(left), str(right),
                  "--silhouette-only", "--key", "alpha", "--out", str(output), "--page-workers", "2"],
                 cwd=MODULE_PATH.parents[1], capture_output=True, text=True, timeout=45,
             )
             self.assertEqual(result.returncode, 0, result.stderr)
             with (output / "silhouette.tsv").open() as stream:
                 rows = list(csv.DictReader(stream, delimiter="\t"))
-            self.assertEqual([row["tolerant_content_match_percent"] for row in rows], ["100.00000"] * 2)
+            self.assertEqual([row["tolerant_content_match_percent"] for row in rows], ["100.00"] * 2)
             manifest = json.loads((output / "silhouette_manifest.json").read_text())
             self.assertEqual(manifest["radius_px"], 2)
             self.assertEqual(manifest["color_tolerance"], 32)

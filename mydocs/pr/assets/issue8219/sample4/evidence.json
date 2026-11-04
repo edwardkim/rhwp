@@ -1,0 +1,232 @@
+{
+  "date": "2026-10-28",
+  "source": "samples/hwp3-sample4.hwp",
+  "source_sha256": "f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+  "pdf": "pdf/hwp3-sample4-2020.pdf",
+  "pdf_sha256": "61d63da58638b4a28900a15694779b35766f4ff5b3e0ed41d959a97f2599bb60",
+  "previous_pdf_sha256": "c0216394a9683a8cd50639f6db0118514e2ef04590d1248444589bf2d2022f6d",
+  "pages": 36,
+  "dpi": 96,
+  "engine": "2020",
+  "hancom_version": "11.0.0.9136",
+  "job_id": "f5f807d9-8035-46ed-92fe-0e44335a097d",
+  "print_method": 0,
+  "output_mode": "hancom2020_pdf_driver_one_up",
+  "pdf_path_note": "비교 때 임시 파일명을 사용했으나 사용자 지시에 따라 동일 바이트를 기존 PDF 경로에 덮어썼다.",
+  "page21_image_rect_px": [
+    255.7,
+    954.16,
+    496.06,
+    1002.77
+  ],
+  "page21_coordinate_method": "PyMuPDF image bounds 72dpi × 96/72",
+  "results": {
+    "native": {
+      "tsv": "mydocs/pr/assets/issue8219/sample4/native.tsv",
+      "tsv_sha256": "23eb68230f486f89afcd6ef92d57972b9c81285bebad1f05808d743bf3c34518",
+      "min": 64.32418,
+      "below90": [
+        1
+      ],
+      "page21": 100.0,
+      "manifest_sha256": "da6e6aa6c102a865da3254780d59a038f8e9fdb8048e6c7af4e12fbbdd5c9232",
+      "producer": {
+        "hwp": {
+          "path": "samples/hwp3-sample4.hwp",
+          "sha256": "f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4"
+        },
+        "pdf": {
+          "path": "pdf/issue8219-hwp3-sample4-2020.pdf",
+          "sha256": "61d63da58638b4a28900a15694779b35766f4ff5b3e0ed41d959a97f2599bb60"
+        },
+        "git_head": "97a98fddb0a608e4b1fa4b443f3a4f9e0dccd532",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "8303951029de360a0b881937f1440656d5eeb5b7100f3a7058272e00c57f7660"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/usr/bin/python3.12",
+          "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+          "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+          "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+          "version": "153.0.7999.0",
+          "wrapper_version": "5.13.0",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-native-rhwp",
+          "path": "output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-native-rhwp",
+          "sha256": "2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "04290218f302357bb57508328f9be56fa5fd674d5b7c57adfbccf68ace484851",
+        "layout_generation": "2022",
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    "wasm": {
+      "tsv": "mydocs/pr/assets/issue8219/sample4/wasm.tsv",
+      "tsv_sha256": "f6fd0b33170c9f8e59abb587be0fa899c81fc3f77367e1895721e0ded9d4de08",
+      "min": 64.81033,
+      "below90": [
+        1
+      ],
+      "page21": 100.0,
+      "manifest_sha256": "4203df4406a31044b758b49bec4a7a23fc9807c87d85b90a83f0c61f4011a689",
+      "producer": {
+        "hwp": {
+          "path": "samples/hwp3-sample4.hwp",
+          "sha256": "f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4"
+        },
+        "pdf": {
+          "path": "pdf/issue8219-hwp3-sample4-2020.pdf",
+          "sha256": "61d63da58638b4a28900a15694779b35766f4ff5b3e0ed41d959a97f2599bb60"
+        },
+        "git_head": "97a98fddb0a608e4b1fa4b443f3a4f9e0dccd532",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "8303951029de360a0b881937f1440656d5eeb5b7100f3a7058272e00c57f7660"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/usr/bin/python3.12",
+          "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+          "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+          "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+          "version": "153.0.7999.0",
+          "wrapper_version": "5.13.0",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-native-rhwp",
+          "path": "output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-native-rhwp",
+          "sha256": "2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "04290218f302357bb57508328f9be56fa5fd674d5b7c57adfbccf68ace484851",
+        "layout_generation": "2022",
+        "wasm": {
+          "files": [
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-wasm-pkg/rhwp.js",
+              "sha256": "a48acb46a157950724859baea436fda8d5d3b7c9a0fd10665455c952bf4c2434"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8328/float-hwpx-fixed-wasm-pkg/rhwp_bg.wasm",
+              "sha256": "05bab1b50e9a17b380582e562e992c7189fc3d2e9c85a01187ef069c24ff56e7"
+            }
+          ],
+          "exporter_sha256": "8b5ea4f4f3391fc36547f4289d706a057e25ce7bbd767d7b0a966199bb8db2dd",
+          "font_registration_sha256": "0fe96a5da7ddfbd13dc6db2b0a10a85439b9bfd40164774bfa9508653f05ea1a",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "none",
+          "files": []
+        }
+      }
+    }
+  },
+  "page1_base_comparison": {
+    "base_commit": "db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc",
+    "base_binary_sha256": "4c836aea177e63d8ea96f46fedb5331eaa8808e243df443deddc6ead520c6fc1",
+    "base_raw": 64.32418,
+    "candidate_raw": 64.32418,
+    "base_png_sha256": "820a718ab5bc5e2b907e681d6d9139e059347e2acbbbf979d5d1297e92d864a4",
+    "candidate_png_sha256": "820a718ab5bc5e2b907e681d6d9139e059347e2acbbbf979d5d1297e92d864a4",
+    "same_png": true,
+    "scope": "1쪽만 직접 비교. 이 결과로 다른 쪽의 리베이스 하락 여부를 추정하지 않는다."
+  },
+  "test": {
+    "summary": "4 passed",
+    "log_sha256": "25de5ea3ce85146b5f4badf1d6620dce7d4ed5e3b75e65e2fb1eb550bf52c1ce"
+  },
+  "base_head_comparison": {
+    "native": {
+      "base_commit": "db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc",
+      "pages": 36,
+      "drops_ge_0_1pp": [],
+      "different_png_pages": [],
+      "base_manifest_sha256": "b8a2d155ee2dd5843d3945997f0594a9bc4e231dd4b5f4a53daf15e98deb4425",
+      "candidate_manifest_sha256": "da6e6aa6c102a865da3254780d59a038f8e9fdb8048e6c7af4e12fbbdd5c9232",
+      "base_min": 64.32418,
+      "candidate_min": 64.32418,
+      "base_tsv": "mydocs/pr/assets/issue8219/sample4/base-native.tsv",
+      "base_tsv_sha256": "23eb68230f486f89afcd6ef92d57972b9c81285bebad1f05808d743bf3c34518"
+    },
+    "wasm": {
+      "base_commit": "db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc",
+      "pages": 36,
+      "drops_ge_0_1pp": [],
+      "different_png_pages": [],
+      "base_manifest_sha256": "fa5161472e05fd5717b02145e8800be36ab25dad15605396db74b6b8d64d2a5e",
+      "candidate_manifest_sha256": "4203df4406a31044b758b49bec4a7a23fc9807c87d85b90a83f0c61f4011a689",
+      "base_min": 64.81033,
+      "candidate_min": 64.81033,
+      "base_tsv": "mydocs/pr/assets/issue8219/sample4/base-wasm.tsv",
+      "base_tsv_sha256": "f6fd0b33170c9f8e59abb587be0fa899c81fc3f77367e1895721e0ded9d4de08"
+    }
+  },
+  "page1_font_substitution_experiment": {
+    "date": "2026-10-28",
+    "source_face": "중간공한",
+    "candidate": "Dongle Regular",
+    "candidate_source": "https://github.com/yangheeryu/Dongle",
+    "candidate_license": "SIL OFL 1.1",
+    "candidate_sha256": "2966e7a9d312a868e2b5477bf9a3e59b8ce16beb76e7e52305ab5897d1ce9741",
+    "render": "native-skia; explicit font environment substitution and font-path; 96dpi; PDFium; silhouette raw, radius 2px",
+    "baseline_percent": 64.32418,
+    "candidate_percent": 41.54053,
+    "baseline_png_sha256": "820a718ab5bc5e2b907e681d6d9139e059347e2acbbbf979d5d1297e92d864a4",
+    "candidate_png_sha256": "0dcb3d58c0e3da1a5a8df3a4a30d0f03a7117e897df125570906c514e430ddb2",
+    "decision": "사용자가 글꼴 제약으로 추가 보정 없이 진행하도록 지시했다. 동글을 적용하지 않는다. 기존 1쪽 미달은 유지한다."
+  }
+}

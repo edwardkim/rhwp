@@ -1,0 +1,12 @@
+{
+  "source": "04c92da78165ccbf63b467855591df183655a98d",
+  "base": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+  "source_code_identical": true,
+  "origin": "ubuntu-ted:/home/tsjang/rhwp/pkg",
+  "expected_from": "mydocs/pr/assets/s21_20261027/visual-evidence.json",
+  "verified_hashes": {
+    "rhwp.js": "a48acb46a157950724859baea436fda8d5d3b7c9a0fd10665455c952bf4c2434",
+    "rhwp_bg.wasm": "99c8f542858d30f5b0781c6a6954d3eba1dff2214199ef7e4dd6d36e267d13af"
+  },
+  "native_binary_not_reused": "target release binary did not match the validated native producer hash; no native source provenance inferred from it."
+}

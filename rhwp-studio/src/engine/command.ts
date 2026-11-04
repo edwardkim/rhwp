@@ -703,6 +703,7 @@ export class InsertTextCommand implements EditCommand {
     private replacedText = '',
     /** [#7489] 덮어쓰기 직전 문단 조각. 첫 조각으로 되돌리고, 병합으로 붙은 나머지는 버린다. */
     private fragmentIds: number[] = [],
+    private bodyLogical = false,
   ) {
     this.timestamp = timestamp ?? Date.now();
     // #8001: 삽입 범위와 되돌리기 범위는 코어가 실제로 소비하는 문자열로 맞춘다.
@@ -734,12 +735,27 @@ export class InsertTextCommand implements EditCommand {
         this.discard(wasm);
         throw error;
       }
+    } else if (this.bodyLogical) {
+      const fragmentId = this.charFormat ? captureTextFragment(wasm, this.position) : null;
+      if (fragmentId !== null) this.fragmentIds = [fragmentId];
+      try {
+        wasm.insertTextLogical(this.position.sectionIndex, this.position.paragraphIndex, this.position.charOffset, this.text);
+        if (this.charFormat) {
+          const from = wasm.logicalToTextOffset(this.position.sectionIndex, this.position.paragraphIndex, this.position.charOffset);
+          applyCharShapeModsToRange(wasm, this.position, from, from + charCount(this.text), this.charFormat);
+        }
+      } catch (error) {
+        if (fragmentId !== null) wasm.restoreDeleteFragment(fragmentId);
+        this.discard(wasm);
+        throw error;
+      }
+      this.lastMutationEffects = IMMEDIATE_TEXT_MUTATION_EFFECTS;
     } else {
       this.lastMutationEffects = insertTextWithMutationEffects(wasm, this.position, this.text);
     }
     // 코어 오프셋은 Unicode scalar 다 — UTF-16 길이로 옮기면 😀 뒤 캐럿이 한 글자 더 간다.
     const after = { ...this.position, charOffset: this.position.charOffset + charCount(this.text) };
-    if (this.charFormat) {
+    if (this.charFormat && !this.bodyLogical) {
       applyCharShapeModsToRange(wasm, this.position, this.position.charOffset, after.charOffset, this.charFormat);
     }
     return after;
@@ -766,7 +782,15 @@ export class InsertTextCommand implements EditCommand {
     }
     // [#2337-review] 삭제 count 는 char(Unicode scalar) 단위다. UTF-16 length 를 넘기면
     // astral 문자에서 실제보다 많이 지워 인접 문자를 잃는다 → HF/FN 과 동일하게 charCount.
-    doDeleteTextImmediate(wasm, this.position, charCount(this.text));
+    // 문단 끝의 개체 뒤 입력은 텍스트 끝에 들어가므로 실제 삽입 시작에서 지운다.
+    const position = isCell(this.position) ? this.position : {
+      ...this.position,
+      charOffset: Math.min(
+        this.position.charOffset,
+        wasm.getParagraphLength(this.position.sectionIndex, this.position.paragraphIndex) - charCount(this.text),
+      ),
+    };
+    doDeleteTextImmediate(wasm, position, charCount(this.text));
     if (this.replacedText) doInsertTextImmediate(wasm, this.position, this.replacedText);
     return { ...this.position };
   }
@@ -778,6 +802,7 @@ export class InsertTextCommand implements EditCommand {
 
   mergeWith(other: EditCommand): EditCommand | null {
     if (!(other instanceof InsertTextCommand)) return null;
+    if (other.bodyLogical !== this.bodyLogical) return null;
     // 같은 문단/셀인지 확인
     if (other.position.sectionIndex !== this.position.sectionIndex) return null;
     if (other.position.paragraphIndex !== this.position.paragraphIndex) return null;
@@ -804,6 +829,7 @@ export class InsertTextCommand implements EditCommand {
     const merged = new InsertTextCommand(
       this.position, this.text + other.text, this.timestamp, this.charFormat,
       this.replacedText + other.replacedText, [...this.fragmentIds, ...other.fragmentIds],
+      this.bodyLogical,
     );
     merged.steps = [...this.steps, ...other.steps];
     return merged;
@@ -1405,6 +1431,7 @@ export class ApplyCharFormatCommand implements EditCommand {
 
 export type ParaFormatTarget =
   | { kind: 'body'; sec: number; para: number }
+  | { kind: 'cellPath'; sec: number; parentPara: number; path: CellPathEntry[] }
   | { kind: 'cell'; sec: number; parentPara: number; controlIdx: number; cellIdx: number; cellParaIdx: number };
 
 interface ParaShapeHistoryEntry {
@@ -1416,7 +1443,9 @@ interface ParaShapeHistoryEntry {
 function getParaShapeId(wasm: WasmBridge, target: ParaFormatTarget): number {
   const props = target.kind === 'body'
     ? wasm.getParaPropertiesAt(target.sec, target.para)
-    : wasm.getCellParaPropertiesAt(
+    : target.kind === 'cellPath'
+      ? wasm.getCellParaPropertiesAtByPath(target.sec, target.parentPara, JSON.stringify(target.path))
+      : wasm.getCellParaPropertiesAt(
         target.sec,
         target.parentPara,
         target.controlIdx,
@@ -1435,6 +1464,10 @@ function applyParaFormatToTarget(wasm: WasmBridge, target: ParaFormatTarget, pro
     wasm.applyParaFormat(target.sec, target.para, propsJson);
     return;
   }
+  if (target.kind === 'cellPath') {
+    wasm.applyParaFormatInCellByPath(target.sec, target.parentPara, JSON.stringify(target.path), propsJson);
+    return;
+  }
   wasm.applyParaFormatInCell(
     target.sec,
     target.parentPara,
@@ -1448,6 +1481,10 @@ function applyParaFormatToTarget(wasm: WasmBridge, target: ParaFormatTarget, pro
 function restoreParaShapeId(wasm: WasmBridge, target: ParaFormatTarget, paraShapeId: number): void {
   if (target.kind === 'body') {
     wasm.setParaShapeId(target.sec, target.para, paraShapeId);
+    return;
+  }
+  if (target.kind === 'cellPath') {
+    wasm.setCellParaShapeIdByPath(target.sec, target.parentPara, JSON.stringify(target.path), paraShapeId);
     return;
   }
   wasm.setCellParaShapeId(
@@ -1474,9 +1511,11 @@ export class ApplyParaFormatCommand implements EditCommand {
 
   execute(wasm: WasmBridge): DocumentPosition {
     if (this.entries.length > 0 && this.entries.every(entry => entry.afterParaShapeId !== undefined)) {
-      for (const entry of this.entries) {
-        restoreParaShapeId(wasm, entry.target, entry.afterParaShapeId!);
-      }
+      wasm.runInBatch(() => {
+        for (const entry of this.entries) {
+          restoreParaShapeId(wasm, entry.target, entry.afterParaShapeId!);
+        }
+      });
       return { ...this.cursorBefore };
     }
 
@@ -1501,9 +1540,11 @@ export class ApplyParaFormatCommand implements EditCommand {
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    for (const entry of this.entries) {
-      restoreParaShapeId(wasm, entry.target, entry.beforeParaShapeId);
-    }
+    wasm.runInBatch(() => {
+      for (const entry of this.entries) {
+        restoreParaShapeId(wasm, entry.target, entry.beforeParaShapeId);
+      }
+    });
     return { ...this.cursorBefore };
   }
 

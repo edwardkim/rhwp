@@ -1,0 +1,176 @@
+{
+  "status": "interim_failed",
+  "candidate_source": "1c885d3110b768799eb9463c61a2be7a1f862755",
+  "font_condition": "51 ordered exact font programs and prior OS fallback selection",
+  "records": 67,
+  "pages": 956,
+  "threshold_decline_pp": 0.1,
+  "drops": [
+    {
+      "input": "hwp5-spec-official",
+      "page": 24,
+      "pre_rebase": 99.71451,
+      "candidate": 76.84636,
+      "decline_pp": 22.86815,
+      "candidate_tsv_sha256": "df9007ad287d614465ac0372a82fb9e137a61bbfab4b44995e2356c7c84f75e2",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/hwp5-spec-official.tsv"
+    },
+    {
+      "input": "hwp5-spec-official",
+      "page": 20,
+      "pre_rebase": 99.91459,
+      "candidate": 77.60113,
+      "decline_pp": 22.31346,
+      "candidate_tsv_sha256": "df9007ad287d614465ac0372a82fb9e137a61bbfab4b44995e2356c7c84f75e2",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/hwp5-spec-official.tsv"
+    },
+    {
+      "input": "endnotes-september",
+      "page": 20,
+      "pre_rebase": 96.35945,
+      "candidate": 95.32108,
+      "decline_pp": 1.03837,
+      "candidate_tsv_sha256": "7ab7db210bb6d761e34b7459c5ccd27bf4c43644818d6d4053cee037f8f2c266",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/endnotes-september.tsv"
+    },
+    {
+      "input": "endnotes-november",
+      "page": 21,
+      "pre_rebase": 91.32974,
+      "candidate": 90.84255,
+      "decline_pp": 0.48719,
+      "candidate_tsv_sha256": "cda3c2fefd7b086139afa511c4c56fb23561b9bc7304194483fd21516a04b3da",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/endnotes-november.tsv"
+    },
+    {
+      "input": "hwp5-spec-official",
+      "page": 21,
+      "pre_rebase": 99.54785,
+      "candidate": 99.07509,
+      "decline_pp": 0.47276,
+      "candidate_tsv_sha256": "df9007ad287d614465ac0372a82fb9e137a61bbfab4b44995e2356c7c84f75e2",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/hwp5-spec-official.tsv"
+    },
+    {
+      "input": "newsletter-korean",
+      "page": 1,
+      "pre_rebase": 98.00674,
+      "candidate": 97.55086,
+      "decline_pp": 0.45588,
+      "candidate_tsv_sha256": "25a351044ded601e491ce64578acab1f53dcfb210133fd3569a86d67698c275e",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/newsletter-korean.tsv"
+    },
+    {
+      "input": "hwpml-spec-2020",
+      "page": 23,
+      "pre_rebase": 99.78723,
+      "candidate": 99.37026,
+      "decline_pp": 0.41697,
+      "candidate_tsv_sha256": "98167f7555dd7870d235592bed3c1bd3079624808ad05c73836b9228297e3bcb",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/hwpml-spec-2020.tsv"
+    },
+    {
+      "input": "hwpml-spec-2020",
+      "page": 24,
+      "pre_rebase": 99.91002,
+      "candidate": 99.49582,
+      "decline_pp": 0.4142,
+      "candidate_tsv_sha256": "98167f7555dd7870d235592bed3c1bd3079624808ad05c73836b9228297e3bcb",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/hwpml-spec-2020.tsv"
+    },
+    {
+      "input": "onsemiro-hwpx",
+      "page": 26,
+      "pre_rebase": 94.25732,
+      "candidate": 93.94421,
+      "decline_pp": 0.31311,
+      "candidate_tsv_sha256": "1cc0fc66c7b04188a86012a50ceef9ced4df47b248df2b4f70bbf79a6e6fbdde",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/onsemiro-hwpx.tsv"
+    },
+    {
+      "input": "onsemiro-hwp",
+      "page": 26,
+      "pre_rebase": 94.25851,
+      "candidate": 93.94558,
+      "decline_pp": 0.31293,
+      "candidate_tsv_sha256": "1ee8c95b2546243050d92b1229b41cc26ff493480811600f4cec61d4dd601a8c",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/onsemiro-hwp.tsv"
+    },
+    {
+      "input": "nested-height-cache",
+      "page": 3,
+      "pre_rebase": 99.64167,
+      "candidate": 99.3886,
+      "decline_pp": 0.25307,
+      "candidate_tsv_sha256": "c40220c2f49576ac85e640c90a621992601ff7815c4a6a08f011e730660b1a0f",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/nested-height-cache.tsv"
+    },
+    {
+      "input": "rebase8116-cell_nested_table_rows",
+      "page": 1,
+      "pre_rebase": 98.57262,
+      "candidate": 98.35045,
+      "decline_pp": 0.22217,
+      "candidate_tsv_sha256": "58eb34393240f718c65dca5331b8223bc30d0a137a678c0210c86724cd3a5b58",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/rebase8116-cell_nested_table_rows.tsv"
+    },
+    {
+      "input": "onsemiro-hwpx",
+      "page": 38,
+      "pre_rebase": 93.89616,
+      "candidate": 93.72874,
+      "decline_pp": 0.16742,
+      "candidate_tsv_sha256": "1cc0fc66c7b04188a86012a50ceef9ced4df47b248df2b4f70bbf79a6e6fbdde",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/onsemiro-hwpx.tsv"
+    },
+    {
+      "input": "onsemiro-hwp",
+      "page": 38,
+      "pre_rebase": 93.89759,
+      "candidate": 93.7303,
+      "decline_pp": 0.16729,
+      "candidate_tsv_sha256": "1ee8c95b2546243050d92b1229b41cc26ff493480811600f4cec61d4dd601a8c",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/onsemiro-hwp.tsv"
+    },
+    {
+      "input": "onsemiro-hwp",
+      "page": 19,
+      "pre_rebase": 97.7889,
+      "candidate": 97.67924,
+      "decline_pp": 0.10966,
+      "candidate_tsv_sha256": "1ee8c95b2546243050d92b1229b41cc26ff493480811600f4cec61d4dd601a8c",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/onsemiro-hwp.tsv"
+    },
+    {
+      "input": "onsemiro-hwpx",
+      "page": 19,
+      "pre_rebase": 97.7889,
+      "candidate": 97.67924,
+      "decline_pp": 0.10966,
+      "candidate_tsv_sha256": "1cc0fc66c7b04188a86012a50ceef9ced4df47b248df2b4f70bbf79a6e6fbdde",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/onsemiro-hwpx.tsv"
+    },
+    {
+      "input": "onsemiro-hwp",
+      "page": 33,
+      "pre_rebase": 97.81353,
+      "candidate": 97.70492,
+      "decline_pp": 0.10861,
+      "candidate_tsv_sha256": "1ee8c95b2546243050d92b1229b41cc26ff493480811600f4cec61d4dd601a8c",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/onsemiro-hwp.tsv"
+    },
+    {
+      "input": "onsemiro-hwpx",
+      "page": 33,
+      "pre_rebase": 97.81353,
+      "candidate": 97.70492,
+      "decline_pp": 0.10861,
+      "candidate_tsv_sha256": "1cc0fc66c7b04188a86012a50ceef9ced4df47b248df2b4f70bbf79a6e6fbdde",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/onsemiro-hwpx.tsv"
+    }
+  ],
+  "retry": "onsemiro-hwp first attempt Chrome startup timeout, 46 pages rerun under same conditions",
+  "note": "exit 1 on official HWP5 specification is a failed visual gate; its complete TSV is included",
+  "run_log": "output/pr-review/planet6897-20261026/rebase-8319/original-prior-os-candidate-wasm.log",
+  "retry_log": "output/pr-review/planet6897-20261026/rebase-8319/onsemiro-hwp-prior-os-candidate-wasm-retry.log"
+}

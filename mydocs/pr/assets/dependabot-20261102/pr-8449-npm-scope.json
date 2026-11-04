@@ -1,0 +1,11 @@
+{
+  "number": 8449,
+  "head": "2fa686d569a078ce9e44e05ca493e65d704784c7",
+  "changed_entries": [
+    "",
+    "node_modules/@types/chrome"
+  ],
+  "full_before_sha256": "f4877a0e50b776cae01d73e41002b5ff38e5a290585c819a37e36ad042cd77b3",
+  "full_after_sha256": "6e8247bdd5e3d5fcd20220f45372498fd6f23277dc8ab6529e68ff526fae32c6",
+  "comparison_scope": "all changed lock entries, including root manifest; unchanged lock graph omitted"
+}

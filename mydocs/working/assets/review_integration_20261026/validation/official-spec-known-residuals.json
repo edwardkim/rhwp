@@ -1,0 +1,24 @@
+[
+  {
+    "input": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+    "page": 20,
+    "before_own_corrections_png": "output/pr-review/planet6897-20261026/head/native/direct-primary/hwp5-spec-official/rhwp_png/rhwp_020.png",
+    "current_png": "output/pr-review/planet6897-20261026/final/native/hwp5-spec-official/rhwp_png/rhwp_020.png",
+    "before_sha256": "d7376c9b613c6078ff7fba5ee62b42756d1e34c040d97b3943bdec82536ef806",
+    "current_sha256": "d7376c9b613c6078ff7fba5ee62b42756d1e34c040d97b3943bdec82536ef806",
+    "pixel_identical": true,
+    "raw_match_percent": 99.9956,
+    "status": "Known source-PR residual, unchanged by current inherited-below90 corrections; not claimed fixed."
+  },
+  {
+    "input": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+    "page": 31,
+    "before_own_corrections_png": "output/pr-review/planet6897-20261026/head/native/direct-primary/hwp5-spec-official/rhwp_png/rhwp_031.png",
+    "current_png": "output/pr-review/planet6897-20261026/final/native/hwp5-spec-official/rhwp_png/rhwp_031.png",
+    "before_sha256": "1b111cc982a1f4f8f690fc55e9d886d1d713c778abc9c905f4a55b07df4a03d0",
+    "current_sha256": "1b111cc982a1f4f8f690fc55e9d886d1d713c778abc9c905f4a55b07df4a03d0",
+    "pixel_identical": true,
+    "raw_match_percent": 97.05766,
+    "status": "Known source-PR residual, unchanged by current inherited-below90 corrections; not claimed fixed."
+  }
+]

@@ -19,7 +19,13 @@ use crate::{
 const MAX_FIELD_RESOLUTION_PASSES: usize = 32;
 type FieldKey = (usize, usize, usize); // 구역, 문단, 모델 scalar 위치
 
-fn fields(core: &DocumentCore) -> BTreeMap<FieldKey, AutoNumber> {
+#[derive(Clone)]
+struct BodyField {
+    number: AutoNumber,
+    logical_position: usize,
+}
+
+fn fields(core: &DocumentCore) -> BTreeMap<FieldKey, BodyField> {
     let mut out = BTreeMap::new();
     for (section_index, section) in core.document.sections.iter().enumerate() {
         for (para_index, para) in section.paragraphs.iter().enumerate() {
@@ -28,13 +34,19 @@ fn fields(core: &DocumentCore) -> BTreeMap<FieldKey, AutoNumber> {
                 continue;
             }
             for kind in [AutoNumberType::Page, AutoNumberType::TotalPage] {
-                let positions = LayoutEngine::resolve_auto_number_placeholder_positions(para, kind);
+                let positions = LayoutEngine::resolve_auto_number_placeholder_addresses(para, kind);
                 let controls = para.controls.iter().filter_map(|control| match control {
                     Control::AutoNumber(number) if number.number_type == kind => Some(number),
                     _ => None,
                 });
                 for (position, number) in positions.into_iter().zip(controls) {
-                    out.insert((section_index, para_index, position), number.clone());
+                    out.insert(
+                        (section_index, para_index, position.source),
+                        BodyField {
+                            number: number.clone(),
+                            logical_position: position.logical,
+                        },
+                    );
                 }
             }
         }
@@ -73,7 +85,7 @@ fn collect_owners(
     node: &RenderNode,
     section: usize,
     page_number: u32,
-    candidates: &BTreeMap<FieldKey, AutoNumber>,
+    candidates: &BTreeMap<FieldKey, BodyField>,
     owners: &mut BTreeMap<FieldKey, u32>,
 ) -> Result<(), HwpError> {
     // 같은 문단 번호를 쓰더라도 본문과 중첩 흐름은 서로 다른 소유자다.
@@ -90,8 +102,14 @@ fn collect_owners(
     }
     if let RenderNodeType::TextRun(run) = &node.node_type {
         if let (Some(para), Some(start)) = (run.para_index, run.char_start) {
-            let end = start + run.text.chars().count();
-            for (&key, _) in candidates.range((section, para, start)..(section, para, end)) {
+            let end = start + run.logical_char_count();
+            // TextRun은 인라인 개체도 한 칸인 편집 주소를 발행한다.
+            // 저장 표시값의 원문 키는 유지하고, 소유 판정에서 같은 논리 주소를 쓴다.
+            for (&key, field) in candidates.range((section, para, 0)..=(section, para, usize::MAX))
+            {
+                if field.logical_position < start || field.logical_position >= end {
+                    continue;
+                }
                 if owners
                     .insert(key, page_number)
                     .is_some_and(|old| old != page_number)
@@ -129,7 +147,7 @@ impl DocumentCore {
 
     fn resolve_body_page_fields(
         &mut self,
-        candidates: &BTreeMap<FieldKey, AutoNumber>,
+        candidates: &BTreeMap<FieldKey, BodyField>,
         force_breaks: &[HashSet<usize>],
     ) -> Result<(), HwpError> {
         let mut seen = HashSet::new();
@@ -179,7 +197,8 @@ impl DocumentCore {
                 }
             }
             let mut next = BTreeMap::new();
-            for (&key, number) in candidates {
+            for (&key, field) in candidates {
+                let number = &field.number;
                 let owner = owners.get(&key).ok_or_else(|| {
                     HwpError::RenderError(format!(
                         "본문 쪽번호 필드의 실제 줄 소속이 없습니다: 구역{} 문단{} 문자{}",

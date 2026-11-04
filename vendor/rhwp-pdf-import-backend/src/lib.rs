@@ -165,16 +165,30 @@ pub mod error;
 pub(crate) mod cache;
 
 // Core PDF parsing
-#[cfg(any(feature = "jbig2", feature = "jpeg2000"))]
+mod annotation_text;
 mod codec_resource;
+mod column_detection;
 pub mod document;
 pub mod import_limits;
+mod import_storage;
+mod rotated_order;
+mod rowspan_labels;
+mod sidebar_order;
+mod span_alignment;
+mod text_normalization;
+mod xref_bounded_recovery;
 
 /// Actual decoder features after Cargo dependency feature unification.
 /// The tuple is `(JBIG2, JPEG 2000)`; no document is opened.
 pub const fn image_codec_support() -> (bool, bool) {
     (cfg!(feature = "jbig2"), cfg!(feature = "jpeg2000"))
 }
+
+/// Effective colour-transform backend after Cargo feature unification.
+pub const fn icc_transform_support() -> bool {
+    cfg!(any(feature = "icc-qcms", feature = "icc-lcms2"))
+}
+
 pub mod lexer;
 pub mod object;
 mod object_copy;
@@ -617,29 +631,81 @@ pub(crate) mod utils {
         items: Vec<T>,
         get_bbox: impl Fn(&T) -> &crate::geometry::Rect,
     ) -> Vec<T> {
+        try_sort_vertical_tategaki(items, get_bbox, crate::import_storage::ImportStorage(None))
+            .expect("vertical scratch allocation")
+    }
+    #[cfg(test)]
+    mod vertical_resource_tests {
+        use crate::{
+            geometry::Rect,
+            import_limits::{ImportBudget, PdfImportLimits},
+            import_storage::ImportStorage,
+        };
+        struct Owned {
+            id: usize,
+            bounds: Rect,
+            _payload: String,
+        }
+        fn input() -> Vec<Owned> {
+            [(0, 20.0, 10.0), (1, 50.0, 30.0), (2, 50.0, 10.0)]
+                .into_iter()
+                .map(|(id, x, y)| Owned {
+                    id,
+                    bounds: Rect::new(x, y, 5.0, 5.0),
+                    _payload: format!("source {id}"),
+                })
+                .collect()
+        }
+        #[test]
+        fn bounded_vertical_sort_accepts_non_clone_payload_and_recovers_in_a_fresh_request() {
+            let tiny = ImportBudget::new(PdfImportLimits {
+                decoded_bytes: 1,
+                ..Default::default()
+            })
+            .unwrap();
+            assert!(super::try_sort_vertical_tategaki(
+                input(),
+                |v| &v.bounds,
+                ImportStorage(Some(&tiny))
+            )
+            .is_err());
+            let fresh = ImportBudget::new(PdfImportLimits::default()).unwrap();
+            let out = super::try_sort_vertical_tategaki(
+                input(),
+                |v| &v.bounds,
+                ImportStorage(Some(&fresh)),
+            )
+            .unwrap();
+            assert_eq!(out.iter().map(|v| v.id).collect::<Vec<_>>(), [1, 2, 0]);
+        }
+    }
+    pub(crate) fn try_sort_vertical_tategaki<T>(
+        mut items: Vec<T>,
+        get_bbox: impl Fn(&T) -> &crate::geometry::Rect,
+        allocation: crate::import_storage::ImportStorage<'_>,
+    ) -> crate::error::Result<Vec<T>> {
+        allocation.bytes(0)?;
         if items.len() < 2 {
-            return items;
+            return Ok(items);
         }
 
-        let mut widths: Vec<f32> = items.iter().map(|it| get_bbox(it).width.max(1.0)).collect();
-        widths.sort_by(|a, b| safe_float_cmp(*a, *b));
+        let mut widths = allocation.collect(items.iter().map(|it| get_bbox(it).width.max(1.0)))?;
+        allocation.sort_by(&mut widths, |a, b| safe_float_cmp(*a, *b))?;
         let tol = widths[widths.len() / 2].max(1.0);
 
-        let centers: Vec<f32> = items
-            .iter()
-            .map(|it| {
-                let b = get_bbox(it);
-                b.x + b.width * 0.5
-            })
-            .collect();
-        let ys: Vec<f32> = items.iter().map(|it| get_bbox(it).y).collect();
+        let centers = allocation.collect(items.iter().map(|it| {
+            let b = get_bbox(it);
+            b.x + b.width * 0.5
+        }))?;
+        let ys = allocation.collect(items.iter().map(|it| get_bbox(it).y))?;
 
         // Right-to-left pass assigning column ids. Stable sort keeps ties
         // in input order, so clustering is deterministic.
-        let mut order: Vec<usize> = (0..items.len()).collect();
-        order.sort_by(|&a, &b| safe_float_cmp(centers[b], centers[a]));
+        let mut order = allocation.collect(0..items.len())?;
+        allocation.sort_by(&mut order, |&a, &b| safe_float_cmp(centers[b], centers[a]))?;
 
-        let mut column = vec![0u32; items.len()];
+        let mut column = allocation.vec(items.len())?;
+        column.resize(items.len(), 0u32);
         let mut current = 0u32;
         let mut prev = centers[order[0]];
         for &idx in &order[1..] {
@@ -656,17 +722,14 @@ pub(crate) mod utils {
 
         // Column ascending (columns were numbered right-to-left above),
         // then top-to-bottom within a column. Both keys are total orders.
-        order.sort_by(|&a, &b| {
+        allocation.sort_by(&mut order, |&a, &b| {
             column[a]
                 .cmp(&column[b])
                 .then_with(|| safe_float_cmp(ys[b], ys[a]))
-        });
+        })?;
 
-        let mut slots: Vec<Option<T>> = items.into_iter().map(Some).collect();
-        order
-            .into_iter()
-            .map(|i| slots[i].take().expect("each index appears once"))
-            .collect()
+        allocation.reorder(&mut items, &order)?;
+        Ok(items)
     }
 
     /// Safely compare two floating point numbers, handling NaN cases.
@@ -764,6 +827,14 @@ pub(crate) mod utils {
         all_spans: &[crate::layout::TextSpan],
         indices: &[usize],
     ) -> Vec<f32> {
+        try_snap_baselines_to_rows(all_spans, indices, crate::import_storage::ImportStorage(None))
+            .expect("row scratch allocation")
+    }
+    pub(crate) fn try_snap_baselines_to_rows(
+        all_spans: &[crate::layout::TextSpan],
+        indices: &[usize],
+        allocation: crate::import_storage::ImportStorage<'_>,
+    ) -> crate::error::Result<Vec<f32>> {
         // Baseline and top of a span. A degenerate box falls back to the font
         // size so it still gets a row rather than becoming one.
         let edges = |i: usize| -> (f32, f32) {
@@ -813,32 +884,43 @@ pub(crate) mod utils {
             by_baseline.min((a_top - b_top).abs())
         };
 
-        let mut snapped: Vec<f32> = indices.iter().map(|&i| all_spans[i].bbox.y).collect();
+        let mut snapped = allocation.collect(indices.iter().map(|&i| all_spans[i].bbox.y))?;
         if indices.is_empty() {
-            return snapped;
+            return Ok(snapped);
         }
 
         // The dominant text size, to 0.5 pt. Seeding rows from one size keeps
         // the grid regular; mixing every size in would let a run centred
         // between two rows define a row of its own between them.
-        let mut tally: std::collections::HashMap<i32, usize> = std::collections::HashMap::new();
-        for &i in indices {
-            let fs = all_spans[i].font_size;
-            if fs.is_finite() && fs > 0.0 {
-                *tally.entry((fs * 2.0).round() as i32).or_insert(0) += 1;
+        // Count the same half-point font-size keys without an opaque hash-table
+        // backing. Sorted groups preserve the smallest-key winner on count ties.
+        let selected = || {
+            indices.iter().filter_map(|&i| {
+                let fs = all_spans[i].font_size;
+                (fs.is_finite() && fs > 0.).then_some((fs * 2.).round() as i32)
+            })
+        };
+        let mut sizes = allocation.vec(selected().count())?;
+        sizes.extend(selected());
+        sizes.sort_unstable();
+        let mut previous = None;
+        let mut count = 0usize;
+        let mut modal: Option<(i32, usize)> = None;
+        for key in sizes {
+            count = if previous == Some(key) { count + 1 } else { 1 };
+            previous = Some(key);
+            if modal.is_none_or(|(_, best)| count > best) {
+                modal = Some((key, count));
             }
         }
-        let modal = tally
-            .into_iter()
-            .max_by(|a, b| a.1.cmp(&b.1).then_with(|| b.0.cmp(&a.0)))
-            .map(|(k, _)| k);
+        let modal = modal.map(|(key, _)| key);
 
         // Positions within `indices`, topmost baseline first, so a row is
         // always seeded by its upper edge.
-        let mut order: Vec<usize> = (0..indices.len()).collect();
-        order.sort_by(|&a, &b| {
+        let mut order = allocation.collect(0..indices.len())?;
+        allocation.sort_by(&mut order, |&a, &b| {
             safe_float_cmp(all_spans[indices[b]].bbox.y, all_spans[indices[a]].bbox.y)
-        });
+        })?;
 
         // Two runs cannot share a line and also share the space on it.
         //
@@ -900,7 +982,8 @@ pub(crate) mod utils {
         // the row later.
         let mut rows: Vec<usize> = Vec::new();
         let mut members: Vec<Vec<usize>> = Vec::new();
-        let mut row_of: Vec<Option<usize>> = vec![None; indices.len()];
+        let mut row_of = allocation.vec(indices.len())?;
+        row_of.resize(indices.len(), None);
         // Seeded rows indexed by their seed's baseline, ascending, so the
         // nearest-row search reads a window instead of every row on the page.
         //
@@ -940,8 +1023,8 @@ pub(crate) mod utils {
                 let (lo_b, hi_b) = (base_i - window, base_i + window);
                 let from = rows_by_baseline.partition_point(|&(b, _)| b < lo_b);
                 let to = rows_by_baseline.partition_point(|&(b, _)| b <= hi_b);
-                let mut candidates: Vec<usize> =
-                    rows_by_baseline[from..to].iter().map(|&(_, r)| r).collect();
+                let mut candidates =
+                    allocation.collect(rows_by_baseline[from..to].iter().map(|&(_, r)| r))?;
                 // Row order, so a tie still resolves to the row seeded first.
                 candidates.sort_unstable();
                 let best = candidates
@@ -962,13 +1045,15 @@ pub(crate) mod utils {
                             && !members[r].iter().any(|&m| occupies_the_same_space(i, m)) =>
                     {
                         row_of[pos] = Some(seed);
-                        members[r].push(i);
+                        allocation.push(&mut members[r], i)?;
                     },
                     _ => {
                         let at = rows_by_baseline.partition_point(|&(b, _)| b <= base_i);
+                        allocation.reserve(&mut rows_by_baseline, 1)?;
                         rows_by_baseline.insert(at, (base_i, rows.len()));
-                        rows.push(i);
-                        members.push(vec![i]);
+                        allocation.push(&mut rows, i)?;
+                        let member = allocation.collect([i])?;
+                        allocation.push(&mut members, member)?;
                         row_of[pos] = Some(i);
                     },
                 }
@@ -980,7 +1065,7 @@ pub(crate) mod utils {
                 snapped[pos] = all_spans[*seed].bbox.y;
             }
         }
-        snapped
+        Ok(snapped)
     }
 
     /// Total-order wrapper over `f32` for use as a sort key. For finite values
@@ -1501,6 +1586,6 @@ mod tests {
 
     #[test]
     fn test_name() {
-        assert_eq!(NAME, "pdf_oxide");
+        assert_eq!(NAME, "rhwp-pdf-import-backend");
     }
 }

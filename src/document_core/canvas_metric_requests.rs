@@ -85,7 +85,7 @@ impl Collector<'_> {
                             || decision.dash_leader
                             || ch.is_whitespace()
                             || ch.is_control()
-                            || crate::renderer::boxed_pua_number(ch).is_some()
+                            || crate::renderer::enclosed_pua(ch).is_some()
                         {
                             continue;
                         }

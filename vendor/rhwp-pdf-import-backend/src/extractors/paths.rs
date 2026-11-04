@@ -53,6 +53,8 @@ pub(crate) struct PathGraphicsState {
     pub stroke_color_rgb: (f32, f32, f32),
     pub fill_color_rgb: (f32, f32, f32),
     pub line_width: f32,
+    pub text_render_mode: u8,
+    pub miter_limit: f32,
     pub line_cap: u8,
     pub line_join: u8,
     pub fill_alpha: f32,
@@ -70,6 +72,8 @@ impl PathGraphicsState {
             stroke_color_rgb: (0.0, 0.0, 0.0),
             fill_color_rgb: (0.0, 0.0, 0.0),
             line_width: 1.0,
+            text_render_mode: 0,
+            miter_limit: 10.0,
             line_cap: 0,
             line_join: 0,
             fill_alpha: 1.0,
@@ -451,9 +455,13 @@ impl PathExtractor {
             _ => LineJoin::Miter,
         };
         let (r, g, b) = state.stroke_color_rgb;
-        self.current_stroke_color = Some(Color::new(r, g, b));
+        self.current_stroke_color =
+            (!matches!(state.stroke_color_space, crate::path_color::PathColorSpace::Pattern(_)))
+                .then_some(Color::new(r, g, b));
         let (r, g, b) = state.fill_color_rgb;
-        self.current_fill_color = Some(Color::new(r, g, b));
+        self.current_fill_color =
+            (!matches!(state.fill_color_space, crate::path_color::PathColorSpace::Pattern(_)))
+                .then_some(Color::new(r, g, b));
     }
 
     /// Set stroke color.
@@ -488,8 +496,14 @@ impl PathExtractor {
     /// Begins a new subpath at the specified point.
     pub fn move_to(&mut self, x: f32, y: f32) {
         let point = self.transform_point(x, y);
-        self.current_operations
-            .push(PathOperation::MoveTo(point.x, point.y));
+        // Consecutive m operators replace the pending, segment-free subpath
+        // start (PDF 32000-1, table 59). Preserve actual preceding subpaths.
+        if let Some(PathOperation::MoveTo(a, b)) = self.current_operations.last_mut() {
+            (*a, *b) = (point.x, point.y);
+        } else {
+            self.current_operations
+                .push(PathOperation::MoveTo(point.x, point.y));
+        }
         self.current_point = Some(point);
         self.subpath_start = Some(point);
     }
@@ -547,6 +561,10 @@ impl PathExtractor {
     ///
     /// Adds a complete rectangle subpath.
     pub fn rectangle(&mut self, x: f32, y: f32, width: f32, height: f32) {
+        // re begins with an implicit m, which also replaces a pending m.
+        if matches!(self.current_operations.last(), Some(PathOperation::MoveTo(..))) {
+            self.current_operations.pop();
+        }
         // Rectangle needs to transform all corners properly
         let p1 = self.transform_point(x, y);
         let p2 = self.transform_point(x + width, y + height);
@@ -729,10 +747,14 @@ impl PathExtractor {
                     }
                 },
                 PathOperation::Rectangle(x, y, w, h) => {
-                    min_x = min_x.min(*x);
-                    min_y = min_y.min(*y);
-                    max_x = max_x.max(*x + *w);
-                    max_y = max_y.max(*y + *h);
+                    // ISO 32000-1 §8.5.2: re is an oriented closed subpath;
+                    // either dimension may be negative. Preserve its winding
+                    // in the operations, but include both ends in the raster
+                    // bounds. Assuming positive sizes crops compound fills.
+                    min_x = min_x.min(*x).min(*x + *w);
+                    min_y = min_y.min(*y).min(*y + *h);
+                    max_x = max_x.max(*x).max(*x + *w);
+                    max_y = max_y.max(*y).max(*y + *h);
                 },
                 PathOperation::ClosePath => {},
             }
@@ -756,8 +778,9 @@ impl PathExtractor {
     }
 
     /// Record the live graphics-state clip, never the nearest clip in stream order.
-    pub fn record_text_clip(
+    pub(crate) fn record_text_clip(
         &mut self,
+        state: &PathGraphicsState,
         budget: Option<&crate::import_limits::ImportBudget>,
     ) -> crate::error::Result<()> {
         if let Some(observations) = &mut self.clip_observations {
@@ -774,6 +797,71 @@ impl PathExtractor {
                     .text_uses
                     .try_reserve(1)
                     .map_err(|_| budget.reject("text clip observation allocation"))?;
+            }
+            if matches!(state.text_render_mode, 0 | 2 | 4 | 6)
+                && matches!(state.fill_color_space, crate::path_color::PathColorSpace::Pattern(_))
+            {
+                return Err(crate::error::Error::UnsupportedTextPaint(
+                    "unsupported text pattern fill".into(),
+                ));
+            }
+            if matches!(state.text_render_mode, 1 | 2 | 5 | 6) {
+                let m = state.ctm;
+                let scale2 = m.a * m.a + m.b * m.b;
+                // Line width lives in user space, not text space (9.3.6).
+                // An anisotropic CTM needs an affine stroke, not an averaged width.
+                // The editable consumer stores widths in 1/1000 pt. Orthogonal
+                // axes that quantize to the very same width are representable
+                // without adding a document-specific scale tolerance (printer
+                // CTMs can carry independently rounded X/Y device resolutions).
+                let width_x = state.line_width * scale2.sqrt();
+                let width_y = state.line_width * (m.c * m.c + m.d * m.d).sqrt();
+                if !scale2.is_finite()
+                    || scale2 <= 0.0
+                    || m.c * m.c + m.d * m.d <= 0.0
+                    || (m.a * m.c + m.b * m.d).abs() > scale2 * 1e-6
+                    || !width_y.is_finite()
+                    || (f64::from(width_x) * 1000.0).round()
+                        != (f64::from(width_y) * 1000.0).round()
+                    || !state.line_width.is_finite()
+                    || state.line_width < 0.0
+                    || !state.miter_limit.is_finite()
+                    || state.miter_limit < 1.0
+                    || state.line_join > 2
+                    || state.dash_pattern.is_some()
+                    || matches!(
+                        state.stroke_color_space,
+                        crate::path_color::PathColorSpace::Unsupported
+                            | crate::path_color::PathColorSpace::Pattern(_)
+                    )
+                    || state.text_render_mode >= 4
+                {
+                    return Err(crate::error::Error::UnsupportedTextPaint(
+                        "unsupported text stroke transform, clipping or line style".into(),
+                    ));
+                }
+                if let Some(budget) = budget {
+                    budget.charge_entries(1)?;
+                    budget.charge_cache_copy(
+                        self.paint.source_order.len() * std::mem::size_of::<usize>(),
+                    )?;
+                    observations
+                        .text_paints
+                        .try_reserve(1)
+                        .map_err(|_| budget.reject("text paint observation allocation"))?;
+                }
+                observations.text_paints.push((
+                    self.paint.source_order.clone(),
+                    crate::elements::TextStrokePaint {
+                        fill: state.text_render_mode == 2,
+                        width: width_x,
+                        color: state.stroke_color_rgb,
+                        fill_alpha: state.fill_alpha,
+                        stroke_alpha: state.stroke_alpha,
+                        line_join: state.line_join,
+                        miter_limit: state.miter_limit,
+                    },
+                ));
             }
             observations
                 .text_uses

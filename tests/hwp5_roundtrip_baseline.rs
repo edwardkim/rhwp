@@ -93,7 +93,7 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
     let mut acc = Vec::new();
     walk(root, root, &mut acc);
     preserved_format_inputs::append_preserved_hwp5_inputs(&mut acc);
-    acc.retain(|(path, _)| !is_exam_fixture(path));
+    acc.retain(|(path, _)| !is_deferred_fixture(path));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     assert!(!acc.is_empty(), "samples 에 .hwp 샘플이 없음");
     acc

@@ -23,16 +23,16 @@ issue: 5476
 ## 만진 경로 / 만지지 않은 경로
 
 - 만짐: `tools/inspect_msec/`, `tests/fixtures/inspect_msec/`, `mydocs/working/inspect_msec/`,
-  `mydocs/working/m_sec_inspect_fatten.md`, `tests/cases/inspect_msec_fatten.rs`
+  `mydocs/working/archives/m_sec_inspect_fatten.md`, `tests/cases/inspect_msec_fatten.rs`
 - 안 만짐: `src/`, `gym/`, `scripts/visual_sweep.py`, 다른 MEGA 좌석
 
 ## 건수
 
-- 성공 봉투 194
+- 성공 봉투 192
 - 예외 봉투 22
-- hidden-text 48
+- hidden-text 47
 - injection 102
-- unicode 44
+- unicode 43
 
 ## 시험
 

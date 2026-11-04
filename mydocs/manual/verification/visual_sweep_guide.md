@@ -93,6 +93,21 @@ web package를 빌드해야 한다. API가 없는 과거 bundle은 검증을 중
 `--resume`으로 섞을 수 없다. 자세한 세대 근거는
 [CLI 조판 세대](../cli_commands.md#조판-세대---compat)를 따른다.
 
+### PDF 래스터의 물리 DPI와 출력 버퍼
+
+PDF 기준 PNG는 용지의 point 좌표에 양 축 동일한 `dpi/72` 행렬을 적용한다.
+출력 버퍼만 `ceil(page_points*dpi/72)`로 할당하고, 올림한 정수 너비·높이에 맞춰
+용지 전체를 다시 늘리지 않는다. PDFium의 `FPDF_RenderPageBitmapWithMatrix`가
+원본 회전·CropBox의 display matrix 뒤에 이 물리 배율을 결합하며, 기존 RGB·흰 배경·
+annotation 표시·text/image/path antialias 계약은 유지한다.
+
+정책은 `pdfium_smooth_rgb_exact_dpi_v2`다. 이전 `pdfium_smooth_rgb_v1`의 PNG·TSV는
+소수 픽셀 크기의 용지를 축별로 늘렸을 수 있으므로 새 정책의 결과와 섞지 않는다.
+동일한 입력·독립 PDF·RHWP producer 신원을 확인한 기존 RHWP PNG를 재사용하더라도,
+base와 후보의 PDF PNG·TSV·overlay·review는 양쪽 모두 같은 새 정책에서 생성한다.
+이전 증거를 보존하고 정책·helper·실행 라이브러리 SHA를 기록한다. 래스터의 DPI 보정을
+RHWP 조판 개선으로 바꾸어 보고하지 않는다. 실루엣 임계값·2px·제출 gate는 유지한다.
+
 ## 페이지별 TSV와 PR 재검토 필수 조건
 
 조판·렌더링에 영향을 주는 변경은 **검증 대상 각 문서의 전체 페이지 TSV를 먼저 산출**한다.
@@ -116,6 +131,18 @@ web package를 빌드해야 한다. API가 없는 과거 bundle은 검증을 중
 저장한다. compare·overlay·review PNG와 상세 구조 분석은 생성하지 않는다.
 기본 경로는 비교용 Native/WASM PNG와 PDF raster를 생성하며, 이미 있는 PNG는
 `--png-pair`로 재사용해 원문 export·raster 작업도 생략할 수 있다.
+행정업무운영 편람 HWPX의 Native 383쪽 기준 비교는 일반 실행에 자동 포함되지 않는다.
+**조판에 영향을 주는 변경이 포함된 PR은 제출 전에 최종 head에서 `--handbook-gate`를
+반드시 실행해 통과해야 한다.**
+다른 대상 실행에 옵션을 추가하거나 해당 옵션만 지정해 별도로 실행할 수 있다.
+383쪽 전체의 90% 및 #8389 페이지별 기준 하락 검사를 적용하며 미실행·실패·누락·쪽수
+불일치이면 PR 제출을 보류한다. 실행 head·명령·결과와 TSV를 검증 기록에 남긴다.
+실행이 중단되면 같은 명령에 `--resume`을 추가해 이어간다. Native와 fresh WASM은
+완료한 쪽 묶음의 입력·실행 환경과 산출물 해시를 검사한 뒤 재사용하며, 완료되지 않은
+묶음만 다시 출력한다. `--png-pair`는 완료한 쪽의 PNG 해시와 계산 환경을 검사해
+미완료 쪽만 계산한다. 원본·PDF·실행 파일·글꼴·코드가 바뀌면 기존 결과를 섞지 않고
+재개를 거부한다. 중간 상태는 `run_state=incomplete`로 남고 최종 TSV는 전부 완료한 뒤
+기록된다. 새로운 조건으로 측정할 때는 `--resume` 없이 새 출력 경로를 사용한다.
 
 ```bash
 python3 scripts/visual_sweep.py --silhouette-only \
@@ -132,6 +159,9 @@ python3 scripts/visual_sweep.py --silhouette-only \
 
 위 예시의 `<...>`는 실제 경로·이름으로 바꾼다. 현재 코드로 web package를 새로 빌드한 뒤
 fresh WASM도 같은 입력·기준 PDF·DPI·글꼴 환경으로 실행한다.
+원본이 연결 그림을 사용하면 WASM 명령에 `--linked-image <그림 경로>`를 그림마다
+반복해 실제 파일을 공급한다. 파일명과 SHA-256은 실행 기록에 남으며 그림 영역을
+가리거나 비교에서 제외하지 않는다.
 
 ```bash
 python3 scripts/visual_sweep.py --silhouette-only \
@@ -144,6 +174,13 @@ python3 scripts/visual_sweep.py --silhouette-only \
 `--png-pair` 결과는 지정한 `--out` 바로 아래에 저장된다. 각 TSV를 스프레드시트에서 탭 구분으로
 열어 `page`별 `silhouette_raw_match_percent`를 Native/WASM 간 대조하고, `below_90`과
 최저값을 확인한다. 이 값은 **실루엣 일치율 보조값**이며 전체 렌더링 정확도나 구조 일치율이 아니다.
+
+실행 로그의 JSON 요약은 대상 `key`, 비교 쪽수 `pages`, 소수 둘째 자리 표시 최저값
+`minimum`, raw 미대응 픽셀이 실제로 0인 쪽수 `exact100`을 보여 준다. 페이지별 정수
+미대응은 `silhouette_manifest.json`의 `silhouette_raw_unmatched_pixels`에서 확인한다.
+기존 PDF는 `--pdf`로 그대로 지정하며 PDF를 다시 변환하지 않는다. 검증용 시스템 글꼴이
+필요하면 `--font-path`를 디렉터리마다 지정하고, 동일한 매핑은 `--font-environment`로
+전달한다. 전체 로그는 예를 들어 `> output/<실행>.log 2>&1`로 보관한다.
 
 검증 대상 전체 문서에서 Native와 fresh WASM TSV를 각각 먼저 산출하고,
 비교 쪽수·최저 일치율·90% 미만/누락 쪽을 결과보고와 PR 본문에 기록한다.
@@ -165,6 +202,12 @@ TSV의 첫 세 열은 `page`, `tolerant_content_match_percent`, `below_90`이며
 `silhouette_raw_match_percent`, `silhouette_boundary_reconciled_pixels`를 뒤에 함께 기록한다.
 **90% gate·devel 대비 하락·98% px 회귀 판정은 모두 `silhouette_raw_match_percent`를 쓴다.**
 `below_90`도 raw 기준이다. 첫 번째 점수 열의 색상 경계 보정값은 진단용이며 판정을 대신하지 않는다.
+TSV의 일치율은 소수점 셋째 자리에서 반올림해 둘째 자리까지 표시한다. `100.00`은 실제 값이
+정확히 100%라는 뜻이 아니며, `90.00`으로 표시된 쪽도 원래 값이 90% 미만이면 `below_90=1`이다.
+overlay의 일치율도 동일한 입력의 `silhouette_raw_match_percent`를 소수점 둘째 자리까지 표시한다.
+색상 경계 보정값은 overlay에 함께 표시하지 않으며 진단 지표에서 확인한다.
+정확한 점수와 90%·98%·100% 및 기준 대비 하락 판정에는 같은 실행의
+`silhouette_manifest.json`에 기록된 페이지별 정밀값을 사용한다.
 raw도2px 이웃을 허용하며, RGB까지 동일해야 하는 엄격 픽셀 지표와는 다르다.
 232 이진화 경계가 유색 PDF 픽셀을 빈 영역으로 오판하는 경우를 구분하기 위해 원값을 보존한다.
 내용 마스크232·2px 반경은 유지하며, 원래 불일치 픽셀 중 같은 위치 양쪽 모두 흰 배경
@@ -190,7 +233,7 @@ raw도2px 이웃을 허용하며, RGB까지 동일해야 하는 엄격 픽셀 �
 위 Native/fresh WASM 명령을 기준 SHA의 producer와 후보 SHA의 producer로 각각 실행한다.
 동일 원본·PDF·글꼴·backend·Print profile·compat·DPI로 문서 전쪽을 비교하며, output은
 `output/pr-review/<id>/base/{native,wasm}`와 `head/{native,wasm}`처럼 분리한다.
-`page`별 `silhouette_raw_match_percent`의 **기준−후보가2%p 이상이면90% 이상이어도
+`page`별 `silhouette_raw_match_percent`의 **기준−후보가 2%p를 초과하면 90% 이상이어도
 PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 혼합은 허용하지 않는다.
 원 소수값·십진수 연산·누락 판정·직접 판독·review 기록은
 [devel 대비 실루엣 하락 재검토](visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
@@ -206,6 +249,9 @@ Native/fresh WASM 최저 일치율이 90% 미만이거나 측정 불가이면 �
 확인 → 필요한 검사 변경** 순서를 따른다. 절대 px 좌표·고정 px 영역 대신 문단·줄·개체의 소유·순서·
 보존·포함·겹침 관계로 검사한다. 다만 **완료된 페이지**의 Native/fresh WASM `silhouette_raw_match_percent`가 각각98% 이상이고 독립 PDF와 직접 확대 판독을 마쳤으면 해당 쪽의 독립 기대 좌표를
 ±2px 허용 오차로 고정할 수 있다. 다른 페이지까지98% 이상일 필요는 없으며 관계 검사도 유지한다.
+양쪽 raw가 소수 둘째 자리에서 각각 100.00%로 표시되는 페이지는 같은 직접 판독·독립 좌표
+조건을 충족하면 ±1px도 선택할 수 있다. 100.00% 표시만으로 검사 추가나 전쪽 검사를
+의무화하지 않는다.
 [페이지별 px 회귀 조건](../pr_review/visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다. 상세 절차는
 [기존 기대값 재검토](../pr_review/visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따른다.
 
@@ -363,6 +409,26 @@ legacy TTF는 종료 비문자만 `.notdef`로 고친 공급 사본을 사용하
 그려 캡처하고, 준비 실패·쪽 누락·중복이면 중단한다. 내장 글꼴은 WASM의 기존 Canvas API가
 소비한다. private 공급 글꼴과 `font_resources`는 공개 증적이나 Git에 포함하지 않는다.
 
+원본의 명시 대체 TTF를 실제 공급자가 선택한 경우, Native `export-png --json`은
+`observedFontFallbacks`에 요청·선택 family·원본 프로그램 SHA-256·collection face index를
+기록한다. 사용자 선언 환경은 `declaredFontEnvironment`, 입력 바이트는 `sourceSha256`으로
+별도 고정한다. WASM 직접 PNG에 같은 관측을 전달하려면 그 JSON을
+`--observed-font-receipt <Native JSON>`으로 지정한다. 입력·사용자 환경과 실제 공급
+프로그램/face가 같고, Canvas가 같은 프로그램을 선택할 때만 WASM의 공통 측정 환경에
+적용한다. 불일치는 실패로 처리하며 원 face를 공급할 수 있는 WASM 환경에는 부재 관측을
+적용하지 않는다. 메트릭 표·부분 글꼴 목록·`document.fonts.check`로 원 face 부재를 추정하지
+않는다. 관측 파일 SHA는 `run_manifest.json`, 작업자별 실제 공급 SHA와 face는
+`wasm-export-complete.json`의 `observedFonts`에 남긴다. 관측을 전달한 실행과 전달하지 않은
+실행은 조건을 구분하고 동일 조건으로 base/head를 비교한다. 이 옵션은 글꼴 예외나 시각
+gate 면제가 아니며, WASM의 쪽수·트리·PNG는 계속 같은 WASM 문서에서 산출한다.
+
+같은 family의 여러 버전이 설치돼 있으면 Native가 선택한 프로그램 SHA와 WASM 공급 목록을
+대조한다. 선택한 프로그램이 없거나 다른 버전이 우선하면, 해당 **기존 시스템 파일**을 첫 번째
+`--font-path <실제 파일>`로 지정해 같은 face를 공급한다. 직접 PNG 경로는 단일 TTF/OTF/TTC/
+WOFF/WOFF2 파일과 디렉터리를 모두 받으며, 원본 SHA와 컬렉션 face를 확인한다. 다른 버전의
+family 이름만 일치한다고 통과시키지 않는다. 이 조건을 바꾸면 base/head도 같은 실제 프로그램으로
+다시 대조하며, 이전 공급 조건의 TSV와 구분한다. 글꼴을 저장소에 복사해 해결하지 않는다.
+
 WASM PNG 작업자는 출력 폴더 아래 `chrome-worker-<번호>-*`에 전용 Chrome 프로필을
 만들고, 브라우저 종료를 확인한 뒤 제거한다. Snap Chromium도 host와 같은 경로를
 사용하도록 `/tmp` 대신 이 경로를 사용한다. 시작 실패 시에도 생성한 프로필을 정리하며,
@@ -390,6 +456,11 @@ render tree 중 한 쪽이 누락되면 성공으로 처리하지 않는다. 패
 제거하므로 SVG `<text>`용 검증 폰트로 사용할 수 없다. Native와 WASM에
 같은 `@font-face` 공급을 적용하며 WASM의 text·좌표·render tree는 Native 것으로 대체하지 않는다.
 mode와 해당 디렉터리의 폰트 파일 hash가 바뀌면 `--resume`은 이전 증적을 거부한다.
+
+본문과 수식의 face를 각각 확인한다. 수식에 `HYhwpEQ` 또는 `HancomEQN`을 사용하면 설치된
+`HYHWPEQ.TTF`·`HancomEQN.ttf` 중 해당 프로그램도 명시한 경로에 공급한다. 두 face의
+메트릭은 서로 다르므로 임의로 치환하지 않는다. base/후보와 Native/fresh WASM 모두 같은
+원본 프로그램·우선순위로 다시 출력하고, 글꼴 공급 전의 미달 결과와 구분해 기록한다.
 
 ```bash
 venv/bin/python scripts/visual_sweep.py \
@@ -1002,6 +1073,18 @@ PR 본문 URL은 해당 제출 head를 고정하고, [merge 후 GitHub comment](
 
 ## GitHub merge comment
 
+시각 결과를 근거로 원 PR에 review·일반 comment를 남길 때는 **첫 comment부터** 그 PR이 주장한
+문서와 페이지의 실제 review·overlay PNG를 각각 `![설명](raw URL)`로 표시한다. 원 PR의 본문·첨부·
+쪽 번호와 검증 입력·기준 PDF·출력 경로를 대조해 이미지가 같은 주장에 대응하는지 직접 확인한다.
+여러 입력이나 페이지를 주장하면 각 주장에 대응하는 증적을 넣고, 다른 PR·다른 문서의 대표 그림으로
+대신하지 않는다. 첫 comment에 충분한 이미지가 없으면 게시하지 않고 증적을 먼저 준비한다.
+
+게시할 자산은 실제 접근 가능한 저장소의 정확한 commit SHA를 고정한 `raw.githubusercontent.com` URL로
+연결한다. merge 전에는 해당 자산을 포함한 head SHA, merge 후에는 자산을 포함한 merge SHA를 쓴다.
+게시 전에 raw 응답의 성공·이미지 형식·바이트 해시와 원본을 확인하고, 게시 후 API 본문과 화면의
+이미지 표시를 재확인한다. 증적을 아직 게시할 수 없으면 코멘트를 보류하며, 임시 output 경로나
+나중에 정정할 계획으로 대체하지 않는다. GitHub 게시에는 기존 사용자 승인 규칙을 따른다.
+
 renderer, layout, paint처럼 **문서 비교 결과를 merge 판단 근거로 쓴 PR**의 공식 비교 절차는 이
 Visual Sweep 가이드다. merge 후 GitHub comment는 이미지 하나 또는 raw URL만으로 판정하지 않고, 이 절의
 절차와 review 문서에 기록한 실제 결과를 함께 가리킨다.
@@ -1265,3 +1348,35 @@ PR 리뷰/보고서에는 다음을 분리해 적는다.
 동일한 설정을 사용하며, 설정 파일 해시가 달라지면 이전 `--resume` 결과는 재사용하지 않는다.
 프로필 선언과 페이지 수만으로 PDF 일치를 판정하지 않는다. 대응 페이지의 내용과 폰트를
 직접 확인한다. JSON 형식과 지원 범위는 [폰트 환경 가이드](../font_environment.md)를 따른다.
+
+## 외부 연결 그림을 제외한 실루엣 비교
+
+한컴 Print 서버가 원본의 외부 연결 그림 경로에 접근하지 못하는 경우에는 원본 그림 컨트롤과
+실제 렌더 트리의 상자를 확인하고, 사용자 지시에 따라 `--silhouette-only
+--linked-image-exclusions <증거.json>`을 지정할 수 있다. 기본 비교는 바뀌지 않는다.
+대상은 하나의 원본·PDF 조합, 96dpi이며 `--resume`과 함께 쓸 수 없다.
+
+증거 JSON의 `kind`는 `linked-image-exclusions-v1`, `dpi`는 96이다. `source`와 `pdf`에는
+각각 `path`와 `sha256`을 기록한다. `regions`에는 1부터 시작하는 `page`, 정수 픽셀 사각형
+`rect_px`(`[왼쪽, 위, 오른쪽, 아래]`, 오른쪽·아래는 제외), 실제 `external_path`와
+`control`(`section0/para1/control0` 형식)을 기록한다. `assets`에는 WASM의 디코드에 사용할
+로컬 연결 그림의 `name`, `path`, `sha256`을 기록한다. 원본이 실제 요청한 basename과 공급
+목록이 일치해야 하며 각 파일의 해시도 확인한다. 외부 파일이 없으면 없는 그대로 기록하고
+다른 이미지로 대체하지 않는다.
+
+```bash
+venv/bin/python scripts/visual_sweep.py --silhouette-only \
+  --hwp <원본.hwp> --pdf <독립-print.pdf> \
+  --linked-image-exclusions <증거.json> --dpi 96 --compat 2022 \
+  --key <대상> --out <출력-디렉터리>
+```
+
+실제 대상과 증거의 원본·PDF 해시를 대조하고, 선택 쪽의 그림 컨트롤과 렌더 상자가 증거의
+사각형과 일치하는지 확인한다. 현재 렌더 트리에서 구역을 구별할 수 없으므로 단일 구역 문서의
+첫 구역 컨트롤만 허용한다. WASM은 해시가 확인된 로컬 연결 파일을 문서가 요청한 경우에만
+주입한다. 비교할 때만 양쪽 PNG에서 같은 영역을 흰색으로 처리하며 원본 PNG는 변경하지 않는다.
+TSV의 `excluded_linked_image_regions`와 manifest의 `excluded_regions`에 제외 내역을 남긴다.
+해당 상자와 겹치는 글자나 다른 내용도 비교되지 않으므로 전쪽 전체 픽셀 검증이나 100%로
+주장하지 않는다. 제외 밖의 raw 90% 미달은 그대로 재검토 상태이며, 통과하는 경우에도 이
+제외 비교만으로 최종 수용 판정을 내리지 않는다. 기존 raster를 `--png-pair`로 비교할 때도
+같은 옵션을 사용할 수 있으나, 별도 렌더 트리 대조는 호출자가 증거로 남겨야 한다.

@@ -1,0 +1,2187 @@
+{
+  "key": "tab-split",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1
+  ],
+  "completed_pages": [
+    1
+  ],
+  "missing_pages": [],
+  "tsv": "/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-saved-wasm-sweep/tab-split/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-saved-wasm-sweep/tab-split/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "5bdf23b591db85995aaec7e843df033e66ea95422e4ccf22534a584bd2dd6e46",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-saved-wasm-sweep/tab-split/pdf_png/pdf-001.png",
+      "pdf_sha256": "e3a7e2989ad60bceeccfb5e533031005c0138958a2ce20ddef9063c846f4f2a7"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.00278,
+      "silhouette_raw_unmatched_pixels": 861,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 43110,
+      "tolerant_content_match_percent": 98.00278
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "output/pr-review/chrisryugj-20261031/candidate-edits/tab-split.hwp",
+      "sha256": "d56775d73d56562654787f11ad4308c77caf0797a445b4438ad1c24e24c70044"
+    },
+    "pdf": {
+      "path": "output/pr-review/chrisryugj-20261031/print-final/tab-split-2020.pdf",
+      "sha256": "7746e9573cee3e2ed57d31a5924669a4aa59b1f46eae2d411b869cf83b5c7027"
+    },
+    "git_head": "b8c0ef2e4ba1b827db13b9b86bf355f7e27f5e4f",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "63aaab9380891390ed56a4b3816f7d781bee775cfd5d62ce343b6f1f774c6eae"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/producers/base/rhwp-native",
+      "path": "output/pr-review/chrisryugj-20261031/producers/base/rhwp-native",
+      "sha256": "ecdccea7532c4ec3b3f1047791b405ef4e51feb6492eafe9f48558221b1b00b6"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "04290218f302357bb57508328f9be56fa5fd674d5b7c57adfbccf68ace484851",
+    "layout_generation": "2022",
+    "wasm": {
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/producers/candidate/rhwp.js",
+          "sha256": "248cef6af1ccba826afe12f12f517e56e87638b422a4d9af4d7952d0ae717d8d"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/producers/candidate/rhwp_bg.wasm",
+          "sha256": "0d04213b5a1681e3749be7e9f3018057dfe3f2a3a3d157820bc31b4cdd9bbe11"
+        }
+      ],
+      "exporter_sha256": "8b5ea4f4f3391fc36547f4289d706a057e25ce7bbd767d7b0a966199bb8db2dd",
+      "font_registration_sha256": "0fe96a5da7ddfbd13dc6db2b0a10a85439b9bfd40164774bfa9508653f05ea1a",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/AGENCYB.TTF",
+          "sha256": "4fde694cc486b55266f7561c685fbd9153ea0003f0c0c39fc744b132051d40c5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/AGENCYR.TTF",
+          "sha256": "d672eb87a3787bdaf8f75df50f9ade864e2d5c9cdec5b07ce6de9d7d39433ea2"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ALGER.TTF",
+          "sha256": "d0b3b7cd48a047cdb7fa610d060807be44fca80f05ce4bf7557c4800f908e48a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ANTQUAB.TTF",
+          "sha256": "134a9f8ecf618660305d7d34b6905375c1d5d7838ea15cdb2789ba94317f4117"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ANTQUABI.TTF",
+          "sha256": "bc546e3e96f8cdd9e6cf02eb5c8ac5551ef20ef4639ff701c338ea281f56fbd0"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ANTQUAI.TTF",
+          "sha256": "6b00590bd7a52a94e9e90e35a28c1d2fa03f83f458d2f2dfbced70a9c1ea0c80"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ARIALN.TTF",
+          "sha256": "cad552553cf2a75afca01955751aaa115e2a64fd6c6eea42e1fbd236630b7e0a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ARIALNB.TTF",
+          "sha256": "6c4a4b643461def5411e0217b74a625dcf2fb681252ef5da1db0af4eae80aa7e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ARIALNBI.TTF",
+          "sha256": "161b859efd20c69ddebb23012a49f4f2030d56a0c1b9bcfd4df753217ce3e358"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ARIALNI.TTF",
+          "sha256": "faf73aa7ce40b77ad19c09507a2263fe3f3ce9fa5642e8a1cd54fb3c9f52d599"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ARIALUNI.TTF",
+          "sha256": "fe50313c37c2eca0bbf8cc3565b5ef32314753889afbe44cb275d65c3b58f0df"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ARLRDBD.TTF",
+          "sha256": "d9352e7d73711f006a27f44e71808a74fec109e2342e680e054c4458569f0a94"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BASKVILL.TTF",
+          "sha256": "529c972a6d5c1992c76e908255f655f98989b74b146058c90555af6d925a1715"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BAUHS93.TTF",
+          "sha256": "8afb4da281e19745d582814bdc66006bd56f43eb2fd0d2f88d854771472420b3"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BELL.TTF",
+          "sha256": "986a5b8bb70238e3c896e3113ef581df26204131f72d59fc12d2deef7ef89e4c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BELLB.TTF",
+          "sha256": "dcc8d42eebbab6822f736a7b99e1c9d6ee6861b247a19049bb33e5955d991dde"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BELLI.TTF",
+          "sha256": "17b6e7689e333fea42b19d817427cecf95b86a340bb0af5babba3ab25e6a1b40"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BERNHC.TTF",
+          "sha256": "8715897a451aa9e37353b6cce5f5f3d853ecbe97de87756838704eff47c8ce86"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BKANT.TTF",
+          "sha256": "c019f155a0004760f32079c22c29ef0ddd223d0c2c79e2487122e66d38a53b32"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BMHANNA_11yrs_ttf.ttf",
+          "sha256": "7abaedf3f61f1613ff8833ad6319115ea1def5a2d1b5a1203a957d6abd2f8f18"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BOD_B.TTF",
+          "sha256": "051b0031db491fa893feddd485b917b24a9d12f15a1e99e782c2420da0a3ffb5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BOD_BI.TTF",
+          "sha256": "9729e2ae73b15871db606a18a48b8674ce2bae35d76a511d3510c4a9db2385ef"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BOD_BLAI.TTF",
+          "sha256": "29854f6597ca7b46db601c7a2eb28c13e31ee0541c7a5a499581fdee8da1b1d5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BOD_BLAR.TTF",
+          "sha256": "63261985fc00d6db2dda4f22da039c70f3c4c90aa0f087fc1b7a8c9856f2b551"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BOD_CB.TTF",
+          "sha256": "f307de012e77219a25ef59ada33820a3e33f6865c911acdd97440c15058713fd"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BOD_CBI.TTF",
+          "sha256": "24fd78549262987502d83ea0bce5b47a3a0ac85c3941921b241a73fca08dd012"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BOD_CI.TTF",
+          "sha256": "37194e3c2d5b000443d23dc324b1367cbe2be40f28c2a6c693e6051210432ca3"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BOD_CR.TTF",
+          "sha256": "0f1f746f293e547f8189783c49aee22a8b839698f7493b5915cc5b432c65d843"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BOD_I.TTF",
+          "sha256": "960458b4c0851b8b9f1d047fe50f7fa01ddfbecaec692521d262660882e9596a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BOD_PSTC.TTF",
+          "sha256": "d0efcbb58042808781f33898dc0fbe5342da22d813415a4dcb394872b1d19afa"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BOD_R.TTF",
+          "sha256": "17b06990413ab318b9e9f2c05d3816059f56d7a678f4712849a3318a9e5e7c7a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BOOKOS.TTF",
+          "sha256": "8f2df7dbc1f2b790f6e6fdd24dbb6c2a96b6e554ba2031c3ab0fe34d322a1b3e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BOOKOSB.TTF",
+          "sha256": "ec95c7380ab7f92ebc75bba6c56a80646fcb450ef6cccc631852a8b97be75c55"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BOOKOSBI.TTF",
+          "sha256": "2de5e34daf966be8e165bd5604ac0714a7946ea2a0a08f86ff04e687ed54d8d7"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BOOKOSI.TTF",
+          "sha256": "ec990c65df2ba6ead654bcb69f7f88bb76910b029f2edf663710cae3fde5f7dd"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BRADHITC.TTF",
+          "sha256": "1f7ad9e753a88da096121bd831a7df72868ac48b8edefc8c96c7a73303f1575d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BRITANIC.TTF",
+          "sha256": "1aa27a3e349a8c8daf466e0f89e94b0dc5b9cbe82e0d7a77e04d3dd6e1588e3d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BRLNSB.TTF",
+          "sha256": "ad7d00c413fe11ec423ff5e2b63da7d403049ab3babf13d0b2ab34a43f4d4a55"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BRLNSDB.TTF",
+          "sha256": "4c50d832f4e1401e226566159735dae932dd224d795ac57772061096117e4147"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BRLNSR.TTF",
+          "sha256": "0b6044c72e67aaae9c2ae3c8b4bb06d066fdbc02779c68e3883984acbbe24cb8"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BROADW.TTF",
+          "sha256": "a252b1e5d460f1e0e4781146186393e5b217ab379db237c7bcb8d7c353943edc"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BRUSHSCI.TTF",
+          "sha256": "b77d119749b51c7ae5242dd093360d5b1c94117469e578cfdd2de03fdc55eda5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/BSSYM7.TTF",
+          "sha256": "3bd67d5982d259580a6d032f375c3b80e58c4496ffd8858b377dd69123809819"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/CALIFB.TTF",
+          "sha256": "9e23cba751cdd44dd7466e019b38d29360cee1aca62bd4b75dfc5cca93ea4b7a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/CALIFI.TTF",
+          "sha256": "56b5168f5b847ce0f3280076d6c0ed026681ce3c5141629f5d8eba92dd1fcccc"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/CALIFR.TTF",
+          "sha256": "a779c135081030298594ea50fcdf59bcf5cd341008137931e2fd0e68d4ca65d6"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/CALIST.TTF",
+          "sha256": "f976b470e19fde1971824107182927472cf67a08acc42f8e2f23951312863a8c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/CALISTB.TTF",
+          "sha256": "1b3949401e310a5967a4c108bb9be49e28e69f73095ad088f783035e8f22d28f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/CALISTBI.TTF",
+          "sha256": "9b9e45f016b013d92c3caf1985db22f85e39c8b1f208636f9ac21f9c135239ce"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/CALISTI.TTF",
+          "sha256": "c7f699a3f94e57187ed36f1acebfe3e0460615ba368d14ed0aab45272844c1d5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/CASTELAR.TTF",
+          "sha256": "5d5db8ae79e77adca68e52454088f3a456f363acc9f577cc6dd08b18fa996bda"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/CENSCBK.TTF",
+          "sha256": "8209f9295b20a9c3d0f7e5163d7ef9946353e653c40f25e7ef9f905856ec246a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/CENTAUR.TTF",
+          "sha256": "1d9fec6f9b2b72203ea56a4c7e3b40499984829ff99ae8ae53340fd8d5f07fcb"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/CENTURY.TTF",
+          "sha256": "21be61ff5289c2125dbb48e2a739fd4dd98c3e58b37abfc22cc0412dd8376d95"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/CHILLER.TTF",
+          "sha256": "64327ea7bccc5583396d6796cbc535d27c0389906a36312e5811d9ec535c6a03"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/COLONNA.TTF",
+          "sha256": "7da22b3012c6071b7756f6d077ada0cbef49d66dccb7667ab74c97b3748675d5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/COOPBL.TTF",
+          "sha256": "0518e37fd63c8b97d63a6ce678eaca254f0677ab94d420e99860772ecf348636"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/COPRGTB.TTF",
+          "sha256": "f354b9e48583dd9cb2a60dcd79eaa787722396d768aac0608d2ac0751d35bc3c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/COPRGTL.TTF",
+          "sha256": "607520e814ebd77845cfb7824d0afd47ffff9ea4f335c8f2db356d3c6396a99d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/CURLZ___.TTF",
+          "sha256": "caf7d153d2860f395f846db58032173c3f76b57f9368ec08382f728742cf5a5d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Caladea-Bold.ttf",
+          "sha256": "74eda4fc5ffba0d8dc4aa76d41499f5ab76168d9ed6141c6417064c6244db9b6"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Caladea-BoldItalic.ttf",
+          "sha256": "f47a35ad6cd0efa9914d93f9d03c93e30c55da43674bccfabac73b3c0d522c01"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Caladea-Italic.ttf",
+          "sha256": "9c968bf60ba1e851cdfea77c71e3540c57792f77482dd241acc29d1425569c4e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Caladea-Regular.ttf",
+          "sha256": "d2f6cad33f191e65b68bd74e6d4f7708080a41b32db635866109df3090265d91"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Candara.ttf",
+          "sha256": "002c1e3378d02ed7dbdb3df1c94d433413a56f3f2f3aa8315a57720ee851dc45"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Candarab.ttf",
+          "sha256": "ec0dce5170aaaf2cf485d4ba39d86fbba1dd1c76d9140cbf75a6b84b50fb20de"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Candarai.ttf",
+          "sha256": "c165dbbc35bbf1fefae865c3e6b02404c8d182074fe04e78e221bab7d35ce3f8"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Candaral.ttf",
+          "sha256": "c35742957794a81b6c73aa43d2f19e3d3d0c45a6dafbc2efcddd04ad6b3aeac8"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Candarali.ttf",
+          "sha256": "ff22b2841bc0aa0664b50c9215e8440f1da4f74bedd27ab33865f63f433b2681"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Candaraz.ttf",
+          "sha256": "a873581d9f0886441bd45c5e425a734e86e063ef583b9cf8081b1aa03b871f1c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Carlito-Bold.ttf",
+          "sha256": "0f62ab34ad5d079a0a28fac01bcf7c7a724a4db4d6cb99cab9cabff382fbb80f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Carlito-BoldItalic.ttf",
+          "sha256": "380764b6898d7b73ceae6384b2958b196d2a0428962ef3adf138d27947228666"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Carlito-Italic.ttf",
+          "sha256": "718a0663864d37a4868220a19b9668a5fe10a46197f6df367b4c2c30c04c026c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Carlito-Regular.ttf",
+          "sha256": "b4ff23ba370cc95a3c349336b73f9c28514a1371210f89832efc85c4b1ea7131"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/CascadiaCode.ttf",
+          "sha256": "cfb6a8d474018fe46d53a427e5fbee44b998822d0d3d8772914bd712cfc55ac4"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/CascadiaMono.ttf",
+          "sha256": "0e141cb99609f6f10ad05313fd1807d5cc9e28658dcbb35ab162e52ff67dc718"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/D2Coding v.1.3.2 ligature Bold Nerd Font Complete.ttf",
+          "sha256": "3952a11b6c723092870c9b616e186dab0ac0c6038f3cab10f9da28db9d41479d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/D2Coding v.1.3.2 ligature Nerd Font Complete.ttf",
+          "sha256": "5376edb50ed9a15967e27560cf44a64d1a1ff5494940e70e003740d4e70f2417"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/D2Coding-Ver1.3.2-20180524-all.ttc",
+          "sha256": "3722c0295b77510e969003241e12cdbffe27e30e80f3c73137439d18e23b9bdb"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/D2Coding-Ver1.3.2-20180524-ligature.ttc",
+          "sha256": "c7bead93c6ca997d8ac47ba4568b15fef6e5bf0cc8f77d5a11fb0437205e5407"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/D2Coding-Ver1.3.2-20180524-ligature_0.ttc",
+          "sha256": "c7bead93c6ca997d8ac47ba4568b15fef6e5bf0cc8f77d5a11fb0437205e5407"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/D2CodingLigatureNerdFont-Bold.ttf",
+          "sha256": "e0a34f027b409afb285e4105ca74501dbf6c280672a223310ceb837507fc1e53"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/D2CodingLigatureNerdFont-Regular.ttf",
+          "sha256": "6ae351eec65c77a3f9940343887a9eedc121869e7cf6c8b65dc2e9f90253f1ef"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/D2CodingLigatureNerdFontMono-Bold.ttf",
+          "sha256": "239457eaf438c0ce6bb0c0583dc9cdb321a9769d3731fbdd8cb868e30d3fbc78"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/D2CodingLigatureNerdFontMono-Regular.ttf",
+          "sha256": "c40066b2c522fde2456a368ccf69ee7cbdc1367962e0619e763cb15d75fb8312"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/D2CodingLigatureNerdFontPropo-Bold.ttf",
+          "sha256": "45f6abfacdb68aefca83470773ea8c7a9e2f49ef0f64852b115842070f9d6546"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/D2CodingLigatureNerdFontPropo-Regular.ttf",
+          "sha256": "dc09a97b31f4ded4287bc1fa69c1b14e020eb08becf36aba220ede6da27b3230"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSans-Bold.ttf",
+          "sha256": "e6476c1b80502924294eed40894c5b18e06c181444ca953e5334262df9c27724"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSans-BoldOblique.ttf",
+          "sha256": "eb436dca0c2594b73d8b603b892e374fdfd8d885d25ffb4f18df4c4c0b49e50f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSans-ExtraLight.ttf",
+          "sha256": "6cb0746a1f68d176bebe83752cee35ebdf726cb1a1e88a01fc038ddf76de9ea8"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSans-Oblique.ttf",
+          "sha256": "4af75fa16ee6d3ad43e1ecec41862c24954af26a55c6bb1ebb27bd486a50f5f4"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSans.ttf",
+          "sha256": "7da195a74c55bef988d0d48f9508bd5d849425c1770dba5d7bfc6ce9ed848954"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSansCondensed-Bold.ttf",
+          "sha256": "38098d0b8edd8430a0f53fb2831b5d36037563a998a620d3c87a4d7591766d20"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSansCondensed-BoldOblique.ttf",
+          "sha256": "43f9fd6b77edf174553cf94857c77c63de7ddb0c6751fd1390e73223518e128f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSansCondensed-Oblique.ttf",
+          "sha256": "dc3526fa25fae4278c4e34b47d4c049b6923421c70921032a0db11bfe9c1b0cf"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSansCondensed.ttf",
+          "sha256": "8550cd5ca1acb65a8fc7877c46939cd0b4d909f8e7bc1e24716873d918c5e549"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSansMono-Bold.ttf",
+          "sha256": "bce60f1b4421acd9ea51ba6623d7024ecbe6817a953e3654df62a5e6bdf8f769"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSansMono-BoldOblique.ttf",
+          "sha256": "91713a71d550bba22c2a6b2bb2a9ad8f9a159e12e4e9f0a5b2677998ba21213e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSansMono-Oblique.ttf",
+          "sha256": "742097840c541870e8d6dc5c9b37bb1ceeea6c0dedd1d475faf903ef9df734b0"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSansMono.ttf",
+          "sha256": "b4a6c3e4faab8773f4ff761d56451646409f29abedd68f05d38c2df667d3c582"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSerif-Bold.ttf",
+          "sha256": "c47b5527bcdc8dcf9ea8c77054454c5a884beaca2f44851a2a823ee639cbf07f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSerif-BoldItalic.ttf",
+          "sha256": "8d3dd3d31350309042ed226af82b34539bd773518e6107cb352712853ba80308"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSerif-Italic.ttf",
+          "sha256": "2e39b1d50f90b933b00c7bb54a96afd3f86419b3d717c7cf202e36f2d4973e47"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSerif.ttf",
+          "sha256": "42d1edeb7952f31b1f96d767ed7030b08a39e0c372b0071641518864e2bffb51"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSerifCondensed-Bold.ttf",
+          "sha256": "e09aa87c60c3e8de7f4e6c7bfeec8fd9489b6cd975e3033259bca3d6009aed18"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSerifCondensed-BoldItalic.ttf",
+          "sha256": "4cfc5a3700c72413f51c4bb54f09617401a0a63eccb9ff577713e20afa047fa5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSerifCondensed-Italic.ttf",
+          "sha256": "dfe5bf5336d62ca71de419cccf7fd18ab19a57245dc392891ee76347129807e1"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/DejaVuSerifCondensed.ttf",
+          "sha256": "685dcdfb8daf32a453d3426a4eb8d881c72146ddd999229354fb757511357995"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ELEPHNT.TTF",
+          "sha256": "327ee1da1a144b1bd7970a8715daf00159ee1d0a9a81aeb33dcbf02631ed56e7"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ELEPHNTI.TTF",
+          "sha256": "f9ff23ecb4dd03c511e5462d0b3563b733d4a924579d41c1df8fcb68d647d2d9"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ENGR.TTF",
+          "sha256": "944dd47cc65586f54d83ed55d654c82b179111b2651e6e1d575c2f4bda55085c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ERASBD.TTF",
+          "sha256": "88d1a747cec854b6efd25a2721f250c5623f61a818a6ea5e219408485fc9a3bb"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ERASDEMI.TTF",
+          "sha256": "9633185651dbec620c26f03e96e8d604a743c93d85e2b51e2f57c795a86cd642"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ERASLGHT.TTF",
+          "sha256": "d432c14b62c70f4777f9db5901063b76d8db88b27aca46a5fb5b4a4c552c5c3a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ERASMD.TTF",
+          "sha256": "856137000a507908e4c289410917db83d19da88f6050af71675211ba68e9e0b3"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/FELIXTI.TTF",
+          "sha256": "662ac854d07237d7d6a2e1c0efba28c6166002ae8cbe0df0f58c43f65b21c54d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/FORTE.TTF",
+          "sha256": "7407f0814d04a4cc45127933df1d6ffab5c90e5e888d33a7279cd82c36426b30"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/FRABK.TTF",
+          "sha256": "9ad3d0e5ef31c4a9a98cb0e169e4e625286aa34c712add3e001c0100138730d4"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/FRABKIT.TTF",
+          "sha256": "2fc6ff3c5253dca997c68d592e8cfa066b516a782d4b2747acf297c6523f9306"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/FRADM.TTF",
+          "sha256": "cfd1bb2c9b0e8b624952288acf9bdadaa64e52bc846e4720e2f0653359e5b8c5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/FRADMCN.TTF",
+          "sha256": "4ab0f4d87991cbda91a625369e2804c4fb88969cdb1e4bd83b6bf37d07cf9cfd"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/FRADMIT.TTF",
+          "sha256": "478e980ecfb423400516403cf49587f5b2e6a6dfc2c41cffcc51c109adc24ee7"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/FRAHV.TTF",
+          "sha256": "d1a3a6e5937c5923d4138c1f622145f577ae2f97c7f2d0e899ecec4d0412b839"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/FRAHVIT.TTF",
+          "sha256": "ac70b60f163536b2c0e2e2752262a6f8d1db6af43da73d5caab855d369f1da13"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/FRAMDCN.TTF",
+          "sha256": "1861e0824e53ca60a04ea1bc7bdb159131448fec711ed079ebccbf645dd345d1"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/FREESCPT.TTF",
+          "sha256": "2e131823861483b966f87ca23063ba6f3c0cecf9ac5d785d71ed1710dab477d5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/FRSCRIPT.TTF",
+          "sha256": "ddeda8f737249e8a2ac17f3e0757525e20631375cbb8b78d99b1462a146cef47"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/FTLTLT.TTF",
+          "sha256": "4feeeac17a284f6f45fc66bd28da141e6bd904f291290c1214d25d06e7c542bd"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GARA.TTF",
+          "sha256": "6204f2ace1a6c196b95b079f10ded04af8f431ce8eb2cf3945acc89b594c3728"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GARABD.TTF",
+          "sha256": "76487d4b739ffea6d64f86d0e6a19a8d0031dc67ba2fa2518bbc1818351543ff"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GARAIT.TTF",
+          "sha256": "9cda64dabb9b2aef5a810fe7ed231ca34c4cf42ae5a108c368ab6a21af2c4ccf"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GIGI.TTF",
+          "sha256": "cf70b1cf7b70913c7f2288f037fe376e159d9e35f0619a2b412e88d7f3f5ce3a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GILBI___.TTF",
+          "sha256": "e79f9c1768515a1844bd889092ecebf5c40f301e4415ad1238a8e2f09ce8543e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GILB____.TTF",
+          "sha256": "c95e47d509eada17f78d730010a5bbb69f60a940c17df6e4e7354c62262c1ab8"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GILC____.TTF",
+          "sha256": "3216f7d3a15d3107a457b93b5537784108c3237b3fb2d16494d8ecee0a22cbd4"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GILI____.TTF",
+          "sha256": "5b81f2b18d3b19baa4cf151cd6eb6c49f8e0e58194fd0a02995cccdec803448e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GILLUBCD.TTF",
+          "sha256": "9c96a89a866bcc0b36d1d80f61ebb6ba9251cf9708e0060ac94546be57dbd881"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GILSANUB.TTF",
+          "sha256": "a74b5e4489bb98a96ff5f727bf33dd922703d0f3069f4ce95aa2c5d7f92d2253"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GIL_____.TTF",
+          "sha256": "f6664b244192ab4cf3a58bb6a653700d1f345d03bb8879888bcea1b6f8f3f97c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GLECB.TTF",
+          "sha256": "962ebe317bfba70511c4f04ceb3a7160def7e3ce8cfcb035fddce7ef202ff9b4"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GLSNECB.TTF",
+          "sha256": "f44727cfdef37b028ea00283fee7ffa09b821ce2bbbfa28d518ec48976468ea5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GOTHIC.TTF",
+          "sha256": "3a9cbb5d75b2a2b0d22dc94571608e4e9dc7b88e825374985880c5722c1c9e5f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GOTHICB.TTF",
+          "sha256": "90cb613b492874a560c0ff18a3402b1d24fb7e846dff11295d5c4644d6c75e83"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GOTHICBI.TTF",
+          "sha256": "2dc5949d57d2e172601fb6f5093c1fbf15a463e29ed47c4c8ff2434baf1c2b19"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GOTHICI.TTF",
+          "sha256": "6cf57be6f9d0bd60bd5dc6eee7c11e87e5b19df210156495a524b974185b9fb9"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GOUDOS.TTF",
+          "sha256": "380e2cd97160e14042cea52ff785ca92d966e29f873cf2b93e1746f3a582ec74"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GOUDOSB.TTF",
+          "sha256": "f3cd0e13e4a0ed77522b1ab29061da6658f449d1d89b56751cdcdeed86da47e2"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GOUDOSI.TTF",
+          "sha256": "71d2d85781689de6326a229aeba2d143a5b3e8a4f0fc93b75af197fb63bf05bd"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GOUDYSTO.TTF",
+          "sha256": "ab475061e2479350a315bf3f72d65ae9acc37bebef4cf8df979f8f6ced659216"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Gabriola.ttf",
+          "sha256": "ddd852f9e43a5e81af62a3f6654324ba7553d7d66101ab848abc1bd2d626ac4b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GenBasB.ttf",
+          "sha256": "26d5d4044a4bf92f265bf3b597076aa52d0497cb102cbdbfb1131f658ce97c9c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GenBasBI.ttf",
+          "sha256": "5bfddd753de0a9ad83940e9b6130a8082510416d7450bb8e39d90e7655a75e35"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GenBasI.ttf",
+          "sha256": "191de1e709a691f1134775539dee8b2167baef3ee411744b5cdf3b43ce18707a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GenBasR.ttf",
+          "sha256": "f0248c5a6d76dca62c639fdfdde97f9ae60c05c96bec03925d522531d7c0ca37"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GenBkBasB.ttf",
+          "sha256": "37fc25b7916e4055ffff0b9bda2b9a9efe7d3404773339fa8cde00a15d5589a9"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GenBkBasBI.ttf",
+          "sha256": "dccbca56a0d1bdbcc440e3b2070ee0ef63fd834454196baeaa8226ead9c82f07"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GenBkBasI.ttf",
+          "sha256": "6879e401a0c44c6473fb796c284112f3139bd20c289cff92e6c4abb4dab7d369"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GenBkBasR.ttf",
+          "sha256": "f0e5c2d48408804caf9779ee2e039687b3ac5cf56edff51577fc0aedc0908994"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GmarketSansTTFBold.ttf",
+          "sha256": "ff7c354dd1a324e4cecc1223c4f71e74fa81be7027e0c7f6324c475909cacefc"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/GmarketSansTTFMedium.ttf",
+          "sha256": "c6b9a2c10bfdb55975948ce191f9cf638955b5cfdc99149969add5b579262fc1"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2GPRM.TTF",
+          "sha256": "5d44c3bf2ab83b773e292eb91d6373fdbc11364532064ebb961ee8181ae54335"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2GSRB.TTF",
+          "sha256": "b5679c0b4eee4f53ddc591defc5f3d657bcf052c7afff27ac41d07be67480163"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2GTRE.TTF",
+          "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2GTRM.TTF",
+          "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2HDRM.TTF",
+          "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2MJRE.TTF",
+          "sha256": "2fda1cc69297fe605ee8804984d26666c2543b0ec22b8f50031123a18d81924e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2MJSM.TTF",
+          "sha256": "f78f538885b29f956cf84286e430898462d11430604625857ad587c0ea73925b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2MKPB.TTF",
+          "sha256": "5d9865627d7f72e01c51f766bf8f485bee126188eb9c07c0df02d263a54b2d6a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2PORL.TTF",
+          "sha256": "e9d3cb723faef0e6d3811b9c2de31349fb78733e23024f086a93c0c14d2b9b68"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2PORM.TTF",
+          "sha256": "2c8c6ffca6665eca867079be0e184c8783f63031e01def94264c5a429b03c622"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2SA1M.TTF",
+          "sha256": "4fd98912d979331de61cf0705741b6946ea0013fa0b7b34fa273ed18afdaba4a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatangB.ttf",
+          "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatangExt.ttf",
+          "sha256": "f88d957a26dd5a6360424e37b6d25b4192a83d922b7ac1fa9fb92d34e579afe4"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatangExtB.ttf",
+          "sha256": "c9c8ec1f6c295be9254157fdbddef9df93f5f4b6c55e8683214b50368c50c381"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatangExtBB.ttf",
+          "sha256": "594860a83ffb618c76f1a08ab1708b2ad62bf533c919065e2527d7fbe69c497d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HANDotum.ttf",
+          "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HANDotumB.ttf",
+          "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HANDotumExt.ttf",
+          "sha256": "a2828746031f9e725b667ab1e5c96b553b6b42d24d55669a4472605692f8807c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HANWing2.ttf",
+          "sha256": "ea1138df0143c26a1b8150b67a4c4a16e1839fa77cfbf7d8655fd6d3dd497f52"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HARLOWSI.TTF",
+          "sha256": "a9488a827468a58c7ba78abc284a949a27f7ef4bcb921674b354d926d1c216c0"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HARNGTON.TTF",
+          "sha256": "f482f5760773767d798c64f470c08c140588e7b07510094497e7a89c3f2f319d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HATTEN.TTF",
+          "sha256": "40e898e471fa4de3ca09a6dfed961d00d6395af20fe6cf1c6b83c795bea04543"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HMFMMUEX.TTC",
+          "sha256": "be52401ea71e34d7c52bffacf25f95e3cc0bfdadc8a2a1f377d458f22484f7b7"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HMFMOLD.TTF",
+          "sha256": "3b2e7ec32c6c64edd80ef6c0cd685c461e78f76afba4ec9b21467fe0e3f5e0de"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HMFMPYUN.TTF",
+          "sha256": "39d01b794c09d199f08248656aee098f208ebde82fb87cd395714546863cbc37"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HMKMAMI.TTF",
+          "sha256": "ca0da5f083be40d27772d4482f05947c3c5091585189aadc64900aaf914baf3f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HMKMMAG.TTF",
+          "sha256": "ee9a3250e1198ac5960f9ead0cf4d32c99b80a4adc94ed782526e2ddd4853529"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HMKMRHD.TTF",
+          "sha256": "950272dc7af1fb7cdd4c33f74f0619256b9ac84d5d3815f1c295b590bd2243e2"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HTOWERT.TTF",
+          "sha256": "d5ed7dbd872ae77e6e30cada5287dbaa1ba755f962d0672c5ed14bea08f08422"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HTOWERTI.TTF",
+          "sha256": "8f7699a0fd02de79d565fbd5205be070b777b790f028c1fd7e6090e34ed81bda"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HYHWPEQ.TTF",
+          "sha256": "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HanSantteutDotum-Bold.ttf",
+          "sha256": "b7c90dadfc6459cba605d8556ac281bc205141c5e58c51b6d9fa9e8c5f78c5bc"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HanSantteutDotum-Regular.ttf",
+          "sha256": "423874746eb96c13b5255599135447312ed50c624d252eea1c6f3c67a83b681d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Hancom Gothic Bold.ttf",
+          "sha256": "387905d447e92bce4d12462c7f90820d859d17a17151f822d907984867317ad9"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Hancom Gothic Regular.ttf",
+          "sha256": "4a80e6a87aae6c779ccdf85116f4e8cb5b0027f71a28f538bb01a953265e6649"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Hancom HMJE_V.ttf",
+          "sha256": "fbb6cfaedb73278aea4db39613e8989203239eb7aa8afded6bd46e69a78a2dbd"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HancomEQN.ttf",
+          "sha256": "c249c422e4acbafe2757c0f4a5d714414f84305c728776d889224f6116186e35"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/IMPRISHA.TTF",
+          "sha256": "9db1f3315d5c18572381f3880bd2c171fa1f49a1cd6e5f5f8d97cc1317911f06"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/INFROMAN.TTF",
+          "sha256": "ee066d11d2933638a5d00c242a24f2c9b8bd68bd3ddb3b334123f8efcd539f03"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ITCBLKAD.TTF",
+          "sha256": "2934319d3c6ba08a4477a3dc4f08695d4b926fc81a316f7a278e780ab5c9609d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ITCEDSCR.TTF",
+          "sha256": "60c4f425563b12a6c0223d5c65212fffb42f4b3d84789084aae44c42f3416865"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ITCKRIST.TTF",
+          "sha256": "a298c30e23beb222a016afa24d4d8f389f30ac3b8be6763f9f94199c3b11ff0a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Inkfree.ttf",
+          "sha256": "c8ab96bc49ec1dc36936b5973fc143ca222c1a33ab27b87071a3bbc44d34ca9a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/JOKERMAN.TTF",
+          "sha256": "d0d2d8efdbf07df506c87f9cadcd5052a6e446c99570177b1f98555661c6937c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/JUICE___.TTF",
+          "sha256": "efef0fa6138c648f9b5694f11d3372cf2733ae6126c91dbc7b2327c00546a699"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/JUMJA.TTF",
+          "sha256": "ece5a3763808ab0fa9db58cba4e4b0131bfec7ff814d371270ce7ac9e130d143"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/KUNSTLER.TTF",
+          "sha256": "8a9783e50f3bf892d958b7e61990d6ccaee65daaa0ffc246d3e1bd4fb0104b41"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/KoPub Batang Bold.ttf",
+          "sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/KoPub Batang Light.ttf",
+          "sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/KoPub Batang Medium.ttf",
+          "sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/KoPub Dotum Bold.ttf",
+          "sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/KoPub Dotum Light.ttf",
+          "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/KoPub Dotum Medium.ttf",
+          "sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LATINWD.TTF",
+          "sha256": "d64b9e6668069915ae217548b010be1b52be99bc923e88e148a83619b0102868"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LBRITE.TTF",
+          "sha256": "736eb3bdc990636d283384cf6428b03a6632ae16e81dc72cd28aecd0cdadb017"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LBRITED.TTF",
+          "sha256": "8012eb0ec90ab1b7a40eec8987927d5764055e332bdb19ab5eeb3c1cf67987c8"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LBRITEDI.TTF",
+          "sha256": "b2d15815ce8f722e22885e67562a66f512f6412399d9400ac01fecd718d54839"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LBRITEI.TTF",
+          "sha256": "d347d9ae8a42c63ed7dc15bba992d00ee9e606e0ac499a8022757c275855f612"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LCALLIG.TTF",
+          "sha256": "5c7e6c59e09c38c4e280504741bcfc051c95a9c931b3c92c03b7f2733f580622"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LEELAWAD.TTF",
+          "sha256": "11e1960d6aca5d6de0fcbeda530dbb3dea8837d810596c54235b07a9fbe43f9e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LEELAWDB.TTF",
+          "sha256": "436bb96f8bbb151e7634fcea07794044a8565b013e505245322dafa13e6c3efd"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LFAX.TTF",
+          "sha256": "25b23e0e8ba977da78fd0f6c13b76e561756010a73cb5a8187dd817496e25fec"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LFAXD.TTF",
+          "sha256": "1a8dd16d0d1456923c5d3824943771e63eb67e6b8660e5c1c479674fbbba163d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LFAXDI.TTF",
+          "sha256": "fd16af41073406530c7633bbf6976c1aecac1f4bc9d1882135cf58ec9b31dd07"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LFAXI.TTF",
+          "sha256": "27899b1624a2c13245cbfd28666090e3fe9ca17ecba4cd6e19a615892f6c6db5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LHANDW.TTF",
+          "sha256": "c5ab997a1c3e49cb0d34fa5a3f2c39934d39f2657dca224fcb3b480768676501"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LSANS.TTF",
+          "sha256": "eb3f949ba0f1368698e69396259e667d9fb913ebfde3c742d493aae5dd57141e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LSANSD.TTF",
+          "sha256": "76160ce9cd774532131cf4902b810a2d02c94f225da238ff8c04e25875eb66c5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LSANSDI.TTF",
+          "sha256": "eb2d865bdadbdd19dacd2aa6f1a0d4e93263b3dac13de536106286e809abc238"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LSANSI.TTF",
+          "sha256": "ca117345d190cda8ad6c7a41af1d6d43c475d0fdc99c97b8d325986309597f7a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LTYPE.TTF",
+          "sha256": "b700d1bc51a11c77ca7b119b0677a9cd4dc1e61fe43a7130bc2044cd7dc9b116"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LTYPEB.TTF",
+          "sha256": "993b8ad78909d2b9d67ea0001112cac238fb65c6b31f6729fdb0b86c24e2b8ab"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LTYPEBO.TTF",
+          "sha256": "187f363e9c2e328409938b4413027fe8f0c55423913ba66ea66d3f0d7fd5c74e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LTYPEO.TTF",
+          "sha256": "980e0ce5a0f4c407e90c72a16da2a259b7fc2a0ea48d1faf048028b2735fa941"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LeelUIsl.ttf",
+          "sha256": "f7a9d979c27baad75ebcd41ea45113919576c2e56af9ffd483dd9d0ef9272a25"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LeelaUIb.ttf",
+          "sha256": "15f58cff987dce2ca1e7740ca6001b8e4e2589ea80898fdedca26d2726979f7e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LeelawUI.ttf",
+          "sha256": "ca9a670f12d0e47c20441012a22f78ab17c1b126818e0e887ef7db6ecf5e76b4"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LeferiBaseBold.ttf",
+          "sha256": "57ce0091c975be989c33838430837803eecf492128a052f75014d0b45a0c1706"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LeferiBaseRegular.ttf",
+          "sha256": "90cf04ae3525b10be3138687ae861dbc1983a125213819dabfa4099197bdf2ef"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LeferiPointBlack.ttf",
+          "sha256": "2c1e4c2b24fda771242ad206bf5412cd85dc578b4fcc23a9d73ae334f7c4e6b3"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LeferiPointBlackOblique.ttf",
+          "sha256": "c17b594ca55406dac008b989fd0c290a2e300443ec265104d1438e6546deeb20"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LeferiPointSpecial.ttf",
+          "sha256": "f1d974c5ddd45d522249364e8eceef06e1c6d917d53340626ef02cd69d9c4b24"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LeferiPointSpecialItalic.ttf",
+          "sha256": "bdd0fafe8a49e6e1ef1a2afd3a8eaba77eeaf7a942bd033a128b98fbf56c4654"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LeferiPointWhite.ttf",
+          "sha256": "32d6509d762b73e25cf7846d1793dae12a8f952e7ac0a2cd25f3719940d4dc26"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/LeferiPointWhiteOblique.ttf",
+          "sha256": "60d6d9822d4ee0a4691a3acb1485b3310f614a697ddca033ed1b7a28b9c1d0b1"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MAGNETOB.TTF",
+          "sha256": "455964b4a07af53205ed705e0f40778ff203f2c9e7c72a8bf2c4d7a3a834e895"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MAIAN.TTF",
+          "sha256": "8cd40ac425585ee56a4a98f19a1f646828cec1e9565b4a0bfab1d4ce9d7a81c3"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MATURASC.TTF",
+          "sha256": "e334bf287bdf4211fe5958c4926c8ad4ddd3f44f5fdcb2d9dcfa1394186d8132"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MISTRAL.TTF",
+          "sha256": "a03a3a71113d44d7bfb98e9720264f72a05ba112e191fb78eb08d11a3f41e500"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MOD20.TTF",
+          "sha256": "cd7c7867a456ceae560d825cbec1d95b3de8cb62b00ce513db6afc293f243218"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MSUIGHUB.TTF",
+          "sha256": "c2f95d25963c01a980a9cb88615c5ab3949464bed519b1ad56acc671c4608c48"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MSUIGHUR.TTF",
+          "sha256": "1da9b5ace583a0a52e85280264d84917630ff6d600caea9a1b99cbd7e8b7c07f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MTCORSVA.TTF",
+          "sha256": "a6f6dacb871be365ad93fe1aab09332f768cd2aa35fdfca8e0053a38f5a2662b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MTEXTRA.TTF",
+          "sha256": "4b20e24f9fcab717b90ce67ec59539b2b866adf072b1dcab71af6ef34ea8cd78"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MalangmalangB.ttf",
+          "sha256": "a1451656ec7c7f69a87997e637fc883ea65ae51d7e540036344aa31c53cedb7b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MalangmalangR.ttf",
+          "sha256": "f6682e2027b1a382d3e01546f7a7115cb26cc1245ded6b839686a069abc743b0"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MaruBuri-Bold.ttf",
+          "sha256": "13aa1058c135e8f0b2c41de4e5e7866b18f970a15db2b1a290227e52dc02aba8"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MaruBuri-ExtraLight.ttf",
+          "sha256": "e9562e5ad3efb724e003bd29ef5ff363af1a61c89612e3986dc39bf26978a2eb"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MaruBuri-Light.ttf",
+          "sha256": "d13423f5f1441dba9b063af14c073a46e435651fbd81299d9cccc5a4cf3e0c07"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MaruBuri-Regular.ttf",
+          "sha256": "803429881927c79dbb49497274244e72b672c56e0503f28262503f77524cba7a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MaruBuri-SemiBold.ttf",
+          "sha256": "2d86f0b4950955fb69f069c415d01a51bbbbcf03682d59a6adab7f5b05d16fe5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/MaterialIconsRound-Regular.otf",
+          "sha256": "bad85e5454b6288104ce03806c37323bcd8f145e3094e727860173ac8c91062e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG L DZ Bold Italic Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "b73b4d45c52d2a21b37d8507b354eac8bd9b725f4946e1cb323d1db8ba12fced"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG L DZ Bold Italic Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "a921478adc043b64c1c418a1b1c8ff1803fa506bf6e57682e892868fc01c86a0"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG L DZ Bold Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "020a7ae9a355f1b5f5676b945a75b8230adfe15d29af4ba13b4419e7be75a4bc"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG L DZ Bold Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "774f127137c7d1297dd28d28a665c5093199d545f331328c11e80ed3ab16f193"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG L DZ Italic Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "fe569bd8f961400c30aaf38719845f2c304f0da3794e2697e1b99f635dc58e91"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG L DZ Italic Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "514d8ae2242dc082676e827f106d1db1c60046fe3dc01b4640f1f4b144003b7f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG L DZ Regular Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "b36d8dd5eb9dc207d91458ea7fdf610ca8022b0568cebaa43df61be1ddfdde63"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG L DZ Regular Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "72a0579751b5e3f03875cf4d2a00bb8d28aba828c088bb1a4ff29a0e8a0b80ed"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG M Bold Italic Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "d0b7409b81ecb4f46bd3e234a7d3c673574b8963f813d3a454917b06c36a3ea6"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG M Bold Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "2aa0a7afbc4ec191aa52e9671b3c88b0888cd236454b7e38b67d84c833d3b192"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG M Bold Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "74b2725cb0bf350dc3315bda5103b0b86f3d7206f7c181989620d39b51e287eb"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG M DZ Bold Italic Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "969fabb6305d73167c288e1c7d45d1cb1854e98de3ef1cc66864b6fb5f3e2c8d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG M DZ Bold Italic Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "aff58fdde20382a1412798ce4b35030d64fffdb22ec86ad20b2b21b5c3b93cb7"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG M DZ Bold Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "1fac37c504273594347b00ecd9a93205334fef8759bcaf620e1b582601c122f6"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG M DZ Bold Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "44b3913cf679e205888bb244d1300f640b23fc0001fac2ba648204f5e5b9af8c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG M DZ Italic Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "cace7b67819e5f377d7e8d9dcdcb4ae3b017f85cc54b58c3d3c1a4d5ab49334e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG M DZ Italic Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "e4fb3e8e42338dd3ab4b8e6d99803f34cf81c1a2eecfe9d66f4284d852157074"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG M DZ Regular Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "42f20a348431a25a929fb9fb5c94e55328cb7888fe949f4a08307178306da102"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG M DZ Regular Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "e7fdbd497f01773a2c27f5d2f8467536b3b52cb4c15316471d9064f46fa76329"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG M Italic Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "efb35ed6cf251e4ad57b5e78e8c6c3780f675c107244137356847436246f2387"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG M Italic Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "250a02bd7a425f53882db83652324b2f30258152a257052df7aa1506f91fb426"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG M Regular Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "cdf4a90f3b8994accce9d6991e7699fb12ca37befbc1ff36be563e6eab0b832f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG M Regular Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "d31aa48b4481e115012bf4a48e67ddde11b46440b8f0d6220fd580f53dacd3f1"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG S Bold Italic Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "95695705420d65a3abd69174e4086f2115fb9f557cc7b59be6c60af179a1f57c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG S Bold Italic Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "a6068ebb8170bf194c04c10a08cc3be31a372b7a3f5295b66591b2fba073df01"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG S Bold Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "193180f9ae38cf339afb0862c528d4e9790be6f5dc0a1013eb7a507798d8aebc"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG S Bold Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "262211c5f124ea275e3b3144ead980ad1236c467ab28cbc331c49b378a317bea"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG S DZ Bold Italic Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "f2e4aa8fee3ff77f2897a11b84f697ab300109d0025142f770f5ab5c4dc82486"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG S DZ Bold Italic Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "4bd8736805e1ef11f2125b12253f349fd31bb66091768bb34eda19a73de5796e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG S DZ Bold Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "275e5d47d03c8a0e2ae7cb24d3ce6230a2a5c53be60d58b7c49e934200d1a5c7"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG S DZ Bold Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "9f01a09deab4d592618828f7edcce9067c64ebf1a881981ade868cfdf1a49147"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG S DZ Italic Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "6b575288d464a14a490a7440f1c044add9ee63e6512eaf4dbc58cdfac968956c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG S DZ Italic Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "a4b372f44ab233879796de4805656a23d5850e6921069d2513e6ceb7c537321b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG S DZ Regular Nerd Font Complete Mono Windows Compatible.ttf",
+          "sha256": "2d16048fb27b7aad1275454ed1053f1e61c865cb33595c3faa8f9b9d3b6bcd95"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Meslo LG S DZ Regular Nerd Font Complete Windows Compatible.ttf",
+          "sha256": "3712aefe09784c754cd407c3595082527b8df363efac42384aff1f0e181999ae"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NGULIM.TTF",
+          "sha256": "871b6190046c01ccabf52c80e393af623176c1a30a86a8a297f6f1acfbdd9b43"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NIAGENG.TTF",
+          "sha256": "ece195c4b0d53ce4ebaed656341708180abfebdddadf219fb014a31e70410bde"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NIAGSOL.TTF",
+          "sha256": "ee5f2638432efa7ea6273625ae2fe5dfa3d393ad0b51f8f5fb0f3d3c5ae65f6f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NIRMALA.TTF",
+          "sha256": "5471293f88e4c6d482a78a137872eb99271b0787be8f8bef5e63d741f7447015"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NIRMALAB.TTF",
+          "sha256": "9e0c6052395d4321686cb8338959eb68788941c6f5836194559f2080b63efa27"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NanumGothic.ttf",
+          "sha256": "48a28e97b34fc8e5b157657633670cd1b7de126cfc414da65ce9c3d5bc8be733"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NanumGothicBold.ttf",
+          "sha256": "454eb3f503f377782a99eb84fc4bb7dde22a0f075d41b47427737f2985053bc9"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NanumGothicExtraBold.ttf",
+          "sha256": "e0288775c8f021f327fd77f9eb251eea80e4601bbbb068478c7878caa23e8f92"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NanumGothicLight.ttf",
+          "sha256": "da39544c39be58124a4fcb296eafc2bf73530b3dbd1b19aa802c5c3fd227e31c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NanumMyeongjo-YetHangul.ttf",
+          "sha256": "2da006402121ca2efb5ddbd213bd05adb2917733346705f13a09d260a739b569"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NanumMyeongjo.ttf",
+          "sha256": "a21faae83d2d16d11c639f04f25fbe410eda905969ad75eff50d63ca31569f25"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NanumMyeongjoBold.ttf",
+          "sha256": "cb47c5d029dd5ee5b8f6fe142c468d670edbe4e9caaad33b91e6ac399e99194a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NanumMyeongjoExtraBold.ttf",
+          "sha256": "a03d520bccc43ae1dc0bd5f64d143195a0ffce8318aacb0f3efb6117827eee14"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NanumSquareB.ttf",
+          "sha256": "f737d58294faec9c632189af3a2a3e48e49c03c0256de09db61e879e2857bfbf"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NanumSquareR.ttf",
+          "sha256": "5a51deae5237435d9a0bc0cc6cc30619a914b29801f895698cfdacadcad06e94"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Nirmala.ttc",
+          "sha256": "ad02cdfc06e144ac45f318e8e5a64cbe04c7479d4beb91d25f5a319a466b1767"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NotoSansKR-VF.ttf",
+          "sha256": "018174e8cdd366aff67c8d366c7dc806a7babbe7f2819fc23b00d59f7b8353d0"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NotoSansKR-VariableFont_wght.ttf",
+          "sha256": "7cd81998a15203d3b457d31345590181e8933ca3de20361722d996491b132b83"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NotoSerifKR-VF.ttf",
+          "sha256": "88bb5b81bccef54628e030c269fa803b0f4935e58b347ad1ee21ca8829540a33"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/NotoSerifKR-VariableFont_wght.ttf",
+          "sha256": "ad964df5f03b757746aeb34c93ba26c2353939e8dc024216d425d5c7b9f21ae1"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/OCRAEXT.TTF",
+          "sha256": "2b058a75ff9336c703e48b618ef759906dc9e37712e27698f74aa3ec0b949346"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/OLDENGL.TTF",
+          "sha256": "1d9d8d06aec3de7b9abbcdac2381f457d9d606b54f05e9b0e0187bf8565a1104"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ONYX.TTF",
+          "sha256": "baba81b90b5102d1e1807aed3a4f38ed8f3d0e45c2b12b27152d8101c4de21fb"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/OUTLOOK.TTF",
+          "sha256": "1cc072157711f80296f3d013cec95093fc1be4e35a97406c46e76b14a97f41e1"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/PALSCRI.TTF",
+          "sha256": "13093d9642d540cb5efad5cad52ad703e11c0e1f5308bc23ff2cfd7737e7516c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/PAPYRUS.TTF",
+          "sha256": "895fdea742cdccd53e8ce847a7d2d9c3ddbd7ebdbe0444e88246f0f9e4e2526d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/PARCHM.TTF",
+          "sha256": "5b4a73788f013c252eb5877a7974e5836eeffc1189dd7319a219080fcc908f80"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/PERBI___.TTF",
+          "sha256": "f8346184d59314a919926dcfb60da96421781ab19c2e04c2f76f0f82ace8cee4"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/PERB____.TTF",
+          "sha256": "8eb139cdeff99c8297c95bf857d94def798116d02fdcf72cefb88d43fe7a33d4"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/PERI____.TTF",
+          "sha256": "2f52ec437a22912ec82c06afdde46c6b1c7593b44025c4627901d353a965b161"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/PERTIBD.TTF",
+          "sha256": "1024c55e896123dad43b1a15f0c86640556b01e9348eb797e6d7c5a889178d6b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/PERTILI.TTF",
+          "sha256": "5b90d215f586c91cbaceee9e96d8840431e6b4713909dd47ab70084a067d0b10"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/PER_____.TTF",
+          "sha256": "f8202c3426b5c54b192969351f15ea35288de44e811e9514d923898214b94184"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/PLAYBILL.TTF",
+          "sha256": "673e9f49ace279c73711dd778037b5d435790be236c9e5892609794b0bb4377f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/POORICH.TTF",
+          "sha256": "1a98bbb22c3097e418a263ca80b63ac1264e8cbd03d5f0a7143bc598297a387b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/PRISTINA.TTF",
+          "sha256": "4bd22f9cfa8255c17ef5734964bdcea39f0614c1975f9d495576a0110f5bf177"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Phetsarath OT.ttf",
+          "sha256": "f06126394e98af2ba5e546feb05a269cbfa489db8ce915952532500d93712835"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Pyidaungsu-1.8.3_Bold.ttf",
+          "sha256": "c41d39eb2efd93870806f65c16621117a0486671144c486e51f616d802b12c82"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Pyidaungsu-1.8.3_Numbers.ttf",
+          "sha256": "070a973b4e56e3d5a60cf57b5c2edfa18dea0d9eb78ed0076473820434852164"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Pyidaungsu-1.8.3_Regular.ttf",
+          "sha256": "b1423fd20293fbf9e33da647c7641dc72dcf40653b211e57d8fe482d8d74691d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/RAGE.TTF",
+          "sha256": "4e06cfa893f7e1e656709ac2cc240cf17cc82da9fb8df1afbf689940e47c0cfd"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/RAVIE.TTF",
+          "sha256": "7019d811b304287be2223f1667e0989f862951cbba660bde13a86bb103d97b80"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/REFSAN.TTF",
+          "sha256": "26d345f357d8213475eff6459ccf2dbc9d707e2f8c0445540f3bb183f717c0f0"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/REFSPCL.TTF",
+          "sha256": "0f9cd250887e38b99ff7111769d249daee8634c2c875f49c3599017bd2586aab"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ROCCB___.TTF",
+          "sha256": "bda7c484b491bb10914d668300c6560621de1b091784010f2d4d239020b6e5be"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ROCC____.TTF",
+          "sha256": "967465e783b62ce5fdfb10183753ddfa0ba6396036340fd3cc67f85187d57689"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ROCK.TTF",
+          "sha256": "0c61e5ce8296a55761cdb9d350d4c990be4cda8890cc70f2abdedfc357f96d00"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ROCKB.TTF",
+          "sha256": "fc9fd442d2dcd719c88d42121d69f5dd9dda02cc1c8afa025d261ec28795468f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ROCKBI.TTF",
+          "sha256": "c8a0f6976209cc198bc47ee287fd872fd86690f4d2893057e7ee92dd1235fb5f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ROCKEB.TTF",
+          "sha256": "6c52077681d5d1831b9e8f6621deb82de960418d24fe39d8cdc88778fbb19e30"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ROCKI.TTF",
+          "sha256": "70af64a5bc061505e7a1cb1cd691811768a7cc84e53d48fcb526deb53f8c7a57"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ROKG_R.ttf",
+          "sha256": "849c61ec05c9b468266a6ee3e7020ddc7c1696c9b3b29469b4986cab5e243a50"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/SCHLBKB.TTF",
+          "sha256": "a13c13a72c0aafc2be6baf52fd28b1745af6f0fd5fbd365499c7298f4ee416a1"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/SCHLBKBI.TTF",
+          "sha256": "8decca6df27be6bb2bd15801dd9cde62502bf4fb20efd835038861455ffe763b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/SCHLBKI.TTF",
+          "sha256": "73ff30499a0c673440e6df6e134e0731e586112ab99a0553f7c4dbb28f84366a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/SCRIPTBL.TTF",
+          "sha256": "ebd9ca7dc28fee37c942b4084f377711ba571da5fd7154125abf8f81c9628ce6"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/SHOWG.TTF",
+          "sha256": "80cd2486979c2c18f9dd59277c0fd800959afa1ce23820dcf7bce31f208647af"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/SNAP____.TTF",
+          "sha256": "b9e8a921cc54334132052f880fc1b8b236cb6f41b1cfa4618ea399014e6cea4d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/STENCIL.TTF",
+          "sha256": "5d53b38fa8ff33d15676cdcd78b261681bfda861c449b4f7ddfd7574a5c11e18"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/SansSerifCollection.ttf",
+          "sha256": "eb78c210d380fce7d3822b3a5ccfa808f1eb0390de6237f5460970679f393ce0"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/SegUIVar.ttf",
+          "sha256": "27ca1ab4bd5ad3b0404ee6a9a03b143408dbd7e5a4c9e4b2054639c03fc0f682"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/Segoe Fluent Icons.ttf",
+          "sha256": "82f5dc0e0cb9f41efad49e5423c76768ae0fc96e062a0893b6c729b863033013"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/SegoeIcons.ttf",
+          "sha256": "af496bd8ed18e8b45ea9c914bb3319204ab4fac450e0f4d3aab62bac6c02e5e9"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/SimsunExtG.ttf",
+          "sha256": "9cadcd0ab3d549446b51001d9896773d87ad012d93d842532f321eca514bffd8"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/SitkaVF-Italic.ttf",
+          "sha256": "74d4b98aabe85e16cb2fa6583c93f9f17642234d030a38462c36d1bcdde65928"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/SitkaVF.ttf",
+          "sha256": "9f71aabf76ccc757d25e18801d6a37e45cacc8b74c8b42a19e9f36ca99eef594"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/TCBI____.TTF",
+          "sha256": "4fee7243ffb931f65713de0537a145f6aa1e7302c8398fea68c4864d41e7fd98"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/TCB_____.TTF",
+          "sha256": "64df8ce11b656bdda3e35275b83dec7c40fc8a0a73d8a921918fb99b538f62d0"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/TCCB____.TTF",
+          "sha256": "b068cd471c07907a772b6f39a415d33d6328d32d1ea0032be9a717cb4b80b254"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/TCCEB.TTF",
+          "sha256": "9e8a6af516706030b8536b2ea6535664cd9bea916fb15304556d8139a6945ff9"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/TCCM____.TTF",
+          "sha256": "73655bc3a86553ea1d76df8c8eed0e8d0daebc797aba885cde99833ffe9545dd"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/TCMI____.TTF",
+          "sha256": "3ffa539609563836dc5546f473f6e7a3b7e4c9f7ba5876522925a980ab87fd7f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/TCM_____.TTF",
+          "sha256": "10df71cef84ae0d7031d7ffa072b185343365be0e59bec4ac231e7c77811584b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/TEMPSITC.TTF",
+          "sha256": "1b20b818be881cf16e711daf7e3c44be66a93b581bcd7b580a4423f18595fb35"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/VINERITC.TTF",
+          "sha256": "2bbb4cafa0c5767155971e7bc578483478351a36e55d035450e50b468422a962"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/VIVALDII.TTF",
+          "sha256": "13cc1cc1ed4b8192f1840291863551afa3d950f01110a8fc3127dca744740a1b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/VLADIMIR.TTF",
+          "sha256": "ede635464683ba465c949d7dd6894f9dff49a76229618cb0b73e0c85b93e4169"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/WINGDNG2.TTF",
+          "sha256": "fa671b6fddedd57f158ab90b6aa6a7c33db6f41ab620db72b7ad1e57c38bda5f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/WINGDNG3.TTF",
+          "sha256": "ac9ee085920a3d8b076d5e0c61dc9df42c4bac28d1fc968344f9ceddb3972f69"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/WantedSans-Black.ttf",
+          "sha256": "02092d69b9518a541eb2dd96037e50f2a2d660bbf3168f987f38fa9718cf362b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/WantedSans-Bold.ttf",
+          "sha256": "7d97a38d0c35b2e43ff2ae47040133faf0324d1c78800a16aaaa5d276376037c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/WantedSans-ExtraBlack.ttf",
+          "sha256": "ede63d59b0a60a07123afb84a89d1322743d358d28c8db3dbf04acd9688e1f17"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/WantedSans-ExtraBold.ttf",
+          "sha256": "1614d814a293c877dc103a8751fc629cf772ddecd3ac3f26b634f529241dd47f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/WantedSans-Medium.ttf",
+          "sha256": "e5f05e044e105b699f7eea82f9875ebcad46bfe73118a6ef60d48889631816aa"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/WantedSans-Regular.ttf",
+          "sha256": "849b51938f5779e7526fcf09b3c737e9d401261d111f626280af16423bf19f40"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/WantedSans-SemiBold.ttf",
+          "sha256": "1378a4914ebc4f658af9d68284048ddbc904a9704ae78fcdd84e7862bde89d70"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/YuGothB.ttc",
+          "sha256": "d923a57f781f06198167da4f58287be7ac64a954a47aff4295e078a42b4b68b2"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/YuGothL.ttc",
+          "sha256": "0acf409fc61e1560ea0384f8c72bf87c6fa7282077420657979680ee21dad2a4"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/YuGothM.ttc",
+          "sha256": "cb2021bbfe40b21ec564848b8d702125661594e1b4f1eb2e77fd8a98b485cf19"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/YuGothR.ttc",
+          "sha256": "cd24b5617c1e26572b0a7fe7e558f7121ca42c36f7b50e8d9216ac222a1c0a93"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/arial.ttf",
+          "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/arialbd.ttf",
+          "sha256": "e8f4e3baf6cc35fed6fcce3a540e8b39e8f6cda1d22a28f2ec8f526fef7a43f5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/arialbi.ttf",
+          "sha256": "267a411525980d648f10a7222a6ff1ebe4d4feeefbf9b3100cae2b5cfab5594a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ariali.ttf",
+          "sha256": "86b32db9a06f9694e2a3760c42e5117bcdc5cc1255bb5186ca8ce0305e22f288"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ariblk.ttf",
+          "sha256": "10df702864b1f89cb29ba0d6b97c04228338d16807e13e8d8c74b91aba5e5f23"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/bahnschrift.ttf",
+          "sha256": "eaad201da94cb323401fdb8cc760650803ddf8fd704cb9fa56317e6c69bc6fd6"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/batang.ttc",
+          "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/calibri.ttf",
+          "sha256": "57e93ff143572bcc092c1f56202d43ddc07bb119aa104c6d7af163470fb551f6"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/calibrib.ttf",
+          "sha256": "0a8296747536ead27d5f48f67e911cc3b207742b3f704e66995251d12fd422e5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/calibrii.ttf",
+          "sha256": "7f150e9eabe5db3e1b0f9469dca5c96176bc2fbb306dc9d48b7029dc69c52763"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/calibril.ttf",
+          "sha256": "2db491080305b349588b9851fb6fe960eee04cd7c1097784a987287d782f0a54"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/calibrili.ttf",
+          "sha256": "64ca9b15ca79927c3c4c69094bb41f78e5f0d79e9501d9d381a8794b220eead1"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/calibriz.ttf",
+          "sha256": "760539bfedbe24e7853ca8a621d9cb1f3de52036c116e81aae36b33c4ab60a7c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/cambria.ttc",
+          "sha256": "84e70ccc1664482f4a960442c7a166c91a1b2cf98ff88c33cb73f79403f66d7b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/cambriab.ttf",
+          "sha256": "6685c657a7e292083e28f19bbf1a1e90509ce3e1130dbc4ed1c62ba3f9140543"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/cambriai.ttf",
+          "sha256": "6905f0ac846d1ec4326cd14a46cb7379204940aa293b098ee4c1a69723bbd165"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/cambriaz.ttf",
+          "sha256": "fa90f376ad37f308a819b341c8185f788d30a1012829278592eab45a41818d1a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/comic.ttf",
+          "sha256": "fc7fbc3fb456a363f1f719b0ec62ae093c78124bb6da046006ae7e217a6b8575"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/comicbd.ttf",
+          "sha256": "128fdcfdfdd358e1624c15dd1f84a4d0689e59afcdefb81f8105efb2253b9c00"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/comici.ttf",
+          "sha256": "872cdefea79e25ff1a8a814109593c23ed66ba46f5bb843815d49e1ab4e0be3c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/comicz.ttf",
+          "sha256": "36eb300a76582b7d39f3d34834ce1255f0b9b2830fb2e81485c4b85a5ff7f03b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/consola.ttf",
+          "sha256": "cf00b507b3286870cc5064ebd0633c303f70b491a4af25eec2d32df413db0179"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/consolab.ttf",
+          "sha256": "7e8de70c92a891722bd3fbd623db005caab2bfe267e5dab5be46b95a44e0c7f1"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/consolai.ttf",
+          "sha256": "0b5b0484cf69ae973bd39380069f141271a4c9299b8885fa2d13f42aadbefef9"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/consolaz.ttf",
+          "sha256": "9bc225ec52aa8f4b88b98bb735b1908bd72c9e31a12139fafcc1bd6c86bed3b4"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/constan.ttf",
+          "sha256": "495577bf8ef74deab6ecc2e7acf63cd966184148f9bc2044a1068cd58501577e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/constanb.ttf",
+          "sha256": "b6c66a1858370fe575629e19d53c05350738bf5105e18ceac07fe9efc9cd008d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/constani.ttf",
+          "sha256": "2314a03c53506fa79525bc479ea4be9c036d1ebd86a1ffb5837ca5b43ff51f07"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/constanz.ttf",
+          "sha256": "9311aadcbd919746f50d222fa0215fb44266d6993221c14a196f0725fdae464f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/corbel.ttf",
+          "sha256": "a183b77b655df66793639af7874828fb50f748dc4af57ae40f758156f7f34634"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/corbelb.ttf",
+          "sha256": "fa008372f8a94945d0daef9daf0bfb9e3fba3a25fd17f2607d47ac6861bd0303"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/corbeli.ttf",
+          "sha256": "9be778c9ed418770f6b5a02064d9c0b47a8fdea1137618f0bec9ac4072430a45"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/corbell.ttf",
+          "sha256": "0e36ddf90102e476c6739ca4c8cc18ba8309d880c12558981d2e4d42de78fc00"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/corbelli.ttf",
+          "sha256": "a031500bccd32b5d6e819699b774fc679c696ed4965b643d51a94eb398475550"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/corbelz.ttf",
+          "sha256": "588f090ae3a6d31370457312683d14ee3a5bfbdaaa0a070b7c80225b55b23e78"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/cour.ttf",
+          "sha256": "e4a66a0259718d0c8f4b6e14319b4803ced45afbddf3abba8b8c3e2006856206"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/courbd.ttf",
+          "sha256": "11e629cef937cd08f942aa1bd994a71302dbe2819c72c6d4c183a623acbb421a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/courbi.ttf",
+          "sha256": "2d61f452de49b57d9ef14ce8896bc1cd2ed8285c2e9fb2e73e78a4b23f91d308"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/couri.ttf",
+          "sha256": "d82eeeb458f661d867f916d691fc6d3c53f8735fe4d5b04b54a5757321ee03e0"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ebrima.ttf",
+          "sha256": "3c5ce79b86ef4e4dd5c61d9a976c89751fe3ec35ae15dd253f3fb0745f883ef9"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ebrimabd.ttf",
+          "sha256": "08e47df2f8c6d1e94067b4e50680b232ff29c517bc1bff0c092c69f21c7549ca"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/fontawesome-webfont.ttf",
+          "sha256": "aa58f33f239a0fb02f5c7a6c45c043d7a9ac9a093335806694ecd6d4edc0d6a8"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/framd.ttf",
+          "sha256": "bac844bd41f847cf138737026d41c983387a1065535c32e78aa22c48708b52ad"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/framdit.ttf",
+          "sha256": "df59f9ea915957b22a389d68580bf40dc5bd05822cc65b5fdcc188c706a694e7"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/gadugi.ttf",
+          "sha256": "0ec2bdbfc2ba99d9fb05b6f7c511e7ab8b7c055e2d644570ad777455d6e9796d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/gadugib.ttf",
+          "sha256": "c96226cba7f50e94b534a5f8ade6a54f48a03be7c73360524eda5cbce4de34b6"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/georgia.ttf",
+          "sha256": "38dffcaf1fac89492f7c56c600a14daf36ae42f7c21985cd4134ae113124a58f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/georgiab.ttf",
+          "sha256": "72a6cd94fab6c179392075d3fb361e269cdddfad41bb7ab385fa22a37e49a900"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/georgiai.ttf",
+          "sha256": "d3e4bad27651d120ac8f2cea42cf4b4f077264fb243f66b3caffcfd35465f49b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/georgiaz.ttf",
+          "sha256": "3f9e512f82eaf6f1b7869b82013fb79f6eaf1a41e75a0e7b96f31f35b1022ae4"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/gulim.ttc",
+          "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/himalaya.ttf",
+          "sha256": "fdec3a7efacd57913d3c14111837908ccbabea5b0b44ec62527eb73acf743afb"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/impact.ttf",
+          "sha256": "d8bbdb72e3f930157824b2e59677d3a912d4512c14a948e6656a2e3fb0c935ad"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/javatext.ttf",
+          "sha256": "df8d94382f73e6d2197b60653c3d55c28ab5cf127a82e65b8af4ed1b52fdc412"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/l_10646.ttf",
+          "sha256": "97226e81f19eff8c8fb191745748bab920472c005d3ec4e23d9a50a12c471d92"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/lucon.ttf",
+          "sha256": "2ca2cfde263fa420e8d39420f075ee9ac80bc0794272c53ac4571a88f8a075a6"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/malgun.ttf",
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/malgunbd.ttf",
+          "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/malgunsl.ttf",
+          "sha256": "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/marlett.ttf",
+          "sha256": "b7397adf2dcc24ca790348a3c26deb2122b45e5728fd25fc588de4cf5a75b469"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/micross.ttf",
+          "sha256": "89b42a12ea0379133fb2f4a1d1bd53058fb61e2343c1d509452d5761acc85b7a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/mingliub.ttc",
+          "sha256": "8f8afdb3ec7047118f6dc51b29d395e697ee6770d0afd0cd407457e2ad6e93cb"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/mmrtext.ttf",
+          "sha256": "f9b362b1e0e09880cdf71852e3cc6dd6f7babb3fb6c12019f39af2135c6233cc"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/mmrtextb.ttf",
+          "sha256": "a96d49aa45e2800f49734578e5f5c1eaeb142e60a1fe1a4cc4d885170be5dcfe"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/monbaiti.ttf",
+          "sha256": "bf15e713f2ae14f85201ad31752054b0d88adb64634d9a1f5a7bc032f981ff89"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/msgothic.ttc",
+          "sha256": "4bde3e6392b96910fb59094c6c1a4dbfae18fee78d0bf13dc30616837c4f95db"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/msjh.ttc",
+          "sha256": "1fd5fc7046e0eea753988ee06d1a5a731df68475614e2174fbba9b4800f392ac"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/msjhbd.ttc",
+          "sha256": "7d55cd4801102131d991630cea74534dcf73a9fabf4a33e54fe05dfb4f5aa790"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/msjhl.ttc",
+          "sha256": "15f1162a68b5859f246d89ea62aed711b1994817c72e78e3df5d205c89c5c6e8"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/msyh.ttc",
+          "sha256": "d79c55e68b1131eea0cc1c47be4f572d964f28c682e143db2ad09c1e4cb07a3f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/msyhbd.ttc",
+          "sha256": "4508821b3dffe01f0ef5e5326a3e60df705a44633858811f67b6982dce3f6ee6"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/msyhl.ttc",
+          "sha256": "7e9bdf90bb5d3fe1b5975fc8ae31944b8fa674122261f92c28d4ec0b9c482fa1"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/msyi.ttf",
+          "sha256": "80aef1c25135b945e9de7d09e6445c386405eb2e0ea7032d4cd00a2fe3eef0ae"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/mvboli.ttf",
+          "sha256": "5dfd7a4c708caeefae42cdb9540946de042beeb8c069dfde0dbc14c2fa0705ae"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ntailu.ttf",
+          "sha256": "de0b632015447f28c2db41c8e07c745cedb05ead5dbc2e73f19da14d2e5f2151"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/ntailub.ttf",
+          "sha256": "cfc2acbf9ae0205a0a258e564bdbf5466a4e49a95281a1d2e72690f149ec837b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/opens___.ttf",
+          "sha256": "86f6a40ca61adfc5942fb4d2fc360ffba9abd972a7e21c1ee91e494299ff0cbc"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/pala.ttf",
+          "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/palab.ttf",
+          "sha256": "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/palabi.ttf",
+          "sha256": "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/palai.ttf",
+          "sha256": "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/phagspa.ttf",
+          "sha256": "538949482d964e9f353a3a8d860bb3eda93b46b830f3b677e4f53eb2ff3a6e7d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/phagspab.ttf",
+          "sha256": "03e4e45bb8ebb6d055a5584166cc26712bf7e746ea29cb6e548341361d31dc85"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/segmdl2.ttf",
+          "sha256": "a2efc8b8e51fbd031a7142a1ade8866fa904c0c349511abc579ee53f8a926f31"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/segoepr.ttf",
+          "sha256": "91046862e08fbade0bdd648e81c4efbe6a963947f8b6e32b64a28fe39073c468"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/segoeprb.ttf",
+          "sha256": "3cced0162ddb9e5f1e63ee1b36fd6e581c090318dce1a0af01b77f5ea9952c80"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/segoesc.ttf",
+          "sha256": "b24aa49a4bcb99a0ffc60cad77f00941e4b121153d8b0a519c03719d9be6004e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/segoescb.ttf",
+          "sha256": "6cd482205e1390b32a2b6327e1e5039424e346172c187074eac12006bc51935e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/segoeui.ttf",
+          "sha256": "704eada12961a27fd271f7d3b09e2066520e758390c1776744eff430fee30f6e"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/segoeuib.ttf",
+          "sha256": "b169e636719880976a97e94e3b1cb3dbe5f4a38eabc037bf9f2a9165154c3ad2"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/segoeuii.ttf",
+          "sha256": "f9feaeee8b20751c15700b4fb03571b335f52e91edece7fb7aa1ceaa6eeb0db7"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/segoeuil.ttf",
+          "sha256": "0dbddf9e20b2dc0facd568c877aa1155b3597c09a7ca41d00ca580af25d1cc51"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/segoeuisl.ttf",
+          "sha256": "288a8e3fcd0f6090881dcc469b557f55e0a85864abe1cc24330bb4f08105f69b"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/segoeuiz.ttf",
+          "sha256": "f2ecff1a943929f07a7b872c948b1de57fe688ac7d0bab6fc9f624c95a97dbfe"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/seguibl.ttf",
+          "sha256": "bdf29c9b7484c631f19d6ef436a63d15f8a1a82bc856f1a0f6906c41a097d2b1"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/seguibli.ttf",
+          "sha256": "6efcb158b0093bdeb6c308a93e10c2240e6510b99b756d9583cb59b7e219aaf9"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/seguiemj.ttf",
+          "sha256": "451df9bb5546055af625ff86aa72695df43e8e170b4c6c1316fe44e9c7a22f7c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/seguihis.ttf",
+          "sha256": "a162ceeaf701b55d11c542daf1c39c52bfaf686496505bff2eb75ca24814c136"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/seguili.ttf",
+          "sha256": "07bbf002d8dccb6bf7db8e31207076bf357fe92b1e5f82a20d2c941d59ebeb96"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/seguisb.ttf",
+          "sha256": "6c3fd894b19950b10c34bf64069ef821eaf2f58f959146306fee5b367472e501"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/seguisbi.ttf",
+          "sha256": "16847ed882097cd1c0d45c63b6d75c3021f2133c64db03796f57dac198d0b2ad"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/seguisli.ttf",
+          "sha256": "032eb41f836c3d6fd765dc4c287ea87f7f0c392a454ffc58d7e5fbe29d1fee86"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/seguisym.ttf",
+          "sha256": "a4a35dcc62cd30e1a6c97b695ecef83e59d2b149e3af834f6a49f11851d56b37"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/simsun.ttc",
+          "sha256": "1526ac24375f51f6eb73bc2d3f8072dbe4a80a3a65217677c9d9a84f67dab2ab"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/simsunb.ttf",
+          "sha256": "2a476ca00b5fbbbc12a4c5335634722b11a495ed87429284325701f1e36b596a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/sylfaen.ttf",
+          "sha256": "ac278d932d59558a76817e98051b1dae53867aa81ad83e5198b1b4c4b8066a08"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/symbol.ttf",
+          "sha256": "bbf1192965e5266fbf23370416337d2861fc1e8bd349def93f2994ba67382fc3"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/tahoma.ttf",
+          "sha256": "9af03d4ad44a3b413d92f7de48b94aa7cc8a1471a75d498406eae837f62ee1d1"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/tahomabd.ttf",
+          "sha256": "b16ed1a15e0cabea8d41d9f8899c253cd61ac466af5e3980d02bd0cf311c2267"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/taile.ttf",
+          "sha256": "f5151d081f6afea4c26464e0cd5e695f57a99209cfeea2f483c3108684660eb6"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/taileb.ttf",
+          "sha256": "1878842d8dbdf8489794af0bace95a956db270dfa506ddcaabf94fa827b769ac"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/times.ttf",
+          "sha256": "931c5de5c70401d9324d5014c123802b4fb753000360ceb2f56c589403cd58c5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/timesbd.ttf",
+          "sha256": "54fbe2c70af7c85a97bed0573227e3ccc4b2486012e3ca2a40c6bc77065846f5"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/timesbi.ttf",
+          "sha256": "3a29d114cb5229e8dbda5bef6c69be4a210a13b7277de4d66e9fc86963226f6c"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/timesi.ttf",
+          "sha256": "e7f7a88b65188328aea58670f955022e23c712f55679524729da1e4e03c49d88"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/trebuc.ttf",
+          "sha256": "fe3e8bdd64c1c9f3b9cf5189d06510c80d72cec28e03d04bffc560f77eec58d1"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/trebucbd.ttf",
+          "sha256": "dfcc306777a594d2815368547dd897e2ac82aff8073e55d9e682569939e49b81"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/trebucbi.ttf",
+          "sha256": "87942234ab0cc4400088648bef8d1f7afc4c44e676c7ed6b32ca31462c18307d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/trebucit.ttf",
+          "sha256": "9c9dc0cd0fd6b1a06e8f406d04bb15a88aaf20328d3e166c12d6bc7994b781d2"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/verdana.ttf",
+          "sha256": "6a8481fe107ee547893c018b13dba291c2020bec3de5da6525d9ac09f6bc2105"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/verdanab.ttf",
+          "sha256": "f3245f5f38f61bd1ceefb0f1338a5b88a21e6220832c2f43a38bbc7e1547c36f"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/verdanai.ttf",
+          "sha256": "14f2ebcdaa1b77e5993a8533662e4bd3ebfe2c5771b6daafd8ccb39b2ad588b9"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/verdanaz.ttf",
+          "sha256": "d71f81c83ec63eaa32d36d5df7be1d9e71d3ea9150f47cebda2924923cbbf18a"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/webdings.ttf",
+          "sha256": "67461fabd8329d0d8ad62689cac642b34fac81c754ff9077ad211160ec62282d"
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/wingding.ttf",
+          "sha256": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b"
+        }
+      ]
+    }
+  },
+  "exported_svg_pages": 0,
+  "exported_png_source_pages": 1,
+  "exported_render_tree_pages": 1,
+  "exported_pdf_pages": 1
+}

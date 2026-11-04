@@ -1,0 +1,135 @@
+{
+  "axis-font1800-height16875": {
+    "input": "inputs/axis-font1800-height16875.hwpx",
+    "input_sha256": "c6d25888a79e0779ed6e0f7f67eacf6d8a90a1cf3ec079e024fb8d6f44fda328",
+    "pdf": "pdf/axis-font1800-height16875-2020.pdf",
+    "pdf_sha256": "5bbb658b04378c3af523386b53a2a64e7287ccf379035a4a6e3144aa9882bce9",
+    "pdf_pages": 1,
+    "source_height_hu": 16875,
+    "expected_value_labels": [
+      0,
+      6
+    ],
+    "native_before_labels": [
+      0
+    ],
+    "candidate_code_head": "a19d7c3d164807d69ef85b40a75908957cb0b2d8",
+    "native_raw_minimum": "97.55893",
+    "fresh_wasm_raw_minimum": "96.54990",
+    "native_tsv": "output/pr-review/semanticist21-20261019/chart-axis-line-height-candidate-1018-cartesian-axis-line-height-fixed-native/candidate/axis-font1800-height16875/silhouette.tsv",
+    "fresh_wasm_tsv": "output/pr-review/semanticist21-20261019/chart-axis-line-height-candidate-1019-cartesian-axis-line-height-fixed-wasm/candidate/axis-font1800-height16875/silhouette.tsv",
+    "print_receipt": "output/pr-review/semanticist21-20261019/mcp-chart-axis-label-spacing-controls-1003/axis-font1800-height16875-complete.json",
+    "scope": "public no-LineSeg chart host with height-only counterexample; not unchanged-original fidelity proof"
+  },
+  "axis-font1800-height16950": {
+    "input": "inputs/axis-font1800-height16950.hwpx",
+    "input_sha256": "090aa1d03593e95b1431ae216359a4dacc86c3f360c27a86617f664bc03c6646",
+    "pdf": "pdf/axis-font1800-height16950-2020.pdf",
+    "pdf_sha256": "952d447cb14fd5bb9b3527e2d6b744465fd76a3382f6ef4b9c0903ea49706956",
+    "pdf_pages": 1,
+    "source_height_hu": 16950,
+    "expected_value_labels": [
+      0,
+      6
+    ],
+    "native_before_labels": [
+      0
+    ],
+    "candidate_code_head": "a19d7c3d164807d69ef85b40a75908957cb0b2d8",
+    "native_raw_minimum": "97.59245",
+    "fresh_wasm_raw_minimum": "96.55868",
+    "native_tsv": "output/pr-review/semanticist21-20261019/chart-axis-line-height-candidate-1018-cartesian-axis-line-height-fixed-native/candidate/axis-font1800-height16950/silhouette.tsv",
+    "fresh_wasm_tsv": "output/pr-review/semanticist21-20261019/chart-axis-line-height-candidate-1019-cartesian-axis-line-height-fixed-wasm/candidate/axis-font1800-height16950/silhouette.tsv",
+    "print_receipt": "output/pr-review/semanticist21-20261019/mcp-chart-axis-label-boundary-controls-1011/axis-font1800-height16950-complete.json",
+    "scope": "public no-LineSeg chart host with height-only counterexample; not unchanged-original fidelity proof"
+  },
+  "axis-font1800-height17025": {
+    "input": "inputs/axis-font1800-height17025.hwpx",
+    "input_sha256": "40a92d8e6627860bc6687750888d6b04ca6ee72eb56dd3a592996fb56d2d01dc",
+    "pdf": "pdf/axis-font1800-height17025-2020.pdf",
+    "pdf_sha256": "9274eadabdaef3b3ea33d62051c5ae4428bc33fcd201150ae4a850e61ea2b8f6",
+    "pdf_pages": 1,
+    "source_height_hu": 17025,
+    "expected_value_labels": [
+      0,
+      6
+    ],
+    "native_before_labels": [
+      0
+    ],
+    "candidate_code_head": "a19d7c3d164807d69ef85b40a75908957cb0b2d8",
+    "native_raw_minimum": "97.54991",
+    "fresh_wasm_raw_minimum": "96.65770",
+    "native_tsv": "output/pr-review/semanticist21-20261019/chart-axis-line-height-candidate-1018-cartesian-axis-line-height-fixed-native/candidate/axis-font1800-height17025/silhouette.tsv",
+    "fresh_wasm_tsv": "output/pr-review/semanticist21-20261019/chart-axis-line-height-candidate-1019-cartesian-axis-line-height-fixed-wasm/candidate/axis-font1800-height17025/silhouette.tsv",
+    "print_receipt": "output/pr-review/semanticist21-20261019/mcp-chart-axis-label-boundary-controls-1011/axis-font1800-height17025-complete.json",
+    "scope": "public no-LineSeg chart host with height-only counterexample; not unchanged-original fidelity proof"
+  },
+  "axis-font1800-height17100": {
+    "input": "inputs/axis-font1800-height17100.hwpx",
+    "input_sha256": "a68726e3f36a06aa62f517c20094d8e444db320e6cf2efaa0b0407eeee8f8c2b",
+    "pdf": "pdf/axis-font1800-height17100-2020.pdf",
+    "pdf_sha256": "4660d279f23f6eec78fb418f753c4e6791879ad492a51c982a997e9b141edc5f",
+    "pdf_pages": 1,
+    "source_height_hu": 17100,
+    "expected_value_labels": [
+      0,
+      6
+    ],
+    "native_before_labels": [
+      0
+    ],
+    "candidate_code_head": "a19d7c3d164807d69ef85b40a75908957cb0b2d8",
+    "native_raw_minimum": "97.34283",
+    "fresh_wasm_raw_minimum": "96.37359",
+    "native_tsv": "output/pr-review/semanticist21-20261019/chart-axis-line-height-candidate-1018-cartesian-axis-line-height-fixed-native/candidate/axis-font1800-height17100/silhouette.tsv",
+    "fresh_wasm_tsv": "output/pr-review/semanticist21-20261019/chart-axis-line-height-candidate-1019-cartesian-axis-line-height-fixed-wasm/candidate/axis-font1800-height17100/silhouette.tsv",
+    "print_receipt": "output/pr-review/semanticist21-20261019/mcp-chart-axis-label-boundary-controls-1011/axis-font1800-height17100-complete.json",
+    "scope": "public no-LineSeg chart host with height-only counterexample; not unchanged-original fidelity proof"
+  },
+  "axis-font1800-height17250": {
+    "input": "inputs/axis-font1800-height17250.hwpx",
+    "input_sha256": "577c77f114e0acbd01dddffb6c4f82dd1507514e26db47035ace020a3207ec44",
+    "pdf": "pdf/axis-font1800-height17250-2020.pdf",
+    "pdf_sha256": "b39e76c383c59729e038ff27936d0bf12df686c38b7801704b874992fd33ac9a",
+    "pdf_pages": 1,
+    "source_height_hu": 17250,
+    "expected_value_labels": [
+      0,
+      4
+    ],
+    "native_before_labels": [
+      0
+    ],
+    "candidate_code_head": "a19d7c3d164807d69ef85b40a75908957cb0b2d8",
+    "native_raw_minimum": "97.52062",
+    "fresh_wasm_raw_minimum": "96.57233",
+    "native_tsv": "output/pr-review/semanticist21-20261019/chart-axis-line-height-candidate-1018-cartesian-axis-line-height-fixed-native/candidate/axis-font1800-height17250/silhouette.tsv",
+    "fresh_wasm_tsv": "output/pr-review/semanticist21-20261019/chart-axis-line-height-candidate-1019-cartesian-axis-line-height-fixed-wasm/candidate/axis-font1800-height17250/silhouette.tsv",
+    "print_receipt": "output/pr-review/semanticist21-20261019/mcp-chart-axis-label-spacing-controls-1003/axis-font1800-height17250-complete.json",
+    "scope": "public no-LineSeg chart host with height-only counterexample; not unchanged-original fidelity proof"
+  },
+  "axis-font1800-height18000": {
+    "input": "inputs/axis-font1800-height18000.hwpx",
+    "input_sha256": "edfff6470933017b74cb6384921c2ae8f24392d48899007ccb67ca19c21dfe0a",
+    "pdf": "pdf/axis-font1800-height18000-2020.pdf",
+    "pdf_sha256": "b4914d3ef485261b9cfcc77c1956d70e603d70c9b5a57d40859566833ea70f12",
+    "pdf_pages": 1,
+    "source_height_hu": 18000,
+    "expected_value_labels": [
+      0,
+      4
+    ],
+    "native_before_labels": [
+      0,
+      6
+    ],
+    "candidate_code_head": "a19d7c3d164807d69ef85b40a75908957cb0b2d8",
+    "native_raw_minimum": "97.24897",
+    "fresh_wasm_raw_minimum": "96.34703",
+    "native_tsv": "output/pr-review/semanticist21-20261019/chart-axis-line-height-candidate-1018-cartesian-axis-line-height-fixed-native/candidate/axis-font1800-height18000/silhouette.tsv",
+    "fresh_wasm_tsv": "output/pr-review/semanticist21-20261019/chart-axis-line-height-candidate-1019-cartesian-axis-line-height-fixed-wasm/candidate/axis-font1800-height18000/silhouette.tsv",
+    "print_receipt": "output/pr-review/semanticist21-20261019/mcp-chart-axis-label-spacing-controls-1003/axis-font1800-height18000-complete.json",
+    "scope": "public no-LineSeg chart host with height-only counterexample; not unchanged-original fidelity proof"
+  }
+}

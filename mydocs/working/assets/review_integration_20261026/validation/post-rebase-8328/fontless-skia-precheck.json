@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-29",
+  "scope": "native_fractional_glyph_origin 내 4개 Skia 검사",
+  "command": "cargo nextest run --cargo-profile release-test --target-dir target/pr-review --features native-skia --test regression_suite_010 --test-threads 4 --no-fail-fast -E 'test(native_fractional_glyph_origin)'",
+  "font_environment": "FONTCONFIG_FILE로 빈 디렉터리만 검색, fc-list 0개; 시스템 글꼴 디렉터리 자체를 가린 실행은 별도 진행",
+  "repository_supplied_font": {
+    "path": "ttfs/opensource/NotoSansKR-Regular.ttf",
+    "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+    "tracked": true
+  },
+  "code_test_head": "994f56720a9a41c0357130eb5e71471a6f043f3c",
+  "passed": 4,
+  "skipped_by_filter": 291,
+  "exit_code": 0,
+  "tests": [
+    "rhwp::regression_suite_010 native_fractional_glyph_origin::fixed_advance_glyph_preserves_quarter_pixel_baseline_translation",
+    "rhwp::regression_suite_010 native_fractional_glyph_origin::ordinary_ttf_keeps_existing_raster_baseline_grid",
+    "rhwp::regression_suite_010 native_fractional_glyph_origin::subpixel_stroke_hairline::subpixel_dashed_page_border_covers_one_device_pixel",
+    "rhwp::regression_suite_010 native_fractional_glyph_origin::subpixel_stroke_hairline::subpixel_table_rules_cover_one_device_pixel"
+  ],
+  "log_sha256": "9e9fa1f750a46d6aa2fdd3ed50af277ba4fbfd94e355aebf153563c6e8604831",
+  "limitations": [
+    "이 검사는 26개 전체 파일이나 모든 플랫폼의 확인을 대신하지 않는다.",
+    "시스템 폰트 디렉터리를 숨기는 강한 격리 검사는 별도 실행 중이다."
+  ]
+}

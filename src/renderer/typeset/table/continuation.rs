@@ -5,8 +5,8 @@ mod job;
 mod step;
 
 use crate::renderer::typeset::{
-    paragraph, row_geometry_table, table, ComposedParagraph, FootnoteFragment, MeasuredTable,
-    Paragraph, ResolvedStyleSet, TableCellFootnote, TypesetState,
+    paragraph, table, ComposedParagraph, FootnoteFragment, MeasuredTable, Paragraph,
+    ResolvedStyleSet, TableCellFootnote, TypesetState,
 };
 
 /// [#2424] block-table continuation loop의 재개 지점.
@@ -139,6 +139,9 @@ impl TableContinuationCursor {
 
 /// [#2424] continuation loop 진입 전에 한번 계산하는 owned 준비 상태.
 pub(in crate::renderer::typeset) struct BlockTableContinuationPreparedState {
+    /// 첫 조각 전에 소비하지 않은 현재 줄 범위는 마지막 조각이 소유한다.
+    pub(in crate::renderer::typeset) computed_host_tail:
+        Option<crate::renderer::typeset::paragraph::metrics::FormattedHostTail>,
     /// 첫 행을 전혀 소비하지 못해 저장 호스트 쪽을 떠난 실제 전이 사실.
     /// 예산과 출력은 새 쪽에서 문단 앵커 거리를 다시 적용하지 않는다.
     pub(in crate::renderer::typeset) first_anchor_offset_consumed: bool,

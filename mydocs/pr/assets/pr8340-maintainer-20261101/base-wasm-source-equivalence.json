@@ -1,0 +1,10 @@
+{
+  "recordedBuildSource": "24484260bb7e374176147fd136ae9848d0f49a6c",
+  "verifiedEquivalentBase": "1a7ae8f5bd17ebc22b281fd1915973e18e4e641f",
+  "actualChangedProductPaths": [
+    "src/document_core/commands/object_ops/table.rs",
+    "src/document_core/commands/object_ops/table/creation_line.rs"
+  ],
+  "allDirtyFileHashesMatch": true,
+  "allFourArtifactHashesMatch": true
+}

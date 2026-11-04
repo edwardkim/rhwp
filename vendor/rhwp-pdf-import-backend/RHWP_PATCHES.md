@@ -10,6 +10,42 @@ rhwp 내부 보안 패치 dependency이며, 원 저작권·라이선스·NOTICE�
 
 ## 원본과 추적
 
+### #8415 요청 예산 내 PDF 암호 인증
+
+`document/import_encryption.rs`에서 bounded constructor의 Standard Security R2–R6
+사전·키 길이·crypt filter 조합을 검사한다. 인증 KDF는 유한한 최악 작업량·예약을 먼저
+계상하고, 문자열·stream 복호화는 단일 할당 및 누적 요청 한도를 유지한다. 메모리/reader
+객체 로더가 `decrypt_loaded_object`를 공유하며, 복호화된 `StreamData`에도 원래 예산을
+보존한다. XRef·Encrypt 사전과 EncryptMetadata=false를 구분하고 ObjStm 내부 문자열을
+다시 복호화하지 않는다. 인증 실패를 부분 추출 성공으로 바꾸지 않는다.
+V5 키 필드의 추가 바이트는 QPDF와 같이 수용하되 필수 접두부만 handler에 복사한다.
+V5 이전에 의미 없는 OE/UE/Perms 필드는 handler 생성 전에 제거해 불필요한 복사를 막는다.
+원본의 파싱·사전 복사는 여전히 요청 예산을 사용하며 짧은 키 필드를 늘려 복구하지 않는다.
+
+R5 인증의 기존 중간 키 반환 오류를 UE/OE 복호화로 보정했고, R5/R6의 127바이트 암호
+절단은 UTF-8 문자 경계가 아니라 규정된 바이트 경계로 적용한다. 독립 pikepdf/QPDF 입력과
+Python cryptography AES-CBC 값을 대조한다. 입력 제어군은 `pdf/issue8415/authentication`,
+실행 결과는 본체의 `mydocs/working/task_m100_8413_implementation.md`에 기록한다.
+본체 `pdf-import`는 R2–R4 읽기에 필요한 `legacy-crypto`를 포함한다. 혼합/Identity crypt
+filter와 공개키 보안 handler는 지원한다고 선언하지 않는다. 인증 뒤 복사·편집 플래그를
+추가 차단으로 사용하지 않는 것은 본체 메인터너 정책이다. 프로세스 전체 heap/시간 상한과
+parser 모든 할당 경계의 보장은 이 변경으로 주장하지 않는다.
+
+### #8403 문자 획 관측
+
+`extract_paths_with_clips`의 실제 text-show 장부에 `Tr=1/2`의 획 두께·색·채움 여부·
+투명도·선 연결·miter를 추가한다. page/Form의 q/Q 상태와 ExtGState를 재사용하며,
+획 두께는 글자 크기가 아니라 사용자 좌표계와 균일 CTM으로 변환한다. 텍스트를 그림으로
+치환하거나 weight를 강제로 올리지 않는다. 비균일 CTM·점선·글리프 clip 결합 등 아직
+표현하지 못하는 획은 `UnsupportedTextPaint`로 전달한다. 호출자는
+`PDF_TEXT_UNSUPPORTED`로 표시한다. 일반 검색 API의 반환 계약은 바꾸지 않는다.
+
+본체 lowering은 내장 OpenType name 테이블의 실제 family를 사용한다. PDF BaseFont의
+PostScript 이름에서 임의 suffix를 잘라 family를 추정하지 않는다. 관측·family 문자열과
+캐시는 기존 요청 예산 안에서 보관한다. 구현과 검증 기록은 #8403 수행 문서에 연결한다.
+
+### upstream 식별
+
 - 출처: <https://crates.io/crates/pdf_oxide/0.3.78>
 - upstream repository: <https://github.com/yfedoseev/pdf_oxide>
 - `.crate` SHA-256: `95b1ecc1a60a314fbd1aea5fe8f700ec32af1efa70fef5c6879162444da3437d`
@@ -20,7 +56,7 @@ rhwp 내부 보안 패치 dependency이며, 원 저작권·라이선스·NOTICE�
 - `UPSTREAM_FILES.json`은 원본 archive의 파일별 SHA-256 목록이다.
   변경·추가 파일과 원문 보존을 이 목록으로 구별한다. upstream 갱신 시 보안 diff를 다시 감사한다.
 - MIT 선택지로 사용하며 `LICENSE-MIT`, `LICENSE-APACHE`, `NOTICE`, `TRADEMARKS.md`를 보존한다.
-- 외부 배포 승인이 없으므로 `publish = false`다. 별도 게시·배포는 수행하지 않았다.
+- 2026-10-28 확정된 14개 게시 구성에 따라 `publish = ["crates-io"]`다. 별도 게시·배포는 수행하지 않았다.
 
 ## 내장 폰트 고지 보완
 
@@ -33,6 +69,25 @@ rhwp 내부 보안 패치 dependency이며, 원 저작권·라이선스·NOTICE�
 
 ## 보안 패치 경계
 
+### 이미지 타일 패턴 추출 (#8403)
+
+- `document/pattern_images.rs`의 공통 walker가 페이지·Form·패턴 셀의 이미지 paint를
+  처리한다. `PatternType=1`·`PaintType=1`의 이미지 패턴은 부모 초기 좌표계·Matrix·BBox·
+  XStep/YStep·채움 clip을 적용한다. 음수 간격도 같은 정수 격자로 처리한다.
+- 경로 색 상태에 Pattern을 보존해 이전 단색으로 채우는 문제를 막는다. 패턴 채움과
+  함께 있는 단색 윤곽선은 이미지 뒤에 그린다. 지원하지 않는 패턴 윤곽선·비이미지 셀 paint는
+  `UnsupportedPattern`으로 거부하며 rhwp는 `PDF_PATTERN_UNSUPPORTED`로 전달한다.
+- 가시 영역에서 타일 인덱스 범위를 계산한다. 타일·Form 방문과 깊이, 셀 연산자 replay,
+  핸들·색 이름·캐시 복사는 기존 요청 예산을 소비한다. 순환 리소스·0인 간격·비유한 기하는
+  정상 출력으로 숨기지 않는다. 기존 공유 stream cache를 유지한다.
+- 같은 셀의 paint 위치별 픽셀·mask 결과는 타일 간 공유한다. 배치별 복사는 예산을 계상하고
+  opacity·clip·CTM을 각각 적용한다. 페이지 전체를 래스터화하지 않는다.
+- 원본 사례의 기존 문자 외곽선 차이와 최종 검증 상태는
+  `mydocs/working/task_m100_8403_visual_gate.md`에 별도로 기록한다.
+
+- #8174의 Native 작업자 정책 전달을 위해 `PdfImportLimits`에 `Deserialize`를 추가했다.
+  입력 복사 전의 frontend 검증과 `ImportBudget::new`의 유한·비영 한도 검증을 유지한다.
+  이 직렬화 지원을 전체 parser 할당 경계의 증명으로 확대하지 않는다.
 - `PdfDocument::from_bytes_with_limits`에서 요청별 `ImportBudget`을 생성한다.
   bytes 입력과 xref bootstrap부터 같은 context를 사용한다.
 - 파싱된 `StreamData`는 객체/캐시 clone을 지나도 원래 context를 공유한다.
@@ -398,3 +453,92 @@ and inline JPEGs consume this same decision. No default limit or bitmap geometry
 `image_codec_support()` exposes the actual compiled JBIG2/JPEG 2000 feature flags.
 The RHWP frontend uses this result so a consumer enabling a backend feature through
 another dependency is reflected after Cargo feature unification. This adds no decoding work.
+
+## #8174 v2-S02 로컬 보정
+
+- 기본 코덱·ICC 선택은 RHWP 본체 manifest에서 정하고 effective support를 조회한다.
+- ICC source profile의 요청 cache·네 intent별 CMM cache, 실제 materialize·palette·PNG 소비를
+  연결한다. qcms의 profile/CLUT 예약·반복은 `rhwp-qcms` 보정판에서 같은 요청을 소비한다.
+- JPX의 PDF 색 공간 선언을 실제 decoder 성분 해석에 전달하고 index/CMYK의 내장 alpha를
+  확장한다. palette 원본 index와 alpha를 분리하고 색상 변환 전 연관 alpha를 복원한다.
+- 손상 xref는 `xref_bounded_recovery`의 유한한 scan·객체·stream 검사로 복구한다.
+  무제한 legacy scan을 제한 constructor에서 호출하지 않는다. 모호한 recovery stream의
+  Length와 재구성할 수 없는 구조는 계속 오류다. 암호화를 제거하거나 metadata를 버리지 않는다.
+- 후속 제한 object load는 원문 slice에서 문법과 stream Length 뒤의 종료 token을 확인한다.
+  문자열/주석/stream의 `endobj` bytes로 객체를 자르지 않는다.
+- 고정 struct/gamma, font와 다른 legacy 경로의 전체 할당 감사 완료를 주장하지 않는다.
+  실제 실행·검증 상태는 `mydocs/working/task_m100_8174_v2_stage2.md`에 기록한다.
+
+### #8174 ICC profile stream 해소
+
+ICC profile cache·해소된 profile·OutputIntent는 document의 stream decoder를 소비한다.
+기존 `StreamData`도 요청 예산을 유지하므로 이전 경로를 무제한 압축 해제로 분류하지 않는다.
+실제 호환성 근거는 profile의 간접 `Filter` 해소다. 이전 경로는 정상 `/Filter 7 0 R`을
+해소하지 못해 CMM 대신 대체 색을 사용했다. document decoder는 같은 요청 예산으로
+Filter/DecodeParms 참조를 해소하고 sticky failure를 유지한다.
+
+### #8174 Indexed JPX의 preblend 순서
+
+PDF 32000-1:2008 §11.6.5.3은 Indexed의 인덱스가 아닌 팔레트 색을 preblend하도록 정한다.
+인덱스는 그대로 lookup하고 공통 Indexed expander가 base 색 성분을 alpha로 복원한 뒤
+ICC/CMYK 변환을 수행한다. Gray·RGB·CMYK·ICC base가 같은 결과를 소비한다. 추가 복원 작업은
+요청 작업 예산에 계상하며 CMM 한도 실패 뒤 반복을 계속하거나 대체 색의 성공을 반환하지 않는다.
+초기 합성 기준도 같은 인덱스 복원 가정을 갖고 있었음을 기록하고, 원본은 유지한 채 사양으로
+기준의 해석을 바로잡는다. 별도의 정상 preblended palette·ICC 대조군으로 순서를 검증한다.
+
+이미 Lab→RGB로 변환한 palette에는 원래 Lab 성분 범위가 남아 있지 않다. 이 표현에 RGB의
+역 preblend를 적용하지 않으며 Indexed Lab+SMaskInData=2는 명시적으로 거부한다.
+straight alpha 및 원 sample을 유지하는 Gray/RGB/CMYK/ICC base의 확대와 구분한다.
+이는 모든 JPX 색 공간·mask 조합을 지원한다는 선언이 아니다.
+
+## #8174 v2-S07 Type1/CFF·Unicode 예약 보정
+
+`fonts/allocation.rs`의 공통 요청 어댑터로 Type1 encoding 삽입·덮어쓰기, CFF INDEX·charset·
+encoding·simple/CID map, glyph-name OnceLock과 Unicode memo를 생성·복사 전에 계상한다.
+제한 요청은 fallible reserve와 sticky 오류를 공유한다. 기존 예산 없는 공개 API는 wrapper로
+유지하며 FontInfo의 제품 경로는 PdfDocument의 같은 예산을 전달한다.
+
+CFF INDEX는 1-based offset·범위·산술 overflow를 검사하고 중간 offset Vec를 만들지 않는다.
+DICT operand는 명세의 48개를 고정 stack 배열로 처리하며 실수 문자열·raw CFF의 OpenType
+포장도 요청 예산을 소비한다. Unicode memo의 양성·음성 miss와 hit의 반환 복사, CMap range·
+glyph-name·radical 정규화·CJK fallback을 포함한다. Shift-JIS의 작은 임시 버퍼도 stack으로
+대체했다. 카운터는 논리 예약·확장 작업량이며 allocator overhead·live heap·총 RSS가 아니다.
+
+Native/WASM의 작은 한도·정확한 복사 경계·오류 뒤 정상 요청과 실제 CLI·Worker·Studio
+연결을 검증했다. 나머지 FontInfo payload clone·index·frontend/Core의 할당과 실제 host
+confinement는 미완료다. 기존 PDF 문자 폭·줄바꿈의 직접 판독 결함도 남아 시각 완료·PR
+제출을 보류한다. source·명령·성능·증거와 보류 이유는
+`mydocs/working/task_m100_8174_v2_stage7.md`에 기록한다.
+
+## #8174 operator 수집 버퍼의 선행 제한
+
+bounded content 수집 Vec의 capacity 증가를 기존 `stream_bytes` 이하로 제한한다.
+요청한 새 capacity의 바이트를 같은 요청의 decoded 예산에 선계상하고 fallible exact reserve한다.
+후속 cache/interpreter 복사 전에 이미 큰 Vec를 만든 뒤 거절하던 경로를 보완한다. 어휘 파싱
+카운터·sticky 오류·새 요청 격리는 유지한다. raw backend 기본 operator 250,000은 바꾸지 않으며
+본체 standard 8,000,000과 선택 쪽 비례 정책을 혼동하지 않는다. 실제 실행과 비용은
+`mydocs/working/task_m100_8174_t01_operator_budget.md`에 기록한다.
+
+### #8174 글자 원점 후처리의 임시 저장소
+
+- baseline index와 정렬 scratch, glyph·후보·참조·anchor·offset 배열을 같은 요청의
+  decoded work로 먼저 예약한다. 기존 matching·anchor 문턱·interpolation 수식은 공통
+  helper에서 유지하며, 일반 검색과 bounded paint 추출이 함께 사용한다.
+- resource 오류는 일반적인 글자 원점 부재와 구분해 호출자에게 전파한다. painted char
+  Vec은 임시 Arc를 만들지 않고 빌려 쓴다. 전체 reading-order/Unicode 후처리 감사나
+  프로세스 메모리 상한의 완료를 뜻하지 않는다.
+- 단독 backend unit 실행을 위해 기존 cfg(test)의 StreamData·budget 인자·fallible
+  upsample 연결을 보완했다. DejaVu smoke는 기존 배포 폰트를 참조하며, 외부 CFF/JP2/
+  CMYK 자료에 의존한 컨테이너·해상도·writer 검사는 source에 동봉한 원본 합성 입력과
+  생성기 또는 기존 dev encoder를 사용한다. 기존 의미·기하·태그 기대는 유지한다.
+  합성 자료의 목적·라이선스·재생성은 각 `src/*/testdata/README.md`에 기록한다.
+
+### #8174 T05 — 재열기 owner의 협력 작업 검사
+
+`ImportBudget`에 선택적인 `ImportWorkGuard`를 연결한다. 기존 sticky 실패를 먼저 반환하고,
+owner가 작업 만료를 알리면 같은 요청을 실패로 전환한다. 기본 Native/PDF 예산에는 guard가
+없으며, WASM 편집 HWPX 재열기가 예약·압축 해제 읽기 경계에서 monotonic deadline을
+검사할 때 사용한다. 같은 스레드의 동기 작업을 선점하거나 XML/ZIP 내부의 모든 할당과
+브라우저 전체 heap을 제한하는 기능이 아니다. 실제 요청 수명·실패 후 복구와 독립 편집은
+`tests/cases/issue_8174_pdf_session_lifetime.rs`와
+`mydocs/working/task_m100_8174_t05_completion.md`에 기록한다.

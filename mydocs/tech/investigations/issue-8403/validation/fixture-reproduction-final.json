@@ -1,0 +1,17 @@
+[
+  {
+    "input": "image-patterns",
+    "pages": 5,
+    "identicalPixels": true
+  },
+  {
+    "input": "text-stroke",
+    "pages": 7,
+    "identicalPixels": true
+  },
+  {
+    "input": "text-stroke-edited",
+    "pages": 7,
+    "identicalPixels": true
+  }
+]

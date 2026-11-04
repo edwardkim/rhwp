@@ -1,0 +1,14 @@
+[
+  {
+    "case": "ai-settings",
+    "url": "http://127.0.0.1:7710",
+    "exit_code": 0,
+    "mode": "isolated headless, intercepted Anthropic requests, synthetic fixture credentials only"
+  },
+  {
+    "case": "ai-panel",
+    "url": "http://127.0.0.1:7710",
+    "exit_code": 0,
+    "mode": "isolated headless, intercepted Anthropic requests, synthetic fixture credentials only"
+  }
+]

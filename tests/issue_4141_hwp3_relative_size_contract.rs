@@ -87,7 +87,7 @@ fn hwp3_samples() -> Vec<(PathBuf, String)> {
         for entry in entries.flatten() {
             let path = entry.path();
             if is_deferred_exam_document(path.to_string_lossy().as_ref())
-                || exam_fixtures::is_exam_fixture(&path)
+                || exam_fixtures::is_deferred_fixture(&path)
             {
                 continue;
             }

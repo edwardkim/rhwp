@@ -9,9 +9,10 @@ pub fn is_deferred(path: &std::path::Path, axis: &str) -> bool {
         .filter(|line| !line.starts_with('#') && !line.is_empty())
         .any(|line| {
             let mut columns = line.split('\t');
-            columns.next() == Some(relative)
-                && columns
-                    .next()
-                    .is_some_and(|axes| axes.split(',').any(|value| value == axis))
+            columns.next().is_some_and(|entry| {
+                relative == entry || normalized.ends_with(&format!("/{entry}"))
+            }) && columns
+                .next()
+                .is_some_and(|axes| axes.split(',').any(|value| value == axis))
         })
 }

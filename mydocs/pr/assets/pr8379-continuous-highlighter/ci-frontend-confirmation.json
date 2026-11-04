@@ -1,0 +1,164 @@
+{
+  "head": "e6439bd3ca7e90bd3894ac7f8524df41c6553c93",
+  "run_id": 41416091309,
+  "job_id": 125181420610,
+  "job_name": "Frontend package gates",
+  "conclusion": "success",
+  "summary": [
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:12.6841510Z   PASS: bar 배경=rgb(37, 41, 47)",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:12.6841934Z   PASS: bar 경계=1px",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:12.6842205Z   PASS: icon contrast=12.90",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6792974Z   PASS: theme mode=dark",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6793891Z   PASS: effective theme=dark",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6794377Z   PASS: skin=oldschool",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6795007Z   PASS: 행 수=2",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6795397Z   PASS: 전체 압축 높이=71px",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6795825Z   PASS: 가로 overflow 없음",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6796262Z   PASS: 기본 도구 한 줄=56px",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6796774Z   PASS: 기본 도구 내부 overflow 격리",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6797768Z   PASS: 기본 도구 이동 버튼 표시",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6798252Z   PASS: toolbar 배경=rgb(37, 41, 47)",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6798729Z   PASS: toolbar 경계=1px",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6799135Z   PASS: toolbar nav contrast=10.49",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6799674Z   PASS: bar 배경=rgb(37, 41, 47)",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6800157Z   PASS: bar 경계=1px",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6800535Z   PASS: icon contrast=12.90",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6801018Z   PASS: 더보기 panel 표시",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6801412Z   PASS: 더보기 첫 명령 focus",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6801904Z   PASS: panel 배경=rgb(54, 60, 69)",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6802414Z   PASS: panel 경계=1px",
+    "Frontend package gates\tRun Studio responsive toolbar gate (#6118,\t2026-11-02T09:07:14.6802872Z   PASS: panel contrast=9.81",
+    "Frontend package gates\tVerify extension distributions\t2026-11-02T09:07:26.6550757Z # tests 3",
+    "Frontend package gates\tVerify extension distributions\t2026-11-02T09:07:26.6552487Z # pass 3",
+    "Frontend package gates\tVerify extension distributions\t2026-11-02T09:07:26.6554221Z # fail 0",
+    "Frontend package gates\tVerify extension distributions\t2026-11-02T09:07:26.6564418Z # skipped 0",
+    "Frontend package gates\tVerify VS Code webview outline keyboard contract\t2026-11-02T09:07:42.3074306Z # tests 6",
+    "Frontend package gates\tVerify VS Code webview outline keyboard contract\t2026-11-02T09:07:42.3075292Z # pass 6",
+    "Frontend package gates\tVerify VS Code webview outline keyboard contract\t2026-11-02T09:07:42.3075488Z # fail 0",
+    "Frontend package gates\tVerify VS Code webview outline keyboard contract\t2026-11-02T09:07:42.3084716Z # skipped 0",
+    "Frontend package gates\tVerify font asset contracts\t2026-11-02T09:07:42.9599400Z # tests 8",
+    "Frontend package gates\tVerify font asset contracts\t2026-11-02T09:07:42.9600045Z # pass 8",
+    "Frontend package gates\tVerify font asset contracts\t2026-11-02T09:07:42.9600782Z # fail 0",
+    "Frontend package gates\tVerify font asset contracts\t2026-11-02T09:07:42.9601662Z # skipped 0"
+  ],
+  "steps": [
+    {
+      "name": "Set up job",
+      "conclusion": "success"
+    },
+    {
+      "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "conclusion": "success"
+    },
+    {
+      "name": "Install Rust toolchain",
+      "conclusion": "success"
+    },
+    {
+      "name": "Install wasm-pack",
+      "conclusion": "success"
+    },
+    {
+      "name": "Restore frontend WASM cargo cache",
+      "conclusion": "success"
+    },
+    {
+      "name": "Build fresh WASM package for frontend gates",
+      "conclusion": "success"
+    },
+    {
+      "name": "Set up Node.js",
+      "conclusion": "success"
+    },
+    {
+      "name": "Install frontend package dependencies",
+      "conclusion": "success"
+    },
+    {
+      "name": "Verify WASM bindings and editor embed contract",
+      "conclusion": "success"
+    },
+    {
+      "name": "Verify build dependency compatibility",
+      "conclusion": "success"
+    },
+    {
+      "name": "Run editor package tests when declared",
+      "conclusion": "success"
+    },
+    {
+      "name": "Run shared and extension service worker tests",
+      "conclusion": "success"
+    },
+    {
+      "name": "Run Chrome extension options UI tests",
+      "conclusion": "success"
+    },
+    {
+      "name": "Run Studio unit tests",
+      "conclusion": "success"
+    },
+    {
+      "name": "Install headless Chrome",
+      "conclusion": "success"
+    },
+    {
+      "name": "Validate Visual Sweep Canvas font binding",
+      "conclusion": "success"
+    },
+    {
+      "name": "Run undo depth measurement gate (#5769)",
+      "conclusion": "success"
+    },
+    {
+      "name": "Run Studio responsive toolbar gate (#6118,",
+      "conclusion": "success"
+    },
+    {
+      "name": "Build Studio",
+      "conclusion": "success"
+    },
+    {
+      "name": "Build browser extensions",
+      "conclusion": "success"
+    },
+    {
+      "name": "Verify extension distributions",
+      "conclusion": "success"
+    },
+    {
+      "name": "Compile VS Code extension",
+      "conclusion": "success"
+    },
+    {
+      "name": "Verify VS Code webview outline keyboard contract",
+      "conclusion": "success"
+    },
+    {
+      "name": "Verify font asset contracts",
+      "conclusion": "success"
+    },
+    {
+      "name": "Save frontend WASM cargo cache",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Post Set up Node.js",
+      "conclusion": "success"
+    },
+    {
+      "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "conclusion": "success"
+    },
+    {
+      "name": "Complete job",
+      "conclusion": "success"
+    }
+  ],
+  "studio_summary": [
+    "Frontend package gates\tRun Studio unit tests\t2026-11-02T09:02:39.9332564Z # tests 2718",
+    "Frontend package gates\tRun Studio unit tests\t2026-11-02T09:02:39.9333112Z # pass 2716",
+    "Frontend package gates\tRun Studio unit tests\t2026-11-02T09:02:39.9333316Z # fail 0",
+    "Frontend package gates\tRun Studio unit tests\t2026-11-02T09:02:39.9333733Z # skipped 2"
+  ]
+}

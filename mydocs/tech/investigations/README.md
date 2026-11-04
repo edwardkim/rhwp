@@ -65,3 +65,4 @@ probe source만 남은 디렉터리는 별도 README를 강제하지 않으며, 
 - [Issue #4739 정부상징 폰트 후계·대체 조사](issue-4739/README.md)
 - [Issue #4741 Local Font Access 부분 열거 누락 조사](issue-4741/README.md)
 - [Issue #8174 CLI·Rust 라이브러리 소비 구조 재조사](issue-8174/README.md)
+- [Issue #8403 PDF 패턴 이미지의 검정 채움 원인](issue-8403/README.md)

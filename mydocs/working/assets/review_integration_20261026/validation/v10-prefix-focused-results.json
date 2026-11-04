@@ -1,0 +1,96 @@
+{
+  "compiled_base_head": "ebd1769015f2cbe4915fbc8653578252d38de25f",
+  "compiled_patch_sha256": "a52a7a6db6c1576725773c3dd6d1527f0422d86578563dda53043cb38a9ff83d",
+  "binary_sha256": "e3f96b684e8a28edcd13a535a6405ce6393bb4574271e90fbc82673ca2cd9ac5",
+  "steps": [
+    {
+      "name": "v10-prefix-onsemiro-hwp",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/candidate-v10-prefix-rhwp",
+        "info",
+        "samples/[2027] 온새미로 1 본교재.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "seconds": 1.4155452760169283,
+      "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v10-prefix-onsemiro-hwp.log",
+      "pageCount": 46
+    },
+    {
+      "name": "v10-prefix-onsemiro-hwpx",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/candidate-v10-prefix-rhwp",
+        "info",
+        "samples/[2027] 온새미로 1 본교재.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "seconds": 1.2196675409795716,
+      "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v10-prefix-onsemiro-hwpx.log",
+      "pageCount": 46
+    },
+    {
+      "name": "v10-prefix-onsemiro-hwpx-compat2024",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/candidate-v10-prefix-rhwp",
+        "dump-pages",
+        "samples/[2027] 온새미로 1 본교재.hwpx",
+        "--compat",
+        "2024",
+        "-p",
+        "45",
+        "--json"
+      ],
+      "exit": 0,
+      "seconds": 2.469659383990802,
+      "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v10-prefix-onsemiro-hwpx-compat2024.log"
+    },
+    {
+      "name": "v10-prefix-source-frame-contracts",
+      "command": [
+        "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_011-33797b0c8477257c",
+        "source_frame_control_ownership::",
+        "--nocapture",
+        "--test-threads",
+        "1"
+      ],
+      "exit": 0,
+      "seconds": 12.46905670396518,
+      "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v10-prefix-source-frame-contracts.log"
+    },
+    {
+      "name": "v10-prefix-sungeo-all",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/basic/sungeo.hwp",
+        "--pdf",
+        "pdf/basic/sungeo-2022.pdf",
+        "--key",
+        "sungeo-v10",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/candidate-v10-prefix-rhwp",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v10-prefix"
+      ],
+      "exit": 0,
+      "seconds": 59.58408723596949,
+      "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v10-prefix-sungeo-all.log"
+    }
+  ],
+  "compiled_contract_binary": {
+    "path": "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_011-33797b0c8477257c",
+    "sha256": "c1ec06e3d29a45032e3d9171cfc20fb43693a86e1483bd5412fbd4d3ae769a7a"
+  },
+  "completed_at": "2026-10-26T22:41:38.242260+00:00",
+  "sungeo_pages": 94,
+  "sungeo_native_min_raw": 99.85165
+}

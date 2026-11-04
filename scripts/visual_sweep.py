@@ -17,6 +17,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -573,6 +574,8 @@ def wasm_package_provenance(root: Path, package: Path, rasterizer: str = "svg") 
     return {
         "files": [{"path": str(path.resolve()), "sha256": sha256_file(path)} for path in files],
         "exporter_sha256": sha256_file(exporter),
+        "font_registration_sha256": (sha256_file(root / "scripts/visual-sweep-font-registration.mjs")
+                                     if rasterizer == "png" else None),
         "comparison_profile": "print",
         "font_policy": ("document embedded glyph resources; requested Canvas families supplied once per worker"
                         if rasterizer == "png" else "same-input native export-svg --font-style --profile print; font-face CSS only"),
@@ -638,12 +641,37 @@ def default_sweep_font_paths() -> list[Path]:
         return [Path(value) for value in configured.split(os.pathsep) if value]
     if platform.system() == "Darwin":
         user_fonts = Path.home() / "Library/Fonts"
-        if user_fonts.is_dir():
-            return [user_fonts]
+        try:
+            if user_fonts.is_dir():
+                return [user_fonts]
+        except OSError:
+            # 최소 글꼴 격리에서 읽을 수 없는 경로는 설치 근거가 아니다.
+            pass
     return []
 
 
-def svg_font_export_options(root: Path, mode: str | None, paths: list[Path]) -> tuple[list[str], dict[str, object]]:
+def linux_system_font_files() -> list[Path]:
+    """WASM 직접 출력에 Fontconfig가 실제 등록한 프로그램을 공급한다."""
+    if platform.system() != "Linux":
+        return []
+    try:
+        result = subprocess.run(
+            ["fc-list", "--format", "%{file}\n"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return []
+    supported = {".ttf", ".otf", ".ttc", ".woff", ".woff2"}
+    return sorted({
+        path for value in result.stdout.splitlines()
+        if (path := Path(value)).is_file() and path.suffix.lower() in supported
+    })
+
+
+def svg_font_export_options(root: Path, mode: str | None, paths: list[Path], *, allow_files: bool = False) -> tuple[list[str], dict[str, object]]:
     """검증에 공급할 글꼴과 해시를 고정한다. 글꼴 파일은 진단용 SVG에만 포함한다."""
     if mode == "subset":
         raise SystemExit(
@@ -661,10 +689,14 @@ def svg_font_export_options(root: Path, mode: str | None, paths: list[Path]) -> 
     files = []
     for directory in paths:
         directory = resolve_input_path(root, directory)
-        if not directory.is_dir():
+        if allow_files and directory.is_file():
+            candidates = [directory]
+        elif directory.is_dir():
+            candidates = sorted(directory.rglob("*"))
+        else:
             raise SystemExit(f"폰트 디렉터리가 없습니다: {directory}")
         args.extend(["--font-path", str(directory)])
-        for path in sorted(directory.rglob("*")):
+        for path in candidates:
             if path.is_file() and path.suffix.lower() in {".ttf", ".otf", ".ttc", ".woff", ".woff2"}:
                 files.append({"path": str(path), "sha256": sha256_file(path)})
     if mode == "full" and paths and not files:
@@ -1515,10 +1547,14 @@ def render_target(
     svg_rasterizer: str,
     wasm_pkg: Path | None = None,
     font_environment: Path | None = None,
+    observed_font_receipt: Path | None = None,
     embed_fonts: str | None = None,
     font_paths: list[Path] | None = None,
     font_mismatch_evidence: Path | None = None,
     silhouette_only: bool = False,
+    excluded_regions: dict[int, list[tuple[int, int, int, int]]] | None = None,
+    exclusion_evidence: dict[str, object] | None = None,
+    linked_images: list[dict[str, str]] | None = None,
     compat: str = "2022",
     page_workers: int = 4,
     rasterizer: str = "svg",
@@ -1526,6 +1562,15 @@ def render_target(
     print(f"== {target.key} ==", flush=True)
     if dpi <= 0:
         raise SystemExit(f"DPI는 양수여야 합니다: {dpi}")
+    if exclusion_evidence is not None:
+        if dpi != 96 or not silhouette_only:
+            raise SystemExit("연결 그림 제외는 96dpi 실루엣 전용입니다")
+        for label, actual in (("source", root / target.hwp), ("pdf", root / target.pdf)):
+            if sha256_file(actual) != exclusion_evidence[label]["sha256"]:
+                raise SystemExit(f"연결 그림 제외 증거의 {label}가 실제 대상과 다릅니다")
+        info = json.loads(run([rhwp_bin, "info", str(root / target.hwp), "--json"], cwd=root).stdout)
+        if info.get("sections") != 1:
+            raise SystemExit("연결 그림 제외는 구역 소유를 확인할 수 있는 단일 구역 문서만 지원합니다")
     hwp = resolve_input_path(root, target.hwp)
     pdf = resolve_input_path(root, target.pdf)
     if not hwp.exists():
@@ -1533,6 +1578,32 @@ def render_target(
     if not pdf.exists():
         raise SystemExit(f"PDF 파일이 없습니다: {pdf}")
     font_mismatch_record = font_mismatch_evidence_record(root, font_mismatch_evidence, hwp=hwp, pdf=pdf)
+
+    automatic_font_paths = not font_paths
+    native_webfonts = None
+    if rasterizer == "png" and wasm_pkg is None:
+        try:
+            from scripts import visual_sweep_native_webfonts
+        except ModuleNotFoundError:
+            import visual_sweep_native_webfonts
+        try:
+            if font_environment is not None:
+                font_environment = resolve_input_path(root, font_environment)
+            prepared = visual_sweep_native_webfonts.prepare(
+                root, hwp, rhwp_bin, font_paths or default_sweep_font_paths(),
+                font_environment, compat, dpi,
+            )
+        except (Exception, SystemExit) as error:
+            failure = {"key": target.key, "run_state": "failed",
+                       "pr_review_gate": {"status": "re_review_required",
+                                          "reason": "native_webfont_preparation_failed"},
+                       "error": str(error)}
+            write_json_atomic(out_root / safe_target_key(target.key) / "manifest.json", failure)
+            update_root_summary(out_root, failure)
+            raise SystemExit(f"Native 웹폰트 준비 실패: {error}") from error
+        font_paths = prepared["font_paths"]
+        font_environment = prepared["font_environment"]
+        native_webfonts = prepared["evidence"]
 
     base = out_root / safe_target_key(target.key)
     svg_dir = base / "svg"
@@ -1561,6 +1632,8 @@ def render_target(
         font_environment = resolve_input_path(root, font_environment)
         environment_args.extend(["--font-environment", str(font_environment)])
     provenance = sweep_provenance(root, hwp, pdf, rhwp_bin, svg_rasterizer)
+    if native_webfonts is not None:
+        provenance["native_webfont_fallback"] = native_webfonts
     png_module = None
     if rasterizer == "png":
         try:
@@ -1573,20 +1646,41 @@ def render_target(
     else:
         provenance["raster_backend"] = "svg-" + svg_rasterizer
     provenance["layout_generation"] = compat
+    if exclusion_evidence is not None:
+        provenance["linked_image_exclusions"] = exclusion_evidence
+    if linked_images:
+        provenance["linked_images"] = linked_images
     if font_environment is not None:
         provenance["font_environment"] = {
             "path": str(font_environment),
             "sha256": hashlib.sha256(font_environment.read_bytes()).hexdigest(),
         }
+    if observed_font_receipt is not None:
+        if wasm_pkg is None or rasterizer != "png":
+            raise SystemExit("실제 글꼴 관측은 WASM 직접 PNG 경로에만 적용할 수 있습니다.")
+        observed_font_receipt = resolve_input_path(root, observed_font_receipt)
+        provenance["observed_font_receipt"] = {
+            "path": str(observed_font_receipt),
+            "sha256": sha256_file(observed_font_receipt),
+        }
     if wasm_pkg is not None:
         provenance["wasm"] = wasm_package_provenance(root, wasm_pkg, rasterizer)
+    system_font_supply = False
     if png_module is not None and not font_paths:
         font_paths = default_sweep_font_paths()
+        if wasm_pkg is not None and not font_paths:
+            font_paths = linux_system_font_files()
+            system_font_supply = bool(font_paths)
     font_args, font_supply = svg_font_export_options(
-        root, "full" if png_module and font_paths else embed_fonts, font_paths or []
+        root, "full" if png_module and font_paths else embed_fonts, font_paths or [],
+        allow_files=png_module is not None,
     )
     if png_module is not None:
         font_supply["mode"] = "direct-font-programs"
+        if automatic_font_paths and font_paths:
+            font_supply["source"] = "RHWP_FONT_PATH" if os.environ.get("RHWP_FONT_PATH") else "automatic_local_and_web"
+        if system_font_supply:
+            font_supply["source"] = "system_fontconfig"
     provenance["font_supply"] = font_supply
     if wasm_pkg is not None and rasterizer == "svg":
         provenance["wasm"]["font_policy"] = "same-input native " + " ".join(font_args) + "; font-face CSS only"
@@ -1612,7 +1706,8 @@ def render_target(
                 if wasm_pkg is not None:
                     png_module.export_wasm_png(sys.modules[__name__], root, hwp, wasm_pkg, base,
                                               selected_pages, font_paths or [], font_environment, compat,
-                                              dpi, page_workers)
+                                              dpi, page_workers, observed_font_receipt,
+                                              linked_images=linked_images or (exclusion_evidence.get("assets", []) if exclusion_evidence else None))
                 else:
                     png_module.export_native_png(sys.modules[__name__], root, hwp, rhwp_bin, base,
                                                 selected_pages, font_paths or [], environment_args,
@@ -1680,6 +1775,11 @@ def render_target(
                 run(pdf_raster_commands(pdf, dpi, pdf_prefix, [page])[0], cwd=root)
     if silhouette_only:
         all_pdf_pngs = sorted(pdf_png_dir.glob("*.png"), key=page_num)
+        if exclusion_evidence is not None:
+            selected_set = set(selected_pages) if selected_pages is not None else None
+            regions = [entry for entry in exclusion_evidence["regions"]
+                       if selected_set is None or entry["page"] in selected_set]
+            validate_linked_image_regions(all_tree_paths, regions)
         sources = select_source_page_paths(
             all_svg_paths, all_tree_paths, all_pdf_pngs, selected_pages
         )
@@ -1688,7 +1788,10 @@ def render_target(
             root, sources, rhwp_png_dir, dpi / 96.0, "png" if png_module else svg_rasterizer, workers=page_workers
         ):
             pairs.append((page, rhwp_png_dir / f"rhwp_{page:03d}.png", pdf_path))
-        manifest = write_silhouette_tsv(pairs, base, target.key, document_counts=document_counts, workers=page_workers)
+        manifest = write_silhouette_tsv(pairs, base, target.key, document_counts=document_counts,
+                                        workers=page_workers, excluded_regions=excluded_regions,
+                                        exclusion_evidence=exclusion_evidence,
+                                        resume=resume and (base / "silhouette-metrics").is_dir())
         manifest["provenance"] = provenance
         manifest["exported_svg_pages"] = len(list(svg_dir.glob("*.svg")))
         manifest["exported_png_source_pages"] = len(all_svg_paths) if png_module else 0
@@ -1920,6 +2023,7 @@ def subpixel_tolerant_content_match_details(
         "silhouette_method": SILHOUETTE_METHOD,
         "silhouette_raw_match_percent": round((1.0 - raw_mismatched / content_union) * 100.0, 5)
         if content_union else 100.0,
+        "silhouette_raw_unmatched_pixels": raw_mismatched,
         "silhouette_boundary_reconciled_pixels": reconciled,
         "silhouette_color_tolerance": DEFAULT_PIXEL_DIFF_THRESHOLD,
         "silhouette_content_union_pixels": content_union,
@@ -2418,11 +2522,12 @@ def mask_content_regions(
     image: Image.Image,
     rectangles: list[tuple[int, int, int, int]],
 ) -> Image.Image:
-    """텍스트 흐름의 줄 띠 분석을 위해 확인된 비본문 영역을 지운 이미지를 반환한다.
+    """지정된 영역을 흰색으로 지운 복사본을 반환한다.
 
     단 흐름 신호는 떠 있는 그림 주위의 재조판도 검출하도록 래스터의 줄 띠를 측정한다.
     가운데 정렬 표의 빽빽한 괘선과 셀 텍스트는 문단의 기준선이 아니다.
-    이 신호에서만 렌더 트리의 해당 소유 영역을 가린다. 원 래스터와 표 배치 검사는 유지한다."""
+    그 신호에서는 해당 표 영역만 가린다. 외부 연결 그림 제외 비교에서도 명시된
+    양쪽 영역을 가린다. 원 래스터는 변경하지 않는다."""
     if not rectangles:
         return image
     masked = image.copy()
@@ -5295,14 +5400,9 @@ def review_comment_line(metrics: dict[str, object] | None) -> str:
     raw = metrics.get("silhouette_raw_match_percent")
     if not isinstance(raw, (int, float)):
         return "코멘트: raw 실루엣 판정값 = 확인 불가."
-    notes = [f"코멘트: 판정값 raw 실루엣(2px 이웃) = {raw:.2f}%."]
-    adjusted = metrics.get("tolerant_content_match_percent")
-    if isinstance(adjusted, (int, float)):
-        notes.append(f"색상 경계 보정값(진단용) {adjusted:.2f}%.")
-    strict = metrics.get("visual_accuracy_proxy_percent")
-    if isinstance(strict, (int, float)):
-        notes.append(f"엄격 내용 픽셀 {strict:.2f}%.")
-    return " ".join(notes)
+    # overlay의 유일한 일치율은 TSV의 raw 열과 동일하게 표시한다.
+    # 나머지 진단 지표는 metrics/manifest에 보존한다.
+    return f"코멘트: 판정값 raw 실루엣(2px 이웃) = {raw:.2f}%."
 
 
 def make_review_panels(
@@ -5413,9 +5513,20 @@ def document_page_counts(root: Path, pdf: Path, export_metadata: Path) -> dict[s
 
 def silhouette_pair_metrics(pair):
     """이미지 경로만 작업자에게 전달하고 같은 지표·입력 해시를 계산한다."""
-    page, rhwp_path, pdf_path = pair
+    page, rhwp_path, pdf_path = pair[:3]
+    excluded = pair[3] if len(pair) == 4 else []
     with Image.open(rhwp_path) as rhwp, Image.open(pdf_path) as pdf:
+        if excluded:
+            if rhwp.size != pdf.size:
+                raise ValueError(f"p{page}: 제외 영역 비교는 같은 크기의 원본 PNG가 필요합니다")
+            for left, top, right, bottom in excluded:
+                if not (0 <= left < right <= rhwp.width and 0 <= top < bottom <= rhwp.height):
+                    raise ValueError(f"p{page}: 제외 영역이 PNG 밖에 있습니다")
+            rhwp = mask_content_regions(rhwp.convert("RGB"), excluded)
+            pdf = mask_content_regions(pdf.convert("RGB"), excluded)
         details = subpixel_tolerant_content_match_details(rhwp, pdf)
+    if excluded:
+        details["excluded_rectangles_px"] = [list(rect) for rect in excluded]
     return page, details, {
         "page": page,
         "rhwp_png": str(rhwp_path),
@@ -5428,23 +5539,91 @@ def silhouette_pair_metrics(pair):
 def write_silhouette_tsv(
     pairs: list[tuple[int, Path, Path]], out_dir: Path, key: str,
     *, document_counts: dict[str, int] | None = None, workers: int = 1,
+    excluded_regions: dict[int, list[tuple[int, int, int, int]]] | None = None,
+    exclusion_evidence: dict[str, object] | None = None,
+    resume: bool = False,
 ) -> dict[str, object]:
     """이미지 증적을 새로 만들지 않고 같은 2px 보조 지표와 입력 해시만 저장한다."""
     if not pairs:
         raise SystemExit("실루엣 비교 입력이 없습니다.")
     out_dir.mkdir(parents=True, exist_ok=True)
     tsv = out_dir / "silhouette.tsv"
+    checkpoint_dir = out_dir / "silhouette-metrics"
+    if not resume:
+        clean_dir(checkpoint_dir)
+    else:
+        if not checkpoint_dir.is_dir():
+            raise SystemExit(f"실루엣 쪽 체크포인트가 없습니다: {checkpoint_dir}")
+    checkpoint_identity = {
+        "key": key,
+        "pages": [page for page, _, _ in pairs],
+        "exclusion_evidence": exclusion_evidence.get("sha256") if exclusion_evidence else None,
+    }
+    identity_path = checkpoint_dir / "manifest.json"
+    if resume:
+        if not identity_path.is_file() or load_json_object(identity_path, "실루엣 쪽 목록") != checkpoint_identity:
+            raise SystemExit("실루엣 재개 대상의 쪽 목록 또는 제외 증거가 바뀌었습니다")
+    else:
+        write_json_atomic(identity_path, checkpoint_identity)
+    tsv.unlink(missing_ok=True)
+    write_json_atomic(out_dir / "silhouette_manifest.json", {
+        "key": key, "mode": "silhouette_only", "run_state": "incomplete",
+        "pr_review_gate": {"status": "not_evaluated", "reason": "실루엣 계산 진행 중"},
+    })
     metrics = []
     inputs = []
-    with tsv.open("w", encoding="utf-8") as stream:
-        stream.write("page\ttolerant_content_match_percent\tbelow_90\tsilhouette_raw_match_percent\tsilhouette_boundary_reconciled_pixels\n")
-        for page, details, inputs_for_page in ordered_page_map(silhouette_pair_metrics, pairs, workers):
+    temporary_tsv = out_dir / "silhouette.tsv.tmp"
+    with temporary_tsv.open("w", encoding="utf-8") as stream:
+        header = "page\ttolerant_content_match_percent\tbelow_90\tsilhouette_raw_match_percent\tsilhouette_boundary_reconciled_pixels"
+        stream.write(header + ("\texcluded_linked_image_regions" if exclusion_evidence is not None else "") + "\n")
+        compare_pairs = [(page, rhwp, pdf, (excluded_regions or {}).get(page, []))
+                         for page, rhwp, pdf in pairs] if excluded_regions else pairs
+        producer = {
+            "sweep": sha256_file(Path(__file__)),
+            "image_helpers": sha256_file(Path(__file__).with_name("visual_sweep_images.py")),
+            "exclusion_evidence": exclusion_evidence.get("sha256") if exclusion_evidence else None,
+            "image_decoding": image_decoding_provenance(),
+        }
+        cached = {}
+        missing = []
+        for pair in compare_pairs:
+            page, rhwp_path, pdf_path = pair[:3]
+            path = checkpoint_dir / f"p{page:06d}.json"
+            identity = {
+                "rhwp_sha256": sha256_file(rhwp_path), "pdf_sha256": sha256_file(pdf_path),
+                "excluded": [list(rect) for rect in (pair[3] if len(pair) == 4 else [])],
+                "method": SILHOUETTE_METHOD, "producer": producer,
+            }
+            if resume and path.exists():
+                saved = load_json_object(path, "실루엣 쪽 체크포인트")
+                if saved.get("identity") != identity:
+                    raise SystemExit(f"실루엣 p{page} 입력 또는 계산 환경이 바뀌었습니다")
+                saved_input = saved["inputs"]
+                saved_input.update({"rhwp_png": str(rhwp_path), "pdf_png": str(pdf_path)})
+                cached[page] = (page, saved["details"], saved_input)
+            else:
+                missing.append(pair)
+        for page, details, inputs_for_page in ordered_page_map(silhouette_pair_metrics, missing, workers):
+            pair = next(item for item in compare_pairs if item[0] == page)
+            identity = {
+                "rhwp_sha256": inputs_for_page["rhwp_sha256"], "pdf_sha256": inputs_for_page["pdf_sha256"],
+                "excluded": [list(rect) for rect in (pair[3] if len(pair) == 4 else [])],
+                "method": SILHOUETTE_METHOD, "producer": producer,
+            }
+            write_json_atomic(checkpoint_dir / f"p{page:06d}.json", {
+                "identity": identity, "details": details, "inputs": inputs_for_page,
+            })
+            cached[page] = (page, details, inputs_for_page)
+        for page in sorted(cached):
+            _, details, inputs_for_page = cached[page]
             value = details["tolerant_content_match_percent"]
             metrics.append({"page": page, **details})
-            stream.write(f"{page}\t{value:.5f}\t{int(details['silhouette_raw_match_percent'] < PR_REVIEW_MIN_RAW_MATCH_PERCENT)}"
-                         f"\t{details['silhouette_raw_match_percent']:.5f}"
-                         f"\t{details['silhouette_boundary_reconciled_pixels']}\n")
+            stream.write(f"{page}\t{value:.2f}\t{int(details['silhouette_raw_match_percent'] < PR_REVIEW_MIN_RAW_MATCH_PERCENT)}"
+                         f"\t{details['silhouette_raw_match_percent']:.2f}"
+                         f"\t{details['silhouette_boundary_reconciled_pixels']}"
+                         + (f"\t{len((excluded_regions or {}).get(page, []))}" if exclusion_evidence is not None else "") + "\n")
             inputs.append(inputs_for_page)
+    temporary_tsv.replace(tsv)
     gate = pr_review_gate(metrics, font_mismatch_evidence=None, document_page_counts=document_counts)
     if gate["status"] == "passed":
         gate = {**gate, "status": "not_evaluated", "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"}
@@ -5457,9 +5636,94 @@ def write_silhouette_tsv(
         "image_decoding": image_decoding_provenance(),
         "color_tolerance": DEFAULT_PIXEL_DIFF_THRESHOLD, "pr_review_gate": gate,
     }
+    if exclusion_evidence is not None:
+        manifest["excluded_regions"] = exclusion_evidence
+        if gate["status"] != "re_review_required":
+            manifest["pr_review_gate"] = {**gate, "status": "not_evaluated",
+                "reason": "외부 연결 그림 영역 제외 비교; 해당 영역과 겹친 내용은 검증하지 않았습니다"}
     write_json_atomic(out_dir / "silhouette_manifest.json", manifest)
     print(f"실루엣 보조값 {len(pairs)}쪽: {tsv}", flush=True)
+    # 표시값은 TSV와 같은 정밀도로 출력하고 실제 일치 여부는 정수 픽셀로 센다.
+    # 출력이 100.00%여도 반올림 전 미대응 픽셀이 있을 수 있다.
+    minimum = min(float(item["silhouette_raw_match_percent"]) for item in metrics)
+    unmatched = [item.get("silhouette_raw_unmatched_pixels") for item in metrics]
+    exact = sum(value == 0 for value in unmatched) if all(type(value) is int for value in unmatched) else None
+    print(json.dumps({"key": key, "pages": len(metrics), "minimum": f"{minimum:.2f}",
+                      "exact100": exact}, ensure_ascii=False), flush=True)
     return manifest
+
+
+def load_linked_image_exclusions(path: Path) -> tuple[dict[int, list[tuple[int, int, int, int]]], dict[str, object]]:
+    """명시된 원본·PDF 해시와 쪽별 연결 그림 영역을 검증한다."""
+    evidence = json.loads(path.read_text(encoding="utf-8"))
+    if evidence.get("kind") != "linked-image-exclusions-v1" or evidence.get("dpi") != 96:
+        raise ValueError("외부 그림 제외 증거의 종류 또는 DPI가 올바르지 않습니다")
+    for label in ("source", "pdf"):
+        entry = evidence.get(label, {})
+        target = Path(entry.get("path", ""))
+        if not target.is_file() or sha256_file(target) != entry.get("sha256"):
+            raise ValueError(f"외부 그림 제외 증거의 {label} 해시가 다릅니다")
+    regions: dict[int, list[tuple[int, int, int, int]]] = {}
+    for entry in evidence.get("regions", []):
+        page, rect = entry.get("page"), entry.get("rect_px")
+        if type(page) is not int or page < 1 or not isinstance(rect, list) or len(rect) != 4 or any(type(v) is not int for v in rect):
+            raise ValueError("외부 그림 제외 쪽 또는 사각형이 올바르지 않습니다")
+        if not entry.get("external_path") or not entry.get("control"):
+            raise ValueError("외부 그림 제외에는 원본 경로와 컨트롤 주소가 필요합니다")
+        regions.setdefault(page, []).append(tuple(rect))
+    if not regions:
+        raise ValueError("외부 그림 제외 영역이 없습니다")
+    assets = evidence.get("assets", [])
+    if not isinstance(assets, list):
+        raise ValueError("연결 그림 공급 목록은 배열이어야 합니다")
+    names = set()
+    for asset in assets:
+        name, target = asset.get("name"), Path(asset.get("path", ""))
+        if (not isinstance(name, str) or not name or Path(name).name != name
+                or "\\" in name or name in names):
+            raise ValueError("연결 그림 공급 파일명은 고유한 basename이어야 합니다")
+        if not target.is_file() or sha256_file(target) != asset.get("sha256"):
+            raise ValueError(f"연결 그림 공급 파일 해시가 다릅니다: {name}")
+        names.add(name)
+    if assets:
+        expected = {entry["external_path"].replace("\\", "/").rsplit("/", 1)[-1]
+                    for entry in evidence["regions"]}
+        if names != expected:
+            raise ValueError("연결 그림 공급 목록과 제외 컨트롤의 파일명이 다릅니다")
+    return regions, {"manifest": str(path), "sha256": sha256_file(path),
+                     "kind": evidence["kind"], "dpi": 96,
+                     "source": evidence["source"], "pdf": evidence["pdf"],
+                     "regions": evidence["regions"], "assets": assets,
+                     "limitation": "영역 안의 그림과 겹친 글자·다른 내용도 비교하지 않음"}
+
+
+def validate_linked_image_regions(trees: list[Path], regions: list[dict[str, object]]) -> None:
+    """실제 출력 쪽의 그림 상자가 제외 증거와 같을 때만 마스크한다."""
+    by_page = {page_num(path): path for path in trees}
+    for entry in regions:
+        page = entry["page"]
+        if page not in by_page:
+            continue  # 선택 페이지에 없는 제외 영역은 적용하지 않는다.
+        match = re.fullmatch(r"section(\d+)/para(\d+)/control(\d+)", entry["control"])
+        if not match:
+            raise ValueError(f"p{page}: 그림 컨트롤 주소 형식 오류")
+        if int(match.group(1)) != 0:
+            raise ValueError(f"p{page}: 렌더 트리에서 첫 구역 이외의 컨트롤을 확인할 수 없습니다")
+        para, control = int(match.group(2)), int(match.group(3))
+        matches = []
+        def visit(node):
+            if node.get("type") == "Image" and node.get("pi") == para and node.get("ci") == control:
+                matches.append(node)
+            for child in node.get("children", []):
+                visit(child)
+        visit(json.loads(by_page[page].read_text(encoding="utf-8")))
+        if len(matches) != 1:
+            raise ValueError(f"p{page}: 연결 그림 컨트롤을 하나로 확인할 수 없습니다")
+        box = matches[0]["bbox"]
+        rect = [math.floor(box["x"]), math.floor(box["y"]),
+                math.ceil(box["x"] + box["w"]), math.ceil(box["y"] + box["h"])]
+        if rect != entry["rect_px"]:
+            raise ValueError(f"p{page}: 연결 그림 렌더 상자가 제외 영역과 다릅니다")
 
 
 def silhouette_png_pairs(
@@ -5498,6 +5762,23 @@ def custom_targets_from_args(args: argparse.Namespace) -> list[Target]:
     return dedupe_target_keys(targets)
 
 
+def linked_image_records(root: Path, paths: list[Path]) -> list[dict[str, str]]:
+    """WASM에 공급할 연결 그림의 실제 바이트와 고유 파일명을 고정한다."""
+    records = []
+    names = set()
+    for path in paths:
+        requested = resolve_input_path(root, path)
+        name = requested.name
+        source = requested.resolve()
+        if not source.is_file():
+            raise SystemExit(f"연결 그림 파일이 없습니다: {source}")
+        if name.casefold() in names:
+            raise SystemExit(f"연결 그림 파일명이 중복됩니다: {name}")
+        names.add(name.casefold())
+        records.append({"name": name, "path": str(source), "sha256": sha256_file(source)})
+    return records
+
+
 def dedupe_target_keys(targets: list[Target]) -> list[Target]:
     counts: dict[str, int] = {}
     deduped: list[Target] = []
@@ -5508,6 +5789,68 @@ def dedupe_target_keys(targets: list[Target]) -> list[Target]:
             key = f"{key}-{counts[key]}"
         deduped.append(Target(key, target.hwp, target.pdf))
     return deduped
+
+
+def required_handbook_gate(root: Path, out_root: Path, rhwp_bin: str, workers: int,
+                           font_paths: list[Path]) -> dict[str, object]:
+    """요청 시 편람을 별도로 Native 전쪽 출력해 #8389와 비교한다."""
+    try:
+        from scripts import visual_sweep_handbook as handbook
+        from scripts.visual_sweep_resume import render_silhouette_resumable
+    except ModuleNotFoundError:
+        import visual_sweep_handbook as handbook
+        from visual_sweep_resume import render_silhouette_resumable
+
+    started = time.monotonic()
+    report_path = out_root / "required-handbook-8153-gate.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest = None
+    try:
+        ensure_tools("native-skia")
+        ensure_default_rhwp_binary_is_current(root, rhwp_bin)
+        fonts = list(font_paths or default_sweep_font_paths())
+        webfonts = handbook.supply_webfonts(
+            root, root / "output/pr-review/handbook-8153-webfont-cache", font_paths=fonts)
+        fonts.extend(Path(item["native_path"]).parent for item in webfonts)
+        manifest = render_silhouette_resumable(
+            sys.modules[__name__], root,
+            Target("required-handbook-8153-native", handbook.DOC, handbook.PDF),
+            out_root, rhwp_bin, 96, DEFAULT_PIXEL_DIFF_THRESHOLD, None,
+            resume=False, svg_rasterizer="webfont", wasm_pkg=None,
+            font_environment=None, observed_font_receipt=None, embed_fonts=None,
+            font_paths=fonts, font_mismatch_evidence=None, excluded_regions=None,
+            exclusion_evidence=None, linked_images=[], compat="2024",
+            page_workers=workers, rasterizer="png",
+        )
+        report = handbook.compare(root, manifest, dpi=96)
+        report["webfont_fallback"] = webfonts
+        report["manifest"] = str(out_root / "required-handbook-8153-native" / "silhouette_manifest.json")
+    except (Exception, SystemExit) as error:
+        report = {"status": "re_review_required", "reason": "handbook_execution_failed",
+                  "error": str(error)}
+    report["elapsed_seconds"] = round(time.monotonic() - started, 3)
+    write_json_atomic(report_path, report)
+    if manifest is None:
+        manifest = {"key": "required-handbook-8153-native", "run_state": "failed",
+                    "pr_review_gate": {"status": "re_review_required"}}
+    manifest["accepted_handbook_quality"] = report
+    if report["status"] != "passed":
+        manifest["pr_review_gate"] = {
+            **manifest.get("pr_review_gate", {}), "status": "re_review_required",
+            "reason": "필수 편람 Native 기준 하락 또는 검증 실패",
+        }
+    handbook_manifest = out_root / "required-handbook-8153-native" / "silhouette_manifest.json"
+    write_json_atomic(handbook_manifest, manifest)
+    update_root_summary(out_root, manifest)
+    print(f"필수 편람 Native 전쪽 검사: {report_path} ({report['elapsed_seconds']}초)", flush=True)
+    return report
+
+
+def enforce_required_handbook(root: Path, out_root: Path, rhwp_bin: str, workers: int,
+                              font_paths: list[Path]) -> None:
+    result = required_handbook_gate(root, out_root, rhwp_bin, workers, font_paths)
+    if result["status"] != "passed":
+        raise SystemExit("PR 검토 보류: 필수 편람 Native 전쪽 검사에서 하락 또는 검증 실패")
 
 
 def main() -> None:
@@ -5526,9 +5869,15 @@ def main() -> None:
         help="overlay·compare·review PNG 및 상세 분석을 생략하고 같은2px 실루엣 보조값만 TSV로 저장합니다.",
     )
     parser.add_argument(
+        "--handbook-gate", action="store_true",
+        help="행정업무운영 편람 HWPX를 Native 383쪽 전수 검사하고 #8389 기준과 비교합니다.",
+    )
+    parser.add_argument(
         "--png-pair", nargs=2, type=Path, metavar=("RHWP_PNG_DIR", "PDF_PNG_DIR"),
         help="--silhouette-only에서 기존 raster 두 디렉터리를 비교합니다. 원문 재출력 없이 입력 해시를 기록합니다.",
     )
+    parser.add_argument("--linked-image-exclusions", type=Path,
+                        help="실루엣 전용: 원본·PDF 해시와 연결 그림의 96dpi 제외 영역 JSON")
     parser.add_argument("--out", default="output/task1274")
     parser.add_argument("--rasterizer", choices=("png", "svg"), default="png",
                         help="기본 png는 Native Skia/fresh WASM Canvas에서 직접 출력합니다. svg는 벡터 진단 경로입니다.")
@@ -5550,6 +5899,7 @@ def main() -> None:
     parser.add_argument("--embed-fonts", nargs="?", const="full", choices=("full",), help="진단 SVG에 원본 폰트를 전체 임베딩합니다. Unicode cmap 검사 후 캡처하며 공개 증적은 PNG로 보존합니다.")
     parser.add_argument("--font-path", type=Path, action="append", default=[], help="검증용 폰트 경로. --embed-fonts와 함께 사용하며 파일 hash를 기록합니다.")
     parser.add_argument("--font-environment", type=Path, help="조판/출력에 공통 적용할 명시적 폰트 환경 JSON")
+    parser.add_argument("--observed-font-receipt", type=Path, help="같은 입력·사용자 환경의 Native export-png JSON에 기록된 실제 대체 글꼴 관측 (WASM PNG 전용)")
     parser.add_argument(
         "--font-mismatch-evidence",
         type=Path,
@@ -5561,6 +5911,10 @@ def main() -> None:
     parser.add_argument(
         "--wasm-pkg", type=Path,
         help="새 WASM web package를 Chrome에서 실행해 SVG와 render tree를 비교합니다. rhwp CLI는 글꼴 별칭과 note-shape만 제공합니다.",
+    )
+    parser.add_argument(
+        "--linked-image", type=Path, action="append", default=[],
+        help="WASM 직접 PNG에 공급할 원본 연결 그림 파일입니다. 필요한 파일마다 반복 지정합니다.",
     )
     parser.add_argument(
         "--svg-rasterizer",
@@ -5616,19 +5970,33 @@ def main() -> None:
         raise SystemExit("--pixel-diff-threshold는 0 이상 255 이하로 지정해야 합니다.")
     selected_pages = parse_page_selection(args.page, args.pages)
 
-    if args.silhouette_only and args.resume:
-        parser.error("실루엣 전용 모드는 일반 PNG checkpoint의 --resume을 사용하지 않습니다.")
     if args.silhouette_only and args.font_mismatch_evidence:
         parser.error("TSV는 원 점수를 유지합니다. 글꼴 예외 증거는 재검토 후 일반 PNG 모드에 지정하세요.")
+    if args.linked_image_exclusions and not args.silhouette_only:
+        parser.error("--linked-image-exclusions는 --silhouette-only와 함께 사용합니다.")
+    if args.linked_image and (args.wasm_pkg is None or args.rasterizer != "png"):
+        parser.error("--linked-image는 --wasm-pkg와 직접 PNG 경로에서 사용합니다.")
     if args.png_pair:
         if not args.silhouette_only:
             parser.error("--png-pair는 --silhouette-only와 함께 사용합니다.")
-        if args.target or args.hwp or args.pdf or args.file_target or args.wasm_pkg:
+        if args.target or args.hwp or args.pdf or args.file_target or args.wasm_pkg or args.linked_image:
             parser.error("--png-pair와 원문 export 입력은 함께 사용하지 않습니다.")
         pairs = silhouette_png_pairs(*args.png_pair, selected_pages)
-        manifest = write_silhouette_tsv(pairs, Path(args.out), args.key or "png-pair", workers=args.page_workers)
+        exclusions, evidence = (load_linked_image_exclusions(args.linked_image_exclusions)
+                                if args.linked_image_exclusions else ({}, None))
+        manifest = write_silhouette_tsv(pairs, Path(args.out), args.key or "png-pair", workers=args.page_workers,
+                                        excluded_regions=exclusions, exclusion_evidence=evidence,
+                                        resume=args.resume)
         if manifest["pr_review_gate"]["status"] == "re_review_required":
             raise SystemExit("실루엣 보조값 90% 미만: TSV를 확인하고 직접 검토하세요.")
+        if args.handbook_gate:
+            enforce_required_handbook(Path.cwd(), Path(args.out), args.rhwp_bin,
+                                      args.page_workers, args.font_path)
+        return
+
+    if args.handbook_gate and not (args.target or args.hwp or args.pdf or args.file_target):
+        enforce_required_handbook(Path.cwd(), Path(args.out), args.rhwp_bin,
+                                  args.page_workers, args.font_path)
         return
 
     custom_targets = custom_targets_from_args(args)
@@ -5651,11 +6019,67 @@ def main() -> None:
     else:
         selected = list(TARGETS.values())
     selected = dedupe_target_keys([*selected, *custom_targets])
+    if any(safe_target_key(target.key) == "required-handbook-8153-native" for target in selected):
+        parser.error("required-handbook-8153-native은 필수 편람 검사의 예약 대상 이름입니다.")
+    exclusions, evidence = (load_linked_image_exclusions(args.linked_image_exclusions)
+                            if args.linked_image_exclusions else ({}, None))
+    if evidence is not None and len(selected) != 1:
+        parser.error("연결 그림 제외 증거는 정확히 하나의 원본·PDF 대상에만 적용합니다.")
+    if args.linked_image and len(selected) != 1:
+        parser.error("연결 그림 공급은 정확히 하나의 원본 대상에만 적용합니다.")
+    image_records = linked_image_records(root, args.linked_image)
+    if image_records and evidence is not None and evidence.get("assets"):
+        parser.error("--linked-image와 제외 증거의 별도 그림 공급은 함께 지정하지 않습니다.")
     out_root = root / args.out
     out_root.mkdir(parents=True, exist_ok=True)
+    if args.silhouette_only:
+        try:
+            from scripts.visual_sweep_resume import prepare_target_plan
+        except ModuleNotFoundError:
+            from visual_sweep_resume import prepare_target_plan
+        prepare_target_plan(
+            sys.modules[__name__], root, out_root, selected, selected_pages,
+            resume=args.resume, rhwp_bin=args.rhwp_bin, dpi=args.dpi,
+            compat=args.compat, rasterizer=args.rasterizer, wasm_pkg=args.wasm_pkg,
+            linked_images=image_records,
+        )
     re_review_targets: list[str] = []
     for target in selected:
-        manifest = render_target(
+        if args.silhouette_only:
+            try:
+                from scripts.visual_sweep_resume import render_silhouette_resumable
+            except ModuleNotFoundError:
+                from visual_sweep_resume import render_silhouette_resumable
+            def render(*args, **kwargs):
+                return render_silhouette_resumable(sys.modules[__name__], *args, **kwargs)
+        else:
+            render = render_target
+        options = dict(
+            svg_rasterizer=args.svg_rasterizer,
+            wasm_pkg=args.wasm_pkg,
+            font_environment=args.font_environment,
+            observed_font_receipt=args.observed_font_receipt,
+            embed_fonts=args.embed_fonts,
+            font_paths=args.font_path,
+            font_mismatch_evidence=args.font_mismatch_evidence,
+            excluded_regions=exclusions,
+            exclusion_evidence=evidence,
+            linked_images=image_records,
+            compat=args.compat,
+            page_workers=args.page_workers,
+            rasterizer=args.rasterizer,
+        )
+        if not args.silhouette_only:
+            options['silhouette_only'] = False
+        target_resume = args.resume
+        if args.silhouette_only and target_resume:
+            target_base = out_root / safe_target_key(target.key)
+            target_checkpoint = target_base / "silhouette-checkpoint.json"
+            if not target_checkpoint.exists():
+                if target_base.exists() and any(target_base.iterdir()):
+                    raise SystemExit(f"완료되지 않은 실루엣 대상에 체크포인트가 없습니다: {target_base}")
+                target_resume = False
+        manifest = render(
             root,
             target,
             out_root,
@@ -5663,17 +6087,8 @@ def main() -> None:
             args.dpi,
             args.pixel_diff_threshold,
             selected_pages,
-            resume=args.resume,
-            svg_rasterizer=args.svg_rasterizer,
-            wasm_pkg=args.wasm_pkg,
-            font_environment=args.font_environment,
-            embed_fonts=args.embed_fonts,
-            font_paths=args.font_path,
-            font_mismatch_evidence=args.font_mismatch_evidence,
-            silhouette_only=args.silhouette_only,
-            compat=args.compat,
-            page_workers=args.page_workers,
-            rasterizer=args.rasterizer,
+            resume=target_resume,
+            **options,
         )
         gate = manifest.get("pr_review_gate")
         if isinstance(gate, dict) and gate.get("status") == "re_review_required":
@@ -5685,6 +6100,8 @@ def main() -> None:
             "PR 검토 보류. "
             "작성자 branch에서 PDF/overlay 원인을 수정하고 Native/fresh WASM TSV·review PNG를 재산출하세요: " + "; ".join(re_review_targets)
         )
+    if args.handbook_gate:
+        enforce_required_handbook(root, out_root, args.rhwp_bin, args.page_workers, args.font_path)
 
 
 if __name__ == "__main__":

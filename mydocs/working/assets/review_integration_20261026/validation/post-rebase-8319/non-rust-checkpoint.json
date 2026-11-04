@@ -1,0 +1,41 @@
+{
+  "head": "1061286a0dd546a89db47f3bb41bd0f41f944ede",
+  "steps": [
+    {
+      "name": "studio-unit",
+      "cwd": "/home/tsjang/rhwp/rhwp-studio",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=4",
+        "tests/*.test.ts",
+        "../npm/editor/tests/*.test.mjs",
+        "../rhwp-shared/pdf/*.test.js"
+      ],
+      "exit_code": 0,
+      "summary": {
+        "tests": 2632,
+        "passed": 2630,
+        "failed": 0,
+        "skipped": 2
+      },
+      "temporary_log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/studio-unit.log",
+      "log_sha256": "eb4fbd1a557dc49dc7734fa65f96dd7fb09264a1756bf8be6f01c2aa8a90edb9"
+    },
+    {
+      "name": "studio-typescript",
+      "cwd": "/home/tsjang/rhwp/rhwp-studio",
+      "command": [
+        "node_modules/.bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0,
+      "summary": {
+        "errors": 0
+      },
+      "temporary_log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/studio-typescript.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "fresh_wasm_browser_validation_complete": false
+}

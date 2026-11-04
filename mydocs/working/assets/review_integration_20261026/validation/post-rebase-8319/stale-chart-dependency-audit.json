@@ -1,0 +1,19 @@
+{
+  "status": "invalid_producers_confirmed",
+  "old_source": "3a2a081a418a38a2fb696136835d0f721b216972",
+  "current_source": "f5c3972844442d7d2c74496bfd4db06cec26615b",
+  "native_binary_sha256": "4be33bcbd8321197d0aea218321c6af3177479eedeada751f5ad8659a9e6b321",
+  "wasm_binary_sha256": "3c9fb1cd813e74638fc4e23051879a75622e51f83be3dd6f2d9fad1dc0c6ecdc",
+  "wasm_chart_dependency_depinfo_sha256": "13fe58cd905ba943617b430a7c33016b21a9f80572e93e0bba138f42cb332751",
+  "wasm_depinfo_contains_current_cartesian_module": false,
+  "before_svg_sha256": "cac920bb9713816320855c3c202d2283210fc41a04fd22a2cf141ff22dcdd85b",
+  "invalid_svg_sha256": "bca4522fb6c175c820cdee65d08611812ac2639ae1cd0bd8eb8728409ae182fb",
+  "chart_case": "tests/fixtures/inline-control-move/chart-before.hwp",
+  "reference_pdf": "pdf/semanticist21_source_contracts_20261026/pr7694-updated-198-chart-before-2020.pdf",
+  "reference_pdf_sha256": "8bf9e211868e22f694097e7011b9eab18833cb43d12614fc26df2b686fa13bd7",
+  "native_base_raw": 99.80761,
+  "native_invalid_raw": 89.38709,
+  "wasm_base_raw": 99.66483,
+  "wasm_invalid_raw": 87.9825,
+  "note": "공유 target에서 이전 worktree 차트 crate가 재사용돼 실행 파일이 현재 소스와 달랐다. 전체 Rust 실행도 같은 옛 .rlib을 참조해 중단했으며 모든 최종 판정을 다시 한다."
+}

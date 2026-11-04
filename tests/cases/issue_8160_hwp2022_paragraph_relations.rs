@@ -1,6 +1,11 @@
+//! 관계형·고정형: 2022 HWP 본문 소유와 독립 Print의 원점·기준선·테두리.
+//! 주석 갱신: 2026-10-30 04:26 KST; 직전 파일 변경: df85dd5967 (2026-10-25 20:20:40 +09:00).
+//! 2026-10-30 측정 raw(96dpi, PDFium): 3·7·63·64쪽 Native·fresh WASM 각 100.00%;
+//! 전 64쪽 최저 Native 100.00% / fresh WASM 100.00%.
+//! 근거: mydocs/pr/assets/issue_8160/rebase-ad4bf269-20261030/README.md.
 //! #8160: sample16 회귀 검사 통합. 이전 등록: tests/cases/issue_7642_sample16_2022_paragraph_relations.rs
 //! #8160: 2022 저장본 전 64쪽 Native/fresh 표준 WASM raw 100%, 정수 미대응 0.
-//! 고정 화면 위치 대신 원본 문단·표 소유, 꼬리 내용과 포함·겹침을 검사한다.
+//! 원본 문단·표 소유, 꼬리 내용과 포함·겹침 및 검증된 좌표를 검사한다.
 //! 표 경계 검사는 source5ac의 실제 출력에서 앞 문단과의 겹침을 검출한다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -126,13 +131,13 @@ fn issue_8160_sample16_2022_bcp_keeps_both_authored_rows_and_owned_successor() {
             unreachable!()
         };
         let actual_baseline = first.bbox.y + run.baseline;
-        assert!((first.bbox.x - x).abs() <= 2.0, "BCP 가로 원점 ±2px");
-        assert!((actual_baseline - baseline).abs() <= 2.0, "BCP 기준선 ±2px");
+        assert!((first.bbox.x - x).abs() <= 1.0, "BCP 가로 원점 ±1px");
+        assert!((actual_baseline - baseline).abs() <= 1.0, "BCP 기준선 ±1px");
         baselines.push(actual_baseline);
     }
     assert!(
-        ((baselines[1] - baselines[0]) - 27.680013).abs() <= 2.0,
-        "독립 Print 두 줄의 기준선 간격 ±2px"
+        ((baselines[1] - baselines[0]) - 27.680013).abs() <= 1.0,
+        "독립 Print 두 줄의 기준선 간격 ±1px"
     );
     for line in &bcp {
         for node in &line.children {
@@ -366,8 +371,8 @@ fn issue_8160_sample16_2022_compound_page_border_keeps_both_print_coverage_bands
             );
             let actual_css = f64::from(band[0] + band[band.len() - 1]) / 4.0;
             assert!(
-                (actual_css - center_css).abs() <= 2.0,
-                "독립 Print 선 띠 중심 ±2 CSSpx"
+                (actual_css - center_css).abs() <= 1.0,
+                "독립 Print 선 띠 중심 ±1 CSSpx"
             );
         }
     }

@@ -1,0 +1,30 @@
+[package]
+rust-version = "1.93.1"
+name = "rhwp-qcms"
+authors = ["Jeff Muizelaar", "Benoit Girard", "Andrew Osmond"]
+version = "0.3.0-rhwp.1"
+edition = "2018"
+publish = ["crates-io"]
+include = ["src/**/*", "COPYING", "LICENSE", "RHWP_PATCHES.md", "UPSTREAM_FILES.json", "upstream/**"]
+
+description = "lightweight color management"
+documentation = "https://docs.rs/qcms"
+license = "MIT"
+repository = "https://github.com/FirefoxGraphics/qcms"
+keywords = ["color"]
+categories = ["graphics"]
+
+[lib]
+name = "qcms"
+
+[features]
+default = ["iccv4-enabled", "cmyk"]
+c_bindings = ["libc"]
+neon = []
+iccv4-enabled = []
+cmyk = []
+
+[dependencies]
+libc = {version = "0.2", optional = true }
+
+rhwp-codec-resource = { path = "../rhwp-codec-resource", version = "0.1.0", features = ["scoped"] }

@@ -1,4 +1,4 @@
-//! 원본 전체 그림을 축소하는 동안에만 Canvas의 저역 통과 품질을 선택한다.
+//! 그림의 실제 선택 영역을 축소할 때 Canvas의 저역 통과 품질을 선택한다.
 
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
@@ -9,7 +9,7 @@ pub(super) struct ReductionQuality<'a> {
 }
 
 impl<'a> ReductionQuality<'a> {
-    pub(super) fn for_full_image(
+    pub(super) fn for_source_window(
         context: &'a CanvasRenderingContext2d,
         source_width: f64,
         source_height: f64,

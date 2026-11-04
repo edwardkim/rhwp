@@ -1,0 +1,18 @@
+{
+  "independent_decoder": "djpeg",
+  "command": [
+    "djpeg",
+    "-outfile",
+    "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/baseline-1x1-mixed-Y1x2-Cb2x2-Cr2x2.jpg.ppm",
+    "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/jpeg-inputs/baseline-1x1-mixed-Y1x2-Cb2x2-Cr2x2.jpg"
+  ],
+  "exit": 0,
+  "decoded_ppm_sha256": "3ff6c5463ace13c0f26a735ac1af2bb96ab8a9ba1cb4398359cf2466f63a4d1b",
+  "width": 1,
+  "height": 1,
+  "rgb": [
+    0,
+    0,
+    0
+  ]
+}

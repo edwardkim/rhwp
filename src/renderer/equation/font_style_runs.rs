@@ -40,6 +40,8 @@ pub(super) fn resolve(children: Vec<EqNode>) -> Vec<EqNode> {
 }
 
 fn font_switch(node: &EqNode) -> Option<FontStyleKind> {
+    // 구형의 명시적 Group 안에 든 전환은 바깥 글줄의 전환 marker가 아니다.
+    // Version 60은 Group을 만들지 않으므로 기존 전역 전환을 유지한다.
     if let EqNode::FontStyle { style, body } = node {
         if matches!(style, FontStyleKind::Roman | FontStyleKind::Italic)
             && matches!(body.as_ref(), EqNode::Empty)

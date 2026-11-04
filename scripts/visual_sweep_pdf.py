@@ -1,6 +1,7 @@
 """PDF의 색·가는 Type3 획을 보존하는 PDFium 래스터와 실행 신원."""
 
 import argparse
+import ctypes
 import hashlib
 import importlib.util
 import math
@@ -9,7 +10,7 @@ from functools import lru_cache
 from pathlib import Path
 
 PDF_RASTERIZER = sys.executable
-PDF_RASTER_POLICY = "pdfium_smooth_rgb_v1"
+PDF_RASTER_POLICY = "pdfium_smooth_rgb_exact_dpi_v2"
 
 
 def pdf_raster_commands(pdf, dpi, pdf_prefix, selected_pages):
@@ -28,6 +29,11 @@ def pdf_rasterizer_provenance():
         "backend": "pdfium",
         "policy": PDF_RASTER_POLICY,
         "antialias": {"text": True, "image": True, "path": True},
+        "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": True,
+        },
         "script_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         "available": importlib.util.find_spec("pypdfium2") is not None,
     }
@@ -62,6 +68,7 @@ def rasterize(pdf, dpi, prefix, selected_pages=None):
     if not pdf_rasterizer_provenance()["available"]:
         raise RuntimeError("실행 신원이 확인되는 pypdfium2가 필요합니다")
     import pypdfium2
+    import pypdfium2_raw
 
     prefix = Path(prefix)
     prefix.parent.mkdir(parents=True, exist_ok=True)
@@ -72,14 +79,23 @@ def rasterize(pdf, dpi, prefix, selected_pages=None):
         for page_number in pages:
             page = document[page_number - 1]
             try:
-                bitmap = page.render(
-                    scale=dpi / 72,
-                    fill_color=(255, 255, 255, 255),
-                    no_smoothtext=False,
-                    no_smoothimage=False,
-                    no_smoothpath=False,
+                scale = dpi / 72
+                width = math.ceil(page.get_width() * scale)
+                height = math.ceil(page.get_height() * scale)
+                bitmap = pypdfium2.PdfBitmap.new_native(
+                    width, height, pypdfium2_raw.FPDFBitmap_BGR,
                 )
                 try:
+                    bitmap.fill_rect((255, 255, 255, 255), 0, 0, width, height)
+                    # 버퍼 크기 올림으로 용지를 늘리지 않는다. PDFium의 source
+                    # rotation/CropBox display matrix 뒤에 같은 물리 배율을 결합한다.
+                    matrix = pypdfium2_raw.FS_MATRIX(scale, 0, 0, scale, 0, 0)
+                    clip = pypdfium2_raw.FS_RECTF(0, 0, width, height)
+                    # 기존 page.render의 annotation·smooth 기본값을 보존한다.
+                    pypdfium2_raw.FPDF_RenderPageBitmapWithMatrix(
+                        bitmap, page, ctypes.byref(matrix), ctypes.byref(clip),
+                        pypdfium2_raw.FPDF_ANNOT,
+                    )
                     # PDFium 소유 버퍼가 닫히기 전에 별도의 RGB 이미지로 복사한다.
                     with bitmap.to_pil().convert("RGB") as image:
                         image.save(prefix.parent / f"{prefix.name}-{page_number:03d}.png")

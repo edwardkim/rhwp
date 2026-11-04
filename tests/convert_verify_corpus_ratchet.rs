@@ -1,3 +1,8 @@
+//! 고정형: `convert --verify` 코퍼스의 실패 문서 집합을 등재 목록과 비교한다.
+//! 주석 갱신: 2026-11-01T05:41:13+09:00; 직전 파일 커밋: 2026-10-27T20:30:38+09:00 (`c1ca82f2233d18142ef85d6db55939d0dbce0c21`).
+//! 입력·기준: `samples/`와 이 파일의 `EXPECTED_FAILURES`, `tests/support/deferred_exam_scope.rs`.
+//! 변환·재파싱의 저장 손실 집합을 검사하며 화면 시각 일치율은 측정하지 않는다.
+//!
 //! [#3505] `convert --verify` 코퍼스 래칫 — 저장 손실이 새로 들어오는 것을 막는다.
 //!
 //! 이 세션에서 고친 저장 손실 두 건(#3492 개요번호 마커, #3524 책갈피)은 **둘 다
@@ -34,7 +39,7 @@ use std::time::{Duration, Instant};
 
 use rhwp::parser::FileFormat;
 use rhwp::serializer::hwpx::roundtrip::{
-    diff_documents, strip_cross_format_noise, strip_hwpx_to_hwp_noise,
+    diff_exported_hwp_documents, strip_cross_format_noise, strip_hwpx_to_hwp_noise,
 };
 
 /// 현재 저장 손실이 남아 있는 문서 — 각 항목은 **왜 아직 열려 있는지**를 밝힌다.
@@ -119,7 +124,7 @@ fn verify_roundtrip(data: &[u8]) -> Option<usize> {
     let bytes = snapshot.serialize().ok()?;
     let reloaded = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).ok()?;
 
-    let diff = diff_documents(&expected, reloaded.document());
+    let diff = diff_exported_hwp_documents(&expected, reloaded.document());
     let diff = match source_format {
         FileFormat::Hwp => diff,
         FileFormat::Hwpx => strip_hwpx_to_hwp_noise(diff),
@@ -192,7 +197,7 @@ fn run_partition(part: usize) {
     // 나머지 하위 디렉터리 68개는 이 이슈가 다루는 축이 아니고, 한꺼번에 넣으면
     // 무관한 신규 실패를 이 PR 에서 등재해야 한다. 필요하면 별도 이슈로 넓힌다.
     collect_recursive(&samples_dir().join("chart"), &mut entries);
-    entries.retain(|path| !is_exam_fixture(path));
+    entries.retain(|path| !is_deferred_fixture(path));
     let mut skipped = 0usize;
     let mut oversized = 0usize;
     let entries: Vec<_> = entries

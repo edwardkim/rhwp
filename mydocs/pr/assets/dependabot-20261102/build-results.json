@@ -1,0 +1,72 @@
+[
+  {
+    "gate": "base-wasm",
+    "command": [
+      "bash",
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-pkg",
+      "--release",
+      "--mode",
+      "no-install"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 1009.6,
+    "at": "2026-11-02T05:01:27.675490+00:00"
+  },
+  {
+    "gate": "merge-skia-fix",
+    "command": [
+      "git",
+      "merge",
+      "--no-ff",
+      "-m",
+      "review: integrate corrected Skia dependency graph",
+      "review/pr-8456-skia-upgrade"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.62,
+    "at": "2026-11-02T05:01:28.364879+00:00"
+  },
+  {
+    "gate": "candidate-native-build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--lib",
+      "--bin",
+      "rhwp",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 229.71,
+    "at": "2026-11-02T05:05:18.052410+00:00"
+  },
+  {
+    "gate": "candidate-wasm-build",
+    "command": [
+      "bash",
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--release",
+      "--mode",
+      "no-install"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 1042.4,
+    "at": "2026-11-02T05:22:40.537578+00:00"
+  }
+]

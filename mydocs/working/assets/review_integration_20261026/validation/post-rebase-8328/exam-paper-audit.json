@@ -1,0 +1,1126 @@
+{
+  "status": "finished",
+  "source_count": 55,
+  "records": [
+    {
+      "input": "samples/21_언어_기출_편집가능본.hwp",
+      "input_sha256": "905454045ca2e236839a7cab59750678116d08af3db31dbf846819af355b8d15",
+      "sections": [
+        {
+          "index": 0,
+          "width": 84188,
+          "height": 119052
+        }
+      ],
+      "all_sections_a3": true,
+      "pdfs": [
+        {
+          "pdf": "pdf/21_언어_기출_편집가능본-hwp-2020.pdf",
+          "pages": 15,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": false,
+          "sha256": "9691fc2a6d443e0fc2eba1b744b908ce7393b07a06b7b977112f5b0ef72a57a4"
+        },
+        {
+          "pdf": "pdf/21_언어_기출_편집가능본-2022.pdf",
+          "pages": 15,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": false,
+          "sha256": "f2d858d7974393661d91a658e6b384b951114ef52783379f426a963effd97b72"
+        },
+        {
+          "pdf": "pdf/issue7642-exam-print/exam-01-21_언어_기출_편집가능본-hwp-print-2020.pdf",
+          "pages": 15,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": true,
+          "sha256": "68aa48724b4d6f68ed04ef30d6be5d67dcd3bcf57c916aa131f7ad15c2d81ba8"
+        },
+        {
+          "pdf": "samples/21_언어_기출_편집가능본.pdf",
+          "pages": 15,
+          "page_sizes_pt": [
+            [
+              842.0,
+              1191.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": false,
+          "sha256": "6bc54661a73af788d437463e000f76652b1325b44607e58443e7391d23e2db83"
+        },
+        {
+          "pdf": "samples/21_언어_기출_편집가능본-2020.pdf",
+          "pages": 15,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": false,
+          "sha256": "a1a8b0ffd6ae9b23627f7b1bf58bbdfdc0714a369713cc057aa836c75b143f1e"
+        },
+        {
+          "pdf": "samples/21_언어_기출_편집가능본-2010.pdf",
+          "pages": 16,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": false,
+          "sha256": "609d56421009ccab5a50cb2a8f4e78af4d0961de2e7ae85d811905e8434ac251"
+        }
+      ]
+    },
+    {
+      "input": "samples/3-09월_교육_통합_2022.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-09월_교육_통합_2022.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-09월_교육_통합_2023.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-09월_교육_통합_2023.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-09월_교육_통합_2024-격자기준종이.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-09월_교육_통합_2024-격자기준쪽.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-09월_교육_통합_2024-구분선아래20.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-09월_교육_통합_2024-미주사이20.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-10월_교육_통합_2022.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-10월_교육_통합_2022.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2022.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2022.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/eq-002.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84186
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/exam-kor-1p.hwp",
+      "input_sha256": "81a80b05aa3e0f2b58a517e7642264ed113950bc970ed826a6a22e2058e61646",
+      "sections": [
+        {
+          "index": 0,
+          "width": 84188,
+          "height": 119052
+        }
+      ],
+      "all_sections_a3": true,
+      "pdfs": [
+        {
+          "pdf": "pdf/issue7642-all-inputs-print/all-33-exam-kor-1p-hwp-print-2020.pdf",
+          "pages": 1,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": true,
+          "sha256": "029510aeb99c6a9a527f46932f50ee3d9e3edab51b873e8331f8c24fda44f0ce"
+        }
+      ]
+    },
+    {
+      "input": "samples/exam-kor-2p.hwp",
+      "input_sha256": "bdf208426c35ec93e846c3f40651d26ae4b017d2cf82765a71bb03df38dc9326",
+      "sections": [
+        {
+          "index": 0,
+          "width": 84188,
+          "height": 119052
+        }
+      ],
+      "all_sections_a3": true,
+      "pdfs": [
+        {
+          "pdf": "pdf/issue7642-exam-print/exam-09-exam-kor-2p-hwp-print-2020.pdf",
+          "pages": 2,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": true,
+          "sha256": "25392bf95b480343f31858570f051f955b35b96e20346ceeb4b5c4c1d030db1a"
+        }
+      ]
+    },
+    {
+      "input": "samples/exam-kor-3p.hwp",
+      "input_sha256": "1352c06c35db6425dab62e5c5c9c0848d224d914401d8f17c7cd16a56e853a33",
+      "sections": [
+        {
+          "index": 0,
+          "width": 84188,
+          "height": 119052
+        }
+      ],
+      "all_sections_a3": true,
+      "pdfs": [
+        {
+          "pdf": "pdf/issue7642-exam-print/exam-10-exam-kor-3p-hwp-print-2020.pdf",
+          "pages": 3,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": true,
+          "sha256": "84e068dade902500a5479ffaca6bac557d6ae1c9af8f123ffe246055dcc70a96"
+        }
+      ]
+    },
+    {
+      "input": "samples/exam-kor-4p.hwp",
+      "input_sha256": "530813c78612d78e2443faf9674df16b622ae3bde0d8cefc77fe120f784794e6",
+      "sections": [
+        {
+          "index": 0,
+          "width": 84188,
+          "height": 119052
+        }
+      ],
+      "all_sections_a3": true,
+      "pdfs": [
+        {
+          "pdf": "pdf/issue7642-exam-print/exam-11-exam-kor-4p-hwp-print-2020.pdf",
+          "pages": 4,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": true,
+          "sha256": "859dc09d1340730a440ce3769cebe633af024eb9884dc98b74198e9798765c54"
+        }
+      ]
+    },
+    {
+      "input": "samples/exam_eng.hwp",
+      "input_sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b",
+      "sections": [
+        {
+          "index": 0,
+          "width": 84188,
+          "height": 119052
+        }
+      ],
+      "all_sections_a3": true,
+      "pdfs": [
+        {
+          "pdf": "pdf/exam_eng-2022.pdf",
+          "pages": 8,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": false,
+          "sha256": "68ce956dc33f6cc6c21537488a0accebd20a1c4dde7ee720843d4565532c9844"
+        },
+        {
+          "pdf": "pdf/exam_eng-hwp-2020.pdf",
+          "pages": 8,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": false,
+          "sha256": "4f5b9e0b7be65fcb915b2fecc41e9b397b1d85d369b64545209a172bc7b36c98"
+        },
+        {
+          "pdf": "pdf/issue7642-exam-print/exam-02-exam_eng-hwp-print-2020.pdf",
+          "pages": 8,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": true,
+          "sha256": "08b34c32089b73b5535bd59c38171e698e0b11932c66c4172c54b01a796b2102"
+        },
+        {
+          "pdf": "samples/exam_eng-2010.pdf",
+          "pages": 14,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": false,
+          "sha256": "73a59eb5c3402674ce494e990e686fd3eef47238ca86d5926055f24e5a22985d"
+        },
+        {
+          "pdf": "samples/exam_eng.pdf",
+          "pages": 8,
+          "page_sizes_pt": [
+            [
+              842.0,
+              1191.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": false,
+          "sha256": "f5b970223010d2f498e0411f38a8dd3e9eb9cfe9f8f20a68ee2122029e8489bc"
+        },
+        {
+          "pdf": "samples/exam_eng-2020.pdf",
+          "pages": 8,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": false,
+          "sha256": "50f357874efe578bf55510499f8d208fc3f2e80c3af3d020296379c11e1c7b53"
+        }
+      ]
+    },
+    {
+      "input": "samples/exam_kor.hwp",
+      "input_sha256": "0315576fb25dd29ad3b6b188ee2539d0e8d31c15b74847be801c2186a97aac69",
+      "sections": [
+        {
+          "index": 0,
+          "width": 84188,
+          "height": 119052
+        },
+        {
+          "index": 1,
+          "width": 84188,
+          "height": 119052
+        },
+        {
+          "index": 2,
+          "width": 84188,
+          "height": 119052
+        }
+      ],
+      "all_sections_a3": true,
+      "pdfs": [
+        {
+          "pdf": "pdf/exam_kor-hwp-2020.pdf",
+          "pages": 20,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": false,
+          "sha256": "d67a5a0c759dcc8609226f89ef96de5339e3b41c43c2655be3824dcde1732f22"
+        },
+        {
+          "pdf": "pdf/exam_kor-2022.pdf",
+          "status": "ambiguous-source",
+          "pages": 20,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false
+        },
+        {
+          "pdf": "pdf/issue7382-regression-review/exam_kor-2020-reprint.pdf",
+          "status": "ambiguous-source",
+          "pages": 20,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false
+        },
+        {
+          "pdf": "pdf/issue7642-exam-print/exam-03-exam_kor-hwp-print-2020.pdf",
+          "pages": 20,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": true,
+          "sha256": "72341eae4b56ca18894129e244ad00170991d91e7262bd3983c00720cd872972"
+        }
+      ]
+    },
+    {
+      "input": "samples/exam_math.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 77102,
+          "height": 111685
+        },
+        {
+          "index": 1,
+          "width": 77102,
+          "height": 111685
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/exam_math_8.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 77102,
+          "height": 111685
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/exam_math_no.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 77102,
+          "height": 111685
+        },
+        {
+          "index": 1,
+          "width": 77102,
+          "height": 111685
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/exam_science.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 77102,
+          "height": 111685
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/exam_social-p1.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 77102,
+          "height": 111685
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/exam_social.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 77102,
+          "height": 111685
+        },
+        {
+          "index": 1,
+          "width": 77102,
+          "height": 111685
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/hml/exambank_math_equations_min.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/hml/exambank_math_equations_min.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84188
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/hwpx/eq-002.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 59528,
+          "height": 84186
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/hwpx/exam-kor-1p.hwpx",
+      "input_sha256": "c74d164d7e13096c91be8ffdc546b9964dc9d04e5c46469e750af36b7b36868b",
+      "sections": [
+        {
+          "index": 0,
+          "width": 84188,
+          "height": 119052
+        }
+      ],
+      "all_sections_a3": true,
+      "pdfs": [
+        {
+          "pdf": "pdf/issue7642-all-inputs-print/all-46-exam-kor-1p-hwpx-print-2020.pdf",
+          "pages": 1,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": true,
+          "sha256": "01c54faf359f78a530a0a37493d3ec36bab022242068bdf1928193f132756b62"
+        }
+      ]
+    },
+    {
+      "input": "samples/hwpx/exam-kor-2p.hwpx",
+      "input_sha256": "c5c4599a35e17985e24c6899840808b9da0a26a359dd2fba7b8e332b65a53c82",
+      "sections": [
+        {
+          "index": 0,
+          "width": 84188,
+          "height": 119052
+        }
+      ],
+      "all_sections_a3": true,
+      "pdfs": [
+        {
+          "pdf": "pdf/issue7642-exam-print/exam-14-exam-kor-2p-hwpx-print-2020.pdf",
+          "pages": 2,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": true,
+          "sha256": "b6a48dc980113a3a4817cf192a8d267f636db78806cc091938db3b904bea76c6"
+        }
+      ]
+    },
+    {
+      "input": "samples/hwpx/exam-kor-3p.hwpx",
+      "input_sha256": "d62e4ec0798088858b41e9e28767614ecc46988e45150cf6fec046c297f88736",
+      "sections": [
+        {
+          "index": 0,
+          "width": 84188,
+          "height": 119052
+        }
+      ],
+      "all_sections_a3": true,
+      "pdfs": [
+        {
+          "pdf": "pdf/issue7642-exam-print/exam-15-exam-kor-3p-hwpx-print-2020.pdf",
+          "pages": 3,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": true,
+          "sha256": "382de8ac44858288b4c955d8e35d7e7e733a370822434879f390ce8a5cc3ab36"
+        }
+      ]
+    },
+    {
+      "input": "samples/hwpx/exam-kor-4p.hwpx",
+      "input_sha256": "2478e53999984e6aa925a9d50c17c853ace8273863986432fe285089729f13f6",
+      "sections": [
+        {
+          "index": 0,
+          "width": 84188,
+          "height": 119052
+        }
+      ],
+      "all_sections_a3": true,
+      "pdfs": [
+        {
+          "pdf": "pdf/issue7642-exam-print/exam-16-exam-kor-4p-hwpx-print-2020.pdf",
+          "pages": 4,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": true,
+          "sha256": "7bc46b216bd1b3fddbaddbb279e1b9e2b3b9eaf8f60aa26af77d8f0f55fe6a59"
+        }
+      ]
+    },
+    {
+      "input": "samples/hwpx/exam_kor.hwpx",
+      "input_sha256": "c71a8991d63d084c18db1c90d2e32865b2af69cae5762b20cb554ee53a539b7c",
+      "sections": [
+        {
+          "index": 0,
+          "width": 84188,
+          "height": 119052
+        },
+        {
+          "index": 1,
+          "width": 84188,
+          "height": 119052
+        },
+        {
+          "index": 2,
+          "width": 84188,
+          "height": 119052
+        }
+      ],
+      "all_sections_a3": true,
+      "pdfs": [
+        {
+          "pdf": "pdf/exam_kor-2022.pdf",
+          "status": "ambiguous-source",
+          "pages": 20,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false
+        },
+        {
+          "pdf": "pdf/issue7382-regression-review/exam_kor-2020-reprint.pdf",
+          "status": "ambiguous-source",
+          "pages": 20,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false
+        },
+        {
+          "pdf": "pdf/hwpx/exam_kor-hwpx-2020.pdf",
+          "pages": 20,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": false,
+          "sha256": "86cb58a24a75c460e95e34e90e825721bf868f6dca979fc17aa4f2f2f3171902"
+        },
+        {
+          "pdf": "pdf/issue7642-exam-print/exam-12-exam_kor-hwpx-print-2020.pdf",
+          "pages": 20,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false,
+          "catalog_identity": true,
+          "sha256": "3328a5c8696aa8884ef3f7035e5fc4813773e0f8a49e1496e7bedf2179b2221f"
+        }
+      ]
+    },
+    {
+      "input": "samples/hwpx/exam_social-p1.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 77102,
+          "height": 111685
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/hwpx/exam_social.hwpx",
+      "sections": [
+        {
+          "index": 0,
+          "width": 77102,
+          "height": 111685
+        },
+        {
+          "index": 1,
+          "width": 77102,
+          "height": 111685
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    },
+    {
+      "input": "samples/issue7899/exam_math_8-edited.hwp",
+      "sections": [
+        {
+          "index": 0,
+          "width": 77102,
+          "height": 111685
+        }
+      ],
+      "all_sections_a3": false,
+      "pdfs": []
+    }
+  ],
+  "prefix_named_references": [
+    {
+      "input": "samples/exam_kor.hwp",
+      "pdf": "samples/2020-exam_kor.pdf",
+      "prior_pages": 20,
+      "prior_page_size": "A4",
+      "status": "replaced by verified 2020 MCP A3 Print",
+      "evidence": "exam-hwp-mcp-print.json",
+      "current_pages": 20,
+      "current_page_sizes_pt": [
+        [
+          841.0,
+          1190.0
+        ]
+      ]
+    },
+    {
+      "input": "samples/exam_kor.hwp",
+      "pdf": "samples/2010-exam_kor.pdf",
+      "pages": 20,
+      "page_size": "A3",
+      "status": "user authorized overwrite with Hancom 2020 MCP A3 Print; historical 2010 PDF no longer present in this path",
+      "pdf_sha256": "882312f04a7edd5e70eeaaf4ccc5f41cac72251dc81ce8b7667fa1fc4e9d2232",
+      "evidence": "exam-hwp-mcp-print.json",
+      "prior_pdf_sha256": "92d1219ea53fd0505332b9bd0e10952a37b0c84f30edcbbde7ed2e9a73b24804",
+      "prior_pages": 31,
+      "prior_page_size": "A4",
+      "current_pages": 20,
+      "current_page_sizes_pt": [
+        [
+          841.0,
+          1190.0
+        ]
+      ]
+    }
+  ]
+}

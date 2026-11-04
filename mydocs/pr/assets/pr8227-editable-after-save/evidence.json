@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-28",
+  "source_pdf": "samples/21_언어_기출_편집가능본-2010.pdf",
+  "source_pdf_sha256": "609d56421009ccab5a50cb2a8f4e78af4d0961de2e7ae85d811905e8434ac251",
+  "edit": "PDF editable 가져오기 후 \"싱어는위와같은롤스의시도를\" 문단 처음에 IR: 삽입, HWP 직렬화 및 재열기",
+  "edited_hwp_sha256": "ee52362ed174deddff7fd9c80c2861100402b39a3d7f188b7d2709ef2b64b670",
+  "independent_pdf": "pdf/pr8227-editable-import-edited-2020.pdf",
+  "independent_pdf_sha256": "95709baa066aaf9547e1e2d1f3eef99d8bf5b661b025ef68c2ea03b760451bcc",
+  "mcp_job_id": "1b19ab8f-0140-4442-bc32-cabd2ceaaf37",
+  "print": "Hancom 2020 MCP PrintToPDFEx method 0; A3",
+  "page_count": 16,
+  "edited_page": 4,
+  "method": "96dpi PDFium vs native-skia / fresh WASM canvas; silhouette raw radius 2px",
+  "native_binary_sha256": "2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0",
+  "wasm_sha256": "05bab1b50e9a17b380582e562e992c7189fc3d2e9c85a01187ef069c24ff56e7",
+  "results": {
+    "native": {
+      "edited_page_4_percent": 65.17416,
+      "minimum_page": 5,
+      "minimum_percent": 1.58239,
+      "tsv": "mydocs/pr/assets/pr8227-editable-after-save/native.tsv"
+    },
+    "wasm": {
+      "edited_page_4_percent": 64.97946,
+      "minimum_page": 5,
+      "minimum_percent": 1.63218,
+      "tsv": "mydocs/pr/assets/pr8227-editable-after-save/wasm.tsv"
+    }
+  },
+  "scope": "메모리 내 편집 비교와는 별도로 동일 편집을 HWP로 저장·재열기해 측정했다. 편집된 문장이 HWP와 독립 Print 4쪽에 존재함을 확인했다. 이 수치를 메모리 편집의 직접 측정으로 쓰지 않는다.",
+  "same_input_native_base_comparison": {
+    "base_commit": "db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc",
+    "base_binary_sha256": "4c836aea177e63d8ea96f46fedb5331eaa8808e243df443deddc6ead520c6fc1",
+    "same_current_environment": true,
+    "pages": [
+      {
+        "page": 4,
+        "rhwp_png_sha256": "b404a0cddc395552b8257538569bef672c3ce9240dde07e138f8a97bcc53860d",
+        "pdf_png_sha256": "c7923c98d5122fe7849513a87b61fcb9a35ec233317a585cbd7c16f3bbb9f897",
+        "raw_percent": 65.17416
+      },
+      {
+        "page": 5,
+        "rhwp_png_sha256": "f543c66962bb5dd8c0a403b9516801e125389fad9fdf08b86f537d25ed449a7b",
+        "pdf_png_sha256": "a28857328a12c029daf70e638fa22a70cde8d271237dd3df31e300e23daa86d2",
+        "raw_percent": 1.58239
+      },
+      {
+        "page": 6,
+        "rhwp_png_sha256": "25281905be1be1d58c63fbb4f7581ac54794c30ef3f2d182fa823a292e15b657",
+        "pdf_png_sha256": "747426132894cbfed40bf08d5c9a01137ce9e2f9293df22cc1746ce2cac2b167",
+        "raw_percent": 27.057
+      }
+    ],
+    "note": "동일 저장 HWP·기준 PDF와 현재 글꼴 환경에서 4~6쪽의 base와 후보 PNG가 바이트 단위로 같다. 나머지 쪽이나 WASM은 이 비교의 대상이 아니다."
+  }
+}

@@ -30,6 +30,8 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) current_height: f64,
     /// 현재 단 시작 시점의 논리 높이 (px)
     pub(in crate::renderer::typeset) current_start_height: f64,
+    /// 첫 물리 쪽의 모든 단이 공유하는 인증된 저장 시작 밴드.
+    pub(in crate::renderer::typeset) stored_initial_column_band: f64,
     /// 현재 단에 미주 흐름 항목이 포함되어 있는지 여부
     pub(in crate::renderer::typeset) current_endnote_flow: bool,
     /// [#5886] 현재 단에 문단-사이 compact 되감김을 넣었으면, 이후 문단도
@@ -144,6 +146,10 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 현재 쪽에 실제 배치된 그림의 점유 영역(용지 좌표). 다음 단에도 간섭할 수 있다.
     pub(in crate::renderer::typeset) side_wrap_exclusions:
         std::collections::BTreeMap<(usize, usize), crate::renderer::layout_frame::FrameExclusion>,
+    /// [#8282] 저장 줄 없는 host 의 배제 영역. 한/글이 그 개체 둘레로 뒤 문단을 조판한 적이
+    /// 없으므로 뒤 문단의 저장 줄은 이 개체를 증언하지 않는다.
+    pub(in crate::renderer::typeset) unwitnessed_side_wraps:
+        std::collections::BTreeSet<(usize, usize)>,
     pub(in crate::renderer::typeset) inline_placements: std::collections::HashMap<
         (usize, usize),
         crate::renderer::float_placement::InlineBoxPlacement,
@@ -156,6 +162,10 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) paragraph_origins:
         std::collections::HashMap<usize, crate::renderer::pagination::ParagraphOrigin>,
     pub(super) pending_paragraph_origins: Vec<PendingParagraphOrigin>,
+    pub(in crate::renderer::typeset) host_compositions: std::collections::HashMap<
+        usize,
+        std::sync::Arc<crate::renderer::composer::ComposedParagraph>,
+    >,
     pub(in crate::renderer::typeset) stored_paragraph_flow_ends:
         std::collections::HashMap<usize, f64>,
     /// 쪽 상단의 첫 문단이 이미 예약한 저장 앞 간격.
@@ -167,7 +177,7 @@ pub(in crate::renderer::typeset) struct StateView {
     >,
     /// [#7330] 현재 단에서 확정한 자리차지 표가 민 host 첫 글줄의 남은 앞 간격.
     pub(in crate::renderer::typeset) float_pushed_line_spacings:
-        std::collections::HashMap<usize, f64>,
+        std::collections::HashMap<usize, crate::renderer::float_placement::FloatPushedFirstLine>,
     /// 단 상대 TAC 물리 하단. 저장 host 높이와 별개로 다음 어울림 후보 줄을 제한한다.
     pub(in crate::renderer::typeset) inline_box_flow_bottom: f64,
     /// 같은 문단의 선행 RowBreak 표가 continuation 을 만들 때 후행 co-anchored 표를
@@ -183,6 +193,9 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 단일 컬럼·caption 보유 picture 형상으로 한정한다.
     pub(in crate::renderer::typeset) deferred_next_page_square_pictures:
         Vec<DeferredSquarePictureControl>,
+    /// 이어지는 쪽에서 저장 reset 으로 끝낸 문단 조각 (문단, 시작 줄). 그 조각 안 표시의
+    /// 본문 각주는 조각 경계 판정이 이미 계상했으므로 표시가 놓인 쪽에 둔다.
+    pub(in crate::renderer::typeset) stored_reset_note_fragments: Vec<(usize, usize)>,
     /// 현재 호스트를 남기고 다음 쪽의 저장 상단 프레임만 이월한다.
     pub(in crate::renderer::typeset) deferred_next_page_stored_frames:
         Vec<crate::renderer::typeset::DeferredStoredFrameControl>,
@@ -255,6 +268,8 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) hide_empty_line: bool,
     /// [Task #362] 현재 페이지에서 감춘 빈 줄 수 (페이지마다 reset, 최대 2).
     pub(in crate::renderer::typeset) hidden_empty_lines: u32,
+    /// 숨긴 첫 줄로 달라진 물리 쪽 경계가 저장 경계와 다시 맞을 때까지 유지한다.
+    pub(in crate::renderer::typeset) hidden_line_reflow_active: bool,
     /// [Task #362] 감춘 빈 줄이 적용된 페이지 인덱스 (페이지 변경 감지용).
     pub(in crate::renderer::typeset) hidden_empty_page_idx: usize,
     /// [Task #362] hide_empty_line 으로 감춘 paragraph 인덱스 (PaginationResult 에 포함).
@@ -364,6 +379,7 @@ pub(in crate::renderer::typeset) struct StateView {
     /// (이전 zone 디자인 spacing /2) + (새 zone 디자인 spacing /2) 를 zone_y_offset 에
     /// 더한다. 다단(2+) ColumnDef 의 `간격`은 가로 간격이므로 0 으로 둔다.
     pub(in crate::renderer::typeset) current_zone_design_spacing_px: f64,
+    pub(in crate::renderer::typeset) current_zone_plain_text: bool,
     /// [Task #1027 Stage D] 컬럼 단위 vpos 스냅 상태 (렌더러 build_single_column 정합).
     /// current_height 상대공간(col_area_y=0)에서 HeightCursor 를 구동한다.
     pub(in crate::renderer::typeset) vpos_page_base: Option<i32>,

@@ -372,7 +372,7 @@ pub(crate) fn convert_hwp(args: &[String]) -> i32 {
                         let expected = verify_expected
                             .as_ref()
                             .expect("verify expected snapshot must exist");
-                        let diff = rhwp::serializer::hwpx::roundtrip::diff_documents(
+                        let diff = rhwp::serializer::hwpx::roundtrip::diff_exported_hwp_documents(
                             expected,
                             reloaded.document(),
                         );
@@ -574,9 +574,22 @@ pub(crate) fn export_hwpx(args: &[String]) -> i32 {
                     }
 
                     if verify_options.verify {
-                        let diff = rhwp::serializer::hwpx::roundtrip::diff_documents(
-                            doc.document(),
-                            reloaded.document(),
+                        // [#8306] 저장기의 의도된 정규화(#6869 쪽 번호 위치 접기, 합성 줄
+                        // 생략)를 같은 규칙으로 양쪽에 적용해 비교한다. 합성 줄은 파일에
+                        // 저장된 값이 아니라 rhwp 가 불러올 때 만드는 값이라 재파싱 쪽에도
+                        // 다시 생긴다.
+                        let expected =
+                            rhwp::serializer::hwpx::roundtrip::hwpx_export_expected_document(
+                                doc.document(),
+                            );
+                        let reloaded_comparable =
+                            rhwp::serializer::hwpx::roundtrip::hwpx_export_expected_document(
+                                reloaded.document(),
+                            );
+                        // 저장 정규화와 저장 줄 캐시 계약을 모두 적용한다 (#8306, #8310).
+                        let diff = rhwp::serializer::hwpx::roundtrip::diff_exported_hwpx_documents(
+                            &expected,
+                            &reloaded_comparable,
                         );
                         // HWP 계열은 HWPX와 표현 자리가 다른 필드 메타데이터가 있고,
                         // HWP3에는 하이퍼텍스트·빈 그림 imgRect의 추가 정규화가 있다.
@@ -587,8 +600,8 @@ pub(crate) fn export_hwpx(args: &[String]) -> i32 {
                             }
                             rhwp::parser::FileFormat::Hwp3 => {
                                 rhwp::serializer::hwpx::roundtrip::strip_hwp3_to_hwpx_noise(
-                                    doc.document(),
-                                    reloaded.document(),
+                                    &expected,
+                                    &reloaded_comparable,
                                     diff,
                                 )
                             }

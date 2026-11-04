@@ -1,0 +1,49 @@
+{
+  "allRustObjectsIdentical": true,
+  "sources": {
+    "nativeProducer": {
+      "source": "d329bb309bde593e45e952b0e14ddd46a02b7c62",
+      "gitObjects": {
+        "src": "4f3e5bbdc4c4026de39a4bb5c34434ed335ee1eb",
+        "vendor": "e6c8726b71ba7b46503e9d9c5d4ebb1ccb0c4610",
+        "crates": "efdb9422a6c9838bfb221e3561c3c2e9b0fa9ef3",
+        "Cargo.toml": "f566ab63d2d2f957d26e6611313498638d453952",
+        "Cargo.lock": "cdac7775dbbead86b64b2ba7f8b8ed2a9f755207",
+        "tests/cases/issue_8174_form_actions.rs": "80cedc142ba1412ad8ee171e3249a98cee90c766"
+      }
+    },
+    "wasmProducer": {
+      "source": "03e31d5b20b9f765655d5c30bb97e659caa50ca9",
+      "gitObjects": {
+        "src": "4f3e5bbdc4c4026de39a4bb5c34434ed335ee1eb",
+        "vendor": "e6c8726b71ba7b46503e9d9c5d4ebb1ccb0c4610",
+        "crates": "efdb9422a6c9838bfb221e3561c3c2e9b0fa9ef3",
+        "Cargo.toml": "f566ab63d2d2f957d26e6611313498638d453952",
+        "Cargo.lock": "cdac7775dbbead86b64b2ba7f8b8ed2a9f755207",
+        "tests/cases/issue_8174_form_actions.rs": "80cedc142ba1412ad8ee171e3249a98cee90c766"
+      }
+    },
+    "fullRustGate": {
+      "source": "3d021f944d841807fd35093e2210ae93c1743c96",
+      "gitObjects": {
+        "src": "4f3e5bbdc4c4026de39a4bb5c34434ed335ee1eb",
+        "vendor": "e6c8726b71ba7b46503e9d9c5d4ebb1ccb0c4610",
+        "crates": "efdb9422a6c9838bfb221e3561c3c2e9b0fa9ef3",
+        "Cargo.toml": "f566ab63d2d2f957d26e6611313498638d453952",
+        "Cargo.lock": "cdac7775dbbead86b64b2ba7f8b8ed2a9f755207",
+        "tests/cases/issue_8174_form_actions.rs": "80cedc142ba1412ad8ee171e3249a98cee90c766"
+      }
+    },
+    "finalFrontend": {
+      "source": "40b7b2937b399e21b13e8723843ec8daa8fcbb09",
+      "gitObjects": {
+        "src": "4f3e5bbdc4c4026de39a4bb5c34434ed335ee1eb",
+        "vendor": "e6c8726b71ba7b46503e9d9c5d4ebb1ccb0c4610",
+        "crates": "efdb9422a6c9838bfb221e3561c3c2e9b0fa9ef3",
+        "Cargo.toml": "f566ab63d2d2f957d26e6611313498638d453952",
+        "Cargo.lock": "cdac7775dbbead86b64b2ba7f8b8ed2a9f755207",
+        "tests/cases/issue_8174_form_actions.rs": "80cedc142ba1412ad8ee171e3249a98cee90c766"
+      }
+    }
+  }
+}

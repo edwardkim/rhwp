@@ -1,0 +1,24 @@
+from pathlib import Path
+import json,subprocess,hashlib
+R=Path.cwd();O=R/'output/pr-review/issue8174/v2-s05-20261025';base=R/'output/pr-review/issue8174/v2-s04-20261025/candidate-native/rhwp';candidate=O/'candidate-native/rhwp'
+inputs=['samples/hwp_table_test.hwp','samples/hwpx/143E433F503322BD33.hwpx']
+cases=[]
+for name in inputs:
+ for args in [['info',name,'--json'],['export-text',name,'--output',str(O/'cli-plain')],['export-text',name,'--json'],['export-text',name,'--json','--max-chars','20'],['export-text',name,'--page','0','--json']]:cases.append(args)
+cases += [['info','pdf/issue8174/features/icc-rgb.pdf','--json'],['info','pdf/issue8183/scan-jbig2.pdf','--json'],['capabilities'],['export-text','missing-8174-input.hwp','--json'],['export-text',inputs[0],'--max-chars','0','--json'],['export-text',inputs[0],'--page','99999','--json']]
+rows=[]
+for i,args in enumerate(cases):
+ outputs=[]
+ for label,binary in [('base',base),('registry',candidate)]:
+  result=subprocess.run([str(binary),*args],cwd=R,capture_output=True,timeout=60)
+  for stream in ['stdout','stderr']:(O/f'cli-{i:02d}-{label}.{stream}').write_bytes(getattr(result,stream))
+  outputs.append(result)
+ a,b=outputs;same=(a.returncode,a.stdout,a.stderr)==(b.returncode,b.stdout,b.stderr)
+ rows.append({'args':args,'base_exit':a.returncode,'candidate_exit':b.returncode,'same_exit_stdout_stderr':same,'stdout_sha256':hashlib.sha256(b.stdout).hexdigest(),'stderr_sha256':hashlib.sha256(b.stderr).hexdigest()});assert same,(args,a.returncode,b.returncode,a.stderr,b.stderr)
+# Execute the new guide command exactly, in a private example directory.
+d=O/'guide-cli';d.mkdir(exist_ok=True);(d/'input.pdf').write_bytes((R/'pdf/issue8174/features/icc-rgb.pdf').read_bytes())
+result=subprocess.run([str(candidate),'import-pdf','input.pdf','output.hwpx','--resource-profile','constrained','--json'],cwd=d,capture_output=True,timeout=60);assert result.returncode==0,result.stderr
+info=json.loads(result.stdout);assert info['pageCount']==1 and (d/'output.hwpx').is_file();(O/'guide-cli-result.json').write_bytes(result.stdout)
+minimal=O/'installed-minimal/bin/rhwp';plain=subprocess.run([str(minimal),'export-text',inputs[0],'--json'],cwd=R,capture_output=True);normal=subprocess.run([str(candidate),'export-text',inputs[0],'--json'],cwd=R,capture_output=True);assert (plain.returncode,plain.stdout,plain.stderr)==(normal.returncode,normal.stdout,normal.stderr)
+rejected=subprocess.run([str(minimal),'import-pdf',str(d/'input.pdf'),str(d/'excluded.hwpx'),'--json'],cwd=R,capture_output=True);assert rejected.returncode!=0 and b'PDF_IMPORT_DISABLED' in rejected.stderr and not (d/'excluded.hwpx').exists()
+(O/'cli-contracts.json').write_text(json.dumps({'cases':rows,'guide_command_passed':True,'minimal_hwp_matches_default':True,'minimal_pdf_rejected_before_output':True},indent=2)+'\n');print('CLI CONTRACTS PASS',len(rows),'+ guide + minimal controls',flush=True)

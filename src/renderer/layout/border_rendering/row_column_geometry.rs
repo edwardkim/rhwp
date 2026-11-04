@@ -5,6 +5,7 @@ pub(crate) struct RowColumnGeometry {
     positions: Vec<Vec<f64>>,
     widths: Vec<Vec<f64>>,
     spacing: f64,
+    cell_widths: Vec<Vec<(usize, usize, f64)>>,
 }
 
 impl RowColumnGeometry {
@@ -13,6 +14,7 @@ impl RowColumnGeometry {
             positions,
             widths,
             spacing,
+            cell_widths: Vec::new(),
         }
     }
 
@@ -25,6 +27,13 @@ impl RowColumnGeometry {
         end: usize,
         cell_spacing: f64,
     ) -> f64 {
+        if let Some(width) = self.cell_widths.get(row).and_then(|cells| {
+            cells
+                .iter()
+                .find_map(|&(left, right, width)| (left == start && right == end).then_some(width))
+        }) {
+            return width;
+        }
         self.widths[row][start..end].iter().sum::<f64>()
             + (self.spacing * (end - start) as f64 - cell_spacing)
     }
@@ -42,6 +51,42 @@ impl RowColumnGeometry {
             }
         }
         self.spacing *= factor;
+        for row in &mut self.cell_widths {
+            for (_, _, width) in row {
+                *width *= factor;
+            }
+        }
+    }
+
+    /// 같은 HU 프레임을 본문과 괘선에 전달한다. 실제 폭을 가상 열 합으로 되돌리지 않는다.
+    pub(super) fn apply_closing_rows(
+        &mut self,
+        table: &crate::model::table::Table,
+        dpi: f64,
+        width_scale: f64,
+    ) {
+        self.cell_widths = vec![Vec::new(); self.positions.len()];
+        let scale = dpi / 7200.0 * width_scale;
+        let spacing = f64::from(table.cell_spacing) * scale;
+        for (row, frames) in table.closing_row_frames().into_iter().enumerate() {
+            let Some(frames) = frames else {
+                continue;
+            };
+            for frame in frames {
+                let cell = &table.cells[frame.cell_index];
+                let start = usize::from(cell.col);
+                let end = start + usize::from(cell.col_span);
+                let left = frame.start_hu as f64 * scale;
+                let width = frame.width_hu as f64 * scale;
+                let track = (width + spacing) / f64::from(cell.col_span);
+                for col in start..end {
+                    self.positions[row][col] = left + track * (col - start) as f64;
+                    self.widths[row][col] = track - spacing;
+                }
+                self.positions[row][end] = left + width + spacing;
+                self.cell_widths[row].push((start, end, width));
+            }
+        }
     }
 }
 

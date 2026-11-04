@@ -1,11 +1,167 @@
-// 글꼴 공급의 비동기 소유 계약 검사다. mock bytes를 실제 cmap/시각 증거로 쓰지 않는다.
+// 관계형: 글꼴 공급의 비동기 소유·원본 TTF/대체 체인 분리를 검사한다.
+// 주석 갱신: 2026-11-04 15:18 KST. mock bytes를 실제 cmap/시각 증거로 쓰지 않는다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { NativePuaFontSession } from '../src/core/native-pua-font-session.ts';
 import { setHostFontProvider } from '../src/core/local-fonts.ts';
 import type { HostFontData } from '../src/core/host-font-provider.ts';
 
 let serial = 0;
+
+test('같은 family의 HFT와 TrueType 폭 프로그램을 출처별로 준비한다', async () => {
+  const files = new Map(['TTF', 'CFF'].map(id => {
+    const name = id === 'TTF' ? 'RHWPHostFixture-Regular.ttf' : 'RHWPHftOutline.otf';
+    const file = readFileSync(new URL(`../../tests/fixtures/fonts/${name}`, import.meta.url));
+    return [id, file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength) as ArrayBuffer];
+  }));
+  await setHostFontProvider({
+    async getSnapshot() { return { revision: 'source-width-mixed', faces: ['TTF', 'CFF'].map(id => ({
+      id, family: 'MixedWidth', fullName: `MixedWidth ${id}`, postscriptName: `MixedWidth-${id}`,
+      style: 'Regular', weight: 400, slant: 'normal' as const,
+    })) }; },
+    async readFace(id) { return { bytes: files.get(id)! }; },
+    subscribe() { return () => {}; },
+  });
+  const requests = [
+    { family: 'MixedWidth, DisplayOnly', bold: false, italic: false },
+    { family: 'MixedWidth, DisplayOnly', bold: false, italic: false, source_ttf: true },
+  ];
+  const signatures: number[] = [];
+  const owner = {
+    getNativePuaFontRequests: () => '[]', registerNativePuaFont: () => false,
+    getNativeOtfFontRequests: () => JSON.stringify(requests),
+    prepareNativeOtfFonts(provider: (raw: string) => Uint8Array | Uint8Array[] | null) {
+      for (const request of requests) {
+        const selected = provider(JSON.stringify(request));
+        assert.ok(selected instanceof Uint8Array);
+        signatures.push(new DataView(selected.buffer, selected.byteOffset, selected.byteLength).getUint32(0));
+      }
+      return true;
+    },
+  };
+  try {
+    assert.equal(await new NativePuaFontSession().prepare(owner, 1, () => true, () => true), true);
+    assert.deepEqual(signatures, [0x4f54544f, 0x00010000]);
+  } finally { await setHostFontProvider(null); }
+});
+
+test('같은 family의 HFT와 TTF 요청을 독립적으로 공급하고 다시 준비해도 유지한다', async () => {
+  const data = (name: string) => {
+    const file = readFileSync(new URL(`../../tests/fixtures/fonts/${name}`, import.meta.url));
+    return file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength) as ArrayBuffer;
+  };
+  const faces = ['TTF', 'CFF'].map(id => ({ id, family: 'Mixed', fullName: `Mixed ${id}`,
+    postscriptName: `Mixed-${id}`, style: 'Regular', weight: 400, slant: 'normal' as const }));
+  await setHostFontProvider({
+    async getSnapshot() { return { revision: 'source-type-mixed', faces }; },
+    async readFace(id) { return { bytes: data(id === 'TTF' ? 'RHWPHostFixture-Regular.ttf' : 'RHWPHftOutline.otf') }; },
+    subscribe() { return () => {}; },
+  });
+  const calls: Array<[boolean, number]> = [];
+  const owner = {
+    getNativePuaFontRequests: () => JSON.stringify([
+      {family: 'Mixed', bold: false, italic: false},
+      {family: 'Mixed', bold: false, italic: false, source_ttf: true},
+    ]),
+    registerNativePuaFont() { throw new Error('유형별 등록 API를 사용해야 한다'); },
+    registerNativePuaFontForSource(_family: string, _bold: boolean, _italic: boolean,
+      sourceTtf: boolean, bytes: Uint8Array) {
+      calls.push([sourceTtf, new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(0)]);
+      return true;
+    },
+  };
+  try {
+    const session = new NativePuaFontSession();
+    assert.equal(await session.prepare(owner, 1, () => true, () => true), true);
+    assert.equal(await session.prepare(owner, 1, () => true, () => true), true);
+    assert.deepEqual(calls, [[false, 0x4f54544f], [true, 0x00010000]]);
+  } finally { await setHostFontProvider(null); }
+});
+
+test('굵은 HFT 요청에 실제 선택한 일반 OTF를 공급하고 세대가 바뀌면 다시 준비한다', async () => {
+  const font = readFileSync(new URL('../../tests/fixtures/fonts/RHWPHftOutline.otf', import.meta.url));
+  const bytes = font.buffer.slice(font.byteOffset, font.byteOffset + font.byteLength) as ArrayBuffer;
+  const request = {family: 'Fixture', bold: true, italic: false};
+  let reads = 0, calls = 0;
+  await setHostFontProvider({
+    async getSnapshot() { return {revision: 'otf-regular', faces: [{id: 'fixture', family: 'Fixture',
+      fullName: 'Fixture', postscriptName: 'Fixture', style: 'Regular', weight: 400, slant: 'normal'}]}; },
+    async readFace() { reads++; return {bytes}; }, subscribe() { return () => {}; },
+  });
+  const owner = {
+    getNativePuaFontRequests: () => '[]', registerNativePuaFont: () => false,
+    getNativeOtfFontRequests: () => JSON.stringify([request]),
+    prepareNativeOtfFonts(provider: (raw: string) => Uint8Array | Uint8Array[] | null) {
+      calls++; const selected = provider(JSON.stringify(request));
+      assert.ok(selected instanceof Uint8Array);
+      assert.equal(new DataView(selected.buffer).getUint32(0), 0x4f54544f); return true;
+    },
+    clearNativePuaFonts() {},
+  };
+  try {
+    const session = new NativePuaFontSession();
+    assert.equal(session.records(owner).length, 1);
+    assert.equal(await session.prepare(owner, 1, () => true, () => true), true);
+    assert.equal(await session.prepare(owner, 1, () => true, () => true), true);
+    assert.equal(calls, 1); assert.equal(reads, 1);
+    assert.equal(await session.prepare(owner, 2, () => true, () => true), true);
+    assert.equal(calls, 2);
+  } finally { await setHostFontProvider(null); }
+});
+
+test('같은 family의 분할 OTF를 빠짐없이 준비하고 호스트 순서로 전달한다', async () => {
+  const font = readFileSync(new URL('../../tests/fixtures/fonts/RHWPHftOutline.otf', import.meta.url));
+  const bytes = font.buffer.slice(font.byteOffset, font.byteOffset + font.byteLength) as ArrayBuffer;
+  const request = {family: 'Split', bold: false, italic: false};
+  await setHostFontProvider({
+    async getSnapshot() { return {revision: 'split-otf', faces: ['Latin', 'Hangul'].map(id => ({
+      id, family: 'Split', fullName: `Split ${id}`, postscriptName: `Split-${id}`,
+      style: 'Regular', weight: 400, slant: 'normal' as const,
+    }))}; },
+    async readFace() { return {bytes}; }, subscribe() { return () => {}; },
+  });
+  const owner = {
+    getNativePuaFontRequests: () => '[]', registerNativePuaFont: () => false,
+    getNativeOtfFontRequests: () => JSON.stringify([request]),
+    prepareNativeOtfFonts(provider: (raw: string) => Uint8Array | Uint8Array[] | null) {
+      const selected = provider(JSON.stringify(request));
+      assert.ok(Array.isArray(selected)); assert.equal(selected.length, 2);
+      assert.ok(selected.every(item => new DataView(item.buffer).getUint32(0) === 0x4f54544f));
+      return true;
+    },
+  };
+  try {
+    const session = new NativePuaFontSession();
+    assert.deepEqual(session.records(owner).map(record => record.postscriptName), ['Split-Latin', 'Split-Hangul']);
+    assert.equal(await session.prepare(owner, 1, record => record.postscriptName === 'Split-Latin', () => true), false,
+      '일부 face만 준비됐을 때 분할 family의 폭을 먼저 적용하지 않는다');
+    assert.equal(await session.prepare(owner, 1, () => true, () => true), true);
+  } finally { await setHostFontProvider(null); }
+});
+
+test('굵은 face가 없는 분할 family는 일반 face에서 다음 PUA 프로그램을 확인한다', async () => {
+  const font = readFileSync(new URL('../../tests/fixtures/fonts/RHWPHftOutline.otf', import.meta.url));
+  const bytes = font.buffer.slice(font.byteOffset, font.byteOffset + font.byteLength) as ArrayBuffer;
+  await setHostFontProvider({
+    async getSnapshot() { return {revision: 'split-pua', faces: ['Latin', 'Symbols'].map(id => ({
+      id, family: 'Split', fullName: `Split ${id}`, postscriptName: `Split-${id}`,
+      style: 'Regular', weight: 400, slant: 'normal' as const,
+    }))}; },
+    async readFace() { return {bytes}; }, subscribe() { return () => {}; },
+  });
+  let calls = 0;
+  const owner = {
+    getNativePuaFontRequests: () => JSON.stringify([{family: 'Split', paint_families: ['Split'], bold: true, italic: false}]),
+    registerNativePuaFont() { return ++calls === 2; },
+  };
+  try {
+    const session = new NativePuaFontSession();
+    assert.equal(session.records(owner).length, 2);
+    assert.equal(await session.prepare(owner, 1, () => true, () => true), true);
+    assert.equal(calls, 2);
+  } finally { await setHostFontProvider(null); }
+});
 async function fixture(fallback = false) {
   const revision = `pua-session-${++serial}`;
   const families = fallback ? ['Primary', 'Fallback'] : ['Primary'];

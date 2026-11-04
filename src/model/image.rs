@@ -27,9 +27,10 @@ pub struct Picture {
     pub border_width: i32,
     /// 테두리 속성
     pub border_attr: ShapeBorderLine,
-    /// 이미지 테두리 좌표 X (4개)
+    /// 그림 꼭짓점의 앞 네 INT32: [pt0.x, pt0.y, pt1.x, pt1.y].
+    /// 기존 필드명과 달리 X 좌표만의 배열이 아니다.
     pub border_x: [i32; 4],
-    /// 이미지 테두리 좌표 Y (4개)
+    /// 그림 꼭짓점의 뒤 네 INT32: [pt2.x, pt2.y, pt3.x, pt3.y].
     pub border_y: [i32; 4],
     /// 자르기 정보
     pub crop: CropInfo,
@@ -52,10 +53,11 @@ pub struct Picture {
     pub effects: PictureEffects,
     /// 캡션
     pub caption: Option<super::shape::Caption>,
-    /// HWPX `<hp:imgDim>` 원본 이미지 픽셀 크기 (#1389).
+    /// HWP5 표 116의 기준 이미지 크기(HWPUNIT 두 개), HWPX `<hp:imgDim>` 대응.
     ///
-    /// imgClip extent 와 독립(전수 측정: 불일치 24/170) — 원본 이미지 픽셀 크기를
-    /// verbatim 보존한다. (dimwidth, dimheight). HWPX 파서만 적재.
+    /// crop과 같은 원본 좌표계의 전체 범위이며 디코딩된 bitmap 픽셀 크기와 구별한다.
+    /// imgClip extent와 독립(전수 측정: 불일치 24/170)인 (dimwidth, dimheight)를
+    /// 그대로 보존한다. HWP5·HWPX 파서가 모두 적재한다.
     pub img_dim: (u32, u32),
     /// HWPX `<hp:pic reverse="...">` 값 — 그림 좌우 반전(한컴 Automation
     /// `InsertPicture`의 `reverse` 옵션과 동일 개념). 파서가 읽지 않고 직렬화기가
@@ -67,6 +69,50 @@ pub struct Picture {
 }
 
 impl Picture {
+    /// Construct an embedded picture with the existing insertion geometry contract.
+    /// `common` owns placement; the source crop and imgDim both use pixels × 75.
+    pub(crate) fn from_embedded_image(
+        common: CommonObjAttr,
+        bin_data_id: u16,
+        natural_width_px: u32,
+        natural_height_px: u32,
+    ) -> Self {
+        let width = common.width;
+        let height = common.height;
+        let img_dim = (natural_width_px * 75, natural_height_px * 75);
+        Self {
+            common,
+            shape_attr: ShapeComponentAttr {
+                original_width: width,
+                original_height: height,
+                current_width: width,
+                current_height: height,
+                local_file_version: 1,
+                render_sx: 1.0,
+                render_sy: 1.0,
+                ..Default::default()
+            },
+            border_x: [0, 0, width as i32, 0],
+            border_y: [width as i32, height as i32, 0, height as i32],
+            crop: CropInfo {
+                left: 0,
+                top: 0,
+                right: img_dim.0 as i32,
+                bottom: img_dim.1 as i32,
+            },
+            img_dim,
+            image_attr: ImageAttr {
+                bin_data_id,
+                brightness: 0,
+                contrast: 0,
+                effect: ImageEffect::RealPic,
+                transparency: 0,
+                external_path: None,
+            },
+            ..Default::default()
+        }
+    }
+
     /// 저장된 자르기 폭이 있으면 높이가 비어 있어도 그 선택을 보존한다.
     /// 빈 선택을 자르기 없음으로 바꾸면 한컴이 그리지 않는 원본 전체가 나타난다.
     pub fn render_crop_rect(&self) -> Option<(i32, i32, i32, i32)> {

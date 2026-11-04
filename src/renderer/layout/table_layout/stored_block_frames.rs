@@ -214,15 +214,28 @@ impl LayoutEngine {
             || cells
                 .iter()
                 .any(|cell| !self.stored_body_text_cell_frame(table, cell))
-            || !cells.iter().zip(end_cut).any(|(cell, &unit)| {
-                cell.row_span > 1
-                    && unit > 0
-                    && self.cell_unit_opens_stored_page_frame(cell, table, styles, unit)
-            })
         {
             return None;
         }
-        (first..end)
+        let span_restart = cells.iter().zip(end_cut).any(|(cell, &unit)| {
+            cell.row_span > 1
+                && unit > 0
+                && self.cell_unit_opens_stored_page_frame(cell, table, styles, unit)
+        });
+        // 병합 제목이 먼저 끝난 뒤 일반 칸에서 쪽을 나눌 수도 있다. 이때는
+        // 실제 미완료 칸의 저장 경계와 완료한 병합 칸의 선언 합을 함께 확인한다.
+        let completed_spans = cells.iter().zip(end_cut).all(|(cell, &unit)| {
+            cell.row_span == 1 || unit == self.cell_units(cell, table, styles).len()
+        });
+        let ordinary_restart = cells.iter().zip(end_cut).any(|(cell, &unit)| {
+            cell.row_span == 1
+                && unit > 0
+                && self.cell_unit_opens_stored_page_frame(cell, table, styles, unit)
+        });
+        if !span_restart && !(completed_spans && ordinary_restart) {
+            return None;
+        }
+        let rows: Vec<_> = (first..end)
             .map(|row| {
                 let owners: Vec<_> = cells
                     .iter()
@@ -236,25 +249,78 @@ impl LayoutEngine {
                     if cell.height == 0 || cell.height > i32::MAX as u32 {
                         return None;
                     }
-                    let padding = cell.effective_padding(&table.padding);
-                    let mut previous_end = None;
-                    for line in cell.paragraphs.iter().flat_map(|para| &para.line_segs) {
-                        let top = i64::from(line.vertical_pos);
-                        if previous_end.is_some_and(|end| top < end) {
-                            return None;
-                        }
-                        previous_end = Some(top + i64::from(line.line_height));
-                    }
-                    let ink_end =
-                        previous_end? + i64::from(padding.top) + i64::from(padding.bottom);
-                    if ink_end > i64::from(cell.height) {
+                    if !self.stored_block_cell_frames_fit(table, cell, styles) {
                         return None;
                     }
                     declared = declared.max(cell.height);
                 }
-                Some(hwpunit_to_px(declared as i32, self.dpi))
+                Some(declared)
             })
-            .collect()
+            .collect::<Option<_>>()?;
+        if !span_restart {
+            let spans: Vec<_> = cells.iter().filter(|cell| cell.row_span > 1).collect();
+            if spans.is_empty()
+                || spans.iter().any(|cell| {
+                    let start = usize::from(cell.row).checked_sub(first);
+                    let covered =
+                        start.and_then(|start| rows.get(start..start + usize::from(cell.row_span)));
+                    !covered.is_some_and(|rows| {
+                        rows.iter().map(|&height| u64::from(height)).sum::<u64>()
+                            == u64::from(cell.height)
+                    })
+                })
+            {
+                return None;
+            }
+        }
+        Some(
+            rows.into_iter()
+                .map(|height| hwpunit_to_px(height as i32, self.dpi))
+                .collect(),
+        )
+    }
+
+    /// 저장 줄의 겹침은 실제 유닛의 쪽 재시작에서만 허용한다. 각 프레임의
+    /// 내용은 원본 행 선언 안에 들어가야 하며 단순한 로컬0은 경계가 아니다.
+    fn stored_block_cell_frames_fit(
+        &self,
+        table: &Table,
+        cell: &crate::model::table::Cell,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        let padding = cell.effective_padding(&table.padding);
+        if padding.top < 0 || padding.bottom < 0 {
+            return false;
+        }
+        let mut previous_end = None;
+        let units = self.cell_units(cell, table, styles);
+        if units.is_empty() {
+            return false;
+        }
+        for unit in units.iter() {
+            if unit.reflowed_line_slot || unit.vis_start >= unit.vis_end {
+                return false;
+            }
+            let para = &cell.paragraphs[unit.para_idx];
+            let Some(lines) = para.line_segs.get(unit.vis_start..unit.vis_end) else {
+                return false;
+            };
+            for (index, line) in lines.iter().enumerate() {
+                let top = i64::from(line.vertical_pos);
+                if previous_end.is_some_and(|end| top < end)
+                    && !(index == 0 && unit.page_frame_reset_before)
+                {
+                    return false;
+                }
+                let end = top + i64::from(line.line_height);
+                if end + i64::from(padding.top) + i64::from(padding.bottom) > i64::from(cell.height)
+                {
+                    return false;
+                }
+                previous_end = Some(end);
+            }
+        }
+        true
     }
 
     /// 앞 조각이 실제 수용한 높이를 원본 행 순서로 차감한다. 남은 내용/안여백은

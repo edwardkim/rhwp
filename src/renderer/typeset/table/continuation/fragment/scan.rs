@@ -1,8 +1,8 @@
 //! Read-only scan and footnote-aware refit. Returns cuts; does not emit page items.
 
 use crate::renderer::typeset::{
-    controls, row_geometry_table, table, table_declared_object_covers_cell_row_frames,
-    BlockRowScanVars, BlockTableRowScan, Control, Footnote, TypesetEngine, TypesetState,
+    controls, table, table_declared_object_covers_cell_row_frames, BlockRowScanVars,
+    BlockTableRowScan, Control, Footnote, TypesetEngine, TypesetState,
 };
 
 use super::super::TableContinuationCursor;
@@ -233,6 +233,17 @@ impl TypesetEngine {
         // [Task #1025] split_block_start: 블록 분할 시 연속분 커서 복귀 기록.
         let issue2424_scan_started = profile.enabled.then(std::time::Instant::now);
         let scan_vars = BlockRowScanVars {
+            // 이전 쪽에서 이어진 문단 뒤의 저장 줄은 원래 쪽 좌표계일 수 있다.
+            // 첫 표 프레임을 현재 흐름 원점에서 인증하지 못했다면 그 내부 컷도
+            // 현재 쪽의 경계로 승격하지 않는다. 이어받은 표 조각은 별도로 판정한다.
+            source_frame_origin_unverified: !is_continuation
+                && saved_first_fragment_source_frame.is_none()
+                && para_idx.checked_sub(1).is_some_and(|previous| {
+                    matches!(st.current_items.last(),
+                        Some(crate::renderer::pagination::PageItem::PartialParagraph {
+                            para_index, start_line, ..
+                        }) if *para_index == previous && *start_line > 0)
+                }),
             cursor_row,
             row_count: scan_row_count,
             cs,
@@ -478,91 +489,66 @@ impl TypesetEngine {
         // 줄+각주 크기 실측 정합). 앵커 전부가 조각 밖이면 예약을 해제하되
         // 첫 앵커 직전을 예산 상한으로 재스캔한다 (앵커 줄은 자기 각주와
         // 함께 다음 조각으로 — 한글 규칙).
-        let table_fn_reserved = (total_footnote - st.current_footnote_height).max(0.0)
-            + if st.current_footnote_height <= 0.0 {
-                fn_margin
-            } else {
-                0.0
-            };
+        // [#7732] 표 각주를 이 쪽에서 빼면 남는 각주는 이미 정해진 쪽 각주뿐이라 경계가 확정이다.
+        // 그 경계를 지키는 40px 여유도 함께 되돌린다(한/글은 각주 구분선 바로 위까지 행을 놓는다).
+        let table_fn_reserved = (total_footnote - st.current_footnote_height).max(0.0) + fn_margin;
         let is_split_fragment = end_row < row_count || split_end_limit > 0.0;
+        // [#7732] 앵커 줄이 자기 각주와 함께 다음 조각으로 간다는 #2097 가정은 한/글 출력과
+        // 다르다. 한/글은 칸 각주 때문에 행을 줄이지 않고, 앵커가 이 조각에 있어도 각주는
+        // 조각 뒤 남는 공간이나 표가 끝나는 쪽에 놓는다(합성 `gen_cell_notes_multipage.py`).
+        // 그래서 표가 이 쪽에서 끝나지 않는 한 예약 전체를 되돌리고 앵커 위치로 상한을 두지 않는다.
         if table_fn_reserved > 0.5
             && !is_continuation
             && cursor_row == 0
             && start_cut.is_empty()
             && is_split_fragment
         {
-            let first_anchor = table::footnotes::first_table_footnote_anchor_offset(
-                layout_engine,
-                row_geometry_table,
-                styles,
-                cut_row_h,
-                cs,
-            );
-            if let Some(min_anchor) = first_anchor.filter(|anchor| *anchor >= consumed - 0.5) {
-                let pad = if mt.allows_row_break_split() {
-                    layout_engine.row_remaining_visible_padding_height(
-                        row_geometry_table,
-                        cursor_row,
-                        &[],
-                        styles,
-                    )
-                } else {
-                    mt.max_padding_for_row(cursor_row)
-                };
-                // [#8081] 0 으로 자른 첫 조각 예산에는 모자란 몫이 빠져 있다 — 되돌린 예약에서
-                // 그 몫을 먼저 갚아야 실제 남은 공간이 된다.
-                let avail_refit = (avail_for_rows + table_fn_reserved - first_fragment_shortfall)
-                    .min(min_anchor + pad + 0.1);
-                if avail_refit > avail_for_rows + 0.5 {
-                    let issue2424_refit_started = profile.enabled.then(std::time::Instant::now);
-                    // 일반 행 컷이 따로 쓰는 물리 프레임 상한도 같은 몫을 되돌린다.
-                    let reflow_refit = reflow_frame_avail_for_rows.map(|height| {
-                        height
-                            .max(height + table_fn_reserved - reflow_frame_first_fragment_shortfall)
-                    });
-                    let blank_refit = reflow_blank_avail_for_rows.map(|height| {
-                        height
-                            .max(height + table_fn_reserved - reflow_blank_first_fragment_shortfall)
-                    });
-                    let refit = run_scan(BlockRowScanVars {
-                        avail_for_rows: avail_refit,
-                        reflow_frame_avail_for_rows: reflow_refit,
-                        reflow_blank_avail_for_rows: blank_refit,
-                        ..scan_vars
-                    });
-                    if let Some(started) = issue2424_refit_started {
-                        profile.refit.0 += started.elapsed();
-                        profile.refit.1 += 1;
+            // [#8081] 0 으로 자른 첫 조각 예산에는 모자란 몫이 빠져 있다 — 되돌린 예약에서
+            // 그 몫을 먼저 갚아야 실제 남은 공간이 된다.
+            let avail_refit = avail_for_rows + table_fn_reserved - first_fragment_shortfall;
+            if avail_refit > avail_for_rows + 0.5 {
+                let issue2424_refit_started = profile.enabled.then(std::time::Instant::now);
+                // 일반 행 컷이 따로 쓰는 물리 프레임 상한도 같은 몫을 되돌린다.
+                let reflow_refit = reflow_frame_avail_for_rows.map(|height| {
+                    height.max(height + table_fn_reserved - reflow_frame_first_fragment_shortfall)
+                });
+                let blank_refit = reflow_blank_avail_for_rows.map(|height| {
+                    height.max(height + table_fn_reserved - reflow_blank_first_fragment_shortfall)
+                });
+                let refit = run_scan(BlockRowScanVars {
+                    avail_for_rows: avail_refit,
+                    reflow_frame_avail_for_rows: reflow_refit,
+                    reflow_blank_avail_for_rows: blank_refit,
+                    ..scan_vars
+                });
+                if let Some(started) = issue2424_refit_started {
+                    profile.refit.0 += started.elapsed();
+                    profile.refit.1 += 1;
+                }
+                // 되돌린 예산으로 표가 이 쪽에서 끝나면 각주도 이 쪽 몫이라 예약을 유지한다.
+                let refit_continues = refit.end_row < row_count || refit.split_end_limit > 0.0;
+                if refit.consumed > consumed + 0.5 && refit_continues {
+                    if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                        eprintln!(
+                            "DIAG_SCAN FN_REFIT pi={} consumed {:.1} -> {:.1} reserved={:.1}",
+                            para_idx, consumed, refit.consumed, table_fn_reserved,
+                        );
                     }
-                    // 재스캔 조각도 앵커 미포함일 때만 채택 (상한이 보증하나
-                    // squeeze 허용치로 소폭 넘을 수 있어 재확인).
-                    if refit.consumed > consumed + 0.5 && refit.consumed <= min_anchor + pad + 0.5 {
-                        if std::env::var("RHWP_DIAG_SCAN").is_ok() {
-                            eprintln!(
-                                "DIAG_SCAN FN_REFIT pi={} consumed {:.1} -> {:.1} reserved={:.1} min_anchor={:.1}",
-                                para_idx,
-                                consumed,
-                                refit.consumed,
-                                table_fn_reserved,
-                                min_anchor
-                            );
-                        }
-                        source_frame_band = refit.source_frame_band;
-                        plain_cut_owns_blank_band = refit.plain_cut_owns_blank_band;
-                        consumed = refit.consumed;
-                        end_row = refit.end_row;
-                        split_block_start = refit.split_block_start;
-                        split_end_cut = refit.split_end_cut;
-                        split_end_limit = refit.split_end_limit;
-                        split_end_reserved = refit.split_end_reserved;
-                        split_block_physical_height = refit.split_block_physical_height;
-                        end_row_height_override = refit.end_row_height_override;
-                        accepted_end_row_box = refit.accepted_end_row_box;
-                        accepted_start_row_box = refit.accepted_start_row_box;
-                        accepted_partial_row_box = refit.accepted_partial_row_box;
-                        if end_row <= cursor_row {
-                            end_row = cursor_row + 1;
-                        }
+                    source_frame_band = refit.source_frame_band;
+                    plain_cut_owns_blank_band = refit.plain_cut_owns_blank_band;
+                    consumed = refit.consumed;
+                    end_row = refit.end_row;
+                    split_block_start = refit.split_block_start;
+                    split_end_cut = refit.split_end_cut;
+                    split_end_limit = refit.split_end_limit;
+                    split_end_reserved = refit.split_end_reserved;
+                    split_block_physical_height = refit.split_block_physical_height;
+                    end_row_height_override = refit.end_row_height_override;
+                    accepted_end_row_box = refit.accepted_end_row_box;
+                    accepted_start_row_box = refit.accepted_start_row_box;
+                    accepted_partial_row_box = refit.accepted_partial_row_box;
+                    if end_row <= cursor_row {
+                        end_row = cursor_row + 1;
                     }
                 }
             }
@@ -784,9 +770,7 @@ impl TypesetEngine {
                 split_end_reserved = height;
             }
         }
-
-        // 원본 일반 행의 쪽 프레임은 refit이 선택한 내용과 같은 물리 상자를 예약한다.
-        // 내용을 다 소비한 컷에도 마지막 줄 간격만 남은 꼬리를 별도 행으로 세지 않는다.
+        // refit의 내용 컷과 물리 상자를 함께 예약하고 완료 컷의 작은 줄간격 꼬리는 새 행으로 만들지 않는다.
         if split_block_start.is_none()
             && split_end_limit > 0.0
             && !split_end_cut.is_empty()
@@ -823,8 +807,7 @@ impl TypesetEngine {
                     .min(avail_for_rows)
                     - before_last,
             );
-            // 두 저장 프레임과 후속 원점이 닫은 상자는 쪽의 남는 공간이 아니다.
-            // 이미 늘어난 임시 예약 대신 실제 소유 컷의 내용 하한과 비교한다.
+            // 두 저장 프레임·후속 원점이 닫은 상자는 임시 예약 대신 실제 소유 컷의 내용 하한과 비교한다.
             let source_opening = (!is_continuation
                 && cursor_row == 0
                 && start_cut.is_empty()
@@ -858,8 +841,7 @@ impl TypesetEngine {
                     )
                     && *height <= available
             });
-            // 인라인 프레임의 반복 제목행 계약은 유지한다. 일반 칸의 원본
-            // 최소는 제목행 유무와 무관하며, helper가 저장 컷의 유효성을 확인한다.
+            // 인라인 반복 제목행은 유지하며 일반 칸의 원본 최소·저장 컷은 제목행 유무와 별도로 확인한다.
             let inline_frame = self
                 .stored_header_physical_rows(st, input.source)
                 .then(|| {
@@ -886,12 +868,15 @@ impl TypesetEngine {
                 .flatten()
                 .filter(|height| *height >= selected);
             if let Some(height) = source_opening.or(inline_frame).or_else(|| {
+                let carried = (row == cursor_row && !input.start.start_cut_is_block)
+                    .then_some(start_row_height_override)
+                    .flatten();
                 layout_engine.stored_ordinary_row_end_frame(
                     row_geometry_table,
                     row,
-                    row_start,
-                    &split_end_cut,
+                    (row_start, &split_end_cut),
                     available,
+                    carried,
                     styles,
                 )
             }) {
@@ -903,7 +888,6 @@ impl TypesetEngine {
                 split_end_reserved = height;
             }
         }
-
         // 온전한 앞 제목만 소유한 원본 조각은 다음 인라인 상자를 가져오지
         // 않고 현재 셀의 최소 물리 밴드를 끝낸다. 같은 높이를 paint에 전달한다.
         if split_block_start.is_none()
@@ -989,6 +973,43 @@ impl TypesetEngine {
             }
         }
 
+        // 재조판 호스트의 자리차지 조각은 수용한 행의 물리 상자를 쪽 끝까지
+        // 소유한다. 내용 유닛 컷은 늘리지 않고, 같은 예산 안의 빈 띠만 예약한다.
+        // 저장 프레임·걸침 블록이 이미 높이를 소유하면 그 결과를 유지한다.
+        if input.prepared.computed_host_tail.is_some()
+            && split_block_start.is_none()
+            && end_row > cursor_row
+            && split_end_limit > 0.0
+            && !split_end_cut.is_empty()
+            && end_row_height_override.is_none()
+        {
+            let row = end_row - 1;
+            let row_start: &[usize] = if row == cursor_row { start_cut } else { &[] };
+            let selected = layout_engine.row_cut_content_height(
+                row_geometry_table,
+                row,
+                row_start,
+                &split_end_cut,
+                styles,
+            );
+            let full = layout_engine.row_cut_content_height(
+                row_geometry_table,
+                row,
+                row_start,
+                &[],
+                styles,
+            );
+            let before = (consumed - selected).max(0.0);
+            let capacity = (avail_for_rows - before).max(0.0);
+            let plain_row = row_geometry_table
+                .cells
+                .iter()
+                .all(|cell| usize::from(cell.row) != row || cell.row_span == 1);
+            if plain_row && capacity > selected && capacity < full {
+                end_row_height_override = Some(capacity);
+                consumed = before + capacity;
+            }
+        }
         BlockTableRowScan {
             source_frame_band,
             plain_cut_owns_blank_band,

@@ -1,3 +1,8 @@
+//! 관계형·고정형: 합성 페이지·viewport의 격자, stride, 할당 예산과 실제 raw buffer 크기의 계약.
+//! 주석 갱신: 2026-10-30T23:23:28+09:00; 직전 파일 커밋: 2026-10-26T18:25:02+09:00 (06bf9c11002879934831f5c2276fe2b267cc8be0).
+//! 실물 페이지의 조판 좌표를 고정하는 검사가 아니므로 이 assertion의 raw 시각 측정값은 비해당이다.
+//! 합성 알고리즘 계약과 별도의 Native/fresh WASM 실물 검증을 구분한다.
+//! 근거: mydocs/pr/assets/seo_rii_20261030/README.md.
 //! Public preflight must agree with actual output without changing pixel replay.
 #![cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]
 
@@ -5,8 +10,68 @@ use rhwp::paint::{LayerNode, PageLayerTree};
 use rhwp::renderer::layer_renderer::RasterRenderOptions;
 use rhwp::renderer::raster_pixels::RasterRegion;
 use rhwp::renderer::render_tree::BoundingBox;
-use rhwp::renderer::skia::{SkiaLayerRenderer, SkiaRegionPlan};
+use rhwp::renderer::skia::{SkiaLayerRenderer, SkiaRegionPlan, SkiaTilePlan};
 use rhwp::HwpError;
+
+#[test]
+fn tiled_preflight_bounds_one_surface_instead_of_the_whole_large_page() {
+    let request = region(510.0, 510.0, 4.0, 4.0);
+    let options = RasterRenderOptions::default();
+    assert!(SkiaRegionPlan::new(20_000.0, 30_000.0, request, options).is_err());
+    let tile = SkiaTilePlan::new(20_000.0, 30_000.0, request, options).unwrap();
+    assert_eq!((tile.origin_x(), tile.origin_y()), (510, 510));
+    assert_eq!((tile.width(), tile.height()), (4, 4));
+    assert_eq!((tile.stride(), tile.output_bytes()), (16, 64));
+    assert_eq!(tile.tile_count(), 4);
+    assert_eq!(tile.working_bytes(), 516 * 516 * 4);
+    assert_eq!(tile.peak_bitmap_bytes(), 516 * 516 * 4 + 64);
+    let exact_tile =
+        SkiaTilePlan::new(20_000.0, 30_000.0, region(0.0, 0.0, 512.0, 512.0), options).unwrap();
+    assert_eq!(exact_tile.tile_count(), 1);
+}
+
+#[test]
+fn tiled_offpage_has_no_working_bytes_and_output_limits_still_apply() {
+    let options = RasterRenderOptions::default();
+    let offpage =
+        SkiaTilePlan::new(20_000.0, 30_000.0, region(-2.0, -3.0, 2.0, 3.0), options).unwrap();
+    assert_eq!((offpage.tile_count(), offpage.working_bytes()), (0, 0));
+    assert_eq!(offpage.peak_bitmap_bytes(), 24);
+    // Exactly 128 MiB of output remains valid only without a working tile.
+    let huge = region(-16_384.0, -2048.0, 16_384.0, 2048.0);
+    assert_eq!(
+        SkiaTilePlan::new(20_000.0, 30_000.0, huge, options)
+            .unwrap()
+            .peak_bitmap_bytes(),
+        SkiaRegionPlan::MAX_BITMAP_BYTES
+    );
+    assert!(matches!(
+        SkiaTilePlan::new(
+            20_000.0,
+            30_000.0,
+            region(0.0, 0.0, 16_384.0, 2048.0),
+            options
+        ),
+        Err(HwpError::ResourceLimit(_))
+    ));
+    for invalid in [
+        region(f64::NAN, 0.0, 1.0, 1.0),
+        region(0.0, 0.0, 0.0, 1.0),
+        region(16_777_216.0, 0.0, 1.0, 1.0),
+    ] {
+        assert!(SkiaTilePlan::new(20_000.0, 30_000.0, invalid, options).is_err());
+    }
+    assert!(SkiaTilePlan::new(
+        20_000.0,
+        30_000.0,
+        region(0.0, 0.0, 2.0, 2.0),
+        RasterRenderOptions {
+            max_pixels: 3,
+            ..options
+        }
+    )
+    .is_err());
+}
 
 fn region(x: f64, y: f64, width: f64, height: f64) -> RasterRegion {
     RasterRegion {

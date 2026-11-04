@@ -1,0 +1,72 @@
+{
+  "source": "independent PDF writer, Pillow/LittleCMS, OpenJPEG; no RHWP output used as reference",
+  "sourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+  "files": {
+    "icc-cmyk-jpeg.pdf": "ff13edaf9028e83548bf90718cfbf729b2e84263b4d4cae21677f5f9b91538ac",
+    "icc-cmyk.pdf": "35e4deed659659255cab50f449fd532dcf212ce0bd24758dc10e0610c89721cc",
+    "icc-gray.pdf": "862f7a68ad57a116e99cfdf4829e2fe6360d89707c328cd9427327ea258bfe68",
+    "icc-indexed.pdf": "f368d3afc4fd3c5d21496a5defe29336b5ea9900c992b930963053257457f29e",
+    "icc-indirect-filter.pdf": "39fadd082650ecebaf334e1b859d7045a3578d170273fa3be5786576716f8767",
+    "icc-jpeg.pdf": "58e7d40d5b8df050a14b01233cffd4ef285ee7a85fcaa4c57a6034ed939a75c0",
+    "icc-path-cmyk.pdf": "481fd92b004a123a0a08e2b0d570ee91f94fe3037cbaf70695329cb67dacc3ca",
+    "icc-path-rgb.pdf": "9b556f2c7a4a09dc207b4e3ea87e71562d189df9fca3cdcde239b2e4a2732462",
+    "icc-rgb.pdf": "eeace343d50b71cdef52ea2bba9cebbe39a5759fc2a1d1841c1ad3c238894a5c",
+    "jpx-cmyk-alpha-boxed.pdf": "610748e3953c90bd928f3a7bfc05a9e4435993ebb3e1c32a29b7b7156620af85",
+    "jpx-cmyk-alpha.pdf": "ec3ea1ad2c4fad56a776be9e02e261ea31ce220975e9b74b1767d5bf216138b1",
+    "jpx-cmyk-premult-boxed.pdf": "1cfc6dfd16c5a366644dbd331370e0fe67d9ea40b0e7aa5603010afd4417bc49",
+    "jpx-cmyk-premult.pdf": "740e5c7e75fbd4020c110d4ce9bb37b3cfe0350c9c213f3dbb0a79365ada1a80",
+    "jpx-indexed-alpha-boxed.pdf": "19a608710c0e6eb87f24907712f0ad71a311d781a436f3236c7e19c4e0096ed4",
+    "jpx-indexed-alpha.pdf": "8ee7ab2834b47a28325c57cf8e52640824b03a09620799b62cedfcf67129b89e",
+    "jpx-indexed-icc-premult-boxed.pdf": "29cdf42396dd3c9caaba9a4df7c0dd67d64e6255b1f581925fe5cd9c921ca3b5",
+    "jpx-indexed-icc-premult.pdf": "9c82109acc9fbdf22f72fa9e6d6f6710269c9adba609aaad01b4cae0bd341a2f",
+    "jpx-indexed-palette-premult-boxed.pdf": "32d4ba9aca652257937c78ae9a72365038a4e30f099fcaa00b2fcb4f65b82256",
+    "jpx-indexed-palette-premult.pdf": "b4de71866ba269ba5325d428046e9ce978bea670820ab39811942ae79455e119",
+    "jpx-indexed-premult-boxed.pdf": "1ff7d122017908dbd8bebb9ae6b52ca156b9c2e1b8af96c4665b9ae9c238dba8",
+    "jpx-indexed-premult.pdf": "f4101624cbc3cae13bd9065f3eb44569a93df0cde41efbaae1d809a3c02b94b7",
+    "recovery-fake-header.pdf": "7c80198b02945940ac36bdada987811e266e58be3f45dc1f11ff25d5a6163a73",
+    "recovery-incremental.pdf": "3b916cd1b8da0837f6fa60d71fffcd87d5d0e0bcdd2aa3fd5d73a1c9ff9e3d32",
+    "recovery-missing-xref.pdf": "0c253d2349175ddd788cf92dd82b098c51cb1df697ac45673f7a44c292763923",
+    "reference/icc-cmyk-gs.pdf": "22c266a42f7177f99faf9404da7d7deaacbef83ea43ab7254fd80ab5573382d8",
+    "reference/icc-cmyk-jpeg-gs.pdf": "3471470fb6d1a722d24de1bcb107d024b2763785d86dad0f62b8747f363e4853",
+    "reference/icc-gray-gs.pdf": "21135eec48956dd084c90433d93d094a77648eb0dc9fe59e7fb97fb16c5216f2",
+    "reference/icc-indexed-gs.pdf": "581429de5fcde31f3077d298a6d7cd27bcef2a8aa856f235c9b455dd07c6a031",
+    "reference/icc-indirect-filter-gs.pdf": "384ddf23bee00df071fee2101c50fd052fc0cde7d594d61c4264b3c136366871",
+    "reference/icc-jpeg-gs.pdf": "6d3de415553354e39e8642d290861c54ff59e877e578d68c484ed3878f7a09ab",
+    "reference/icc-lcms-expected.png": "3641990f31b9bf0350c5025a3db2b6d8c3497c29193cb5266759dbff68d8a429",
+    "reference/icc-path-cmyk-gs.pdf": "836da8761dd77a36cc2eb8b82bcfda9087ba8c34f14de560ded31cddc4703efb",
+    "reference/icc-path-rgb-gs.pdf": "29026babe39540e7754d2dbfb082d7c05cddf78aa8b797f12e7a8720ba0f43c7",
+    "reference/icc-rgb-gs.pdf": "3850f7dd7f64ba63f0a49d046d42cd7c6b76af07617c1e4d5fa6b8943530d41c",
+    "reference/jpx-cmyk-alpha-independent.pdf": "60380c6b53bfdadc9d0595176dd79404706b97e83c8b0005bc5c814c3d370661",
+    "reference/jpx-cmyk-alpha-source.pdf": "b81dfab365375f54ccdee042696e35a957c6b031d1f6958072115b8db4eb194d",
+    "reference/jpx-cmyk-premult-independent.pdf": "497c2e88439c357cd4082f1ff4861f225e788aeb1a10e937dd38b8f5562f0821",
+    "reference/jpx-cmyk-premult-source.pdf": "faaf768828e1fe554d46f59550a868e55b1bc0dfc7ad656b974c991e5397b646",
+    "reference/jpx-indexed-alpha-independent.pdf": "b8f04898d2d62ed4fc7befa8dc10a583c27dd00c828585e923b476727757c2fa",
+    "reference/jpx-indexed-alpha-source.pdf": "ac8cc26bbdd1d0313778b57cb914577d3c46977b50875eb0f1743e5f4e7055af",
+    "reference/jpx-indexed-icc-premult-independent.pdf": "0ff1797e65db25ac483ed3132f5a81260dc00837b6ccd17daeb0864d992f8a89",
+    "reference/jpx-indexed-icc-premult-source.pdf": "d5de0d7c0602b22b859d920f31e9ac7ca612e060a6bc917fa6c7afbe36e1c152",
+    "reference/jpx-indexed-palette-premult-independent.pdf": "b356ea0e5cfabe56c66f93addec44c0ff619fe9f4539ab9710144b97bb6c135c",
+    "reference/jpx-indexed-palette-premult-source.pdf": "72e99eb26cef8af2fa7c70d3bf8a1611cae0292524e7fb7ebce6d5c3f0770cc6",
+    "reference/jpx-indexed-premult-independent.pdf": "f6766c5769203c2d84a295a20a7000e89a6c9410eac92c69986d9ab0ff095961",
+    "reference/jpx-indexed-premult-source.pdf": "aaa0ccfa3f037ca689a57793cf0c2304e39ccd069518375643100e78a3dee121",
+    "reference/recovery-fake-header-original.pdf": "db57c1e2851d2b8b4180ac0f51e14c93a9ede72fb907558b0cab89853a7651c1",
+    "reference/recovery-incremental-original.pdf": "db16760172807d2b01353300da15f420ccb7467e3fbcd37d1e794c90fb399cd6",
+    "reference/recovery-original.pdf": "1fa2bbdb1928900907f11d41224073363e3b37a7c21b73b59227c1bf7a20bfe6"
+  },
+  "generator": "tools/fixture_generators/pdf_features_issue8174.py",
+  "profiles": {
+    "rgb": {
+      "path": "vendor/rhwp-hayro-jpeg2000/assets/ProPhoto-v2-micro.icc",
+      "sha256": "00b0ac58f99189b071bfca63b5434fd9f48ad08c92b17e6ce525e54b9d1a8319"
+    },
+    "cmyk": {
+      "path": "vendor/rhwp-hayro-jpeg2000/assets/CGATS001Compat-v2-micro.icc",
+      "sha256": "73e1ba37d2bad5bab2a964f40a9eed96209666efc067c3322626214bbef234a0"
+    },
+    "gray": {
+      "path": "vendor/svg2pdf/src/icc/sGrey-v4.icc",
+      "sha256": "00c0f94e09127520a17dc0e1d9264b5702081d96dbdb1549ee88e3631ce42a9d"
+    }
+  },
+  "referenceCorrection": "Indexed premultiplied opacity is inverted in palette colours before ICC conversion, ISO 32000-1 11.6.5.3; original 20 source PDFs unchanged",
+  "previousIncorrectReferenceCommit": "98e8431695f21f1bb24c561f5b95a3d3d2640a22"
+}

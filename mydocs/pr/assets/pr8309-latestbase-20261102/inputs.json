@@ -1,0 +1,195 @@
+[
+  {
+    "path": "tests/fixtures/pr8309-latest/textbox-reference-bottom.hwpx",
+    "bytes": 8063,
+    "sha256": "5e21c5c7c4c137d25c068426b1d9c47c4b09ed84253ad3660cc1729a7287545d"
+  },
+  {
+    "path": "tests/fixtures/pr8309-latest/textbox-reference-center.hwpx",
+    "bytes": 8065,
+    "sha256": "d7e851d41bcb81073c30eb5bfce57fcd25fffefc477f3e294c00c4f0fa12d1f5"
+  },
+  {
+    "path": "tests/fixtures/pr8309-latest/textbox-reference-top.hwpx",
+    "bytes": 8060,
+    "sha256": "1aa9243888fec3cfcffb9212e601957487f1fdcb648310be819b8ed932b87d8d"
+  },
+  {
+    "path": "tests/fixtures/pr8309-latest/textbox-saved-bottom.hwp",
+    "bytes": 13312,
+    "sha256": "ba89b94fbefd06841b666d3b94e95a59110397f4ccfe879fb4a34644f056c3af"
+  },
+  {
+    "path": "tests/fixtures/pr8309-latest/textbox-saved-bottom.hwpx",
+    "bytes": 8063,
+    "sha256": "5e21c5c7c4c137d25c068426b1d9c47c4b09ed84253ad3660cc1729a7287545d"
+  },
+  {
+    "path": "tests/fixtures/pr8309-latest/textbox-saved-center.hwp",
+    "bytes": 13312,
+    "sha256": "d2763e39c4da953c1429ff9af314397723b7ed35ce305ccb14fafc20dac1f457"
+  },
+  {
+    "path": "tests/fixtures/pr8309-latest/textbox-saved-center.hwpx",
+    "bytes": 8065,
+    "sha256": "d7e851d41bcb81073c30eb5bfce57fcd25fffefc477f3e294c00c4f0fa12d1f5"
+  },
+  {
+    "path": "tests/fixtures/pr8309-latest/textbox-saved-default.hwp",
+    "bytes": 13312,
+    "sha256": "6035f5e84b8f189c90c91767a011405035e9ff72100d84e1016a51d4bfa4b957"
+  },
+  {
+    "path": "tests/fixtures/pr8309-latest/textbox-saved-default.hwpx",
+    "bytes": 8060,
+    "sha256": "1aa9243888fec3cfcffb9212e601957487f1fdcb648310be819b8ed932b87d8d"
+  },
+  {
+    "path": "tests/fixtures/pr8309-latest/textbox-saved-top.hwp",
+    "bytes": 13312,
+    "sha256": "6035f5e84b8f189c90c91767a011405035e9ff72100d84e1016a51d4bfa4b957"
+  },
+  {
+    "path": "tests/fixtures/pr8309-latest/textbox-saved-top.hwpx",
+    "bytes": 8060,
+    "sha256": "1aa9243888fec3cfcffb9212e601957487f1fdcb648310be819b8ed932b87d8d"
+  },
+  {
+    "path": "pdf/pr8309-latest/textbox-reference-bottom-2024.pdf",
+    "bytes": 10762,
+    "sha256": "e11fdf106eed6da340c15ffb31a991c71831cb67c497f6143b9672afb4872d2e"
+  },
+  {
+    "path": "pdf/pr8309-latest/textbox-reference-center-2024.pdf",
+    "bytes": 10761,
+    "sha256": "3da851e606ebd990e9e6bd0a2975e8d362b74c62f81db9f06bc860f3a4303c92"
+  },
+  {
+    "path": "pdf/pr8309-latest/textbox-reference-top-2024.pdf",
+    "bytes": 10759,
+    "sha256": "752db14817204b90b7caca688e6e29da13676130b27cdec373fce6248c3fcf33"
+  },
+  {
+    "path": "pdf/pr8309-latest/textbox-saved-bottom-2024.pdf",
+    "bytes": 10761,
+    "sha256": "11f741a95f301df1a561c26954fbb0016e4f07a5cdf83c2af6f211c2044a4b13"
+  },
+  {
+    "path": "pdf/pr8309-latest/textbox-saved-center-2024.pdf",
+    "bytes": 10761,
+    "sha256": "82f2ca78e300f294f38dd62777bf96fdaaae0447be96b9977a973fe86944f051"
+  },
+  {
+    "path": "pdf/pr8309-latest/textbox-saved-default-2024.pdf",
+    "bytes": 10761,
+    "sha256": "05d9183669f0acf5369f4ccd78c12a3e76ec3f5bae3c9f6558c7fbbb061ce02a"
+  },
+  {
+    "path": "samples/issue8122/textbox_valign_no_lineseg.hwp",
+    "bytes": 9728,
+    "sha256": "de374075cfc2c1ef945d3795bba194b90dc42d759caf8b478c603d4777cfb8ff",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf",
+    "bytes": 47497,
+    "sha256": "0cfca5740c6fc9aaadf9db814e6e0503850d1f56013eb4bdda895bbc80dd0023",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "samples/issue8399/A.hwp",
+    "bytes": 94720,
+    "sha256": "98c5ef50de81d704fcfa03b81c99ef89badfafb839a1ea78334a46b76f9e6987",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "pdf/issue8399/A-hwp-2024.pdf",
+    "bytes": 26608,
+    "sha256": "45777e3678de4f0558867697c5bf2f71535c4b71bf9f70955be71367421c2e59",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "samples/issue8399/A.hwpx",
+    "bytes": 89128,
+    "sha256": "fddd90eed7c4f8818e723bb526c50cad8269c7b1a02eddd64d5a0cda2a5773c7",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "pdf/issue8399/A-hwpx-2024.pdf",
+    "bytes": 26608,
+    "sha256": "0450bebb11625b1acbcc1ce06ff36a12474a76b3a52b6ac143b10b000226633a",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "samples/issue8399/D.hwp",
+    "bytes": 95232,
+    "sha256": "08faf214ad31724f027fc222616e8fa58e03ea77cc04771c801a510f32661b91",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "pdf/issue8399/D-hwp-2024.pdf",
+    "bytes": 33832,
+    "sha256": "c058a040a80938dc448ea6e9181235ae6cb55c77320d45d459932d82f68ed46f",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "samples/issue8399/D.hwpx",
+    "bytes": 89428,
+    "sha256": "fb3a7c5425cb7a42438988a267a3416e95bd8884bbb2cd7f21c9acbc7160492c",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "pdf/issue8399/D-hwpx-2024.pdf",
+    "bytes": 33832,
+    "sha256": "8f554dea4519655eed59fbff7259c763e367795fef4fe400f9ee209aac098b9c",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "samples/issue8399/E.hwp",
+    "bytes": 94720,
+    "sha256": "7427d910a308fb1c0a2daf8cdf31fce429a45c194899d7d5a79b264743277057",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "pdf/issue8399/E-hwp-2024.pdf",
+    "bytes": 26608,
+    "sha256": "5f94ff87ec244609bae5efef5e741f8d7207648771e8b4c8a6c4c9336f5af136",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "samples/issue8399/E.hwpx",
+    "bytes": 89131,
+    "sha256": "a4141e83a0dc8ecbd94bec888893be702a87b7fd3b6fefaad451720763eece1c",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "pdf/issue8399/E-hwpx-2024.pdf",
+    "bytes": 26608,
+    "sha256": "bf580bc15a7b8f9c50763b4eecb3ac15eeb9ed0f80eb8defbb4772c6249ed643",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "samples/issue8399/P.hwp",
+    "bytes": 95232,
+    "sha256": "b305d6d267ef5e23a42321e9ddbfd6388cfd576a9381cb49ae9fc6500f928907",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "pdf/issue8399/P-hwp-2024.pdf",
+    "bytes": 50323,
+    "sha256": "bf586386e33796adee12082a3173d995e3614cf745973ae5a715a4e12506a889",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "samples/issue8399/P.hwpx",
+    "bytes": 89019,
+    "sha256": "72016c8b292cd8325e910e165e6a5a0a7b82a05ca6f1f27ad20316a98018464f",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  },
+  {
+    "path": "pdf/issue8399/P-hwpx-2024.pdf",
+    "bytes": 50323,
+    "sha256": "5d53dc4942b5639f16b306f5d29be6b1a80cecafd3bfae31391ee194215cffb1",
+    "origin": "pre-existing public input at 0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+  }
+]

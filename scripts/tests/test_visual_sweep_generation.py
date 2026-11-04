@@ -93,6 +93,38 @@ class GenerationTests(unittest.TestCase):
                     base, target, {"layout_generation": "2024"}, 96, 32, resume=True,
                 )
 
+    def test_resume_rejects_changed_font_registration_and_observation(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / "scripts").mkdir()
+            package = root / "pkg"
+            package.mkdir()
+            for name in ("rhwp.js", "rhwp_bg.wasm"):
+                (package / name).write_bytes(b"package")
+            (root / "scripts/export-wasm-png-for-sweep.mjs").write_text("exporter")
+            helper = root / "scripts/visual-sweep-font-registration.mjs"
+            helper.write_text("original registration")
+            receipt = root / "observation.json"
+            receipt.write_text('{"source":"original program"}')
+
+            def provenance():
+                return {"wasm": SWEEP.wasm_package_provenance(root, package, "png"),
+                        "observed_font_receipt": {"path": str(receipt),
+                                                  "sha256": SWEEP.sha256_file(receipt)}}
+
+            base = root / "output"
+            base.mkdir()
+            target = SWEEP.Target("case", Path("source.hwp"), Path("oracle.pdf"))
+            SWEEP.run_manifest_for_target(base, target, provenance(), 96, 32, resume=False)
+            SWEEP.run_manifest_for_target(base, target, provenance(), 96, 32, resume=True)
+            helper.write_text("changed registration")
+            with self.assertRaisesRegex(SystemExit, "provenance"):
+                SWEEP.run_manifest_for_target(base, target, provenance(), 96, 32, resume=True)
+            helper.write_text("original registration")
+            receipt.write_text('{"source":"different program"}')
+            with self.assertRaisesRegex(SystemExit, "provenance"):
+                SWEEP.run_manifest_for_target(base, target, provenance(), 96, 32, resume=True)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,3 +1,7 @@
+//! 관계형·고정형: 합성 렌더 트리의 글자 겹침 판정 계약.
+//! 주석 갱신: 2026-10-30T10:05:44+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
+//! 합성 트리의 교차 판정과 CLI 봉투 계약으로 문서별 raw 시각 측정은 해당하지 않는다.
+//! 근거: mydocs/manual/cli_commands.md, tests/fixtures/layout_anomaly_m02f/README.md.
 //! [#5372] `layout-anomaly` text-overlap 판정·봉투 계약.
 //!
 //! 합성 렌더 트리로 글자끼리의 bbox 교차를 고정하고, 자기서술·`--json` 필드·
@@ -192,8 +196,10 @@ fn overlapping_text_runs_inside_table_are_text_overlap_not_generic_overlap() {
             border_fill_id: 0,
             text_direction: 0,
             clip: false,
+            closed_reflow_frame: false,
             page_fragment: false,
             model_cell_index: None,
+            model_para_range: None,
         }),
         BoundingBox::new(10.0, 10.0, 80.0, 30.0),
     );
@@ -267,6 +273,8 @@ fn intentional_char_overlap_runs_are_not_flagged() {
         tr.char_overlap = Some(rhwp::renderer::composer::CharOverlapInfo {
             border_type: 1,
             inner_char_size: 100,
+            composition: None,
+            empty_ink: false,
         });
     }
     let other = text_run_at("나", 12.0, 10.0, 20.0, 12.0);

@@ -1,15 +1,26 @@
 //! Finite cellular chains over F2 for already reconstructed rectangular cell faces.
-use serde_json::{json, Value};
+use super::{
+    allocation::{message, Allocation},
+    value_macro::request_json,
+};
+use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 
-fn toggle<T: Ord>(set: &mut BTreeSet<T>, item: T) {
+fn toggle<T: Ord>(
+    allocation: Allocation<'_>,
+    set: &mut BTreeSet<T>,
+    item: T,
+) -> Result<(), String> {
     if !set.remove(&item) {
+        allocation.tree_entry::<T, ()>().map_err(message)?;
         set.insert(item);
     }
+    Ok(())
 }
 
 /// Cell addresses are (row, column, rowspan, colspan). Axes are split at every grid slot.
 pub fn evidence(
+    allocation: Allocation<'_>,
     rows: usize,
     cols: usize,
     cells: &[(usize, usize, usize, usize)],
@@ -22,7 +33,7 @@ pub fn evidence(
         return Err("cell complex budget exceeded".into());
     }
     let mut edge_ids = BTreeMap::new();
-    let mut boundaries = Vec::new();
+    let mut boundaries = allocation.vec(cells.len()).map_err(message)?;
     let mut incidences = 0usize;
     for &(r, c, rs, cs) in cells {
         if rs == 0 || cs == 0 || r >= rows || c >= cols || rs > rows - r || cs > cols - c {
@@ -33,28 +44,46 @@ pub fn evidence(
             return Err("cell complex incidence budget exceeded".into());
         }
         let mut boundary = BTreeSet::new();
-        let mut add = |a, b| {
+        let mut add = |a, b| -> Result<(), String> {
             let id = edge_ids.len();
             let key = if a < b { (a, b) } else { (b, a) };
-            toggle(&mut boundary, *edge_ids.entry(key).or_insert(id));
+            let entry = match edge_ids.entry(key) {
+                std::collections::btree_map::Entry::Occupied(entry) => *entry.get(),
+                std::collections::btree_map::Entry::Vacant(entry) => {
+                    allocation
+                        .tree_entry::<(usize, usize), usize>()
+                        .map_err(message)?;
+                    *entry.insert(id)
+                }
+            };
+            toggle(allocation, &mut boundary, entry)
         };
         let vertex = |y, x| y * (cols + 1) + x;
         for x in c..c + cs {
-            add(vertex(r, x), vertex(r, x + 1));
-            add(vertex(r + rs, x), vertex(r + rs, x + 1));
+            add(vertex(r, x), vertex(r, x + 1))?;
+            add(vertex(r + rs, x), vertex(r + rs, x + 1))?;
         }
         for y in r..r + rs {
-            add(vertex(y, c), vertex(y + 1, c));
-            add(vertex(y, c + cs), vertex(y + 1, c + cs));
+            add(vertex(y, c), vertex(y + 1, c))?;
+            add(vertex(y, c + cs), vertex(y + 1, c + cs))?;
         }
         boundaries.push(boundary);
     }
-    let mut edges = vec![(0, 0); edge_ids.len()];
+    let mut edges = allocation.vec(edge_ids.len()).map_err(message)?;
+    edges.resize(edge_ids.len(), (0, 0));
     for (edge, id) in edge_ids {
         edges[id] = edge;
     }
-    let vertices: BTreeSet<_> = edges.iter().flat_map(|(a, b)| [*a, *b]).collect();
-    let mut sets: Vec<_> = (0..(rows + 1) * (cols + 1)).collect();
+    let mut vertices = BTreeSet::new();
+    for vertex in edges.iter().flat_map(|(a, b)| [*a, *b]) {
+        if !vertices.contains(&vertex) {
+            allocation.tree_entry::<usize, ()>().map_err(message)?;
+        }
+        vertices.insert(vertex);
+    }
+    let mut sets = allocation
+        .collect(0..(rows + 1) * (cols + 1))
+        .map_err(message)?;
     fn root(sets: &mut [usize], mut i: usize) -> usize {
         while sets[i] != i {
             sets[i] = sets[sets[i]];
@@ -67,19 +96,23 @@ pub fn evidence(
         let b = root(&mut sets, b);
         sets[b] = a;
     }
-    let components = vertices
-        .iter()
-        .map(|i| root(&mut sets, *i))
-        .collect::<BTreeSet<_>>()
-        .len();
+    let mut roots = BTreeSet::new();
+    for i in &vertices {
+        let root = root(&mut sets, *i);
+        if !roots.contains(&root) {
+            allocation.tree_entry::<usize, ()>().map_err(message)?;
+        }
+        roots.insert(root);
+    }
+    let components = roots.len();
     let rank_one = vertices.len() - components;
     let mut pivots = BTreeMap::<usize, BTreeSet<usize>>::new();
     let mut work = 0usize;
     for mut boundary in boundaries {
         let mut vertex_boundary = BTreeSet::new();
         for &i in &boundary {
-            toggle(&mut vertex_boundary, edges[i].0);
-            toggle(&mut vertex_boundary, edges[i].1);
+            toggle(allocation, &mut vertex_boundary, edges[i].0)?;
+            toggle(allocation, &mut vertex_boundary, edges[i].1)?;
         }
         if !vertex_boundary.is_empty() {
             return Err("boundary of boundary is nonzero".into());
@@ -91,9 +124,12 @@ pub fn evidence(
                     return Err("cell complex reduction budget exceeded".into());
                 }
                 for &i in previous {
-                    toggle(&mut boundary, i);
+                    toggle(allocation, &mut boundary, i)?;
                 }
             } else {
+                allocation
+                    .tree_entry::<usize, BTreeSet<usize>>()
+                    .map_err(message)?;
                 pivots.insert(pivot, boundary);
                 break;
             }
@@ -106,9 +142,9 @@ pub fn evidence(
         return Err("cell complex is not an acyclic connected table disk".into());
     }
     Ok(
-        json!({"field":"F2","vertices":vertices.len(),"edges":edges.len(),"faces":cells.len(),
+        request_json!(allocation,{"field":"F2","vertices":vertices.len(),"edges":edges.len(),"faces":cells.len(),
         "rankBoundary1":rank_one,"rankBoundary2":rank_two,"boundarySquaredZero":true,
         "skeletonCycleRank":cycles,"betti":betti,"eulerCharacteristic":1,
-        "scope":"filled cell complex; topology alone does not prove table semantics"}),
+        "scope":"filled cell complex; topology alone does not prove table semantics"})?,
     )
 }

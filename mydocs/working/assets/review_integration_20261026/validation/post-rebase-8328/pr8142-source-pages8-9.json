@@ -1,0 +1,71 @@
+{
+  "date": "2026-10-29",
+  "source_pr": 8142,
+  "contributor_image_commit": "e1abc4c7f149268ea63995eeedeb02cfcc92e5cd",
+  "claim": "병합 셀 8쪽의 행과 9쪽 이어짐을 직접 판독",
+  "cases": {
+    "native": {
+      "pages": {
+        "8": {
+          "raw_percent_same_prior_pdf_raster": 97.84306,
+          "same_png_sha256": "5e4307a71a2e4716bfe5980100587c8995c9cb635102ef92318858f27102dd9c"
+        },
+        "9": {
+          "raw_percent_same_prior_pdf_raster": 100.0,
+          "same_png_sha256": "7a11d7980d8a71af29fe59f9acc09de0ca9d600cbe86f207ebc6a0458a64c39c"
+        }
+      },
+      "input": "samples/rowspan-band-fit/rowspan-band-fit.hwp",
+      "input_sha256": "649c0eaf95ea7e959953945e5603648b0894bdb09cecc512ede645dc71cff5d7",
+      "pdf": "pdf/rowspan-band-fit/rowspan-band-fit-2020.pdf",
+      "pdf_sha256": "3581e48fc76b65e292d3668a27fc5dbbdb905b37b40b11c58b5abd122dba00a9"
+    },
+    "wasm": {
+      "pages": {
+        "8": {
+          "raw_percent_same_prior_pdf_raster": 97.50188,
+          "same_png_sha256": "fc35f3ff8c198fdaa8e31d01f9c0b3b9886814b6de3179c1cbf464ac10f2c164"
+        },
+        "9": {
+          "raw_percent_same_prior_pdf_raster": 100.0,
+          "same_png_sha256": "7d83a60b8de8574a6c23ceb9e8fd552298a008f0f12d6f7b4b822a0b23394769"
+        }
+      },
+      "input": "samples/rowspan-band-fit/rowspan-band-fit.hwp",
+      "input_sha256": "649c0eaf95ea7e959953945e5603648b0894bdb09cecc512ede645dc71cff5d7",
+      "pdf": "pdf/rowspan-band-fit/rowspan-band-fit-2020.pdf",
+      "pdf_sha256": "3581e48fc76b65e292d3668a27fc5dbbdb905b37b40b11c58b5abd122dba00a9"
+    }
+  },
+  "contributor_images": {
+    "rowspan_band_fit_p009_base_review.png": {
+      "path": "mydocs/report/rowspan-band-fit/rowspan_band_fit_p009_base_review.png",
+      "sha256": "21c6d430b77378c03bbac197ebbf280119917d42502499f7677d7ec1f4ab74e7",
+      "git_blob": "655e30c41ac076159f3948b0e34e8583a12a18ff"
+    },
+    "rowspan_band_fit_p009_head_review.png": {
+      "path": "mydocs/report/rowspan-band-fit/rowspan_band_fit_p009_head_review.png",
+      "sha256": "2f80a3b5ddcd1148d9b79b884dadac5343e2b7f01a0f8bcb744ae159673e1f1c",
+      "git_blob": "c4b30524a413bb074d47f4e26db50e846588c5a8"
+    },
+    "rowspan_band_fit_p009_wasm_review.png": {
+      "path": "mydocs/report/rowspan-band-fit/rowspan_band_fit_p009_wasm_review.png",
+      "sha256": "20ff31af4ca1b4b9b1964e0099f526ad75225b41529a472dea3fed074644b9d3",
+      "git_blob": "9f567e6967b66a59544aeaf12c1a9c9ef8f616e3"
+    },
+    "rowspan_band_fit_p008_head_review.png": {
+      "path": "mydocs/report/rowspan-band-fit/rowspan_band_fit_p008_head_review.png",
+      "sha256": "6017d4bc97758f4cad0d39beef5e7061786f4b4141f75c84ed57fc6941ef36ba",
+      "git_blob": "b6d6443d9799ddc10f2e537bcbc4548cf4fd14c0"
+    },
+    "rowspan_band_fit_p008_head_overlay.png": {
+      "path": "mydocs/report/rowspan-band-fit/rowspan_band_fit_p008_head_overlay.png",
+      "sha256": "7815ae9060bccd0b6ff8965ed47b5f57434f74b47f6d1837cf1564547b0ea401",
+      "git_blob": "04f07ea3ed5944f8d88c056172d72b7ba8717cce"
+    }
+  },
+  "limitations": [
+    "기여자 이미지와 통합 후보 측정은 별도 실행이다.",
+    "후속 보정 전후 렌더 PNG가 같아 기존 PDF 래스터 기준 수치가 같다. 새 래스터의 직접 측정으로 대체하지 않는다."
+  ]
+}

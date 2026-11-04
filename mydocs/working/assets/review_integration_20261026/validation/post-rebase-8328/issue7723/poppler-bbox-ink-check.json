@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-29",
+  "page": 1,
+  "word": "물",
+  "method": "Poppler pdftotext -bbox-layout 및 동일 PDFium 96dpi 래스터의 선택 영역 RGB 최소 채널 232 미만 화소 행",
+  "pdftotext_version": "pdftotext version 24.02.0",
+  "inputs": {
+    "old": {
+      "pdf": "pdf/hwp3-sample16-hwp5-2010-hwp-2024.pdf",
+      "pdf_sha256": "ba4b10dee6e35e9c5ee71dd8c8004528ad3dd72b47ef5dd0cd859e0431aae381",
+      "page1_raster_sha256": "95a3f45819abbc33b4ca64d400c96f685a754dd34fcb583ca0afc25d78dcb50e",
+      "bbox_pt": {
+        "xMin": 159.03381,
+        "yMin": 185.193661,
+        "xMax": 173.066205,
+        "yMax": 200.617997
+      },
+      "roi_px": [
+        210,
+        205,
+        236,
+        274
+      ],
+      "occupied_y_px": [
+        248,
+        262
+      ],
+      "pdftotext_stderr_bytes": 0
+    },
+    "new": {
+      "pdf": "pdf/hwp3-sample16-hwp5-2010-issue7723-mcp-2024.pdf",
+      "pdf_sha256": "4b03e8f1325654b423f4e2975890309c44b70cf3a1b1083879097aff2ad09c6a",
+      "page1_raster_sha256": "86908c655e179d707d60eac4b67e66e15b2a3fabcaf5ec9153b95fb477dfb98b",
+      "bbox_pt": {
+        "xMin": 159.03381,
+        "yMin": 169.818412,
+        "xMax": 173.066205,
+        "yMax": 206.282562
+      },
+      "roi_px": [
+        210,
+        205,
+        236,
+        274
+      ],
+      "occupied_y_px": [
+        248,
+        262
+      ],
+      "pdftotext_stderr_bytes": 0
+    }
+  },
+  "finding": "같은 글자 추출 상단 yMin은 약 15.38pt 다르지만 선택한 글자 영역의 검은 화소 행은 두 래스터 모두 248~262px다. 추출 bbox 상단만을 실제 잉크 위치나 글줄 이동으로 해석하지 않는다.",
+  "limitations": [
+    "1쪽 한 단어와 제한된 x/y 영역의 관측이다. 두 글꼴 윤곽이 같거나 다른 쪽의 조판이 같다는 뜻은 아니다.",
+    "해당 PDF 내 글꼴의 텍스트 bbox 처리 차이와 실제 폰트 선택 원인을 이 실험만으로 확정하지 않는다.",
+    "새 기준의 렌더 일치율 개선이나 전체 100%를 주장하지 않는다."
+  ]
+}

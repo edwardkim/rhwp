@@ -1,0 +1,55 @@
+{
+  "status": "diagnostic_only_unresolved",
+  "input": "samples/issue8080/cell_nested_table_rows.hwp",
+  "page": 1,
+  "pdf_sha256": "e19cb10792a2c25558d95c22eaa75794bad52168a2370a2c9e9ffbeafb7d34d7",
+  "historical_raw": 98.57262,
+  "current_old_source_raw": 98.35047,
+  "current_corrected_raw": 98.35045,
+  "chrome_platform_font": "HCR Dotum / HCRDotum",
+  "platform_font_source": "system font selection confirmed via Chrome DevTools CSS.getPlatformFontsForNode",
+  "local_font_sha256": "1c0dce5aff03b79c58f5a628c088b0806e5b28cc080d8cecefb58f1a415413b6",
+  "hancom_font_sha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+  "pdf_cid_subset_font_sha256": "a2a532155b276188298e782c27d453a80ee9b8be4e1304f293a730f31eea3eec",
+  "pdf_subset_font_name": "VEVABA+HCRDotum",
+  "pdf_unicode_cid_outlines_checked": 256,
+  "local_font_matching_outlines": 256,
+  "hancom_font_matching_outlines": 256,
+  "pdf_hint_tables_equal": [
+    "fpgm",
+    "prep",
+    "cvt "
+  ],
+  "minimal_system_font_probe": {
+    "raw": 98.78168,
+    "platform_font": "Noto Sans KR ExtraLight",
+    "matching_pdf_outlines": 0,
+    "note": "진단용 글꼴 제한이며 공식 검사 기준으로 사용하지 않음"
+  },
+  "original_source_and_original_helpers_raw": 98.35047,
+  "old_chromium_versions": [
+    "155.0.8059.84",
+    "156.0.8078.47"
+  ],
+  "old_chromium_png_equal": true,
+  "note": "과거 소스의 codegen-units=16 최적화 빌드가 원본 WASM 해시와 일치함. 현재 브라우저 환경에서 과거 출력 차이의 원인은 계속 조사한다.",
+  "exact_historical_wasm_control": {
+    "source_commit": "3a2a081a418a38a2fb696136835d0f721b216972",
+    "codegen_units": 16,
+    "optimized_wasm_sha256": "c5b25dd8b22efce0d4ecb08291069e3ec625345c40957cbe457cc431f69737d8",
+    "recorded_historical_wasm_sha256": "c5b25dd8b22efce0d4ecb08291069e3ec625345c40957cbe457cc431f69737d8",
+    "nested_page_1_historical_raw": 98.57262,
+    "nested_page_1_current_environment_raw": 98.35047,
+    "conclusion": "과거 바이너리와 해시가 같아도 현재 환경에서 과거 TSV가 재현되지 않는다. 환경 원인은 계속 조사한다."
+  },
+  "newsletter_native_font_control": {
+    "page": 2,
+    "historical_raw": 93.09501,
+    "current_environment_raw": 92.81548,
+    "same_old_binary_current_png_sha256": "f93655cb394748a210a29744096e00da80a57069d49b35c1b9e179eaeb752a21",
+    "restored_fontconfig_raw": 93.09501,
+    "restored_and_historical_png_sha256": "16bf3c0da18a2d4d9d5b5ada63ca94912bc23b3c2af9429574e149417b2fc57d",
+    "fontconfig_condition": "과거 검사 후 추가된 세 시스템 글꼴을 이 검증 프로세스에서 제외하여 과거 선택 환경을 재현",
+    "note": "전역 시스템 설정을 변경하지 않음. 전체 범위를 같은 조건으로 재검증한다."
+  }
+}

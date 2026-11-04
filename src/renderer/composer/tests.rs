@@ -284,6 +284,7 @@ fn context_display_overlay_preserves_frame_style_partitions_around_the_field() {
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
             regenerated_font_metrics: false,
             literal_figure_space: false,
+            literal_soft_hyphen: false,
             ..stale.clone()
         },
         ComposedTextRun {
@@ -433,6 +434,64 @@ fn modest_field_fill_reflows_a_geometry_matching_stored_partition() {
         !materialized.stored_text_partition_is_dirty(),
         "a model-writing reflow publishes a current partition"
     );
+    {
+        let text = "alpha\tomega";
+        let extensions = vec![[7500, 0, 0x0203, 0, 0, 0, 9]];
+        let mut para = Paragraph {
+            text: text.into(),
+            char_count: text.chars().count() as u32 + 1,
+            char_offsets: (0..text.chars().count() as u32).collect(),
+            tab_extended: extensions.clone(),
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![LineSeg {
+                segment_width: 15000,
+                line_height: 1000,
+                text_height: 900,
+                baseline_distance: 800,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let composed = compose_paragraph(&para);
+        assert_eq!(
+            composed.tab_extended, extensions,
+            "저장 줄 수용 경로는 전진을 보존한다"
+        );
+        para.invalidate_layout_inputs();
+        assert!(para.stored_text_partition_is_dirty());
+        let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
+        let rebuilt = recompose_stored_lines_in_frame(
+            &composed,
+            &para,
+            ParagraphBox::content(0..15000),
+            200.0,
+            &styles,
+            96.0,
+            false,
+            StoredRowMissPolicy::Reflow,
+            &[],
+        )
+        .expect("편집으로 무효화한 저장 줄은 현재 프레임에서 재구성한다");
+        assert!(
+            rebuilt.tab_extended.is_empty(),
+            "옛 줄의 전진을 새 줄에서 다시 수용하지 않는다"
+        );
+        assert_eq!(
+            para.tab_extended, extensions,
+            "원본·직렬화 데이터는 보존한다"
+        );
+        let visible: String = rebuilt
+            .lines
+            .iter()
+            .flat_map(|line| &line.runs)
+            .map(|run| run.text.as_str())
+            .collect();
+        assert_eq!(visible, text, "재조판은 내용 순서·누락·중복을 보존한다");
+    }
 }
 
 /// 누름틀을 가진 본문 문단도 프레임이 소유한다 — 소유자 없는 문단을 만들면 안 된다.
@@ -813,19 +872,18 @@ fn test_char_overlap_multi_component_is_single_advance() {
 /// - 관세청 월간 수출입 현황 p1 — 테두리 없음(0) + `charSz=-4` → 축소 없음.
 ///   한컴 PDF content stream 에서 마커와 본문이 같은 `101 Tf`, 같은 baseline.
 #[test]
-fn char_overlap_size_ratio_applies_only_when_a_border_is_drawn() {
+fn char_overlap_signed_size_steps_follow_hancom_print() {
     // 테두리 없음 — charSz 부호와 무관하게 축소하지 않는다 (#4085 관세청 오라클)
     assert_eq!(char_overlap_size_ratio(0, -4), 1.0);
     assert_eq!(char_overlap_size_ratio(0, 90), 1.0);
-
-    // 테두리 있음 — PR #1101 실측 규칙 보존 (회귀 금지)
+    // 독립 Print의 크기 증거·전쪽 Native/fresh WASM·직접 확대 판독:
+    // mydocs/pr/assets/semanticist21_20261019/char_overlap_size_print/README.md
+    // 본문 10pt에 -3/0/10/20/50을 적용한 결과는 약 7/10/20/30/60pt다.
+    for (char_size, expected) in [(-3, 0.7), (0, 1.0), (10, 2.0), (20, 3.0), (50, 6.0)] {
+        assert!((char_overlap_size_ratio(1, char_size) - expected).abs() < 1e-9);
+    }
+    // 기존 PR #1101의 테두리 있는 음수 크기 계약도 유지한다.
     assert_eq!(char_overlap_size_ratio(4, -2), 0.8);
-    assert!((char_overlap_size_ratio(1, -3) - 0.7).abs() < 1e-9);
-
-    // 양수는 percent 그대로
-    assert_eq!(char_overlap_size_ratio(1, 50), 0.5);
-
-    // 0 은 기본 100%
     assert_eq!(char_overlap_size_ratio(3, 0), 1.0);
 }
 
@@ -1199,6 +1257,7 @@ fn test_split_runs_by_lang_korean_english() {
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
         literal_figure_space: false,
+        literal_soft_hyphen: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 3);
@@ -1226,6 +1285,7 @@ fn test_split_runs_by_lang_no_split() {
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
         literal_figure_space: false,
+        literal_soft_hyphen: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
@@ -1249,6 +1309,7 @@ fn test_split_runs_by_lang_space_follows_prev() {
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
         literal_figure_space: false,
+        literal_soft_hyphen: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 3);
@@ -1276,6 +1337,7 @@ fn test_split_runs_by_lang_empty() {
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
         literal_figure_space: false,
+        literal_soft_hyphen: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
@@ -1298,6 +1360,7 @@ fn test_split_runs_by_lang_english_only() {
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
         literal_figure_space: false,
+        literal_soft_hyphen: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
@@ -1405,6 +1468,7 @@ fn test_estimate_composed_line_width() {
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
             regenerated_font_metrics: false,
             literal_figure_space: false,
+            literal_soft_hyphen: false,
         }],
         line_height: 400,
         baseline_distance: 320,
@@ -1905,6 +1969,7 @@ fn test_555_effective_text_for_metrics_uses_display_text_when_present() {
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
         literal_figure_space: false,
+        literal_soft_hyphen: false,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -1933,6 +1998,7 @@ fn test_555_effective_text_for_metrics_multi_jamo_cluster() {
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
         literal_figure_space: false,
+        literal_soft_hyphen: false,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -1962,6 +2028,7 @@ fn test_555_effective_text_for_metrics_no_display_text_falls_back_to_text() {
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
         literal_figure_space: false,
+        literal_soft_hyphen: false,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -1992,6 +2059,7 @@ fn test_677_effective_text_for_metrics_preserves_f081c_filler() {
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
         literal_figure_space: false,
+        literal_soft_hyphen: false,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -2120,6 +2188,7 @@ fn test_kbu1_line_start_forbidden_retraction() {
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
             regenerated_font_metrics: false,
             literal_figure_space: false,
+            literal_soft_hyphen: false,
         }],
         line_height: 400,
         baseline_distance: 320,

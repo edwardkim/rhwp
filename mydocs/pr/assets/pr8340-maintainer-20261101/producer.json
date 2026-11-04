@@ -1,0 +1,73 @@
+{
+  "base": "1a7ae8f5bd17ebc22b281fd1915973e18e4e641f",
+  "contributor_head": "806e151776e6fae7a482bccad1aa4af8fa8dda23",
+  "compiled_merge_ref": "bc4da7875991725d7bdcef78e0e11e2ddf2929ad",
+  "compiled_tree": "a42db2adae181a31788805cd4e5852744a8a2744",
+  "declaration_correction": "f19b334e66f4d70632669daa91ca4b403682cd5e",
+  "runtime_source_identical_after_declaration_correction": true,
+  "wasm": {
+    "source": "bc4da7875991725d7bdcef78e0e11e2ddf2929ad",
+    "mergeTree": "a42db2adae181a31788805cd4e5852744a8a2744",
+    "optimized": true,
+    "buildLog": "candidate-wasm-build.log",
+    "artifacts": {
+      "rhwp.js": {
+        "sha256": "e686b20d70bfc9e51f9ebf7efb3d0c84ca7308d19db747b6ce6a2328af35b07a",
+        "bytes": 521832
+      },
+      "rhwp_bg.wasm": {
+        "sha256": "19e4729f73daa5a183d37b29eb09500cdd217c112383f0d643b786fce59bb3c1",
+        "bytes": 26018913
+      },
+      "rhwp.d.ts": {
+        "sha256": "93e5476f76ac72f116eb636456c6131a07297b4779b764a71c39183bd6352d0e",
+        "bytes": 208333
+      },
+      "rhwp_bg.wasm.d.ts": {
+        "sha256": "8108c6673fb8b4889f2738005c8dfcf757ac4e89b5ec946f9dd6c8b56467d1f9",
+        "bytes": 72800
+      }
+    },
+    "recordedAt": "2026-11-01T11:21:15.059246+00:00"
+  },
+  "native": {
+    "source": "bc4da7875991725d7bdcef78e0e11e2ddf2929ad",
+    "command": "cargo build --locked --profile release-test --features native-skia --lib --bin rhwp",
+    "sha256": "b3812b1f944f84f6c0c6436d95cb41d871df4f11c8112c895167ba27b8c5bbb6",
+    "profile": "release-test",
+    "features": [
+      "native-skia"
+    ]
+  },
+  "base_native": {
+    "source": "1a7ae8f5bd17ebc22b281fd1915973e18e4e641f",
+    "command": "cargo build --locked --profile release-test --features native-skia --lib --bin rhwp",
+    "sha256": "24ada524541fd768f465dd33b2b5c5df0909dda811c1178a6ff1a48735a9991a",
+    "profile": "release-test",
+    "features": [
+      "native-skia"
+    ]
+  },
+  "font": {
+    "family": "HCRBatang / 함초롬바탕",
+    "version": "1.980 Build 20140819",
+    "sha256": "d85550717552101699122adc5b948e8129881f39ffcf802cafe62aac3b1ced40",
+    "source": "https://raw.githubusercontent.com/dsolver-el/hwpx-template-engine/d3018c859da225ea8b0f71408ce30ac48de862f6/src/main/resources/fonts/hcr/HANBatang.ttf",
+    "font_program_included_in_commit": false
+  },
+  "environment": {
+    "os": "Linux x86_64 (WSL2)",
+    "node": "v24.15.0",
+    "rust": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+    "wasm_pack": "wasm-pack 0.15.0",
+    "wasm_opt": "wasm-opt version 117 (version_117)",
+    "chrome": "155.0.8059.79",
+    "compat": "2024",
+    "dpi": 96,
+    "profile": "print"
+  },
+  "recorded_at": "2026-11-01T12:08:48.093640+00:00",
+  "source_branch_declaration_correction": "3fa96a6e8da8558d8a7a9cdaa32adaf4644e202d",
+  "source_branch_merge_verification": "submission-candidate.json",
+  "declaration_correction_note": "Original local integration generated bindings; source-branch minimal correction adds the same nine signatures without importing devel history. Runtime/test blobs of its clean latest-base merge equal the tested integration candidate."
+}

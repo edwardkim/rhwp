@@ -6,7 +6,7 @@
 use super::{EqLayout, EqNode, LayoutBox, LayoutKind, SpaceKind};
 
 fn items(row: &EqNode) -> &[EqNode] {
-    match row {
+    match row.ungrouped() {
         EqNode::Row(items) => items,
         _ => std::slice::from_ref(row),
     }

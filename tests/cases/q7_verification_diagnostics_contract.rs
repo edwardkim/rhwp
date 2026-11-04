@@ -1,3 +1,7 @@
+//! 관계형·고정형: 필드 검사·앵커 및 caret 진단 CLI의 출력·오류 계약.
+//! 주석 갱신: 2026-11-01T06:20:08+09:00; 직전 파일 커밋: 2026-10-08T16:06:29+09:00 (`defe8d69faccfca9691e197d91b4dc4a61151904`).
+//! 입력·기준: `samples/field-01.hwp`, `samples/hwp3-sample.hwp`와 진단 CLI.
+//! 좌표 필드의 존재와 순서를 검사하며 화면 시각 일치율은 측정하지 않는다.
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};

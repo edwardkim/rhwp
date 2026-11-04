@@ -1,0 +1,128 @@
+{
+  "version": "1",
+  "default_font": "Arial",
+  "questions": [
+    {
+      "number": 1,
+      "stem": "Question 1.",
+      "passage_ref": "shared",
+      "stem_blocks": [
+        {
+          "type": "text",
+          "text": "Question 1."
+        },
+        {
+          "type": "boxed",
+          "title": "Box",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "Inside "
+                },
+                {
+                  "type": "image",
+                  "ref": "img/diagram.png"
+                },
+                {
+                  "type": "text",
+                  "text": " box."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "image",
+          "ref": "img/diagram.png",
+          "placement": "inline"
+        }
+      ],
+      "choices": [
+        {
+          "label": "A.",
+          "text": "Answer."
+        }
+      ],
+      "media": [
+        {
+          "id": "img/diagram.png",
+          "natural_w": 640,
+          "natural_h": 160,
+          "target_w_mm": 20
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "stem": "Question 2.",
+      "passage_ref": "shared",
+      "stem_blocks": [
+        {
+          "type": "text",
+          "text": "Question 2."
+        },
+        {
+          "type": "boxed",
+          "title": "Box",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "Inside "
+                },
+                {
+                  "type": "image",
+                  "ref": "img/diagram.png"
+                },
+                {
+                  "type": "text",
+                  "text": " box."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "image",
+          "ref": "img/diagram.png",
+          "placement": "inline"
+        }
+      ],
+      "choices": [
+        {
+          "label": "A.",
+          "text": "Answer."
+        }
+      ],
+      "media": [
+        {
+          "id": "img/diagram.png",
+          "natural_w": 640,
+          "natural_h": 160,
+          "target_w_mm": 20
+        }
+      ]
+    }
+  ],
+  "passages": [
+    {
+      "id": "shared",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Shared passage."
+        },
+        {
+          "type": "image",
+          "ref": "img/diagram.png",
+          "placement": "between"
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,5 @@
-# Issue #7158 전체 그림 시각 검증 입력
+# Issue #7158 원본의 시각 회귀 이관
 
-- `156492236-regulatory-sandbox-full.hwpx`: 중소벤처기업부의 규제샌드박스 시행 3주년 보도참고자료 원본. [이슈 #7158](https://github.com/edwardkim/rhwp/issues/7158)과 [기존 자료 출처](../../../samples/issue4090/README.md)를 따른다.
-- 기존 `samples/issue4090/156492236_규제샌드박스_min.hwpx`는 BinData/Preview를 스텁으로 바꾼 회귀 입력이다. 원본의 Contents XML과 바이트가 같지만 그림의 시각 검증을 대체하지 않는다.
-- 이 파일은 원본 바이트를 보존하며, 기존 Git 추적 HWP/HWPX에 같은 SHA-256이 없는 것을 확인한 뒤 추가했다. 구조 회귀는 기존 최소본을 재사용하고 전체 사진 비교에는 이 입력을 사용한다.
-- 기준은 기존 [한컴 PDF](../../../pdf/156492236-regulatory-sandbox-full-2020.pdf)다. 동일 PDF를 다시 복사하거나 변환하지 않았다.
-- 원본 이름, SHA-256, byte 수는 [manifest](MANIFEST.json)에 기록한다.
+그림을 보존한 원본은 [#8236 재현 자산](../../../mydocs/pr/assets/issue_8236/regulatory_sandbox/README.md)으로 옮겼다. 바이트·SHA-256은 유지한다. 고정 devel과 후보의 전 17쪽 Native/fresh WASM 최저값이 각각 75% 전후여서 정상 출력 회귀로 등록하지 않는다.
+
+기존 최소본은 parser·serializer가 공유하므로 `samples/issue4090/156492236_규제샌드박스_min.hwpx`에 보존한다. 원본과 Contents XML은 같지만 BinData/Preview 스텁은 원본 그림의 시각 증거를 대신하지 않는다. 렌더링 축의 자동 수집은 명시적으로 제외했다. [manifest](MANIFEST.json)와 이관 자산의 복원 원장을 따른다.

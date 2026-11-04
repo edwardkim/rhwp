@@ -67,13 +67,13 @@ runTest('AI 설정과 키 보관', async ({ page }) => {
       request.respond({ status: 204, headers: cors });
       return;
     }
-    const ok = headers['x-api-key'] === GOOD_KEY;
+    const ok = headers.authorization === `Bearer ${GOOD_KEY}`;
     request.respond({
       status: ok ? 200 : 401,
       headers: { ...cors, 'content-type': 'application/json' },
       body: JSON.stringify(ok
         ? { type: 'model', id: 'claude-opus-5-5', display_name: 'Claude Opus 5.5', created_at: '2026-01-01T00:00:00Z' }
-        : { type: 'error', error: { type: 'authentication_error', message: 'invalid x-api-key' } }),
+        : { type: 'error', error: { type: 'authentication_error', message: 'invalid credentials' } }),
     });
   });
 
@@ -110,6 +110,10 @@ runTest('AI 설정과 키 보관', async ({ page }) => {
     `TC3: 모델 조회만 호출 (${getCalls.map((c) => c.url).join(', ')})`);
   assert(getCalls.every((c) => c.headers['anthropic-dangerous-direct-browser-access'] === 'true'),
     'TC3: 브라우저 직접 접근 헤더');
+  assert(getCalls[0].headers.authorization === `Bearer ${BAD_KEY}`
+    && getCalls[1].headers.authorization === `Bearer ${GOOD_KEY}`
+    && getCalls.every((c) => !('x-api-key' in c.headers)
+      && c.headers['anthropic-version'] === '2026-10-21'), 'TC3: SDK 1.x 인증과 API 버전');
   assert(apiCalls.every((c) => c.method !== 'POST'), 'TC3: 메시지 요청(토큰 사용) 없음');
 
   // ── TC4: 기억 + 암호로 저장 ────────────────────────────

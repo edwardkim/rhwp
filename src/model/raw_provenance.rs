@@ -29,16 +29,19 @@
 //!
 //! ## 다이제스트 규약
 //!
-//! serde 직렬화(JSON 인코딩)를 blake3 로 해시한다 — `Debug`/`DefaultHasher`/
-//! 재귀 `Clone` 스냅샷에 의존하지 않는다. serde_json 은 구조체 필드를 선언
-//! 순서로, 숫자·float 를 결정적 표기(ryu/itoa)로 방출하므로 같은 프로세스에서
-//! 항상 같은 바이트를 낸다. DocInfo 트리에는 순회 순서가 비결정적인 맵 타입이
+//! serde 직렬화를 이진 인코딩([`digest_encoding`])으로 blake3 에 넘긴다 —
+//! `Debug`/`DefaultHasher`/재귀 `Clone` 스냅샷에 의존하지 않는다. 인코딩은 구조체
+//! 필드를 선언 순서로, 숫자·float 를 고정 바이트로 방출하므로 같은 프로세스에서
+//! 항상 같은 바이트를 낸다. 다이제스트는 같은 프로세스의 같은 타입 값끼리만
+//! 비교하며 저장하지 않는다. DocInfo 트리에는 순회 순서가 비결정적인 맵 타입이
 //! 없다(생기면 이 모듈에서 정렬 직렬화로 감싸야 한다). 봉인 대상 필드는
 //! [`doc_info_model_digest`] 가 **전수 구조분해**로 나열한다 — 필드 추가 시
 //! 컴파일 오류로 목록 갱신을 강제한다.
 //!
 //! Section(`raw_stream`)·본문 컨트롤 raw 레코드의 같은 계약은 #4488·#4495 가
 //! 별도로 다룬다 — 스트림·소유자가 다르다.
+
+mod digest_encoding;
 
 use serde::Serialize;
 
@@ -76,16 +79,23 @@ pub fn bytes_digest(bytes: &[u8]) -> [u8; 32] {
     *blake3::hash(bytes).as_bytes()
 }
 
+/// 모델 값의 다이제스트 — serde 직렬화를 [`digest_encoding`] 의 이진 인코딩으로 해시한다.
+pub(crate) fn value_digest<T: Serialize + ?Sized>(value: &T, context: &str) -> [u8; 32] {
+    let mut writer = digest_encoding::DigestWriter::new();
+    value.serialize(&mut writer).expect(context);
+    writer.finish()
+}
+
 /// 레코드(직렬화 가능한 모델 값) 하나의 다이제스트.
 ///
 /// 레코드의 `raw_data` 필드도 다이제스트에 포함된다 — 모델 필드가 변하지 않는 한
 /// `raw_data` 는 파싱 시점 그대로이므로 판정에 영향이 없고, `raw_data` 만 바꿔치기
 /// 하는 변경도 불일치로 떨어져 승인되지 않는다.
 pub fn record_digest<T: Serialize>(record: &T) -> [u8; 32] {
-    let mut hasher = blake3::Hasher::new();
-    serde_json::to_writer(&mut hasher, record)
-        .expect("레코드 다이제스트 직렬화는 실패할 수 없다 (순수 인메모리 인코딩)");
-    *hasher.finalize().as_bytes()
+    value_digest(
+        record,
+        "레코드 다이제스트 직렬화는 실패할 수 없다 (순수 인메모리 인코딩)",
+    )
 }
 
 /// 봉인 컨테이너에서 `idx` 레코드의 raw 재사용 허용 여부.
@@ -181,10 +191,10 @@ pub fn doc_info_model_digest(doc_info: &DocInfo, doc_props: &DocProperties) -> [
         props: doc_props,
     };
 
-    let mut hasher = blake3::Hasher::new();
-    serde_json::to_writer(&mut hasher, &fp)
-        .expect("모델 다이제스트 직렬화는 실패할 수 없다 (순수 인메모리 인코딩)");
-    *hasher.finalize().as_bytes()
+    value_digest(
+        &fp,
+        "모델 다이제스트 직렬화는 실패할 수 없다 (순수 인메모리 인코딩)",
+    )
 }
 
 /// 레코드 봉인 묶음 계산 — 봉인 시점의 목록 순서 그대로.
@@ -267,17 +277,14 @@ pub fn section_model_digest(section: &crate::model::document::Section) -> [u8; 3
         trailing_lists: &'a Option<crate::model::section_tail::SectionTail>,
     }
 
-    let mut hasher = blake3::Hasher::new();
-    serde_json::to_writer(
-        &mut hasher,
+    value_digest(
         &Fingerprint {
             section_def,
             paragraphs,
             trailing_lists,
         },
+        "모델 다이제스트 직렬화는 실패할 수 없다 (순수 인메모리 인코딩)",
     )
-    .expect("모델 다이제스트 직렬화는 실패할 수 없다 (순수 인메모리 인코딩)");
-    *hasher.finalize().as_bytes()
 }
 
 impl crate::model::document::Section {

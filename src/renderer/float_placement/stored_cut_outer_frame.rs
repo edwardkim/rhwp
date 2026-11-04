@@ -5,17 +5,17 @@ use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::shape::{TextWrap, VertAlign, VertRelTo};
 use crate::model::table::{Table, TablePageBreak};
 
-/// 직접 저장 HWPX의 작은 개체 앵커는 큰 표 상자의 바깥 여백을 대신 점유하지 않는다.
+/// 원본 저장 프레임의 작은 개체 앵커는 큰 표 상자의 바깥 여백을 대신 점유하지 않는다.
 /// 전체 개체를 담은 저장 줄, 본문 텍스트, 편집된 호스트는 기존 앵커 계약을 유지한다.
 pub(crate) fn stored_hwpx_cut_owns_outer_frame(
-    original_hwpx: bool,
+    original_stored_frame: bool,
     host: &Paragraph,
     table: &Table,
 ) -> bool {
     let [line] = host.line_segs.as_slice() else {
         return false;
     };
-    original_hwpx
+    original_stored_frame
         && !table.common.treat_as_char
         && table.common.flow_with_text
         && table.common.text_wrap == TextWrap::TopAndBottom

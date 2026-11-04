@@ -1,0 +1,64 @@
+{
+  "date": "2026-10-29",
+  "audited_head": "9250e34310c70150bf7559d8e1de6d03d71e8720",
+  "base_sha": "db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc",
+  "test_and_code_unchanged_since": "99dc917846",
+  "source_changes": [],
+  "checks": [
+    {
+      "name": "suite_prepare",
+      "command": "node scripts/rust-test-suite-manifest.mjs --prepare",
+      "exit_code": 0,
+      "log_sha256": "b794890ad4f3811c271b501632da7aa70e051d1b50f9afd76349848d71337cf1"
+    },
+    {
+      "name": "fmt_check",
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "native_clippy",
+      "command": "cargo clippy --locked --target-dir target/pr-review -- -D warnings",
+      "exit_code": 0,
+      "log_sha256": "8a6a3ad31ae390e2e60197b82e5dcb09e2ce90f31b53b042bd2b64cac572a638"
+    },
+    {
+      "name": "wasm_clippy",
+      "command": "cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown --target-dir target/pr-review -- -D warnings",
+      "exit_code": 0,
+      "log_sha256": "fbe2c66e1b40814f26b34b2f9d521a9f6ade366f1db5f2f823325b48aefbabd0"
+    },
+    {
+      "name": "workspace_build",
+      "command": "cargo build --locked --workspace --target-dir target/pr-review",
+      "exit_code": 0,
+      "log_sha256": "a08209a9d2b4e6ddc8cfb524c536974bee669202f8bb85e71e84ff8534fa100c"
+    },
+    {
+      "name": "workspace_clippy",
+      "command": "cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings",
+      "exit_code": 0,
+      "log_sha256": "0331242f82c3aa71030176688904ffa73b6e7c443bea17106ae5391f3434dbaa"
+    },
+    {
+      "name": "suite_policy",
+      "command": "node scripts/rust-test-suite-manifest.mjs --check --base-ref db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc",
+      "exit_code": 0,
+      "log_sha256": "ff5e87fc572f03c1f6ba8658ffd1149f9fefd9b8df0e200eb691766704b07a54"
+    },
+    {
+      "name": "unit_tier",
+      "command": "node scripts/rust-unit-test-tiers.mjs --check --base-ref db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc",
+      "exit_code": 0,
+      "log_sha256": "2c6dbaab2093a94c2fa3ec11190f384180b922a10025e3466a44f53c6611685c"
+    }
+  ],
+  "suite_policy_counts": "1862 sources, 28 suites + 20 exceptions, 48/48 integration targets",
+  "unit_tier_counts": "4099 tests, 296 modules",
+  "limitations": [
+    "WASM 및 workspace Clippy는 정적 검사이며 테스트를 실행한 결과가 아니다.",
+    "작업지시자 지시에 따라 전체 회귀를 다시 실행하지 않았다.",
+    "이 검증은 새 MCP 기준 시각 검증이나 원격 CI를 대체하지 않는다."
+  ]
+}

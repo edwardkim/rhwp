@@ -111,6 +111,22 @@ impl PdfStroke {
         Some(all)
     }
     pub(crate) fn segment_rectangles(&self, endpoints: [f64; 4]) -> Option<Vec<[f64; 4]>> {
+        match self.try_segment_rectangles(endpoints, |rects, rectangle| {
+            rects.push(rectangle);
+            Ok::<_, std::convert::Infallible>(())
+        }) {
+            Ok(result) => result,
+            Err(never) => match never {},
+        }
+    }
+
+    /// The caller reserves each published rectangle before its buffer grows.
+    /// Dash phase and odd-pattern repetition share the ordinary geometry path.
+    pub(crate) fn try_segment_rectangles<E>(
+        &self,
+        endpoints: [f64; 4],
+        mut push: impl FnMut(&mut Vec<[f64; 4]>, [f64; 4]) -> Result<(), E>,
+    ) -> Result<Option<Vec<[f64; 4]>>, E> {
         let [x, y, a, b] = endpoints;
         let horizontal = y == b;
         let length = if horizontal {
@@ -123,10 +139,9 @@ impl PdfStroke {
         } else {
             -1.
         };
-        let mut dash = self.dash.clone();
-        if dash.len() % 2 == 1 {
-            dash.extend(self.dash.iter().copied());
-        }
+        let dash = &self.dash;
+        let repeated = dash.len() % 2 == 1;
+        let count = dash.len() * if repeated { 2 } else { 1 };
         let mut rects = Vec::new();
         let rectangle = |start: f64, end: f64| {
             if horizontal {
@@ -140,28 +155,33 @@ impl PdfStroke {
             }
         };
         if dash.is_empty() {
-            return Some(vec![rectangle(0., length)]);
+            push(&mut rects, rectangle(0., length))?;
+            return Ok(Some(rects));
         }
-        let mut phase = self.phase.rem_euclid(dash.iter().sum());
+        let period: f64 = dash
+            .iter()
+            .chain(dash.iter().take(if repeated { dash.len() } else { 0 }))
+            .sum();
+        let mut phase = self.phase.rem_euclid(period);
         let mut index = 0;
-        while phase >= dash[index] {
-            phase -= dash[index];
-            index = (index + 1) % dash.len();
+        while phase >= dash[index % dash.len()] {
+            phase -= dash[index % dash.len()];
+            index = (index + 1) % count;
         }
         let mut at = 0.;
-        let mut remain = dash[index] - phase;
+        let mut remain = dash[index % dash.len()] - phase;
         for _ in 0..8192 {
             let end = (at + remain).min(length);
             if index % 2 == 0 && end > at {
-                rects.push(rectangle(at, end));
+                push(&mut rects, rectangle(at, end))?;
             }
             if end >= length {
-                return Some(rects);
+                return Ok(Some(rects));
             }
             at = end;
-            index = (index + 1) % dash.len();
-            remain = dash[index];
+            index = (index + 1) % count;
+            remain = dash[index % dash.len()];
         }
-        None
+        Ok(None)
     }
 }

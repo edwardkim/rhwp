@@ -1,0 +1,117 @@
+{
+  "fiscal_reference_reuse": [
+    {
+      "path": "samples/issue6312/fiscal_trend_float_table_anchor.hwpx",
+      "bytes": 91946,
+      "sha256": "aa804ca85dba392fad80dd78e3b61e668771984720a0a321a0c0ed694233a918",
+      "matches_independent_reference_commit": "c685efb11eddb7f0fc16f4e9edc5f5b302736c98"
+    },
+    {
+      "path": "pdf/issue6312/fiscal-trend-float-table-anchor-2020.pdf",
+      "bytes": 305835,
+      "sha256": "f99cf3992af5c3ae67e8c55b763ac9aa1cef95d164d60eeb73db190cc8120f3f",
+      "matches_independent_reference_commit": "c685efb11eddb7f0fc16f4e9edc5f5b302736c98"
+    }
+  ],
+  "fiscal_reference_pages": 4,
+  "fiscal_original_issue": 6312,
+  "prior_corrections": [
+    "cd9412d7e",
+    "c685efb11",
+    "e12d99b91"
+  ],
+  "no_lineseg_countercase_reference_ledger": "tests/fixtures/issue_7642/no-ls/README.md",
+  "countercases": [
+    {
+      "input": "tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-false.hwp",
+      "input_sha256": "8647f8ca68776fd1a2e640e69a5a8e428c6cb287ba17b2cb883fcce5efae20a8",
+      "pdf": "tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-false-print-2020.pdf",
+      "pdf_sha256": "0ea824cccc05c0dbab4edbddbf5df407481cb554e85d6e909d21d59702b5d7c9",
+      "source_kind": "Independent Hancom2020 Print of existing generated diagnostic HWP countercase; not evidence that original p122 matches."
+    },
+    {
+      "input": "tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-true.hwp",
+      "input_sha256": "a7188cf5dd388df0c930224178a3cba44715cd07ccdccde5c8ebcde7cbfa0c3f",
+      "pdf": "tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-true-print-2020.pdf",
+      "pdf_sha256": "ee84d81a4b3889da9658b5ee0936c8f726f30897ea9a63c9564408a2c427e6b4",
+      "source_kind": "Independent Hancom2020 Print of existing generated diagnostic HWP countercase; not evidence that original p122 matches."
+    },
+    {
+      "input": "tests/fixtures/issue_7642/no-ls/picture-flow-authored-break-no-ls.hwp",
+      "input_sha256": "c7d856b48d19cabb51e50b0befdf2fbc67a903a633038b7084dc6c2113177b93",
+      "pdf": "tests/fixtures/issue_7642/no-ls/picture-flow-authored-break-no-ls-print-2020.pdf",
+      "pdf_sha256": "9b8037d88922205acf7459e6e4a44a8535894923c3e75aed06b672bb0bb6ed1c",
+      "source_kind": "Independent Hancom2020 Print of existing generated diagnostic HWP countercase; not evidence that original p122 matches."
+    },
+    {
+      "input": "tests/fixtures/issue_7642/no-ls/picture-flow-center-row-no-ls.hwp",
+      "input_sha256": "48f55c0d01011d3580f2f1fdef2d565077ffa1e66c7aaddfca10761dd43dd297",
+      "pdf": "tests/fixtures/issue_7642/no-ls/picture-flow-center-row-no-ls-print-2020.pdf",
+      "pdf_sha256": "0e8536e76112d9439cb9c50418ad5918ba88310ab0630c2745b64a677dfd159f",
+      "source_kind": "Independent Hancom2020 Print of existing generated diagnostic HWP countercase; not evidence that original p122 matches."
+    },
+    {
+      "input": "tests/fixtures/issue_7642/no-ls/picture-flow-column-transition-no-ls.hwp",
+      "input_sha256": "29745472fdb513c8d4d1a7a6f1a22a56580acd9b06b6620ed7bed7d0b3000c32",
+      "pdf": "tests/fixtures/issue_7642/no-ls/picture-flow-column-transition-no-ls-print-2020.pdf",
+      "pdf_sha256": "d9dcf28fe3b5ee63ff05880f44e2d5eda3200c40f008981aa2d702acd1059e23",
+      "source_kind": "Independent Hancom2020 Print of existing generated diagnostic HWP countercase; not evidence that original p122 matches."
+    },
+    {
+      "input": "tests/fixtures/issue_7642/no-ls/picture-flow-mixed-center-row-no-ls.hwp",
+      "input_sha256": "8db7c5325b0e1676c29190d55110465453203be310de435492a29d6522835ad6",
+      "pdf": "tests/fixtures/issue_7642/no-ls/picture-flow-mixed-center-row-no-ls-print-2020.pdf",
+      "pdf_sha256": "a2a1178aea825b6e2e734a43b18b35cd83f53d650ef28491a9ba03ddf146ea4f",
+      "source_kind": "Independent Hancom2020 Print of existing generated diagnostic HWP countercase; not evidence that original p122 matches."
+    },
+    {
+      "input": "tests/fixtures/issue_7642/no-ls/picture-flow-mixed-end-picture-no-ls.hwp",
+      "input_sha256": "8478f28ec6bfbeb85f4d5ed3947b3063380549ec956a5fbe7fc5559aabd0dd7e",
+      "pdf": "tests/fixtures/issue_7642/no-ls/picture-flow-mixed-end-picture-no-ls-print-2020.pdf",
+      "pdf_sha256": "1a37e74b889946e8ceeff9fd3cf7200d356fe2af6401c93634879a9208f3bb3e",
+      "source_kind": "Independent Hancom2020 Print of existing generated diagnostic HWP countercase; not evidence that original p122 matches."
+    },
+    {
+      "input": "tests/fixtures/issue_7642/no-ls/picture-flow-outer-margin-row-no-ls.hwp",
+      "input_sha256": "16a916b8c79e055f26d2033f7104c2cb39487bf21993356b805ad8616ac7cebb",
+      "pdf": "tests/fixtures/issue_7642/no-ls/picture-flow-outer-margin-row-no-ls-print-2020.pdf",
+      "pdf_sha256": "6fab8b80a40cf81355adc11a923b777f7515977a25a7963b3296a00ba6118f50",
+      "source_kind": "Independent Hancom2020 Print of existing generated diagnostic HWP countercase; not evidence that original p122 matches."
+    },
+    {
+      "input": "tests/fixtures/issue_7642/no-ls/picture-flow-relative-font-row-no-ls.hwp",
+      "input_sha256": "6e0073478832e25398466ad001c1566b626ca0c49634184135857d88ef0f8870",
+      "pdf": "tests/fixtures/issue_7642/no-ls/picture-flow-relative-font-row-no-ls-print-2020.pdf",
+      "pdf_sha256": "109ed14cbc38ee7e9604e64066d84261bd34806077d9f5ebee1510c1936834be",
+      "source_kind": "Independent Hancom2020 Print of existing generated diagnostic HWP countercase; not evidence that original p122 matches."
+    },
+    {
+      "input": "tests/fixtures/issue_7642/no-ls/picture-flow-same-row-no-ls.hwp",
+      "input_sha256": "aeee538f8d361f81bb7b356ab662c453f13f67a4e2be4c2af911eabd16ea1d12",
+      "pdf": "tests/fixtures/issue_7642/no-ls/picture-flow-same-row-no-ls-print-2020.pdf",
+      "pdf_sha256": "1ad87bdcb0265492849d495f7a539c37aec00b42e61940023ade8b88c164dad9",
+      "source_kind": "Independent Hancom2020 Print of existing generated diagnostic HWP countercase; not evidence that original p122 matches."
+    },
+    {
+      "input": "tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-boundary-no-ls.hwp",
+      "input_sha256": "07ebb414f77d99c4b1a609e31f79904e95cedf4fe21f315cf6760007a8aa3c38",
+      "pdf": "tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-boundary-no-ls-print-2020.pdf",
+      "pdf_sha256": "10eab539ec29e8efd87d993e820fcc5335974aad5075042709fe733f2b922b96",
+      "source_kind": "Independent Hancom2020 Print of existing generated diagnostic HWP countercase; not evidence that original p122 matches."
+    },
+    {
+      "input": "tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-only-fit-no-ls.hwp",
+      "input_sha256": "4faca24711f2dcd84dc22b3047dfb56911d70c952789978071a8b898facc2747",
+      "pdf": "tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-only-fit-no-ls-print-2020.pdf",
+      "pdf_sha256": "71728ac7e179fd1f850a348d951b5fd1c227ee4a8c74219a26646b5bdfa1d155",
+      "source_kind": "Independent Hancom2020 Print of existing generated diagnostic HWP countercase; not evidence that original p122 matches."
+    },
+    {
+      "input": "tests/fixtures/issue_7642/no-ls/picture-flow-wrapped-row-no-ls.hwp",
+      "input_sha256": "52af34ce881875d302b604010f4a67ca51b2f85386a40e4f68e4714836064f1c",
+      "pdf": "tests/fixtures/issue_7642/no-ls/picture-flow-wrapped-row-no-ls-print-2020.pdf",
+      "pdf_sha256": "880e9aef5665b4a46c0418009a246f8a095bed2151ceaaeddfce1eb960ac39cb",
+      "source_kind": "Independent Hancom2020 Print of existing generated diagnostic HWP countercase; not evidence that original p122 matches."
+    }
+  ]
+}

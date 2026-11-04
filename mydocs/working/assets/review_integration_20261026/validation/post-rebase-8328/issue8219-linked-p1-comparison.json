@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-28",
+  "source": "samples/hwp3-sample10.hwp",
+  "page": 1,
+  "document_pages": 763,
+  "dpi": 96,
+  "excluded_regions": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue8219-linked-image-regions.json",
+  "cases": {
+    "native": {
+      "raw": 65.65028,
+      "gate": "re_review_required",
+      "mask_count": 3,
+      "manifest_sha256": "1f17496f3021f89a1fd62025778be24da7f5d8269c7a8eb10651f7822172a104",
+      "png_sha256": "1df43e6c551daa2f6b5ea15df3746e230d4dc576b678052d28dc021bca00ec71",
+      "pdf_png_sha256": "e48a30eeecc605355cb3dc66712ef7491f7baf29787781704692c82b5dc2ee79"
+    },
+    "wasm": {
+      "raw": 64.31181,
+      "gate": "re_review_required",
+      "mask_count": 3,
+      "manifest_sha256": "01be289d47289315f5da845fddc217b16816aea2fb259b2fe42bb92aaa0a5c68",
+      "png_sha256": "ec7c30d6b71f93fb26ea2edd76f46e40b3848f3acf55aa26335c94e18d41f2fd",
+      "pdf_png_sha256": "e48a30eeecc605355cb3dc66712ef7491f7baf29787781704692c82b5dc2ee79"
+    }
+  },
+  "scope": "1쪽에서 연결 그림 및 그 상자와 겹친 내용 제외. 다른 762쪽의 결과와 전쪽 최저값은 이 기록에 없음.",
+  "status": "re_review_required",
+  "note": "WASM의 연결 그림은 원본이 지목한 동일 이름의 로컬 후보 파일을 해시 확인 후 주입했다. 두 출력 모두 그림 상자는 비교에서 제외한다."
+}

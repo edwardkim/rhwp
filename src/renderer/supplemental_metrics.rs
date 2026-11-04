@@ -13,14 +13,14 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use super::TextStyle;
 
-/// Unverified width guesses may use a prepared measurement from the active
-/// backend. Authentic glyph advances and explicit HWP width rules stay intact.
-/// The narrow overlay is a compatibility guess, not evidence of a selected
-/// program's advance. A Canvas measurement does not promote its format to TTF.
+/// 실제 backend의 전진이 확인되지 않은 추정 폭만 보충 측정으로 대체한다.
+/// 원 face의 실제 글리프 폭과 명시적인 HWP 규칙은 유지한다. 선언 체인의 다른
+/// face에서 빌린 폭과 좁은 문장부호 overlay는 선택된 프로그램의 전진을 입증하지
+/// 않는다. Canvas 측정으로 원 face의 형식을 TrueType으로 승격하지 않는다.
 pub(crate) fn accepts_prepared_glyph_advance(width_source: &str) -> bool {
     matches!(
         width_source,
-        "heuristicHalfwidth" | "metricNarrowPunctuationOverlay"
+        "heuristicHalfwidth" | "declaredGlyphFallbackMetric" | "metricNarrowPunctuationOverlay"
     )
 }
 
@@ -451,18 +451,38 @@ pub fn canvas_measured_descriptor<'a>(style: &'a TextStyle, cluster: &str) -> Op
 /// must stay wholly on the old path, rather than partially replacing one scalar.
 /// No additional segmentation/allocation occurs without an active snapshot.
 pub(crate) fn standalone_scalar_mask(text: &str, style: &TextStyle) -> Option<Vec<bool>> {
-    if !style.supplemental_metrics.as_ref()?.is_active() {
-        return None;
+    match standalone_scalar_mask_with_storage(text, style, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
-    Some(scalar_eligibility(text))
+}
+
+pub(crate) fn standalone_scalar_mask_with_storage<S: crate::storage::Storage>(
+    text: &str,
+    style: &TextStyle,
+    storage: &S,
+) -> Result<Option<Vec<bool>>, S::Error> {
+    crate::storage::with_optional(|failure| {
+        if !style.supplemental_metrics.as_ref()?.is_active() {
+            return None;
+        }
+        crate::storage::optional(try_scalar_eligibility(text, storage), failure)
+    })
 }
 
 /// One Unicode grapheme policy for paragraph preparation and local measurement.
 pub(crate) fn scalar_eligibility(text: &str) -> Vec<bool> {
-    text.graphemes(true)
-        .flat_map(|g| {
-            let count = g.chars().count();
-            std::iter::repeat_n(count == 1, count)
-        })
-        .collect()
+    match try_scalar_eligibility(text, &crate::renderer::style_resolver::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+pub(crate) fn try_scalar_eligibility<S: crate::renderer::style_resolver::storage::Storage>(
+    text: &str,
+    storage: &S,
+) -> Result<Vec<bool>, S::Error> {
+    storage.collect(text.graphemes(true).flat_map(|g| {
+        let count = g.chars().count();
+        std::iter::repeat_n(count == 1, count)
+    }))
 }

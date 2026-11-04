@@ -1,24 +1,31 @@
 import { getHostFontState, hasHostFontProvider, loadRendererLocalFont, loadStoredLocalFonts,
-  prepareHostFontCatalog, resolveRendererLocalFont, localFontFaceKey } from './local-fonts';
+  prepareHostFontCatalog, resolveRendererLocalFont, localFontFaceKey } from './local-fonts.ts';
 
 export interface MetafileFontDocument {
   getMetafileFontRequests?(): string;
+  getTextShadowFontRequests?(): string;
+  fontSupportsText?(bytes: Uint8Array, faceIndex: number, text: string): boolean;
+  fontMissingText?(bytes: Uint8Array, faceIndex: number, text: string): string | undefined;
   registerMetafileFont?(family: string, bytes: Uint8Array, faceIndex: number): boolean;
   clearMetafileFonts?(): void;
 }
 
-interface FontRequest { families: string[]; weight: number; italic: boolean; text: string }
+interface FontRequest { families: string[]; weight: number; italic: boolean; text: string; glyphs?: boolean }
 interface Prepared { generation: string; requests: string; keys: Set<string> }
 
-/** 이미지 내부 글꼴도 실제 host/local SFNT를 받는다. CSS 존재를 bytes 공급으로 간주하지 않는다. */
+/** 이미지·글자 효과가 실제 host/local SFNT를 공유한다. CSS 존재를 bytes 공급으로 간주하지 않는다. */
 export class MetafileFontSession {
   private readonly prepared = new WeakMap<MetafileFontDocument, Prepared>();
 
   async prepare(owner: MetafileFontDocument | null, fontGeneration: number,
     current: () => boolean): Promise<boolean> {
-    if (!owner?.getMetafileFontRequests || !owner.registerMetafileFont) return true;
-    const raw = owner.getMetafileFontRequests();
-    const requests: FontRequest[] = JSON.parse(raw);
+    if (!owner?.registerMetafileFont) return true;
+    const requests: FontRequest[] = [
+      ...JSON.parse(owner.getMetafileFontRequests?.() ?? '[]'),
+      ...JSON.parse(owner.getTextShadowFontRequests?.() ?? '[]')
+        .map((request: FontRequest) => ({...request, glyphs: Boolean(request.text)})),
+    ];
+    const raw = JSON.stringify(requests);
     if (!requests.length) return true;
     if (hasHostFontProvider()) await prepareHostFontCatalog();
     else {
@@ -35,18 +42,31 @@ export class MetafileFontSession {
       this.prepared.set(owner, state);
     }
     for (const request of requests) {
+      let remaining = request.text;
       for (const family of request.families) {
         const style = { weight: request.weight, slant: request.italic ? 'italic' as const : 'normal' as const };
         const record = resolveRendererLocalFont(family, style) ?? resolveRendererLocalFont(family);
         if (!record) continue;
         const key = `${family.toLowerCase()}|${localFontFaceKey(record)}`;
-        if (state.keys.has(key)) continue;
+        const glyphs = request.glyphs && (typeof owner.fontMissingText === 'function'
+          || typeof owner.fontSupportsText === 'function');
+        if (state.keys.has(key) && !glyphs) continue;
         const data = await loadRendererLocalFont(record);
         if (!current() || generation !== `${fontGeneration}:${getHostFontState().generation}`) return false;
         if (!data) continue;
+        if (glyphs) {
+          const missing = typeof owner.fontMissingText === 'function'
+            ? owner.fontMissingText(new Uint8Array(data.bytes), data.faceIndex ?? 0, remaining)
+            : owner.fontSupportsText!(new Uint8Array(data.bytes), data.faceIndex ?? 0, remaining) ? '' : remaining;
+          if (typeof missing !== 'string' || missing === remaining) continue;
+          remaining = missing;
+        }
         // 실패를 빈 glyph 프로그램으로 대체하지 않는다. 미공급 face는 기존 SVG 경로가 담당한다.
-        owner.registerMetafileFont(family, new Uint8Array(data.bytes), data.faceIndex ?? 0);
-        state.keys.add(key);
+        if (!state.keys.has(key)) {
+          owner.registerMetafileFont(family, new Uint8Array(data.bytes), data.faceIndex ?? 0);
+          state.keys.add(key);
+        }
+        if (glyphs && !remaining) break;
       }
     }
     state.requests = raw;

@@ -1,0 +1,339 @@
+{
+  "scope": "Actual full portable print PageLayerTree replay using explicit open-font aliases; CanvasKit software. Font aliases are controlled; DejaVu Sans covers U+2024 in the absent 한양신명조 face while default Korean fallback remains available. This is actual backend replay, not a Hancom font fidelity score.",
+  "results": [
+    {
+      "key": "seal-form",
+      "file": "issue8201/seal-delegation-form.hwp",
+      "missingDraws": [],
+      "diagnostics": {
+        "surfaceCreated": 1,
+        "surfaceReused": 0,
+        "staticPictureCacheEntries": 8,
+        "staticPictureCacheBytes": 6386,
+        "staticPictureCacheHits": 0,
+        "staticPictureCacheMisses": 8,
+        "staticPictureCacheEvictions": 0,
+        "textBlobCacheEntries": 182,
+        "textBlobCacheBytes": 61938,
+        "textBlobCacheHits": 26,
+        "textBlobCacheMisses": 182,
+        "fallbackFamilyCacheEntries": 27,
+        "paragraphFontEntries": 5,
+        "paragraphFontBytes": 5879164,
+        "paragraphProviderBuilds": 0,
+        "paragraphFontRejections": 0,
+        "pendingImageLoads": 0,
+        "mode": "default",
+        "surfacePreference": "software",
+        "surfaceBackend": "software",
+        "surfaceFallbackReason": null,
+        "lastRenderCompleted": true,
+        "lastUnsupportedOps": [],
+        "lastExpectedUnsupportedOps": [],
+        "lastUnexpectedUnsupportedOps": [],
+        "lastRenderError": null,
+        "passesRuntimeReadinessGate": true,
+        "readinessBlockers": [],
+        "hiddenCanvas2dOverlayUsed": false,
+        "lastRenderDurationMs": 425.7999999821186,
+        "renderCount": 1,
+        "imageCacheEntries": 0,
+        "imageCacheLimit": 128,
+        "imageCachePixels": 0,
+        "imageCachePixelLimit": 67108864,
+        "imageCacheHits": 0,
+        "imageCacheMisses": 0,
+        "imageCacheEvictions": 0,
+        "mipmapCacheEntries": 0,
+        "mipmapCacheBytes": 0,
+        "mipmapCacheHits": 0,
+        "mipmapCacheMisses": 0,
+        "imageFailureCacheHits": 0,
+        "imageFailures": [],
+        "localTypefaceCount": 0,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "bundledTypefaceCount": 2,
+        "bundledTypefaceLoadFailureCount": 0,
+        "glyphRunFontBlobCount": 0,
+        "glyphRunFontBlobBytes": 0,
+        "glyphRunTypefaceCount": 0,
+        "glyphRunFontCount": 0,
+        "fontSubstitutionLimit": 4096,
+        "unregisteredFontFallbacks": 0,
+        "fontSubstitutions": [
+          {
+            "requestedFamily": "돋움체",
+            "resolvedFamily": "CanvasKit symbol fallback",
+            "source": "missingGlyphSymbol",
+            "kind": "glyphCoverageFallback"
+          }
+        ],
+        "replayFeatureCounts": {
+          "dashedStrokes": 0,
+          "glyphRuns": 0,
+          "tabLeaders": 0,
+          "charOverlaps": 0,
+          "verticalPresentationPunctuation": 0,
+          "verticalTextRuns": 0
+        },
+        "textVariantDiagnosticGroups": 0,
+        "textVariantDiagnosticParts": 0,
+        "replayDiagnosticsDropped": 0
+      },
+      "supply": [
+        {
+          "url": "fonts/NotoSansKR-Regular.woff2",
+          "aliases": [
+            "돋움체",
+            "한양견고딕",
+            "HY견명조",
+            "돋움",
+            "Tom's Handwriting"
+          ]
+        },
+        {
+          "url": "review-fonts/dejavu.ttf",
+          "aliases": [
+            "한양신명조"
+          ]
+        },
+        {
+          "url": "fonts/RHWPPublicBatang-Regular.woff2",
+          "aliases": [
+            "RHWP Public Batang"
+          ]
+        }
+      ],
+      "pageSize": [
+        793.333,
+        1121.333
+      ]
+    },
+    {
+      "key": "bokhak",
+      "file": "복학원서.hwp",
+      "missingDraws": [],
+      "diagnostics": {
+        "surfaceCreated": 1,
+        "surfaceReused": 0,
+        "staticPictureCacheEntries": 8,
+        "staticPictureCacheBytes": 28198930,
+        "staticPictureCacheHits": 0,
+        "staticPictureCacheMisses": 8,
+        "staticPictureCacheEvictions": 0,
+        "textBlobCacheEntries": 174,
+        "textBlobCacheBytes": 76206,
+        "textBlobCacheHits": 4,
+        "textBlobCacheMisses": 174,
+        "fallbackFamilyCacheEntries": 21,
+        "paragraphFontEntries": 5,
+        "paragraphFontBytes": 5879164,
+        "paragraphProviderBuilds": 0,
+        "paragraphFontRejections": 0,
+        "pendingImageLoads": 0,
+        "mode": "default",
+        "surfacePreference": "software",
+        "surfaceBackend": "software",
+        "surfaceFallbackReason": null,
+        "lastRenderCompleted": true,
+        "lastUnsupportedOps": [],
+        "lastExpectedUnsupportedOps": [],
+        "lastUnexpectedUnsupportedOps": [],
+        "lastRenderError": null,
+        "passesRuntimeReadinessGate": true,
+        "readinessBlockers": [],
+        "hiddenCanvas2dOverlayUsed": false,
+        "lastRenderDurationMs": 629.7999999821186,
+        "renderCount": 1,
+        "imageCacheEntries": 2,
+        "imageCacheLimit": 128,
+        "imageCachePixels": 1409590,
+        "imageCachePixelLimit": 67108864,
+        "imageCacheHits": 0,
+        "imageCacheMisses": 2,
+        "imageCacheEvictions": 0,
+        "mipmapCacheEntries": 0,
+        "mipmapCacheBytes": 0,
+        "mipmapCacheHits": 0,
+        "mipmapCacheMisses": 0,
+        "imageFailureCacheHits": 0,
+        "imageFailures": [],
+        "localTypefaceCount": 0,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "bundledTypefaceCount": 2,
+        "bundledTypefaceLoadFailureCount": 0,
+        "glyphRunFontBlobCount": 0,
+        "glyphRunFontBlobBytes": 0,
+        "glyphRunTypefaceCount": 0,
+        "glyphRunFontCount": 0,
+        "fontSubstitutionLimit": 4096,
+        "unregisteredFontFallbacks": 0,
+        "fontSubstitutions": [
+          {
+            "requestedFamily": "한양신명조",
+            "resolvedFamily": "Noto Sans KR",
+            "source": "missingGlyphDefault",
+            "kind": "glyphCoverageFallback"
+          },
+          {
+            "requestedFamily": "한양신명조",
+            "resolvedFamily": "CanvasKit symbol fallback",
+            "source": "missingGlyphSymbol",
+            "kind": "glyphCoverageFallback"
+          }
+        ],
+        "replayFeatureCounts": {
+          "dashedStrokes": 1,
+          "glyphRuns": 0,
+          "tabLeaders": 0,
+          "charOverlaps": 0,
+          "verticalPresentationPunctuation": 0,
+          "verticalTextRuns": 0
+        },
+        "textVariantDiagnosticGroups": 0,
+        "textVariantDiagnosticParts": 0,
+        "replayDiagnosticsDropped": 0
+      },
+      "supply": [
+        {
+          "url": "fonts/NotoSansKR-Regular.woff2",
+          "aliases": [
+            "한양견명조",
+            "Toms Handwriting,한컴바탕",
+            "굴림",
+            "Tom's Handwriting"
+          ]
+        },
+        {
+          "url": "review-fonts/dejavu.ttf",
+          "aliases": [
+            "한양신명조"
+          ]
+        },
+        {
+          "url": "fonts/RHWPPublicBatang-Regular.woff2",
+          "aliases": [
+            "RHWP Public Batang"
+          ]
+        }
+      ],
+      "pageSize": [
+        793.333,
+        1121.333
+      ]
+    },
+    {
+      "key": "issue4680",
+      "file": "issue4680/20117321_gijang_handover_bond_ledger_form.hwp",
+      "missingDraws": [],
+      "diagnostics": {
+        "surfaceCreated": 1,
+        "surfaceReused": 0,
+        "staticPictureCacheEntries": 8,
+        "staticPictureCacheBytes": 7130,
+        "staticPictureCacheHits": 0,
+        "staticPictureCacheMisses": 8,
+        "staticPictureCacheEvictions": 0,
+        "textBlobCacheEntries": 58,
+        "textBlobCacheBytes": 16236,
+        "textBlobCacheHits": 2,
+        "textBlobCacheMisses": 58,
+        "fallbackFamilyCacheEntries": 18,
+        "paragraphFontEntries": 5,
+        "paragraphFontBytes": 5879164,
+        "paragraphProviderBuilds": 0,
+        "paragraphFontRejections": 0,
+        "pendingImageLoads": 0,
+        "mode": "default",
+        "surfacePreference": "software",
+        "surfaceBackend": "software",
+        "surfaceFallbackReason": null,
+        "lastRenderCompleted": true,
+        "lastUnsupportedOps": [],
+        "lastExpectedUnsupportedOps": [],
+        "lastUnexpectedUnsupportedOps": [],
+        "lastRenderError": null,
+        "passesRuntimeReadinessGate": true,
+        "readinessBlockers": [],
+        "hiddenCanvas2dOverlayUsed": false,
+        "lastRenderDurationMs": 210.90000000596046,
+        "renderCount": 1,
+        "imageCacheEntries": 0,
+        "imageCacheLimit": 128,
+        "imageCachePixels": 0,
+        "imageCachePixelLimit": 67108864,
+        "imageCacheHits": 0,
+        "imageCacheMisses": 0,
+        "imageCacheEvictions": 0,
+        "mipmapCacheEntries": 0,
+        "mipmapCacheBytes": 0,
+        "mipmapCacheHits": 0,
+        "mipmapCacheMisses": 0,
+        "imageFailureCacheHits": 0,
+        "imageFailures": [],
+        "localTypefaceCount": 0,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "bundledTypefaceCount": 2,
+        "bundledTypefaceLoadFailureCount": 0,
+        "glyphRunFontBlobCount": 0,
+        "glyphRunFontBlobBytes": 0,
+        "glyphRunTypefaceCount": 0,
+        "glyphRunFontCount": 0,
+        "fontSubstitutionLimit": 4096,
+        "unregisteredFontFallbacks": 0,
+        "fontSubstitutions": [
+          {
+            "requestedFamily": "한양신명조",
+            "resolvedFamily": "Noto Sans KR",
+            "source": "missingGlyphDefault",
+            "kind": "glyphCoverageFallback"
+          },
+          {
+            "requestedFamily": "한양신명조",
+            "resolvedFamily": "CanvasKit symbol fallback",
+            "source": "missingGlyphSymbol",
+            "kind": "glyphCoverageFallback"
+          }
+        ],
+        "replayFeatureCounts": {
+          "dashedStrokes": 0,
+          "glyphRuns": 0,
+          "tabLeaders": 0,
+          "charOverlaps": 0,
+          "verticalPresentationPunctuation": 0,
+          "verticalTextRuns": 0
+        },
+        "textVariantDiagnosticGroups": 0,
+        "textVariantDiagnosticParts": 0,
+        "replayDiagnosticsDropped": 0
+      },
+      "supply": [
+        {
+          "url": "fonts/NotoSansKR-Regular.woff2",
+          "aliases": [
+            "Tom's Handwriting"
+          ]
+        },
+        {
+          "url": "review-fonts/dejavu.ttf",
+          "aliases": [
+            "한양신명조"
+          ]
+        },
+        {
+          "url": "fonts/RHWPPublicBatang-Regular.woff2",
+          "aliases": [
+            "RHWP Public Batang"
+          ]
+        }
+      ],
+      "pageSize": [
+        793.333,
+        1121.333
+      ]
+    }
+  ]
+}

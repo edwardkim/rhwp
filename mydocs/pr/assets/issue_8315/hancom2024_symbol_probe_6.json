@@ -1,0 +1,1767 @@
+{
+"00B7": [
+"·",
+"ArialMT",
+0.325
+],
+"0391": [
+"Α",
+"MalgunGothic",
+0.663
+],
+"0392": [
+"Β",
+"MalgunGothic",
+0.591
+],
+"0393": [
+"Γ",
+"MalgunGothic",
+0.482
+],
+"0394": [
+"Δ",
+"MalgunGothic",
+0.663
+],
+"0395": [
+"Ε",
+"MalgunGothic",
+0.518
+],
+"0396": [
+"Ζ",
+"MalgunGothic",
+0.591
+],
+"0397": [
+"Η",
+"MalgunGothic",
+0.735
+],
+"0398": [
+"Θ",
+"MalgunGothic",
+0.783
+],
+"0399": [
+"Ι",
+"MalgunGothic",
+0.277
+],
+"039A": [
+"Κ",
+"MalgunGothic",
+0.591
+],
+"039B": [
+"Λ",
+"MalgunGothic",
+0.639
+],
+"039C": [
+"Μ",
+"MalgunGothic",
+0.928
+],
+"039D": [
+"Ν",
+"MalgunGothic",
+0.771
+],
+"039E": [
+"Ξ",
+"MalgunGothic",
+0.518
+],
+"039F": [
+"Ο",
+"MalgunGothic",
+0.771
+],
+"03A0": [
+"Π",
+"MalgunGothic",
+0.723
+],
+"03A1": [
+"Ρ",
+"MalgunGothic",
+0.566
+],
+"03A3": [
+"Σ",
+"MalgunGothic",
+0.518
+],
+"03A4": [
+"Τ",
+"MalgunGothic",
+0.53
+],
+"03A5": [
+"Υ",
+"MalgunGothic",
+0.566
+],
+"03A6": [
+"Φ",
+"MalgunGothic",
+0.771
+],
+"03A7": [
+"Χ",
+"MalgunGothic",
+0.603
+],
+"03A8": [
+"Ψ",
+"MalgunGothic",
+0.795
+],
+"03A9": [
+"Ω",
+"MalgunGothic",
+0.771
+],
+"03B1": [
+"α",
+"MalgunGothic",
+0.627
+],
+"03B2": [
+"β",
+"MalgunGothic",
+0.554
+],
+"03B3": [
+"γ",
+"MalgunGothic",
+0.53
+],
+"03B4": [
+"δ",
+"MalgunGothic",
+0.591
+],
+"03B5": [
+"ε",
+"MalgunGothic",
+0.446
+],
+"03B6": [
+"ζ",
+"MalgunGothic",
+0.446
+],
+"03B7": [
+"η",
+"MalgunGothic",
+0.591
+],
+"03B8": [
+"θ",
+"MalgunGothic",
+0.603
+],
+"03B9": [
+"ι",
+"MalgunGothic",
+0.265
+],
+"03BA": [
+"κ",
+"MalgunGothic",
+0.542
+],
+"03BB": [
+"λ",
+"MalgunGothic",
+0.506
+],
+"03BC": [
+"μ",
+"MalgunGothic",
+0.591
+],
+"03BD": [
+"ν",
+"MalgunGothic",
+0.53
+],
+"03BE": [
+"ξ",
+"MalgunGothic",
+0.458
+],
+"03BF": [
+"ο",
+"MalgunGothic",
+0.603
+],
+"03C0": [
+"π",
+"MalgunGothic",
+0.651
+],
+"03C1": [
+"ρ",
+"MalgunGothic",
+0.603
+],
+"03C2": [
+"ς",
+"HCRBatang",
+0.506
+],
+"03C3": [
+"σ",
+"MalgunGothic",
+0.591
+],
+"03C4": [
+"τ",
+"MalgunGothic",
+0.506
+],
+"03C5": [
+"υ",
+"MalgunGothic",
+0.566
+],
+"03C6": [
+"φ",
+"MalgunGothic",
+0.723
+],
+"03C7": [
+"χ",
+"MalgunGothic",
+0.554
+],
+"03C8": [
+"ψ",
+"MalgunGothic",
+0.771
+],
+"03C9": [
+"ω",
+"MalgunGothic",
+0.832
+],
+"0401": [
+"Ё",
+"MalgunGothic",
+0.518
+],
+"0410": [
+"А",
+"MalgunGothic",
+0.663
+],
+"0411": [
+"Б",
+"MalgunGothic",
+0.591
+],
+"0412": [
+"В",
+"MalgunGothic",
+0.591
+],
+"0413": [
+"Г",
+"MalgunGothic",
+0.482
+],
+"0414": [
+"Д",
+"MalgunGothic",
+0.711
+],
+"0415": [
+"Е",
+"MalgunGothic",
+0.518
+],
+"0416": [
+"Ж",
+"MalgunGothic",
+0.892
+],
+"0417": [
+"З",
+"MalgunGothic",
+0.554
+],
+"0418": [
+"И",
+"MalgunGothic",
+0.771
+],
+"0419": [
+"Й",
+"MalgunGothic",
+0.771
+],
+"041A": [
+"К",
+"MalgunGothic",
+0.591
+],
+"041B": [
+"Л",
+"MalgunGothic",
+0.687
+],
+"041C": [
+"М",
+"MalgunGothic",
+0.928
+],
+"041D": [
+"Н",
+"MalgunGothic",
+0.735
+],
+"041E": [
+"О",
+"MalgunGothic",
+0.771
+],
+"041F": [
+"П",
+"MalgunGothic",
+0.735
+],
+"0420": [
+"Р",
+"MalgunGothic",
+0.578
+],
+"0421": [
+"С",
+"MalgunGothic",
+0.639
+],
+"0422": [
+"Т",
+"MalgunGothic",
+0.542
+],
+"0423": [
+"У",
+"MalgunGothic",
+0.591
+],
+"0424": [
+"Ф",
+"MalgunGothic",
+0.747
+],
+"0425": [
+"Х",
+"MalgunGothic",
+0.603
+],
+"0426": [
+"Ц",
+"MalgunGothic",
+0.759
+],
+"0427": [
+"Ч",
+"MalgunGothic",
+0.675
+],
+"0428": [
+"Ш",
+"MalgunGothic",
+0.976
+],
+"0429": [
+"Щ",
+"MalgunGothic",
+1.012
+],
+"042A": [
+"Ъ",
+"MalgunGothic",
+0.723
+],
+"042B": [
+"Ы",
+"MalgunGothic",
+0.795
+],
+"042C": [
+"Ь",
+"MalgunGothic",
+0.591
+],
+"042D": [
+"Э",
+"MalgunGothic",
+0.639
+],
+"042E": [
+"Ю",
+"MalgunGothic",
+1.036
+],
+"042F": [
+"Я",
+"MalgunGothic",
+0.603
+],
+"0430": [
+"а",
+"MalgunGothic",
+0.53
+],
+"0431": [
+"б",
+"MalgunGothic",
+0.603
+],
+"0432": [
+"в",
+"MalgunGothic",
+0.542
+],
+"0433": [
+"г",
+"MalgunGothic",
+0.398
+],
+"0434": [
+"д",
+"MalgunGothic",
+0.566
+],
+"0435": [
+"е",
+"MalgunGothic",
+0.542
+],
+"0436": [
+"ж",
+"MalgunGothic",
+0.771
+],
+"0437": [
+"з",
+"MalgunGothic",
+0.458
+],
+"0438": [
+"и",
+"MalgunGothic",
+0.603
+],
+"0439": [
+"й",
+"MalgunGothic",
+0.603
+],
+"043A": [
+"к",
+"MalgunGothic",
+0.506
+],
+"043B": [
+"л",
+"MalgunGothic",
+0.53
+],
+"043C": [
+"м",
+"MalgunGothic",
+0.723
+],
+"043D": [
+"н",
+"MalgunGothic",
+0.591
+],
+"043E": [
+"о",
+"MalgunGothic",
+0.603
+],
+"043F": [
+"п",
+"MalgunGothic",
+0.591
+],
+"0440": [
+"р",
+"MalgunGothic",
+0.603
+],
+"0441": [
+"с",
+"MalgunGothic",
+0.482
+],
+"0442": [
+"т",
+"MalgunGothic",
+0.422
+],
+"0443": [
+"у",
+"MalgunGothic",
+0.494
+],
+"0444": [
+"ф",
+"MalgunGothic",
+0.699
+],
+"0445": [
+"х",
+"MalgunGothic",
+0.47
+],
+"0446": [
+"ц",
+"MalgunGothic",
+0.615
+],
+"0447": [
+"ч",
+"MalgunGothic",
+0.578
+],
+"0448": [
+"ш",
+"MalgunGothic",
+0.82
+],
+"0449": [
+"щ",
+"MalgunGothic",
+0.844
+],
+"044A": [
+"ъ",
+"MalgunGothic",
+0.603
+],
+"044B": [
+"ы",
+"MalgunGothic",
+0.723
+],
+"044C": [
+"ь",
+"MalgunGothic",
+0.518
+],
+"044D": [
+"э",
+"MalgunGothic",
+0.482
+],
+"044E": [
+"ю",
+"MalgunGothic",
+0.832
+],
+"044F": [
+"я",
+"MalgunGothic",
+0.518
+],
+"0451": [
+"ё",
+"MalgunGothic",
+0.542
+],
+"2013": [
+"–",
+"MalgunGothic",
+0.518
+],
+"2014": [
+"—",
+"MalgunGothic",
+1.036
+],
+"2017": [
+"‗",
+"HCRBatang",
+0.591
+],
+"2018": [
+"‘",
+"ArialMT",
+0.229
+],
+"2019": [
+"’",
+"ArialMT",
+0.229
+],
+"201A": [
+"‚",
+"ArialMT",
+0.217
+],
+"201B": [
+"‛",
+"ArialMT",
+0.217
+],
+"201C": [
+"“",
+"ArialMT",
+0.337
+],
+"201D": [
+"”",
+"ArialMT",
+0.337
+],
+"201E": [
+"„",
+"ArialMT",
+0.325
+],
+"201F": [
+"‟",
+"ArialMT",
+0.337
+],
+"2020": [
+"†",
+"MalgunGothic",
+0.386
+],
+"2021": [
+"‡",
+"MalgunGothic",
+0.386
+],
+"2022": [
+"•",
+"MalgunGothic",
+0.422
+],
+"2023": [
+"‣",
+"HCRBatang",
+0.374
+],
+"2024": [
+"․",
+"HCRBatang",
+0.289
+],
+"2025": [
+"‥",
+"MalgunGothic",
+0.446
+],
+"2026": [
+"…",
+"MalgunGothic",
+0.747
+],
+"2027": [
+"‧",
+"HCRBatang",
+0.289
+],
+"2030": [
+"‰",
+"MalgunGothic",
+1.253
+],
+"2032": [
+"′",
+"MalgunGothic",
+0.241
+],
+"2033": [
+"″",
+"MalgunGothic",
+0.386
+],
+"2039": [
+"‹",
+"MalgunGothic",
+0.325
+],
+"203A": [
+"›",
+"MalgunGothic",
+0.325
+],
+"203B": [
+"※",
+"MalgunGothic",
+0.795
+],
+"203C": [
+"‼",
+"MalgunGothic",
+0.591
+],
+"203E": [
+"‾",
+"HCRBatang",
+0.591
+],
+"2044": [
+"⁄",
+"HCRBatang",
+0.639
+],
+"2047": [
+"⁇",
+"MalgunGothic",
+0.928
+],
+"204E": [
+"⁎",
+"HCRBatang",
+0.482
+],
+"204F": [
+"⁏",
+"HCRBatang",
+0.289
+],
+"2053": [
+"⁓",
+"HCRBatang",
+0.699
+],
+"2054": [
+"⁔",
+"HCRBatang",
+0.783
+],
+"2055": [
+"⁕",
+"HCRBatang",
+0.566
+],
+"2056": [
+"⁖",
+"HCRBatang",
+0.542
+],
+"2057": [
+"⁗",
+"HCRBatang",
+0.578
+],
+"2058": [
+"⁘",
+"HCRBatang",
+0.627
+],
+"2059": [
+"⁙",
+"HCRBatang",
+0.615
+],
+"205A": [
+"⁚",
+"HCRBatang",
+0.289
+],
+"205B": [
+"⁛",
+"HCRBatang",
+0.687
+],
+"205C": [
+"⁜",
+"HCRBatang",
+0.771
+],
+"205D": [
+"⁝",
+"HCRBatang",
+0.301
+],
+"205E": [
+"⁞",
+"HCRBatang",
+0.289
+],
+"2074": [
+"⁴",
+"MalgunGothic",
+0.362
+],
+"207F": [
+"ⁿ",
+"MalgunGothic",
+0.398
+],
+"2081": [
+"₁",
+"MalgunGothic",
+0.386
+],
+"2082": [
+"₂",
+"MalgunGothic",
+0.386
+],
+"2083": [
+"₃",
+"MalgunGothic",
+0.386
+],
+"2084": [
+"₄",
+"MalgunGothic",
+0.386
+],
+"2090": [
+"ₐ",
+"HCRBatang",
+0.337
+],
+"2091": [
+"ₑ",
+"HCRBatang",
+0.313
+],
+"2092": [
+"ₒ",
+"HCRBatang",
+0.337
+],
+"2093": [
+"ₓ",
+"HCRBatang",
+0.349
+],
+"2094": [
+"ₔ",
+"HCRBatang",
+0.313
+],
+"20A3": [
+"₣",
+"MalgunGothic",
+0.494
+],
+"20A4": [
+"₤",
+"MalgunGothic",
+0.554
+],
+"20A7": [
+"₧",
+"MalgunGothic",
+1.121
+],
+"20A9": [
+"₩",
+"MalgunGothic",
+0.759
+],
+"20AC": [
+"€",
+"MalgunGothic",
+0.554
+],
+"2103": [
+"℃",
+"MalgunGothic",
+0.964
+],
+"2105": [
+"℅",
+"HCRBatang",
+0.976
+],
+"2109": [
+"℉",
+"MalgunGothic",
+0.964
+],
+"2113": [
+"ℓ",
+"MalgunGothic",
+0.337
+],
+"2116": [
+"№",
+"MalgunGothic",
+1.157
+],
+"2121": [
+"℡",
+"MalgunGothic",
+0.964
+],
+"2122": [
+"™",
+"MalgunGothic",
+0.795
+],
+"2126": [
+"Ω",
+"MalgunGothic",
+0.783
+],
+"212B": [
+"Å",
+"MalgunGothic",
+0.699
+],
+"212E": [
+"℮",
+"HCRBatang",
+0.976
+],
+"213B": [
+"℻",
+"HCRBatang",
+0.976
+],
+"213C": [
+"ℼ",
+"HCRBatang",
+0.976
+],
+"213D": [
+"ℽ",
+"HCRBatang",
+0.976
+],
+"213E": [
+"ℾ",
+"HCRBatang",
+0.976
+],
+"213F": [
+"ℿ",
+"HCRBatang",
+0.976
+],
+"2140": [
+"⅀",
+"HCRBatang",
+0.976
+],
+"2141": [
+"⅁",
+"HCRBatang",
+0.976
+],
+"2142": [
+"⅂",
+"HCRBatang",
+0.976
+],
+"2143": [
+"⅃",
+"HCRBatang",
+0.976
+],
+"2144": [
+"⅄",
+"HCRBatang",
+0.976
+],
+"2145": [
+"ⅅ",
+"HCRBatang",
+0.976
+],
+"2146": [
+"ⅆ",
+"HCRBatang",
+0.976
+],
+"2147": [
+"ⅇ",
+"HCRBatang",
+0.976
+],
+"2148": [
+"ⅈ",
+"HCRBatang",
+0.976
+],
+"2149": [
+"ⅉ",
+"HCRBatang",
+0.976
+],
+"214A": [
+"⅊",
+"HCRBatang",
+0.976
+],
+"214B": [
+"⅋",
+"HCRBatang",
+0.976
+],
+"214C": [
+"⅌",
+"HCRBatang",
+0.976
+],
+"214D": [
+"⅍",
+"HCRBatang",
+0.976
+],
+"214E": [
+"ⅎ",
+"HCRBatang",
+0.976
+],
+"2153": [
+"⅓",
+"MalgunGothic",
+0.964
+],
+"2154": [
+"⅔",
+"MalgunGothic",
+0.964
+],
+"215B": [
+"⅛",
+"MalgunGothic",
+0.94
+],
+"215C": [
+"⅜",
+"MalgunGothic",
+0.988
+],
+"215D": [
+"⅝",
+"MalgunGothic",
+0.988
+],
+"215E": [
+"⅞",
+"MalgunGothic",
+0.916
+],
+"2192": [
+"→",
+"MalgunGothic",
+0.964
+],
+"2460": [
+"①",
+"MalgunGothic",
+1.012
+],
+"25CF": [
+"●",
+"MalgunGothic",
+1.0
+],
+"3200": [
+"㈀",
+"MalgunGothic",
+1.012
+],
+"3201": [
+"㈁",
+"MalgunGothic",
+1.012
+],
+"3202": [
+"㈂",
+"MalgunGothic",
+1.012
+],
+"3203": [
+"㈃",
+"MalgunGothic",
+1.012
+],
+"3204": [
+"㈄",
+"MalgunGothic",
+1.012
+],
+"3205": [
+"㈅",
+"MalgunGothic",
+1.012
+],
+"3206": [
+"㈆",
+"MalgunGothic",
+1.012
+],
+"3207": [
+"㈇",
+"MalgunGothic",
+1.012
+],
+"3208": [
+"㈈",
+"MalgunGothic",
+1.012
+],
+"3209": [
+"㈉",
+"MalgunGothic",
+1.012
+],
+"320A": [
+"㈊",
+"MalgunGothic",
+1.0
+],
+"320B": [
+"㈋",
+"MalgunGothic",
+1.0
+],
+"320C": [
+"㈌",
+"MalgunGothic",
+1.012
+],
+"320D": [
+"㈍",
+"MalgunGothic",
+1.012
+],
+"320E": [
+"㈎",
+"MalgunGothic",
+1.0
+],
+"320F": [
+"㈏",
+"MalgunGothic",
+1.0
+],
+"3210": [
+"㈐",
+"MalgunGothic",
+1.012
+],
+"3211": [
+"㈑",
+"MalgunGothic",
+1.012
+],
+"3212": [
+"㈒",
+"MalgunGothic",
+1.012
+],
+"3213": [
+"㈓",
+"MalgunGothic",
+1.012
+],
+"3214": [
+"㈔",
+"MalgunGothic",
+1.012
+],
+"3215": [
+"㈕",
+"MalgunGothic",
+1.012
+],
+"3216": [
+"㈖",
+"MalgunGothic",
+1.012
+],
+"3217": [
+"㈗",
+"MalgunGothic",
+1.012
+],
+"3218": [
+"㈘",
+"MalgunGothic",
+1.012
+],
+"3219": [
+"㈙",
+"MalgunGothic",
+1.012
+],
+"321A": [
+"㈚",
+"MalgunGothic",
+1.0
+],
+"321B": [
+"㈛",
+"MalgunGothic",
+1.0
+],
+"321C": [
+"㈜",
+"MalgunGothic",
+1.012
+],
+"3260": [
+"㉠",
+"MalgunGothic",
+1.012
+],
+"3261": [
+"㉡",
+"MalgunGothic",
+1.012
+],
+"3262": [
+"㉢",
+"MalgunGothic",
+1.012
+],
+"3263": [
+"㉣",
+"MalgunGothic",
+1.012
+],
+"3264": [
+"㉤",
+"MalgunGothic",
+1.012
+],
+"3265": [
+"㉥",
+"MalgunGothic",
+1.012
+],
+"3266": [
+"㉦",
+"MalgunGothic",
+1.012
+],
+"3267": [
+"㉧",
+"MalgunGothic",
+1.012
+],
+"3268": [
+"㉨",
+"MalgunGothic",
+1.012
+],
+"3269": [
+"㉩",
+"MalgunGothic",
+1.012
+],
+"326A": [
+"㉪",
+"MalgunGothic",
+1.0
+],
+"326B": [
+"㉫",
+"MalgunGothic",
+1.0
+],
+"326C": [
+"㉬",
+"MalgunGothic",
+1.012
+],
+"326D": [
+"㉭",
+"MalgunGothic",
+1.012
+],
+"326E": [
+"㉮",
+"MalgunGothic",
+1.0
+],
+"326F": [
+"㉯",
+"MalgunGothic",
+1.0
+],
+"3270": [
+"㉰",
+"MalgunGothic",
+1.012
+],
+"3271": [
+"㉱",
+"MalgunGothic",
+1.012
+],
+"3272": [
+"㉲",
+"MalgunGothic",
+1.012
+],
+"3273": [
+"㉳",
+"MalgunGothic",
+1.012
+],
+"3274": [
+"㉴",
+"MalgunGothic",
+1.012
+],
+"3275": [
+"㉵",
+"MalgunGothic",
+1.012
+],
+"3276": [
+"㉶",
+"MalgunGothic",
+1.012
+],
+"3277": [
+"㉷",
+"MalgunGothic",
+1.012
+],
+"3278": [
+"㉸",
+"MalgunGothic",
+1.012
+],
+"3279": [
+"㉹",
+"MalgunGothic",
+1.012
+],
+"327A": [
+"㉺",
+"MalgunGothic",
+1.0
+],
+"327B": [
+"㉻",
+"MalgunGothic",
+1.0
+],
+"327F": [
+"㉿",
+"MalgunGothic",
+1.0
+],
+"3380": [
+"㎀",
+"MalgunGothic",
+1.012
+],
+"3381": [
+"㎁",
+"MalgunGothic",
+1.012
+],
+"3382": [
+"㎂",
+"MalgunGothic",
+1.012
+],
+"3383": [
+"㎃",
+"MalgunGothic",
+1.012
+],
+"3384": [
+"㎄",
+"MalgunGothic",
+1.012
+],
+"3388": [
+"㎈",
+"MalgunGothic",
+1.012
+],
+"3389": [
+"㎉",
+"MalgunGothic",
+1.012
+],
+"338A": [
+"㎊",
+"MalgunGothic",
+1.0
+],
+"338B": [
+"㎋",
+"MalgunGothic",
+1.0
+],
+"338C": [
+"㎌",
+"MalgunGothic",
+1.012
+],
+"338D": [
+"㎍",
+"MalgunGothic",
+1.012
+],
+"338E": [
+"㎎",
+"MalgunGothic",
+1.0
+],
+"338F": [
+"㎏",
+"MalgunGothic",
+1.0
+],
+"3390": [
+"㎐",
+"MalgunGothic",
+1.012
+],
+"3391": [
+"㎑",
+"MalgunGothic",
+1.012
+],
+"3392": [
+"㎒",
+"MalgunGothic",
+1.012
+],
+"3393": [
+"㎓",
+"MalgunGothic",
+1.012
+],
+"3394": [
+"㎔",
+"MalgunGothic",
+1.012
+],
+"3395": [
+"㎕",
+"MalgunGothic",
+1.012
+],
+"3396": [
+"㎖",
+"MalgunGothic",
+1.012
+],
+"3397": [
+"㎗",
+"MalgunGothic",
+1.012
+],
+"3398": [
+"㎘",
+"MalgunGothic",
+1.012
+],
+"3399": [
+"㎙",
+"MalgunGothic",
+1.012
+],
+"339A": [
+"㎚",
+"MalgunGothic",
+1.0
+],
+"339B": [
+"㎛",
+"MalgunGothic",
+1.0
+],
+"339C": [
+"㎜",
+"MalgunGothic",
+1.012
+],
+"339D": [
+"㎝",
+"MalgunGothic",
+1.012
+],
+"339E": [
+"㎞",
+"MalgunGothic",
+1.0
+],
+"339F": [
+"㎟",
+"MalgunGothic",
+1.0
+],
+"33A0": [
+"㎠",
+"MalgunGothic",
+1.0
+],
+"33A1": [
+"㎡",
+"MalgunGothic",
+1.0
+],
+"33A2": [
+"㎢",
+"MalgunGothic",
+1.0
+],
+"33A3": [
+"㎣",
+"MalgunGothic",
+1.0
+],
+"33A4": [
+"㎤",
+"MalgunGothic",
+1.0
+],
+"33A5": [
+"㎥",
+"MalgunGothic",
+1.0
+],
+"33A6": [
+"㎦",
+"MalgunGothic",
+1.0
+],
+"33A7": [
+"㎧",
+"MalgunGothic",
+1.0
+],
+"33A8": [
+"㎨",
+"MalgunGothic",
+1.0
+],
+"33A9": [
+"㎩",
+"MalgunGothic",
+1.0
+],
+"33AA": [
+"㎪",
+"MalgunGothic",
+1.0
+],
+"33AB": [
+"㎫",
+"MalgunGothic",
+1.0
+],
+"33AC": [
+"㎬",
+"MalgunGothic",
+1.0
+],
+"33AD": [
+"㎭",
+"MalgunGothic",
+1.0
+],
+"33AE": [
+"㎮",
+"MalgunGothic",
+1.0
+],
+"33AF": [
+"㎯",
+"MalgunGothic",
+1.012
+],
+"33B0": [
+"㎰",
+"MalgunGothic",
+1.0
+],
+"33B1": [
+"㎱",
+"MalgunGothic",
+1.0
+],
+"33B2": [
+"㎲",
+"MalgunGothic",
+1.0
+],
+"33B3": [
+"㎳",
+"MalgunGothic",
+1.0
+],
+"33B4": [
+"㎴",
+"MalgunGothic",
+1.0
+],
+"33B5": [
+"㎵",
+"MalgunGothic",
+1.0
+],
+"33B6": [
+"㎶",
+"MalgunGothic",
+1.0
+],
+"33B7": [
+"㎷",
+"MalgunGothic",
+1.0
+],
+"33B8": [
+"㎸",
+"MalgunGothic",
+1.0
+],
+"33B9": [
+"㎹",
+"MalgunGothic",
+1.0
+],
+"33BA": [
+"㎺",
+"MalgunGothic",
+1.0
+],
+"33BB": [
+"㎻",
+"MalgunGothic",
+1.0
+],
+"33BC": [
+"㎼",
+"MalgunGothic",
+1.0
+],
+"33BD": [
+"㎽",
+"MalgunGothic",
+1.0
+],
+"33BE": [
+"㎾",
+"MalgunGothic",
+1.0
+],
+"33BF": [
+"㎿",
+"MalgunGothic",
+1.012
+],
+"33C0": [
+"㏀",
+"MalgunGothic",
+1.012
+],
+"33C1": [
+"㏁",
+"MalgunGothic",
+1.012
+],
+"33C2": [
+"㏂",
+"MalgunGothic",
+1.012
+],
+"33C3": [
+"㏃",
+"MalgunGothic",
+1.012
+],
+"33C4": [
+"㏄",
+"MalgunGothic",
+1.012
+],
+"33C5": [
+"㏅",
+"MalgunGothic",
+1.012
+],
+"33C6": [
+"㏆",
+"MalgunGothic",
+1.012
+],
+"33C7": [
+"㏇",
+"MalgunGothic",
+1.012
+],
+"33C8": [
+"㏈",
+"MalgunGothic",
+1.012
+],
+"33C9": [
+"㏉",
+"MalgunGothic",
+1.012
+],
+"33CA": [
+"㏊",
+"MalgunGothic",
+1.0
+],
+"33CF": [
+"㏏",
+"MalgunGothic",
+1.0
+],
+"33D0": [
+"㏐",
+"MalgunGothic",
+1.012
+],
+"33D3": [
+"㏓",
+"MalgunGothic",
+1.012
+],
+"33D6": [
+"㏖",
+"MalgunGothic",
+1.012
+],
+"33D8": [
+"㏘",
+"MalgunGothic",
+1.012
+],
+"33DB": [
+"㏛",
+"MalgunGothic",
+1.0
+],
+"33DC": [
+"㏜",
+"MalgunGothic",
+1.012
+],
+"33DD": [
+"㏝",
+"MalgunGothic",
+1.012
+],
+"FF01": [
+"！",
+"MalgunGothic",
+1.0
+]
+}

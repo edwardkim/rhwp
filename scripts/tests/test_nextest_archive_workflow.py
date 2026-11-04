@@ -212,7 +212,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("JUnit report contains no target durations", collector)
         self.assertIn("collectDurationMeasurement", collector)
         self.assertIn("case_durations", collector)
-        self.assertIn("exactly one B, C, and D report", refresh)
+        self.assertIn("const refreshed = refreshDurationPolicy(policy, measurements)", refresh)
         self.assertIn("identical run, ref, and sha provenance", refresh)
 
     def test_native_skia_uses_the_same_test_profile_policy(self) -> None:

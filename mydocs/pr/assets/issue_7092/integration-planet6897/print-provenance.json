@@ -1,0 +1,14 @@
+{
+  "input": "samples/basic/treatise sample.hwp",
+  "input_sha256": "1aec0ca0a958d24199591b96916a2535d04f1c654f60dda1027ecbaf4839f828",
+  "last_saved_with": "hancom-office-2010 8.0.0.450",
+  "output": "pdf/issue7092/treatise-sample-2020.pdf",
+  "output_sha256": "a90c88f4d42d06b91e49edb0da5172ee64d8bc3e13bcbfb406e0bfbd5b21fbd6",
+  "job_id": "43cf4494-584e-49b2-9b5a-05dd90e9d1ae",
+  "engine": "2020",
+  "hancom_version": "11.0.0.9136",
+  "pdf_print_method": 0,
+  "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+  "pdf_page_count": 7,
+  "input_preprocess": "scripts_disabled"
+}

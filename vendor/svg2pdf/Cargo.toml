@@ -33,6 +33,7 @@ ttf-parser = { version = "0.25" }
 siphasher = { version = "1.0.1"}
 
 [package]
+rust-version = "1.93.1"
 include = [
     "/Cargo.toml",
     "/src/**",
@@ -43,7 +44,7 @@ include = [
 ]
 name = "rhwp-svg2pdf"
 description = "rhwp SVG-to-PDF compatibility backend based on svg2pdf 0.13.0; not an official upstream release"
-publish = false
+publish = ["crates-io"]
 categories = ["encoding", "graphics", "multimedia"]
 keywords = ["svg", "pdf", "vector-graphics", "conversion"]
 version = { workspace = true }

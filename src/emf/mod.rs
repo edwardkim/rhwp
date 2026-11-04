@@ -41,6 +41,8 @@ pub enum Error {
     MisalignedRecord { offset: usize, size: u32 },
     /// 레코드 Size 필드가 최소 헤더(8) 미만.
     RecordTooSmall { offset: usize, size: u32 },
+    /// 복합 다각형의 선언 점 수와 개별 다각형 점 수의 합이 다르다.
+    InvalidPolygonPointCount { declared: usize, actual: usize },
 }
 
 impl core::fmt::Display for Error {
@@ -64,6 +66,10 @@ impl core::fmt::Display for Error {
             Self::RecordTooSmall { offset, size } => {
                 write!(f, "record at offset {offset} too small: size={size} < 8")
             }
+            Self::InvalidPolygonPointCount { declared, actual } => write!(
+                f,
+                "invalid polygon point count: declared={declared}, actual={actual}"
+            ),
         }
     }
 }

@@ -1,0 +1,45 @@
+[
+  {
+    "gate": "typescript",
+    "command": [
+      "npx",
+      "tsc",
+      "--noEmit"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 1.32,
+    "at": "2026-11-02T05:24:13.606130+00:00"
+  },
+  {
+    "gate": "studio-test",
+    "command": [
+      "npm",
+      "test"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 17.65,
+    "at": "2026-11-02T05:27:16.412464+00:00"
+  },
+  {
+    "gate": "studio-build",
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 4.67,
+    "at": "2026-11-02T05:27:21.087625+00:00"
+  },
+  {
+    "gate": "vscode-compile",
+    "command": [
+      "npm",
+      "run",
+      "compile"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 10.18,
+    "at": "2026-11-02T05:27:31.272220+00:00"
+  }
+]

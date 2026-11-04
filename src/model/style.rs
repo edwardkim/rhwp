@@ -114,6 +114,9 @@ pub struct SubstFont {
 /// 스펙 위반값 0 이 된다(#4141).
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct CharShape {
+    /// Explicit glyph paint; independent of font weight and advance metrics.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text_paint: Option<super::text_paint::TextPaint>,
     /// 원본 레코드 바이트 (라운드트립 보존용, 있으면 직렬화 시 우선 사용)
     pub raw_data: Option<Vec<u8>>,
     /// 언어별 글꼴 ID 참조값 (한글, 영어, 한자, 일어, 기타, 기호, 사용자)
@@ -230,6 +233,7 @@ pub struct CharShape {
 impl Default for CharShape {
     fn default() -> Self {
         Self {
+            text_paint: None,
             raw_data: None,
             font_ids: [0; 7],
             // ↓ 파생값 0 은 OWPML 유효범위 50~200 밖 — positiveInteger 라 타입 수준 불법 (#4161)
@@ -271,7 +275,8 @@ impl Default for CharShape {
 /// CharShape 비교: raw_data 필드 제외 (라운드트립용 원본 바이트는 논리적 동일성과 무관)
 impl PartialEq for CharShape {
     fn eq(&self, other: &Self) -> bool {
-        self.font_ids == other.font_ids
+        self.text_paint == other.text_paint
+            && self.font_ids == other.font_ids
             && self.ratios == other.ratios
             && self.spacings == other.spacings
             && self.relative_sizes == other.relative_sizes
@@ -489,6 +494,9 @@ pub struct Bullet {
     pub bullet_char: char,
     /// 이미지 글머리표 여부 (0=문자, ID=이미지)
     pub image_bullet: i32,
+    /// HWPX에서 그림 사용을 표시했지만 실제 그림 참조가 없는 원본 속성이다.
+    #[serde(skip_serializing)]
+    pub hwpx_image_without_ref: bool,
     /// 이미지 글머리 데이터 (대비, 밝기, 효과, ID)
     pub image_data: [u8; 4],
     /// 체크 글머리표 문자
@@ -497,6 +505,20 @@ pub struct Bullet {
     /// align/useInstWidth/autoIndent/textOffsetType/checkable 등 7수준 필드로 표현
     /// 못하는 HWPX 전용 속성 보존. [#2790]
     pub raw_para_head: Option<String>,
+}
+
+impl Bullet {
+    /// HWP의 그림 사용 값과 그림 데이터에 저장된 BinData 순번은 서로 다르다.
+    /// HWPX에서 읽은 `image_bullet`은 매니페스트를 정규화한 BinData 순번이다.
+    pub fn image_reference(&self) -> Option<u16> {
+        if self.image_bullet <= 0 {
+            return None;
+        }
+        if self.raw_para_head.is_none() {
+            return (self.image_data[3] != 0).then_some(u16::from(self.image_data[3]));
+        }
+        u16::try_from(self.image_bullet).ok().filter(|id| *id > 0)
+    }
 }
 
 /// 텍스트 정렬 방식
@@ -1306,3 +1328,5 @@ mod tests {
         assert_eq!(fill.fill_type, FillType::None);
     }
 }
+
+crate::storage::clone_fields!(DiagonalLine, {diagonal_type, width, color});

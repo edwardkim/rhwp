@@ -1,0 +1,48 @@
+{
+  "dpi": 96,
+  "coordinate_system": "paper-origin CSS px",
+  "tolerance_px": 2,
+  "pages": {
+    "111": {
+      "native_raw": "99.93763",
+      "wasm_raw": "99.91756"
+    },
+    "242": {
+      "native_raw": "98.84506",
+      "wasm_raw": "98.87142"
+    }
+  },
+  "tables_111": [
+    {
+      "paragraph": 837,
+      "control": 1,
+      "top": 549.0667,
+      "bottom": 614.82
+    },
+    {
+      "paragraph": 839,
+      "control": 0,
+      "top": 695.292,
+      "bottom": 749.6867
+    },
+    {
+      "paragraph": 841,
+      "control": 0,
+      "top": 804.0814,
+      "bottom": 869.676
+    }
+  ],
+  "table_242": {
+    "paragraph": 414,
+    "control": 0,
+    "top": 501.231,
+    "bottom": 542.827
+  },
+  "arrow_111": {
+    "x": 233.348,
+    "start_y": 827.92,
+    "end_y": 849.5173
+  },
+  "coordinate_source": "독립 한컴2024+KoPub Print PDF의 vector 선/채움 경로를 72pt에서 96DPI 종이 원점으로 환산",
+  "source_pdf_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593"
+}

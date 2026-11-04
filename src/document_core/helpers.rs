@@ -65,6 +65,7 @@ pub(crate) fn logical_to_text_offset(para: &Paragraph, logical_offset: usize) ->
             if logical_idx == logical_offset {
                 return (text_idx, true);
             }
+            continue;
         }
         // 텍스트 문자
         if text_idx < text_len {
@@ -108,11 +109,6 @@ pub(crate) fn logical_paragraph_length(para: &Paragraph) -> usize {
         .iter()
         .filter(|ctrl| is_logical_inline_control(ctrl))
         .count();
-    let char_overlap_count = para
-        .controls
-        .iter()
-        .filter(|ctrl| matches!(ctrl, Control::CharOverlap(_)))
-        .count();
     let logical_positions = find_logical_control_positions(para);
     let max_inline_end = para
         .controls
@@ -124,7 +120,7 @@ pub(crate) fn logical_paragraph_length(para: &Paragraph) -> usize {
         .map(|pos| pos + 1)
         .unwrap_or(0);
 
-    (text_len + inline_count + char_overlap_count).max(max_inline_end + char_overlap_count)
+    (text_len + inline_count).max(max_inline_end)
 }
 
 /// 반환: positions[i] = para.controls[i]가 삽입되어야 할 텍스트 문자 인덱스

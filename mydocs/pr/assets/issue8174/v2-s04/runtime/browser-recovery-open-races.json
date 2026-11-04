@@ -1,0 +1,8 @@
+{
+  "checked": [
+    "a protected open cannot overwrite a document created during key derivation",
+    "a delayed recovery cannot overwrite a newer document",
+    "cancelled recovery during key derivation preserves the unconsumed encrypted draft"
+  ],
+  "faultInjection": "A deterministic gate before actual WebCrypto deriveKey; real KDF and document replacement still execute."
+}

@@ -12,8 +12,8 @@
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
 use rhwp::model::document::{Document, Section};
-use rhwp::model::paragraph::{LineSeg, Paragraph};
-use rhwp::model::style::ParaShape;
+use rhwp::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
+use rhwp::model::style::{CharShape, ParaShape};
 use rhwp::model::table::{Cell, Table};
 use rhwp::serializer::hwpx::serialize_hwpx;
 
@@ -56,15 +56,30 @@ fn nested_table() -> Table {
 }
 
 /// 표 host 문단이 `line_segs` 를 `segs` 로 가진 문서.
-fn document_with_host_line_segs(segs: Vec<LineSeg>) -> Document {
+fn document_with_host_line_segs(segs: Vec<LineSeg>, table_after_text: bool) -> Document {
     // has_preceding_text 를 세우는 앞 문단 — 실제 문서와 같은 배치다.
     let lead = Paragraph {
         text: "나. 사료 급여 내역".to_string(),
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![line_seg(0, TEXT_LH, 0)],
         ..Default::default()
     };
 
     let mut host = Paragraph {
         text: "볏짚".to_string(),
+        char_count: 11,
+        char_offsets: if table_after_text {
+            vec![0, 1]
+        } else {
+            vec![8, 9]
+        },
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
         ..Default::default()
     };
     host.controls.push(Control::Table(Box::new(nested_table())));
@@ -93,6 +108,7 @@ fn document_with_host_line_segs(segs: Vec<LineSeg>) -> Document {
 
     let mut doc = Document::default();
     doc.doc_info.para_shapes = vec![ParaShape::default()];
+    doc.doc_info.char_shapes = vec![CharShape::default()];
     doc.sections.push(section);
     doc
 }
@@ -152,41 +168,47 @@ fn nested_table_y(doc: &Document) -> f64 {
         .expect("중첩 표 y")
 }
 
+// 저장 줄 소속을 검사하려면 글자모양과 실제 제어 슬롯 축도 함께 유효해야 한다.
+// 이 합성 계약은 원 기관 문서의 시각 검증을 대신하지 않는다.
 #[test]
-fn issue_5589_trailing_text_line_does_not_move_the_table() {
-    // 표만 있는 한 줄 짜리 문단.
-    let only_band = nested_table_y(&document_with_host_line_segs(vec![line_seg(
-        BAND_VPOS, BAND_LH, 0,
-    )]));
-    // 같은 문단에 표 뒤 글줄이 한 줄 더 저장된 경우.
-    let with_text = nested_table_y(&document_with_host_line_segs(vec![
-        line_seg(BAND_VPOS, BAND_LH, 0),
-        line_seg(TEXT_VPOS, TEXT_LH, 10),
-    ]));
-
+fn stored_table_slot_keeps_its_origin_when_a_trailing_text_line_is_present() {
+    let only_band = nested_table_y(&document_with_host_line_segs(
+        vec![line_seg(BAND_VPOS, BAND_LH, 0)],
+        false,
+    ));
+    let with_text = nested_table_y(&document_with_host_line_segs(
+        vec![
+            line_seg(BAND_VPOS, BAND_LH, 0),
+            line_seg(TEXT_VPOS, TEXT_LH, 8),
+        ],
+        false,
+    ));
     assert!(
-        (only_band - with_text).abs() <= 2.0,
-        "표 뒤 글줄 때문에 표가 {:.1}px 이동했다 (표만: {only_band:.1}, 글줄 포함: {with_text:.1}) (#5589)",
-        with_text - only_band
+        (only_band - with_text).abs() <= 0.2,
+        "뒤 글줄이 같은 슬롯의 표 원점을 이동시키지 않음: {only_band}, {with_text}"
     );
 }
 
 #[test]
-fn issue_5589_table_on_second_line_still_follows_stored_offset() {
-    // [#1195] 표 앞에 텍스트가 있어 표가 둘째 줄로 넘어간 경우는 종전대로 그 줄에 놓는다.
-    let text_first = nested_table_y(&document_with_host_line_segs(vec![
-        line_seg(BAND_VPOS, TEXT_LH, 0),
-        line_seg(TEXT_VPOS, BAND_LH, 2),
-    ]));
-    let band_first = nested_table_y(&document_with_host_line_segs(vec![
-        line_seg(BAND_VPOS, BAND_LH, 0),
-        line_seg(TEXT_VPOS, TEXT_LH, 10),
-    ]));
-
-    let stored_offset = (TEXT_VPOS - BAND_VPOS) as f64 / 7200.0 * 96.0;
+fn stored_text_prefix_places_the_table_in_its_own_following_band() {
+    let text_first = nested_table_y(&document_with_host_line_segs(
+        vec![
+            line_seg(BAND_VPOS, TEXT_LH, 0),
+            line_seg(TEXT_VPOS, BAND_LH, 2),
+        ],
+        true,
+    ));
+    let band_first = nested_table_y(&document_with_host_line_segs(
+        vec![
+            line_seg(BAND_VPOS, BAND_LH, 0),
+            line_seg(TEXT_VPOS, TEXT_LH, 8),
+        ],
+        false,
+    ));
+    let stored_offset = f64::from(TEXT_VPOS - BAND_VPOS) / 7200.0 * 96.0;
+    assert!(text_first > band_first, "앞 글줄 뒤 표 밴드의 순서를 보존");
     assert!(
-        (text_first - band_first - stored_offset).abs() <= 3.0,
-        "표가 둘째 줄에 저장된 문단에서 저장 오프셋({stored_offset:.1}px)만큼 내려가지 않았다 \
-         (둘째 줄: {text_first:.1}, 첫 줄: {band_first:.1})"
+        (text_first - band_first - stored_offset).abs() <= 0.2,
+        "원본 저장 줄 간격과 실제 표 원점 차이의 관계: {text_first}, {band_first}"
     );
 }

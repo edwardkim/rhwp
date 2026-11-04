@@ -1,0 +1,9 @@
+{
+  "ready": false,
+  "reason": "no-verified-pr-duration-measurements",
+  "completed": true,
+  "run_id": 41420219752,
+  "url": "https://github.com/edwardkim/rhwp/actions/runs/41420219752",
+  "conclusion": "success",
+  "head_sha": "ba9a3c5f222a151736a4a21f9743bf8d9ddfbd8a"
+}

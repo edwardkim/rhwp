@@ -13,6 +13,7 @@ mod transformed_text;
 pub mod field_query;
 mod font_decision;
 mod font_metric_coverage;
+pub mod form_action;
 mod form_query;
 pub mod hwpctrl_sets;
 pub mod hyperlink_geometry;
@@ -49,4 +50,4 @@ pub mod chart_extract;
 pub mod table_csv;
 pub mod table_extract;
 
-pub(crate) mod equation_fonts;
+pub(crate) mod content_fonts;

@@ -27,12 +27,13 @@ export interface AutosaveScheduleSettings {
 
 export type AutosaveStatus =
   | { state: 'saving'; reason: string }
-  | { state: 'saved'; reason: string; byteLength: number }
+  | { state: 'saved'; reason: string; byteLength: number; encrypted?: boolean }
   | { state: 'blocked'; reason: string }
   | { state: 'error'; reason: string; error: unknown };
 
 export interface AutosaveManagerOptions {
   exportBytes: () => Uint8Array;
+  protectDraft?: (draft: AutosaveDraft) => Promise<AutosaveDraft>;
   /**
    * 참이면 복구용 자동 저장을 수행하지 않는다. 보호 문서에서 평문 복구본이 남는 것을
    * 막기 위한 fail-closed 조건이다 (#5992).
@@ -63,6 +64,7 @@ function reasonText(reason: unknown, fallback: string): string {
 
 export class AutosaveManager {
   private readonly exportBytes: () => Uint8Array;
+  private readonly protectDraft?: (draft: AutosaveDraft) => Promise<AutosaveDraft>;
   private readonly isRecoveryBlocked: () => boolean;
   private readonly now: () => number;
   private readonly idFactory: () => string;
@@ -82,6 +84,7 @@ export class AutosaveManager {
 
   constructor(options: AutosaveManagerOptions) {
     this.exportBytes = options.exportBytes;
+    this.protectDraft = options.protectDraft;
     this.isRecoveryBlocked = options.isRecoveryBlocked ?? (() => false);
     this.scheduleSettings = normalizeSchedule({
       recoveryEnabled: true,
@@ -125,6 +128,7 @@ export class AutosaveManager {
   }
 
   async beginDocument(meta: AutosaveDocumentMeta, options: { discardPreviousDraft?: boolean } = {}): Promise<string> {
+    this.discardGeneration += 1;
     const previousDraftId = this.current?.draftId ?? null;
     this.cancelTimers();
     this.pendingReason = null;
@@ -205,7 +209,7 @@ export class AutosaveManager {
       const bytes = this.exportBytes();
       const savedAt = this.now();
       const generationAtStart = this.discardGeneration;
-      await this.store.saveDraft({
+      let draft: AutosaveDraft = {
         id: current.draftId,
         fileName: current.fileName,
         sourceFormat: current.sourceFormat,
@@ -213,7 +217,10 @@ export class AutosaveManager {
         byteLength: bytes.byteLength,
         data: new Uint8Array(bytes),
         dirtyReason: reason,
-      });
+      };
+      if (this.protectDraft) draft = await this.protectDraft(draft);
+      if (this.discardGeneration !== generationAtStart || this.current !== current) return;
+      await this.store.saveDraft(draft);
       if (this.discardGeneration !== generationAtStart) {
         // 저장 진행 중 discard가 끼어듦 — 방금 저장으로 부활한 draft를 재삭제한다
         await this.deleteDraft(current.draftId, 'discarded-during-save');
@@ -221,7 +228,7 @@ export class AutosaveManager {
       }
       this.lastSavedAt = savedAt;
       this.logger.debug?.(`[autosave] draft saved: ${current.fileName} (${bytes.byteLength} bytes)`);
-      this.onStatus?.({ state: 'saved', reason, byteLength: bytes.byteLength });
+      this.onStatus?.({ state: 'saved', reason, byteLength: draft.data.byteLength, encrypted: Boolean(draft.protection) });
     } catch (error) {
       this.logger.warn('[autosave] draft save failed:', error);
       this.onStatus?.({ state: 'error', reason, error });

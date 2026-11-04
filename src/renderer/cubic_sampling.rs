@@ -5,6 +5,7 @@
 //! 같은 네 표본 식을 장치 격자에 계산한다. 더 큰 축소는 기존 저역 통과를 쓴다.
 //! 호출자는 실제 한컴 2024 색 확장 payload 표식을 확인한 뒤 이 경로를 선택한다.
 
+#[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
 pub(crate) fn modest_reduction(source: (f64, f64), device: (f64, f64)) -> bool {
     [source.0, source.1, device.0, device.1]
         .iter()
@@ -23,8 +24,7 @@ pub(crate) struct DeviceRaster {
     pub height: u32,
 }
 
-#[cfg(target_arch = "wasm32")]
-fn weight(distance: f64) -> f64 {
+pub(crate) fn weight(distance: f64) -> f64 {
     let d = distance.abs();
     if d < 1.0 {
         ((1.5 * d - 2.5) * d) * d + 1.0

@@ -121,17 +121,42 @@ fn chart_moves_to_second_column_and_text_does_not_overlap() {
 }
 
 #[test]
-fn page_background_watermark_has_opacity() {
+fn page_background_applies_print_rgb_once_without_mutating_source() {
     for rel in [
         "samples/143E433F503322BD33.hwp",
         "samples/hwpx/143E433F503322BD33.hwpx",
     ] {
-        let svg = core(rel)
-            .render_page_svg_layer_with_profile_native(0, RenderProfile::Print)
-            .expect("실제 Print SVG");
+        let core = core(rel);
+        let source = serde_json::to_value(&core.document().doc_info.border_fills).unwrap();
+        let page = core.build_page_render_tree(0).expect("첫 쪽 소유 트리");
+        let mut nodes = Vec::new();
+        descendants(&page.root, &mut nodes);
+        let backgrounds: Vec<_> = nodes
+            .iter()
+            .filter_map(|node| {
+                if let RenderNodeType::PageBackground(background) = &node.node_type {
+                    background.image.as_ref()
+                } else {
+                    None
+                }
+            })
+            .collect();
+        assert_eq!(backgrounds.len(), 1, "{rel}: 쪽 배경 소유를 보존한다");
+        let image = backgrounds[0];
+        assert_eq!(image.effect, rhwp::model::image::ImageEffect::RealPic);
+        assert_eq!(
+            (image.brightness, image.contrast),
+            (0, 0),
+            "{rel}: 이미 Print RGB에 소비한 색조를 backend가 다시 적용하지 않는다"
+        );
         assert!(
-            svg.contains("<g opacity=\""),
-            "{rel}: 워터마크 opacity 누락"
+            image::load_from_memory(&image.data).is_ok(),
+            "배경 내용 보존"
+        );
+        assert_eq!(
+            serde_json::to_value(&core.document().doc_info.border_fills).unwrap(),
+            source,
+            "{rel}: render-node 정규화가 원본 채움 속성을 바꾸면 안 된다"
         );
     }
 }

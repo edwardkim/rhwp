@@ -1,0 +1,18 @@
+[
+  {
+    "app": "rhwp-chrome",
+    "exit": 0,
+    "seconds": 5.944415512960404,
+    "ai_endpoint_hits": [],
+    "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rhwp-chrome-build-before-final-wasm.log",
+    "wasm_note": "Existing baseline WASM; validates extension no-AI build exclusion only, not final candidate WASM."
+  },
+  {
+    "app": "rhwp-firefox",
+    "exit": 0,
+    "seconds": 5.705638273968361,
+    "ai_endpoint_hits": [],
+    "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rhwp-firefox-build-before-final-wasm.log",
+    "wasm_note": "Existing baseline WASM; validates extension no-AI build exclusion only, not final candidate WASM."
+  }
+]

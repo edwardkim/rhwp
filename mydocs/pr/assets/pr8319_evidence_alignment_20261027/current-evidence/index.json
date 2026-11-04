@@ -1,0 +1,1022 @@
+{
+  "candidate_base_commit": "67a81782a4fdaf6e24571cb339e37279b2657966",
+  "working_tree_product_changes_included": true,
+  "native_binary_sha256": "748477a42b9bb274c6240b2a2b794e91968c881f7948ee5a8d5f1ee8fe67e0a9",
+  "wasm_sha256": "818737e85f3f6a3c0f6a90238285efadadee95d4087cd031074f1e4b9179b5a0",
+  "records": [
+    {
+      "pr": 7559,
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/public_api_originals/inputs/offset-hwpx.hwpx",
+      "input_sha256": "cf0903bc87b790495100f96e8a787f0ba00ce67cb72406c89d2be6a9533821ee",
+      "pdf": "pdf/pr7559_review/offset-hwpx-2020.pdf",
+      "pdf_sha256": "02179a917b9e5a917daa3d644b243be21050ee0688a11310fd722336d1bd0708",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7559/native",
+          "review_sha256": "8ead3469b98c9d472ef00b7fd8502b1c8aec3a8961d0dfff007dba8142a85a85",
+          "overlay_sha256": "9803827c7c458a2118a3078dee2afa432179c279d253a71493c02657ad03b64f"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7559/wasm",
+          "review_sha256": "95b43809eed2a3bfbd0893da6db3959d7bb15758f015b10f0839bacbd02872ac",
+          "overlay_sha256": "d0cc45fbd3d949bfe820d675129eeda1d938f385f0c24d9454f999686c3daf09"
+        }
+      }
+    },
+    {
+      "pr": 7572,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/178.hwpx",
+      "input_sha256": "9ba1c6e882408656bccb85688b8ba4588626a91e61b068b106c8cf5fcf06ac23",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/178-2020.pdf",
+      "pdf_sha256": "1bf0df15cbdacdc8246f3087cd0a74584951ee786c02fd11949fda9c67849ecd",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 3,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7572/native",
+          "review_sha256": "d8ade2418161b49438cb13e1c181011ac247a54567e53977c83e07fe3861b14c",
+          "overlay_sha256": "22d3b2338624b8ba01f67bb6a96e2efcd0fbd1577c31c9b958a99d11818ac95f"
+        },
+        "wasm": {
+          "pages": 3,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7572/wasm",
+          "review_sha256": "17811ac3d17501a80bf8daa0bbcf7e027894feddfc53232a56fe933b574f6ddb",
+          "overlay_sha256": "d4fa3e3ace523882ec93c57b5016a38cd284b9dfb1b28ca4e4e68df1bc8e07a2"
+        }
+      }
+    },
+    {
+      "pr": 7573,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/181.hwpx",
+      "input_sha256": "84283f46ef725b412d9bd70509db541f6f2d6f54417870a82fb47ebda72e9a48",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/181-2020.pdf",
+      "pdf_sha256": "0dc723d7498e4651c12cfda73dfb6bea0c67717d6e1fa47f65f69a5bb359d9ca",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 99.57627,
+          "representative_raw": 99.57627,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7573/native",
+          "review_sha256": "819ce3a5ff3f773656451a6d6adafcd09f13e77d98bca2c699e1f7e9789ff0bb",
+          "overlay_sha256": "4905bb10292a9db469c8d794104b272503240e5f52a180df25d2d74da57fc4be"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 99.07728,
+          "representative_raw": 99.07728,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7573/wasm",
+          "review_sha256": "698114015baa30faed0b3fda15eca9551d270446d428116ffdd50a9b639e6e24",
+          "overlay_sha256": "c1e0bc150c11dbd0fc83e8a9cd76add9b1c3af8ce498caf90a16a279b0a3f388"
+        }
+      }
+    },
+    {
+      "pr": 7588,
+      "input": "mydocs/pr/assets/semanticist21_group_geometry_20261021/inputs/hwpx/pr7588-pr8042-ungroup-30.hwpx",
+      "input_sha256": "cd2c7fd270f1020bc960b5dce629251012b286e5912c8bbacf5908aa20cdd3ad",
+      "pdf": "mydocs/pr/assets/semanticist21_group_geometry_20261021/pdf/hwpx/pr7588-pr8042-ungroup-30-2020.pdf",
+      "pdf_sha256": "5e3e31a234ce26f4a6e8517c5142c00f66e93576853ec66da80d4dc8e1295b71",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7588/native",
+          "review_sha256": "4217078ab881c96d8bb6b349f432fe1db078fe0059b9ee93dcf48aa0ced5fef3",
+          "overlay_sha256": "549e02f394bf9aedb7edd49f050baddee26784b868825b9a02eb5fca192ae5aa"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7588/wasm",
+          "review_sha256": "9cf6e8334a697042c63bd3c0ae427ec13bbed4a8dd29dfd643a139b56168200e",
+          "overlay_sha256": "83091030300fad970ca5d6bc248e9b22698c0873d6c1980489179706956cd1d2"
+        }
+      }
+    },
+    {
+      "pr": 7589,
+      "input": "mydocs/pr/assets/pr_7589_form_multiline/pr7589-multiline-true.hwpx",
+      "input_sha256": "8b3d341410df07fc32f0909b5b84f274ec48e61bb70bf1bcc6050c2e62599457",
+      "pdf": "mydocs/pr/assets/pr_7589_form_multiline/pr7589-multiline-true-2020.pdf",
+      "pdf_sha256": "21482ec033b610614f675e32bb983cb3d75f9acbbf7ca7bbe00702f61f8f7868",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7589/native",
+          "review_sha256": "53f09c1bfbd46ae1f82edb5b86fcdcca0ca1a45d821eb19f4d5830affe537ea7",
+          "overlay_sha256": "bc421209c16872dff603329499f12792e4e952939d5237ea08852730a0fbde25"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 92.37734,
+          "representative_raw": 92.37734,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7589/wasm",
+          "review_sha256": "8c06b2439ee7db73a8eb0638c90c839c8374d02eb3948b52d38bed0b1b0bc397",
+          "overlay_sha256": "d189789197fddfb1fc53ae24ae4485de74a55f742bee5604b69eefe1e48249aa"
+        }
+      }
+    },
+    {
+      "pr": 7662,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/188.hwpx",
+      "input_sha256": "d454147e39fb3fcb6070f3b21edece5dbba1bee10dc063422043cb6b8aa7033e",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/188-2020.pdf",
+      "pdf_sha256": "2f79486fefcbd252a897b2d29619b8b7f2d4f6716a81e7030466db0ca3eafd7d",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7662/native",
+          "review_sha256": "ada4cb4a7961b7b6694c0925df27c00058f084002e2c8b24da363ae6842d6695",
+          "overlay_sha256": "7c59dc0c9f68a3db2779afbe5cd2f6e79a5f80265847208b0400779fa99f7af1"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7662/wasm",
+          "review_sha256": "f20116310df159292fcf5fa371bcc76a71e8f195e9bf39a43450ce4199478b1f",
+          "overlay_sha256": "cbce93b519c66954cc0a9eeb55c66a07cbf3eb4f374e4e61fed09957beb44f69"
+        }
+      }
+    },
+    {
+      "pr": 7694,
+      "input": "tests/fixtures/inline-control-move/chart-after.hwp",
+      "input_sha256": "8ff56111b683005b7d4cd34990e7214debc7785d9bef6bc76a2772d036ace617",
+      "pdf": "pdf/semanticist21_source_contracts_20261026/pr7694-updated-198-chart-after-2020.pdf",
+      "pdf_sha256": "2f93373067c868addc624878b01c99f25fd13235de2924976fa17b5a44a90d57",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 99.71479,
+          "representative_raw": 99.71479,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7694/native",
+          "review_sha256": "bc246ce9337602e7db2f7a79e77943ae786d2dc6481084ea95bfac0cd7bb364b",
+          "overlay_sha256": "fe5f9ce79738e208d7cb78e77e148f762d23c380769ebe5ab57cf672ef64fb25"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 99.73289,
+          "representative_raw": 99.73289,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7694/wasm",
+          "review_sha256": "0911223ae9f49127abeb13e4d8bbfcdedc74fa41d8d01b59f99ca754b4c9107d",
+          "overlay_sha256": "5d37cb56041065079c645947643ec9d052fb501903b96d692b9a5b80da0fc933"
+        }
+      }
+    },
+    {
+      "pr": 7819,
+      "input": "tests/fixtures/char_overlap_caret_axis/nonbmp-endnote-true.hwp",
+      "input_sha256": "a7aafc8b6e37141e10b34077ce592410f7115c67186ab72db828509aebb16e87",
+      "pdf": "pdf/issue7819_char_overlap_caret_axis/nonbmp-endnote-true-hwp-2020.pdf",
+      "pdf_sha256": "0d72792090d0aa869fa11ff8ca3712b2532c0c12073e302790ec5fe68c170bdb",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7819/native",
+          "review_sha256": "1e248a10b39bfe7e8272a5300c2f20fa37417c25b2374682d6315814815bda01",
+          "overlay_sha256": "ba6348e8ac91c709bbd91920d653ecff92bcab9ba512ac53c5dc0e78067d5ca9"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7819/wasm",
+          "review_sha256": "55fb337e10007305a09e3dd3d1fe5c479d00c71d3e3467510b6e8aba120b142a",
+          "overlay_sha256": "df73221d687d0dd99fe71833c2ec0a8e48a2e527b30c8c3d044672553534df34"
+        }
+      }
+    },
+    {
+      "pr": 7833,
+      "input": "tests/fixtures/hwpx_cell_frame_print/pr7833-flat-false-tables-false-cut.hwpx",
+      "input_sha256": "61aeefefc423eb88c4e21d36018a9b5d0bb67ff3902766049d990691609ed897",
+      "pdf": "pdf/semanticist21-20261019/generated-hwpx/pr7833-flat-false-tables-false-cut/pr7833-flat-false-tables-false-cut-2020.pdf",
+      "pdf_sha256": "57cbd0f72b13b8a0e8049c465c3230c7c7643adda0e005deb2275450ad0c4190",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7833/native",
+          "review_sha256": "7780b6b45340358808908d2218307e963d5526328af19959ba56c8399fc1cedf",
+          "overlay_sha256": "312f10bc5c7d8fe235e1e02def2bd58659b6355ee0deebe8335802d200b1f79a"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7833/wasm",
+          "review_sha256": "de5ce4513b5821d5144248ca2eb83824c7e6221bea6bec426489f905085146b1",
+          "overlay_sha256": "829ca23c4a36f60c1e7388a7b83c36f0d71ecb9801923edd5106c63a4abd54c4"
+        }
+      }
+    },
+    {
+      "pr": 7904,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/211.hwpx",
+      "input_sha256": "4fd67cd597ea33cc7ae916bb9448c84416c1225300a28f984095f93a105bcc6d",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/211-2020.pdf",
+      "pdf_sha256": "89ce80e0bfff5b6befcc0603cb3c55e48888fd3433fe0c007fbe937ce6b6a5b5",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7904/native",
+          "review_sha256": "e911748335a34061b94e66348c31156f18971acf2512fc243850b2d287639d62",
+          "overlay_sha256": "100d1ff1bcf37d1e9f6d6d27518dfa13f8701bf821475b544029dd215f14ed20"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr7904/wasm",
+          "review_sha256": "c04adeeae3f2213f69f28ff11194bcba72794e29d5dc8fdf87afe1cc93683827",
+          "overlay_sha256": "78dcf142ef0d9a10ef61c734a5e884d14781727ff156c1ab732817493f069fa8"
+        }
+      }
+    },
+    {
+      "pr": 8014,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/195.hwpx",
+      "input_sha256": "56fb2054fa2a57d09a4e024edc5bd29f6f67a47424e2b19096a18bbb986d4684",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/195-2020.pdf",
+      "pdf_sha256": "081082724f2e50034da71cfb3a91c291820d00641eb5bc2fd3348e9c4791c5c7",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 2,
+          "min_raw": 99.98236,
+          "representative_raw": 99.98384,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8014/native",
+          "review_sha256": "2f373bb248be7ae31c7bb695c7c8f1cf03f53d176666385b61bbb4e68ce2f2df",
+          "overlay_sha256": "c576c99549e3f695e58b802cb6848caee7c7dc8e1364edb03cc26ee4517f0096"
+        },
+        "wasm": {
+          "pages": 2,
+          "min_raw": 99.76268,
+          "representative_raw": 99.76268,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8014/wasm",
+          "review_sha256": "b5b582493ad8253239b0661c9b4c2588b18c4220a86e6c3ffd5912d53458b38c",
+          "overlay_sha256": "0eb49a95ad4da1bca5c950512af1449341c538d2300bac22db017419182a2d16"
+        }
+      }
+    },
+    {
+      "pr": 8031,
+      "input": "tests/fixtures/pr8031_page_number_cell/pr8031-api-defined-page-number-cell.hwpx",
+      "input_sha256": "7e331d2c5a828bf4f915491ee8db3cd0a9eb253d7cc6caad80acebc37044e8b8",
+      "pdf": "pdf/semanticist21-20261019/pr8031-api-defined-page-number-cell-2020.pdf",
+      "pdf_sha256": "feb6345ec85aa9166fb3d7a6ce5a2359879cdff66f009c293fd237559986f1a9",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8031/native",
+          "review_sha256": "ab6b6d064cf5c71f2262cb94ea64dc95bac73d4077a8058fbc7f7ba501089fe4",
+          "overlay_sha256": "f6c4c53be269b5c76bc1f4c49ee3759b419d0c3658b0b8aa71765188d33d8771"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8031/wasm",
+          "review_sha256": "79fc591c596fb214701f45c60bb47cdc4c62b5f7618aa3822f239f79db9d4891",
+          "overlay_sha256": "a33c1ec1f8be66fee19131c6db40e5c1a1e967af09797fd0c436ae19e73e1f3e"
+        }
+      }
+    },
+    {
+      "pr": 8032,
+      "input": "tests/fixtures/pr8032_print_alpha/wide.hwpx",
+      "input_sha256": "9ef1b0180eab92c311901a5be26936ac737df165c6a0cdf9b8a743553519b07d",
+      "pdf": "pdf/semanticist21-20261019/pr8032-print-alpha-wide-2020.pdf",
+      "pdf_sha256": "ca30c1fce58e933f0a20c7b842f1cd1c306d071f2f64b1fef110449532d5187d",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 98.78322,
+          "representative_raw": 98.78322,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8032/native",
+          "review_sha256": "3fe5d0ecd13583d11db22ef1a6779bbcbab9513f652dd5d42aa5053e66e03d20",
+          "overlay_sha256": "e69bde8ecde7ccbfae3c099b6746fc2b91fc0890924515983f8f384ecc28d428"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 98.78261,
+          "representative_raw": 98.78261,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8032/wasm",
+          "review_sha256": "0757fd1a3cd100d3af25da790f1a57673e7b538cc2dc845914866f4d6e238530",
+          "overlay_sha256": "d0498137e63a93f04c20c6cc5c31c4c0d61b3f4fb1510e6c6598b350228127ed"
+        }
+      }
+    },
+    {
+      "pr": 8035,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/212.hwpx",
+      "input_sha256": "d8c5ad8e8f31461d2b74b63bac9dc1a6e60541f02ec58a1048a9b079028f52c9",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/212-2020.pdf",
+      "pdf_sha256": "c310ea3c5ec9d880e6997282712e15f990bc07e6055ddf4b2e3d3b3bd4472508",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8035/native",
+          "review_sha256": "d81d36a4f6f3756f975cc8280dc0d1302a9b2a7f0f418f3a5be52de5e2ad49fd",
+          "overlay_sha256": "0bda995589167eb0c254fe48b0219c0ddd00e8edb7186b16ff8b07bb45382ee9"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8035/wasm",
+          "review_sha256": "da5989377f1e01876cf0de7da9404a5bcfd1a0db508cefadd899886b260bd470",
+          "overlay_sha256": "38d594ed66afdbf712175c8f331bf6b8584d94838421fa7bb167f70a1920d9a9"
+        }
+      }
+    },
+    {
+      "pr": 8036,
+      "input": "tests/fixtures/pr8036_stored_tall_line/continuing.hwpx",
+      "input_sha256": "21bb9f714b5e3ce646142cd4d8a34cd2c50600a89d6b741f75a2f7dbdbb4df0f",
+      "pdf": "pdf/pr8036_stored_tall_line/continuing-2020.pdf",
+      "pdf_sha256": "8ae130f8e28669e5036359e2c2a95d2c992f78947feaf1e9ab2f2811e39b478d",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8036/native",
+          "review_sha256": "36a1195e9df3a0b47100900c50c8cf0f5e6e9d40bf8df6a370f6bc0b567c1138",
+          "overlay_sha256": "208945fa89ab00365a60a4ccac612557744f24264493422fd3f7b4db47507231"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8036/wasm",
+          "review_sha256": "a09e4a0ddbf5a6f7dc50f57c0399b4708885d9ef2a5101ec0d16b232a6dd0eb1",
+          "overlay_sha256": "5f641df68032079a3bf3b492419862717dd72619bd82c3d26fd33e9b7d172fb3"
+        }
+      }
+    },
+    {
+      "pr": 8037,
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/inputs/pr8037-body-picture-on-host.hwpx",
+      "input_sha256": "b45e8e507712da9a975445ad0055bd7eef45b30deab607f9e23f8bc1effc28b4",
+      "pdf": "pdf/pr8319_evidence_alignment_20261027/pr8037-body-picture-on-host-2020.pdf",
+      "pdf_sha256": "f48eb5b9db28cb727cea14f63cb9a0da64eed6ce9e9eee1e854c10e354282d27",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 96.19628,
+          "representative_raw": 96.19628,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8037/native",
+          "review_sha256": "92042f26b8d62a43b62ef205fea1b9c3b090db878e8f539c11904db29c0e0f12",
+          "overlay_sha256": "87d36a9fcf7b3a985af98cc39d336dcdc2478990175b5e090b6a8682f0b03850"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 95.89714,
+          "representative_raw": 95.89714,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8037/wasm",
+          "review_sha256": "4641d536b49f755de104fcb5b236af9b9758f990c7dcaff01382c755df249b13",
+          "overlay_sha256": "0bbc1e6603180c3c9547509139067adc32f4263da75248e855593e3d6573a671"
+        }
+      }
+    },
+    {
+      "pr": 8038,
+      "input": "mydocs/pr/assets/raised_dot_clip_20261025/raised-dot.hwpx",
+      "input_sha256": "c65131da3881475c93af521dcdcde9b2b4e8cd981500fcaa98ab9b447dc4e1b7",
+      "pdf": "pdf/raised-dot-clip/raised-dot-2020.pdf",
+      "pdf_sha256": "cfd1ebaa3ccad355448049468a6bd13ba60c0428f020cca129e80d40f6d7a90d",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8038/native",
+          "review_sha256": "bc8dd165912608e99e23aefb9fbf36a550e45700c83bef034ff8116ad2ea93cf",
+          "overlay_sha256": "3ee0c21a4117c80076dd0ed1d20d5cb5f73a0523514b4d0240d769089006f1af"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8038/wasm",
+          "review_sha256": "4b502c043c9b4fd3b68396a5e9b3e9955d1ed8d2e39b9c9c262e51f7ec01b90e",
+          "overlay_sha256": "eb5ae1c1da6889cd94caaefffe8cbe140a4b10628823ae1ee8cac612b3982c41"
+        }
+      }
+    },
+    {
+      "pr": 8039,
+      "input": "tests/fixtures/hwpx_cell_frame_print/pr8039-control-tail-true.hwpx",
+      "input_sha256": "22391a6e27cde14e353279be278eb184e4cc2df5a9a3306c3d5a0cd41b671ea2",
+      "pdf": "pdf/semanticist21-20261019/generated-hwpx/pr8039-control-tail-true/pr8039-control-tail-true-2020.pdf",
+      "pdf_sha256": "0a1dd0de95c683deabf54499477415fd4ebe9926889748a6154812da07c9375f",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8039/native",
+          "review_sha256": "b2054b9f353a548e0055314ea4c42e8ac9ec6383bd94459d866c1270dc7c7f36",
+          "overlay_sha256": "960943ea11976b542d2b94a1c177bd9850c3d1dd40a431e5bc39c79c137ca60e"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8039/wasm",
+          "review_sha256": "3760e4cc68de030fcf7aa107b7040270ca7f668d1075748b6512c9ec712abfb3",
+          "overlay_sha256": "2da1d5c7839951d0fe953054fb9095bf390f8ef238dc26d78fb0a8c6d3adc899"
+        }
+      }
+    },
+    {
+      "pr": 8041,
+      "input": "mydocs/pr/assets/semanticist21_group_geometry_20261021/inputs/hwpx/pr8041-case-3-base-0-after.hwpx",
+      "input_sha256": "d6eaa0ed71943ecf8559dc764b74e75487c81fc05c63c44b04c6fd6ea1040432",
+      "pdf": "mydocs/pr/assets/semanticist21_group_geometry_20261021/pdf/hwpx/pr8041-case-3-base-0-after-2020.pdf",
+      "pdf_sha256": "ede3f7bf8973520b6332b0f9bb8e4a4d688de1628d39c5768a731a4539f40b74",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8041/native",
+          "review_sha256": "4b104f131cab71236c705c5a6f961ab3aa0e93c5b5381b6d65c6986101261472",
+          "overlay_sha256": "af1426cc02eb118b518699b9078118cb00a2213b702b48237211379638e918e7"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8041/wasm",
+          "review_sha256": "db96d95c31239342696c967964136b898c5038128192852cfa5e12bf374e5910",
+          "overlay_sha256": "f579985fcc4c69137a3e93417b4ad7683978a9ecc29cbbba0964244576e4e2e5"
+        }
+      }
+    },
+    {
+      "pr": 8042,
+      "input": "mydocs/pr/assets/active_field_group_owner_20261021/inputs/ungroup-after.hwp",
+      "input_sha256": "977a99bd44e5d85d7ce25f90a533e80dc4e19f34409e548722d0fc12776b82a3",
+      "pdf": "mydocs/pr/assets/active_field_group_owner_20261021/pdf/ungroup-after-hwp-2020.pdf",
+      "pdf_sha256": "2611ce87c13d808b2eee30fed01d480b0d354f3d7b9dcad60190d6cd6e9cc1bc",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8042/native",
+          "review_sha256": "58aa1bd9dc262aebb4f2d08f9c30369d45676d26ba664dc3c9e4b110615910ae",
+          "overlay_sha256": "8c15d45130e818954c00b3dd6999d6a931106e01303ea088ae8a41e3bcac6744"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8042/wasm",
+          "review_sha256": "28593beee0a6180a4f32f229b18331a7e4d79eaae405449db2c0ca78a35764ac",
+          "overlay_sha256": "d2fffe042accdab3ac8d0d9025636d0b1ab0be3f6b51eee566113dfb18d1ebc9"
+        }
+      }
+    },
+    {
+      "pr": 8043,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/197.hwpx",
+      "input_sha256": "8cac55deaa8102e4afcb66535679f5ae852028cc13d939758194c9480249e507",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/197-2020.pdf",
+      "pdf_sha256": "25a5c691a535a18ee06edc17eae6c292c3a83ec973b605ee55399819ec46a76e",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8043/native",
+          "review_sha256": "9b5a5bdd150c7306aa85e35b593c35291aac9fdeda9228ea5c517ea1e6eb1ebc",
+          "overlay_sha256": "352789fa77a139ef39ac104c23f1f2cec5a43c8fd54edf2df6587e94c303f7fb"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8043/wasm",
+          "review_sha256": "ba94044a52c40a20650a5db9e903dc2fabdef602b28dcfefd0194ffec7ddacac",
+          "overlay_sha256": "49f422f8e980b66655114b8ce01f5cb6a11eeb286190808b1f45e9900663ab85"
+        }
+      }
+    },
+    {
+      "pr": 8045,
+      "input": "tests/fixtures/pr8045_square_wrap/square-hancom2020.hwpx",
+      "input_sha256": "a85aa1a67089027180c9772d8285b5d39d2eb345a4cf706ab2bd380616f5c361",
+      "pdf": "pdf/pr8045_review/square-hancom2020-2020.pdf",
+      "pdf_sha256": "3a429a93a009f44c275cc0394caef62296e706fc6e224b2a63ce2333fd1e3843",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8045/native",
+          "review_sha256": "143155c3060a27ef45db91e293e84c83dde2a5069a8596e85ace4d71edeab207",
+          "overlay_sha256": "293b8385b9b0a2b0ca658b68a0af5ee8da7ce6d7d31043af06ad61cc7d81de83"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8045/wasm",
+          "review_sha256": "ae859de909a2334dbe231180247d62c28b12faf5efecdad4a137ecab2e00ca72",
+          "overlay_sha256": "7d651dd8decc17cbb677b67ea7935cd898e07838bead8d8876baf578aa0ce08a"
+        }
+      }
+    },
+    {
+      "pr": 8049,
+      "input": "mydocs/pr/assets/caption_autonumber_projection_20261021/inputs/ta-pic-caption-tight.hwpx",
+      "input_sha256": "32cdf807f2a9ceae26671a07ab88ea69bcbc5e2082a6aabe75ae265b2e5b8c4f",
+      "pdf": "mydocs/pr/assets/caption_autonumber_projection_20261021/pdf/ta-pic-caption-tight-2020.pdf",
+      "pdf_sha256": "0800c0ffc142e50abb76b4db6f69a8201c0849813c924e928b10893a4947f9d8",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 99.98107,
+          "representative_raw": 99.98107,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8049/native",
+          "review_sha256": "d55f0f0140e115e1c1197d0907def28329c5365cd5c76b3f7525e1ba09c2d640",
+          "overlay_sha256": "65a21ad71ba7067d81713b708c693b429b638ab32ade15e738492f8777f98e56"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 99.9811,
+          "representative_raw": 99.9811,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8049/wasm",
+          "review_sha256": "ed51fd5f9fa6143fcd86c6a8a75dec5b5ad1db561206747b2248a8418c5a05ff",
+          "overlay_sha256": "8cd2c5eb5834977b09888e8a3a8b70cb0e3d19a770cfac1325aecb05788b6c23"
+        }
+      }
+    },
+    {
+      "pr": 8050,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/198.hwpx",
+      "input_sha256": "ffada9bc581584a267a49baee246008e1cd12345e0396b910c14d4f9fca6e5f9",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/198-2020.pdf",
+      "pdf_sha256": "7309f5416cf835fbb24835a3cd6e4eb99747d679c9532aaed589d74ec1d19d1d",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8050/native",
+          "review_sha256": "366a0665062e704dc4ff9061b4525c8df1e68cc1fb09034976f959ab29fb3ca5",
+          "overlay_sha256": "504517bae8978b0d9dc26f0c39c658ce2df9e42b05979f6c210905018ba14dbb"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8050/wasm",
+          "review_sha256": "683d414f37f309f033a510322a23da7ce1a3cf6417bab9d3f524c6aebd79876b",
+          "overlay_sha256": "899b22574af166e5166e7dc205ed9690344fd13b96193b37cbaac43c5d4498c0"
+        }
+      }
+    },
+    {
+      "pr": 8051,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/199.hwpx",
+      "input_sha256": "6659ed9830af931405704b5dd23bcb3da05b11ca76be4f7b9ba599b5300865ac",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/199-2020.pdf",
+      "pdf_sha256": "37cdbbd886447e06d992d7a8a9f7aea29a47e1782fc919050194cd719978caea",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 2,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8051/native",
+          "review_sha256": "2bcbc19998035d497b57238987f210d5df563f1b8489cf1b0c4855afca453eff",
+          "overlay_sha256": "b165335f758c96fc7fca5f9b6bac6fd75232b66e0ef42e0aa5a8a3142e9fd9bd"
+        },
+        "wasm": {
+          "pages": 2,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8051/wasm",
+          "review_sha256": "4893b6b3d3e29669af48941f9335b8aa743baa7557e10d35d1d885e051ff1552",
+          "overlay_sha256": "5b496370597aaeb2e2d9ce93b2f1a39aee0ed5aa1dc63612fa4ba470378f541d"
+        }
+      }
+    },
+    {
+      "pr": 8052,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/200.hwpx",
+      "input_sha256": "6050a3e9573c4bfca97e3554d6cae92a17b6979cd660341c0b400fb7a2c01c92",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/200-2020.pdf",
+      "pdf_sha256": "2144d8c6cb8f0bd9a8b7edd6288ced43e0819d2e26f048280da10b1e959befbf",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 2,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8052/native",
+          "review_sha256": "27b3ff4f81b060f0480c2dbbbe292df18f20b9971752467ef07f9d52de4b354d",
+          "overlay_sha256": "7ccd13690eda9541c6e2bca4c97204ef96e60a6604adda86119ab6d807f93190"
+        },
+        "wasm": {
+          "pages": 2,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8052/wasm",
+          "review_sha256": "069a93c653f2f2b49a6d2ad328589546ec59e343d7fb0ca2a61ce841c3bae959",
+          "overlay_sha256": "17c6699e91cfd9ddb79b4f68733cc59cbc538354a645f35b45dd6045d65e92ac"
+        }
+      }
+    },
+    {
+      "pr": 8053,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/202.hwpx",
+      "input_sha256": "2034955066e5b31cb78d0112753277c8d612eb914de3e60ce4ae09b9fb7676a3",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/202-2020.pdf",
+      "pdf_sha256": "76cc2289033f2c6238c7b22f7276193e09655dbe73c155363d8e63d5f4830f6d",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8053/native",
+          "review_sha256": "14d6bc173bb4c19d3948fdc74758abcb5dd9323a767c9375ebba564b85d1acf2",
+          "overlay_sha256": "de023236cbb0b5590a3f06fc9d660cfd941a81b82d7cbb8debadfa15c936b689"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8053/wasm",
+          "review_sha256": "3699b8d45aa1804b1a1123c6b69be2c1330db20518304555e9357f1ffc14c6e4",
+          "overlay_sha256": "40f4b9437681b4c1f04405794d92e929a005a08974b1522070b0911618a16ca7"
+        }
+      }
+    },
+    {
+      "pr": 8054,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/203.hwpx",
+      "input_sha256": "778ca806c3b2aed367dfd283dccb85ec51229b08a7b6ef2602ae804ac2ccc25f",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/203-2020.pdf",
+      "pdf_sha256": "9c364c74306723adf27bffdc7d90da7f6fa9167e5c507e083b91c1c194859738",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8054/native",
+          "review_sha256": "c76563158d5ced21e4fb768b0c56a716de1c92d31a455e5a312d33ded21042ce",
+          "overlay_sha256": "1fc1d1a829e1afe7e9d2335693c097931b49dc9639781b871733851466bf00a9"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8054/wasm",
+          "review_sha256": "1cc6d10714cbcd73121db3be610f1dac3de9fceba2adb0d410d055932deb3304",
+          "overlay_sha256": "b8afe9c1d514bcdeda2266970410960a577ef97ef012d346ec7881583a5a2bd0"
+        }
+      }
+    },
+    {
+      "pr": 8055,
+      "input": "mydocs/pr/assets/float_fragment_frames_20261020/inputs/hwp/public-rowbreak-normalized-2020.hwp",
+      "input_sha256": "5c6e9dcc37c42de5f2d4c9972eb339e476672ac60da02135e7ec2e483d5ed34d",
+      "pdf": "mydocs/pr/assets/float_fragment_frames_20261020/pdf/hwp/public-rowbreak-normalized-2020-2020.pdf",
+      "pdf_sha256": "93cc27c42b7db35f13e8925c651c883e90b390e68bbf068ad4865e2437bec22f",
+      "page": 2,
+      "backends": {
+        "native": {
+          "pages": 2,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8055/native",
+          "review_sha256": "d69cd5f99064c2a998279223f4d45bba9d3ee209f7a3c2a7e7c169c82bee86ec",
+          "overlay_sha256": "619354594f529048d5551d0434b84f6fed63b8f264a07fcc42526abced86f4a3"
+        },
+        "wasm": {
+          "pages": 2,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8055/wasm",
+          "review_sha256": "7439e15075af18b148697d65be69394ff87a74ae549c12ef90fbb79bdeb43c92",
+          "overlay_sha256": "3d3903cb1654e128c1b6cb0786a24744f51c3de7c814b6f43c5011d559978bea"
+        }
+      }
+    },
+    {
+      "pr": 8056,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/205.hwpx",
+      "input_sha256": "58b6739b969d07cb0f486566c0667fcf81fe33d327989fd714ff847f64f2e63c",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/205-2020.pdf",
+      "pdf_sha256": "ca9e361b88f476ec94a348de0016ae0ccb0a8bc18e61c92520fa7ab18a43524f",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8056/native",
+          "review_sha256": "6191a554860013c0b01943aaee2a646d4014a543374ee07f32c4a5c9029e1cc7",
+          "overlay_sha256": "aabf65fd596267d5b0f3058d474e0614b0d9d3d793e31f45770a0c13a993bb1d"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8056/wasm",
+          "review_sha256": "122e4c3b61a2eaf6fe9958cba54afab81ece9f851cfd79e3a09a5e0785818948",
+          "overlay_sha256": "820f164b402d34e101fb2b9ca31cbc721ef3a86d89f85ab889db1ed8e414463e"
+        }
+      }
+    },
+    {
+      "pr": 8057,
+      "input": "mydocs/pr/assets/verified_point_suppliers_20261025/inputs/gulim.hwpx",
+      "input_sha256": "446a7d75666788b9dde8586716a592b507ad1c689dd50709890771d84735e3e8",
+      "pdf": "pdf/verified-point-suppliers/gulim-2020.pdf",
+      "pdf_sha256": "31d9188b0212d222d7eb46e391febaaf0bc591516fa8939a12c2720f7c1fdcc5",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8057/native",
+          "review_sha256": "e7a7810708f6ac1d717b8292fbd63065d38d8f0de85697df659bf3f8777145fe",
+          "overlay_sha256": "dee07b83aed2724b36c4c63f5e776c2ad7c0835de2f0baa83a7b473f5aa0c0f7"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 98.37398,
+          "representative_raw": 98.37398,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8057/wasm",
+          "review_sha256": "67e10d7d2aa69e116ec4ebc46b65486a5f295f80af763b7fc04cbbc3e5f383da",
+          "overlay_sha256": "813b9f2fb16d4519ccf67ff022ffa691ff99b17de57d3afe3c8c5ae87bb7fb88"
+        }
+      }
+    },
+    {
+      "pr": 8061,
+      "input": "tests/fixtures/pr8061_cell_picture_layer/picture-z2.hwpx",
+      "input_sha256": "759bf88c72ac5d1b2ff221756abbad2bbaac7776af752350f003bd4db9e83998",
+      "pdf": "pdf/pr8061_review/picture-z2-2020.pdf",
+      "pdf_sha256": "fc519b025cd35fb85e2be7e6505b74a0e0a4b0328f7bb3b1c18bb109dcf308a9",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8061/native",
+          "review_sha256": "51f4aa042b5577802d237b1b7b36ea2edb0342e90552a5c91b5e7546e0c87b17",
+          "overlay_sha256": "85f99e63595cf8343b922c955fd830501506a9ced25a96e9a694b393a4911f74"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8061/wasm",
+          "review_sha256": "3013ab6462942821b5e81890d8829435d9305f340bf2f5f0f8f27f8c4ce5d2ce",
+          "overlay_sha256": "9243eb027f02ba22bdd16d9462794454d4ebd21c6f6e047ce120b0bdc1c35c94"
+        }
+      }
+    },
+    {
+      "pr": 8062,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/206.hwpx",
+      "input_sha256": "af558f112f87e6e62e8bb9ef764c8f34502fd13643b99e7a8dbf6199761b964b",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/206-2020.pdf",
+      "pdf_sha256": "5b0bb6548804a340ad13d809bf057b4d644cb59b6020db1510003edeb04154b0",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8062/native",
+          "review_sha256": "7cfdab2a0ee2cd5e08f56bedb6255397f4814f6c4cf5c7aa7eda793648f0e69d",
+          "overlay_sha256": "bd62a07f5b04fbf407415d03a8c3ca047542cfa24acc14039fd0cd63bb8c7370"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8062/wasm",
+          "review_sha256": "b5b8124866ba7460de050c1748225971199aadf2f1bf8ec7d21d5022fef4622f",
+          "overlay_sha256": "d6f8c616929da405da740ccc3bed41d5ed390c5c522b9a12bce18dd2864051d1"
+        }
+      }
+    },
+    {
+      "pr": 8065,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/207.hwpx",
+      "input_sha256": "698ca8c3b6cb6c9696a11b30af703fa1e079f184a03d61f73b18ed5e3512af91",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/207-2020.pdf",
+      "pdf_sha256": "7c1d945fe8282e1ea0575b08450de97521be6f332ea9b8293bbb7763c0427ab2",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8065/native",
+          "review_sha256": "dcae93fddea1fe00eb6ae21725086c4daec7d088d7bf2992868e838ed40d4f36",
+          "overlay_sha256": "d3bcc96881f5249779f590e9a9eb4b5a793056ad6dc713c335a7c245ad556179"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8065/wasm",
+          "review_sha256": "b3273f87c11717595dde39996bea3b42d10033df23e834f9321bf01414098ea7",
+          "overlay_sha256": "c906b91288404ba1ec68603bb5b7977a3e051ced6bd7e59effc9deb18f11ff1b"
+        }
+      }
+    },
+    {
+      "pr": 8066,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/208.hwpx",
+      "input_sha256": "e672f8042449111ebcff0bd74336b382356c77680a9e4fe0549cf65dd33a2f83",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/208-2020.pdf",
+      "pdf_sha256": "99bf4e5d23a240fa7541fe6313e773f61928602623c89aaa03e59049955823bc",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8066/native",
+          "review_sha256": "c0cca23466794d64e1f11683fe32d182c1e6fe6ccad4b65e780056783b33441f",
+          "overlay_sha256": "9f12ced5c54327f221b050aa4f0ad4805b7a956f1b4abac139b08277f71fa0ae"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8066/wasm",
+          "review_sha256": "3fe43be29684f928da52cb3632f2b5b3e2108943ec29c4668d0cfe7ac88b3e07",
+          "overlay_sha256": "747c049a81841388fe9c3e26f647c0d64c8f1cf60ade042226f2a38e45479ec5"
+        }
+      }
+    },
+    {
+      "pr": 8090,
+      "input": "mydocs/pr/assets/s21_20261027/inputs/209.hwpx",
+      "input_sha256": "b7e549f3aa68ec0a338fe15f287db03cf683f2444fb765e422e0b159538e63c1",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/209-2020.pdf",
+      "pdf_sha256": "6cda0e705d476cd00a99cad338df523018bf3160dd2774cc34a026e686a52109",
+      "page": 2,
+      "backends": {
+        "native": {
+          "pages": 2,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8090/native",
+          "review_sha256": "aa79e3ba9d58a51b38d55aa6a627c56b93ea84acbfe245d6568eda51be6585cd",
+          "overlay_sha256": "0067796ff78096ebb800988e418d315846bb32814e8c3ffa504e165289ce616f"
+        },
+        "wasm": {
+          "pages": 2,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8090/wasm",
+          "review_sha256": "8939ed18906758690022b39f0c69389cf2df006d47a32e2f56386f07d3930f69",
+          "overlay_sha256": "7d4aeb97196a8971b450d9b590570bb33d4bc041805a915b22e8610a72f74c2b"
+        }
+      }
+    },
+    {
+      "pr": 8093,
+      "input": "tests/fixtures/pr8093_form_caret/form-slot.hwp",
+      "input_sha256": "1c7e40474066cfc7c4892ab8d3b2e6ae7dde7055335ae2330c772e1cdc159b6c",
+      "pdf": "pdf/pr8093_review/form-slot-hwp-2020.pdf",
+      "pdf_sha256": "fd36f88c6e8766ee36bf6dbfd36dea9defe33e6efa11aea18c0c53caa3f87817",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8093/native",
+          "review_sha256": "72d31accaa532ed38ad27fd62165e51ef8c61d3fb543fac1018adf78dbc3dfc8",
+          "overlay_sha256": "6fabd0b1c95306ce6d220c0aea161fa4d7f2931ab810cd76fed1211ed09e4846"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 100.0,
+          "representative_raw": 100.0,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8093/wasm",
+          "review_sha256": "1fd445758eb8b5ec81eebae2fba0e39e2e9b081e7382417c49478c243c11d7aa",
+          "overlay_sha256": "382deb3398d615f4e81752b39a1aa2e343ae791bd97dfa60fd3ec0399b3bc37a"
+        }
+      }
+    },
+    {
+      "pr": 8094,
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/inputs/pr8094-caption-number-sudal.hwpx",
+      "input_sha256": "dab243d31a31079621231c4f625ea6d9eb99119f3e050aaf7c3411f9e29b5189",
+      "pdf": "pdf/pr8319_evidence_alignment_20261027/pr8094-caption-number-sudal-2020.pdf",
+      "pdf_sha256": "acf82f44ad2c2e53f4ba6c068ace272038a4f23fa9f5f006ceecd76e155a7a6c",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 98.11257,
+          "representative_raw": 98.11257,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8094/native",
+          "review_sha256": "356534cfe3ed8c078939ad6d9354597553e426fdf80ee5bd9024b03ad02b468b",
+          "overlay_sha256": "ec344be65bfc7847c403d2acdee457ed97aa204d2a582f96d4055828a86459bb"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 98.11342,
+          "representative_raw": 98.11342,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8094/wasm",
+          "review_sha256": "217872b06001cc0437a0cc29ad040be61f119c78a35a87e09cf19ce6c22e2b45",
+          "overlay_sha256": "c18da84d0bba70d3d1579026f3b8acb2efb375dc989e83533e288525cefaed35"
+        }
+      }
+    },
+    {
+      "pr": 8096,
+      "input": "tests/fixtures/pr8096_form_defaults/form-only-defaults-hwpx.hwpx",
+      "input_sha256": "2d49344b76f515dc3d325ce6eca9fb75cdc384743aa13e38966ae675eab515f4",
+      "pdf": "pdf/semanticist21_source_contracts_20261026/form-only-defaults-hwpx-2020.pdf",
+      "pdf_sha256": "9a240e7026b5b7e5a3d30fca93746e017555f1679d790b092009d935cc6979b1",
+      "page": 1,
+      "backends": {
+        "native": {
+          "pages": 1,
+          "min_raw": 99.99194,
+          "representative_raw": 99.99194,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8096/native",
+          "review_sha256": "9ba8763a701b0f4d34527c03fd20eacff0f252a8f4b96590b2fa20693f08fb8b",
+          "overlay_sha256": "779336bdef2651543b3402e0c7bbc8ed820103abe1fc90e37da2bfc94e085d42"
+        },
+        "wasm": {
+          "pages": 1,
+          "min_raw": 99.99194,
+          "representative_raw": 99.99194,
+          "asset_dir": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/current-evidence/pr8096/wasm",
+          "review_sha256": "a873a75ba8a6ab90373f41779ee71151344668e2ee64ea4c81b28674e650c25e",
+          "overlay_sha256": "1049f94b314ee9d35ba379f1496f2356d1129f911767a064d00e7e466709e06b"
+        }
+      }
+    }
+  ]
+}

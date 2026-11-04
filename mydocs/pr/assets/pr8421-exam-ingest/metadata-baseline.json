@@ -1,0 +1,11 @@
+{
+  "existing_affected_files": [
+    "mydocs/tech/benchmark_vs_alternatives.md",
+    "mydocs/tech/investigations/issue-4964/README.md",
+    "mydocs/tech/investigations/issue-5511/README.md",
+    "mydocs/tech/investigations/issue-5511/task_m100_5511_cli_surface_inventory.md"
+  ],
+  "existing_metadata_errors": 16,
+  "same_blobs_as_pre_review_devel": true,
+  "new_metadata_errors_in_changed_files": 0
+}

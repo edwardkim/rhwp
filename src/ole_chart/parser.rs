@@ -6,7 +6,6 @@
 
 use std::fmt;
 
-use encoding_rs::EUC_KR;
 use serde::Serialize;
 
 use super::grid::{self, LegacyChartGrid};
@@ -309,10 +308,7 @@ fn decode_legacy_text_payload(payload: &[u8]) -> Option<String> {
         return None;
     }
 
-    let (text, _, had_errors) = EUC_KR.decode(&payload[..text_end]);
-    if had_errors {
-        return None;
-    }
+    let text = super::legacy_string::decode(payload)?;
 
     let normalized = text.replace('\u{3000}', " ");
     let text = normalized.trim().to_string();

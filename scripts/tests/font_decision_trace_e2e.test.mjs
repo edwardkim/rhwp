@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -20,6 +21,9 @@ const MANIFEST = JSON.parse(fs.readFileSync(path.join(
   INVESTIGATION,
   'font_decision_trace_e2e.json',
 ), 'utf8'));
+const SOURCE_BOUNDARIES = JSON.parse(fs.readFileSync(path.join(
+  ROOT, 'tests', 'fixtures', 'font_trace_source_boundaries.json',
+), 'utf8')).documents;
 const wasmModule = await import(pathToFileURL(path.join(ROOT, 'pkg', 'rhwp.js')).href);
 await wasmModule.default({
   module_or_path: fs.readFileSync(path.join(ROOT, 'pkg', 'rhwp_bg.wasm')),
@@ -82,7 +86,7 @@ const completeLocalState = {
   lastError: null,
 };
 
-test('공개 HWP/HWPX fixture의 exact, missing, substFont 계보가 WASM에서 끝까지 이어진다', () => {
+test('WASM 공개 런의 글꼴 계보와 실제 원문 주소 경계를 함께 검증한다', () => {
   const traces = new Map();
   for (const document of MANIFEST.documents) {
     const first = readTrace(document);
@@ -98,6 +102,13 @@ test('공개 HWP/HWPX fixture의 exact, missing, substFont 계보가 WASM에서 
         assert.deepEqual(first.counts[key], value, `${document.id}: ${key}`);
       }
       if (document.validateRunOwnership) {
+        const sourceContract = SOURCE_BOUNDARIES.find(entry => entry.path === document.path);
+        if (sourceContract) {
+          assert.equal(createHash('sha256').update(fs.readFileSync(path.join(ROOT, document.path))).digest('hex'),
+            sourceContract.inputSha256, `${document.id}: 독립 원본 경계의 입력 SHA`);
+        }
+        const sourceBoundaries = sourceContract?.boundaries ?? [];
+        const observedBoundaries = new Set();
         const core = new wasmModule.HwpDocument(new Uint8Array(fs.readFileSync(path.join(ROOT, document.path))));
         let layout;
         try { layout = JSON.parse(core.getPageTextLayout(document.page)); }
@@ -110,16 +121,34 @@ test('공개 HWP/HWPX fixture의 exact, missing, substFont 계보가 WASM에서 
           const local = Number(record.recordId.split(':char:').at(-1));
           assert.equal(record.source.character, Array.from(owner.text)[local]);
           assert.equal(record.source.charShapeId, owner.charShapeId ?? null);
-          if (owner.charStart == null) {
+          const paragraphIndex = (owner.cellPath == null ? owner.paraIdx : owner.parentParaIdx) ?? null;
+          const nestedPath = (owner.cellPath ?? []).flatMap(entry => (
+            [entry.controlIndex, entry.cellIndex, entry.cellParaIndex]
+          ));
+          assert.equal(record.source.sectionIndex, owner.secIdx ?? null);
+          assert.equal(record.source.paragraphIndex, paragraphIndex);
+          assert.deepEqual(record.source.nestedPath, nestedPath);
+          // 공개 런은 표시 문자열의 논리 위치다. 원본 tcps 이후의 추정 주소를
+          // 스칼라 원문 주소로 확정하지 않는 Native 계약과 함께 검증한다.
+          const boundary = sourceBoundaries.find(entry => (
+            entry.sectionIndex === owner.secIdx && entry.paragraphIndex === paragraphIndex
+            && JSON.stringify(entry.nestedPath) === JSON.stringify(nestedPath)
+            && owner.charStart != null && owner.charStart + local >= entry.logicalStart
+          ));
+          if (boundary) {
+            assert.equal(boundary.controlId, 'tcps');
+            observedBoundaries.add(boundary);
+          }
+          if (owner.charStart == null || boundary) {
             assert.equal(record.source.charOffset, null);
             assert.equal(record.source.status, 'unavailable');
           } else {
+            assert.equal(record.source.status, 'complete', `${document.id}: 일반 본문 소유권`);
             assert.equal(record.source.charOffset, owner.charStart + local);
-            assert.equal(record.source.sectionIndex, owner.secIdx);
-            assert.equal(record.source.paragraphIndex,
-              owner.cellPath == null ? owner.paraIdx : owner.parentParaIdx);
           }
         }
+        assert.equal(observedBoundaries.size, sourceBoundaries.length,
+          `${document.id}: 선언한 원본 경계를 실제 출력에서 검사한다`);
       }
     }
     if (!deferredPins.has('expectedLayoutHash')) {

@@ -271,12 +271,14 @@ pub(super) fn print() {
     );
     println!("      --verify-pages        변환 전/후 렌더 페이지 수를 비교 (불일치 시 exit 4)");
     println!();
-    println!("  import-pdf <입력.pdf> <출력.hwpx|출력.hwp> [--source-pages 0,6-7] [--json] [--table-inference]");
+    println!("  import-pdf <입력.pdf> <출력.hwpx|출력.hwp> [--source-pages 0,6-7] [--layout fidelity|editable] [--resource-profile standard|constrained] [--resource-limits limits.json] [--json] [--table-inference]");
     println!("      --table-inference    --json에 원본 문자를 포함한 표 추론 근거·후보를 추가");
     println!(
         "      PDF 전체 또는 선택 쪽을 가져오기 (기본 포함 pdf-import; 제외 빌드는 재빌드 필요)"
     );
     println!("      --source-pages <목록>  원본 쪽 0-based 증가 목록·포함 범위. 생략하면 전체 쪽");
+    println!("      --layout <모드>        fidelity(기본): 인식한 본문 영역마다 위치 고정 글상자");
+    println!("                             editable: 본문 문단을 구역 본문 흐름·다단·쪽/단 나누기로 배치");
     println!("      --json                 stdout에 저장 결과·원본 쪽/구역 대응·진단 JSON 한 개");
     println!("      중복·역순·잘못된 범위는 exit 2, 읽기·변환·쓰기 실패는 exit 1 (stdout 비움)");
     println!("      원본 덮어쓰기 금지. 성공한 전체 결과만 원자적으로 저장하며 암호 옵션은 미지원");
@@ -296,10 +298,13 @@ pub(super) fn print() {
     println!("                              (생략 시 base64 data URI로 XML에 인라인)");
     println!("      --json                  산출 봉투를 stdout 에 JSON 으로 출력");
     println!();
-    println!("  info <파일.hwp|파일.hwpx|파일.hml> [--json]");
+    println!("  info <파일.hwp|파일.hwpx|파일.hml> [--json|--font-plan]");
     println!("      HWP/HWPX/HML 문서 정보 표시");
     println!();
     println!("      --json                  문서 정보를 JSON으로 stdout에 출력");
+    println!("      --font-plan             내장 폰트와 원본·대체 글꼴 후보를 JSON으로 출력");
+    println!("      Native SVG/PNG/PDF 출력은 설치 글꼴 우선, 누락 시 원장에 등록된 웹폰트 공급");
+    println!("      RHWP_WEBFONT_CACHE: 캐시 경로, RHWP_WEBFONT_OFFLINE=1: 검증된 캐시만 사용");
     println!();
     println!("  word-count <파일.hwp|파일.hwpx|파일.hml> [--json]");
     println!("      구역·문단·글자·어절·쪽 수를 IR 본문에서 센다");
@@ -471,7 +476,14 @@ pub(super) fn print() {
     println!("      --verify-pages        저장 전/후 렌더 페이지 수를 비교 (불일치 시 exit 4)");
     println!();
     println!("  build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>");
-    println!("      ingest JSON(시험문제 등)을 HWPX로 생성 (rhwp-exam-ingest 파이프라인)");
+    println!(
+        "      ingest JSON과 로컬 이미지를 HWPX로 생성 (이미지 기준 경로 기본값: JSON 디렉터리)"
+    );
+    println!(
+        "      --max-image-bytes/--max-total-image-bytes <N>     개별/전체 이미지 바이트 상한"
+    );
+    println!("      --max-image-pixels/--max-total-image-pixels <N>   개별/전체 이미지 픽셀 상한");
+    println!("      --max-image-instances <N>                       그림 삽입 개수 상한");
     println!();
     println!("  scaffold <spec.json> [--format hwpx] -o <out.hwpx> [--json]");
     println!("      구조화된 명세(제목·개요 제목·문단·표)에서 유효한 HWPX 문서를 생성");

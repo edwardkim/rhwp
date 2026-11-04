@@ -1,8 +1,6 @@
 //! 미주 참조 해석과 번호 문자 준비. 원본 IR은 변경하지 않는다.
 
-use crate::renderer::typeset::{
-    format_number, Control, EndnoteDeferral, EndnoteRef, Paragraph, RenderNumberFormat,
-};
+use crate::renderer::typeset::{Control, EndnoteDeferral, EndnoteRef, Paragraph};
 
 /// [미주 배치] `en_ref` 의 미주 본문(en_ctrl)을 해석한다. 현재 구역 미주면 본문
 /// paragraphs 에서, END_OF_DOCUMENT 로 문서 끝에 모인 앞 구역 미주면 deferral
@@ -25,49 +23,31 @@ pub(in crate::renderer::typeset) fn resolve_endnote_content<'a>(
     }
 }
 
-pub(in crate::renderer::typeset) fn note_number_format_from_hwp_code(
-    code: u8,
-) -> RenderNumberFormat {
-    match code {
-        0 => RenderNumberFormat::Digit,
-        1 => RenderNumberFormat::CircledDigit,
-        2 => RenderNumberFormat::RomanUpper,
-        3 => RenderNumberFormat::RomanLower,
-        4 => RenderNumberFormat::LatinUpper,
-        5 => RenderNumberFormat::LatinLower,
-        8 => RenderNumberFormat::HangulGaNaDa,
-        12 => RenderNumberFormat::HangulNumber,
-        13 => RenderNumberFormat::HanjaNumber,
-        _ => RenderNumberFormat::Digit,
-    }
-}
-
-pub(in crate::renderer::typeset) fn note_decoration_char(value: u16) -> Option<char> {
-    if value == 0 {
-        None
-    } else {
-        char::from_u32(value as u32).filter(|ch| *ch != '\0')
-    }
-}
-
 pub(in crate::renderer::typeset) fn format_endnote_marker_text(
     endnote: &crate::model::footnote::Endnote,
 ) -> String {
-    let number = format_number(
+    crate::renderer::note_marker::text(
+        &endnote.paragraphs,
+        crate::model::control::AutoNumberType::Endnote,
         endnote.number,
-        note_number_format_from_hwp_code(endnote.number_shape as u8),
-    );
-    let prefix = note_decoration_char(endnote.before_decoration_letter)
-        .map(|ch| ch.to_string())
-        .unwrap_or_default();
-    let suffix = note_decoration_char(endnote.after_decoration_letter)
-        .unwrap_or(')')
-        .to_string();
-    format!("{}{}{}", prefix, number, suffix)
+        endnote.number_shape,
+        endnote.before_decoration_letter,
+        endnote.after_decoration_letter,
+    )
 }
 
 /// 미주 첫 문단을 그릴 때 번호 앞에서 지우는 앞 공백 글자 수.
 fn endnote_leading_space_count(para: &Paragraph) -> usize {
+    if let Some((index, _)) = crate::renderer::note_marker::leading(
+        std::slice::from_ref(para),
+        crate::model::control::AutoNumberType::Endnote,
+    ) {
+        // 저장 자동 번호의 자리표만 치환하고 뒤의 실제 공백은 보존한다.
+        let positions = para.control_utf16_positions();
+        return usize::from(
+            para.text.starts_with(' ') && para.char_offsets.first() == positions.get(index),
+        );
+    }
     para.text
         .chars()
         .take_while(|ch| matches!(*ch, ' ' | '\u{00A0}' | '\u{2007}'))
@@ -76,7 +56,16 @@ fn endnote_leading_space_count(para: &Paragraph) -> usize {
 
 /// 미주 첫 문단 앞에 붙여 그리는 번호 글자(`1) `).
 fn endnote_marker_prefix(endnote: &crate::model::footnote::Endnote) -> String {
-    format!("{} ", format_endnote_marker_text(endnote))
+    let mut prefix = format_endnote_marker_text(endnote);
+    if crate::renderer::note_marker::leading(
+        &endnote.paragraphs,
+        crate::model::control::AutoNumberType::Endnote,
+    )
+    .is_none()
+    {
+        prefix.push(' ');
+    }
+    prefix
 }
 
 /// 미주 첫 문단의 글자 위치를 번호를 붙여 그린 문단의 글자 위치로 바꾼다.
@@ -132,11 +121,16 @@ pub(in crate::renderer::typeset) fn prepend_endnote_marker_text(
     }
     let prefix = endnote_marker_prefix(endnote);
     let prefix_len = prefix.chars().count();
+    let has_separator = crate::renderer::note_marker::leading(
+        &endnote.paragraphs,
+        crate::model::control::AutoNumberType::Endnote,
+    )
+    .is_none();
     para.insert_text_at(0, &prefix);
     if let Some(char_shape_id) = marker_char_shape_id {
-        para.apply_char_shape_range(0, prefix_len - 1, char_shape_id);
+        para.apply_char_shape_range(0, prefix_len - usize::from(has_separator), char_shape_id);
     }
-    if let Some(char_shape_id) = separator_char_shape_id {
+    if let Some(char_shape_id) = separator_char_shape_id.filter(|_| has_separator) {
         para.apply_char_shape_range(prefix_len - 1, prefix_len, char_shape_id);
     }
 }

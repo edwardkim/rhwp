@@ -1,6 +1,10 @@
-//! HWP3 paragraph-list recursion is bounded before entering the large parser frame.
-//! Synthetic binary records follow the HWP3 paragraph/control layout; these are
-//! parser resource-boundary tests, not visual baselines.
+//! 관계형: 합성 HWP3 입력의 문단 재귀 깊이 제한 계약.
+//! 주석 갱신: 2026-10-30T10:05:44+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
+//! 근거: mydocs/tech/한글문서파일구조3.0.md; 정상 파서 대조군은 samples/hwp3-sample.hwp와 samples/hwp3-sample19.hwp다.
+//! 합성 HWP3의 재귀 제한과 오류 전파 검사이며 페이지별 raw 시각 측정은 대상이 아니다.
+//! HWP3 문단 목록 재귀는 큰 파서 프레임에 진입하기 전에 제한한다.
+//! 합성 바이너리 레코드는 HWP3 문단·제어 구조를 따르며 시각 기준이 아닌
+//! 파서 자원 경계 검사에 사용한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::parser::hwp3::parse_hwp3;
@@ -15,7 +19,7 @@ fn header(count: u16) -> Vec<u8> {
 fn document(depth: usize, controls: &[u16]) -> Vec<u8> {
     let mut bytes = vec![0; 30 + 128 + 1008 + 14 + 2];
     bytes[..23].copy_from_slice(b"HWP Document File V3.00");
-    // Empty font/style inventories; the parser supplies its normal defaults.
+    // 글꼴·스타일 목록을 비워 파서가 일반 기본값을 사용하게 한다.
     for level in 0..depth {
         let control = controls[level % controls.len()];
         bytes.extend(header(4));
@@ -47,7 +51,7 @@ fn depth_policy_rejects_hidden_header_and_note_recursion() {
             error.to_string().contains("paragraph nesting exceeds"),
             "wrong failure: {error}"
         );
-        // Success after error proves the scoped budget was released.
+        // 오류 후 성공으로 범위별 예산이 해제됐음을 확인한다.
         parse_hwp3(&document(1, controls)).expect("depth state restored after error");
     }
 }
@@ -60,13 +64,13 @@ fn hostile_depth_is_an_error_on_the_default_stack() {
 
 #[test]
 fn depth_budget_counts_active_lists_and_restores_after_failure() {
-    // Explicit policy boundary: root + 15 child lists fit the 16-frame budget.
+    // 명시적 정책 경계: 루트와 자식 목록 15개는 16개 프레임 예산에 들어간다.
     parse_hwp3(&document(15, &[15])).expect("last allowed list depth");
     assert!(parse_hwp3(&document(16, &[15])).is_err());
     let prefix = 30 + 128 + 1008 + 14 + 2;
     let shallow = document(1, &[15]);
     let mut siblings = shallow[..prefix].to_vec();
-    // Each sibling owns one child list; total paragraph count is not depth.
+    // 각 형제는 자식 목록 하나를 소유하며 전체 문단 수는 깊이가 아니다.
     for _ in 0..1_000 {
         siblings.extend_from_slice(&shallow[prefix..shallow.len() - 43]);
     }

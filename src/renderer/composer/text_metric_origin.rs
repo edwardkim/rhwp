@@ -4,7 +4,7 @@ use crate::model::paragraph::{LineSeg, Paragraph};
 
 /// 저장 줄을 단순히 읽은 것과 현재 프레임이 새로 발행한 줄을 구분한다.
 /// 공백 규칙의 값·글꼴 이름·문서 식별자로 출처를 추측하지 않는다.
-pub(super) fn regenerated_row(paragraph: &Paragraph, line_index: usize) -> bool {
+pub(crate) fn regenerated_row(paragraph: &Paragraph, line_index: usize) -> bool {
     let Some(line) = paragraph.line_segs.get(line_index) else {
         return true;
     };

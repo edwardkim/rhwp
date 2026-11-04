@@ -105,6 +105,19 @@ fn parse_svg_attr(attrs: &str, key: &str) -> Option<f64> {
     attrs[s..e].parse::<f64>().ok()
 }
 
+fn svg_has_ellipse_within(svg: &str, bbox: BoundingBox) -> bool {
+    svg.split("<ellipse ").skip(1).any(|element| {
+        let attrs = &element[..element.find('>').unwrap_or(element.len())];
+        match (parse_svg_attr(attrs, "cx"), parse_svg_attr(attrs, "cy")) {
+            (Some(cx), Some(cy)) => {
+                (bbox.x..=bbox.x + bbox.width).contains(&cx)
+                    && (bbox.y..=bbox.y + bbox.height).contains(&cy)
+            }
+            _ => false,
+        }
+    })
+}
+
 fn svg_line_with_text(svg: &str, needle: &str) -> Option<(String, Vec<(f64, String)>)> {
     let mut by_y: BTreeMap<i32, Vec<(f64, String)>> = BTreeMap::new();
     let mut i = 0;
@@ -246,15 +259,17 @@ fn issue_2020_bokhak_receipt_seal_line_and_stamp_align() {
         .expect("render bokhak receipt SVG");
 
     assert!(
-        svg_line_with_text(&svg, "(인)").is_some(),
-        "복학원서 접수증 위 날인선에는 `(인)` 표시가 렌더링되어야 함"
-    );
-    assert!(
         !svg.contains('\u{F081C}'),
         "TAC filler 원문 U+F081C가 SVG에 그대로 출력되면 안 됨"
     );
 
-    let seal_line = find_text_bbox(&tree.root, "(인)").expect("합성 날인선 TextRun");
+    // [#8201] 한컴 PDF 는 날인선 가운데에 서명란과 같은 타원 안 '인' 글리프를 찍는다.
+    // 합성 날인선은 원 기호 U+F012B 를 싣고, paint 가 그 자리에 타원 테두리를 그린다.
+    let seal_line = find_text_bbox(&tree.root, "\u{F012B}").expect("합성 날인선 TextRun");
+    assert!(
+        svg_has_ellipse_within(&svg, seal_line),
+        "복학원서 접수증 위 날인선에는 타원 안 '인' 기호가 렌더링되어야 함: line={seal_line:?}"
+    );
     let receipt_table = find_table_bbox(&tree.root, 16, 0).expect("pi=16 receipt table");
     assert!(
         seal_line.y < receipt_table.y && seal_line.width > 600.0,

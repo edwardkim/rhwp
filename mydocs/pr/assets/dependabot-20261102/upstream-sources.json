@@ -1,0 +1,32 @@
+[
+  {
+    "name": "zip",
+    "url": "https://github.com/zip-rs/zip2/blob/v9.1.3/CHANGELOG.md",
+    "git_blob": "3c6a8847d22a33ea6e611c1c38a410575b806650",
+    "bytes": 56369
+  },
+  {
+    "name": "roxmltree",
+    "url": "https://github.com/RazrFalcon/roxmltree/blob/v0.21.2/CHANGELOG.md",
+    "git_blob": "08218276055e133e32930a7ca6ae6428b7f5bcae",
+    "bytes": 11337
+  },
+  {
+    "name": "install-action",
+    "url": "https://github.com/taiki-e/install-action/blob/v2.88.1/CHANGELOG.md",
+    "git_blob": "5e6a8ad75c91877d49710ae9e3383a1aea0cf9ac",
+    "bytes": 259149
+  },
+  {
+    "name": "anthropic",
+    "url": "https://github.com/anthropics/anthropic-sdk-typescript/blob/sdk-v1.3.0/CHANGELOG.md",
+    "git_blob": "1ff882c8ca96329a5e948d4861579c46c8c2805e",
+    "bytes": 251496
+  },
+  {
+    "name": "libc",
+    "url": "https://github.com/rust-lang/libc/blob/0.2.191/CHANGELOG.md",
+    "git_blob": "904c5746848a8366d846575ed728a94477410aa5",
+    "bytes": 95528
+  }
+]

@@ -66,6 +66,9 @@ function fixture(keyboard: any, picture: any, tableObjectClipboardTarget: any, m
     wasm: {
       get documentGeneration() { return state.generation; },
       borrowDocumentHandle: () => state.handle,
+      // 선택한 개체 외에 본문 글자가 없는 문단에서 조합을 시작한다.
+      getParagraphLength: () => 0,
+      getLogicalLength: () => 1,
       copyControl: (...args: unknown[]) => {
         copyCalls.push(args);
         calls.push('copy');

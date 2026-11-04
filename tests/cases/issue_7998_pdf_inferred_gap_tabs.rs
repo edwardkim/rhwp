@@ -1,3 +1,9 @@
+//! 검사 유형: 관계형·고정형.
+//! 2026-10-28 측정 raw(96dpi, PDFium, PDF fidelity 가져오기): 6778-square-2020.pdf 5쪽 Native 99.89992% / fresh WASM 99.94753%, 7쪽 99.98428% / 99.96873%, 9쪽 99.85585% / 99.98492%, 10쪽 99.76329% / 99.80875%; 전12쪽 최저 99.12224% / 98.95404%.
+//! body-gap-tab.pdf 1쪽 Native·fresh WASM 각 100.00000%; 전1쪽 최저 각 100.00000%.
+//! 수치는 원본 PDF 전체를 그대로 가져온 출력이며 이후 편집·저장·재열기 결과의 측정이 아니다.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf-gap-visual-evidence.json.
+//!
 //! Independent source gaps stay editable, without rewriting authored spaces.
 #![cfg(feature = "pdf-import")]
 use rhwp::{
@@ -213,6 +219,7 @@ fn source(page: usize) -> DocumentCore {
         &PdfImportOptions {
             source_pages: Some(vec![page]),
             include_table_inference: true,
+            ..PdfImportOptions::default()
         },
     )
     .unwrap()
@@ -255,7 +262,7 @@ fn exercise(original: DocumentCore, needle: &str, expected: &str, expected_rows:
             assert_eq!(a.0, z.0);
             assert!(
                 (a.1 - z.1).abs() < 0.25 && (a.2 - z.2).abs() < 0.25,
-                "same restored text uses the same common origins"
+                "same restored text uses the same common origins; route {route}; needle {needle:?}; original {a:?}; restored {z:?}"
             );
         }
         for bytes in [

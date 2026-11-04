@@ -11,6 +11,8 @@ export interface HyperlinkInfo {
   end: number;
   text: string;
   uri: string;
+  /** 문서 내부 책갈피 링크의 대상 이름. 이때 uri는 `?<이름>` 원문이다. */
+  bookmark?: string;
 }
 export interface HyperlinkContext { text: string; links: HyperlinkInfo[] }
 

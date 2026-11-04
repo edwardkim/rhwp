@@ -8,6 +8,10 @@ impl EqParser {
     /// Thin 공백 뒤에 첨자가 있으면 공백을 건너뛰고 첨자를 파싱한다.
     pub(super) fn try_parse_scripts(&mut self, base: EqNode) -> EqNode {
         let mut result = base;
+        // 구형 명시적 그룹 기저는 첫 첨자 안으로 뒤 첨자를 이어받는다.
+        // 일반 a_b^c의 병렬 슬롯과 {a}_b^c의 중첩 소속을 구분한다.
+        // 독립 세대·순서·중괄호 Print: f4eb7352-d61b-4cdc-956b-46934265d01c.
+        let grouped_legacy_base = self.legacy_display && matches!(result, EqNode::Group(_));
         let mut has_sub = false;
         let mut has_sup = false;
         let mut sub = None;
@@ -40,7 +44,7 @@ impl EqParser {
                 if self.stop_at_missing_script_operand() {
                     break;
                 }
-                sub = Some(self.parse_script_operand(has_sup));
+                sub = Some(self.parse_script_operand(has_sup || grouped_legacy_base));
                 has_sub = true;
             } else if ty == TokenType::Superscript && !has_sup {
                 self.pos += 1;

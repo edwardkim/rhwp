@@ -1,0 +1,11 @@
+{
+  "job": "https://github.com/edwardkim/rhwp/actions/runs/41379931125/job/125071502069",
+  "head": "cd0ccf51995d9e985f8137d211db6077d7003a8b",
+  "selected_log_lines": [
+    "2026-11-02T03:04:19.2246787Z Download action repository 'taiki-e/install-action@68a389c788b2cd04016ce8c80ee23b80d2ab3d68' (SHA:68a389c788b2cd04016ce8c80ee23b80d2ab3d68)",
+    "2026-11-02T03:07:06.8616980Z info: downloading https://github.com/nextest-rs/nextest/releases/download/cargo-nextest-0.9.150/cargo-nextest-0.9.150-x86_64-unknown-linux-gnu.tar.gz",
+    "2026-11-02T03:07:07.1369122Z info: verifying sha256 checksum for cargo-nextest-0.9.150-x86_64-unknown-linux-gnu.tar.gz",
+    "2026-11-02T03:07:07.3152843Z cargo-nextest 0.9.150 (d225b1daf 2026-10-26)"
+  ],
+  "whole_log_sha256": "7be257c3482a3ee22956881438559a4e80a60b6c1b623d016f61cb87535578ef"
+}

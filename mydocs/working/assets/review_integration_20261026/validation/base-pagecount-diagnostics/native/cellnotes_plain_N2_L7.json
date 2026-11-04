@@ -1,0 +1,31 @@
+{
+  "purpose": "Diagnostic comparison of every reference page. Baseline extra pages remain explicitly rejected, not a whole-document PASS.",
+  "base_source": "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c",
+  "backend": "native",
+  "reference_pages": 11,
+  "baseline_pages": 12,
+  "paired_reference_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "unreferenced_baseline_pages": [
+    {
+      "page": 12,
+      "png": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/base/native-final-conditions/cellnotes_plain_N2_L7/rhwp_png/rhwp_012.png",
+      "sha256": "089af095eed170bbae6bec9ad85f76ee81823d5a1a51b3b9041a2eb7f5200334",
+      "raw_match_percent": null,
+      "reason": "No corresponding independent reference page"
+    }
+  ],
+  "paired_tsv": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/baseline-pagecount-analysis/native/cellnotes_plain_N2_L7/silhouette.tsv",
+  "whole_document_gate": "re_review_required"
+}

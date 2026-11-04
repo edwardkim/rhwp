@@ -1,0 +1,57 @@
+[
+  {
+    "name": "zero-step",
+    "exit": 1,
+    "code": "PDF_PATTERN_UNSUPPORTED"
+  },
+  {
+    "name": "huge-tiles",
+    "exit": 1,
+    "code": "PDF_RESOURCE_LIMIT"
+  },
+  {
+    "name": "unsupported-paint",
+    "exit": 1,
+    "code": "PDF_PATTERN_UNSUPPORTED"
+  },
+  {
+    "name": "cyclic-pattern",
+    "exit": 1,
+    "code": "PDF_PATTERN_UNSUPPORTED"
+  },
+  {
+    "name": "uncoloured-pattern",
+    "exit": 1,
+    "code": "PDF_PATTERN_UNSUPPORTED"
+  },
+  {
+    "name": "shading-pattern",
+    "exit": 1,
+    "code": "PDF_PATTERN_UNSUPPORTED"
+  },
+  {
+    "name": "singular-pattern",
+    "exit": 1,
+    "code": "PDF_PATTERN_UNSUPPORTED"
+  },
+  {
+    "name": "dashed-text",
+    "exit": 1,
+    "code": "PDF_TEXT_UNSUPPORTED"
+  },
+  {
+    "name": "anisotropic-text",
+    "exit": 1,
+    "code": "PDF_TEXT_UNSUPPORTED"
+  },
+  {
+    "name": "clipped-text-stroke",
+    "exit": 1,
+    "code": "PDF_TEXT_UNSUPPORTED"
+  },
+  {
+    "name": "pattern-text",
+    "exit": 1,
+    "code": "PDF_TEXT_UNSUPPORTED"
+  }
+]

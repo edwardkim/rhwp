@@ -1,3 +1,7 @@
+//! 관계형: 검사 대상 — 그림·도형 크기 보호 속성의 설정 및 저장 후 보존.
+//! 주석 갱신: 2026-11-01T05:59:30+09:00; 직전 파일 커밋: 2026-06-18T15:45:32+09:00 (`5aa78304e94896a654820a32801a0eb1127bbf50`).
+//! 입력·기준: `samples/ta-pic-001-r-쪽영역안제한.hwp`, `samples/inner-table-01.hwp`와 크기 보호 API.
+//! 모델·API·직렬화 계약을 검사하며 화면 시각 일치율은 측정하지 않는다.
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
 use rhwp::model::document::Document;

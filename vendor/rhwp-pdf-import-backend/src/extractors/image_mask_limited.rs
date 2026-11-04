@@ -189,7 +189,7 @@ impl StreamMask {
             .checked_mul(height as usize)
             .filter(|&n| n <= budget.limits.stream_bytes)
             .ok_or_else(|| budget.reject("mask sample bytes"))?;
-        if u64::from(width) * u64::from(height) > 16_000_000 {
+        if u64::from(width) * u64::from(height) > 64_000_000 {
             return Err(budget.reject("mask pixels"));
         }
         let ranges = limited_decode_ranges(Some(doc), dict.get("Decode"), 1, budget)?;
@@ -250,11 +250,9 @@ impl StreamMask {
             },
             Some(_) => return Err(Error::Image("Matte requires SMask".into())),
         };
-        if entry("DecodeParms")?.is_some_and(|v| !matches!(*v, Object::Null))
-            && !super::image_mask_limited_extra::codec_decode_parms_allowed(doc, dict, budget)?
-        {
-            return Err(Error::Unsupported("limited image mask DecodeParms".into()));
-        }
+        // DecodeParms belongs to the filter pipeline, including Flate/LZW
+        // predictors. The bounded stream decoder validates and applies it;
+        // absent Predictor means 1, so other predictor entries are inert.
         // The raw extractor folds Decode into samples; its JPEG pass-through
         // intentionally does not. Carry it to the JPEG composition boundary.
         let jpeg_decode = if base
@@ -337,16 +335,16 @@ impl StreamMask {
         let height = image.height.max(self.height);
         let count = (width as usize)
             .checked_mul(height as usize)
-            .filter(|&n| n > 0 && n <= 16_000_000)
+            .filter(|&n| n > 0 && n <= 64_000_000)
             .ok_or_else(|| budget.reject("masked image geometry"))?;
         let size = count
             .checked_mul(4)
             .ok_or_else(|| budget.reject("masked RGBA size"))?;
-        let jpeg = matches!(image.data, ImageData::Jpeg(_));
+        let jpeg = matches!(image.data.as_ref(), ImageData::Jpeg(_));
         if jpeg && self.other_source_decode {
             return Err(Error::Unsupported("limited masked JPEG Decode colour space".into()));
         }
-        let rgb: Cow<'_, [u8]> = match &image.data {
+        let rgb: Cow<'_, [u8]> = match image.data.as_ref() {
             ImageData::Raw {
                 pixels,
                 format: PixelFormat::RGB,
@@ -438,10 +436,10 @@ impl StreamMask {
                 rgba.push((alpha * 255.0).round() as u8);
             }
         }
-        image.data = ImageData::Raw {
+        image.data = std::sync::Arc::new(ImageData::Raw {
             pixels: rgba,
             format: PixelFormat::RGBA,
-        };
+        });
         image.width = width;
         image.height = height;
         image.color_space = ColorSpace::DeviceRGB;

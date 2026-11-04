@@ -2212,6 +2212,7 @@ mod tests {
         FontInfo {
             base_font: "TestVertical".to_string(),
             subtype: "Type0".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Identity,
             to_unicode: None,
             font_weight: None,

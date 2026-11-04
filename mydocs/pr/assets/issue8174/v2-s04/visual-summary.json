@@ -1,0 +1,1059 @@
+{
+  "consumerSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+  "nativeProducerSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+  "wasmProducerSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+  "cohort": "No Rust changes between these sources; WASM built fresh with wasm-opt; consumer JS/TS tested at 40b7.",
+  "tsv": [
+    {
+      "path": "pdf/native/icc-cmyk/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/icc-cmyk-jpeg/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/icc-gray/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/icc-indexed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/icc-indirect-filter/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/icc-jpeg/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/icc-path-cmyk/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/icc-path-rgb/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/icc-rgb/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/jpx-cmyk-alpha/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/jpx-cmyk-alpha-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/jpx-cmyk-premult/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/jpx-cmyk-premult-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/jpx-indexed-alpha/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/jpx-indexed-alpha-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/jpx-indexed-icc-premult/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/jpx-indexed-icc-premult-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/jpx-indexed-palette-premult/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/jpx-indexed-palette-premult-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/jpx-indexed-premult/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/jpx-indexed-premult-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-jbig2/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-jbig2-generic_template0/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-jbig2-mask/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-jbig2-symbol_global/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-jpx/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-jpx-alpha/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-jpx-indexed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-jpx-mask/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-jpx-palette/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-jpx-premult/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-jpx-tiles/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-scan-jbig2/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-scan-jbig2-200/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-scan-jpeg-control/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-scan-jpeg-control-200/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-scan-jpx/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/old-scan-jpx-200/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/recovery-fake-header/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/recovery-incremental/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/native/recovery-missing-xref/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/icc-cmyk/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/icc-cmyk-jpeg/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/icc-gray/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/icc-indexed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/icc-indirect-filter/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/icc-jpeg/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/icc-path-cmyk/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/icc-path-rgb/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/icc-rgb/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/jpx-cmyk-alpha/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/jpx-cmyk-alpha-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/jpx-cmyk-premult/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/jpx-cmyk-premult-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/jpx-indexed-alpha/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/jpx-indexed-alpha-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/jpx-indexed-icc-premult/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/jpx-indexed-icc-premult-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/jpx-indexed-palette-premult/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/jpx-indexed-palette-premult-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/jpx-indexed-premult/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/jpx-indexed-premult-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-jbig2/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-jbig2-generic_template0/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-jbig2-mask/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-jbig2-symbol_global/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-jpx/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-jpx-alpha/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-jpx-indexed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-jpx-mask/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-jpx-palette/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-jpx-premult/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-jpx-tiles/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-scan-jbig2/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-scan-jbig2-200/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-scan-jpeg-control/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-scan-jpeg-control-200/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-scan-jpx/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/old-scan-jpx-200/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/recovery-fake-header/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/recovery-incremental/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/studio/recovery-missing-xref/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/icc-cmyk/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/icc-cmyk-jpeg/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/icc-gray/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/icc-indexed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/icc-indirect-filter/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/icc-jpeg/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/icc-path-cmyk/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/icc-path-rgb/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/icc-rgb/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/jpx-cmyk-alpha/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/jpx-cmyk-alpha-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/jpx-cmyk-premult/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/jpx-cmyk-premult-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/jpx-indexed-alpha/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/jpx-indexed-alpha-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/jpx-indexed-icc-premult/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/jpx-indexed-icc-premult-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/jpx-indexed-palette-premult/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/jpx-indexed-palette-premult-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/jpx-indexed-premult/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/jpx-indexed-premult-boxed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-jbig2/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-jbig2-generic_template0/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-jbig2-mask/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-jbig2-symbol_global/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-jpx/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-jpx-alpha/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-jpx-indexed/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-jpx-mask/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-jpx-palette/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-jpx-premult/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-jpx-tiles/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-scan-jbig2/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-scan-jbig2-200/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-scan-jpeg-control/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-scan-jpeg-control-200/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-scan-jpx/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/old-scan-jpx-200/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/recovery-fake-header/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/recovery-incremental/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "pdf/wasm/recovery-missing-xref/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "forms/native/after/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 97.42445,
+      "rawMax": 97.42445,
+      "sha256": "55e9a5fe5cb7458e549d2806e21f9a16b4d20cef4272eabff631f8bfa3fc6bbb"
+    },
+    {
+      "path": "forms/native/before/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 96.98675,
+      "rawMax": 96.98675,
+      "sha256": "d019ba1b754a8f33ed8c63fe6badbde8b97d85d146cb21d04b7bfcb8105c9a22"
+    },
+    {
+      "path": "forms/wasm/after/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 97.34453,
+      "rawMax": 97.34453,
+      "sha256": "f0121adbef2c5dbd5d6cf9a308430acee2c954837ba8bd2a076bf759f6027031"
+    },
+    {
+      "path": "forms/wasm/before/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 96.9373,
+      "rawMax": 96.9373,
+      "sha256": "9819f52f190e02a947af72d499e24ce24e0cee2d064300f513078ebb39e0ad50"
+    },
+    {
+      "path": "svg/native/clip-opacity/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "svg/native/embedded-jpeg/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "svg/native/embedded-png/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "svg/native/foreground/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "svg/native/gradient/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "svg/native/internal-use/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "svg/native/restricted-script/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "svg/wasm-studio/clip-opacity/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "svg/wasm-studio/embedded-jpeg/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "svg/wasm-studio/embedded-png/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "svg/wasm-studio/foreground/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "svg/wasm-studio/gradient/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "svg/wasm-studio/gradient-transform/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "svg/wasm-studio/internal-use/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "svg/wasm-studio/restricted-script/silhouette.tsv",
+      "pages": 1,
+      "rawMin": 100.0,
+      "rawMax": 100.0,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    }
+  ],
+  "preservation": [
+    {
+      "path": "preservation/candidate/native/table/silhouette.tsv",
+      "pages": 3,
+      "rawMin": 96.6158,
+      "sameTsvAsS03": true,
+      "pixelChangedFromS03": 0,
+      "pagesCompared": [
+        "rhwp_001.png",
+        "rhwp_002.png",
+        "rhwp_003.png"
+      ]
+    },
+    {
+      "path": "preservation/candidate/wasm/table/silhouette.tsv",
+      "pages": 3,
+      "rawMin": 96.117,
+      "sameTsvAsS03": true,
+      "pixelChangedFromS03": 0,
+      "pagesCompared": [
+        "rhwp_001.png",
+        "rhwp_002.png",
+        "rhwp_003.png"
+      ]
+    },
+    {
+      "path": "preservation-tac/candidate/native/tac3/silhouette.tsv",
+      "pages": 3,
+      "rawMin": 99.29369,
+      "sameTsvAsS03": true,
+      "pixelChangedFromS03": 0,
+      "pagesCompared": [
+        "rhwp_001.png",
+        "rhwp_002.png",
+        "rhwp_003.png"
+      ]
+    },
+    {
+      "path": "preservation-tac/candidate/wasm/tac3/silhouette.tsv",
+      "pages": 3,
+      "rawMin": 99.30776,
+      "sameTsvAsS03": true,
+      "pixelChangedFromS03": 0,
+      "pagesCompared": [
+        "rhwp_001.png",
+        "rhwp_002.png",
+        "rhwp_003.png"
+      ]
+    }
+  ],
+  "notes": [
+    "41 independent PDF cases, 1 page each, through real Studio Worker then identical HWpx consumed in Native/fresh WASM; Studio actual CanvasKit PNGs also measured",
+    "7 authored OpenType SVG raster cases plus CanvasKit transform; Chrome independent SVG basis, not Hancom HWP evidence",
+    "Controlled Hancom form before/after independent static Print; scripts_disabled service preprocessing is not Hancom Click execution evidence",
+    "No new fixed-pixel geometry regression pins; form raw minima below98%",
+    "Direct current producer vs Worker current producer full RGBA equal41/41; this is not an old S03 JS implementation comparison"
+  ]
+}

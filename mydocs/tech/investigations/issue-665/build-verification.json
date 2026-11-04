@@ -1,0 +1,61 @@
+{
+  "records": [
+    {
+      "step": "base-native-build",
+      "source": "ea86816b5316dfeeb47ecf20df97abfd4b02da73",
+      "result": "passed",
+      "reported_compile_seconds": 406,
+      "reported_total_seconds": null,
+      "local_log_sha256": "932eca87114b1f106d8bfb405946c855447f626d31902f520daaa1ed589bdb5e"
+    },
+    {
+      "step": "base-wasm-build",
+      "source": "ea86816b5316dfeeb47ecf20df97abfd4b02da73",
+      "result": "passed",
+      "reported_compile_seconds": 276,
+      "reported_total_seconds": 735,
+      "local_log_sha256": "ac3078ead6a37479b3eb6855eb1c1368f7182751649c9b5542a7dacbfe3c4dab"
+    },
+    {
+      "step": "head-native-build",
+      "source": "d78048a6f0e5f71aa3bdb7d32e703bd5971e3019",
+      "result": "passed",
+      "reported_compile_seconds": 960,
+      "reported_total_seconds": null,
+      "local_log_sha256": "6bcd89c935cacb3665bd03bc08c246fac509e070cf7ed69bc1cb37b9c3ad0cea"
+    },
+    {
+      "step": "head-wasm-rebuild",
+      "source": "d78048a6f0e5f71aa3bdb7d32e703bd5971e3019",
+      "result": "passed",
+      "reported_compile_seconds": 210,
+      "reported_total_seconds": 670,
+      "local_log_sha256": "0363be8d449197e3804f719746d8c42a2e5e23b24fdd6be28d39fe13b54b9162"
+    },
+    {
+      "step": "clippy-native",
+      "source": "d78048a6f0e5f71aa3bdb7d32e703bd5971e3019",
+      "result": "passed",
+      "reported_compile_seconds": 155,
+      "reported_total_seconds": null,
+      "local_log_sha256": "9b8ba0cd63d8ba0129346726a65f5ab12a3f67b112b5153499ac2953a3f4867c"
+    },
+    {
+      "step": "clippy-wasm",
+      "source": "d78048a6f0e5f71aa3bdb7d32e703bd5971e3019",
+      "result": "passed",
+      "reported_compile_seconds": 194,
+      "reported_total_seconds": null,
+      "local_log_sha256": "43581652eba00a1aaa5ae6e170c04ad00acd9838bc163b8075c5490146495f91"
+    },
+    {
+      "step": "workspace-build",
+      "source": "d78048a6f0e5f71aa3bdb7d32e703bd5971e3019",
+      "result": "passed",
+      "reported_compile_seconds": 257,
+      "reported_total_seconds": null,
+      "local_log_sha256": "de3b5bb72bc12c2ac2fd11f75871c0440088f5e004c0f71dfd604a1dcb3d1ef0"
+    }
+  ],
+  "note": "Structured final results replace raw build output excerpts. Producer hashes remain in base/head-producers.json."
+}

@@ -1,0 +1,472 @@
+{
+  "measuredAt": "2026-11-01T11:17:37.849063+09:00",
+  "sourceBaseHead": "db4f50b4529ad3f11dc611444d1fec20827bc468",
+  "productSourceSha256": {
+    "src/paint/builder.rs": "d2587255187b828dc2f9a2bd0dd7566de7a73bc6bf83567b4e49f283ab6e1ce6",
+    "src/parser/pdf/allocation.rs": "154b822d55ea3584928d27ec121ebeeeff6234dbb6962a21cd9a6eb156c1fcd5",
+    "src/parser/pdf/extract.rs": "d587dca5113dc898b78c3d99f725388e27af762944208f2ed45ef2137abbb1a9",
+    "src/parser/pdf/lowering.rs": "caa48f3459e597774082d0d2af574648b1b9c474b74fd9bf2b4a9814b4441972",
+    "src/parser/pdf/mod.rs": "45405d26503893cb2508648b4cfcdcee3c7f462a26d3753ebb96b62b45f91ca8",
+    "src/parser/pdf/policy.rs": "1d7ec4fe5ae13a0595bc51337540809b182fbe83276e2aab106e90445f242e04",
+    "src/parser/pdf/rotated_text.rs": "63a9efb4ba49be7b5f08a9ae0b1900703f761d1d34b50a61eaeddef921fc2ad6",
+    "src/parser/pdf/table_detection.rs": "9107ecbd43dede088fc8cd84f210b1704a4c40ad302e5f941f92d681f6c13519",
+    "src/renderer/image_resolver/print_alpha.rs": "14d3b93ab0589ab3955611119501e0e7db77d6ffb610bfbc9dfb38c776fbd259",
+    "src/renderer/image_resolver/print_alpha_2024.rs": "6822f49642ba0cdffc0a0d0349c72ebfffc3e4465fede76fa502789e4febad91",
+    "src/renderer/image_resolver/print_bitmap_window.rs": "0a671b7fe098a82b0bf7e7f280fb60d645a82bf0fd8741641b0e864ca0585ee6",
+    "src/renderer/image_resolver/print_codec.rs": "98fbb3b1b798bab81ba7512e4749ff621d8051863c41d647c032a2c243ffbf1f",
+    "src/renderer/image_resolver/print_fill_jpeg.rs": "f99dd7fe2b89515a21789a7d688e226238e4c70af55836210d64a47c7a102426",
+    "src/renderer/image_resolver/print_jpeg_encode.rs": "9475baf73fa4f375ea6f006b5cc76a1db9675e8f909a1c16b0c12ca765cb7339",
+    "src/renderer/image_resolver/print_tone.rs": "0870770f6abbc30ddfe53dd73f0f3d1c94919b44debd78261a45985b7a0aa0aa",
+    "src/renderer/png_sampling.rs": "4f7d4332ebafbdc9a9b75d87aded6de716eeaa6221945e71839c817316b7d50f",
+    "src/wasm_api/pdf_request.rs": "95e0e5325b43f3a32b446e527cf6d0057efed48be81c8e91c784dacec1498356",
+    "vendor/rhwp-pdf-import-backend/Cargo.toml": "f4e6e34744d370a6ec618cd4f6e1d231dbe4873b5c095b63d52b7b9644360505",
+    "vendor/rhwp-pdf-import-backend/Cargo.toml.orig": "e387780228d24acf1d46892c1792f6c42ebbb1d541f99dccb7bc56e6a8f0a4f0",
+    "vendor/rhwp-pdf-import-backend/src/document.rs": "9710f596cb9597799e0384bf93f5ccec2e0bfb9c658ddd0737d9b179fbb68141",
+    "vendor/rhwp-pdf-import-backend/src/document/pattern_images.rs": "2ed8b2a844fa1f7db208899e01b338c7bef70fba039cf8d7868582e3e5a8d58f",
+    "vendor/rhwp-pdf-import-backend/src/extractors/image_clip.rs": "9ba20cb678e5ed36224c94b8251b1edd8753fc78d396571d3d1c2fc961fc35c1",
+    "vendor/rhwp-pdf-import-backend/src/extractors/image_mask_limited.rs": "6a7b487a69dc9d949c475538b4af90ce352b40e2a7606674137d903280c5a52d",
+    "vendor/rhwp-pdf-import-backend/src/extractors/image_mask_limited_extra.rs": "3b240d9b30f9f8a09ec70c9ca1aa8eaad0ffd674755f7ff46cc6b7dccd0136e3",
+    "vendor/rhwp-pdf-import-backend/src/extractors/images.rs": "cdeab1e1e68fdeee5e51c91d7c12e1a1b3ffea25b6ec1a22d968d05afa087ccd",
+    "vendor/rhwp-pdf-import-backend/src/extractors/mod.rs": "6b2be37918dd31d3c1432c186c126ba091482515c9c45e303466777498f139ee",
+    "vendor/rhwp-pdf-import-backend/src/extractors/paths.rs": "38f88f2eac6a644c8618f3c1354967eea7720cc4afacfccd2b5f52cb10d3a793",
+    "vendor/rhwp-pdf-import-backend/src/extractors/png_limited.rs": "ec8af9c5a18df1f2cf041a2b063004b69f1152b747c70bb75035e4c2ea70a6e8",
+    "vendor/rhwp-pdf-import-backend/src/extractors/text.rs": "91b7eb4ef33e098555906a75b8b006151d7a395de4b3f95b05ff913265b26213",
+    "vendor/rhwp-pdf-import-backend/src/fonts/font_dict.rs": "ba88cc7bb40e67b8955972bd7bf9b916b8688486513b1de4c13e3066d5a8aca2",
+    "vendor/rhwp-pdf-import-backend/src/fonts/global_cache.rs": "052a910ff61f5304574b5efd844702a25c3847249b1cfe8d9940939cb864c4fc",
+    "vendor/rhwp-pdf-import-backend/src/fonts/mod.rs": "b0d9bb000b5f0a26a18089b62ec72d51d871873a72fadca55114430d7d9797ea",
+    "vendor/rhwp-pdf-import-backend/src/fonts/unicode_decode.rs": "f53094091f1489ff6495fa6fa5c796ad75c9ea7831468712ae3595398159bbb3",
+    "vendor/rhwp-pdf-import-backend/src/import_limits.rs": "2c7e746108cd16a1849d3396811f962b8cd7c3161688389606743ca76f7dda9d",
+    "vendor/rhwp-pdf-import-backend/src/rendering/text_rasterizer.rs": "8f511e4d5e4346aba2fc91e141463681db95db6b48ac751285a68cd812be43a4",
+    "vendor/rhwp-pdf-import-backend/src/extractors/image_clip_path.rs": "8c1f0414785ea7d9dba8428e575d6c280a9fba3b6cc085e929209ea2287e3541",
+    "vendor/rhwp-pdf-import-backend/src/fonts/type3_empty.rs": "cfa7ce6d7fd64bc9f69efabe63d8b6c7cd7fda277d78c103da02f9dbb3cbb5cb",
+    "Cargo.toml": "debb771aa5b059c4a7cf8ed9dd9c3c51f02f3d32c23cc1818b013e059520c8c0",
+    "Cargo.lock": "5e63cc3b313f7b8ce1f86fdfa8a4acb97e80275d52538f6dc5602725cca1e2fc"
+  },
+  "binarySha256": {
+    "native": "6594f2b12172e268243b0b2dc4555667ad49106f4fcd3324336afda6b68b8809",
+    "pkg/rhwp_bg.wasm": "298f8db9462c965ecbb329249790c3f3223f8bf5d0f0a10446b82b901f2d779e",
+    "pkg/rhwp.js": "34a697dd2fbad6cd49efeb2f2cb6a59087f49fcf906a66578344230cc9bab334",
+    "rhwp-studio/public/rhwp_bg.wasm": "298f8db9462c965ecbb329249790c3f3223f8bf5d0f0a10446b82b901f2d779e",
+    "rhwp-studio/public/rhwp.js": "34a697dd2fbad6cd49efeb2f2cb6a59087f49fcf906a66578344230cc9bab334"
+  },
+  "inputs": [
+    {
+      "name": "img_clipping_01.pdf",
+      "sha256": "75324afbe62535a6b4f2bc980269310ca14d90eb385f828fc6857a44bea542b4",
+      "bytes": 16697228,
+      "repositoryPath": "samples/issue8413/img_clipping_01.pdf"
+    },
+    {
+      "name": "img_bug_01.pdf",
+      "sha256": "3fc955a5ceec37d0c5d83c28d09fce54a5fa2654884e82b5ecabe090f20e810b",
+      "bytes": 12783971,
+      "repositoryPath": "samples/issue8413/img_bug_01.pdf"
+    },
+    {
+      "name": "PDF_ENCRYPTION_UNSUPPORTED.pdf",
+      "sha256": "51eecae552f21e3ddb196ea8ff59f3a84cf9ab8cc431a9cab1425e7f01babe71",
+      "bytes": 18705307,
+      "repositoryPath": "samples/issue8413/PDF_ENCRYPTION_UNSUPPORTED.pdf"
+    },
+    {
+      "name": "f87pro.pdf",
+      "sha256": "6454edae50bd2f93e56ecbe71bf7c3b959dbbf241abf2906753f20dd22a15a57",
+      "bytes": 15520189,
+      "repositoryPath": "samples/issue8413/f87pro.pdf"
+    }
+  ],
+  "scores": [
+    {
+      "document": "controls-final",
+      "native": {
+        "pages": 13,
+        "minimumRawPercent": 98.88,
+        "below90": 0,
+        "tsvSha256": "950b89b233f01934e28033a4a321e8435ea82c7ab574630b2beeb682db7fee9d"
+      },
+      "wasm": {
+        "pages": 13,
+        "minimumRawPercent": 98.97,
+        "below90": 0,
+        "tsvSha256": "6f1d47e6af4b5e688cb2a363da7d2b8ff9a54d1c26ee467d6bb0260fc139d35a"
+      }
+    },
+    {
+      "document": "consecutive",
+      "native": {
+        "pages": 5,
+        "minimumRawPercent": 100.0,
+        "below90": 0,
+        "tsvSha256": "651306476c87a371f9fe4a04366e2fc908ec9241fb4ab9918c6652f0cee0ac50"
+      },
+      "wasm": {
+        "pages": 5,
+        "minimumRawPercent": 100.0,
+        "below90": 0,
+        "tsvSha256": "651306476c87a371f9fe4a04366e2fc908ec9241fb4ab9918c6652f0cee0ac50"
+      }
+    },
+    {
+      "document": "compound",
+      "native": {
+        "pages": 1,
+        "minimumRawPercent": 100.0,
+        "below90": 0,
+        "tsvSha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "wasm": {
+        "pages": 1,
+        "minimumRawPercent": 100.0,
+        "below90": 0,
+        "tsvSha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "document": "curve",
+      "native": {
+        "pages": 1,
+        "minimumRawPercent": 100.0,
+        "below90": 0,
+        "tsvSha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "wasm": {
+        "pages": 1,
+        "minimumRawPercent": 100.0,
+        "below90": 0,
+        "tsvSha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "document": "hancom-palette-final",
+      "native": {
+        "pages": 1,
+        "minimumRawPercent": 100.0,
+        "below90": 0,
+        "tsvSha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "wasm": {
+        "pages": 1,
+        "minimumRawPercent": 100.0,
+        "below90": 0,
+        "tsvSha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "document": "img-clipping-color-final",
+      "native": {
+        "pages": 32,
+        "minimumRawPercent": 99.89,
+        "below90": 0,
+        "tsvSha256": "d4d647172ed2af60d46648e95c0ca3cd3b45b6ef6a9297b31282bd2dee3b2283"
+      },
+      "wasm": {
+        "pages": 32,
+        "minimumRawPercent": 99.89,
+        "below90": 0,
+        "tsvSha256": "6cccea8d11ee3446290cd41361dcb94badd0f0fef5237bbe0e0f804a18257d91"
+      }
+    },
+    {
+      "document": "img-bug-color-final",
+      "native": {
+        "pages": 37,
+        "minimumRawPercent": 99.76,
+        "below90": 0,
+        "tsvSha256": "1b16bbbe39d298439338f18f745f5c840cf291377efccfba13d1f81c8efb048e"
+      },
+      "wasm": {
+        "pages": 37,
+        "minimumRawPercent": 99.83,
+        "below90": 0,
+        "tsvSha256": "12b71b46a0dcd53d588189a10884878ac7e66cdddaeec9a2ad7d2c65a2307268"
+      }
+    },
+    {
+      "document": "encrypted-final",
+      "native": {
+        "pages": 57,
+        "minimumRawPercent": 91.72,
+        "below90": 0,
+        "tsvSha256": "b45b78785ca7188946835bf5f4dea6a07d1f4da21a32705d7ddd0082bc018eb4"
+      },
+      "wasm": {
+        "pages": 57,
+        "minimumRawPercent": 91.64,
+        "below90": 0,
+        "tsvSha256": "b76c44ca06637a187a90ad9d752987d2bc7f8332883173f3b2b776765167ed31"
+      }
+    },
+    {
+      "document": "f87pro-final",
+      "native": {
+        "pages": 1,
+        "minimumRawPercent": 99.82,
+        "below90": 0,
+        "tsvSha256": "78793dd400ed461419c42983ae0c19e75caec1b759cbcf6e37ed482909b82eef"
+      },
+      "wasm": {
+        "pages": 1,
+        "minimumRawPercent": 99.82,
+        "below90": 0,
+        "tsvSha256": "78793dd400ed461419c42983ae0c19e75caec1b759cbcf6e37ed482909b82eef"
+      }
+    }
+  ],
+  "measurements": [
+    {
+      "name": "img_clipping_01",
+      "sourcePages": 32,
+      "native": {
+        "name": "img_clipping_01",
+        "wallSeconds": 49.27,
+        "peakRssKiB": 704972,
+        "exit": 0
+      },
+      "wasm": {
+        "elapsedMs": 67920.929651,
+        "memoryCapacity": 806354944,
+        "remaining": 1799401527
+      },
+      "wasmResourceUsage": {
+        "decodedBytes": 6682388580,
+        "codecAllocatedBytes": 3609257602,
+        "codecWorkUnits": 1338764346,
+        "parsedObjects": 24402,
+        "collectionEntries": 41488,
+        "operators": 130098,
+        "textBytes": 4363,
+        "spans": 304,
+        "referenceVisits": 9435,
+        "xobjectVisits": 200,
+        "contentParseCalls": 32,
+        "pageOperatorCacheHits": 96,
+        "pageStreamCacheHits": 96,
+        "formStreamCacheHits": 0,
+        "failure": null
+      },
+      "studio": {
+        "milliseconds": 83111,
+        "pages": 32,
+        "result": {
+          "requestId": "curves-test",
+          "ok": true
+        },
+        "pageConversionReached100": true
+      },
+      "saves": {
+        "native-hwpx": {
+          "bytes": 108144485,
+          "sha256": "97c00b9c4cd3769f1a68dc4c391a4715f203926224f1624f461f608dbe3c8bab"
+        },
+        "native-hwp": {
+          "bytes": 109014528,
+          "sha256": "bdbc7a8b0db85ce84962494588fa5e52e6f369a0b18f6b6094299797853fb59c"
+        },
+        "wasm-hwpx": {
+          "bytes": 108144485,
+          "sha256": "97c00b9c4cd3769f1a68dc4c391a4715f203926224f1624f461f608dbe3c8bab"
+        },
+        "wasm-hwp": {
+          "bytes": 109014528,
+          "sha256": "6ff0e01364283195578421faaea500c55b3a6c4495a52e5816c2324a243d6953"
+        }
+      }
+    },
+    {
+      "name": "img_bug_01",
+      "sourcePages": 37,
+      "native": {
+        "name": "img_bug_01",
+        "wallSeconds": 24.4,
+        "peakRssKiB": 409188,
+        "exit": 0
+      },
+      "wasm": {
+        "elapsedMs": 24517.554227,
+        "memoryCapacity": 554958848,
+        "remaining": 7048662989
+      },
+      "wasmResourceUsage": {
+        "decodedBytes": 1494978343,
+        "codecAllocatedBytes": 919644022,
+        "codecWorkUnits": 491881360,
+        "parsedObjects": 2975,
+        "collectionEntries": 13224,
+        "operators": 7378,
+        "textBytes": 5768,
+        "spans": 428,
+        "referenceVisits": 3402,
+        "xobjectVisits": 496,
+        "contentParseCalls": 37,
+        "pageOperatorCacheHits": 111,
+        "pageStreamCacheHits": 111,
+        "formStreamCacheHits": 0,
+        "failure": null
+      },
+      "studio": {
+        "milliseconds": 26458,
+        "pages": 37,
+        "result": {
+          "requestId": "curves-test",
+          "ok": true
+        },
+        "pageConversionReached100": true
+      },
+      "saves": {
+        "native-hwpx": {
+          "bytes": 46293260,
+          "sha256": "831963c163e337951c9364bd0ce52874b5d69245c1ada8dec0972ac7444e1432"
+        },
+        "native-hwp": {
+          "bytes": 46619136,
+          "sha256": "fa5d3dd2581ffa8c8fa202209885d265d1a626af036f7a03524896a0f5eb96f1"
+        },
+        "wasm-hwpx": {
+          "bytes": 46293260,
+          "sha256": "831963c163e337951c9364bd0ce52874b5d69245c1ada8dec0972ac7444e1432"
+        },
+        "wasm-hwp": {
+          "bytes": 46619136,
+          "sha256": "d6144e756a6d13ee53066217784c8bd8b30d4b2d27c2242d48580998868b93fc"
+        }
+      }
+    },
+    {
+      "name": "PDF_ENCRYPTION_UNSUPPORTED",
+      "sourcePages": 57,
+      "native": {
+        "name": "PDF_ENCRYPTION_UNSUPPORTED",
+        "wallSeconds": 9.54,
+        "peakRssKiB": 316848,
+        "exit": 0
+      },
+      "wasm": {
+        "elapsedMs": 23407.994278000002,
+        "memoryCapacity": 610205696,
+        "remaining": 6259105409
+      },
+      "wasmResourceUsage": {
+        "decodedBytes": 2247518991,
+        "codecAllocatedBytes": 247674592,
+        "codecWorkUnits": 44624286,
+        "parsedObjects": 81335,
+        "collectionEntries": 166908,
+        "operators": 98694,
+        "textBytes": 160457,
+        "spans": 5168,
+        "referenceVisits": 16029,
+        "xobjectVisits": 1324,
+        "contentParseCalls": 355,
+        "pageOperatorCacheHits": 167,
+        "pageStreamCacheHits": 169,
+        "formStreamCacheHits": 268,
+        "failure": null
+      },
+      "studio": {
+        "milliseconds": 17677,
+        "pages": 57,
+        "result": {
+          "requestId": "curves-test",
+          "ok": true
+        },
+        "pageConversionReached100": true
+      },
+      "saves": {
+        "native-hwpx": {
+          "bytes": 83310192,
+          "sha256": "f301501ae39f43925d4d252eaa4b7ca2a64e87298422cb4c35ef8ed16cc451e0"
+        },
+        "native-hwp": {
+          "bytes": 83727872,
+          "sha256": "37a212b011427a49f5e8a06e598ad47539dd7e209e61e4f9258f08c07ed8c83c"
+        },
+        "wasm-hwpx": {
+          "bytes": 83310192,
+          "sha256": "f301501ae39f43925d4d252eaa4b7ca2a64e87298422cb4c35ef8ed16cc451e0"
+        },
+        "wasm-hwp": {
+          "bytes": 83728896,
+          "sha256": "af0afa4f5bc76a1e683f071ad61f0588af698e71dc1b01e2017ae43c87aaac8e"
+        }
+      }
+    },
+    {
+      "name": "f87pro",
+      "sourcePages": 1,
+      "native": {
+        "name": "f87pro",
+        "wallSeconds": 10.19,
+        "peakRssKiB": 483120,
+        "exit": 0
+      },
+      "wasm": {
+        "elapsedMs": 53563.030458,
+        "memoryCapacity": 745668608,
+        "remaining": 7056742203
+      },
+      "wasmResourceUsage": {
+        "decodedBytes": 1520547632,
+        "codecAllocatedBytes": 126601343,
+        "codecWorkUnits": 0,
+        "parsedObjects": 210,
+        "collectionEntries": 2506,
+        "operators": 623266,
+        "textBytes": 0,
+        "spans": 0,
+        "referenceVisits": 42,
+        "xobjectVisits": 6,
+        "contentParseCalls": 1,
+        "pageOperatorCacheHits": 2,
+        "pageStreamCacheHits": 2,
+        "formStreamCacheHits": 0,
+        "failure": null
+      },
+      "studio": {
+        "milliseconds": 139951,
+        "pages": 1,
+        "result": {
+          "requestId": "curves-test",
+          "ok": true
+        },
+        "pageConversionReached100": true
+      },
+      "saves": {
+        "native-hwpx": {
+          "bytes": 12644757,
+          "sha256": "e72a9e1cc111e43cc2b549400fa1ec97d5f12dd3dac5618bef1ecbf237726fa8"
+        },
+        "native-hwp": {
+          "bytes": 13459968,
+          "sha256": "fc29188f2d8e7d9e983877e5b273a08d27833c90428da5f3f6e61364f910fe97"
+        },
+        "wasm-hwpx": {
+          "bytes": 12644757,
+          "sha256": "e72a9e1cc111e43cc2b549400fa1ec97d5f12dd3dac5618bef1ecbf237726fa8"
+        },
+        "wasm-hwp": {
+          "bytes": 13503488,
+          "sha256": "76b700db212b125ac397d7113863ea1397e564a4918616cdc0f617e980f6735e"
+        }
+      }
+    }
+  ],
+  "fontPolicy": "Controls: explicit standard Arial, not Arial Narrow. 37/57 pages: original embedded outlines restored locally; no private font bytes distributed.",
+  "limits": "Current runs with concurrent build activity; not a before/after speed benchmark. WASM linear memory capacity is not process RSS. Studio uses 300 second import timeout. f87pro completed after CDP protocol timeout was raised; first attempt is retained in local evidence.",
+  "implementationCommit": "f17ca45e14a016e747f2a3aa399bbc50bb805df9",
+  "validationWorktree": "/tmp/rhwp-issue8413-validation",
+  "normalControl": "Native Hancom palette PNG unchanged before/after; both Native and WASM raw 100%. Final SVG export preserves RGB239 and continuous alpha.",
+  "submissionChanges": {
+    "rebasedHead": "25dc243a46cdf26de5c228b62c82c6b02504cd92",
+    "base": "da39c536613a4bd543dc72b63a556183efc0383f",
+    "sourceDifferences": [
+      {
+        "path": "src/parser/pdf/lowering.rs",
+        "measuredSha256": "caa48f3459e597774082d0d2af574648b1b9c474b74fd9bf2b4a9814b4441972",
+        "submissionSha256": "0829b47a96dd09aaef8586b7ad2f5b9d878e46bb6d41007d8d2894e1cd3478f9"
+      }
+    ],
+    "nonTestProductionCodeIdentical": true,
+    "reason": "Remove only the source cfg(test) module and replace its boundary coverage via the public PDF API in tests/cases/issue_8174_pdf_resource_policy.rs; product/visual evidence is reused, not relabelled as a new run."
+  },
+  "publicationApproval": "2026-11-01 maintainer explicitly approved public commits of the four original PDFs."
+}

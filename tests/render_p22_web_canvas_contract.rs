@@ -1,3 +1,7 @@
+//! 관계형·고정형: 검사 대상 — Web Canvas의 paint 호출과 처리 순서에 관한 소스 계약.
+//! 주석 갱신: 2026-11-01T06:05:18+09:00; 직전 파일 커밋: 2026-09-03T04:05:38+09:00 (`da604b2943c28428cf8cf952ac57cb8e9b39faf9`).
+//! 입력·기준: `src/renderer/web_canvas.rs`의 소스 문자열.
+//! 출력 API 계약을 검사하며 화면 시각 일치율은 측정하지 않는다.
 const WEB_CANVAS_SOURCE: &str = include_str!("../src/renderer/web_canvas.rs");
 
 #[test]

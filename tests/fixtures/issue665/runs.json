@@ -1,0 +1,51 @@
+{
+  "version": "1",
+  "default_font": "Arial",
+  "questions": [
+    {
+      "number": 1,
+      "stem": "Ordered runs.",
+      "stem_blocks": [
+        {
+          "type": "paragraph",
+          "runs": [
+            {
+              "type": "text",
+              "text": "Before "
+            },
+            {
+              "type": "image",
+              "ref": "img/diagram.png"
+            },
+            {
+              "type": "text",
+              "text": " after, then "
+            },
+            {
+              "type": "image",
+              "ref": "img/diagram.png"
+            },
+            {
+              "type": "text",
+              "text": " final."
+            }
+          ]
+        }
+      ],
+      "choices": [
+        {
+          "label": "A.",
+          "text": "Preserve all text."
+        }
+      ],
+      "media": [
+        {
+          "id": "img/diagram.png",
+          "natural_w": 640,
+          "natural_h": 160,
+          "target_w_mm": 20
+        }
+      ]
+    }
+  ]
+}

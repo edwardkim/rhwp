@@ -1,0 +1,22 @@
+{
+  "synchronized": {
+    "rhwp.js": {
+      "match": true,
+      "sha256": "e686b20d70bfc9e51f9ebf7efb3d0c84ca7308d19db747b6ce6a2328af35b07a"
+    },
+    "rhwp_bg.wasm": {
+      "match": true,
+      "sha256": "19e4729f73daa5a183d37b29eb09500cdd217c112383f0d643b786fce59bb3c1"
+    },
+    "rhwp.d.ts": {
+      "match": true,
+      "sha256": "93e5476f76ac72f116eb636456c6131a07297b4779b764a71c39183bd6352d0e"
+    },
+    "rhwp_bg.wasm.d.ts": {
+      "match": true,
+      "sha256": "8108c6673fb8b4889f2738005c8dfcf757ac4e89b5ec946f9dd6c8b56467d1f9"
+    }
+  },
+  "semanticTypeChanges": "Three class methods, three InitOutput members, three raw WASM exports added; no removed signatures. Other diff lines are generated export ordering.",
+  "scope": "Hashes describe the fresh local integration producer. Source-branch declarations add nine exact signatures while retaining their original order; see submission-candidate.json for merged semantic equality."
+}

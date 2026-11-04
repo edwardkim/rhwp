@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-29",
+  "head": "731758d12475b66987953898b12ad0aa083e8f90",
+  "source_wasm_observed_sha256": "7b9684d74a850c6925ec981a2cf005d86e50fe166b21bf71669ce2fdfc9ebbb4",
+  "source_producer_head": "7b65cb809e354d79f89f6c087cbdc5257dbb06f3",
+  "wasm_code_diff_since_producer": [],
+  "method": "기본 작업공간의 Studio 파일을 변경하지 않고 분리된 임시 Studio에 동일 소스와 최신 최적화 WASM을 공급했다. CDP가 앱 초기화 과정에서 실제 받은 WASM 응답의 해시를 확인했다.",
+  "ai_providers": {
+    "command": "npm run e2e:ai-providers",
+    "exit_code": 0,
+    "checks_passed": 34,
+    "log_sha256": "21400275c8cca58f9657c326f88afbab276824c7864e08ecf4e624d841f2e43c",
+    "api_policy": "OpenAI·Gemini 요청은 브라우저에서 모의 응답으로 처리했으며 실제 키는 사용하지 않았다."
+  },
+  "pdf_layout": {
+    "temporary_probe_sha256": "d28b9f15d6f6ab512f4461fe05936d60fd87df4251b603e739ecede5c663e2f4",
+    "input": "samples/21_언어_기출_편집가능본-2010.pdf",
+    "input_sha256": "609d56421009ccab5a50cb2a8f4e78af4d0961de2e7ae85d811905e8434ac251",
+    "exit_code": 0,
+    "checks_passed": 6,
+    "checked": "같은 2010 시험 PDF를 기본 및 편집 배치로 열고 각 모드와 문서·원본 16쪽을 확인",
+    "log_sha256": "3420b86a7eb60c13f7c2cc9a60ef032199a5d20eefeb13b5672f9bae0b971eb8"
+  },
+  "wasm_consumption": [
+    {
+      "sha256": "839c6dd3ee119965e0b34eedd25a92bdafd92e435bf5b94e60be44edf6ad51c1",
+      "response_count": 1,
+      "received_sha256": "7b9684d74a850c6925ec981a2cf005d86e50fe166b21bf71669ce2fdfc9ebbb4"
+    },
+    {
+      "sha256": "839c6dd3ee119965e0b34eedd25a92bdafd92e435bf5b94e60be44edf6ad51c1",
+      "response_count": 1,
+      "received_sha256": "7b9684d74a850c6925ec981a2cf005d86e50fe166b21bf71669ce2fdfc9ebbb4"
+    },
+    {
+      "sha256": "839c6dd3ee119965e0b34eedd25a92bdafd92e435bf5b94e60be44edf6ad51c1",
+      "response_count": 1,
+      "received_sha256": "7b9684d74a850c6925ec981a2cf005d86e50fe166b21bf71669ce2fdfc9ebbb4"
+    }
+  ],
+  "limitations": [
+    "PDF 쪽의 시각 일치율을 검사한 실행은 아니다.",
+    "브라우저 전체 회귀나 전체 Studio 테스트 재실행을 뜻하지 않는다.",
+    "초기 격리 환경의 누락 경로 및 접근 제한은 수정 후 재실행했다."
+  ],
+  "canvaskit_minimal_fonts": {
+    "command": "node e2e/run-with-vite.mjs -- node e2e/canvaskit-periodic-borders-issue7998.test.mjs --mode=headless",
+    "exit_code": 0,
+    "fontconfig_file_sha256": "6d7279fde2946e4d30c3ef7528e345c5183841c6070247f5ed42bd381fbac01b",
+    "fc_list_count": 0,
+    "test_file": "rhwp-studio/e2e/canvaskit-periodic-borders-issue7998.test.mjs",
+    "test_file_sha256": "b85809b515b93de7029f2dbb1567f29d0c1a2705e2d3c18fa3f8a67ca7b8cc55",
+    "input": "pdf/issue7998/periodic-borders/native-dot-widths.hwpx",
+    "input_sha256": "1fbd2b9026d07fed1f9bddd30bbe8d24bfb93975d5d3037d5dfb543ff6a038d4",
+    "checks": "실제 CanvasKit 점선 4종, 투명 테두리, 렌더 완료 및 미지원 연산 없음",
+    "text_ops": "검사 대상에서 제외",
+    "log_sha256": "886a2c0f89edf555f96acf5e93df3493c81cfff635b191a3d6ff35580564c665",
+    "wasm_consumption_sha256": "839c6dd3ee119965e0b34eedd25a92bdafd92e435bf5b94e60be44edf6ad51c1",
+    "wasm_sha256": "7b9684d74a850c6925ec981a2cf005d86e50fe166b21bf71669ce2fdfc9ebbb4",
+    "limitation": "Fontconfig 검색을 빈 디렉터리로 제한했으며 시스템 글꼴 디렉터리 자체를 숨긴 격리 실험은 아니다."
+  }
+}

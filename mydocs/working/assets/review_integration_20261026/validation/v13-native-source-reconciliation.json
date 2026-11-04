@@ -1,0 +1,12 @@
+{
+  "compiled_base_head": "59c7fef1674658c138625cc9348becbef5cbcd04",
+  "tracked_patch_sha256": "8437c5b212450f4d528790c52cbab5996d026720c6abbe73f58ecc86047c9d7b",
+  "binary": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/candidate-v13-inline-fit-rhwp",
+  "binary_sha256": "8eba0444e0af24bf6fd7e6d22fdf65670168f0fcb76c815b20c15605ba17a5ac",
+  "build_log": "v13-inline-fit-1.log",
+  "scope": "Existing common physical occupied_end for inline row fit; flow end retained; text_rows legacy owner and floating shape occupancy preserved.",
+  "committed_head": "8b7f48e6929030cc53e324c0ffba637616c28213",
+  "production_tree_matches_compiled_base_plus_patch": true,
+  "source_paths_checked": 1828,
+  "source_path_hashes_sha256": "92ce72007d33a7ed124942022ed99b17575e1090351e28b40b098d33cf3d3be9"
+}

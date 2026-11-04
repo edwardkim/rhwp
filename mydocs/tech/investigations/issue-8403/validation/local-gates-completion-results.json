@@ -1,0 +1,172 @@
+[
+  {
+    "name": "fixed-svg-lib-reader",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--lib",
+      "test_task683_pr149_image_cluster_spacing"
+    ],
+    "exit": 0,
+    "seconds": 333.26
+  },
+  {
+    "name": "issue_5929_table_below_square_pic",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_5929_table_below_square_pic",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "exit": 0,
+    "seconds": 15.78
+  },
+  {
+    "name": "issue_7193_picture_inner_margin",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_7193_picture_inner_margin",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "exit": 0,
+    "seconds": 15.31
+  },
+  {
+    "name": "issue_6776_cell_tac_picture_accounting",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_6776_cell_tac_picture_accounting",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "exit": 0,
+    "seconds": 19.4
+  },
+  {
+    "name": "fmt-after-readers",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 22.52
+  },
+  {
+    "name": "lint-workspace-after-readers",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 64.36
+  },
+  {
+    "name": "manifest-after-readers",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "3c01421e89a562de4ba8b021a4cdf943af60b58d"
+    ],
+    "exit": 0,
+    "seconds": 0.71
+  },
+  {
+    "name": "native-lib",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--lib"
+    ],
+    "exit": 0,
+    "seconds": 358.49
+  },
+  {
+    "name": "native-pattern",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_8403_pdf_image_patterns",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "exit": 0,
+    "seconds": 308.2
+  },
+  {
+    "name": "native-placeholder",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_2225_missing_picture_placeholder",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "exit": 0,
+    "seconds": 18.77
+  },
+  {
+    "name": "native-direct-pdf",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "render_p37_direct_pdf_export",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "exit": 0,
+    "seconds": 14.32
+  }
+]

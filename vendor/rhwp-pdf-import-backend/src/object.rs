@@ -199,7 +199,8 @@ impl Object {
         self.decode_stream_data_with_decryption(None, 0, 0)
     }
 
-    /// The limited import path does not support encrypted streams.
+    /// Decode bounded stream bytes; the document loader decrypts authenticated
+    /// encrypted streams before passing them to this filter decoder.
     pub fn decode_stream_data_with_budget(
         &self,
         budget: &crate::import_limits::ImportBudget,

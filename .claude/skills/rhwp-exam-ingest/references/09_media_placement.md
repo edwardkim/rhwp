@@ -1,11 +1,14 @@
 # 09 — media placement
 
 이미지가 **어디에 놓이는지** 는 픽셀이 아니라 의미다.
+CLI는 실제 이미지 바이트와 Picture/BinData를 연결한다. 각 배치는 본문 흐름에 참여한다.
+
 스키마 enum: `between` | `above` | `below` | `inline`. 기본 `between`.
 
 `stem_blocks` 의 image 블록과 `media[]` 항목 **둘 다** placement 를 가질 수 있다.
-둘을 같게 맞춘다. 어긋나면 빌더 구현에 따라 한쪽이 이긴다. 이 스킬은
-빌더를 바꾸지 않고, 두 값을 동일하게 써서 불확실성을 없앤다.
+블록의 placement가 우선한다. 블록에서 참조한 media는 다시 자동 삽입하지 않는다.
+블록에서 참조하지 않은 media만 해당 문항의 placement에 한 번 자동 삽입한다.
+공유 지문·boxed의 between/below는 해당 컨테이너의 끝에 놓는다.
 
 ## between (기본, 가장 흔함)
 
@@ -45,16 +48,18 @@
 
 > 다음 중 ㉠에 해당하는 것은? [작은 도형] 을 고르시오.
 
-한컴 Picture inline 직렬화가 약하면 (#182) inline 은 깨질 수 있다.
-중요한 자료는 `between` 으로 내려 독립 문단처럼 넣는 편이 안전하다.
-inline 을 썼으면 한계를 사용자에게 한 줄로 고지한다.
+image 블록의 inline은 같은 컨테이너의 앞 문단 끝에 붙는다. 앞 문단이 없으면
+자체 문단을 사용하며 boxed 뒤 이미지를 그 boxed 내부에 붙이지 않는다.
+정확한 문장 중간은 `{"type":"paragraph","runs":[{"type":"text","text":"앞 "},
+{"type":"image","ref":"img/q1.png"},{"type":"text","text":" 뒤"}]}`로 지정한다.
+출력의 Picture 참조·글자 순서와 실제 한컴 표시를 확인한다.
 
 ## 고르는 질문
 
 1. 그림이 선택지보다 위이고 발문보다 아래인가? → `between`
 2. 그림이 발문보다 위인가? → `above` + 블록 순서 앞
 3. 그림이 선택지보다 아래인가? → `below`
-4. 그림이 문장 중간에 끼는가? → `inline` (한계 고지)
+4. 그림이 문장 중간에 끼는가? → `paragraph.runs`
 
 애매하면 `between`. 기본값이 그 이유다.
 

@@ -2,6 +2,8 @@
 
 use std::ops::Range;
 
+pub(crate) const TEXT_LINE_EM: f64 = 1.3;
+
 pub(crate) struct LegendRow {
     pub items: Range<usize>,
     pub width: f64,
@@ -12,10 +14,11 @@ pub(crate) struct LegendLayout {
     pub rows: Vec<LegendRow>,
     pub width: f64,
     pub row_height: f64,
+    pub bottom_padding: f64,
 }
 
 impl LegendLayout {
-    pub fn new(widths: Vec<f64>, available: f64, font_size: f64) -> Self {
+    pub fn new(widths: Vec<f64>, available: f64, font_size: f64, frame_padding: f64) -> Self {
         let mut rows = Vec::new();
         let (mut start, mut width) = (0, 0.0);
         for (i, item_width) in widths.iter().enumerate() {
@@ -40,11 +43,16 @@ impl LegendLayout {
             widths,
             rows,
             width,
-            row_height: font_size * 1.5,
+            row_height: font_size * TEXT_LINE_EM,
+            bottom_padding: frame_padding * 0.8,
         }
     }
 
     pub fn height(&self) -> f64 {
-        self.rows.len() as f64 * self.row_height
+        if self.rows.is_empty() {
+            0.0
+        } else {
+            self.rows.len() as f64 * self.row_height + self.bottom_padding
+        }
     }
 }

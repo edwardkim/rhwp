@@ -184,6 +184,10 @@ impl EncryptionHandler {
         self.dict.permissions
     }
 
+    pub(crate) fn encrypts_metadata(&self) -> bool {
+        self.dict.encrypt_metadata
+    }
+
     /// Get the encryption algorithm.
     pub fn algorithm(&self) -> Algorithm {
         self.algorithm

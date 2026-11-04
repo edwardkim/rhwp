@@ -1,3 +1,8 @@
+//! 관계형: 탭 뒤 가시문자의 문자 경계가 런 bbox에 포함되고 같은 줄의 다음 런을 침범하지 않는지 검사한다.
+//! 주석 갱신: 2026-10-31T02:14:48+09:00; 직전 파일 커밋: 2026-10-15T20:24:34+09:00 (39a634e547621c32ae6f9ba8c1694d35c827078b).
+//! lseg-05-tab.hwp: 2026-10-31, 96 DPI PDFium, 2px raw, 전체 1쪽 Native 98.06% / fresh WASM 97.91% (전쪽 최저와 같음).
+//! 독립 한컴 2020 Print 및 직접 확대 판독: mydocs/pr/assets/chrisryugj_20261031/README.md.
+//! 이 근거로 위 원본의 400px 폭 핀만 문자 끝과 bbox의 포함 관계로 교체했다. 아래 다른 원본 검사는 변경하지 않는다.
 //! [Issue #6800] 오른쪽 탭이 든 `TextRun` 의 bbox 폭이 **탭 스톱까지** 잡혀, 같은 줄의
 //! 다음 런을 통째로 덮은 것처럼 계수됐다.
 //!
@@ -95,26 +100,39 @@ fn a_mid_run_tab_with_text_after_it_is_untouched() {
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/lseg-05-tab.hwp"))
             .expect("lseg-05-tab.hwp 읽기");
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
-    let tree = core.build_page_render_tree(0).expect("1쪽 render tree");
-    let mut lines = Vec::new();
-    lines_with_runs(&tree.root, &mut lines);
-
+    let layout: serde_json::Value =
+        serde_json::from_str(&core.get_page_text_layout_native(0).unwrap()).unwrap();
     let mut checked = 0;
-    for runs in &lines {
-        for (text, _, width) in runs {
-            // 탭이 들었는데 **뒤에 가시문자가 있는** 런.
-            let Some((_, after)) = text.rsplit_once('\t') else {
-                continue;
-            };
-            if after.trim().is_empty() {
-                continue;
-            }
-            checked += 1;
-            assert!(
-                *width > 400.0,
-                "탭 뒤 가시문자가 있는 런의 폭은 종전대로여야 한다                  (텍스트 {text:?}, 폭 {width:.1})"
-            );
+    for run in layout["runs"].as_array().unwrap() {
+        let text = run["text"].as_str().unwrap();
+        let Some((_, after)) = text.rsplit_once('\t') else {
+            continue;
+        };
+        if after.trim().is_empty() {
+            continue;
         }
+        checked += 1;
+        let positions = run["charX"].as_array().unwrap();
+        assert_eq!(positions.len(), text.chars().count() + 1);
+        let tab = text
+            .chars()
+            .enumerate()
+            .filter(|(_, ch)| *ch == '\t')
+            .map(|(i, _)| i)
+            .last()
+            .unwrap();
+        let suffix_start = positions[tab + 1].as_f64().unwrap();
+        let suffix_end = positions.last().unwrap().as_f64().unwrap();
+        let width = run["w"].as_f64().unwrap();
+        assert!(
+            suffix_end > suffix_start,
+            "탭 뒤 가시문자가 공간을 점유해야 한다: {text:?}"
+        );
+        // 공개 JSON은 소수 첫째 자리로 반올림된다. 이 오차 외에 절대 px 기대값은 없다.
+        assert!(
+            width + 0.1 >= suffix_end,
+            "탭 뒤 글자 끝을 bbox가 잘라서는 안 된다: {text:?}, bbox={width}, 문자 끝={suffix_end}"
+        );
     }
     assert!(
         checked >= 3,

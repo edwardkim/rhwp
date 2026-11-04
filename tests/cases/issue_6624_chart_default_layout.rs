@@ -2,8 +2,8 @@
 //!
 //! 차트 XML 에는 글꼴 크기가 `c:chartSpace/c:txPr` 의 10pt 하나뿐이고 제목 크기·계열 선
 //! 굵기·배치(`c:manualLayout`)는 없다. 한/글은 그 자리를 기본 서식으로 채운다: 제목 14pt
-//! 검정, 라벨 10pt 검정, 격자·축선 #8c8c8c 1px, 계열 선 2.25pt. 배치는 글꼴 배수(제목
-//! baseline 1.9T, 플롯 상단 3.26T, 플롯 하단 3.1L, 원형은 왼쪽 여백 0·아래 1.1L).
+//! 검정, 라벨 10pt 검정, 격자·축선 #8c8c8c 1px, 계열 선 2.25pt. 제목의 잉크 하단과
+//! SVG 기준선은 다르므로 실제 상단 앵커와 제목·플롯·라벨의 순서를 구분해 검사한다.
 //! 이 파일은 표본 문서의 1쪽 SVG 에서 그 서식이 실제로 나오는지 본다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -65,7 +65,7 @@ fn clustered_column_uses_hancom_default_typography_and_axis() {
     );
     assert!(!g.contains("stroke=\"#e8e8e8\""), "옛 연회색 격자 잔존");
 
-    // 배치: 제목 baseline → 플롯 상단(축선 y1) = 1.36T, 축선 → 프레임 하단 = 3.1L
+    // 실제 상단 앵커의 제목과 축은 같은 프레임 안에서 겹치지 않는다.
     let frame_y = num_after(g, " y=\"");
     let frame_h = num_after(g, " height=\"");
     let title = &g[g.find("class=\"hwp-chart-title\"").unwrap()..];
@@ -73,22 +73,16 @@ fn clustered_column_uses_hancom_default_typography_and_axis() {
     let axis = &g[g.find("class=\"hwp-chart-axis\"").unwrap()..];
     let plot_top = num_after(axis, " y1=\"");
     let plot_bottom = num_after(axis, " y2=\"");
-    let t = 14.0 * 96.0 / 72.0;
-    let l = 10.0 * 96.0 / 72.0;
     assert!(
-        (title_y - frame_y - 1.9 * t).abs() < 0.1,
-        "제목 baseline 1.9T: {}",
-        title_y - frame_y
+        title.contains("dominant-baseline=\"text-before-edge\""),
+        "제목 y를 잉크 하단이나 alphabetic 기준선으로 오인하지 않는다"
     );
     assert!(
-        (plot_top - title_y - 1.36 * t).abs() < 0.1,
-        "제목→플롯 1.36T: {}",
-        plot_top - title_y
-    );
-    assert!(
-        (frame_y + frame_h - plot_bottom - 3.1 * l).abs() < 0.1,
-        "플롯 하단 여백 3.1L: {}",
-        frame_y + frame_h - plot_bottom
+        frame_y < title_y
+            && title_y + num_after(title, " font-size=\"") < plot_top
+            && plot_top < plot_bottom
+            && plot_bottom < frame_y + frame_h,
+        "프레임 안 제목·플롯의 순서와 비겹침"
     );
 }
 
@@ -198,13 +192,14 @@ fn scatter_draws_gridlines_only_for_the_axis_that_declares_them() {
 #[test]
 fn plot_area_has_no_border_and_frame_uses_hancom_default() {
     // plotArea spPr 는 `a:noFill` + `a:ln > a:noFill` → 플롯 테두리 없음. chartSpace spPr 없음
-    // → 한/글 기본 바깥 테두리 #8c8c8c 0.75px (실측 4배 래스터 3px·gray 134).
+    // → 한/글 기본 바깥 테두리 RGB134, 0.75pt(96DPI에서1px).
+    // 명시0.75pt 독립 Print와 대조했으며 pt를 px로 오인하지 않는다.
     let svg = page0_svg("samples/chart/기타/시가고가저가종가.hwp");
     let g = chart_group(&svg);
     assert!(!g.contains("#cccccc"), "옛 연회색 테두리 잔존");
     let frame = &g[..g.find("/>").unwrap()];
     assert!(
-        frame.contains("stroke=\"#8c8c8c\" stroke-width=\"0.75\""),
+        frame.contains("stroke=\"#868686\" stroke-width=\"1.00\""),
         "바깥 테두리: {frame}"
     );
     let plot = g.split("<rect ").nth(2).expect("플롯 rect");
@@ -379,10 +374,9 @@ fn tag_after<'a>(svg: &'a str, pat: &str) -> &'a str {
     &rest[..rest.find('>').expect("태그 닫힘")]
 }
 
-/// 한/글 기본 서식 실측 핀 — 제목 14pt 검정 baseline 35.5, 첫 격자선 61, 축선 209,
-/// 카테고리 라벨 10pt 검정, 격자·축선 #8c8c8c 1px.
+/// 한/글 기본 서식과 같은 프레임 안 제목·축·라벨의 소유와 순서를 검사한다.
 #[test]
-fn hancom_default_layout_pins_430x250() {
+fn hancom_default_layout_keeps_title_plot_and_labels_in_order() {
     let mut chart = bars_chart();
     chart.title = Some("차트 제목".into());
     let svg = render_chart_svg(&chart, 0.0, 0.0, 430.0, 250.0);
@@ -391,7 +385,8 @@ fn hancom_default_layout_pins_430x250() {
     assert!(title.contains("font-size=\"18.67\""), "제목 14pt: {title}");
     assert!(title.contains("fill=\"#000000\""), "제목 검정: {title}");
     let ty = num_after(title, " y=\"");
-    assert!((ty - 35.47).abs() < 0.05, "제목 baseline 35.5: {ty}");
+    assert!(title.contains("dominant-baseline=\"text-before-edge\""));
+    assert!(ty > 0.0, "제목은 프레임 위 여백 안쪽");
 
     let axis = tag_after(&svg, "class=\"hwp-chart-axis\"");
     assert!(
@@ -400,8 +395,8 @@ fn hancom_default_layout_pins_430x250() {
     );
     let top = num_after(axis, " y1=\"");
     let bottom = num_after(axis, " y2=\"");
-    assert!((top - 60.85).abs() < 0.05, "플롯 상단(첫 격자선) 61: {top}");
-    assert!((bottom - 208.67).abs() < 0.05, "축선 209: {bottom}");
+    assert!(ty + num_after(title, " font-size=\"") < top);
+    assert!(top < bottom, "플롯의 위아래 순서");
 
     let cat = svg
         .split("<text ")
@@ -413,8 +408,8 @@ fn hancom_default_layout_pins_430x250() {
     );
     let cy = num_after(cat, " y=\"");
     assert!(
-        (cy - (208.67 + 13.33 * 2.3)).abs() < 0.1,
-        "라벨 baseline = 축선 + 2.3L: {cy}"
+        bottom < cy && cy < 250.0,
+        "범주 라벨은 축 아래이면서 호출자가 준 프레임 안에 위치: {cy}"
     );
 
     for l in svg.split("<line ").skip(1) {
@@ -428,16 +423,28 @@ fn hancom_default_layout_pins_430x250() {
 
 #[test]
 fn explicit_text_and_title_sizes_are_honored() {
-    // 차트 XML 이 준 글꼴 크기(pt)를 쓰고, 여백은 그 배수로 따라간다.
+    // 선언 크기는 보존하고 커진 제목·라벨의 점유를 같은 플롯 예약에 반영한다.
     let mut chart = bars_chart();
     chart.title = Some("T".into());
     chart.text_size_pt = Some(12.0);
     chart.title_size_pt = Some(21.0);
     let svg = render_chart_svg(&chart, 0.0, 0.0, 430.0, 250.0);
+    let mut default_chart = chart.clone();
+    default_chart.text_size_pt = None;
+    default_chart.title_size_pt = None;
+    let default_svg = render_chart_svg(&default_chart, 0.0, 0.0, 430.0, 250.0);
     let title = tag_after(&svg, "class=\"hwp-chart-title\"");
     assert!(title.contains("font-size=\"28.00\""), "제목 21pt: {title}");
     let ty = num_after(title, " y=\"");
-    assert!((ty - 28.0 * 1.9).abs() < 0.05, "제목 baseline 1.9T: {ty}");
+    assert!(title.contains("dominant-baseline=\"text-before-edge\""));
+    assert_eq!(
+        ty,
+        num_after(
+            tag_after(&default_svg, "class=\"hwp-chart-title\""),
+            " y=\""
+        ),
+        "글꼴 크기가 달라도 프레임 위 여백 앵커는 유지"
+    );
     let cat = svg
         .split("<text ")
         .find(|t| t.contains(">a<"))
@@ -445,7 +452,14 @@ fn explicit_text_and_title_sizes_are_honored() {
     assert!(cat.contains("font-size=\"16.00\""), "라벨 12pt: {cat}");
     let axis = tag_after(&svg, "class=\"hwp-chart-axis\"");
     let top = num_after(axis, " y1=\"");
-    assert!((top - 28.0 * 3.26).abs() < 0.05, "플롯 상단 3.26T: {top}");
+    assert!(ty + num_after(title, " font-size=\"") < top);
+    assert!(
+        top > num_after(
+            tag_after(&default_svg, "class=\"hwp-chart-axis\""),
+            " y1=\""
+        ),
+        "커진 제목·축 글줄에 더 많은 위 공간을 예약"
+    );
 }
 
 #[test]

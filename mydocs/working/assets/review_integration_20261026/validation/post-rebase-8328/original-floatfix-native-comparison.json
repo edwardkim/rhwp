@@ -1,0 +1,5543 @@
+{
+  "status": "failed",
+  "historical_status": "not_evaluated",
+  "backend": "native",
+  "source_commit": "81f2428cf8",
+  "prior_source_commit": "94a868b34d",
+  "prior_evidence_sha256": "6b2ab90c0ab3e6d8901206015fa351b5fba7e354682800ea0891e5c209abe28f",
+  "native_binary_sha256": "2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0",
+  "wasm_sha256": null,
+  "cases": 67,
+  "pages": 956,
+  "drops_ge_0_1pp": [
+    [
+      "newsletter-korean",
+      2,
+      93.09501,
+      92.81548,
+      0.27953
+    ]
+  ],
+  "historical_drops_ge_0_1pp": [],
+  "below90": [],
+  "errors": [],
+  "cases_data": [
+    {
+      "key": "caption-negative-offset",
+      "input": "/home/tsjang/rhwp/samples/caption-float-frame/caption-negative-offset.hwp",
+      "input_sha256": "51efcd64c8e7e438ef8152543a755171ce803c4c630b1f5ae43e49ede3609c17",
+      "pdf": "/home/tsjang/rhwp/pdf/caption-float-frame/caption-negative-offset-2020.pdf",
+      "pdf_sha256": "630039d4fa67f198750d58be37fcbe3eb70a89c91530ee8e0adfac4aec619ac6",
+      "compat": "2022",
+      "fixed_tsv_sha256": "f36340d127b054181b508d3a0f74aced069343454fbda4e835df632b09db70c1",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 97.67543,
+          "candidate": 97.67543
+        },
+        {
+          "page": 2,
+          "prior": 99.59564,
+          "candidate": 99.59564
+        }
+      ]
+    },
+    {
+      "key": "captioned-host-2020",
+      "input": "/home/tsjang/rhwp/samples/issue8149/captioned-host-2020.hwp",
+      "input_sha256": "98e404df1f68231175f72edf576c235d2cafd7e9d3bc9fd10035c43834574636",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8149/captioned-host-2020.pdf",
+      "pdf_sha256": "df610351db2b80e8067de06468264bbbedcbfdf2bf7e3c871e8f3a97d88517b1",
+      "compat": "2022",
+      "fixed_tsv_sha256": "9e83e432d3f2300ef54a44fa7d98ebd345b4830e43bb1ebefd13e639b05b27a9",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "cellnotes_plain_N2_L7",
+      "input": "/home/tsjang/rhwp/samples/issue1937/cellnotes_plain_N2_L7.hwpx",
+      "input_sha256": "d8845782c67e35de9895d3b355d7a28ec552b24ebe1fdbb15d8d7883128827a3",
+      "pdf": "/home/tsjang/rhwp/pdf/issue1937/cellnotes_plain_N2_L7-2020.pdf",
+      "pdf_sha256": "eeef281525705c977f3a51cbc9e0373fbab564ec04a0dde1c66794df68f7ba18",
+      "compat": "2022",
+      "fixed_tsv_sha256": "0b57b8fec6dbe0839bc650bd108a501046a376e1eaaff46f5eeaa41c3f4e59e8",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "prior": 99.92658,
+          "candidate": 99.92658
+        },
+        {
+          "page": 4,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 5,
+          "prior": 99.90795,
+          "candidate": 99.90795
+        },
+        {
+          "page": 6,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 7,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 8,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 9,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 10,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 11,
+          "prior": 98.43063,
+          "candidate": 98.43063
+        }
+      ]
+    },
+    {
+      "key": "cellnotes_span_N2",
+      "input": "/home/tsjang/rhwp/samples/issue1937/cellnotes_span_N2.hwpx",
+      "input_sha256": "c8776455a41e07ab152dc8075d4bf38bf83575f65b24d3702c72fc6898342637",
+      "pdf": "/home/tsjang/rhwp/pdf/issue1937/cellnotes_span_N2-2020.pdf",
+      "pdf_sha256": "76a875f5ec392a797878caee3e875eaa892bd2a5f595c6a7bd467d3b2ff4e560",
+      "compat": "2022",
+      "fixed_tsv_sha256": "1ff5dcab19d2d1fdf95565566d6caed6c069b02c4613a061cfc41440f38cb581",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 96.95701,
+          "candidate": 96.95701
+        },
+        {
+          "page": 2,
+          "prior": 98.80823,
+          "candidate": 98.80823
+        }
+      ]
+    },
+    {
+      "key": "civil-form",
+      "input": "/home/tsjang/rhwp/samples/issue6032/2912695_civil_petition_form.hwp",
+      "input_sha256": "1c6569dc69b1fe99de058de2760249d322b393b7eb6b4f2a2fe60f2489c25e04",
+      "pdf": "/home/tsjang/rhwp/pdf/2912695_civil_petition_form-2020.pdf",
+      "pdf_sha256": "2e85455f13d0e911b495a7a152f1c799ffb2fc37dd2051312cafa4359c810f89",
+      "compat": "2022",
+      "fixed_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "cont_reset_F20_L70_N0",
+      "input": "/home/tsjang/rhwp/samples/continuation_reset/cont_reset_F20_L70_N0.hwp",
+      "input_sha256": "04ec268cadf7bb9283b0422b5bda7431fc7f174e7f19e2b893bd6a275313050d",
+      "pdf": "/home/tsjang/rhwp/pdf/continuation_reset/cont_reset_F20_L70_N0-2020.pdf",
+      "pdf_sha256": "0c499ee0834a5e36852df00eaa19d14133adee285c29a2861735a2df7372fa02",
+      "compat": "2022",
+      "fixed_tsv_sha256": "9e83e432d3f2300ef54a44fa7d98ebd345b4830e43bb1ebefd13e639b05b27a9",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "cont_reset_F20_L70_N4",
+      "input": "/home/tsjang/rhwp/samples/continuation_reset/cont_reset_F20_L70_N4.hwp",
+      "input_sha256": "5e66adeb20610d965ff21661d88fda8252a547120ca777827f9cf984f540a9ab",
+      "pdf": "/home/tsjang/rhwp/pdf/continuation_reset/cont_reset_F20_L70_N4-2020.pdf",
+      "pdf_sha256": "7e6fb30bda1e57b5b00010069ea781e283fc2d7a304305290c368fd95994921c",
+      "compat": "2022",
+      "fixed_tsv_sha256": "964fe0ddeb8a2a54a6c274f0b5da36f70d52ccc1291c49b1d39f874ff0f3801a",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 99.996,
+          "candidate": 99.996
+        },
+        {
+          "page": 3,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "cont_reset_F20_L70_N6",
+      "input": "/home/tsjang/rhwp/samples/continuation_reset/cont_reset_F20_L70_N6.hwp",
+      "input_sha256": "111b7ac9235f390005cfc848c5892f294b8a180e998221769afb0311751ccd8d",
+      "pdf": "/home/tsjang/rhwp/pdf/continuation_reset/cont_reset_F20_L70_N6-2020.pdf",
+      "pdf_sha256": "23c172162334477f2b5c7ce85b44e2b2e1f373bf0a4942054b8f1d3dfeec0512",
+      "compat": "2022",
+      "fixed_tsv_sha256": "9e83e432d3f2300ef54a44fa7d98ebd345b4830e43bb1ebefd13e639b05b27a9",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "endnotes-november",
+      "input": "/home/tsjang/rhwp/samples/3-11월_실전_통합_2022.hwp",
+      "input_sha256": "bc8bccbb954c337d813d1af96f4e3047242124c2f2939163e282634eb721accd",
+      "pdf": "/home/tsjang/rhwp/pdf/3-11월_실전_통합_2022-hwp-2020.pdf",
+      "pdf_sha256": "efad255e305326b5b84507481b2158e59941ae2bf4d87dbf97cb5a93b9664a57",
+      "compat": "2022",
+      "fixed_tsv_sha256": "f21523829ef6607301c39786301656fb07baccbfb506a70033fa9c08a619f674",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 98.71272,
+          "candidate": 98.71272
+        },
+        {
+          "page": 2,
+          "prior": 99.68122,
+          "candidate": 99.68122
+        },
+        {
+          "page": 3,
+          "prior": 99.51444,
+          "candidate": 99.51444
+        },
+        {
+          "page": 4,
+          "prior": 99.38248,
+          "candidate": 99.38248
+        },
+        {
+          "page": 5,
+          "prior": 99.76751,
+          "candidate": 99.76751
+        },
+        {
+          "page": 6,
+          "prior": 99.66605,
+          "candidate": 99.66605
+        },
+        {
+          "page": 7,
+          "prior": 99.7264,
+          "candidate": 99.7264
+        },
+        {
+          "page": 8,
+          "prior": 97.52227,
+          "candidate": 97.52227
+        },
+        {
+          "page": 9,
+          "prior": 99.80454,
+          "candidate": 99.80454
+        },
+        {
+          "page": 10,
+          "prior": 99.28772,
+          "candidate": 99.28772
+        },
+        {
+          "page": 11,
+          "prior": 98.86855,
+          "candidate": 98.86855
+        },
+        {
+          "page": 12,
+          "prior": 99.7546,
+          "candidate": 99.7546
+        },
+        {
+          "page": 13,
+          "prior": 99.51933,
+          "candidate": 99.51933
+        },
+        {
+          "page": 14,
+          "prior": 99.24976,
+          "candidate": 99.24976
+        },
+        {
+          "page": 15,
+          "prior": 99.85841,
+          "candidate": 99.85841
+        },
+        {
+          "page": 16,
+          "prior": 99.49069,
+          "candidate": 99.49069
+        },
+        {
+          "page": 17,
+          "prior": 99.10617,
+          "candidate": 99.10617
+        },
+        {
+          "page": 18,
+          "prior": 98.74196,
+          "candidate": 98.74196
+        },
+        {
+          "page": 19,
+          "prior": 99.23014,
+          "candidate": 99.23014
+        },
+        {
+          "page": 20,
+          "prior": 99.71567,
+          "candidate": 99.71567
+        },
+        {
+          "page": 21,
+          "prior": 90.80955,
+          "candidate": 90.80955
+        }
+      ]
+    },
+    {
+      "key": "endnotes-september",
+      "input": "/home/tsjang/rhwp/samples/3-09월_교육_통합_2022.hwp",
+      "input_sha256": "d451ffbc72e8c84433f380c0cbcc8472f23286d53dce4b793a4bbb82f8715108",
+      "pdf": "/home/tsjang/rhwp/pdf/3-09월_교육_통합_2022-hwp-2020.pdf",
+      "pdf_sha256": "748900124e771baf6ce7d90c2ef869b9078b53437c59bc47bdbcc42cba81bb80",
+      "compat": "2022",
+      "fixed_tsv_sha256": "0ec32f4f470fbde8f290d3f43ad4e0fe46693319dc2f1ebcb9e5944e67d13f75",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 98.68626,
+          "candidate": 98.68626
+        },
+        {
+          "page": 2,
+          "prior": 99.40659,
+          "candidate": 99.40659
+        },
+        {
+          "page": 3,
+          "prior": 98.47645,
+          "candidate": 98.47645
+        },
+        {
+          "page": 4,
+          "prior": 99.12697,
+          "candidate": 99.12697
+        },
+        {
+          "page": 5,
+          "prior": 99.21415,
+          "candidate": 99.21415
+        },
+        {
+          "page": 6,
+          "prior": 99.59587,
+          "candidate": 99.59587
+        },
+        {
+          "page": 7,
+          "prior": 98.89874,
+          "candidate": 98.89874
+        },
+        {
+          "page": 8,
+          "prior": 99.48646,
+          "candidate": 99.48646
+        },
+        {
+          "page": 9,
+          "prior": 99.42853,
+          "candidate": 99.42853
+        },
+        {
+          "page": 10,
+          "prior": 98.88604,
+          "candidate": 98.88604
+        },
+        {
+          "page": 11,
+          "prior": 99.53375,
+          "candidate": 99.53375
+        },
+        {
+          "page": 12,
+          "prior": 99.00373,
+          "candidate": 99.00373
+        },
+        {
+          "page": 13,
+          "prior": 99.55209,
+          "candidate": 99.55209
+        },
+        {
+          "page": 14,
+          "prior": 99.28607,
+          "candidate": 99.28607
+        },
+        {
+          "page": 15,
+          "prior": 99.50522,
+          "candidate": 99.50522
+        },
+        {
+          "page": 16,
+          "prior": 99.11851,
+          "candidate": 99.11851
+        },
+        {
+          "page": 17,
+          "prior": 99.69943,
+          "candidate": 99.69943
+        },
+        {
+          "page": 18,
+          "prior": 98.74241,
+          "candidate": 98.74241
+        },
+        {
+          "page": 19,
+          "prior": 98.69593,
+          "candidate": 98.69593
+        },
+        {
+          "page": 20,
+          "prior": 95.06161,
+          "candidate": 95.06161
+        },
+        {
+          "page": 21,
+          "prior": 98.99743,
+          "candidate": 98.99743
+        },
+        {
+          "page": 22,
+          "prior": 98.83007,
+          "candidate": 98.83007
+        },
+        {
+          "page": 23,
+          "prior": 99.16239,
+          "candidate": 99.16239
+        }
+      ]
+    },
+    {
+      "key": "equation-lim",
+      "input": "/home/tsjang/rhwp/samples/equation-lim.hwp",
+      "input_sha256": "ba168d388df614e7b9390c4685d368cf3019595c5fecbce0e681dc8fb9bea36d",
+      "pdf": "/home/tsjang/rhwp/pdf/equation-lim-hwp-2020.pdf",
+      "pdf_sha256": "19125d41b8f0edda322b147e10f8b761af90bdf4518a32c02a4232762fb9bb4e",
+      "compat": "2022",
+      "fixed_tsv_sha256": "a9e912190b270cbe38adb15e5e80c5bdc689f7b31a51b53bccc741b15122da07",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 99.88926,
+          "candidate": 99.88926
+        }
+      ]
+    },
+    {
+      "key": "fiscal-anchor",
+      "input": "/home/tsjang/rhwp/samples/issue6312/fiscal_trend_float_table_anchor.hwpx",
+      "input_sha256": "aa804ca85dba392fad80dd78e3b61e668771984720a0a321a0c0ed694233a918",
+      "pdf": "/home/tsjang/rhwp/pdf/issue6312/fiscal-trend-float-table-anchor-2020.pdf",
+      "pdf_sha256": "f99cf3992af5c3ae67e8c55b763ac9aa1cef95d164d60eeb73db190cc8120f3f",
+      "compat": "2022",
+      "fixed_tsv_sha256": "5eb7a99bfba8159eacceba441579ee15caac7ea9a9cfa4ddc9f462cbb26696c8",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 99.99813,
+          "candidate": 99.99813
+        },
+        {
+          "page": 2,
+          "prior": 99.95483,
+          "candidate": 99.97511
+        },
+        {
+          "page": 3,
+          "prior": 99.88812,
+          "candidate": 99.94393
+        },
+        {
+          "page": 4,
+          "prior": 99.98308,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "hairline-calendar",
+      "input": "/home/tsjang/rhwp/samples/basic/calendar_year.hwp",
+      "input_sha256": "6ba1b5fb0425f6ce3331052f600abcf5e282703132d4ccf20445a506f188ded4",
+      "pdf": "/home/tsjang/rhwp/pdf/basic/calendar_year-2022.pdf",
+      "pdf_sha256": "c44a40046ba5763d5489695eefce4047f4aa9ae74b1545366cb5444c18448b66",
+      "compat": "2022",
+      "fixed_tsv_sha256": "73fb8455f33e49347db68d9bf1422db9ad0493a40bece6c0c8751e17ffdbb0bb",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 98.82866,
+          "candidate": 98.82866
+        }
+      ]
+    },
+    {
+      "key": "hairline-sungeo",
+      "input": "/home/tsjang/rhwp/samples/basic/sungeo.hwp",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "pdf": "/home/tsjang/rhwp/pdf/basic/sungeo-2022.pdf",
+      "pdf_sha256": "57347b7c0700464e8572f8139dbceb1547165e013600be18b85c44c8cdc2e872",
+      "compat": "2022",
+      "fixed_tsv_sha256": "c5df5b7340354d340c9e08be6e7943dd1983060788909943b4d68938540552ad",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 99.92921,
+          "candidate": 99.92921
+        },
+        {
+          "page": 3,
+          "prior": 99.91998,
+          "candidate": 99.91998
+        },
+        {
+          "page": 4,
+          "prior": 99.91281,
+          "candidate": 99.91281
+        },
+        {
+          "page": 5,
+          "prior": 99.91873,
+          "candidate": 99.91873
+        },
+        {
+          "page": 6,
+          "prior": 99.95883,
+          "candidate": 99.95883
+        },
+        {
+          "page": 7,
+          "prior": 99.92197,
+          "candidate": 99.92197
+        },
+        {
+          "page": 8,
+          "prior": 99.90903,
+          "candidate": 99.90903
+        },
+        {
+          "page": 9,
+          "prior": 99.92435,
+          "candidate": 99.92435
+        },
+        {
+          "page": 10,
+          "prior": 99.89096,
+          "candidate": 99.89096
+        },
+        {
+          "page": 11,
+          "prior": 99.88938,
+          "candidate": 99.88938
+        },
+        {
+          "page": 12,
+          "prior": 99.92247,
+          "candidate": 99.92247
+        },
+        {
+          "page": 13,
+          "prior": 99.89371,
+          "candidate": 99.89371
+        },
+        {
+          "page": 14,
+          "prior": 99.95208,
+          "candidate": 99.95208
+        },
+        {
+          "page": 15,
+          "prior": 99.9213,
+          "candidate": 99.9213
+        },
+        {
+          "page": 16,
+          "prior": 99.94511,
+          "candidate": 99.94511
+        },
+        {
+          "page": 17,
+          "prior": 99.85999,
+          "candidate": 99.85999
+        },
+        {
+          "page": 18,
+          "prior": 99.92039,
+          "candidate": 99.92039
+        },
+        {
+          "page": 19,
+          "prior": 99.95514,
+          "candidate": 99.95514
+        },
+        {
+          "page": 20,
+          "prior": 99.94694,
+          "candidate": 99.94694
+        },
+        {
+          "page": 21,
+          "prior": 99.94109,
+          "candidate": 99.94109
+        },
+        {
+          "page": 22,
+          "prior": 99.93511,
+          "candidate": 99.93511
+        },
+        {
+          "page": 23,
+          "prior": 99.92587,
+          "candidate": 99.92587
+        },
+        {
+          "page": 24,
+          "prior": 99.94897,
+          "candidate": 99.94897
+        },
+        {
+          "page": 25,
+          "prior": 99.94041,
+          "candidate": 99.94041
+        },
+        {
+          "page": 26,
+          "prior": 99.94268,
+          "candidate": 99.94268
+        },
+        {
+          "page": 27,
+          "prior": 99.89617,
+          "candidate": 99.89617
+        },
+        {
+          "page": 28,
+          "prior": 99.87807,
+          "candidate": 99.87807
+        },
+        {
+          "page": 29,
+          "prior": 99.93078,
+          "candidate": 99.93078
+        },
+        {
+          "page": 30,
+          "prior": 99.908,
+          "candidate": 99.908
+        },
+        {
+          "page": 31,
+          "prior": 99.88982,
+          "candidate": 99.88982
+        },
+        {
+          "page": 32,
+          "prior": 99.92694,
+          "candidate": 99.92694
+        },
+        {
+          "page": 33,
+          "prior": 99.91037,
+          "candidate": 99.91037
+        },
+        {
+          "page": 34,
+          "prior": 99.97528,
+          "candidate": 99.97528
+        },
+        {
+          "page": 35,
+          "prior": 99.90686,
+          "candidate": 99.90686
+        },
+        {
+          "page": 36,
+          "prior": 99.92672,
+          "candidate": 99.92672
+        },
+        {
+          "page": 37,
+          "prior": 99.9456,
+          "candidate": 99.9456
+        },
+        {
+          "page": 38,
+          "prior": 99.92228,
+          "candidate": 99.92228
+        },
+        {
+          "page": 39,
+          "prior": 99.93605,
+          "candidate": 99.93605
+        },
+        {
+          "page": 40,
+          "prior": 99.92489,
+          "candidate": 99.92489
+        },
+        {
+          "page": 41,
+          "prior": 99.95587,
+          "candidate": 99.95587
+        },
+        {
+          "page": 42,
+          "prior": 99.93793,
+          "candidate": 99.93793
+        },
+        {
+          "page": 43,
+          "prior": 99.90822,
+          "candidate": 99.90822
+        },
+        {
+          "page": 44,
+          "prior": 99.90577,
+          "candidate": 99.90577
+        },
+        {
+          "page": 45,
+          "prior": 99.92137,
+          "candidate": 99.92137
+        },
+        {
+          "page": 46,
+          "prior": 99.91217,
+          "candidate": 99.91217
+        },
+        {
+          "page": 47,
+          "prior": 99.94566,
+          "candidate": 99.94566
+        },
+        {
+          "page": 48,
+          "prior": 99.92222,
+          "candidate": 99.92222
+        },
+        {
+          "page": 49,
+          "prior": 99.95161,
+          "candidate": 99.95161
+        },
+        {
+          "page": 50,
+          "prior": 99.93148,
+          "candidate": 99.93148
+        },
+        {
+          "page": 51,
+          "prior": 99.92281,
+          "candidate": 99.92281
+        },
+        {
+          "page": 52,
+          "prior": 99.93651,
+          "candidate": 99.93651
+        },
+        {
+          "page": 53,
+          "prior": 99.89136,
+          "candidate": 99.89136
+        },
+        {
+          "page": 54,
+          "prior": 99.92604,
+          "candidate": 99.92604
+        },
+        {
+          "page": 55,
+          "prior": 99.96322,
+          "candidate": 99.96322
+        },
+        {
+          "page": 56,
+          "prior": 99.92578,
+          "candidate": 99.92578
+        },
+        {
+          "page": 57,
+          "prior": 99.89654,
+          "candidate": 99.89654
+        },
+        {
+          "page": 58,
+          "prior": 99.94451,
+          "candidate": 99.94451
+        },
+        {
+          "page": 59,
+          "prior": 99.96388,
+          "candidate": 99.96388
+        },
+        {
+          "page": 60,
+          "prior": 99.92676,
+          "candidate": 99.92676
+        },
+        {
+          "page": 61,
+          "prior": 99.9501,
+          "candidate": 99.9501
+        },
+        {
+          "page": 62,
+          "prior": 99.93836,
+          "candidate": 99.93836
+        },
+        {
+          "page": 63,
+          "prior": 99.92494,
+          "candidate": 99.92494
+        },
+        {
+          "page": 64,
+          "prior": 99.93797,
+          "candidate": 99.93797
+        },
+        {
+          "page": 65,
+          "prior": 99.91759,
+          "candidate": 99.91759
+        },
+        {
+          "page": 66,
+          "prior": 99.92554,
+          "candidate": 99.92554
+        },
+        {
+          "page": 67,
+          "prior": 99.91349,
+          "candidate": 99.91349
+        },
+        {
+          "page": 68,
+          "prior": 99.89823,
+          "candidate": 99.89823
+        },
+        {
+          "page": 69,
+          "prior": 99.88354,
+          "candidate": 99.88354
+        },
+        {
+          "page": 70,
+          "prior": 99.88008,
+          "candidate": 99.88008
+        },
+        {
+          "page": 71,
+          "prior": 99.93071,
+          "candidate": 99.93071
+        },
+        {
+          "page": 72,
+          "prior": 99.91501,
+          "candidate": 99.91501
+        },
+        {
+          "page": 73,
+          "prior": 99.9225,
+          "candidate": 99.9225
+        },
+        {
+          "page": 74,
+          "prior": 99.9338,
+          "candidate": 99.9338
+        },
+        {
+          "page": 75,
+          "prior": 99.9624,
+          "candidate": 99.9624
+        },
+        {
+          "page": 76,
+          "prior": 99.922,
+          "candidate": 99.922
+        },
+        {
+          "page": 77,
+          "prior": 99.92003,
+          "candidate": 99.92003
+        },
+        {
+          "page": 78,
+          "prior": 99.8765,
+          "candidate": 99.8765
+        },
+        {
+          "page": 79,
+          "prior": 99.9282,
+          "candidate": 99.9282
+        },
+        {
+          "page": 80,
+          "prior": 99.92219,
+          "candidate": 99.92219
+        },
+        {
+          "page": 81,
+          "prior": 99.93126,
+          "candidate": 99.93126
+        },
+        {
+          "page": 82,
+          "prior": 99.91119,
+          "candidate": 99.91119
+        },
+        {
+          "page": 83,
+          "prior": 99.94278,
+          "candidate": 99.94278
+        },
+        {
+          "page": 84,
+          "prior": 99.94454,
+          "candidate": 99.94454
+        },
+        {
+          "page": 85,
+          "prior": 99.90337,
+          "candidate": 99.90337
+        },
+        {
+          "page": 86,
+          "prior": 99.98317,
+          "candidate": 99.98317
+        },
+        {
+          "page": 87,
+          "prior": 99.94069,
+          "candidate": 99.94069
+        },
+        {
+          "page": 88,
+          "prior": 99.89565,
+          "candidate": 99.89565
+        },
+        {
+          "page": 89,
+          "prior": 99.85164,
+          "candidate": 99.85164
+        },
+        {
+          "page": 90,
+          "prior": 99.93459,
+          "candidate": 99.93459
+        },
+        {
+          "page": 91,
+          "prior": 99.93111,
+          "candidate": 99.93111
+        },
+        {
+          "page": 92,
+          "prior": 99.89598,
+          "candidate": 99.89598
+        },
+        {
+          "page": 93,
+          "prior": 99.93192,
+          "candidate": 99.93192
+        },
+        {
+          "page": 94,
+          "prior": 99.94891,
+          "candidate": 99.94891
+        }
+      ]
+    },
+    {
+      "key": "headerrow-2020",
+      "input": "/home/tsjang/rhwp/samples/issue8149/headerrow-2020.hwp",
+      "input_sha256": "6c0f7ae05f673962d130d4e104ceedd197b675b5bdebd037f4c1a24bd04cdada",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8149/headerrow-2020.pdf",
+      "pdf_sha256": "9dc2672ff3cbb0a6b1426eed8a87b1b355b7db202b090010d97b65ce46f067b9",
+      "compat": "2022",
+      "fixed_tsv_sha256": "27d2c186b5812c529ed68d92ff2dfd4766039c446dcaac640c644b9c6bacf988",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 4,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 5,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 6,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 7,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 8,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 9,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 10,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 11,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 12,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 13,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 14,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 15,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 16,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 17,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 18,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 19,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 20,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 21,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 22,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 23,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 24,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 25,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 26,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 27,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 28,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 29,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 30,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 31,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "hwp5-spec-official",
+      "input": "/home/tsjang/rhwp/samples/한글문서파일형식_5.0_revision1.3.hwp",
+      "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "pdf": "/home/tsjang/rhwp/pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+      "pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+      "compat": "2022",
+      "fixed_tsv_sha256": "7a724ea4a4da1ac66e34e052b177604ab866bfaf7edb351243473298f5a06c3f",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 99.82579,
+          "candidate": 99.82579
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 4,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 5,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 6,
+          "prior": 99.65761,
+          "candidate": 99.65761
+        },
+        {
+          "page": 7,
+          "prior": 97.14805,
+          "candidate": 97.14805
+        },
+        {
+          "page": 8,
+          "prior": 95.31577,
+          "candidate": 95.31577
+        },
+        {
+          "page": 9,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 10,
+          "prior": 99.99733,
+          "candidate": 99.99733
+        },
+        {
+          "page": 11,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 12,
+          "prior": 99.99878,
+          "candidate": 99.99878
+        },
+        {
+          "page": 13,
+          "prior": 99.94545,
+          "candidate": 99.94545
+        },
+        {
+          "page": 14,
+          "prior": 99.9992,
+          "candidate": 99.9992
+        },
+        {
+          "page": 15,
+          "prior": 99.99528,
+          "candidate": 99.99528
+        },
+        {
+          "page": 16,
+          "prior": 99.94391,
+          "candidate": 99.94391
+        },
+        {
+          "page": 17,
+          "prior": 99.99921,
+          "candidate": 99.99921
+        },
+        {
+          "page": 18,
+          "prior": 99.99896,
+          "candidate": 99.99896
+        },
+        {
+          "page": 19,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 20,
+          "prior": 99.9956,
+          "candidate": 99.9956
+        },
+        {
+          "page": 21,
+          "prior": 99.59026,
+          "candidate": 99.59026
+        },
+        {
+          "page": 22,
+          "prior": 99.99925,
+          "candidate": 99.99925
+        },
+        {
+          "page": 23,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 24,
+          "prior": 99.99751,
+          "candidate": 99.99751
+        },
+        {
+          "page": 25,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 26,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 27,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 28,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 29,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 30,
+          "prior": 99.99875,
+          "candidate": 99.99875
+        },
+        {
+          "page": 31,
+          "prior": 97.1879,
+          "candidate": 97.1879
+        },
+        {
+          "page": 32,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 33,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 34,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 35,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 36,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 37,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 38,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 39,
+          "prior": 99.91795,
+          "candidate": 99.91795
+        },
+        {
+          "page": 40,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 41,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 42,
+          "prior": 99.99925,
+          "candidate": 99.99925
+        },
+        {
+          "page": 43,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 44,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 45,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 46,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 47,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 48,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 49,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 50,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 51,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 52,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 53,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 54,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 55,
+          "prior": 99.99925,
+          "candidate": 99.99925
+        },
+        {
+          "page": 56,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 57,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 58,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 59,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 60,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 61,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 62,
+          "prior": 99.99436,
+          "candidate": 99.99436
+        },
+        {
+          "page": 63,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 64,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 65,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 66,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 67,
+          "prior": 97.24723,
+          "candidate": 97.24723
+        },
+        {
+          "page": 68,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 69,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 70,
+          "prior": 95.58681,
+          "candidate": 95.58681
+        },
+        {
+          "page": 71,
+          "prior": 99.92454,
+          "candidate": 99.92454
+        }
+      ]
+    },
+    {
+      "key": "hwpml-spec-2020",
+      "input": "/home/tsjang/rhwp/samples/hwpspec.hwp",
+      "input_sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d",
+      "pdf": "/home/tsjang/rhwp/pdf/review-integration-20261026/hwpspec-2020.pdf",
+      "pdf_sha256": "257f02c14ce843f38398c6702274434ec129c73b9da8ed41f9f61dc107a6bbc4",
+      "compat": "2022",
+      "fixed_tsv_sha256": "2f0a7b0e8e50619e066fc5000e0b8a0dc080e962ba066575e83d5531ae80a41b",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 98.79964,
+          "candidate": 98.79964
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 4,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 5,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 6,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 7,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 8,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 9,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 10,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 11,
+          "prior": 99.64336,
+          "candidate": 99.64336
+        },
+        {
+          "page": 12,
+          "prior": 97.27682,
+          "candidate": 97.27682
+        },
+        {
+          "page": 13,
+          "prior": 98.25977,
+          "candidate": 98.25977
+        },
+        {
+          "page": 14,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 15,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 16,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 17,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 18,
+          "prior": 99.98489,
+          "candidate": 99.98489
+        },
+        {
+          "page": 19,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 20,
+          "prior": 99.94516,
+          "candidate": 99.94516
+        },
+        {
+          "page": 21,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 22,
+          "prior": 99.9924,
+          "candidate": 99.9924
+        },
+        {
+          "page": 23,
+          "prior": 99.99389,
+          "candidate": 99.99389
+        },
+        {
+          "page": 24,
+          "prior": 99.88864,
+          "candidate": 99.88864
+        },
+        {
+          "page": 25,
+          "prior": 99.99652,
+          "candidate": 99.99652
+        },
+        {
+          "page": 26,
+          "prior": 99.99682,
+          "candidate": 99.99682
+        },
+        {
+          "page": 27,
+          "prior": 99.99615,
+          "candidate": 99.99615
+        },
+        {
+          "page": 28,
+          "prior": 99.99678,
+          "candidate": 99.99678
+        },
+        {
+          "page": 29,
+          "prior": 99.99513,
+          "candidate": 99.99513
+        },
+        {
+          "page": 30,
+          "prior": 99.99686,
+          "candidate": 99.99686
+        },
+        {
+          "page": 31,
+          "prior": 99.99505,
+          "candidate": 99.99505
+        },
+        {
+          "page": 32,
+          "prior": 99.99699,
+          "candidate": 99.99699
+        },
+        {
+          "page": 33,
+          "prior": 99.99641,
+          "candidate": 99.99641
+        },
+        {
+          "page": 34,
+          "prior": 99.99614,
+          "candidate": 99.99614
+        },
+        {
+          "page": 35,
+          "prior": 99.99691,
+          "candidate": 99.99691
+        },
+        {
+          "page": 36,
+          "prior": 99.99692,
+          "candidate": 99.99692
+        },
+        {
+          "page": 37,
+          "prior": 99.99521,
+          "candidate": 99.99521
+        },
+        {
+          "page": 38,
+          "prior": 99.99733,
+          "candidate": 99.99733
+        },
+        {
+          "page": 39,
+          "prior": 99.99621,
+          "candidate": 99.99621
+        },
+        {
+          "page": 40,
+          "prior": 99.99484,
+          "candidate": 99.99484
+        },
+        {
+          "page": 41,
+          "prior": 99.99701,
+          "candidate": 99.99701
+        },
+        {
+          "page": 42,
+          "prior": 99.99587,
+          "candidate": 99.99587
+        },
+        {
+          "page": 43,
+          "prior": 99.99731,
+          "candidate": 99.99731
+        },
+        {
+          "page": 44,
+          "prior": 99.99737,
+          "candidate": 99.99737
+        },
+        {
+          "page": 45,
+          "prior": 99.99739,
+          "candidate": 99.99739
+        },
+        {
+          "page": 46,
+          "prior": 99.99673,
+          "candidate": 99.99673
+        },
+        {
+          "page": 47,
+          "prior": 99.99757,
+          "candidate": 99.99757
+        },
+        {
+          "page": 48,
+          "prior": 99.99702,
+          "candidate": 99.99702
+        },
+        {
+          "page": 49,
+          "prior": 99.99747,
+          "candidate": 99.99747
+        },
+        {
+          "page": 50,
+          "prior": 99.99621,
+          "candidate": 99.99621
+        },
+        {
+          "page": 51,
+          "prior": 99.99741,
+          "candidate": 99.99741
+        },
+        {
+          "page": 52,
+          "prior": 99.99698,
+          "candidate": 99.99698
+        },
+        {
+          "page": 53,
+          "prior": 99.99668,
+          "candidate": 99.99668
+        },
+        {
+          "page": 54,
+          "prior": 99.99765,
+          "candidate": 99.99765
+        },
+        {
+          "page": 55,
+          "prior": 99.99705,
+          "candidate": 99.99705
+        },
+        {
+          "page": 56,
+          "prior": 99.99658,
+          "candidate": 99.99658
+        },
+        {
+          "page": 57,
+          "prior": 99.99649,
+          "candidate": 99.99649
+        },
+        {
+          "page": 58,
+          "prior": 99.99709,
+          "candidate": 99.99709
+        },
+        {
+          "page": 59,
+          "prior": 99.98297,
+          "candidate": 99.98297
+        },
+        {
+          "page": 60,
+          "prior": 99.9968,
+          "candidate": 99.9968
+        },
+        {
+          "page": 61,
+          "prior": 99.99684,
+          "candidate": 99.99684
+        },
+        {
+          "page": 62,
+          "prior": 99.99602,
+          "candidate": 99.99602
+        },
+        {
+          "page": 63,
+          "prior": 99.99373,
+          "candidate": 99.99373
+        },
+        {
+          "page": 64,
+          "prior": 97.27418,
+          "candidate": 97.27418
+        },
+        {
+          "page": 65,
+          "prior": 99.99381,
+          "candidate": 99.99381
+        },
+        {
+          "page": 66,
+          "prior": 99.96776,
+          "candidate": 99.96776
+        },
+        {
+          "page": 67,
+          "prior": 97.81467,
+          "candidate": 97.81467
+        },
+        {
+          "page": 68,
+          "prior": 99.96783,
+          "candidate": 99.96783
+        },
+        {
+          "page": 69,
+          "prior": 99.99402,
+          "candidate": 99.99402
+        },
+        {
+          "page": 70,
+          "prior": 99.99584,
+          "candidate": 99.99584
+        },
+        {
+          "page": 71,
+          "prior": 99.93608,
+          "candidate": 99.93608
+        },
+        {
+          "page": 72,
+          "prior": 99.99653,
+          "candidate": 99.99653
+        },
+        {
+          "page": 73,
+          "prior": 99.9829,
+          "candidate": 99.9829
+        },
+        {
+          "page": 74,
+          "prior": 99.97306,
+          "candidate": 99.97306
+        },
+        {
+          "page": 75,
+          "prior": 99.72684,
+          "candidate": 99.72684
+        },
+        {
+          "page": 76,
+          "prior": 99.99291,
+          "candidate": 99.99291
+        },
+        {
+          "page": 77,
+          "prior": 99.99592,
+          "candidate": 99.99592
+        },
+        {
+          "page": 78,
+          "prior": 99.97357,
+          "candidate": 99.97357
+        },
+        {
+          "page": 79,
+          "prior": 99.98841,
+          "candidate": 99.98841
+        },
+        {
+          "page": 80,
+          "prior": 99.99526,
+          "candidate": 99.99526
+        },
+        {
+          "page": 81,
+          "prior": 99.99445,
+          "candidate": 99.99445
+        },
+        {
+          "page": 82,
+          "prior": 99.99665,
+          "candidate": 99.99665
+        },
+        {
+          "page": 83,
+          "prior": 99.96225,
+          "candidate": 99.96225
+        },
+        {
+          "page": 84,
+          "prior": 99.99681,
+          "candidate": 99.99681
+        },
+        {
+          "page": 85,
+          "prior": 99.99518,
+          "candidate": 99.99518
+        },
+        {
+          "page": 86,
+          "prior": 99.9939,
+          "candidate": 99.9939
+        },
+        {
+          "page": 87,
+          "prior": 99.99553,
+          "candidate": 99.99553
+        },
+        {
+          "page": 88,
+          "prior": 99.98889,
+          "candidate": 99.98889
+        },
+        {
+          "page": 89,
+          "prior": 99.98348,
+          "candidate": 99.98348
+        },
+        {
+          "page": 90,
+          "prior": 99.99455,
+          "candidate": 99.99455
+        },
+        {
+          "page": 91,
+          "prior": 99.99174,
+          "candidate": 99.99174
+        },
+        {
+          "page": 92,
+          "prior": 99.99726,
+          "candidate": 99.99726
+        },
+        {
+          "page": 93,
+          "prior": 99.98496,
+          "candidate": 99.98496
+        },
+        {
+          "page": 94,
+          "prior": 92.45593,
+          "candidate": 92.45593
+        },
+        {
+          "page": 95,
+          "prior": 99.9833,
+          "candidate": 99.9833
+        },
+        {
+          "page": 96,
+          "prior": 99.9841,
+          "candidate": 99.9841
+        },
+        {
+          "page": 97,
+          "prior": 99.96516,
+          "candidate": 99.96516
+        },
+        {
+          "page": 98,
+          "prior": 99.99321,
+          "candidate": 99.99321
+        },
+        {
+          "page": 99,
+          "prior": 99.99507,
+          "candidate": 99.99507
+        },
+        {
+          "page": 100,
+          "prior": 99.99715,
+          "candidate": 99.99715
+        },
+        {
+          "page": 101,
+          "prior": 99.99551,
+          "candidate": 99.99551
+        },
+        {
+          "page": 102,
+          "prior": 99.9792,
+          "candidate": 99.9792
+        },
+        {
+          "page": 103,
+          "prior": 99.90954,
+          "candidate": 99.90954
+        },
+        {
+          "page": 104,
+          "prior": 99.99734,
+          "candidate": 99.99734
+        },
+        {
+          "page": 105,
+          "prior": 99.99745,
+          "candidate": 99.99745
+        },
+        {
+          "page": 106,
+          "prior": 99.99507,
+          "candidate": 99.99507
+        },
+        {
+          "page": 107,
+          "prior": 99.99623,
+          "candidate": 99.99623
+        },
+        {
+          "page": 108,
+          "prior": 99.96707,
+          "candidate": 99.96707
+        },
+        {
+          "page": 109,
+          "prior": 99.99502,
+          "candidate": 99.99502
+        },
+        {
+          "page": 110,
+          "prior": 99.96789,
+          "candidate": 99.96789
+        },
+        {
+          "page": 111,
+          "prior": 98.70373,
+          "candidate": 98.70373
+        },
+        {
+          "page": 112,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 113,
+          "prior": 99.98148,
+          "candidate": 99.98148
+        },
+        {
+          "page": 114,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 115,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 116,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 117,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 118,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 119,
+          "prior": 99.94149,
+          "candidate": 99.94149
+        },
+        {
+          "page": 120,
+          "prior": 99.98459,
+          "candidate": 99.98459
+        },
+        {
+          "page": 121,
+          "prior": 99.97435,
+          "candidate": 99.97435
+        },
+        {
+          "page": 122,
+          "prior": 99.94775,
+          "candidate": 99.94775
+        },
+        {
+          "page": 123,
+          "prior": 99.95936,
+          "candidate": 99.95936
+        },
+        {
+          "page": 124,
+          "prior": 99.9324,
+          "candidate": 99.9324
+        },
+        {
+          "page": 125,
+          "prior": 99.95725,
+          "candidate": 99.95725
+        },
+        {
+          "page": 126,
+          "prior": 99.9274,
+          "candidate": 99.9274
+        },
+        {
+          "page": 127,
+          "prior": 99.93252,
+          "candidate": 99.93252
+        },
+        {
+          "page": 128,
+          "prior": 99.94784,
+          "candidate": 99.94784
+        },
+        {
+          "page": 129,
+          "prior": 99.93724,
+          "candidate": 99.93724
+        },
+        {
+          "page": 130,
+          "prior": 99.94239,
+          "candidate": 99.94239
+        },
+        {
+          "page": 131,
+          "prior": 99.96488,
+          "candidate": 99.96488
+        },
+        {
+          "page": 132,
+          "prior": 99.91214,
+          "candidate": 99.91214
+        },
+        {
+          "page": 133,
+          "prior": 99.96308,
+          "candidate": 99.96308
+        },
+        {
+          "page": 134,
+          "prior": 99.92123,
+          "candidate": 99.92123
+        },
+        {
+          "page": 135,
+          "prior": 99.95792,
+          "candidate": 99.95792
+        },
+        {
+          "page": 136,
+          "prior": 99.90276,
+          "candidate": 99.90276
+        },
+        {
+          "page": 137,
+          "prior": 99.94246,
+          "candidate": 99.94246
+        },
+        {
+          "page": 138,
+          "prior": 99.9295,
+          "candidate": 99.9295
+        },
+        {
+          "page": 139,
+          "prior": 99.93951,
+          "candidate": 99.93951
+        },
+        {
+          "page": 140,
+          "prior": 99.94624,
+          "candidate": 99.94624
+        },
+        {
+          "page": 141,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 142,
+          "prior": 99.94149,
+          "candidate": 99.94149
+        },
+        {
+          "page": 143,
+          "prior": 99.91419,
+          "candidate": 99.91419
+        },
+        {
+          "page": 144,
+          "prior": 99.95331,
+          "candidate": 99.95331
+        },
+        {
+          "page": 145,
+          "prior": 99.80247,
+          "candidate": 99.80247
+        },
+        {
+          "page": 146,
+          "prior": 99.93815,
+          "candidate": 99.93815
+        },
+        {
+          "page": 147,
+          "prior": 99.93168,
+          "candidate": 99.93168
+        },
+        {
+          "page": 148,
+          "prior": 99.93507,
+          "candidate": 99.93507
+        },
+        {
+          "page": 149,
+          "prior": 99.86676,
+          "candidate": 99.86676
+        },
+        {
+          "page": 150,
+          "prior": 99.9617,
+          "candidate": 99.9617
+        },
+        {
+          "page": 151,
+          "prior": 99.95888,
+          "candidate": 99.95888
+        },
+        {
+          "page": 152,
+          "prior": 99.92989,
+          "candidate": 99.92989
+        },
+        {
+          "page": 153,
+          "prior": 99.95386,
+          "candidate": 99.95386
+        },
+        {
+          "page": 154,
+          "prior": 99.94637,
+          "candidate": 99.94637
+        },
+        {
+          "page": 155,
+          "prior": 99.94977,
+          "candidate": 99.94977
+        },
+        {
+          "page": 156,
+          "prior": 99.93292,
+          "candidate": 99.93292
+        },
+        {
+          "page": 157,
+          "prior": 99.94502,
+          "candidate": 99.94502
+        },
+        {
+          "page": 158,
+          "prior": 99.9385,
+          "candidate": 99.9385
+        },
+        {
+          "page": 159,
+          "prior": 99.95137,
+          "candidate": 99.95137
+        },
+        {
+          "page": 160,
+          "prior": 99.95729,
+          "candidate": 99.95729
+        },
+        {
+          "page": 161,
+          "prior": 99.9339,
+          "candidate": 99.9339
+        },
+        {
+          "page": 162,
+          "prior": 99.94346,
+          "candidate": 99.94346
+        },
+        {
+          "page": 163,
+          "prior": 99.9594,
+          "candidate": 99.9594
+        },
+        {
+          "page": 164,
+          "prior": 99.93015,
+          "candidate": 99.93015
+        },
+        {
+          "page": 165,
+          "prior": 99.95842,
+          "candidate": 99.95842
+        },
+        {
+          "page": 166,
+          "prior": 99.9223,
+          "candidate": 99.9223
+        },
+        {
+          "page": 167,
+          "prior": 99.92567,
+          "candidate": 99.92567
+        },
+        {
+          "page": 168,
+          "prior": 99.95001,
+          "candidate": 99.95001
+        },
+        {
+          "page": 169,
+          "prior": 99.92467,
+          "candidate": 99.92467
+        },
+        {
+          "page": 170,
+          "prior": 99.95705,
+          "candidate": 99.95705
+        },
+        {
+          "page": 171,
+          "prior": 99.97559,
+          "candidate": 99.97559
+        },
+        {
+          "page": 172,
+          "prior": 99.96794,
+          "candidate": 99.96794
+        },
+        {
+          "page": 173,
+          "prior": 99.96568,
+          "candidate": 99.96568
+        },
+        {
+          "page": 174,
+          "prior": 99.98148,
+          "candidate": 99.98148
+        },
+        {
+          "page": 175,
+          "prior": 96.46768,
+          "candidate": 96.46768
+        },
+        {
+          "page": 176,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 177,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 178,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "issue1937",
+      "input": "/home/tsjang/rhwp/samples/issue1937_rowbreak_footnote_overpagination.hwp",
+      "input_sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "pdf": "/home/tsjang/rhwp/pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+      "pdf_sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb",
+      "compat": "2022",
+      "fixed_tsv_sha256": "38607b8124e6e5d01b84477444e38cb62682f295c26120d0fc4e26986f05f6df",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "prior": 99.97075,
+          "candidate": 99.97075
+        },
+        {
+          "page": 4,
+          "prior": 99.98115,
+          "candidate": 99.98115
+        },
+        {
+          "page": 5,
+          "prior": 99.9984,
+          "candidate": 99.9984
+        },
+        {
+          "page": 6,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 7,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 8,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 9,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 10,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 11,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 12,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 13,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 14,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 15,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 16,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 17,
+          "prior": 99.99543,
+          "candidate": 99.99543
+        },
+        {
+          "page": 18,
+          "prior": 99.98424,
+          "candidate": 99.98424
+        },
+        {
+          "page": 19,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 20,
+          "prior": 99.93502,
+          "candidate": 99.93502
+        },
+        {
+          "page": 21,
+          "prior": 99.72235,
+          "candidate": 99.72235
+        },
+        {
+          "page": 22,
+          "prior": 99.15817,
+          "candidate": 99.15817
+        },
+        {
+          "page": 23,
+          "prior": 99.98695,
+          "candidate": 99.98695
+        },
+        {
+          "page": 24,
+          "prior": 99.9714,
+          "candidate": 99.9714
+        },
+        {
+          "page": 25,
+          "prior": 99.98496,
+          "candidate": 99.98496
+        },
+        {
+          "page": 26,
+          "prior": 99.96853,
+          "candidate": 99.96853
+        },
+        {
+          "page": 27,
+          "prior": 99.99881,
+          "candidate": 99.99881
+        },
+        {
+          "page": 28,
+          "prior": 99.9491,
+          "candidate": 99.9491
+        },
+        {
+          "page": 29,
+          "prior": 99.93756,
+          "candidate": 99.93756
+        },
+        {
+          "page": 30,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 31,
+          "prior": 99.95276,
+          "candidate": 99.95276
+        },
+        {
+          "page": 32,
+          "prior": 99.99238,
+          "candidate": 99.99238
+        },
+        {
+          "page": 33,
+          "prior": 99.95598,
+          "candidate": 99.95598
+        },
+        {
+          "page": 34,
+          "prior": 99.93466,
+          "candidate": 99.93466
+        },
+        {
+          "page": 35,
+          "prior": 99.99617,
+          "candidate": 99.99617
+        },
+        {
+          "page": 36,
+          "prior": 99.93523,
+          "candidate": 99.93523
+        },
+        {
+          "page": 37,
+          "prior": 97.93136,
+          "candidate": 97.93136
+        },
+        {
+          "page": 38,
+          "prior": 99.68709,
+          "candidate": 99.68709
+        },
+        {
+          "page": 39,
+          "prior": 99.85463,
+          "candidate": 99.85463
+        },
+        {
+          "page": 40,
+          "prior": 99.89791,
+          "candidate": 99.89791
+        },
+        {
+          "page": 41,
+          "prior": 99.99919,
+          "candidate": 99.99919
+        },
+        {
+          "page": 42,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 43,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 44,
+          "prior": 99.86042,
+          "candidate": 99.86042
+        },
+        {
+          "page": 45,
+          "prior": 99.99757,
+          "candidate": 99.99757
+        },
+        {
+          "page": 46,
+          "prior": 99.69153,
+          "candidate": 99.69153
+        },
+        {
+          "page": 47,
+          "prior": 99.97827,
+          "candidate": 99.97827
+        },
+        {
+          "page": 48,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 49,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 50,
+          "prior": 99.99432,
+          "candidate": 99.99432
+        }
+      ]
+    },
+    {
+      "key": "mcp2020-issue8167-tac_rectangle_inline",
+      "input": "/home/tsjang/rhwp/samples/issue8167/tac_rectangle_inline.hwpx",
+      "input_sha256": "fdd1cb7dcef5d077c4f19f749822bf3a76734105ef0a1443bdff75f038596abd",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8167/tac_rectangle_inline-2020.pdf",
+      "pdf_sha256": "2fc3532f64ccc0d7a8df032db06ef8b8dff652ed1644cb9bfb2ea50f4eaf20b2",
+      "compat": "2022",
+      "fixed_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "mcp2020-issue8167-tac_textbox_inline",
+      "input": "/home/tsjang/rhwp/samples/issue8167/tac_textbox_inline.hwpx",
+      "input_sha256": "300db4c44b4b622a682bfb0744bba910d5620b29f089a51caf159ee40a3c544b",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8167/tac_textbox_inline-2020.pdf",
+      "pdf_sha256": "337ce08be0780c8b807d41b2640579519732e3a8d9478b0bbc98a706f0f3ac07",
+      "compat": "2022",
+      "fixed_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above",
+      "input": "/home/tsjang/rhwp/samples/issue8168/multiline_tac_picture_para_topandbottom_offset_above.hwp",
+      "input_sha256": "dc2f948ce42f5c5924a6639888058ea35b427d114a6a2de6aacf1bc4791e2d96",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8168/multiline_tac_picture_para_topandbottom_offset_above-2020.pdf",
+      "pdf_sha256": "b64c658eac96cee6502625b939bd6240587d539ed98b22dab4c1d3227f7955a7",
+      "compat": "2022",
+      "fixed_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below",
+      "input": "/home/tsjang/rhwp/samples/issue8168/multiline_tac_picture_para_topandbottom_offset_below.hwp",
+      "input_sha256": "060bf70211fc53a8e867660307b18b990dca0957aed5e08eaa5ecc6ac182c301",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8168/multiline_tac_picture_para_topandbottom_offset_below-2020.pdf",
+      "pdf_sha256": "9f2bece13c24033da21a1e00999db0a2b30401f29bbc3a2c5a3241fdafed1271",
+      "compat": "2022",
+      "fixed_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox",
+      "input": "/home/tsjang/rhwp/samples/issue8168/tac_picture_with_page_relative_topandbottom_textbox.hwp",
+      "input_sha256": "a035e1d4bf9e97c285a0e3c608fe37e589f108f70f72e8617ca3120037ffd474",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8168/tac_picture_with_page_relative_topandbottom_textbox-2020.pdf",
+      "pdf_sha256": "a0592ce6fdf47d208dd2094f9708bddd78af7b81900066f0bb0b4f06e7b13b7b",
+      "compat": "2022",
+      "fixed_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "mcp2020-issue8168-tac_picture_with_topandbottom_textbox",
+      "input": "/home/tsjang/rhwp/samples/issue8168/tac_picture_with_topandbottom_textbox.hwpx",
+      "input_sha256": "24f37255ae293ef80db1cc248471e0ff7e239bd5113c461f2423484f2d12dab1",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8168/tac_picture_with_topandbottom_textbox-2020.pdf",
+      "pdf_sha256": "94e622f52eb75b64c739f9f0936fab27cfd3bf0e9c59c7b054db4ade018c3f72",
+      "compat": "2022",
+      "fixed_tsv_sha256": "e3ea69181b935ff424e1967e2b2ff7100e520ca2cf130ee8f35a3bb29837b360",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 93.52218,
+          "candidate": 93.52218
+        }
+      ]
+    },
+    {
+      "key": "mcp2020-issue8271-tac_picture_behindtext_textbox",
+      "input": "/home/tsjang/rhwp/samples/issue8271/tac_picture_behindtext_textbox.hwpx",
+      "input_sha256": "19ac4952c2d2254fce267b950b40dba10cfe607c9c6bf9b6139804dfdbbc7b00",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8271/tac_picture_behindtext_textbox-2020.pdf",
+      "pdf_sha256": "fe9dd3caedb3dabc7e38f81de03a3804bbf7430597f9c4fc3c3e86f3ba2e0ab0",
+      "compat": "2022",
+      "fixed_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "mcp2020-issue8271-tac_picture_topandbottom_textbox",
+      "input": "/home/tsjang/rhwp/samples/issue8271/tac_picture_topandbottom_textbox.hwpx",
+      "input_sha256": "5caee737321f70a63a396be04cc93cd24526fa4650fb549639dadbee7aedba0f",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8271/tac_picture_topandbottom_textbox-2020.pdf",
+      "pdf_sha256": "dc7b94bd0ccc8201713102f3c392256f0f9c9cce354ed0e5b86e5dd26975db02",
+      "compat": "2022",
+      "fixed_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "nested-height-cache",
+      "input": "/home/tsjang/rhwp/samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "pdf": "/home/tsjang/rhwp/pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "compat": "2022",
+      "fixed_tsv_sha256": "24710c8c0090c21d3097feb0047ab8136e8d0d037eaf2eac5f4106aa96838eb1",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 94.47057,
+          "candidate": 94.47057
+        },
+        {
+          "page": 2,
+          "prior": 98.82635,
+          "candidate": 98.82635
+        },
+        {
+          "page": 3,
+          "prior": 99.84704,
+          "candidate": 99.84704
+        },
+        {
+          "page": 4,
+          "prior": 99.83327,
+          "candidate": 99.90509
+        },
+        {
+          "page": 5,
+          "prior": 98.97592,
+          "candidate": 98.97592
+        },
+        {
+          "page": 6,
+          "prior": 97.61453,
+          "candidate": 97.61453
+        },
+        {
+          "page": 7,
+          "prior": 97.82853,
+          "candidate": 97.82853
+        },
+        {
+          "page": 8,
+          "prior": 98.66687,
+          "candidate": 98.66687
+        },
+        {
+          "page": 9,
+          "prior": 99.57879,
+          "candidate": 99.57879
+        },
+        {
+          "page": 10,
+          "prior": 97.55815,
+          "candidate": 97.55815
+        },
+        {
+          "page": 11,
+          "prior": 98.82265,
+          "candidate": 98.82265
+        },
+        {
+          "page": 12,
+          "prior": 99.24501,
+          "candidate": 99.24501
+        },
+        {
+          "page": 13,
+          "prior": 99.06752,
+          "candidate": 99.06752
+        },
+        {
+          "page": 14,
+          "prior": 97.88429,
+          "candidate": 97.88429
+        },
+        {
+          "page": 15,
+          "prior": 98.311,
+          "candidate": 98.311
+        },
+        {
+          "page": 16,
+          "prior": 95.36986,
+          "candidate": 95.36986
+        },
+        {
+          "page": 17,
+          "prior": 98.4589,
+          "candidate": 98.4589
+        }
+      ]
+    },
+    {
+      "key": "newsletter-chinese",
+      "input": "/home/tsjang/rhwp/samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
+      "input_sha256": "34a5964fa791ae662052cba8482efae682f13b45a0c0cd6ce633425566a2d5a9",
+      "pdf": "/home/tsjang/rhwp/pdf/review-integration-20261026/newsletter-chinese-2024.pdf",
+      "pdf_sha256": "93cd11ba2e4c256a9bc22da58942afd551f28cfe6ace16ca13c76d650cb3e360",
+      "compat": "2024",
+      "fixed_tsv_sha256": "806849ad5aeb1c69651108149dec5a2140c2e19c55d00cd6ca712d8f6c630dd2",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 99.21553,
+          "candidate": 99.16453
+        },
+        {
+          "page": 2,
+          "prior": 93.54978,
+          "candidate": 93.57998
+        }
+      ]
+    },
+    {
+      "key": "newsletter-korean",
+      "input": "/home/tsjang/rhwp/samples/issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
+      "input_sha256": "70a6663e75fefedc001b2c249bd20f5b994596954120740252f484b1892e2097",
+      "pdf": "/home/tsjang/rhwp/pdf/review-integration-20261026/newsletter-korean-2020.pdf",
+      "pdf_sha256": "4c1cbc3a4a08a5682ea4b4561874c1c8cf261cdba1c961d8e439c7e9a10e7a24",
+      "compat": "2022",
+      "fixed_tsv_sha256": "c3111573b2b1c7b997fe11ad474b61d7dff45b9e8dd5b9240d3c3dba85f3f8fb",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 97.56961,
+          "candidate": 97.55114
+        },
+        {
+          "page": 2,
+          "prior": 93.09501,
+          "candidate": 92.81548
+        }
+      ]
+    },
+    {
+      "key": "onsemiro-hwp",
+      "input": "/home/tsjang/rhwp/samples/[2027] 온새미로 1 본교재.hwp",
+      "input_sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+      "pdf": "/home/tsjang/rhwp/pdf/review-integration-20261026/onsemiro-hwp-2020.pdf",
+      "pdf_sha256": "94f2ae8b745ab043aeca2a0b2a25f62dd3d97ec2fed3e1c1e75c982cc8c6f6c4",
+      "compat": "2022",
+      "fixed_tsv_sha256": "f39a25f79d88cfbb3d8a132f044c7eba2399386f80dfc1e61b0afa42eb371231",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "prior": 99.93437,
+          "candidate": 99.93437
+        },
+        {
+          "page": 4,
+          "prior": 99.56179,
+          "candidate": 99.56179
+        },
+        {
+          "page": 5,
+          "prior": 94.85033,
+          "candidate": 94.85033
+        },
+        {
+          "page": 6,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 7,
+          "prior": 99.9446,
+          "candidate": 99.9446
+        },
+        {
+          "page": 8,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 9,
+          "prior": 99.7475,
+          "candidate": 99.7475
+        },
+        {
+          "page": 10,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 11,
+          "prior": 96.20119,
+          "candidate": 96.20119
+        },
+        {
+          "page": 12,
+          "prior": 99.16368,
+          "candidate": 99.16368
+        },
+        {
+          "page": 13,
+          "prior": 99.129,
+          "candidate": 99.129
+        },
+        {
+          "page": 14,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 15,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 16,
+          "prior": 99.68139,
+          "candidate": 99.68139
+        },
+        {
+          "page": 17,
+          "prior": 99.64714,
+          "candidate": 99.64714
+        },
+        {
+          "page": 18,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 19,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 20,
+          "prior": 99.08326,
+          "candidate": 99.08326
+        },
+        {
+          "page": 21,
+          "prior": 99.5047,
+          "candidate": 99.5047
+        },
+        {
+          "page": 22,
+          "prior": 99.13452,
+          "candidate": 99.13452
+        },
+        {
+          "page": 23,
+          "prior": 99.6228,
+          "candidate": 99.6228
+        },
+        {
+          "page": 24,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 25,
+          "prior": 99.42731,
+          "candidate": 99.42731
+        },
+        {
+          "page": 26,
+          "prior": 98.56459,
+          "candidate": 98.56459
+        },
+        {
+          "page": 27,
+          "prior": 99.27575,
+          "candidate": 99.27575
+        },
+        {
+          "page": 28,
+          "prior": 99.05691,
+          "candidate": 99.05691
+        },
+        {
+          "page": 29,
+          "prior": 98.72497,
+          "candidate": 98.72497
+        },
+        {
+          "page": 30,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 31,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 32,
+          "prior": 98.42932,
+          "candidate": 98.42932
+        },
+        {
+          "page": 33,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 34,
+          "prior": 99.1979,
+          "candidate": 99.1979
+        },
+        {
+          "page": 35,
+          "prior": 96.15653,
+          "candidate": 96.15653
+        },
+        {
+          "page": 36,
+          "prior": 99.99829,
+          "candidate": 99.99829
+        },
+        {
+          "page": 37,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 38,
+          "prior": 98.42477,
+          "candidate": 98.42477
+        },
+        {
+          "page": 39,
+          "prior": 99.68254,
+          "candidate": 99.68254
+        },
+        {
+          "page": 40,
+          "prior": 99.62229,
+          "candidate": 99.62229
+        },
+        {
+          "page": 41,
+          "prior": 99.60077,
+          "candidate": 99.60077
+        },
+        {
+          "page": 42,
+          "prior": 96.35431,
+          "candidate": 96.35431
+        },
+        {
+          "page": 43,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 44,
+          "prior": 99.99815,
+          "candidate": 99.99815
+        },
+        {
+          "page": 45,
+          "prior": 97.95849,
+          "candidate": 97.95849
+        },
+        {
+          "page": 46,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "onsemiro-hwpx",
+      "input": "/home/tsjang/rhwp/samples/[2027] 온새미로 1 본교재.hwpx",
+      "input_sha256": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c",
+      "pdf": "/home/tsjang/rhwp/pdf/review-integration-20261026/onsemiro-hwpx-2024.pdf",
+      "pdf_sha256": "015ac8396395652ffce81167d017adea4b3284a660a59f46bbbf5e261443af5b",
+      "compat": "2024",
+      "fixed_tsv_sha256": "b508888883e434c4678dc074332e495a07919aa143f8ff759e23ac151c914faf",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "prior": 99.93484,
+          "candidate": 99.93484
+        },
+        {
+          "page": 4,
+          "prior": 99.56193,
+          "candidate": 99.56193
+        },
+        {
+          "page": 5,
+          "prior": 94.85033,
+          "candidate": 94.85033
+        },
+        {
+          "page": 6,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 7,
+          "prior": 99.9446,
+          "candidate": 99.9446
+        },
+        {
+          "page": 8,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 9,
+          "prior": 99.74749,
+          "candidate": 99.74749
+        },
+        {
+          "page": 10,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 11,
+          "prior": 96.20119,
+          "candidate": 96.20119
+        },
+        {
+          "page": 12,
+          "prior": 99.16366,
+          "candidate": 99.16366
+        },
+        {
+          "page": 13,
+          "prior": 99.129,
+          "candidate": 99.129
+        },
+        {
+          "page": 14,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 15,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 16,
+          "prior": 99.68138,
+          "candidate": 99.68138
+        },
+        {
+          "page": 17,
+          "prior": 99.64712,
+          "candidate": 99.64712
+        },
+        {
+          "page": 18,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 19,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 20,
+          "prior": 99.08324,
+          "candidate": 99.08324
+        },
+        {
+          "page": 21,
+          "prior": 99.5047,
+          "candidate": 99.5047
+        },
+        {
+          "page": 22,
+          "prior": 99.1345,
+          "candidate": 99.1345
+        },
+        {
+          "page": 23,
+          "prior": 99.6228,
+          "candidate": 99.6228
+        },
+        {
+          "page": 24,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 25,
+          "prior": 99.42731,
+          "candidate": 99.42731
+        },
+        {
+          "page": 26,
+          "prior": 98.56424,
+          "candidate": 98.56424
+        },
+        {
+          "page": 27,
+          "prior": 99.27575,
+          "candidate": 99.27575
+        },
+        {
+          "page": 28,
+          "prior": 99.0569,
+          "candidate": 99.0569
+        },
+        {
+          "page": 29,
+          "prior": 98.72497,
+          "candidate": 98.72497
+        },
+        {
+          "page": 30,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 31,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 32,
+          "prior": 98.4289,
+          "candidate": 98.4289
+        },
+        {
+          "page": 33,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 34,
+          "prior": 99.19788,
+          "candidate": 99.19788
+        },
+        {
+          "page": 35,
+          "prior": 96.16314,
+          "candidate": 96.16314
+        },
+        {
+          "page": 36,
+          "prior": 99.99829,
+          "candidate": 99.99829
+        },
+        {
+          "page": 37,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 38,
+          "prior": 98.42435,
+          "candidate": 98.42435
+        },
+        {
+          "page": 39,
+          "prior": 99.68254,
+          "candidate": 99.68254
+        },
+        {
+          "page": 40,
+          "prior": 99.62228,
+          "candidate": 99.62228
+        },
+        {
+          "page": 41,
+          "prior": 99.60077,
+          "candidate": 99.60077
+        },
+        {
+          "page": 42,
+          "prior": 96.68542,
+          "candidate": 96.68542
+        },
+        {
+          "page": 43,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 44,
+          "prior": 99.99815,
+          "candidate": 99.99815
+        },
+        {
+          "page": 45,
+          "prior": 97.95709,
+          "candidate": 97.95709
+        },
+        {
+          "page": 46,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "pdf-2010-editable",
+      "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/candidate-pdf-import/pdf-2010-editable.hwpx",
+      "input_sha256": "a09263bd2cb6c5e8dfd3be425b888f5708dc34bd4485308868c03894b9f2a0f5",
+      "pdf": "/home/tsjang/rhwp/samples/21_언어_기출_편집가능본-2010.pdf",
+      "pdf_sha256": "609d56421009ccab5a50cb2a8f4e78af4d0961de2e7ae85d811905e8434ac251",
+      "compat": "2022",
+      "fixed_tsv_sha256": "13f0daeaacdfedc3cfb375acbf7402bd9d79a2e2551aabff1de7ca03e8034977",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 99.69301,
+          "candidate": 99.69301
+        },
+        {
+          "page": 2,
+          "prior": 99.80611,
+          "candidate": 99.80611
+        },
+        {
+          "page": 3,
+          "prior": 99.7514,
+          "candidate": 99.7514
+        },
+        {
+          "page": 4,
+          "prior": 99.78935,
+          "candidate": 99.78935
+        },
+        {
+          "page": 5,
+          "prior": 99.6707,
+          "candidate": 99.6707
+        },
+        {
+          "page": 6,
+          "prior": 99.4238,
+          "candidate": 99.4238
+        },
+        {
+          "page": 7,
+          "prior": 99.81554,
+          "candidate": 99.81554
+        },
+        {
+          "page": 8,
+          "prior": 99.75415,
+          "candidate": 99.75415
+        },
+        {
+          "page": 9,
+          "prior": 99.43619,
+          "candidate": 99.43619
+        },
+        {
+          "page": 10,
+          "prior": 99.65611,
+          "candidate": 99.65611
+        },
+        {
+          "page": 11,
+          "prior": 99.24995,
+          "candidate": 99.24995
+        },
+        {
+          "page": 12,
+          "prior": 99.52661,
+          "candidate": 99.52661
+        },
+        {
+          "page": 13,
+          "prior": 99.58693,
+          "candidate": 99.58693
+        },
+        {
+          "page": 14,
+          "prior": 99.32222,
+          "candidate": 99.32222
+        },
+        {
+          "page": 15,
+          "prior": 98.80832,
+          "candidate": 98.80832
+        },
+        {
+          "page": 16,
+          "prior": 98.80897,
+          "candidate": 98.80897
+        }
+      ]
+    },
+    {
+      "key": "pdf-2010-fidelity",
+      "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/candidate-pdf-import/pdf-2010-fidelity.hwpx",
+      "input_sha256": "851144435ef1102cd4727f0635819973915d5718c130812c288cbc3e85fbe2dc",
+      "pdf": "/home/tsjang/rhwp/samples/21_언어_기출_편집가능본-2010.pdf",
+      "pdf_sha256": "609d56421009ccab5a50cb2a8f4e78af4d0961de2e7ae85d811905e8434ac251",
+      "compat": "2022",
+      "fixed_tsv_sha256": "abcf5293f057372eda1e2d0309e37da031b6b17cfb08ed7354ca3794a36d88ad",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 99.69345,
+          "candidate": 99.69345
+        },
+        {
+          "page": 2,
+          "prior": 99.81619,
+          "candidate": 99.81619
+        },
+        {
+          "page": 3,
+          "prior": 99.75992,
+          "candidate": 99.75992
+        },
+        {
+          "page": 4,
+          "prior": 99.83969,
+          "candidate": 99.83969
+        },
+        {
+          "page": 5,
+          "prior": 99.77978,
+          "candidate": 99.77978
+        },
+        {
+          "page": 6,
+          "prior": 99.77264,
+          "candidate": 99.77264
+        },
+        {
+          "page": 7,
+          "prior": 99.82808,
+          "candidate": 99.82808
+        },
+        {
+          "page": 8,
+          "prior": 99.82473,
+          "candidate": 99.82473
+        },
+        {
+          "page": 9,
+          "prior": 99.7501,
+          "candidate": 99.7501
+        },
+        {
+          "page": 10,
+          "prior": 99.65681,
+          "candidate": 99.65681
+        },
+        {
+          "page": 11,
+          "prior": 99.68437,
+          "candidate": 99.68437
+        },
+        {
+          "page": 12,
+          "prior": 99.52866,
+          "candidate": 99.52866
+        },
+        {
+          "page": 13,
+          "prior": 99.71312,
+          "candidate": 99.71312
+        },
+        {
+          "page": 14,
+          "prior": 99.60765,
+          "candidate": 99.60765
+        },
+        {
+          "page": 15,
+          "prior": 99.74084,
+          "candidate": 99.74084
+        },
+        {
+          "page": 16,
+          "prior": 98.80897,
+          "candidate": 98.80897
+        }
+      ]
+    },
+    {
+      "key": "pdf-2020-editable",
+      "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/candidate-pdf-import/pdf-2020-editable.hwpx",
+      "input_sha256": "f4261a6c67b4390a74cedd7dfb2c0e1462548a4002f46526b98261ff6aa7000a",
+      "pdf": "/home/tsjang/rhwp/samples/21_언어_기출_편집가능본-2020.pdf",
+      "pdf_sha256": "a1a8b0ffd6ae9b23627f7b1bf58bbdfdc0714a369713cc057aa836c75b143f1e",
+      "compat": "2022",
+      "fixed_tsv_sha256": "be41acad808807885e0fd9067e2ac4237c6733899f2d7089874b10b781a3e6bb",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 99.6984,
+          "candidate": 99.6984
+        },
+        {
+          "page": 2,
+          "prior": 99.59688,
+          "candidate": 99.59688
+        },
+        {
+          "page": 3,
+          "prior": 99.44378,
+          "candidate": 99.44378
+        },
+        {
+          "page": 4,
+          "prior": 99.60978,
+          "candidate": 99.60978
+        },
+        {
+          "page": 5,
+          "prior": 99.5339,
+          "candidate": 99.5339
+        },
+        {
+          "page": 6,
+          "prior": 99.45909,
+          "candidate": 99.45909
+        },
+        {
+          "page": 7,
+          "prior": 99.58207,
+          "candidate": 99.58207
+        },
+        {
+          "page": 8,
+          "prior": 99.54875,
+          "candidate": 99.54875
+        },
+        {
+          "page": 9,
+          "prior": 99.41686,
+          "candidate": 99.41686
+        },
+        {
+          "page": 10,
+          "prior": 99.22377,
+          "candidate": 99.22377
+        },
+        {
+          "page": 11,
+          "prior": 99.44593,
+          "candidate": 99.44593
+        },
+        {
+          "page": 12,
+          "prior": 99.34597,
+          "candidate": 99.34597
+        },
+        {
+          "page": 13,
+          "prior": 99.52022,
+          "candidate": 99.52022
+        },
+        {
+          "page": 14,
+          "prior": 99.11807,
+          "candidate": 99.11807
+        },
+        {
+          "page": 15,
+          "prior": 99.27277,
+          "candidate": 99.27277
+        }
+      ]
+    },
+    {
+      "key": "pdf-2020-fidelity",
+      "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/candidate-pdf-import/pdf-2020-fidelity.hwpx",
+      "input_sha256": "621ed0ce5dc918e5246a0e0f4ed853812bfe36009560a4b81fc4a25b64b58d8f",
+      "pdf": "/home/tsjang/rhwp/samples/21_언어_기출_편집가능본-2020.pdf",
+      "pdf_sha256": "a1a8b0ffd6ae9b23627f7b1bf58bbdfdc0714a369713cc057aa836c75b143f1e",
+      "compat": "2022",
+      "fixed_tsv_sha256": "dc1e3875e6d2230d7d11c19112a4bc0e72a24d5fd53a839babe343d2959237b5",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 99.69848,
+          "candidate": 99.69848
+        },
+        {
+          "page": 2,
+          "prior": 99.59773,
+          "candidate": 99.59773
+        },
+        {
+          "page": 3,
+          "prior": 99.45071,
+          "candidate": 99.45071
+        },
+        {
+          "page": 4,
+          "prior": 99.6161,
+          "candidate": 99.6161
+        },
+        {
+          "page": 5,
+          "prior": 99.53427,
+          "candidate": 99.53427
+        },
+        {
+          "page": 6,
+          "prior": 99.46113,
+          "candidate": 99.46113
+        },
+        {
+          "page": 7,
+          "prior": 99.58804,
+          "candidate": 99.58804
+        },
+        {
+          "page": 8,
+          "prior": 99.61515,
+          "candidate": 99.61515
+        },
+        {
+          "page": 9,
+          "prior": 99.42271,
+          "candidate": 99.42271
+        },
+        {
+          "page": 10,
+          "prior": 99.22375,
+          "candidate": 99.22375
+        },
+        {
+          "page": 11,
+          "prior": 99.4469,
+          "candidate": 99.4469
+        },
+        {
+          "page": 12,
+          "prior": 99.34373,
+          "candidate": 99.34373
+        },
+        {
+          "page": 13,
+          "prior": 99.5312,
+          "candidate": 99.5312
+        },
+        {
+          "page": 14,
+          "prior": 99.47578,
+          "candidate": 99.47578
+        },
+        {
+          "page": 15,
+          "prior": 99.28054,
+          "candidate": 99.28054
+        }
+      ]
+    },
+    {
+      "key": "pdf-mac-editable",
+      "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/candidate-pdf-import/pdf-mac-editable.hwpx",
+      "input_sha256": "c10fe5f1b5f5a653a2b9e1d0fccd382a5f0602ca14744c247ea5ec5b73223df1",
+      "pdf": "/home/tsjang/rhwp/samples/21_언어_기출_편집가능본.pdf",
+      "pdf_sha256": "6bc54661a73af788d437463e000f76652b1325b44607e58443e7391d23e2db83",
+      "compat": "2022",
+      "fixed_tsv_sha256": "c27d7abe379c1cf611b493314e4d5e86fbbfbd7136ba7db766da6970da2cd43d",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 98.51818,
+          "candidate": 98.51818
+        },
+        {
+          "page": 2,
+          "prior": 99.84485,
+          "candidate": 99.84485
+        },
+        {
+          "page": 3,
+          "prior": 99.21678,
+          "candidate": 99.21678
+        },
+        {
+          "page": 4,
+          "prior": 99.85274,
+          "candidate": 99.85274
+        },
+        {
+          "page": 5,
+          "prior": 99.82753,
+          "candidate": 99.82753
+        },
+        {
+          "page": 6,
+          "prior": 99.76936,
+          "candidate": 99.76936
+        },
+        {
+          "page": 7,
+          "prior": 99.78295,
+          "candidate": 99.78295
+        },
+        {
+          "page": 8,
+          "prior": 99.73832,
+          "candidate": 99.73832
+        },
+        {
+          "page": 9,
+          "prior": 99.68631,
+          "candidate": 99.68631
+        },
+        {
+          "page": 10,
+          "prior": 99.31178,
+          "candidate": 99.31178
+        },
+        {
+          "page": 11,
+          "prior": 99.75069,
+          "candidate": 99.75069
+        },
+        {
+          "page": 12,
+          "prior": 99.63713,
+          "candidate": 99.63713
+        },
+        {
+          "page": 13,
+          "prior": 99.75974,
+          "candidate": 99.75974
+        },
+        {
+          "page": 14,
+          "prior": 99.69216,
+          "candidate": 99.69216
+        },
+        {
+          "page": 15,
+          "prior": 99.52835,
+          "candidate": 99.52835
+        }
+      ]
+    },
+    {
+      "key": "pdf-mac-fidelity",
+      "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/candidate-pdf-import/pdf-mac-fidelity.hwpx",
+      "input_sha256": "0b24eb722daed8821fd688fa7af1064172572cde0a79e21c729834465ee0929b",
+      "pdf": "/home/tsjang/rhwp/samples/21_언어_기출_편집가능본.pdf",
+      "pdf_sha256": "6bc54661a73af788d437463e000f76652b1325b44607e58443e7391d23e2db83",
+      "compat": "2022",
+      "fixed_tsv_sha256": "21e0ad45b51669b7eb99db416d8da0915346df7115caf973a57365a2296743c8",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 98.52208,
+          "candidate": 98.52208
+        },
+        {
+          "page": 2,
+          "prior": 99.84506,
+          "candidate": 99.84506
+        },
+        {
+          "page": 3,
+          "prior": 99.78603,
+          "candidate": 99.78603
+        },
+        {
+          "page": 4,
+          "prior": 99.8498,
+          "candidate": 99.8498
+        },
+        {
+          "page": 5,
+          "prior": 99.82792,
+          "candidate": 99.82792
+        },
+        {
+          "page": 6,
+          "prior": 99.77047,
+          "candidate": 99.77047
+        },
+        {
+          "page": 7,
+          "prior": 99.78005,
+          "candidate": 99.78005
+        },
+        {
+          "page": 8,
+          "prior": 99.81115,
+          "candidate": 99.81115
+        },
+        {
+          "page": 9,
+          "prior": 99.68601,
+          "candidate": 99.68601
+        },
+        {
+          "page": 10,
+          "prior": 99.31178,
+          "candidate": 99.31178
+        },
+        {
+          "page": 11,
+          "prior": 99.75167,
+          "candidate": 99.75167
+        },
+        {
+          "page": 12,
+          "prior": 99.62909,
+          "candidate": 99.62909
+        },
+        {
+          "page": 13,
+          "prior": 99.75957,
+          "candidate": 99.75957
+        },
+        {
+          "page": 14,
+          "prior": 99.69312,
+          "candidate": 99.69312
+        },
+        {
+          "page": 15,
+          "prior": 99.52895,
+          "candidate": 99.52895
+        }
+      ]
+    },
+    {
+      "key": "picture-countercase-normalized-quarter-reflow-false",
+      "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-false.hwp",
+      "input_sha256": "8647f8ca68776fd1a2e640e69a5a8e428c6cb287ba17b2cb883fcce5efae20a8",
+      "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-false-print-2020.pdf",
+      "pdf_sha256": "0ea824cccc05c0dbab4edbddbf5df407481cb554e85d6e909d21d59702b5d7c9",
+      "compat": "2022",
+      "fixed_tsv_sha256": "d7a9050bedbc4bc983dc60939c17690640f084a45a49873be522c829dd631f68",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 99.99435,
+          "candidate": 99.99435
+        }
+      ]
+    },
+    {
+      "key": "picture-countercase-normalized-quarter-reflow-true",
+      "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-true.hwp",
+      "input_sha256": "a7188cf5dd388df0c930224178a3cba44715cd07ccdccde5c8ebcde7cbfa0c3f",
+      "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-true-print-2020.pdf",
+      "pdf_sha256": "ee84d81a4b3889da9658b5ee0936c8f726f30897ea9a63c9564408a2c427e6b4",
+      "compat": "2022",
+      "fixed_tsv_sha256": "d7a9050bedbc4bc983dc60939c17690640f084a45a49873be522c829dd631f68",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 99.99435,
+          "candidate": 99.99435
+        }
+      ]
+    },
+    {
+      "key": "picture-countercase-picture-flow-authored-break-no-ls",
+      "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-authored-break-no-ls.hwp",
+      "input_sha256": "c7d856b48d19cabb51e50b0befdf2fbc67a903a633038b7084dc6c2113177b93",
+      "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-authored-break-no-ls-print-2020.pdf",
+      "pdf_sha256": "9b8037d88922205acf7459e6e4a44a8535894923c3e75aed06b672bb0bb6ed1c",
+      "compat": "2022",
+      "fixed_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "picture-countercase-picture-flow-center-row-no-ls",
+      "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-center-row-no-ls.hwp",
+      "input_sha256": "48f55c0d01011d3580f2f1fdef2d565077ffa1e66c7aaddfca10761dd43dd297",
+      "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-center-row-no-ls-print-2020.pdf",
+      "pdf_sha256": "0e8536e76112d9439cb9c50418ad5918ba88310ab0630c2745b64a677dfd159f",
+      "compat": "2022",
+      "fixed_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "picture-countercase-picture-flow-column-transition-no-ls",
+      "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-column-transition-no-ls.hwp",
+      "input_sha256": "29745472fdb513c8d4d1a7a6f1a22a56580acd9b06b6620ed7bed7d0b3000c32",
+      "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-column-transition-no-ls-print-2020.pdf",
+      "pdf_sha256": "d9dcf28fe3b5ee63ff05880f44e2d5eda3200c40f008981aa2d702acd1059e23",
+      "compat": "2022",
+      "fixed_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "picture-countercase-picture-flow-mixed-center-row-no-ls",
+      "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-mixed-center-row-no-ls.hwp",
+      "input_sha256": "8db7c5325b0e1676c29190d55110465453203be310de435492a29d6522835ad6",
+      "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-mixed-center-row-no-ls-print-2020.pdf",
+      "pdf_sha256": "a2a1178aea825b6e2e734a43b18b35cd83f53d650ef28491a9ba03ddf146ea4f",
+      "compat": "2022",
+      "fixed_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "picture-countercase-picture-flow-mixed-end-picture-no-ls",
+      "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-mixed-end-picture-no-ls.hwp",
+      "input_sha256": "8478f28ec6bfbeb85f4d5ed3947b3063380549ec956a5fbe7fc5559aabd0dd7e",
+      "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-mixed-end-picture-no-ls-print-2020.pdf",
+      "pdf_sha256": "1a37e74b889946e8ceeff9fd3cf7200d356fe2af6401c93634879a9208f3bb3e",
+      "compat": "2022",
+      "fixed_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "picture-countercase-picture-flow-outer-margin-row-no-ls",
+      "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-outer-margin-row-no-ls.hwp",
+      "input_sha256": "16a916b8c79e055f26d2033f7104c2cb39487bf21993356b805ad8616ac7cebb",
+      "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-outer-margin-row-no-ls-print-2020.pdf",
+      "pdf_sha256": "6fab8b80a40cf81355adc11a923b777f7515977a25a7963b3296a00ba6118f50",
+      "compat": "2022",
+      "fixed_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "picture-countercase-picture-flow-relative-font-row-no-ls",
+      "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-relative-font-row-no-ls.hwp",
+      "input_sha256": "6e0073478832e25398466ad001c1566b626ca0c49634184135857d88ef0f8870",
+      "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-relative-font-row-no-ls-print-2020.pdf",
+      "pdf_sha256": "109ed14cbc38ee7e9604e64066d84261bd34806077d9f5ebee1510c1936834be",
+      "compat": "2022",
+      "fixed_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "picture-countercase-picture-flow-same-row-no-ls",
+      "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-same-row-no-ls.hwp",
+      "input_sha256": "aeee538f8d361f81bb7b356ab662c453f13f67a4e2be4c2af911eabd16ea1d12",
+      "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-same-row-no-ls-print-2020.pdf",
+      "pdf_sha256": "1ad87bdcb0265492849d495f7a539c37aec00b42e61940023ade8b88c164dad9",
+      "compat": "2022",
+      "fixed_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "picture-countercase-picture-flow-tail-gap-boundary-no-ls",
+      "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-boundary-no-ls.hwp",
+      "input_sha256": "07ebb414f77d99c4b1a609e31f79904e95cedf4fe21f315cf6760007a8aa3c38",
+      "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-boundary-no-ls-print-2020.pdf",
+      "pdf_sha256": "10eab539ec29e8efd87d993e820fcc5335974aad5075042709fe733f2b922b96",
+      "compat": "2022",
+      "fixed_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "picture-countercase-picture-flow-tail-gap-only-fit-no-ls",
+      "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-only-fit-no-ls.hwp",
+      "input_sha256": "4faca24711f2dcd84dc22b3047dfb56911d70c952789978071a8b898facc2747",
+      "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-only-fit-no-ls-print-2020.pdf",
+      "pdf_sha256": "71728ac7e179fd1f850a348d951b5fd1c227ee4a8c74219a26646b5bdfa1d155",
+      "compat": "2022",
+      "fixed_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "picture-countercase-picture-flow-wrapped-row-no-ls",
+      "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-wrapped-row-no-ls.hwp",
+      "input_sha256": "52af34ce881875d302b604010f4a67ca51b2f85386a40e4f68e4714836064f1c",
+      "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-wrapped-row-no-ls-print-2020.pdf",
+      "pdf_sha256": "880e9aef5665b4a46c0418009a246f8a095bed2151ceaaeddfce1eb960ac39cb",
+      "compat": "2022",
+      "fixed_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "r110_cellnotes_span_N2",
+      "input": "/home/tsjang/rhwp/samples/issue1937/r110_cellnotes_span_N2.hwpx",
+      "input_sha256": "cad4697a99a2af330ed9ad68a05d5018cbc041ca562d2c5682b7a087e7251147",
+      "pdf": "/home/tsjang/rhwp/pdf/issue1937/r110_cellnotes_span_N2-2020.pdf",
+      "pdf_sha256": "8f97203f9d60a228daf04d6a67d1b26cdb143c6c7700d21ab4f0aa61c54449e3",
+      "compat": "2022",
+      "fixed_tsv_sha256": "1f8ceedf509cf2ab761480622f80cdfb3e6d585a636cf697d53af4117121b86e",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 96.95701,
+          "candidate": 96.95701
+        },
+        {
+          "page": 2,
+          "prior": 97.34601,
+          "candidate": 97.34601
+        },
+        {
+          "page": 3,
+          "prior": 98.16845,
+          "candidate": 98.16845
+        }
+      ]
+    },
+    {
+      "key": "rebase8116-cell_nested_table_rows",
+      "input": "/home/tsjang/rhwp/samples/issue8080/cell_nested_table_rows.hwp",
+      "input_sha256": "7756e38c49dbccd961393a5e66f22c5660f2dd2653128a73903923044cb782f9",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8080/cell_nested_table_rows-webhwp-print.pdf",
+      "pdf_sha256": "e19cb10792a2c25558d95c22eaa75794bad52168a2370a2c9e9ffbeafb7d34d7",
+      "compat": "2022",
+      "fixed_tsv_sha256": "ffc88d90f43ee5aad810792f9148c6a05bc14cae12dd6a25c02ba04b0e291d8d",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 98.60825,
+          "candidate": 98.60825
+        }
+      ]
+    },
+    {
+      "key": "rebase8116-overlay_table_beside_title",
+      "input": "/home/tsjang/rhwp/samples/issue8080/overlay_table_beside_title.hwp",
+      "input_sha256": "33654561d40ed7a355ee2bdba29aae9e6e3dd91ab71a805570256283bdefafa8",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8080/overlay_table_beside_title-webhwp-print.pdf",
+      "pdf_sha256": "8bf9269c7aed625ade6b55cd70400763ac0e6ebaac0de3b38177c03fb93e0a32",
+      "compat": "2022",
+      "fixed_tsv_sha256": "8547ee5b5397e7898a3b954d98fd6debc8d8aabc588938df47f0c8796498a2fb",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 99.99669,
+          "candidate": 99.99669
+        },
+        {
+          "page": 2,
+          "prior": 99.99666,
+          "candidate": 99.99666
+        },
+        {
+          "page": 3,
+          "prior": 99.99666,
+          "candidate": 99.99666
+        },
+        {
+          "page": 4,
+          "prior": 99.99665,
+          "candidate": 99.99665
+        },
+        {
+          "page": 5,
+          "prior": 99.99652,
+          "candidate": 99.99652
+        }
+      ]
+    },
+    {
+      "key": "rebase8116-picture_cell_row_height",
+      "input": "/home/tsjang/rhwp/samples/issue8080/picture_cell_row_height.hwp",
+      "input_sha256": "2db234d895be0d6558f1b61c2195cea016a8ce5d7db91261979a505f92ec82ad",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8080/picture_cell_row_height-webhwp-print.pdf",
+      "pdf_sha256": "d80780c13f8a46ba3cb23a4cdc43bdb7096d0521a123aeb29d1a0a7cad2b9c79",
+      "compat": "2022",
+      "fixed_tsv_sha256": "d9bd9e3e05775e23013c809bf9df5e91d28382d5c10abfe33137798590d86b83",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 93.2223,
+          "candidate": 93.2223
+        },
+        {
+          "page": 2,
+          "prior": 94.52416,
+          "candidate": 94.52416
+        },
+        {
+          "page": 3,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 4,
+          "prior": 93.37098,
+          "candidate": 93.37098
+        },
+        {
+          "page": 5,
+          "prior": 93.34606,
+          "candidate": 93.34606
+        }
+      ]
+    },
+    {
+      "key": "rebase8116-title_between_floating_shapes",
+      "input": "/home/tsjang/rhwp/samples/issue8080/title_between_floating_shapes.hwp",
+      "input_sha256": "80ff065ac5f186bae54bc43ef5a61fe4bf059074762b139de6b1c57b7158d76c",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8080/title_between_floating_shapes-webhwp-print.pdf",
+      "pdf_sha256": "394bb941e71ba3232238471ba20db139d9f277ed2f6571be23eb5cecfae4322c",
+      "compat": "2022",
+      "fixed_tsv_sha256": "a35fe91f0ac6f71671851ade8554127db0050832be80e9d7dca20ac2b37c2ff2",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 97.78292,
+          "candidate": 97.78292
+        },
+        {
+          "page": 2,
+          "prior": 99.45615,
+          "candidate": 99.45615
+        },
+        {
+          "page": 3,
+          "prior": 99.02506,
+          "candidate": 99.02506
+        },
+        {
+          "page": 4,
+          "prior": 93.63019,
+          "candidate": 93.63019
+        }
+      ]
+    },
+    {
+      "key": "reservefit-2020",
+      "input": "/home/tsjang/rhwp/samples/issue8149/reservefit-2020.hwp",
+      "input_sha256": "66045449890bba114d836554a7724ed00f98a69f5b5f097bec9e328fbb92c519",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8149/reservefit-2020.pdf",
+      "pdf_sha256": "479c4085f39e88e87f2be31780c2d66ecc2bdee9a5f3b77da7cbd6798046c0e4",
+      "compat": "2022",
+      "fixed_tsv_sha256": "3a275cdec033ac8f47901f79e2d76d0d091bd02f91218dcc2bde28c829f6a786",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 4,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 5,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 6,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 7,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 8,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 9,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 10,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 11,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 12,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 13,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 14,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 15,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 16,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 17,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 18,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 19,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 20,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 21,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 22,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 23,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 24,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 25,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 26,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 27,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 28,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 29,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 30,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 31,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 32,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 33,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 34,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 35,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 36,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 37,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 38,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 39,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 40,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 41,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 42,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 43,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 44,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 45,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 46,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 47,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 48,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 49,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 50,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 51,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 52,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 53,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 54,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 55,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 56,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 57,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 58,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 59,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 60,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 61,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 62,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 63,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 64,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 65,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "rowfit-2020",
+      "input": "/home/tsjang/rhwp/samples/issue8149/rowfit-2020.hwp",
+      "input_sha256": "34c24c5c64504f5e3ca590790f222b618aad1785adfc21c52beeb58004350eaa",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8149/rowfit-2020.pdf",
+      "pdf_sha256": "85b2430460538dd0a5ca39bc4eb940029153a46e034504a80e86b147338b2d43",
+      "compat": "2022",
+      "fixed_tsv_sha256": "0370947d4b82de77b4024a36d0c868925334d3a95935008c29808b8e15333f6b",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 4,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 5,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 6,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 7,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 8,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 9,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 10,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 11,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 12,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 13,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 14,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 15,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 16,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 17,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 18,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 19,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 20,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 21,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 22,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 23,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 24,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 25,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 26,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 27,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 28,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 29,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 30,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 31,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 32,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 33,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "rowspan-band-fit",
+      "input": "/home/tsjang/rhwp/samples/rowspan-band-fit/rowspan-band-fit.hwp",
+      "input_sha256": "649c0eaf95ea7e959953945e5603648b0894bdb09cecc512ede645dc71cff5d7",
+      "pdf": "/home/tsjang/rhwp/pdf/rowspan-band-fit/rowspan-band-fit-2020.pdf",
+      "pdf_sha256": "3581e48fc76b65e292d3668a27fc5dbbdb905b37b40b11c58b5abd122dba00a9",
+      "compat": "2022",
+      "fixed_tsv_sha256": "0254866afd5baec055b7f98a60bae041e1331fcfd725804e84de805d1f0c6268",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 4,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 5,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 6,
+          "prior": 98.57461,
+          "candidate": 98.57461
+        },
+        {
+          "page": 7,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 8,
+          "prior": 97.84306,
+          "candidate": 97.84306
+        },
+        {
+          "page": 9,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "rowspan-header-original",
+      "input": "/home/tsjang/rhwp/samples/table_scattered_header_rowbreak.hwp",
+      "input_sha256": "65bbf7f22c8ab664f0f916b3a25257faf7a65ad564d58706955580e4f63c649b",
+      "pdf": "/home/tsjang/rhwp/pdf/table_scattered_header_rowbreak-hwp-2024.pdf",
+      "pdf_sha256": "83a02aa2ce248cf3a16c78eebf0e2ecfe89349b012f11855799af0c52e23e4e2",
+      "compat": "2024",
+      "fixed_tsv_sha256": "42ff4c247205451fb02b90736851dc97cf08213c2181c3aa9b8ce564a30293d8",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 99.99858,
+          "candidate": 99.99858
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 4,
+          "prior": 99.66225,
+          "candidate": 99.66225
+        },
+        {
+          "page": 5,
+          "prior": 98.38867,
+          "candidate": 98.38867
+        },
+        {
+          "page": 6,
+          "prior": 99.10934,
+          "candidate": 99.10934
+        },
+        {
+          "page": 7,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 8,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 9,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 10,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 11,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 12,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 13,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 14,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 15,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 16,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 17,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 18,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 19,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 20,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 21,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 22,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 23,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 24,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 25,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 26,
+          "prior": 99.6389,
+          "candidate": 99.6389
+        },
+        {
+          "page": 27,
+          "prior": 99.22041,
+          "candidate": 99.22041
+        },
+        {
+          "page": 28,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 29,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 30,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 31,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 32,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 33,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 34,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 35,
+          "prior": 99.71142,
+          "candidate": 99.71142
+        },
+        {
+          "page": 36,
+          "prior": 98.79555,
+          "candidate": 98.79555
+        },
+        {
+          "page": 37,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 38,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 39,
+          "prior": 99.99758,
+          "candidate": 99.99758
+        },
+        {
+          "page": 40,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 41,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 42,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 43,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 44,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 45,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 46,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 47,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 48,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 49,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 50,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 51,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 52,
+          "prior": 99.72409,
+          "candidate": 99.72409
+        }
+      ]
+    },
+    {
+      "key": "tac-shape-source",
+      "input": "/home/tsjang/rhwp/samples/HWP5-nopassword-123456.hwpx",
+      "input_sha256": "20ed90f48c6501cad99f6aa1f82d81d2a2132eb04f2d1d32805ac251749e4d0e",
+      "pdf": "/home/tsjang/rhwp/pdf/HWP5-nopassword-123456-hwpx-2024.pdf",
+      "pdf_sha256": "b20bd5c0b3716818113cc6bc2a18ba768325b338a3a16840e3680e124cfea01d",
+      "compat": "2024",
+      "fixed_tsv_sha256": "5bfcd60a2ced011d2af1f162e77b8a258511e6e311d653832e1e274e1f7d122c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 98.01165,
+          "candidate": 98.01165
+        },
+        {
+          "page": 2,
+          "prior": 99.70511,
+          "candidate": 99.70511
+        },
+        {
+          "page": 3,
+          "prior": 99.89951,
+          "candidate": 99.89951
+        },
+        {
+          "page": 4,
+          "prior": 99.00827,
+          "candidate": 99.00827
+        },
+        {
+          "page": 5,
+          "prior": 99.54999,
+          "candidate": 99.54999
+        },
+        {
+          "page": 6,
+          "prior": 99.37118,
+          "candidate": 99.37118
+        },
+        {
+          "page": 7,
+          "prior": 99.78256,
+          "candidate": 99.78256
+        },
+        {
+          "page": 8,
+          "prior": 99.997,
+          "candidate": 99.997
+        },
+        {
+          "page": 9,
+          "prior": 99.45699,
+          "candidate": 99.45699
+        },
+        {
+          "page": 10,
+          "prior": 99.97823,
+          "candidate": 99.97823
+        },
+        {
+          "page": 11,
+          "prior": 99.78251,
+          "candidate": 99.78251
+        },
+        {
+          "page": 12,
+          "prior": 97.18602,
+          "candidate": 97.18602
+        },
+        {
+          "page": 13,
+          "prior": 99.44571,
+          "candidate": 99.44571
+        },
+        {
+          "page": 14,
+          "prior": 99.96314,
+          "candidate": 99.96314
+        },
+        {
+          "page": 15,
+          "prior": 99.9682,
+          "candidate": 99.9682
+        },
+        {
+          "page": 16,
+          "prior": 99.95752,
+          "candidate": 99.95752
+        },
+        {
+          "page": 17,
+          "prior": 99.84073,
+          "candidate": 99.84073
+        },
+        {
+          "page": 18,
+          "prior": 99.95316,
+          "candidate": 99.95316
+        },
+        {
+          "page": 19,
+          "prior": 99.94404,
+          "candidate": 99.94404
+        },
+        {
+          "page": 20,
+          "prior": 99.8853,
+          "candidate": 99.8853
+        },
+        {
+          "page": 21,
+          "prior": 99.8902,
+          "candidate": 99.8902
+        },
+        {
+          "page": 22,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 23,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 24,
+          "prior": 99.84304,
+          "candidate": 99.84304
+        }
+      ]
+    },
+    {
+      "key": "topbottom-original",
+      "input": "/home/tsjang/rhwp/samples/tac-verify/scenario-a-after.hwp",
+      "input_sha256": "a6d0adcd7ff92e2679a123eda7484c408a005e046839067626dec08bcd551eba",
+      "pdf": "/home/tsjang/rhwp/pdf/issue8168/scenario-a-after-2024.pdf",
+      "pdf_sha256": "49faa5bf34bc4e32024c1c31e81687fc9c32eec55db34742cb6cbdbc89fad8d9",
+      "compat": "2024",
+      "fixed_tsv_sha256": "77564a9040197b1a5c3939b32dd0f415f278ea7206166db6379f1fa311ad1ce0",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 99.92661,
+          "candidate": 99.92661
+        }
+      ]
+    },
+    {
+      "key": "trim_n0_F02",
+      "input": "/home/tsjang/rhwp/samples/issue1937/trim_n0_F02.hwpx",
+      "input_sha256": "a191c7e25ae749908dfe4e894ac8b8006b6eb00a28d4aff46a1f633b09c51e0d",
+      "pdf": "/home/tsjang/rhwp/pdf/issue1937/trim_n0_F02-2020.pdf",
+      "pdf_sha256": "a71267faa225feb77c287174c80dd7696e9908359d36c64bf4fe22c29567281d",
+      "compat": "2022",
+      "fixed_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "trim_n0_h6630_F02",
+      "input": "/home/tsjang/rhwp/samples/issue1937/trim_n0_h6630_F02.hwpx",
+      "input_sha256": "c943fb179aee9fce248d272dc3607ebfa8e92c690037ee71c0fd5120f0012ab5",
+      "pdf": "/home/tsjang/rhwp/pdf/issue1937/trim_n0_h6630_F02-2020.pdf",
+      "pdf_sha256": "712cfce8782c75b36877fa6f002cca6e4ac1ffbdfeb03ea0fb49e3a2d2e1f59b",
+      "compat": "2022",
+      "fixed_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "trim_n0_h6660_F02",
+      "input": "/home/tsjang/rhwp/samples/issue1937/trim_n0_h6660_F02.hwpx",
+      "input_sha256": "39de0b243ef676819a176d2388eb32e5fd440af8fb447c5bd30feb6f41e57623",
+      "pdf": "/home/tsjang/rhwp/pdf/issue1937/trim_n0_h6660_F02-2020.pdf",
+      "pdf_sha256": "5bc9182c1014f2c581d5f8fd9a54e9892e6a1107d2ecf7248e741c890c7bdbd6",
+      "compat": "2022",
+      "fixed_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "trim_n0_l1_big_h6500_F01",
+      "input": "/home/tsjang/rhwp/samples/issue1937/trim_n0_l1_big_h6500_F01.hwpx",
+      "input_sha256": "943f24e5bdfa13cdc2b6d6f2b5f27192104a5e811b27791a8ea514ad997aa6c7",
+      "pdf": "/home/tsjang/rhwp/pdf/issue1937/trim_n0_l1_big_h6500_F01-2020.pdf",
+      "pdf_sha256": "64cc48388543e1457c083e4a548804f2d9a09c4c0d04617b89a01c98f26b90f9",
+      "compat": "2022",
+      "fixed_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "trim_n1_F01",
+      "input": "/home/tsjang/rhwp/samples/issue1937/trim_n1_F01.hwpx",
+      "input_sha256": "ede86f80f03339c2336b2d5f181b03c58670c294ca81f8a197fb60a9999d07b5",
+      "pdf": "/home/tsjang/rhwp/pdf/issue1937/trim_n1_F01-2020.pdf",
+      "pdf_sha256": "ea8e29b1962aea890cae27ad03115449efd133edab54c73e21257cce0f8dd2b1",
+      "compat": "2022",
+      "fixed_tsv_sha256": "58f2cff4ab75116b942767733afbb89c69def04b1a330b76ba1d3c608b758538",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 99.24286,
+          "candidate": 99.24286
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "trim_n1_F04",
+      "input": "/home/tsjang/rhwp/samples/issue1937/trim_n1_F04.hwpx",
+      "input_sha256": "94c7824e93fb0c2b269cd7d7a662084fe0218126420af0a539d01a006f05091d",
+      "pdf": "/home/tsjang/rhwp/pdf/issue1937/trim_n1_F04-2020.pdf",
+      "pdf_sha256": "1a6bf60a6d6628d466db701017c5ab6a82003fa656f396cfcdd76be2f9093014",
+      "compat": "2022",
+      "fixed_tsv_sha256": "b4f6a2ebbf7e909e61d01398ddc9a2a8ff0e7b97e180027207ace519d8c74915",
+      "pages": [
+        {
+          "page": 1,
+          "prior": 99.21161,
+          "candidate": 99.21161
+        },
+        {
+          "page": 2,
+          "prior": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    }
+  ]
+}

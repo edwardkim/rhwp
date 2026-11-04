@@ -1,0 +1,138 @@
+{
+  "source": "695cea7b973fc54fc5ffc7f6d414f7ecf403b882",
+  "upstream_devel": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "scope": "S06 first execution-backed MD05 audit and correction planning; no product fix or complete MD05 signoff",
+  "audit_probes_passed": true,
+  "product_source_changed": false,
+  "product_dependency_lock_changed": false,
+  "new_rendering_baselines_or_tests": false,
+  "untrusted_pdf_official_support_ready": false,
+  "pr_submission_ready": false,
+  "confirmed_font_accounting_findings": [
+    "Type1 custom map 3 entries accepted at cap 1",
+    "Simple CFF byte/GID map 3 entries accepted at cap 1",
+    "CID CFF map 1001 entries accepted at cap 1",
+    "256 Unicode memo entries and copied strings without decoded charge; cached result after sticky failure in direct backend API"
+  ],
+  "preserved_contracts": [
+    "budgeted CID widths reject and keep output",
+    "document wrappers see sticky failure",
+    "same-request fonts shared, separate-request fonts/memos separated",
+    "Linux AS/CPU/wall/output enforcement and healthy followup",
+    "actual CLI env allowlist",
+    "actual Worker/Studio failure preserves prior document; deadline recovers via new Worker"
+  ],
+  "jpeg": {
+    "cases_per_backend": 52,
+    "normal_decodes_per_backend": 46,
+    "matched_decoder_rejections_per_backend": 6,
+    "worker_h_calls_per_backend": 106,
+    "capacity_growth_requirements_per_backend": 10,
+    "native_wasm_pixel_and_branch_results_equal": true,
+    "allocation_byte_counts_platform_dependent": true,
+    "platform_difference_example": {
+      "input": "baseline-1x1-s0.jpg",
+      "native_charged_bytes": 1875,
+      "wasm_charged_bytes": 1527,
+      "cause": "component Vec reserves size_of(Components); pointer/usize layout differs between x86_64 and wasm32"
+    },
+    "growth_specific_reservation_denial_passed": true,
+    "minimum_independent_reference_rgb": [
+      0,
+      0,
+      0
+    ],
+    "note": "6 mixed progressive inputs pass djpeg but fail both unmodified and observer decoders before H; keep compatibility limitation open, not a trap or successful decode."
+  },
+  "commands": [
+    {
+      "command": "cargo build --manifest-path output/pr-review/issue8174/v2-s06-20261025/probe/Cargo.toml --profile release-test --locked",
+      "exit": 0
+    },
+    {
+      "command": "target/pr-review/release-test/issue8174-md05-audit inputs/type1-three-mappings.pdf inputs/cff-simple-four-glyphs.pdf inputs/cff-cid-1001-glyphs.pdf (cwd output/pr-review/issue8174/v2-s06-20261025)",
+      "exit": 0
+    },
+    {
+      "command": "python3 output/pr-review/issue8174/v2-s06-20261025/cli_audit.py",
+      "exit": 0
+    },
+    {
+      "command": "node output/pr-review/issue8174/v2-s06-20261025/browser-audit.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node output/pr-review/issue8174/v2-s06-20261025/studio-audit.mjs",
+      "exit": 0
+    },
+    {
+      "command": "python3 output/pr-review/issue8174/v2-s06-20261025/env_audit.py",
+      "exit": 0
+    },
+    {
+      "command": "cargo build --manifest-path output/pr-review/issue8174/v2-s06-20261025/jpeg-probe/Cargo.toml --profile release-test --locked",
+      "exit": 0
+    },
+    {
+      "command": "target/pr-review/release-test/issue8174-jpeg-audit <52 JPEG paths>",
+      "exit": 0
+    },
+    {
+      "command": "wasm-pack build --target web --out-dir ../jpeg-wasm --out-name jpeg_audit --release -- --locked (cwd jpeg-probe)",
+      "exit": 0
+    },
+    {
+      "command": "node output/pr-review/issue8174/v2-s06-20261025/jpeg-browser.mjs",
+      "exit": 0
+    },
+    {
+      "command": "cargo metadata --locked --format-version 1 --filter-platform x86_64-unknown-linux-gnu --features native-skia",
+      "exit": 0
+    },
+    {
+      "command": "cargo metadata --locked --format-version 1 --filter-platform wasm32-unknown-unknown",
+      "exit": 0
+    }
+  ],
+  "cargo_environment": {
+    "target_dir": "/home/edward/mygithub/rhwp/target/pr-review",
+    "jobs": 4,
+    "sequential": true
+  },
+  "unresolved": [
+    "B01/B02 font accounting corrections",
+    "B03/B04 remaining clone/index/frontend/core/serialization allocation correction and execution coverage",
+    "6 mixed progressive JPEG compatibility rejections",
+    "Native filesystem/network confinement and supported-platform validation",
+    "synchronous main-thread reopen and browser memory boundaries",
+    "chacha20 narrow lock update plus compatibility validation",
+    "MD01/MD08/MD09 decisions and actual registry publication"
+  ],
+  "document_checks": {
+    "markdown_files_checked": [
+      "mydocs/working/task_m100_8174_v2_stage6.md",
+      "mydocs/plans/task_m100_8174_impl.md",
+      "mydocs/plans/task_m100_8174_maintainer_decisions.md",
+      "mydocs/plans/task_m100_7911_backlog.md",
+      "mydocs/manual/security_feature_limits.md",
+      "mydocs/tech/investigations/issue-8174/README.md",
+      "mydocs/pr/assets/issue8174/v2-s06/README.md"
+    ],
+    "links_exit": 0,
+    "targeted_metadata_files": [
+      "mydocs/manual/security_feature_limits.md",
+      "mydocs/tech/investigations/issue-8174/README.md"
+    ],
+    "targeted_metadata_errors": 0,
+    "existing_global_metadata_errors": 20,
+    "existing_global_metadata_error_files": [
+      "mydocs/tech/benchmark_vs_alternatives.md",
+      "mydocs/tech/investigations/issue-5511/README.md",
+      "mydocs/tech/investigations/issue-4964/README.md",
+      "mydocs/tech/native_skia_region.md",
+      "mydocs/tech/investigations/issue-5511/task_m100_5511_cli_surface_inventory.md"
+    ],
+    "existing_error_files_identical_to_start": true,
+    "recorded_results_and_24_source_hashes_verified": true
+  }
+}

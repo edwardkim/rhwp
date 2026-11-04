@@ -1,0 +1,782 @@
+{
+  "date": "2026-10-29",
+  "scope": "측정 근거 정리 이전 부모부터 이 시점 HEAD까지 차이가 있는 Rust 검사 26개 파일",
+  "base_commit": "385310cc2a1d4e313095621be36b891d604813c2",
+  "audited_head": "6e6d7e93bcd700177ae48f58b48d49321aa793e7",
+  "file_count": 26,
+  "checks": [
+    "첫 줄의 검사 유형",
+    "합성 ZIP 검사 외 측정·raw·96dpi 기재",
+    "첫 주석의 정식 근거 경로 존재와 Git 추적",
+    "합성 ZIP 검사 외 날짜·Native·WASM·전체 쪽·최저 수치 표기"
+  ],
+  "limitations": [
+    "파일별 의미와 측정의 적합성, 좌표 고정 검사 범위 및 테스트 통과를 이 기계적 검사만으로 판정하지 않는다.",
+    "수정된 문서의 점수는 원본 점수로 대신하지 않는다.",
+    "합성 ZIP 바이트 비교에는 문서 Print 측정치가 없다."
+  ],
+  "files": [
+    {
+      "file": "tests/cases/bindata_save_passthrough.rs",
+      "sha256": "d1783aeb7b7add482488a70a541a017af8004618f5681f9af59c69e86e446acc",
+      "type_header": "//! 검사 유형: 관계형.",
+      "header": [
+        "//! 검사 유형: 관계형.",
+        "//! 2026-10-28 원본 측정 raw(96dpi, PDFium): exam_kor.hwp 1쪽 Native 99.69502% / fresh WASM 99.70440%; 전20쪽 최저 96.74140% / 96.66238%.",
+        "//! 저장 스트림의 원본·저장본 비교이며 그림 교체본의 시각 측정값은 아니다.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/header-evidence-ted3-matrix.json."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/header-evidence-ted3-matrix.json"
+      ],
+      "test_annotations": 2,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/captioned_float_table_stored_frame.rs",
+      "sha256": "f2ba075d18e0fcf59a240bd3c2c4be287829cda3bb3b60ec6fbfeb938d207005",
+      "type_header": "//! 검사 유형: 관계형.",
+      "header": [
+        "//! 검사 유형: 관계형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium):",
+        "//! caption-negative-offset.hwp: 1쪽 Native 97.67543% / fresh WASM 97.67277%; 전2쪽 최저 97.67543% / 97.67277%.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.",
+        "//!",
+        "//! 위 캡션을 단 문단 기준 자리차지 표(빈 호스트, 음수 세로 오프셋)의 저장 프레임.",
+        "//!",
+        "//! 위 캡션 흐름 표의 음수 오프셋은 이미 받은 흐름 원점 앞으로 상자를 올리지 못해 출력에서",
+        "//! 0 이다. 저장 빈 호스트 프레임 판정이 같은 흐름 오프셋을 써야 저장 원점(앞 글줄 전진",
+        "//! 끝에 바깥 위 여백을 더한 자리)을 받는다. 종전에는 원래 오프셋으로 프레임을 기각해 흐름 배치가 바깥",
+        "//! 위 여백만큼 표를 위에 그렸다.",
+        "//!",
+        "//! 입력 `samples/caption-float-frame/caption-negative-offset.hwp` 는 1342000-202300055",
+        "//! 41쪽(표 11)을 발췌해 한/글 2020 으로 저장한 원본이다. 기대값은 같은 저장본의 한/글",
+        "//! 2020 Print PDF(`pdf/caption-float-frame/caption-negative-offset-2020.pdf`)와 대조했다(1쪽",
+        "//! Native 97.55·fresh WASM 97.74). 98% 미만이라 px 를 고정하지 않고 원본 단위의 관계를",
+        "//! 검사한다: 캡션 줄은 호스트 저장 줄 원점(vpos 10400 HU) + 바깥 위 여백(283 HU)에서",
+        "//! 시작하고(한/글 Print 캡션 위 274.4px), 표 본체는 캡션 아래에 놓인다."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json"
+      ],
+      "test_annotations": 1,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/continuation_stored_reset_own_notes.rs",
+      "sha256": "dd87c35b77d8a77cccb3de4e13e9dbf705249233015abd7e0a9103829478fa47",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium):",
+        "//! cont_reset_F20_L70_N0.hwp: 2쪽 Native 100.00000% / fresh WASM 100.00000%; 3쪽 Native 100.00000% / fresh WASM 100.00000%; 전3쪽 최저 100.00000% / 100.00000%.",
+        "//! cont_reset_F20_L70_N4.hwp: 2쪽 Native 99.99600% / fresh WASM 99.99287%; 3쪽 Native 100.00000% / fresh WASM 100.00000%; 전3쪽 최저 99.99600% / 99.99287%.",
+        "//! cont_reset_F20_L70_N6.hwp: 2쪽 Native 100.00000% / fresh WASM 99.99127%; 3쪽 Native 100.00000% / fresh WASM 100.00000%; 전3쪽 최저 100.00000% / 99.99127%.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.",
+        "//! 2쪽 마지막 본문 글줄의 독립 Print 좌표: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/continuation-pdf-coordinates.json.",
+        "//!",
+        "//! 한 문단이 세 쪽에 걸칠 때 둘째 쪽(이어지는 조각)의 저장 쪽 reset — 자기 각주가 있는 경우.",
+        "//!",
+        "//! 입력은 `samples/continuation_reset/gen_continuation_reset.py` 로 만든 HWPX 를 한/글 2020 이",
+        "//! 다시 저장한 HWP 다(저장 줄·쪽 reset 은 한/글이 쓴 값). 긴 문단(67줄)의 23줄째와 59줄째(N4)·",
+        "//! 56줄째(N6)에 `vpos=0` reset 이 있고, 둘째 쪽 줄에 그 문단 자기 각주가 4·6개 있다. 한/글 2020",
+        "//! Print(`pdf/continuation_reset/*-2020.pdf`)는 셋째 쪽을 그 reset 줄부터 시작한다.",
+        "//!",
+        "//! 수정 전 rhwp 는 첫 reset(23줄)만 쪽 경계로 쓰고, 이어지는 쪽은 각주를 빼지 않은 본문 전체를",
+        "//! 예산으로 23–66줄을 한 쪽에 넣어 각주 영역과 겹쳤다. 각주 없는 같은 문단(N0)은 둘째 reset 이",
+        "//! 없어 바뀌지 않는다."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/continuation-pdf-coordinates.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json"
+      ],
+      "test_annotations": 2,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/equation_render_cache_contract.rs",
+      "sha256": "5d8a76df6391be299a4a2d5995dae278dc0a7261ce802dc933c670b945f1bdb7",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium):",
+        "//! equation-lim.hwp: 1쪽 Native 99.88926% / fresh WASM 100.00000%; 전1쪽 최저 99.88926% / 100.00000%.",
+        "//! 3-11월_실전_통합_2022.hwp: 1쪽 Native 98.71272% / fresh WASM 98.70189%; 21쪽 Native 90.80955% / fresh WASM 90.84255%; 전21쪽 최저 90.80955% / 90.84255%.",
+        "//! equation-lim.hwp의 수식 `+ 1` 편집·저장본: 1쪽 Native 99.89669% / fresh WASM 100.00000%; 전1쪽 최저 99.89669% / 100.00000%.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.",
+        "//! 수식 편집본의 독립 Print와 좌표: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/equation-edited-print-evidence.json.",
+        "//!"
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/equation-edited-print-evidence.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json"
+      ],
+      "test_annotations": 3,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/hwpx_bindata_save_passthrough.rs",
+      "sha256": "8fdb09e0ea95f3a24cbc32e033d4252c2058c7bde231f1498c855e0436a0460a",
+      "type_header": "//! 검사 유형: 관계형.",
+      "header": [
+        "//! 검사 유형: 관계형.",
+        "//! 2026-10-28 원본 측정 raw(96dpi, PDFium): exam_kor.hwp 1쪽 Native 99.69502% / fresh WASM 99.70440%; 전20쪽 최저 96.74140% / 96.66238%.",
+        "//! exam_kor.hwpx 1쪽 Native 99.69179% / fresh WASM 99.70186%; 전20쪽 최저 96.65339% / 96.56449%.",
+        "//! 저장 스트림의 원본·저장본 비교이며 그림 교체본의 시각 측정값은 아니다.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/header-evidence-ted3-matrix.json."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/header-evidence-ted3-matrix.json"
+      ],
+      "test_annotations": 3,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/hwpx_precompressed_entry.rs",
+      "sha256": "4490dc140d961be05f1b8b37ceaf32e25ab82726dda8a988349d9b285b2f507e",
+      "type_header": "//! 검사 유형: 고정형(바이트). 합성 ZIP 엔트리 검사로 원본 문서·쪽·시각 측정 대상이 없다.",
+      "header": [
+        "//! 검사 유형: 고정형(바이트). 합성 ZIP 엔트리 검사로 원본 문서·쪽·시각 측정 대상이 없다.",
+        "//! 미리 deflate 한 데이터로 쓴 HWPX ZIP 엔트리는, 같은 압축 바이트라면 일반 경로로 쓴",
+        "//! 엔트리와 바이트 단위로 같다(결정론 메타데이터 — mtime·호스트·권한 — 를 공유)."
+      ],
+      "evidence_paths": [],
+      "test_annotations": 1,
+      "synthetic_zip_exception": true
+    },
+    {
+      "file": "tests/cases/issue_4068_column_top_table_outer_margin.rs",
+      "sha256": "796d1b0c918ff7a7bf998fd232c2cfbf5c3a47f41a25ba965d7d9b2419b7db04",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium):",
+        "//! pic-in-table-with-toggle.hwp: 1쪽 Native·fresh WASM 각 100.00000%; 전1쪽 최저 각 100.00000%.",
+        "//! 정책연구용역사업 중간진도보고서 HWP: 24쪽 Native 96.57615% / fresh WASM 96.62165%; 전215쪽 최저 59.29844% / 58.93395%.",
+        "//! 2912695_civil_petition_form.hwp: 2쪽 Native·fresh WASM 각 100.00000%; 전2쪽 최저 각 100.00000%.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/header-evidence-ted3-matrix.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.",
+        "//! 독립 Print 표 경계: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/outer-margin-pdf-boundaries.json.",
+        "//!",
+        "//! [Issue #4068] 단 맨 위에 선 문단 기준 자리차지 표는 테두리를 바깥 여백",
+        "//! (`outMargin.top`) 아래에 그린다.",
+        "//!",
+        "//! 이슈의 \"셀 안 부동 그림이 한/글보다 4~6px 위\" 잔여는 그림이 아니라 표 테두리가",
+        "//! 바깥 위 여백만큼 위에 있던 결과다. 세 형상을 한/글 정본으로 고정한다.",
+        "//!",
+        "//! | 형상 | 표본 | 정본 |",
+        "//! | --- | --- | --- |",
+        "//! | 구역 첫 문단 앵커 | `pic-in-table-with-toggle.hwp` 1쪽 | 표 윗변 = 본문 + 원본 위 여백, 뒤 그림은 표 아래 + 원본 아래 여백 |",
+        "//! | 앞 쪽에서 넘어온 표 | `정책연구용역사업 중간진도보고서…` 24쪽 | 이전 단 vOff를 버리고 본문 + 원본 위 여백 |",
+        "//! | 같은 쪽 둘째 표 | `2912695_civil_petition_form.hwp` 2쪽 | 첫 표의 원본 위 여백 적용, 둘째 표는 저장 흐름 유지 |",
+        "//!",
+        "//! 절대 좌표 대신 같은 쪽 노드 사이의 관계(본문 윗변·앞 표 아랫변·뒤 그림)를 잰다."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/header-evidence-ted3-matrix.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/outer-margin-pdf-boundaries.json"
+      ],
+      "test_annotations": 3,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/issue_4068_unclipped_cell_honors_valign.rs",
+      "sha256": "5b88a9eaeb897a280428d272473478a1325bac17d2891b28e9643065f0456009",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium):",
+        "//! hwpx_sample2.hwp: 19쪽 Native 99.91241% / fresh WASM 99.94545%; 전29쪽 최저 96.12298% / 95.97915%.",
+        "//! issue2007_nested_cell_pagination_42065.hwp: 11쪽 Native 98.82265% / fresh WASM 98.87353%; 전17쪽 최저 94.47057% / 94.39749%.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/sample2-ted3-visual-evidence.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.",
+        "//! 19쪽 독립 Print 글줄 좌표: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/sample2-p19-pdf-coordinates.json.",
+        "//!",
+        "//! [Issue #4068] **안 잘린 중첩 칸이 선언된 세로 정렬을 잃는다.**",
+        "//!",
+        "//! `table_layout.rs` 의 `effective_valign` 은 네 가지 잘림 조건에서 `Top` 으로 수렴한다.",
+        "//! 그중 `cell_clipped_by_parent_viewport` 는 호출자가 넘긴 `col_area` 로 잘림을",
+        "//! 판정하는데, 그 값은 직전 조각까지 품은 채 올 수 있다(그 자리 주석이 이미 적어 둔",
+        "//! 사실이다). 그래서 **페이지 안에 온전히 들어간** 칸까지 \"잘렸다\"고 오판했다.",
+        "//!",
+        "//! ```text",
+        "//!   hwpx_sample2 19쪽 · 중첩 표 1행×2열 · 두 칸 모두 선언 valign=Center",
+        "//!     셀 961.80..1063.40 · page bbox 0.00..1122.50   → 실제로는 안 잘린다",
+        "//!     그런데 parentvp=true 로 Top 강제",
+        "//! ```",
+        "//!",
+        "//! 결과는 칸 내용이 정렬 몫만큼 위로 붙는 것이다. 한/글 정본(engine 2020) PDF 와",
+        "//! 베이스라인끼리 직접 대면 이렇게 나온다 — 같은 쪽 첫 줄이 Δ+0.03px 로 떨어지므로",
+        "//! 이 계기 자체는 검증돼 있다.",
+        "//!",
+        "//! ```text",
+        "//!   글자 칸 베이스라인   수정 전 Δ +9.99px  →  수정 후 Δ +8.11px",
+        "//! ```",
+        "//!",
+        "//! 고친 것은 술어에 **실제 클립(page bbox)** 한 항을 더한 것뿐이다. 안 잘린 칸은",
+        "//! 잘림 수렴의 대상이 아니다.",
+        "//!",
+        "//! ⚠ 이 수정은 `#4068` 의 그림 dy 를 **움직이지 않는다.** 그림 칸은 내용 높이가",
+        "//! 안높이보다 커서 정렬 몫이 0 이다(아래 `the_cell_without_alignment_slack_stays_put`",
+        "//! 가 그것을 잠근다). 이 시험이 잠그는 것은 \"칸 정렬 오판\" 하나다.",
+        "//!",
+        "//! 선언 정렬, 여유 없는 칸, 실제 부모 잘림과 온전한 continuation 칸을 각각 검사한다.",
+        "//! 과거 잘림 핀 대신 독립 Print가 보존한 원본 정렬·내용 포함 관계를 보호한다."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/sample2-p19-pdf-coordinates.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/sample2-ted3-visual-evidence.json"
+      ],
+      "test_annotations": 5,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/issue_7445_biotoxin_source_ownership.rs",
+      "sha256": "c4506b31e605df3c4abf4b87aa06e0da238b568a43b63e3ed67e816b20183874",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-24 측정 raw(96dpi, PDFium, source 1f54c3df):",
+        "//! 55쪽 Native 100.00000% / fresh WASM 100.00000%; 63쪽 Native 99.95399% / fresh WASM 99.95399%.",
+        "//! 125쪽 Native 100.00000% / fresh WASM 100.00000%; 143쪽 Native 100.00000% / fresh WASM 100.00000%.",
+        "//! 146쪽 Native 100.00000% / fresh WASM 100.00000%; 147쪽 Native 100.00000% / fresh WASM 100.00000%.",
+        "//! 148쪽 Native 100.00000% / fresh WASM 100.00000%; 154쪽 Native 100.00000% / fresh WASM 100.00000%.",
+        "//! 155쪽 Native 99.98997% / fresh WASM 99.98995%; 168쪽 Native 100.00000% / fresh WASM 100.00000%.",
+        "//! 172쪽 Native 100.00000% / fresh WASM 100.00000%.",
+        "//! 전205쪽 최저 Native 98.42761% / fresh WASM 98.42748%.",
+        "//! 근거: mydocs/pr/assets/issue7445/completed-20261009/final-20261024/README.md.",
+        "//!",
+        "//! #7445 지정 댓글의 생물독 원본: 독립 PDF 205쪽 전수 시각 수용 후 복구한 회귀.",
+        "//! C84 Native/fresh WASM 전205쪽96DPI raw 최저97.13499/97.13158%, 미달0.",
+        "//! 원본 셀·문단·그림의 소속, 내용 보존과 상대 배치를 검사하고, 양쪽98% 이상인",
+        "//! 중요한 그림 경계만 독립 Print의 ±2 CSSpx로 보호한다. 출처는",
+        "//! completed-20261009/regression-policy-20261015/gray-grid-raster-20261017/README.md."
+      ],
+      "evidence_paths": [
+        "mydocs/pr/assets/issue7445/completed-20261009/final-20261024/README.md"
+      ],
+      "test_annotations": 9,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "sha256": "a92e4c30107e7ee266159372e327f50d9bf930e10668e326d2302e34586b3c38",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium):",
+        "//! trim_n0_F02.hwpx: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 전2쪽 최저 100.00000% / 100.00000%.",
+        "//! trim_n0_h6630_F02.hwpx: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 전2쪽 최저 100.00000% / 100.00000%.",
+        "//! trim_n0_h6660_F02.hwpx: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 전2쪽 최저 100.00000% / 100.00000%.",
+        "//! trim_n0_l1_big_h6500_F01.hwpx: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 전2쪽 최저 100.00000% / 100.00000%.",
+        "//! trim_n1_F01.hwpx: 1쪽 Native 99.24286% / fresh WASM 99.22884%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 전2쪽 최저 99.24286% / 99.22884%.",
+        "//! trim_n1_F04.hwpx: 1쪽 Native 99.21161% / fresh WASM 99.19721%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 전2쪽 최저 99.21161% / 99.19721%.",
+        "//! issue1937_rowbreak_footnote_overpagination.hwp: 32쪽 Native 99.99238% / fresh WASM 99.99242%; 33쪽 Native 99.95598% / fresh WASM 99.94937%; 44쪽 Native 99.86042% / fresh WASM 99.85697%; 45쪽 Native 99.99757% / fresh WASM 99.98557%; 전50쪽 최저 97.93136% / 97.80027%.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.",
+        "//! 2쪽 이어지는 표 경계의 독립 Print 좌표: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/trim-continuation-pdf-boundaries.json.",
+        "//! 실물 32·33쪽 표 경계: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue1937-table-pdf-coordinates.json.",
+        "//!",
+        "//! [#7732] 쪽 나눔(RowBreak) 표의 쪽 끝 행 — 각주 경계와 빈 잔여.",
+        "//!",
+        "//! 한/글 2020·2024 Print(합성 `samples/issue1937/gen_row_trim.py`, 한 줄 내용에 선언 높이만 큰",
+        "//! 행)에서 확인한 두 규칙을 잠근다.",
+        "//!",
+        "//! 1. 표에 자기 각주가 없고 이 쪽의 각주가 이미 정해졌으면 행을 각주 구분선 바로 위까지",
+        "//!    놓는다(40px 여유 없음). `trim_n1_*`: 표 하단 993.3px · 구분선 1005.9px.",
+        "//! 2. 쪽 끝 행의 내용이 이 쪽에서 끝나면, 남는 선언 높이가 1282HU(17.1px, 10pt + 위아래",
+        "//!    기본 안 여백) 이하일 때 다음 쪽에 이어받지 않고 버린다. 그보다 크면 빈 띠로 이어받는다.",
+        "//!    경계는 글자 크기·칸 안 여백·내용 줄 수와 무관하다(20pt 에서도 19.9px 는 이어받는다).",
+        "//!",
+        "//! ```text",
+        "//!   입력                          정본(2020)                  1쪽 끝 행 · 2쪽 시작",
+        "//!   trim_n0_F02                   잔여 11.9px 버림            R10 · R11",
+        "//!   trim_n0_h6630_F02             잔여 16.0px 버림            R09 · R10",
+        "//!   trim_n0_h6660_F02             잔여 19.9px 이어받음        R09 · R09(이어받기)",
+        "//!   trim_n0_l1_big_h6500_F01      20pt, 잔여 19.9px 이어받음  R09 · R09(이어받기)",
+        "//!   trim_n1_F01                   쪽 각주, R10 을 나눠 놓음    R10 · R10(이어받기)",
+        "//!   trim_n1_F04                   쪽 각주, 잔여 6.7px 버림    R09 · R10",
+        "//! ```",
+        "//!",
+        "//! 실물: `samples/issue1937_rowbreak_footnote_overpagination.hwp` 32쪽 표(pi=300)는 정본처럼",
+        "//! 행 0–4 를 싣고(행 4 는 선언 131.6px 중 125.3px 만) 33쪽은 행 5 부터 시작한다. 수정 전에는",
+        "//! 첫 조각이 행 0–3 이라 33–43쪽이 한 행씩 밀렸다.",
+        "//!",
+        "//! 문단 흐름도 같은 각주 경계를 쓴다(40px 여유 없음). 그러면 문단 자기 각주의 앵커 줄이",
+        "//! 저장 쪽 경계 바로 앞에 있을 때 그 각주를 줄 단위로 이어 놓는 한/글 규칙이 드러난다",
+        "//! (44쪽 pi=340·44), 아래 마지막 검사)."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue1937-table-pdf-coordinates.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/trim-continuation-pdf-boundaries.json"
+      ],
+      "test_annotations": 7,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/issue_7732_split_table_cell_footnotes.rs",
+      "sha256": "726a4ac3ec7cc3235fddb5a604b582dbec66d8ac13fe3eb014e2a1c4057416f6",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium):",
+        "//! cellnotes_plain_N2_L7.hwpx: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 11쪽 Native 98.43063% / fresh WASM 98.60333%; 전11쪽 최저 98.43063% / 98.60333%.",
+        "//! cellnotes_span_N2.hwpx: 1쪽 Native 96.95701% / fresh WASM 96.92720%; 2쪽 Native 98.80823% / fresh WASM 98.96267%; 전2쪽 최저 96.95701% / 96.92720%.",
+        "//! r110_cellnotes_span_N2.hwpx: 1쪽 Native 96.95701% / fresh WASM 96.92720%; 3쪽 Native 98.16845% / fresh WASM 98.40227%; 전3쪽 최저 96.95701% / 96.92720%.",
+        "//! issue1937_rowbreak_footnote_overpagination.hwp: 35쪽 Native 99.99617% / fresh WASM 99.99621%; 41쪽 Native 99.99919% / fresh WASM 99.99595%; 42쪽 Native 100.00000% / fresh WASM 100.00000%; 전50쪽 최저 97.93136% / 97.80027%.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.",
+        "//! 표 조각의 독립 Print 경계: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/cellnotes-pdf-boundaries.json.",
+        "//! 실물 35쪽 표 경계: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue1937-table-pdf-coordinates.json.",
+        "//!",
+        "//! [#7732] 여러 쪽에 걸친 쪽 나눔 표의 칸 각주 — 행을 줄이지 않는다.",
+        "//!",
+        "//! 한/글 2020·2024 Print(합성 `samples/issue1937/gen_cell_notes_multipage.py`, 각주 앵커가 첫 쪽",
+        "//! 행에 있는 2열 표)는 칸 각주 때문에 행을 줄이지 않는다. 각주는 조각 뒤 남는 공간이나 표가",
+        "//! 끝나는 쪽에 놓이고, 첫 쪽은 행으로 본문 바닥까지 찬다. 병합 칸 유무와 무관하다.",
+        "//!",
+        "//! ```text",
+        "//!   입력                          정본 쪽별 행            각주",
+        "//!   cellnotes_span_N2             R00–R44 · R45–R69       1)–3) 2쪽",
+        "//!   r110_cellnotes_span_N2        R00–R44 · R45–R90 · …   1)–4) 3쪽",
+        "//!   cellnotes_plain_N2_L7         행마다 7줄, 쪽 끝 행을 줄 단위로 자른다",
+        "//! ```",
+        "//!",
+        "//! 쪽 끝에서 자른 행의 마지막 줄은 뒤 줄간격 없이 계상한다. 칸 첫 문단에 각주가 있어도 같다.",
+        "//!",
+        "//! 실물: `samples/issue1937_rowbreak_footnote_overpagination.hwp` 35쪽 122행 표(pi=306)는 각주",
+        "//! 18)–40) 앵커가 35–41쪽 행에 있지만 정본은 35쪽을 9번 행까지 채우고 각주를 42·43쪽에 둔다.",
+        "//! 수정 전에는 첫 조각이 표 각주 전체를 예약해 35쪽이 행 0–7 에서 끝났다."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/cellnotes-pdf-boundaries.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue1937-table-pdf-coordinates.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json"
+      ],
+      "test_annotations": 4,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/issue_7998_pdf_inferred_gap_tabs.rs",
+      "sha256": "51265d76f9e4d76ad249d7884161432cd7e828b19dbcd1f266a78f86b3cf9e59",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium, PDF fidelity 가져오기): 6778-square-2020.pdf 5쪽 Native 99.89992% / fresh WASM 99.94753%, 7쪽 99.98428% / 99.96873%, 9쪽 99.85585% / 99.98492%, 10쪽 99.76329% / 99.80875%; 전12쪽 최저 99.12224% / 98.95404%.",
+        "//! body-gap-tab.pdf 1쪽 Native·fresh WASM 각 100.00000%; 전1쪽 최저 각 100.00000%.",
+        "//! 수치는 원본 PDF 전체를 그대로 가져온 출력이며 이후 편집·저장·재열기 결과의 측정이 아니다.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf-gap-visual-evidence.json.",
+        "//!",
+        "//! Independent source gaps stay editable, without rewriting authored spaces."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf-gap-visual-evidence.json"
+      ],
+      "test_annotations": 4,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/issue_8149_empty_host_float_page_bottom.rs",
+      "sha256": "b232547285ecda82d6e51bdd1863cdbd98764eb9ea820edc9da0032fd478f7b1",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium):",
+        "//! rowfit-2020.hwp: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 33쪽 Native 100.00000% / fresh WASM 100.00000%; 전33쪽 최저 100.00000% / 100.00000%.",
+        "//! reservefit-2020.hwp: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 65쪽 Native 100.00000% / fresh WASM 100.00000%; 전65쪽 최저 100.00000% / 100.00000%.",
+        "//! headerrow-2020.hwp: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 31쪽 Native 100.00000% / fresh WASM 100.00000%; 전31쪽 최저 100.00000% / 100.00000%.",
+        "//! 한글문서파일형식_5.0_revision1.3.hwp: 20쪽 Native 99.99560% / fresh WASM 99.92004%; 24쪽 Native 99.99751% / fresh WASM 99.99752%; 전71쪽 최저 95.31577% / 95.19516%.",
+        "//! hwpspec.hwp: 23쪽 Native 99.99389% / fresh WASM 99.79148%; 54쪽 Native 99.99765% / fresh WASM 99.99765%; 전178쪽 최저 92.45593% / 92.83271%.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.",
+        "//!",
+        "//! #8149 쪽 바닥에서 나뉘는 빈 host 문단 기준 자리차지 표 — 첫 조각에 실리는 행과 다음 쪽 행.",
+        "//!",
+        "//! 독립 기준은 같은 HWP 의 한/글 2020 Print PDF(`pdf/issue8149/*-2020.pdf`)다. 생성기는",
+        "//! `samples/issue8149/gen_*.py` 이며, 아래 기대 행 구간은 PDF 본문 글자(`Rxx 행N`)에서 쪽마다 읽었다.",
+        "//! - `rowfit`: 아래 캡션 유무 × 바깥 아래 여백(1984/0HU) × 행 높이(1300~1900HU) 16사례.",
+        "//!   한/글은 첫 조각 아래에 `바깥 아래 여백 + 아래 캡션` 을 남긴다.",
+        "//! - `reservefit`: 같은 표를 같은 자리에 두고 바깥 아래 여백만 0..3000HU(200HU 간격) × 캡션 유무 32사례.",
+        "//!   예약이 여백에 2.7px 단위로 따라 움직이는지(한 행 줄어드는 문턱) 본다.",
+        "//! - `headerrow`: 제목 줄 반복 × 첫 행 제목 칸 × 채움 줄 15사례. 한/글은 제목 행만 쪽 끝에 남기는",
+        "//!   분할도 한다(H03·H08·H13). 남은 칸이 첫 행보다 작으면 표 전체가 다음 쪽으로 간다(H04 등).",
+        "//!",
+        "//! 검사는 쪽 소속(어느 행이 어느 쪽에 있나)·누락·중복이다. 좌표는 고정하지 않는다."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json"
+      ],
+      "test_annotations": 9,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/issue_8167_tac_shape_insert_line.rs",
+      "sha256": "6faf252302e46f66b69b463ac3dc7b6953b33c58078958cbc258f8973eb6d36d",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium): tac_rectangle_inline.hwpx와 tac_textbox_inline.hwpx는 각각 1쪽 Native·fresh WASM 100.00000%; 전1쪽 최저도 각 100.00000%.",
+        "//! 실제 fixture와 생성 문서의 도형 배치를 비교한다. 도형이 없는 대조군은 별도의 합성 입력이다.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue8167-pdf-coordinates.json.",
+        "//!",
+        "//! [#8167] 편집으로 넣은 글자처럼 취급 도형은 자기 줄을 도형 높이만큼 키우고, 줄의 글자는",
+        "//! 그 줄의 기준선(도형 아래 변 쪽)에 놓인다.",
+        "//!",
+        "//! 결함 두 겹:",
+        "//! 1. `create_shape_control_native` 가 글자처럼 취급 도형을 넣고 host 문단의 줄을 다시 나누지",
+        "//!    않았다. 저장 줄이 글자 높이(1000HU)로 남아 도형이 줄 위(본문 위 여백)로 넘쳐 그려졌다.",
+        "//! 2. 본문의 «도형 + 글자» 줄은 줄 높이·기준선을 글자 크기로 접어, 줄을 다시 나눠도 글자가",
+        "//!    줄 맨 위 글자 높이 자리에 남았다.",
+        "//!",
+        "//! 독립 기준: 같은 편집을 저장한 HWPX 를 한/글 2024(13.0.0.564) Print 로 출력하면, 글상자·",
+        "//! 사각형·글자처럼 취급 그림 세 경우 모두 줄이 도형 높이만큼 내려가고 앞뒤 글자 「앞」·「글 뒤 글」",
+        "//! 이 도형 아래 변 높이에 놓이며 「다음 문단」은 도형 아래에 온다. 입력은 이 테스트가 편집 API",
+        "//! 로 만드는 합성 문서다(저장 LineSeg 는 rhwp 재조판 결과)."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue8167-pdf-coordinates.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json"
+      ],
+      "test_annotations": 4,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/issue_8168_topandbottom_sibling_tac_picture.rs",
+      "sha256": "cb56225911dfec509edf7077ffa6a5c1980c0f95e6e3f30e6abb57b5d2b80214",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium): scenario-a-after.hwp 1쪽 Native 99.92661% / fresh WASM 99.92661%; 전1쪽 최저 각 99.92661%.",
+        "//! 메모리에서 새로 편집한 별도 입력은 위 원본과 동일한 문서가 아니다.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.",
+        "//! 실제 원본 1쪽의 독립 Print 좌표: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/scenario-a-pdf-coordinates.json.",
+        "//!",
+        "//! [#8168] 같은 문단의 위아래(TopAndBottom) 개체가 글자처럼 취급 그림을 줄 밖으로 끌어내리지 않는다.",
+        "//!",
+        "//! 결함: 문단에 글자처럼 취급 그림과 떠 있는 위아래 개체가 함께 있으면, 그림 y 에 그 개체의",
+        "//! 높이(+바깥 여백)를 무조건 더했다(#1151 보정). 그 보정의 전제는 개체가 이 문단의 흐름",
+        "//! 시작(문단 기준, 세로 오프셋 0)에 놓여 그림 줄 위를 차지하는 것이다. 종이 기준으로 줄 아래에",
+        "//! 놓인 글상자에도 적용돼, 줄의 글자는 제자리인데 그림만 글상자 자리로 내려가 겹쳤다.",
+        "//!",
+        "//! 독립 기준: 같은 편집을 저장한 HWPX 를 한/글 2024(13.0.0.564) Print 로 출력하면 「앞 [그림]",
+        "//! 글 뒤 글」이 한 줄이고, 글상자는 그 줄 아래 지정 위치에 있다. 반례: #1151 의 한/글 산출물",
+        "//! `samples/tac-verify/scenario-a-after.hwp`(문단 기준 오프셋 0 의 위아래 표 + 글자처럼 그림)는",
+        "//! 그림을 표 아래에 둔다 — 그 동작은 그대로다."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/scenario-a-pdf-coordinates.json"
+      ],
+      "test_annotations": 2,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/issue_8218_hwp3_link_bindata_order.rs",
+      "sha256": "287e52e345fbef164b03381dec1c51e2635d0cdd7144613f013204eeac56136a",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium): hwp3-sample4.hwp 1쪽 Native 64.32418% / fresh WASM 64.81033%,",
+        "//! 21쪽 Native·fresh WASM 각 100.00000%; 전36쪽 최저 64.32418% / 64.81033%.",
+        "//! 1쪽은 90% 미만이므로 관계 검사만 사용한다. 독립 Print의 21쪽 내장 그림 좌표를 고정 검사한다.",
+        "//! 연결 그림 두 개를 삽입한 비시각 합성 입력은 별도이며 원본의 측정값으로 대체하지 않는다.",
+        "//! 근거: mydocs/pr/assets/issue8219/sample4/evidence.json."
+      ],
+      "evidence_paths": [
+        "mydocs/pr/assets/issue8219/sample4/evidence.json"
+      ],
+      "test_annotations": 4,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/issue_8220_pdf_editable_layout.rs",
+      "sha256": "ca41e940721e5fcd976f6fc2519fa0d99e4f17887972fa54aa21ec8914d082d4",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-27 측정 raw(96dpi, PDFium, PDF editable 가져오기): 21_언어_기출_편집가능본-2010.pdf 7쪽 Native 99.82145% / fresh WASM 99.77620%; 전16쪽 최저 98.80885% / 98.69835%.",
+        "//! 21_언어_기출_편집가능본-2020.pdf 7쪽 99.58789% / 99.18794%; 전15쪽 최저 99.13134% / 98.69133%.",
+        "//! 21_언어_기출_편집가능본.pdf 7쪽 99.77787% / 99.73748%; 전15쪽 최저 98.51800% / 98.44191%.",
+        "//! 수치 쌍은 Native / fresh WASM이며 당시 head의 편집 전 가져오기 결과다. 편집 후 결과는 별도 문서다.",
+        "//! 2026-10-28 같은 편집을 HWP로 저장·재열기한 입력 raw(96dpi, PDFium): 4쪽 Native 65.17416% / fresh WASM 64.97946%; 전16쪽 최저 1.58239% / 1.63218%.",
+        "//! 편집 저장본 근거: mydocs/pr/assets/pr8227-editable-after-save/evidence.json. 메모리 편집의 직접 측정은 아니다.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/visual-validation.json.",
+        "//! 2010 PDF 7쪽 좌표 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf2010-exam-p7-coordinates.json.",
+        "//!",
+        "//! #8220: the editable PDF layout stores recognized body paragraphs as the",
+        "//! section's own text flow. Independent expectations: the source HWP's",
+        "//! paragraph text and the PDF's page count. Checks are relational: paragraph",
+        "//! ownership, joins across column and page boundaries, and that the renderer",
+        "//! keeps every stored row instead of breaking the text again."
+      ],
+      "evidence_paths": [
+        "mydocs/pr/assets/pr8227-editable-after-save/evidence.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf2010-exam-p7-coordinates.json",
+        "mydocs/working/assets/review_integration_20261026/validation/visual-validation.json"
+      ],
+      "test_annotations": 4,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/issue_8220_pdf_exam_paragraph_boundaries.rs",
+      "sha256": "11e623f6b684792cb7bbf578ce286f078e6957b8edb6cd29d9be8302c21c9073",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-27 측정 raw(96dpi, PDFium, PDF fidelity 가져오기): 21_언어_기출_편집가능본-2010.pdf 7쪽 Native 99.83396% / fresh WASM 99.77416%; 전16쪽 최저 98.80885% / 98.69530%.",
+        "//! 21_언어_기출_편집가능본-2020.pdf 7쪽 99.59383% / 99.19060%; 전15쪽 최저 99.22374% / 98.69112%.",
+        "//! 21_언어_기출_편집가능본.pdf 7쪽 99.77490% / 99.73443%; 전15쪽 최저 98.52190% / 98.44719%.",
+        "//! 각 수치 쌍은 Native / fresh WASM 순서이며 현재 head의 새 측정이 아닌 당시 측정이다.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/visual-validation.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/tsv/native/pdf-2010-fidelity.tsv,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/pdf-2010-fidelity.tsv.",
+        "//! 2010 PDF 7쪽 원본 글줄 좌표: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf2010-exam-p7-coordinates.json.",
+        "//!",
+        "//! #8220: untagged exam PDFs printed from one HWP. Imported body paragraphs",
+        "//! follow the author's paragraph boundaries. The independent expectation is the source",
+        "//! HWP's own paragraph text; the additional coordinate comes from the source PDF.",
+        "//!",
+        "//! Boundaries exercised here, each on real Hancom output:",
+        "//! - a short last line followed by an indented or flush next line,",
+        "//! - item markers (`①`..`⑤`) on the first-line start of hanging choices,",
+        "//! - a centered box title (`<보기>`) above a full box line whose text carries",
+        "//!   no space characters, so words end at gaps between source spans,",
+        "//! - a spanning title that abuts the two text columns,",
+        "//! - columns whose baselines are offset from each other."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf2010-exam-p7-coordinates.json",
+        "mydocs/working/assets/review_integration_20261026/validation/tsv/native/pdf-2010-fidelity.tsv",
+        "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/pdf-2010-fidelity.tsv",
+        "mydocs/working/assets/review_integration_20261026/validation/visual-validation.json"
+      ],
+      "test_annotations": 2,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/issue_8271_hwpx_reopen_tac_picture_float.rs",
+      "sha256": "39640b875f459093e4025d6644cb3e1b52ec85acab2e6803c412fc68c85bf444",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium): tac_picture_topandbottom_textbox.hwpx와 tac_picture_behindtext_textbox.hwpx는 각각 1쪽 Native·fresh WASM 100.00000%; 전1쪽 최저도 각 100.00000%.",
+        "//! 재열기 검사에서 직접 생성한 문서와 실측 fixture의 배치가 같은지도 검사한다. 그림만 있는 합성 대조군은 별도다.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue8271-pdf-coordinates.json.",
+        "//!",
+        "//! [#8271] HWPX 로 저장한 뒤 다시 열어도 글자처럼 그림 + 줄 폭 중립 부동 개체 문단의 배치가 같다.",
+        "//!",
+        "//! 결함: HWPX 저장은 편집한 문단의 `linesegarray` 를 뺀다(한/글이 다시 계산하게 하는 설계).",
+        "//! rhwp 가 다시 열면 그 문단을 저장 줄 없이 현재 프레임에서 재조판하는데, 같은 문단에 글자처럼",
+        "//! 취급하지 않은 그림·도형이 하나라도 있으면 프레임이 문단을 받지 않았다. 그래서 합성 줄(글자",
+        "//! 높이)만 남아 글자처럼 그림의 높이가 줄에서 빠지고, 뒤 문단이 그만큼 위로 올라왔다.",
+        "//!",
+        "//! 독립 기준: 같은 문서의 저장 전 배치와 HWP 저장본(저장 줄 보존)을 다시 연 배치가 서로 같다.",
+        "//! 저장·재열기는 배치를 바꾸지 않아야 한다. 자리차지·글 뒤·글 앞 부동 개체는 줄 폭을 바꾸지",
+        "//! 않으므로(표의 같은 계약 #6102) 글자처럼 그림의 줄 구성에 관여하지 않는다."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue8271-pdf-coordinates.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json"
+      ],
+      "test_annotations": 5,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/native_fractional_glyph_origin.rs",
+      "sha256": "6f1c358749f95ee3fb924ce0a107aa3155b07192ad6461242e6bc30c049a279c",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium): calendar_year.hwp 1쪽 Native 98.82866% / fresh WASM 98.50891%; 전1쪽 최저 98.82866% / 98.50891%.",
+        "//! sungeo.hwp 34쪽 Native 99.97528% / fresh WASM 99.98763%; 전94쪽 최저 99.85164% / 99.92219%.",
+        "//! 합성 글리프 검사는 독립 원본 문서가 없는 raster 격자 검사다.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json"
+      ],
+      "test_annotations": 4,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/nested_table_height_cache_contract.rs",
+      "sha256": "f337874242e1ff3fe04104b8685f732f03b62acb79da56cb106208d272532fee",
+      "type_header": "//! 검사 유형: 관계형.",
+      "header": [
+        "//! 검사 유형: 관계형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium):",
+        "//! issue2007_nested_cell_pagination_42065.hwp: 1쪽 Native 94.47057% / fresh WASM 94.39749%; 17쪽 Native 98.45890% / fresh WASM 98.06580%; 전17쪽 최저 94.47057% / 94.39749%.",
+        "//! 같은 편집을 저장·재열기한 별도 입력: 2쪽 Native 58.54219% / fresh WASM 91.73536%,",
+        "//! 3쪽 Native 26.59257% / fresh WASM 26.64294%, 4쪽 Native 46.02103% / fresh WASM 46.09464%; 전18쪽 최저 26.59257% / 26.64294%.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.",
+        "//! 편집 저장본 근거: mydocs/pr/assets/pr8213-nested-cache-edit/evidence.json. 메모리 내 편집 결과의 직접 측정은 아니다.",
+        "//!"
+      ],
+      "evidence_paths": [
+        "mydocs/pr/assets/pr8213-nested-cache-edit/evidence.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json"
+      ],
+      "test_annotations": 1,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/print_alpha_source_grid.rs",
+      "sha256": "21d2c0febd808cb98035e4edd977405e0593ac091f71397d8253f9f710169beb",
+      "type_header": "//! 검사 유형: 고정형.",
+      "header": [
+        "//! 검사 유형: 고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium): 한글문서파일형식_5.0_revision1.3.hwp 21쪽 Native 99.59026% / fresh WASM 99.54796%; 전71쪽 최저 95.31577% / 95.19516%.",
+        "//! wide.hwpx 1쪽 Native 98.78322% / fresh WASM 98.78261%; 전1쪽 최저 98.78322% / 98.78261%.",
+        "//! narrow.hwpx 1쪽 Native·fresh WASM 각 100.00000%; 전1쪽 최저 각 100.00000%.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/print-alpha-visual-evidence.json.",
+        "//!",
+        "//! 연속 알파 그림의 원본 줄 소유와 독립 한컴 Print 운반체를 함께 보호한다.",
+        "//! Native/fresh WASM 양쪽 98% 이상과 직접 판독을 마친 두 입력만 사용한다.",
+        "//! 증거: mydocs/pr/assets/pr_8032_print_alpha/README.md"
+      ],
+      "evidence_paths": [
+        "mydocs/pr/assets/pr_8032_print_alpha/README.md",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/print-alpha-visual-evidence.json"
+      ],
+      "test_annotations": 2,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/rowspan_band_fits_remaining_page.rs",
+      "sha256": "f73c2e821458eeab66c2d07a25dca06be2b01921e5a39a8a38d2de03a7df5dd5",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium):",
+        "//! rowspan-band-fit.hwp: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 9쪽 Native 100.00000% / fresh WASM 100.00000%; 전9쪽 최저 97.84306% / 97.50188%.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.",
+        "//! 9쪽 표 경계의 독립 Print 좌표: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/rowspan-pdf-boundaries.json.",
+        "//!",
+        "//! RowBreak 표에서 앞 행의 병합 칸이 덮는 행이 쪽 끝에 걸릴 때, 그 행의 글줄과 안 여백이",
+        "//! 남은 높이에 다 들어가면 한/글은 그 행을 이 쪽에 남은 높이로 끝내고 다음 쪽은 다음 행에서",
+        "//! 시작한다. 남는 빈 띠의 크기는 조건이 아니다.",
+        "//!",
+        "//! 입력 `samples/rowspan-band-fit/rowspan-band-fit.hwp` 는 합성 HWPX(열0 이 행1~4 를 병합한",
+        "//! 8×3 RowBreak 표, 쪽 끝 남은 높이 1280/1480 HU)를 한/글 2020 으로 열어 HWP 로 저장한 원본이다.",
+        "//! 정답은 같은 저장본의 한/글 2020 Print PDF(`pdf/rowspan-band-fit/rowspan-band-fit-2020.pdf`)다.",
+        "//! 남은 높이 1480 HU 에서 내용+안 여백(17.1px)은 남은 18.4px 에 들어가지만 빈 띠는 1.3px 뿐이다."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/rowspan-pdf-boundaries.json"
+      ],
+      "test_annotations": 2,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/source_frame_control_ownership.rs",
+      "sha256": "43398c0aa1962210f19f85437d843ea90f38134afc0f9509201a8ffea9187922",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium): issue8168의 multiline above·below 및 page-relative HWP, issue8271의 topandbottom·behindtext HWPX는 각각 1쪽 Native·fresh WASM 100.00000%, 전1쪽 최저 각 100.00000%.",
+        "//! issue2007_nested_cell_pagination_42065.hwp: 3쪽 99.84704% / 99.82862%, 11쪽 98.82265% / 98.87353%; 전17쪽 최저 94.47057% / 94.39749%.",
+        "//! sungeo.hwp: 21쪽 99.94109% / 99.98302%, 22쪽 99.93511% / 99.97305%; 전94쪽 최저 99.85164% / 99.92219%.",
+        "//! hwpspec.hwp: 23쪽 99.99389% / 99.79148%, 54쪽 각 99.99765%; 전178쪽 최저 92.45593% / 92.83271%.",
+        "//! 중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp: 1쪽 99.16453% / 99.14176%, 2쪽 93.57998% / 93.34172%; 전2쪽 최저 93.57998% / 93.34172%.",
+        "//! issue3307_outline_number.hwpx: 8쪽 99.98280% / 99.96373%; 전9쪽 최저 97.30996% / 97.15648%.",
+        "//! 각 수치 쌍의 순서는 Native / fresh WASM이다. 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/header-evidence-ted3-matrix.json.",
+        "//!",
+        "//! 저장 프레임·실제 control 줄·표의 물리 상자 소유를 독립 Print와 대조한 회귀.",
+        "//!",
+        "//! #8133/#8184/#8213/#8206/#8283 통합 보정. 관련 원본의 전쪽 Native/fresh WASM",
+        "//! 90% 통과 뒤 추가한다. JSON 골든이나 현재 출력의 절대 좌표를 기대값으로 쓰지 않는다.",
+        "//! CLI producer를 바꾸어 동일 검사를 수정 전후 실행할 수 있다."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/header-evidence-ted3-matrix.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json"
+      ],
+      "test_annotations": 8,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/cases/verified_official_stored_frame_restart.rs",
+      "sha256": "f15348a1735f964ec8f8829b98022446c366657c2e76c135b091e87b01e82466",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium):",
+        "//! pr8036-seoul-official.hwpx: 11쪽 Native 99.99015% / fresh WASM 99.96975%;",
+        "//! 12쪽 Native 98.07866% / fresh WASM 98.10975%; 전13쪽 최저 95.97864% / 96.05079%.",
+        "//! pr8057-official.hwpx: 15쪽 Native 99.16179% / fresh WASM 99.14062%; 전37쪽 최저 95.46028% / 95.38098%.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/floatfix-native-matrix.json,",
+        "//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/floatfix-wasm-matrix.json.",
+        "//! pr8036 독립 Print 경계: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8036-pdf-boundaries.json.",
+        "//!",
+        "//! 독립 한컴 Print에서 확인한 연속 표의 쪽 소유와 후속 순서를 보호한다."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/floatfix-native-matrix.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/floatfix-wasm-matrix.json",
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8036-pdf-boundaries.json"
+      ],
+      "test_annotations": 2,
+      "synthetic_zip_exception": false
+    },
+    {
+      "file": "tests/issue_rowbreak_chart_overlap.rs",
+      "sha256": "fe19cf7067baba96f67936864bf8e99898bfb3372bc4f9aa15172919e98af958",
+      "type_header": "//! 검사 유형: 관계형·고정형.",
+      "header": [
+        "//! 검사 유형: 관계형·고정형.",
+        "//! 2026-10-28 측정 raw(96dpi, PDFium): rowbreak-problem-pages.hwpx 2쪽 Native 99.54784% / fresh WASM 99.54876%, 11쪽 95.74925% / 95.75079%, 13쪽 98.81057% / 98.79067%, 16쪽 98.52036% / 98.48140%; 전18쪽 최저 94.05007% / 93.97178%.",
+        "//! rowbreak-problem-pages.hwp 1쪽 Native 99.92080% / fresh WASM 99.92124%, 10쪽 각 100.00000%, 13쪽 98.84461% / 98.83836%; 전18쪽 최저 97.86923% / 97.91713%.",
+        "//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/header-evidence-ted3-matrix.json.",
+        "//!",
+        "//! `samples/rowbreak-problem-pages.hwpx`의 표 분할 회귀 검사.",
+        "//!",
+        "//! 2쪽의 첫 도표 형태 TAC 표(`pi=5 ci=0`)는 앞선",
+        "//! `<민간 SaaS 연계공통기반 운영체계>` 제목 글줄 아래에서 시작해야 한다.",
+        "//! 이 경계를 지키지 않으면 표 테두리와 그림이 제목 글자 아래에 겹쳐 그려진다."
+      ],
+      "evidence_paths": [
+        "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/header-evidence-ted3-matrix.json"
+      ],
+      "test_annotations": 17,
+      "synthetic_zip_exception": false
+    }
+  ]
+}

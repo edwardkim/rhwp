@@ -1,0 +1,10 @@
+{
+  "product_source": "6d95c45f08ca8fe5302044b5ef2aa136fd50798e",
+  "text_source": "getPageTextLayout().runs, ordered text concatenation",
+  "nonempty_text_required": true,
+  "image_only_controls_exempt_from_nonempty": true,
+  "edited_rendered_occurrences": 14,
+  "old_rendered_occurrences_after_edit": 0,
+  "unchanged_canvas2d_pngs_from_final_visual_measurement": 117,
+  "negative_recovery_cases": 11
+}

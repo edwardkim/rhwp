@@ -1,0 +1,212 @@
+{
+  "product_source_sha": "e787be830763d871703e025aa7adae499f954618",
+  "input": "/home/tsjang/rhwp/samples/2025 행정업무운영 편람(최종).hwp",
+  "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+  "pdf": "/home/tsjang/rhwp/pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+  "pdf_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+  "dpi": 96,
+  "compat": "2024",
+  "backends": {
+    "native": {
+      "whole_pages": 383,
+      "raw_minimum": "92.66367",
+      "page94_raw": "98.64499",
+      "tsv": "native_silhouette.tsv",
+      "tsv_sha256": "ed7b65c76192f0c15360399974528097e0feb1e7ca7b614ae543710125e90d6b",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "handbook-full",
+        "/home/tsjang/rhwp/samples/2025 행정업무운영 편람(최종).hwp",
+        "/home/tsjang/rhwp/pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-char-overlap-082",
+        "--compat",
+        "2024",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/stored-projection-native082-1234/candidate",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ]
+    },
+    "wasm": {
+      "whole_pages": 383,
+      "raw_minimum": "92.65487",
+      "page94_raw": "98.64029",
+      "tsv": "wasm_silhouette.tsv",
+      "tsv_sha256": "30b1dbdd2175a6138e7c81bb6fc6a72432b3cf70d67ade6ff713feee3c761ecf",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "handbook-full",
+        "/home/tsjang/rhwp/samples/2025 행정업무운영 편람(최종).hwp",
+        "/home/tsjang/rhwp/pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-char-overlap-082",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-char-overlap-033",
+        "--compat",
+        "2024",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/stored-projection-wasm033-1240/candidate",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ]
+    }
+  },
+  "representative_pngs": [
+    {
+      "backend": "native",
+      "path": "native_review_094.png",
+      "sha256": "1f36409741bd6a73f62457b8883b1728b1d5a4ed26320fd9cc3ad18a9b6eafae"
+    },
+    {
+      "backend": "native",
+      "path": "native_overlay_094.png",
+      "sha256": "e21abcc428dc0ce3612946c4ccf7dcad9e2e31342d6be0d06cccc85fafd8ccce"
+    },
+    {
+      "backend": "wasm",
+      "path": "wasm_review_094.png",
+      "sha256": "a074439ad2c3d5740709f1e8b86cb6fc8c9cbfcc99e4708cb3ec011946d9378e"
+    },
+    {
+      "backend": "wasm",
+      "path": "wasm_overlay_094.png",
+      "sha256": "bb2a0c546fe9ed715e04aa6fe09f18b33fc825312528946c0d3c3d896eb4baa3"
+    }
+  ],
+  "formal_regression": {
+    "test_source": "tests/cases/group_picture_outline_frames.rs",
+    "before_verified_source_sha": "ae6d24e744533f87bf39c9ff79e2b6fb4451ecd9",
+    "candidate_verified_source_sha": "e787be830763d871703e025aa7adae499f954618",
+    "before_fail": 2,
+    "candidate_pass": 2,
+    "executions": [
+      {
+        "phase": "before",
+        "version": "081",
+        "library_sha256": "a643d3a898e71540b752dfebec3efb7659cc06f735d90a4b535976cb85818bf6",
+        "test_source_sha256": "e473e9cf13bf1da05f9e1a4790d34e0538440ba1a8c6d9205793f9af52ceb15a",
+        "command": [
+          "rustc",
+          "--crate-name",
+          "group_picture_1257_before",
+          "--edition=2021",
+          "--test",
+          "/home/tsjang/rhwp/tests/cases/group_picture_outline_frames.rs",
+          "-D",
+          "warnings",
+          "-L",
+          "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+          "--extern",
+          "rhwp=/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/librhwp-native-char-overlap-081.rlib",
+          "-o",
+          "/home/tsjang/rhwp/target/pr-review/release-test/group-picture-1257-before",
+          "--extern",
+          "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-4ff737955f43c990.rlib",
+          "--extern",
+          "roxmltree=/home/tsjang/rhwp/target/pr-review/release-test/deps/libroxmltree-5f6c7c0edbfb5bd5.rlib",
+          "--extern",
+          "ttf_parser=/home/tsjang/rhwp/target/pr-review/release-test/deps/libttf_parser-138f44048b0c67cc.rlib",
+          "-L",
+          "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-d3bbd036d45b3a6c/out/skia"
+        ],
+        "build_exit": 0,
+        "build_log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/group-picture-regression-1257-before-build.log",
+        "test_exit": 101,
+        "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/group-picture-regression-1257-before.log"
+      },
+      {
+        "phase": "candidate",
+        "version": "082",
+        "library_sha256": "86980af643469e31e24e131a7af3076143e5930b44ac5caf197c3113d29e1039",
+        "test_source_sha256": "e473e9cf13bf1da05f9e1a4790d34e0538440ba1a8c6d9205793f9af52ceb15a",
+        "command": [
+          "rustc",
+          "--crate-name",
+          "group_picture_1257_candidate",
+          "--edition=2021",
+          "--test",
+          "/home/tsjang/rhwp/tests/cases/group_picture_outline_frames.rs",
+          "-D",
+          "warnings",
+          "-L",
+          "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+          "--extern",
+          "rhwp=/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/librhwp-native-char-overlap-082.rlib",
+          "-o",
+          "/home/tsjang/rhwp/target/pr-review/release-test/group-picture-1257-candidate",
+          "--extern",
+          "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-4ff737955f43c990.rlib",
+          "--extern",
+          "roxmltree=/home/tsjang/rhwp/target/pr-review/release-test/deps/libroxmltree-5f6c7c0edbfb5bd5.rlib",
+          "--extern",
+          "ttf_parser=/home/tsjang/rhwp/target/pr-review/release-test/deps/libttf_parser-138f44048b0c67cc.rlib",
+          "-L",
+          "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-d3bbd036d45b3a6c/out/skia"
+        ],
+        "build_exit": 0,
+        "build_log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/group-picture-regression-1257-candidate-build.log",
+        "test_exit": 0,
+        "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/group-picture-regression-1257-candidate.log"
+      }
+    ],
+    "registered_nextest": {
+      "command": "CARGO_BUILD_JOBS=8 node scripts/run-rust-test.mjs group_picture_outline_frames -- --locked --cargo-profile release-test --target-dir target/pr-review --test-threads 12",
+      "suite": "regression_suite_014",
+      "nextest_run_id": "3d850a0a-239a-4f5b-8f7d-fe3cb88aa1fb",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 255,
+      "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/group-picture-registered-nextest-1259.log",
+      "log_sha256": "af30a4ecb3bf09fd7e47bdd9497f48d9569b32cbee266288f6467582574fc545"
+    }
+  },
+  "full_current_devel_comparison": {
+    "native": {
+      "comparison_base_sha": "2e3b4f880bd11d35398e6ea0100846611f13a72d",
+      "candidate_committed_source_sha": "e787be830763d871703e025aa7adae499f954618",
+      "conditions": 62,
+      "pages": 860,
+      "candidate_raw_minimum": "92.66367",
+      "errors": [],
+      "drops": [],
+      "candidate_below90": []
+    },
+    "wasm": {
+      "comparison_base_sha": "2e3b4f880bd11d35398e6ea0100846611f13a72d",
+      "candidate_committed_source_sha": "e787be830763d871703e025aa7adae499f954618",
+      "conditions": 62,
+      "pages": 860,
+      "candidate_raw_minimum": "92.56774",
+      "errors": [],
+      "drops": [],
+      "candidate_below90": []
+    }
+  }
+}

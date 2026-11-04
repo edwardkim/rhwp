@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "mode": "default",
+  "profile": "print",
+  "status": "incomplete",
+  "eligible": false,
+  "complete": false,
+  "pageCount": 94,
+  "scannedPages": 54,
+  "scannedWorkUnits": 50000,
+  "limits": {
+    "maxPages": 128,
+    "maxWorkUnits": 50000,
+    "maxBlockers": 32,
+    "maxRequiredFontFamilies": 256
+  },
+  "summary": {
+    "totalItems": 4194,
+    "directItems": 4193,
+    "directRequiredItems": 1,
+    "compatOverlayItems": 0,
+    "textFallbackItems": 0,
+    "unsupportedItems": 0,
+    "hiddenOverlayViolations": 1
+  },
+  "blockers": [
+    {
+      "pageIndex": 0,
+      "code": "hiddenCanvas2dOverlayRequired",
+      "opType": "textRun",
+      "detail": "scriptTextRequiresShaping"
+    },
+    {
+      "pageIndex": 54,
+      "code": "workLimitExceeded",
+      "detail": "maxWorkUnits=50000;remainingWorkUnits=875"
+    }
+  ],
+  "requiredFontFamilies": [
+    "RHWP Old Hangul",
+    "굴림",
+    "궁서",
+    "한양해서",
+    "함초롬돋움"
+  ],
+  "capabilityDigest": "blake3:b6dae009bf40f0030f64b66787a8dad13db698336eb7484336c6c34873a445a6"
+}

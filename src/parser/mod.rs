@@ -616,6 +616,14 @@ fn parse_hwp_with_cfb(
     if let Some(idx) = doc
         .extra_streams
         .iter()
+        .position(|(p, _)| p == crate::model::text_paint::HWP_STREAM)
+    {
+        let (_, bytes) = doc.extra_streams.remove(idx);
+        crate::model::text_paint::decode(&mut doc, &bytes);
+    }
+    if let Some(idx) = doc
+        .extra_streams
+        .iter()
         .position(|(p, _)| p == crate::model::hyperlink_format::HWP_STREAM)
     {
         let (_, bytes) = doc.extra_streams.remove(idx);
@@ -1341,7 +1349,34 @@ pub fn parse_pdf_with_metadata(
     data: &[u8],
     options: &pdf::PdfImportOptions,
 ) -> Result<ParsedDocument, ParseError> {
-    parse_pdf_unsealed(data, options).map(seal_parsed_document)
+    parse_pdf_with_metadata_and_policy(data, options, pdf::PdfImportPolicy::default())
+}
+
+/// Explicit policy with the same provenance sealing as format auto-detection.
+#[cfg(feature = "pdf-import")]
+pub fn parse_pdf_with_metadata_and_policy(
+    data: &[u8],
+    options: &pdf::PdfImportOptions,
+    policy: pdf::PdfImportPolicy,
+) -> Result<ParsedDocument, ParseError> {
+    parse_pdf_unsealed_with_policy(data, options, policy).map(seal_parsed_document)
+}
+
+#[cfg(feature = "pdf-import")]
+pub(crate) fn parse_pdf_with_metadata_and_request(
+    data: &[u8],
+    options: &pdf::PdfImportOptions,
+    policy: pdf::PdfImportPolicy,
+    request: std::sync::Arc<pdf_oxide::import_limits::ImportBudget>,
+    progress: &mut dyn FnMut(pdf::PdfImportProgress) -> Result<(), pdf::PdfImportError>,
+) -> Result<ParsedDocument, ParseError> {
+    let result = pdf::parse_pdf_with_request_and_progress(data, options, policy, request, progress)
+        .map_err(ParseError::PdfError)?;
+    Ok(seal_parsed_document(ParsedDocument {
+        document: result.document,
+        hml_metadata: None,
+        pdf_metadata: Some(result.metadata),
+    }))
 }
 
 #[cfg(feature = "pdf-import")]
@@ -1349,12 +1384,32 @@ fn parse_pdf_unsealed(
     data: &[u8],
     options: &pdf::PdfImportOptions,
 ) -> Result<ParsedDocument, ParseError> {
-    let result = pdf::parse_pdf_with_options(data, options).map_err(ParseError::PdfError)?;
+    parse_pdf_unsealed_with_policy(data, options, pdf::PdfImportPolicy::default())
+}
+
+#[cfg(feature = "pdf-import")]
+fn parse_pdf_unsealed_with_policy(
+    data: &[u8],
+    options: &pdf::PdfImportOptions,
+    policy: pdf::PdfImportPolicy,
+) -> Result<ParsedDocument, ParseError> {
+    let result = pdf::parse_pdf_with_policy(data, options, policy).map_err(ParseError::PdfError)?;
     Ok(ParsedDocument {
         document: result.document,
         hml_metadata: None,
         pdf_metadata: Some(result.metadata),
     })
+}
+
+#[cfg(feature = "pdf-import")]
+pub(crate) fn parse_pdf_editor_hwpx(
+    data: &[u8],
+    reservation: std::sync::Arc<dyn crate::storage::Reservation>,
+) -> Result<ParsedDocument, ParseError> {
+    hwpx::parse_hwpx_with_reservation(data, Some(reservation))
+        .map_err(ParseError::from)
+        .map(without_hml_metadata)
+        .map(seal_parsed_document)
 }
 
 /// 포맷 자동 감지 후 공통 IR과 입력 메타데이터를 파싱한다.
@@ -1381,7 +1436,20 @@ fn parse_document_inner(
     parse_document_inner_unsealed(data, password).map(seal_parsed_document)
 }
 
-fn seal_parsed_document(mut parsed: ParsedDocument) -> ParsedDocument {
+/// `DocumentCore` 로 여는 경로 전용 — DocInfo 만 봉인하고 본문 봉인은 호출자에게 맡긴다.
+///
+/// `DocumentCore::from_parsed_document` 는 로드 픽스업과 첫 paginate 뒤 본문을 다시
+/// 봉인하고, 그 사이에는 본문 봉인 값을 읽지 않는다(편집 신호는 봉인 유무와
+/// `raw_stream` 유무만 보는데 로드 픽스업은 `raw_stream` 을 지우지 않는다). 파서 말미의
+/// 본문 봉인은 덮어써질 뿐이므로 본문 전체 직렬화·해시를 한 번 줄인다.
+pub(crate) fn parse_document_for_core(
+    data: &[u8],
+    password: Option<&[u8]>,
+) -> Result<ParsedDocument, ParseError> {
+    parse_document_inner_unsealed(data, password).map(seal_parsed_doc_info)
+}
+
+fn seal_parsed_doc_info(mut parsed: ParsedDocument) -> ParsedDocument {
     // [#4493] 파싱과 모든 load fixup 이 끝난 마지막 지점에서 DocInfo raw 출처를
     // 봉인한다 — 이보다 앞(포맷별 파서 내부)에서 봉인하면 HWP3-변환본 spacing
     // 반감 같은 로드 보정이 봉인을 깨서, 무변경 문서의 원본 바이트 통과가 죽는다.
@@ -1390,9 +1458,14 @@ fn seal_parsed_document(mut parsed: ParsedDocument) -> ParsedDocument {
         .document
         .doc_info
         .seal_raw_provenance(&parsed.document.doc_properties);
+    parsed
+}
+
+fn seal_parsed_document(parsed: ParsedDocument) -> ParsedDocument {
+    let mut parsed = seal_parsed_doc_info(parsed);
     // [#4488/#4495] 본문 Section raw_stream 과 하위 컨트롤 raw 레코드도 같은
-    // 지점에서 봉인한다. DocumentCore 로 열리는 경로는 from_bytes 의 로드 픽스업
-    // (손상 lineseg 제거 등) 뒤에 다시 봉인된다.
+    // 지점에서 봉인한다. DocumentCore 로 열리는 경로는 이 봉인을 건너뛰고
+    // (`parse_document_for_core`) from_bytes 의 로드 픽스업 뒤에 한 번 봉인한다.
     parsed.document.seal_body_raw_provenance();
     parsed
 }
@@ -1442,7 +1515,10 @@ fn parse_document_inner_unsealed(
             })
         }
         #[cfg(feature = "pdf-import")]
-        FileFormat::Pdf => parse_pdf_unsealed(data, &pdf::PdfImportOptions::default()),
+        FileFormat::Pdf => parse_pdf_unsealed(
+            data,
+            &pdf::PdfImportOptions::with_password(password).map_err(ParseError::PdfError)?,
+        ),
         #[cfg(not(feature = "pdf-import"))]
         FileFormat::Pdf => Err(ParseError::UnsupportedFormat {
             code: "PDF_IMPORT_DISABLED",

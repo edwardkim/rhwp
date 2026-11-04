@@ -29,6 +29,13 @@
   ],
   "moduleIntegrationOverrides": [
     {
+      "path": "tests/cases/issue_7518_reflow_row_physical_frame.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
       "path": "tests/cases/issue_6753_lazy_base_keeps_trimmed_spacing_before.rs",
       "allowBlockers": [
         "path_attr",
@@ -75,6 +82,27 @@
         "path_attr",
         "root_mod"
       ]
+    },
+    {
+      "path": "tests/cases/issue_8153_print_device_arithmetic.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8153_symbol_coverage.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8153_symbol_fallback.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
     }
   ],
   "exceptions": [
@@ -112,14 +140,6 @@
       "reasons": [
         "path_attr",
         "root_mod"
-      ]
-    },
-    {
-      "target": "issue_2225_missing_picture_placeholder",
-      "path": "tests/issue_2225_missing_picture_placeholder.rs",
-      "manual": false,
-      "reasons": [
-        "function_gated_native_skia"
       ]
     },
     {

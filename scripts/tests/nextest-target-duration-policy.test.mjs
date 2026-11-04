@@ -405,3 +405,48 @@ test("#8267 current Cargo targets form four nonempty disjoint deterministic arch
     assert.deepEqual(result.stdout.trim().split("\n"), expected.targets);
   }
 });
+
+
+for (const schema of [1, 2]) {
+  test(`#8272 refresh CLI consumes complete three/four archive reports (schema ${schema})`, async t => {
+    const fs = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const directory = fs.mkdtempSync(path.join(tmpdir(), "duration-refresh-cli-"));
+    t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+    const cli = fileURLToPath(new URL("../refresh-nextest-target-duration-policy.mjs", import.meta.url));
+    const inputPolicy = schema === 1
+      ? { schema_version: 1, fallback_seconds: 1, targets: {} }
+      : { schema_version: 2, fallback_seconds_per_test: 1, parallelism_factor: 4,
+        targets: {}, cases: {}, test_cases: {} };
+    const policyFile = path.join(directory, "policy.json");
+    fs.writeFileSync(policyFile, JSON.stringify(inputPolicy));
+    for (const label of ["b", "c", "d", "e", "f"]) {
+      const target = `target_${label}`;
+      const report = { schema_version: schema, archive_label: label, run_id: "123",
+        ref: "refs/pull/8188/merge", sha: "a".repeat(40), targets: { [target]: 2 } };
+      if (schema === 2) Object.assign(report, { cases: { [target]: 2 }, test_cases: { [`${target}::works`]: 2 } });
+      fs.writeFileSync(path.join(directory, `${label}.json`), JSON.stringify(report));
+    }
+    function run(labels, suffix) {
+      const output = path.join(directory, `output-${suffix}.json`);
+      const result = spawnSync(process.execPath, [cli, "--policy", policyFile,
+        ...labels.flatMap(label => ["--measurement", path.join(directory, `${label}.json`)]),
+        "--output", output], { encoding: "utf8", timeout: 30000 });
+      return { result, output };
+    }
+    for (const labels of [["b", "c", "d"], ["b", "c", "d", "e"]]) {
+      const { result, output } = run(labels, labels.join(""));
+      assert.equal(result.status, 0, result.stderr);
+      const actual = JSON.parse(fs.readFileSync(output, "utf8"));
+      assert.deepEqual(Object.keys(actual.measurement_sources), labels);
+      assert.deepEqual(Object.keys(actual.targets), labels.map(label => `target_${label}`));
+      if (labels.includes("e")) assert.equal(actual.targets.target_e, 2);
+    }
+    for (const [index, labels] of [["b", "c"], ["b", "c", "e"],
+      ["b", "c", "d", "d"], ["b", "c", "d", "f"], ["b", "c", "d", "e", "f"]].entries()) {
+      const { result, output } = run(labels, `rejected-${index}`);
+      assert.notEqual(result.status, 0, JSON.stringify(labels));
+      assert.equal(fs.existsSync(output), false, "invalid reports cannot publish a policy");
+    }
+  });
+}

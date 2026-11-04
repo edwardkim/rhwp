@@ -460,7 +460,10 @@ fn unknown_schemes_survive_neighbor_edit_and_bad_nested_paths_fail_atomically() 
         .unwrap();
     assert!(core
         .update_hyperlink_native(&target, mail_id, "https://example.net")
-        .is_err());
+        .unwrap());
+    assert!(core
+        .update_hyperlink_native(&target, mail_id, "mailto:user@example.com")
+        .unwrap());
     core.update_hyperlink_native(&target, web_id, "https://example.org/new")
         .unwrap();
     let before = format!("{:?}", core.document());

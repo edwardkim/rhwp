@@ -42,4 +42,8 @@ impl ReplayPolicy {
     pub fn antialias(self) -> bool {
         self.profile != RenderProfile::FastPreview || !self.prefer_raster
     }
+
+    pub fn print_stroke_adjustment(self) -> bool {
+        self.profile == RenderProfile::Print
+    }
 }

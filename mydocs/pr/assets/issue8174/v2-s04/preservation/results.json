@@ -1,0 +1,50 @@
+[
+  {
+    "path": "preservation/candidate/native/table/silhouette.tsv",
+    "pages": 3,
+    "rawMin": 96.6158,
+    "sameTsvAsS03": true,
+    "pixelChangedFromS03": 0,
+    "pagesCompared": [
+      "rhwp_001.png",
+      "rhwp_002.png",
+      "rhwp_003.png"
+    ]
+  },
+  {
+    "path": "preservation/candidate/wasm/table/silhouette.tsv",
+    "pages": 3,
+    "rawMin": 96.117,
+    "sameTsvAsS03": true,
+    "pixelChangedFromS03": 0,
+    "pagesCompared": [
+      "rhwp_001.png",
+      "rhwp_002.png",
+      "rhwp_003.png"
+    ]
+  },
+  {
+    "path": "preservation-tac/candidate/native/tac3/silhouette.tsv",
+    "pages": 3,
+    "rawMin": 99.29369,
+    "sameTsvAsS03": true,
+    "pixelChangedFromS03": 0,
+    "pagesCompared": [
+      "rhwp_001.png",
+      "rhwp_002.png",
+      "rhwp_003.png"
+    ]
+  },
+  {
+    "path": "preservation-tac/candidate/wasm/tac3/silhouette.tsv",
+    "pages": 3,
+    "rawMin": 99.30776,
+    "sameTsvAsS03": true,
+    "pixelChangedFromS03": 0,
+    "pagesCompared": [
+      "rhwp_001.png",
+      "rhwp_002.png",
+      "rhwp_003.png"
+    ]
+  }
+]

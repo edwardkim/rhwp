@@ -7,6 +7,10 @@ tests/fixtures/render_page_controlset.tsv 의 각 문서에 대해 현재 rhwp �
 """
 import csv, sys, subprocess, re, os, argparse
 from collections import Counter
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from regression_document_scope import is_deferred_regression_input
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--root", default="C:/Users/planet/hwpdocs")
@@ -17,6 +21,10 @@ a = ap.parse_args()
 
 pat = re.compile(r"페이지 수:\s*(\d+)")
 rows = list(csv.DictReader(open(a.fixture, encoding="utf-8"), delimiter="\t"))
+
+excluded = [r for r in rows if is_deferred_regression_input(r["rel"], axis="render_page")]
+rows = [r for r in rows if r not in excluded]
+print(f"이관 범위 제외: {len(excluded)}건 / 실행 대상: {len(rows)}건")
 
 conf = Counter()      # delta(rhwp-hangul) → count
 results = []
@@ -36,7 +44,7 @@ for r in rows:
 total = sum(1 for _, _, rp, _ in results if rp > 0)
 match = conf.get(0, 0)
 print(f"=== 렌더링 페이지 게이트 ({total} 측정) ===")
-print(f"일치(rhwp==한글): {match} ({100.0*match/total:.1f}%)")
+print(f"일치(rhwp==한글): {match} ({100.0*match/total if total else 0.0:.1f}%)")
 print("delta(rhwp-한글) 분포:")
 for d in sorted(k for k in conf if k is not None):
     tag = "일치" if d == 0 else ("부족(-)" if d < 0 else "초과(+)")

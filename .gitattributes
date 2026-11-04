@@ -141,3 +141,12 @@ tests/fixtures/issue_8109_saved_fonts/*.hwpx -text -diff
 # #8183 PDF xref의 고정 폭 패딩과 codec stream의 원본 바이트를 보존한다.
 pdf/issue8183/*.pdf -text -diff
 pdf/issue8183/**/*.pdf -text -diff
+
+# #8174 독립 CFF PDF의 xref·font stream과 원본 font 고지 바이트를 보존한다.
+pdf/issue8174/fonts/*.pdf -text -diff
+pdf/issue8174/fonts/URW-FONT-NOTICE.txt -text -whitespace
+
+# #8174 qcms의 원본 라이선스와 미수정 C 바인딩 주석은 upstream 바이트를 보존한다.
+vendor/rhwp-qcms/COPYING -text -whitespace
+vendor/rhwp-qcms/LICENSE -text -whitespace
+vendor/rhwp-qcms/src/c_bindings.rs -whitespace

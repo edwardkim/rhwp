@@ -12,6 +12,7 @@ import {
   type PageMovementSettings,
 } from '../view/page-movement.ts';
 import { normalizeZoomFitMode, type ZoomFitMode } from '../view/zoom-fit.ts';
+import { normalizePdfImportLayout, type PdfImportLayout } from './pdf-import-layout.ts';
 
 /** 대표 글꼴 세트 (7개 언어별 글꼴) */
 export interface FontSet {
@@ -94,6 +95,12 @@ export interface AutosaveSettings {
   idleDelaySeconds: number;
 }
 
+/** 문서 가져오기 설정 */
+export interface ImportSettings {
+  /** PDF 본문 문단 배치: 원본 모양 우선(fidelity) 또는 편집 우선(editable) */
+  pdfLayout: PdfImportLayout;
+}
+
 /** 전체 설정 구조 */
 export interface AppSettings {
   version: number;
@@ -102,6 +109,7 @@ export interface AppSettings {
   dialog: DialogSettings;
   view: ViewSettings;
   autosave: AutosaveSettings;
+  import: ImportSettings;
 }
 
 /** 언어 인덱스 상수 (HWP 7개 언어) */
@@ -182,6 +190,9 @@ function defaultSettings(): AppSettings {
       idleSaveEnabled: true,
       idleDelaySeconds: 10,
     },
+    import: {
+      pdfLayout: 'fidelity',
+    },
   };
 }
 
@@ -241,6 +252,7 @@ class UserSettingsService {
       const dialog: Partial<DialogSettings> = parsed.dialog ?? {};
       const view: Partial<ViewSettings> = parsed.view ?? {};
       const autosave: Partial<AutosaveSettings> = parsed.autosave ?? {};
+      const importSettings: Partial<ImportSettings> = parsed.import ?? {};
       // 저장값에 쪽 배치가 없으면 기본 설정을 쓴다 — 정규화의 폴백(`DEFAULT_PAGE_ARRANGEMENT`)
       // 은 손상된 값을 되살리는 용도이자 `setPageDimensions` 의 하위 호환 인자라, 새 사용자의
       // 기본 쪽 모양과는 뜻이 다르다. 두 갈래를 같은 상수로 묶으면 기본값을 바꿀 때 그리드
@@ -319,6 +331,9 @@ class UserSettingsService {
             600,
           ),
         },
+        import: {
+          pdfLayout: normalizePdfImportLayout(importSettings.pdfLayout),
+        },
       };
     } catch {
       return defaultSettings();
@@ -394,6 +409,17 @@ class UserSettingsService {
   /** PDF 저장 전 브라우저 인쇄 대상 안내 표시 설정 */
   setShowPdfPrintGuidance(value: boolean): void {
     this.data.dialog.showPdfPrintGuidance = value;
+    this.save();
+  }
+
+  /** PDF를 열 때 본문 문단 배치 반환 */
+  getPdfImportLayout(): PdfImportLayout {
+    return this.data.import.pdfLayout;
+  }
+
+  /** PDF를 열 때 본문 문단 배치 설정. 다음에 여는 PDF부터 적용된다. */
+  setPdfImportLayout(value: PdfImportLayout): void {
+    this.data.import.pdfLayout = normalizePdfImportLayout(value);
     this.save();
   }
 

@@ -385,7 +385,8 @@ export class AiPanel {
     this.root = root;
 
     this.offs.push(this.ctx.onChange(() => { void this.render(); }));
-    this.offs.push(this.chat.onReset(() => this.clearLog(t('ai.chat.documentChanged'))));
+    this.offs.push(this.chat.onReset((reason) => this.clearLog(
+      t(reason === 'provider' ? 'ai.chat.providerChanged' : 'ai.chat.documentChanged'))));
     this.offs.push(this.host.onCursorChange(() => this.scheduleSelectionCheck()));
     this.renderUsage();
     void this.render();
@@ -516,6 +517,7 @@ export class AiPanel {
       },
     };
     this.chat.setPresenter(presenter);
+    const provider = this.ctx.settings.provider;
     let result: AgentRunResult | null = null;
     let failure: unknown = null;
     try {
@@ -541,7 +543,7 @@ export class AiPanel {
         max_tokens: t('ai.chat.truncated'),
         round_limit: t('ai.chat.roundLimit'),
         error: result.error
-          ? failureMessage(result.error.reason, result.error.retryAfterSeconds, result.error.detail)
+          ? failureMessage(result.error.reason, result.error.retryAfterSeconds, result.error.detail, provider)
           : t('ai.error.unknown'),
       } as const)[result.status];
       answer.finish(note, result.status === 'error' || result.status === 'refusal' ? 'error' : 'info');
@@ -549,7 +551,7 @@ export class AiPanel {
       if (result.error) console.error('[AI] 요청 실패', result.error.reason, result.error.status ?? '', result.error.detail ?? '');
     } else {
       const reason = failure instanceof AiProviderError ? failure.reason : 'unknown';
-      answer.finish(failureMessage(reason), 'error');
+      answer.finish(failureMessage(reason, undefined, undefined, provider), 'error');
       if (!(failure instanceof AiProviderError)) console.error('[AI] 질문 처리 실패', failure);
     }
     this.scrollToEnd();

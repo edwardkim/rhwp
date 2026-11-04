@@ -1,0 +1,169 @@
+{
+  "body-budget-122": {
+    "input": "inputs/body-budget-122.hwpx",
+    "input_sha256": "3d13ce357f6dcdb680357c9bdff287babad12fe4e111cca6609e2df80355b6e5",
+    "pdf": "pdf/body-budget-122-2020.pdf",
+    "pdf_sha256": "7eea13d14cc93d3c4e3884e8356e31fe90b5bd293b7add85a82ee591621a17cd",
+    "pages": 3,
+    "native_minimum": "98.99865",
+    "wasm_minimum": "100.00000",
+    "prefix_page": 1,
+    "tail_page": 2,
+    "successor_page": 3,
+    "table_pages": [
+      2
+    ],
+    "first_column_frames": [
+      {
+        "page": 2,
+        "row": 2,
+        "col": 0,
+        "left": 144.56266276041666,
+        "right": 263.69866943359375,
+        "top": 42.039998372395836,
+        "bottom": 99.72666422526042,
+        "dpi": 96,
+        "coordinate_system": "종이 왼쪽 위 원점, PDF vector 선 중심"
+      }
+    ]
+  },
+  "body-budget-160": {
+    "input": "inputs/body-budget-160.hwpx",
+    "input_sha256": "cc2edd7f7f812c78e1423cfbcde4b72e6a256d07088294460a65ce6f11760d9b",
+    "pdf": "pdf/body-budget-160-2020.pdf",
+    "pdf_sha256": "c6cc2b6234240617d6a383b51fe10ceada1ec892bc806c8b46a98a25f939d541",
+    "pages": 1,
+    "native_minimum": "98.84573",
+    "wasm_minimum": "99.74107",
+    "prefix_page": 1,
+    "tail_page": 1,
+    "successor_page": 1,
+    "table_pages": [
+      1
+    ],
+    "first_column_frames": [
+      {
+        "page": 1,
+        "row": 2,
+        "col": 0,
+        "left": 144.56266276041666,
+        "right": 263.69866943359375,
+        "top": 65.59066772460938,
+        "bottom": 123.13999430338542,
+        "dpi": 96,
+        "coordinate_system": "종이 왼쪽 위 원점, PDF vector 선 중심"
+      }
+    ]
+  },
+  "body-budget-85": {
+    "input": "inputs/body-budget-85.hwpx",
+    "input_sha256": "5cf363f20f3255626676198eedfa0e1372640856fc4196c44607eda1c06883f5",
+    "pdf": "pdf/body-budget-85-2020.pdf",
+    "pdf_sha256": "61ca271be3e11512bf3e416fb082bed7062cf2fc677388513cfd4a3480ed26f3",
+    "pages": 3,
+    "native_minimum": "99.30397",
+    "wasm_minimum": "99.65348",
+    "prefix_page": 1,
+    "tail_page": 2,
+    "successor_page": 3,
+    "table_pages": [
+      1,
+      2
+    ],
+    "first_column_frames": [
+      {
+        "page": 1,
+        "row": 2,
+        "col": 0,
+        "left": 144.56266276041666,
+        "right": 263.69866943359375,
+        "top": 67.64266459147136,
+        "bottom": 94.63466389973958,
+        "dpi": 96,
+        "coordinate_system": "종이 왼쪽 위 원점, PDF vector 선 중심"
+      },
+      {
+        "page": 2,
+        "row": 2,
+        "col": 0,
+        "left": 144.56266276041666,
+        "right": 263.69866943359375,
+        "top": 17.398671468098957,
+        "bottom": 60.48800150553385,
+        "dpi": 96,
+        "coordinate_system": "종이 왼쪽 위 원점, PDF vector 선 중심"
+      }
+    ]
+  },
+  "cell-boundary": {
+    "input": "inputs/cell-boundary.hwpx",
+    "input_sha256": "868d11ccc1bee4b887f74b201e4673d8e1f4f66db6c4bb07e560518df2eed531",
+    "pdf": "pdf/cell-boundary-2020.pdf",
+    "pdf_sha256": "086c77471dd81d5dd620bb4bba4b9e0debc4681d0d52baf0e19f36acdf0d3436",
+    "pages": 3,
+    "native_minimum": "99.24399",
+    "wasm_minimum": "99.74000",
+    "prefix_page": 1,
+    "tail_page": 2,
+    "successor_page": 3,
+    "table_pages": [
+      1,
+      2
+    ],
+    "first_column_frames": [
+      {
+        "page": 2,
+        "row": 2,
+        "col": 0,
+        "left": 144.56266276041666,
+        "right": 263.69866943359375,
+        "top": 17.398671468098957,
+        "bottom": 76.74800109863281,
+        "dpi": 96,
+        "coordinate_system": "종이 왼쪽 위 원점, PDF vector 선 중심"
+      }
+    ]
+  },
+  "unbroken-table": {
+    "input": "inputs/unbroken-table.hwpx",
+    "input_sha256": "2c219180f57bd3f290e32ce35414d4b0b048bd2ac3b511489b5fad5e9b03d760",
+    "pdf": "pdf/unbroken-table-2020.pdf",
+    "pdf_sha256": "9193389e44f98f308c365f54c1a40fa5331819dc456e008f41fada076f6230d8",
+    "pages": 2,
+    "native_minimum": "99.34152",
+    "wasm_minimum": "99.73272",
+    "prefix_page": 1,
+    "tail_page": 1,
+    "successor_page": 1,
+    "table_pages": [
+      2
+    ],
+    "first_column_frames": [
+      {
+        "page": 2,
+        "row": 2,
+        "col": 0,
+        "left": 144.56266276041666,
+        "right": 263.69866943359375,
+        "top": 43.25199890136719,
+        "bottom": 102.60133870442708,
+        "dpi": 96,
+        "coordinate_system": "종이 왼쪽 위 원점, PDF vector 선 중심"
+      }
+    ]
+  },
+  "original": {
+    "input": "inputs/156489124_tail_line_before_deferred_table.hwp",
+    "pages": 2,
+    "prefix_page": 2,
+    "tail_page": 2,
+    "table_pages": [
+      2
+    ],
+    "input_sha256": "c12a6d9647dee5849687a4e040576c03ff8ddfeda6436205b5f1db0cefc927b5",
+    "pdf": "pdf/156489124_tail_line_before_deferred_table-2020.pdf",
+    "pdf_sha256": "d5bba3421e4708d7938516de087e22b90be13647240c77dd082666c7ecdd9ff0",
+    "native_minimum": "98.47238",
+    "wasm_minimum": "98.40456"
+  }
+}

@@ -1,0 +1,20 @@
+[RustTestSuite] issue_8262_table_in_cell -> regression_suite_005::issue_8262_table_in_cell
+[RustTestSuite] cargo nextest run --locked --test regression_suite_005 -E test(/(^|::)issue_8262_table_in_cell::/) --cargo-profile release-test --target-dir /home/edward/mygithub/rhwp/target/pr-review --features native-skia
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 9.75s
+────────────
+ Nextest run ID e6a87240-9a47-45dd-a94a-6ddcdd8648a7 with nextest profile: default
+    Starting 7 tests across 1 binary (283 tests skipped)
+        PASS [   0.010s] (1/7) rhwp::regression_suite_005 issue_8262_table_in_cell::create_table_at_cell_text_start_uses_original_paragraph
+        PASS [   0.011s] (2/7) rhwp::regression_suite_005 issue_8262_table_in_cell::create_table_in_nested_cell_by_path
+        PASS [   0.011s] (3/7) rhwp::regression_suite_005 issue_8262_table_in_cell::create_table_in_cell_rejects_bad_input_without_change
+        PASS [   0.011s] (4/7) rhwp::regression_suite_005 issue_8262_table_in_cell::create_table_in_empty_cell_matches_hancom
+        PASS [   0.011s] (5/7) rhwp::regression_suite_005 issue_8262_table_in_cell::create_table_between_characters_in_cell_matches_hancom
+        PASS [   0.012s] (6/7) rhwp::regression_suite_005 issue_8262_table_in_cell::create_table_at_cell_text_end_adds_empty_paragraph_after
+        PASS [   0.015s] (7/7) rhwp::regression_suite_005 issue_8262_table_in_cell::create_table_in_cell_survives_hwp_and_hwpx_roundtrip
+────────────
+     Summary [   0.017s] 7 tests run: 7 passed, 283 skipped
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+info: update nextest with cargo nextest self update, or bypass check with --override-version-check

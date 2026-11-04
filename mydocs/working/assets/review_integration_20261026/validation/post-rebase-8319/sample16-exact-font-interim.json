@@ -1,0 +1,54 @@
+{
+  "status": "interim_not_final_source",
+  "candidate_source": "1c885d3110b768799eb9463c61a2be7a1f862755",
+  "native_binary_sha256": "42734d70a4d3cdd745c2f68bef8d800dfe9a0313619d0dd8867c006ff7bd6945",
+  "wasm_binary_sha256": "7f99d8e4c5b21c6fbd765c7fc098baa19b1feef5c1958eaa9ceeeb5e9e9afd09",
+  "font_condition": "217 historical font programs matched by SHA; font environment semantically reconstructed, not byte identical",
+  "font_program_list_sha256": "bda34e171ebdcdf97e33ec118c4d2d6d27590a45860249b690b6518e60b7da33",
+  "comparison": {
+    "threshold": 232,
+    "symmetric_radius_pixels": 2,
+    "white_pad": true
+  },
+  "pages_checked": 384,
+  "raw100": 384,
+  "failed": 0,
+  "integer_report_sha256": "40b15b94c0cee7f0e3b44b46b8a7287a6dafbd5612febde9ba5c0a1d27337a3b",
+  "log": "output/pr-review/planet6897-20261026/rebase-8319/sample16-exact-interim-integer.log",
+  "runs": {
+    "native": {
+      "hwpx": {
+        "pages": 64,
+        "raw100": 64,
+        "tsv_sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f"
+      },
+      "hwp2024": {
+        "pages": 64,
+        "raw100": 64,
+        "tsv_sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f"
+      },
+      "hwp2022": {
+        "pages": 64,
+        "raw100": 64,
+        "tsv_sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f"
+      }
+    },
+    "wasm": {
+      "hwpx": {
+        "pages": 64,
+        "raw100": 64,
+        "tsv_sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f"
+      },
+      "hwp2024": {
+        "pages": 64,
+        "raw100": 64,
+        "tsv_sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f"
+      },
+      "hwp2022": {
+        "pages": 64,
+        "raw100": 64,
+        "tsv_sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f"
+      }
+    }
+  }
+}

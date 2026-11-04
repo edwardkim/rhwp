@@ -1,4 +1,10 @@
-//! Parser/IR contracts on explicitly synthetic PDFs, not visual fidelity claims.
+//! 관계형·고정형 합성 Parser/IR·CLI 계약: 내용 보존·오류·선택 쪽수. 시각 좌표 golden이 아니다.
+//! 주석 갱신: 2026-11-01T00:29:10+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 80968497c2c178eeecb3b2e1d04d086ad27a0dc7 / 2026-10-21T14:57:32+09:00.
+//! #8415 인증 제어군: 독립 평문 PDF 1쪽, 2026-11-01 96dpi 보정 전 2px 실루엣.
+//! Native/fresh WASM 각 100.00%, 전쪽 최저 각 100.00%; 본문·이미지 직접 판독 완료.
+//! 근거: mydocs/working/assets/issue8415/password-authentication/ 및 task_m100_8413_implementation.md.
+//! 이 수치는 #8415 새 암호 제어군에 한정하며 기존 합성 계약을 실제 문서 시각 검증으로 승격하지 않는다.
 #![cfg(feature = "pdf-import")]
 
 use rhwp::model::{control::Control, provenance::SourceFormat};
@@ -362,7 +368,11 @@ fn input_policy_accepts_exact_limit_and_rejects_before_parsing_over_limit() {
     let limit = failure.frontend_limit.unwrap();
     assert_eq!(
         (limit.used, limit.requested, limit.limit),
-        (Some(0), Some(source.len()), Some(source.len() - 1))
+        (
+            Some(0),
+            Some(source.len() as u64),
+            Some((source.len() - 1) as u64)
+        )
     );
     for invalid in [0, u16::MAX as usize + 1] {
         policy.max_selected_pages = invalid;
@@ -614,4 +624,152 @@ fn service_exposes_pdf_format_without_a_synthetic_hwp_version() {
     assert!(info.version.is_none());
     assert_eq!(texts(opened.document()), ["PDF CONTENT"]);
     assert!(opened.into_core().pdf_metadata().is_some());
+}
+
+// #8415: authentication/byte-preservation contracts, not layout coordinates.
+// Public pikepdf controls and independent creation: pdf/issue8415/authentication/README.md.
+fn password_control_8415(name: &str) -> Vec<u8> {
+    std::fs::read(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("pdf/issue8415/authentication")
+            .join(format!("{name}.pdf")),
+    )
+    .unwrap()
+}
+
+#[test]
+fn password_pdf_authentication_keeps_plaintext_and_images_in_both_save_formats() {
+    use rhwp::{parser, DocumentCore};
+    let plain = DocumentCore::from_bytes(&password_control_8415("password-control")).unwrap();
+    let expected_text = texts(plain.document());
+    let expected_image = plain.document().bin_data_content[0].data.load().to_vec();
+    for revision in 2..=6 {
+        let input = password_control_8415(&format!("password-r{revision}"));
+        let missing = parse_pdf_with_options(&input, &Default::default())
+            .err()
+            .unwrap();
+        assert_eq!(missing.code, "PDF_PASSWORD_REQUIRED", "R{revision}");
+        let wrong = parse_pdf_with_options(
+            &input,
+            &PdfImportOptions {
+                password: Some("wrong".into()),
+                ..Default::default()
+            },
+        )
+        .err()
+        .unwrap();
+        assert_eq!(wrong.code, "PDF_PASSWORD_INVALID", "R{revision}");
+        for password in [b"synthetic-open".as_slice(), b"synthetic-owner".as_slice()] {
+            let core = DocumentCore::from_bytes_with_password(&input, password).unwrap();
+            assert_eq!(
+                texts(core.document()),
+                expected_text,
+                "R{revision}: authenticated content"
+            );
+            assert_eq!(
+                core.document().bin_data_content[0].data.load().to_vec(),
+                expected_image
+            );
+            for bytes in [
+                core.export_hwp_native().unwrap(),
+                core.export_hwpx_native().unwrap(),
+            ] {
+                let reopened = parser::parse_document(&bytes).unwrap();
+                assert_eq!(
+                    texts(&reopened),
+                    expected_text,
+                    "R{revision}: saved plaintext"
+                );
+                assert_eq!(
+                    reopened.bin_data_content[0].data.load().to_vec(),
+                    expected_image
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn password_pdf_unicode_empty_permissions_and_resource_rejection_are_request_local() {
+    use rhwp::parser::pdf::{parse_pdf_with_policy, PdfImportPolicy};
+    use rhwp::DocumentCore;
+    let expected = texts(
+        DocumentCore::from_bytes(&password_control_8415("password-control"))
+            .unwrap()
+            .document(),
+    );
+    for (name, password) in [
+        ("password-unicode", "합성-암호-8415".to_owned()),
+        ("password-long-unicode", "가".repeat(43)),
+        ("password-metadata-clear", "synthetic-open".to_owned()),
+        ("password-padded-fields", "synthetic-open".to_owned()),
+        ("password-padded-fields", "synthetic-owner".to_owned()),
+        ("password-empty", String::new()),
+    ] {
+        let core = DocumentCore::from_bytes_with_password(
+            &password_control_8415(name),
+            password.as_bytes(),
+        )
+        .unwrap();
+        assert_eq!(texts(core.document()), expected, "{name}");
+    }
+    let input = password_control_8415("password-r6");
+    let options = PdfImportOptions {
+        password: Some("synthetic-open".into()),
+        ..Default::default()
+    };
+    assert!(!format!("{options:?}").contains("synthetic-open"));
+    // Keep xref offsets intact while independently corrupting the encryption
+    // contract. These are admission tests, not alternate valid algorithms.
+    for (before, after, code) in [
+        (
+            "/Filter /Standard",
+            "/Filter /PubSecXX",
+            "PDF_ENCRYPTION_UNSUPPORTED",
+        ),
+        ("/R 6", "/R 9", "PDF_ENCRYPTION_UNSUPPORTED"),
+        ("/CFM /AESV3", "/CFM /AESV9", "PDF_ENCRYPTION_UNSUPPORTED"),
+        ("/U <", "/Z <", "PDF_PARSE_FAILED"),
+    ] {
+        assert_eq!(before.len(), after.len());
+        let start = input
+            .windows(before.len())
+            .position(|w| w == before.as_bytes())
+            .unwrap();
+        let mut invalid = input.clone();
+        invalid[start..start + before.len()].copy_from_slice(after.as_bytes());
+        assert_eq!(
+            parse_pdf_with_options(&invalid, &options)
+                .err()
+                .unwrap()
+                .code,
+            code
+        );
+    }
+    let policy = PdfImportPolicy::default()
+        .with_limits_json(r#"{"backend":{"decodedBytes":1048576}}"#)
+        .unwrap();
+    assert_eq!(
+        parse_pdf_with_policy(&input, &options, policy)
+            .err()
+            .unwrap()
+            .code,
+        "PDF_RESOURCE_LIMIT"
+    );
+    assert_eq!(
+        texts(&parse_pdf_with_options(&input, &options).unwrap().document),
+        expected
+    );
+    // The original empty-user-password PDF has restrictive copy/edit flags.
+    assert_eq!(
+        texts(
+            &parse_pdf_with_options(
+                &password_control_8415("password-empty"),
+                &Default::default()
+            )
+            .unwrap()
+            .document
+        ),
+        expected
+    );
 }

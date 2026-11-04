@@ -1,0 +1,195 @@
+{
+  "source": "9cabbff39d",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "18b8b9d7637089696afabf8081bf091022d134307a4369e89100f45844a087a4",
+      "bytes": 2574
+    },
+    {
+      "path": "dejavu-family-environment.json",
+      "sha256": "50b380c8ffa38a0ac36f489057cd691abe66bdbcaa6773cbae78a68fcfe498b2",
+      "bytes": 113
+    },
+    {
+      "path": "gates.json",
+      "sha256": "9f388afd799588d7fec001282e86110893d39f243490237f2e072706c395af73",
+      "bytes": 585
+    },
+    {
+      "path": "images/native/images/overlay_001.png",
+      "sha256": "b2d17f08eb39d0a1c601bccf61c2048e261b86b63cbd3506ea79e01151c5311e",
+      "bytes": 20675
+    },
+    {
+      "path": "images/native/images/overlay_004.png",
+      "sha256": "e0c2550d8f89015e61c23616e76d394bec3f723e6ce5cdb61611cb13a0beed4c",
+      "bytes": 21029
+    },
+    {
+      "path": "images/native/images/overlay_005.png",
+      "sha256": "f225de69732644a1b9d87a94db2d0a84778c0f5d243f088a157f276ecc9aab1d",
+      "bytes": 22192
+    },
+    {
+      "path": "images/native/images/review_001.png",
+      "sha256": "2f2ccc30dafcc8a4409037cd7a240922506af9ba8ede66221fca85d08d32a0cf",
+      "bytes": 26805
+    },
+    {
+      "path": "images/native/images/review_004.png",
+      "sha256": "f68f95bdd40ff98bd49e827e7fb420b3a214e5d79a6b5c2811973ffd5de9fb38",
+      "bytes": 28164
+    },
+    {
+      "path": "images/native/images/review_005.png",
+      "sha256": "ee9108a374f12a57b4b777936a4ad72a4318e1d287692da33efe620dfc980af7",
+      "bytes": 30930
+    },
+    {
+      "path": "images/native/text/overlay_002.png",
+      "sha256": "a80fc9a0d65b34b9428f315b804a4b992ab0d5623eabd35a747bfc11df6dc9ff",
+      "bytes": 22296
+    },
+    {
+      "path": "images/native/text/review_002.png",
+      "sha256": "e1f8124bfa9aa9c04ae07a52447d1ed277d68048cd0c8229189a69c7c6739d3e",
+      "bytes": 33621
+    },
+    {
+      "path": "images/wasm/images/overlay_001.png",
+      "sha256": "a21ce1894b412d15bd218858d8e06f6004f2992f1c27575b0f919a2700f19b69",
+      "bytes": 20671
+    },
+    {
+      "path": "images/wasm/images/overlay_004.png",
+      "sha256": "e0c2550d8f89015e61c23616e76d394bec3f723e6ce5cdb61611cb13a0beed4c",
+      "bytes": 21029
+    },
+    {
+      "path": "images/wasm/images/overlay_005.png",
+      "sha256": "f225de69732644a1b9d87a94db2d0a84778c0f5d243f088a157f276ecc9aab1d",
+      "bytes": 22192
+    },
+    {
+      "path": "images/wasm/images/review_001.png",
+      "sha256": "0109bbd9b8f363b3ecb1c1ab87abc63233a33d370b392e20ff764a520780f6d8",
+      "bytes": 26754
+    },
+    {
+      "path": "images/wasm/images/review_004.png",
+      "sha256": "f68f95bdd40ff98bd49e827e7fb420b3a214e5d79a6b5c2811973ffd5de9fb38",
+      "bytes": 28164
+    },
+    {
+      "path": "images/wasm/images/review_005.png",
+      "sha256": "ee9108a374f12a57b4b777936a4ad72a4318e1d287692da33efe620dfc980af7",
+      "bytes": 30930
+    },
+    {
+      "path": "images/wasm/text/overlay_002.png",
+      "sha256": "486b2ded3f5cf366912797e1a4015a8a1480b71b89c703b97e1301176a14cdc9",
+      "bytes": 21901
+    },
+    {
+      "path": "images/wasm/text/review_002.png",
+      "sha256": "5cac738b84ac64413ea64d99c071b53ffa23aa387d8de53e2f90145f52f93d47",
+      "bytes": 32585
+    },
+    {
+      "path": "private-aggregate.json",
+      "sha256": "25ef9c12eec749dd32a26e5be7e9ac79befa958fc3e8cc862e3bd18dbed1b7ad",
+      "bytes": 3816
+    },
+    {
+      "path": "probes/prepare_clip_controls.py",
+      "sha256": "397dd1645c14871ddecbf44b2ed4d5749df575eb5aec8f9cfdb321f442565ba5",
+      "bytes": 3564
+    },
+    {
+      "path": "probes/prepare_text_clip_control.py",
+      "sha256": "a34331b64b34faa37fde4143a430e66da11ee5df8cbf31474fdfd973e4736330",
+      "bytes": 1557
+    },
+    {
+      "path": "public-inputs.json",
+      "sha256": "0904daaa9a69ac724c2605ece1d54700bf9164bc3b3685278a291907a6aba96c",
+      "bytes": 834
+    },
+    {
+      "path": "studio-summary.json",
+      "sha256": "0b8bd56414afeb16e69c6259254a107b4d883a89ffb878d6ba0bc3aad082f552",
+      "bytes": 1436
+    },
+    {
+      "path": "t02-browser-clip.json",
+      "sha256": "fc0d0f6c5d577d76663552e8dcf6efd80ea6724357bf7210b642f93506c5f2a1",
+      "bytes": 1658
+    },
+    {
+      "path": "t02-browser-text-batch.json",
+      "sha256": "2b05f8b40b88b0cfdabc06f7a1db2e5e15eeacb34101679da1835d4a6197a7a1",
+      "bytes": 337
+    },
+    {
+      "path": "t02-native-producer.json",
+      "sha256": "11ab9c7a66cb108489e5c2c918ad6fe83955c5da53da22e1e892e08df92c96e9",
+      "bytes": 332
+    },
+    {
+      "path": "t02-operators-before.json",
+      "sha256": "dafb99b95e01e1398999f917a10fa6ed623d0bfc40c6485506350af047035db4",
+      "bytes": 214
+    },
+    {
+      "path": "t02-operators-candidate.json",
+      "sha256": "8279716086501832d92b0abbe9f52101f41dc4e0461650be11b805667873b282",
+      "bytes": 590
+    },
+    {
+      "path": "t02-wasm-producer.json",
+      "sha256": "f85363749b2d15683b50c46f7e4435af7dd512b408e0f26521b45b22c049b5b8",
+      "bytes": 887
+    },
+    {
+      "path": "t02-worker-clip.json",
+      "sha256": "186f38d874afb7cd89a6648e36728379825f37f6846d7c58bc41e9631dba2f05",
+      "bytes": 249
+    },
+    {
+      "path": "tsv/native/batch/silhouette.tsv",
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "bytes": 164
+    },
+    {
+      "path": "tsv/native/images/silhouette.tsv",
+      "sha256": "96f3cc17c1ae24448f3f6c774dff76a46ae60ec0f43073a3935f5b90759a56ab",
+      "bytes": 242
+    },
+    {
+      "path": "tsv/native/text/silhouette.tsv",
+      "sha256": "af0d7ef725f12d2aa05f3a386416fbb5bcdc9e347ae69f5076613422d33ee79c",
+      "bytes": 184
+    },
+    {
+      "path": "tsv/wasm/batch/silhouette.tsv",
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "bytes": 164
+    },
+    {
+      "path": "tsv/wasm/images/silhouette.tsv",
+      "sha256": "96f3cc17c1ae24448f3f6c774dff76a46ae60ec0f43073a3935f5b90759a56ab",
+      "bytes": 242
+    },
+    {
+      "path": "tsv/wasm/text/silhouette.tsv",
+      "sha256": "9e83e432d3f2300ef54a44fa7d98ebd345b4830e43bb1ebefd13e639b05b27a9",
+      "bytes": 190
+    },
+    {
+      "path": "visual-summary.json",
+      "sha256": "cc80bc651425f9b7a3adeac96b939f001fc0b59e65e06bfddc994932eca1ebf8",
+      "bytes": 816
+    }
+  ]
+}

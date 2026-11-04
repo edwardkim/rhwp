@@ -357,6 +357,26 @@ impl Renderer for HtmlRenderer {
                 color
             ));
         }
+        if let Some(p) = style.text_paint {
+            let rgba = |color: u32, alpha: u8| {
+                format!(
+                    "rgba({},{},{},{})",
+                    color & 255,
+                    (color >> 8) & 255,
+                    (color >> 16) & 255,
+                    f64::from(alpha) / 255.0
+                )
+            };
+            css.push_str(&format!(
+                "-webkit-text-stroke:{}px {};-webkit-text-fill-color:{};paint-order:fill stroke;",
+                if p.width == 0.0 { 1.0 } else { p.width },
+                rgba(p.paint.stroke_color, p.paint.stroke_alpha),
+                rgba(
+                    style.color,
+                    if p.paint.fill { p.paint.fill_alpha } else { 0 }
+                )
+            ));
+        }
         // 양각
         if style.emboss {
             css.push_str("text-shadow:-1px -1px 0 #999,1px 1px 0 #fff;");
@@ -374,8 +394,8 @@ impl Renderer for HtmlRenderer {
             ));
         }
 
-        let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
-        if (ratio - 1.0).abs() > 0.01 {
+        let (_, ratio) = style.ratio_draw_params(1.0);
+        if style.has_horizontal_ratio() {
             css.push_str(&format!(
                 "transform:scaleX({:.4});transform-origin:left;",
                 ratio

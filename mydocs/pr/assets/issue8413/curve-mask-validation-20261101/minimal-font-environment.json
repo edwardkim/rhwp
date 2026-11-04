@@ -1,0 +1,36 @@
+{
+  "hidden": [
+    "/mnt/c/Windows/Fonts",
+    "/mnt/e",
+    "/home/edward/mygithub/ttfs",
+    "/home/edward/.fonts",
+    "/home/edward/.local/share/fonts",
+    "/opt"
+  ],
+  "fontconfigFiles": [
+    "/tmp/rhwp-issue8413-validation/ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+    "/tmp/rhwp-issue8413-validation/ttfs/opensource/RHWPOldHangul-Regular.otf",
+    "/tmp/rhwp-issue8413-validation/ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+    "/tmp/rhwp-issue8413-validation/ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+    "/tmp/rhwp-issue8413-validation/ttfs/opensource/NotoSansKR-Regular.ttf"
+  ],
+  "bundledFiles": [
+    "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+    "ttfs/opensource/NotoSansKR-Regular.ttf",
+    "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+    "ttfs/opensource/RHWPOldHangul-Regular.otf",
+    "ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+    "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf"
+  ],
+  "isolation": "bwrap mount namespace; only /usr, /etc, /proc, /dev, /sys, validation checkout, repository and Rust/Node tools are mounted",
+  "emptyMounts": [
+    "/usr/share/fonts",
+    "/usr/local/share/fonts"
+  ],
+  "unsetEnvironment": [
+    "RHWP_FONT_PATH"
+  ],
+  "temporaryDirectory": "private /tmp with validation worktree mounted explicitly",
+  "diagnosticFontDirectories": "repository output directories with font or arial in the name are masked, except the empty Fontconfig cache/config directory",
+  "testFixtures": "Tests may explicitly load repository license-checked fixtures; system/private fonts are not available."
+}

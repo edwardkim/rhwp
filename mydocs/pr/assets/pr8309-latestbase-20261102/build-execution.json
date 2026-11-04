@@ -1,0 +1,114 @@
+[
+  {
+    "name": "prepare-latest-suites",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--prepare"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 1.41
+  },
+  {
+    "name": "base-negative",
+    "command": [
+      "python3",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8309-latest/run-minfont.py",
+      "/home/edward/mygithub/rhwp-worktrees/pr-8309-textbox-vertical-align",
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "textbox_vertical_align_hwp",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 101,
+    "elapsed_seconds": 153.02
+  },
+  {
+    "name": "base-wasm",
+    "command": [
+      "bash",
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8309-latest/base-pkg",
+      "--release",
+      "--mode",
+      "no-install"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 868.5
+  },
+  {
+    "name": "candidate-native",
+    "command": [
+      "python3",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8309-latest/run-minfont.py",
+      "/home/edward/mygithub/rhwp-worktrees/pr-8309-textbox-vertical-align",
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--lib",
+      "--bin",
+      "rhwp",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 154.94
+  },
+  {
+    "name": "candidate-positive",
+    "command": [
+      "python3",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8309-latest/run-minfont.py",
+      "/home/edward/mygithub/rhwp-worktrees/pr-8309-textbox-vertical-align",
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "textbox_vertical_align_hwp",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 151.05
+  },
+  {
+    "name": "candidate-wasm",
+    "command": [
+      "bash",
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--release",
+      "--mode",
+      "no-install"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 845.78
+  }
+]

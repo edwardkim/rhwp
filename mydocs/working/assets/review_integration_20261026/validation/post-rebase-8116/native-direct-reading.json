@@ -1,0 +1,45 @@
+{
+  "source_head": "ae8c413f84a01a4cc4591357056183709f21b150",
+  "records": [
+    {
+      "key": "rebase8116-overlay_table_beside_title",
+      "page": 2,
+      "actual_png_sha256": "d251ec727a5388d4d1b0b1311889da85afa1b3d6bdd7c20ca1e8ebfce52029f6",
+      "comparison": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8116/reading/rebase8116-overlay_table_beside_title-p002-native-compare.png",
+      "observation": "제목·작은 표가 둘째 쪽 위에 함께 있고 본문 표와 겹치지 않는다.",
+      "remaining_appearance": "기존 글꼴 굵기·래스터 차이를 픽셀 완전 일치로 주장하지 않는다."
+    },
+    {
+      "key": "rebase8116-cell_nested_table_rows",
+      "page": 1,
+      "actual_png_sha256": "011854448dd23a401573fe6a2f1f2b4bb5f641c6b34fc2c22e424fc38b30f2fd",
+      "comparison": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8116/reading/rebase8116-cell_nested_table_rows-p001-native-compare.png",
+      "observation": "중첩 표의 글줄·행 경계와 뒤 내용이 셀 안에 보존된다.",
+      "remaining_appearance": "기존 글꼴 굵기·래스터 차이를 픽셀 완전 일치로 주장하지 않는다."
+    },
+    {
+      "key": "rebase8116-title_between_floating_shapes",
+      "page": 3,
+      "actual_png_sha256": "6d0bc57b19291780cbef83df80c7cfd457ab8aa69a1da9e3849a2f765ec1ad67",
+      "comparison": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8116/reading/rebase8116-title_between_floating_shapes-p003-native-compare.png",
+      "observation": "셋째 쪽의 장식·본문·하단 표와 뒤 장식이 기준과 같은 쪽에 놓인다.",
+      "remaining_appearance": "기준 devel에도 있는 상단 장식의 색상 영역 크기·제목 글꼴 굵기 차이, 일부 셀의 줄바꿈 차이가 남아 있다. 독립 PDF와 픽셀 완전 일치로 주장하지 않는다. Native/WASM의 기준-후보 출력 연속성 원장으로 기존 차이를 구분한다."
+    },
+    {
+      "key": "rebase8116-title_between_floating_shapes",
+      "page": 4,
+      "actual_png_sha256": "1ff28b2ff2b914feb16866d0b1cc463271533b2d5e527f62572a0d867b5cd9ac",
+      "comparison": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8116/reading/rebase8116-title_between_floating_shapes-p004-native-compare.png",
+      "observation": "넷째 쪽 제목이 한 글줄로 유지되고 표 위 간격이 보존된다.",
+      "remaining_appearance": "기준 devel에도 있는 상단 장식의 색상 영역 크기·제목 글꼴 굵기 차이, 일부 셀의 줄바꿈 차이가 남아 있다. 독립 PDF와 픽셀 완전 일치로 주장하지 않는다. Native/WASM의 기준-후보 출력 연속성 원장으로 기존 차이를 구분한다."
+    },
+    {
+      "key": "rebase8116-picture_cell_row_height",
+      "page": 5,
+      "actual_png_sha256": "a5e5bee24eb10f3dd674400e72e9b445ca62acf0cc5ff74d781376fe61552585",
+      "comparison": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8116/reading/rebase8116-picture_cell_row_height-p005-native-compare.png",
+      "observation": "다섯째 쪽 작은 표 아래의 제목·본문 표가 겹치지 않고 원래 행과 글줄 순서가 유지된다.",
+      "remaining_appearance": "기존 글꼴 굵기·래스터 차이를 픽셀 완전 일치로 주장하지 않는다."
+    }
+  ]
+}

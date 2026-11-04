@@ -1,0 +1,347 @@
+{
+  "date": "2026-10-28",
+  "method": "git patch-id --stable commit comparison from each historical merge base",
+  "prs": [
+    {
+      "number": 8115,
+      "old_head": "a47a41d3004a0458873cf1a00e90a356f19f2fa5",
+      "new_head": "7f29ae9b311a963702142cab91e7c53383de8e84",
+      "old_commits": 9,
+      "new_commits": 9,
+      "added_commits": [],
+      "missing_commits": []
+    },
+    {
+      "number": 8128,
+      "old_head": "21c40f21c5ee019fdf1ee4e68bdfeed35d3ae26c",
+      "new_head": "063763a3a374d32d2b74f031c1603c317334e661",
+      "old_commits": 3,
+      "new_commits": 3,
+      "added_commits": [
+        {
+          "sha": "28f8164cafc2c118ae793c2aa4a2fb1d778de5d6",
+          "subject": "fix(typeset): 이어지는 쪽에서도 같은 문단의 다음 저장 쪽 reset 을 경계로 쓰고 그 조각의 자기 각주를 표시 쪽에 둔다",
+          "patch_id": "b4e04474ef286bf47dfcb79c3e918f8031dfd428"
+        }
+      ],
+      "missing_commits": [
+        {
+          "sha": "f5bcd972fabd84f334319d954416b34bbb43d359",
+          "subject": "fix(typeset): 이어지는 쪽에서도 같은 문단의 다음 저장 쪽 reset 을 경계로 쓰고 그 조각의 자기 각주를 표시 쪽에 둔다",
+          "patch_id": "930f6f48941c21d97a35c135cff7beb01f112c00"
+        }
+      ]
+    },
+    {
+      "number": 8133,
+      "old_head": "465d85f13cab961628ec07247ea6ade82e0cbc46",
+      "new_head": "695c354ee46cf793c9620a927daeb61355cd32e1",
+      "old_commits": 12,
+      "new_commits": 12,
+      "added_commits": [
+        {
+          "sha": "90b17663684f551d760b328fab1bf4490e694677",
+          "subject": "fix(skia): raster 획은 장치 한 칸보다 가늘게 그리지 않는다 (#8125)",
+          "patch_id": "9d1a33c5580ac9fef5cde381ed3529c87e90a1a6"
+        },
+        {
+          "sha": "7797a6e96165be90f78943d14ba9ec7d71be06cc",
+          "subject": "ci: skia_subpixel_stroke_hairline 를 Native Skia 분류 목록에 등록 (#8125)",
+          "patch_id": "c90b82ec12441c720a999b3443bdcd73441944fe"
+        },
+        {
+          "sha": "01aaee1afe75768e7225722f6c8d4c6a874e87e9",
+          "subject": "test: #8125 가는 획 회귀를 기존 Native Skia 검사 파일로 옮긴다",
+          "patch_id": "1871466145b429972115bc92d2eabda788c5118e"
+        }
+      ],
+      "missing_commits": [
+        {
+          "sha": "5fdd263ee9f05cc977d5bee5cabe03849f6d995c",
+          "subject": "fix(skia): raster 획은 장치 한 칸보다 가늘게 그리지 않는다 (#8125)",
+          "patch_id": "c28bfe9fbbb2618dc337ab5d97622cad7a3dde62"
+        },
+        {
+          "sha": "68e11eb4b78a837e9c935a5ce04d6e9539110618",
+          "subject": "ci: skia_subpixel_stroke_hairline 를 Native Skia 분류 목록에 등록 (#8125)",
+          "patch_id": "3976808b3ac70a11b744815c140190faf93b96e6"
+        },
+        {
+          "sha": "c0b1451409d1e5e529fa5009c3849105440b75a1",
+          "subject": "test: #8125 가는 획 회귀를 기존 Native Skia 검사 파일로 옮긴다",
+          "patch_id": "ac2b1a431cfe3f323a407fb70def48b411b93a0b"
+        }
+      ]
+    },
+    {
+      "number": 8142,
+      "old_head": "e1abc4c7f149268ea63995eeedeb02cfcc92e5cd",
+      "new_head": "500f5b8825f0b5cc7c4409b04d2a53e0cbdb2ed8",
+      "old_commits": 3,
+      "new_commits": 3,
+      "added_commits": [],
+      "missing_commits": []
+    },
+    {
+      "number": 8184,
+      "old_head": "567ff9d18ac1f7e702e94042eb38a03a44f95943",
+      "new_head": "cc6d06077013daf6090021ab317c347dbd05b236",
+      "old_commits": 24,
+      "new_commits": 27,
+      "added_commits": [
+        {
+          "sha": "6a69023fb46b0b8dc04c7f07b1d76a6ed8dbf41d",
+          "subject": "fix(layout): TAC 표의 아래 캡션 띠와 TAC 도형 host 뒤 줄간격을 저장 사다리대로 그린다 (#8149)",
+          "patch_id": "093022a7a71722355d3b74cca2e66560e1aa86aa"
+        },
+        {
+          "sha": "7acdfbb69f8a7240b89cb4fc9c4896f141eec5b2",
+          "subject": "fix(typeset): #8149 빈 host 표 첫 조각 예약을 첫 행 이월 판정과 공유한다",
+          "patch_id": "a71296b439435eb31d436b0e03ffc1f47e62859c"
+        },
+        {
+          "sha": "b74d4c2d2690dfcb749d78735b417cbb3bd39c19",
+          "subject": "fix(float): #8149 단 첫머리 빈 host 표 쪽의 저장 원점을 상자 등식으로 정한다",
+          "patch_id": "434d9a50dfe66cf39813092f0d96ba3da73e26c2"
+        },
+        {
+          "sha": "6fe6d9fdb01c494e6da80573bec03539b959d703",
+          "subject": "fix(#8149): 다음 문단 조회를 바인딩 방식과 무관한 `first + 1` 로 쓴다",
+          "patch_id": "a3a2ecedc90cadc247b95a3508c06cb67cf8f549"
+        },
+        {
+          "sha": "ffbf463e00816dee61a7609cb1ea44bed692bd7a",
+          "subject": "fix(#8149): 빈 host 표 뒤 흡수·첫 조각 앵커·저장 원점 대체를 한/글 출력과 맞춘다",
+          "patch_id": "b41096a59367787b41813fc6a6a7df115b680473"
+        },
+        {
+          "sha": "cc6d06077013daf6090021ab317c347dbd05b236",
+          "subject": "fix(#8149): 대체 원점은 저장 줄이 커서를 증언할 때, 첫 조각 예약은 표 안 각주가 없을 때만",
+          "patch_id": "bde68615b0f05920a6af840738f3af4bd997539f"
+        }
+      ],
+      "missing_commits": [
+        {
+          "sha": "05cef5908cf6d7b7a7580f38bfd7ae888b96e16f",
+          "subject": "fix(layout): TAC 표의 아래 캡션 띠와 TAC 도형 host 뒤 줄간격을 저장 사다리대로 그린다 (#8149)",
+          "patch_id": "937e4c2a7e347ff0f19ce9d90e585ad24dcb1a28"
+        },
+        {
+          "sha": "add1ee699818af2a8364dee9ff051425a50da272",
+          "subject": "fix(typeset): #8149 빈 host 표 첫 조각 예약을 첫 행 이월 판정과 공유한다",
+          "patch_id": "18b8ba7a74578eafad0719102778c6b54d212924"
+        },
+        {
+          "sha": "ca6112a6c91c2eef40f1b46e88e442b7723bdc2c",
+          "subject": "fix(float): #8149 단 첫머리 빈 host 표 쪽의 저장 원점을 상자 등식으로 정한다",
+          "patch_id": "41b8bc8cd9b7b549765b8b79aded6fa7bdee91ca"
+        }
+      ]
+    },
+    {
+      "number": 8202,
+      "old_head": "d0f6adbeef179e17d0431eb84c38443d318a887a",
+      "new_head": "75357ec08a6417fb0d9eaf688c2f5267ebe00e70",
+      "old_commits": 3,
+      "new_commits": 3,
+      "added_commits": [
+        {
+          "sha": "163a24ce994457f76f887f152428c6ef8adbc967",
+          "subject": "fix(layout): 글자처럼 취급 도형이 자기 줄을 키우고 글자는 그 줄의 기준선에 놓인다 (#8167)",
+          "patch_id": "12a3979745c17cb17031b5ad1397f6782eb2855e"
+        }
+      ],
+      "missing_commits": [
+        {
+          "sha": "654ee8d47d4407f6dd88fa3a3f4161163f303072",
+          "subject": "fix(layout): 글자처럼 취급 도형이 자기 줄을 키우고 글자는 그 줄의 기준선에 놓인다 (#8167)",
+          "patch_id": "d219d9d45808e32236c415c736403bc5d1fe6f8a"
+        }
+      ]
+    },
+    {
+      "number": 8205,
+      "old_head": "5de6de6a1586e4ce714ee4c8e51a92a3b4812c97",
+      "new_head": "2ef5f3f2c9ff0184f8c0c74ed5ff97a74f656d7c",
+      "old_commits": 3,
+      "new_commits": 3,
+      "added_commits": [
+        {
+          "sha": "885fdc7a0b0a9f679d822c15bd56a37775afcdb6",
+          "subject": "perf(typeset): 미주 단 측정의 수식 재계산과 중복 재생 제거",
+          "patch_id": "a86ea63779772e17696ada2a9e252b11273816e7"
+        }
+      ],
+      "missing_commits": [
+        {
+          "sha": "d254c9bac69ca05c2a1c9eb80a975a9c22a72258",
+          "subject": "perf(typeset): 미주 단 측정의 수식 재계산과 중복 재생 제거",
+          "patch_id": "5a465bc567dc0210e6bf48e283bf2b591234f889"
+        }
+      ]
+    },
+    {
+      "number": 8206,
+      "old_head": "dd3ad0b29bb55893caf8d618e42a24776d64673f",
+      "new_head": "da54116c8597a4d1ba6c6c29a4cf1771bad45fe3",
+      "old_commits": 4,
+      "new_commits": 4,
+      "added_commits": [],
+      "missing_commits": []
+    },
+    {
+      "number": 8209,
+      "old_head": "01588f1e997b37795d2dbafecdf1f015341d553c",
+      "new_head": "40174966a35149fbd4dcb5f6dd17ebaafef8e412",
+      "old_commits": 6,
+      "new_commits": 6,
+      "added_commits": [],
+      "missing_commits": []
+    },
+    {
+      "number": 8210,
+      "old_head": "276d569c2f5abce5b77bfb89aed016951e314bd3",
+      "new_head": "d5c4895563711039cd1b110940531f6b76a0b4c6",
+      "old_commits": 10,
+      "new_commits": 10,
+      "added_commits": [
+        {
+          "sha": "285c2ea1af5b5b2df9355a67b420312c3a0d792f",
+          "subject": "perf(table): 큰 표 분할 스캔의 표 단위 사실을 행·셀마다 다시 계산하지 않음",
+          "patch_id": "5b3bcf4e915e90a3970153a0abe1fd1af5bd855f"
+        }
+      ],
+      "missing_commits": [
+        {
+          "sha": "e0355691ab52253e4c6b5b4714b5b64a85804869",
+          "subject": "perf(table): 큰 표 분할 스캔의 표 단위 사실을 행·셀마다 다시 계산하지 않음",
+          "patch_id": "9d2167fdeb51c5143a362d15edd1c1d3ed277744"
+        }
+      ]
+    },
+    {
+      "number": 8213,
+      "old_head": "d9aab2292be0da4c71dc2c28665fd9ddc8c07a59",
+      "new_head": "73d77a2a05f8d9523aedd0e53b22ed1faca14b8a",
+      "old_commits": 17,
+      "new_commits": 17,
+      "added_commits": [
+        {
+          "sha": "285c2ea1af5b5b2df9355a67b420312c3a0d792f",
+          "subject": "perf(table): 큰 표 분할 스캔의 표 단위 사실을 행·셀마다 다시 계산하지 않음",
+          "patch_id": "5b3bcf4e915e90a3970153a0abe1fd1af5bd855f"
+        },
+        {
+          "sha": "0be8f5d3880c10ca4927a4dd5a11fdbc6c4b7e3a",
+          "subject": "perf(text): 글자 폭 메트릭 조회의 글꼴 이름 해석을 최근 이름 캐시로",
+          "patch_id": "07799dea3a0be5656335fd2ee35b6a451e92c386"
+        }
+      ],
+      "missing_commits": [
+        {
+          "sha": "e0355691ab52253e4c6b5b4714b5b64a85804869",
+          "subject": "perf(table): 큰 표 분할 스캔의 표 단위 사실을 행·셀마다 다시 계산하지 않음",
+          "patch_id": "9d2167fdeb51c5143a362d15edd1c1d3ed277744"
+        },
+        {
+          "sha": "32301f8a2d3f2b88fe037b37a2af8167f2d81b3c",
+          "subject": "perf(text): 글자 폭 메트릭 조회의 글꼴 이름 해석을 최근 이름 캐시로",
+          "patch_id": "8670d120c187369066c27d9d91c63e1410ec70e3"
+        }
+      ]
+    },
+    {
+      "number": 8215,
+      "old_head": "31e5e700791c89c743feacd84acc55bc034569a3",
+      "new_head": "a232a87a4fe825c928b59ed872e880d7206029de",
+      "old_commits": 1,
+      "new_commits": 1,
+      "added_commits": [],
+      "missing_commits": []
+    },
+    {
+      "number": 8217,
+      "old_head": "b717326395c5e9556f6ccb0ec3dc1c127c2daf49",
+      "new_head": "283b9f83c91ca32f9d084f195f939a8d27cb38e2",
+      "old_commits": 1,
+      "new_commits": 1,
+      "added_commits": [],
+      "missing_commits": []
+    },
+    {
+      "number": 8219,
+      "old_head": "bfe5d44cf1d08806d9ac12aff1096096ed0853c0",
+      "new_head": "ed9d725e522595959fc703ba8f8e6ecc8d757975",
+      "old_commits": 1,
+      "new_commits": 1,
+      "added_commits": [],
+      "missing_commits": []
+    },
+    {
+      "number": 8221,
+      "old_head": "1a69db15352e171d2a16b4195d78cc445af2e9e6",
+      "new_head": "3e230b6d724d2712a7f0f3694a5117340f4ccc26",
+      "old_commits": 3,
+      "new_commits": 3,
+      "added_commits": [],
+      "missing_commits": []
+    },
+    {
+      "number": 8227,
+      "old_head": "a34d1fb70dcdc2e1f692efaa63bfd2d77ee0e74c",
+      "new_head": "fe855d85935c47b3ff5fd1b93839e5926f468828",
+      "old_commits": 7,
+      "new_commits": 7,
+      "added_commits": [],
+      "missing_commits": []
+    },
+    {
+      "number": 8229,
+      "old_head": "195ce6297541f2136ea02fb55cdc531320d2d714",
+      "new_head": "dc375dca931c4198225805e6de26ca379ec5297d",
+      "old_commits": 8,
+      "new_commits": 8,
+      "added_commits": [],
+      "missing_commits": []
+    },
+    {
+      "number": 8237,
+      "old_head": "f58e857b1294dd1ed0ea1f355f6323fbc5dbcd51",
+      "new_head": "18637f022c69ee1b4a5d12cb994bf060a4306f7d",
+      "old_commits": 9,
+      "new_commits": 9,
+      "added_commits": [],
+      "missing_commits": []
+    },
+    {
+      "number": 8265,
+      "old_head": "65196bb3f97293763b7736438feb6d47a5072922",
+      "new_head": "3d99386bb15ccb30b39735594e5771a01653acb8",
+      "old_commits": 1,
+      "new_commits": 1,
+      "added_commits": [],
+      "missing_commits": []
+    },
+    {
+      "number": 8283,
+      "old_head": "43d7eb24e84c84e6fd7a817dad579b9baebaaae3",
+      "new_head": "3d77e870874596b96275b9c0f48ec73dd3cde5ec",
+      "old_commits": 4,
+      "new_commits": 4,
+      "added_commits": [
+        {
+          "sha": "9c671965c6b069d178c068fe1b8939ab1110fd39",
+          "subject": "fix(layout): 저장 줄 없는 글자처럼 그림 호스트가 줄 폭 중립 부동 개체와 함께여도 현재 프레임에서 재조판된다 (#8271)",
+          "patch_id": "41df404ae67494552d7cf426396f41d729d78fc4"
+        }
+      ],
+      "missing_commits": [
+        {
+          "sha": "ebfa21f277a86347b67df3e8a3b94b97ea27a9da",
+          "subject": "fix(layout): 저장 줄 없는 글자처럼 그림 호스트가 줄 폭 중립 부동 개체와 함께여도 현재 프레임에서 재조판된다 (#8271)",
+          "patch_id": "b0f438ba068122b82e1ffbc48fe6bca35509bc94"
+        }
+      ]
+    }
+  ]
+}

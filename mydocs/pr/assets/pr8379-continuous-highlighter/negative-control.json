@@ -1,0 +1,16 @@
+{
+  "implementation_head": "503e53e9463d242ee26b5aedf4bda251538cbe49",
+  "test_file": "rhwp-studio/e2e/continuous-highlighter.test.mjs",
+  "tests_from": "maintainer added empty-range and F5 cases before product correction",
+  "wasm_sha256": "b2b50b86aa1a041cfd61022a92248d545aa0910fbe58895fe5bae87553de63c7",
+  "pass_count": 27,
+  "failed_assertions": [
+    "FAIL: 선택한 글자가 없으면 연속 형광펜 모드가 된다",
+    "FAIL: 선택한 셀의 글자에 형광펜 색이 즉시 적용된다",
+    "FAIL: 셀 블록 서식 지정은 연속 모드로 들어가지 않는다",
+    "FAIL: 셀 블록 칠은 undo 한 단계로 기록된다"
+  ],
+  "exit_code": 1,
+  "app_errors": [],
+  "wasm_response_matched": true
+}

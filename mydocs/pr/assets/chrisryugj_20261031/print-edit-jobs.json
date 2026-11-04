@@ -1,0 +1,22 @@
+[
+  {
+    "operation": "insert",
+    "job_id": "e1fe3f86-004f-4e06-a463-857641c09410",
+    "inputSha256": "431084096480f4dbf40359a51fb6918671c81b2170182e8818e6f4b7613513e7"
+  },
+  {
+    "operation": "delete",
+    "job_id": "27b70cbb-0d25-47cd-a15a-8da7c00ad28a",
+    "inputSha256": "71c76ad5dc326670ce7b0610efc17a67709660c2826ffaa3c430a1f3a1d5936e"
+  },
+  {
+    "operation": "split",
+    "job_id": "32231a9b-b3f1-4735-bec9-eb0615cb867a",
+    "inputSha256": "d56775d73d56562654787f11ad4308c77caf0797a445b4438ad1c24e24c70044"
+  },
+  {
+    "operation": "split-merge",
+    "job_id": "765cf6a0-abff-41e3-8d3a-1fe3f9c710f5",
+    "inputSha256": "63d1c2f0518c047a4b789a2df12c697f265f65d5846a7c1b2906d7fb88fd5867"
+  }
+]

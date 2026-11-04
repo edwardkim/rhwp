@@ -1,0 +1,38 @@
+[
+  {
+    "kind": "preservation",
+    "runtime": "native",
+    "pages": 3,
+    "minimumRaw": 96.6158,
+    "basePixelDifference": 0,
+    "baseSource": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+    "candidateSource": "9a9329766ae8068a841795c9cb0f216c5f790c84"
+  },
+  {
+    "kind": "preservation",
+    "runtime": "wasm",
+    "pages": 3,
+    "minimumRaw": 96.117,
+    "basePixelDifference": 0,
+    "baseSource": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+    "candidateSource": "9a9329766ae8068a841795c9cb0f216c5f790c84"
+  },
+  {
+    "kind": "preservation-tac",
+    "runtime": "native",
+    "pages": 3,
+    "minimumRaw": 99.29369,
+    "basePixelDifference": 0,
+    "baseSource": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+    "candidateSource": "9a9329766ae8068a841795c9cb0f216c5f790c84"
+  },
+  {
+    "kind": "preservation-tac",
+    "runtime": "wasm",
+    "pages": 3,
+    "minimumRaw": 99.30776,
+    "basePixelDifference": 0,
+    "baseSource": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+    "candidateSource": "9a9329766ae8068a841795c9cb0f216c5f790c84"
+  }
+]

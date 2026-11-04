@@ -1,0 +1,5 @@
+    Checking memchr v2.8.3
+    Checking serde v1.0.229
+    Checking serde_json v1.0.154
+    Checking llm-verifier-verdict-protocol v0.1.0 (/home/edward/mygithub/rhwp/tools/llm_verifier/verdict_protocol)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.24s

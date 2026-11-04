@@ -33,7 +33,13 @@ pub(in crate::renderer::typeset) fn prepare_forced_page_boundary(
     // 비율로 다시 거절하지 않는다. 기존 세션 편집 플래그와 구성 줄 수,
     // 유효 저장 앵커를 확인하고 실제 재조판으로 사라진 reset은 재사용하지 않는다.
     // 같은 원본 줄 사다리와 실제 흐름은 컨테이너 형식과 무관하게 같은 쪽을 소유한다.
-    let anchored_stored_body_reset_line = (!st.profile.session_edited()
+    let reflowed_text_fits = st.hidden_line_reflow_active
+        && st.profile.hwp3_native_layout()
+        && st.col_count == 1
+        && para.controls.is_empty()
+        && st.current_height + fmt.height_for_fit <= available;
+    let anchored_stored_body_reset_line = (!reflowed_text_fits
+        && !st.profile.session_edited()
         && stored_frame_valid
         && para_has_visible_text(para)
         && fmt.line_heights.len() == para.line_segs.len())
@@ -124,7 +130,8 @@ pub(in crate::renderer::typeset) fn prepare_forced_page_boundary(
         })
         // full-fit early return보다 앞의 같은 chain에 넣어야 reset tail을 통째로
         // 배치해 separator와 겹치는 우회가 없다.
-        .or(native_hwp5_existing_footnote_boundary.map(|boundary| boundary.break_line));
+        .or(native_hwp5_existing_footnote_boundary.map(|boundary| boundary.break_line))
+        .filter(|_| !reflowed_text_fits);
     if std::env::var("RHWP_DIAG_SPLIT_BUDGET").is_ok() && forced_page_break_line.is_some() {
         // 물리 예산 부족과 저장 경계 강제를 구분한다. 내용·동작은 바꾸지 않는다.
         eprintln!(

@@ -1,0 +1,388 @@
+{
+  "date": "2026-10-29",
+  "scope": "26개 파일 첫 주석에서 원본 비교 원장의 동일 파일명과 명시적 Native/WASM 값 쌍을 기계적으로 대응한 일부 쪽",
+  "result": "52개 쪽 수치 쌍 일치",
+  "checked_count": 52,
+  "inventory": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/regression-26-header-inventory.json",
+  "inventory_sha256": "59000dd342768c505a905954451edf789b90c10b4fb8bad71f827cfc19f983a8",
+  "source_evidence": {
+    "native": {
+      "path": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json",
+      "sha256": "6d68a0af743e1be5e3a20adbd39baeb96c91394a989a26af9e10193bb648a5be"
+    },
+    "wasm": {
+      "path": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json",
+      "sha256": "78524e879aec6833c940eb507e3f649fb4c96da3c6110eb357027970db744fbd"
+    }
+  },
+  "limitations": [
+    "각 숫자가 원장과 일치하는지 확인한 부분 점검이며 해당 문서의 최신 측정이나 다른 형식의 수치 전체를 보증하지 않는다.",
+    "PNG 고정 좌표의 정확성이나 테스트 통과 여부는 별도 증거로 판단한다."
+  ],
+  "pages": [
+    {
+      "test_file": "tests/cases/captioned_float_table_stored_frame.rs",
+      "input": "caption-negative-offset.hwp",
+      "page": 1,
+      "native_percent": 97.67543,
+      "wasm_percent": 97.67277
+    },
+    {
+      "test_file": "tests/cases/continuation_stored_reset_own_notes.rs",
+      "input": "cont_reset_F20_L70_N0.hwp",
+      "page": 2,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/continuation_stored_reset_own_notes.rs",
+      "input": "cont_reset_F20_L70_N0.hwp",
+      "page": 3,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/continuation_stored_reset_own_notes.rs",
+      "input": "cont_reset_F20_L70_N4.hwp",
+      "page": 2,
+      "native_percent": 99.996,
+      "wasm_percent": 99.99287
+    },
+    {
+      "test_file": "tests/cases/continuation_stored_reset_own_notes.rs",
+      "input": "cont_reset_F20_L70_N4.hwp",
+      "page": 3,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/continuation_stored_reset_own_notes.rs",
+      "input": "cont_reset_F20_L70_N6.hwp",
+      "page": 2,
+      "native_percent": 100.0,
+      "wasm_percent": 99.99127
+    },
+    {
+      "test_file": "tests/cases/continuation_stored_reset_own_notes.rs",
+      "input": "cont_reset_F20_L70_N6.hwp",
+      "page": 3,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/equation_render_cache_contract.rs",
+      "input": "equation-lim.hwp",
+      "page": 1,
+      "native_percent": 99.88926,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/equation_render_cache_contract.rs",
+      "input": "3-11월_실전_통합_2022.hwp",
+      "page": 1,
+      "native_percent": 98.71272,
+      "wasm_percent": 98.70189
+    },
+    {
+      "test_file": "tests/cases/equation_render_cache_contract.rs",
+      "input": "3-11월_실전_통합_2022.hwp",
+      "page": 21,
+      "native_percent": 90.80955,
+      "wasm_percent": 90.84255
+    },
+    {
+      "test_file": "tests/cases/issue_4068_column_top_table_outer_margin.rs",
+      "input": "2912695_civil_petition_form.hwp",
+      "page": 2,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_4068_unclipped_cell_honors_valign.rs",
+      "input": "issue2007_nested_cell_pagination_42065.hwp",
+      "page": 11,
+      "native_percent": 98.82265,
+      "wasm_percent": 98.87353
+    },
+    {
+      "test_file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "input": "trim_n0_F02.hwpx",
+      "page": 1,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "input": "trim_n0_F02.hwpx",
+      "page": 2,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "input": "trim_n0_h6630_F02.hwpx",
+      "page": 1,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "input": "trim_n0_h6630_F02.hwpx",
+      "page": 2,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "input": "trim_n0_h6660_F02.hwpx",
+      "page": 1,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "input": "trim_n0_h6660_F02.hwpx",
+      "page": 2,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "input": "trim_n0_l1_big_h6500_F01.hwpx",
+      "page": 1,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "input": "trim_n0_l1_big_h6500_F01.hwpx",
+      "page": 2,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "input": "trim_n1_F01.hwpx",
+      "page": 1,
+      "native_percent": 99.24286,
+      "wasm_percent": 99.22884
+    },
+    {
+      "test_file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "input": "trim_n1_F01.hwpx",
+      "page": 2,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "input": "trim_n1_F04.hwpx",
+      "page": 1,
+      "native_percent": 99.21161,
+      "wasm_percent": 99.19721
+    },
+    {
+      "test_file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "input": "trim_n1_F04.hwpx",
+      "page": 2,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "input": "issue1937_rowbreak_footnote_overpagination.hwp",
+      "page": 32,
+      "native_percent": 99.99238,
+      "wasm_percent": 99.99242
+    },
+    {
+      "test_file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "input": "issue1937_rowbreak_footnote_overpagination.hwp",
+      "page": 33,
+      "native_percent": 99.95598,
+      "wasm_percent": 99.94937
+    },
+    {
+      "test_file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "input": "issue1937_rowbreak_footnote_overpagination.hwp",
+      "page": 44,
+      "native_percent": 99.86042,
+      "wasm_percent": 99.85697
+    },
+    {
+      "test_file": "tests/cases/issue_7732_rowbreak_page_end_rows.rs",
+      "input": "issue1937_rowbreak_footnote_overpagination.hwp",
+      "page": 45,
+      "native_percent": 99.99757,
+      "wasm_percent": 99.98557
+    },
+    {
+      "test_file": "tests/cases/issue_7732_split_table_cell_footnotes.rs",
+      "input": "cellnotes_plain_N2_L7.hwpx",
+      "page": 1,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_7732_split_table_cell_footnotes.rs",
+      "input": "cellnotes_plain_N2_L7.hwpx",
+      "page": 11,
+      "native_percent": 98.43063,
+      "wasm_percent": 98.60333
+    },
+    {
+      "test_file": "tests/cases/issue_7732_split_table_cell_footnotes.rs",
+      "input": "cellnotes_span_N2.hwpx",
+      "page": 1,
+      "native_percent": 96.95701,
+      "wasm_percent": 96.9272
+    },
+    {
+      "test_file": "tests/cases/issue_7732_split_table_cell_footnotes.rs",
+      "input": "cellnotes_span_N2.hwpx",
+      "page": 2,
+      "native_percent": 98.80823,
+      "wasm_percent": 98.96267
+    },
+    {
+      "test_file": "tests/cases/issue_7732_split_table_cell_footnotes.rs",
+      "input": "r110_cellnotes_span_N2.hwpx",
+      "page": 1,
+      "native_percent": 96.95701,
+      "wasm_percent": 96.9272
+    },
+    {
+      "test_file": "tests/cases/issue_7732_split_table_cell_footnotes.rs",
+      "input": "r110_cellnotes_span_N2.hwpx",
+      "page": 3,
+      "native_percent": 98.16845,
+      "wasm_percent": 98.40227
+    },
+    {
+      "test_file": "tests/cases/issue_7732_split_table_cell_footnotes.rs",
+      "input": "issue1937_rowbreak_footnote_overpagination.hwp",
+      "page": 35,
+      "native_percent": 99.99617,
+      "wasm_percent": 99.99621
+    },
+    {
+      "test_file": "tests/cases/issue_7732_split_table_cell_footnotes.rs",
+      "input": "issue1937_rowbreak_footnote_overpagination.hwp",
+      "page": 41,
+      "native_percent": 99.99919,
+      "wasm_percent": 99.99595
+    },
+    {
+      "test_file": "tests/cases/issue_7732_split_table_cell_footnotes.rs",
+      "input": "issue1937_rowbreak_footnote_overpagination.hwp",
+      "page": 42,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_8149_empty_host_float_page_bottom.rs",
+      "input": "rowfit-2020.hwp",
+      "page": 1,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_8149_empty_host_float_page_bottom.rs",
+      "input": "rowfit-2020.hwp",
+      "page": 33,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_8149_empty_host_float_page_bottom.rs",
+      "input": "reservefit-2020.hwp",
+      "page": 1,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_8149_empty_host_float_page_bottom.rs",
+      "input": "reservefit-2020.hwp",
+      "page": 65,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_8149_empty_host_float_page_bottom.rs",
+      "input": "headerrow-2020.hwp",
+      "page": 1,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_8149_empty_host_float_page_bottom.rs",
+      "input": "headerrow-2020.hwp",
+      "page": 31,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/issue_8149_empty_host_float_page_bottom.rs",
+      "input": "한글문서파일형식_5.0_revision1.3.hwp",
+      "page": 20,
+      "native_percent": 99.9956,
+      "wasm_percent": 99.92004
+    },
+    {
+      "test_file": "tests/cases/issue_8149_empty_host_float_page_bottom.rs",
+      "input": "한글문서파일형식_5.0_revision1.3.hwp",
+      "page": 24,
+      "native_percent": 99.99751,
+      "wasm_percent": 99.99752
+    },
+    {
+      "test_file": "tests/cases/issue_8149_empty_host_float_page_bottom.rs",
+      "input": "hwpspec.hwp",
+      "page": 23,
+      "native_percent": 99.99389,
+      "wasm_percent": 99.79148
+    },
+    {
+      "test_file": "tests/cases/issue_8149_empty_host_float_page_bottom.rs",
+      "input": "hwpspec.hwp",
+      "page": 54,
+      "native_percent": 99.99765,
+      "wasm_percent": 99.99765
+    },
+    {
+      "test_file": "tests/cases/nested_table_height_cache_contract.rs",
+      "input": "issue2007_nested_cell_pagination_42065.hwp",
+      "page": 1,
+      "native_percent": 94.47057,
+      "wasm_percent": 94.39749
+    },
+    {
+      "test_file": "tests/cases/nested_table_height_cache_contract.rs",
+      "input": "issue2007_nested_cell_pagination_42065.hwp",
+      "page": 17,
+      "native_percent": 98.4589,
+      "wasm_percent": 98.0658
+    },
+    {
+      "test_file": "tests/cases/rowspan_band_fits_remaining_page.rs",
+      "input": "rowspan-band-fit.hwp",
+      "page": 1,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/rowspan_band_fits_remaining_page.rs",
+      "input": "rowspan-band-fit.hwp",
+      "page": 2,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    },
+    {
+      "test_file": "tests/cases/rowspan_band_fits_remaining_page.rs",
+      "input": "rowspan-band-fit.hwp",
+      "page": 9,
+      "native_percent": 100.0,
+      "wasm_percent": 100.0
+    }
+  ]
+}

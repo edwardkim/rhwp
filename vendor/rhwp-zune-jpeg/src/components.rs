@@ -55,6 +55,7 @@ pub(crate) struct Components {
     /// An up-sampling function, can be basic or SSE, depending
     /// on the platform
     pub up_sampler: UpSampler,
+    pub bounded_upsampler: Option<crate::transforms::BoundedSampler>,
     /// How pixels do we need to go to get to the next line?
     pub width_stride: usize,
     /// Component ID for progressive
@@ -161,6 +162,7 @@ impl Components {
             quantization_table: [0; 64],
             dc_pred: 0,
             up_sampler: upsample_no_op,
+            bounded_upsampler: None,
             // set later
             width_stride: horizontal_sample,
             id: a[0],

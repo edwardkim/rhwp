@@ -2129,8 +2129,10 @@ mod tests {
                 border_fill_id: 0,
                 text_direction: 0,
                 clip: false,
+                closed_reflow_frame: false,
                 page_fragment: false,
                 model_cell_index: None,
+                model_para_range: None,
             }),
             BoundingBox::new(0.0, 0.0, 30.0, 10.0),
         );

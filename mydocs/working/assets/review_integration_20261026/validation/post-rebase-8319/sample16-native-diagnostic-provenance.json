@@ -1,0 +1,30 @@
+{
+  "source_commit": "1c885d3110b768799eb9463c61a2be7a1f862755",
+  "binary_sha256": "42734d70a4d3cdd745c2f68bef8d800dfe9a0313619d0dd8867c006ff7bd6945",
+  "backend": "native-skia",
+  "dpi": 96,
+  "comparison": "independent Print PDF; verify_issue_8160_raw100.py: threshold 232, symmetric radius 2px",
+  "pages": 192,
+  "bidirectional_unmatched_0_0": 192,
+  "font_program_count": 217,
+  "exact_original_programs": 214,
+  "reconstructed_programs": [
+    {
+      "prior_sha256": "04264432d4d3d30eb2b4d0174b4c191b0418ebc2729bdeee8978305ceb8b14d1",
+      "actual_sha256": "03f28d860b1772b9010d417da585a7baf037e02945678d8f0e31d0ae7c13c9a3"
+    },
+    {
+      "prior_sha256": "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341",
+      "actual_sha256": "c149591683a19a7541c7504a608a29be49577bd7928e62effe22565c9371632b"
+    },
+    {
+      "prior_sha256": "f92ff78fe7eaf2914e9879966e6a8383d3c525242339b781a117b755df70034a",
+      "actual_sha256": "84b66080d1722b5629c613c0e1c91148547e9502c36dacd4764311cb407708ac"
+    }
+  ],
+  "font_environment_2024_sha256": "a665e92d8bae13cf3aef2f471a6186f3bac23e51c374138db63718db96f322a3",
+  "font_environment_2022_sha256": "64439206a3148412e943916a9cc7bed9585d519a4c8cb068800ab5f428273868",
+  "font_environment_status": "reconstructed from coordinate regression contract; byte identity with historical files not established",
+  "wasm_status": "pending",
+  "scope": "intermediate diagnostic only; rerun after any production source change"
+}

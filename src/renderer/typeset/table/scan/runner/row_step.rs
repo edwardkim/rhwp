@@ -91,8 +91,19 @@ impl TypesetEngine {
             layout_engine.reflow_row_physical_minimum(table, r, mt.row_heights[r], None, styles);
         let continuing_reflow_minimum =
             layout_engine.row_has_continuing_reflow_minimum(table, r, styles);
-        let plain_reflow_line_units =
-            layout_engine.row_has_plain_reflow_line_units(table, r, styles);
+        let row_start = if r == cursor_row { start_cut } else { &[] };
+        // 미래 문단의 자식 표가 현재 글줄 컷의 물리 최소 소유를 지우지 않는다.
+        // 같은 물리 예산으로 실제 선택한 유닛만 분류하며 개체 viewport는 제외한다.
+        let plain_reflow_line_units = layout_engine
+            .row_has_plain_reflow_line_units(table, r, styles)
+            || ((reflow_minimum.is_some() || continuing_reflow_minimum)
+                && layout_engine.row_cut_has_plain_reflow_units(
+                    table,
+                    r,
+                    row_start,
+                    (v.blank_row_available_height() - consumed - cs_before).max(0.0),
+                    styles,
+                ));
         let physical_minimum_splittable =
             mt.allows_row_break_split() && reflow_minimum.is_some() && plain_reflow_line_units;
         let row_units_splittable = mt.is_row_splittable(r) || physical_minimum_splittable;
@@ -101,8 +112,8 @@ impl TypesetEngine {
         let owns_plain_row_frame = ordinary_row_can_split
             && (reflow_minimum.is_some() || continuing_reflow_minimum)
             && plain_reflow_line_units;
-        // 본문을 전진시키는 일반 글줄은 저장 여부와 무관하게 같은 물리 하단을 쓴다.
-        // paint의 바깥여백/쪽 끝 경계를 넘는 줄을 먼저 소비한 뒤 잘라내지 않는다.
+        // 현재 컷이 소유한 일반 글줄에 같은 물리 하단을 적용한다.
+        // 개체 viewport의 독립 예약과 먼 다음 조각의 개체를 혼동하지 않는다.
         let plain_body_band = matches!(
             table.common.text_wrap,
             crate::model::shape::TextWrap::TopAndBottom
@@ -373,6 +384,7 @@ impl TypesetEngine {
                 row_start_cut,
                 row_count,
                 is_continuation,
+                source_frame_origin_unverified: v.source_frame_origin_unverified,
                 profile: &st.profile,
             }
             .resolve(
@@ -602,8 +614,10 @@ impl TypesetEngine {
                     // 만 불가피하게 자른다. 그 밖에는 `splittable=false` 로 떨어져 행 경계에서
                     // 조각을 끝내고(`end_row = r`) 다음 쪽에서 행을 통째로 재개한다. 한/글
                     // 정본: 편람 PDF 158→159쪽이 큰 행을 통째로 넘기며 앞쪽 바닥을 비운다.
-                    let row_needs_whole_band = r == cursor_row
-                        && cut_row_h.get(r).copied().unwrap_or(0.0) > avail_for_rows;
+                    let atomic_band_h = layout_engine
+                        .reflow_cellbreak_row_host_band_height(table, r, styles)
+                        .unwrap_or_else(|| cut_row_h.get(r).copied().unwrap_or(0.0));
+                    let row_needs_whole_band = r == cursor_row && atomic_band_h > avail_for_rows;
                     !(crate::renderer::typeset::none_table_is_atomic_here(table)
                         || crate::renderer::typeset::cell_unit_row_is_atomic_here(table))
                         || table_storage_declares_splits
@@ -690,6 +704,8 @@ impl TypesetEngine {
                 enabled: source_tail_enabled,
                 mid_frame_only,
             } = source_tail_query.gate(&res);
+            let source_frame_owned =
+                layout_engine.row_start_owns_stored_frame(table, r, row_start_cut, styles);
             let mut uses_source_frame_tail = false;
             if source_tail_enabled {
                 // Capacity can pass an authenticated source frame even when
@@ -757,6 +773,7 @@ impl TypesetEngine {
             // 재시작이 용량 컷보다 뒤면 예산을 넘으므로 종전 용량 컷을 쓴다.
             let mut stored_restart_continuation_cut = false;
             if !row_start_cut.is_empty()
+                && source_frame_owned
                 && !uses_source_frame_tail
                 && !res.fully_consumed
                 && mt.allows_row_break_split()
@@ -1119,6 +1136,37 @@ impl TypesetEngine {
                     }
                     return false;
                 }
+                // 위 밴드 컷이 받지 않은 행 중, 앞 행의 병합 칸 안쪽에만 있는 행은 글줄과
+                // 안 여백이 남은 높이에 다 들어가면 이 쪽에서 남은 높이로 끝난다. 다음
+                // 쪽은 다음 행이 선언 높이로 시작하고, 남는 빈 띠의 크기는 조건이 아니다
+                // (한/글 2020 합성 `samples/rowspan-band-fit`: 줄간격·안 여백·글자 크기를 바꾼
+                // 네 계열에서 문턱은 늘 «내용 + 안 여백 ≤ 남은 높이»). 병합 칸이 이 행에서
+                // 시작하거나 끝나면 그 칸의 남은 내용을 같은 행의 컷으로 이어야 하므로 제외한다.
+                let band_rest = (avail_for_rows - consumed - cs_before).max(0.0);
+                let covered_row_closes = rowspan_touched[r]
+                    && !table::scan::row::row_bounds_a_rowspan(table, r)
+                    && mt.allows_row_break_split()
+                    && r > cursor_row
+                    && res.fully_consumed
+                    && !res.end_cut.is_empty()
+                    && row_total > band_rest + 0.5
+                    && table::scan::row::row_box_fits(res.consumed_height + padding, band_rest);
+                if covered_row_closes {
+                    consumed += cs_before + band_rest;
+                    r += 1;
+                    end_row = r;
+                    end_row_height_override = Some(band_rest);
+                    if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                        eprintln!(
+                            "DIAG_SCAN COVERED_ROW_CLOSE r={} rest={:.1} content={:.1} row_total={:.1}",
+                            r - 1,
+                            band_rest,
+                            res.consumed_height,
+                            row_total
+                        );
+                    }
+                    return false;
+                }
                 // A terminal response immediately followed by a no-text/no-control row can
                 // exceed the composed row metric only by the measured-versus-stored
                 // row drift.  Use that exact drift rather than a template allowance.
@@ -1293,7 +1341,15 @@ impl TypesetEngine {
             // consumed_height 는 패딩을 제외하므로, 좁은 #2439 strict 경로의 orphan
             // 판정은 렌더러가 실제로 그리는 이 높이를 사용한다(content 24px + pad 3.8px).
             let split_total = saved_opening_frame_height.unwrap_or_else(|| {
-                layout_engine.row_cut_content_height(table, r, row_start_cut, &res.end_cut, styles)
+                res.physical_height.unwrap_or_else(|| {
+                    layout_engine.row_cut_content_height(
+                        table,
+                        r,
+                        row_start_cut,
+                        &res.end_cut,
+                        styles,
+                    )
+                })
             });
             let source_blank_band = layout_engine
                 .stored_nested_plain_cut_frame_extra(table, r, row_start_cut, &res.end_cut, styles)
@@ -1849,7 +1905,10 @@ impl TypesetEngine {
                         * (end_row - cursor_row + 2) as f64;
                     plain_cut_owns_blank_band |= physical - content > roundoff;
                 }
-                if let Some(height) = plain_cut_frame.or(source_blank_band) {
+                if let Some(height) = plain_cut_frame
+                    .or(source_blank_band)
+                    .or(res.physical_height)
+                {
                     end_row_height_override = Some(height);
                 }
                 if let Some(height) = layout_engine.saved_single_cell_opening_frame_height(

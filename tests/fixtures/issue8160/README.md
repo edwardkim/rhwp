@@ -59,10 +59,17 @@ fresh 표준 최적화 WASM 64/64쪽 raw100·실제 양방향 정수 미대응 0
 좌표 검사는 이 독립 Print와 전쪽 PNG의 프로그램 선택 환경을 사용한다. 기존 572개
 앵커·630개 영역의 기대값과 ±2px 공차는 유지한다. 글꼴 바이트를 fixture에 복제하지 않는다.
 
-`hwp2022-header-logo.png`는 같은 새 MCP PDF의 1쪽 96 DPI raster에서
+`hwp2022-header-logo-exact-96dpi.png`는 같은 기존 MCP PDF의 1쪽을 현재 Visual Sweep의
+`pdfium_smooth_rgb_exact_dpi_v2` 정책으로 96 DPI 래스터한 뒤
 `[52, 64, 185, 102]`를 잘라 얻은 133×38px 독립 기대값이다. 원본/PDF 해시는
 `hwp2022.json`의 기존 필드를, 영역·PNG 해시·원래 전쪽 PNG 해시·임계값 232·대칭 2px는
 같은 파일의 `browser_raster_regions`를 따른다. 기존 64쪽의 좌표 행은 바꾸지 않았다.
+이전 `hwp2022-header-logo.png`는 정수 출력 크기에 맞춰 페이지를 늘린
+`pdfium_smooth_rgb_v1` 기준으로 보존한다. 동일 PDF의 1쪽을 이전 방식으로 다시 래스터한
+SHA-256은 `6052593e338fb506d8a33a03fe01f3790515a87ef1238b4ea98053bc822ba596`이며
+기존 기준과 일치한다. 새 물리 DPI 기준의 전체 쪽 SHA-256은
+`dadd39d960f9e74022953e80b7a2c53dbcda94b2937013bc05421994a6e4d5e8`이다.
+두 기준과 실제 출력의 같은 영역 비교는 [CI 실패 분석](../../../mydocs/plans/issue_8160_jpeg_exact_dpi_20261030.md)에 기록한다.
 
 [`issue_8160_print_jpeg_frame.browser.mjs`](../../../scripts/tests/issue_8160_print_jpeg_frame.browser.mjs)는 실제
 WASM과 Canvas로 같은 표지를 그리고 원본 그림 두 개·JPEG 인쇄 프레임·64쪽·decode 성공을

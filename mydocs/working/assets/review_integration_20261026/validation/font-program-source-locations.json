@@ -1,0 +1,37 @@
+{
+  "programs": [
+    {
+      "temporary_alias": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/installed-document-fonts/HMKMG.TTF",
+      "existing_installed_source": "/opt/hnc/hoffice11/Shared/TTF/Hwp/HMKMG.TTF",
+      "bytes": 1336108,
+      "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+    },
+    {
+      "temporary_alias": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/installed-document-fonts/HMKMM.TTF",
+      "existing_installed_source": "/opt/hnc/hoffice11/Shared/TTF/Hwp/HMKMM.TTF",
+      "bytes": 1820732,
+      "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+    },
+    {
+      "temporary_alias": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/installed-document-fonts/HYGSRB.TTF",
+      "existing_installed_source": "/opt/hnc/hoffice11/Shared/TTF/Hwp/HYGSRB.TTF",
+      "bytes": 1898764,
+      "sha256": "b41cef3386d034040704b1a143ef13a63c5b9f1ec4222a7579c1796ea05517f6"
+    },
+    {
+      "temporary_alias": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/installed-document-fonts/HYGTRE.TTF",
+      "existing_installed_source": "/opt/hnc/hoffice11/Shared/TTF/Hwp/HYGTRE.TTF",
+      "bytes": 2937892,
+      "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+    },
+    {
+      "temporary_alias": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/installed-document-fonts/HYMJRE.TTF",
+      "existing_installed_source": "/opt/hnc/hoffice11/Shared/TTF/Hwp/HYMJRE.TTF",
+      "bytes": 4883924,
+      "sha256": "a101a7a219ffd57273374a423e734adfba1529e5eaf2e9a7476f7150708ea506"
+    }
+  ],
+  "scope": "The same five installed Hancom programs supplied to fixed-base and candidate Native/WASM comparisons. Other open/bundled fonts are listed in per-run provenance.",
+  "program_binaries_committed": false,
+  "cleanup": "Removing output aliases leaves all existing installed sources in place."
+}

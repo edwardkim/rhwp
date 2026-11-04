@@ -2,6 +2,13 @@
 
 use crate::model::paragraph::{tab_ext_is_placeholder, Paragraph};
 
+/// 원본 저장 위치의 스냅샷은 현재 줄 수와 대응할 때만 유효하다.
+pub(super) fn source_vertical_positions(para: &Paragraph) -> Option<&[i32]> {
+    para.source_line_seg_vertical_pos
+        .as_deref()
+        .filter(|positions| positions.len() == para.line_segs.len())
+}
+
 /// 편집/재조판 결과의 미계산 탭은 소비자가 다시 계산하도록 캐시를 생략한다.
 /// 원본에서 읽은 정상 줄 분할은 미계산 탭 하나만으로 폐기하지 않는다.
 /// `layout_space_metrics`는 줄 구성 결과와 함께 게시되는 재조판 출처이며,
@@ -23,4 +30,10 @@ pub(super) fn can_serialize_line_partition(para: &Paragraph) -> bool {
                 .get(index)
                 .is_none_or(tab_ext_is_placeholder)
         })
+}
+
+/// 재구성된 축의 단독 표 줄은 문자 분할이 없고 원본 쪽 좌표도 아니다.
+/// HWPX 소비자가 표의 물리 상자로 줄을 다시 구성하도록 해당 캐시만 생략한다.
+pub(super) fn can_serialize_hwpx_line_partition(para: &Paragraph) -> bool {
+    can_serialize_line_partition(para) && !para.rebased_single_table_row()
 }

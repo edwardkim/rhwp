@@ -362,7 +362,7 @@ mod tests {
 
         let stream = Object::Stream {
             dict,
-            data: Bytes::from(combined),
+            data: StreamData::from(combined),
         };
 
         let objects = parse_object_stream(&stream).unwrap();
@@ -386,7 +386,7 @@ mod tests {
 
         let stream = Object::Stream {
             dict,
-            data: Bytes::from(b"1 0 42".to_vec()),
+            data: StreamData::from(b"1 0 42".to_vec()),
         };
 
         // Should still work - Type is optional if we trust the caller
@@ -402,7 +402,7 @@ mod tests {
 
         let stream = Object::Stream {
             dict,
-            data: Bytes::from(b"1 0 42".to_vec()),
+            data: StreamData::from(b"1 0 42".to_vec()),
         };
 
         let result = parse_object_stream(&stream);
@@ -417,7 +417,7 @@ mod tests {
 
         let stream = Object::Stream {
             dict,
-            data: Bytes::from(b"1 0 42".to_vec()),
+            data: StreamData::from(b"1 0 42".to_vec()),
         };
 
         let result = parse_object_stream(&stream);
@@ -433,7 +433,7 @@ mod tests {
 
         let stream = Object::Stream {
             dict,
-            data: Bytes::from(b"1 0 42".to_vec()),
+            data: StreamData::from(b"1 0 42".to_vec()),
         };
 
         let result = parse_object_stream(&stream);
@@ -449,7 +449,7 @@ mod tests {
 
         let stream = Object::Stream {
             dict,
-            data: Bytes::from(b"1 0 42".to_vec()),
+            data: StreamData::from(b"1 0 42".to_vec()),
         };
 
         let result = parse_object_stream(&stream);

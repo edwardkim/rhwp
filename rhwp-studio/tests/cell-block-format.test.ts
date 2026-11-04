@@ -108,6 +108,25 @@ test('선택된 셀이 없으면 대상도 없다', () => {
   assert.deepEqual(targets, []);
 });
 
+for (const depth of [2, 3]) {
+  test(`깊이 ${depth} 셀 블록은 전체 경로와 각 셀의 문단 인덱스를 보존한다`, () => {
+    const path = Array.from({ length: depth }, (_, index) => ({
+      controlIndex: index + 1, cellIndex: index + 2, cellParaIndex: index + 3,
+    }));
+    const before = structuredClone(path);
+    const targets = paraFormatTargetsForCellBlock(
+      { sec: 1, ppi: 7, ci: 1, cellIndices: [0, 2], cellPath: path },
+      cell => cell === 0 ? 2 : 1,
+    );
+    assert.equal(targets.length, 3);
+    assert.deepEqual(targets, [[0, 0], [0, 1], [2, 0]].map(([cellIndex, cellParaIndex]) => ({
+      kind: 'cellPath', sec: 1, parentPara: 7,
+      path: [...before.slice(0, -1), { ...before[depth - 1], cellIndex, cellParaIndex }],
+    })));
+    assert.deepEqual(path, before, '커서가 보유한 원래 경로는 변경하지 않는다');
+  });
+}
+
 test('문단 서식 대상 산출은 텍스트 선택보다 셀 블록을 먼저 본다', () => {
   // 셀 블록 선택은 getSelectionOrdered() 가 null 이므로, 분기가 뒤에 오면 도달하지 못하고
   // getParaFormatTargetsForRange(pos, pos) 로 떨어져 앵커 셀 하나만 대상이 된다.

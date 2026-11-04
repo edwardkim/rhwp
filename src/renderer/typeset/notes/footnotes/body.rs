@@ -241,27 +241,52 @@ impl TypesetEngine {
             let saved_hwpx_tail = !st.profile.hwp5_stored_pagination_layout()
                 && st.profile.hwpx_stored_layout()
                 && body_tail_reset.is_some();
-            let multi_note_routed = if st.profile.hwp5_stored_pagination_layout() || saved_hwpx_tail
-            {
-                crate::renderer::pagination::find_inline_control_target_page(
-                    &st.pages,
-                    &st.current_items,
-                    para_idx,
-                    ctrl_idx,
-                    para,
-                )
-                .filter(|(page_idx, col_idx)| {
-                    st.pages
-                        .get(*page_idx)
-                        .is_some_and(|page| !page.footnotes.is_empty())
-                        && (!saved_hwpx_tail
-                            || st.completed_body_fragment_note_fits(
-                                *page_idx, *col_idx, para_idx, fn_height,
-                            ))
-                })
-            } else {
-                None
-            };
+            // 이어지는 쪽에서 저장 reset 으로 끝낸 조각은 그 안 표시의 각주를 이미 계상해
+            // 경계를 정했다(`stored_body_reset_fragment_matches_current_flow`). 그 각주는 표시
+            // 쪽이 첫 각주 쪽이어도 그 쪽에 둔다(합성 `cont_reset_F20_L70_N4`).
+            let stored_reset_fragment_route = crate::renderer::pagination::find_inline_control_target_page(
+                &st.pages,
+                &st.current_items,
+                para_idx,
+                ctrl_idx,
+                para,
+            )
+            .filter(|(page_idx, col_idx)| {
+                st.pages
+                    .get(*page_idx)
+                    .and_then(|page| page.column_contents.get(*col_idx))
+                    .is_some_and(|column| {
+                        column.items.iter().any(|item| {
+                            matches!(item,
+                                crate::renderer::pagination::PageItem::PartialParagraph {
+                                    para_index, start_line, ..
+                                } if *para_index == para_idx
+                                    && st.stored_reset_note_fragments.contains(&(para_idx, *start_line)))
+                        })
+                    })
+            });
+            let multi_note_routed =
+                if st.profile.hwp5_stored_pagination_layout() || saved_hwpx_tail {
+                    crate::renderer::pagination::find_inline_control_target_page(
+                        &st.pages,
+                        &st.current_items,
+                        para_idx,
+                        ctrl_idx,
+                        para,
+                    )
+                    .filter(|(page_idx, col_idx)| {
+                        st.pages
+                            .get(*page_idx)
+                            .is_some_and(|page| !page.footnotes.is_empty())
+                            && (!saved_hwpx_tail
+                                || st.completed_body_fragment_note_fits(
+                                    *page_idx, *col_idx, para_idx, fn_height,
+                                ))
+                    })
+                } else {
+                    None
+                }
+                .or(stored_reset_fragment_route);
             // marker 본문이 이미 두 physical page로 나뉜 경우, 각주 자체의
             // stored reset도 일대일이면 prefix는 marker page, suffix는 현재
             // tail page가 소유한다(p129 note 176). 표 셀용으로 검증된 같은

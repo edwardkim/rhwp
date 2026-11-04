@@ -128,7 +128,7 @@ fn same_id_jsonl_matches_catalog() {
             ))
         })
         .filter(|row| {
-            !exam_fixtures::is_exam_fixture(std::path::Path::new(
+            !exam_fixtures::is_deferred_fixture(std::path::Path::new(
                 row["file"].as_str().expect("원본 파일 경로"),
             ))
         })
@@ -136,7 +136,7 @@ fn same_id_jsonl_matches_catalog() {
     let catalog_rows = SAME_ID_PARAS
         .iter()
         .filter(|row| corpus_scope::sample_is_in_scope(std::path::Path::new(row.file)))
-        .filter(|row| !exam_fixtures::is_exam_fixture(std::path::Path::new(row.file)))
+        .filter(|row| !exam_fixtures::is_deferred_fixture(std::path::Path::new(row.file)))
         .count();
     assert_eq!(jsonl_rows, catalog_rows);
 }
@@ -146,7 +146,7 @@ fn planner_keeps_every_same_id_corpus_row() {
     for row in SAME_ID_PARAS
         .iter()
         .filter(|row| corpus_scope::sample_is_in_scope(std::path::Path::new(row.file)))
-        .filter(|row| !exam_fixtures::is_exam_fixture(std::path::Path::new(row.file)))
+        .filter(|row| !exam_fixtures::is_deferred_fixture(std::path::Path::new(row.file)))
     {
         let refs: Vec<rhwp::model::paragraph::CharShapeRef> = row
             .refs

@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-29",
+  "head": "83b7a0203db67e1526ae302eedbeedac6fadb5f6",
+  "cwd": "rhwp-studio",
+  "typecheck": {
+    "command": "npx tsc --noEmit",
+    "exit_code": 0,
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "targeted_tests": {
+    "command": "node --test tests/ai-gemini-provider.test.ts tests/ai-openai-provider.test.ts tests/ai-provider-switch.test.ts tests/pdf-import-layout.test.ts tests/canvaskit-raster-stroke.test.ts tests/canvaskit-device-stroke-contract.test.ts tests/canvaskit-local-image-transform.test.ts",
+    "exit_code": 0,
+    "tests": 41,
+    "passed": 41,
+    "failed": 0,
+    "skipped": 0,
+    "log_sha256": "f1b80c9079881a6e0ce7dd4547169c6a44cd834f6d0315c45843828473425ee1",
+    "test_files": [
+      {
+        "path": "rhwp-studio/tests/ai-gemini-provider.test.ts",
+        "sha256": "f9f338598428fb4efad5178194e81052e6d6ab7172b5a4f3663999b469ac047c"
+      },
+      {
+        "path": "rhwp-studio/tests/ai-openai-provider.test.ts",
+        "sha256": "43b258c430ef05b307f613d8296d57f009c626c4b009a52c838958434b51d4ae"
+      },
+      {
+        "path": "rhwp-studio/tests/ai-provider-switch.test.ts",
+        "sha256": "b703716ff18c05b702583bf6d2477fc1fa539f307b8a67879b8d1625547c5491"
+      },
+      {
+        "path": "rhwp-studio/tests/pdf-import-layout.test.ts",
+        "sha256": "7f22f32ac9da57cb1a113208270a34e3cef45d2ce1d8876e1e7b3f846190f159"
+      },
+      {
+        "path": "rhwp-studio/tests/canvaskit-raster-stroke.test.ts",
+        "sha256": "08e5dde07cb71ec1678716314ff5c412a4244736bc383bb36b4fdf352263fa04"
+      },
+      {
+        "path": "rhwp-studio/tests/canvaskit-device-stroke-contract.test.ts",
+        "sha256": "190ce19d70b16b5b24350b4788921bf6d5981dd17485b5c45df7fd6bbf423cba"
+      },
+      {
+        "path": "rhwp-studio/tests/canvaskit-local-image-transform.test.ts",
+        "sha256": "e82e866447193c6794ac788c208e3a2ecfb94631391eced5c12308e91510663f"
+      }
+    ]
+  },
+  "limitations": [
+    "변경 관련 일곱 파일의 선택 검사이며 전체 Studio 검사 재실행이 아니다.",
+    "브라우저의 최신 WASM 실행이나 시각 검증은 이 Node 검사만으로 증명하지 않는다."
+  ]
+}

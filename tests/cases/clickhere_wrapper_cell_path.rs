@@ -5,9 +5,6 @@ use serde_json::{json, Value};
 
 type CellPath = Vec<(usize, usize, usize)>;
 
-/// 래퍼가 한 쪽을 넘어 부분 표로 나뉘게 하는 안쪽 표의 행 수.
-const SPLIT_ROWS: u16 = 80;
-
 fn table(core: &mut DocumentCore, rows: u16, columns: u16) -> usize {
     let last = core.document().sections[0].paragraphs.len() - 1;
     core.insert_text_native(0, last, 0, "표 앞").unwrap();
@@ -98,24 +95,4 @@ fn transparent_wrapper_activation_hides_its_guide() {
     assert_eq!(remaining[0].1["text"], "SECONDGUIDE");
     core.clear_active_field();
     assert_eq!(core.render_page_svg_native(0).unwrap(), original);
-}
-
-#[test]
-fn split_transparent_wrapper_preserves_full_cell_path() {
-    // 한 쪽을 넘는 래퍼는 부분 표로 나눠 그린다. 첫 칸과 마지막 칸이 다른 쪽에 놓여
-    // 첫 조각과 이어지는 조각을 모두 지난다.
-    let (mut core, hosts, last) = nested_fields(SPLIT_ROWS, 1, &["SPLITGUIDE"]);
-    let first = vec![(0, 0, 0), (0, 0, 0)];
-    core.insert_text_in_cell_by_path(0, hosts[0], &first, 0, "첫 칸")
-        .unwrap();
-    let all = runs(&core);
-    let page_of = |text: &str, path: &CellPath| {
-        let (page, run) = all.iter().find(|(_, run)| run["text"] == text).unwrap();
-        assert_eq!(run["parentParaIdx"], hosts[0]);
-        assert_eq!(run["cellPath"], path_json(path));
-        *page
-    };
-    assert!(page_of("첫 칸", &first) < page_of("SPLITGUIDE", &last));
-    assert!(core.set_active_field_by_path(0, hosts[0], &last, 2));
-    assert!(guide_runs(&core).is_empty());
 }

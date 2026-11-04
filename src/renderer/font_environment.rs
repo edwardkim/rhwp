@@ -17,6 +17,9 @@ use crate::error::HwpError;
 pub struct FontEnvironment {
     id: String,
     substitutions: BTreeMap<String, String>,
+    /// 실제 공급자가 조회한 이름·최종 프로그램 신원. 임의 표시 치환과 구별한다.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    selected_programs: BTreeMap<String, AvailableFontProgram>,
     /// 실제 공급 snapshot에서 조건을 충족한 canonical 선택의 출처다.
     /// 글꼴 설치·바이트 공급의 증명과 구분하며 명시적 환경에는 생략할 수 있다.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
@@ -33,10 +36,22 @@ pub struct FontEnvironment {
     /// 기본 face가 없는 글자만 이 순서로 측정·출력한다. IR에는 저장하지 않는다.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     glyph_fallbacks: BTreeMap<String, Vec<String>>,
+    /// 같은 이름이라도 문서 언어 슬롯이 지정한 보조 글꼴은 다를 수 있다.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    document_glyph_fallbacks: Vec<DocumentGlyphFallback>,
     /// 같은 원본 이름이라도 언어 슬롯/글꼴 레코드가 지정한 프로그램은 다를 수 있다.
     /// 전역 치환으로 합칠 수 없는 선택만 원본 주소와 함께 보존한다.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     document_substitutions: Vec<DocumentFontSubstitution>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct DocumentGlyphFallback {
+    language_slot: usize,
+    font_id: u16,
+    source: String,
+    faces: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -47,6 +62,8 @@ struct DocumentFontSubstitution {
     source: String,
     target: String,
     program_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    query: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     selection_rule: Option<String>,
 }
@@ -65,7 +82,7 @@ pub struct DocumentFontSelectionRequest {
 }
 
 /// 출력 호스트가 실제로 로드한 프로그램. 형식 미확인 시 HFT 메트릭을 유지한다.
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct AvailableFontProgram {
     pub query: String,
@@ -73,6 +90,9 @@ pub struct AvailableFontProgram {
     pub program_id: String,
     #[serde(default)]
     pub true_type: bool,
+    /// 실제 바이트에서 확인한 OpenType CFF 프로그램이다.
+    #[serde(default)]
+    pub open_type_cff: bool,
 }
 
 /// 실제 프로그램 공급과 존재 확인은 서로 다른 증거다. 이름만 확인된
@@ -96,15 +116,75 @@ fn is_false(value: &bool) -> bool {
     !value
 }
 
-fn program_names(name: &str) -> Vec<String> {
-    std::iter::once(name)
+/// 같은 프로그램의 이름만 조회한다. 화면용 호환 fallback은 설치 증거가 아니다.
+pub(crate) fn program_names(name: &str) -> Vec<String> {
+    let mut names: Vec<String> = std::iter::once(name)
         .chain(super::installed_font_program_aliases(name).iter().copied())
         .filter(|name| FontEnvironment::valid_name(name))
         .map(str::to_owned)
-        .collect()
+        .collect();
+    // 확인된 HFT 계열의 # 이름은 원래 이름을 우선 조회한다. 원본 프로그램이
+    // 없을 때만 #을 뺀 설치 프로그램도 후보로 제시하며, 존재 확인은 공급자가 한다.
+    if let Some(unprefixed) = name.strip_prefix('#') {
+        if super::font_rule_layout_name_projection::find_font_rule_layout_name(
+            "rust-style-resolution.hft",
+            name,
+            0,
+        )
+        .is_some()
+            && FontEnvironment::valid_name(unprefixed)
+        {
+            names.push(unprefixed.to_owned());
+        }
+    }
+    names
+}
+
+/// HWP3에는 유형 필드가 없다. 확인된 HFT 이름은 유형 미상이라도 원 프로그램을 조회한다.
+fn may_select_hft_program(font: &crate::model::style::Font, language: usize) -> bool {
+    font.native_program.is_none()
+        && (font.alt_type == 2
+            || (font.alt_type == 0
+                && super::font_rule_layout_name_projection::find_font_rule_layout_name(
+                    "rust-style-resolution.hft",
+                    &font.name,
+                    language,
+                )
+                .is_some()))
 }
 
 impl FontEnvironment {
+    pub(crate) fn with_observed_substitutions(
+        base: Option<&Self>,
+        replacements: BTreeMap<String, String>,
+    ) -> Result<Option<Self>, HwpError> {
+        if replacements.is_empty() {
+            return Ok(None);
+        }
+        let mut result = base.cloned().unwrap_or(Self {
+            id: "observed-host-fonts".to_owned(),
+            substitutions: BTreeMap::new(),
+            selected_programs: BTreeMap::new(),
+            selection_rules: BTreeMap::new(),
+            true_type_faces: Vec::new(),
+            preserve_source_metrics: false,
+            document_substitutions: Vec::new(),
+            glyph_fallbacks: BTreeMap::new(),
+            document_glyph_fallbacks: Vec::new(),
+        });
+        for (family, target) in replacements {
+            if result.has_source_selection(&family) {
+                continue;
+            }
+            result.substitutions.insert(family, target.clone());
+            if !result.true_type_faces.contains(&target) {
+                result.true_type_faces.push(target);
+            }
+        }
+        result.validate()?;
+        Ok(Some(result))
+    }
+
     /// 원본과 문서 지정 내장 프로그램을 같은 이름 집합으로 보존한다.
     pub(crate) fn embedded_program_names(
         doc_info: &crate::model::document::DocInfo,
@@ -145,7 +225,7 @@ impl FontEnvironment {
             .collect()
     }
 
-    fn document_requests_with_slots(
+    pub(crate) fn document_requests_with_slots(
         doc_info: &crate::model::document::DocInfo,
     ) -> Vec<(usize, u16, DocumentFontSelectionRequest)> {
         let mut requests = Vec::new();
@@ -167,12 +247,22 @@ impl FontEnvironment {
                 let Ok(font_id) = u16::try_from(index) else {
                     continue;
                 };
+                let mut primary_names = if may_select_hft_program(font, language) {
+                    program_names(&font.name)
+                } else {
+                    Vec::new()
+                };
+                for name in program_names(primary) {
+                    if !primary_names.contains(&name) {
+                        primary_names.push(name);
+                    }
+                }
                 requests.push((
                     language,
                     font_id,
                     DocumentFontSelectionRequest {
                         source: font.name.clone(),
-                        primary: program_names(primary),
+                        primary: primary_names,
                         public_fallback:
                             super::font_rule_layout_name_projection::find_font_rule_layout_name(
                                 "rust-style-resolution.missing-program",
@@ -225,10 +315,11 @@ impl FontEnvironment {
                     .font_faces
                     .get(language_slot)
                     .and_then(|faces| faces.get(font_id as usize));
-                (program.true_type
-                    && program.query == request.source
-                    && source
-                        .is_some_and(|font| font.alt_type == 2 && font.native_program.is_none()))
+                let is_source_program = program.query == request.source
+                    || request.source.strip_prefix('#') == Some(program.query.as_str());
+                ((program.true_type || program.open_type_cff)
+                    && is_source_program
+                    && source.is_some_and(|font| may_select_hft_program(font, language_slot)))
                 .then_some((program, None))
             } else {
                 request
@@ -270,7 +361,9 @@ impl FontEnvironment {
                         Some((left, right))
                             if left.0.family == right.0.family
                                 && left.0.program_id == right.0.program_id
-                                && left.0.true_type == right.0.true_type =>
+                                && left.0.query == right.0.query
+                                && left.0.true_type == right.0.true_type
+                                && left.0.open_type_cff == right.0.open_type_cff =>
                         {
                             // 같은 프로그램이라도 선택 사유가 다른 슬롯은 전역 조건의
                             // 증거가 아니다. 공급 선택은 유지하고 조건 출처만 제외한다.
@@ -290,11 +383,15 @@ impl FontEnvironment {
             .collect();
         // 다른 프로그램이 같은 최종 family를 주장하면 슬롯 주소만으로 paint를
         // 구분할 수 없다. 그런 모호성은 기존처럼 수용하지 않는다.
-        let mut family_programs: BTreeMap<(String, String), Option<(String, bool)>> =
+        let mut family_programs: BTreeMap<(String, String), Option<(String, bool, bool)>> =
             BTreeMap::new();
         for (_, _, source, candidate) in &slot_candidates {
             if let Some((program, _)) = candidate {
-                let identity = (program.program_id.clone(), program.true_type);
+                let identity = (
+                    program.program_id.clone(),
+                    program.true_type,
+                    program.open_type_cff,
+                );
                 family_programs
                     .entry((source.clone(), program.family.clone()))
                     .and_modify(|previous| {
@@ -306,6 +403,7 @@ impl FontEnvironment {
             }
         }
         let mut substitutions = BTreeMap::new();
+        let mut selected_programs = BTreeMap::new();
         let mut selection_rules = BTreeMap::new();
         let mut true_type_faces = std::collections::BTreeSet::new();
         let mut digest = Sha256::new();
@@ -317,11 +415,17 @@ impl FontEnvironment {
             if !Self::valid_name(&selected.family) {
                 continue;
             }
-            for value in [&source, &selected.family, &selected.program_id] {
+            for value in [
+                &source,
+                &selected.family,
+                &selected.program_id,
+                &selected.query,
+            ] {
                 digest.update(value.as_bytes());
                 digest.update([0]);
             }
             digest.update([u8::from(selected.true_type)]);
+            digest.update([u8::from(selected.open_type_cff)]);
             if selected.true_type {
                 true_type_faces.insert(selected.family.clone());
             }
@@ -330,7 +434,8 @@ impl FontEnvironment {
                 digest.update([0]);
                 selection_rules.insert(source.clone(), rule_id.to_owned());
             }
-            substitutions.insert(source, selected.family);
+            substitutions.insert(source.clone(), selected.family.clone());
+            selected_programs.insert(source, selected);
         }
         let mut document_substitutions = Vec::new();
         for (language_slot, font_id, source, candidate) in slot_candidates {
@@ -346,11 +451,17 @@ impl FontEnvironment {
             digest.update(b"document-font-slot\0");
             digest.update((language_slot as u64).to_le_bytes());
             digest.update(font_id.to_le_bytes());
-            for value in [&source, &program.family, &program.program_id] {
+            for value in [
+                &source,
+                &program.family,
+                &program.program_id,
+                &program.query,
+            ] {
                 digest.update(value.as_bytes());
                 digest.update([0]);
             }
             digest.update([u8::from(program.true_type)]);
+            digest.update([u8::from(program.open_type_cff)]);
             if let Some(rule) = rule {
                 digest.update(rule.as_bytes());
                 digest.update([0]);
@@ -364,6 +475,7 @@ impl FontEnvironment {
                 source,
                 target: program.family,
                 program_id: program.program_id,
+                query: Some(program.query),
                 selection_rule: rule.map(str::to_owned),
             });
         }
@@ -383,10 +495,12 @@ impl FontEnvironment {
                     .collect::<String>()
             ),
             substitutions,
+            selected_programs,
             selection_rules,
             true_type_faces: true_type_faces.into_iter().collect(),
             preserve_source_metrics: true,
             glyph_fallbacks: BTreeMap::new(),
+            document_glyph_fallbacks: Vec::new(),
             document_substitutions,
         };
         environment.validate()?;
@@ -456,9 +570,15 @@ impl FontEnvironment {
     ) -> Result<Option<Self>, HwpError> {
         use sha2::{Digest, Sha256};
         let needs_primary_program_identity =
-            doc_info.font_faces.iter().flatten().any(|font| {
-                !font.is_embedded && font.alt_type == 2 && font.native_program.is_none()
-            });
+            doc_info
+                .font_faces
+                .iter()
+                .enumerate()
+                .any(|(language, fonts)| {
+                    fonts
+                        .iter()
+                        .any(|font| !font.is_embedded && may_select_hft_program(font, language))
+                });
         if !needs_primary_program_identity
             && !Self::document_requests(doc_info).iter().any(|request| {
                 !request.substitute.is_empty() || !request.public_fallback.is_empty()
@@ -482,6 +602,30 @@ impl FontEnvironment {
                     })
                     .and_then(|id| database.face(id))
                     .or_else(|| database.faces().find(|face| face.post_script_name == query))?;
+                // 같은 family와 스타일의 설치본 중 CFF OpenType을 먼저 사용한다.
+                // PostScript 이름을 직접 지정한 조회는 다른 face로 바꾸지 않는다.
+                let face = if face.post_script_name == query
+                    && !face.families.iter().any(|(name, _)| name == query)
+                {
+                    face
+                } else {
+                    database
+                        .faces()
+                        .find(|candidate| {
+                            candidate.style == face.style
+                                && candidate.weight == face.weight
+                                && candidate.stretch == face.stretch
+                                && candidate.families.iter().any(|(name, _)| {
+                                    face.families.iter().any(|(original, _)| original == name)
+                                })
+                                && database
+                                    .with_face_data(candidate.id, |bytes, _| {
+                                        bytes.get(..4) == Some(b"OTTO")
+                                    })
+                                    .unwrap_or(false)
+                        })
+                        .unwrap_or(face)
+                };
                 let family = face.families.first()?.0.clone();
                 database.with_face_data(face.id, |bytes, index| {
                     let offset = if bytes.get(..4) == Some(b"ttcf") {
@@ -494,6 +638,7 @@ impl FontEnvironment {
                         bytes.get(offset..offset.checked_add(4)?),
                         Some(b"\0\x01\0\0" | b"true")
                     );
+                    let open_type_cff = bytes.get(offset..offset.checked_add(4)?) == Some(b"OTTO");
                     let mut digest = Sha256::new();
                     digest.update(bytes);
                     digest.update(index.to_be_bytes());
@@ -501,6 +646,7 @@ impl FontEnvironment {
                         query: query.into(),
                         family,
                         true_type,
+                        open_type_cff,
                         program_id: digest
                             .finalize()
                             .iter()
@@ -547,12 +693,23 @@ impl FontEnvironment {
                 self.canonical_selection_rule(source) != Some(rule_id.as_str())
             })
             || self.substitutions.len() > 256
+            || self.selected_programs.len() > 256
+            || self.selected_programs.iter().any(|(source, program)| {
+                !Self::valid_name(source)
+                    || !Self::valid_name(&program.query)
+                    || !Self::valid_name(&program.family)
+                    || !Self::valid_name(&program.program_id)
+            })
             || self.document_substitutions.len() > 256
             || self.document_substitutions.iter().any(|selection| {
                 selection.language_slot >= super::style_resolver::LANG_COUNT
                     || !Self::valid_name(&selection.source)
                     || !Self::valid_name(&selection.target)
                     || !Self::valid_name(&selection.program_id)
+                    || selection
+                        .query
+                        .as_deref()
+                        .is_some_and(|query| !Self::valid_name(query))
                     || self.substitutions.contains_key(&selection.source)
                     || selection.selection_rule.as_deref().is_some_and(|rule| {
                         Self::canonical_rule(&selection.source, &selection.target, rule).is_none()
@@ -566,6 +723,30 @@ impl FontEnvironment {
                 .len()
                 != self.document_substitutions.len()
             || self.glyph_fallbacks.len() > 256
+            || self.document_glyph_fallbacks.len() > 1024
+            || self.document_glyph_fallbacks.iter().any(|item| {
+                item.language_slot >= super::style_resolver::LANG_COUNT
+                    || !Self::valid_name(&item.source)
+                    || item.faces.is_empty()
+                    || item.faces.len() > 16
+                    || item
+                        .faces
+                        .iter()
+                        .any(|face| !Self::valid_name(face) || face == &item.source)
+                    || item
+                        .faces
+                        .iter()
+                        .collect::<std::collections::BTreeSet<_>>()
+                        .len()
+                        != item.faces.len()
+            })
+            || self
+                .document_glyph_fallbacks
+                .iter()
+                .map(|item| (item.language_slot, item.font_id))
+                .collect::<std::collections::BTreeSet<_>>()
+                .len()
+                != self.document_glyph_fallbacks.len()
             || self.glyph_fallbacks.iter().any(|(from, faces)| {
                 !Self::valid_name(from)
                     || faces.is_empty()
@@ -624,6 +805,15 @@ impl FontEnvironment {
         self.substitutions.get(face).map(String::as_str)
     }
 
+    /// family 단위 관측은 원본 주소별 프로그램 선택을 덮어쓸 수 없다.
+    pub(crate) fn has_source_selection(&self, face: &str) -> bool {
+        self.substitutions.contains_key(face)
+            || self
+                .document_substitutions
+                .iter()
+                .any(|selection| selection.source == face)
+    }
+
     fn document_substitution(
         &self,
         face: &str,
@@ -648,6 +838,21 @@ impl FontEnvironment {
             .or_else(|| self.replacement(face))
     }
 
+    /// 선택 대상이 그대로일 때 실제 조회한 원본·문서 지정 이름을 반환한다.
+    pub(crate) fn selected_program_query_for(
+        &self,
+        source: &str,
+        language_slot: usize,
+        font_id: u16,
+    ) -> Option<&str> {
+        if let Some(selection) = self.document_substitution(source, language_slot, font_id) {
+            return selection.query.as_deref();
+        }
+        let selected = self.selected_programs.get(source)?;
+        (self.replacement_for(source, language_slot, font_id) == Some(selected.family.as_str()))
+            .then_some(selected.query.as_str())
+    }
+
     pub(crate) fn canonical_selection_rule_for(
         &self,
         source: &str,
@@ -666,5 +871,23 @@ impl FontEnvironment {
 
     pub(crate) fn glyph_fallbacks(&self, face: &str) -> Option<&[String]> {
         self.glyph_fallbacks.get(face).map(Vec::as_slice)
+    }
+
+    pub(crate) fn glyph_fallbacks_for_slot(
+        &self,
+        source: &str,
+        face: &str,
+        language_slot: usize,
+        font_id: u16,
+    ) -> Option<&[String]> {
+        self.document_glyph_fallbacks
+            .iter()
+            .find(|item| {
+                item.language_slot == language_slot
+                    && item.font_id == font_id
+                    && item.source == source
+            })
+            .map(|item| item.faces.as_slice())
+            .or_else(|| self.glyph_fallbacks(face))
     }
 }

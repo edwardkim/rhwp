@@ -1,4 +1,11 @@
-//! 독립 Print의 원 글꼴·영문 슬롯 소유를 source 글자와 최종 전진 관계로 보호한다.
+//! 관계형·고정형: 원 글꼴·영문 슬롯 소유와 본문의 보존을 검사한다.
+//! 주석 갱신: 2026-10-30T06:08:07+09:00; 직전 파일 커밋: 2026-10-30T06:01:43+09:00 (739bf70d61).
+//! 2026-10-24 측정 raw(96dpi, PDFium, 2px): Native / fresh WASM(no-opt), 당시 증거다.
+//! 변환 HWP 5쪽 99.53% / 99.91%, 전 16쪽 최저 98.84% / 99.50%.
+//! 신청서 HWP 1쪽 98.76% / 98.80%, 전 2쪽 최저도 각각 같다.
+//! 자산관리 HWPX 57쪽 99.92% / 99.90%, 전 60쪽 최저 96.08% / 96.08%.
+//! 우수사례 HWP 3쪽 97.85% / 97.80%, 전 3쪽 최저도 각각 같다.
+//! 근거: mydocs/pr/assets/issue7445/completed-20261009/final-20261024/README.md.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -11,6 +18,15 @@ fn load(path: &str) -> DocumentCore {
     DocumentCore::from_bytes(&bytes).expect("원본 문서 로드")
 }
 
+fn semantic_text(node: &rhwp::renderer::render_tree::RenderNode, output: &mut String) {
+    if let rhwp::renderer::render_tree::RenderNodeType::TextRun(run) = &node.node_type {
+        output.extend(run.text.chars().filter(|ch| !ch.is_whitespace()));
+    }
+    for child in &node.children {
+        semantic_text(child, output);
+    }
+}
+
 /// 전16쪽 Native/fresh 90%와 제목 확대 확인 뒤 추가한다.
 /// 독립 Print의 HFT bullet은 인접 굵은 한글과 같은 전각 전진을 갖는다.
 #[test]
@@ -19,29 +35,48 @@ fn converted_hft_bullet_shares_the_adjacent_fullwidth_advance() {
     let layout: Value =
         serde_json::from_str(&core.get_page_text_layout_native(4).unwrap()).unwrap();
     let title = "•서버 측면의 응용 프로그램 계층 작업 할당 방법";
-    let rows: Vec<_> = layout["runs"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .filter(|run| run["text"].as_str() == Some(title))
+    // [#8136] `•` 는 기호 슬롯 글자라 제목 글과 다른 run 이 된다. 같은 글줄에서 `•` run 과
+    // 바로 뒤 run 을 이어 제목을 복원한다(이 문서는 기호·한글 슬롯 face 가 같아 표시는 그대로다).
+    let runs = layout["runs"].as_array().unwrap();
+    let rows: Vec<_> = runs
+        .windows(2)
+        .filter(|pair| {
+            pair[0]["y"] == pair[1]["y"]
+                && format!(
+                    "{}{}",
+                    pair[0]["text"].as_str().unwrap_or_default(),
+                    pair[1]["text"].as_str().unwrap_or_default()
+                ) == title
+        })
         .collect();
     assert_eq!(rows.len(), 1, "원문 제목의 누락·중복 없음");
-    let run = rows[0];
-    assert!(run["bold"].as_bool().unwrap(), "독립 Print의 굵은 제목");
-    let xs = run["charX"].as_array().unwrap();
-    assert_eq!(xs.len(), title.chars().count() + 1, "scalar 소유 보존");
-    let bullet = xs[1].as_f64().unwrap() - xs[0].as_f64().unwrap();
-    let hangul = xs[2].as_f64().unwrap() - xs[1].as_f64().unwrap();
+    let (bullet_run, text_run) = (&rows[0][0], &rows[0][1]);
+    assert_eq!(bullet_run["text"].as_str(), Some("•"));
+    for run in [bullet_run, text_run] {
+        assert!(run["bold"].as_bool().unwrap(), "독립 Print의 굵은 제목");
+        assert!(run["fontFamily"]
+            .as_str()
+            .unwrap()
+            .starts_with("한양신명조"));
+    }
+    let bx = bullet_run["charX"].as_array().unwrap();
+    let tx = text_run["charX"].as_array().unwrap();
+    assert_eq!(
+        bx.len() + tx.len(),
+        title.chars().count() + 2,
+        "scalar 소유 보존"
+    );
+    let bullet = bx[1].as_f64().unwrap() - bx[0].as_f64().unwrap();
+    let hangul = tx[1].as_f64().unwrap() - tx[0].as_f64().unwrap();
+    // 제목 run 은 `•` 전진이 끝난 자리에서 시작한다.
+    let gap = text_run["x"].as_f64().unwrap() - (bullet_run["x"].as_f64().unwrap() + bullet);
+    assert!(gap.abs() < 0.5, "`•` 뒤 제목 시작이 어긋남: {gap}");
     // Print의 기준선 원점 709→805→901.9956, 같은 glyph scale92이다.
     // 절대 위치를 고정하지 않고 실제 글줄에서 두 전진의 관계를 검사한다.
     assert!(
         bullet > hangul * 0.95 && bullet < hangul * 1.05,
         "bullet을 반각으로 축소하면 안 된다: bullet={bullet}, 인접 한글={hangul}"
     );
-    assert!(run["fontFamily"]
-        .as_str()
-        .unwrap()
-        .starts_with("한양신명조"));
 }
 
 /// 전2쪽 Native/fresh 90%·쪽수 일치 및 대괄호 확대 확인 뒤 추가한다.
@@ -125,6 +160,10 @@ fn collection_alias_preserves_requested_face_and_body_in_public_svg() {
             .flat_map(|run| run["text"].as_str().unwrap().chars())
             .filter(|ch| !ch.is_whitespace())
             .collect();
+        let tree = core.build_page_render_tree(page).unwrap();
+        let mut ordered_body = String::new();
+        semantic_text(&tree.root, &mut ordered_body);
+        assert_eq!(requested_body, ordered_body, "공개 텍스트의 원본 읽기 순서");
         assert!(
             layout["runs"]
                 .as_array()
@@ -162,6 +201,33 @@ fn collection_alias_preserves_requested_face_and_body_in_public_svg() {
             // source를 대체 이름으로 바꾸지 않고 일반 fallback보다 먼저 공급한다.
             assert_eq!(families.get(1).copied(), Some("Dotum"));
         }
-        assert_eq!(painted_body, requested_body, "본문의 순서·누락·중복 보존");
+        // 겹침 순서에 따라 paint 전체 순서는 읽기 순서와 다를 수 있다.
+        // 문자의 누락·중복과 각 원본 런의 순서는 각각 유지한다.
+        let counts = |body: &str| {
+            let mut counts = std::collections::BTreeMap::new();
+            for ch in body.chars() {
+                *counts.entry(ch).or_insert(0usize) += 1;
+            }
+            counts
+        };
+        assert_eq!(
+            counts(&painted_body),
+            counts(&requested_body),
+            "본문 누락·중복 없음"
+        );
+        for run in layout["runs"].as_array().unwrap() {
+            let text: String = run["text"]
+                .as_str()
+                .unwrap()
+                .chars()
+                .filter(|ch| !ch.is_whitespace())
+                .collect();
+            if !text.is_empty() {
+                assert!(
+                    painted_body.contains(&text),
+                    "원본 런 내부 순서 보존: {text}"
+                );
+            }
+        }
     }
 }

@@ -418,7 +418,12 @@ fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
                         && node.text() == Some("․")
                         && node
                             .attribute("font-family")
-                            .is_some_and(|family| family.contains("휴먼명조"))
+                            // 원본 요청 글꼴과 실제 결측 기호 공급자는 다르다.
+                            // 독립 Print와 같은 한컴바탕을 첫 paint 글꼴로 확인한다.
+                            .and_then(|family| family.split(',').next())
+                            .is_some_and(|primary| {
+                                primary.trim().trim_matches('\'') == "Haansoft Batang"
+                            })
                 })
                 .expect("원본 제목 기호의 실제 paint 소유");
             let next = dot.next_sibling_element().expect("기호 다음 실제 글자");
@@ -436,9 +441,10 @@ fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
                  explicit={explicit_glyph_advance}, dot={dot_advance}, Hangul={hangul_advance}"
             );
             if page_index == 64 {
-                // 같은 제목 동작의40쪽은97.84795/97.86223%라 관계만 검사한다.
-                // 전66쪽 양쪽90% 이상,65쪽은98.17737/98.18230%와 확대 판독을
-                // 충족했다. 독립 Print 기호와 뒤 한글의 원점을 ±2 CSSpx로 보호한다.
+                // 40쪽은 기존 관계 검사를 유지한다. Native253/fresh WASM072의
+                // 전 66쪽 최저는 97.15069/97.06823%, 65쪽은 양쪽 raw 100%다.
+                // review·overlay 확대 판독을 마친 독립 Print 기호와 뒤 한글의
+                // 원점을 기존 ±2 CSSpx로 보호한다.
                 let baseline = dot.attribute("y").unwrap().parse::<f64>().unwrap();
                 for (actual, independent) in [
                     (origin(dot), 320.8),

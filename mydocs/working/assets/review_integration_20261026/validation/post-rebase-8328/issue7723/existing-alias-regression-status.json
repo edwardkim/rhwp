@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-29",
+  "audited_head": "3518a1efc5259ee6fcb5bfb76653f36ed032716e",
+  "test_file": "tests/cases/issue_8160_saved_page_boundaries.rs",
+  "test_file_sha256": "a3671caa3026b6c6a4b2b20cadb3d8a916e38702f489b32c3043c03acecc496a",
+  "test_name": "rhwp::regression_suite_027 issue_8160_saved_page_boundaries::issue_8160_sample16_hwp5_page_break_before_section_4_matches_hancom",
+  "prior_test_evidence": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-targeted-nextest.json",
+  "prior_test_exit_code": 0,
+  "prior_test_result": "PASS",
+  "prior_log_sha256": "fa316d6d6a4a29470b4ce78fde353fc3302997fc42d76bf41a0d3f29bb877851",
+  "same_code_and_tests_since": "99dc917846",
+  "source_changes": [],
+  "input_sha256": {
+    "samples/hwp3-sample16-hwp5.hwp": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
+    "samples/hwp3-sample16-hwp5-2010.hwp": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+  },
+  "meaning": "기존 시험은 양쪽 이름의 파일이 바이트 동일함을 검사한 다음 각각 64쪽 및 21~24쪽 내용·소유 관계를 검사한다. 새 MCP PDF와 전쪽 시각 일치율을 검사하는 기능은 아니다.",
+  "limitations": [
+    "이전에 완료된 검사의 로그와 동일 소스를 확인했으며 재실행하지 않았다.",
+    "이 실행이 설치 글꼴 없는 환경이었다고 주장하지 않는다.",
+    "새 MCP 기준의 전쪽 100%나 #7723 종료 조건을 증명하지 않는다."
+  ]
+}

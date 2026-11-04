@@ -119,6 +119,20 @@ test('classification priority produces every W3 category exactly once', () => {
   }
 });
 
+test('current metric backed sources require an actual entry and character hit', () => {
+  for (const widthSource of ['canonicalHangulMetric', 'declaredGlyphFallbackMetric']) {
+    assert.deepEqual(classifyCoverageDecision(decision({ widthSource }), CONTRACT), {
+      status: 'classified', category: 'exact-hit',
+    });
+    assert.throws(() => classifyCoverageDecision(decision({
+      widthSource, characterMatch: 'miss',
+    }), CONTRACT), /metric character hit/);
+    assert.throws(() => classifyCoverageDecision(decision({
+      widthSource, metricEntry: null,
+    }), CONTRACT), /metric character hit/);
+  }
+});
+
 test('non-font advances are explicit non-applicable records, not heuristic successes', () => {
   for (const widthSource of [
     'clusterContinuation',

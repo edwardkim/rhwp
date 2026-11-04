@@ -1,3 +1,7 @@
+//! 관계형: 검사 대상 — 수식 속성 setter와 raw 저장·재파싱 결과.
+//! 주석 갱신: 2026-11-01T05:57:53+09:00; 직전 파일 커밋: 2026-08-29T19:10:34+09:00 (`33c6dc4cf076d03a9bcc6a5b4e797285ed86f97a`).
+//! 입력·기준: `samples/atop-equation-01.hwp`, `samples/equation-lim.hwp`, `samples/issue-505-equations.hwp`.
+//! 모델·API·직렬화 계약을 검사하며 화면 시각 일치율은 측정하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;

@@ -1,4 +1,4 @@
-//! Horizontal text in a rotated, uniformly scaled PDF frame stays editable.
+//! Horizontal text in a rotated, orthogonally scaled PDF frame stays editable.
 //! ISO 32000-1 §9.4.4 rotates both glyphs and their displacements. Merely
 //! rotating an axis-aligned span bbox would move the original baseline origin.
 use crate::model::{shape::RectangleShape, text_clip::TextClipPath};
@@ -19,10 +19,12 @@ pub(super) fn validate(span: &TextSpan, basis: [f32; 4]) -> Result<(), &'static 
     if scale2 <= 0.0
         || a * d - b * c <= 0.0
         || (a * c + b * d).abs() > scale2 * 1e-6
-        || (c * c + d * d - scale2).abs() > scale2 * 1e-6
         || span.horizontal_scaling <= 0.0
     {
-        return Err("rotated text with shear, unequal scaling or reflection is not supported");
+        return Err("rotated text with shear or reflection is not supported");
+    }
+    if !(50.0..=200.0).contains(&span.horizontal_scaling) {
+        return Err("rotated text scaling exceeds the editable character ratio");
     }
     // The standard shape rotation property is integral degrees. Accept only
     // when that quantization displaces every frame point by < half a HWPUNIT.
@@ -39,6 +41,7 @@ pub(super) fn apply(
     span: &TextSpan,
     media_box: (f32, f32, f32, f32),
     clip: Option<&PathClip>,
+    allocation: super::allocation::Allocation<'_>,
 ) -> Result<(), String> {
     if span.rotation_degrees == 0.0 {
         return Ok(());
@@ -93,15 +96,19 @@ pub(super) fn apply(
     attr.render_sy = cos;
     attr.render_tx = tx;
     attr.render_ty = ty;
-    let paths: Option<Vec<TextClipPath>> =
-        super::text_clip::local_paths_mapped(clip, true, |x, y| {
+    let paths: Option<Vec<TextClipPath>> = super::text_clip::local_paths_mapped(
+        clip,
+        true,
+        |x, y| {
             let dx = f64::from(x - media_box.0) - center.0;
             let dy = f64::from(media_box.3 - y) - center.1;
             (
                 (cos * dx - sin * dy + width / 2.0) * 100.0,
                 (sin * dx + cos * dy + height / 2.0) * 100.0,
             )
-        })?;
+        },
+        allocation,
+    )?;
     rect.drawing.text_box.as_mut().unwrap().paint_clip = paths;
     Ok(())
 }

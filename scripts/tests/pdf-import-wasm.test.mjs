@@ -1,4 +1,4 @@
-// Product WASM/Worker contract. Requires Docker-built root pkg with pdf-import.
+// Product WASM/Worker contract. Requires a fresh optimized root pkg with pdf-import.
 // This checks connectivity/content/session ownership, not visual fidelity.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -37,7 +37,7 @@ function syntheticPdf(pageCount = 3) {
   return Buffer.from(pdf);
 }
 
-test('Docker product WASM: public API, active document isolation and real Worker recovery', { timeout: 180_000 }, async () => {
+test('fresh product WASM: public API, active document isolation and real Worker recovery', { timeout: 180_000 }, async () => {
   mkdirSync(evidence, { recursive: true });
   const files = new Map();
   const sources = {};
@@ -59,6 +59,30 @@ test('Docker product WASM: public API, active document isolation and real Worker
   add('/scan-buffers.pdf', join(root, 'pdf/issue7971/scan-jpeg-buffer-controls.pdf'), 'application/pdf');
   add('/fullwidth-space-source.pdf', join(root, 'samples/issue7957/resource-limit.pdf'), 'application/pdf');
   add('/colour-source.pdf', join(root, 'samples/issue7959/bounded-import-path.pdf'), 'application/pdf');
+  add('/icc-budget.pdf', join(root, 'pdf/issue8174/features/icc-path-rgb.pdf'), 'application/pdf');
+  add('/xref-budget.pdf', join(root, 'pdf/issue8174/features/recovery-fake-header.pdf'), 'application/pdf');
+  files.set('/memory-failure-worker.js', ['text/javascript', `import { PdfImportRequest } from '/pkg/rhwp.js';
+const buffered = []; self.onmessage = event => buffered.push(event);
+const original = PdfImportRequest.prepare;
+PdfImportRequest.prepare = (options) => {
+  if (options?.includeTableInference) new WebAssembly.Memory({initial: 1, maximum: 1}).grow(1);
+  return original.call(PdfImportRequest, options);
+};
+await import('/rhwp-shared/pdf/import-worker.js');
+const consume = self.onmessage; for (const event of buffered) consume(event);`]);
+  // Controlled engine trap in an actual browser Worker, independent of PDF parsing.
+  files.set('/trap-failure-worker.js', ['text/javascript', `import { PdfImportRequest } from '/pkg/rhwp.js';
+const buffered = []; self.onmessage = event => buffered.push(event);
+const original = PdfImportRequest.prepare;
+const trap = new WebAssembly.Instance(new WebAssembly.Module(new Uint8Array([
+  0,97,115,109,1,0,0,0, 1,4,1,96,0,0, 3,2,1,0, 7,5,1,1,102,0,0, 10,5,1,3,0,0,11
+]))).exports.f;
+PdfImportRequest.prepare = options => {
+  if (options?.includeTableInference) trap();
+  return original.call(PdfImportRequest, options);
+};
+await import('/rhwp-shared/pdf/import-worker.js');
+const consume = self.onmessage; for (const event of buffered) consume(event);`]);
   add('/control.hwp', join(root, 'samples/hwp_table_test.hwp'), 'application/octet-stream');
   files.set('/synthetic.pdf', ['application/pdf', syntheticPdf()]);
   files.set('/synthetic-many-pages.pdf', ['application/pdf', syntheticPdf(1025)]);
@@ -107,12 +131,185 @@ test('Docker product WASM: public API, active document isolation and real Worker
         check(control.getPdfImportDiagnostics() === 'null' && control.pageCount() > 0, 'feature-off HWP unaffected');
         control.free();
       }
-      const wasm = await import('/pkg/rhwp.js'); await wasm.default();
+      const wasm = await import('/pkg/rhwp.js'); const instance = await wasm.default();
       check(wasm.HwpDocument.supportsPdfImport() === true, 'PDF runtime advertises PDF enabled');
+      const boundaryCapabilities = JSON.parse(wasm.HwpDocument.getPdfImportRuntimeCapabilities());
+      check(boundaryCapabilities.requestTransportReservations === true && boundaryCapabilities.editorReopenRemainingCredit === true
+        && boundaryCapabilities.mainThreadPreemption === false && boundaryCapabilities.processMemoryLimitEnforced === false,
+        'capabilities distinguish actual copy/reopen boundaries from main-thread preemption and process memory limits');
+      const bounded = wasm.PdfImportRequest.importPdf(bytes, { resourceProfile: 'constrained' });
+      const limits = JSON.parse(bounded.getTransferLimits());
+      check(limits.outputBytes === 32 * 1024 * 1024 && limits.diagnosticsBytes === 8 * 1024 * 1024, 'request uses shared constrained transfer limits');
+      const beforeSave = JSON.parse(bounded.inspect());
+      const boundedBytes = bounded.exportDocument('hwpx', limits.outputBytes);
+      const afterSave = JSON.parse(bounded.inspect());
+      check(afterSave.diagnostics.resourceUsage.decodedBytes > beforeSave.diagnostics.resourceUsage.decodedBytes, 'same WASM request accounts first save and diagnostics');
+      const unbounded = wasm.HwpDocument.importPdf(bytes, { resourceProfile: 'constrained' });
+      const legacyBytes = unbounded.exportHwpx(); unbounded.free();
+      check(boundedBytes.length === legacyBytes.length && boundedBytes.every((v, i) => v === legacyBytes[i]), 'bounded first save preserves ordinary HWPX bytes');
+      bounded.free();
+      const failedRequest = wasm.PdfImportRequest.importPdf(bytes, {});
+      throwsCode(() => failedRequest.exportDocument('hwpx', 1), 'SERIALIZE_RESOURCE_LIMIT');
+      throwsCode(() => failedRequest.inspect(), 'PDF_IMPORT_SESSION');
+      failedRequest.free();
+      const recoveredRequest = wasm.PdfImportRequest.importPdf(bytes, {});
+      check(recoveredRequest.exportDocument('hwpx', 1024 * 1024).length > 1, 'fresh WASM request recovers after output rejection');
+      recoveredRequest.free();
+
+      const tiny = wasm.PdfImportRequest.prepare({ resourceLimits: { backend: { decodedBytes: 8 } } });
+      throwsCode(() => tiny.reserveInput(9), 'PDF_RESOURCE_LIMIT');
+      throwsCode(() => tiny.open(bytes), 'PDF_IMPORT_SESSION'); tiny.free();
+      const svgOwner = wasm.PdfImportRequest.importPdf(bytes, {});
+      const ordinarySvgDoc = wasm.HwpDocument.importPdf(bytes, {});
+      check(svgOwner.renderPageSvg(0) === ordinarySvgDoc.renderPageSvg(0), 'bounded SVG preserves ordinary product output');
+      ordinarySvgDoc.free();
+      throwsCode(() => svgOwner.renderPageSvgLimited(0, 16), 'PDF_RESOURCE_LIMIT');
+      throwsCode(() => svgOwner.inspect(), 'PDF_IMPORT_SESSION'); svgOwner.free();
+      const preparedInput = wasm.PdfImportRequest.prepare({});
+      preparedInput.reserveInput(bytes.length); preparedInput.open(bytes);
+      const handoff = preparedInput.exportDocument('hwpx', 1024 * 1024);
+      const remaining = preparedInput.remainingDecodedBytes();
+      check(remaining > 0, 'actual remaining decoded credit follows input, import and export copies');
+      throwsCode(() => wasm.PdfEditorReopen.open(handoff, {}, 1024 * 1024, 8, 1000), 'PDF_RESOURCE_LIMIT');
+      throwsCode(() => wasm.PdfEditorReopen.open(handoff, {}, 1024 * 1024, remaining, 0), 'PDF_IMPORT_TIMEOUT');
+      throwsCode(() => wasm.PdfEditorReopen.open(handoff, {}, 1024 * 1024, remaining, 0.000001), 'PDF_IMPORT_TIMEOUT');
+      const editorOwner = wasm.PdfEditorReopen.open(handoff, {}, 1024 * 1024, remaining, 30000);
+      const reopenUsage = JSON.parse(editorOwner.resourceUsage());
+      check(reopenUsage.decodedBytes > handoff.length * 2 && reopenUsage.decodedBytes <= remaining,
+        'reopen reserves WASM input, archive backing, decoded entries and Core from remaining import credit');
+      const editor = editorOwner.takeDocument();
+      throwsCode(() => editorOwner.takeDocument(), 'PDF_EDITOR_REOPEN'); editorOwner.free(); preparedInput.free();
+      check(editor.pageCount() === 3, 'reopen takes one fully editable document');
+      editor.convertToEditable(); editor.insertText(0, 0, 0, 'T05');
+      for (const saved of [editor.exportHwp(), editor.exportHwpx()]) {
+        const reopened = new wasm.HwpDocument(saved);
+        const rendered = Array.from({ length: reopened.pageCount() }, (_, page) => {
+          const xml = new DOMParser().parseFromString(reopened.renderPageSvg(page), 'image/svg+xml');
+          return [...xml.querySelectorAll('text')].map(node => node.textContent).join('');
+        });
+        check(JSON.stringify(rendered) === JSON.stringify(['T05FIRST', 'SECOND', 'THIRD']),
+          'recovered editor preserves the edit, all source text, page ownership and order through both saves');
+        reopened.free();
+      }
+      editor.free();
       const policy = JSON.parse(wasm.HwpDocument.getPdfImportPolicy());
       check(policy.schemaVersion === 1 && Number.isSafeInteger(policy.backend.inputBytes), 'runtime supplies the policy used before transfer');
       check(Number.isSafeInteger(policy.maxDocumentImagePlacements) && policy.maxDocumentImagePlacements >= 99,
         'runtime exposes the bounded cumulative image placement policy');
+      check(JSON.stringify(JSON.parse(wasm.HwpDocument.getPdfImportPolicyWithOptions({}))) === JSON.stringify(policy), 'standard options and legacy policy query agree');
+      const constrained = JSON.parse(wasm.HwpDocument.getPdfImportPolicyWithOptions({ resourceProfile: 'constrained' }));
+      check(constrained.backend.inputBytes === 16 * 1024 * 1024 && constrained.maxSelectedPages === 64, 'constrained profile is resolved by the Rust authority');
+      const capabilities = JSON.parse(wasm.HwpDocument.getPdfImportRuntimeCapabilities());
+      check(capabilities.preCopyPolicyValidation && capabilities.interruption === 'hostWorkerTermination'
+        && capabilities.processMemoryLimitEnforced === false, 'runtime distinguishes pre-copy counters and host Worker interruption from process memory limits');
+      for (const resourceProfile of ['unknown', '', null, 1, false, {}]) {
+        throwsCode(() => wasm.HwpDocument.importPdf(bytes, { resourceProfile }), 'PDF_RESOURCE_POLICY');
+      }
+      for (const resourceLimits of [null, [], 1, new Date(), { unknown: 1 }, { maxSelectedPages: 0 },
+        { maxSelectedPages: undefined }, { maxSelectedPages: null }, { maxSelectedPages: -1 },
+        { maxSelectedPages: 1.5 }, { maxSelectedPages: NaN }, { maxSelectedPages: Infinity },
+        { maxSelectedPages: Number.MAX_SAFE_INTEGER + 1 }, { maxSelectedPages: 4294967296 },
+        { backend: null }, { backend: [] }, { backend: new Date() }, { backend: { inputBytes: 0 } },
+        { backend: { inputBytes: '16' } }, { backend: { inputBytes: true } }, { backend: { inputBytes: 1n } },
+        { backend: { inputBytes: constrained.backend.inputBytes + 1 } },
+        { backend: { codecWorkUnits: undefined } }, { backend: { unknown: 1 } },
+        { [Symbol('hidden')]: 1 }, { backend: { [Symbol('hidden')]: 1 } }]) {
+        throwsCode(() => wasm.HwpDocument.importPdf(bytes, { resourceProfile: 'constrained', resourceLimits }), 'PDF_RESOURCE_POLICY');
+      }
+      const exactOptions = { resourceLimits: { backend: { inputBytes: bytes.length } } };
+      const exact = wasm.HwpDocument.importPdf(bytes, exactOptions);
+      check(JSON.parse(exact.getPdfImportDiagnostics()).resourcePolicy.backend.inputBytes === bytes.length, 'exact input boundary and effective policy reach the actual backend'); exact.free();
+      const visible = new Uint8Array(bytes.length + 8192); visible.set(bytes, 4096);
+      const view = wasm.HwpDocument.importPdf(visible.subarray(4096, 4096 + bytes.length), exactOptions);
+      check(view.pageCount() === 3, 'direct WASM copies only the visible input view'); view.free();
+      const lowerOptions = { resourceLimits: { backend: { inputBytes: bytes.length - 1 } } };
+      wasm.HwpDocument.getPdfImportPolicyWithOptions(lowerOptions);
+      const oversized = new Uint8Array(8 * 1024 * 1024);
+      const memoryBefore = instance.memory.buffer.byteLength;
+      throwsCode(() => wasm.HwpDocument.importPdf(oversized, lowerOptions), 'PDF_RESOURCE_LIMIT');
+      const memoryAfterRejection = instance.memory.buffer.byteLength;
+      check(memoryAfterRejection === memoryBefore, 'rejected input does not grow WASM memory for an automatic argument copy');
+      for (const wrong of [null, [], {}, 'PDF', bytes.buffer, new Uint16Array(4)]) {
+        throwsCode(() => wasm.HwpDocument.importPdf(wrong, {}), 'PDF_INVALID_INPUT');
+      }
+      const one = wasm.HwpDocument.importPdf(bytes, { resourceProfile: 'constrained', sourcePages: [1], resourceLimits: { maxSelectedPages: 1 } });
+      check(one.pageCount() === 1 && JSON.parse(one.getPdfImportDiagnostics()).resourcePolicy.maxSelectedPages === 1, 'selection uses the resolved constrained policy'); one.free();
+      throwsCode(() => wasm.HwpDocument.importPdf(bytes, { sourcePages: [0, 1], resourceLimits: { maxSelectedPages: 1 } }), 'PDF_PAGE_SELECTION');
+      const iccBudget = new Uint8Array(await (await fetch('/icc-budget.pdf')).arrayBuffer());
+      const xrefBudget = new Uint8Array(await (await fetch('/xref-budget.pdf')).arrayBuffer());
+      for (const [name, input] of [['ICC', iccBudget], ['xref', xrefBudget]]) {
+        throwsCode(() => wasm.HwpDocument.importPdf(input, { resourceLimits: { backend: { codecWorkUnits: 1 } } }), 'PDF_RESOURCE_LIMIT');
+        const normal = wasm.HwpDocument.importPdf(input, { resourceProfile: 'constrained' });
+        check(normal.pageCount() === 1, `${name} actual work budget failure does not poison the next request`); normal.free();
+      }
+      for (const [uri, kind] of [['https://example.com/한글?q=1', 'web'], ['mailto:user@example.com', 'mail'],
+        ['#목표', 'documentAnchor'], ['../서류.pdf', 'relativeFile'], ['C:\\docs\\문서.hwp', 'localFile'], ['rhwp-app:open/document', 'registeredApplication']]) {
+        const destination = JSON.parse(wasm.HwpDocument.classifyHyperlinkDestination(uri));
+        check(destination.uri === uri && destination.kind === kind, `shared WASM destination classification: ${kind}`);
+        const doc = wasm.HwpDocument.createEmpty(); doc.createBlankDocument(); doc.insertText(0, 0, 0, 'Link target');
+        doc.insertHyperlinkEx(JSON.stringify({ target: { section: 0, para: 0, cellPath: [] }, start: 0, end: 4, uri }));
+        for (const [name, saved] of [['hwp', doc.exportHwp()], ['hwpx', doc.exportHwpx()]]) {
+          const reopen = new wasm.HwpDocument(saved);
+          check(JSON.parse(reopen.getHyperlinkContext('{"section":0,"para":0,"cellPath":[]}')).links[0].uri === uri,
+            `${kind}: actual WASM ${name} roundtrip keeps original destination`); reopen.free();
+        }
+        doc.free();
+      }
+      for (const uri of ['javascript:alert(1)', 'data:text/html,test', 'https://user:secret@example.com', '../bad\nfile']) {
+        check(JSON.parse(wasm.HwpDocument.classifyHyperlinkDestination(uri)).kind === null, 'rejected host destination is not classified as executable');
+      }
+      const sampleCanvas = document.createElement('canvas'); sampleCanvas.width = sampleCanvas.height = 4;
+      sampleCanvas.getContext('2d').fillStyle = '#0000ff'; sampleCanvas.getContext('2d').fillRect(0, 0, 4, 4);
+      const rasterCases = [
+        ['gradient', '<defs><linearGradient id="g"><stop stop-color="#ff0000"/><stop offset="1" stop-color="#0000ff"/></linearGradient></defs><rect x="10" y="20" width="30" height="30" fill="url(#g)"/>'],
+        ['clip-opacity', '<defs><clipPath id="c"><circle cx="25" cy="35" r="14"/></clipPath></defs><rect x="10" y="20" width="30" height="30" fill="#00ff00" opacity="0.5" clip-path="url(#c)"/>'],
+        ['internal-use', '<defs><rect id="r" x="10" y="20" width="30" height="30" fill="#0000ff"/></defs><use href="#r"/>'],
+        ['restricted-script', '<script>alert(1)</script><rect x="10" y="20" width="30" height="30" fill="#0000ff"/>'],
+        ['restricted-before-gradient', '<script>alert(1)</script><defs><linearGradient id="g"><stop stop-color="#ff0000"/><stop offset="1" stop-color="#0000ff"/></linearGradient></defs><rect x="10" y="20" width="30" height="30" fill="url(#g)"/>'],
+        ...['png', 'jpeg'].map(format => [`embedded-${format}`, `<image x="10" y="20" width="30" height="30" href="${sampleCanvas.toDataURL(`image/${format}`)}"/>`]),
+        ['foreground', '<rect x="10" y="20" width="30" height="30" fill="currentColor"/>'],
+      ];
+      const svgRaster = [];
+      const pixels = async source => {
+        const image = new Image(); image.src = source; await image.decode();
+        const canvas = document.createElement('canvas'); canvas.width = canvas.height = 30;
+        const context = canvas.getContext('2d'); context.drawImage(image, 0, 0);
+        return { rgba: context.getImageData(0, 0, 30, 30).data, png: canvas.toDataURL() };
+      };
+      const rasterOptions = JSON.stringify({ viewBox: [10, 20, 30, 30], viewport: [10, 10, 30, 30], scale: 1, currentColor: '#008000' });
+      for (const [name, artwork] of rasterCases) {
+        const fragment = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg">${artwork}</svg>`;
+        const prepared = wasm.prepareStaticSvgRaster(rasterOptions, fragment);
+        check(prepared && prepared.width === 30 && prepared.height === 30 && prepared.byteCost === 3600,
+          `${name}: actual WASM consumes the bounded common SVG raster result`);
+        const url = URL.createObjectURL(new Blob([prepared.bytes], { type: 'image/png' }));
+        const actual = await pixels(url); URL.revokeObjectURL(url);
+        // Independent browser SVG renderer; no RHWP output is used to construct the source.
+        const safeArtwork = artwork.replace('<script>alert(1)</script>', '');
+        const reference = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="10 20 30 30" color="#008000">${safeArtwork}</svg>`;
+        const refUrl = URL.createObjectURL(new Blob([reference], { type: 'image/svg+xml' }));
+        const expected = await pixels(refUrl); URL.revokeObjectURL(refUrl);
+        const center = (15 * 30 + 15) * 4;
+        check(actual.rgba[center + 3] > 0 && Math.abs(actual.rgba[center + 3] - expected.rgba[center + 3]) <= 1,
+          `${name}: actual SVG center ink/alpha matches independent browser output`);
+        if (name === 'foreground') check(actual.rgba[center] === 0 && actual.rgba[center + 1] === 128 && actual.rgba[center + 2] === 0,
+          'foreground color reaches the common raster before paint');
+        svgRaster.push({ name, source: fragment, referenceSvg: reference, png: actual.png, referencePng: expected.png });
+      }
+      for (const fragment of ['<svg><use href="https://example.com/a.svg#glyph"/></svg>', '<svg><path d="M1 1broken"/></svg>',
+        '<svg><defs><g id="a"><use href="#a"/></g></defs><use href="#a"/></svg>',
+        '<svg onload="alert(1)"><rect width="2" height="2"/></svg>']) {
+        check(wasm.prepareStaticSvgRaster(rasterOptions, fragment) === undefined, 'unsafe or invalid artwork is rejected before raster replay');
+      }
+      // Public replay boundary: bounded markup may still describe exponential <use> expansion.
+      const expansion = ['<g id="n0"><rect x="10" y="20" width="30" height="30"/></g>'];
+      for (let level = 1; level <= 20; level++) expansion.push(`<g id="n${level}"><use href="#n${level - 1}"/><use href="#n${level - 1}"/></g>`);
+      check(wasm.prepareStaticSvgRaster(rasterOptions, `<svg><defs>${expansion.join('')}</defs><use href="#n20"/></svg>`) === undefined,
+        'exponential internal-use expansion is refused before actual WASM replay');
+      check(wasm.prepareStaticSvgRaster(rasterOptions, '<svg><rect x="10" y="20" width="30" height="30" fill="#0000ff"/></svg>')?.byteCost === 3600,
+        'a refused expansion does not poison ordinary fresh SVG replay');
+      check(wasm.prepareStaticSvgRaster(JSON.stringify({ viewBox: [0, 0, 1, 1], viewport: [0, 0, 100000, 100000], scale: 1, currentColor: '#000000' }),
+        '<svg><rect width="1" height="1"/></svg>') === undefined, 'SVG output pixel ceiling rejects before bitmap allocation');
       const repeated = wasm.HwpDocument.importPdf(placements, {});
       try {
         check(repeated.pageCount() === 3, 'XObject, Form and inline placement pages remain distinct');
@@ -256,6 +453,10 @@ test('Docker product WASM: public API, active document isolation and real Worker
         return worker;
       } });
       try {
+        await session.importPdf(bytes);
+        await rejectsCode(session.exportDocument('hwpx', { outputBytes: 1 }), 'PDF_RESOURCE_LIMIT');
+        await rejectsCode(session.inspect(), 'PDF_NO_DOCUMENT');
+        check((await session.importPdf(bytes)).pageCount === 3, 'actual Worker recreated after bounded serialization failure');
         const scanned = await session.importPdf(scanBytes, {}, { timeoutMs: 60_000 });
         check(scanned.pageCount === 5, 'Worker imports every scan-sized JPEG page');
         check(scanImages(await session.renderPageSvg(4)).length === 1, 'Worker preserves the final scan image');
@@ -312,14 +513,67 @@ test('Docker product WASM: public API, active document isolation and real Worker
         setTimeout(() => abort.abort(), 1);
         await rejectsCode(aborted, 'PDF_IMPORT_CANCELLED');
         check((await session.inspect()).pageCount === 3, 'abort preserves active document');
+        await rejectsCode(session.importPdf(iccBudget, { resourceLimits: { backend: { codecWorkUnits: 1 } } }), 'PDF_RESOURCE_LIMIT');
+        check((await session.inspect()).pageCount === 3, 'actual ICC budget failure preserves active Worker');
+        const progress = [];
+        const controlled = await session.importPdf(bytes, { resourceProfile: 'constrained', sourcePages: [1], resourceLimits: { maxSelectedPages: 1 } },
+          { timeoutMs: 60_000, onProgress: phase => progress.push(phase) });
+        check(controlled.diagnostics.resourcePolicy.maxSelectedPages === 1 && controlled.diagnostics.resourcePolicy.backend.inputBytes === constrained.backend.inputBytes,
+          'Worker passes selected profile and explicit lower cap into actual diagnostics');
+        check(progress.includes('importing') && progress.includes('ready'), 'Worker progress does not finish the request before result publication');
+        let memoryWorkers = 0;
+        const memorySession = new PdfImportSession({ workerFactory: () => {
+          const url = memoryWorkers++ === 1 ? '/memory-failure-worker.js' : '/rhwp-shared/pdf/import-worker.js';
+          return new Worker(url, { type: 'module' });
+        } });
+        try {
+          await memorySession.importPdf(bytes, { sourcePages: [0] }, { timeoutMs: 60_000 });
+          await rejectsCode(memorySession.importPdf(bytes, { includeTableInference: true }, { timeoutMs: 60_000 }), 'PDF_WORKER_MEMORY');
+          check((await memorySession.inspect()).pageCount === 1, 'actual bounded WebAssembly.Memory.grow failure preserves active document');
+          const next = await memorySession.importPdf(bytes, { sourcePages: [2] }, { timeoutMs: 60_000 });
+          check(memoryWorkers === 3 && next.diagnostics.pages[0].sourcePage === 2, 'normal request succeeds after memory-failed Worker recreation');
+        } finally { memorySession.dispose(); }
+        let trapWorkers = 0;
+        const trapSession = new PdfImportSession({ workerFactory: () => {
+          const url = trapWorkers++ === 1 ? '/trap-failure-worker.js' : '/rhwp-shared/pdf/import-worker.js';
+          return new Worker(url, { type: 'module' });
+        } });
+        try {
+          await trapSession.importPdf(bytes, { sourcePages: [0] }, { timeoutMs: 60_000 });
+          let trapped;
+          try { await trapSession.importPdf(bytes, { includeTableInference: true }, { timeoutMs: 60_000 }); }
+          catch (error) { trapped = error; }
+          check(trapped?.code === 'PDF_WORKER_FAILED' && trapped.message.includes('unreachable'),
+            'an actual WebAssembly unreachable trap retires the failed candidate');
+          check((await trapSession.inspect()).pageCount === 1, 'engine trap preserves the prior active Worker');
+          const next = await trapSession.importPdf(bytes, { sourcePages: [2] }, { timeoutMs: 60_000 });
+          check(trapWorkers === 3 && next.diagnostics.pages[0].sourcePage === 2,
+            'a fresh product Worker recovers after an actual engine trap');
+        } finally { trapSession.dispose(); }
+        const phaseAbort = new AbortController();
+        await rejectsCode(session.importPdf(real, {}, { signal: phaseAbort.signal, timeoutMs: 60_000,
+          onProgress: phase => { if (phase === 'importing') phaseAbort.abort(); } }), 'PDF_IMPORT_CANCELLED');
+        check((await session.inspect()).pageCount === 1, 'cancellation after importing phase preserves active document');
         const recovered = await session.importPdf(bytes, { sourcePages: [1] }, { timeoutMs: 60_000 });
         check(recovered.pageCount === 1 && recovered.diagnostics.pages[0].sourcePage === 1, 'normal input after Worker recreation');
         check(real.byteLength > 0, 'caller PDF buffer not detached');
-        return { checked, workers, terminatedBeforeDispose: terminated, diagnostics: loaded.diagnostics,
+        return { checked, svgRaster, workers, memoryWorkers, trapWorkers, preCopyMemory: { inputBytes: oversized.byteLength, before: memoryBefore, after: memoryAfterRejection }, terminatedBeforeDispose: terminated, diagnostics: loaded.diagnostics,
           hwpx: Array.from(hwpx), hwp: Array.from(hwp), svg, reopenedSvg };
       } finally { session.dispose(); }
     }, { hasDisabled: !!disabledPkg });
     assert.deepEqual(errors, []);
+    mkdirSync(join(evidence, 'svg-raster'), { recursive: true });
+    result.svgRaster = result.svgRaster.map(({ name, source, referenceSvg, png, referencePng }) => {
+      writeFileSync(join(evidence, 'svg-raster', `${name}.svg`), source);
+      writeFileSync(join(evidence, 'svg-raster', `${name}-reference.svg`), referenceSvg);
+      const paths = {};
+      for (const [suffix, data] of [['wasm', png], ['reference', referencePng]]) {
+        const bytes = Buffer.from(data.split(',')[1], 'base64');
+        const path = join(evidence, 'svg-raster', `${name}-${suffix}.png`); writeFileSync(path, bytes);
+        paths[suffix] = { path, sha256: hash(bytes) };
+      }
+      return { name, ...paths };
+    });
     for (const format of ['hwpx', 'hwp']) {
       const bytes = Buffer.from(result[format]);
       writeFileSync(join(evidence, `worker-all.${format}`), bytes);
@@ -338,7 +592,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
       });
     }
     writeFileSync(join(evidence, 'browser-result.json'), JSON.stringify({ ...result, sources, browser: await browser.version(), visualJudgment: 'not_evaluated_F4_pending' }, null, 2));
-    console.log(`${result.checked.length} assertions, ${result.workers} actual Workers; all 12 pages rendered/saved`);
+    console.log(`${result.checked.length} assertions, ${result.workers + result.memoryWorkers + result.trapWorkers} actual Workers (${result.workers} normal, ${result.memoryWorkers} memory-failure controls, ${result.trapWorkers} engine-trap controls); all 12 pages rendered/saved`);
   } finally {
     await page?.close();
     if (cdp) await browser?.disconnect();

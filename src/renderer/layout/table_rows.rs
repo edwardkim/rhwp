@@ -21,6 +21,8 @@ struct RowIndex {
     raw_heights: OnceLock<Arc<Vec<HwpUnit>>>,
     declared_shrink: OnceLock<Arc<Vec<HwpUnit>>>,
     paragraph_widths: OnceLock<Arc<Vec<i32>>>,
+    plain_object_row_frames: OnceLock<Option<Arc<Vec<i32>>>>,
+    row_boxes_exceed_object_frame: OnceLock<bool>,
 }
 
 impl RowIndex {
@@ -47,6 +49,8 @@ impl RowIndex {
             raw_heights: OnceLock::new(),
             declared_shrink: OnceLock::new(),
             paragraph_widths: OnceLock::new(),
+            plain_object_row_frames: OnceLock::new(),
+            row_boxes_exceed_object_frame: OnceLock::new(),
         }
     }
 }
@@ -97,6 +101,25 @@ impl TableRows<'_> {
                 .paragraph_widths
                 .get_or_init(|| Arc::new(self.table.paragraph_frame_owner_widths())),
         )
+    }
+
+    /// 표 전체 저장 행 상자에서 얻는 개체 행 프레임. 행마다 묻지만 표 단위 사실이다.
+    pub(super) fn plain_object_row_frames(&self) -> Option<Arc<Vec<i32>>> {
+        self.index
+            .plain_object_row_frames
+            .get_or_init(|| {
+                crate::renderer::float_placement::stored_plain_object_row_frame_heights(self.table)
+                    .map(Arc::new)
+            })
+            .clone()
+    }
+
+    /// 저장 행 상자 합이 개체 높이를 넘는지(조각 증거). 셀마다 묻지만 표 단위 사실이다.
+    pub(super) fn row_boxes_exceed_object_frame(&self) -> bool {
+        *self
+            .index
+            .row_boxes_exceed_object_frame
+            .get_or_init(|| super::LayoutEngine::stored_row_boxes_exceed_object_frame(self.table))
     }
 
     pub(super) fn declared_shrink(&self) -> Arc<Vec<HwpUnit>> {

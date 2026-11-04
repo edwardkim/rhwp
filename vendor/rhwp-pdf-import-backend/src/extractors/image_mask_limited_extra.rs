@@ -41,7 +41,6 @@ pub(super) fn samples(
     let dict = object
         .as_dict()
         .ok_or_else(|| Error::Image("image must be a stream".into()))?;
-    #[cfg(any(feature = "jbig2", feature = "jpeg2000"))]
     if let Some(samples) = codec_samples(doc, object, dict, expected, budget)? {
         return Ok(samples);
     }
@@ -84,7 +83,7 @@ fn layout(
 ) -> Result<(usize, usize)> {
     let count = width
         .checked_mul(height)
-        .filter(|&n| n <= 16_000_000)
+        .filter(|&n| n <= 64_000_000)
         .ok_or_else(|| budget.reject("mask pixels"))?;
     let row = width
         .checked_mul(components)
@@ -199,7 +198,7 @@ impl ColourKey {
         let ImageData::Raw {
             pixels,
             format: PixelFormat::RGBA,
-        } = &mut image.data
+        } = image.samples_mut(budget)?
         else {
             unreachable!("opacity produces RGBA")
         };
@@ -280,7 +279,6 @@ pub(super) fn stencil(
 
 /// Encoded image bytes must be decoded before source-sample mask operations.
 /// ISO 32000-1 7.4.8/7.4.9: JBIG2 is bilevel; JPX samples precede PDF Decode.
-#[cfg(any(feature = "jbig2", feature = "jpeg2000"))]
 fn codec_samples(
     doc: &PdfDocument,
     object: &Object,
@@ -298,11 +296,33 @@ fn codec_samples(
     };
     let last = last.map(|f| resolve(doc, f, budget)).transpose()?;
     let name = last.as_deref().and_then(Object::as_name);
-    if !matches!(name, Some("JBIG2Decode" | "JPXDecode")) {
+    if !matches!(name, Some("JBIG2Decode" | "JPXDecode" | "DCTDecode")) {
         return Ok(None);
     }
     let width = dimension(doc, dict, "Width", budget)? as u32;
     let height = dimension(doc, dict, "Height", budget)? as u32;
+    if name == Some("DCTDecode") {
+        let bpc = dict
+            .get("BitsPerComponent")
+            .map(|v| resolve(doc, v, budget))
+            .transpose()?;
+        if bpc.as_deref().and_then(Object::as_integer) != Some(8) {
+            return Err(Error::Unsupported("JPEG source-mask bit depth".into()));
+        }
+        // The stream decoder removes wrapping byte filters and decrypts the
+        // stream; DCT remains encoded until the allocation-budgeted decoder.
+        let bytes = doc.decode_stream_with_encryption(object, ObjectRef::new(0, 0))?;
+        let decoded = super::super::jpeg_limited::decode(&bytes, width, height, budget)?;
+        let pixels = match decoded {
+            image::DynamicImage::ImageLuma8(p) => p.into_raw(),
+            image::DynamicImage::ImageRgb8(p) => p.into_raw(),
+            _ => return Err(Error::Unsupported("JPEG mask source components".into())),
+        };
+        if pixels.len() != expected {
+            return Err(Error::Image("JPEG source samples differ from PDF declaration".into()));
+        }
+        return Ok(Some(pixels));
+    }
     #[cfg(feature = "jbig2")]
     if name == Some("JBIG2Decode") {
         let bpc = dict
@@ -351,9 +371,20 @@ fn codec_samples(
                     None,
                     false,
                     Some((width, height)),
+                    Some(1),
                 )?
             } else {
-                crate::decoders::jpx::decode_jpx_for_pdf(&bytes, None, true, Some((width, height)))?
+                crate::decoders::jpx::decode_jpx_for_pdf(
+                    &bytes,
+                    None,
+                    true,
+                    Some((width, height)),
+                    if bpc == 8 {
+                        u8::try_from(expected / (width as usize * height as usize)).ok()
+                    } else {
+                        None
+                    },
+                )?
             };
             if image.width != width || image.height != height {
                 return Err(Error::Image("JPX mask dimensions differ from PDF".into()));
@@ -403,26 +434,4 @@ fn codec_samples(
         "{} disabled at build time",
         name.unwrap_or("image codec")
     )))
-}
-
-/// Retain the old raw-mask DecodeParms refusal, but allow the opted-in JBIG2
-/// adapter to resolve and decode its shared global stream with the same request.
-pub(super) fn codec_decode_parms_allowed(
-    doc: &PdfDocument,
-    dict: &HashMap<String, Object>,
-    budget: &ImportBudget,
-) -> Result<bool> {
-    #[cfg(feature = "jbig2")]
-    if let Some(filter) = dict.get("Filter") {
-        let filter = resolve(doc, filter, budget)?;
-        let last = match &*filter {
-            Object::Array(values) => values.last(),
-            other => Some(other),
-        };
-        if let Some(last) = last {
-            return Ok(resolve(doc, last, budget)?.as_name() == Some("JBIG2Decode"));
-        }
-    }
-    let _ = (doc, dict, budget);
-    Ok(false)
 }

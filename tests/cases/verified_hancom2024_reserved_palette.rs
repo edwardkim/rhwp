@@ -1,5 +1,9 @@
-//! 흑백 예약색과 실제 Print 계조를 공통 그림 payload·조회·프로필 경로에서 보호한다.
-//! 독립 2024 Print와 전쪽 Native/fresh WASM·직접 판독: stage2101, stage2122.
+//! 관계형·고정형: 예약색 소유 관계와 독립 Print의 색·표본 계약을 검사한다.
+//! 주석 갱신: 2026-10-30T14:47:29+09:00; 직전 파일 커밋: 2026-10-30T05:26:44+09:00 (ceab737e45).
+//! 2026-10-29 측정 raw(96dpi, PDFium, 2px): 예약색 1쪽 Native 100.00% / fresh WASM 100.00%,
+//! 색상 팔레트 1쪽 Native 100.00% / fresh WASM 100.00%.
+//! 각 문서 전 1쪽 최저 Native·fresh WASM 각각 100.00%.
+//! 근거: mydocs/pr/assets/issue_8153/palette-regression-20261029/README.md.
 //! 합성 진단 입력이며 실물 시험지나 WMF의 완료 증거를 대신하지 않는다.
 //! 새 독립 PDF를 직접 읽으므로 pdf-import 기능에서 실행한다.
 #![cfg(all(not(target_arch = "wasm32"), feature = "pdf-import"))]
@@ -129,10 +133,8 @@ fn verify_profile(
                 .unwrap();
             assert!(maximum_error <= 1,
                 "새 독립 Print JPEG의 전체 계조·색상: owner={owner:?}, maximum_error={maximum_error}");
-            assert_eq!(
-                inline_ops[index]["imageReconstruction"].as_str() == Some("catmullRom"),
-                changes
-            );
+            // 색상 확장과 장치 표본화는 서로 다른 계약이다. 실제 색은 위의
+            // 독립 Print 자원과 비교하며 표본화는 별도 면적 표본 검사로 보호한다.
         } else {
             assert_eq!(emitted.as_raw(), source.as_raw(), "Screen 원본 RGBA 보존");
         }

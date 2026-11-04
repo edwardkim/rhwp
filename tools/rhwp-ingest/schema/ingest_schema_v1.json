@@ -127,6 +127,27 @@
               "items": { "$ref": "#/definitions/StemBlock" }
             }
           }
+        },
+        {
+          "type": "object",
+          "required": ["type", "runs"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "paragraph" },
+            "runs": { "type": "array", "items": { "$ref": "#/definitions/InlineRun" } }
+          }
+        }
+      ]
+    },
+    "InlineRun": {
+      "oneOf": [
+        {
+          "type": "object", "required": ["type", "text"], "additionalProperties": false,
+          "properties": { "type": { "const": "text" }, "text": { "type": "string" } }
+        },
+        {
+          "type": "object", "required": ["type", "ref"], "additionalProperties": false,
+          "properties": { "type": { "const": "image" }, "ref": { "type": "string" } }
         }
       ]
     },

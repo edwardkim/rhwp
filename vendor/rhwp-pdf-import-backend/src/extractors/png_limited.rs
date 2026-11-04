@@ -45,11 +45,12 @@ pub(super) fn encode(
         _ => unreachable!("validated above"),
     };
     chunk(writer, b"IHDR", &ihdr, &[])?;
-    if let Some(interpolate) = interpolate {
-        // Private, ancillary, unsafe-to-copy PNG chunk. Version 1 declares
-        // source sampling; pixel-changing foreign editors must discard it.
-        chunk(writer, b"rhWP", &[1, u8::from(interpolate)], &[])?;
-    }
+    // Private, ancillary, unsafe-to-copy PNG chunk. Version 6 preserves PDF
+    // output colours separately from optional source interpolation: 0/1 are
+    // explicit nearest/linear, 2 leaves the transformed bitmap's sampling to
+    // the renderer. Hancom's bitmap print conversion must not recolour this
+    // already converted PDF image. Foreign pixel editors must discard it.
+    chunk(writer, b"rhWP", &[6, interpolate.map_or(2, u8::from)], &[])?;
     for row in pixels.chunks_exact(row_bytes) {
         // PNG filter None; the source samples remain borrowed.
         feed(&mut compressor, &[0], false, writer)?;

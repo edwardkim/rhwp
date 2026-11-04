@@ -3,7 +3,7 @@
 use super::{CellUnit, LayoutEngine, ResolvedStyleSet};
 use crate::model::{
     paragraph::{LineSeg, Paragraph},
-    table::Cell,
+    table::{Cell, Table},
 };
 
 /// 연속된 저장 사다리의 원점으로 빈 줄 자체의 점유를 확인한다.
@@ -28,14 +28,12 @@ fn closed_stored_empty_line_owns_advance(
         return false;
     };
     let next = cell.paragraphs.get(unit.para_idx + 1);
-    if [Some(previous), Some(paragraph), next]
-        .into_iter()
-        .flatten()
-        .any(|para| {
-            !para.controls.is_empty()
-                || para.stored_text_partition_is_dirty()
-                || para.cell_format_vpos_dirty
-        })
+    if !previous.controls.is_empty()
+        || !paragraph.controls.is_empty()
+        || [Some(previous), Some(paragraph), next]
+            .into_iter()
+            .flatten()
+            .any(|para| para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty)
         || !paragraph.text.trim().is_empty()
         || paragraph.line_segs.len() != 1
     {
@@ -73,6 +71,8 @@ fn closed_stored_empty_line_owns_advance(
     if !authentic(before) || !authentic(line) || !closes(before, previous, line, paragraph) {
         return false;
     }
+    // 뒤 문단의 제어는 그 문단의 줄을 소유한다. 앞·현재 줄의 닫힘과
+    // 다음 원점까지의 실제 전진을 확인한 현재 빈 줄을 무높이로 만들지 않는다.
     match next {
         Some(next) => next
             .line_segs
@@ -136,8 +136,8 @@ impl LayoutEngine {
     /// 프레임 경계는 호출자가 실제 컷과 같은 판별자로 확인해 전달한다.
     pub(super) fn stored_closing_empty_line_advance_hu(
         &self,
+        table: &Table,
         cell: &Cell,
-        table: &crate::model::table::Table,
         index: usize,
         next_starts_frame: bool,
         styles: &ResolvedStyleSet,
@@ -238,6 +238,8 @@ impl LayoutEngine {
                         && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                 );
         };
+        // 다음 문단의 제어는 현재 빈 줄의 원점 닫힘과 독립적이다.
+        // 재조판된 다음 문단도 아래의 원본 앞줄 증거로 현재 점유를 확인한다.
         if !para.controls.is_empty() {
             return false;
         }

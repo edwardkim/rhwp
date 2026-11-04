@@ -255,6 +255,282 @@ fn clicking_after_second_tac_picture_hits_picture_end_position() {
         hit["cursorRect"]["y"], saved_rect["y"],
         "클릭 결과 캐럿도 두 번째 그림 뒤 조판부호 기준선에 있어야 한다: hit={hit}, saved={saved_rect}"
     );
+    assert_eq!(hit["cursorRect"]["height"], saved_rect["height"]);
+    assert_eq!(hit["cursorRect"]["x"], saved_rect["x"]);
+
+    // 두 줄 사이의 논리 자리 1은 첫 그림 뒤와 다음 그림 앞을 함께 나타낸다.
+    // 클릭한 그림 줄의 기준선을 지켜 직접 캐럿 조회의 다른 줄로 옮기지 않는다.
+    let tree = doc.build_page_render_tree(0).unwrap();
+    let mut images = Vec::new();
+    collect_image_bboxes(&tree.root, &mut images);
+    images.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+    assert_eq!(images.len(), 2);
+    for (index, &(ix, _, iw, _)) in images.iter().enumerate() {
+        let before = parse_json(
+            "그림 앞 캐럿",
+            &doc.get_cursor_rect_native(0, 0, index).unwrap(),
+        );
+        let y = before["y"].as_f64().unwrap();
+        let height = before["height"].as_f64().unwrap();
+        for (offset, edge, click) in [
+            (index, ix, ix - height / 2.0),
+            (index + 1, ix + iw, ix + iw + height / 2.0),
+        ] {
+            let hit = parse_json(
+                "그림 줄 양 끝 클릭",
+                &doc.hit_test(0, click, y + height / 2.0).unwrap(),
+            );
+            assert_eq!(hit["charOffset"].as_u64(), Some(offset as u64));
+            assert_eq!(hit["cursorRect"]["y"], before["y"]);
+            assert_eq!(hit["cursorRect"]["height"], before["height"]);
+            assert!((hit["cursorRect"]["x"].as_f64().unwrap() - edge).abs() < 0.1);
+        }
+    }
+}
+
+#[test]
+fn short_inline_picture_hits_follow_styled_empty_carets_in_both_formats() {
+    for (font_hu, picture_count) in [(1000, 1), (1800, 1), (3600, 1), (1000, 2)] {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        for _ in 0..picture_count {
+            let made = parse_json(
+                "새 그림",
+                &core
+                    .insert_picture_native(
+                        0,
+                        0,
+                        0,
+                        &[],
+                        include_bytes!("../assets/logo/logo-16.png"),
+                        1200,
+                        400,
+                        16,
+                        16,
+                        "png",
+                        "짧은 그림",
+                        None,
+                        None,
+                    )
+                    .unwrap(),
+            );
+            core.set_picture_properties_native(
+                0,
+                0,
+                made["controlIdx"].as_u64().unwrap() as usize,
+                r#"{"treatAsChar":true}"#,
+            )
+            .unwrap();
+        }
+        core.apply_char_format_native(0, 0, 0, 0, &format!(r#"{{"fontSize":{font_hu}}}"#))
+            .unwrap();
+        for bytes in [
+            core.export_hwp_native().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ] {
+            let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).unwrap();
+            let before_hwp = doc.export_hwp().unwrap();
+            let before_hwpx = doc.export_hwpx().unwrap();
+            let before_svg = doc.render_page_svg_native(0).unwrap();
+            let mut images = Vec::new();
+            collect_image_bboxes(&doc.build_page_render_tree(0).unwrap().root, &mut images);
+            assert_eq!(images.len(), picture_count);
+            assert!(
+                images.iter().all(|bbox| bbox.3 < 6.0),
+                "실제 작은 그림 높이"
+            );
+            for offset in 0..=picture_count {
+                let rect = parse_json(
+                    "원래 캐럿",
+                    &doc.get_cursor_rect_native(0, 0, offset).unwrap(),
+                );
+                let height = rect["height"].as_f64().unwrap();
+                if font_hu > 1000 && offset == picture_count {
+                    assert_eq!(height, f64::from(font_hu) / 75.0, "실제 18/36pt 캐럿");
+                }
+                let click_x = rect["x"].as_f64().unwrap()
+                    + if offset == picture_count {
+                        height / 2.0
+                    } else {
+                        -height / 2.0
+                    };
+                let click_y = rect["y"].as_f64().unwrap() + height / 2.0;
+                let hit = parse_json(
+                    "작은 그림 끝 클릭",
+                    &doc.hit_test(0, click_x, click_y).unwrap(),
+                );
+                assert_eq!(
+                    hit["charOffset"].as_u64(),
+                    Some(offset as u64),
+                    "font={font_hu}, pictures={picture_count}"
+                );
+                assert_eq!(
+                    hit["cursorRect"], rect,
+                    "font={font_hu}, pictures={picture_count}, offset={offset}"
+                );
+            }
+            assert_eq!(doc.render_page_svg_native(0).unwrap(), before_svg);
+            assert_eq!(doc.export_hwp().unwrap(), before_hwp);
+            assert_eq!(doc.export_hwpx().unwrap(), before_hwpx);
+        }
+    }
+
+    // 같은 줄의 연속 그림 앞뒤에 서로 다른 실제 글꼴 크기를 둔다.
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "가나").unwrap();
+    core.apply_char_format_native(0, 0, 0, 1, r#"{"fontSize":1800}"#)
+        .unwrap();
+    core.apply_char_format_native(0, 0, 1, 2, r#"{"fontSize":3600}"#)
+        .unwrap();
+    for _ in 0..2 {
+        let made = parse_json(
+            "서식 경계 그림",
+            &core
+                .insert_picture_native(
+                    0,
+                    0,
+                    1,
+                    &[],
+                    include_bytes!("../assets/logo/logo-16.png"),
+                    1200,
+                    400,
+                    16,
+                    16,
+                    "png",
+                    "짧은 그림",
+                    None,
+                    None,
+                )
+                .unwrap(),
+        );
+        core.set_picture_properties_native(
+            0,
+            0,
+            made["controlIdx"].as_u64().unwrap() as usize,
+            r#"{"treatAsChar":true}"#,
+        )
+        .unwrap();
+    }
+    let para = &core.document().sections[0].paragraphs[0];
+    let positions = para.logical_control_positions();
+    let picture_positions: Vec<_> = para
+        .controls
+        .iter()
+        .enumerate()
+        .filter(|(_, control)| matches!(control, Control::Picture(_)))
+        .map(|(ci, _)| positions[ci])
+        .collect();
+    assert_eq!(picture_positions, [1, 2]);
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).unwrap();
+        let before_hwp = doc.export_hwp().unwrap();
+        let before_hwpx = doc.export_hwpx().unwrap();
+        let before_svg = doc.render_page_svg_native(0).unwrap();
+        let layout = parse_json("서식 경계 배치", &doc.get_page_text_layout(0).unwrap());
+        let runs = layout["runs"].as_array().unwrap();
+        assert!(runs
+            .iter()
+            .any(|run| run["text"] == "가" && run["fontSize"] == 24.0));
+        assert!(runs
+            .iter()
+            .any(|run| run["text"] == "나" && run["fontSize"] == 48.0));
+        let mut images = Vec::new();
+        collect_image_bboxes(&doc.build_page_render_tree(0).unwrap().root, &mut images);
+        images.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        assert_eq!(images.len(), 2);
+        for (index, &(x, y, width, height)) in images.iter().enumerate() {
+            for (offset, fraction) in [(index + 1, 0.25), (index + 2, 0.75)] {
+                let rect = parse_json(
+                    "서식 경계 캐럿",
+                    &doc.get_cursor_rect_native(0, 0, offset).unwrap(),
+                );
+                let hit = parse_json(
+                    "서식 경계 그림 클릭",
+                    &doc.hit_test(0, x + width * fraction, y + height / 2.0)
+                        .unwrap(),
+                );
+                assert_eq!(
+                    hit["charOffset"].as_u64(),
+                    Some(offset as u64),
+                    "그림 {index}, 논리 자리 {offset}: hit={hit}, images={images:?}"
+                );
+                assert_eq!(hit["cursorRect"], rect, "그림 {index}, 논리 자리 {offset}");
+            }
+        }
+        // 그림 뒤 큰 글자의 끝을 눌렀을 때 그림 여백이 글자를 가로채면 안 된다.
+        let tail = runs.iter().find(|run| run["text"] == "나").unwrap();
+        let tail_hit = parse_json(
+            "그림 뒤 글자 끝 클릭",
+            &doc.hit_test(
+                0,
+                tail["x"].as_f64().unwrap()
+                    + tail["charX"]
+                        .as_array()
+                        .unwrap()
+                        .last()
+                        .unwrap()
+                        .as_f64()
+                        .unwrap()
+                    - 0.1,
+                tail["y"].as_f64().unwrap() + tail["h"].as_f64().unwrap() / 2.0,
+            )
+            .unwrap(),
+        );
+        assert_eq!(tail_hit["charOffset"], 4);
+        assert_eq!(
+            tail_hit["cursorRect"],
+            parse_json(
+                "글자 끝 캐럿",
+                &doc.get_cursor_rect_native(0, 0, 4).unwrap()
+            )
+        );
+        assert_eq!(doc.render_page_svg_native(0).unwrap(), before_svg);
+        assert_eq!(doc.export_hwp().unwrap(), before_hwp);
+        assert_eq!(doc.export_hwpx().unwrap(), before_hwpx);
+    }
+
+    // 같은 본문의 뒤 안내문도 큰 캐럿의 여백보다 먼저 판정한다.
+    core.insert_click_here_field_at(0, 0, 2, "GUIDE", "메모", "뒤 누름틀", true)
+        .unwrap();
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).unwrap();
+        let before_hwp = doc.export_hwp().unwrap();
+        let before_hwpx = doc.export_hwpx().unwrap();
+        let before_svg = doc.render_page_svg_native(0).unwrap();
+        let layout = parse_json("안내문 배치", &doc.get_page_text_layout(0).unwrap());
+        let guide = layout["runs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|run| run["text"] == "GUIDE")
+            .unwrap();
+        assert!(guide.get("charStart").is_none());
+        for fraction in [0.005, 0.5, 0.995] {
+            let hit = parse_json(
+                "그림 뒤 안내문 클릭",
+                &doc.hit_test(
+                    0,
+                    guide["x"].as_f64().unwrap() + guide["w"].as_f64().unwrap() * fraction,
+                    guide["y"].as_f64().unwrap() + guide["h"].as_f64().unwrap() / 2.0,
+                )
+                .unwrap(),
+            );
+            assert_eq!(hit["isField"], true, "안내문 비율 {fraction}: {hit}");
+            assert_eq!(hit["fieldType"], "clickhere");
+            assert_eq!(hit["fieldId"], 1);
+            assert_eq!(hit["charOffset"], 2);
+        }
+        assert_eq!(doc.render_page_svg_native(0).unwrap(), before_svg);
+        assert_eq!(doc.export_hwp().unwrap(), before_hwp);
+        assert_eq!(doc.export_hwpx().unwrap(), before_hwpx);
+    }
 }
 
 #[test]

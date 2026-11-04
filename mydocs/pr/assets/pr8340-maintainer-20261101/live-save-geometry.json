@@ -1,0 +1,114 @@
+[
+  {
+    "key": "nested-same-line-center-hwpx",
+    "textNodes": 19,
+    "pageCount": 1,
+    "maximumDelta": 0,
+    "differences": []
+  },
+  {
+    "key": "nested-same-line-right-hwpx",
+    "textNodes": 19,
+    "pageCount": 1,
+    "maximumDelta": 0,
+    "differences": []
+  },
+  {
+    "key": "nested-same-line-before-hwpx",
+    "textNodes": 19,
+    "pageCount": 1,
+    "maximumDelta": 0,
+    "differences": []
+  },
+  {
+    "key": "nested-same-line-line-hwpx",
+    "textNodes": 19,
+    "pageCount": 1,
+    "maximumDelta": 0,
+    "differences": []
+  },
+  {
+    "key": "nested-same-line-before-line-hwpx",
+    "textNodes": 19,
+    "pageCount": 1,
+    "maximumDelta": 0,
+    "differences": []
+  },
+  {
+    "key": "nested-same-line-before-line-hwp",
+    "textNodes": 19,
+    "pageCount": 1,
+    "maximumDelta": 0,
+    "differences": []
+  },
+  {
+    "key": "nested-same-line-indent-hwpx",
+    "textNodes": 19,
+    "pageCount": 1,
+    "maximumDelta": 0,
+    "differences": []
+  },
+  {
+    "key": "nested-width-wrap-center-hwpx",
+    "textNodes": 17,
+    "pageCount": 1,
+    "maximumDelta": 0,
+    "differences": []
+  },
+  {
+    "key": "nested-width-wrap-right-hwpx",
+    "textNodes": 17,
+    "pageCount": 1,
+    "maximumDelta": 0,
+    "differences": []
+  },
+  {
+    "key": "nested-width-wrap-before-hwpx",
+    "textNodes": 17,
+    "pageCount": 1,
+    "maximumDelta": 0,
+    "differences": []
+  },
+  {
+    "key": "nested-width-wrap-line-hwpx",
+    "textNodes": 17,
+    "pageCount": 1,
+    "maximumDelta": 0,
+    "differences": []
+  },
+  {
+    "key": "nested-width-wrap-before-line-hwpx",
+    "textNodes": 17,
+    "pageCount": 1,
+    "maximumDelta": 0,
+    "differences": []
+  },
+  {
+    "key": "nested-width-wrap-before-line-hwp",
+    "textNodes": 17,
+    "pageCount": 1,
+    "maximumDelta": 0,
+    "differences": []
+  },
+  {
+    "key": "nested-width-wrap-indent-hwpx",
+    "textNodes": 17,
+    "pageCount": 1,
+    "maximumDelta": 0,
+    "differences": []
+  },
+  {
+    "key": "nested-same-line-studio-right-hwpx",
+    "textNodes": 19,
+    "pageCount": 1,
+    "maximumDelta": 0,
+    "differences": []
+  },
+  {
+    "key": "nested-width-wrap-studio-right-hwpx",
+    "textNodes": 17,
+    "pageCount": 1,
+    "maximumDelta": 0,
+    "differences": []
+  }
+]

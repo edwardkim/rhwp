@@ -1,3 +1,8 @@
+//! 관계형: WMF 마스크의 색 선택과 비트 연산 계약.
+//! 주석 갱신: 2026-10-30T10:05:44+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
+//! 합성 비트 연산과 기존 WMF 자원 관계 검사로 문서별 raw 시각 측정은 해당하지 않는다.
+//! 근거: tests/fixtures/wmf_monthly_trade_curve.wmf, src/wmf/converter/svg/ternary_raster_operator.rs.
+//! 합성 WMF와 기존 curve 바이트의 연산·자원 관계 검사이며 문서 전쪽 시각 측정은 별도다.
 //! [#6865] `PATINVERT → DPa → PATINVERT`의 마스크는 바탕과 브러시 색을 선택한다.
 //!
 //! `PATINVERT → DPa → PATINVERT`의 비트 연산은 `(D XOR G) AND M XOR G`다.
@@ -62,7 +67,7 @@ fn i16le(v: i16) -> [u8; 2] {
 const PATINVERT: u32 = 0x005A_0049;
 const DPA: u32 = 0x00A0_00C9;
 
-/// placeable(22B) + METAHEADER(18B).
+/// placeable 헤더(22바이트)와 METAHEADER(18바이트)다.
 fn header() -> Vec<u8> {
     let mut b = Vec::new();
     b.extend_from_slice(&u32le(0x9AC6_CDD7));
@@ -310,7 +315,7 @@ fn issue_6865_halftone_two_unit_edge_difference_is_preserved() {
 #[test]
 fn issue_6865_non_halftone_one_unit_difference_is_preserved() {
     let mut pattern = dib_pattern_brush(1);
-    // Alter the first pixel row, leaving a valid black/white 1bpp bitmap.
+    // 첫 픽셀 행을 바꾸되 유효한 흑백 1bpp 비트맵은 유지한다.
     pattern[6 + 2 + 2 + 40 + 8] = 0;
     let svg = finish_sequence(
         mask_prefix(pattern, blit_rect(DPA, 9, 9, 51, 51)),
@@ -502,8 +507,8 @@ fn assert_xor_pattern_pixels_with_source_row(
             let masked = (left..left + width).contains(&x) && (top..top + height).contains(&y);
             // DIB는 bottom-up이다. 첫 저장 행은 0x55, 맨 위 행은 0xAA이므로
             // 기본 팔레트에서 x+y가 짝수인 비트가 흰색이다.
-            // The non-checker control changes DIB bottom row zero to all black.
-            // DIB is bottom-up, so its device-space row is y mod 8 == 7.
+            // 체커가 아닌 대조군은 DIB의 맨 아래 0번 행을 모두 검게 바꾼다.
+            // DIB는 아래에서 위로 저장하므로 장치 좌표의 행은 y mod 8 == 7이다.
             let mask = if zero_bottom_row && y % 8 == 7 {
                 0
             } else if ((x + y) % 2 == 0) ^ reversed {

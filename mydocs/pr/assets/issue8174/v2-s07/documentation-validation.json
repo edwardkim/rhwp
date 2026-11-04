@@ -1,0 +1,34 @@
+{
+  "changedMetadataErrors": [],
+  "globalExistingMetadataErrors": [
+    "mydocs/tech/benchmark_vs_alternatives.md: 필수 메타데이터 누락: kind",
+    "mydocs/tech/benchmark_vs_alternatives.md: 필수 메타데이터 누락: status",
+    "mydocs/tech/benchmark_vs_alternatives.md: 필수 메타데이터 누락: canonical",
+    "mydocs/tech/benchmark_vs_alternatives.md: 필수 메타데이터 누락: last_verified",
+    "mydocs/tech/investigations/issue-4964/README.md: 필수 메타데이터 누락: kind",
+    "mydocs/tech/investigations/issue-4964/README.md: 필수 메타데이터 누락: status",
+    "mydocs/tech/investigations/issue-4964/README.md: 필수 메타데이터 누락: canonical",
+    "mydocs/tech/investigations/issue-4964/README.md: 필수 메타데이터 누락: last_verified",
+    "mydocs/tech/investigations/issue-5511/README.md: 필수 메타데이터 누락: kind",
+    "mydocs/tech/investigations/issue-5511/README.md: 필수 메타데이터 누락: status",
+    "mydocs/tech/investigations/issue-5511/README.md: 필수 메타데이터 누락: canonical",
+    "mydocs/tech/investigations/issue-5511/README.md: 필수 메타데이터 누락: last_verified",
+    "mydocs/tech/investigations/issue-5511/task_m100_5511_cli_surface_inventory.md: 필수 메타데이터 누락: kind",
+    "mydocs/tech/investigations/issue-5511/task_m100_5511_cli_surface_inventory.md: 필수 메타데이터 누락: status",
+    "mydocs/tech/investigations/issue-5511/task_m100_5511_cli_surface_inventory.md: 필수 메타데이터 누락: canonical",
+    "mydocs/tech/investigations/issue-5511/task_m100_5511_cli_surface_inventory.md: 필수 메타데이터 누락: last_verified",
+    "mydocs/tech/native_skia_region.md: 필수 메타데이터 누락: kind",
+    "mydocs/tech/native_skia_region.md: 필수 메타데이터 누락: status",
+    "mydocs/tech/native_skia_region.md: 필수 메타데이터 누락: canonical",
+    "mydocs/tech/native_skia_region.md: 필수 메타데이터 누락: last_verified"
+  ],
+  "existingFilesUnchangedSinceSliceStart": [
+    "mydocs/tech/benchmark_vs_alternatives.md",
+    "mydocs/tech/investigations/issue-4964/README.md",
+    "mydocs/tech/investigations/issue-5511/README.md",
+    "mydocs/tech/investigations/issue-5511/task_m100_5511_cli_surface_inventory.md",
+    "mydocs/tech/native_skia_region.md"
+  ],
+  "markdownLinksExit": 0,
+  "markdownDocuments": 10
+}

@@ -647,6 +647,7 @@ fn parse_char_shape(data: &[u8]) -> Result<CharShape, DocInfoError> {
     let use_font_space = (attr & (1 << 25)) != 0;
 
     Ok(CharShape {
+        text_paint: None,
         raw_data: None,
         font_ids,
         ratios,
@@ -783,6 +784,16 @@ fn parse_para_shape(data: &[u8]) -> Result<ParaShape, DocInfoError> {
     } else {
         0
     };
+    // [#8352] 한/글은 «최소» 줄간격을 5.0.2.5 필드(attr3 종류 3 + `line_spacing_v2`)에만 두고
+    // 구 필드에는 비율 100 을 자리표시로 남긴다. 다른 종류는 두 필드가 같다.
+    let (line_spacing_type, line_spacing) = if attr3 & 0x1f == 3 {
+        (
+            LineSpacingType::Minimum,
+            i32::try_from(line_spacing_v2).unwrap_or(i32::MAX),
+        )
+    } else {
+        (line_spacing_type, line_spacing)
+    };
 
     // [#2734] 말미 4바이트(payload offset 54~57) = 개요 수준(0~9 = 1수준~10수준).
     // attr1 bit25~27 은 3비트라 한컴이 6 에서 포화시키므로 8~10수준은 이 필드에만 남는다.
@@ -918,6 +929,7 @@ fn parse_bullet(data: &[u8]) -> Result<Bullet, DocInfoError> {
         char_shape_id,
         bullet_char,
         image_bullet,
+        hwpx_image_without_ref: false,
         image_data,
         check_bullet_char,
         raw_para_head: None,

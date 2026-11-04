@@ -1,0 +1,137 @@
+[
+  {
+    "name": "candidate-browser",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "../mydocs/tech/investigations/issue-8403/validation/browser-verify.mjs",
+      "--mode=headless"
+    ],
+    "exit": 1,
+    "seconds": 125.87
+  },
+  {
+    "name": "candidate-wasm-scores",
+    "command": [
+      "/home/edward/mygithub/rhwp/venv/bin/python",
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/scores-candidate.py"
+    ],
+    "exit": 1,
+    "seconds": 0.86
+  },
+  {
+    "name": "candidate-browser",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "../mydocs/tech/investigations/issue-8403/validation/browser-verify.mjs",
+      "--mode=headless"
+    ],
+    "exit": 1,
+    "seconds": 5.9
+  },
+  {
+    "name": "candidate-wasm-scores",
+    "command": [
+      "/home/edward/mygithub/rhwp/venv/bin/python",
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/scores-candidate.py"
+    ],
+    "exit": 1,
+    "seconds": 0.85
+  },
+  {
+    "name": "candidate-browser",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "../mydocs/tech/investigations/issue-8403/validation/browser-verify.mjs",
+      "--mode=headless"
+    ],
+    "exit": 1,
+    "seconds": 69.26
+  },
+  {
+    "name": "candidate-browser",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "../mydocs/tech/investigations/issue-8403/validation/browser-verify.mjs",
+      "--mode=headless"
+    ],
+    "exit": 1,
+    "seconds": 49.82
+  },
+  {
+    "name": "candidate-pr149-browser",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/pr149-rebase.mjs",
+      "--mode=headless"
+    ],
+    "exit": 1,
+    "seconds": 123.63
+  },
+  {
+    "name": "test-helper-native",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--lib",
+      "test_task683_pr149_image_cluster_spacing"
+    ],
+    "exit": 101,
+    "seconds": 68.86
+  },
+  {
+    "name": "base-browser",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "../mydocs/tech/investigations/issue-8403/validation/browser-verify.mjs",
+      "--mode=headless"
+    ],
+    "exit": 1,
+    "seconds": 94.34
+  },
+  {
+    "name": "new-sample-ratchets",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--tests",
+      "--test-threads",
+      "14",
+      "--no-fail-fast",
+      "-E",
+      "test(/ir_field_sweep_does_not_regress|overflow_cell_lines_do_not_grow|off_canvas_does_not_grow|text_overlaps_do_not_grow|body_overflow_does_not_grow|oracle_page_count/)"
+    ],
+    "exit": 130,
+    "seconds": 411.96
+  }
+]

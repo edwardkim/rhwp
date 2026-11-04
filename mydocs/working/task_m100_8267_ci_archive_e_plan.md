@@ -86,3 +86,12 @@ review-only 허용 경로와 trusted policy에는 빠져 있다.
 일반 커밋으로 적용한다. source·sample·PDF·TSV 및 Native 전용 #8160 검사 연결 보존을 Git으로
 대조하고, 합쳐진 head에서 관련 계약과 lint를 다시 실행한 뒤 upstream의 기존 PR head에 push한다.
 검토/오늘할일의 Option 2 후속 문서 PR과 merge는 현재 수행하지 않는다.
+
+
+## 최종 승인과 후속 처리
+
+사용자는 CI 완료 후 원 PR을 머지하고 review·오늘할일을 옵션 2 문서 PR로 반영하도록 승인했다.
+원 PR #8188은 `2546c8b2ab7041399fb15fe82e0f50c1ade21724`로 머지됐고 A~E 기본 11,379개와 CI Impact Policy가 통과했다.
+병합 후 CLI main의 E 입력 거부는 별도 [#8272](https://github.com/edwardkim/rhwp/issues/8272)·[PR #8273](https://github.com/edwardkim/rhwp/pull/8273)으로 보정했다.
+보정 merge `61ec35daa` 이후 metadata run 40298571437에서 B/C/D/E 실측의 실제 정책 발행을 확인했다.
+review·오늘할일과 두 CI 단계의 결과는 별도 문서 PR #8274로 보존한다.

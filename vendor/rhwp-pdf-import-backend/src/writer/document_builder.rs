@@ -3695,6 +3695,19 @@ fn wrap_text(text: &str, max_chars: usize) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
+    fn white_cmyk_jpeg() -> Vec<u8> {
+        let mut bytes = Vec::new();
+        jpeg_encoder::Encoder::new(&mut bytes, 100)
+            .encode(&[0; 10 * 11 * 4], 10, 11, jpeg_encoder::ColorType::Cmyk)
+            .expect("encode original 10x11 CMYK white test image");
+        bytes
+    }
+    fn white_cmyk_file() -> tempfile::NamedTempFile {
+        use std::io::Write;
+        let mut file = tempfile::NamedTempFile::new().unwrap();
+        file.write_all(&white_cmyk_jpeg()).unwrap();
+        file
+    }
     use super::*;
 
     #[test]
@@ -3954,14 +3967,12 @@ mod tests {
 
     #[test]
     fn test_image_from_file_and_bytes() {
+        let image_file = white_cmyk_file();
         // Happy path: load an image from disk + from bytes, confirm
         // ContentElement::Image is pushed with the right geometry.
         let mut doc = DocumentBuilder::new();
         doc.letter_page()
-            .image_from_file(
-                "tests/fixtures/adobe_cmyk_10x11_white.jpg",
-                Rect::new(72.0, 600.0, 100.0, 110.0),
-            )
+            .image_from_file(image_file.path(), Rect::new(72.0, 600.0, 100.0, 110.0))
             .expect("load from file")
             .done();
 
@@ -3985,8 +3996,7 @@ mod tests {
     fn test_image_from_bytes_roundtrip() {
         // Same image loaded via from_bytes must produce an equivalent
         // ContentElement::Image.
-        let bytes =
-            std::fs::read("tests/fixtures/adobe_cmyk_10x11_white.jpg").expect("fixture must exist");
+        let bytes = white_cmyk_jpeg();
 
         let mut doc = DocumentBuilder::new();
         doc.letter_page()
@@ -4079,6 +4089,7 @@ mod tests {
 
     #[test]
     fn test_transforms_extend_to_path_and_image() {
+        let image_file = white_cmyk_file();
         // Inside a rotated scope, both a shape (Path) and an image
         // (Image) must carry the composed matrix, AND the emitted PDF
         // must wrap them in `q ... cm ... Q` brackets.
@@ -4086,10 +4097,7 @@ mod tests {
         doc.letter_page()
             .rotated(30.0, |p| {
                 p.circle(200.0, 500.0, 30.0, Some(LineStyle::default()), None)
-                    .image_from_file(
-                        "tests/fixtures/adobe_cmyk_10x11_white.jpg",
-                        Rect::new(100.0, 400.0, 50.0, 55.0),
-                    )
+                    .image_from_file(image_file.path(), Rect::new(100.0, 400.0, 50.0, 55.0))
                     .expect("load image")
             })
             .done();
@@ -5232,8 +5240,7 @@ mod tests {
     #[test]
     fn test_image_with_alt_emits_figure_bdc() {
         use crate::geometry::Rect;
-        let img_bytes =
-            std::fs::read("tests/fixtures/adobe_cmyk_10x11_white.jpg").expect("fixture must exist");
+        let img_bytes = white_cmyk_jpeg();
         let mut builder = DocumentBuilder::new();
         builder = builder.metadata(DocumentMetadata::new().tagged_pdf_ua1());
         let page = builder.letter_page();
@@ -5253,8 +5260,7 @@ mod tests {
     #[test]
     fn test_image_as_artifact_emits_artifact_bdc() {
         use crate::geometry::Rect;
-        let img_bytes =
-            std::fs::read("tests/fixtures/adobe_cmyk_10x11_white.jpg").expect("fixture must exist");
+        let img_bytes = white_cmyk_jpeg();
         let mut builder = DocumentBuilder::new();
         builder = builder.metadata(DocumentMetadata::new().tagged_pdf_ua1());
         let page = builder.letter_page();

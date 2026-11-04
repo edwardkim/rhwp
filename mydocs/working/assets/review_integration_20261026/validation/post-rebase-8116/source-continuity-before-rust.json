@@ -1,0 +1,11 @@
+{
+  "production_native_head": "ae8c413f84a01a4cc4591357056183709f21b150",
+  "wasm_build_head": "523af99acf2c53265e390a4e982eb07dd1071099",
+  "source_paths": 1828,
+  "native_and_wasm_source_hashes_match": true,
+  "new_base": "faa885e8b54ffc7cdf4196cd43a3103f362499a2",
+  "candidate_differs_from_baseline_wasm": true,
+  "chinese_producer_sanity": "passed >=90 on actual current output",
+  "full_rust_status": "pending",
+  "actual_fresh_wasm_browser_and_all_page_comparison": "pending"
+}

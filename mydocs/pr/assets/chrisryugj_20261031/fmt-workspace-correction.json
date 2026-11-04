@@ -1,0 +1,3 @@
+{
+  "reason": "cargo fmt invokes vendor metadata separately; an output/ worktree sees the enclosing primary workspace for excluded vendor crates. Run fmt in the primary checkout, whose Rust product and test sources are identical, and keep other gates in the review checkout. No Cargo.toml or package membership changes."
+}

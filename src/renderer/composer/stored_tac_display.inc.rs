@@ -227,13 +227,30 @@ pub(crate) fn caption_height_px_in_context(
     styles: Option<&ResolvedStyleSet>,
     dpi: f64,
 ) -> f64 {
+    match caption_height_px_in_context_with_storage(
+        caption,
+        styles,
+        dpi,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn caption_height_px_in_context_with_storage<S: crate::storage::Storage>(
+    caption: &Option<Caption>,
+    styles: Option<&ResolvedStyleSet>,
+    dpi: f64,
+    storage: &S,
+) -> Result<f64, S::Error> {
     let caption = match caption {
         Some(c) => c,
-        None => return 0.0,
+        None => return Ok(0.0),
     };
 
     if caption.paragraphs.is_empty() {
-        return 0.0;
+        return Ok(0.0);
     }
 
     // line_segs가 비어 컴포즈로 대체할 때 쓰는 기본 줄 높이(HWPUNIT).
@@ -248,7 +265,7 @@ pub(crate) fn caption_height_px_in_context(
             line_seg_height = line_seg_height.max(hwpunit_to_px(para_bottom - para_top, dpi));
         }
 
-        let composed = compose_paragraph(para);
+        let composed = try_compose_paragraph_scoped(para, false, None, storage)?;
         if composed.lines.is_empty() {
             let own_font_size = styles
                 .filter(|_| para.line_segs.is_empty())
@@ -275,8 +292,7 @@ pub(crate) fn caption_height_px_in_context(
             }
         }
     }
-
-    line_seg_height.max(composed_height)
+    Ok(line_seg_height.max(composed_height))
 }
 
 /// 도형 캡션 선택은 실제 배치와 흐름 측정이 같은 속성을 소비한다.
@@ -320,11 +336,11 @@ pub(crate) fn captioned_shape_height_px(
 /// 보유하나, OFL 폰트 (Noto Serif KR / Source Han Serif K 등) 는 KS X 1026-1
 /// 자모 영역만 지원하므로 PUA → 자모 변환 후 합자 렌더링이 필요.
 ///
-/// `U+F012B` 같은 한컴 전용 PUA 기호는 표준 Unicode 단일 문자 대응이 없어서
-/// 표시 문자열(`(인)`)로 확장한다. 본 함수는 `run.text` 를 변경하지 않고
-/// `run.display_text` 에만 변환 결과를 저장한다. 이는 `char_offsets`,
-/// `line.char_start`, `line_chars` 등 인덱싱 불변성을 유지하기 위함이다
-/// (PUA 1 char = display N chars).
+/// 표준 Unicode 단일 문자 대응이 없는 한컴 전용 PUA 기호는 검증된 표시 문자열로
+/// 확장한다. 본 함수는 `run.text` 를 변경하지 않고 `run.display_text` 에만 변환
+/// 결과를 저장한다. 이는 `char_offsets`, `line.char_start`, `line_chars` 등 인덱싱
+/// 불변성을 유지하기 위함이다(PUA 1 char = display N chars). `U+F012B` 서명·날인
+/// 기호처럼 렌더러가 합성하는 기호(`EnclosedPua`)는 원 키를 유지한다(#8201).
 ///
 /// 1990년대 한컴 제품 설명서는 `ᄒᆞᆫ글`·`ᄒᆞᆫ메일`처럼 제품명을 옛한글 자모로
 /// 저장했지만, 한컴 PDF는 이를 각각 `한글`·`한메일`로 인쇄한다. 이것은 일반
@@ -332,14 +348,15 @@ pub(crate) fn captioned_shape_height_px(
 /// 바꾸며, 원문 IR·검색·캐럿 offset은 그대로 보존한다.
 ///
 /// 매핑 표: KTUG HanyangPuaTableProject (Public Domain).
-fn convert_pua_display_text(
+fn try_convert_pua_display_text<S: crate::storage::Storage>(
     composed: &mut ComposedParagraph,
     soft_hyphen_control: bool,
     styles: Option<&ResolvedStyleSet>,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     use super::pua_oldhangul::map_pua_old_hangul;
 
-    let product_prefix_starts = legacy_hancom_product_prefix_starts(composed);
+    let product_prefix_starts = try_legacy_hancom_product_prefix_starts(composed, storage)?;
     let mut run_char_start = 0usize;
     for line in composed.lines.iter_mut() {
         // [#7993] 제어 표기 소프트 하이픈은 줄 끝에서만 `-` 로 보이고, 줄 중간에서는
@@ -348,8 +365,12 @@ fn convert_pua_display_text(
         // 표시 문자열만 바꾼다 — 줄 끝 판정은 이 줄의 마지막 모델 글자다.
         let line_last_run = line.runs.iter().rposition(|run| !run.text.is_empty());
         for (run_index, run) in line.runs.iter_mut().enumerate() {
-            let program = styles.and_then(|styles| run.text_style(styles).native_pua_metrics);
-            let chars: Vec<char> = run.text.chars().collect();
+            let program = match styles {
+                Some(styles) => run.try_text_style(styles, storage)?.native_pua_metrics,
+                None => None,
+            };
+            let chars: Vec<char> = storage.collect(run.text.chars())?;
+            run.literal_soft_hyphen = !soft_hyphen_control && chars.contains(&'\u{00AD}');
             let run_char_end = run_char_start + chars.len();
             let has_product_projection = product_prefix_starts
                 .iter()
@@ -358,7 +379,7 @@ fn convert_pua_display_text(
                 pua_plain_text_display(*ch).is_some()
                     || map_pua_old_hangul(*ch).is_some()
                     || map_pua_bullet_char(*ch) != *ch
-                    || (soft_hyphen_control && *ch == '\u{00AD}')
+                    || *ch == '\u{00AD}'
             });
             let line_end_char = if Some(run_index) == line_last_run {
                 chars.len().checked_sub(1)
@@ -369,12 +390,12 @@ fn convert_pua_display_text(
                 run_char_start = run_char_end;
                 continue;
             }
-            let mut display = String::with_capacity(run.text.len() * 3);
+            let mut display = storage.string("")?;
             let mut changed = false;
             for (index, ch) in chars.iter().copied().enumerate() {
                 let char_position = run_char_start + index;
                 if product_prefix_starts.contains(&char_position) {
-                    display.push('한');
+                    storage.push_char(&mut display, '한')?;
                     changed = true;
                 } else if product_prefix_starts
                     .iter()
@@ -383,32 +404,37 @@ fn convert_pua_display_text(
                     // `ᄒᆞᆫ` 세 자모가 style/line 경계를 넘더라도 첫 위치에만
                     // `한`을 투영한다. 뒤 두 model char는 offset 공간에만 남긴다.
                     changed = true;
-                } else if soft_hyphen_control && ch == '\u{00AD}' {
-                    if line_end_char == Some(index) {
-                        display.push('-');
+                } else if ch == '\u{00AD}' {
+                    // 제어 표기는 줄 끝에서만, 리터럴은 본문에서도 하이픈으로 보인다.
+                    // 모델 문자와 offset은 그대로 유지한다.
+                    if !soft_hyphen_control || line_end_char == Some(index) {
+                        storage.push_char(&mut display, '-')?;
                     }
                     changed = true;
                 } else if program
                     .as_ref()
                     .is_some_and(|program| program.advance_em(ch).is_some())
+                    || super::enclosed_pua(hancom_symbol_display_key(ch)).is_some()
                 {
-                    // 실제 공급한 원 glyph는 Unicode 표시 대체보다 우선한다.
-                    // 측정과 paint가 같은 프로그램의 전진·표시 문자를 소비한다.
+                    // 실제 공급한 원 glyph와 렌더러 합성 기호(#8201)는 Unicode 표시 대체보다
+                    // 우선한다. 측정과 paint가 같은 원 키의 전진·표시를 소비한다.
                     let source = hancom_symbol_display_key(ch);
-                    display.push(source);
+                    storage.push_char(&mut display, source)?;
                     changed |= source != ch;
                 } else if let Some(replacement) = pua_plain_text_display(ch) {
-                    display.push_str(replacement);
+                    storage.push_str(&mut display, replacement)?;
                     changed = true;
                 } else if let Some(jamos) = map_pua_old_hangul(ch) {
-                    display.extend(jamos.iter().copied());
+                    for &jamo in jamos {
+                        storage.push_char(&mut display, jamo)?;
+                    }
                     changed = true;
                 } else {
                     // paint와 같은 표시 투영을 사용하되 원본 프로그램의
                     // 확인된 전진폭은 char_width_decision이 소유한다.
                     // 표시용 전각 글리프로 원본 PUA의 반각 폭을 바꾸지 않는다.
                     let mapped = map_pua_bullet_char(ch);
-                    display.push(mapped);
+                    storage.push_char(&mut display, mapped)?;
                     if mapped != ch {
                         changed = true;
                     }
@@ -420,6 +446,7 @@ fn convert_pua_display_text(
             run.display_text = changed.then_some(display);
         }
     }
+    Ok(())
 }
 
 const LEGACY_HANCOM_PRODUCT_WORDS: [(&str, &str); 4] = [
@@ -447,23 +474,29 @@ pub(crate) fn legacy_hancom_product_display_text(text: &str) -> Option<String> {
 /// `ComposedParagraph`의 run은 줄·글자모양 경계에서 나뉠 수 있으므로, 먼저 모든
 /// run을 이어 검사한 뒤 model char 좌표를 돌려준다. 그 뒤 display projection은
 /// run별로 적용해도 줄 경계를 넘어선 제품명을 놓치지 않는다.
-fn legacy_hancom_product_prefix_starts(composed: &ComposedParagraph) -> Vec<usize> {
-    let logical_text: String = composed
+fn try_legacy_hancom_product_prefix_starts<S: crate::storage::Storage>(
+    composed: &ComposedParagraph,
+    storage: &S,
+) -> Result<Vec<usize>, S::Error> {
+    let mut logical_text = storage.string("")?;
+    for text in composed
         .lines
         .iter()
         .flat_map(|line| line.runs.iter())
         .map(|run| run.text.as_str())
-        .collect();
-    let mut starts = Vec::new();
+    {
+        storage.push_str(&mut logical_text, text)?;
+    }
+    let mut starts = storage.vec(0)?;
     for (char_index, (byte_index, _)) in logical_text.char_indices().enumerate() {
         if LEGACY_HANCOM_PRODUCT_WORDS
             .iter()
             .any(|(legacy, _)| logical_text[byte_index..].starts_with(legacy))
         {
-            starts.push(char_index);
+            storage.push(&mut starts, char_index)?;
         }
     }
-    starts
+    Ok(starts)
 }
 
 /// 각주 마커를 해당 텍스트 위치의 런에 인라인 삽입
@@ -521,6 +554,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                     space_metric: crate::renderer::composer::SpaceMetric::Stored,
                     regenerated_font_metrics: line.runs[ri].regenerated_font_metrics,
                     literal_figure_space: line.runs[ri].literal_figure_space,
+                    literal_soft_hyphen: line.runs[ri].literal_soft_hyphen,
                 };
 
                 let mut new_runs = Vec::new();
@@ -541,6 +575,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                                 space_metric: run.space_metric,
                                 regenerated_font_metrics: run.regenerated_font_metrics,
                                 literal_figure_space: run.literal_figure_space,
+                                literal_soft_hyphen: run.literal_soft_hyphen,
                             });
                         }
                         new_runs.push(marker_run.clone());
@@ -558,6 +593,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                                 space_metric: run.space_metric,
                                 regenerated_font_metrics: run.regenerated_font_metrics,
                                 literal_figure_space: run.literal_figure_space,
+                                literal_soft_hyphen: run.literal_soft_hyphen,
                             });
                         }
                     } else {

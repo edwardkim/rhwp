@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-28",
+  "source": "independent Hancom 2020 Print PDFs",
+  "method": "PyMuPDF page text line bounding-box bottom in PDF points converted to 96dpi CSS pixels (4/3); last body line before first footnote",
+  "page": 2,
+  "tolerance_px": 2,
+  "cases": [
+    {
+      "input": "samples/continuation_reset/cont_reset_F20_L70_N0.hwp",
+      "pdf": "pdf/continuation_reset/cont_reset_F20_L70_N0-2020.pdf",
+      "pdf_sha256": "0c499ee0834a5e36852df00eaa19d14133adee285c29a2861735a2df7372fa02",
+      "pdf_page_count": 3,
+      "last_body_line_text": "로 이어 쓴다 139 긴 문단의 본문 문장을 여러 줄로 이어 쓴다 140 ",
+      "bbox_pt": [
+        56.609317779541016,
+        757.8951416015625,
+        368.63751220703125,
+        768.1337280273438
+      ],
+      "bottom_96dpi_px": 1024.1783040364583,
+      "footnote_first_top_pt": null
+    },
+    {
+      "input": "samples/continuation_reset/cont_reset_F20_L70_N4.hwp",
+      "pdf": "pdf/continuation_reset/cont_reset_F20_L70_N4-2020.pdf",
+      "pdf_sha256": "7e6fb30bda1e57b5b00010069ea781e283fc2d7a304305290c368fd95994921c",
+      "pdf_page_count": 3,
+      "last_body_line_text": "이어 쓴다 122 긴 문단의 본문 문장을 여러 줄로 이어 쓴다 123 긴 문단의 본문 문장을 여러 줄로 이어 ",
+      "bbox_pt": [
+        56.609317779541016,
+        630.1148071289062,
+        541.1345825195312,
+        640.3533935546875
+      ],
+      "bottom_96dpi_px": 853.8045247395834,
+      "footnote_first_top_pt": 657.6846923828125
+    },
+    {
+      "input": "samples/continuation_reset/cont_reset_F20_L70_N6.hwp",
+      "pdf": "pdf/continuation_reset/cont_reset_F20_L70_N6-2020.pdf",
+      "pdf_sha256": "23c172162334477f2b5c7ce85b44e2b2e1f373bf0a4942054b8f1d3dfeec0512",
+      "pdf_page_count": 3,
+      "last_body_line_text": "문장을 여러 줄로 이어 쓴다 116 긴 문단의 본문 문장을 여러 줄로 이어 쓴다 117 6)긴 문단의 본문 문",
+      "bbox_pt": [
+        56.609317779541016,
+        582.0691528320312,
+        538.0895385742188,
+        592.40576171875
+      ],
+      "bottom_96dpi_px": 789.8743489583334,
+      "footnote_first_top_pt": 616.0901489257812
+    }
+  ],
+  "visual_inspection": {
+    "method": "opened 96dpi side-by-side native and independent PDF crops showing last body line and footnote boundary",
+    "file": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/continuation-print-crops.png",
+    "sha256": "a07c582bc39a142874ea840dfd50386f285b347a0a40d2b5c190e0a6c4da3b28"
+  }
+}

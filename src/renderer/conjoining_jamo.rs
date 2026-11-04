@@ -6,13 +6,29 @@
 //! 2024는 원 face의 spacing 자모를 유지하므로 이 모듈의 문자 분류만으로
 //! 무전진을 선택하지 않는다. style resolver가 선택한 실제 프로그램을 함께 소비한다.
 
+/// 독립 자모의 표시·전진에 함께 적용할 실제 프로그램 선택이다.
+/// 글꼴 이름의 문자열 포인터를 모든 텍스트 런에 복제하지 않는다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum IsolatedJamoFont {
+    HcrDotum,
+}
+
 /// 자모 클러스터 길이 매핑 계산
 ///
 /// 한글 자모 조합(초+중+종)을 1개 클러스터로 묶는다.
 /// cluster_len[i] > 0: 클러스터 시작 (길이), 0: 클러스터 내부 (이전 문자와 동일 위치)
 pub(crate) fn cluster_lengths(chars: &[char]) -> Vec<u8> {
+    match cluster_lengths_with_storage(chars, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+pub(crate) fn cluster_lengths_with_storage<S: crate::storage::Storage>(
+    chars: &[char],
+    storage: &S,
+) -> Result<Vec<u8>, S::Error> {
     let char_count = chars.len();
-    let mut cluster_len = vec![0u8; char_count];
+    let mut cluster_len = storage.filled(char_count, 0u8)?;
     let mut ci = 0;
     while ci < char_count {
         if is_hangul_choseong(chars[ci]) {
@@ -30,7 +46,7 @@ pub(crate) fn cluster_lengths(chars: &[char]) -> Vec<u8> {
             ci += 1;
         }
     }
-    cluster_len
+    Ok(cluster_len)
 }
 
 /// 한글 자모 초성 여부 (옛한글 포함)
@@ -53,9 +69,21 @@ pub(crate) fn is_mark(c: char) -> bool {
 }
 
 pub(crate) fn isolated_positions(chars: &[char]) -> Vec<bool> {
-    cluster_lengths(chars)
-        .iter()
-        .zip(chars)
-        .map(|(&length, &c)| length == 1 && is_mark(c))
-        .collect()
+    match isolated_positions_with_storage(chars, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
 }
+pub(crate) fn isolated_positions_with_storage<S: crate::storage::Storage>(
+    chars: &[char],
+    storage: &S,
+) -> Result<Vec<bool>, S::Error> {
+    storage.collect(
+        cluster_lengths_with_storage(chars, storage)?
+            .iter()
+            .zip(chars)
+            .map(|(&length, &c)| length == 1 && is_mark(c)),
+    )
+}
+
+crate::storage::clone_copy!(IsolatedJamoFont);

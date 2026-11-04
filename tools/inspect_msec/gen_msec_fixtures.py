@@ -14,9 +14,12 @@ from __future__ import annotations
 
 import json
 import shutil
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "scripts"))
+from regression_document_scope import is_deferred_regression_input
 OUT = ROOT / "tests" / "fixtures" / "inspect_msec"
 WORKING = ROOT / "mydocs" / "working" / "inspect_msec"
 ISSUE = 5476
@@ -1146,7 +1149,7 @@ class Builder:
         )
 
     def _ht_clean_samples(self) -> None:
-        for sample in CLEAN_SAMPLES:
+        for sample in filter(lambda value: not is_deferred_regression_input(value), CLEAN_SAMPLES):
             slug = slug_token(Path(sample).name)
             env = {
                 "schemaVersion": SCHEMA,

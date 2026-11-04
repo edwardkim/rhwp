@@ -1,0 +1,50 @@
+{
+  "native_source": "5ae234786dbcd15e98a6cf35dd0c187af483efc7",
+  "wasm_source": "04d8c792ee2352ef4f102ce31f056a735e74609d",
+  "production_sources_identical": true,
+  "source": "samples/exam_science.hwp",
+  "source_sha256": "22d29786a80d68a9b2ad9294c2dab4915e0eced941e790e37390b14312b8b6a8",
+  "pdf": "pdf/issue7642-exam-print/exam-07-exam_science-hwp-print-2020.pdf",
+  "pdf_sha256": "1c828fef29d7761d8ef46c8da50cc59936a95128920453ca5cc0d6440ac82d14",
+  "pdf_contract": "previous independent Hancom2020 Print; unchanged original input",
+  "compat": "2022",
+  "dpi": 96,
+  "pages": 4,
+  "minimum_native_raw": 96.42394,
+  "minimum_wasm_raw": 96.32059,
+  "page2_native_raw": 98.73115,
+  "page2_wasm_raw": 98.69418,
+  "direct_review": "Native/fresh page2 review+standalone overlay: answer table remains left; questions10..12 remain right; no moved or duplicated source content observed",
+  "files": [
+    {
+      "file": "native_silhouette.tsv",
+      "sha256": "7a2433f04aa9ec4c146c54fc2baadb83c79804a63724ea717a12bf13cf031dd2",
+      "source": "5ae234786dbcd15e98a6cf35dd0c187af483efc7"
+    },
+    {
+      "file": "native-p002-review.png",
+      "sha256": "2ee40ea6c30f9b057fa93da836607e2bb617d4e710d05bec3463b9bb63caabb3",
+      "source": "5ae234786dbcd15e98a6cf35dd0c187af483efc7"
+    },
+    {
+      "file": "native-p002-overlay.png",
+      "sha256": "e71f9afc70e7d6db7cf75e2e5873e28c1f161f55e1204488914394b1f3abf6b6",
+      "source": "5ae234786dbcd15e98a6cf35dd0c187af483efc7"
+    },
+    {
+      "file": "wasm_silhouette.tsv",
+      "sha256": "4bc42f6d744fc700416ddaeb0a2fdd9bc465b4e1b86861005af9ac36f5fbbf11",
+      "source": "04d8c792ee2352ef4f102ce31f056a735e74609d"
+    },
+    {
+      "file": "wasm-p002-review.png",
+      "sha256": "6ea2712a68ccc7f18f7cc9da05af3ec67d686c103acd64dad51df45c4651f5ec",
+      "source": "04d8c792ee2352ef4f102ce31f056a735e74609d"
+    },
+    {
+      "file": "wasm-p002-overlay.png",
+      "sha256": "28601b9dc0f9fa900ccc2552f2a0ae4b1746fe81a9ebabb0aae7e6221f485a9b",
+      "source": "04d8c792ee2352ef4f102ce31f056a735e74609d"
+    }
+  ]
+}

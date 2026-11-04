@@ -11,7 +11,6 @@ node   tools/hwpctrl_compat/runner_rhwp.mjs tools/hwpctrl_compat/probes/<이름>
 python tools/hwpctrl_compat/compare.py <출력>
 ```
 
-## p2-footnote-chain — 컨트롤 사슬 차례가 문서에 따라 갈린다
 
 `samples/2025 행정업무운영 편람(최종).hwp` 에서 164건 중 **83건이 어긋난다**(캡션을 고친
 뒤에도 그대로다 — 다른 원인이다).

@@ -1,0 +1,300 @@
+{
+  "source": "1e7282ad64fae37bbf9684c1e77008e132473075",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "1e8aec2b0944475f3ed5141518ed7fcdb99acf60dd83c1aac60b2610ae733a7b",
+      "bytes": 1619
+    },
+    {
+      "path": "browser-font-contracts.json",
+      "sha256": "791a165767934e4d4b6f6b6734214cfbbb96945d9ab06b1930522f8f3280f9c9",
+      "bytes": 1897
+    },
+    {
+      "path": "images/native/cff/overlay_001.png",
+      "sha256": "c09bd0aeabe08460a7ba91688cffbaa9c435594052635f9f80a3e78502d8c531",
+      "bytes": 30233
+    },
+    {
+      "path": "images/native/cff/review_001.png",
+      "sha256": "713932082405d0aa0aa360794d74ef86599c922b42766170faccaa2a5d37b953",
+      "bytes": 59233
+    },
+    {
+      "path": "images/native/type3/overlay_001.png",
+      "sha256": "c722e77a86acab76c48cbb5bd6b711aac86c3afc7161a14697bec387db50a2ab",
+      "bytes": 275358
+    },
+    {
+      "path": "images/native/type3/overlay_003.png",
+      "sha256": "ee3a1979be5466f9d32f4aefeb2c3aa670ba9cc7aed62d92a9c1af7b4c92fee1",
+      "bytes": 170117
+    },
+    {
+      "path": "images/native/type3/overlay_011.png",
+      "sha256": "80358898374c16e7dccdf68032dff15d1e2151d6ca8521f84d77fcb050a92eb6",
+      "bytes": 148982
+    },
+    {
+      "path": "images/native/type3/review_001.png",
+      "sha256": "e4bc86c703dcdbf5e9c97778598757feb6070b66915e2335ef5d6993065cc3a5",
+      "bytes": 824481
+    },
+    {
+      "path": "images/native/type3/review_003.png",
+      "sha256": "ac11208eccce5d9f639f4d8d7c33a923ac12b38757b7f411172ce8658e16b479",
+      "bytes": 525357
+    },
+    {
+      "path": "images/native/type3/review_011.png",
+      "sha256": "255cfb92c6f7e6605e7c79c8c3fa2b4fca1befc4cd543fc4b5d5a8137fd7dabe",
+      "bytes": 428908
+    },
+    {
+      "path": "images/wasm/cff/overlay_001.png",
+      "sha256": "9610c2f33426aa20425b98ed94963d635c90f50a3418b8aec5c76c2c7ff96e7d",
+      "bytes": 30322
+    },
+    {
+      "path": "images/wasm/cff/review_001.png",
+      "sha256": "b51ae1574a4302b388424c9d9576a8217e4005c5a5ccdc1fae9227216346af13",
+      "bytes": 58468
+    },
+    {
+      "path": "images/wasm/type3/overlay_001.png",
+      "sha256": "f2c6c0de05b3535359ceb4e5af0f48a6fadf78879716d62e3dbff2272fb27526",
+      "bytes": 273919
+    },
+    {
+      "path": "images/wasm/type3/overlay_003.png",
+      "sha256": "81e475862130c204542d19dae0a3243240506a4ff9064cc6607ce21f95ad895a",
+      "bytes": 167559
+    },
+    {
+      "path": "images/wasm/type3/overlay_011.png",
+      "sha256": "c198f7ebb58821b2806366b1714962fca6fb662a77a1b5df867668c578949566",
+      "bytes": 147847
+    },
+    {
+      "path": "images/wasm/type3/review_001.png",
+      "sha256": "4bc869ab1a77f55b755f52e87fc001f2a2725c1af6b55c195a3108d0d3110838",
+      "bytes": 819049
+    },
+    {
+      "path": "images/wasm/type3/review_003.png",
+      "sha256": "265f86a6928363733101aa73ebdb32ee517486b68f85fa1f684fb5c55885a02d",
+      "bytes": 514080
+    },
+    {
+      "path": "images/wasm/type3/review_011.png",
+      "sha256": "166c65df31acc7e9408f371a08659587200e1969ed2412133a3a29a73368665e",
+      "bytes": 428565
+    },
+    {
+      "path": "native-perf-summary.json",
+      "sha256": "3206d7029dd39ff318084d44648f57ade6cdaa206925ee97daed30af1d1a8eae",
+      "bytes": 1014
+    },
+    {
+      "path": "native-producer.json",
+      "sha256": "9185c94d0b4179fe0d6e2700217085fddf71064efeb14c0ef72afe3cc8b265ce",
+      "bytes": 228
+    },
+    {
+      "path": "tsv/before/native/cff/silhouette.tsv",
+      "sha256": "e3dab98827c4913628911988421b0d1e443eff0a8510165d8e254c6ed9a8e587",
+      "bytes": 136
+    },
+    {
+      "path": "tsv/before/native/type3/silhouette.tsv",
+      "sha256": "516f7a1d7b5fce3415ac60350df5580c21e29cd24c1c89bbb1d9e6246934ffd6",
+      "bytes": 407
+    },
+    {
+      "path": "tsv/before/wasm/cff/silhouette.tsv",
+      "sha256": "01db655088c601451d552eec38e9dede713c85a0f0f020d477be46aaa76740be",
+      "bytes": 136
+    },
+    {
+      "path": "tsv/before/wasm/type3/silhouette.tsv",
+      "sha256": "6b8e7b1dfb66678da75fc78158731292d3843a31578b6dc19cd2f019d0dec6c7",
+      "bytes": 408
+    },
+    {
+      "path": "tsv/candidate/native/batch-operator-control/silhouette.tsv",
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "bytes": 164
+    },
+    {
+      "path": "tsv/candidate/native/body-baseline/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/native/body-basic/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/native/body-center/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/native/body-columns/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/native/body-tj/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/native/body-unrepresentable/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/native/cell-nested/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/native/cell-picture-overlap/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/native/cff/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/native/consecutive-moves/silhouette.tsv",
+      "sha256": "96f3cc17c1ae24448f3f6c774dff76a46ae60ec0f43073a3935f5b90759a56ab",
+      "bytes": 242
+    },
+    {
+      "path": "tsv/candidate/native/multiline-cell/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/native/paragraph-origins/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/native/text-consecutive-moves/silhouette.tsv",
+      "sha256": "af0d7ef725f12d2aa05f3a386416fbb5bcdc9e347ae69f5076613422d33ee79c",
+      "bytes": 184
+    },
+    {
+      "path": "tsv/candidate/native/tj-cell/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/native/type3/silhouette.tsv",
+      "sha256": "c4b57f87104a5a21d3fdec6503ea8fcd0872d12a65d23cade77c4cbe116c9c38",
+      "bytes": 407
+    },
+    {
+      "path": "tsv/candidate/wasm/batch-operator-control/silhouette.tsv",
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "bytes": 164
+    },
+    {
+      "path": "tsv/candidate/wasm/body-baseline/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/wasm/body-basic/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/wasm/body-center/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/wasm/body-columns/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/wasm/body-tj/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/wasm/body-unrepresentable/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/wasm/cell-nested/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/wasm/cell-picture-overlap/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/wasm/cff/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/wasm/consecutive-moves/silhouette.tsv",
+      "sha256": "96f3cc17c1ae24448f3f6c774dff76a46ae60ec0f43073a3935f5b90759a56ab",
+      "bytes": 242
+    },
+    {
+      "path": "tsv/candidate/wasm/multiline-cell/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/wasm/paragraph-origins/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/wasm/text-consecutive-moves/silhouette.tsv",
+      "sha256": "9e83e432d3f2300ef54a44fa7d98ebd345b4830e43bb1ebefd13e639b05b27a9",
+      "bytes": 190
+    },
+    {
+      "path": "tsv/candidate/wasm/tj-cell/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    {
+      "path": "tsv/candidate/wasm/type3/silhouette.tsv",
+      "sha256": "2db5d22a7200cbe9e58af18cca0af37f2d9fbccfd1ca6668f4a05524d5416166",
+      "bytes": 408
+    },
+    {
+      "path": "type3-preservation.json",
+      "sha256": "73f78d602c55d5220aab7aef368064f0999b99fd28aeb4f8da9030d2fd3c1eb6",
+      "bytes": 3183
+    },
+    {
+      "path": "visual-summary.json",
+      "sha256": "078bfad8f9985728df33822f3d7ad130335408c4b33e9b1b3eeade5201fc2c8a",
+      "bytes": 3372
+    },
+    {
+      "path": "wasm-producer.json",
+      "sha256": "3177592c73b4a59d339a6af1cc469e58b3cfb32d87e9a51d1a48554ed99483f6",
+      "bytes": 746
+    }
+  ]
+}

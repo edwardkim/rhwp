@@ -1,0 +1,12 @@
+{
+  "compiled_base_head": "642d29dab1d06596de784c113527a2482073e828",
+  "tracked_patch_sha256": "8192881a7750b7e93c8f5c0332962b6937ed64499f3b14733b2f0aa72315afe8",
+  "additional_source_files": {
+    "src/renderer/layout/nested_table_origin.rs": "72397f4ee74d757da90699e70499ee82ac6f22051a3df2c1bc61aed72723311a"
+  },
+  "binary_sha256": "0cc0d001d3fbb28fc10246d039b48d8d6a3e2154bacc2fa5c8221118c6d9fe7e",
+  "binary": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/candidate-v11-origin-rhwp",
+  "scope": "All tracked production changes plus the explicitly hashed new25-line module. No source changes during compilation.",
+  "reconciled_head": "401d9070b6bf3cca3803c3c87ac88a0ad4a07a6b",
+  "reconciled_source_tree": true
+}

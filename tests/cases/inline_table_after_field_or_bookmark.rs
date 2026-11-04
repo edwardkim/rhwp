@@ -90,11 +90,16 @@ fn table_box(node: &RenderNode) -> Option<BoundingBox> {
     node.children.iter().find_map(table_box)
 }
 
-/// 첫 문단의 `char_idx`번 글자를 그린 런의 상자.
-fn char_box(node: &RenderNode, char_idx: usize) -> Option<BoundingBox> {
+/// 런의 논리 위치를 본문 글자 축으로 변환해 `char_idx`번 글자의 상자를 찾는다.
+fn char_box(doc: &HwpDocument, node: &RenderNode, char_idx: usize) -> Option<BoundingBox> {
     if let RenderNodeType::TextRun(run) = &node.node_type {
         if run.para_index == Some(0) && run.cell_context.is_none() {
-            if let Some(start) = run.char_start {
+            if let Some(logical_start) = run.char_start {
+                // 표·누름틀·책갈피 슬롯은 본문 글자 번호에 포함되지 않는다.
+                let start = doc
+                    .logical_to_text_offset(0, 0, u32::try_from(logical_start).unwrap())
+                    .expect("글자 런의 논리 위치를 본문 글자 위치로 변환")
+                    as usize;
                 if (start..start + run.text.chars().count()).contains(&char_idx) {
                     return Some(node.bbox);
                 }
@@ -103,7 +108,7 @@ fn char_box(node: &RenderNode, char_idx: usize) -> Option<BoundingBox> {
     }
     node.children
         .iter()
-        .find_map(|child| char_box(child, char_idx))
+        .find_map(|child| char_box(doc, child, char_idx))
 }
 
 fn assert_rows(doc: &HwpDocument, label: &str) {
@@ -122,7 +127,7 @@ fn assert_rows(doc: &HwpDocument, label: &str) {
 
     let tree = doc.build_page_render_tree(0).unwrap();
     let table = table_box(&tree.root).expect("표");
-    let [ga, da, ra] = [3, 5, 6].map(|i| char_box(&tree.root, i).expect("글자 런"));
+    let [ga, da, ra] = [3, 5, 6].map(|i| char_box(doc, &tree.root, i).expect("글자 런"));
     assert!(
         (da.y - ga.y).abs() < 0.5,
         "{label}: '다'는 '가'와 같은 줄이다 — 가 {ga:?}, 다 {da:?}"

@@ -1,0 +1,28 @@
+import os,json,subprocess,time
+from pathlib import Path
+BASE=Path(__file__).resolve().parent
+ROOT=Path("/home/edward/mygithub/rhwp")
+CONSUMER=Path((BASE/"consumer-path.txt").read_text().strip())
+TARGET=ROOT/"target/pr-review"
+CONFIG=["--config",'source.crates-io.replace-with="rhwp-validation"',"--config",'source.rhwp-validation.registry="sparse+http://127.0.0.1:48174/index/"']
+def run(name,args,cwd=CONSUMER,extra=None):
+ env=os.environ.copy();env.update(CARGO_TARGET_DIR=str(TARGET),CARGO_BUILD_JOBS="4")
+ if extra:env.update(extra)
+ start=time.time()
+ with (BASE/(name+".stdout")).open("w") as out,(BASE/(name+".stderr")).open("w") as err:r=subprocess.run(args,cwd=cwd,env=env,stdout=out,stderr=err)
+ meta={"command":args,"cwd":str(cwd),"exit_code":r.returncode,"seconds":round(time.time()-start,3)}
+ (BASE/(name+".command.json")).write_text(json.dumps(meta,indent=2)+"\n");print(name,r.returncode,meta["seconds"],flush=True)
+ if r.returncode:raise RuntimeError((name,(BASE/(name+".stderr")).read_text()[-1800:]))
+def cargo(name,args,**kw):return run(name,["cargo",*CONFIG,*args],**kw)
+if __name__=="__main__":
+ while not (BASE/"registry-config.json").exists():time.sleep(1)
+ cargo("metadata-default",["metadata","--format-version","1","--features","native","--filter-platform","x86_64-unknown-linux-gnu"])
+ meta=json.loads((BASE/"metadata-default.stdout").read_text());names={p["name"] for p in json.loads((BASE/"packages.json").read_text())["packages"]}
+ chosen=[p for p in meta["packages"] if p["name"] in names]
+ assert len(chosen)==14 and all(p["source"].startswith("registry+") and not p["manifest_path"].startswith(str(ROOT)) for p in chosen)
+ (BASE/"selected-sources.json").write_text(json.dumps(chosen,indent=2)+"\n")
+ cargo("consumer-default",["run","--locked","--profile","release-test","--features","native","--bin","rhwp-8174-s05-consumer","--",str(ROOT/"samples/hwp_table_test.hwp"),str(ROOT/"samples/hwpx/143E433F503322BD33.hwpx")])
+ cargo("error-contract",["test","--locked","--profile","release-test","--features","native","--test","error_contract"])
+ cargo("guide-examples",["run","--locked","--profile","release-test","--features","native","--bin","guide","--",str(ROOT/"samples/hwpx/blank_hwpx.hwpx"),str(ROOT/"pdf/issue8174/features/icc-rgb.pdf")])
+ cargo("consumer-pdf",["run","--locked","--profile","release-test","--features","native","--bin","pdf","--",str(ROOT),str(BASE/"consumer-pdf")])
+ cargo("cli-install",["install","rhwp","--registry","crates-io","--version","=0.8.7","--bin","rhwp","--locked","--features","native-skia","--profile","release-test","--root",str(BASE/"installed"),"--target-dir",str(TARGET)])

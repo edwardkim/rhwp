@@ -1,0 +1,266 @@
+[
+  {
+    "path": "base/native/body-list-typed/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "base/native/helvetica-styles/silhouette.tsv",
+    "bytes": 130,
+    "sha256": "f56104928ffcf8d66715393367ec4ad1cf8a84700d76da5ea6ab6a5bd40cc1bb",
+    "matchesOriginal": true
+  },
+  {
+    "path": "base/native/pic-crop-01/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "base/native/re-03-latin/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "base/native/shape-group-02/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "base/native-handbook/handbook-hwp/silhouette.tsv",
+    "bytes": 8428,
+    "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "matchesOriginal": true
+  },
+  {
+    "path": "base/wasm/body-list-typed/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "base/wasm/helvetica-styles/silhouette.tsv",
+    "bytes": 130,
+    "sha256": "87a9caaa6efad0a79d45599b544359dd28b63a86206cd5ebcba2bda5dfb23a3c",
+    "matchesOriginal": true
+  },
+  {
+    "path": "base/wasm/pic-crop-01/silhouette.tsv",
+    "bytes": 130,
+    "sha256": "7678d6f2f5d362601ec7573b64be6cc0077e70485b9fbdd18272914d4058f420",
+    "matchesOriginal": true
+  },
+  {
+    "path": "base/wasm/re-03-latin/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "base/wasm/shape-group-02/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "base/wasm-handbook/handbook-hwp/silhouette.tsv",
+    "bytes": 8428,
+    "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/consumer/full/body-list-typed/scores/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/consumer/full/helvetica-styles/scores/silhouette.tsv",
+    "bytes": 130,
+    "sha256": "f56104928ffcf8d66715393367ec4ad1cf8a84700d76da5ea6ab6a5bd40cc1bb",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/consumer/full/pic-crop-01/scores/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/consumer/full/shape-group-02/scores/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/consumer/host/body-list-typed/scores/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/consumer/host/helvetica-styles/scores/silhouette.tsv",
+    "bytes": 130,
+    "sha256": "f56104928ffcf8d66715393367ec4ad1cf8a84700d76da5ea6ab6a5bd40cc1bb",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/consumer/host/pic-crop-01/scores/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/consumer/host/shape-group-02/scores/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/consumer/prepared/body-list-typed/scores/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/consumer/prepared/helvetica-styles/scores/silhouette.tsv",
+    "bytes": 130,
+    "sha256": "f56104928ffcf8d66715393367ec4ad1cf8a84700d76da5ea6ab6a5bd40cc1bb",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/consumer/prepared/pic-crop-01/scores/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/consumer/prepared/shape-group-02/scores/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/consumer/tiled/body-list-typed/scores/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/consumer/tiled/helvetica-styles/scores/silhouette.tsv",
+    "bytes": 130,
+    "sha256": "f56104928ffcf8d66715393367ec4ad1cf8a84700d76da5ea6ab6a5bd40cc1bb",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/consumer/tiled/pic-crop-01/scores/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/consumer/tiled/shape-group-02/scores/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/native/body-list-typed/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/native/helvetica-styles/silhouette.tsv",
+    "bytes": 130,
+    "sha256": "f56104928ffcf8d66715393367ec4ad1cf8a84700d76da5ea6ab6a5bd40cc1bb",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/native/pic-crop-01/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/native/re-03-latin/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/native/shape-group-02/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/native-handbook/handbook-hwp/silhouette.tsv",
+    "bytes": 8428,
+    "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/review-pdf289/silhouette.tsv",
+    "bytes": 134,
+    "sha256": "ce4253ac1c28219210ad70c0e0fe619424d2a11970a8a28b184110c3d1a0dc0e",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/review-pdf63/silhouette.tsv",
+    "bytes": 133,
+    "sha256": "e7e309a8d74b5444cb9bad59b6455497d0a916dab0c87a4dfc541176c334d9d0",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/wasm/body-list-typed/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/wasm/helvetica-styles/silhouette.tsv",
+    "bytes": 130,
+    "sha256": "87a9caaa6efad0a79d45599b544359dd28b63a86206cd5ebcba2bda5dfb23a3c",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/wasm/pic-crop-01/silhouette.tsv",
+    "bytes": 130,
+    "sha256": "7678d6f2f5d362601ec7573b64be6cc0077e70485b9fbdd18272914d4058f420",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/wasm/re-03-latin/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/wasm/shape-group-02/silhouette.tsv",
+    "bytes": 132,
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "matchesOriginal": true
+  },
+  {
+    "path": "candidate/wasm-handbook/handbook-hwp/silhouette.tsv",
+    "bytes": 8428,
+    "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "matchesOriginal": true
+  },
+  {
+    "path": "native-page-comparison.tsv",
+    "bytes": 15463,
+    "sha256": "6bc433f262497a4391f600b22b3e7882bb8ea2a61e317a311ec648344d0e7569",
+    "matchesOriginal": null
+  },
+  {
+    "path": "wasm-page-comparison.tsv",
+    "bytes": 14687,
+    "sha256": "9acf64d4faf309365bcabab8316f03e277fba5e7d95b3748d05653781c1b9804",
+    "matchesOriginal": null
+  }
+]

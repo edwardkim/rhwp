@@ -4,6 +4,8 @@ use super::paragraph::Paragraph;
 use super::style::{Fill, ShapeBorderLine};
 use super::*;
 
+pub(crate) mod shadow;
+
 /// `raw_ctrl_data` (CTRL_HEADER) 바이트 오프셋 상수.
 ///
 /// `parse_common_obj_attr` 및 `serialize_common_obj_attr` 과 일치해야 한다.
@@ -75,10 +77,6 @@ pub struct CommonObjAttr {
     /// bit 2 ⟺ affectLSpacing="1" 를 1:1 대조 검증했다. 이 필드가 없어
     /// 그림·도형·표 방출이 "0" 으로 하드코딩되던 유실을 해소한다.
     pub affect_line_spacing: bool,
-    /// HWPX 출처 GenShape를 HWP5로 저장할 때 필요한 storage high bit 후보.
-    ///
-    /// Table adapter의 `0x08000000` 보강과 다른 `0x04000000` bit 26이다.
-    pub hwp5_gen_shape_attr_bit26: bool,
     /// VertRelTo가 para일 때 크기 보호 여부 (HWP5 GenShape CTRL_HEADER attr bit 20).
     pub size_protect: bool,
     /// HWPX 출처 GenShape 번호 범주 high bit 후보 (HWP5 GenShape CTRL_HEADER attr bit 28).
@@ -129,6 +127,35 @@ pub enum ObjectNumberingType {
     Picture,
     Table,
     Equation,
+}
+
+impl ObjectNumberingType {
+    /// [#8335] HWP5 개체 공통 속성 attr 의 번호 범주 비트 자리(bit 26-27, #8294).
+    pub const HWP5_ATTR_MASK: u32 = 0x03 << 26;
+
+    /// HWP5 attr bit 26-27 의 번호 범주. bit 28 은 범주와 별개다(#8294).
+    pub fn from_hwp5_attr(attr: u32) -> Self {
+        match (attr >> 26) & 0x03 {
+            1 => Self::Picture,
+            2 => Self::Table,
+            3 => Self::Equation,
+            _ => Self::None,
+        }
+    }
+
+    /// 이 범주를 HWP5 attr bit 26-27 자리에 둔 값.
+    ///
+    /// 한컴이 같은 문서를 저장한 HWP·HWPX 32쌍의 개체 616개(표 348·그림 117·도형 91·
+    /// 수식 60) 전부에서 bit 26-27 이 `numberingType` 과 같다. 개체 종류와 무관하다 —
+    /// `NONE` 그림은 0, `PICTURE` 표는 1 이다.
+    pub fn hwp5_attr_bits(self) -> u32 {
+        (match self {
+            Self::None => 0,
+            Self::Picture => 1,
+            Self::Table => 2,
+            Self::Equation => 3,
+        }) << 26
+    }
 }
 
 /// HWPX 개체 `dropcapstyle` (드롭캡 표시 방식). OWPML Core 스키마 `DropCapStyleType`.
@@ -284,6 +311,34 @@ pub struct ShapeComponentAttr {
     /// 아핀 행렬 비대각 요소 (회전/전단 성분)
     pub render_b: f64,
     pub render_c: f64,
+    /// [#8225] 묶음 안 자식 도형의 CTRL_DATA 원본 (자식 SHAPE_COMPONENT 바로 아래 레코드, 라운드트립 보존용).
+    /// 한컴은 여기에 개체 설명 글 같은 ParameterSet 을 둔다. 맨 위 개체의 CTRL_DATA 는
+    /// `Paragraph.ctrl_data_records` 가 갖는다.
+    #[serde(skip)]
+    pub ctrl_data: Option<Vec<u8>>,
+}
+
+impl ShapeComponentAttr {
+    /// 원본 사각형 안에서 수행하는 로컬 반전. 저장 행렬과 편집 캐시가 공유한다.
+    /// 현재 크기로의 배율과 회전·이동은 이 변환 다음에 합성한다.
+    pub(crate) fn local_reflection_matrix(&self) -> [f64; 6] {
+        [
+            if self.horz_flip { -1.0 } else { 1.0 },
+            0.0,
+            if self.horz_flip {
+                self.original_width as f64
+            } else {
+                0.0
+            },
+            0.0,
+            if self.vert_flip { -1.0 } else { 1.0 },
+            if self.vert_flip {
+                self.original_height as f64
+            } else {
+                0.0
+            },
+        ]
+    }
 }
 
 impl Default for ShapeComponentAttr {
@@ -316,6 +371,7 @@ impl Default for ShapeComponentAttr {
             render_sy: 1.0,
             render_b: 0.0,
             render_c: 0.0,
+            ctrl_data: None,
         }
     }
 }
@@ -534,8 +590,30 @@ impl ShapeObject {
     /// (`shape_attr.current_height`)는 어긋날 수 있다 — 한글은 둘 중 큰 값을
     /// 조판 높이로 쓴다. 조판·측정·렌더가 각자 이 식을 다시 쓰면 같은 속성에
     /// 정의가 여러 벌 생기므로(#4333) 이 메서드가 유일한 정의다.
+    ///
+    /// [#8167] HWPX `<hp:curSz height="0">` 를 파서가 `orgSz` 로 채운 값
+    /// (`current_height_was_zero`)은 `renderingInfo` 배율을 적용하기 전 원본 크기라
+    /// 실제 표시 높이가 아니다. 이때는 저장 프레임만 쓴다 — 한/글은 `sz` 1284HU ·
+    /// `orgSz` 6768HU 인 글자처럼 글상자를 1284HU 줄에 놓는다(HWP5-nopassword hwpx 18쪽).
     pub fn flow_height_hu(&self) -> i32 {
-        (self.common().height as i32).max(self.shape_attr().current_height as i32)
+        let attr = self.shape_attr();
+        let current = if attr.current_height_was_zero {
+            0
+        } else {
+            attr.current_height as i32
+        };
+        (self.common().height as i32).max(current)
+    }
+
+    /// 도형이 줄 흐름에서 차지하는 가로 범위 (HWPUNIT). [`Self::flow_height_hu`] 와 같은 규칙.
+    pub fn flow_width_hu(&self) -> i32 {
+        let attr = self.shape_attr();
+        let current = if attr.current_width_was_zero {
+            0
+        } else {
+            attr.current_width as i32
+        };
+        (self.common().width as i32).max(current)
     }
 
     /// 개체 요소 속성 가변 참조 반환
@@ -771,9 +849,9 @@ pub struct CurveShape {
     pub common: CommonObjAttr,
     /// 그리기 공통 속성
     pub drawing: DrawingObjAttr,
-    /// 제어점 좌표 목록
+    /// 곡선이 통과하는 원본 점 체인 (베지어 제어점 배열이 아님)
     pub points: Vec<Point>,
-    /// 세그먼트 타입 목록 (0: line, 1: curve)
+    /// 인접한 점 사이의 구간 종류: points.len() - 1개 (0: line, 1: curve)
     pub segment_types: Vec<u8>,
 }
 

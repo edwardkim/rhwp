@@ -1,0 +1,86 @@
+issue	state	document_paths	title	note
+7721	open	4	[7445] HWP3 sample16 HWP5 변환본 전체 피델리티	-
+7722	open	2	[7445] HWP3 sample16 HWPX 변환본 전체 피델리티	-
+7723	open	4	[7445] HWP3 sample16 2010 저장본 전체 피델리티	-
+7727	open	2	[7445] 항공교통관제사 CBTA 연구 전체 피델리티	-
+7728	open	2	[7445] 전기안전관리법 시행규칙 70833 전체 피델리티	-
+7729	open	4	[7445] 국민권익위원회 제도개선 권고안 30269 전체 피델리티	-
+7730	open	2	[7445] 영어 시험 원본 피델리티와 회귀 범위 기록	-
+7731	open	2	[7445] HWP 컨트롤 API 105쪽 전체 피델리티	-
+7732	open	2	[7445] 소상공인 중간보고서 RowBreak 표·각주 전체 피델리티	-
+7733	open	4	[7445] 화학제품 표시 기준 축소 HWP 전체 피델리티	-
+7734	open	3	[7445] 결재문서 36375752 saved-bounds HWPX 전체 피델리티	-
+7735	open	2	[7445] 한컴 파일 형식 5.0 revision1.3 배포용 HWP 피델리티	-
+7736	open	2	[7445] PR4093 개요 탐색 패널 합성 HWPX 배치	-
+7737	open	3	[7445] 가상융합산업 시행령 78494 전체 피델리티	 본문에서 비교 대상으로만 언급한 samples/issue6776/36367506-water-facility-approval.hwpx는 해당 이슈의 제외 원본에 포함하지 않는다.
+7738	open	2	[7445] PR4093 최소 개요·표셀 번호 합성 HWPX 겹침	-
+7739	open	5	[7445] 화학제품 표시도안 연구 전체 원문 피델리티	본문이 정상 대조군으로 명시한 issue2004_cell_image_stack.hwp는 제외하지 않는다.
+7740	open	0	[7445] PR7382 차단 회귀 범위 정정과 정상 검사 복원 기록	범위 정정/이관 철회 기록. 문서 자체의 새 제외 대상으로 확장하지 않는다.
+7741	open	1	[7445] rowbreak-problem-pages HWPX 전체 피델리티	-
+7742	open	1	[7445] 사이버대학 신청서 글자 겹침과 표 조각 소속	-
+7743	open	2	[7445] 교육과정 연결맵 415쪽 피델리티와 회귀 재검토	-
+7744	open	1	[7445] 진안군 공동주택 신청서 전체 피델리티	-
+7745	open	1	[7445] 재활용 보도자료 HWPX off-canvas 피델리티	-
+7746	open	1	[7445] HWP5 무암호 HWPX off-canvas 피델리티	-
+7747	open	1	[7445] 중첩 셀 42065 문서 전체 피델리티와 쪽수	-
+7748	open	1	[7445] 전직시험면제 표 전체 피델리티와 쪽수	-
+7749	open	2	[7445] 31쪽 80550 규제영향분석 HWPX의 두 경로·내용 소속	-
+7750	open	1	[7445] HwpCtrl ParameterSet 명세 74쪽 전체 피델리티	-
+7753	open	2	[7445] 간장 기증자 정책연구 HWP·HWPX 전체 피델리티	-
+7754	open	2	[7445] HWP5 암호 HWPX 쪽수 전제와 피델리티	-
+7755	open	1	[7445] 2017년 시장구조조사 전체 피델리티	-
+7756	open	1	[7445] 복학원서 전체 피델리티와 기존 회귀	-
+7757	open	1	[7445] 배포용 HWPX distribution_doc 전체 피델리티	-
+7759	open	1	[7445] 공개 HWP 143E433F503322BD33 폰트 추적 회귀	-
+7760	open	1	[7445] 2024년 5월 월간 수출입 HWP 폰트 추적 회귀	-
+7761	open	1	[7445] 온새미로 HWP 폰트 추적 회귀	-
+7762	open	1	[7445] 온새미로 HWPX 폰트 추적 회귀	-
+7765	open	2	[7445] 86712 규제영향분석 HWP·HWPX 전체 피델리티	-
+7766	open	1	[7445] 법률 개정 이유서 52쪽 전체 피델리티	-
+7767	open	1	[7445] 동물복지 사육관리 문서 전체 피델리티	-
+7769	open	5	[7445] synam-001 KPS 문서 전체 피델리티	-
+7770	open	2	[7445] 양돈 소득 HWP 전체 피델리티	-
+7771	open	1	[7445] 아이돌 굿즈 판매사업자 제재 Center 문서 피델리티	-
+7772	open	1	[7445] hwpspec 전체 피델리티와 쪽·개체 소속 회귀	 본문에서 비교 대상으로만 언급한 samples/exam_kor.hwp는 해당 이슈의 제외 원본에 포함하지 않는다.
+7773	open	1	[7445] k-water RFP 24쪽 전체 피델리티	-
+7774	open	4	[7445] HWP3 SQL sample10 전체 피델리티	현대 HWPX 정상 대조군 exam_kor는 이 이슈의 미완료 원본이 아니므로 제외 목록에 넣지 않는다.
+7775	open	1	[7445] 양돈 소득 HWPX 전체 피델리티	-
+7776	open	1	[7445] pr-1674 HWP 전체 피델리티	-
+7777	open	1	[7445] 37787 규제영향분석서 전체 피델리티	-
+7778	open	1	[7445] 59043 규제영향분석서 전체 피델리티	-
+7779	open	1	[7445] 76076 규제영향분석 HWPX 전체 피델리티	-
+7780	open	5	[7445] KTX-003 글자 겹침과 전체 피델리티	-
+7781	open	5	[7445] 반복 표 2439 글자 겹침과 전체 피델리티	-
+7782	open	0	[7445] 저장 표 빈 문단 외곽선의 이관 철회·보정 기록	범위 정정/이관 철회 기록. 문서 자체의 새 제외 대상으로 확장하지 않는다.
+7783	open	2	[7445] 80168 규제영향분석 HWP·HWPX 전체 피델리티	-
+7784	open	1	[7445] 76076 규제영향분석 HWP 전체 피델리티	-
+7785	open	2	[7445] 수식 HML 원본과 회귀 검사 후속 개선	-
+7786	open	4	[7445] KTX 목차의 쪽번호 배치와 전체 피델리티	-
+7787	open	4	[7445] overlay-top 중첩 표 후속 전진과 전체 피델리티	-
+7788	open	4	[7445] 정상 생성 nested-split의 이어받기 셀 외곽선	-
+7789	open	1	[7445] 중국어 가정통신문 전체 피델리티와 본문 넘침	-
+7790	open	2	[7445] pic-in-head·pic-in-table 동일 원본 피델리티	-
+7791	open	2	[7445] AIFT HWP 74쪽 전체 피델리티와 SVG 고정 검사	본문이 명시한 HWP만 대상이며 정상 HWPX 쌍둥이는 제외하지 않는다.
+7792	open	2	[7445] table_text_anchor_wrap HWPX 3쪽 전체 피델리티	-
+7803	open	1	[7445] fragment_ghost_vrules.hwp 가스 표 소속과 32/31쪽 차이	-
+7806	open	1	[7445] 56345_regulatory_impact_analysis.hwp 전 21쪽 기존 시각 미달	-
+7807	open	2	[fidelity] SO-SUEOP HWP3/HWPX 46쪽의 전쪽 시각 미달과 기존 좌표 핀 분리	-
+7808	open	1	[fidelity] sample1-repro 46쪽 overlay 표의 내용 소속과 전쪽 시각 미달	-
+7811	open	1	[7445] 2700727_animal_facility_standards.hwpx 표 분할·행 보존·용지 밖 넘침 회귀 이관	-
+7812	open	1	[7445] table_giant_cell_overfill.hwpx 마지막 조각·행 높이·넘침 회귀 이관	-
+7813	open	2	[7445] issue1949_giant_cell_nested_tables_perf 전쪽 시각 미달과 실패 회귀 이관	-
+7821	open	1	[조판 회귀 이관] coanchored_float_tac_order.hwp — 표 배치 미달과 3→4쪽 결과 추적	-
+7822	open	2	[회귀 이관] 3232693_employment_support_criteria.hwpx — 셀 조각 픽셀 핀 재검토	-
+7823	open	1	[조판 회귀 이관] 148738070_wrapper_table_stored_page_frame.hwp — 누적 브랜치의 7→9쪽 회귀	-
+7830	open	1	[7445] hwpx_sample2.hwp 29쪽 시각 미달과 표 조각 회귀 이관	-
+7831	open	1	[7445] 1382000 가정폭력 조사 39→37쪽·표 조각 회귀 후속	-
+7834	open	1	[7445] 춘천 인사규칙 22037757 전15쪽 피델리티와 본문 넘침 회귀 이관	-
+7863	open	2	fix(renderer): cell_multi_para_float_pics.hwp 수동 축약 입력의 표·본문·캡션 원점 미달	-
+7864	open	2	fix(renderer): tac_picture_line_top.hwpx 수동 축약 입력의 표·본문·캡션 원점 미달	-
+7922	open	2	[7445] 1192000-202100017 끝 탭 런·charX·hit-test 회귀 재구축	 본문에서 비교 대상으로만 언급한 samples/lseg-05-tab.hwp는 해당 이슈의 제외 원본에 포함하지 않는다.
+7955	open	1	[7445] 주택임대차계약서 housing-lease-standard-form 전체 피델리티와 과거 제목 표 px 핀	-
+8044	open	1	[7445] 1790387_prep_final_report.hwpx 차트 제목·플롯·범례 배치 후속 보정	-
+8046	open	0	[7445] 수식 명령 catalog.tsv의 AST·layout·SVG 골든 재구축	-
+8047	open	0	[7445] M09x WMF·EMF 9종 골든과 독립 Print 차이 재검토	-
+8048	open	0	[7445] #6735 합성 내장 표 셀의 저장 줄 위치 계약과 Print 기준 확보	-
+8100	open	15	[7445 이관] 연속 표 7677·7678, HWPX 3종, 사무분장표 22081993 잔여 피델리티	-

@@ -1,0 +1,9 @@
+{
+  "inputs_pdf_files": 19,
+  "tsv_files": 28,
+  "representative_images": 16,
+  "same_input_output_pairs": 14,
+  "runtime_source_unchanged": true,
+  "all_hashes_verified": true,
+  "verified_at": "2026-11-02T00:43:19.004082+00:00"
+}

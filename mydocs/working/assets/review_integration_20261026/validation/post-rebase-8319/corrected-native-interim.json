@@ -1,0 +1,15 @@
+{
+  "status": "interim_not_final",
+  "source_commit": "f5c3972844442d7d2c74496bfd4db06cec26615b",
+  "native_binary_sha256": "3a7b0c02eb624c38e75ef18240abe2c6c39c2aabb24f43d38be4dc0757444b0a",
+  "chart_print_score": 99.80761,
+  "chart_svg_frame": "#868686 / 1.00",
+  "sample16_native_png_pages": 192,
+  "sample16_native_png_raw100": 192,
+  "sample16_metric": "symmetric integer unmatched pixels = 0, radius 2 px",
+  "original_native_cases": 56,
+  "original_native_pages": 693,
+  "original_native_drop_ge_0_1_pp": 0,
+  "original_native_below90": 0,
+  "remaining": "WASM, original and incoming full sweeps, full Rust tests and browser checks"
+}

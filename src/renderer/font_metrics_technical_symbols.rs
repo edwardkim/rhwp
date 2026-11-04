@@ -73,6 +73,15 @@ static VERIFIED_TECHNICAL_1_PRESENT: [bool; 256] = [
 ];
 
 fn verified_technical_symbol_entry(metric: &FontMetric, ch: char) -> Option<(bool, u16)> {
+    // 같은 HBATANG 35f84328…의 Arrows 전체 cmap/hmtx: 112개 모두
+    // 1024/1024em이다. 독립 편람 Print의 결측 화살표도 이 프로그램을 쓴다.
+    // 기존 DB의 미수집 구간만 보충하며 다른 face·굵기·기울임은 추정하지 않는다.
+    if (0x2190..=0x21FF).contains(&(ch as u32))
+        && (metric.name, metric.em_size, metric.bold, metric.italic)
+            == ("Haansoft Batang", 1024, false, false)
+    {
+        return Some((true, 1024));
+    }
     // 독립 한컴 2020 Print의 Batang 프로그램: U+25A1 전진은 911/1024em이다.
     // 기존 DB가 수집하지 않은 기하 기호를 전각 추정으로 바꾸지 않는다.
     // 근거: 2599643_port_call_form-2020.pdf의 xref 12, glyph 15, hmtx.
@@ -105,6 +114,9 @@ pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Optio
     // 자연 전진은 기존 메트릭의 178/1024em이며, 독립 Print의 다음 글자 원점으로 대조했다.
     if matches!(ch, '\u{2024}' | '\u{2027}') {
         match (metric.name, metric.em_size, metric.bold, metric.italic) {
+            // arial.ttf SHA-256 b23742143bae95dfaf50d8d530e798c7863336b254b899024b0b12b09c93abfd.
+            // 실제 regular 프로그램의 cmap 결측이며 다른 Arial face에는 적용하지 않는다.
+            ("Arial", 2048, false, false) => return Some(false),
             ("HumanMyeongJo", 1024, false, false) => return Some(false),
             // H2HDRM.TTF e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831:
             // 원 프로그램 cmap의 확인된 결측이다. 폭 표의 미수집을 뜻하지 않는다.

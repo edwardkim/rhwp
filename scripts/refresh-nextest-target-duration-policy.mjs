@@ -162,10 +162,6 @@ function main() {
   }
   const policy = JSON.parse(fs.readFileSync(options.policy, "utf8"));
   const measurements = options.measurements.map((filePath) => JSON.parse(fs.readFileSync(filePath, "utf8")));
-  const labels = new Set(measurements.map((measurement) => measurement.archive_label));
-  if (labels.size !== 3 || !labels.has("b") || !labels.has("c") || !labels.has("d")) {
-    fail("measurements must contain exactly one B, C, and D report");
-  }
   const refreshed = refreshDurationPolicy(policy, measurements);
   fs.mkdirSync(path.dirname(options.output), { recursive: true });
   fs.writeFileSync(options.output, `${JSON.stringify(refreshed, null, 2)}\n`);

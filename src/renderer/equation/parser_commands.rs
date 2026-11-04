@@ -125,6 +125,8 @@ impl EqParser {
             }
             EqCommandClass::Limit => self.parse_limit(cmd == "Lim"),
             EqCommandClass::Matrix => self.parse_matrix(matrix_style(cu)),
+            EqCommandClass::Column if self.document_terms => self.parse_column(pile_align(cu)),
+            EqCommandClass::Column => self.parse_command_fallback(cmd, attach_scripts),
             EqCommandClass::Cases => self.parse_cases(),
             EqCommandClass::EqAlign => self.parse_eqalign(),
             EqCommandClass::Pile => self.parse_pile(pile_align(cu)),

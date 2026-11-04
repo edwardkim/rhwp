@@ -153,22 +153,53 @@ impl TypesetEngine {
                 let table = input.source.row_geometry_table;
                 let engine = &input.prepared.layout_engine;
                 let styles = input.source.styles;
+                let nested_frame = engine
+                    .stored_nested_parent_opening_frame(
+                        table,
+                        row,
+                        &scan.split_end_cut,
+                        &input.source.measured_table.row_heights,
+                        styles,
+                    )
+                    .is_some_and(|frame| {
+                        (frame.height - height).abs() <= hwpunit_to_px(2, self.dpi)
+                    });
                 if scan.split_end_limit <= 0.0
                     || scan.split_end_cut.is_empty()
-                    || !engine.row_has_original_plain_text_owners(table, row, &scan.split_end_cut)
-                    || !(engine.row_cut_ends_at_original_plain_text_reset(
-                        table,
-                        row,
-                        &[],
-                        &scan.split_end_cut,
-                        styles,
-                    ) || engine.row_cut_ends_at_saved_zero_origin_frame(
-                        table,
-                        row,
-                        &[],
-                        &scan.split_end_cut,
-                        styles,
-                    ))
+                    || !(nested_frame
+                        || engine.row_has_original_plain_text_owners(
+                            table,
+                            row,
+                            &scan.split_end_cut,
+                        )
+                        || engine.row_cut_has_original_plain_text_owners(
+                            table,
+                            row,
+                            &scan.split_end_cut,
+                            styles,
+                        ))
+                    || !(nested_frame
+                        || engine.row_cut_ends_at_original_plain_text_reset(
+                            table,
+                            row,
+                            &[],
+                            &scan.split_end_cut,
+                            styles,
+                        )
+                        || engine.row_cut_ends_at_saved_zero_origin_frame(
+                            table,
+                            row,
+                            &[],
+                            &scan.split_end_cut,
+                            styles,
+                        )
+                        || engine.row_cut_ends_at_native_saved_page_frame(
+                            table,
+                            row,
+                            &[],
+                            &scan.split_end_cut,
+                            styles,
+                        ))
                 {
                     return None;
                 }
@@ -192,7 +223,11 @@ impl TypesetEngine {
             };
             (before_last, selected_last)
         };
-        let last_height = height - budget.header_overhead - before_last;
+        // 첫 조각의 개체 상자에는 표 바깥 셀 간격도 포함된다.
+        // 마지막 행 상자에는 행 사이 간격만 이미 반영한 앞 행을 빼고,
+        // 바깥 간격을 다시 배정하지 않는다.
+        let outer = hwpunit_to_px(input.source.table.outer_cell_spacing_hu(), self.dpi);
+        let last_height = height - budget.header_overhead - before_last - outer;
         (before_last >= 0.0 && last_height >= selected_last).then_some((height, last_height))
     }
 
@@ -272,7 +307,11 @@ impl TypesetEngine {
         // The existing saved-frame producer authenticates the host origin and
         // available body space. The raw row lower bound independently proves
         // this object box is only a fragment. Its units still need a real cut.
-        let height = saved_frame?.0.min(available);
+        let outer = hwpunit_to_px(source.table.outer_cell_spacing_hu(), self.dpi);
+        // 저장 상자는 바깥 간격을 포함하고 `available`은 이미 그 간격을 뺀
+        // 행 예산이다. 같은 단위로 제한한 뒤 전체 조각 상자를 복원한다.
+        let row_capacity = (saved_frame?.0 - outer).max(0.0).min(available);
+        let height = row_capacity + outer;
         let mut before = 0.0;
         let mut complete_last_row = None;
         let mut carried_band_row = None;
@@ -280,8 +319,8 @@ impl TypesetEngine {
             if row > 0 {
                 before += input.prepared.cell_spacing;
             }
-            if before + row_height > height {
-                let remaining = height - before;
+            if before + row_height > row_capacity {
+                let remaining = row_capacity - before;
                 // A declared row can include unused space. All of its units
                 // may fit in the source remainder even when that box does not.
                 // The complete-row minimum covers owners starting in this row.

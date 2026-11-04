@@ -141,7 +141,7 @@ pub fn shape(text: &str, face_bytes: &[u8], direction: Direction) -> Option<Shap
 mod tests {
     use super::*;
 
-    const DEJAVU: &[u8] = include_bytes!("../../tests/fixtures/fonts/DejaVuSans.ttf");
+    const DEJAVU: &[u8] = include_bytes!("../fonts/assets/DejaVuSans.ttf");
 
     #[test]
     fn shape_ltr_ascii() {

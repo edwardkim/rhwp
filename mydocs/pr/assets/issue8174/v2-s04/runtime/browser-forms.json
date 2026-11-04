@@ -1,0 +1,72 @@
+{
+  "checked": [
+    "actual CFB Click script reaches the WASM action context",
+    "actual pointer click computes ten, checks the box and changes the caption",
+    "button result is recorded in the existing undo history",
+    "one undo restores every form value atomically",
+    "one redo restores the calculation",
+    "hwp save and actual reparse preserve script and all three action results",
+    "hwpx save and actual reparse preserve script and all three action results",
+    "actual Worker/editor boundary: loop",
+    "actual Worker/editor boundary: timeout",
+    "actual Worker/editor boundary: cancel",
+    "actual Worker/editor boundary: next",
+    "actual Worker/editor boundary: noPartial",
+    "actual Worker/editor boundary: readOnly",
+    "actual Worker/editor boundary: formGuard",
+    "actual Worker/editor boundary: formWrite",
+    "actual Worker/editor boundary: body",
+    "actual Worker/editor boundary: bodyUndo",
+    "button owner lifecycle: readOnly",
+    "button owner lifecycle: busy",
+    "button owner lifecycle: cancelled",
+    "button owner lifecycle: noPartial",
+    "button owner lifecycle: retired",
+    "normal editing succeeds after a cancelled button and document replacement"
+  ],
+  "target": {
+    "address": {
+      "section": 0,
+      "para": 0,
+      "control": 2,
+      "cellPath": []
+    },
+    "hit": {
+      "found": true,
+      "sec": 0,
+      "para": 0,
+      "ci": 2,
+      "formType": "PushButton",
+      "name": "PushButton",
+      "value": 0,
+      "caption": "명령 단추",
+      "text": "",
+      "bbox": {
+        "x": 113.4,
+        "y": 132.3,
+        "w": 94.5,
+        "h": 26.5
+      }
+    }
+  },
+  "boundaries": {
+    "loop": true,
+    "timeout": true,
+    "cancel": true,
+    "next": true,
+    "noPartial": true,
+    "readOnly": true,
+    "formGuard": true,
+    "formWrite": true,
+    "body": true,
+    "bodyUndo": true
+  },
+  "lifecycle": {
+    "readOnly": true,
+    "busy": true,
+    "cancelled": true,
+    "noPartial": true,
+    "retired": true,
+    "generation": 2
+  }
+}

@@ -1,0 +1,51 @@
+#[cfg(not(feature = "rhwp-default"))]
+fn main() {
+ let support=rhwp::pdf_support::pdf_import_support();assert!(!support.jbig2 && !support.jpeg2000 && !support.icc);
+ #[cfg(feature="pdf-only")] {
+  use rhwp::parser::pdf::{parse_pdf_with_policy,PdfImportPolicy,PdfImportOptions};
+  let root=std::path::Path::new("/home/edward/mygithub/rhwp");
+  let normal=std::fs::read(root.join("pdf/issue8174/features/recovery-incremental.pdf")).unwrap();
+  assert!(support.enabled && support.bounded_xref_recovery);
+  assert!(parse_pdf_with_policy(&normal,&PdfImportOptions::default(),PdfImportPolicy::default()).is_ok());
+  for source in ["pdf/issue8183/scan-jbig2.pdf","pdf/issue8183/jpx.pdf"] {
+   let b=std::fs::read(root.join(source)).unwrap();
+   let error=parse_pdf_with_policy(&b,&PdfImportOptions::default(),PdfImportPolicy::default()).err().expect("excluded codec must fail");
+   println!("EXCLUDED {source}: {error}");
+  }
+  assert!(parse_pdf_with_policy(&normal,&PdfImportOptions::default(),PdfImportPolicy::default()).is_ok());
+  println!("PDF-ONLY PASS recovery + excluded JBIG2/JPX + healthy followup");
+ }
+}
+#[cfg(feature = "rhwp-default")]
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use rhwp::parser::pdf::{PdfImportPolicy, PdfImportProfile, PdfImportOptions, parse_pdf_with_policy};
+    let root=std::path::PathBuf::from(std::env::args().nth(1).unwrap());
+    let out=std::path::PathBuf::from(std::env::args().nth(2).unwrap());std::fs::create_dir_all(&out)?;
+    let support=rhwp::pdf_support::pdf_import_support();
+    assert!(support.enabled && support.jbig2 && support.jpeg2000 && support.icc && support.bounded_xref_recovery);
+    let fixtures:Vec<serde_json::Value>=serde_json::from_slice(&std::fs::read(out.parent().unwrap().join("fixtures.json"))?)?;
+    let inputs=fixtures.iter().map(|f|std::path::PathBuf::from(f["input"].as_str().unwrap())).collect::<Vec<_>>();
+    let mut rows=Vec::new();
+    for (input,fixture) in inputs.iter().zip(&fixtures) {
+        let bytes=std::fs::read(input)?;
+        let imported=parse_pdf_with_policy(&bytes,&PdfImportOptions::default(),PdfImportPolicy::default())?;
+        assert_eq!(imported.metadata.source_page_count,1);
+        assert!(!imported.metadata.parser_allocation_bounds_proven);
+        let core=rhwp::DocumentCore::from_pdf_bytes_with_policy(&bytes,&PdfImportOptions::default(),PdfImportPolicy::default())?;
+        let saved=rhwp::serializer::serialize_hwpx(core.document())?;
+        let reopened=rhwp::DocumentCore::from_bytes(&saved)?;assert_eq!(core.page_count(),reopened.page_count());
+        std::fs::write(out.join(fixture["name"].as_str().unwrap()).with_extension("hwpx"),saved)?;
+        rows.push(serde_json::json!({"name":input.file_name().unwrap().to_str(),"pages":core.page_count(),"metadata":imported.metadata}));
+    }
+    assert_eq!(rows.len(),41);
+    let normal=std::fs::read(root.join("pdf/issue8174/features/icc-rgb.pdf"))?;
+    let constrained=PdfImportPolicy::for_profile(PdfImportProfile::Constrained);
+    assert!(parse_pdf_with_policy(&normal,&PdfImportOptions::default(),constrained).is_ok());
+    let low=constrained.with_limits_json(r#"{"backend":{"inputBytes":1}}"#)?;
+    assert_eq!(parse_pdf_with_policy(&normal,&PdfImportOptions::default(),low).err().unwrap().code,"PDF_RESOURCE_LIMIT");
+    for bad in [r#"{"wat":1}"#,r#"{"backend":{"inputBytes":0}}"#,r#"{"backend":{"inputBytes":1,"inputBytes":2}}"#] {assert!(constrained.with_limits_json(bad).is_err());}
+    assert_eq!(parse_pdf_with_policy(b"bad",&PdfImportOptions::default(),constrained).err().unwrap().code,"PDF_INVALID_INPUT");
+    assert!(parse_pdf_with_policy(&normal,&PdfImportOptions::default(),constrained).is_ok());
+    std::fs::write(out.join("results.json"),serde_json::to_vec_pretty(&rows)?)?;
+    println!("REGISTRY PDF PASS 41 + policy/failure/recovery");Ok(())
+}

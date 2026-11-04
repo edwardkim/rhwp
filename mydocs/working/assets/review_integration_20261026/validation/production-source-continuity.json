@@ -1,0 +1,11 @@
+{
+  "production_visual_head": "ae8c413f84a01a4cc4591357056183709f21b150",
+  "regression_head": "2e902abacf328bccdd7780606666ac3b1c5c1ce9",
+  "wasm_build_head": "523af99acf2c53265e390a4e982eb07dd1071099",
+  "source_paths": 1828,
+  "production_and_studio_sources_byte_identical": true,
+  "wasm_sha256": "c5b25dd8b22efce0d4ecb08291069e3ec625345c40957cbe457cc431f69737d8",
+  "js_sha256": "c1c8d1820cc4375ab668427fa0a42c87d71c3d0d83955f4d300880559023ddc6",
+  "incoming_base": "faa885e8b54ffc7cdf4196cd43a3103f362499a2",
+  "prior_native_pixel_continuity": "post-rebase-8116/native-prior-output-continuity.json"
+}

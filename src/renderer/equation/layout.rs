@@ -57,6 +57,8 @@ pub struct EqLayout {
     hancom_math_face: bool,
     hancom_eqn: bool,
     legacy_equation: bool,
+    legacy_math_face: bool,
+    legacy_declared_width: Option<f64>,
     math_digit_advance: Option<u16>,
     variable_italic: bool,
     variable_bold: bool,
@@ -143,6 +145,8 @@ impl EqLayout {
             hancom_math_face: false,
             hancom_eqn: false,
             legacy_equation: false,
+            legacy_math_face: false,
+            legacy_declared_width: None,
             math_digit_advance: None,
             variable_italic: true,
             variable_bold: false,
@@ -166,6 +170,14 @@ impl EqLayout {
             hancom_math_face: equation.font_name.eq_ignore_ascii_case("HYhwpEQ"),
             hancom_eqn: equation.font_name.eq_ignore_ascii_case("HancomEQN"),
             legacy_equation: legacy::matches_version(equation),
+            legacy_math_face: equation.uses_legacy_display(),
+            legacy_declared_width: (equation.uses_legacy_display()
+                && equation.attr & crate::model::control::EQUATION_LINE_MODE_BIT == 0
+                && equation.eqedit & crate::model::control::EQUATION_LINE_MODE_BIT == 0
+                && equation.common.width > 0
+                && equation.common.width <= i32::MAX as u32
+                && equation.common.width_criterion == crate::model::shape::SizeCriterion::Absolute)
+                .then(|| super::super::hwpunit_to_px(equation.common.width as i32, dpi)),
             // 두 face의 수학 PUA 숫자만 같은 512/1024 전진폭이다.
             // 영문·기호는 서로 다르므로 HancomEQN을 HYhwpEQ로 치환하지 않는다.
             math_digit_advance: (equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
@@ -215,6 +227,14 @@ impl EqLayout {
             ..*self
         };
         let result = root.layout_node(node, self.font_size);
+        if let Some(width) = self.legacy_declared_width {
+            // CHAR 평면은 글꼴 글줄 프레임까지 소유한다. 지원하는 문자·그룹만
+            // 먼저 수용하며, 분수 등 복합식은 아래 HFT 프레임을 유지한다.
+            let mut projected = root.matrix_row_box(result.clone(), self.font_size);
+            if super::legacy_coordinate_plane::project(node, &mut projected, width) {
+                return projected;
+            }
+        }
         if self.legacy_hft_metrics && result.width > 0.0 {
             // The same HFT line/fraction frame owns both root paint and edited
             // size. A display glyph's ink box is not the logical font line.
@@ -308,6 +328,7 @@ impl EqLayout {
         }
         match node {
             EqNode::Row(children) => self.layout_row(children, fs),
+            EqNode::Group(body) => self.layout_node(body, fs),
             EqNode::Text(s) => self.layout_text(s, fs),
             EqNode::Number(s) => self.layout_number(s, fs),
             EqNode::Symbol(s) => self.layout_symbol(s, fs),

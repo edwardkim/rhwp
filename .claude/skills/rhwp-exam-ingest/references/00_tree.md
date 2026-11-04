@@ -1,5 +1,10 @@
 # 00 — 판단 트리
 
+`build-from-ingest`는 로컬 PNG·JPEG·GIF·BMP·TIFF를 검증해 Picture/BinData로 삽입한다.
+기준 경로는 JSON 디렉터리이며 `--media-dir`로 바꿀 수 있다. 경로 이탈·누락·손상·한도 초과는
+`INGEST_IMAGE_*`로 실패한다. placeholder로 대체하지 않으며 실제 이미지 표시도 확인한다.
+문장 중간의 위치는 `paragraph.runs`의 text/image 순서로 지정한다.
+
 이 장은 에이전트가 시험지 입력을 받고 **첫 30초**에 어느 helper·어느 필드를
 고르는지 고정한다. 새 CLI 를 만들지 않는다. `exam_paper` 빌더를 고치지 않는다.
 
@@ -84,7 +89,8 @@ ingest.json 준비됨
   ├─ media[] 비어 있음 ──▶ build-from-ingest -o  ( --media-dir 생략 가능 )
   └─ media[] 있음
        ├─ crop 아직 안 함 ──▶ crop_image.sh (F14)
-       └─ 파일 존재 ──▶ build-from-ingest --media-dir -o (F15)
+       └─ INGEST_IMAGE_* ──▶ F18. 경로·치수·형식·한도 확인
+            제한 재현 또는 텍스트 입력에서만 build-from-ingest -o (F15)
             ├─ unknown field ──▶ JSON 수정 (F11)
             ├─ boxed.text ──▶ blocks 로 (F12)
             └─ 성공 ──▶ dump / export-text / unzip -l
@@ -97,7 +103,7 @@ ingest.json 준비됨
 | 적분·행렬 수식 | bbox crop → image 블록 | LaTeX 필드를 ingest 에 추가 |
 | 3단 병합 표 | 표 전체를 Picture | Table IR 발명 |
 | 손글씨 메모 | 무시하거나 이미지 | OCR 엔진 호출 |
-| Picture 가 한컴에서 안 보임 | 한계 고지 (#182) | writer 를 이 스킬에서 고침 |
+| Picture 가 한컴에서 안 보임 | 이미지 파일·참조·실제 표시를 대조 | writer 를 이 스킬에서 고침 |
 
 ## 이 트리가 고르지 않는 것
 

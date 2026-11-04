@@ -1,3 +1,8 @@
+//! 검사 유형: 관계형·고정형.
+//! 2026-10-28 측정 raw(96dpi, PDFium): rowbreak-problem-pages.hwpx 2쪽 Native 99.54784% / fresh WASM 99.54876%, 11쪽 95.74925% / 95.75079%, 13쪽 98.81057% / 98.79067%, 16쪽 98.52036% / 98.48140%; 전18쪽 최저 94.05007% / 93.97178%.
+//! rowbreak-problem-pages.hwp 1쪽 Native 99.92080% / fresh WASM 99.92124%, 10쪽 각 100.00000%, 13쪽 98.84461% / 98.83836%; 전18쪽 최저 97.86923% / 97.91713%.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/header-evidence-ted3-matrix.json.
+//!
 //! `samples/rowbreak-problem-pages.hwpx`의 표 분할 회귀 검사.
 //!
 //! 2쪽의 첫 도표 형태 TAC 표(`pi=5 ci=0`)는 앞선
@@ -119,6 +124,24 @@ fn rowbreak_page11_partial_table_stays_inside_body() {
         table_bottom <= body_bottom + 0.5,
         "page 11 table is clipped: table bottom={table_bottom:.2}, body bottom={body_bottom:.2}"
     );
+}
+
+#[test]
+fn rowbreak_page16_coanchored_table_keeps_print_origin() {
+    let doc = load_doc(SAMPLE);
+    let tree = doc.build_page_render_tree(15).expect("render page 16");
+    let inline = find_table_bbox(&tree.root, 28, 1).expect("inline table");
+    let floating = find_table_bbox(&tree.root, 28, 0).expect("floating table fragment");
+    let body = find_body_bbox(&tree.root).expect("page 16 body");
+    // 독립 한컴 2020 Print: 아래 표의 위끝 약 742px, 앞 표 아래 약 16px.
+    let gap = floating.y - (inline.y + inline.height);
+    assert!(
+        (floating.y - 742.0).abs() <= 2.0,
+        "floating top={}",
+        floating.y
+    );
+    assert!((gap - 16.0).abs() <= 2.0, "table gap={gap}");
+    assert!(floating.y + floating.height <= body.y + body.height + 0.5);
 }
 
 #[test]

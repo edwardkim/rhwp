@@ -1,0 +1,47 @@
+[
+  {
+    "key": "saved_bottom",
+    "page": "rhwp_001.png",
+    "base_candidate_rgba_equal": true,
+    "size": [
+      794,
+      1122
+    ]
+  },
+  {
+    "key": "wrapping_A",
+    "page": "rhwp_001.png",
+    "base_candidate_rgba_equal": true,
+    "size": [
+      794,
+      1122
+    ]
+  },
+  {
+    "key": "legacy_textbox",
+    "page": "rhwp_001.png",
+    "base_candidate_rgba_equal": true,
+    "size": [
+      794,
+      1122
+    ]
+  },
+  {
+    "key": "wmf_fixed_face",
+    "page": "rhwp_001.png",
+    "base_candidate_rgba_equal": true,
+    "size": [
+      794,
+      1122
+    ]
+  },
+  {
+    "key": "wmf_fixed_face",
+    "page": "rhwp_002.png",
+    "base_candidate_rgba_equal": true,
+    "size": [
+      794,
+      1122
+    ]
+  }
+]

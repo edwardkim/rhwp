@@ -1,0 +1,215 @@
+{
+  "date": "2026-10-29",
+  "audited_head": "f4dcc30ea12c914b696bad4ef1cbde4782030d39",
+  "scope": "20개 PR의 리뷰 및 구현 리뷰 40개 파일의 Markdown 상대 파일 링크",
+  "documents": [
+    {
+      "path": "mydocs/pr/archives/pr_8115_review.md",
+      "sha256": "54472a1afa0f884207e8d7387f8314ce36395d7ae3adfdfea9f25fae0365f368",
+      "relative_links": 54
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8115_review_impl.md",
+      "sha256": "928be6e9d525adb7b5a64e9d2533d25b99a43878ba1a101bf23029aee34fa17e",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8128_review.md",
+      "sha256": "f84a040bc81d17a15db8077c958b59d15c9661133ac278d87fa7b2f34bdd4f67",
+      "relative_links": 38
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8128_review_impl.md",
+      "sha256": "4ff52f97d685bc2dace912a8288479658b33f5a44fbe57e100327b1faef5b93c",
+      "relative_links": 4
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8133_review.md",
+      "sha256": "29866fd921c1531d321069c707314ba7218cdaf9ca099d7e79721615c8527305",
+      "relative_links": 45
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8133_review_impl.md",
+      "sha256": "dc8b78a92e91d7a169c1b8573c001d7e41c18c93a89229713f2046d8ade471ba",
+      "relative_links": 4
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8142_review.md",
+      "sha256": "93ef6bc3cf821bf11e0e0bbd2a3c841386a78ea65ff0736c79b58a653993cd8d",
+      "relative_links": 35
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8142_review_impl.md",
+      "sha256": "81dedfdd798fd42db2396f40771ce8764d3e48ce49c7c98b7d78ec164a4491f7",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8184_review.md",
+      "sha256": "b659d935e687f1e7750214b98a4d113b9e62bee659bc1faf1bd70ad81b9b4244",
+      "relative_links": 45
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8184_review_impl.md",
+      "sha256": "f3c04a1184e1461388d47561c5a37fdd94702322e99f12c15326e73aa8c924d6",
+      "relative_links": 10
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8202_review.md",
+      "sha256": "8ddc98d695dca4a348a95fcf01067ee3797f903ed97f3279dc3320789abe1f8d",
+      "relative_links": 48
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8202_review_impl.md",
+      "sha256": "459d659d0c8fd3fb8ef225c4218a19be64ce2b927674a921b496c8b53dcbb0c1",
+      "relative_links": 4
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8205_review.md",
+      "sha256": "ea93aa7ac117ef9253439325e4d23882a78d40df4ddf50fa6e5ccf97b4c8f27f",
+      "relative_links": 38
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8205_review_impl.md",
+      "sha256": "0d08cd766ee3bf69410f1990379011e8e2870a63442e015e3319220e2db13fde",
+      "relative_links": 4
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8206_review.md",
+      "sha256": "a394f81e21bc05ad57f4a111718c0181e15da52ee8b259541ae0c4acb9f27c8b",
+      "relative_links": 70
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8206_review_impl.md",
+      "sha256": "1a87aaab47963ff044a0ebb739fd9470b223cbda6365198cf17710299801a09c",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8209_review.md",
+      "sha256": "2224529670d383d119963e8766375b136c910c13e02ef6a8187a281f2e5f2cbc",
+      "relative_links": 29
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8209_review_impl.md",
+      "sha256": "f26ef9c6aa2e188290d13ad81a5728abec4da609b060c2824fa77a235c4295a9",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8210_review.md",
+      "sha256": "f12e82b867592c1b7780622571b8c5f2f473934e43b8aa178794289c8c982667",
+      "relative_links": 32
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8210_review_impl.md",
+      "sha256": "ec8739b0239417e12a513b6baad11b2cc9a6ddc78e41326f6798bda02b375238",
+      "relative_links": 4
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8213_review.md",
+      "sha256": "4151522df8fce4b0fb133c6fab3a3e06e0e7b3ed8926aadac0d6d7e07ea9214a",
+      "relative_links": 43
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8213_review_impl.md",
+      "sha256": "5eb84c2649325bf5fc4073ed7a66986380cff8738cde6ef0e625562c55bbc0aa",
+      "relative_links": 4
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8215_review.md",
+      "sha256": "5bbce3d3d7776effe19db6d590b6f9bc91b68546c663cf626db655f76ce15370",
+      "relative_links": 13
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8215_review_impl.md",
+      "sha256": "4d17c5f38e64198e17cc1cec25c70801127a966a1ed321be01e8c5c342269da6",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8217_review.md",
+      "sha256": "03022118d68f9271cd4c173518f97d56b1b75980bcbae989862d0d369a417ea7",
+      "relative_links": 19
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8217_review_impl.md",
+      "sha256": "b39afd1de1270d8bf2a83aa944c2ec7f935a97cc0df1d58fa0c5d6c6bd288a0e",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8219_review.md",
+      "sha256": "46ad68b2d6751623df28196bf4ff76214a379c3b5a6bbcd3b7641d1d3734e8f2",
+      "relative_links": 17
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8219_review_impl.md",
+      "sha256": "17ca9021c4aabddd0816a641542319045e09ee68666c3b3a5cd7d5ef0334fd60",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8221_review.md",
+      "sha256": "e53f7a23e552fcac1acc7dce3a6a9014496f498eb131fc890703a183ad638a1f",
+      "relative_links": 37
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8221_review_impl.md",
+      "sha256": "27868b4cd41ce990023bb9951dcc12c8f5740f06a337392bdf591cd5abb3a0a3",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8227_review.md",
+      "sha256": "34c8cab2071d98fb1fcf2b258c5a54eeb2ae2b210786a80984560af54fb48e39",
+      "relative_links": 51
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8227_review_impl.md",
+      "sha256": "e5f9835492ef397e3aa426cf37fd621863570871de304cc269ff602e7e0dd99b",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8229_review.md",
+      "sha256": "3cbbc5837529450910d299bf6380deb705c82c7d6bd2bd2b0c2702c7e66be999",
+      "relative_links": 41
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8229_review_impl.md",
+      "sha256": "00404712012612b593ac5e653b17f99113404db48ac9138dcbd7fdbc3345169c",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8237_review.md",
+      "sha256": "75dc0692c310279b525691d70b4b66c3fdf7daba8bb2a2a650a2948f45805f8c",
+      "relative_links": 40
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8237_review_impl.md",
+      "sha256": "0e20ec77dd9ee1e2c857804c78ec9dff160799989811b71f48782305edad844a",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8265_review.md",
+      "sha256": "2e960c65eba74e9ddcbe81ad27b3421684be66f06ea8425c46ed8c1d3eed03ab",
+      "relative_links": 24
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8265_review_impl.md",
+      "sha256": "f2a83275bfda9cd92ba0ee29cd6dde1df8d8f4a471f05a4474f446546b888c28",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8283_review.md",
+      "sha256": "bed790540ddad9825fb6c9b0250ec35bba3b04bfc44160ad487464cad677691b",
+      "relative_links": 73
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8283_review_impl.md",
+      "sha256": "bc993274fb6ba7796faccf5307aa9a4d9d82c55a7c6413e96872554bc295a385",
+      "relative_links": 4
+    }
+  ],
+  "relative_links": 866,
+  "missing": [],
+  "untracked_file_targets": [],
+  "output_targets": [],
+  "limitations": [
+    "정규식이 인식한 Markdown 링크만 검사한다.",
+    "외부 웹 링크 및 문서 내 앵커와 증거 내용의 적합성은 검사하지 않는다."
+  ]
+}

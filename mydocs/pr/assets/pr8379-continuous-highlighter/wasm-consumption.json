@@ -1,0 +1,97 @@
+{
+  "verified_sessions": [
+    {
+      "source_sha": "503e53e9463d242ee26b5aedf4bda251538cbe49",
+      "profile": "release + wasm-opt",
+      "expected_sha256": "b2b50b86aa1a041cfd61022a92248d545aa0910fbe58895fe5bae87553de63c7",
+      "page": "http://127.0.0.1:7717/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7717/@fs/home/edward/mygithub/rhwp-worktrees/pr-8379-continuous-highlighter/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "b2b50b86aa1a041cfd61022a92248d545aa0910fbe58895fe5bae87553de63c7"
+        }
+      ],
+      "record": "34245-5346064c-3f89-4023-af79-49662d4b0ad5.json"
+    },
+    {
+      "source_sha": "503e53e9463d242ee26b5aedf4bda251538cbe49",
+      "profile": "release + wasm-opt",
+      "expected_sha256": "b2b50b86aa1a041cfd61022a92248d545aa0910fbe58895fe5bae87553de63c7",
+      "page": "http://127.0.0.1:7717/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7717/@fs/home/edward/mygithub/rhwp-worktrees/pr-8379-continuous-highlighter/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "b2b50b86aa1a041cfd61022a92248d545aa0910fbe58895fe5bae87553de63c7"
+        }
+      ],
+      "record": "34943-bd03f22d-4c1e-4a14-93a1-f0d9f6813a3e.json"
+    },
+    {
+      "source_sha": "503e53e9463d242ee26b5aedf4bda251538cbe49",
+      "profile": "release + wasm-opt",
+      "expected_sha256": "b2b50b86aa1a041cfd61022a92248d545aa0910fbe58895fe5bae87553de63c7",
+      "page": "http://127.0.0.1:7717/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7717/@fs/home/edward/mygithub/rhwp-worktrees/pr-8379-continuous-highlighter/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "b2b50b86aa1a041cfd61022a92248d545aa0910fbe58895fe5bae87553de63c7"
+        }
+      ],
+      "record": "39314-14b4b0d0-fbaa-49da-a52b-936e752cf61b.json"
+    },
+    {
+      "source_sha": "503e53e9463d242ee26b5aedf4bda251538cbe49",
+      "profile": "release + wasm-opt",
+      "expected_sha256": "b2b50b86aa1a041cfd61022a92248d545aa0910fbe58895fe5bae87553de63c7",
+      "page": "http://127.0.0.1:7717/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7717/@fs/home/edward/mygithub/rhwp-worktrees/pr-8379-continuous-highlighter/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "b2b50b86aa1a041cfd61022a92248d545aa0910fbe58895fe5bae87553de63c7"
+        }
+      ],
+      "record": "39620-60c55729-a9e0-43d3-84a0-545699e83972.json"
+    },
+    {
+      "source_sha": "503e53e9463d242ee26b5aedf4bda251538cbe49",
+      "profile": "release + wasm-opt",
+      "expected_sha256": "b2b50b86aa1a041cfd61022a92248d545aa0910fbe58895fe5bae87553de63c7",
+      "page": "http://127.0.0.1:7718/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7718/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "b2b50b86aa1a041cfd61022a92248d545aa0910fbe58895fe5bae87553de63c7"
+        }
+      ],
+      "record": "42219-5b3072c5-d1f9-4f26-9c83-c38b4d77bc7b.json"
+    }
+  ],
+  "excluded_setup_attempts": [
+    {
+      "source_sha": "503e53e9463d242ee26b5aedf4bda251538cbe49",
+      "profile": "release + wasm-opt",
+      "expected_sha256": "b2b50b86aa1a041cfd61022a92248d545aa0910fbe58895fe5bae87553de63c7",
+      "page": "http://127.0.0.1:7718/",
+      "matched": false,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7718/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "19e4729f73daa5a183d37b29eb09500cdd217c112383f0d643b786fce59bb3c1"
+        }
+      ],
+      "record": "40391-854a2e74-21eb-41cd-acfc-576d4b2ce0a4.json"
+    }
+  ],
+  "exclusion_reason": "Initial base harness resolved its installed package instead of the pinned fresh pair. This attempt was not accepted. Final base test used browser response interception and verified the same fresh JS/WASM."
+}

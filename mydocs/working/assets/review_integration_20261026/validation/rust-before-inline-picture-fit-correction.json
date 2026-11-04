@@ -1,0 +1,148 @@
+{
+  "head": "59c7fef1674658c138625cc9348becbef5cbcd04",
+  "base": "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c",
+  "started_at": "2026-10-27T00:03:54.621980+00:00",
+  "target": "/home/tsjang/rhwp/target/pr-review",
+  "build_jobs": 4,
+  "steps": [
+    {
+      "name": "v12-final-fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 49.135042313020676,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-fmt-check.log"
+    },
+    {
+      "name": "v12-final-clippy-host",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 123.12460566801019,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-clippy-host.log"
+    },
+    {
+      "name": "v12-final-clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 112.20978474500589,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-clippy-wasm.log"
+    },
+    {
+      "name": "v12-final-workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 144.96655440004542,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-workspace-build.log"
+    },
+    {
+      "name": "v12-final-clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 181.45655460306443,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-clippy-workspace.log"
+    },
+    {
+      "name": "v12-final-suite-policy",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c"
+      ],
+      "exit": 0,
+      "seconds": 3.9537111161043867,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-suite-policy.log"
+    },
+    {
+      "name": "v12-final-unit-tier-policy",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c"
+      ],
+      "exit": 0,
+      "seconds": 33.9771661660634,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-unit-tier-policy.log"
+    },
+    {
+      "name": "v12-final-nextest-all",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "exit": 100,
+      "seconds": 3985.142648159992,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-nextest-all.log"
+    }
+  ],
+  "status": "failed",
+  "active_step": "v12-final-nextest-all",
+  "summary": {
+    "run": 11622,
+    "passed": 11619,
+    "failed": 3,
+    "existing_skipped": 45,
+    "interrupted": 0
+  },
+  "failure_module": "issue_6312_float_anchor_line_uses_source_vpos",
+  "scope": "All three failures result from four reference pages becoming five; no tolerance or expected-page-count change approved."
+}

@@ -320,8 +320,20 @@ pub struct TernaryRasterOperator {
     rect: BlitDestRect,
     brush: Option<Brush>,
     source: Option<Source>,
+    /// 원본 DIB에서 읽을 사각형. 음수 크기는 원본 축의 반전이다.
+    source_rect: Option<BitmapSourceRect>,
+    /// StretchDIB의 상향식 DIB는 원점이 왼쪽 아래에 있다.
+    source_bottom_up: bool,
     clip_id: Option<String>,
     clip_rect: Option<[i32; 4]>,
+}
+
+#[derive(Clone, Copy)]
+struct BitmapSourceRect {
+    x: i16,
+    y: i16,
+    width: i16,
+    height: i16,
 }
 
 enum Source {
@@ -336,6 +348,8 @@ impl TernaryRasterOperator {
             rect,
             brush: None,
             source: None,
+            source_rect: None,
+            source_bottom_up: false,
             clip_id: None,
             clip_rect: None,
         }
@@ -413,8 +427,121 @@ impl TernaryRasterOperator {
         self
     }
 
+    /// DIB 전송 레코드의 원본 사각형을 목적 사각형과 별도로 보존한다.
+    pub fn source_rectangle(mut self, x: i16, y: i16, width: i16, height: i16) -> Self {
+        self.source_rect = Some(BitmapSourceRect {
+            x,
+            y,
+            width,
+            height,
+        });
+        self
+    }
+
+    /// StretchDIB의 원본 좌표가 아래쪽을 원점으로 삼는 경우에 지정한다.
+    pub fn bottom_up_source(mut self) -> Self {
+        self.source_bottom_up = true;
+        self
+    }
+
+    fn bitmap_node(&self, bitmap: Bitmap, dimensions: (usize, usize)) -> Option<Node> {
+        let (x, y, width, height, transform) = self.normalized_rect();
+        let Some(source) = self.source_rect else {
+            let image = Node::new("image")
+                .set("x", x)
+                .set("y", y)
+                .set("width", width)
+                .set("height", height)
+                .set("preserveAspectRatio", "none")
+                .set("href", bitmap.as_data_url());
+            return Some(match transform {
+                Some(transform) => image.set("transform", transform),
+                None => image,
+            });
+        };
+        if source.width == 0 || source.height == 0 || dimensions.0 == 0 || dimensions.1 == 0 {
+            return None;
+        }
+        // 전체 원본은 직접 전송한다. 부분 원본에는 명시적 viewport가 필요하다.
+        if source.x == 0
+            && source.y == 0
+            && usize::try_from(source.width).ok() == Some(dimensions.0)
+            && usize::try_from(source.height).ok() == Some(dimensions.1)
+        {
+            let image = Node::new("image")
+                .set("x", x)
+                .set("y", y)
+                .set("width", width)
+                .set("height", height)
+                // WMF 비트맵 전송은 원본 비율과 달라도 목적 사각형을 채운다.
+                .set("preserveAspectRatio", "none")
+                .set("href", bitmap.as_data_url());
+            return Some(match transform {
+                Some(transform) => image.set("transform", transform),
+                None => image,
+            });
+        }
+        let sx = i64::from(source.x);
+        let sw = i64::from(source.width);
+        let sh = i64::from(source.height);
+        let sy = if self.source_bottom_up {
+            i64::try_from(dimensions.1).ok()? - i64::from(source.y) - sh
+        } else {
+            i64::from(source.y)
+        };
+        let mut image = Node::new("image")
+            .set("x", 0)
+            .set("y", 0)
+            .set("width", dimensions.0)
+            .set("height", dimensions.1)
+            .set("preserveAspectRatio", "none")
+            .set("href", bitmap.as_data_url());
+        let mut source_transforms = Vec::new();
+        if sw < 0 {
+            source_transforms.push(format!("translate({},0) scale(-1,1)", 2 * sx + sw));
+        }
+        if sh < 0 {
+            source_transforms.push(format!("translate(0,{}) scale(1,-1)", 2 * sy + sh));
+        }
+        if !source_transforms.is_empty() {
+            image = image.set("transform", source_transforms.join(" "));
+        }
+        let viewport = Node::new("svg")
+            .set("x", x)
+            .set("y", y)
+            .set("width", width)
+            .set("height", height)
+            .set(
+                "viewBox",
+                format!(
+                    "{} {} {} {}",
+                    sx.min(sx + sw),
+                    sy.min(sy + sh),
+                    sw.abs(),
+                    sh.abs()
+                ),
+            )
+            .set("preserveAspectRatio", "none")
+            .set("overflow", "hidden")
+            .add(image);
+        // nested SVG의 transform은 구현마다 다르게 소비하므로 바깥 그룹에 둔다.
+        Some(match transform {
+            Some(transform) => Node::new("g").set("transform", transform).add(viewport),
+            None => viewport,
+        })
+    }
+
+    fn source_bitmap_node(&mut self) -> Option<Node> {
+        let dib = match self.source.take()? {
+            Source::Bitmap16(data) => DeviceIndependentBitmap::from(data),
+            Source::Bitmap(data) => data,
+        };
+        let dimensions = (dib.dib_header_info.width(), dib.dib_header_info.height());
+        self.bitmap_node(Bitmap::from(dib), dimensions)
+    }
+
     pub fn run(
-        self,
+        mut self,
         definitions: &mut Vec<Node>,
         brush_only_rop_sequence: &mut BrushOnlyRopSequence,
         element_count: usize,
@@ -448,28 +575,10 @@ impl TernaryRasterOperator {
                 .set("stroke", "none")
                 .set("fill", "black"),
             TernaryRasterOperation::SRCCOPY => {
-                let (x, y, width, height, transform) = self.normalized_rect();
-                let bitmap = match self.source.unwrap() {
-                    Source::Bitmap16(data) => {
-                        let bitmap = crate::wmf::parser::DeviceIndependentBitmap::from(data);
-                        crate::wmf::converter::Bitmap::from(bitmap)
-                    }
-                    Source::Bitmap(data) => Bitmap::from(data),
+                let Some(image) = self.source_bitmap_node() else {
+                    return Ok(None);
                 };
-
-                let image = Node::new("image")
-                    .set("x", x)
-                    .set("y", y)
-                    .set("width", width)
-                    .set("height", height)
-                    // WMF blit은 원본 비율과 무관하게 목적 사각형을 채운다.
-                    // SVG 기본 meet는 여백을 만들고 비트맵을 가운데로 옮긴다.
-                    .set("preserveAspectRatio", "none")
-                    .set("href", bitmap.as_data_url());
-                match transform {
-                    Some(transform) => image.set("transform", transform),
-                    None => image,
-                }
+                image
             }
             TernaryRasterOperation::PATCOPY => {
                 let fill = match Fill::from(self.brush.clone().unwrap()) {
@@ -551,26 +660,10 @@ impl TernaryRasterOperator {
                     ?operation,
                     "approximating source TernaryRasterOperation as SRCCOPY"
                 );
-                let (x, y, width, height, transform) = self.normalized_rect();
-                let bitmap = match self.source.unwrap() {
-                    Source::Bitmap16(data) => {
-                        let bitmap = crate::wmf::parser::DeviceIndependentBitmap::from(data);
-                        crate::wmf::converter::Bitmap::from(bitmap)
-                    }
-                    Source::Bitmap(data) => Bitmap::from(data),
+                let Some(image) = self.source_bitmap_node() else {
+                    return Ok(None);
                 };
-
-                let image = Node::new("image")
-                    .set("x", x)
-                    .set("y", y)
-                    .set("width", width)
-                    .set("height", height)
-                    .set("preserveAspectRatio", "none")
-                    .set("href", bitmap.as_data_url());
-                match transform {
-                    Some(transform) => image.set("transform", transform),
-                    None => image,
-                }
+                image
             }
             operation => {
                 info!(?operation, "TernaryRasterOperation is not implemented");

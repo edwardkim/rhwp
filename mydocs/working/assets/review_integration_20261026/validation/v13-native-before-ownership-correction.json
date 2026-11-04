@@ -1,0 +1,10 @@
+{
+  "source_head": "8b7f48e6929030cc53e324c0ffba637616c28213",
+  "cases": 63,
+  "page_comparisons": 941,
+  "minimum_raw": "90.81277",
+  "below90": 0,
+  "historical_stage_only": true,
+  "correction_after_this_run": "Removed unnecessary decorative floating-shape occupancy; v14 verification required.",
+  "native_controller_completed_at": "2026-10-27T02:05:08.618507+00:00"
+}

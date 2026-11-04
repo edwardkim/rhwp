@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-28",
+  "source_pr": 8217,
+  "cases": [
+    "tests/cases/hwpx_precompressed_entry.rs",
+    "tests/cases/hwpx_bindata_save_passthrough.rs"
+  ],
+  "source_origin": "원 PR #8217의 원래 두 파일과 검사 보존; ZIP 합성 검사는 시각 측정 비대상",
+  "command": "cargo nextest run --cargo-profile release-test --target-dir target/pr-review --test regression_suite_002 --test regression_suite_013 -E 'test(hwpx_precompressed_entry::) | test(hwpx_bindata_save_passthrough::)' --no-fail-fast",
+  "nextest_run_id": "8615b838-dd64-4f90-8737-af054d3bea7a",
+  "passed": 4,
+  "failed": 0,
+  "skipped": 526,
+  "log_sha256": "643cac1b6a1708eb02b326dd898111522a013bc3df0719500b7366c328365770"
+}

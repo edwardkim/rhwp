@@ -24,6 +24,14 @@ pub const HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS: &[u8] = b"2:paragraph-utf16";
 /// 없으면 render-diff 왕복이 프로파일 차이만큼 갈라진다(hwp3-sample p7 14.9px).
 pub const HWP3_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwp3-origin";
 
+/// [#8303] HWP3 원본에서 만든 HWPX 가 `textpos` 를 문단 UTF-16 축으로 싣는다는 생산자 표지.
+///
+/// 값은 [`HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS`] 와 같다. 한컴 2020·2024 가 같은 HWP3 을 HWPX 로
+/// 저장할 때 구역·단 정의 자리를 센 축으로 쓰고(`hwp3-table-caption` 문단 0 줄 1:
+/// `textpos=62`), 그 자리를 뺀 값(46)은 한컴이 표를 한 줄 아래에 인쇄한다. HWP3 원본의
+/// 마커 값(`hwp3_page_ownership`)과 분리해 두어, 표지가 없는 이전 산출물은 종전 축으로 읽는다.
+pub const HWP3_ORIGIN_HWPX_PARAGRAPH_AXIS_PATH: &str = "META-INF/rhwp-hwp3-paragraph-axis";
+
 /// 원본 HWP3의 외부 생성·재정렬 요청을 저장 왕복에서 보존한다.
 pub const HWP3_EXTERNAL_REALIGN_STREAM_PATH: &str = "/RhwpHwp3ExternalRealign";
 pub const HWP3_EXTERNAL_REALIGN_HWPX_PATH: &str = "META-INF/rhwp-hwp3-external-realign";
@@ -37,6 +45,14 @@ pub const HWP3_EXTERNAL_REALIGN_HWPX_PATH: &str = "META-INF/rhwp-hwp3-external-r
 /// 한컴은 미지의 루트 스트림을 무시하고(열림 계약 게이트로 검증), 한컴에서 재저장하면
 /// 마커가 사라지며 그 문서는 진짜 native HWP5 가 되므로 시멘틱이 자기일관적이다.
 pub const HWPX_ORIGIN_STREAM_PATH: &str = "/RhwpHwpxOrigin";
+
+/// [#8310] `/RhwpHwpxOrigin` 값 — 원본 HWPX 의 저장 줄 계약을 지닌 변환본.
+///
+/// 한컴 HWPX(rhwp 출처 표식 없음)에서 만든 HWP 는 본문 저장 줄을 원본 HWPX 와 같게 쓴다 —
+/// 원본 좌표 스냅샷(#5847)과 "저장 줄 없음". 다시 열 때 HWPX 와 같은 XML import 규칙으로
+/// 줄을 재구성해야 같은 조판 입력이 된다. 종전 값 `1` 은 이 계약 없이 쓴 변환본이므로
+/// 값으로 구분해 종전 파일의 읽기 규칙을 바꾸지 않는다.
+pub const HWPX_ORIGIN_SOURCE_LINES: &[u8] = b"2";
 
 /// [#3707] HWP3 출처 마커. `RhwpHwpxOrigin` 과 같은 방식이다.
 ///
@@ -256,6 +272,29 @@ pub struct DocInfo {
     pub raw_provenance: Option<crate::model::raw_provenance::DocInfoSeal>,
 }
 
+impl DocInfo {
+    /// 문서의 변경 추적 설정(`<hh:trackchageConfig flags>` · HWP5 `HWPTAG_TRACKCHANGE` 첫 `u32`).
+    ///
+    /// 이 값은 이름과 달리 **조판에 영향을 준다** — 한글이 `flags="0"` 문서를 열면 같은
+    /// 내용이 한 쪽 더 늘어난다(00295 실측: 원본 1쪽, rhwp 저장본 2쪽, 이 값만 56 으로
+    /// 바꾸면 다시 1쪽). HWP5 는 `HWPTAG_TRACKCHANGE` 레코드 첫 `u32` 에 싣는다(파서가
+    /// 모델링하지 않아 `extra_records` 에 원시 보존된다). 레코드가 없으면 56 — 한컴
+    /// 실측이다: 코퍼스 6,473 문서 중 4,588 이 레코드를 갖고 그중 4,555 가 56 이며,
+    /// 레코드가 **없는** 문서(00000·00001)를 한글로 저장해도 `flags="56"` 이 나온다.
+    /// 4바이트가 안 되는 손상 레코드도 기본값으로 떨어진다.
+    pub fn track_change_flags(&self) -> u32 {
+        self.extra_records
+            .iter()
+            .find(|r| r.tag_id == crate::parser::tags::HWPTAG_TRACKCHANGE)
+            .and_then(|r| r.data.get(..4))
+            .map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+            .unwrap_or(TRACK_CHANGE_FLAGS_DEFAULT)
+    }
+}
+
+/// 한컴이 `HWPTAG_TRACKCHANGE` 없는 문서에 쓰는 변경 추적 설정값 (실측).
+pub const TRACK_CHANGE_FLAGS_DEFAULT: u32 = 56;
+
 /// HWP5 `HWPTAG_DOC_DATA` 안에서 인쇄 방식을 담는 키.
 ///
 /// 레코드는 `(u32 key, u32 value)` 의 평평한 목록이고 **키 순서가 문서마다 다르다** —
@@ -368,6 +407,33 @@ pub struct SectionDef {
 }
 
 impl Document {
+    /// HWPX 인쇄 설정의 편집 용지 표시 값. 미기재와 미지원 값은 구분한다.
+    pub(crate) fn hwpx_print_crop_mark(settings: &[u8]) -> Option<bool> {
+        let xml = std::str::from_utf8(settings).ok()?;
+        let start = xml.find(r#"name="PrintCropMark""#)?;
+        let value_start = start + xml[start..].find('>')? + 1;
+        let value_end = value_start + xml[value_start..].find('<')?;
+        match xml[value_start..value_end].trim() {
+            "0" => Some(false),
+            "1" => Some(true),
+            _ => None,
+        }
+    }
+
+    /// 한컴 Print의 편집 용지 표시. 미기재와 지원하지 않는 값은 출력하지 않는다.
+    pub(crate) fn print_crop_marks(&self) -> bool {
+        if let Some(settings) = self.hwpx_aux_entry("settings.xml") {
+            return Self::hwpx_print_crop_mark(settings).unwrap_or(false);
+        }
+        self.doc_info.extra_records.iter().any(|record| {
+            record.tag_id == 27
+                && record.data.chunks_exact(8).any(|pair| {
+                    u32::from_le_bytes(pair[..4].try_into().unwrap()) == 0x0006_401a
+                        && u32::from_le_bytes(pair[4..].try_into().unwrap()) == 1
+                })
+        })
+    }
+
     /// HWPX 원본 보조 엔트리를 경로로 조회한다.
     ///
     /// 직렬화기가 하드코딩 상수 대신 원본 바이트를 출력할지 결정할 때 사용한다.
@@ -377,6 +443,16 @@ impl Document {
             .iter()
             .find(|(p, _)| p == path)
             .map(|(_, d)| d.as_slice())
+    }
+
+    /// [#8310] 이 HWP 가 원본 HWPX 의 저장 줄 계약(원본 좌표·저장 줄 없음)을 지니는가.
+    ///
+    /// `/RhwpHwpxOrigin` 의 값이 [`HWPX_ORIGIN_SOURCE_LINES`] 일 때만 참이다. 종전 값(`1`)의
+    /// 변환본과 rhwp HWP3 출처 HWPX 에서 만든 HWP 는 종전처럼 HWP 규칙으로 줄을 읽는다.
+    pub fn hwpx_origin_keeps_source_lines(&self) -> bool {
+        self.extra_streams.iter().any(|(path, value)| {
+            path == HWPX_ORIGIN_STREAM_PATH && value == HWPX_ORIGIN_SOURCE_LINES
+        })
     }
 
     /// [#2403 Stage 1] 레이아웃 호환 정책 질의 표면.

@@ -51,4 +51,55 @@ pub struct Equation {
     /// 파일 속성이 아니며, 관련 수식 값이 바뀌면 렌더러가 재사용하지 않는다.
     #[serde(skip)]
     pub unpositioned_host_frame_seal: Option<DeclaredEquationFrameSource>,
+    /// 구형 저장 수식의 선언 프레임 출처. 새 IR에는 자동으로 부여하지 않는다.
+    #[serde(skip)]
+    pub legacy_source_frame_seal: Option<[u8; 32]>,
+}
+
+impl Equation {
+    /// 색·호스트 이동과 분리된 수식 내용 및 선언 프레임의 서명.
+    pub(crate) fn declared_frame_signature(&self) -> [u8; 32] {
+        crate::model::raw_provenance::record_digest(&(
+            &self.script,
+            &self.font_name,
+            &self.version_info,
+            self.font_size,
+            self.attr,
+            self.eqedit,
+            self.common.width,
+            self.common.height,
+            self.baseline,
+            self.common.size_protect,
+            self.common.treat_as_char,
+        ))
+    }
+
+    /// 파서가 읽기를 마친 구형 개체만 선언 프레임의 소유자로 봉인한다.
+    pub(crate) fn retain_legacy_source_frame(&mut self) {
+        self.legacy_source_frame_seal = (self.version_info.is_empty()
+            && self.font_name.eq_ignore_ascii_case("HYhwpEQ")
+            && self.common.treat_as_char
+            && self.attr & super::EQUATION_LINE_MODE_BIT == 0
+            && self.eqedit & super::EQUATION_LINE_MODE_BIT == 0
+            && self.font_size > 0
+            && self.common.width > 0
+            && self.common.width <= i32::MAX as u32
+            && self.common.height >= self.font_size
+            && self.common.height <= i32::MAX as u32
+            && (1..=100).contains(&self.baseline)
+            && !self.script.trim().is_empty())
+        .then(|| self.declared_frame_signature());
+    }
+
+    /// 내용·크기·범위가 편집된 개체에는 이전 저장 상자를 적용하지 않는다.
+    pub(crate) fn retains_legacy_source_frame(&self) -> bool {
+        self.legacy_source_frame_seal
+            .is_some_and(|signature| signature == self.declared_frame_signature())
+    }
+
+    /// 표시 세대는 파일 속성이다. 내용·크기 편집이나 JSON 왕복으로 사라지는
+    /// 런타임 캐시 출처를 조건으로 사용하지 않는다. 새 편집 수식은 Version 60이다.
+    pub(crate) fn uses_legacy_display(&self) -> bool {
+        self.version_info.is_empty() && self.font_name.eq_ignore_ascii_case("HYhwpEQ")
+    }
 }

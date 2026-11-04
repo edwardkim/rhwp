@@ -11,14 +11,16 @@ use crate::renderer::float_placement::is_para_topbottom_float;
 use crate::renderer::hwpunit_to_px;
 use crate::renderer::style_resolver::{ResolvedParaStyle, ResolvedStyleSet};
 use crate::renderer::typeset::{
-    empty_paragraph_fallback_line_metrics, line_has_tac_control,
-    para_is_treat_as_char_picture_only, text_line_is_picture_lead_in,
+    empty_paragraph_fallback_line_metrics, line_has_tac_control_with_storage,
+    para_is_treat_as_char_picture_only, text_line_is_picture_lead_in_with_storage,
 };
 
 use super::context::ParagraphFormatContext;
 use super::metrics::FormattedParagraph;
 
-pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
+pub(in crate::renderer::typeset) fn format_paragraph_for_flow_with_storage<
+    S: crate::storage::Storage,
+>(
     ctx: &ParagraphFormatContext<'_>,
     para: &Paragraph,
     composed: Option<&ComposedParagraph>,
@@ -26,11 +28,12 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
     column_width_px: Option<f64>,
     hwp3_body_reflow: bool,
     known_square_band: bool,
-) -> FormattedParagraph {
+    storage: &S,
+) -> Result<FormattedParagraph, S::Error> {
     let para_style_id = composed.map(|c| c.para_style_id as usize).unwrap_or(0);
     let para_style = styles.para_styles.get(para_style_id);
 
-    let recomposed = recompose_for_flow(
+    let recomposed = recompose_for_flow_with_storage(
         ctx,
         para,
         composed,
@@ -38,7 +41,8 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
         para_style,
         column_width_px,
         known_square_band,
-    );
+        storage,
+    )?;
     let composed = recomposed.as_ref().or(composed);
     // Reflow has no saved vertical ladder which could restore omitted spacing.
     // Reserve the same paragraph before-space consumed by the composed paint
@@ -56,8 +60,15 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
     // 이 이미 동일 역할을 담당하므로 이중 패딩이 발생 (한컴 PDF 대비 +48px excess, 4·5쪽
     // 누적 +17~30pt 사용자 피드백). zone 전환 패딩만 유지.
 
-    let (line_heights, line_spacings) =
-        resolve_line_metrics(ctx, para, composed, styles, para_style, column_width_px);
+    let (line_heights, line_spacings) = resolve_line_metrics_with_storage(
+        ctx,
+        para,
+        composed,
+        styles,
+        para_style,
+        column_width_px,
+        storage,
+    )?;
 
     let lines_total: f64 = line_heights
         .iter()
@@ -165,54 +176,88 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
     // 표 없는 일반 본문에는 배치용 줄 사본을 만들지 않는다.
     let computed_host_lines = recomposed
         .as_ref()
-        .filter(|_| {
-            para.controls.iter().any(|control| {
-                matches!(control,
-            Control::Table(table) if is_para_topbottom_float(&table.common))
+        .or_else(|| {
+            (para.stored_text_partition_is_dirty()
+                || crate::renderer::para_has_no_stored_line_segs(para))
+            .then_some(composed)
+            .flatten()
+        })
+        .filter(|comp| {
+            para.controls.iter().enumerate().any(|(index, control)| {
+                matches!(control, Control::Table(table)
+                    if is_para_topbottom_float(&table.common)
+                        || comp.frame_owns_inline_table(index))
             })
         })
-        .map(|comp| {
+        .map(|comp| -> Result<Vec<_>, S::Error> {
             // 높이 보정이 줄 수를 바꾼 다른 owner의 결과를 문자 경계에 억지로 zip하지 않는다.
             if comp.lines.len() != line_heights.len() || comp.lines.len() != line_spacings.len() {
-                return Vec::new();
+                return Ok(Vec::new());
             }
             let mut top = 0.0;
-            comp.lines
-                .iter()
-                .enumerate()
-                .map(|(i, line)| {
-                    let resolved = crate::renderer::float_placement::ParagraphHostLine {
-                        char_start: line.char_start,
-                        top,
-                        height: line_heights[i],
-                    };
-                    top += line_heights[i] + line_spacings[i];
-                    resolved
+            storage.collect(comp.lines.iter().enumerate().map(|(i, line)| {
+                let resolved = crate::renderer::float_placement::ParagraphHostLine {
+                    char_start: line.char_start,
+                    top,
+                    height: line_heights[i],
+                };
+                top += line_heights[i] + line_spacings[i];
+                resolved
+            }))
+        })
+        .transpose()?;
+    let host_composition = composed
+        .filter(|comp| {
+            computed_host_lines.is_some()
+                && !comp.lines.is_empty()
+                && comp.lines.len() == line_heights.len()
+                && comp.lines.len() == line_spacings.len()
+                && comp.lines.iter().enumerate().all(|(index, line)| {
+                    line_heights[index] == hwpunit_to_px(line.line_height, ctx.dpi())
+                        && line_spacings[index] == hwpunit_to_px(line.line_spacing, ctx.dpi())
                 })
-                .collect()
-        });
-    let tail_line_remaining_width = (|| {
+        })
+        .map(|comp| {
+            storage.bytes(
+                std::mem::size_of::<ComposedParagraph>() + 2 * std::mem::size_of::<usize>(),
+            )?;
+            Ok::<_, S::Error>(std::sync::Arc::new(crate::storage::try_clone(
+                comp, storage,
+            )?))
+        })
+        .transpose()?;
+    let tail_line_remaining_width = (|| -> Result<Option<f64>, S::Error> {
         if !para.controls.iter().any(|control| {
             matches!(control, Control::Table(table) if is_para_topbottom_float(&table.common))
         }) {
-            return None;
+            return Ok(None);
         }
-        let comp = composed?;
-        let line = comp.lines.last()?;
+        let Some(comp) = composed else {
+            return Ok(None);
+        };
+        let Some(line) = comp.lines.last() else {
+            return Ok(None);
+        };
         // Tabs need their resolved tab-stop positions, not font advances.
         // Do not manufacture a line miss from an unsupported measurement.
         if line.has_line_break || line.runs.iter().any(|run| run.text.contains('\t')) {
-            return None;
+            return Ok(None);
         }
-        let cw = column_width_px?;
-        let style = para_style?;
+        let Some(cw) = column_width_px else {
+            return Ok(None);
+        };
+        let Some(style) = para_style else {
+            return Ok(None);
+        };
         let available =
             cw - crate::renderer::equation_tac_flow::paragraph_effective_margin_left(
                 style.margin_left,
                 style.indent,
                 comp.lines.len() - 1,
             ) - style.margin_right;
-        let text_width = crate::renderer::composer::estimate_composed_line_width(line, styles);
+        let text_width = crate::renderer::composer::estimate_composed_line_width_with_storage(
+            line, styles, storage,
+        )?;
         let inline_width: f64 = comp
             .tac_controls
             .iter()
@@ -220,8 +265,11 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
             .map(|(_, width, _)| hwpunit_to_px(*width, ctx.dpi()))
             .sum();
         let remaining = available - text_width - inline_width;
-        (available.is_finite() && available > 0.0 && remaining.is_finite()).then_some(remaining)
-    })();
+        Ok(
+            (available.is_finite() && available > 0.0 && remaining.is_finite())
+                .then_some(remaining),
+        )
+    })()?;
     let exact_reflow_text_box = flow_spacing.is_some()
         && !known_square_band
         && !ctx.uniform_filler_ladder()
@@ -258,13 +306,15 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
                                 <= ctx.dpi() / 7200.0
                     })
         })
-        .cloned();
-    FormattedParagraph {
+        .map(|value| crate::storage::try_clone(value, storage))
+        .transpose()?;
+    Ok(FormattedParagraph {
         stored_ladder_is_filler: ctx.uniform_filler_ladder(),
         exact_reflow_text_box,
         computed_paragraph,
         tail_line_remaining_width,
         computed_host_lines,
+        host_composition,
         square_host_plan: None,
         total_height,
         line_heights,
@@ -273,11 +323,11 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
         spacing_after,
         height_for_fit,
         tac_outer_margin_v_px,
-    }
+    })
 }
 
 /// 기존 frame 재구성의 선택과 읽기 borrow 범위를 보존한다.
-fn recompose_for_flow(
+fn recompose_for_flow_with_storage<S: crate::storage::Storage>(
     ctx: &ParagraphFormatContext<'_>,
     para: &Paragraph,
     composed: Option<&ComposedParagraph>,
@@ -285,7 +335,8 @@ fn recompose_for_flow(
     para_style: Option<&ResolvedParaStyle>,
     column_width_px: Option<f64>,
     known_square_band: bool,
-) -> Option<ComposedParagraph> {
+    storage: &S,
+) -> Result<Option<ComposedParagraph>, S::Error> {
     // [Task #1042 Stage 6c] line_segs.empty paragraph 의 typeset/layout 측정 정합 —
     // paragraph_layout (렌더링 path) 는 Stage 6b 에서 recompose_for_cell_width 로 column
     // 기반 wrap 을 적용하지만, format_paragraph (typeset/measurement path) 는 원본
@@ -308,7 +359,17 @@ fn recompose_for_flow(
                 crate::renderer::composer::ParagraphBox::body_for_style(cw, para_style, ctx.dpi());
             // NO_LS 와 저장분할 both go to the frame.
             if inner > 0.0 {
-                crate::renderer::composer::recompose_stored_lines_in_frame_with_known_square_band(
+                let inline_table_heights = if ctx.profile().legacy_hwp3_stored_geometry() {
+                    Vec::new()
+                } else {
+                    crate::renderer::composer::reflow_inline_table_heights_with_storage(
+                        para,
+                        styles,
+                        ctx.dpi(),
+                        storage,
+                    )?
+                };
+                crate::renderer::composer::recompose_stored_lines_in_frame_with_known_square_band_with_storage(
                     c,
                     para,
                     paragraph_box,
@@ -321,25 +382,27 @@ fn recompose_for_flow(
                     known_square_band,
                     ctx.profile().hwpx_stored_layout(),
                     ctx.uniform_filler_ladder(),
-                    &[],
+                    &inline_table_heights,
+                    storage,
                 )
             } else {
-                None
+                Ok(None)
             }
         }
-        _ => None,
+        _ => Ok(None),
     }
 }
 
 /// 구성된 줄/저장 줄/빈 문단 경로의 기존 메트릭과 보정을 계산한다.
-fn resolve_line_metrics(
+fn resolve_line_metrics_with_storage<S: crate::storage::Storage>(
     ctx: &ParagraphFormatContext<'_>,
     para: &Paragraph,
     composed: Option<&ComposedParagraph>,
     styles: &ResolvedStyleSet,
     para_style: Option<&ResolvedParaStyle>,
     column_width_px: Option<f64>,
-) -> (Vec<f64>, Vec<f64>) {
+    storage: &S,
+) -> Result<(Vec<f64>, Vec<f64>), S::Error> {
     let ls_val = para_style.map(|s| s.line_spacing).unwrap_or(160.0);
     let ls_type = para_style
         .map(|s| s.line_spacing_type)
@@ -369,13 +432,13 @@ fn resolve_line_metrics(
         )
     });
     let (mut line_heights, mut line_spacings): (Vec<f64>, Vec<f64>) = if let Some(comp) = composed {
-        let tac_offsets_px: Vec<(usize, f64, usize)> = comp
-            .tac_controls
-            .iter()
-            .map(|(pos, width_hu, control_index)| {
-                (*pos, hwpunit_to_px(*width_hu, ctx.dpi()), *control_index)
-            })
-            .collect();
+        let tac_offsets_px: Vec<(usize, f64, usize)> = storage.collect(
+            comp.tac_controls
+                .iter()
+                .map(|(pos, width_hu, control_index)| {
+                    (*pos, hwpunit_to_px(*width_hu, ctx.dpi()), *control_index)
+                }),
+        )?;
         let line_available_width_px = |line_idx: usize| {
             column_width_px.map(|cw| {
                 let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
@@ -408,21 +471,18 @@ fn resolve_line_metrics(
                     .iter()
                     .all(|l| l.char_start == comp.lines[0].char_start)
             {
-                let hs: Vec<f64> = tacs
-                    .iter()
-                    .map(|(_, _, ci)| {
-                        para.controls
-                            .get(*ci)
-                            .and_then(|c| crate::renderer::tac_object_flow_height_px(c, ctx.dpi()))
-                            .unwrap_or(0.0)
-                    })
-                    .collect();
+                let hs: Vec<f64> = storage.collect(tacs.iter().map(|(_, _, ci)| {
+                    para.controls
+                        .get(*ci)
+                        .and_then(|c| crate::renderer::tac_object_flow_height_px(c, ctx.dpi()))
+                        .unwrap_or(0.0)
+                }))?;
                 (hs.iter().all(|h| *h > 8.0)).then_some(hs)
             } else {
                 None
             }
         };
-        let mut pairs = Vec::with_capacity(comp.lines.len());
+        let mut pairs = storage.vec(comp.lines.len())?;
         let mut prev_line_reserved_tac_picture_height: Option<f64> = None;
         for (line_idx, line) in comp.lines.iter().enumerate() {
             if !ctx.profile().session_edited() && !ctx.profile().hwp3_layout() {
@@ -432,19 +492,23 @@ fn resolve_line_metrics(
                     line_idx,
                     ctx.dpi(),
                 ) {
-                    pairs.push((height, hwpunit_to_px(line.line_spacing, ctx.dpi())));
+                    storage.push(
+                        &mut pairs,
+                        (height, hwpunit_to_px(line.line_spacing, ctx.dpi())),
+                    )?;
                     prev_line_reserved_tac_picture_height = None;
                     continue;
                 }
             }
             if let Some(ref hs) = stacked_tac_picture_heights {
                 let ls_px = hwpunit_to_px(line.line_spacing, ctx.dpi());
-                pairs.push((hs[line_idx], ls_px));
+                storage.push(&mut pairs, (hs[line_idx], ls_px))?;
                 prev_line_reserved_tac_picture_height = Some(hs[line_idx]);
                 continue;
             }
             let runs_all_whitespace = line.runs.iter().all(|r| r.text.trim().is_empty());
-            let line_has_tac_control = line_has_tac_control(para, comp, line_idx);
+            let line_has_tac_control =
+                line_has_tac_control_with_storage(para, comp, line_idx, storage)?;
             // [#6972] 저장 줄 높이가 TAC 개체 하나의 흐름 높이와 같으면 그 줄은
             // 개체가 **소유한 줄**이지 빈 guide 줄이 아니다. composer 가 두 줄에
             // 같은 char_start 를 실으면 `tac_control_indices_for_line` 의 char-range
@@ -470,7 +534,7 @@ fn resolve_line_metrics(
                     .iter()
                     .any(|(pos, _, _)| *pos == line.char_start);
             if empty_tac_guide_line {
-                pairs.push((0.0, 0.0));
+                storage.push(&mut pairs, (0.0, 0.0))?;
                 prev_line_reserved_tac_picture_height = None;
                 continue;
             }
@@ -498,7 +562,7 @@ fn resolve_line_metrics(
                             && cur.column_start != prev.column_start
                     });
             if horizontal_split_continuation {
-                pairs.push((0.0, 0.0));
+                storage.push(&mut pairs, (0.0, 0.0))?;
                 prev_line_reserved_tac_picture_height = None;
                 continue;
             }
@@ -520,7 +584,7 @@ fn resolve_line_metrics(
                 && !line_owns_tac_object
                 && !line_owns_tac_table
             {
-                pairs.push((0.0, 0.0));
+                storage.push(&mut pairs, (0.0, 0.0))?;
                 prev_line_reserved_tac_picture_height = None;
                 continue;
             }
@@ -531,8 +595,15 @@ fn resolve_line_metrics(
                 .map(|seg| hwpunit_to_px(seg.text_height, ctx.dpi()))
                 .unwrap_or(0.0);
             let max_fs = crate::renderer::composed_line_max_font_size(line, para, styles);
-            let text_before_picture_line =
-                text_line_is_picture_lead_in(para, comp, line_idx, raw_lh, max_fs, ctx.dpi());
+            let text_before_picture_line = text_line_is_picture_lead_in_with_storage(
+                para,
+                comp,
+                line_idx,
+                raw_lh,
+                max_fs,
+                ctx.dpi(),
+                storage,
+            )?;
             let tac_picture_height =
                 crate::renderer::line_owning_tac_object_height_px(para, raw_lh, ctx.dpi());
             let tac_picture_height = if text_before_picture_line {
@@ -552,14 +623,19 @@ fn resolve_line_metrics(
                     .map(|prev| (raw_lh - prev).abs() <= 8.0)
                     .unwrap_or(false)
             {
-                pairs.push((0.0, 0.0));
+                storage.push(&mut pairs, (0.0, 0.0))?;
                 prev_line_reserved_tac_picture_height = None;
                 continue;
             }
             // [#5854] 통짜 합성 사다리 문서는 저장 `line_height` 가 글자 크기보다
             // 크든 작든 실측이 아니다 — 항상 글꼴·문단 스타일로 다시 뽑는다.
+            let computed_empty_host = para.controls.iter().any(|control| {
+                matches!(control, Control::Table(table)
+                    if crate::renderer::float_placement::computed_empty_table_host(para, table))
+            });
             let recompute_lh = text_before_picture_line
-                || (max_fs > 0.0 && (raw_lh < max_fs || ctx.uniform_filler_ladder()));
+                || (max_fs > 0.0
+                    && (raw_lh < max_fs || ctx.uniform_filler_ladder() || computed_empty_host));
             let (lh, line_spacing_px) = if recompute_lh {
                 // [Task #1042 Stage 6c] HWP3/HWP5 line_segs 의 (line_height=base,
                 // line_spacing=extra) 의미와 정합되게 분해 — 종전 처럼 ls_val/100 전체를
@@ -598,14 +674,15 @@ fn resolve_line_metrics(
                 )
             };
             let extra_rows =
-                crate::renderer::equation_tac_flow::compute_equation_only_tac_line_flow(
+                crate::renderer::equation_tac_flow::compute_equation_only_tac_line_flow_with_storage(
                     Some(para),
                     comp,
                     &tac_offsets_px,
                     line_idx,
                     equation_line_available_width_px(0).unwrap_or(f64::INFINITY),
                     equation_line_available_width_px(1).unwrap_or(f64::INFINITY),
-                )
+                    storage,
+                )?
                 .map(|flow| flow.extra_rows)
                 .unwrap_or(0);
             // Pagination은 배치 cursor와 다른 예약 계약을 사용한다. 저장 사다리의
@@ -614,7 +691,26 @@ fn resolve_line_metrics(
             // HeightMeasurer의 fallback 측정 정합 범위이므로 typeset 예약 높이는
             // 종전 줄 상자를 유지한다.
             let flow_lh = lh + extra_rows as f64 * (lh + line_spacing_px);
-            pairs.push((flow_lh, line_spacing_px));
+            // 글자가 없는 개체 줄은 저장 사다리에서 다음 줄과 겹칠 수 있다(통계 보고서
+            // 첫 문단: 조판부호 줄과 글상자 줄이 모두 lh=3403 인데 vpos 500→600). 한글은
+            // 저장 vpos 차이만큼만 전진하므로 줄 상자를 통째로 쌓으면 뒤 내용이 그만큼
+            // (+44px) 밀린다.
+            let stored_overlap_advance =
+                crate::renderer::stored_line_ladder::stored_overlap_advance_hu(
+                    para,
+                    line_idx,
+                    comp.lines.len(),
+                    runs_all_whitespace,
+                )
+                .and_then(|advance| i32::try_from(advance).ok())
+                .map(|advance| hwpunit_to_px(advance, ctx.dpi()))
+                .filter(|advance| *advance < flow_lh + line_spacing_px);
+            if let Some(advance) = stored_overlap_advance {
+                storage.push(&mut pairs, (advance, 0.0))?;
+                prev_line_reserved_tac_picture_height = None;
+                continue;
+            }
+            storage.push(&mut pairs, (flow_lh, line_spacing_px))?;
             prev_line_reserved_tac_picture_height = tac_picture_height;
         }
         if pairs.is_empty() {
@@ -624,21 +720,22 @@ fn resolve_line_metrics(
                 para_style,
                 ctx.profile().hwp3_layout(),
             ) {
-                pairs.push(metric);
+                storage.push(&mut pairs, metric)?;
             }
         }
         // [#2287] 저장 LINE_SEG 없는 빈 anchor 문단의 TAC 그림/도형 —
         // composed lines 가 비어 문단 플로우가 0 으로 붕괴하는 것을
         // 개체 폭 greedy wrap 줄 메트릭 합성으로 방지.
         if pairs.is_empty() {
-            if let Some(metrics) = crate::renderer::tac_object_stack_line_metrics(
+            if let Some(metrics) = crate::renderer::tac_object_stack_line_metrics_with_storage(
                 para,
                 ctx.dpi(),
                 line_available_width_px(0),
                 styles,
                 para_style,
-            ) {
-                pairs.extend(metrics);
+                storage,
+            )? {
+                storage.extend(&mut pairs, metrics)?;
             }
         }
         // [#7418] 저장 줄 없는 글자처럼 취급 표 host — 표 줄의 줄간격을 잃지 않는다.
@@ -646,7 +743,7 @@ fn resolve_line_metrics(
             if let Some(metric) =
                 crate::renderer::tac_table_host_line_metrics(para, ctx.dpi(), styles, para_style)
             {
-                pairs.push(metric);
+                storage.push(&mut pairs, metric)?;
             }
         }
         // 저장 LINE_SEG가 전혀 없는 빈 문단도 composer는 placeholder line 하나를
@@ -661,25 +758,25 @@ fn resolve_line_metrics(
             ctx.profile().hwp3_layout(),
         ) {
             pairs.clear();
-            pairs.push(metric);
+            storage.push(&mut pairs, metric)?;
         }
-        pairs.into_iter().unzip()
+        storage.unzip(pairs)?
     } else if !para.line_segs.is_empty() {
-        para.line_segs
-            .iter()
-            .map(|seg| {
-                (
-                    hwpunit_to_px(seg.line_height, ctx.dpi()),
-                    hwpunit_to_px(seg.line_spacing, ctx.dpi()),
-                )
-            })
-            .unzip()
+        storage.unzip(para.line_segs.iter().map(|seg| {
+            (
+                hwpunit_to_px(seg.line_height, ctx.dpi()),
+                hwpunit_to_px(seg.line_spacing, ctx.dpi()),
+            )
+        }))?
     } else if let Some((lh, ls)) =
         empty_paragraph_fallback_line_metrics(para, styles, para_style, ctx.profile().hwp3_layout())
     {
-        (vec![lh], vec![ls])
+        (storage.collect([lh])?, storage.collect([ls])?)
     } else {
-        (vec![hwpunit_to_px(400, ctx.dpi())], vec![0.0])
+        (
+            storage.collect([hwpunit_to_px(400, ctx.dpi())])?,
+            storage.collect([0.0])?,
+        )
     };
     if has_treat_as_char_picture_shape
         && line_heights.len() == 2
@@ -719,8 +816,8 @@ fn resolve_line_metrics(
         && crate::renderer::layout::para_is_floating_overlay_anchor(para)
     {
         let line = &para.line_segs[0];
-        line_heights = vec![hwpunit_to_px(line.line_height, ctx.dpi())];
-        line_spacings = vec![hwpunit_to_px(line.line_spacing, ctx.dpi())];
+        line_heights = storage.collect([hwpunit_to_px(line.line_height, ctx.dpi())])?;
+        line_spacings = storage.collect([hwpunit_to_px(line.line_spacing, ctx.dpi())])?;
     } else if crate::renderer::layout::para_is_floating_overlay_anchor(para) {
         let (lh, ls) = empty_paragraph_fallback_line_metrics(
             para,
@@ -729,9 +826,9 @@ fn resolve_line_metrics(
             ctx.profile().hwp3_layout(),
         )
         .unwrap_or((hwpunit_to_px(400, ctx.dpi()), 0.0));
-        line_heights = vec![lh];
-        line_spacings = vec![ls];
+        line_heights = storage.collect([lh])?;
+        line_spacings = storage.collect([ls])?;
     }
 
-    (line_heights, line_spacings)
+    Ok((line_heights, line_spacings))
 }

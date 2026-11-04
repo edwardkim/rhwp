@@ -1,3 +1,7 @@
+//! 관계형·고정형: 글꼴 메트릭 coverage 집계의 수량·출처와 입력 불변성을 검사한다.
+//! 주석 갱신: 2026-10-31T23:52:21+09:00; 직전 파일 커밋: 2026-10-31T23:19:18+09:00 (d6b5b19b30e14d913d123651df75dbc01efc456c).
+//! 합성 문서와 samples/task-001.hwp의 분석 API 계약이다. 출력 전후 동일성만 비교하며 시각 일치율을 판정하지 않는다.
+//! 근거: mydocs/tech/README.md 및 #4962 coverage 분석 API의 검사 본문.
 use rhwp::document_core::DocumentCore;
 use std::collections::BTreeMap;
 
@@ -197,6 +201,72 @@ fn trace_width_source_counts(core: &DocumentCore) -> BTreeMap<String, u64> {
 }
 
 #[test]
+fn mixed_program_metrics_keep_each_decisions_font_names_without_mutating_output() {
+    // Ж 는 #8315 이후 함초롬바탕 기호 슬롯 hmtx 보충표로 실제 측정된다. 결측 쪽은
+    // 아래 W3 표와 같이 미할당 U+0378 로 만들어 앞으로의 폭 표 보충과 무관하게 둔다.
+    let core = public_blank_with_font_text("함초롬바탕", "\u{0378}😀\u{0378}");
+    let model = format!("{:?}", core.document());
+    let hwp = core.export_hwp_native().unwrap();
+    let hwpx = core.export_hwpx_native().unwrap();
+    let svg = core.render_page_svg_native(0).unwrap();
+    let trace: serde_json::Value = serde_json::from_str(
+        &core
+            .get_font_decision_trace_native(0, r#"{"maxCharacters":100}"#)
+            .unwrap(),
+    )
+    .unwrap();
+    let (_, aggregate) = coverage(&core);
+    assert_reconciled(&aggregate);
+    assert_private_data_absent(&aggregate);
+    assert_eq!(count(&aggregate, "/categories/char-miss"), 2);
+    assert_eq!(count(&aggregate, "/categories/exact-hit"), 1);
+    let mut expected = BTreeMap::new();
+    for record in trace["records"].as_array().unwrap() {
+        assert_eq!(record["source"]["status"], "complete");
+        let metric = &record["layoutMetric"];
+        let key = (
+            metric["requestedFace"].as_str().unwrap().to_owned(),
+            metric["aliasResolvedFace"].as_str().unwrap().to_owned(),
+            metric["metricEntry"].as_u64().unwrap(),
+            metric["widthSource"].as_str().unwrap().to_owned(),
+            metric["characterMatch"].as_str().unwrap().to_owned(),
+        );
+        *expected.entry(key).or_insert(0_u64) += 1;
+    }
+    assert_eq!(
+        expected.len(),
+        2,
+        "실제로 다른 두 프로그램을 소비하는 같은 언어 구간"
+    );
+    let actual: BTreeMap<_, _> = aggregate["decisionUsage"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|row| {
+            assert_eq!(row["font"], "함초롬바탕", "원문 선언 face는 유지한다");
+            (
+                (
+                    row["metricRequestedFace"].as_str().unwrap().to_owned(),
+                    row["metricResolvedFace"].as_str().unwrap().to_owned(),
+                    row["metricEntry"].as_u64().unwrap(),
+                    row["widthSource"].as_str().unwrap().to_owned(),
+                    row["characterMatch"].as_str().unwrap().to_owned(),
+                ),
+                row["charCount"].as_u64().unwrap(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        actual, expected,
+        "문자별 실제 entry·이름·출처·수량의 W2/W3 대조"
+    );
+    assert_eq!(format!("{:?}", core.document()), model);
+    assert_eq!(core.export_hwp_native().unwrap(), hwp);
+    assert_eq!(core.export_hwpx_native().unwrap(), hwpx);
+    assert_eq!(core.render_page_svg_native(0).unwrap(), svg);
+}
+
+#[test]
 fn public_fixture_aggregate_is_deterministic_reconciled_and_private() {
     let core = DocumentCore::from_bytes(include_bytes!("../../samples/task-001.hwp"))
         .expect("public fixture parses");
@@ -333,7 +403,15 @@ fn public_blank_derived_documents_reach_every_current_positive_category() {
             false,
         ),
         ("본한글", "가", "metric-surrogate", "embeddedMetric", false),
-        ("함초롬바탕", "😀", "char-miss", "heuristicHalfwidth", false),
+        // 이모지는 설치된 대체 글꼴에서 정상 측정될 수 있다. 미할당 U+0378로
+        // 실제 cmap 결측을 만들고, 출력 모양이 아닌 coverage 집계 계약을 검사한다.
+        (
+            "함초롬바탕",
+            "\u{0378}",
+            "char-miss",
+            "heuristicHalfwidth",
+            false,
+        ),
         (
             "W3 Missing Face",
             "A",
@@ -405,7 +483,7 @@ fn public_blank_derived_document_keeps_all_non_applicable_width_sources_out_of_c
     let expected = BTreeMap::from([
         ("clusterContinuation".to_string(), 2),
         ("literalFigureSpace".to_string(), 1),
-        ("heuristicFullwidth".to_string(), 1),
+        ("canonicalHangulMetric".to_string(), 1),
         ("heuristicHalfwidth".to_string(), 1),
         ("inlineObjectPlaceholder".to_string(), 1),
         ("tabAdvance".to_string(), 1),

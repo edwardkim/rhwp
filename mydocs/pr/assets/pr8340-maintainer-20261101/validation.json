@@ -1,0 +1,194 @@
+{
+  "studio": {
+    "passed": 2713,
+    "skipped": 2,
+    "failed": 0
+  },
+  "cell_block_focused": {
+    "passed": 20,
+    "failed": 0
+  },
+  "routing_history_focused": {
+    "passed": 32,
+    "failed": 0
+  },
+  "rust_cell_vpos_minimal_font": {
+    "passed": 10,
+    "filtered": 319,
+    "failed": 0
+  },
+  "actual_wasm_driver": "PASS: depth 2/3, block/range/caret, captions, undo/redo, HWP/HWPX",
+  "actual_browser": {
+    "documents": 2,
+    "actual_depth": 2,
+    "selected_paragraphs_per_nested_table": 2,
+    "toolbar_alignment": "PASS",
+    "keyboard_undo_redo": "PASS",
+    "f5_full_nested_table_block": "PASS",
+    "unselected_nested_table_unchanged": "PASS"
+  },
+  "public_type_consumer": {
+    "before": "TS2551 for all three new methods",
+    "after": 0,
+    "source_branch_minimal_correction_after": 0
+  },
+  "studio_typecheck": 0,
+  "studio_production_build": 0,
+  "states": 20,
+  "native_pages": 20,
+  "wasm_pages": 20,
+  "all_independent_page_counts_match": true,
+  "raw_minimum_native": 100,
+  "raw_minimum_wasm": 100,
+  "below_90": 0,
+  "base_decline_over_2pp": 0,
+  "live_vs_saved": {
+    "states": 16,
+    "max_text_bbox_delta_px": 0
+  },
+  "full_local_rust_and_native_library": "Reused exact contributor source-head Full CI 40631025065 under clean current-base simulation; no Rust source/test correction by maintainer. Fresh Native/WASM, focused checks, Studio and visual checks were executed locally.",
+  "logs": [
+    {
+      "name": "base-native-build.log",
+      "sha256": "d917f2a2a0f5f5cc6704d269ff570aaf1817ba52dea2d015a9ccfc6926cac413",
+      "bytes": 234
+    },
+    {
+      "name": "candidate-wasm-build.log",
+      "sha256": "caa97bfe0c92cedc3d66d3429c98b26e041628f6a5d0749e4fcc3f63b619ae02",
+      "bytes": 2342
+    },
+    {
+      "name": "candidate-native-build.log",
+      "sha256": "6c86b63ddcde094276e81fb44d5af30633ad69050e7f02c1ebaa183c8790f0f6",
+      "bytes": 1949
+    },
+    {
+      "name": "cell-block-focused.log",
+      "sha256": "1bb09b5b15a1b723204c13097d7252f78d6d82476505e8c9c06ef4343bf1bef4",
+      "bytes": 1900
+    },
+    {
+      "name": "routing-history-focused.log",
+      "sha256": "b5d35e689d4b637210821d834e7e21a2186e719e774260a66619a5240fd554b4",
+      "bytes": 3984
+    },
+    {
+      "name": "rust-cell-vpos-focused.log",
+      "sha256": "53e3a878b4f61e148ec016655b936ea131c7d4c13eb7eb7770a5691215950c46",
+      "bytes": 3787
+    },
+    {
+      "name": "nested-wasm-focused.log",
+      "sha256": "9a5d1c3e50ba7ab595cdda2af2d8761dba58acbeaa1b7412739fbab1520a0d9f",
+      "bytes": 726
+    },
+    {
+      "name": "studio-all-tests.log",
+      "sha256": "3eaf35c91c34e45966f1d2504c582f5874e1738cfd5d855741c3f4532059cb2f",
+      "bytes": 268714
+    },
+    {
+      "name": "studio-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "name": "public-types-before.log",
+      "sha256": "fdb929860f1f78b0e0cccd1bc07f1e243017569012709843c8245ea02f0678a2",
+      "bytes": 598
+    },
+    {
+      "name": "public-types-after.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "name": "studio-typecheck-after-binding.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "name": "studio-production-build.log",
+      "sha256": "d7cbd43d8f912b1636a4f3d10547d624816daecd8dc7ba1bcfc0c62bccb4b1f4",
+      "bytes": 2022
+    },
+    {
+      "name": "studio-all-tests-minimal-font.log",
+      "sha256": "49bcac35b1812eb12f0a2328205bddeb7eddf4afcedd17a8237aa7711cc84439",
+      "bytes": 268595
+    }
+  ],
+  "studio_minimal_font": {
+    "passed": 2713,
+    "skipped": 2,
+    "failed": 0,
+    "font_receipt": "font-isolation.json"
+  },
+  "commands": [
+    {
+      "name": "base-native",
+      "command": "CARGO_TARGET_DIR=<shared-review-target> CARGO_BUILD_JOBS=14 cargo build --locked --profile release-test --features native-skia --lib --bin rhwp",
+      "source": "1a7ae8f5bd17ebc22b281fd1915973e18e4e641f",
+      "exit": 0
+    },
+    {
+      "name": "candidate-wasm",
+      "command": "CARGO_TARGET_DIR=<shared-review-target> CARGO_BUILD_JOBS=14 bash scripts/wasm-pack-locked.sh --target web --out-dir pkg --release --mode no-install",
+      "source": "bc4da7875991725d7bdcef78e0e11e2ddf2929ad",
+      "exit": 0
+    },
+    {
+      "name": "candidate-native",
+      "command": "CARGO_TARGET_DIR=<shared-review-target> CARGO_BUILD_JOBS=14 cargo build --locked --profile release-test --features native-skia --lib --bin rhwp",
+      "source": "bc4da7875991725d7bdcef78e0e11e2ddf2929ad",
+      "exit": 0
+    },
+    {
+      "name": "focused-rust",
+      "command": "node scripts/run-rust-test.mjs issue_6639_cell_para_format_vpos -- --cargo-profile release-test --target-dir <shared-review-target> --features native-skia --test-threads 6",
+      "environment": "bubblewrap minimal project fonts; see font-isolation.json",
+      "exit": 0
+    },
+    {
+      "name": "focused-wasm",
+      "command": "node tests/support/nested-paragraph-format.runner.mjs",
+      "cwd": "rhwp-studio",
+      "exit": 0
+    },
+    {
+      "name": "studio",
+      "command": "npm test",
+      "cwd": "rhwp-studio",
+      "environment": "host run and a second bubblewrap minimal-font run",
+      "exit": 0
+    },
+    {
+      "name": "typecheck",
+      "command": "npx tsc --noEmit",
+      "cwd": "rhwp-studio",
+      "exit": 0
+    },
+    {
+      "name": "production-build",
+      "command": "RHWP_WITHOUT_HWPCTRL=1 npm run build",
+      "cwd": "rhwp-studio",
+      "exit": 0
+    },
+    {
+      "name": "public-consumer",
+      "command": "npx tsc --ignoreConfig --noEmit --skipLibCheck --module nodenext --moduleResolution nodenext --target es2022 <public-types-probe.ts>",
+      "cwd": "rhwp-studio",
+      "exit": 0
+    }
+  ],
+  "existing_regressions": {
+    "file": "tests/cases/issue_7419_no_ls_tac_row_growth.rs",
+    "scope": [
+      "nested-same-line",
+      "nested-width-wrap"
+    ],
+    "findings": "Existing same-line/wrap ownership checks are relational. The independent Print title-coordinate checks use qualified ±2px; current two fixtures are Native/fresh WASM raw 100% and were directly inspected. No expectation or baseline was changed."
+  },
+  "final_source_candidate_runtime_equivalence": "All runtime/test blobs equal tested integration after clean merge with base 1a7ae8f5bd17; public declarations semantically equal, generated ordering retained."
+}

@@ -1,0 +1,308 @@
+{
+  "base": "238de6de41a208648f4ade6b494fe433a81c1fce",
+  "scope": "Six affected existing conditions and original two-page RowBreak; no new real HWP",
+  "max_drop_pp": "0.1",
+  "whole_pages_per_backend": 96,
+  "records": [
+    {
+      "key": "impact-4599",
+      "backend": "native",
+      "input": "samples/issue4599/1790387_policy_progress.hwpx",
+      "pdf": "pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf",
+      "input_sha256": "947e51913c561611397c4f7d88feaad7112da4adc658b21cbfd9471e00192411",
+      "pdf_sha256": "4c0d9d0876410766d99f4589916971f97b751a3d71901068637c7e2cc1061f95",
+      "whole_pages": 64,
+      "files": {
+        "base": {
+          "path": "impact/native/base/impact-4599.tsv",
+          "sha256": "6f787f7db6a400656e57a095d14912194345198515c4d31e1b8182078b5a4dd8"
+        },
+        "candidate": {
+          "path": "impact/native/candidate/impact-4599.tsv",
+          "sha256": "70ffb6f64be624091b12cbf27317702a7edea4eed1decd408ae4c31e5e8e9c16"
+        }
+      },
+      "capture_manifest_sha256": "43990e07f8ae92f9ed9e927302529c83c6892fc18ae912872a0cffcb56ed795a",
+      "candidate_raw_min": "92.04708"
+    },
+    {
+      "key": "impact-4599",
+      "backend": "wasm",
+      "input": "samples/issue4599/1790387_policy_progress.hwpx",
+      "pdf": "pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf",
+      "input_sha256": "947e51913c561611397c4f7d88feaad7112da4adc658b21cbfd9471e00192411",
+      "pdf_sha256": "4c0d9d0876410766d99f4589916971f97b751a3d71901068637c7e2cc1061f95",
+      "whole_pages": 64,
+      "files": {
+        "base": {
+          "path": "impact/wasm/base/impact-4599.tsv",
+          "sha256": "9b524dc18886f338fc67733c4e6e3c42cb523256ce3f3992ab2efcde8b5b59aa"
+        },
+        "candidate": {
+          "path": "impact/wasm/candidate/impact-4599.tsv",
+          "sha256": "c13f210d6be3a2e8c58fbe231b5a9438726b75f42f701c9942b33e751aed0936"
+        }
+      },
+      "capture_manifest_sha256": "f65762f77481419b4f63e9cd0038df73b703672fa581e287e609a9d5360cf323",
+      "candidate_raw_min": "92.02762"
+    },
+    {
+      "key": "impact-6970",
+      "backend": "native",
+      "input": "tests/fixtures/issue_6970/synth_no_ls_square_wrap.hwp",
+      "pdf": "pdf/synth_no_ls_square_wrap-2020.pdf",
+      "input_sha256": "31a5b76148718d92e3fd150f4d68b84b5005b02d16863c4735a6178eb02f2799",
+      "pdf_sha256": "41156c2d3294d49bdb7091ea4f27d0e2b1e6ff40e04e64da3ff3209876d68110",
+      "whole_pages": 3,
+      "files": {
+        "base": {
+          "path": "impact/native/base/impact-6970.tsv",
+          "sha256": "3efef7191be73630d041167c9da816ef1fa8968f9f5ab693da8f4164787fa730"
+        },
+        "candidate": {
+          "path": "impact/native/candidate/impact-6970.tsv",
+          "sha256": "e3d0b5d18289215c5de0a91d86f67b8ba1cff25759b2c7d7224a0089d7955256"
+        }
+      },
+      "capture_manifest_sha256": "a2b9eda63b2b4c42f4fbc160a820365f1d521474472eb6ea0ac3d4ab2da8e929",
+      "candidate_raw_min": "99.79447"
+    },
+    {
+      "key": "impact-6970",
+      "backend": "wasm",
+      "input": "tests/fixtures/issue_6970/synth_no_ls_square_wrap.hwp",
+      "pdf": "pdf/synth_no_ls_square_wrap-2020.pdf",
+      "input_sha256": "31a5b76148718d92e3fd150f4d68b84b5005b02d16863c4735a6178eb02f2799",
+      "pdf_sha256": "41156c2d3294d49bdb7091ea4f27d0e2b1e6ff40e04e64da3ff3209876d68110",
+      "whole_pages": 3,
+      "files": {
+        "base": {
+          "path": "impact/wasm/base/impact-6970.tsv",
+          "sha256": "f8a137bf67e637be87593f3cd60d315827d9b4c5a7afd042003939b864af9d09"
+        },
+        "candidate": {
+          "path": "impact/wasm/candidate/impact-6970.tsv",
+          "sha256": "4cb5435ac3c5a85c755ac47e81cba710afcb0295bbfd85b6f06ab30addea34a0"
+        }
+      },
+      "capture_manifest_sha256": "5edb1b4663f1f37ad8e13d4b5a21d5faa592a8a23161bffbc7eacff518848944",
+      "candidate_raw_min": "91.53306"
+    },
+    {
+      "key": "impact-7518",
+      "backend": "native",
+      "input": "tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-split.hwp",
+      "pdf": "pdf/pr7518_review/print-20261024/nested-split-2020.pdf",
+      "input_sha256": "0f4d41b7a4de244f9032ea26d0cac2b66db446a35d16a62421a58ed0276002c0",
+      "pdf_sha256": "a0b889f66d6415a8c4b554e15f28fba92c509f331301e072b087781c8b449a97",
+      "whole_pages": 6,
+      "files": {
+        "base": {
+          "path": "impact/native/base/impact-7518.tsv",
+          "sha256": "4d5ee2caa009561be38041efa149207a43f0bbf7e360a0f609c40eb676baef55"
+        },
+        "candidate": {
+          "path": "impact/native/candidate/impact-7518.tsv",
+          "sha256": "8e54743dc228cdebee37ae59d5a15a883c09398f513ad3886ab21cbd322cbd3a"
+        }
+      },
+      "capture_manifest_sha256": "c75105fe34a421bb690964702e02d1b642973e3ebd1c797853b60afcbd816f25",
+      "candidate_raw_min": "99.96132"
+    },
+    {
+      "key": "impact-7518",
+      "backend": "wasm",
+      "input": "tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-split.hwp",
+      "pdf": "pdf/pr7518_review/print-20261024/nested-split-2020.pdf",
+      "input_sha256": "0f4d41b7a4de244f9032ea26d0cac2b66db446a35d16a62421a58ed0276002c0",
+      "pdf_sha256": "a0b889f66d6415a8c4b554e15f28fba92c509f331301e072b087781c8b449a97",
+      "whole_pages": 6,
+      "files": {
+        "base": {
+          "path": "impact/wasm/base/impact-7518.tsv",
+          "sha256": "14925ffa1e9f9aad577cbdf48163ebd892a4df015f0e8e07fe98b452dd794232"
+        },
+        "candidate": {
+          "path": "impact/wasm/candidate/impact-7518.tsv",
+          "sha256": "f28e55836783902214bb6f7c2cac4d69627eb256ef167d9a68068455eab54f6a"
+        }
+      },
+      "capture_manifest_sha256": "5ccb8bcace036b5caa7d103c26ec927496eb781ee5e4db9ce899d7a69908cee8",
+      "candidate_raw_min": "99.95693"
+    },
+    {
+      "key": "impact-intrinsic_heavy_face_20261026",
+      "backend": "native",
+      "input": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "pdf": "pdf/pr8025_review/monthly-trade-original-2020.pdf",
+      "input_sha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e",
+      "pdf_sha256": "cd3798dd11f32ae9ccb0e6f300005c9f6fd0bf141b5349920e0a5cd1a0340912",
+      "whole_pages": 19,
+      "files": {
+        "base": {
+          "path": "impact/native/base/impact-intrinsic_heavy_face_20261026.tsv",
+          "sha256": "fa78236a507370c7b4450e4f4e3d5e1dcc7393c46dba0b4818ff185b0c16614f"
+        },
+        "candidate": {
+          "path": "impact/native/candidate/impact-intrinsic_heavy_face_20261026.tsv",
+          "sha256": "6e0215f6d9f822abcfd3754ff90fdc209abcc385a5e21f61e356a17334aeea0f"
+        }
+      },
+      "capture_manifest_sha256": "d600c05114adae81c26296482547eea9fffd2764ad638a0b63d4add490ee18c1",
+      "candidate_raw_min": "96.62490"
+    },
+    {
+      "key": "impact-intrinsic_heavy_face_20261026",
+      "backend": "wasm",
+      "input": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "pdf": "pdf/pr8025_review/monthly-trade-original-2020.pdf",
+      "input_sha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e",
+      "pdf_sha256": "cd3798dd11f32ae9ccb0e6f300005c9f6fd0bf141b5349920e0a5cd1a0340912",
+      "whole_pages": 19,
+      "files": {
+        "base": {
+          "path": "impact/wasm/base/impact-intrinsic_heavy_face_20261026.tsv",
+          "sha256": "cfe2c6390ac6f9512a68c0d8d1d2b39fc13d886ccf4a14464305d096e00f56a5"
+        },
+        "candidate": {
+          "path": "impact/wasm/candidate/impact-intrinsic_heavy_face_20261026.tsv",
+          "sha256": "8d133d953bfc418a39d18d9ddd530829901e821e5f132a96314382016d7af195"
+        }
+      },
+      "capture_manifest_sha256": "2e04b7266942b2107bd73e961c942ae13021b8fb4c0a3fea5f9aaf3774ea7222",
+      "candidate_raw_min": "96.89977"
+    },
+    {
+      "key": "impact-ta-pic-001-r",
+      "backend": "native",
+      "input": "samples/hwpx/ta-pic-001-r.hwpx",
+      "pdf": "mydocs/pr/assets/caption_autonumber_projection_20261021/pdf/ta-pic-001-r-2020.pdf",
+      "input_sha256": "bec0bb48113109907f9003f5e27745bb834267adcb80dfd332ad98388c0fdd81",
+      "pdf_sha256": "1710ddc838c9976f28d6570717c41c34b1e2e0c92cab4458a32f845b45c31218",
+      "whole_pages": 1,
+      "files": {
+        "base": {
+          "path": "impact/native/base/impact-ta-pic-001-r.tsv",
+          "sha256": "ab6a5aa82e5fe1c2ec986eb3084e7e6ecc600bc548f5e353acdb1b404da51450"
+        },
+        "candidate": {
+          "path": "impact/native/candidate/impact-ta-pic-001-r.tsv",
+          "sha256": "ab6a5aa82e5fe1c2ec986eb3084e7e6ecc600bc548f5e353acdb1b404da51450"
+        }
+      },
+      "capture_manifest_sha256": "cf1ba5dcc4d8c4c9ec58bd8d10ed8e1a989628b0c9ed205a17c2988413619b0e",
+      "candidate_raw_min": "99.98107"
+    },
+    {
+      "key": "impact-ta-pic-001-r",
+      "backend": "wasm",
+      "input": "samples/hwpx/ta-pic-001-r.hwpx",
+      "pdf": "mydocs/pr/assets/caption_autonumber_projection_20261021/pdf/ta-pic-001-r-2020.pdf",
+      "input_sha256": "bec0bb48113109907f9003f5e27745bb834267adcb80dfd332ad98388c0fdd81",
+      "pdf_sha256": "1710ddc838c9976f28d6570717c41c34b1e2e0c92cab4458a32f845b45c31218",
+      "whole_pages": 1,
+      "files": {
+        "base": {
+          "path": "impact/wasm/base/impact-ta-pic-001-r.tsv",
+          "sha256": "cb227351f0a7f566a8959d54635d31be706ec53d428dfc29e41999d05b679711"
+        },
+        "candidate": {
+          "path": "impact/wasm/candidate/impact-ta-pic-001-r.tsv",
+          "sha256": "cb227351f0a7f566a8959d54635d31be706ec53d428dfc29e41999d05b679711"
+        }
+      },
+      "capture_manifest_sha256": "9a2c875639090e210fad5367d7ff3586c7d66cbfbbabd211df1156fc00811818",
+      "candidate_raw_min": "99.98109"
+    },
+    {
+      "key": "impact-ta-pic-caption-tight",
+      "backend": "native",
+      "input": "mydocs/pr/assets/caption_autonumber_projection_20261021/inputs/ta-pic-caption-tight.hwpx",
+      "pdf": "mydocs/pr/assets/caption_autonumber_projection_20261021/pdf/ta-pic-caption-tight-2020.pdf",
+      "input_sha256": "32cdf807f2a9ceae26671a07ab88ea69bcbc5e2082a6aabe75ae265b2e5b8c4f",
+      "pdf_sha256": "0800c0ffc142e50abb76b4db6f69a8201c0849813c924e928b10893a4947f9d8",
+      "whole_pages": 1,
+      "files": {
+        "base": {
+          "path": "impact/native/base/impact-ta-pic-caption-tight.tsv",
+          "sha256": "ab6a5aa82e5fe1c2ec986eb3084e7e6ecc600bc548f5e353acdb1b404da51450"
+        },
+        "candidate": {
+          "path": "impact/native/candidate/impact-ta-pic-caption-tight.tsv",
+          "sha256": "ab6a5aa82e5fe1c2ec986eb3084e7e6ecc600bc548f5e353acdb1b404da51450"
+        }
+      },
+      "capture_manifest_sha256": "7bd6025831869c711c253431d9e15f413c8627eee2cb23b85816826d7ae6483c",
+      "candidate_raw_min": "99.98107"
+    },
+    {
+      "key": "impact-ta-pic-caption-tight",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/caption_autonumber_projection_20261021/inputs/ta-pic-caption-tight.hwpx",
+      "pdf": "mydocs/pr/assets/caption_autonumber_projection_20261021/pdf/ta-pic-caption-tight-2020.pdf",
+      "input_sha256": "32cdf807f2a9ceae26671a07ab88ea69bcbc5e2082a6aabe75ae265b2e5b8c4f",
+      "pdf_sha256": "0800c0ffc142e50abb76b4db6f69a8201c0849813c924e928b10893a4947f9d8",
+      "whole_pages": 1,
+      "files": {
+        "base": {
+          "path": "impact/wasm/base/impact-ta-pic-caption-tight.tsv",
+          "sha256": "c8cbffa4196bdea582e6da9bb82a836204b6db95f8c6b465bc4f5fded2f1fe33"
+        },
+        "candidate": {
+          "path": "impact/wasm/candidate/impact-ta-pic-caption-tight.tsv",
+          "sha256": "c8cbffa4196bdea582e6da9bb82a836204b6db95f8c6b465bc4f5fded2f1fe33"
+        }
+      },
+      "capture_manifest_sha256": "be480e29ebf066261bfa1d65bee1cbc9e6f24e441888ffdf7051bbd321b9cda8",
+      "candidate_raw_min": "99.98110"
+    },
+    {
+      "key": "pr8055-normal-rowbreak",
+      "backend": "native",
+      "input": "mydocs/pr/assets/float_fragment_frames_20261020/inputs/hwp/public-rowbreak-normalized-2020.hwp",
+      "pdf": "mydocs/pr/assets/float_fragment_frames_20261020/pdf/hwp/public-rowbreak-normalized-2020-2020.pdf",
+      "input_sha256": "5c6e9dcc37c42de5f2d4c9972eb339e476672ac60da02135e7ec2e483d5ed34d",
+      "pdf_sha256": "93cc27c42b7db35f13e8925c651c883e90b390e68bbf068ad4865e2437bec22f",
+      "whole_pages": 2,
+      "files": {
+        "base": {
+          "path": "impact/native/base/pr8055-normal-rowbreak.tsv",
+          "sha256": "4ae312ebb8ab928d2f173adae23b35d1b7da62677fd89f22435c70e6b8ec73a0"
+        },
+        "candidate": {
+          "path": "impact/native/candidate/pr8055-normal-rowbreak.tsv",
+          "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c"
+        }
+      },
+      "capture_manifest_sha256": "738f6715d8ef0c5c6d78b8027d4ca97b8f187785c3338f009ca16e9010591fee",
+      "candidate_raw_min": "100.00000"
+    },
+    {
+      "key": "pr8055-normal-rowbreak",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/float_fragment_frames_20261020/inputs/hwp/public-rowbreak-normalized-2020.hwp",
+      "pdf": "mydocs/pr/assets/float_fragment_frames_20261020/pdf/hwp/public-rowbreak-normalized-2020-2020.pdf",
+      "input_sha256": "5c6e9dcc37c42de5f2d4c9972eb339e476672ac60da02135e7ec2e483d5ed34d",
+      "pdf_sha256": "93cc27c42b7db35f13e8925c651c883e90b390e68bbf068ad4865e2437bec22f",
+      "whole_pages": 2,
+      "files": {
+        "base": {
+          "path": "impact/wasm/base/pr8055-normal-rowbreak.tsv",
+          "sha256": "b4765793efdbc18fe14390557c5e613d2534309b651e8cc155e39894d192aaf8"
+        },
+        "candidate": {
+          "path": "impact/wasm/candidate/pr8055-normal-rowbreak.tsv",
+          "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c"
+        }
+      },
+      "capture_manifest_sha256": "b082ebd526616420871c470e4adf8bfd98cba5831478d9dc8d954c93390d8d86",
+      "candidate_raw_min": "100.00000"
+    }
+  ],
+  "comparison": {
+    "path": "impact-comparison.tsv",
+    "sha256": "12ba9f90122fb932bf7bb233e2a262edac0059c6fd14973ba9294749b24fdb96"
+  },
+  "drop_over_0_1_pp": 0,
+  "below_90": 0
+}

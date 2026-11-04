@@ -1,0 +1,105 @@
+{
+  "date": "2026-10-29",
+  "scope": "새 시스템 글꼴 설치 후 #7723 Native 1·4·22·38쪽 진단",
+  "input": "samples/hwp3-sample16-hwp5-2010.hwp",
+  "input_sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
+  "reference_pdf": "pdf/hwp3-sample16-hwp5-2010-issue7723-mcp-2024.pdf",
+  "reference_pdf_sha256": "4b03e8f1325654b423f4e2975890309c44b70cf3a1b1083879097aff2ad09c6a",
+  "method": "Native Skia, print, 96dpi, compat 2024. 명시 폰트 경로 없이 현 시스템 글꼴을 사용한 결과와 같은 PDF PNG의 이전 명시적 글꼴 공급 대조군을 나란히 표시한다.",
+  "fontconfig_family_matches": [
+    {
+      "requested_family": "중간공한",
+      "fontconfig_path": "/usr/local/share/fonts/hft2ttf/Konghan-HFT.otf",
+      "sha256": "e19def2bac01355fb0f4b5cc732dbcbf983e890b017b38d9c9f8f1d65f352a80",
+      "cmap_count": 11267,
+      "contains_hangul_eung": true,
+      "contains_latin_A": true
+    },
+    {
+      "requested_family": "HCI Poppy",
+      "fontconfig_path": "/usr/local/share/fonts/issue8160/original-poppy-complete-symbols/poppy-original-complete-symbols.otf",
+      "sha256": "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341",
+      "cmap_count": 1370,
+      "contains_hangul_eung": false,
+      "contains_latin_A": true
+    },
+    {
+      "requested_family": "한양신명조",
+      "fontconfig_path": "/usr/local/share/fonts/win10-all-hft-20261029/ENSMJ.otf",
+      "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+      "cmap_count": 738,
+      "contains_hangul_eung": false,
+      "contains_latin_A": true
+    },
+    {
+      "requested_family": "휴먼명조",
+      "fontconfig_path": "/usr/local/share/fonts/win10-all-hft-20261029/HMKSM.otf",
+      "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d",
+      "cmap_count": 11230,
+      "contains_hangul_eung": true,
+      "contains_latin_A": false
+    },
+    {
+      "requested_family": "맑은 고딕",
+      "fontconfig_path": "/usr/local/share/fonts/hancom-office-2020/Install/malgun.ttf",
+      "sha256": "6706a05313c7fafb3fd8fda9538c9ecabac7cede30076b3ea85be7716f356702",
+      "cmap_count": 20548,
+      "contains_hangul_eung": true,
+      "contains_latin_A": true
+    }
+  ],
+  "fontconfig_hanyang_eung_match": "/usr/local/share/fonts/issue8160/original-hanyang-complete-symbols/hanyang-original-complete-symbols.otf",
+  "fontconfig_hanyang_A_match": "/usr/local/share/fonts/win10-all-hft-20261029/ENSMJ.otf",
+  "pages": [
+    {
+      "page": 1,
+      "current_system_fonts_raw": 99.28159,
+      "prior_explicit_font_supply_raw": 99.2802,
+      "pdf_png_sha256": "86908c655e179d707d60eac4b67e66e15b2a3fabcaf5ec9153b95fb477dfb98b",
+      "current_png_sha256": "d4c0658fa84a04511f64cc5ecc3a5739700db43723f505fa1dbde5c8e6ca4880"
+    },
+    {
+      "page": 4,
+      "current_system_fonts_raw": 99.38157,
+      "prior_explicit_font_supply_raw": 99.33339,
+      "pdf_png_sha256": "233b1cc2439e272bbd99c632af3e2f2c48650ac55310dd9c665400afb01f19d2",
+      "current_png_sha256": "f090199af2f0e34eb5617905df605151fc95d1f98a24d8d78c02e70a956dbf4c"
+    },
+    {
+      "page": 22,
+      "current_system_fonts_raw": 98.29509,
+      "prior_explicit_font_supply_raw": 98.24607,
+      "pdf_png_sha256": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e",
+      "current_png_sha256": "fadc940c7a63d904c5bb570fd89dd56dec2871ca91cbd28e59a945d441c6c6d8"
+    },
+    {
+      "page": 38,
+      "current_system_fonts_raw": 99.14395,
+      "prior_explicit_font_supply_raw": 99.21033,
+      "pdf_png_sha256": "264421c6701c63294b9194a5944e12375ca0d3518f9a9de837b7624ca96617b1",
+      "current_png_sha256": "11eaee5e9abcf7b566a42c6c091eb7888591ed1a6607645e5b00d24226de0bd0"
+    }
+  ],
+  "result": "네 쪽 모두 새 MCP 기준 100% 미만이다. 단순 family 조회는 한양신명조 영문 전용 프로그램을 먼저 고르지만 문자별 Fontconfig 조회에서는 한글용 원본 프로그램을 고른다. 실제 Native 백엔드의 글리프별 선택을 이 조회만으로 확정하지 않는다.",
+  "limitations": [
+    "이전 대조군과 글꼴 공급 조건이 달라 수치 차이를 코드 회귀로 해석하지 않는다.",
+    "네 쪽만 진단했으며 전쪽 또는 WASM의 현재 시스템 글꼴 결과는 확인하지 않았다.",
+    "시스템 글꼴에 의존하는 회귀 검사를 새로 추가하지 않았다."
+  ],
+  "page22_layout_font_trace": {
+    "date": "2026-10-29",
+    "command": "rhwp-q font-trace samples/hwp3-sample16-hwp5-2010.hwp --page 21 --max-characters 4096 --json",
+    "query_binary_sha256": "7c69385e8c2275e2db92b4cf7d0f7e3fb86119ef3efe7b3649e4f00efc0b93ef",
+    "records": 1346,
+    "layout_hash": "28878a7f1e9c5f4a15fb11813e2642d120beb87b5c3ff059a3d18dddfb3ac12c",
+    "normalized_hash": "870272cad1456251170218a473a4b2f6e56a41549660acd8ccbccc9d99ed369d",
+    "matches_prior_trace": true,
+    "native_backend_observation": {
+      "reasons": [
+        "nativeRendererSnapshotRequired"
+      ],
+      "status": "unsupported"
+    },
+    "interpretation": "이전과 현재 조회의 조판 trace 해시는 같지만 native renderer snapshot이 없어 실제 Skia 글리프 선택이나 시각 일치율을 증명하지 않는다. 이전 조회 바이너리 해시가 기록되지 않아 이 결과만으로 글꼴 설치 외 환경이 모두 같았다고 주장하지 않는다."
+  }
+}

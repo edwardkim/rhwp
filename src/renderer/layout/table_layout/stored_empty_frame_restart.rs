@@ -105,7 +105,7 @@ impl LayoutEngine {
         {
             return false;
         }
-        let owners = Self::row_cut_cell_order(table, row);
+        let owners = self.indexed_row_cut_cell_order(table, row);
         let [index] = owners.as_slice() else {
             return false;
         };

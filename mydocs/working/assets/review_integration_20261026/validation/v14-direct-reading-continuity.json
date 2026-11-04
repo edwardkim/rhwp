@@ -1,0 +1,159 @@
+{
+  "recorded_at": "2026-10-27T02:24:04.903421+00:00",
+  "records": [
+    {
+      "key": "fiscal-anchor",
+      "page": 1,
+      "previous_source": "8b7f48e6929030cc53e324c0ffba637616c28213",
+      "current_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+      "previous_actual_png_sha256": "58b53f8cea6b148578c2477a397baeaac38b5d98767ead0e90fabd11a8b67900",
+      "current_actual_png_sha256": "58b53f8cea6b148578c2477a397baeaac38b5d98767ead0e90fabd11a8b67900",
+      "byte_identical": true,
+      "direct_reading_reused": "Previously opened Native vs independent Print comparison images for the same exact pixel bytes."
+    },
+    {
+      "key": "fiscal-anchor",
+      "page": 2,
+      "previous_source": "8b7f48e6929030cc53e324c0ffba637616c28213",
+      "current_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+      "previous_actual_png_sha256": "34a803bd7283a4cabc31d6c2ad31db198360bc093fd8277dece3f9cc5dc490e0",
+      "current_actual_png_sha256": "34a803bd7283a4cabc31d6c2ad31db198360bc093fd8277dece3f9cc5dc490e0",
+      "byte_identical": true,
+      "direct_reading_reused": "Previously opened Native vs independent Print comparison images for the same exact pixel bytes."
+    },
+    {
+      "key": "fiscal-anchor",
+      "page": 3,
+      "previous_source": "8b7f48e6929030cc53e324c0ffba637616c28213",
+      "current_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+      "previous_actual_png_sha256": "d1c22ea0c8c726f9b5aa2b81dea0ae00a73bacd11a4f337148434cb29f8bd0d7",
+      "current_actual_png_sha256": "d1c22ea0c8c726f9b5aa2b81dea0ae00a73bacd11a4f337148434cb29f8bd0d7",
+      "byte_identical": true,
+      "direct_reading_reused": "Previously opened Native vs independent Print comparison images for the same exact pixel bytes."
+    },
+    {
+      "key": "picture-countercase-picture-flow-tail-gap-only-fit-no-ls",
+      "page": 2,
+      "previous_source": "8b7f48e6929030cc53e324c0ffba637616c28213",
+      "current_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+      "previous_actual_png_sha256": "73b527eaa92d2de453c2efb4778ee997e684cc1a613d6fca5d02362b664d8c28",
+      "current_actual_png_sha256": "73b527eaa92d2de453c2efb4778ee997e684cc1a613d6fca5d02362b664d8c28",
+      "byte_identical": true,
+      "direct_reading_reused": "Previously opened Native vs independent Print comparison images for the same exact pixel bytes."
+    },
+    {
+      "key": "picture-countercase-picture-flow-tail-gap-boundary-no-ls",
+      "page": 2,
+      "previous_source": "8b7f48e6929030cc53e324c0ffba637616c28213",
+      "current_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+      "previous_actual_png_sha256": "ba6d0ead15304f74741111495a8c799dec5c68b36e26147c6d9f4f9b8177c343",
+      "current_actual_png_sha256": "ba6d0ead15304f74741111495a8c799dec5c68b36e26147c6d9f4f9b8177c343",
+      "byte_identical": true,
+      "direct_reading_reused": "Previously opened Native vs independent Print comparison images for the same exact pixel bytes."
+    },
+    {
+      "key": "picture-countercase-picture-flow-column-transition-no-ls",
+      "page": 2,
+      "previous_source": "8b7f48e6929030cc53e324c0ffba637616c28213",
+      "current_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+      "previous_actual_png_sha256": "8bfb7d16f12d121fa7485f7f1c0b27754529dc5c949c5813ec0bc6f27432bf6d",
+      "current_actual_png_sha256": "8bfb7d16f12d121fa7485f7f1c0b27754529dc5c949c5813ec0bc6f27432bf6d",
+      "byte_identical": true,
+      "direct_reading_reused": "Previously opened Native vs independent Print comparison images for the same exact pixel bytes."
+    },
+    {
+      "key": "picture-countercase-picture-flow-mixed-center-row-no-ls",
+      "page": 2,
+      "previous_source": "8b7f48e6929030cc53e324c0ffba637616c28213",
+      "current_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+      "previous_actual_png_sha256": "26adbe29aea9a98270e6934f7f1c37c02a894a0aded576c54383e9fe6adce3bd",
+      "current_actual_png_sha256": "26adbe29aea9a98270e6934f7f1c37c02a894a0aded576c54383e9fe6adce3bd",
+      "byte_identical": true,
+      "direct_reading_reused": "Previously opened Native vs independent Print comparison images for the same exact pixel bytes."
+    },
+    {
+      "key": "onsemiro-hwp",
+      "page": 42,
+      "previous_actual_path": "output/pr-review/planet6897-20261026/v12/native/onsemiro-hwp/rhwp_png/rhwp_042.png",
+      "current_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+      "previous_actual_png_sha256": "d23af32ae703645801feb12e0b55549889ebe15308e327a20a39fdd7591ade5a",
+      "current_actual_png_sha256": "d23af32ae703645801feb12e0b55549889ebe15308e327a20a39fdd7591ade5a",
+      "byte_identical": true,
+      "direct_reading_reused": true
+    },
+    {
+      "key": "onsemiro-hwpx",
+      "page": 42,
+      "previous_actual_path": "output/pr-review/planet6897-20261026/v12/native/onsemiro-hwpx/rhwp_png/rhwp_042.png",
+      "current_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+      "previous_actual_png_sha256": "beb0779916471376a6ab1028e00a18e0628ca243994182f5e75b9602edc696d0",
+      "current_actual_png_sha256": "beb0779916471376a6ab1028e00a18e0628ca243994182f5e75b9602edc696d0",
+      "byte_identical": true,
+      "direct_reading_reused": true
+    },
+    {
+      "key": "nested-height-cache",
+      "page": 11,
+      "previous_actual_path": "mydocs/working/assets/review_integration_20261026/validation/detail/native/nested-height-cache-p011.png",
+      "current_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+      "previous_actual_png_sha256": "9b2398f7db7f32d33eff8d1e345db7624439971619997a268c5ddd2ccf093810",
+      "current_actual_png_sha256": "9b2398f7db7f32d33eff8d1e345db7624439971619997a268c5ddd2ccf093810",
+      "byte_identical": true,
+      "direct_reading_reused": true
+    },
+    {
+      "key": "hairline-sungeo",
+      "page": 34,
+      "previous_actual_path": "mydocs/working/assets/review_integration_20261026/validation/detail/native/hairline-sungeo-p034.png",
+      "current_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+      "previous_actual_png_sha256": "042017e85890a5d07827972f424030cae1a3b5aa5eca3bce99f000af0f800978",
+      "current_actual_png_sha256": "042017e85890a5d07827972f424030cae1a3b5aa5eca3bce99f000af0f800978",
+      "byte_identical": true,
+      "direct_reading_reused": true,
+      "directly_viewed_current": true
+    },
+    {
+      "key": "hwpml-spec-2020",
+      "page": 23,
+      "previous_actual_path": "mydocs/working/assets/review_integration_20261026/validation/detail/native/hwpml-spec-2020-p023.png",
+      "current_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+      "previous_actual_png_sha256": "16f644fe5e46c696a8a570ea8ac16090a5b26877e0b9efa8b0cf740e066bfb11",
+      "current_actual_png_sha256": "16f644fe5e46c696a8a570ea8ac16090a5b26877e0b9efa8b0cf740e066bfb11",
+      "byte_identical": true,
+      "direct_reading_reused": true,
+      "directly_viewed_current": true
+    },
+    {
+      "key": "hwpml-spec-2020",
+      "page": 54,
+      "previous_actual_path": "mydocs/working/assets/review_integration_20261026/validation/detail/native/hwpml-spec-2020-p054.png",
+      "current_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+      "previous_actual_png_sha256": "13c70440485b1f92721f38c68159ed2b22b812a6a1ec7c71f5b766aaa248563f",
+      "current_actual_png_sha256": "13c70440485b1f92721f38c68159ed2b22b812a6a1ec7c71f5b766aaa248563f",
+      "byte_identical": true,
+      "direct_reading_reused": true,
+      "directly_viewed_current": true
+    },
+    {
+      "key": "hwp5-spec-official",
+      "page": 20,
+      "previous_actual_path": "mydocs/working/assets/review_integration_20261026/validation/detail/native/hwp5-spec-official-p020.png",
+      "current_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+      "previous_actual_png_sha256": "d7376c9b613c6078ff7fba5ee62b42756d1e34c040d97b3943bdec82536ef806",
+      "current_actual_png_sha256": "d7376c9b613c6078ff7fba5ee62b42756d1e34c040d97b3943bdec82536ef806",
+      "byte_identical": true,
+      "direct_reading_reused": true
+    },
+    {
+      "key": "hwp5-spec-official",
+      "page": 31,
+      "previous_actual_path": "mydocs/working/assets/review_integration_20261026/validation/detail/native/hwp5-spec-official-p031.png",
+      "current_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+      "previous_actual_png_sha256": "1b111cc982a1f4f8f690fc55e9d886d1d713c778abc9c905f4a55b07df4a03d0",
+      "current_actual_png_sha256": "1b111cc982a1f4f8f690fc55e9d886d1d713c778abc9c905f4a55b07df4a03d0",
+      "byte_identical": true,
+      "direct_reading_reused": true
+    }
+  ],
+  "scope": "Fifteen detailed/control Native image continuity checks. Three archived detail pages were also opened again against independent Print and their retained appearance differences are recorded in v14-native-reading-notes.json."
+}

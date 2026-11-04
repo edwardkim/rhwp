@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "source_sha": "503e53e9463d242ee26b5aedf4bda251538cbe49",
+  "profile": "release + wasm-opt",
+  "command": "CARGO_TARGET_DIR=/home/edward/mygithub/rhwp/target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg",
+  "artifacts": {
+    "rhwp.js": {
+      "sha256": "d5a84985620c90581d6078773cb46445a3237075a3b216a04130fe7e7e18c25b",
+      "bytes": 523516
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "b2b50b86aa1a041cfd61022a92248d545aa0910fbe58895fe5bae87553de63c7",
+      "bytes": 26183706
+    }
+  },
+  "finished_at": "2026-11-02T16:18:28.312583+09:00"
+}

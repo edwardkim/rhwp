@@ -3,12 +3,27 @@
 use super::dispatch::{classify_command, EqCommandClass};
 use super::tokenizer::{self, Token, TokenType};
 
+/// 파일 속성의 표시 세대를 측정과 모든 실제 배치 경로에 함께 전달한다.
+pub(crate) fn parse(equation: &crate::model::control::Equation) -> super::ast::EqNode {
+    let tokens = tokenize_with_display(&equation.script, equation.uses_legacy_display());
+    super::parser::EqParser::for_equation(tokens, equation).parse()
+}
+
 /// bare LaTeX 전용 이름은 문서에서 일반 문자다. 인자와 첨자는 원래 토큰을
 /// 유지한다. 백슬래시의 문서 해석도 공개 LaTeX API와 구분한다.
 pub(crate) fn tokenize(script: &str) -> Vec<Token> {
+    tokenize_with_display(script, false)
+}
+
+fn tokenize_with_display(script: &str, legacy_display: bool) -> Vec<Token> {
     let normalized = super::legacy_hwpeq::normalize(script);
     let script = normalized.as_deref().unwrap_or(script);
-    let mut tokens = tokenizer::Tokenizer::for_document(script).tokenize();
+    let lexer = if legacy_display {
+        tokenizer::Tokenizer::for_legacy_document(script)
+    } else {
+        tokenizer::Tokenizer::for_document(script)
+    };
+    let mut tokens = lexer.tokenize();
     let chars: Vec<char> = script.chars().collect();
     let mut roman_literal = false;
     for token in &mut tokens {

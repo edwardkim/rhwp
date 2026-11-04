@@ -117,6 +117,7 @@ impl NativeDocumentSession {
             // change. set_font_environment checks batch/validation errors before
             // mutating; only infallible assignments follow its success here.
             self.core.set_font_environment(next.environment.clone())?;
+            renderer.prepare_native_otf_fonts(&mut self.core)?;
             self.renderer = std::cell::OnceCell::from(renderer);
             self.fonts = next;
             self.font_generation = generation;

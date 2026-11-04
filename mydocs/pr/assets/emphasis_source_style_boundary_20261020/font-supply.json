@@ -1,0 +1,9 @@
+{
+  "scope": "the original sweep explicitly supplies these font bytes; fonts are not copied into assets",
+  "files": [
+    {
+      "filename": "00-8664669bd2d6-HANBatang.ttf",
+      "sha256": "8664669bd2d6a4fe8b7538706d2bb2a1004c074aa02dca59051e515e731294f5"
+    }
+  ]
+}

@@ -287,7 +287,7 @@ serde-wasm-bindgen = { version = "0.6", optional = true }
 pdfium-render = { version = "0.9", optional = true }
 
 # Rendering (optional - for page to image conversion)
-tiny-skia = { version = "0.12", optional = true }
+tiny-skia = { version = "0.12", default-features = false, features = ["std", "simd"] }
 fast_image_resize = { version = "6", optional = true }                          # SIMD-accelerated image downscaling
 hayro-jbig2 = { version = "0.3", optional = true, default-features = false }    # Pure-Rust JBIG2 decoder (Apache-2.0 OR MIT)
 hayro-jpeg2000 = { version = "0.4", optional = true, default-features = false } # Pure-Rust JPEG 2000 decoder, no_std + WASM-safe (Apache-2.0 OR MIT)
@@ -469,7 +469,7 @@ jpeg2000 = ["dep:hayro-jpeg2000"]
 
 # Page rendering to images (pure Rust via tiny-skia)
 rendering = [
-    "dep:tiny-skia",
+    "tiny-skia/png-format",
     "dep:fast_image_resize",
     "system-fonts",
     "dep:hayro-jbig2",

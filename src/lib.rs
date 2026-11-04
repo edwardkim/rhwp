@@ -19,11 +19,13 @@ pub mod model;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod native_host;
 pub mod ole_chart;
+pub(crate) mod storage;
 pub use rhwp_contracts::ontology;
 pub use rhwp_ooxml_chart as ooxml_chart;
 pub mod paint;
 pub mod parser;
 pub use rhwp_password_crypto as password_crypto;
+pub mod pdf_runtime;
 pub mod pdf_support;
 pub mod plan_schema;
 pub mod pq_sign;
@@ -31,6 +33,9 @@ pub use rhwp_contracts::provenance;
 pub mod rag;
 pub mod render_backend;
 pub mod renderer;
+/// Experimental Native host supervision; request counters remain independent.
+#[cfg(not(target_arch = "wasm32"))]
+pub mod resource_supervisor;
 pub mod scaffold;
 pub mod schema_registry;
 pub mod security_trailer;
@@ -50,6 +55,8 @@ pub mod wasm_api;
 pub mod wmf;
 
 pub use document_core::DocumentCore;
+#[cfg(feature = "pdf-import")]
+pub use document_core::PdfImportSession;
 pub use error::HwpError;
 pub use model::event::DocumentEvent;
 pub use parser::{parse_document, parse_document_with_password, DocumentParser};

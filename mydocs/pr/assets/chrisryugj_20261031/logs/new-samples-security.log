@@ -1,0 +1,30 @@
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+    Finished `release-test` profile [optimized] target(s) in 0.23s
+────────────
+ Nextest run ID 9ee95268-d79b-490c-b4a8-5839e664d69c with nextest profile: default
+    Starting 20 tests across 55 binaries (12232 tests skipped)
+        PASS [   0.014s] ( 1/20) rhwp::regression_suite_012 security_corpus_regression::positive_corpus_hidden_text_vector_is_caught
+        PASS [   0.011s] ( 2/20) rhwp::regression_suite_018 injection_scan_contract::duplicate_input_paths_are_usage_errors
+        PASS [   0.032s] ( 3/20) rhwp::regression_suite_012 security_corpus_regression::new_sample_documents_are_clean_across_all_three_detectors
+        PASS [   0.037s] ( 4/20) rhwp::regression_suite_012 security_corpus_regression::positive_corpus_injection_vector_is_caught
+        PASS [   0.048s] ( 5/20) rhwp::regression_suite_012 security_corpus_regression::positive_corpus_unicode_vector_is_caught
+        PASS [   0.009s] ( 6/20) rhwp::regression_suite_018 injection_scan_contract::help_documents_the_default_scope
+        PASS [   0.022s] ( 7/20) rhwp::regression_suite_018 injection_scan_contract::failures_write_nothing_to_stdout
+        PASS [   0.071s] ( 8/20) rhwp::regression_suite_018 injection_scan_contract::clean_document_reports_null_highest_confidence
+        PASS [   0.091s] ( 9/20) rhwp::regression_suite_012 security_corpus_regression::all_three_envelopes_share_a_consistent_clean_and_array_contract
+        PASS [   0.028s] (10/20) rhwp::regression_suite_018 injection_scan_contract::new_normal_sample_documents_are_clean
+        PASS [   0.126s] (11/20) rhwp::regression_suite_018 injection_scan_contract::include_fields_widens_the_declared_scope
+        PASS [   0.233s] (12/20) rhwp::regression_suite_018 injection_scan_contract::envelope_shape_is_stable
+        PASS [   0.189s] (13/20) rhwp::regression_suite_018 injection_scan_contract::scan_does_not_modify_the_document
+        PASS [   0.336s] (14/20) rhwp::regression_suite_018 injection_scan_contract::min_confidence_high_filters_low_and_medium
+        PASS [   0.271s] (15/20) rhwp::regression_suite_018 injection_scan_contract::scan_does_not_sanitize_the_payload_out_of_the_document
+        PASS [   0.457s] (16/20) rhwp::regression_suite_018 injection_scan_contract::capabilities_and_mcp_declare_the_command_consistently
+        PASS [   0.382s] (17/20) rhwp::regression_suite_018 injection_scan_contract::tool_directive_uses_the_live_registry_not_a_hardcoded_list
+        PASS [   1.200s] (18/20) rhwp::regression_suite_012 security_corpus_regression::allowlisted_documents_still_actually_trigger_detection
+        PASS [   1.632s] (19/20) rhwp::regression_suite_018 injection_scan_contract::each_kind_has_a_red_to_green_case
+        PASS [   1.777s] (20/20) rhwp::regression_suite_018 injection_scan_contract::lookalike_official_sentences_stay_clean
+────────────
+     Summary [   1.853s] 20 tests run: 20 passed, 12232 skipped
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+info: update nextest with cargo nextest self update, or bypass check with --override-version-check

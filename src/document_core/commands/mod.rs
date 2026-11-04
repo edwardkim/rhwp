@@ -9,6 +9,7 @@ mod clone_identity;
 // 필드로 쓰이므로 pub(crate).
 pub(crate) mod delete_fragment;
 mod document;
+pub(crate) use document::HwpExportSnapshot;
 mod source_line_ladder;
 // [jb] 외부 문서(다른 서식표)를 커서에 끼워 넣기 — 한글 클립보드 문서모델 붙여넣기용
 mod cell_format_origin;
@@ -20,6 +21,7 @@ mod header_footer_ops;
 mod html_import;
 mod object_ops;
 pub(crate) mod paragraph_block;
+mod paragraph_format_path;
 pub use object_ops::{TableColumnWidths, TableCreationOptions};
 pub(crate) mod picture_transform_journal;
 // [#3565] 대형 문서 결함을 이분법으로 좁히기 위한 쪽 범위 추출.

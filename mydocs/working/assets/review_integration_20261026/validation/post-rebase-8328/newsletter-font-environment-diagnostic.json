@@ -1,0 +1,104 @@
+{
+  "status": "unresolved_prior_environment",
+  "source": "samples/issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
+  "pdf": "pdf/review-integration-20261026/newsletter-korean-2020.pdf",
+  "note": "same prior binary and new candidate match in current system; isolating newly installed font paths alone does not reproduce prior result; do not claim cause or threshold pass",
+  "runs": {
+    "prior_before_font_refresh": {
+      "input_sha256": "70a6663e75fefedc001b2c249bd20f5b994596954120740252f484b1892e2097",
+      "pdf_sha256": "4c1cbc3a4a08a5682ea4b4561874c1c8cf261cdba1c961d8e439c7e9a10e7a24",
+      "rhwp_binary_sha256": "4be33bcbd8321197d0aea218321c6af3177479eedeada751f5ad8659a9e6b321",
+      "tsv_sha256": "78c4560d30d88c122a09b040a52f8083de4db5354f3bb098b32b018272b72748",
+      "pages": [
+        {
+          "page": "1",
+          "raw": "97.56961",
+          "rhwp_png_sha256": "3b5e2020a055d101eb6cd073fba47903d1fa6feb34add4426331c46115576c23",
+          "pdf_png_sha256": "faf32834c7f14dd5e077b1fa69cf047a4ebe61659466be701df9cd654168a56f"
+        },
+        {
+          "page": "2",
+          "raw": "93.09501",
+          "rhwp_png_sha256": "16bf3c0da18a2d4d9d5b5ada63ca94912bc23b3c2af9429574e149417b2fc57d",
+          "pdf_png_sha256": "92dac4b45fcf034c3e116ffdc64383285089f2f6c58052496256c46794183ca8"
+        }
+      ]
+    },
+    "candidate_current_fonts": {
+      "input_sha256": "70a6663e75fefedc001b2c249bd20f5b994596954120740252f484b1892e2097",
+      "pdf_sha256": "4c1cbc3a4a08a5682ea4b4561874c1c8cf261cdba1c961d8e439c7e9a10e7a24",
+      "rhwp_binary_sha256": "2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0",
+      "tsv_sha256": "c3111573b2b1c7b997fe11ad474b61d7dff45b9e8dd5b9240d3c3dba85f3f8fb",
+      "pages": [
+        {
+          "page": "1",
+          "raw": "97.55114",
+          "rhwp_png_sha256": "92ff1286d11e780d4241d14133b8befe51aa8a1c0daad971c394288007d2c394",
+          "pdf_png_sha256": "faf32834c7f14dd5e077b1fa69cf047a4ebe61659466be701df9cd654168a56f"
+        },
+        {
+          "page": "2",
+          "raw": "92.81548",
+          "rhwp_png_sha256": "f93655cb394748a210a29744096e00da80a57069d49b35c1b9e179eaeb752a21",
+          "pdf_png_sha256": "92dac4b45fcf034c3e116ffdc64383285089f2f6c58052496256c46794183ca8"
+        }
+      ]
+    },
+    "prior_binary_current_fonts": {
+      "input_sha256": "70a6663e75fefedc001b2c249bd20f5b994596954120740252f484b1892e2097",
+      "pdf_sha256": "4c1cbc3a4a08a5682ea4b4561874c1c8cf261cdba1c961d8e439c7e9a10e7a24",
+      "rhwp_binary_sha256": "5a8c2ef8a95330e685ab61073cdf149d256f253310fd946005ff63010fe84f2e",
+      "tsv_sha256": "c3111573b2b1c7b997fe11ad474b61d7dff45b9e8dd5b9240d3c3dba85f3f8fb",
+      "pages": [
+        {
+          "page": "1",
+          "raw": "97.55114",
+          "rhwp_png_sha256": "92ff1286d11e780d4241d14133b8befe51aa8a1c0daad971c394288007d2c394",
+          "pdf_png_sha256": "faf32834c7f14dd5e077b1fa69cf047a4ebe61659466be701df9cd654168a56f"
+        },
+        {
+          "page": "2",
+          "raw": "92.81548",
+          "rhwp_png_sha256": "f93655cb394748a210a29744096e00da80a57069d49b35c1b9e179eaeb752a21",
+          "pdf_png_sha256": "92dac4b45fcf034c3e116ffdc64383285089f2f6c58052496256c46794183ca8"
+        }
+      ]
+    },
+    "candidate_mask_new_paths": {
+      "input_sha256": "70a6663e75fefedc001b2c249bd20f5b994596954120740252f484b1892e2097",
+      "pdf_sha256": "4c1cbc3a4a08a5682ea4b4561874c1c8cf261cdba1c961d8e439c7e9a10e7a24",
+      "rhwp_binary_sha256": "2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0",
+      "tsv_sha256": "c3111573b2b1c7b997fe11ad474b61d7dff45b9e8dd5b9240d3c3dba85f3f8fb",
+      "pages": [
+        {
+          "page": "1",
+          "raw": "97.55114",
+          "rhwp_png_sha256": "92ff1286d11e780d4241d14133b8befe51aa8a1c0daad971c394288007d2c394",
+          "pdf_png_sha256": "faf32834c7f14dd5e077b1fa69cf047a4ebe61659466be701df9cd654168a56f"
+        },
+        {
+          "page": "2",
+          "raw": "92.81548",
+          "rhwp_png_sha256": "f93655cb394748a210a29744096e00da80a57069d49b35c1b9e179eaeb752a21",
+          "pdf_png_sha256": "92dac4b45fcf034c3e116ffdc64383285089f2f6c58052496256c46794183ca8"
+        }
+      ]
+    }
+  },
+  "bold_font_isolation_20261028": {
+    "source_face": "맑은 고딕",
+    "excluded_font": "/home/tsjang/.local/share/fonts/rhwp-validation/malgunbd.ttf",
+    "excluded_font_sha256": "a541834fb9cdde9bd6d2c3ff1565cb0bb5ccf7a15e4e9daf2cb58d9b1cf282aa",
+    "method": "Fontconfig isolated process only, reject specified bold face; candidate native binary, 96dpi, page 2",
+    "isolated_rhwp_png_sha256": "16bf3c0da18a2d4d9d5b5ada63ca94912bc23b3c2af9429574e149417b2fc57d",
+    "historical_rhwp_png_sha256": "16bf3c0da18a2d4d9d5b5ada63ca94912bc23b3c2af9429574e149417b2fc57d",
+    "fixed_historical_pdf_png_sha256": "92dac4b45fcf034c3e116ffdc64383285089f2f6c58052496256c46794183ca8",
+    "historical_pair_raw_percent": 93.09501,
+    "current_font_pair_raw_percent": 92.81548,
+    "current_vs_historical_drop_pp": 0.27953,
+    "isolated_process_pdf_png_sha256": "c49d968abcee5289047c87bb2325204bfa752ec3e2e16a8fc926f02d54c20ab3",
+    "isolated_process_raw_percent": 92.14437,
+    "note": "같은 PDF 파일도 Fontconfig 차이로 PDFium 래스터가 달라질 수 있어 기존 PDF PNG를 고정하여 원래 점수를 검증했다. 설치된 글꼴이나 전역 설정을 변경하지 않았다. 원 점수 기준 미달은 유지한다."
+  },
+  "prior_before_binary_correction": "실제 원본 실행 manifest는 4be33b… 바이너리를 기록한다. 종전 5a8c2e…는 현재 글꼴 대조에 사용한 다른 이전 바이너리였으므로 정정했다."
+}

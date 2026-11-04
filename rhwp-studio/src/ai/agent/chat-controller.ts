@@ -7,6 +7,7 @@
 import type { PluginHost } from '@/plugin/types';
 import { StudioCommandError } from '../../core/command-error.ts';
 import type { AiContext } from '../ai-context.ts';
+import type { AiProviderId } from '../provider/models.ts';
 import type { AiProvider, AiToolCall, AiToolResult } from '../provider/types.ts';
 import { AiProviderError } from '../provider/types.ts';
 import { READ_TOOL_DEFS, executeReadTool, type ToolHost } from '../tools/read-tools.ts';
@@ -31,10 +32,13 @@ import { runAgent, type AgentCallbacks, type AgentRunResult } from './agent-loop
 import { ChatSession } from './chat-session.ts';
 import { AI_SYSTEM_PROMPT } from './system-prompt.ts';
 
-export type ProviderFactory = (apiKey: string) => Promise<AiProvider>;
+export type ProviderFactory = (apiKey: string, provider: AiProviderId) => Promise<AiProvider>;
 
 /** 읽기 → 쓰기 → 명령 통로 순서를 고정한다(요청 접두가 같아야 캐시가 유지된다). */
 export const AI_TOOL_DEFS = [...READ_TOOL_DEFS, ...WRITE_TOOL_DEFS, ...COMMAND_TOOL_DEFS];
+
+/** 대화를 새로 시작한 까닭 — 화면 안내 문구를 고른다. */
+export type ChatResetReason = 'document' | 'provider';
 
 export type ProposalOutcome = 'applied' | 'rejected' | 'stopped' | 'failed';
 
@@ -55,10 +59,10 @@ function isDocumentReleased(error: unknown): boolean {
   return (error as { code?: unknown } | null)?.code === 'DOCUMENT_RELEASED';
 }
 
-/** SDK 는 처음 질문할 때 불러온다. */
-const defaultProviderFactory: ProviderFactory = async (apiKey) => {
-  const { ClaudeProvider } = await import('../provider/claude.ts');
-  return new ClaudeProvider(apiKey);
+/** 고른 제공자의 adapter 는 처음 질문할 때 불러온다. */
+const defaultProviderFactory: ProviderFactory = async (apiKey, provider) => {
+  const { createProvider } = await import('../provider/registry.ts');
+  return createProvider(provider, apiKey);
 };
 
 export class ChatController {
@@ -71,7 +75,12 @@ export class ChatController {
   private readonly host: PluginHost;
   private readonly providerFactory: ProviderFactory;
   private running: AbortController | null = null;
-  private resetListeners = new Set<() => void>();
+  private resetListeners = new Set<(reason: ChatResetReason) => void>();
+  /**
+   * 지금 이력을 만든 제공자. 이력의 assistant 칸은 제공자 원형이라 다른 제공자에 보낼 수 없다 —
+   * 설정에서 제공자가 바뀌면 대화를 새로 시작한다.
+   */
+  private sessionProvider: AiProviderId | null = null;
   private presenter: ProposalPresenter | null = null;
   /** AI 가 스스로 새 문서를 만드는 중인가 — 그 교체로는 대화를 끊지 않는다. */
   private ownSwap = false;
@@ -84,6 +93,9 @@ export class ChatController {
     this.providerFactory = providerFactory;
     host.onDocumentSwap(() => {
       if (!this.ownSwap) this.reset();
+    });
+    ctx.onChange(() => {
+      if (this.sessionProvider !== null && this.sessionProvider !== ctx.settings.provider) this.reset('provider');
     });
   }
 
@@ -109,9 +121,10 @@ export class ChatController {
 
     const abort = new AbortController();
     this.running = abort;
+    this.sessionProvider = settings.provider;
     this.applyRestOfRun = false;
     try {
-      const provider = await this.providerFactory(apiKey);
+      const provider = await this.providerFactory(apiKey, settings.provider);
       const toolHost: ToolHost = this.host;
       return await runAgent({
         provider,
@@ -237,13 +250,14 @@ export class ChatController {
   }
 
   /** 대화를 새로 시작한다. 진행 중이면 먼저 끊는다. */
-  reset(): void {
+  reset(reason: ChatResetReason = 'document'): void {
     this.stop();
     this.current = new ChatSession();
-    for (const listener of [...this.resetListeners]) listener();
+    this.sessionProvider = null;
+    for (const listener of [...this.resetListeners]) listener(reason);
   }
 
-  onReset(listener: () => void): () => void {
+  onReset(listener: (reason: ChatResetReason) => void): () => void {
     this.resetListeners.add(listener);
     return () => { this.resetListeners.delete(listener); };
   }

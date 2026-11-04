@@ -3,8 +3,7 @@
 //! HWP 레코드 내부의 바이너리 필드를 순차적으로 쓰기 위한 버퍼 기반 라이터.
 //! `ByteReader`의 역방향으로, 리틀 엔디안과 UTF-16LE 문자열을 지원한다.
 
-use byteorder::{LittleEndian, WriteBytesExt};
-use std::io;
+use std::io::{self, Write};
 
 /// BMP(U+0000~U+FFFF) 밖의 문자를 HWP5 WCHAR(16비트) 슬롯에 그대로 `as u16`으로 캐스팅하면
 /// 상위 비트가 잘려나가 다른 문자로 손상된다(예: '🔶'(U+1F536) as u16 == 0xF536).
@@ -19,107 +18,103 @@ pub fn char_to_wchar(c: char) -> u16 {
     }
 }
 
-/// 바이트 라이터 (버퍼 기반)
-pub struct ByteWriter {
-    buf: Vec<u8>,
+/// A deterministic record encoder shared by counting and output writers.
+/// Implementations must stream fields without hidden owned scratch.
+pub(crate) trait BinaryProducer {
+    fn write<W: Write>(&self, writer: &mut ByteWriter<W>) -> io::Result<()>;
+}
+
+/// 바이트 라이터. 일반 API의 기본 backing은 Vec이며 요청용 경로는 같은
+/// 필드 writer를 counting sink와 미리 예약한 고정 slice에 적용한다.
+pub struct ByteWriter<W = Vec<u8>> {
+    buf: W,
+    position: usize,
 }
 
 impl ByteWriter {
-    /// 새 ByteWriter 생성
     pub fn new() -> Self {
-        ByteWriter { buf: Vec::new() }
+        Self::with_writer(Vec::new())
     }
-
-    /// 현재 쓰기 위치 (바이트 수)
-    pub fn position(&self) -> usize {
-        self.buf.len()
-    }
-
-    /// u8 쓰기
-    pub fn write_u8(&mut self, v: u8) -> io::Result<()> {
-        self.buf.write_u8(v)
-    }
-
-    /// u16 쓰기 (LE)
-    pub fn write_u16(&mut self, v: u16) -> io::Result<()> {
-        self.buf.write_u16::<LittleEndian>(v)
-    }
-
-    /// u32 쓰기 (LE)
-    pub fn write_u32(&mut self, v: u32) -> io::Result<()> {
-        self.buf.write_u32::<LittleEndian>(v)
-    }
-
-    /// i8 쓰기
-    pub fn write_i8(&mut self, v: i8) -> io::Result<()> {
-        self.buf.write_i8(v)
-    }
-
-    /// i16 쓰기 (LE)
-    pub fn write_i16(&mut self, v: i16) -> io::Result<()> {
-        self.buf.write_i16::<LittleEndian>(v)
-    }
-
-    /// i32 쓰기 (LE)
-    pub fn write_i32(&mut self, v: i32) -> io::Result<()> {
-        self.buf.write_i32::<LittleEndian>(v)
-    }
-
-    /// f64 쓰기 (LE)
-    pub fn write_f64(&mut self, v: f64) -> io::Result<()> {
-        self.buf.write_f64::<LittleEndian>(v)
-    }
-
-    /// 바이트 슬라이스 쓰기
-    pub fn write_bytes(&mut self, data: &[u8]) -> io::Result<()> {
-        self.buf.extend_from_slice(data);
-        Ok(())
-    }
-
-    /// HWP 문자열 쓰기 (u16 글자수 + UTF-16LE 바이트)
-    ///
-    /// `ByteReader::read_hwp_string()`의 역방향.
-    /// 형식: [u16 글자수] + [UTF-16LE 바이트 * 글자수]
-    pub fn write_hwp_string(&mut self, s: &str) -> io::Result<()> {
-        let mut utf16: Vec<u16> = s.encode_utf16().collect();
-        // 글자수 필드가 u16이므로 초과 시 자르지 않으면 wraparound 로 레코드가 손상된다.
-        if utf16.len() > u16::MAX as usize {
-            utf16.truncate(u16::MAX as usize);
-            if matches!(utf16.last(), Some(&u) if (0xD800..=0xDBFF).contains(&u)) {
-                utf16.pop();
-            }
-        }
-        self.write_u16(utf16.len() as u16)?;
-        for code_unit in &utf16 {
-            self.write_u16(*code_unit)?;
-        }
-        Ok(())
-    }
-
-    /// ColorRef 쓰기 (4바이트, 0x00BBGGRR 형식)
-    pub fn write_color_ref(&mut self, color: u32) -> io::Result<()> {
-        self.write_u32(color)
-    }
-
-    /// 0으로 채운 패딩 쓰기
-    pub fn write_zeros(&mut self, count: usize) -> io::Result<()> {
-        self.buf.extend(std::iter::repeat(0u8).take(count));
-        Ok(())
-    }
-
-    /// 내부 버퍼를 소유권 이전하여 반환
     pub fn into_bytes(self) -> Vec<u8> {
         self.buf
     }
-
-    /// 내부 버퍼 참조 반환
     pub fn as_bytes(&self) -> &[u8] {
         &self.buf
     }
 }
 
+impl<W: Write> ByteWriter<W> {
+    pub(crate) fn with_writer(buf: W) -> Self {
+        Self { buf, position: 0 }
+    }
+    pub fn position(&self) -> usize {
+        self.position
+    }
+    pub fn write_u8(&mut self, v: u8) -> io::Result<()> {
+        self.write_bytes(&[v])
+    }
+    pub fn write_u16(&mut self, v: u16) -> io::Result<()> {
+        self.write_bytes(&v.to_le_bytes())
+    }
+    pub fn write_u32(&mut self, v: u32) -> io::Result<()> {
+        self.write_bytes(&v.to_le_bytes())
+    }
+    pub fn write_i8(&mut self, v: i8) -> io::Result<()> {
+        self.write_bytes(&v.to_le_bytes())
+    }
+    pub fn write_i16(&mut self, v: i16) -> io::Result<()> {
+        self.write_bytes(&v.to_le_bytes())
+    }
+    pub fn write_i32(&mut self, v: i32) -> io::Result<()> {
+        self.write_bytes(&v.to_le_bytes())
+    }
+    pub fn write_f64(&mut self, v: f64) -> io::Result<()> {
+        self.write_bytes(&v.to_le_bytes())
+    }
+    pub fn write_bytes(&mut self, data: &[u8]) -> io::Result<()> {
+        let end = self
+            .position
+            .checked_add(data.len())
+            .ok_or_else(|| io::Error::other("binary size overflow"))?;
+        self.buf.write_all(data)?;
+        self.position = end;
+        Ok(())
+    }
+    pub fn write_hwp_string(&mut self, text: &str) -> io::Result<()> {
+        // Preserve the old u16 prefix/truncation contract, including a high
+        // surrogate cut at 65535 units, without materializing a UTF-16 Vec.
+        let mut units = 0usize;
+        let mut last = 0u16;
+        for unit in text.encode_utf16().take(u16::MAX as usize) {
+            units += 1;
+            last = unit;
+        }
+        if (0xD800..=0xDBFF).contains(&last) {
+            units -= 1;
+        }
+        self.write_u16(units as u16)?;
+        for unit in text.encode_utf16().take(units) {
+            self.write_u16(unit)?;
+        }
+        Ok(())
+    }
+    pub fn write_color_ref(&mut self, color: u32) -> io::Result<()> {
+        self.write_u32(color)
+    }
+    pub fn write_zeros(&mut self, mut count: usize) -> io::Result<()> {
+        const ZERO: [u8; 256] = [0; 256];
+        while count != 0 {
+            let n = count.min(ZERO.len());
+            self.write_bytes(&ZERO[..n])?;
+            count -= n;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
+
     use super::*;
     use crate::parser::byte_reader::ByteReader;
 

@@ -28,6 +28,7 @@ impl LayoutEngine {
         }) {
             let trailing = self.nested_cut_terminal_line_spacing(table, cell, window);
             window.iter().map(|unit| unit.height).sum::<f64>()
+                + self.nested_continuation_header_height(cell, &units, lo, styles)
                 - self.continued_cut_nested_atom_tail(cell, &units, lo, lo + window.len(), styles)
                 + self.mixed_nested_flow_extra_from_cut(cell, table, styles, lo, lo + window.len())
                 - trailing
@@ -64,14 +65,19 @@ impl LayoutEngine {
             || last.nested_table_fragment.is_some()
             || last.mixed_nested_fragment
             || last.mixed_nested_trailing
-            || last.vis_end != last.vis_start + 1
+            || last.vis_end <= last.vis_start
+            || !(last.vis_start + 1..last.vis_end).all(|index| {
+                crate::renderer::height_measurer::stored_seg_is_row_fragment(paragraph, index)
+            })
             || !paragraph.controls.is_empty()
             || paragraph.stored_text_partition_is_dirty()
             || paragraph.cell_format_vpos_dirty
         {
             return 0.0;
         }
-        let Some(line) = paragraph.line_segs.get(last.vis_start) else {
+        // 한 유닛의 가로 조각들은 같은 물리 줄이며, 생산자가 마지막
+        // 조각에서 계상한 줄 높이·뒤 간격을 그대로 소비한다.
+        let Some(line) = paragraph.line_segs.get(last.vis_end - 1) else {
             return 0.0;
         };
         if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 || line.line_height <= 0 {

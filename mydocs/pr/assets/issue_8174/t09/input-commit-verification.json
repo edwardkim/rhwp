@@ -1,0 +1,1704 @@
+{
+  "passed": true,
+  "sourceSha": "a4111b02fb75bc9cf869cdbf26af6d8e95ea187c",
+  "publicFiles": [
+    {
+      "path": "mydocs/pr/assets/active_field_group_owner_20261021/inputs/ungroup-after.hwp",
+      "bytes": 13312,
+      "sha256": "977a99bd44e5d85d7ce25f90a533e80dc4e19f34409e548722d0fc12776b82a3",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/active_field_group_owner_20261021/pdf/ungroup-after-hwp-2020.pdf",
+      "bytes": 10650,
+      "sha256": "2611ce87c13d808b2eee30fed01d480b0d354f3d7b9dcad60190d6cd6e9cc1bc",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/caption_autonumber_projection_20261021/inputs/ta-pic-caption-tight.hwpx",
+      "bytes": 235517,
+      "sha256": "32cdf807f2a9ceae26671a07ab88ea69bcbc5e2082a6aabe75ae265b2e5b8c4f",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/caption_autonumber_projection_20261021/pdf/ta-pic-caption-tight-2020.pdf",
+      "bytes": 222571,
+      "sha256": "0800c0ffc142e50abb76b4db6f69a8201c0849813c924e928b10893a4947f9d8",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/computed_empty_host_line_20261020/public_api_originals/inputs/offset-hwpx.hwpx",
+      "bytes": 7864,
+      "sha256": "cf0903bc87b790495100f96e8a787f0ba00ce67cb72406c89d2be6a9533821ee",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/float_fragment_frames_20261020/inputs/hwp/public-rowbreak-normalized-2020.hwp",
+      "bytes": 19456,
+      "sha256": "5c6e9dcc37c42de5f2d4c9972eb339e476672ac60da02135e7ec2e483d5ed34d",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/float_fragment_frames_20261020/pdf/hwp/public-rowbreak-normalized-2020-2020.pdf",
+      "bytes": 12499,
+      "sha256": "93cc27c42b7db35f13e8925c651c883e90b390e68bbf068ad4865e2437bec22f",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/inputs/pr8037-body-picture-on-host.hwpx",
+      "bytes": 9295,
+      "sha256": "b45e8e507712da9a975445ad0055bd7eef45b30deab607f9e23f8bc1effc28b4",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/inputs/pr8094-caption-number-sudal.hwpx",
+      "bytes": 9038,
+      "sha256": "dab243d31a31079621231c4f625ea6d9eb99119f3e050aaf7c3411f9e29b5189",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr_7589_form_multiline/pr7589-multiline-true-2020.pdf",
+      "bytes": 22106,
+      "sha256": "21482ec033b610614f675e32bb983cb3d75f9acbbf7ca7bbe00702f61f8f7868",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr_7589_form_multiline/pr7589-multiline-true.hwpx",
+      "bytes": 11274,
+      "sha256": "8b3d341410df07fc32f0909b5b84f274ec48e61bb70bf1bcc6050c2e62599457",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised_dot_clip_20261025/raised-dot.hwpx",
+      "bytes": 7400,
+      "sha256": "c65131da3881475c93af521dcdcde9b2b4e8cd981500fcaa98ab9b447dc4e1b7",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/178-2020.pdf",
+      "bytes": 11648,
+      "sha256": "1bf0df15cbdacdc8246f3087cd0a74584951ee786c02fd11949fda9c67849ecd",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/178.hwpx",
+      "bytes": 7704,
+      "sha256": "9ba1c6e882408656bccb85688b8ba4588626a91e61b068b106c8cf5fcf06ac23",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/181-2020.pdf",
+      "bytes": 10172,
+      "sha256": "0dc723d7498e4651c12cfda73dfb6bea0c67717d6e1fa47f65f69a5bb359d9ca",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/181.hwpx",
+      "bytes": 7865,
+      "sha256": "84283f46ef725b412d9bd70509db541f6f2d6f54417870a82fb47ebda72e9a48",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/188-2020.pdf",
+      "bytes": 10922,
+      "sha256": "2f79486fefcbd252a897b2d29619b8b7f2d4f6716a81e7030466db0ca3eafd7d",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/188.hwpx",
+      "bytes": 7554,
+      "sha256": "d454147e39fb3fcb6070f3b21edece5dbba1bee10dc063422043cb6b8aa7033e",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/195-2020.pdf",
+      "bytes": 94073,
+      "sha256": "081082724f2e50034da71cfb3a91c291820d00641eb5bc2fd3348e9c4791c5c7",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/195.hwpx",
+      "bytes": 14413,
+      "sha256": "56fb2054fa2a57d09a4e024edc5bd29f6f67a47424e2b19096a18bbb986d4684",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/197-2020.pdf",
+      "bytes": 11951,
+      "sha256": "25a5c691a535a18ee06edc17eae6c292c3a83ec973b605ee55399819ec46a76e",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/197.hwpx",
+      "bytes": 7444,
+      "sha256": "8cac55deaa8102e4afcb66535679f5ae852028cc13d939758194c9480249e507",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/198-2020.pdf",
+      "bytes": 5987,
+      "sha256": "7309f5416cf835fbb24835a3cd6e4eb99747d679c9532aaed589d74ec1d19d1d",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/198.hwpx",
+      "bytes": 5702,
+      "sha256": "ffada9bc581584a267a49baee246008e1cd12345e0396b910c14d4f9fca6e5f9",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/199-2020.pdf",
+      "bytes": 7393,
+      "sha256": "37cdbbd886447e06d992d7a8a9f7aea29a47e1782fc919050194cd719978caea",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/199.hwpx",
+      "bytes": 6537,
+      "sha256": "6659ed9830af931405704b5dd23bcb3da05b11ca76be4f7b9ba599b5300865ac",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/200-2020.pdf",
+      "bytes": 6271,
+      "sha256": "2144d8c6cb8f0bd9a8b7edd6288ced43e0819d2e26f048280da10b1e959befbf",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/200.hwpx",
+      "bytes": 7654,
+      "sha256": "6050a3e9573c4bfca97e3554d6cae92a17b6979cd660341c0b400fb7a2c01c92",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/202-2020.pdf",
+      "bytes": 6059,
+      "sha256": "76cc2289033f2c6238c7b22f7276193e09655dbe73c155363d8e63d5f4830f6d",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/202.hwpx",
+      "bytes": 8025,
+      "sha256": "2034955066e5b31cb78d0112753277c8d612eb914de3e60ce4ae09b9fb7676a3",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/203-2020.pdf",
+      "bytes": 11172,
+      "sha256": "9c364c74306723adf27bffdc7d90da7f6fa9167e5c507e083b91c1c194859738",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/203.hwpx",
+      "bytes": 7952,
+      "sha256": "778ca806c3b2aed367dfd283dccb85ec51229b08a7b6ef2602ae804ac2ccc25f",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/205-2020.pdf",
+      "bytes": 9969,
+      "sha256": "ca9e361b88f476ec94a348de0016ae0ccb0a8bc18e61c92520fa7ab18a43524f",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/205.hwpx",
+      "bytes": 7803,
+      "sha256": "58b6739b969d07cb0f486566c0667fcf81fe33d327989fd714ff847f64f2e63c",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/206-2020.pdf",
+      "bytes": 5844,
+      "sha256": "5b0bb6548804a340ad13d809bf057b4d644cb59b6020db1510003edeb04154b0",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/206.hwpx",
+      "bytes": 7783,
+      "sha256": "af558f112f87e6e62e8bb9ef764c8f34502fd13643b99e7a8dbf6199761b964b",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/207-2020.pdf",
+      "bytes": 9207,
+      "sha256": "7c1d945fe8282e1ea0575b08450de97521be6f332ea9b8293bbb7763c0427ab2",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/207.hwpx",
+      "bytes": 7816,
+      "sha256": "698ca8c3b6cb6c9696a11b30af703fa1e079f184a03d61f73b18ed5e3512af91",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/208-2020.pdf",
+      "bytes": 9208,
+      "sha256": "99bf4e5d23a240fa7541fe6313e773f61928602623c89aaa03e59049955823bc",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/208.hwpx",
+      "bytes": 7770,
+      "sha256": "e672f8042449111ebcff0bd74336b382356c77680a9e4fe0549cf65dd33a2f83",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/209-2020.pdf",
+      "bytes": 11984,
+      "sha256": "6cda0e705d476cd00a99cad338df523018bf3160dd2774cc34a026e686a52109",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/209.hwpx",
+      "bytes": 8913,
+      "sha256": "b7e549f3aa68ec0a338fe15f287db03cf683f2444fb765e422e0b159538e63c1",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/211-2020.pdf",
+      "bytes": 9691,
+      "sha256": "89ce80e0bfff5b6befcc0603cb3c55e48888fd3433fe0c007fbe937ce6b6a5b5",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/211.hwpx",
+      "bytes": 7984,
+      "sha256": "4fd67cd597ea33cc7ae916bb9448c84416c1225300a28f984095f93a105bcc6d",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/212-2020.pdf",
+      "bytes": 12884,
+      "sha256": "c310ea3c5ec9d880e6997282712e15f990bc07e6055ddf4b2e3d3b3bd4472508",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/s21_20261027/inputs/212.hwpx",
+      "bytes": 8436,
+      "sha256": "d8c5ad8e8f31461d2b74b63bac9dc1a6e60541f02ec58a1048a9b079028f52c9",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/semanticist21_group_geometry_20261021/inputs/hwpx/pr7588-pr8042-ungroup-30.hwpx",
+      "bytes": 8179,
+      "sha256": "cd2c7fd270f1020bc960b5dce629251012b286e5912c8bbacf5908aa20cdd3ad",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/semanticist21_group_geometry_20261021/inputs/hwpx/pr8041-case-3-base-0-after.hwpx",
+      "bytes": 8228,
+      "sha256": "d6eaa0ed71943ecf8559dc764b74e75487c81fc05c63c44b04c6fd6ea1040432",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/semanticist21_group_geometry_20261021/pdf/hwpx/pr7588-pr8042-ungroup-30-2020.pdf",
+      "bytes": 16952,
+      "sha256": "5e3e31a234ce26f4a6e8517c5142c00f66e93576853ec66da80d4dc8e1295b71",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/semanticist21_group_geometry_20261021/pdf/hwpx/pr8041-case-3-base-0-after-2020.pdf",
+      "bytes": 10640,
+      "sha256": "ede3f7bf8973520b6332b0f9bb8e4a4d688de1628d39c5768a731a4539f40b74",
+      "matchesCommit": true
+    },
+    {
+      "path": "mydocs/pr/assets/verified_point_suppliers_20261025/inputs/gulim.hwpx",
+      "bytes": 5857,
+      "sha256": "446a7d75666788b9dde8586716a592b507ad1c689dd50709890771d84735e3e8",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/1790387_offset_float_split_min-2020.pdf",
+      "bytes": 120740,
+      "sha256": "53ed89bf9c3b937a909eec7f43e215747ef47e43691abe9d61637c1e8b1c8d70",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/1790387_rowspan_header_repeat-2020.pdf",
+      "bytes": 420328,
+      "sha256": "4e6bf98adea24d257accf50fdfdc5bd386736f3623e6d2a96cceb63d94c7d097",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/1790387_tac_successor_after_split-2020.pdf",
+      "bytes": 153641,
+      "sha256": "10e37138faf2bdb841275ad730dc9e844d6fdaf862b9fcb822f533712211b0b2",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/2912695_civil_petition_form-2020.pdf",
+      "bytes": 47955,
+      "sha256": "2e85455f13d0e911b495a7a152f1c799ffb2fc37dd2051312cafa4359c810f89",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/3-09월_교육_통합_2022-hwp-2020.pdf",
+      "bytes": 1443904,
+      "sha256": "748900124e771baf6ce7d90c2ef869b9078b53437c59bc47bdbcc42cba81bb80",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/3-11월_실전_통합_2022-hwp-2020.pdf",
+      "bytes": 1461874,
+      "sha256": "efad255e305326b5b84507481b2158e59941ae2bf4d87dbf97cb5a93b9664a57",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/HWP5-nopassword-123456-hwpx-2024.pdf",
+      "bytes": 741948,
+      "sha256": "b20bd5c0b3716818113cc6bc2a18ba768325b338a3a16840e3680e124cfea01d",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/basic/calendar_year-2022.pdf",
+      "bytes": 146422,
+      "sha256": "c44a40046ba5763d5489695eefce4047f4aa9ae74b1545366cb5444c18448b66",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/basic/sungeo-2022.pdf",
+      "bytes": 3385360,
+      "sha256": "57347b7c0700464e8572f8139dbceb1547165e013600be18b85c44c8cdc2e872",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/caption-float-frame/caption-negative-offset-2020.pdf",
+      "bytes": 55165,
+      "sha256": "630039d4fa67f198750d58be37fcbe3eb70a89c91530ee8e0adfac4aec619ac6",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/continuation_reset/cont_reset_F20_L70_N0-2020.pdf",
+      "bytes": 29801,
+      "sha256": "0c499ee0834a5e36852df00eaa19d14133adee285c29a2861735a2df7372fa02",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/continuation_reset/cont_reset_F20_L70_N4-2020.pdf",
+      "bytes": 31804,
+      "sha256": "7e6fb30bda1e57b5b00010069ea781e283fc2d7a304305290c368fd95994921c",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/continuation_reset/cont_reset_F20_L70_N6-2020.pdf",
+      "bytes": 32305,
+      "sha256": "23c172162334477f2b5c7ce85b44e2b2e1f373bf0a4942054b8f1d3dfeec0512",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/equation-lim-hwp-2020.pdf",
+      "bytes": 9327,
+      "sha256": "19125d41b8f0edda322b147e10f8b761af90bdf4518a32c02a4232762fb9bb4e",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+      "bytes": 1830277,
+      "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+      "bytes": 2234015,
+      "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "bytes": 2234018,
+      "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue1937/cellnotes_plain_N2_L7-2020.pdf",
+      "bytes": 40666,
+      "sha256": "eeef281525705c977f3a51cbc9e0373fbab564ec04a0dde1c66794df68f7ba18",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue1937/cellnotes_span_N2-2020.pdf",
+      "bytes": 24366,
+      "sha256": "76a875f5ec392a797878caee3e875eaa892bd2a5f595c6a7bd467d3b2ff4e560",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue1937/r110_cellnotes_span_N2-2020.pdf",
+      "bytes": 27041,
+      "sha256": "8f97203f9d60a228daf04d6a67d1b26cdb143c6c7700d21ab4f0aa61c54449e3",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue1937/trim_n0_F02-2020.pdf",
+      "bytes": 20084,
+      "sha256": "a71267faa225feb77c287174c80dd7696e9908359d36c64bf4fe22c29567281d",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue1937/trim_n0_h6630_F02-2020.pdf",
+      "bytes": 20161,
+      "sha256": "712cfce8782c75b36877fa6f002cca6e4ac1ffbdfeb03ea0fb49e3a2d2e1f59b",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue1937/trim_n0_h6660_F02-2020.pdf",
+      "bytes": 20154,
+      "sha256": "5bc9182c1014f2c581d5f8fd9a54e9892e6a1107d2ecf7248e741c890c7bdbd6",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue1937/trim_n0_l1_big_h6500_F01-2020.pdf",
+      "bytes": 20230,
+      "sha256": "64cc48388543e1457c083e4a548804f2d9a09c4c0d04617b89a01c98f26b90f9",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue1937/trim_n1_F01-2020.pdf",
+      "bytes": 21701,
+      "sha256": "ea8e29b1962aea890cae27ad03115449efd133edab54c73e21257cce0f8dd2b1",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue1937/trim_n1_F04-2020.pdf",
+      "bytes": 21746,
+      "sha256": "1a6bf60a6d6628d466db701017c5ab6a82003fa656f396cfcdd76be2f9093014",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf",
+      "bytes": 1508356,
+      "sha256": "4c0d9d0876410766d99f4589916971f97b751a3d71901068637c7e2cc1061f95",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue5875/nested_table_text_caption-2020.pdf",
+      "bytes": 525733,
+      "sha256": "6308671fc56b1bfd9e72660edd6edf574a4e16f75e84e0bf35399339d9ce3702",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue6312/fiscal-trend-float-table-anchor-2020.pdf",
+      "bytes": 305835,
+      "sha256": "f99cf3992af5c3ae67e8c55b763ac9aa1cef95d164d60eeb73db190cc8120f3f",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf",
+      "bytes": 728698,
+      "sha256": "ac34bb60492e3749a53183cfb63c814f86379895937dd1309d3bc3d2d1b8126a",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+      "bytes": 766874,
+      "sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7642-failed-regression-print-20261015/distribution_doc-2020.pdf",
+      "bytes": 124189,
+      "sha256": "0299869bf040b01e07a19dde600852e44aec406257916b781eabdfbce6ed5aba",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7687/titled-host-2020.pdf",
+      "bytes": 21372,
+      "sha256": "ac0b81e37e957bd923dd7b7cb0c9ab243ff0e2039ca9385880e9f73fe87c0521",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7819_char_overlap_caret_axis/nonbmp-endnote-true-hwp-2020.pdf",
+      "bytes": 16336,
+      "sha256": "0d72792090d0aa869fa11ff8ca3712b2532c0c12073e302790ec5fe68c170bdb",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7874/omitted-spacing-after-2024.pdf",
+      "bytes": 21782,
+      "sha256": "8a15a05c3f7c7f43e999e4bfa75971255a1892e03643f54f0ffc7cf848da2bce",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7994/HWP5-nopassword-123456-source-2024.pdf",
+      "bytes": 741941,
+      "sha256": "69378cafd87877cb09813350e8bb83130a5dd9ef8239e4a0a79250ec7a7a928c",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7998/body-baseline.pdf",
+      "bytes": 1070,
+      "sha256": "da32520b1e1ff7e185f025769c50b0c8c08d872cd51a79a7c3e6b879e1c13d79",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7998/body-basic.pdf",
+      "bytes": 997,
+      "sha256": "87ff7c61595a04c6e2ebb6b8ba67a3002c15c070b1f7368d09f3d23b6b51a566",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7998/body-center.pdf",
+      "bytes": 1000,
+      "sha256": "e6fffd6a1bf9c32d11c2d6df2f0b67bf01e9873740a9980b86ebc38a269ce2f4",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7998/body-columns.pdf",
+      "bytes": 1158,
+      "sha256": "999effd0bea78b4bfc7a94a75d712d5aa9eb858b410dfd5acc067ad85b100c4b",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7998/body-tj.pdf",
+      "bytes": 998,
+      "sha256": "493c6efeda07d0b9c71f5140f1ca71670bb4447731c7907979e6c7c8043a2806",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7998/body-unrepresentable.pdf",
+      "bytes": 1079,
+      "sha256": "0b7078e6fc88f083b6a223646d504c3a27f4300e58b79e0bc92dfaa110580606",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7998/cell-nested.pdf",
+      "bytes": 1567,
+      "sha256": "79631eabb9786d075c513774bcef1d8a484bcfb53ae73c11128b2182d0618b90",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7998/cell-picture-overlap.pdf",
+      "bytes": 1278,
+      "sha256": "444f80f9ef5856f0a2f999e3624081753c80156de9bf37fd6675013d7e4640b8",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7998/multiline-cell.pdf",
+      "bytes": 8262,
+      "sha256": "9932fe6ab064921987fe03f771b4aa397344d72ed500cd86f96c50ce2acd3b3a",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7998/paragraph-origins.pdf",
+      "bytes": 8273,
+      "sha256": "ef812cddbce2a4ad6fc2b26ba2355a65cfb5a1b135f67170f22ee14d35e976d6",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue7998/tj-cell.pdf",
+      "bytes": 8271,
+      "sha256": "a99e148267cf1f8ea0dfac844e6cc898201ae0404e86294d3dc28b6c9541f260",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8080/cell_nested_table_rows-webhwp-print.pdf",
+      "bytes": 220663,
+      "sha256": "e19cb10792a2c25558d95c22eaa75794bad52168a2370a2c9e9ffbeafb7d34d7",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8080/overlay_table_beside_title-webhwp-print.pdf",
+      "bytes": 259864,
+      "sha256": "8bf9269c7aed625ade6b55cd70400763ac0e6ebaac0de3b38177c03fb93e0a32",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8080/picture_cell_row_height-webhwp-print.pdf",
+      "bytes": 451858,
+      "sha256": "d80780c13f8a46ba3cb23a4cdc43bdb7096d0521a123aeb29d1a0a7cad2b9c79",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8080/title_between_floating_shapes-webhwp-print.pdf",
+      "bytes": 822815,
+      "sha256": "394bb941e71ba3232238471ba20db139d9f277ed2f6571be23eb5cecfae4322c",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8141/1342000_math_textbook_field_review-hwp-2020.pdf",
+      "bytes": 470272,
+      "sha256": "956ede8003ccd245d5dd7021a0e4af4bd9264a1d95eac77dda134f698b230972",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8149/captioned-host-2020.pdf",
+      "bytes": 20045,
+      "sha256": "df610351db2b80e8067de06468264bbbedcbfdf2bf7e3c871e8f3a97d88517b1",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8149/headerrow-2020.pdf",
+      "bytes": 51232,
+      "sha256": "9dc2672ff3cbb0a6b1426eed8a87b1b355b7db202b090010d97b65ce46f067b9",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8149/reservefit-2020.pdf",
+      "bytes": 117565,
+      "sha256": "479c4085f39e88e87f2be31780c2d66ecc2bdee9a5f3b77da7cbd6798046c0e4",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8149/rowfit-2020.pdf",
+      "bytes": 67463,
+      "sha256": "85b2430460538dd0a5ca39bc4eb940029153a46e034504a80e86b147338b2d43",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8156/titled-host-hancom2020-saved-2020.pdf",
+      "bytes": 21372,
+      "sha256": "5ce45d9da28bd05627fbf4e084da3de380da990b145d7c1475f54fe1df005df8",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8167/tac_rectangle_inline-2020.pdf",
+      "bytes": 10837,
+      "sha256": "2fc3532f64ccc0d7a8df032db06ef8b8dff652ed1644cb9bfb2ea50f4eaf20b2",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8167/tac_textbox_inline-2020.pdf",
+      "bytes": 11384,
+      "sha256": "337ce08be0780c8b807d41b2640579519732e3a8d9478b0bbc98a706f0f3ac07",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8168/multiline_tac_picture_para_topandbottom_offset_above-2020.pdf",
+      "bytes": 55917,
+      "sha256": "b64c658eac96cee6502625b939bd6240587d539ed98b22dab4c1d3227f7955a7",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8168/multiline_tac_picture_para_topandbottom_offset_below-2020.pdf",
+      "bytes": 55914,
+      "sha256": "9f2bece13c24033da21a1e00999db0a2b30401f29bbc3a2c5a3241fdafed1271",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8168/scenario-a-after-2024.pdf",
+      "bytes": 7538,
+      "sha256": "49faa5bf34bc4e32024c1c31e81687fc9c32eec55db34742cb6cbdbc89fad8d9",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8168/tac_picture_with_page_relative_topandbottom_textbox-2020.pdf",
+      "bytes": 47235,
+      "sha256": "a0592ce6fdf47d208dd2094f9708bddd78af7b81900066f0bb0b4f06e7b13b7b",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8168/tac_picture_with_topandbottom_textbox-2020.pdf",
+      "bytes": 47234,
+      "sha256": "94e622f52eb75b64c739f9f0936fab27cfd3bf0e9c59c7b054db4ade018c3f72",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8174/clip/batch-operator-control.pdf",
+      "bytes": 1740,
+      "sha256": "5eb73b707e3ef445177ae549c5610c134a682be58ffdc6eadd5270ff2ff3886b",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8174/clip/consecutive-moves.pdf",
+      "bytes": 2228,
+      "sha256": "c3b30118ad369a36a0420eaed4456c69856b85c77a7266417e16bc8973f187de",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8174/clip/text-consecutive-moves.pdf",
+      "bytes": 33026,
+      "sha256": "649d9dafb74cf46af108c6fe3abc40478d4f0f10ac430b11aa9d937890145bf1",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8174/fonts/cff-cid.pdf",
+      "bytes": 111912,
+      "sha256": "260137e34705089445dceb0766e8736dece73b5aa3aacb54c42f0519a03e564c",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8271/tac_picture_behindtext_textbox-2020.pdf",
+      "bytes": 47160,
+      "sha256": "fe9dd3caedb3dabc7e38f81de03a3804bbf7430597f9c4fc3c3e86f3ba2e0ab0",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8271/tac_picture_topandbottom_textbox-2020.pdf",
+      "bytes": 47234,
+      "sha256": "dc7b94bd0ccc8201713102f3c392256f0f9c9cce354ed0e5b86e5dd26975db02",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/lang_slot/symbol_slot_bullets-2020.pdf",
+      "bytes": 35637,
+      "sha256": "cc1c03ca618cdcf32cd924f85eed8ae32728d52613e699a2cefbcdd031654cab",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/lang_slot/symbol_slot_bullets-2024.pdf",
+      "bytes": 32522,
+      "sha256": "6e20a8f4d78a89fa024644c354ab484f9fdcf316c1179effcd2021cbd80ae03a",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/pr7559_review/offset-hwpx-2020.pdf",
+      "bytes": 9471,
+      "sha256": "02179a917b9e5a917daa3d644b243be21050ee0688a11310fd722336d1bd0708",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/pr8036_stored_tall_line/continuing-2020.pdf",
+      "bytes": 10400,
+      "sha256": "8ae130f8e28669e5036359e2c2a95d2c992f78947feaf1e9ab2f2811e39b478d",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/pr8045_review/square-hancom2020-2020.pdf",
+      "bytes": 12927,
+      "sha256": "3a429a93a009f44c275cc0394caef62296e706fc6e224b2a63ce2333fd1e3843",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/pr8061_review/picture-z2-2020.pdf",
+      "bytes": 9976,
+      "sha256": "fc519b025cd35fb85e2be7e6505b74a0e0a4b0328f7bb3b1c18bb109dcf308a9",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/pr8093_review/form-slot-hwp-2020.pdf",
+      "bytes": 10327,
+      "sha256": "fd36f88c6e8766ee36bf6dbfd36dea9defe33e6efa11aea18c0c53caa3f87817",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/pr8319_evidence_alignment_20261027/pr8037-body-picture-on-host-2020.pdf",
+      "bytes": 11220,
+      "sha256": "f48eb5b9db28cb727cea14f63cb9a0da64eed6ce9e9eee1e854c10e354282d27",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/pr8319_evidence_alignment_20261027/pr8094-caption-number-sudal-2020.pdf",
+      "bytes": 19479,
+      "sha256": "acf82f44ad2c2e53f4ba6c068ace272038a4f23fa9f5f006ceecd76e155a7a6c",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue5966_franchise_review_report_1130000-202100008_franchise_review_report-2020.pdf",
+      "bytes": 1261043,
+      "sha256": "4cf22800e29baddb9b84023462c75252efd4efb04d22e9e64a8e3d9313076009",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/raised-dot-clip/raised-dot-2020.pdf",
+      "bytes": 10442,
+      "sha256": "cfd1ebaa3ccad355448049468a6bd13ba60c0428f020cca129e80d40f6d7a90d",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/review-integration-20261026/hwpspec-2020.pdf",
+      "bytes": 1901742,
+      "sha256": "257f02c14ce843f38398c6702274434ec129c73b9da8ed41f9f61dc107a6bbc4",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "bytes": 625577,
+      "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/review-integration-20261026/newsletter-chinese-2024.pdf",
+      "bytes": 279197,
+      "sha256": "93cd11ba2e4c256a9bc22da58942afd551f28cfe6ace16ca13c76d650cb3e360",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/review-integration-20261026/newsletter-korean-2020.pdf",
+      "bytes": 319716,
+      "sha256": "4c1cbc3a4a08a5682ea4b4561874c1c8cf261cdba1c961d8e439c7e9a10e7a24",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/review-integration-20261026/onsemiro-hwp-2020.pdf",
+      "bytes": 728363,
+      "sha256": "94f2ae8b745ab043aeca2a0b2a25f62dd3d97ec2fed3e1c1e75c982cc8c6f6c4",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/review-integration-20261026/onsemiro-hwpx-2024.pdf",
+      "bytes": 718241,
+      "sha256": "015ac8396395652ffce81167d017adea4b3284a660a59f46bbbf5e261443af5b",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/rowspan-band-fit/rowspan-band-fit-2020.pdf",
+      "bytes": 24658,
+      "sha256": "3581e48fc76b65e292d3668a27fc5dbbdb905b37b40b11c58b5abd122dba00a9",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/semanticist21-20261019/generated-hwpx/pr7833-flat-false-tables-false-cut/pr7833-flat-false-tables-false-cut-2020.pdf",
+      "bytes": 22603,
+      "sha256": "57cbd0f72b13b8a0e8049c465c3230c7c7643adda0e005deb2275450ad0c4190",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/semanticist21-20261019/generated-hwpx/pr8039-control-tail-true/pr8039-control-tail-true-2020.pdf",
+      "bytes": 9749,
+      "sha256": "0a1dd0de95c683deabf54499477415fd4ebe9926889748a6154812da07c9375f",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/semanticist21-20261019/pr8031-api-defined-page-number-cell-2020.pdf",
+      "bytes": 12779,
+      "sha256": "feb6345ec85aa9166fb3d7a6ce5a2359879cdff66f009c293fd237559986f1a9",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/semanticist21-20261019/pr8032-print-alpha-wide-2020.pdf",
+      "bytes": 36248,
+      "sha256": "ca30c1fce58e933f0a20c7b842f1cd1c306d071f2f64b1fef110449532d5187d",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/semanticist21_source_contracts_20261026/form-only-defaults-hwpx-2020.pdf",
+      "bytes": 18788,
+      "sha256": "9a240e7026b5b7e5a3d30fca93746e017555f1679d790b092009d935cc6979b1",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/semanticist21_source_contracts_20261026/pr7694-updated-198-chart-after-2020.pdf",
+      "bytes": 285099,
+      "sha256": "2f93373067c868addc624878b01c99f25fd13235de2924976fa17b5a44a90d57",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/stored_reset_float/field_float_reset-2020.pdf",
+      "bytes": 22389,
+      "sha256": "2c7f2f14f3a60d9636e1d61507f3318eccc2fcced01852c360ed773dcd51f861",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/stored_reset_float/field_float_reset_plain-2020.pdf",
+      "bytes": 21986,
+      "sha256": "a0f4e1806669482b587b0c511018fb6f17238e88909e4c3a702ce70120c2e4e7",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/table_scattered_header_rowbreak-hwp-2024.pdf",
+      "bytes": 428908,
+      "sha256": "83a02aa2ce248cf3a16c78eebf0e2ecfe89349b012f11855799af0c52e23e4e2",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/verified-point-suppliers/gulim-2020.pdf",
+      "bytes": 14658,
+      "sha256": "31d9188b0212d222d7eb46e391febaaf0bc591516fa8939a12c2720f7c1fdcc5",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+      "bytes": 830986,
+      "sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/21_언어_기출_편집가능본-2010.pdf",
+      "bytes": 924081,
+      "sha256": "609d56421009ccab5a50cb2a8f4e78af4d0961de2e7ae85d811905e8434ac251",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/21_언어_기출_편집가능본-2020.pdf",
+      "bytes": 943175,
+      "sha256": "a1a8b0ffd6ae9b23627f7b1bf58bbdfdc0714a369713cc057aa836c75b143f1e",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/21_언어_기출_편집가능본.pdf",
+      "bytes": 655657,
+      "sha256": "6bc54661a73af788d437463e000f76652b1325b44607e58443e7391d23e2db83",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/3-09월_교육_통합_2022.hwp",
+      "bytes": 5820416,
+      "sha256": "d451ffbc72e8c84433f380c0cbcc8472f23286d53dce4b793a4bbb82f8715108",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/3-11월_실전_통합_2022.hwp",
+      "bytes": 5534720,
+      "sha256": "bc8bccbb954c337d813d1af96f4e3047242124c2f2939163e282634eb721accd",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/86712_regulatory_analysis.hwp",
+      "bytes": 151040,
+      "sha256": "ee82c7755617003cb972ba398da9cffadfed24ac0fa068eee1a5347da7658a88",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/HWP5-nopassword-123456.hwp",
+      "bytes": 247808,
+      "sha256": "a34ecb8cde85b6db49c64a954cb7fa5d23b5f49367bc4753c90bfe89a075b50d",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/HWP5-nopassword-123456.hwpx",
+      "bytes": 246148,
+      "sha256": "20ed90f48c6501cad99f6aa1f82d81d2a2132eb04f2d1d32805ac251749e4d0e",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/[2027] 온새미로 1 본교재.hwp",
+      "bytes": 734720,
+      "sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/[2027] 온새미로 1 본교재.hwpx",
+      "bytes": 862784,
+      "sha256": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/basic/calendar_year.hwp",
+      "bytes": 55296,
+      "sha256": "6ba1b5fb0425f6ce3331052f600abcf5e282703132d4ccf20445a506f188ded4",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "bytes": 51712,
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/basic/sungeo.hwp",
+      "bytes": 923648,
+      "sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/caption-float-frame/caption-negative-offset.hwp",
+      "bytes": 60928,
+      "sha256": "51efcd64c8e7e438ef8152543a755171ce803c4c630b1f5ae43e49ede3609c17",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/continuation_reset/cont_reset_F20_L70_N0.hwp",
+      "bytes": 54272,
+      "sha256": "04ec268cadf7bb9283b0422b5bda7431fc7f174e7f19e2b893bd6a275313050d",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/continuation_reset/cont_reset_F20_L70_N4.hwp",
+      "bytes": 54784,
+      "sha256": "5e66adeb20610d965ff21661d88fda8252a547120ca777827f9cf984f540a9ab",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/continuation_reset/cont_reset_F20_L70_N6.hwp",
+      "bytes": 54784,
+      "sha256": "111b7ac9235f390005cfc848c5892f294b8a180e998221769afb0311751ccd8d",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/equation-lim.hwp",
+      "bytes": 13312,
+      "sha256": "ba168d388df614e7b9390c4685d368cf3019595c5fecbce0e681dc8fb9bea36d",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "bytes": 3048448,
+      "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+      "bytes": 3044864,
+      "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5.hwpx",
+      "bytes": 3061900,
+      "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/hwpspec.hwp",
+      "bytes": 2752512,
+      "sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue1937/cellnotes_plain_N2_L7.hwpx",
+      "bytes": 9402,
+      "sha256": "d8845782c67e35de9895d3b355d7a28ec552b24ebe1fdbb15d8d7883128827a3",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue1937/cellnotes_span_N2.hwpx",
+      "bytes": 5364,
+      "sha256": "c8776455a41e07ab152dc8075d4bf38bf83575f65b24d3702c72fc6898342637",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue1937/r110_cellnotes_span_N2.hwpx",
+      "bytes": 5953,
+      "sha256": "cad4697a99a2af330ed9ad68a05d5018cbc041ca562d2c5682b7a087e7251147",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue1937/trim_n0_F02.hwpx",
+      "bytes": 4588,
+      "sha256": "a191c7e25ae749908dfe4e894ac8b8006b6eb00a28d4aff46a1f633b09c51e0d",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue1937/trim_n0_h6630_F02.hwpx",
+      "bytes": 4591,
+      "sha256": "c943fb179aee9fce248d272dc3607ebfa8e92c690037ee71c0fd5120f0012ab5",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue1937/trim_n0_h6660_F02.hwpx",
+      "bytes": 4590,
+      "sha256": "39de0b243ef676819a176d2388eb32e5fd440af8fb447c5bd30feb6f41e57623",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue1937/trim_n0_l1_big_h6500_F01.hwpx",
+      "bytes": 4578,
+      "sha256": "943f24e5bdfa13cdc2b6d6f2b5f27192104a5e811b27791a8ea514ad997aa6c7",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue1937/trim_n1_F01.hwpx",
+      "bytes": 4687,
+      "sha256": "ede86f80f03339c2336b2d5f181b03c58670c294ca81f8a197fb60a9999d07b5",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue1937/trim_n1_F04.hwpx",
+      "bytes": 4731,
+      "sha256": "94c7824e93fb0c2b269cd7d7a662084fe0218126420af0a539d01a006f05091d",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+      "bytes": 147456,
+      "sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue4599/1790387_offset_float_split_min.hwpx",
+      "bytes": 208729,
+      "sha256": "a4f2f5fc2b3b68148100121344783964be75f11092a985d89317b963cdda1156",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue4599/1790387_policy_progress.hwpx",
+      "bytes": 4743695,
+      "sha256": "947e51913c561611397c4f7d88feaad7112da4adc658b21cbfd9471e00192411",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue4599/1790387_rowspan_header_repeat.hwpx",
+      "bytes": 650354,
+      "sha256": "59b8c232f433ecf04e2374505e4c6b18a9aac919a347e0f3a9b8f4d791e004a4",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue4599/1790387_tac_successor_after_split.hwpx",
+      "bytes": 18932,
+      "sha256": "1b2505d993e8948ba2cfd649a7403781488286aa2bcf45eacaa2285ebbee0942",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue5966/1130000-202100008_franchise_review_report.hwp",
+      "bytes": 562176,
+      "sha256": "a1b8299b2554a83873b780474defb02efa949b43c86c63bcc164967f96091e55",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue6032/2912695_civil_petition_form.hwp",
+      "bytes": 14848,
+      "sha256": "1c6569dc69b1fe99de058de2760249d322b393b7eb6b4f2a2fe60f2489c25e04",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue6312/fiscal_trend_float_table_anchor.hwpx",
+      "bytes": 91946,
+      "sha256": "aa804ca85dba392fad80dd78e3b61e668771984720a0a321a0c0ed694233a918",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
+      "bytes": 2150912,
+      "sha256": "34a5964fa791ae662052cba8482efae682f13b45a0c0cd6ce633425566a2d5a9",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
+      "bytes": 1202688,
+      "sha256": "70a6663e75fefedc001b2c249bd20f5b994596954120740252f484b1892e2097",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue7687/titled-host.hwpx",
+      "bytes": 8064,
+      "sha256": "7647230e6b7194bda394b8f9771523708104be1b48f54064e7243f2c5446dd74",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue7874/omitted-spacing-after.hwpx",
+      "bytes": 4618,
+      "sha256": "b1905e369c93f4086047e3c68b77474eab0468491fae7da97bcbd4d944ac0cbf",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8080/cell_nested_table_rows.hwp",
+      "bytes": 11264,
+      "sha256": "7756e38c49dbccd961393a5e66f22c5660f2dd2653128a73903923044cb782f9",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8080/overlay_table_beside_title.hwp",
+      "bytes": 17408,
+      "sha256": "33654561d40ed7a355ee2bdba29aae9e6e3dd91ab71a805570256283bdefafa8",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8080/picture_cell_row_height.hwp",
+      "bytes": 14848,
+      "sha256": "2db234d895be0d6558f1b61c2195cea016a8ce5d7db91261979a505f92ec82ad",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8080/title_between_floating_shapes.hwp",
+      "bytes": 18944,
+      "sha256": "80ff065ac5f186bae54bc43ef5a61fe4bf059074762b139de6b1c57b7158d76c",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8141/1342000_math_textbook_field_review.hwp",
+      "bytes": 393216,
+      "sha256": "1c2d27c5f431141b81052ea308039aa43c2899488b54b48a1d1ff2f6c487047e",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8149/captioned-host-2020.hwp",
+      "bytes": 28672,
+      "sha256": "98e404df1f68231175f72edf576c235d2cafd7e9d3bc9fd10035c43834574636",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8149/headerrow-2020.hwp",
+      "bytes": 41984,
+      "sha256": "6c0f7ae05f673962d130d4e104ceedd197b675b5bdebd037f4c1a24bd04cdada",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8149/reservefit-2020.hwp",
+      "bytes": 60928,
+      "sha256": "66045449890bba114d836554a7724ed00f98a69f5b5f097bec9e328fbb92c519",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8149/rowfit-2020.hwp",
+      "bytes": 46592,
+      "sha256": "34c24c5c64504f5e3ca590790f222b618aad1785adfc21c52beeb58004350eaa",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8156/titled-host-hancom2020-saved.hwp",
+      "bytes": 21504,
+      "sha256": "0fe65f118d8617552af12f1ef9ebeb3083cce0a6b5537fab43646fc30a0fd776",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8167/tac_rectangle_inline.hwpx",
+      "bytes": 7975,
+      "sha256": "fdd1cb7dcef5d077c4f19f749822bf3a76734105ef0a1443bdff75f038596abd",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8167/tac_textbox_inline.hwpx",
+      "bytes": 8113,
+      "sha256": "300db4c44b4b622a682bfb0744bba910d5620b29f089a51caf159ee40a3c544b",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8168/multiline_tac_picture_para_topandbottom_offset_above.hwp",
+      "bytes": 95232,
+      "sha256": "dc2f948ce42f5c5924a6639888058ea35b427d114a6a2de6aacf1bc4791e2d96",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8168/multiline_tac_picture_para_topandbottom_offset_below.hwp",
+      "bytes": 95232,
+      "sha256": "060bf70211fc53a8e867660307b18b990dca0957aed5e08eaa5ecc6ac182c301",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8168/tac_picture_with_page_relative_topandbottom_textbox.hwp",
+      "bytes": 94720,
+      "sha256": "a035e1d4bf9e97c285a0e3c608fe37e589f108f70f72e8617ca3120037ffd474",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8168/tac_picture_with_topandbottom_textbox.hwpx",
+      "bytes": 89171,
+      "sha256": "24f37255ae293ef80db1cc248471e0ff7e239bd5113c461f2423484f2d12dab1",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8271/tac_picture_behindtext_textbox.hwpx",
+      "bytes": 89161,
+      "sha256": "19ac4952c2d2254fce267b950b40dba10cfe607c9c6bf9b6139804dfdbbc7b00",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/issue8271/tac_picture_topandbottom_textbox.hwpx",
+      "bytes": 89163,
+      "sha256": "5caee737321f70a63a396be04cc93cd24526fa4650fb549639dadbee7aedba0f",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/lang_slot/symbol_slot_bullets.hwpx",
+      "bytes": 3912,
+      "sha256": "388dd0f84f46301803d5072d21585988b969adf75dce4eecaa9463145080d1fa",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/rowspan-band-fit/rowspan-band-fit.hwp",
+      "bytes": 15360,
+      "sha256": "649c0eaf95ea7e959953945e5603648b0894bdb09cecc512ede645dc71cff5d7",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/stored_reset_float/field_float_reset.hwp",
+      "bytes": 34816,
+      "sha256": "9dfe5e3fcdb1041de3e68c38ea4ebd95c3d51b858d7907607cc4c0b12ca13a14",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/stored_reset_float/field_float_reset_plain.hwp",
+      "bytes": 34304,
+      "sha256": "5eefa29cbad1ba0dbd369581e89da31cacae64e2b873f92353a2700ce00a1813",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/table_scattered_header_rowbreak.hwp",
+      "bytes": 204800,
+      "sha256": "65bbf7f22c8ab664f0f916b3a25257faf7a65ad564d58706955580e4f63c649b",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/tac-verify/scenario-a-after.hwp",
+      "bytes": 19968,
+      "sha256": "a6d0adcd7ff92e2679a123eda7484c408a005e046839067626dec08bcd551eba",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/task1768/distribution_doc.hwpx",
+      "bytes": 178688,
+      "sha256": "f217c02af7bc2a6641b9544afd29765ddccdd15021507b7554521f68b9d560dc",
+      "matchesCommit": true
+    },
+    {
+      "path": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+      "bytes": 342528,
+      "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/char_overlap_caret_axis/nonbmp-endnote-true.hwp",
+      "bytes": 13312,
+      "sha256": "a7aafc8b6e37141e10b34077ce592410f7115c67186ab72db828509aebb16e87",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/hwpx_cell_frame_print/pr7833-flat-false-tables-false-cut.hwpx",
+      "bytes": 12611,
+      "sha256": "61aeefefc423eb88c4e21d36018a9b5d0bb67ff3902766049d990691609ed897",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/hwpx_cell_frame_print/pr8039-control-tail-true.hwpx",
+      "bytes": 5542,
+      "sha256": "22391a6e27cde14e353279be278eb184e4cc2df5a9a3306c3d5a0cd41b671ea2",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/inline-control-move/chart-after.hwp",
+      "bytes": 33792,
+      "sha256": "8ff56111b683005b7d4cd34990e7214debc7785d9bef6bc76a2772d036ace617",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/inline_flow/print-authored-break-metrics-2020.pdf",
+      "bytes": 20758,
+      "sha256": "633a381004838cc52905d02c6d5d810954396ede75bb8810fab0081729f0767a",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/inline_flow/print-authored-break-metrics.hwpx",
+      "bytes": 8804,
+      "sha256": "d892ea2642fdce3f732e43accd9dfd6cd9eaf3aee99f6234445bf5c2ee17f76b",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/inline_flow/print-object-space-boundaries-2020.pdf",
+      "bytes": 30739,
+      "sha256": "c6e4ce7b012a8aa28a228ae8ad6625009713b48cd0894563ab70f01ab951451f",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/inline_flow/print-object-space-boundaries.hwpx",
+      "bytes": 9271,
+      "sha256": "06f03325fe2105628e39051aea75fc12a98afd3cdde5807bea4cdc5468b51461",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/inline_flow/print-object-space-overflow-2020.pdf",
+      "bytes": 22255,
+      "sha256": "ed00457e3d38c36832f2deb5e4c69f67610397ce4928cc4e4a0a77bc8a497d6e",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/inline_flow/print-object-space-overflow.hwpx",
+      "bytes": 8870,
+      "sha256": "57f713b32a55c7450014d82fcca2ae833836414fb07d2b14d17d36008a9fcef3",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-false-print-2020.pdf",
+      "bytes": 55418,
+      "sha256": "0ea824cccc05c0dbab4edbddbf5df407481cb554e85d6e909d21d59702b5d7c9",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-false.hwp",
+      "bytes": 93184,
+      "sha256": "8647f8ca68776fd1a2e640e69a5a8e428c6cb287ba17b2cb883fcce5efae20a8",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-true-print-2020.pdf",
+      "bytes": 55417,
+      "sha256": "ee84d81a4b3889da9658b5ee0936c8f726f30897ea9a63c9564408a2c427e6b4",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-true.hwp",
+      "bytes": 93184,
+      "sha256": "a7188cf5dd388df0c930224178a3cba44715cd07ccdccde5c8ebcde7cbfa0c3f",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-authored-break-no-ls-print-2020.pdf",
+      "bytes": 46123,
+      "sha256": "9b8037d88922205acf7459e6e4a44a8535894923c3e75aed06b672bb0bb6ed1c",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-authored-break-no-ls.hwp",
+      "bytes": 93184,
+      "sha256": "c7d856b48d19cabb51e50b0befdf2fbc67a903a633038b7084dc6c2113177b93",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-center-row-no-ls-print-2020.pdf",
+      "bytes": 46125,
+      "sha256": "0e8536e76112d9439cb9c50418ad5918ba88310ab0630c2745b64a677dfd159f",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-center-row-no-ls.hwp",
+      "bytes": 93184,
+      "sha256": "48f55c0d01011d3580f2f1fdef2d565077ffa1e66c7aaddfca10761dd43dd297",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-column-transition-no-ls-print-2020.pdf",
+      "bytes": 47150,
+      "sha256": "d9dcf28fe3b5ee63ff05880f44e2d5eda3200c40f008981aa2d702acd1059e23",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-column-transition-no-ls.hwp",
+      "bytes": 105472,
+      "sha256": "29745472fdb513c8d4d1a7a6f1a22a56580acd9b06b6620ed7bed7d0b3000c32",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-mixed-center-row-no-ls-print-2020.pdf",
+      "bytes": 46922,
+      "sha256": "a2a1178aea825b6e2e734a43b18b35cd83f53d650ef28491a9ba03ddf146ea4f",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-mixed-center-row-no-ls.hwp",
+      "bytes": 93184,
+      "sha256": "8db7c5325b0e1676c29190d55110465453203be310de435492a29d6522835ad6",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-mixed-end-picture-no-ls-print-2020.pdf",
+      "bytes": 47194,
+      "sha256": "1a37e74b889946e8ceeff9fd3cf7200d356fe2af6401c93634879a9208f3bb3e",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-mixed-end-picture-no-ls.hwp",
+      "bytes": 93184,
+      "sha256": "8478f28ec6bfbeb85f4d5ed3947b3063380549ec956a5fbe7fc5559aabd0dd7e",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-outer-margin-row-no-ls-print-2020.pdf",
+      "bytes": 46131,
+      "sha256": "6fab8b80a40cf81355adc11a923b777f7515977a25a7963b3296a00ba6118f50",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-outer-margin-row-no-ls.hwp",
+      "bytes": 93184,
+      "sha256": "16a916b8c79e055f26d2033f7104c2cb39487bf21993356b805ad8616ac7cebb",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-relative-font-row-no-ls-print-2020.pdf",
+      "bytes": 46881,
+      "sha256": "109ed14cbc38ee7e9604e64066d84261bd34806077d9f5ebee1510c1936834be",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-relative-font-row-no-ls.hwp",
+      "bytes": 93184,
+      "sha256": "6e0073478832e25398466ad001c1566b626ca0c49634184135857d88ef0f8870",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-same-row-no-ls-print-2020.pdf",
+      "bytes": 46130,
+      "sha256": "1ad87bdcb0265492849d495f7a539c37aec00b42e61940023ade8b88c164dad9",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-same-row-no-ls.hwp",
+      "bytes": 93184,
+      "sha256": "aeee538f8d361f81bb7b356ab662c453f13f67a4e2be4c2af911eabd16ea1d12",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-boundary-no-ls-print-2020.pdf",
+      "bytes": 47107,
+      "sha256": "10eab539ec29e8efd87d993e820fcc5335974aad5075042709fe733f2b922b96",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-boundary-no-ls.hwp",
+      "bytes": 105472,
+      "sha256": "07ebb414f77d99c4b1a609e31f79904e95cedf4fe21f315cf6760007a8aa3c38",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-only-fit-no-ls-print-2020.pdf",
+      "bytes": 47107,
+      "sha256": "71728ac7e179fd1f850a348d951b5fd1c227ee4a8c74219a26646b5bdfa1d155",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-only-fit-no-ls.hwp",
+      "bytes": 105472,
+      "sha256": "4faca24711f2dcd84dc22b3047dfb56911d70c952789978071a8b898facc2747",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-wrapped-row-no-ls-print-2020.pdf",
+      "bytes": 46125,
+      "sha256": "880e9aef5665b4a46c0418009a246f8a095bed2151ceaaeddfce1eb960ac39cb",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/issue_7642/no-ls/picture-flow-wrapped-row-no-ls.hwp",
+      "bytes": 93184,
+      "sha256": "52af34ce881875d302b604010f4a67ca51b2f85386a40e4f68e4714836064f1c",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/pr8031_page_number_cell/pr8031-api-defined-page-number-cell.hwpx",
+      "bytes": 7746,
+      "sha256": "7e331d2c5a828bf4f915491ee8db3cd0a9eb253d7cc6caad80acebc37044e8b8",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/pr8032_print_alpha/wide.hwpx",
+      "bytes": 8904,
+      "sha256": "9ef1b0180eab92c311901a5be26936ac737df165c6a0cdf9b8a743553519b07d",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/pr8036_stored_tall_line/continuing.hwpx",
+      "bytes": 4215,
+      "sha256": "21bb9f714b5e3ce646142cd4d8a34cd2c50600a89d6b741f75a2f7dbdbb4df0f",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/pr8045_square_wrap/square-hancom2020.hwpx",
+      "bytes": 11962,
+      "sha256": "a85aa1a67089027180c9772d8285b5d39d2eb345a4cf706ab2bd380616f5c361",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/pr8061_cell_picture_layer/picture-z2.hwpx",
+      "bytes": 8362,
+      "sha256": "759bf88c72ac5d1b2ff221756abbad2bbaac7776af752350f003bd4db9e83998",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/pr8093_form_caret/form-slot.hwp",
+      "bytes": 13312,
+      "sha256": "1c7e40474066cfc7c4892ab8d3b2e6ae7dde7055335ae2330c772e1cdc159b6c",
+      "matchesCommit": true
+    },
+    {
+      "path": "tests/fixtures/pr8096_form_defaults/form-only-defaults-hwpx.hwpx",
+      "bytes": 7983,
+      "sha256": "2d49344b76f515dc3d325ce6eca9fb75cdc384743aa13e38966ae675eab515f4",
+      "matchesCommit": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/progressive-17x17-mixed-Y1x2-Cb2x2-Cr2x2-alpha.pdf",
+      "bytes": 2086,
+      "sha256": "150f9ac496f876a972268ad59d2129b8b34a27d656998af4603df53f6640259a",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/baseline-9x1-mixed-Y1x2-Cb2x2-Cr2x2.pdf",
+      "bytes": 1325,
+      "sha256": "f4661cb96c0ecbca42e65f41e800a1b8b120be9fb16a083c157de1516b8dce32",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/progressive-9x1-mixed-Y1x2-Cb2x2-Cr2x2.pdf",
+      "bytes": 1214,
+      "sha256": "71deb4a783820daff133a20cb63b17250e7094099994e343475a1090fc300457",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/progressive-9x9-mixed-Y1x2-Cb2x2-Cr2x2.pdf",
+      "bytes": 1329,
+      "sha256": "b8b4948bb425a7f21d1291ccbb731d51b78f7e72a1bf4b3d66fa2788f610323f",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/baseline-33x1-mixed-Y1x2-Cb2x2-Cr2x2.pdf",
+      "bytes": 1428,
+      "sha256": "bb5cb77c296eec84c3cbd18d76d662a16cf1dc6e7062c3b7832d31e1018ef4b7",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/progressive-33x1-mixed-Y1x2-Cb2x2-Cr2x2.pdf",
+      "bytes": 1318,
+      "sha256": "e356d3ab9b242800b751382a3fbb6fa8d371f337260d14ffecd3536d702096e4",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/progressive-65x33-mixed-Y1x2-Cb2x2-Cr2x2.pdf",
+      "bytes": 3418,
+      "sha256": "6a90ae57cbbc65d4bc48fff46469f5a5efd7c54f8921bb325d2d5b8a511168c2",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/baseline-1x1-mixed-Y1x2-Cb2x2-Cr2x2.pdf",
+      "bytes": 1305,
+      "sha256": "82f0ec2a80f3d6c6d3c6ac7277ac964b30fe8f2a008801c61a6d743d533fd496",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/progressive-1x9-mixed-Y1x2-Cb2x2-Cr2x2.pdf",
+      "bytes": 1211,
+      "sha256": "c589ee40a4c4a4b9285841b8e46ca413e659bb18eb80b3fcc32e313ac3da8f3e",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/baseline-1x9-mixed-Y1x2-Cb2x2-Cr2x2.pdf",
+      "bytes": 1328,
+      "sha256": "5ec0126a2f88bc1c7e61a5f936e548f8302f60f0a633bfd8568815dea9f8320c",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/baseline-9x9-mixed-Y1x2-Cb2x2-Cr2x2.pdf",
+      "bytes": 1414,
+      "sha256": "91a2eef5c39679175fb3538abd3882060710512bb3f8e07f70f048542d81285f",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/baseline-65x33-mixed-Y1x2-Cb2x2-Cr2x2.pdf",
+      "bytes": 3776,
+      "sha256": "184b6cdd9ff37b5b63147656a5ca58ddbf000c8c00aa111cf33c4481d83ddf8f",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/baseline-17x17-mixed-Y1x2-Cb2x2-Cr2x2.pdf",
+      "bytes": 1710,
+      "sha256": "83eeea08f510705eb72a9e14afc2eb87e4ae926b50ed939ed6e2c64494f6f4d4",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/progressive-33x19-mixed-Y1x2-Cb2x2-Cr2x2.pdf",
+      "bytes": 2018,
+      "sha256": "b185a03e24aa1449c9f55af9c4b1c887efab788733798fa8371f713a76262fe7",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/progressive-17x17-mixed-Y1x2-Cb2x2-Cr2x2.pdf",
+      "bytes": 1617,
+      "sha256": "1bd1c3421adf3a551a7924fe166994b80d0b07d1e5f2496f976253db6f992280",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/progressive-1x1-mixed-Y1x2-Cb2x2-Cr2x2.pdf",
+      "bytes": 1193,
+      "sha256": "e64f04dbf76f3ae9addd73b893aeec4365576522a3b3c12e7547376e1a4a898e",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    },
+    {
+      "path": "pdf/issue8174/jpeg-compat/baseline-33x19-mixed-Y1x2-Cb2x2-Cr2x2.pdf",
+      "bytes": 2116,
+      "sha256": "9b374cc11806861ab313b0151ee4d340cf14c7699f1e504603154dd599690a4b",
+      "matchesCommit": true,
+      "temporaryCopyVerified": true
+    }
+  ],
+  "privateValidation": {
+    "localOnly": true,
+    "pages": 15,
+    "bytes": 966012,
+    "sha256": "23deabc3911bd6cdf2a69d1f8b7960a2f35a863b2b34cadc9e0e9c32695f6730",
+    "identifyingPathOrImagePublished": false
+  }
+}

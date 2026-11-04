@@ -98,11 +98,12 @@ pub enum Hwp3SpecialChar {
         length: u32,
         data: Vec<u8>,
     }, // 24
-    IndexMark {
+    // [#8304] 스펙 표 31: 25 = 제목/표/그림차례 표식, 26 = 찾아보기 표식.
+    TitleTableFigureMark {
         length: u32,
         data: Vec<u8>,
     }, // 25
-    FindMark {
+    IndexMark {
         length: u32,
         data: Vec<u8>,
     }, // 26
@@ -198,8 +199,8 @@ impl Hwp3SpecialChar {
             22 => Ok(Hwp3SpecialChar::MailMerge { length, data }),
             23 => Ok(Hwp3SpecialChar::CharOverlap { length, data }),
             24 => Ok(Hwp3SpecialChar::Hyphen { length, data }),
-            25 => Ok(Hwp3SpecialChar::IndexMark { length, data }),
-            26 => Ok(Hwp3SpecialChar::FindMark { length, data }),
+            25 => Ok(Hwp3SpecialChar::TitleTableFigureMark { length, data }),
+            26 => Ok(Hwp3SpecialChar::IndexMark { length, data }),
             28 => Ok(Hwp3SpecialChar::OutlineShapeNumber { length, data }),
             29 => Ok(Hwp3SpecialChar::CrossReference { length, data }),
             30 => Ok(Hwp3SpecialChar::BundleBlank { length, data }),

@@ -493,60 +493,7 @@ impl DocumentCore {
             return Err(not_an_equation_error(&para.controls[control_idx]));
         }
 
-        let text_chars: Vec<char> = para.text.chars().collect();
-        let mut ci = 0usize;
-        let mut prev_end: u32 = 0;
-        let mut gap_start: Option<u32> = None;
-        'outer: for i in 0..text_chars.len() {
-            let offset = if i < para.char_offsets.len() {
-                para.char_offsets[i]
-            } else {
-                prev_end
-            };
-            while prev_end + 8 <= offset && ci < para.controls.len() {
-                if ci == control_idx {
-                    gap_start = Some(prev_end);
-                    break 'outer;
-                }
-                ci += 1;
-                prev_end += 8;
-            }
-            let char_size: u32 = if text_chars[i] == '\t' {
-                8
-            } else if text_chars[i].len_utf16() == 2 {
-                2
-            } else {
-                1
-            };
-            prev_end = offset + char_size;
-        }
-        if gap_start.is_none() {
-            while ci < para.controls.len() {
-                if ci == control_idx {
-                    gap_start = Some(prev_end);
-                    break;
-                }
-                ci += 1;
-                prev_end += 8;
-            }
-        }
-
-        if let Some(gs) = gap_start {
-            let threshold = gs + 8;
-            for offset in para.char_offsets.iter_mut() {
-                if *offset >= threshold {
-                    *offset -= 8;
-                }
-            }
-        }
-
-        para.controls.remove(control_idx);
-        if control_idx < para.ctrl_data_records.len() {
-            para.ctrl_data_records.remove(control_idx);
-        }
-        if para.char_count >= 8 {
-            para.char_count -= 8;
-        }
+        para.remove_control(control_idx);
 
         Self::reflow_paragraph_line_segs_after_control_delete(para, &self.styles, self.dpi);
         section.raw_stream = None;
@@ -620,8 +567,9 @@ impl DocumentCore {
             common: CommonObjAttr {
                 ctrl_id: CTRL_EQUATION,
                 // 한컴 저장본의 인라인 수식 계약: 문단 기준 위치, 절대 크기,
-                // 글자처럼 취급, 글과 함께 이동, 위아래 배치.
+                // 글자처럼 취급, 글과 함께 이동, 위아래 배치, 수식 번호 범주(bit 26-27 = 3).
                 attr: 0x0C2A_2311,
+                numbering_type: crate::model::shape::ObjectNumberingType::Equation,
                 treat_as_char: true,
                 width,
                 height,
@@ -637,7 +585,6 @@ impl DocumentCore {
                 vert_rel_to: VertRelTo::Para,
                 horz_rel_to: HorzRelTo::Para,
                 text_wrap: TextWrap::TopAndBottom,
-                hwp5_gen_shape_attr_bit26: true,
                 description: "수식입니다.".to_string(),
                 ..Default::default()
             },

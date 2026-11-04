@@ -8,8 +8,6 @@
 use std::collections::BTreeMap;
 use std::ops::Range;
 
-use encoding_rs::EUC_KR;
-
 const GRID_MARKER: &[u8] = b"VtDataGrid\0";
 const MATRIX_MARKER: &[u8] = b"VtMatrix\0";
 const COLLECTION_MARKER: &[u8] = b"VtCollection\0";
@@ -489,34 +487,7 @@ impl<'a> ArchiveReader<'a> {
 /// 짝수 정렬을 가정하면 안 되고, 확장 문자에서 EUC-KR 왕복이 손실될 수 있다. UTF-16
 /// 절반이 없는 작성기를 위해 cp949 로 폴백한다.
 fn decode_cell_text(payload: &[u8]) -> Option<String> {
-    let Some(split) = payload.windows(2).position(|pair| pair == [0, 0]) else {
-        // `\0\0` 경계가 없는 작성기 — 페이로드 전체가 cp949 한 벌이다(#6922).
-        let (decoded, _, had_errors) = EUC_KR.decode(payload);
-        if had_errors {
-            return None;
-        }
-        let text = decoded.replace('\u{3000}', " ").trim().to_string();
-        if text.is_empty() || text.chars().any(char::is_control) {
-            return None;
-        }
-        return Some(text);
-    };
-    let tail = payload.get(split + 2..)?;
-
-    let text = if tail.len() >= 2 && tail.ends_with(&[0, 0]) && (tail.len() - 2) % 2 == 0 {
-        let units: Vec<u16> = tail[..tail.len() - 2]
-            .chunks_exact(2)
-            .map(|pair| u16::from_le_bytes([pair[0], pair[1]]))
-            .collect();
-        String::from_utf16(&units).ok()?
-    } else {
-        let (decoded, _, had_errors) = EUC_KR.decode(&payload[..split]);
-        if had_errors {
-            return None;
-        }
-        decoded.into_owned()
-    };
-
+    let text = super::legacy_string::decode(payload)?;
     let text = text.replace('\u{3000}', " ").trim().to_string();
     if text.is_empty() || text.chars().any(char::is_control) {
         return None;
@@ -547,6 +518,7 @@ fn read_u32(bytes: &[u8], at: usize) -> Option<u32> {
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
+    use encoding_rs::EUC_KR;
 
     /// 셀 하나의 합성 명세. `index` 는 **1-based 행우선 슬롯 서수**다.
     pub(crate) enum Cell {

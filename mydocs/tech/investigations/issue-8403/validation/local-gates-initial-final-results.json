@@ -1,0 +1,163 @@
+[
+  {
+    "name": "manifest-prepare",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--prepare"
+    ],
+    "exit": 0,
+    "seconds": 1.32
+  },
+  {
+    "name": "focused-existing-pdf",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_7998_pdf_table_inference",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "exit": 0,
+    "seconds": 301.71
+  },
+  {
+    "name": "focused-text",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_8403_pdf_text_stroke",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "exit": 0,
+    "seconds": 16.45
+  },
+  {
+    "name": "focused-pattern",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_8403_pdf_image_patterns",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "exit": 0,
+    "seconds": 13.22
+  },
+  {
+    "name": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 22.2
+  },
+  {
+    "name": "lint-native",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 46.19
+  },
+  {
+    "name": "lint-backend",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp-pdf-import-backend",
+      "--lib",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 0.24
+  },
+  {
+    "name": "workspace-build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "exit": 0,
+    "seconds": 28.92
+  },
+  {
+    "name": "lint-workspace",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 77.48
+  },
+  {
+    "name": "manifest-check",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "3c01421e89a562de4ba8b021a4cdf943af60b58d"
+    ],
+    "exit": 0,
+    "seconds": 0.73
+  },
+  {
+    "name": "nextest-all",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--tests",
+      "--test-threads",
+      "14",
+      "--no-fail-fast"
+    ],
+    "exit": 100,
+    "seconds": 1128.41
+  }
+]

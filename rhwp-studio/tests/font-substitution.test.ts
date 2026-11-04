@@ -1,3 +1,5 @@
+// 관계형: 승인된 로컬 face·공개 공급·문서 대체의 선택 순서와 중복 제거를 검사한다.
+// 주석 갱신: 2026-11-04 01:26:43 KST. 실물 페이지의 px 위치나 시각 일치율을 고정하지 않는다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -5,6 +7,7 @@ import { getDetectedOSFonts } from '../src/core/font-loader.ts';
 import {
   fontFamilyChainForDisplay,
   fontFamilyWithFallback,
+  ordinaryTextFontFamilies,
   resolveFont,
 } from '../src/core/font-substitution.ts';
 
@@ -44,18 +47,18 @@ test('fontFamilyChainForDisplay는 중복 없이 generic font를 그대로 처�
   assert.equal(fontFamilyChainForDisplay('serif', 0, 0), 'serif');
   assert.equal(
     fontFamilyChainForDisplay('없는글꼴', 0, 0),
-    '"Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", sans-serif',
+    '"Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", sans-serif',
   );
   assert.equal(
     fontFamilyChainForDisplay('없는글꼴', 0, 0, { confirmedLocalFonts: ['없는글꼴'] }),
-    '"없는글꼴", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", sans-serif',
+    '"없는글꼴", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", sans-serif',
   );
 });
 
 test('fontFamilyWithFallback 기존 helper는 동일한 fallback 계열을 사용한다', () => {
   assert.equal(
     fontFamilyWithFallback('굴림체'),
-    '"굴림체", "GulimChe", "D2Coding", "Noto Sans Mono", monospace',
+    '"굴림체", "GulimChe", "D2Coding", "Noto Sans Mono", "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", monospace',
   );
 });
 
@@ -76,7 +79,10 @@ test('KoPub바탕체 weight face는 고정폭이 아니라 비례폭 serif로 �
   }
 });
 
-test('정부상징 legacy face는 exact, ROKG successor, 문서 대체 face 순서를 따른다', () => {
+test('정부상징은 확인된 원본, 확인된 successor, 문서 대체 face 순서를 따른다', () => {
+  // 관계형 공급 계약: 실물 페이지의 px 고정 검사가 아니다.
+  // #4800의 원본 우선은 유지한다. 무관한 Government_16040911 웹 공급을
+  // 제거했으므로, 설치되지 않은 원본 이름을 등록 웹폰트처럼 선두에 두지 않는다.
   const legacy = '정부상징 부처명_16040911';
   const documentFallbackFamilies = ['한컴바탕'];
 
@@ -90,13 +96,15 @@ test('정부상징 legacy face는 exact, ROKG successor, 문서 대체 face 순�
     confirmedLocalFonts: ['대한민국정부상징체 R'],
     documentFallbackFamilies,
   });
-  assert.match(successor, /^"정부상징 부처명_16040911", "대한민국정부상징체 R", "한컴바탕"/u);
+  assert.match(successor, /^"대한민국정부상징체 R", "한컴바탕"/u);
+  assert.doesNotMatch(successor, /"정부상징 부처명_16040911"/u);
 
   const documentSubstitute = fontFamilyChainForDisplay(legacy, 1, 0, {
     confirmedLocalFonts: [],
     documentFallbackFamilies,
   });
-  assert.match(documentSubstitute, /^"정부상징 부처명_16040911", "한컴바탕"/u);
+  assert.match(documentSubstitute, /^"한컴바탕"/u);
+  assert.doesNotMatch(documentSubstitute, /"정부상징 부처명_16040911"|Government_16040911/u);
 });
 
 test('ROKG successor는 정부상징 legacy 이름에만 적용한다', () => {
@@ -124,7 +132,7 @@ test('치환 대상이 설치돼 있지 않으면 legacy 이름의 기존 체인
 
   assert.equal(
     chain,
-    '"한양중고딕", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", sans-serif',
+    '"한양중고딕", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", sans-serif',
   );
 });
 
@@ -133,8 +141,8 @@ test('명시적으로 빈 local face 목록은 이전 OS 감지 결과를 사용
   detected.add('HY중고딕');
   detected.add('HYGothic-Medium');
   try {
-    // local() 로드를 확인한 프로그램이 이미 있으면 일반 fallback으로 버리지 않는다.
-    assert.match(fontFamilyChainForDisplay('HYGothic-Medium', 0, 0), /^"HYGothic-Medium"/u);
+    // 저장된 사용자 감지가 없으면 과거 OS 존재 관측을 승인으로 취급하지 않는다.
+    assert.doesNotMatch(fontFamilyChainForDisplay('HYGothic-Medium', 0, 0), /^"HYGothic-Medium"/u);
     const chain = fontFamilyChainForDisplay('한양중고딕', 0, 0, {
       confirmedLocalFonts: [],
     });
@@ -151,4 +159,15 @@ test('요청 이름 자체가 설치돼 있으면 치환 대상을 앞에 두지
   });
 
   assert.match(chain, /^"굴림"/u);
+});
+
+
+test('일반 글리프 후보는 문서 순서를 유지하고 본문 뒤에 그림문자 글꼴을 준비한다', () => {
+  const candidates = ordinaryTextFontFamilies('"함초롬바탕", "Document Substitute"');
+  assert.deepEqual(candidates.slice(0, 2), ['함초롬바탕', 'Document Substitute']);
+  assert.ok(candidates.indexOf('Noto Serif KR') < candidates.indexOf('Segoe UI Emoji'));
+  assert.deepEqual(candidates.slice(-4), ['Segoe UI Emoji', 'Noto Emoji', 'Noto Color Emoji', 'serif']);
+  const chain = ordinaryTextFontFamilies(fontFamilyWithFallback('함초롬바탕'));
+  assert.equal(chain.length, new Set(chain).size);
+  assert.deepEqual(ordinaryTextFontFamilies(''), []);
 });

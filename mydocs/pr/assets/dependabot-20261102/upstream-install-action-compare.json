@@ -1,0 +1,207 @@
+{
+  "html_url": "https://github.com/taiki-e/install-action/compare/1e29709c0ec63babbe8f266397a465f29a825f91...68a389c788b2cd04016ce8c80ee23b80d2ab3d68",
+  "status": "ahead",
+  "total_commits": 47,
+  "files": [
+    {
+      "filename": "CHANGELOG.md",
+      "status": "modified",
+      "additions": 72,
+      "deletions": 2,
+      "patch_sha256": "b9df8162fb87925a74177ad95d127ad45d5ca0101960ded6acd7c251f49cba47"
+    },
+    {
+      "filename": "TOOLS.md",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 0,
+      "patch_sha256": "00a6c8b87a03a9457fc918c4aadcbc752bff29efeb33c50820f9708f47f2040a"
+    },
+    {
+      "filename": "manifests/biome.json",
+      "status": "modified",
+      "additions": 79,
+      "deletions": 3,
+      "patch_sha256": "2ac95042d9bb8a612c6b0d35720b83834ed176d253062857bb4a7d454e0b2104"
+    },
+    {
+      "filename": "manifests/cargo-about.json",
+      "status": "modified",
+      "additions": 24,
+      "deletions": 2,
+      "patch_sha256": "f40d50cae4c9a4a1fccb2b0b617c577d9bd72bbf814714e537abb5b40ac84c7f"
+    },
+    {
+      "filename": "manifests/cargo-binstall.json",
+      "status": "modified",
+      "additions": 16,
+      "deletions": 16,
+      "patch_sha256": "4e6cdf072408187f325597e2b8b1204725c9681aceae8976bc51f901f6a9d39e"
+    },
+    {
+      "filename": "manifests/cargo-nextest.json",
+      "status": "modified",
+      "additions": 37,
+      "deletions": 2,
+      "patch_sha256": "5f64c972a6805d08cd9ee61cd0da8dce152370bb05c3d769313c0b3025bd1f11"
+    },
+    {
+      "filename": "manifests/cargo-sort.json",
+      "status": "modified",
+      "additions": 3,
+      "deletions": 3,
+      "patch_sha256": "fe4cf86da4842e436cf63b1e82129cf3d464f0d5e818032c8858c4f3ecb77725"
+    },
+    {
+      "filename": "manifests/cargo-vet.json",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 2,
+      "patch_sha256": "fb24fc633d697732997fcd333cf2e8945142548b4b3627edaa04b4e3f44ac114"
+    },
+    {
+      "filename": "manifests/deepsource.json",
+      "status": "modified",
+      "additions": 24,
+      "deletions": 2,
+      "patch_sha256": "7969a128ed52922e264bb6109fa109238ff2bc17b29cb9ff9fa329450e1d3a2b"
+    },
+    {
+      "filename": "manifests/dprint.json",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 2,
+      "patch_sha256": "0ad8b28da0740ee922a2a4a51e7ed7418954e88abce286626423c886731c76f0"
+    },
+    {
+      "filename": "manifests/espup.json",
+      "status": "modified",
+      "additions": 14,
+      "deletions": 14,
+      "patch_sha256": "50715ea4ee575f8a6d457faf70ece3bd553e2c9943cae7d0ccb503f70d96d54e"
+    },
+    {
+      "filename": "manifests/kingfisher.json",
+      "status": "modified",
+      "additions": 57,
+      "deletions": 2,
+      "patch_sha256": "780f6a5180fccee51a101609fdea5782e0505fa31b2e862400a2faff8afab767"
+    },
+    {
+      "filename": "manifests/knope.json",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 2,
+      "patch_sha256": "795588a03ad2c5fafd13bfc359dc83021cecace9e98c781676a096b6f0ba3d41"
+    },
+    {
+      "filename": "manifests/mise.json",
+      "status": "modified",
+      "additions": 159,
+      "deletions": 3,
+      "patch_sha256": "86a7ba779cb6ae2241d8cabd7c93a78dbf6a543669e540d9e882d7604b5629cd"
+    },
+    {
+      "filename": "manifests/prek.json",
+      "status": "modified",
+      "additions": 26,
+      "deletions": 0,
+      "patch_sha256": "fade34589e1338cb2e549346e8bfd6b4a4b65eef76d6a5ac77e2ff009e2f5aec"
+    },
+    {
+      "filename": "manifests/release-plz.json",
+      "status": "modified",
+      "additions": 48,
+      "deletions": 1,
+      "patch_sha256": "a9b9d8f7f58238fe7e77e6e39ca4e47fd16cf2b486671f2b1559b7ac000a279b"
+    },
+    {
+      "filename": "manifests/sccache.json",
+      "status": "modified",
+      "additions": 38,
+      "deletions": 1,
+      "patch_sha256": "190da091fa48ee88631922eccf739569f5f80faec5c953c3ef20de5f43bc34d8"
+    },
+    {
+      "filename": "manifests/similarity-rs.json",
+      "status": "added",
+      "additions": 29,
+      "deletions": 0,
+      "patch_sha256": "6e5b9c1919b178485e450435cfe0101025daf37e40ff63fd375a56bedb5aa99c"
+    },
+    {
+      "filename": "manifests/tombi.json",
+      "status": "modified",
+      "additions": 255,
+      "deletions": 3,
+      "patch_sha256": "cb40d381ae539aa4819a1643e60dd6cedddb3cd91802075101108dd9052270bb"
+    },
+    {
+      "filename": "manifests/trunk.json",
+      "status": "modified",
+      "additions": 24,
+      "deletions": 2,
+      "patch_sha256": "e6e2a501ef1e4bf921994ca2968bfc737af82278c58430f3301000f745c3b283"
+    },
+    {
+      "filename": "manifests/uv.json",
+      "status": "modified",
+      "additions": 40,
+      "deletions": 2,
+      "patch_sha256": "55dbcf305733dcd51ab4a5e7107841059a8e63dc5f6b6c3f6957e8b759ef6317"
+    },
+    {
+      "filename": "manifests/vacuum.json",
+      "status": "modified",
+      "additions": 135,
+      "deletions": 2,
+      "patch_sha256": "e7fd1dc06fd2436a0e1b920918f550da2762e012138caa64540469a239bcb147"
+    },
+    {
+      "filename": "manifests/wasm-bindgen.json",
+      "status": "modified",
+      "additions": 22,
+      "deletions": 0,
+      "patch_sha256": "63d4e5a5b8f886fd582f0675a674230bf217c806999a3a315f4dd2867e053504"
+    },
+    {
+      "filename": "manifests/wasm-pack.json",
+      "status": "modified",
+      "additions": 22,
+      "deletions": 0,
+      "patch_sha256": "fa85e314cca1f419eb96874c57d55d09869ec8548736ecc19b38a12a33253a0d"
+    },
+    {
+      "filename": "manifests/wasmtime.json",
+      "status": "modified",
+      "additions": 213,
+      "deletions": 9,
+      "patch_sha256": "cfb6b6de69e11441bb9074dc78ba06d3df0c3aa54a1fb8cd9562e89825399803"
+    },
+    {
+      "filename": "manifests/wild.json",
+      "status": "modified",
+      "additions": 18,
+      "deletions": 1,
+      "patch_sha256": "12ca8a673fa3a98f1df72c407596cc6e24e74e7b43a71d924980a3b72d7e959d"
+    },
+    {
+      "filename": "tools/ci/tool-list.sh",
+      "status": "modified",
+      "additions": 3,
+      "deletions": 0,
+      "patch_sha256": "dd30d3fc2448336a1a86a6cf1633529e1356717dfa89379fa6b6abd7d35a6fbd"
+    },
+    {
+      "filename": "tools/codegen/base/similarity-rs.json",
+      "status": "added",
+      "additions": 13,
+      "deletions": 0,
+      "patch_sha256": "14c40623a0f5632dcc1799d98cc5fc46dae93448e2f26c7b75ba0dc82ca011ba"
+    }
+  ],
+  "review_facts": [
+    "Action executable scripts unchanged; manifest and documentation updates only.",
+    "Install-nextest manifests change nextest0.9.149 to0.9.150."
+  ]
+}

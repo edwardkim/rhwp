@@ -1,0 +1,200 @@
+[
+  {
+    "name": "patterns",
+    "page": 1,
+    "backend": "canvas2d",
+    "rendererSession": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvas2d",
+        "source": "url",
+        "requested": "canvas2d"
+      },
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "selectionReason": "explicitCanvas2d",
+      "fallbackReason": null,
+      "documentRevision": 2,
+      "resourceGeneration": 2,
+      "renderProfile": "screen",
+      "documentDigest": "blake3:afe5117d8a1b4f09f23cde56012ae0c02c946dcb7046e5da46d66e7e12b6e0ce",
+      "decisionKey": "blake3:afe5117d8a1b4f09f23cde56012ae0c02c946dcb7046e5da46d66e7e12b6e0ce|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": null
+    },
+    "clip": {
+      "x": 676.65625,
+      "y": 140,
+      "width": 266.6875,
+      "height": 186.6875
+    },
+    "zoom": "1",
+    "pageCount": 5
+  },
+  {
+    "name": "patterns",
+    "page": 3,
+    "backend": "canvas2d",
+    "rendererSession": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvas2d",
+        "source": "url",
+        "requested": "canvas2d"
+      },
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "selectionReason": "explicitCanvas2d",
+      "fallbackReason": null,
+      "documentRevision": 2,
+      "resourceGeneration": 2,
+      "renderProfile": "screen",
+      "documentDigest": "blake3:afe5117d8a1b4f09f23cde56012ae0c02c946dcb7046e5da46d66e7e12b6e0ce",
+      "decisionKey": "blake3:afe5117d8a1b4f09f23cde56012ae0c02c946dcb7046e5da46d66e7e12b6e0ce|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": null
+    },
+    "clip": {
+      "x": 676.65625,
+      "y": 487.390625,
+      "width": 266.6875,
+      "height": 186.6875
+    },
+    "zoom": "1",
+    "pageCount": 5
+  },
+  {
+    "name": "stroke",
+    "page": 1,
+    "backend": "canvas2d",
+    "rendererSession": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvas2d",
+        "source": "url",
+        "requested": "canvas2d"
+      },
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "selectionReason": "explicitCanvas2d",
+      "fallbackReason": null,
+      "documentRevision": 3,
+      "resourceGeneration": 3,
+      "renderProfile": "screen",
+      "documentDigest": "blake3:c3208efbfb3b9acea807894d8b2cfa9ce53d8817f2c67f560f018d666af27a24",
+      "decisionKey": "blake3:c3208efbfb3b9acea807894d8b2cfa9ce53d8817f2c67f560f018d666af27a24|revision:3|profile:screen|resources:3|request:canvas2d|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": null
+    },
+    "clip": {
+      "x": 530,
+      "y": 140,
+      "width": 560,
+      "height": 320
+    },
+    "zoom": "1",
+    "pageCount": 7
+  },
+  {
+    "name": "stroke",
+    "page": 2,
+    "backend": "canvas2d",
+    "rendererSession": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvas2d",
+        "source": "url",
+        "requested": "canvas2d"
+      },
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "selectionReason": "explicitCanvas2d",
+      "fallbackReason": null,
+      "documentRevision": 3,
+      "resourceGeneration": 3,
+      "renderProfile": "screen",
+      "documentDigest": "blake3:c3208efbfb3b9acea807894d8b2cfa9ce53d8817f2c67f560f018d666af27a24",
+      "decisionKey": "blake3:c3208efbfb3b9acea807894d8b2cfa9ce53d8817f2c67f560f018d666af27a24|revision:3|profile:screen|resources:3|request:canvas2d|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": null
+    },
+    "clip": {
+      "x": 530,
+      "y": 140,
+      "width": 560,
+      "height": 320
+    },
+    "zoom": "1",
+    "pageCount": 7
+  },
+  {
+    "name": "original",
+    "page": 1,
+    "backend": "canvas2d",
+    "rendererSession": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvas2d",
+        "source": "url",
+        "requested": "canvas2d"
+      },
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "selectionReason": "explicitCanvas2d",
+      "fallbackReason": null,
+      "documentRevision": 5,
+      "resourceGeneration": 5,
+      "renderProfile": "screen",
+      "documentDigest": "blake3:7e2e341d3bf2ce0be945a7165defb71819352535b1456af5732b0f2319ca7403",
+      "decisionKey": "blake3:7e2e341d3bf2ce0be945a7165defb71819352535b1456af5732b0f2319ca7403|revision:5|profile:screen|resources:5|request:canvas2d|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": null
+    },
+    "clip": {
+      "x": 170,
+      "y": 140,
+      "width": 1280,
+      "height": 720
+    },
+    "zoom": "1",
+    "pageCount": 8
+  },
+  {
+    "name": "original",
+    "page": 3,
+    "backend": "canvas2d",
+    "rendererSession": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvas2d",
+        "source": "url",
+        "requested": "canvas2d"
+      },
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "selectionReason": "explicitCanvas2d",
+      "fallbackReason": null,
+      "documentRevision": 5,
+      "resourceGeneration": 5,
+      "renderProfile": "screen",
+      "documentDigest": "blake3:7e2e341d3bf2ce0be945a7165defb71819352535b1456af5732b0f2319ca7403",
+      "decisionKey": "blake3:7e2e341d3bf2ce0be945a7165defb71819352535b1456af5732b0f2319ca7403|revision:5|profile:screen|resources:5|request:canvas2d|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": null
+    },
+    "clip": {
+      "x": 170,
+      "y": 140,
+      "width": 1280,
+      "height": 720
+    },
+    "zoom": "1",
+    "pageCount": 8
+  }
+]

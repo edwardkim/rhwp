@@ -17,7 +17,14 @@ impl EqParser {
             self.skip_braced_group();
             return EqNode::Empty;
         }
+        // 구형 CHAR의 그룹은 들어오기 전 글꼴 상태를 소유한다. Version 60의
+        // 전역 전환 계약(#7873/#7975)은 그대로 유지한다. 독립 세대 대조 Print:
+        // b730d7ba-e022-4730-8e76-6aa227858645, {rm}aa · a{rm b}c.
+        let incoming_style = self.font_state;
         let node = self.parse_group_inner();
+        if self.legacy_display {
+            self.font_state = incoming_style;
+        }
         self.depth -= 1;
         node
     }
@@ -41,7 +48,12 @@ impl EqParser {
         // 닫는 괄호 건너뛰기
         self.expect(TokenType::RBrace);
 
-        EqNode::Row(children).simplify()
+        let body = EqNode::Row(children).simplify();
+        if self.legacy_display {
+            EqNode::Group(Box::new(body))
+        } else {
+            body
+        }
     }
 
     /// 현재 `{` 부터 매칭되는 `}` 까지 통째로 소비한다(깊이 상한 초과 시 truncate).

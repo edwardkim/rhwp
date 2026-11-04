@@ -11,11 +11,17 @@ import { AI_EFFORTS, AI_PROVIDERS, modelsOf, type AiEffort, type AiProviderId } 
 import type { AiFailureReason } from '../provider/types.ts';
 import { KeyStoreError, maskKey } from '../settings/key-store.ts';
 
-export function failureMessage(reason: AiFailureReason, retryAfterSeconds?: number, detail?: string): string {
+export function failureMessage(
+  reason: AiFailureReason,
+  retryAfterSeconds?: number,
+  detail?: string,
+  provider: AiProviderId = 'claude',
+): string {
   if (reason === 'rate' && retryAfterSeconds !== undefined) {
     return t('ai.error.rateRetry', { s: Math.ceil(retryAfterSeconds) });
   }
-  const base = t(`ai.error.${reason}`);
+  // 크레딧 충전 위치는 제공자마다 다르다.
+  const base = reason === 'billing' && provider !== 'claude' ? t(`ai.error.billing.${provider}`) : t(`ai.error.${reason}`);
   // 크레딧 부족은 안내 문구로 충분하다 — 같은 뜻의 영문 원문을 덧붙이지 않는다.
   return detail && reason !== 'billing' ? `${base} (${detail})` : base;
 }
@@ -87,7 +93,13 @@ export class AiSettingsDialog extends ModalDialog {
 
     this.providerSelect = select('ai-settings-provider',
       AI_PROVIDERS.map((id) => ({ value: id, label: t(`ai.provider.${id}`) })), settings.provider);
-    this.providerSelect.addEventListener('change', () => this.fillModels());
+    this.providerSelect.addEventListener('change', () => {
+      // 키는 제공자마다 따로 보관한다 — 고른 제공자의 키 상태를 다시 보인다.
+      this.fillModels();
+      this.keyInput.value = '';
+      this.setStatus('', 'info');
+      void this.refreshKeyState();
+    });
     this.modelSelect = select('ai-settings-model', [], settings.model);
     this.fillModels(settings.model);
     this.effortSelect = select('ai-settings-effort',
@@ -246,12 +258,13 @@ export class AiSettingsDialog extends ModalDialog {
     this.testButton.disabled = true;
     this.setStatus(t('ai.settings.testing'), 'info');
     try {
-      // SDK 는 처음 필요할 때 불러온다 — 패널만 열어 보는 사람에게 내려보내지 않는다.
-      const { testClaudeConnection } = await import('../provider/claude.ts');
-      const result = await testClaudeConnection(key, this.modelSelect.value, abort.signal);
+      // adapter 는 처음 필요할 때 불러온다 — 패널만 열어 보는 사람에게 내려보내지 않는다.
+      const provider = this.provider;
+      const { testConnection } = await import('../provider/registry.ts');
+      const result = await testConnection(provider, key, this.modelSelect.value, abort.signal);
       if (abort.signal.aborted) return;
       if (result.ok) this.setStatus(t('ai.settings.testOk', { model: result.modelName }), 'ok');
-      else this.setStatus(failureMessage(result.reason, result.retryAfterSeconds, result.detail), 'error');
+      else this.setStatus(failureMessage(result.reason, result.retryAfterSeconds, result.detail, provider), 'error');
     } finally {
       if (this.testAbort === abort) this.testAbort = null;
       this.testButton.disabled = false;

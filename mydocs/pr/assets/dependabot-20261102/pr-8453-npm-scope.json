@@ -1,0 +1,11 @@
+{
+  "number": 8453,
+  "head": "dc8b52ad418594a42b52560c7b706ca0fe4f1783",
+  "changed_entries": [
+    "",
+    "node_modules/webpack"
+  ],
+  "full_before_sha256": "f7336039bfbd6cb914154d61975c57b4e963533f1bcdd2b0f1e7a7769e73eca5",
+  "full_after_sha256": "d36f29f7d2fa889b9e2f1c2fa690b39a838b498565d0921e9c472bb2fa8654b0",
+  "comparison_scope": "all changed lock entries, including root manifest; unchanged lock graph omitted"
+}

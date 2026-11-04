@@ -1,0 +1,7 @@
+{
+  "source": "d78048a6f0e5f71aa3bdb7d32e703bd5971e3019",
+  "native_sha256": "6d2cf962975ff04f6e965e8596e579ea99f1a47d201c9c6132d89fa4237d0d24",
+  "wasm_sha256": "1a55a703056d60a849decef279d4db945c085ad2314b8708057e8ae92b0d7e2d",
+  "status": " M mydocs/working/task_m100_665_ingest_images.md\n",
+  "recompilation_log": "output/issue665/logs/head-wasm-rebuild.log"
+}

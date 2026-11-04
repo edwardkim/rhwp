@@ -1,3 +1,10 @@
+//! 관계형·고정형: 두 원본의 도형 호스트 소유와 독립 Print 표 경계.
+//! 주석 갱신: 2026-10-30 04:26 KST; 직전 파일 변경: df85dd5967 (2026-10-25 20:20:40 +09:00).
+//! HWPX 2026-10-30 raw(96dpi, PDFium): 8쪽 Native·fresh WASM 각 100.00%;
+//! 전 64쪽 최저 99.99% / 99.99%. 근거: mydocs/pr/assets/issue_8160/rebase-ad4bf269-20261030/README.md.
+//! HWP 2026-10-20 당시 raw(96dpi, 2px 실루엣): 8쪽 Native·fresh WASM 각 100.00%;
+//! 전 64쪽 최저 97.74% / 97.69%. 근거: mydocs/pr/assets/stored_shape_host_frame_20261020/README.md.
+//! HWP 수치는 당시 head의 측정이며 현재 head는 다시 측정하지 않았다.
 //! #8160: ubuntu-ted의 sample16 검사 제거에서 누락된 저장 도형 호스트 회귀 복원.
 //! 원본: 3859d1948444deadc6a5bc6e5343911f870f97f1, 제거: 1ef34f94452493db15a8e33e641f97b81ed74916.
 //! 저장된 도형 호스트는 실제 배치 프레임과 뒤 표의 쪽 소속을 보존한다.
@@ -134,7 +141,7 @@ fn assert_source_order(bytes: &[u8]) {
     assert_eq!(tables[0].2, expected, "표 전체 내용의 추가·누락·중복");
 }
 
-fn assert_print_coordinates(bytes: &[u8]) {
+fn assert_print_coordinates(bytes: &[u8], tolerance: f64) {
     let core = load(bytes);
     let (heading_owner, table_owner) = indices(&core);
     let tree = core.build_page_render_tree(7).unwrap();
@@ -148,7 +155,7 @@ fn assert_print_coordinates(bytes: &[u8]) {
     // 96DPI의 Print 원시 텍스트 원점 265.67999267578125pt × 96/72.
     // 이 페이지는 Native/fresh WASM 모두 raw100%이고 직접 확대 판독했다.
     assert!(
-        (baseline(heading[0]) - 354.239990234375).abs() <= 2.0,
+        (baseline(heading[0]) - 354.239990234375).abs() <= tolerance,
         "Print 제목 기준선"
     );
     let table: Vec<_> = all
@@ -157,11 +164,32 @@ fn assert_print_coordinates(bytes: &[u8]) {
         .collect();
     assert_eq!(table.len(), 1);
     let bbox = table[0].bbox;
-    // 독립 PDF의 상단274.5pt, 하단745.9439697265625pt를 같은 좌표계로 환산했다.
-    assert!((bbox.y - 366.0).abs() <= 2.0, "Print 표 시작");
+    // 독립 PDF의 상단 274.5pt를 같은 좌표계로 환산했다.
+    assert!((bbox.y - 366.0).abs() <= tolerance, "Print 표 시작");
+    // PDF의 745.94397pt는 괘선 중심이고 모델 bbox의 아래 끝과는 다른 값이다.
+    // 표 프레임 높이는 원본 셀 높이 합과 선언 높이 47204 HWPUNIT으로 검증한다.
+    let source_table = core.document().sections[0].paragraphs[table_owner]
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .expect("제목 뒤 원본 표");
+    assert_eq!(source_table.common.height, 47204, "원본 선언 높이");
     assert!(
-        (bbox.y + bbox.height - 994.5919596354166).abs() <= 2.0,
-        "Print 표 종료"
+        (bbox.height - f64::from(source_table.common.height) * 96.0 / 7200.0).abs() <= tolerance,
+        "원본 표 높이와 실제 표 프레임의 차이는 ±{tolerance}px 이내"
+    );
+    assert!(
+        all.iter()
+            .any(|node| matches!(node.node_type, RenderNodeType::Line(_))
+                && node.bbox.width > bbox.width / 2.0
+                && node.bbox.width > node.bbox.height
+                && node.bbox.x >= bbox.x - tolerance
+                && node.bbox.x + node.bbox.width <= bbox.x + bbox.width + tolerance
+                && (node.bbox.y + node.bbox.height - (bbox.y + bbox.height)).abs() <= tolerance),
+        "표 하단 괘선은 원본 표 프레임 끝을 따라야 한다"
     );
     assert!(
         baseline(heading[0]) < bbox.y,
@@ -179,9 +207,9 @@ fn issue_8160_hwpx_stored_shape_keeps_following_table_on_its_heading_page() {
 }
 #[test]
 fn issue_8160_hwp_completed_page_protects_print_heading_and_table_boundaries() {
-    assert_print_coordinates(HWP);
+    assert_print_coordinates(HWP, 2.0);
 }
 #[test]
 fn issue_8160_hwpx_completed_page_protects_print_heading_and_table_boundaries() {
-    assert_print_coordinates(HWPX);
+    assert_print_coordinates(HWPX, 1.0);
 }

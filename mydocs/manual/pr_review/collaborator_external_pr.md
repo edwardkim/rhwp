@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-18
+last_verified: 2026-11-04
 ---
 
 # Collaborator 매개 외부 PR 처리
@@ -21,6 +21,10 @@ last_verified: 2026-10-18
 maintainer_can_modify가 false이면 이 경로를 쓰지 않는다. maintainer 일반 경로 또는 작업지시자가 승인한
 별도 PR 경로로 전환한다.
 
+원 PR에 CI workflow·action·CI 실행/재사용 판정 정책 변경이 포함된 경우에도
+[옵션 2](post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)로 전환한다.
+원 PR의 최신 Full CI와 실제 검토·승인 뒤 병합하고, 후속 기록만 별도 PR로 반영한다.
+
 ### 9.1.1 기본 작업공간: `devel` 기반 체리픽 통합 검토
 
 사용자가 VS Code·터미널에서 commit 그래프와 작업 상태를 볼 수 있어야 하는 외부 PR 검토의 기본 경로는,
@@ -28,6 +32,11 @@ maintainer_can_modify가 false이면 이 경로를 쓰지 않는다. maintainer 
 기능 commit을 순서대로 cherry-pick하는 통합 경로다. 기본 작업공간이 clean하면 검토만을 위해 별도
 `git worktree add`를 만들지 않는다. 별도 worktree는 주 작업공간이 dirty여서 격리가 꼭 필요하거나
 작업지시자가 명시적으로 요구한 경우에만 쓴다.
+
+브랜치는 단독 PR이면 `review/pr-<원 PR번호>-<설명>`, 다수 PR이면
+`review/integration-<대표 이슈번호>-<설명>`으로 명명한다. 대표 이슈가 없는 다수 PR은
+`review/integration-<YYYYMMDD>-<설명>`을 사용한다. 원본 head 보존과 적용 SHA·순서 기록은
+[브랜치 명명 규칙](../codex/docs_and_git_workflow.md#외부-pr-검토와-체리픽-통합-브랜치-명명)을 따른다.
 
 Git 명령을 시작하기 전에 [reviewer assign 선행](intake_and_review.md#21-reviewer-assign-선행)에 따라
 **각 원 PR의 reviewer를 지정하고 API로 재확인**한다. 최소 사전 분류 이후의 상세 조사와 local fetch·체리픽은
@@ -39,7 +48,8 @@ git status --short --branch
 git fetch upstream devel pull/N/head:refs/remotes/upstream/prN-head
 git switch devel
 git merge --ff-only upstream/devel
-git switch -c review/<contributor>-<yyyymmdd> upstream/devel
+# 단독 PR 예시. 다수 PR 통합은 위 integration 형식을 사용한다.
+git switch -c review/pr-N-<description> upstream/devel
 git log --reverse --no-merges --format='%H %s' \
   upstream/devel..upstream/prN-head
 # 위 목록을 오래된 commit부터 하나씩 적용하고, 각 충돌을 이 branch에서 해결한다.
@@ -63,7 +73,7 @@ git diff --check upstream/devel...HEAD
 
 원 contributor PR head를 그대로 유지하면서 그 source branch에 collaborator commit을 직접 push해야 하는
 경우는 아래 9.3.1의 예외 경로다. 이 경우에도 사용자 가시성이 필요하면 별도 worktree 대신 같은 주
-작업공간에서 source head를 checkout한 `review/<contributor>-<yyyymmdd>` branch를 사용한다. direct source
+작업공간에서 source head를 checkout한 `review/pr-<원 PR번호>-<설명>` branch를 사용한다. direct source
 경로와 위 체리픽 통합 경로를 한 PR에 섞거나, contributor history를 rebase·amend·force-push하지 않는다.
 
 ### 9.1.2 렌더링 회귀 보정의 선행 조건
@@ -134,6 +144,9 @@ mydocs/orders/YYYYMMDD.md                  # 갱신이 필요한 경우
 
 오늘할일이 필요하면 merge 후 별도 PR로 늦게 만들지 않는다. review 문서와 함께 contributor PR head에
 포함하고, 뒤에 추가한 review-only commit은 9.3.2의 fast-pass 조건으로 판정한다.
+
+단, 위의 CI 변경 PR은 옵션 2 예외다. 원 PR에 기록을 추가해 Full CI를 반복하지 않고,
+병합 완료 뒤 별도 후속 기록 PR에 review와 오늘할일을 함께 반영한다.
 
 local CI 검증이 완료된 경우 review 문서와 오늘할일은 실행 결과를 과거형으로 기록한다. 아직 실행하지
 않은 GitHub Actions·작업지시자 승인·merge만 미래 조건으로 남기며, 완료 검증을 "실행할 예정"으로
@@ -213,7 +226,7 @@ gh pr view N --repo edwardkim/rhwp \
 git ls-remote --heads https://github.com/<contributor>/rhwp.git refs/heads/<head-branch>
 git fetch https://github.com/<contributor>/rhwp.git \
   refs/heads/<head-branch>:refs/remotes/contributor/prN-head
-git switch review/<contributor>-<yyyymmdd>
+git switch review/pr-N-<description>
 git rev-parse HEAD
 ~~~
 

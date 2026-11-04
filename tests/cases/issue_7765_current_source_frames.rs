@@ -12,45 +12,47 @@ use std::{fs, path::PathBuf, process::Command, sync::OnceLock};
 
 fn pages() -> &'static Vec<Value> {
     static PAGES: OnceLock<Vec<Value>> = OnceLock::new();
-    PAGES.get_or_init(|| {
-        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let output = root.join("output").join(format!(
-            "issue7765-current-frames-{}-{}",
-            std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_nanos()
-        ));
-        fs::create_dir_all(&output).unwrap();
-        let binary = std::env::var("CARGO_BIN_EXE_rhwp")
-            .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").into());
-        let mut result = Vec::new();
-        for page in 25..=29 {
-            let folder = output.join(format!("p{page:03}"));
-            let exported = Command::new(&binary)
-                .arg("export-render-tree")
-                .arg(root.join("samples/86712_regulatory_analysis.hwp"))
-                .args(["--compat", "2024", "--page", &(page - 1).to_string(), "-o"])
-                .arg(&folder)
-                .output()
-                .unwrap();
-            assert!(
-                exported.status.success(),
-                "{page}쪽 실제 출력: {}",
-                String::from_utf8_lossy(&exported.stderr)
-            );
-            let files: Vec<_> = fs::read_dir(&folder)
-                .unwrap()
-                .map(|entry| entry.unwrap().path())
-                .filter(|path| path.extension().is_some_and(|ext| ext == "json"))
-                .collect();
-            assert_eq!(files.len(), 1, "요청한 한 쪽의 렌더 트리만 사용한다");
-            result.push(serde_json::from_slice(&fs::read(&files[0]).unwrap()).unwrap());
-        }
-        fs::remove_dir_all(output).unwrap();
-        result
-    })
+    PAGES.get_or_init(|| load_pages(25..=29))
+}
+
+fn load_pages(numbers: impl IntoIterator<Item = usize>) -> Vec<Value> {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let output = root.join("output").join(format!(
+        "issue7765-current-frames-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    fs::create_dir_all(&output).unwrap();
+    let binary =
+        std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").into());
+    let mut result = Vec::new();
+    for page in numbers {
+        let folder = output.join(format!("p{page:03}"));
+        let exported = Command::new(&binary)
+            .arg("export-render-tree")
+            .arg(root.join("samples/86712_regulatory_analysis.hwp"))
+            .args(["--compat", "2024", "--page", &(page - 1).to_string(), "-o"])
+            .arg(&folder)
+            .output()
+            .unwrap();
+        assert!(
+            exported.status.success(),
+            "{page}쪽 실제 출력: {}",
+            String::from_utf8_lossy(&exported.stderr)
+        );
+        let files: Vec<_> = fs::read_dir(&folder)
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .filter(|path| path.extension().is_some_and(|ext| ext == "json"))
+            .collect();
+        assert_eq!(files.len(), 1, "요청한 한 쪽의 렌더 트리만 사용한다");
+        result.push(serde_json::from_slice(&fs::read(&files[0]).unwrap()).unwrap());
+    }
+    fs::remove_dir_all(output).unwrap();
+    result
 }
 
 fn children(node: &Value) -> impl Iterator<Item = &Value> {
@@ -139,4 +141,68 @@ fn final_fragment_keeps_the_empty_line_box_inside_its_print_border() {
     near(frame[1], 77.5146, "끝 조각 위 괘선");
     near(frame[3], 288.4840, "빈 종료 줄을 보존한 끝 조각 아래 괘선");
     assert!(text(page).contains("안정적인주택공급"));
+}
+
+#[test]
+fn successive_saved_restarts_with_link_fields_keep_their_page_owners() {
+    fn lines<'a>(node: &'a Value, paragraph: u64, result: &mut Vec<&'a Value>) {
+        if node["type"] == "TextLine" && node["pi"] == paragraph {
+            result.push(node);
+            return;
+        }
+        for child in children(node) {
+            lines(child, paragraph, result);
+        }
+    }
+
+    let selected = load_pages([20, 21]);
+    let first = table(&selected[0], 101, 1, 1).expect("Print20쪽의 이어받기 표");
+    let second = table(&selected[1], 101, 1, 1).expect("Print21쪽의 종료 표");
+    let mut before = Vec::new();
+    let mut after = Vec::new();
+    lines(first, 69, &mut before);
+    lines(second, 69, &mut after);
+    // 독립 Print20쪽은 두 줄을 소유하며 21쪽은 마지막 '다'에서 시작한다.
+    assert_eq!(
+        before.len(),
+        2,
+        "표식 때문에 앞쪽의 끝 줄을 이월하면 안 된다"
+    );
+    assert_eq!(after.len(), 1);
+    assert_eq!(text(after[0]), "다");
+
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let source = rhwp::parser::parse_hwp(
+        &fs::read(root.join("samples/86712_regulatory_analysis.hwp")).unwrap(),
+    )
+    .unwrap();
+    let rhwp::model::control::Control::Table(source_table) =
+        &source.sections[0].paragraphs[101].controls[0]
+    else {
+        panic!("원본 표가 필요하다");
+    };
+    let paragraph = &source_table.cells[0].paragraphs[69];
+    assert!(paragraph.controls.iter().any(|control| matches!(
+        control,
+        rhwp::model::control::Control::Field(_) | rhwp::model::control::Control::Hyperlink(_)
+    )));
+    let actual: String = before.iter().chain(&after).map(|line| text(line)).collect();
+    let expected: String = paragraph
+        .text
+        .chars()
+        .filter(|c| !c.is_whitespace())
+        .collect();
+    assert_eq!(
+        actual, expected,
+        "두 조각에서 원문을 순서대로 한 번만 소유한다"
+    );
+
+    let mut following = Vec::new();
+    lines(&selected[1], 102, &mut following);
+    assert_eq!(following.len(), 1);
+    assert_eq!(text(following[0]), "3");
+    assert!(
+        bounds(second)[3] <= bounds(following[0])[1],
+        "빈 종료 줄을 포함한 표 상자는 후속 문단보다 먼저 닫혀야 한다"
+    );
 }

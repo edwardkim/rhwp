@@ -1,0 +1,133 @@
+{
+  "comparison": "SVG subset vs full-face control; not an independent Print comparison",
+  "pages": [
+    {
+      "page": 1,
+      "fonts": [
+        {
+          "family": "HY견고딕",
+          "weight": "400",
+          "unchanged_full_face": true,
+          "bytes": 2817876
+        },
+        {
+          "family": "HY견명조",
+          "weight": "400",
+          "unchanged_full_face": true,
+          "bytes": 4883924
+        },
+        {
+          "family": "HY헤드라인M",
+          "weight": "400",
+          "full_sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5",
+          "subset_sha256": "e11528caa2066abfd77def6b743f7d5b4593d0f6af668907e70f85376ad36cd5",
+          "source_characters_checked": 21,
+          "full_bytes": 911040,
+          "subset_bytes": 6412,
+          "unicode_metrics_outlines_preserved": true
+        },
+        {
+          "family": "굴림체",
+          "weight": "400",
+          "full_sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3",
+          "subset_sha256": "7a6eae50c42d6a8d83b6286a8a9adc34efbd6923154f317ef2202033f499fbb8",
+          "source_characters_checked": 44,
+          "full_bytes": 2817876,
+          "subset_bytes": 10268,
+          "unicode_metrics_outlines_preserved": true
+        }
+      ],
+      "non_font_svg_identical": true,
+      "raw_unmatched_subset": 0,
+      "raw_unmatched_full": 0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 40262,
+        "tolerant_content_match_percent": 100.0
+      },
+      "rgb_different_pixels": 325,
+      "rgb_identical": false
+    },
+    {
+      "page": 2,
+      "fonts": [
+        {
+          "family": "HY견고딕",
+          "weight": "400",
+          "full_sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3",
+          "subset_sha256": "5549b15d8f0a7d150a6cbee48cbc1d6482a46f058048898bc868c469305057ac",
+          "source_characters_checked": 12,
+          "full_bytes": 2817876,
+          "subset_bytes": 4840,
+          "unicode_metrics_outlines_preserved": true
+        },
+        {
+          "family": "HY헤드라인M",
+          "weight": "400",
+          "full_sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5",
+          "subset_sha256": "e6a9e9b25225a290ecf5a42b3bf945dc07d2a49e247e9f655b1b63132dbc57ef",
+          "source_characters_checked": 14,
+          "full_bytes": 911040,
+          "subset_bytes": 4980,
+          "unicode_metrics_outlines_preserved": true
+        },
+        {
+          "family": "Haansoft Batang",
+          "weight": "400",
+          "full_sha256": "e391734bd989a8c45fe671ebcf3a4960985a0dfb1c5638209b55a3dd3f5517df",
+          "subset_sha256": "d4eac2baff73af0bc18a7927d166bf63e06556d3b006f8f7c1d52728235e38f3",
+          "source_characters_checked": 1,
+          "full_bytes": 28240160,
+          "subset_bytes": 2836,
+          "unicode_metrics_outlines_preserved": true
+        },
+        {
+          "family": "굴림체",
+          "weight": "400",
+          "unchanged_full_face": true,
+          "bytes": 2817876
+        },
+        {
+          "family": "한컴돋움",
+          "weight": "400",
+          "full_sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3",
+          "subset_sha256": "ab667ef51cb8cd098fffc43892db283c3ab4b77ea83bc0d918ef5704e87cdcbd",
+          "source_characters_checked": 53,
+          "full_bytes": 2817876,
+          "subset_bytes": 11028,
+          "unicode_metrics_outlines_preserved": true
+        },
+        {
+          "family": "한컴돋움",
+          "weight": "bold",
+          "unchanged_full_face": true,
+          "bytes": 31085224
+        }
+      ],
+      "non_font_svg_identical": true,
+      "raw_unmatched_subset": 0,
+      "raw_unmatched_full": 0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 38185,
+        "tolerant_content_match_percent": 100.0
+      },
+      "rgb_different_pixels": 8974,
+      "rgb_identical": false
+    }
+  ],
+  "all_raw100": true,
+  "all_source_unicode_metrics_outlines_preserved": true,
+  "input": "samples/issue2470/36382471_masked.hwpx",
+  "input_sha256": "43572dad5e17395aa02d1b0000b736b8467278931086604776ef30393dd0f54b",
+  "native_debug_binary_sha256": "4923e454eac4205f411031070ee179e07d9f2252cd7e06acf3a0a5409048e94c",
+  "rust_input_anchor": "36f255768fbfca2601a9a5499b1e92166212c0e1",
+  "executed_head": "d612e9f1710e6bf72f8bd21538820eeb41f9529c",
+  "manual_review": "두 쪽의 변경 영역을 같은 배율로 확대 대조함. 문자·표·간격 보존, RGB 차이와 2px raw100을 구분함."
+}

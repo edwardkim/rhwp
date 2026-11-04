@@ -93,14 +93,22 @@ export abstract class ModalDialog {
     // document capture 단계에서 키 이벤트를 가로채 편집 영역 도달 차단
     // input/textarea 내부의 일반 타이핑은 허용한다.
     this.captureHandler = (e: KeyboardEvent) => {
+      if (!this.isTopmostDialog()) return;
       const target = e.target as HTMLElement | null;
-      const isEditable = target instanceof HTMLInputElement
-        || target instanceof HTMLTextAreaElement;
+      const inside = target !== null && this.dialog.contains(target);
+      const isEditable = inside && (target instanceof HTMLInputElement
+        || target instanceof HTMLTextAreaElement);
 
       if (e.key === 'Escape') {
         e.stopPropagation();
         e.preventDefault();
         this.hide();
+        return;
+      }
+      // A late editor focus callback must not turn modal input into document text.
+      if (!inside) {
+        e.stopPropagation();
+        e.preventDefault();
         return;
       }
       // 버튼의 Enter/Space는 브라우저의 기본 활성화를 허용한다.
@@ -110,7 +118,11 @@ export abstract class ModalDialog {
         e.stopPropagation();
         return;
       }
-      if (e.key === 'Enter' && !isEditable) {
+      // 선택·펼치기와 포커스 가능한 읽기 영역의 기본 키 동작을 유지한다.
+      const isNativeChoice = target instanceof HTMLSelectElement || !!target?.closest('summary')
+        || (target instanceof HTMLPreElement && target.tabIndex >= 0);
+      if (e.key === 'Enter' && !e.isComposing && !isNativeChoice
+        && (!isEditable || this.shouldConfirmOnEnter(target!))) {
         e.stopPropagation();
         e.preventDefault();
         const btn = this.dialog.querySelector('.dialog-btn-primary') as HTMLButtonElement | null;
@@ -124,7 +136,7 @@ export abstract class ModalDialog {
       }
       // 편집 가능한 요소 내부 → 키 입력 허용, 외부 전파만 차단
       e.stopPropagation();
-      if (!isEditable) {
+      if (!isEditable && !isNativeChoice) {
         e.preventDefault();
       }
     };
@@ -153,6 +165,14 @@ export abstract class ModalDialog {
   protected abstract createBody(): HTMLElement;
 
   protected onTabKey(_e: KeyboardEvent): boolean { return false; }
+
+  /** 특정 한 줄 입력만 확인 동작에 연결한다. 일반 입력과 textarea는 기존 동작을 유지한다. */
+  protected shouldConfirmOnEnter(_target: HTMLElement): boolean { return false; }
+
+  protected isTopmostDialog(): boolean {
+    const overlays = document.querySelectorAll('.modal-overlay');
+    return overlays.length > 0 && overlays[overlays.length - 1] === this.overlay;
+  }
 
   /** 서브클래스에서 확인 버튼 동작 구현. false 반환 시 대화상자 유지 */
   protected abstract onConfirm(): void | boolean;

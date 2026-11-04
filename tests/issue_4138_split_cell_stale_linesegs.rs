@@ -68,7 +68,7 @@ fn source_node<'a>(
 /// 증거가 아니므로, 글자 상자만 들어간다는 이유로 다음 쪽 줄을 앞당기지 않는다.
 /// 원본 문단을 두 조각이 정확히 한 번 나누는지도 함께 검사한다.
 #[test]
-fn saved_split_keeps_the_first_continuation_line_on_its_own_page() {
+fn verified_saved_split_preserves_continuation_and_equation_line_advance() {
     let mut doc = load();
     doc.split_table_cell_into_native(0, 0, CTRL_IDX, TARGET_ROW, 0, 1, 2, false, false)
         .expect("split_cell_into 1×2");
@@ -429,20 +429,21 @@ fn saved_split_keeps_the_first_continuation_line_on_its_own_page() {
         "다음 쪽은 이미 앞 쪽에 속한 줄을 반복하지 않는다"
     );
 
-    // 같은 분할 저장본의 독립 한컴 Print/재저장 LineSeg(HU)다.
-    // 큰 수식이 줄간격 계산에 참여하지 않는 혼합 줄도 점유 높이는 보존한다.
-    // Native/fresh WASM 전115/197쪽의 90% 선행 검증은 C32의 정확한 현재 생성본을 따른다.
-    for (paragraph, height, baseline, spacing) in [
-        (1685, 2106, 1411, 720),
-        (1698, 2232, 1540, 1340),
-        (1701, 1260, 1020, 720),
-        (1704, 1386, 1040, 832),
-    ] {
+    // 독립 Print/한컴 재저장의 줄 전진량(HU)을 보호한다.
+    // 줄 상자와 뒤 간격의 내부 분할은 출력 계약이 아니다. 문단 1701의
+    // 1260+720과 1373+607은 같은 1980HU이며 기준선도 1020HU로 같다.
+    // 현재 저장본의 새 Print와 전 115/197쪽 Native/fresh 증거는
+    // mydocs/pr/assets/issue4138_line_advance_20261025/README.md에 있다.
+    for (paragraph, advance) in [(1685, 2826), (1698, 3572), (1701, 1980), (1704, 2218)] {
         let line = &body.paragraphs[paragraph].line_segs[0];
         assert_eq!(
-            (line.line_height, line.baseline_distance, line.line_spacing),
-            (height, baseline, spacing),
-            "독립 한컴 수식 줄의 높이·기준선·간격: 문단{paragraph}"
+            line.line_height + line.line_spacing,
+            advance,
+            "독립 한컴 수식 줄의 전진량: 문단{paragraph}"
+        );
+        assert!(
+            line.baseline_distance > 0 && line.baseline_distance <= line.line_height,
+            "기준선은 해당 글줄 상자 안에 속한다: 문단{paragraph}"
         );
     }
     let equation_page: serde_json::Value =
@@ -464,6 +465,22 @@ fn saved_split_keeps_the_first_continuation_line_on_its_own_page() {
             <= 0.2,
         "최종 배치도 독립 줄 점유와 간격을 한 번 소비한다"
     );
+    let height_page: serde_json::Value =
+        serde_json::from_str(&saved.get_page_render_tree(129).expect("수식의 130쪽 트리")).unwrap();
+    let height_cell = source_node(&height_page, "Cell", "row", u64::from(TARGET_ROW)).unwrap();
+    let height_lines: Vec<_> = height_cell["children"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|line| line["type"] == "TextLine" && line["pi"].as_u64() == Some(1701))
+        .collect();
+    assert_eq!(height_lines.len(), 2, "높이 계수 수식과 뒤 본문의 줄 보존");
+    let first_y = height_lines[0]["bbox"]["y"].as_f64().unwrap();
+    let next_y = height_lines[1]["bbox"]["y"].as_f64().unwrap();
+    // 새 Print130쪽의 본문 기준선372.3930→398.7642 CSSpx는 약26.4px다.
+    // 절대 원점 대신 독립 줄 전진량을 실제 배치가 소비하는지 검사한다.
+    assert!((next_y - first_y - 1980.0 * 96.0 / 7200.0).abs() <= 0.2);
+    assert!(first_y + height_lines[0]["bbox"]["h"].as_f64().unwrap() <= next_y);
 }
 
 /// 독립 Print49쪽의 내어쓰기 자동 탭은 첫 본문과 다음 글줄의 시작을 맞춘다.

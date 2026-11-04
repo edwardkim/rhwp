@@ -18,13 +18,26 @@ impl TypesetState {
     /// 쪽 전환을 확정한 뒤 다음 각주 lane의 같은 조각 높이를 fit과 paint에 예약한다.
     /// 앞 쪽에 남은 본문을 각주 suffix의 쪽으로 먼저 옮기지 않는다.
     pub(in crate::renderer::typeset) fn drain_deferred_body_footnotes(&mut self) {
+        match self.drain_deferred_body_footnotes_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(in crate::renderer::typeset) fn drain_deferred_body_footnotes_with_storage<
+        S: crate::storage::Storage,
+    >(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         for (note, height) in std::mem::take(&mut self.data.deferred_body_footnotes) {
             let draw_separator = note
                 .fragment
                 .map_or(true, |fragment| fragment.draw_separator);
-            self.record_current_footnote(note);
+            self.record_current_footnote_with_storage(note, storage)?;
             self.add_footnote_fragment_height(height, draw_separator);
         }
+        Ok(())
     }
 
     /// [#2559] 각주가 사용할 수 있는 빈 꼬리말 밴드 높이.
@@ -263,7 +276,8 @@ impl TypesetState {
         fragment: FootnoteFragment,
         content_height: f64,
     ) -> bool {
-        let Some(page) = self.data.pages.get_mut(page_idx) else {
+        let data = &mut *self.data;
+        let Some(page) = data.pages.get_mut(page_idx) else {
             return false;
         };
         let first = page.footnotes.is_empty();
@@ -281,12 +295,12 @@ impl TypesetState {
         });
         let added_height = content_height
             + if fragment.draw_separator && !has_separator {
-                self.data.footnote_separator_overhead
+                data.footnote_separator_overhead
             } else {
                 0.0
             }
             + if !first {
-                self.data.footnote_between_notes_margin
+                data.footnote_between_notes_margin
             } else {
                 0.0
             };
@@ -343,12 +357,13 @@ impl TypesetState {
     }
 
     pub(in crate::renderer::typeset) fn sync_current_page_footnote_area(&mut self) {
-        if self.data.current_footnote_height <= 0.0 {
+        let data = &mut *self.data;
+        if data.current_footnote_height <= 0.0 {
             return;
         }
-        if let Some(page) = self.data.pages.last_mut() {
+        if let Some(page) = data.pages.last_mut() {
             page.layout
-                .update_footnote_area(self.data.current_footnote_height);
+                .update_footnote_area(data.current_footnote_height);
         }
     }
 }

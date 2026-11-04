@@ -157,7 +157,7 @@ fn collect(root: &Path, ext: &str, skip_dirs: &[&str]) -> Vec<(PathBuf, String)>
     if root == Path::new(HWP5_ROOT) && ext == "hwp" {
         preserved_format_inputs::append_preserved_hwp5_inputs(&mut acc);
     }
-    acc.retain(|(path, _)| !is_exam_fixture(path));
+    acc.retain(|(path, _)| !is_deferred_fixture(path));
     acc.retain(|(path, _)| !retired_exam_baseline_scope::is_retired(path));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     acc

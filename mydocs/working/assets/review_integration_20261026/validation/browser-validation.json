@@ -1,0 +1,53 @@
+{
+  "wasm_build_head": "523af99acf2c53265e390a4e982eb07dd1071099",
+  "wasm_sha256": "c5b25dd8b22efce0d4ecb08291069e3ec625345c40957cbe457cc431f69737d8",
+  "actual_mocked_api_no_real_keys": true,
+  "runs": [
+    {
+      "name": "ai-providers",
+      "command": [
+        "npm",
+        "run",
+        "e2e:ai-providers"
+      ],
+      "cwd": "rhwp-studio",
+      "exit": 0,
+      "pass_assertions": 34,
+      "temporary_log": "output/pr-review/planet6897-20261026/v15-ai-providers-fresh-browser.log",
+      "log_sha256": "e813e39dbeac24fb50cdf748e0f8b1082f5b2e6a6be6638773596ecf5b263d95"
+    },
+    {
+      "name": "pdf-layout",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/review-v15-pdf-layout-ui.mjs",
+        "--mode=headless"
+      ],
+      "cwd": "rhwp-studio",
+      "exit": 0,
+      "pass_assertions": 24,
+      "temporary_log": "output/pr-review/planet6897-20261026/v15-pdf-layout-fresh-browser.log",
+      "log_sha256": "200a613b5b67b2613ae36e769c60130c54695bddbf82026ce6cadffa252bbb0e"
+    },
+    {
+      "name": "canvaskit-lines",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/review-canvaskit-lines-v15.mjs",
+        "--mode=headless"
+      ],
+      "cwd": "rhwp-studio",
+      "exit": 0,
+      "pass_assertions": 16,
+      "temporary_log": "output/pr-review/planet6897-20261026/v15-canvaskit-lines-fresh-browser.log",
+      "log_sha256": "5ced185e69c18d4a5e04bc682b8c66c788e239692ef8ceb7a6362ccc0d344b73"
+    }
+  ],
+  "completed_at": "2026-10-27T07:16:58.578842+00:00"
+}

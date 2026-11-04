@@ -1,0 +1,14 @@
+{
+  "originalCount": 60,
+  "candidateCount": 48,
+  "originalUnique": 25,
+  "candidateUnique": 25,
+  "uniquePayloadsLost": [],
+  "countDifferences": [
+    {
+      "hash": "b3786fb90d7131b32d536a9e7ae1fbd7c81c638c8c9f0df2c90f4e13f19583b0",
+      "original": 24,
+      "candidate": 12
+    }
+  ]
+}

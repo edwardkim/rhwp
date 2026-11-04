@@ -227,22 +227,53 @@ fn implicit_source_picture_scope_is_preserved_when_saved() {
     }
 }
 
-#[test]
-fn retained_number_slots_do_not_leave_an_extra_blank_in_the_final_paint() {
+fn unbound_number_slots(
+    core: &DocumentCore,
+    page: u32,
+    prefix: &str,
+    number: &str,
+) -> Vec<(f64, String, Option<String>)> {
     use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
-    fn walk(n: &RenderNode, found: &mut Vec<(f64, String, Option<String>)>) {
+    fn walk(
+        n: &RenderNode,
+        prefix: &str,
+        number: &str,
+        found: &mut Vec<(f64, String, Option<String>)>,
+    ) {
         if let RenderNodeType::TextLine(line) = &n.node_type {
-            if line.caption_owner.is_none()&&n.children.iter().any(|c|matches!(&c.node_type,RenderNodeType::TextRun(r)if r.text.starts_with("Before:"))){
-   for c in &n.children{if let RenderNodeType::TextRun(r)=&c.node_type{if r.display_text.as_deref().unwrap_or(&r.text)=="1"{found.push((c.bbox.x,r.text.clone(),r.display_text.clone()))}}}
-  }
+            if line.caption_owner.is_none()
+                && n.children.iter().any(|child| {
+                    matches!(&child.node_type, RenderNodeType::TextRun(run)
+                        if run.text.starts_with(prefix))
+                })
+            {
+                for child in &n.children {
+                    if let RenderNodeType::TextRun(run) = &child.node_type {
+                        if run.display_or_text() == number {
+                            found.push((child.bbox.x, run.text.clone(), run.display_text.clone()));
+                        }
+                    }
+                }
+            }
         }
         for c in &n.children {
-            walk(c, found)
+            walk(c, prefix, number, found)
         }
     }
-    let core = input("inline-unbound");
     let mut fields = Vec::new();
-    walk(&core.build_page_render_tree(0).unwrap().root, &mut fields);
+    walk(
+        &core.build_page_render_tree(page).unwrap().root,
+        prefix,
+        number,
+        &mut fields,
+    );
+    fields
+}
+
+#[test]
+fn retained_number_slots_do_not_leave_an_extra_blank_in_the_final_paint() {
+    let core = input("inline-unbound");
+    let fields = unbound_number_slots(&core, 0, "Before:", "1");
     assert_eq!(fields.len(), 2);
     for ((x, _, _), pdf_x) in fields.iter().zip([162.9516805013021, 188.2179972330729]) {
         assert!(
@@ -256,5 +287,77 @@ fn retained_number_slots_do_not_leave_an_extra_blank_in_the_final_paint() {
             "retained source placeholder is consumed, not drawn in addition to an inserted label"
         );
         assert_eq!(display.as_deref(), Some("1"));
+    }
+}
+
+#[test]
+fn current_number_after_last_picture_keeps_its_independent_print_slots() {
+    use std::{fs, process::Command, time::SystemTime};
+
+    // Cargo가 같은 head에서 만든 CLI의 실제 render tree도 보호한다.
+    // 문단 소유와 표시 문자열을 공개 JSON에서 확인하므로 source 공백과 혼동하지 않는다.
+    let output_dir = std::env::temp_dir().join(format!(
+        "rhwp-issue265-after-{}-{}",
+        std::process::id(),
+        SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    fs::create_dir(&output_dir).unwrap();
+    let output = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        .arg("export-render-tree")
+        .arg(format!("{FIXTURES}/inline-unbound.hwpx"))
+        .args(["--page", "14", "--compat", "2022", "--output"])
+        .arg(&output_dir)
+        .output();
+    let json = fs::read(output_dir.join("render_tree_015.json"));
+    fs::remove_dir_all(&output_dir).unwrap();
+    assert!(output.expect("CLI 실행").status.success(), "CLI 트리 출력");
+    let tree: serde_json::Value = serde_json::from_slice(&json.unwrap()).unwrap();
+    fn collect(node: &serde_json::Value, fields: &mut Vec<(f64, String, Option<String>)>) {
+        let children = node["children"].as_array();
+        if node["type"] == "TextLine"
+            && node["captionOwner"].is_null()
+            && children.is_some_and(|children| {
+                children.iter().any(|child| {
+                    child["type"] == "TextRun"
+                        && child["text"]
+                            .as_str()
+                            .is_some_and(|s| s.starts_with("After:"))
+                })
+            })
+        {
+            for child in children.unwrap() {
+                if child["type"] == "TextRun" && child["displayText"] == "5" {
+                    fields.push((
+                        child["bbox"]["x"].as_f64().unwrap(),
+                        child["text"].as_str().unwrap().into(),
+                        child["displayText"].as_str().map(str::to_owned),
+                    ));
+                }
+            }
+        }
+        for child in children.into_iter().flatten() {
+            collect(child, fields);
+        }
+    }
+    // 독립 Print 15쪽의 두 번호 원점(72pt -> CSS96dpi).
+    // 같은 쪽의 Native 100%/fresh 99.97%와 직접 판독 후 ±2px를 적용한다.
+    let mut fields = Vec::new();
+    collect(&tree, &mut fields);
+    assert_eq!(fields.len(), 2, "마지막 개체 뒤 번호의 누락·중복 금지");
+    for ((x, source, display), pdf_x) in fields.iter().zip([155.59567260742188, 180.70206705729166])
+    {
+        // CLI bbox의 소수 한 자리 반올림 오차도 2px 허용폭 안에서 소비한다.
+        assert!(
+            (x - pdf_x).abs() + 0.05 <= 2.0,
+            "독립 Print 15쪽의 번호 원점"
+        );
+        assert_eq!(
+            source, " ",
+            "원문 자리표를 표시 번호와 중복해서 그리지 않는다"
+        );
+        assert_eq!(display.as_deref(), Some("5"));
     }
 }

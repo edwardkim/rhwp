@@ -1,0 +1,12 @@
+{
+  "yaml_and_router_description_equal": true,
+  "json_files_valid": 76,
+  "generated_files_equal_after_trailing_whitespace_normalization": 103,
+  "runtime_and_schema_unchanged": [
+    "src/cli/commands/generation.rs",
+    "src/document_core/builders/exam_paper.rs",
+    "src/serializer/hwpx/picture.rs",
+    "src/parser/ingest/schema.rs",
+    "tools/rhwp-ingest/schema/ingest_schema_v1.json"
+  ]
+}

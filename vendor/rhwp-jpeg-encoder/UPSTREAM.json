@@ -6,7 +6,33 @@
   "source_archive": "https://static.crates.io/crates/jpeg-encoder/jpeg-encoder-0.7.1.crate",
   "patches": [
     "src/quantization.rs: correct exact half-quantum rounding after the reciprocal fast path.",
-    "README.md: remove two trailing spaces; license wording unchanged."
+    "README.md: remove two trailing spaces; license wording unchanged.",
+    "src/encoder.rs: move scan methods to src/encoder/scans.rs with pub(super) visibility; algorithms unchanged."
   ],
-  "license": "(MIT OR Apache-2.0) AND IJG"
+  "license": "(MIT OR Apache-2.0) AND IJG",
+  "vcs": {
+    "git": {
+      "sha1": "baf40191ae25a32e56a884fa6e001c4fe938d451"
+    },
+    "path_in_vcs": ""
+  },
+  "files": {
+    "Cargo.toml.orig": "bd80a589e17ad71f28ad47158ee5156aa42ffa5029183605f3fa4f2e1e73697d",
+    "LICENSE-APACHE": "85a884980abd6032fc6b5439ba918ab16db9ac9051b5cf18db9c27c587df07c0",
+    "LICENSE-IJG": "a21e92ec88aefc6823f0c51994783571a849e8d9b43d9ade61ec9d886776721e",
+    "LICENSE-MIT": "4d022727ea392ebba2fe5e9a5f78c610a0eae506b491f3db29c78b6d430d6503",
+    "README.md": "7ec1a0e72320be06edcbac3c3e3c6d775b72fe50e483b4d7234988239a9e951b",
+    "src/avx2/fdct.rs": "c9c77c0feddbb4bf0f929754321b2d03af123d2b82b661d8caee6a9ead7b15eb",
+    "src/avx2/ycbcr.rs": "d8ead2213f8809a880112c838b60aee0886dc01b5855aa587690e2990a820a29",
+    "src/avx2.rs": "5da4e32b33624ea554f715658c459fd69de6392af855727b7bf6dcdf54929f7a",
+    "src/encoder.rs": "2ba07ee29a53597e24b54f8401acaac497e0c8650ade1a51de16e210f087bd1b",
+    "src/error.rs": "bd73ebcc55e3bc8b2349d5ff6bec816da05bbb04561b7524a40b0cccc3560644",
+    "src/fdct.rs": "e3f0fc38274c240548ac4604d5dca4107a4f0fe7cd6d617e3ce458dc061beafa",
+    "src/huffman.rs": "36c117186433440c0def0d34c5d63d189415f014f72d87a903890c4e5b0cbb04",
+    "src/image_buffer.rs": "880a89022bfce0d9bc48522e4c2b84fd18176a3bb2f73d17239ed1b1d034ffc7",
+    "src/lib.rs": "a5804c3af11b0d30c35f26a25fc2cda5d5f7b5f03f26d956893bf96307fa2085",
+    "src/marker.rs": "ade459241d689f2706d40242e9d5463517cebc4a04fa37067738d56703c1216f",
+    "src/quantization.rs": "fd41742b7f4de19cabee04c761cbdad72ed474ee494f86d503db35cc5e290853",
+    "src/writer.rs": "d2af30c643192372d349a2a173782c25b4ad66a94e65a49d81b47a5716c9b343"
+  }
 }

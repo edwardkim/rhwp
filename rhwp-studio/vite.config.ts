@@ -71,6 +71,7 @@ export default defineConfig({
       allow: [
         configDir,
         resolve(configDir, '..', 'pkg'),
+        resolve(configDir, '..', 'rhwp-shared'),
         subsecondWasmDir,
         resolve(configDir, '..', 'samples'),
         resolve(configDir, '..', 'npm', 'editor'),
@@ -78,6 +79,22 @@ export default defineConfig({
     },
     watch: {
       ignored: ['**/librhwp-subsecond-patch-*.wasm'],
+    },
+  },
+  build: {
+    // 현재 약 2.2 MB인 Studio 진입 청크는 허용하되 추가 증가는 계속 알린다.
+    chunkSizeWarningLimit: 2500,
+    rolldownOptions: {
+      checks: { bundlerTimings: false },
+      onwarn(warning, defaultHandler) {
+        const message = warning.message.replaceAll('\\', '/');
+        // CanvasKit의 Node 전용 분기에 있는 fs/path 참조만 경고에서 제외한다.
+        if (
+          message.includes('/canvaskit-wasm/') &&
+          /Module "(fs|path)" has been externalized for browser compatibility/.test(message)
+        ) return;
+        defaultHandler(warning);
+      },
     },
   },
   plugins: [

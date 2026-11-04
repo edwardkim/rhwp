@@ -7,33 +7,52 @@ use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
 impl ComposedTextRun {
     /// 모델 축으로 런을 잘라도 필드·PUA의 표시 문자열을 잃지 않는다.
     pub(crate) fn display_for_model_range(&self, start: usize, end: usize) -> Option<String> {
-        let display = self.display_text.as_ref()?;
+        match self.try_display_for_model_range(start, end, &crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+    pub(super) fn try_display_for_model_range<S: crate::storage::Storage>(
+        &self,
+        start: usize,
+        end: usize,
+        storage: &S,
+    ) -> Result<Option<String>, S::Error> {
+        let Some(display) = self.display_text.as_ref() else {
+            return Ok(None);
+        };
         let model_len = self.text.chars().count();
         if start == 0 && end == model_len {
-            return Some(display.clone());
+            return storage.string(display).map(Some);
         }
         if display.chars().count() == model_len {
-            return Some(display.chars().skip(start).take(end - start).collect());
+            return storage
+                .chars(display.chars().skip(start).take(end - start))
+                .map(Some);
         }
-        let text: String = self.text.chars().skip(start).take(end - start).collect();
-        let expanded = super::expand_pua_render_text(&text);
-        (expanded != text).then_some(expanded)
+        let text = storage.chars(self.text.chars().skip(start).take(end - start))?;
+        let expanded = super::try_expand_pua_surface(&text, None, false, storage)?;
+        Ok((expanded != text).then_some(expanded))
     }
 }
 
-pub(super) fn apply(para: &Paragraph, composed: &mut ComposedParagraph) {
+pub(super) fn try_apply<S: crate::storage::Storage>(
+    para: &Paragraph,
+    composed: &mut ComposedParagraph,
+    storage: &S,
+) -> Result<(), S::Error> {
     if para.layout_field_values.is_empty() {
-        return;
+        return Ok(());
     }
     for line in &mut composed.lines {
         let mut position = line.char_start;
-        let mut runs = Vec::new();
+        let mut runs = storage.vec(0)?;
         for run in &line.runs {
             if run.inserted_control_text {
-                runs.push(run.clone());
+                storage.push(&mut runs, run.try_clone(storage)?)?;
                 continue;
             }
-            let chars: Vec<_> = run.text.chars().collect();
+            let chars: Vec<_> = storage.collect(run.text.chars())?;
             let mut plain_start = 0;
             for index in 0..chars.len() {
                 let Some((_, value)) = para
@@ -43,39 +62,42 @@ pub(super) fn apply(para: &Paragraph, composed: &mut ComposedParagraph) {
                 else {
                     continue;
                 };
-                push_slice(&mut runs, run, &chars, plain_start, index);
-                let mut field = run.clone();
-                field.text = chars[index].to_string();
-                field.display_text = Some(value.clone());
+                try_push_slice(&mut runs, run, &chars, plain_start, index, storage)?;
+                let mut field = run.try_clone(storage)?;
+                field.text = storage.chars(std::iter::once(chars[index]))?;
+                field.display_text = Some(storage.string(value)?);
                 field.lang_index = value
                     .chars()
                     .next()
                     .map(detect_lang_category)
                     .unwrap_or(run.lang_index);
-                runs.push(field);
+                storage.push(&mut runs, field)?;
                 plain_start = index + 1;
             }
-            push_slice(&mut runs, run, &chars, plain_start, chars.len());
+            try_push_slice(&mut runs, run, &chars, plain_start, chars.len(), storage)?;
             position += chars.len();
         }
         line.runs = runs;
     }
+    Ok(())
 }
 
-fn push_slice(
+fn try_push_slice<S: crate::storage::Storage>(
     out: &mut Vec<ComposedTextRun>,
     source: &ComposedTextRun,
     chars: &[char],
     start: usize,
     end: usize,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     if start == end {
-        return;
+        return Ok(());
     }
-    let mut piece = source.clone();
-    piece.text = chars[start..end].iter().collect();
-    piece.display_text = source.display_for_model_range(start, end);
-    out.push(piece);
+    let mut piece = source.try_clone(storage)?;
+    piece.text = storage.chars(chars[start..end].iter().copied())?;
+    piece.display_text = source.try_display_for_model_range(start, end, storage)?;
+    storage.push(out, piece)?;
+    Ok(())
 }
 
 /// 자동 번호는 줄 수용 시 한 글자 상자를 예약한다. 실제 pen 전진은 표시

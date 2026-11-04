@@ -90,16 +90,21 @@ impl Control {
             Control::Table(table) => table.common.treat_as_char,
             Control::Picture(picture) => picture.common.treat_as_char,
             Control::Equation(equation) => equation.common.treat_as_char,
+            Control::Form(form) => form.common.treat_as_char,
             _ => false,
         }
     }
 
     /// 편집/커서 이동에서 논리적으로 한 글자 폭을 차지하는 컨트롤인가.
     ///
-    /// `treat_as_char` 개체에 각주·미주를 더한 것. `SectionDef`/`ColumnDef` 같은
+    /// `treat_as_char` 개체에 각주·미주·글자겹침을 더한 것. `SectionDef`/`ColumnDef` 같은
     /// 구조 컨트롤은 흐름에서 자리를 차지하지 않으므로 제외된다.
     pub fn is_logical_inline(&self) -> bool {
-        self.is_treat_as_char_object() || matches!(self, Control::Footnote(_) | Control::Endnote(_))
+        self.is_treat_as_char_object()
+            || matches!(
+                self,
+                Control::Footnote(_) | Control::Endnote(_) | Control::CharOverlap(_)
+            )
     }
 
     /// HWP5 `PARA_TEXT` 에서 확장 제어문자 자리(`CTRL_CHAR_CODE_UNITS`)를 차지하는가.
@@ -187,6 +192,7 @@ pub struct PageNumberPos {
     /// 대시 문자 (WCHAR, 항상 '-')
     pub dash_char: char,
 }
+crate::storage::clone_fields!(PageNumberPos, {format, position, user_symbol, prefix_char, suffix_char, dash_char});
 
 /// 책갈피 ('bokm' 컨트롤)
 #[derive(Debug, Clone, Default, serde::Serialize)]
@@ -314,12 +320,15 @@ pub struct CharOverlap {
     pub chars: Vec<char>,
     /// 테두리 타입 (0=없음/글자끼리, 1=원, 2=반전원, 3=사각형, 4=반전사각형)
     pub border_type: u8,
-    /// 내부 글자 크기 (%, 양수=축소/확대, 기본 100)
+    /// 내부 글자 크기의 부호 있는 10% 단계 (0=원래 크기)
     pub inner_char_size: i8,
     /// 펼침
     pub expansion: u8,
     /// 글자 속성(charshape) ID 배열
     pub char_shape_ids: Vec<u32>,
+    /// HWP 바이너리 레코드의 문자 배열 여부. 원문 배열은 그대로 보존한다.
+    #[serde(skip)]
+    pub hwp_wire_chars: bool,
 }
 
 /// 감추기 ('pghd' 컨트롤)
@@ -338,6 +347,7 @@ pub struct PageHide {
     /// 쪽 번호 감추기
     pub hide_page_num: bool,
 }
+crate::storage::clone_fields!(PageHide, {hide_header, hide_footer, hide_master_page, hide_border, hide_fill, hide_page_num});
 
 /// 숨은 설명 ('tcmt' 컨트롤)
 #[derive(Debug, Default, Clone, serde::Serialize)]

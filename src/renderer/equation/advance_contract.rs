@@ -5,7 +5,7 @@ use super::symbols::FontStyleKind;
 
 /// 미지원 구조의 자연 폭을 원본 저장 폭의 정답으로 삼지 않는다.
 pub(super) fn has_source_advances(node: &EqNode) -> bool {
-    match node {
+    match node.ungrouped() {
         EqNode::Text(text) => !text.is_empty() && text.bytes().all(|ch| ch.is_ascii_alphabetic()),
         EqNode::Number(text) => !text.is_empty() && text.bytes().all(|ch| ch.is_ascii_digit()),
         EqNode::Symbol(text) | EqNode::MathSymbol(text) => {

@@ -180,3 +180,22 @@ for (const negotiated of [true, false]) {
     assert.equal(unsubscribed, subscribed);
   });
 }
+
+test('boundary initializes without crypto.randomUUID in insecure contexts (#8353)', () => {
+  // LAN IP의 http 등 비보안 컨텍스트에서는 crypto.randomUUID가 없다.
+  const original = Object.getOwnPropertyDescriptor(globalThis.crypto, 'randomUUID');
+  const proto = Object.getPrototypeOf(globalThis.crypto);
+  const protoOriginal = Object.getOwnPropertyDescriptor(proto, 'randomUUID');
+  Object.defineProperty(globalThis.crypto, 'randomUUID', { value: undefined, configurable: true });
+  try {
+    assert.equal(typeof globalThis.crypto.randomUUID, 'undefined');
+    const a = fixture().boundary, b = fixture().boundary;
+    assert.equal(a.state().status, 'ready');
+    assert.match(a.sessionId(), /^.+:1$/);
+    assert.notEqual(a.sessionId(), b.sessionId());
+  } finally {
+    if (original) Object.defineProperty(globalThis.crypto, 'randomUUID', original);
+    else delete (globalThis.crypto as any).randomUUID;
+    assert.equal(Object.getOwnPropertyDescriptor(proto, 'randomUUID')?.value, protoOriginal?.value);
+  }
+});

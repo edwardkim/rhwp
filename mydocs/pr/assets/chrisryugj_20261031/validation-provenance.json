@@ -1,0 +1,36 @@
+{
+  "base": "55f40ecd99485a1c9b1f7cdc709cb6efcb9e9b29",
+  "candidate": "b8c0ef2e4ba1b827db13b9b86bf355f7e27f5e4f",
+  "sourceHeads": {
+    "8224": "caabfdc2c4568f8f151c79d9d86c8df56779c52a",
+    "8233": "d9c8a71b642fad1ee8221f4036817a23dfe15f10"
+  },
+  "baseWasmProductSource": "c3f5cbd6d7beecdaa231cd3a40080f2e7f3c8c1e",
+  "baseWasmReuseProof": "git diff c3f5cbd 55f40ecd99 -- src crates vendor Cargo.toml Cargo.lock build.rs is empty",
+  "files": {
+    "output/pr-review/chrisryugj-20261031/producers/base/rhwp.js": "248cef6af1ccba826afe12f12f517e56e87638b422a4d9af4d7952d0ae717d8d",
+    "output/pr-review/chrisryugj-20261031/producers/base/rhwp_bg.wasm": "0a68e189b1b5cedfe66a4cba3f348426bb5562098f61fdc21a8c038dc049923a",
+    "samples/lseg-05-tab.hwp": "0066108df04204324c0802414087563e7673e30f3d142dd014af14e318153d2c",
+    "pdf/lseg-05-tab-hwp-2020.pdf": "abae782496f671569b55ae788185adc45cfd2864aa611c11a4e51c3990193010"
+  },
+  "productSource": "f85410c616",
+  "note": "Manifest git_head records the sweep invocation checkout. Producer sources are recorded here separately. Later changes only add tests, fixtures and review evidence.",
+  "producers": {
+    "base": {
+      "source": "55f40ecd99485a1c9b1f7cdc709cb6efcb9e9b29",
+      "files": {
+        "rhwp-native": "ecdccea7532c4ec3b3f1047791b405ef4e51feb6492eafe9f48558221b1b00b6",
+        "rhwp.js": "248cef6af1ccba826afe12f12f517e56e87638b422a4d9af4d7952d0ae717d8d",
+        "rhwp_bg.wasm": "0a68e189b1b5cedfe66a4cba3f348426bb5562098f61fdc21a8c038dc049923a"
+      }
+    },
+    "candidate": {
+      "source": "f85410c616",
+      "files": {
+        "rhwp-native": "2e7906d3f4b368e45c9ea2d768be1088165058342053a94f7af3d5f904029fb2",
+        "rhwp.js": "248cef6af1ccba826afe12f12f517e56e87638b422a4d9af4d7952d0ae717d8d",
+        "rhwp_bg.wasm": "0d04213b5a1681e3749be7e9f3018057dfe3f2a3a3d157820bc31b4cdd9bbe11"
+      }
+    }
+  }
+}

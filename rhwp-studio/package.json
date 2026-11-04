@@ -1,6 +1,6 @@
 {
   "name": "rhwp-studio",
-  "version": "0.8.7",
+  "version": "0.9.0",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -18,6 +18,7 @@
     "gate:bridge": "node ../scripts/gate_bridge.mjs",
     "e2e:ai-panel": "node e2e/run-with-vite.mjs -- node e2e/ai-panel.test.mjs --mode=headless",
     "e2e:ai-settings": "node e2e/run-with-vite.mjs -- node e2e/ai-settings.test.mjs --mode=headless",
+    "e2e:ai-providers": "node e2e/run-with-vite.mjs -- node e2e/ai-providers.test.mjs --mode=headless",
     "e2e:side-panel": "node e2e/run-with-vite.mjs -- node e2e/side-panel.test.mjs --mode=headless",
     "e2e:automation": "node e2e/automation-commands.test.mjs --mode=headless",
     "e2e:plugin-lifecycle": "node e2e/plugin-lifecycle.test.mjs --mode=headless",
@@ -30,6 +31,7 @@
     "e2e": "node e2e/text-flow.test.mjs",
     "e2e:toolbox-visibility": "node e2e/toolbox-visibility.test.mjs --mode=headless",
     "e2e:issue-6635": "node e2e/run-with-vite.mjs -- node e2e/toolbar-color-activation-issue6635.test.mjs --mode=headless",
+    "e2e:continuous-highlighter": "node e2e/run-with-vite.mjs -- node e2e/continuous-highlighter.test.mjs --mode=headless",
     "e2e:form-edit-escape": "node e2e/form-edit-escape-cancel.test.mjs --mode=headless",
     "e2e:unsaved-guard": "node e2e/unsaved-changes-guard.test.mjs",
     "e2e:undo": "node e2e/undo-contracts.test.mjs",
@@ -46,6 +48,7 @@
     "e2e:page-key-scroll": "node e2e/page-key-scroll.test.mjs --mode=headless",
     "e2e:page-break-caret": "node e2e/run-with-vite.mjs -- node e2e/page-break-caret-reveal.test.mjs --mode=headless",
     "e2e:enter-caret": "node e2e/run-with-vite.mjs -- node e2e/enter-caret-reveal-issue7486.test.mjs --mode=headless",
+    "e2e:selection-layout": "node e2e/run-with-vite.mjs -- node e2e/selection-layout-issue8103.test.mjs --mode=headless",
     "e2e:home-end-key": "node e2e/home-end-key.test.mjs --mode=headless",
     "e2e:ime-navigation": "node e2e/run-with-vite.mjs -- node e2e/ime-navigation.test.mjs --mode=headless",
     "e2e:drag-autoscroll": "node e2e/drag-selection-autoscroll.test.mjs",
@@ -63,6 +66,7 @@
     "e2e:issue-4121": "node e2e/run-with-vite.mjs -- node e2e/header-footer-selection-issue4121.test.mjs --mode=headless",
     "e2e:issue-2809": "node e2e/issue-2809-split-alignment.test.mjs --mode=headless",
     "e2e:issue-4159": "node e2e/issue-4159-terminal-nested-bottom-border-canvas2d.test.mjs --mode=headless",
+    "e2e:issue-8125-canvas2d": "node e2e/run-with-vite.mjs -- node e2e/issue-8125-hairline-canvas2d.test.mjs --mode=headless",
     "e2e:issue-4252": "node e2e/issue-4252-nested-partial-table-object-selection.test.mjs --mode=headless",
     "e2e:issue-4272": "node e2e/issue-4272-nested-cell-text-selection.test.mjs --mode=headless",
     "e2e:issue-4272-page11": "node e2e/issue-4272-page11-nested-cell-copy.test.mjs --mode=headless",
@@ -97,10 +101,10 @@
     "e2e:glyph-outline-portable-geometry": "node e2e/run-with-vite.mjs -- node e2e/glyph-outline-portable-geometry.test.mjs"
   },
   "devDependencies": {
-    "@types/chrome": "^0.3.5",
-    "puppeteer-core": "^25.14.0",
+    "@types/chrome": "^0.3.7",
+    "puppeteer-core": "^25.16.0",
     "typescript": "^7.0.2",
-    "vite": "^8.3.4",
+    "vite": "^8.3.5",
     "vite-plugin-pwa": "^2.0.0",
     "workbox-window": "^7.4.1",
     "ajv": "file:../vendor/npm/ajv"
@@ -114,7 +118,7 @@
     "brace-expansion": "5.0.12"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "0.137.0",
+    "@anthropic-ai/sdk": "1.3.0",
     "@noble/hashes": "^2.4.0",
     "canvaskit-wasm": "^0.42.0",
     "pixelmatch": "^8.0.0",

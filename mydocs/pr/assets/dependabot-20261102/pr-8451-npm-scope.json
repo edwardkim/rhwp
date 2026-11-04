@@ -1,0 +1,11 @@
+{
+  "number": 8451,
+  "head": "b4b31c7fc834c2ed502ef1983e9fc36b341ab41f",
+  "changed_entries": [
+    "",
+    "node_modules/@anthropic-ai/sdk"
+  ],
+  "full_before_sha256": "f4877a0e50b776cae01d73e41002b5ff38e5a290585c819a37e36ad042cd77b3",
+  "full_after_sha256": "2b04fbb7ad362dd291b39b8824b2fa0640a779b2d31d07c32963af94ae723ff9",
+  "comparison_scope": "all changed lock entries, including root manifest; unchanged lock graph omitted"
+}

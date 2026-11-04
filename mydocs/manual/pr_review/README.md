@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-09
+last_verified: 2026-11-04
 ---
 
 # PR review 조건별 가이드 선택표
@@ -69,6 +69,10 @@ collaborator self PR의 기록 순서는 **PR 생성·채번 → 정확한 code 
 문서-only trailing commit → trailing head CI 확인 → merge**다. 상세 기록 시점은
 [8.2.1절](collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)을 따르며,
 trailing commit에는 `review_only_fast_pass`도 보조 경로로 읽는다.
+
+CI workflow·action·CI 실행/재사용 판정 정책 변경 PR은 이 trailing 순서의 예외다.
+[옵션 2](post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)에 따라 원 PR의 Full CI·검토·승인·병합을
+완료한 뒤 별도 후속 기록 PR에 review·오늘할일을 반영한다.
 
 다수 PR을 동시에 다루더라도 reviewer assign, review 문서, 최종 CI·merge 판단은 PR 번호별로 분리한다.
 CI 관찰과 읽기 전용 조사는 병렬로 할 수 있지만, Cargo 공유 상태와 GitHub·Git 상태 변경은

@@ -2,7 +2,7 @@
 
 use crate::model::paragraph::LineSeg;
 use crate::model::shape::{HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
-use crate::model::style::Alignment;
+use crate::model::style::{Alignment, BorderLineType};
 use crate::model::table::{Table, TablePageBreak};
 use crate::renderer::float_placement::signed_hwpunit;
 use crate::renderer::hwpunit_to_px;
@@ -48,6 +48,53 @@ pub(crate) fn wrapper_owns_paint_or_horizontal_frame(
                         || style.indent != 0.0
                 })
     })
+}
+
+/// 나뉠 수 있는 부모 행의 외곽선은 자식 행 컷과 별개인 물리 프레임이다.
+/// 통째로 배치하는 글자 취급 래퍼의 외곽선은 기존 래퍼 배치가 직접 그리므로
+/// 그 외곽선만으로 자식 행 측정과 빈 호스트 줄을 다시 합산하지 않는다.
+pub(super) fn wrapper_owns_row_fragment_frame(table: &Table, styles: &ResolvedStyleSet) -> bool {
+    if table.common.treat_as_char || table.page_break != TablePageBreak::RowBreak {
+        return false;
+    }
+    let has_border = |id: u16| {
+        id.checked_sub(1)
+            .and_then(|index| styles.border_styles.get(usize::from(index)))
+            .is_some_and(|style| {
+                style
+                    .borders
+                    .iter()
+                    .any(|border| border.line_type != BorderLineType::None)
+            })
+    };
+    has_border(table.border_fill_id)
+        || table
+            .cells
+            .first()
+            .is_some_and(|cell| has_border(cell.border_fill_id))
+        || table
+            .zones
+            .iter()
+            .any(|zone| has_border(zone.border_fill_id))
+}
+
+impl super::MeasuredTable {
+    /// 측정에서 확정한 펼침 깊이를 따라가며 행 컷의 실제 소유 표를 돌려준다.
+    /// 분할기가 모양만 보고 다시 펼치면 테두리·채움을 가진 부모의 행을 잃는다.
+    pub(crate) fn row_geometry_table<'a>(&self, table: &'a Table) -> &'a Table {
+        let mut owner = table;
+        for _ in 0..self.unwrapped_table_depth {
+            let [cell] = owner.cells.as_slice() else {
+                panic!("측정에서 펼친 표의 단일 셀 소유 구조가 변경됨");
+            };
+            let [paragraph] = cell.paragraphs.as_slice() else {
+                panic!("측정에서 펼친 표의 단일 문단 소유 구조가 변경됨");
+            };
+            owner = sole_nested_table_in_paragraph(paragraph)
+                .expect("측정에서 펼친 표의 유일한 자식이 유지되어야 함");
+        }
+        owner
+    }
 }
 
 /// 표 하나와 배치 상자가 없는 마커만 있는 문단의 유일한 자식을 반환한다.

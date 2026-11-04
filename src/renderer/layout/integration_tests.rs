@@ -5,6 +5,8 @@
 
 #[cfg(test)]
 mod tests {
+    include!("../../../tests/common/svg_image_frames.rs");
+
     use std::path::Path;
 
     use crate::model::page::{ColumnDef, PageDef};
@@ -78,9 +80,14 @@ mod tests {
         let composed: Vec<_> = paragraphs.iter().map(compose_paragraph).collect();
 
         let styles = ResolvedStyleSet {
+            source_hwp3_native: false,
             source_program_projection_slots: Default::default(),
             isolated_jamo_font: None,
+            script_metrics: Default::default(),
             native_pua_fonts: Default::default(),
+            display_only_otf_slots: Default::default(),
+            char_overlap_size_bounds: None,
+            source_char_shapes: Default::default(),
             resolved_dpi: None,
             page_number_char_style_id: None,
             page_number_font_is_hft: false,
@@ -131,6 +138,7 @@ mod tests {
                 inline_placements: Default::default(),
                 inline_flow_plans: Default::default(),
                 stored_paragraph_flow_ends: Default::default(),
+                host_compositions: Default::default(),
                 stored_column_top_spacings: Default::default(),
                 paragraph_float_placements: Default::default(),
                 float_pushed_line_spacings: Default::default(),
@@ -559,18 +567,12 @@ mod tests {
         let svg = core.render_page_svg_native(0).unwrap_or_default();
         assert!(!svg.is_empty(), "pr-149.hwp page 0 SVG 생성");
 
-        // SVG 에서 <image ... y="..."/> 의 y 값 추출
-        let mut image_ys: Vec<f64> = Vec::new();
-        for cap in svg.split("<image ").skip(1) {
-            if let Some(idx) = cap.find("y=\"") {
-                let rest = &cap[idx + 3..];
-                if let Some(end) = rest.find('"') {
-                    if let Ok(y) = rest[..end].parse::<f64>() {
-                        image_ys.push(y);
-                    }
-                }
-            }
-        }
+        // Read the painted viewport, including a cropped nested SVG. Intrinsic
+        // source pixels and the following text's y are not picture positions.
+        let mut image_ys: Vec<f64> = image_frames(&svg)
+            .into_iter()
+            .map(|frame| frame[1])
+            .collect();
         image_ys.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
         assert_eq!(image_ys.len(), 3, "그림 3개 (원본/회색조/흑백)");

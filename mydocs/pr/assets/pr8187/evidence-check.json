@@ -1,0 +1,23 @@
+{
+  "verified_at": "2026-11-03T11:35:19.120159+09:00",
+  "status": "PASS",
+  "documents_per_backend": 14,
+  "pages_per_backend": {
+    "native": 516,
+    "wasm": 516
+  },
+  "base_comparison_pages_per_backend": {
+    "native": 439,
+    "wasm": 439
+  },
+  "minimum_raw_per_backend": {
+    "native": 93.12289,
+    "wasm": 94.61644
+  },
+  "missing_pages": 0,
+  "below90_pages": 0,
+  "declining_pages_vs_base": 0,
+  "tsv_hashes_verified": 28,
+  "focused_modules_executed": 19,
+  "focused_passed": 72
+}

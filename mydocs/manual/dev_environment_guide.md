@@ -133,7 +133,9 @@ Windows PowerShell에서는 같은 명령을 실행하는 동안만 `$env:CARGO_
 빌드 캐시를 정리하기 전에 **종료된 검증용 Chromium/Puppeteer 임시 프로필**의 용량을
 확인하고 삭제하는 것을 권장한다. PNG 방식의 fresh WASM 검증도 Chromium을 사용하며,
 중단된 실행이 임시 프로필과 캐시를 남길 수 있다. 공유 `target/pr-review`를 임의로
-삭제·초기화하지 않는다.
+삭제·초기화하지 않는다. 검증·후속 처리 종료 후의 `target/pr-review/debug` 전체 삭제는
+[종료 정리 절차](pr_review/post_merge.md#771-검토-전용-target)에 따른 명시적 정리 대상이다.
+해당 빌드·테스트의 사용 종료를 확인하고 다른 target profile은 재사용한다.
 
 Linux Snap Chromium의 후보 경로는 `/tmp/snap-private-tmp/snap.chromium/tmp/`다.
 일반 Chromium/Puppeteer와 다른 OS에서는 실제 실행의 임시 경로·`--user-data-dir`를 먼저
@@ -158,6 +160,7 @@ Linux Snap Chromium의 후보 경로는 `/tmp/snap-private-tmp/snap.chromium/tmp
 전후 여유 공간을 기록한다. 경과 시간만으로 사용하지 않는다고 단정하거나 `incremental`
 전체를 일괄 삭제하지 않는다. target 전체·프로필 디렉터리·실행 파일·`deps`·`.fingerprint`·
 다른 작업의 산출물은 보존한다. 삭제한 증분 캐시는 이후 빌드에서 재생성될 수 있다.
+위 증분 캐시 선별 정리와 달리 검토 종료 시의 `target/pr-review/debug`는 디렉터리 전체를 정리한다.
 
 ## 네이티브 빌드와 테스트
 

@@ -1,0 +1,66 @@
+[
+  {
+    "input": "mydocs/pr/assets/pr8300-maintainer-20261101/created/nested-empty.hwp",
+    "inputSha256": "99cd39742fe9d1c5cceab59f60c77e84ad4c72a3205bf19ce0fd76722367dc0e",
+    "jobId": "52a27c74-69bc-4770-be61-a3279d395b73",
+    "pdf": "pdf/issue8262/nested-empty-hwp-2020.pdf",
+    "status": "succeeded",
+    "printExecution": {
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    "pdfSha256": "3e0119c40863767e382e825eb583ad58f6155be3deb01e2d89bb6f9c9967b9df",
+    "downloaded": true,
+    "studioSavedSha256": "99cd39742fe9d1c5cceab59f60c77e84ad4c72a3205bf19ce0fd76722367dc0e"
+  },
+  {
+    "input": "mydocs/pr/assets/pr8300-maintainer-20261101/created/nested-empty.hwpx",
+    "inputSha256": "d61f1d19d3623acf0ff5b65c6dae622ecbfec27f13e281771804ad87edec8d8e",
+    "jobId": "06700f0b-9262-43c3-b0a4-97fc81d45f0a",
+    "pdf": "pdf/issue8262/nested-empty-hwpx-2020.pdf",
+    "status": "succeeded",
+    "printExecution": {
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    "pdfSha256": "aecf3e9436d4320cc1638af58c960b7aab489c63c07e18b544e0da80388e802f",
+    "downloaded": true,
+    "studioSavedSha256": "d61f1d19d3623acf0ff5b65c6dae622ecbfec27f13e281771804ad87edec8d8e"
+  },
+  {
+    "input": "mydocs/pr/assets/pr8300-maintainer-20261101/created/nested-mid.hwp",
+    "inputSha256": "61bba390bc543053415106b48f759cd6db79940e66315dbf1854ac48d2c86efa",
+    "jobId": "8224da4c-d651-4aee-a38b-e739f967a7d0",
+    "pdf": "pdf/issue8262/nested-mid-hwp-2020.pdf",
+    "status": "succeeded",
+    "printExecution": {
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    "pdfSha256": "9e85e6a99100707bf5e259b1b19f3302b7be4c68ad6ef3bbe20f870c9e6d1910",
+    "downloaded": true,
+    "studioSavedSha256": "61bba390bc543053415106b48f759cd6db79940e66315dbf1854ac48d2c86efa"
+  },
+  {
+    "input": "mydocs/pr/assets/pr8300-maintainer-20261101/created/nested-mid.hwpx",
+    "inputSha256": "09d0ef1126a287a4ff3a85b6b938a330a87bffdd86bce7e7b3e62f8bc1980704",
+    "jobId": "4dbb5577-6162-4b53-a520-f01104df1c00",
+    "pdf": "pdf/issue8262/nested-mid-hwpx-2020.pdf",
+    "status": "succeeded",
+    "printExecution": {
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    "pdfSha256": "e5a0f9ab5e3e4e74ea45b5f977048cce50aabe1bbb37ff92ed0e70287520534b",
+    "downloaded": true,
+    "studioSavedSha256": "09d0ef1126a287a4ff3a85b6b938a330a87bffdd86bce7e7b3e62f8bc1980704"
+  }
+]

@@ -1,3 +1,5 @@
+import { navigateLink } from '../core/link-navigation';
+import { showLinkDestinationDialog } from '../ui/link-destination-dialog';
 /** 링크의 실제 글자 선택 영역 안에서만 hover/열기/우클릭 대상을 찾는다. */
 import { hyperlinkTarget, applyHyperlinkFormat } from '@/core/hyperlink';
 import type { HyperlinkInfo, HyperlinkTarget } from '@/core/hyperlink';
@@ -23,7 +25,7 @@ export function hyperlinkAtPointer(self: any, e: MouseEvent): LinkHit | null {
     const target = hyperlinkTarget(hit);
     const context = self.wasm.getHyperlinkContext(target);
     for (const link of context.links as HyperlinkInfo[]) {
-      if (!/^https?:\/\//i.test(link.uri)) continue;
+      if (!self.wasm.classifyHyperlinkDestination(link.uri)) continue;
       // caret hit-test는 글자 오른쪽 절반에서 다음 offset을 반환할 수 있다.
       if (hit.charOffset < link.start || hit.charOffset > link.end) continue;
       const path = target.cellPath;
@@ -69,13 +71,29 @@ export function followHyperlinkClick(self: any, e: MouseEvent): void {
   if (!current || current.link.fieldId !== pending.hit.link.fieldId || current.link.uri !== pending.hit.link.uri
     || JSON.stringify(current.target) !== JSON.stringify(pending.hit.target)) return;
   try {
-    const url = new URL(current.link.uri);
-    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) return;
-    // 실제 사용자 mouseup 안에서 열고 원본 탭의 opener 접근을 끊는다.
-    const opened = window.open('about:blank', '_blank');
-    if (!opened) { showToast({ message: '팝업이 차단되었습니다. 이 사이트의 팝업을 허용해 주세요.' }); return; }
-    opened.opener = null;
-    opened.location.replace(url.href);
+    const destination = self.wasm.classifyHyperlinkDestination(current.link.uri);
+    if (!destination) return;
+    const generation = self.wasm.documentGeneration;
+    const followed = navigateLink(destination, { fileName: self.wasm.fileName, sourceFormat: self.wasm.getSourceFormat() }, {
+      anchor: name => {
+        const bookmark = self.wasm.getBookmarks().find((item: any) => item.name === name);
+        if (!bookmark || !self.moveCursorTo({ sectionIndex: bookmark.sec, paragraphIndex: bookmark.para, charOffset: bookmark.charPos })) {
+          showToast({ message: '연결된 문서 책갈피를 찾거나 이동할 수 없습니다.' }); return false;
+        }
+        return true;
+      },
+      web: uri => {
+        const url = new URL(uri);
+        if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) return false;
+        const opened = window.open('about:blank', '_blank');
+        if (!opened) { showToast({ message: '팝업이 차단되었습니다. 이 사이트의 팝업을 허용해 주세요.' }); return false; }
+        opened.opener = null; opened.location.replace(url.href); return true;
+      },
+      mail: uri => { window.location.assign(uri); return true; },
+      browserFallback: showLinkDestinationDialog,
+    });
+    void Promise.resolve(followed).then(handled => {
+      if (!handled || self.wasm.documentGeneration !== generation) return;
     // 한컴의 방문 색과 같이 글자 서식으로 반영한다. 저장·PDF·undo에도 같은 색이 남는다.
     // 읽기 전용/양식 편집에서는 executeOperation의 기존 정책이 변경을 차단한다.
     self.executeOperation({
@@ -91,6 +109,7 @@ export function followHyperlinkClick(self: any, e: MouseEvent): void {
         return self.cursor.getPosition();
       },
     });
+    }).catch(error => { showToast({ message: error instanceof Error ? error.message : String(error) }); });
   } catch (error) {
     showToast({ message: error instanceof Error ? error.message : String(error) });
   }

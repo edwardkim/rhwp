@@ -1,0 +1,52 @@
+{
+  "command": [
+    "output/issue665/head-rhwp",
+    "edit",
+    "insert-picture",
+    "tests/fixtures/issue665/generated/runs-roundtrip.hwp",
+    "--image",
+    "tests/fixtures/issue665/img/second.png",
+    "--section",
+    "0",
+    "--para",
+    "1",
+    "--offset",
+    "0",
+    "--width",
+    "5669",
+    "--height",
+    "2835",
+    "-o",
+    "output/issue665/loaded-docinfo-added.hwp",
+    "--verify",
+    "--json"
+  ],
+  "exit": 0,
+  "result": {
+    "binDataId": 2,
+    "changedPages": [
+      0
+    ],
+    "dryRun": false,
+    "height": 2835,
+    "image": "tests/fixtures/issue665/img/second.png",
+    "offset": 0,
+    "output": "output/issue665/loaded-docinfo-added.hwp",
+    "outputFormat": "hwp5",
+    "paragraph": 1,
+    "schemaVersion": "1.0",
+    "section": 0,
+    "source": "tests/fixtures/issue665/generated/runs-roundtrip.hwp",
+    "untrustedContent": false,
+    "untrustedFields": [],
+    "verify": {
+      "diffCount": 0,
+      "identical": true
+    },
+    "width": 5669,
+    "x": 0,
+    "y": 0
+  },
+  "input_sha256": "7ce5bd6c46df17194e6d9249a3cf21ee0b67398eaa21f75176233288738c2c45",
+  "output_sha256": "88d9124877fafd6bc967cae8198293cd6cc1ae764fdbf6df4662c49c598f4036"
+}

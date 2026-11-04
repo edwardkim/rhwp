@@ -1,0 +1,734 @@
+[
+  {
+    "key": "body-list-typed",
+    "roundtripHits": 0,
+    "roundtripReplays": 3,
+    "scales": [
+      {
+        "dimensions": [
+          400,
+          260
+        ],
+        "preparedAndHostEqualFull": true,
+        "retainedBytes": 416000,
+        "scale": 0.75,
+        "warmWindows": 4
+      },
+      {
+        "dimensions": [
+          534,
+          347
+        ],
+        "preparedAndHostEqualFull": true,
+        "retainedBytes": 741192,
+        "scale": 1.0,
+        "warmWindows": 4
+      },
+      {
+        "dimensions": [
+          667,
+          434
+        ],
+        "preparedAndHostEqualFull": true,
+        "retainedBytes": 1157912,
+        "scale": 1.25,
+        "warmWindows": 4
+      }
+    ],
+    "timings": [
+      {
+        "cache": true,
+        "microseconds": 841.763,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 741192,
+        "round": 1
+      },
+      {
+        "cache": false,
+        "microseconds": 12105.207,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 1
+      },
+      {
+        "cache": false,
+        "microseconds": 12255.819,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 2
+      },
+      {
+        "cache": true,
+        "microseconds": 791.959,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 741192,
+        "round": 2
+      },
+      {
+        "cache": true,
+        "microseconds": 825.2620000000001,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 741192,
+        "round": 3
+      },
+      {
+        "cache": false,
+        "microseconds": 12976.771999999999,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 3
+      },
+      {
+        "cache": false,
+        "microseconds": 13419.305,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 4
+      },
+      {
+        "cache": true,
+        "microseconds": 837.263,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 741192,
+        "round": 4
+      },
+      {
+        "cache": true,
+        "microseconds": 830.163,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 741192,
+        "round": 5
+      },
+      {
+        "cache": false,
+        "microseconds": 12816.26,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 5
+      },
+      {
+        "cache": false,
+        "microseconds": 12122.808,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 6
+      },
+      {
+        "cache": true,
+        "microseconds": 797.76,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 741192,
+        "round": 6
+      },
+      {
+        "cache": true,
+        "microseconds": 809.16,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 741192,
+        "round": 7
+      },
+      {
+        "cache": false,
+        "microseconds": 12220.216,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 7
+      },
+      {
+        "cache": false,
+        "microseconds": 11789.884,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 8
+      },
+      {
+        "cache": true,
+        "microseconds": 787.159,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 741192,
+        "round": 8
+      },
+      {
+        "cache": true,
+        "microseconds": 795.959,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 741192,
+        "round": 9
+      },
+      {
+        "cache": false,
+        "microseconds": 12058.804,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 9
+      }
+    ]
+  },
+  {
+    "key": "helvetica-styles",
+    "roundtripHits": 0,
+    "roundtripReplays": 3,
+    "scales": [
+      {
+        "dimensions": [
+          300,
+          240
+        ],
+        "preparedAndHostEqualFull": true,
+        "retainedBytes": 288000,
+        "scale": 0.75,
+        "warmWindows": 4
+      },
+      {
+        "dimensions": [
+          400,
+          320
+        ],
+        "preparedAndHostEqualFull": true,
+        "retainedBytes": 512000,
+        "scale": 1.0,
+        "warmWindows": 4
+      },
+      {
+        "dimensions": [
+          500,
+          400
+        ],
+        "preparedAndHostEqualFull": true,
+        "retainedBytes": 800000,
+        "scale": 1.25,
+        "warmWindows": 4
+      }
+    ],
+    "timings": [
+      {
+        "cache": true,
+        "microseconds": 792.859,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 512000,
+        "round": 1
+      },
+      {
+        "cache": false,
+        "microseconds": 9236.793,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 1
+      },
+      {
+        "cache": false,
+        "microseconds": 8945.369999999999,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 2
+      },
+      {
+        "cache": true,
+        "microseconds": 792.259,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 512000,
+        "round": 2
+      },
+      {
+        "cache": true,
+        "microseconds": 799.66,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 512000,
+        "round": 3
+      },
+      {
+        "cache": false,
+        "microseconds": 8863.964,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 3
+      },
+      {
+        "cache": false,
+        "microseconds": 8789.559000000001,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 4
+      },
+      {
+        "cache": true,
+        "microseconds": 776.159,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 512000,
+        "round": 4
+      },
+      {
+        "cache": true,
+        "microseconds": 791.359,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 512000,
+        "round": 5
+      },
+      {
+        "cache": false,
+        "microseconds": 9135.584,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 5
+      },
+      {
+        "cache": false,
+        "microseconds": 9172.787,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 6
+      },
+      {
+        "cache": true,
+        "microseconds": 768.857,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 512000,
+        "round": 6
+      },
+      {
+        "cache": true,
+        "microseconds": 781.858,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 512000,
+        "round": 7
+      },
+      {
+        "cache": false,
+        "microseconds": 9366.702,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 7
+      },
+      {
+        "cache": false,
+        "microseconds": 9165.087000000001,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 8
+      },
+      {
+        "cache": true,
+        "microseconds": 857.664,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 512000,
+        "round": 8
+      },
+      {
+        "cache": true,
+        "microseconds": 811.0609999999999,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 512000,
+        "round": 9
+      },
+      {
+        "cache": false,
+        "microseconds": 9103.181999999999,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 9
+      }
+    ]
+  },
+  {
+    "key": "pic-crop-01",
+    "roundtripHits": 0,
+    "roundtripReplays": 3,
+    "scales": [
+      {
+        "dimensions": [
+          595,
+          841
+        ],
+        "preparedAndHostEqualFull": true,
+        "retainedBytes": 2001580,
+        "scale": 0.75,
+        "warmWindows": 4
+      },
+      {
+        "dimensions": [
+          794,
+          1122
+        ],
+        "preparedAndHostEqualFull": true,
+        "retainedBytes": 3563472,
+        "scale": 1.0,
+        "warmWindows": 4
+      },
+      {
+        "dimensions": [
+          992,
+          1402
+        ],
+        "preparedAndHostEqualFull": true,
+        "retainedBytes": 5563136,
+        "scale": 1.25,
+        "warmWindows": 4
+      }
+    ],
+    "timings": [
+      {
+        "cache": true,
+        "microseconds": 811.7610000000001,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 1
+      },
+      {
+        "cache": false,
+        "microseconds": 22653.798,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 1
+      },
+      {
+        "cache": false,
+        "microseconds": 23010.524,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 2
+      },
+      {
+        "cache": true,
+        "microseconds": 792.4590000000001,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 2
+      },
+      {
+        "cache": true,
+        "microseconds": 812.761,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 3
+      },
+      {
+        "cache": false,
+        "microseconds": 22808.709,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 3
+      },
+      {
+        "cache": false,
+        "microseconds": 22333.674000000003,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 4
+      },
+      {
+        "cache": true,
+        "microseconds": 842.963,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 4
+      },
+      {
+        "cache": true,
+        "microseconds": 854.664,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 5
+      },
+      {
+        "cache": false,
+        "microseconds": 22587.993000000002,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 5
+      },
+      {
+        "cache": false,
+        "microseconds": 22640.796000000002,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 6
+      },
+      {
+        "cache": true,
+        "microseconds": 803.861,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 6
+      },
+      {
+        "cache": true,
+        "microseconds": 831.8620000000001,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 7
+      },
+      {
+        "cache": false,
+        "microseconds": 22932.918999999998,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 7
+      },
+      {
+        "cache": false,
+        "microseconds": 23036.158,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 8
+      },
+      {
+        "cache": true,
+        "microseconds": 803.362,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 8
+      },
+      {
+        "cache": true,
+        "microseconds": 802.562,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 9
+      },
+      {
+        "cache": false,
+        "microseconds": 22228.905,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 9
+      }
+    ]
+  },
+  {
+    "key": "shape-group-02",
+    "roundtripHits": 0,
+    "roundtripReplays": 3,
+    "scales": [
+      {
+        "dimensions": [
+          595,
+          841
+        ],
+        "preparedAndHostEqualFull": true,
+        "retainedBytes": 2001580,
+        "scale": 0.75,
+        "warmWindows": 4
+      },
+      {
+        "dimensions": [
+          794,
+          1122
+        ],
+        "preparedAndHostEqualFull": true,
+        "retainedBytes": 3563472,
+        "scale": 1.0,
+        "warmWindows": 4
+      },
+      {
+        "dimensions": [
+          992,
+          1402
+        ],
+        "preparedAndHostEqualFull": true,
+        "retainedBytes": 5563136,
+        "scale": 1.25,
+        "warmWindows": 4
+      }
+    ],
+    "timings": [
+      {
+        "cache": true,
+        "microseconds": 781.159,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 1
+      },
+      {
+        "cache": false,
+        "microseconds": 36847.326,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 1
+      },
+      {
+        "cache": false,
+        "microseconds": 36641.109,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 2
+      },
+      {
+        "cache": true,
+        "microseconds": 775.26,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 2
+      },
+      {
+        "cache": true,
+        "microseconds": 863.466,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 3
+      },
+      {
+        "cache": false,
+        "microseconds": 36341.286,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 3
+      },
+      {
+        "cache": false,
+        "microseconds": 36267.681000000004,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 4
+      },
+      {
+        "cache": true,
+        "microseconds": 776.76,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 4
+      },
+      {
+        "cache": true,
+        "microseconds": 771.8589999999999,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 5
+      },
+      {
+        "cache": false,
+        "microseconds": 35800.445,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 5
+      },
+      {
+        "cache": false,
+        "microseconds": 36583.905,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 6
+      },
+      {
+        "cache": true,
+        "microseconds": 776.06,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 6
+      },
+      {
+        "cache": true,
+        "microseconds": 759.3580000000001,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 7
+      },
+      {
+        "cache": false,
+        "microseconds": 36318.085,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 7
+      },
+      {
+        "cache": false,
+        "microseconds": 36747.418,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 8
+      },
+      {
+        "cache": true,
+        "microseconds": 766.0590000000001,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 8
+      },
+      {
+        "cache": true,
+        "microseconds": 939.072,
+        "replays": 1,
+        "requests": 20,
+        "retainedBytes": 3566648,
+        "round": 9
+      },
+      {
+        "cache": false,
+        "microseconds": 36007.261,
+        "replays": 21,
+        "requests": 20,
+        "retainedBytes": 0,
+        "round": 9
+      }
+    ]
+  }
+]

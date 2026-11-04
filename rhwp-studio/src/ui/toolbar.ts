@@ -387,7 +387,7 @@ export class Toolbar {
     btnNone.addEventListener('click', () => {
       this.highlightColor = '#ffffff';
       this.highlightBar.style.background = '#ffffff';
-      this.eventBus.emit('format-char', { shadeColor: '#ffffff' } as CharProperties);
+      this.eventBus.emit('highlight-pick', '#ffffff');
       this.highlightDropdown.classList.remove('open');
     });
     const btnOther = document.createElement('button');
@@ -407,7 +407,7 @@ export class Toolbar {
     hiddenPicker.addEventListener('input', () => {
       this.highlightColor = hiddenPicker.value;
       this.highlightBar.style.background = this.highlightColor;
-      this.eventBus.emit('format-char', { shadeColor: this.highlightColor } as CharProperties);
+      this.eventBus.emit('highlight-pick', this.highlightColor);
       this.highlightDropdown.classList.remove('open');
     });
     actRow.appendChild(btnNone);
@@ -427,7 +427,7 @@ export class Toolbar {
           e.preventDefault();
           this.highlightColor = color;
           this.highlightBar.style.background = color;
-          this.eventBus.emit('format-char', { shadeColor: color } as CharProperties);
+          this.eventBus.emit('highlight-pick', color);
           this.highlightDropdown.classList.remove('open');
         });
         rowEl.appendChild(swatch);
@@ -441,7 +441,17 @@ export class Toolbar {
       e.stopPropagation();
     });
     this.btnHighlight.addEventListener('click', () => {
+      // 연속 형광펜 모드 중이면 버튼 클릭으로 모드 종료
+      if (this.btnHighlight.classList.contains('active')) {
+        this.eventBus.emit('highlight-pen-exit');
+        return;
+      }
       this.highlightDropdown.classList.toggle('open');
+    });
+
+    // 연속 형광펜 모드 진입/종료 시 버튼 눌림 상태 동기화
+    this.eventBus.on('highlight-pen-changed', (color) => {
+      this.btnHighlight.classList.toggle('active', color != null);
     });
 
     this.highlightDropdown.addEventListener('keydown', (event) => {

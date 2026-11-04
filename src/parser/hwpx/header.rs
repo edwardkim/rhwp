@@ -199,6 +199,7 @@ pub(super) fn parse_hwpx_header_with_plain_margin_units(
                     b"linkinfo" => {
                         parse_doc_option_linkinfo(e, &mut doc_info);
                     }
+                    b"trackchageConfig" => parse_track_change_config(e, &mut doc_info),
                     // [Task #1058 후속] BULLET 누락 시 한컴이 default 글머리표를 본문
                     // paragraph 에 자동 부여. HWPX `<hh:bullet id="N" char="❏" useImage="0">`
                     // 4개 → HWP BULLET record 4개. 누락 시 일반 문단 시작 글머리표 부작용.
@@ -236,6 +237,7 @@ pub(super) fn parse_hwpx_header_with_plain_margin_units(
                     b"linkinfo" => {
                         parse_doc_option_linkinfo(e, &mut doc_info);
                     }
+                    b"trackchageConfig" => parse_track_change_config(e, &mut doc_info),
                     _ => {}
                 }
             }
@@ -356,6 +358,33 @@ fn parse_doc_option_linkinfo(e: &quick_xml::events::BytesStart, doc_info: &mut D
         level: 1,
         data: track_change,
     });
+}
+
+/// `<hh:trackchageConfig flags>` 를 HWP5 `HWPTAG_TRACKCHANGE` 첫 `u32` 에 싣는다.
+///
+/// 레코드는 `parse_doc_option_linkinfo` 가 한컴 기본값(56)으로 먼저 만든다 — 헤더에서
+/// `docOption` 이 `trackchageConfig` 앞에 온다. 한글 2024 는 HWPX 를 HWP 로 저장할 때 이
+/// 값을 그대로 옮긴다(exam_social 의 flags 를 0·1·2·4·8·16·24·32·40·48·56·64 로 바꿔
+/// 저장한 레코드가 모두 같은 값). 종전에는 56 을 고정해 `flags="0"` 문서가 HWP 저장에서
+/// 56 으로 바뀌었다.
+fn parse_track_change_config(e: &quick_xml::events::BytesStart, doc_info: &mut DocInfo) {
+    let Some(flags) = e
+        .attributes()
+        .flatten()
+        .find(|attr| attr.key.as_ref().as_bytes() == b"flags")
+        .map(|attr| parse_u32(&attr))
+    else {
+        return;
+    };
+    if let Some(record) = doc_info
+        .extra_records
+        .iter_mut()
+        .find(|r| r.tag_id == tags::HWPTAG_TRACKCHANGE)
+    {
+        if record.data.len() >= 4 {
+            record.data[..4].copy_from_slice(&flags.to_le_bytes());
+        }
+    }
 }
 
 fn parse_memo_shape(e: &quick_xml::events::BytesStart, doc_info: &mut DocInfo) {
@@ -2066,6 +2095,7 @@ fn parse_bullet_hwpx(
     xml: &str,
 ) -> Result<Bullet, HwpxError> {
     let mut bullet = Bullet::default();
+    let mut has_image_ref = false;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref().as_bytes() {
@@ -2100,7 +2130,7 @@ fn parse_bullet_hwpx(
     // numbering.raw_para_heads(#2695 계열)와 같은 방식으로 원본 구간을 통째로 보존해
     // 직렬화 시 splice 한다(무손실 라운드트립).
     // <hh:img binaryItemIDRef="imageN"> 는 이미지 글머리표의 실제 BinData 참조 ID —
-    // useImage="1" 만으로는 어떤 이미지인지 알 수 없어 누락 시 항상 ID 1 로 고정된다.
+    // useImage="1" 만으로는 이미지 ID를 알 수 없으므로 참조 누락 시 문자를 사용한다.
     if !is_empty_event(e) {
         let inner_start = reader.buffer_position() as usize;
         let mut inner_end = inner_start;
@@ -2111,6 +2141,26 @@ fn parse_bullet_hwpx(
                 Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce))
                     if local_name(ce.name().as_ref()) == b"img" =>
                 {
+                    for attr in ce.attributes().flatten() {
+                        let value = attr.value.as_ref();
+                        match attr.key.as_ref().as_bytes() {
+                            b"contrast" => {
+                                bullet.image_data[0] = value.parse::<i8>().unwrap_or(0) as u8
+                            }
+                            b"bright" => {
+                                bullet.image_data[1] = value.parse::<i8>().unwrap_or(0) as u8
+                            }
+                            b"effect" => {
+                                bullet.image_data[2] = match value {
+                                    "GRAY_SCALE" => 1,
+                                    "BLACK_WHITE" => 2,
+                                    "PATTERN_8_8" => 3,
+                                    _ => 0,
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
                     if let Some(attr) = ce
                         .attributes()
                         .flatten()
@@ -2119,7 +2169,10 @@ fn parse_bullet_hwpx(
                         let s = attr.value.as_ref().to_owned();
                         let num: String = s.chars().filter(|c| c.is_ascii_digit()).collect();
                         if let Ok(id) = num.parse::<i32>() {
-                            bullet.image_bullet = id;
+                            if id > 0 {
+                                bullet.image_bullet = id;
+                                has_image_ref = true;
+                            }
                         }
                     }
                 }
@@ -2154,6 +2207,12 @@ fn parse_bullet_hwpx(
         }
     }
 
+    // 실제 참조가 없는 이미지 사용 표시는 다른 BinData를 가리키지 않는다.
+    // 한컴은 이 경우 원본 글머리표 문자를 사용한다. 원래 속성은 저장 시 보존한다.
+    if bullet.image_bullet > 0 && !has_image_ref {
+        bullet.image_bullet = 0;
+        bullet.hwpx_image_without_ref = true;
+    }
     Ok(bullet)
 }
 

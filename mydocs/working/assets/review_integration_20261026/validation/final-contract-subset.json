@@ -1,0 +1,53 @@
+{
+  "incoming_devel_contracts": [
+    "PASS [   0.111s] (11069/11637) rhwp::regression_suite_027 issue_8080_no_lineseg_overlay_table_flow::body_table_starts_below_overlay_table_and_title_sits_beside_it",
+    "PASS [   0.117s] (11071/11637) rhwp::regression_suite_027 issue_8080_no_lineseg_overlay_table_flow::decorated_empty_table_host_line_pushes_last_empty_paragraph_to_next_page",
+    "PASS [   0.230s] (11072/11637) rhwp::regression_suite_027 issue_8080_no_lineseg_overlay_table_flow::every_page_draws_its_overlay_table_above_body_table",
+    "PASS [   0.818s] (11073/11637) rhwp::regression_suite_027 issue_8080_no_lineseg_overlay_table_flow::front_overlay_table_top_does_not_depend_on_host_text",
+    "PASS [   0.106s] (11075/11637) rhwp::regression_suite_027 issue_8080_no_lineseg_overlay_table_flow::nested_overlay_table_rows_stay_inside_cell",
+    "PASS [   0.152s] (11076/11637) rhwp::regression_suite_027 issue_8080_no_lineseg_overlay_table_flow::overlay_sample_keeps_five_pages",
+    "PASS [   0.175s] (11077/11637) rhwp::regression_suite_027 issue_8080_no_lineseg_overlay_table_flow::picture_cell_page_title_and_body_table_follow_small_table",
+    "PASS [   0.216s] (11079/11637) rhwp::regression_suite_027 issue_8080_no_lineseg_overlay_table_flow::picture_cell_row_does_not_widen_gap_below_small_table",
+    "PASS [   0.142s] (11080/11637) rhwp::regression_suite_027 issue_8080_no_lineseg_overlay_table_flow::picture_cell_sample_keeps_five_pages",
+    "PASS [   0.495s] (11081/11637) rhwp::regression_suite_027 issue_8080_no_lineseg_overlay_table_flow::overlay_shape_title_line_ownership_ignores_leading_space_count",
+    "PASS [   0.095s] (11082/11637) rhwp::regression_suite_027 issue_8080_no_lineseg_overlay_table_flow::table_only_square_host_adds_no_empty_line_below_table",
+    "PASS [   0.086s] (11083/11637) rhwp::regression_suite_027 issue_8080_no_lineseg_overlay_table_flow::title_sample_keeps_four_pages",
+    "PASS [   1.738s] (11084/11637) rhwp::regression_suite_027 issue_8080_no_lineseg_overlay_table_flow::empty_square_host_table_origin_follows_offsets_and_outer_margins",
+    "PASS [   0.109s] (11085/11637) rhwp::regression_suite_027 issue_8080_no_lineseg_overlay_table_flow::title_between_floating_shapes_stays_one_line_above_table",
+    "PASS [   2.217s] (11098/11637) rhwp::regression_suite_027 issue_8080_no_lineseg_overlay_table_flow::front_overlay_table_origin_ignores_following_table_top_margin"
+  ],
+  "incoming_devel_passed": 15,
+  "validation_head": "2e902abacf328bccdd7780606666ac3b1c5c1ce9",
+  "production_source": "ae8c413f84a01a4cc4591357056183709f21b150",
+  "execution": "Actual members of the completed final whole nextest run, not an additional focused invocation.",
+  "whole_nextest_log": "output/pr-review/planet6897-20261026/v15-final-nextest-all.log",
+  "whole_nextest_log_sha256": "1772be048e19d6b681f567dc74efd396693f4f751180fd95aafd5fd3e3167760",
+  "contracts": {
+    "issue_6312_float_anchor_line_uses_source_vpos": [
+      "PASS [   0.446s] ( 6740/11637) rhwp::regression_suite_011 issue_6312_float_anchor_line_uses_source_vpos::anchor_ownership_follows_the_cell_after_serialization_order_changes",
+      "PASS [   0.271s] ( 6741/11637) rhwp::regression_suite_011 issue_6312_float_anchor_line_uses_source_vpos::anchor_paragraph_line_advances_the_flow",
+      "PASS [   0.291s] ( 6742/11637) rhwp::regression_suite_011 issue_6312_float_anchor_line_uses_source_vpos::blank_line_spent_spacing_is_not_added_again_to_the_lazy_origin",
+      "PASS [   6.170s] ( 6743/11637) rhwp::regression_suite_011 issue_6312_float_anchor_line_uses_source_vpos::liver_picture_row_and_caption_keep_the_independent_pdf_frame",
+      "PASS [   0.440s] ( 6744/11637) rhwp::regression_suite_011 issue_6312_float_anchor_line_uses_source_vpos::object_anchor_line_is_not_stacked_when_a_sibling_cell_expands_the_row",
+      "PASS [   0.438s] ( 6745/11637) rhwp::regression_suite_011 issue_6312_float_anchor_line_uses_source_vpos::paragraph_advance_matches_its_actual_table_band"
+    ],
+    "issue_7642_missing_lineseg_picture_flow": [
+      "PASS [   0.072s] ( 7670/11637) rhwp::regression_suite_014 issue_7642_missing_lineseg_picture_flow::center_row_uses_one_alignment_point_for_text_and_pictures",
+      "PASS [   0.067s] ( 7671/11637) rhwp::regression_suite_014 issue_7642_missing_lineseg_picture_flow::picture_line_spacing_affects_following_gap_and_preserves_picture",
+      "PASS [   0.049s] ( 7672/11637) rhwp::regression_suite_014 issue_7642_missing_lineseg_picture_flow::relative_display_size_preserves_declared_line_box",
+      "PASS [   0.230s] ( 7674/11637) rhwp::regression_suite_014 issue_7642_missing_lineseg_picture_flow::no_lineseg_picture_rows_preserve_ownership_and_content_order"
+    ],
+    "source_frame_control_ownership": [
+      "PASS [   0.055s] (11135/11637) rhwp::regression_suite_027 source_frame_control_ownership::multiline_float_keeps_its_control_row_before_exclusion",
+      "PASS [   0.088s] (11137/11637) rhwp::regression_suite_027 source_frame_control_ownership::page_relative_float_preserves_source_margins_and_single_ownership",
+      "PASS [   1.645s] (11146/11637) rhwp::regression_suite_027 source_frame_control_ownership::horizontal_fragments_share_one_centered_source_frame",
+      "PASS [   3.838s] (11148/11637) rhwp::regression_suite_027 source_frame_control_ownership::whole_tac_line_keeps_declared_cell_frame_and_all_source_text",
+      "PASS [   6.880s] (11150/11637) rhwp::regression_suite_027 source_frame_control_ownership::coanchored_host_keeps_both_tables_on_the_same_source_page",
+      "PASS [   7.375s] (11151/11637) rhwp::regression_suite_027 source_frame_control_ownership::restarted_heading_and_its_body_keep_their_source_page",
+      "PASS [   8.225s] (11152/11637) rhwp::regression_suite_027 source_frame_control_ownership::table_split_policy_does_not_duplicate_the_heading_gap"
+    ]
+  },
+  "passed": 17,
+  "failed": 0,
+  "separate_native_v13_history": "v13-focused.json records the prior17 Native focused pass before the final narrow ownership correction."
+}

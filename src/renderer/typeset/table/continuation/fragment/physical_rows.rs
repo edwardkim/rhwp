@@ -503,19 +503,27 @@ impl TypesetEngine {
                     source.styles,
                 )[cursor.row]
             });
+        // 행마다 표 전체 셀을 훑지 않도록 병합 칸을 닫히는 행별로 한 번 모은다(표 순서 유지).
+        let mut spans_closing_on: Vec<Vec<&crate::model::table::Cell>> =
+            vec![Vec::new(); heights.len()];
+        for cell in table
+            .cells
+            .iter()
+            .filter(|cell| cell.row_span > 1 && cell.height < 0x8000_0000)
+        {
+            let closing_row = cell.row as usize + cell.row_span as usize - 1;
+            if let Some(cells) = spans_closing_on.get_mut(closing_row) {
+                cells.push(cell);
+            }
+        }
         for row in first_whole_row..heights.len() {
             // Only a closing span whose preceding physical boxes changed can
             // invalidate the globally measured remainder. Other rows keep their
             // original measurement, including content-driven growth.
-            let closing: Vec<_> = table
-                .cells
+            let closing: Vec<_> = spans_closing_on[row]
                 .iter()
-                .filter(|cell| {
-                    cell.row_span > 1
-                        && cell.height < 0x8000_0000
-                        && cell.row as usize + cell.row_span as usize == row + 1
-                        && prefix_known(usize::from(cell.row), accepted_prefix_end.min(row))
-                })
+                .copied()
+                .filter(|cell| prefix_known(usize::from(cell.row), accepted_prefix_end.min(row)))
                 .collect();
             // 앞 조각이 수용한 상자뿐 아니라 이 루프가 방금 다시 푼 행도 걸침의 남은
             // 요구를 바꾼다.
@@ -597,18 +605,24 @@ impl TypesetEngine {
                 .zip(end.last_height)
                 .is_some_and(|(first, height)| {
                     let (_, last, _) = input.source.measured_table.row_block_for(first);
+                    // 스캔이 완전 행 밴드를 수용하면 내용 컷을 비우고 마지막
+                    // 행 상자를 전달한다. 이 명시적 종료를 빈 유닛 선택으로 다시
+                    // 해석하면 이미 사용한 앞 행 높이가 다음 조각의 원장에서 빠진다.
+                    let closed_boundary =
+                        end.complete_cut && end.cut.is_empty() && first < end.row && end.row < last;
                     height.is_finite()
                         && height > 0.0
-                        && input
-                            .prepared
-                            .layout_engine
-                            .row_block_cut_complete_prefix_end(
-                                input.source.row_geometry_table,
-                                (first, last),
-                                end.cut,
-                                input.source.styles,
-                            )
-                            == Some(end.row)
+                        && (closed_boundary
+                            || input
+                                .prepared
+                                .layout_engine
+                                .row_block_cut_complete_prefix_end(
+                                    input.source.row_geometry_table,
+                                    (first, last),
+                                    end.cut,
+                                    input.source.styles,
+                                )
+                                == Some(end.row))
                 });
         let keeps_source_boxes = self.stored_header_physical_rows(st, input.source)
             || input

@@ -1,0 +1,20 @@
+{
+  "recorded_at": "2026-10-27T06:29:33.162517+00:00",
+  "candidate_build_head": "de9602f1b3db4df2c0fd953f33b5af1e3f9a6466",
+  "candidate_wasm_sha256": "2b73483f2e91d812ca9d2ee0da389738f7c5dc612ff543a8dd9c63a30a67a32f",
+  "baseline_wasm_sha256": "2b73483f2e91d812ca9d2ee0da389738f7c5dc612ff543a8dd9c63a30a67a32f",
+  "candidate_first_chinese_raw": 82.98138,
+  "candidate_cargo_build_seconds_observed": 0.61,
+  "classification": "invalid candidate producer: shared target reused baseline artifact after switching worktree with older source mtimes",
+  "action": "Stop invalid candidate WASM sweep/browser and pending full Rust controller; let active Cargo finish; touch current production source mtimes without content change and force current-package recompilation; rerun candidate optimized WASM and approved validation. Existing correct frozen Native and baseline producers retained.",
+  "observed_invalid_attempt_results": {
+    "optimized_build_exit": 0,
+    "candidate_sweep_controller_exit": 143,
+    "candidate_comparison_controller_exit": 143,
+    "continuity_and_panels_controller_exit": 143,
+    "partial_rust_pipeline_exit": 1,
+    "partial_rust_reason": "Own controller terminated before full nextest; active clippy process allowed to finish. Not a whole regression result.",
+    "browser_pipeline_exit": 1,
+    "browser_failure": "First PDF fidelity document did not finish opening within180000ms on the invalid cached baseline package. AI step alone completed. Neither is used as current candidate browser validation."
+  }
+}

@@ -1,0 +1,3 @@
+a68fc95475aeb3966077291c9bc184646c59a7ce1ab8ce325da41d5ab9c9457b  target/pr-review/release-test/rhwp
+3f0981db4a98bc073b528e551739de2e3ebefab0c4bb393a06b37bee8c87de47  output/black-image-20261031/stroke-controls.pdf
+f121e0f0ca222f397ea80d5b16dba45b1e2d768cc339e1e495ade9e3f512869f  output/black-image-20261031/pattern-controls.pdf

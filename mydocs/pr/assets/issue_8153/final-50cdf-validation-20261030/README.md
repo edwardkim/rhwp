@@ -1,0 +1,78 @@
+# #8153 최종 후보 전쪽 TSV
+
+2026-10-30 KST, 96dpi, 독립 한컴 Print의 기존 PDF 래스터와 같은 쪽을 `scripts/visual_sweep.py --silhouette-only --png-pair`로 비교했다. 표의 raw 값은 소수 둘째 자리 표시다.
+
+- 고정 base: `ad4bf269ffef5adf2142b33004a9981fad7ce804`.
+- Native producer: `5620ff0475`, 실행 파일 SHA-256 `f73d1a3416524ab8e022f394459cba20dc6f096f36cebb82f42b1837d159b6da`.
+- fresh WASM producer: `50cdf6701fcd9b646a403f03f61e8c5fd8c2bd74`, 최적화된 WASM SHA-256 `f9e11ac702fc94a0f9abd4033ba27104b86166983085b9c659730a0658b196c9`.
+- 이후 `962fd34ce9`까지 제품 로직 변경은 없으며 회귀 검사와 한국어 주석만 변경했다. 생산 커밋과 증거를 추가한 커밋은 구분한다.
+- 편람 HWP·HWPX 각 383쪽의 Native·WASM 최저 99.96%는 130쪽이다. 사용자가 승인한 WMF 차이 예외를 적용하며 TSV 값을 변경하지 않는다.
+- #8188의 HWP 2022는 각 64쪽 표시 최저 100.00%, HWP 2024·HWPX는 각 64쪽 표시 최저 99.99%다.
+- #7905는 이번 범위를 1쪽 개선으로 한정한다. Native 91.44% → 98.98%, WASM 91.23% → 98.91%다. 기존 base부터 3~6쪽이 90% 미만인 사실과 원 수치를 유지하며, 그쪽 개선은 이 브랜치 범위에 포함하지 않는다.
+- #8040 두 입력은 각 4쪽이며 fresh WASM 최저 98.82%, base 대비 0.1%p 이상 하락한 쪽이 없다.
+- 원본 입력과 PDF의 경로·SHA, 상세 비교·기준 출처는 기존 `rebase-ad4-validation-20261030/README.md`, `mydocs/pr/assets/issue_8160/rebase-ad4-validation-20261030/README.md`, `mydocs/pr/assets/pr_7905_maintainer_20261029/README.md`와 PR 본문을 함께 참조한다.
+
+| TSV | SHA-256 |
+| --- | --- |
+| [handbook-hwp-native.tsv](handbook-hwp-native.tsv) | `d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308` |
+| [handbook-hwp-wasm.tsv](handbook-hwp-wasm.tsv) | `d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308` |
+| [handbook-hwpx-native.tsv](handbook-hwpx-native.tsv) | `d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308` |
+| [handbook-hwpx-wasm.tsv](handbook-hwpx-wasm.tsv) | `d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308` |
+| [sample16-hwpx-native.tsv](sample16-hwpx-native.tsv) | `804fedcc655075b2739abaf7adfb4764c1938357fcaeaaceb62dca421ecb4f49` |
+| [sample16-hwpx-wasm.tsv](sample16-hwpx-wasm.tsv) | `b63dc2408d611890f7d966e88f036d930fb514dcaf3e7d82e017d10da28b0ffa` |
+| [sample16-hwp2024-native.tsv](sample16-hwp2024-native.tsv) | `804fedcc655075b2739abaf7adfb4764c1938357fcaeaaceb62dca421ecb4f49` |
+| [sample16-hwp2024-wasm.tsv](sample16-hwp2024-wasm.tsv) | `b63dc2408d611890f7d966e88f036d930fb514dcaf3e7d82e017d10da28b0ffa` |
+| [sample16-hwp2022-native.tsv](sample16-hwp2022-native.tsv) | `418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7` |
+| [sample16-hwp2022-wasm.tsv](sample16-hwp2022-wasm.tsv) | `418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7` |
+| [issue7905-native.tsv](issue7905-native.tsv) | `3d7f99f46297f0d21f8cc159decd5245b654f7730093909d7c5d4226beb0a95c` |
+| [issue7905-wasm.tsv](issue7905-wasm.tsv) | `a5383687e7e1ce0851b3ad33b1db4174296dc97bc6900f5cb09a1a2d0781adbc` |
+| [issue8040-insert-native.tsv](issue8040-insert-native.tsv) | `9f894b9dc7b78efff1d152b090a924b611630b4e94aefb20d2dc27aca6451c26` |
+| [issue8040-insert-wasm.tsv](issue8040-insert-wasm.tsv) | `0e9ef18698dd82c10d23b762b0278f191f7fe5e99d493c79fa89cf6441402ef3` |
+| [issue8040-insert-delete-native.tsv](issue8040-insert-delete-native.tsv) | `9f894b9dc7b78efff1d152b090a924b611630b4e94aefb20d2dc27aca6451c26` |
+| [issue8040-insert-delete-wasm.tsv](issue8040-insert-delete-wasm.tsv) | `0e9ef18698dd82c10d23b762b0278f191f7fe5e99d493c79fa89cf6441402ef3` |
+| [base-issue7905-native.tsv](base-issue7905-native.tsv) | `8187c52a91cebd22284862746e18682c1086de5e7aaca329fe770c8b288ea426` |
+| [base-issue7905-wasm.tsv](base-issue7905-wasm.tsv) | `9afe3da6bf4e67affa9ee10d8ebe39fd620bcb7b9996db3d8d165dac39a6d002` |
+| [base-issue8040-insert-native.tsv](base-issue8040-insert-native.tsv) | `9f894b9dc7b78efff1d152b090a924b611630b4e94aefb20d2dc27aca6451c26` |
+| [base-issue8040-insert-wasm.tsv](base-issue8040-insert-wasm.tsv) | `0e9ef18698dd82c10d23b762b0278f191f7fe5e99d493c79fa89cf6441402ef3` |
+| [base-issue8040-insert-delete-native.tsv](base-issue8040-insert-delete-native.tsv) | `9f894b9dc7b78efff1d152b090a924b611630b4e94aefb20d2dc27aca6451c26` |
+| [base-issue8040-insert-delete-wasm.tsv](base-issue8040-insert-delete-wasm.tsv) | `0e9ef18698dd82c10d23b762b0278f191f7fe5e99d493c79fa89cf6441402ef3` |
+
+## 같은 쪽 overlay
+
+색상은 파랑 RHWP만, 빨강 PDF만, 주황 양쪽 색 차이, 회색 일치다. 숫자는 2px 실루엣 표시값이며 이미지 픽셀의 완전 동일을 뜻하지 않는다.
+
+- [handbook-hwp-wasm-p130-overlay.png](handbook-hwp-wasm-p130-overlay.png): `9c0c0d40a03a4bbc91b2eea7da41b2ffc40e2a919082234f4cab8c7350a7f75c`
+- [issue7905-wasm-p001-overlay.png](issue7905-wasm-p001-overlay.png): `39ba6e39f9f922b4ecd7706db644d662cf191b580135c48a894ab3a0950ea66e`
+- [sample16-hwpx-wasm-p018-overlay.png](sample16-hwpx-wasm-p018-overlay.png): `1a2ced75def8af29db724e42f1f7785684bfb6523def74c7d7d88cf1547f20ed`
+
+## 회귀 검사의 글꼴 환경 확인
+
+- 2026-10-30 KST, 검토 소스 `23acf787e316d5b9adbce0f952c5104b6af315fd`의 관련 회귀 32개 모듈·89건을 Linux에서 실행하여 89건 통과, 실패·무시 0건을 확인했다. 이 모듈들에는 추가·변경한 ±1px 고정형 69개 함수가 포함된다. [함수별 목록](px-regression-inventory.md).
+- Fontconfig 목록을 비우고 `RHWP_FONT_PATH`를 해제했다. 이어서 `bwrap`으로 `/usr/share/fonts`, `/usr/local/share/fonts`, `~/.local/share/fonts`, `/opt/hnc`를 빈 tmpfs로 가린 상태에서 `cargo nextest list`가 검증 worktree 소스에서 식별한 16개 suite 바이너리의 실제 경로와 SHA-256을 기록하고, 각 바이너리를 이 격리 환경에서 직접 실행해 같은 89건이 통과했다. 격리 안에서 Nextest가 자식 프로세스 실행에 `Permission denied`를 반환하여 직접 실행 방식으로 검증했다. 저장소에 포함된 기존 테스트 자원은 이용할 수 있으며 새 글꼴은 배포하지 않는다.
+- 이는 위 Linux 환경에서 시스템 글꼴이 없는 조건의 실행 결과다. 다른 운영체제나 모든 글꼴 조합에서 동일한 결과를 보장한다는 의미는 아니다. 시각 TSV는 별도로 기록된 Print 비교 환경에서 측정했다.
+
+## 최신 fresh WASM의 Studio 205쪽 재확인
+
+2026-10-30 Linux headless Chrome에서 `50cdf6701fcd9b646a403f03f61e8c5fd8c2bd74` 생산 fresh WASM으로 편람 HWP·HWPX를 각각 열었다. 브라우저가 받은 WASM은 SHA-256 `f9e11ac702fc94a0f9abd4033ba27104b86166983085b9c659730a0658b196c9`이며, 두 원본 모두 383쪽과 이미지 로드 실패 0건을 확인했다. 실제 Canvas2D 205쪽 캡처는 이전에 정식 보존한 [HWP 화면](../rebase-ad4-validation-20261030/studio-p205/handbook-hwp-p205-canvas2d.png), [HWPX 화면](../rebase-ad4-validation-20261030/studio-p205/handbook-hwpx-p205-canvas2d.png)과 각각 픽셀 단위로 동일하다.
+
+CanvasKit software 요청은 두 원본 모두 383쪽이 준비 상한 128쪽을 넘어 Canvas2D로 전환됐다. 따라서 이 실행은 CanvasKit 실출력 성공을 뜻하지 않는다. 화면 검증과 독립 Print TSV는 서로 다른 검증 경로다.
+
+### 편람 HWP 205쪽 Native·fresh WASM 비교
+
+위 전쪽 TSV를 생산한 Native·WASM의 같은 205쪽 PNG와 SHA가 확인된 기존 Print PDF 래스터로 review·overlay를 만들었다. 두 경로 모두 raw 표시값은 100.00%다. 주황은 양쪽 색 차이이며 점수 100.00%가 픽셀 완전 일치를 뜻하지 않는다.
+
+| 출력 | review | overlay |
+| --- | --- | --- |
+| Native | [review](handbook-hwp-p205-native-review.png) | [overlay](handbook-hwp-p205-native-overlay.png) |
+| fresh WASM | [review](handbook-hwp-p205-wasm-review.png) | [overlay](handbook-hwp-p205-wasm-overlay.png) |
+
+- 같은 쪽의 실제 Native Skia PNG: [편람 HWP 205쪽](handbook-hwp-p205-native-skia.png), SHA-256 `a5da35a6fe58797d28aa1c38cf8e18096114d5be66afa97f0942e90102e69dd8`. Studio Canvas2D 화면은 위 최신 WASM 재확인 절의 기존 이미지를 사용한다.
+
+## PR 준비 추가 검증
+
+- 검증 worktree `23acf787e316d5b9adbce0f952c5104b6af315fd`에서 `cargo build --locked --release`는 37분 4초에 통과했다. 이 커밋 이후 제출 후보까지 제품·테스트 코드는 바뀌지 않았다.
+- `cargo test --locked --release --lib` 최초 실행은 3,790건 통과·11건 실패·12건 ignored였다. 11건은 worktree의 `output/`에 쓸 수 없어 발생했다. 출력 경로를 저장소의 ignored `output/`에 연결한 뒤 같은 release 테스트 바이너리에서 실패 11건을 각각 실행해 모두 통과했다. 전체 lib를 새로 실행한 결과와 구분한다.
+- `cargo test --locked --doc`은 디스크 부족으로 최초 실패한 뒤 종료된 검토 전용 증분 캐시를 정리하고 재실행해 8건 통과·3건 ignored였다.
+- CI workflow의 actionlint, Node 정책 334건과 Python workflow 196건이 통과했다. 기본 feature에 포함되지 않는 Native Skia 전용 세 검사는 별도 경로에서 실행한다.
+- Studio renderer 계약과 합성 보충 사설 글리프 브라우저 검사를 최신 fresh WASM으로 재실행해 통과했다. 합성 글꼴은 메모리에서 처리하며 폰트 파일을 추가하지 않았다.
+- 위 89건 외에 Native Skia 글리프 기하 5건과 기호 대체 1건도 실제 시스템 글꼴 경로를 가린 상태에서 통과했다. 글꼴 격리 확인 범위는 총 95건이다.

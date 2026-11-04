@@ -14,6 +14,7 @@ mod box_types;
 mod brace_outline;
 mod brace_recovery;
 pub(crate) mod brace_stretch;
+mod cache;
 #[cfg(target_arch = "wasm32")]
 pub mod canvas_render;
 pub(crate) mod declared_frame;
@@ -37,6 +38,8 @@ pub use integral_outline::Command as GlyphOutlineCommand;
 pub use negation_geometry::NegationGeometry;
 pub(crate) mod document_script;
 pub mod layout;
+mod legacy_coordinate_plane;
+mod legacy_glyphs;
 pub(crate) mod legacy_hwpeq;
 mod logical_font_frame;
 pub mod parser;
@@ -115,7 +118,13 @@ pub(crate) fn edited_size_hwp(equation: &crate::model::control::Equation) -> (u3
 /// legacy HFT 글리프 메트릭 선택 자체는 이 물리 상자의 재조판 증거가 아니다.
 /// 대체 경로는 폭·높이·기준선을 같은 AST에서 얻어 측정과 paint가 함께 소비한다.
 pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u32, u32, i32) {
-    if declared_frame::retains_unpositioned_host_frame(equation) {
+    cache::flow_metrics(equation, compute_flow_metrics_hwp)
+}
+
+fn compute_flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u32, u32, i32) {
+    if declared_frame::retains_unpositioned_host_frame(equation)
+        || equation.retains_legacy_source_frame()
+    {
         return (
             equation.common.width,
             equation.common.height,
@@ -134,10 +143,7 @@ pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u
     // 빈 글줄은 여전히 점유한다. 캐시를 표시 상자의 크기로 보정하지 않는다.
     if !equation.common.size_protect
         && !(0..=100).contains(&equation.baseline)
-        && matches!(
-            parser::EqParser::for_document(document_script::tokenize(&equation.script)).parse(),
-            ast::EqNode::Empty
-        )
+        && matches!(document_script::parse(equation), ast::EqNode::Empty)
     {
         return (0, 0, 0);
     }
@@ -158,8 +164,7 @@ pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u
             .chars()
             .any(|ch| matches!(ch, '\u{AC00}'..='\u{D7A3}'))
     {
-        let ast =
-            parser::EqParser::for_document(document_script::tokenize(&equation.script)).parse();
+        let ast = document_script::parse(equation);
         let intrinsic = layout::EqLayout::for_equation(equation, super::DEFAULT_DPI).layout(&ast);
         let font_frame = (equation.attr & 1 == 0 && equation.font_size > 0)
             .then(|| {
@@ -205,7 +210,7 @@ pub(crate) fn normalized_simple_math_metrics(
     {
         return None;
     }
-    let ast = parser::EqParser::for_document(document_script::tokenize(&equation.script)).parse();
+    let ast = document_script::parse(equation);
     let intrinsic = layout::EqLayout::for_equation(equation, super::DEFAULT_DPI).layout(&ast);
     let fs = super::hwpunit_to_px(equation.font_size.max(1) as i32, super::DEFAULT_DPI);
     if intrinsic.width <= 0.0
@@ -388,6 +393,35 @@ pub(crate) fn inline_baseline_px(
                 intrinsic.height,
                 super::hwpunit_to_px(equation.font_size as i32, dpi),
             )
+    }
+}
+
+/// 수식 노드가 소비하는 paint 조각. 측정 재생과 실제 paint가 같은 값을 공유한다.
+#[derive(Debug, Clone)]
+pub(crate) struct PaintParts {
+    pub(crate) layout_box: layout::LayoutBox,
+    pub(crate) color_str: String,
+    pub(crate) svg_content: String,
+}
+
+/// 문서 스크립트를 paint 원점까지 배치한 상자와 SVG 조각으로 만든다.
+pub(crate) fn paint_parts(equation: &crate::model::control::Equation, dpi: f64) -> PaintParts {
+    cache::paint_parts(equation, dpi, compute_paint_parts)
+}
+
+fn compute_paint_parts(equation: &crate::model::control::Equation, dpi: f64) -> PaintParts {
+    let ast = document_script::parse(equation);
+    let layout_box = layout_for_paint(equation, &ast, dpi);
+    let color_str = svg_render::eq_color_to_svg(equation.color);
+    let svg_content = svg_render::render_equation_svg(
+        &layout_box,
+        &color_str,
+        super::hwpunit_to_px(equation.font_size as i32, dpi),
+    );
+    PaintParts {
+        layout_box,
+        color_str,
+        svg_content,
     }
 }
 

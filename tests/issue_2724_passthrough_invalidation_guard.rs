@@ -60,6 +60,11 @@ use std::path::{Path, PathBuf};
 /// 스캔 루트 (저장소 루트 기준). 이 아래 `.rs` 전부가 대상이다.
 const SCAN_ROOT: &str = "src/document_core";
 
+/// 공통 계층으로 옮긴 무효화도 밀도 검사에 포함한다 (`SCAN_ROOT` 기준 상대 경로).
+/// #665의 BinData 등록은 기존 DocInfo 무효화를 그대로 model helper로 이동했다.
+/// DocumentCore 메서드 분류 범위는 유지하고, 이동한 사이트의 삭제도 계속 차단한다.
+const DENSITY_EXTRA_FILES: &[&str] = &["../model/bin_data.rs"];
+
 /// 패스스루 무효화 관용구. rustfmt 정규화로 공백 1칸 형태가 보장된다.
 const INVALIDATION_TOKENS: [&str; 2] = ["raw_stream = None", "raw_stream_dirty = true"];
 
@@ -104,7 +109,9 @@ const INVALIDATION_LEDGER: &[(&str, usize)] = &[
     ("commands/object_ops/connector.rs", 4),
     ("commands/object_ops/equation.rs", 3),
     ("commands/object_ops/note.rs", 3),
-    ("commands/object_ops/picture.rs", 8),
+    // #665: 등록 helper의 DocInfo 무효화 1곳을 model로 옮겼다. 합계 8곳을 유지한다.
+    ("commands/object_ops/picture.rs", 7),
+    ("../model/bin_data.rs", 1),
     ("commands/object_ops/shape.rs", 7),
     ("commands/object_ops/table.rs", 7),
     ("commands/table_ops.rs", 19),
@@ -711,6 +718,7 @@ fn measure_invalidation_sites() -> BTreeMap<String, usize> {
     let root = scan_root();
     let mut files = Vec::new();
     rs_files(&root, &mut files);
+    files.extend(DENSITY_EXTRA_FILES.iter().map(|file| root.join(file)));
     let mut out = BTreeMap::new();
     for path in files {
         let rel = path

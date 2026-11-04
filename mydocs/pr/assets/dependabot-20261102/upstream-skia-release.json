@@ -1,0 +1,12 @@
+{
+  "html_url": "https://github.com/rust-skia/rust-skia/releases/tag/0.156.0",
+  "tag_name": "0.156.0",
+  "published_at": "2026-10-26T10:13:47Z",
+  "prerelease": true,
+  "body_sha256": "4851051a523007bffd48cb97c703c756c735c42ea32eb6b542c246eb565ba7a2",
+  "review_facts": [
+    "Bindings align to Skia milestone156; bundled dependency versions updated.",
+    "MSRV1.87 is within rhwp1.93.1.",
+    "Both previous0.153.3 and new0.156.0 GitHub releases set prerelease=true."
+  ]
+}
