@@ -51,7 +51,7 @@
 
 원 PR 4건의 실패는 실제 log·annotation을 확인한 checkout/compile 시간 초과였다. assertion·컴파일 오류를 발견하지 않았다. 최신 base의 Lint 45분·builder 60분 정책과 메인터너 새 후보 검증으로 처리하며 기여자 코드 재작업 댓글을 택하지 않았다. 기존 run의 취소·재실행이나 CI 명령·예산 변경은 수행하지 않았고, 미실행 원 검사를 성공으로 기록하지 않는다.
 
-남은 필수 gate와 두 성능 문서의 판정을 반영한 뒤 exact 후보 SHA·본문·원 PR별 후속 처리안을 확정한다. **원격 push·Open PR·merge는 이번 batch에서 아직 승인받거나 실행하지 않았다.**
+로컬 필수 gate는 모두 완료했다. 두 성능 문서의 판정이 확정되면 승인 내용을 기록하고 exact 제출 SHA·본문·원 PR별 후속 처리안을 확정해 원격 단계로 진행한다. **원격 push·Open PR·merge는 이번 batch에서 아직 승인받거나 실행하지 않았다.**
 
 ## 로컬 self-review 결과와 남은 결정
 
