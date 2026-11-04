@@ -72,6 +72,23 @@ fn connector_line_style(
 }
 
 /// 글상자에 공백이 아닌 실제 텍스트가 한 글자라도 있는지.
+/// 그림을 원래 크기로 상자 안 한 자리에 놓는 채우기 모드.
+fn is_placement_fill_mode(mode: crate::model::style::ImageFillMode) -> bool {
+    use crate::model::style::ImageFillMode as M;
+    matches!(
+        mode,
+        M::Center
+            | M::CenterTop
+            | M::CenterBottom
+            | M::LeftCenter
+            | M::LeftTop
+            | M::LeftBottom
+            | M::RightCenter
+            | M::RightTop
+            | M::RightBottom
+    )
+}
+
 fn textbox_has_visible_text(text_box: &TextBox) -> bool {
     text_box
         .paragraphs
@@ -3019,8 +3036,25 @@ impl LayoutEngine {
             if let Some(ref img_fill) = drawing.fill.image {
                 let bin_data_id = img_fill.bin_data_id;
                 let image_data = find_bin_data_bytes(bin_data_content, bin_data_id);
+                // [#8575] 배치 모드(가운데로·왼쪽 아래로 등)의 그림 크기는 그림 자체의
+                // 픽셀 크기(1px = 1/96in, 그림의 DPI 정보는 쓰지 않음)를 축마다 도형
+                // 상자로 줄인 값이다. 도형의 원래 크기·배율과는 무관하다 — 한/글 2020
+                // Print 로 확인(`samples/issue8575/shape_image_fill.hwpx` 사례 A~F).
+                // 바둑판·크기에 맞추어 등 나머지 모드는 종전 값을 유지한다.
+                let placement_size = is_placement_fill_mode(img_fill.fill_mode)
+                    .then(|| {
+                        image_data
+                            .as_deref()
+                            .and_then(crate::renderer::svg::parse_image_dimensions)
+                    })
+                    .flatten()
+                    .filter(|(nw, nh)| *nw > 0 && *nh > 0)
+                    .map(|(nw, nh)| {
+                        let scale = self.dpi / 96.0;
+                        ((nw as f64 * scale).min(w), (nh as f64 * scale).min(h))
+                    });
                 // 이미지 원본 크기: shape_attr의 original_width/height (HWPUNIT)
-                let original_size = {
+                let original_size = placement_size.or_else(|| {
                     let ow = drawing.shape_attr.original_width;
                     let oh = drawing.shape_attr.original_height;
                     if ow > 0 && oh > 0 {
@@ -3031,7 +3065,7 @@ impl LayoutEngine {
                     } else {
                         None
                     }
-                };
+                });
 
                 let img_id = tree.next_id();
                 // [#6895] `ImageNode` 는 화면 순서를, `ImageFill` 은 이진 순서를 담는다.

@@ -4565,6 +4565,9 @@ fn font_local_aliases(font_family: &str) -> Vec<&'static str> {
         "한컴 윤고딕 240" | "Haan YGodic 240" => {
             vec!["한컴 윤고딕 240", "Haan YGodic 240"]
         }
+        "한컴 윤고딕 250" | "Haan YGodic 250" => {
+            vec!["한컴 윤고딕 250", "Haan YGodic 250"]
+        }
         "맑은 고딕" => vec!["맑은 고딕", "Malgun Gothic"],
         "바탕" => vec!["바탕", "Batang"],
         "돋움" => vec!["돋움", "Dotum"],
@@ -4733,6 +4736,7 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
         // 연결한다. 실제 face를 공급해도 영문 파일명 때문에 대체 글꼴을 고르면 안 된다.
         "한컴 윤고딕 230" | "Haan YGodic 230" => vec!["HANYGO230.ttf"],
         "한컴 윤고딕 240" | "Haan YGodic 240" => vec!["HANYGO240.ttf"],
+        "한컴 윤고딕 250" | "Haan YGodic 250" => vec!["HANYGO250.ttf"],
         // local()와 Full embed는 같은 원본 프로그램 우선순위를 사용한다.
         "한양중고딕" => vec!["H2GTRM.TTF", "HANDotum.ttf", "HDOTUM.TTF"],
         // [#6171] 한컴 Windows 설치본의 실제 파일명은 형제 항목(H2GTRM/H2MJSM)과 같은
