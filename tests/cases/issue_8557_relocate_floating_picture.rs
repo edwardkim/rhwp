@@ -1,14 +1,17 @@
 //! 관계형 — 띄운 그림을 다른 문단·칸 문단으로 옮겨 붙이면 소속과 오프셋이 바뀌고 저장 후에도 남는다 (#8557).
-//! 주석 갱신: 2026-11-04T03:30:00+09:00 (새 파일)
+//! 주석 갱신: 2026-11-04T11:45:00+09:00 (새 파일, 칸 기준 검사 추가)
 //! 시각 측정은 해당 없음: 합성 문서에서 그림 컨트롤의 소속·개수·오프셋과 그림 데이터 보존만 검사한다.
 //! 기대값 근거: 한컴은 개체를 다른 쪽으로 끌어 놓으면 앵커(조판 부호)를 놓은 자리의 문단으로 옮긴다.
 //! 옮기는 동안 그림은 하나뿐이어야 하고(복제·소실 없음), 그림 데이터(BinData)는 그대로 쓰인다.
+//! 칸 문단으로 옮긴 그림은 한컴 칸 그림 저장 형태(세로 문단·가로 단 기준, 본문 영역 제한)를 따른다.
+//! 한글 2022(맥 12.31)에서 종이 기준·제한 없음 그대로 칸에 옮긴 그림을 인쇄하면 칸이 아니라 1쪽 맨 위에 그려졌다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
 use rhwp::model::document::Document;
+use rhwp::model::shape::{HorzRelTo, VertRelTo};
 
 /// 1×1 PNG (투명 픽셀 하나).
 const PNG: [u8; 65] = [
@@ -52,6 +55,32 @@ fn pictures(doc: &Document) -> Vec<(bool, i32, i32, u16)> {
         }
     }
     out
+}
+
+/// 칸 문단 안 그림 하나의 (세로 기준, 가로 기준, 본문 영역 제한).
+fn cell_picture_anchor(doc: &Document) -> (VertRelTo, HorzRelTo, bool) {
+    doc.sections[0]
+        .paragraphs
+        .iter()
+        .flat_map(|p| &p.controls)
+        .find_map(|c| match c {
+            Control::Table(t) => t
+                .cells
+                .iter()
+                .flat_map(|cell| &cell.paragraphs)
+                .find_map(|cp| {
+                    cp.controls.iter().find_map(|inner| match inner {
+                        Control::Picture(pic) => Some((
+                            pic.common.vert_rel_to,
+                            pic.common.horz_rel_to,
+                            pic.common.flow_with_text,
+                        )),
+                        _ => None,
+                    })
+                }),
+            _ => None,
+        })
+        .expect("칸 문단 그림")
 }
 
 fn control_index(core: &DocumentCore, para: usize, pick: fn(&Control) -> bool) -> usize {
@@ -110,6 +139,13 @@ fn floating_picture_relocates_between_body_and_cell_paragraphs() {
     )
     .expect("칸으로 옮기기");
     assert_eq!(pictures(core.document()), vec![(true, 1200, -300, bin_id)]);
+    let in_cell =
+        DocumentCore::from_bytes(&core.export_hwp_native().expect("칸 저장")).expect("다시 열기");
+    assert_eq!(
+        cell_picture_anchor(in_cell.document()),
+        (VertRelTo::Para, HorzRelTo::Column, true),
+        "칸 문단 그림은 칸 기준·본문 영역 제한"
+    );
 
     // 칸 문단 → 본문
     let table = control_index(&core, para, |c| matches!(c, Control::Table(_)));

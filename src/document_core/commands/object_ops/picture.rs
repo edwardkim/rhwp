@@ -1260,7 +1260,9 @@ impl DocumentCore {
     /// 개체를 끌어 다른 쪽에 놓으면 한컴은 개체의 조판 부호(앵커)를 놓은 자리의 문단으로
     /// 옮긴다. 앵커가 원래 쪽에 남으면 개체는 원래 쪽 기준으로 그려져 쪽 밖으로 잘린다.
     /// 그림 데이터(BinData)는 그대로 두고 컨트롤만 옮긴다. 셀 경로가 비면 본문 문단이다.
-    /// 오프셋은 그림의 기존 위치 기준(가로·세로)에 대한 HWPUNIT 값이다.
+    /// 오프셋은 그림의 기존 위치 기준(가로·세로)에 대한 HWPUNIT 값이다. 표 칸 문단으로 옮기면
+    /// 기준을 세로 문단·가로 단으로 바꾸고 본문 영역 제한을 켠다(한컴 칸 그림 저장 형태). 이때
+    /// 오프셋은 그 칸 문단 기준으로 해석되므로, 호출자는 옮긴 뒤 실제 배치와의 차이를 보정한다.
     #[allow(clippy::too_many_arguments)]
     pub fn relocate_floating_picture_native(
         &mut self,
@@ -1326,10 +1328,26 @@ impl DocumentCore {
         } else {
             dst_cell_path.to_vec()
         };
+        let into_table_cell = !dst_path.is_empty()
+            && !Self::cell_path_terminates_at_textbox(
+                &self.document.sections[dst_section],
+                dst_para,
+                &dst_path,
+            )?;
         let mut picture = picture;
         if let Control::Picture(pic) = &mut picture {
             pic.common.horizontal_offset = horz_offset as u32;
             pic.common.vertical_offset = vert_offset as u32;
+            if into_table_cell {
+                // 표 칸 문단 안 그림은 한컴 저장본처럼 세로 문단·가로 단 기준에 본문 영역 제한(bit 13)을
+                // 켠다. 종이 기준이나 제한 없음이면 한컴은 칸이 아니라 바깥 문단·종이 기준으로 그린다.
+                let common = &mut pic.common;
+                common.vert_rel_to = crate::model::shape::VertRelTo::Para;
+                common.horz_rel_to = crate::model::shape::HorzRelTo::Column;
+                common.flow_with_text = true;
+                common.attr =
+                    (common.attr & !((0x3 << 3) | (0x3 << 8))) | (2 << 3) | (2 << 8) | (1 << 13);
+            }
         }
         let new_ctrl_idx = {
             let section = &mut self.document.sections[dst_section];
