@@ -223,3 +223,31 @@ Native/fresh WASM 직접 판독, 전체 회귀·최소 글꼴·새 입력 보안
 이슈 #7524의 실제 close 상태를 조회하고 같은 merge·시각 증적의 후속 comment를 남긴다.
 #8576·#8579는 별개 범위로 유지한다. contributor fork branch는 보존하고, 승인된 후속 기록·devel 동기화 후
 이번 upstream 임시 branch와 전체 `output/`·사용을 마친 `target/pr-review/debug`를 정리한다.
+
+## Merge 확정과 운영 기록
+
+[통합 PR #8601](https://github.com/edwardkim/rhwp/pull/8601)을 2026-11-05 00:09:01 KST에
+merge commit [`abad15a943a0b33460d9de6b6e8a48a1479d9eba`](https://github.com/edwardkim/rhwp/commit/abad15a943a0b33460d9de6b6e8a48a1479d9eba)로 수용했다.
+actual tree `fba7e7acef7d80f0c68a4ab444b32bd7c2170f86`는 직전 clean simulation과 일치한다.
+원 PR #8585도 00:09:03 KST에 간접 MERGED로 확인됐다. 원 PR API의 merge SHA는 원 head `7e7a86fef9`이므로,
+보정된 이미지·기록 URL은 실제 integration merge SHA `abad15a943...`에 고정한다.
+
+trailing head `39c1329535ab132bc69b6275d5e6e07b45143e16`의
+[CI](https://github.com/edwardkim/rhwp/actions/runs/41854218803),
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/41854218968),
+[Render Diff](https://github.com/edwardkim/rhwp/actions/runs/41854219036), Adapter·Proptest 및
+[최종 정책 감사](https://github.com/edwardkim/rhwp/actions/runs/41854512252)는 모두 성공했다.
+실제 preflight는 `fast_pass=true`, `build-and-test-green:success`, candidate `c3e28d2c6e`였다.
+최신 required `Build & Test` success와 `MERGEABLE/CLEAN`, exact head 및 기존 오늘할일 262개 보존을
+확인한 뒤 merge했다. code Full archive의 실제 checkout도 `c3e28d2c6e`와 최신 base `3a539454...`의
+merge ref `db81ea40...`였음을 실제 로그에서 확인했다.
+
+병합 뒤 [nextest duration 갱신](https://github.com/edwardkim/rhwp/actions/runs/41854732433)은 checkout에서
+job의 10분 한도에 도달해 cancelled로 종료됐다. 측정 수집·정책 게시 단계는 skipped이며 실행 시간 메타데이터는
+갱신하지 못했다. 성공으로 기록하지 않는다. 이는 병합 전 검증과 별개이며 검증 CI·metadata workflow를
+수동 취소·재실행하지 않았다. 이슈 #7524는 devel push 자동 처리로 00:09:27 KST에 CLOSED(completed)를 확인했다.
+
+[실제 종료 상태·최종 check·merge 증적](../assets/pr8585/post-merge-verification.json)을 보존했다.
+정식 이미지 두 개와 독립 PDF는 실제 merge SHA의 raw URL에서 HTTP 200·SHA-256 동일성을 확인했다.
+운영 기록은 승인된 maintainer MyDocs 전용 직접 반영 경로로 남긴다. 감사 댓글·이슈 후속 댓글과 정리의 실행 결과는
+최종 작업 보고 및 로컬 `.git/pr8585-completion.json`에 별도로 기록한다. fork 원 branch는 그대로 보존한다.
