@@ -1,6 +1,6 @@
 # Native 공개 글꼴 공급·편람 품질 검증 증적
 
-Issue: #8533. 검증 제품 소스는 `c031a38a41670f5e4f6ab0268ef46c62ab1445f5`이며, 이후 Node 검사·문서·증적 커밋과 구분한다. 이 묶음은 완료한 출력의 원본을 보존한다. 남은 WASM base·최소 글꼴 검사를 완료하기 전에는 PR 준비 완료를 주장하지 않는다.
+Issue: #8533. 검증 제품 소스는 `c031a38a41670f5e4f6ab0268ef46c62ab1445f5`다. 이후 Native·WASM 모듈과 Studio 제품 소스는 같지만, 검증 호스트는 명시 프로그램 선행 준비와 PostScript 별칭·legacy family 선택을 보정했다. 이 묶음의 기존 WASM 출력은 그 보정 전 증거이며, [3단계 기록](../../../../working/task_m100_8533_stage3.md)의 같은 현재 호스트 base/후보 재검증 결과로 갱신해야 한다. 이 묶음은 완료한 출력의 원본을 보존하며, 갱신과 남은 검사 완료 전에는 PR 준비 완료를 주장하지 않는다.
 
 - [원본·독립 Print PDF](input-index.md)
 - [전쪽 TSV 원본과 정밀 raw 값](tsv-index.md)
