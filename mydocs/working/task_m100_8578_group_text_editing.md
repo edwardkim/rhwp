@@ -37,7 +37,7 @@ Esc 복귀와 삭제·붙여넣기 착지는 분리한다. 독립 글상자, 중
   본문·중첩 셀 소유 복귀 행위 검사 및 관련 Studio 검사 10건 PASS, TypeScript 검사 PASS.
   이 단계는 묶음 자식 글상자의 클릭·입력 해결 완료를 뜻하지 않는다.
 - 묶음 글상자의 `cellIndex`를 원본 자식 순서의 깊이 우선 글상자 번호로 정의했다.
-  도형 자체를 복제하지 않으며 텍스트 없는 장식·중간 묶음은 번호를 소비하지 않는다.
+  도형 자체를 복제하지 않으며 글상자가 없는 장식·중간 묶음은 번호를 소비하지 않는다.
   `textbox_shape_at` 공통 조회를 커서·텍스트 편집·리플로우·내부 붙여넣기·중첩 개체 주소에 적용했다.
   RenderNode의 실제 글상자 소유 메타데이터를 클릭 후보에 사용한다. 좌표·clip·paint는 바꾸지 않는다.
   자식 글상자의 입력 폭은 Group 외곽이나 비어 있는 child common.sz가 아닌 원본 orgSz·합성 변환을 쓴다.
@@ -96,3 +96,27 @@ Column/Body 컨테이너에만 생산하여 머리말·꼬리말·각주의 전�
 시스템·사용자 글꼴 경로를 파일 시스템에서 차단하고 프로젝트/fixture의 64개 프로그램만 노출했다.
 첫 metadata 실행의 DNS 실패는 격리 환경의 resolv.conf symlink 대상 누락으로 확인하여 해당 DNS
 파일만 읽기 전용 노출했다. 이는 테스트 FAIL이 아니라 실행 전 인프라 오류이며 통과 결과로 세지 않는다.
+
+## 최종 프로그램의 편집·출력 보존 확인
+
+Rust/Studio 구현 head `124e02bf06805f65d792aab939b42aa2b56b2475`에서 Native 집중 6건 PASS,
+fmt·Native/WASM Clippy·workspace build·all-target Clippy·manifest·unit tiers·E2E manifest·
+TypeScript 검사까지 Mac 순차 게이트 13개를 통과했다. 새 회귀는 자동 수집되는 관계 검사이며,
+인쇄 위치를 픽셀로 고정하거나 기존 문서의 기대값을 완화하지 않았다.
+
+같은 입력·독립 Print PDF·실제 설치 글꼴·현재 정본 Visual Sweep으로 base와 후보를 각각 출력했다.
+Native/fresh WASM 모두 전383쪽, 최저 raw 99.96%, 90% 미만 0쪽이다. 각 backend의 base/후보
+TSV 행과 383개 출력 PNG SHA-256이 모두 동일하다. Native 필수 편람 gate도 통과했다.
+Native raw 100%는 376쪽, WASM raw 100%는 380쪽이며 기존 미세 차이를 새 개선으로 주장하지 않는다.
+3·4쪽의 canonical review/overlay를 직접 판독해 제목·안내문·목차·장식의 내용과 배치 보존을 확인했다.
+
+최종 fresh WASM은 `9c3f92982f0cce3ee16af2860712afcdb5946f5c82971668db2bca205d6f6b61`이다.
+pkg/public과 실제 Canvas2D 초기화 응답이 일치했다. 실제 파일 열기부터 입력·드래그·삭제·Enter·
+undo/redo·목차 클릭·개체 선택·Esc가 통과했고 관련 경고는 0건이다. 추가한 E2E assertion으로
+목차 본문과 Esc 복귀 본문이 실제 문자열로 변경되고 undo 후 복원되는 것까지 재실행해 확인했다.
+이 assertion 보강은 Rust/Studio 구현과 프로그램을 바꾸지 않았다.
+
+전쪽 TSV와 3·4쪽 raw/review/overlay, 실제 Studio 화면·주소 JSON·프로그램 출처는
+[증적 디렉터리](../pr/assets/issue_8578/20261105/)에 보존한다. `.log`, 빌드 바이너리, 글꼴은 커밋하지 않는다.
+최소 글꼴 Linux 집중 6건도 PASS이며 전체 nextest·Native Skia 3종은 진행 중이다.
+전체 회귀의 최종 summary와 exit code를 확인하기 전에는 PR 준비 완료로 판정하지 않는다.

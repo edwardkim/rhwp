@@ -1,5 +1,5 @@
 // 관계형: 묶음 자식 글상자와 배경 밖 본문의 실제 마우스·키보드 편집 소유 계약.
-// 주석 갱신: 2026-11-05T01:58:26+09:00. 픽셀 기대 위치는 고정하지 않는다.
+// 주석 갱신: 2026-11-05T02:25:45+09:00. 픽셀 기대 위치는 고정하지 않는다.
 import assert from 'node:assert/strict';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -16,6 +16,8 @@ async function shortcut(page,key) {
 const position = page => page.evaluate(() => window.__inputHandler.cursor.getPosition());
 const read = (page,index,para=0) => page.evaluate(({index,para}) =>
   window.__wasm.getTextInCell(0,4,0,index,para,0,10000), {index,para});
+const readBody = (page,para) => page.evaluate(para =>
+  window.__wasm.getTextRange(0,para,0,window.__wasm.getParagraphLength(0,para)),para);
 
 async function documentPoint(page, pageIndex, x, y) {
   await page.evaluate(({pageIndex,y}) => {
@@ -134,8 +136,13 @@ runTest('#8578 묶음 글상자 클릭·편집·Esc 소유 보존',async({page})
   const contents=await clickText(page,3,'행정업무 운영 개요');
   assert.equal(contents.position.parentParaIndex,undefined,'목차 본문은 장식 묶음에 가로채이지 않는다');
   assert.equal(contents.position.paragraphIndex,8);
+  const contentsBefore=await readBody(page,8);
   await page.keyboard.type('C'); await settle(page);
+  const contentsOffset=contents.position.charOffset;
+  assert.equal(await readBody(page,8),[...contentsBefore].slice(0,contentsOffset).join('')+'C'+[...contentsBefore].slice(contentsOffset).join(''),
+    '목차 본문 입력이 실제 원 소유 문단을 변경한다');
   await shortcut(page,'z'); await settle(page);
+  assert.equal(await readBody(page,8),contentsBefore);
   await page.screenshot({path:new URL('page004-body.png',output).pathname});
 
   const box=await page.evaluate(()=>window.__inputHandler.findPictureBbox({sec:0,ppi:4,ci:0,type:'group'}));
@@ -147,8 +154,11 @@ runTest('#8578 묶음 글상자 클릭·편집·Esc 소유 보존',async({page})
   const escaped=await position(page);
   assert.equal(escaped.paragraphIndex,4,'Esc는 다음 쪽의 인접 문단이 아닌 소유 본문');
   assert.equal(escaped.parentParaIndex,undefined);
+  const ownerBefore=await readBody(page,4);
   await page.keyboard.type('E'); await settle(page);
+  assert.equal(await readBody(page,4),'E'+ownerBefore,'Esc 복귀 후 원 소유 본문에 실제 입력');
   await shortcut(page,'z'); await settle(page);
+  assert.equal(await readBody(page,4),ownerBefore);
   assert.equal(await read(page,1),edited,'소유 본문 입력은 묶음 자식 내용을 변경하지 않는다');
   assert.deepEqual(errors,[],'클릭·선택·편집에서 잘못된 셀 주소 경고 없음');
   const environment=await page.evaluate(()=>({backend:window.__canvasView.pageRenderer.getBackend(),dpr:devicePixelRatio,pageCount:window.__wasm.pageCount,userAgent:navigator.userAgent}));

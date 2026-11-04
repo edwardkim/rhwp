@@ -1,0 +1,136 @@
+{
+  "compiled_code_head": "124e02bf06805f65d792aab939b42aa2b56b2475",
+  "base": "22947f6a90c998e95fa51238d5b907a0ebd37162",
+  "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+  "pdf_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+  "source_hashes": {
+    "rhwp-studio/src/core/types.ts": "dd36195c3efb8dc27f5070725884b37aef91cf9cb8d9483a723d20d78c8596bd",
+    "rhwp-studio/src/engine/cursor.ts": "cf9f71bad5b9ec16e4b960ef02a2d913796c66ccadcd76e9c8a9b6e774d1ed58",
+    "rhwp-studio/src/engine/input-handler-keyboard.ts": "e705c5602927482482ebee5218a000044b2a325745a848c817dadfc249b8e792",
+    "src/document_core/commands/clipboard.rs": "4a54f9e0e1872301b63f6860f5ea8c0ba29c1d1cd1cba4ae4dcd78db8e74b299",
+    "src/document_core/commands/object_ops/table.rs": "f842e5275be804dbe3a807519193bef6d0d70f8c8da3ae6d677dffc6aab13042",
+    "src/document_core/commands/text_editing.rs": "091011d354de74842fae18c03afa5a7d5f3ad23014c0c9d95f22650d796933cc",
+    "src/document_core/helpers.rs": "99b8f3a04910ddfbb8d910f40094554b702869936c00e44fa56592f065906aa1",
+    "src/document_core/hyperlink.rs": "5def87d7dd59af34b9012232b6a07fa997152d8bc8387fd8d50a6144686a5e70",
+    "src/document_core/inline_control.rs": "fbffcefec1b404c45219d3441c7c142c636bf364a26d2b73ae6b24a9709ffcdc",
+    "src/document_core/queries/cursor_nav.rs": "292998965841ee89043ece52bd463e79e15fd38cc8869d996d2399b742e09470",
+    "src/document_core/queries/cursor_rect.rs": "c10d7b5ff20379dabd9d8ed61dd7703caa5c7643c4dcfbe0ca9577379be3a6eb",
+    "src/document_core/queries/doc_tree_nav.rs": "f1dae81811ed5e274f0a4ca874a4ae383f7976605a8017e1159edd48f1a7d0e0",
+    "src/document_core/queries/rendering.rs": "5b64dd0d4c34285233be715a65b5e27acd9c8919f4db07d8a6b9405cbd77da7a",
+    "src/model/shape.rs": "0da9ebc9995ff825091506553fcd471b99537f2041f156d546ec45c05f15a66c",
+    "src/renderer/layout.rs": "aef7854075077036287e0906f5660f2d230392ec22a459899c7a9fcbd725b0d5",
+    "src/renderer/layout/shape_layout.rs": "b9376334aa09acc956ca51334f813cece80dd1032e1876b9640aa718e21cd7ff",
+    "src/renderer/render_normalization.rs": "9bdb75eb91b07fc95e6ba6e9f68f06ae04f76a55f392c0e6b6db44ea889308e1",
+    "src/renderer/render_tree.rs": "d3dac9199ae45f2759b18123ee55453c94c6734a288fce62b4ff6f27f11137ee",
+    "tests/cases/issue_8578_group_text_editing.rs": "f9fdf26c06d7f5b8e97548ccb4f15d1c7ee393dbb1684214d9c9cee318f1edf4"
+  },
+  "final_browser_test_sha256": "674aa3576e7a203d7620fe19788ba2dd94eec77f534a1280702563ae7d83b0df",
+  "final_browser_exit_code": 0,
+  "note": "강화한 브라우저 검사는 목차·Esc 본문의 실제 문자열 변경과 undo 복원까지 검사했다. 인쇄 프로그램의 Rust/Studio source는 compiled_code_head와 동일하다. Linux 전체 회귀와 Native Skia 3종은 아직 실행 중이며 완료 결과로 세지 않는다.",
+  "artifacts": {
+    "browser-artifacts.json": {
+      "sha256": "d2ec05655af2ddf5dd5a6768ee1af3642bf45d0800493c54b52ccb9ea3303bec",
+      "bytes": 632
+    },
+    "browser-result.json": {
+      "sha256": "503f6a1ac32643d4394008581fea84386898c23f4a642ccf951cf63e006446ea",
+      "bytes": 1262
+    },
+    "mac-gates.json": {
+      "sha256": "99def52464626aad7dd857342ce6edb4c4d1324a121bfa2d6d118ca7ea96a988",
+      "bytes": 3405
+    },
+    "native-base.tsv": {
+      "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "bytes": 8428
+    },
+    "native-comparison.json": {
+      "sha256": "1d0311f5f4250c0efc3ca3161ad514879bb36f249c0cf883dce7aa0f87675d85",
+      "bytes": 224
+    },
+    "native-head.tsv": {
+      "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "bytes": 8428
+    },
+    "native-p003-overlay.png": {
+      "sha256": "03d1002c84124c5102fa8f91acc764b527b052b201b151c43b357a407d0ac877",
+      "bytes": 70337
+    },
+    "native-p003-raw.png": {
+      "sha256": "a5fe6ce5c5c19ce800427eb7037ea482b3e9c7c5a3060a057349e7b5e3cd95ea",
+      "bytes": 70486
+    },
+    "native-p003-review.png": {
+      "sha256": "99e289b14319ad382edd807de459b238b707f0fd705b75275004975fa9fe417a",
+      "bytes": 201753
+    },
+    "native-p004-overlay.png": {
+      "sha256": "c13385bd61d98b632ec784d5f906011878dc9d768cbcda8f8a77143bd785441b",
+      "bytes": 83737
+    },
+    "native-p004-raw.png": {
+      "sha256": "acf578842cf5ce787122e7fb09e76a60a4cbb9b3fe995f82a1c5be6275ab52f7",
+      "bytes": 87641
+    },
+    "native-p004-review.png": {
+      "sha256": "4293481990e4367d565acf7d2812d6331fe6df3dba8e016016dbe954c8d94124",
+      "bytes": 238721
+    },
+    "pdf-p003.png": {
+      "sha256": "17861d73e426580d6d65262c06846069acc96bf56bbf28492dc8fcb4c783c6b7",
+      "bytes": 71560
+    },
+    "pdf-p004.png": {
+      "sha256": "53b0bee944375902f88dc551632917e160e8a8e1a911e9b673dd8fb199da1acf",
+      "bytes": 76180
+    },
+    "studio-page003-edit.png": {
+      "sha256": "0e30d459eade10471729d558bd510489ac6860acbad545209421958572a124ab",
+      "bytes": 110561
+    },
+    "studio-page004-body.png": {
+      "sha256": "2104be92d25effffa5601c4058e4b9a9d2813da4de2aa62fbf808253cccb870d",
+      "bytes": 105446
+    },
+    "wasm-base.tsv": {
+      "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "bytes": 8428
+    },
+    "wasm-build.json": {
+      "sha256": "b437a0afa849317c603cd69fa54caf9953a3daaaf42d3de415fea5d2c507380a",
+      "bytes": 456
+    },
+    "wasm-comparison.json": {
+      "sha256": "1d0311f5f4250c0efc3ca3161ad514879bb36f249c0cf883dce7aa0f87675d85",
+      "bytes": 224
+    },
+    "wasm-head.tsv": {
+      "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "bytes": 8428
+    },
+    "wasm-p003-overlay.png": {
+      "sha256": "6fcc1095db47a8317d5706ff5951939048b63f892a019be75d1e8a8665d19c48",
+      "bytes": 74881
+    },
+    "wasm-p003-raw.png": {
+      "sha256": "7260f4afe134569fb8a0b778c3ac8809b5cf218c15564c24880a77ed1128375f",
+      "bytes": 77567
+    },
+    "wasm-p003-review.png": {
+      "sha256": "96bb9943d33eb03a4d9e5170a8783765edf084e07b06fdf465984ed0b046381f",
+      "bytes": 205003
+    },
+    "wasm-p004-overlay.png": {
+      "sha256": "fe2fda4895d5412ce2241a5af4ccd03da876802e686524ae389e16788dc26456",
+      "bytes": 89957
+    },
+    "wasm-p004-raw.png": {
+      "sha256": "e31f308b1c7b511e45fee7997a6ac577b1b5865453e022d1ebb76cf4c6c73dfd",
+      "bytes": 97064
+    },
+    "wasm-p004-review.png": {
+      "sha256": "7dac7177b37475be9c37a82cdb723535fb8dafc7716c30f62dd1d47ac52f4118",
+      "bytes": 241521
+    }
+  }
+}

@@ -1,0 +1,178 @@
+{
+  "head": "124e02bf06805f65d792aab939b42aa2b56b2475",
+  "base": "22947f6a90c998e95fa51238d5b907a0ebd37162",
+  "steps": [
+    {
+      "step": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exitCode": 0,
+      "seconds": 1.071
+    },
+    {
+      "step": "focused",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8578_group_text_editing",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "exitCode": 0,
+      "seconds": 183.255
+    },
+    {
+      "step": "native-cli",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--bin",
+        "rhwp"
+      ],
+      "exitCode": 0,
+      "seconds": 199.46
+    },
+    {
+      "step": "wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exitCode": 0,
+      "seconds": 431.922
+    },
+    {
+      "step": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exitCode": 0,
+      "seconds": 13.291
+    },
+    {
+      "step": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "seconds": 70.746
+    },
+    {
+      "step": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "seconds": 61.129
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "exitCode": 0,
+      "seconds": 99.599
+    },
+    {
+      "step": "all-target-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "seconds": 80.148
+    },
+    {
+      "step": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "22947f6a90c998e95fa51238d5b907a0ebd37162"
+      ],
+      "exitCode": 0,
+      "seconds": 3.054
+    },
+    {
+      "step": "unit-tiers",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "22947f6a90c998e95fa51238d5b907a0ebd37162"
+      ],
+      "exitCode": 0,
+      "seconds": 20.237
+    },
+    {
+      "step": "e2e-manifest",
+      "command": [
+        "python3",
+        "scripts/check_e2e_manifest.py"
+      ],
+      "exitCode": 0,
+      "seconds": 0.273
+    },
+    {
+      "step": "typecheck",
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "exitCode": 0,
+      "seconds": 2.794
+    }
+  ],
+  "running": null,
+  "native_sha256": "cd1ecf73533e1c8e55ce51f1ce0294ea91e536e8c98071ae0511fd883b0e06a0",
+  "success": true
+}
