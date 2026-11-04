@@ -87,7 +87,7 @@ export async function loadSweepFontPrograms(plan, fonts, host = globalThis, sour
       if (sha256 !== record.sha256) throw Error('선택한 글꼴 프로그램의 공급 hash가 다릅니다.');
       resource = {bytes, sha256}; resources.set(record.url, resource);
     }
-    const family = record.families[0];
+    const family = record.primaryFamily || record.families[0];
     for (const alias of new Set([query, family])) {
       const key = `${alias.toLowerCase()}|${record.weight}|${record.style}`;
       if (supplied.has(key)) continue;

@@ -39,6 +39,32 @@ class TerminalCmapTests(unittest.TestCase):
             self.assertIsNone(png.repair_terminal_cmap(self.cmap()[:end], 3))
 
 
+class ProgramPostScriptAliasTests(unittest.TestCase):
+    """관계형: Native가 조회하는 같은 프로그램의 PostScript 이름도 공급한다."""
+
+    def test_cold_and_cached_catalogue_preserve_family_priority_and_supply_postscript_alias(self):
+        from fontTools.ttLib import TTFont
+        fixture = Path(__file__).parents[2] / 'tests/fixtures/native_inline_placeholder/placeholder-contract.ttf'
+        with TTFont(fixture, lazy=True) as font:
+            expected_families, _ = png.font_family_names(font)
+            postscript = font['name'].getDebugName(6)
+        self.assertNotIn(postscript, expected_families, 'family와 다른 실제 프로그램 별칭 대조군')
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            inputs, out = root / 'fonts', root / 'capture'
+            inputs.mkdir(); out.mkdir()
+            shutil.copyfile(fixture, inputs / 'source.ttf')
+            adapter = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
+                sha256_file=lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest(),
+                write_json_atomic=lambda p, value: p.write_text(json.dumps(value)))
+            for _ in range(2):
+                face = json.loads(png.font_catalog(adapter, root, [inputs], out).read_text())['faces'][0]
+                self.assertEqual(face['families'][:len(expected_families)], expected_families,
+                                 '기존 family의 선택 우선순위를 바꾸지 않는다')
+                self.assertIn(postscript, face['families'], 'Native PostScript 조회와 같은 실제 프로그램 공급')
+                self.assertEqual(hashlib.sha256(Path(face['path']).read_bytes()).hexdigest(),
+                                 hashlib.sha256(fixture.read_bytes()).hexdigest(), '별칭 추가로 프로그램을 바꾸지 않는다')
+
 class LegacyProfileHeaderTests(unittest.TestCase):
     def test_header_repair_preserves_the_valid_program_and_records_provenance(self):
         from fontTools.ttLib import TTFont
@@ -721,6 +747,7 @@ class EmbeddedFontCatalogueTests(unittest.TestCase):
             fixture = Path(__file__).parents[2] / 'tests/fixtures/fonts/RHWPExactFaceSmoke.ttc'
             with TTFont(fixture, fontNumber=0) as font:
                 good = ['RHWP Exact Face Zero', 'RHWP Exact Face Zero Regular']
+                postscript = font['name'].getDebugName(6)
                 entry = NameRecord()
                 entry.nameID, entry.platformID, entry.platEncID, entry.langID = 1, 3, 5, 1042
                 entry.string = b'\xd3\x9c'
@@ -733,7 +760,8 @@ class EmbeddedFontCatalogueTests(unittest.TestCase):
                 write_json_atomic=lambda p, v: p.write_text(json.dumps(v), encoding='utf-8'))
             catalogue = json.loads(png.font_catalog(adapter, root, [inputs], root).read_text(encoding='utf-8'))
             record = catalogue['faces'][0]
-            self.assertEqual(record['families'], good)
+            self.assertEqual(record['families'], [*good, postscript])
+            self.assertEqual(record['primaryFamily'], good[0])
             self.assertEqual(len(record['nameRecordErrors']), 1)
             error = record['nameRecordErrors'][0]
             self.assertEqual((error['nameID'], error['platformID'], error['encodingID'], error['languageID']),

@@ -175,6 +175,16 @@ test('실제 프로그램 hash·로드 성공 뒤에만 별칭과 face provenanc
   assert.ok(result.loaded.every(p => p.sourceSha256 === face.sourceSha256 && p.faceIndex === 2));
 });
 
+test('PostScript 별칭으로 공급해도 굵기를 합친 typographic family 대신 Native legacy family를 유지한다', async () => {
+  const {host, face} = programFixture();
+  face.families = ['Generic Family', 'Native Weight Family', 'NativeWeightPS'];
+  face.primaryFamily = 'Native Weight Family';
+  const result = await loadSweepFontPrograms({requests: [{primary: ['NativeWeightPS'], substitute: []}]}, [face], host);
+  assert.equal(result.programs[0].query, 'NativeWeightPS');
+  assert.equal(result.programs[0].family, 'Native Weight Family');
+  assert.deepEqual(result.loaded.map(font => font.family), ['NativeWeightPS', 'Native Weight Family']);
+});
+
 test('공급 실패·hash 변경·실제 font 로드 거절은 준비 완료로 기록하지 않는다', async () => {
   for (const [options, expected] of [
     [{responseOk: false}, /바이트 공급/], [{badHash: true}, /hash/], [{loadError: true}, /OTS rejected/],
