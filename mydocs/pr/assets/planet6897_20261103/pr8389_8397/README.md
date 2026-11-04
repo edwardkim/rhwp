@@ -6,7 +6,10 @@
 측정했다. 색상 경계 보정 전 2px 내용 실루엣의 표시값을 비교한다.
 [원 PR 기준 2,153행 대조](native-display-comparison.tsv)는 중복을 제외하면 17문서·1,770쪽이며,
 **원 PR TSV 대비 하락 0행, 누락 0쪽**이다. 전쪽 최저 94.96%, 90% 미만 0쪽이다.
-문서별 전쪽 TSV는 [native](native/)에 보존했다. fresh WASM의 전쪽 대조는 진행 중이다.
+문서별 전쪽 TSV는 [native](native/)에 보존했다. fresh WASM도 [원 PR 기준 2,153행 대조](wasm-display-comparison.tsv)를 완료했다.
+원 PR TSV 대비 하락 0행, 누락 0쪽이다. 문서별 전쪽 TSV는 [wasm](wasm/)에 보존했다.
+이는 리베이스 전 제품 코드의 실측이며, 새 base `1924d371d6`의 최종 검증을 대신하지 않는다.
+`sample10`에는 원 검증과 같은 외부 참조 그림 `oracle.gif`·`rdb02.gif`·`s1.jpg`를 공급했다.
 [입력·PDF SHA와 Git 포함 명세](inputs.tsv)에 실측 파일과 저장소 파일의 일치를 기록했다.
 
 기준은 각 행의 `기준_TSV`에 기록한 PR #8389·#8397의 정밀 TSV다.
