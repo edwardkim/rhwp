@@ -5,6 +5,9 @@
 `e96b500e3ea259c821f05440f0388355916a9e9b`다. 아래 초기 단계와 중간 실패는 진행 이력이며,
 최종 판정은 마지막 절과 [검증 결과](../pr/assets/issue_8578/20261105/verification.json)를 따른다.
 
+제출 전 최종 코드·증적 대조는 [Issue #8578 최종 PR 검토](../report/task_m100_8578_report.md)에 정리했다.
+원격 push·PR 생성은 사용자 승인 대기다.
+
 - 작업 브랜치: `task/8578-group-text-editing`
 - 최초 고정 base: `22947f6a90c998e95fa51238d5b907a0ebd37162`
 - 원본: `samples/2025 행정업무운영 편람(최종).hwpx`
