@@ -448,6 +448,7 @@ pub struct WebCanvasRenderer {
     metric_descriptor_mismatch: std::cell::Cell<bool>,
     hft_outline_fonts: Option<super::hft_outline::HftOutlineFonts>,
     hft_outline_enabled: bool,
+    print_text_geometry: bool,
     high_quality_images: bool,
     render_profile: crate::paint::RenderProfile,
     bitmap_paper_grid: Option<super::bitmap_raster::PrintPaperGrid>,
@@ -484,6 +485,7 @@ impl WebCanvasRenderer {
             metric_descriptor_mismatch: std::cell::Cell::new(false),
             hft_outline_fonts: None,
             hft_outline_enabled: false,
+            print_text_geometry: false,
             high_quality_images: false,
             render_profile: crate::paint::RenderProfile::Screen,
             bitmap_paper_grid: None,
@@ -558,6 +560,7 @@ impl WebCanvasRenderer {
         self.render_profile = crate::paint::RenderProfile::Screen;
         text_geometry::configure(&self.ctx, false);
         self.print_stroke_adjustment = false;
+        self.print_text_geometry = false;
         self.print_device_clip = false;
         self.render_node(&tree.root);
     }
@@ -571,7 +574,8 @@ impl WebCanvasRenderer {
             crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
         );
         self.render_profile = tree.profile;
-        text_geometry::configure(&self.ctx, tree.preserves_raster_text_geometry());
+        self.print_text_geometry = tree.preserves_raster_text_geometry();
+        text_geometry::configure(&self.ctx, self.print_text_geometry);
         self.hft_outline_enabled = matches!(
             tree.profile,
             crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
@@ -3260,7 +3264,7 @@ impl Renderer for WebCanvasRenderer {
         // Native Skia와 같은 순서이며, 재생할 수 없는 변환은 기존 경로로 간다.
         if self.high_quality_images && self.ctx.image_smoothing_enabled() {
             if let Some(frame) = super::print_raster::PrintRasterFrame::read(data) {
-                if let Some(canvas) = cached_decoded_image_canvas(data, hash_bytes(data)) {
+                if let Some(canvas) = print_image_sampling::decoded_source(data) {
                     if cubic_reduction::draw_print_frame(&self.ctx, &canvas, frame) {
                         return;
                     }

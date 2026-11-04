@@ -13,11 +13,16 @@ const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const require = createRequire(join(root, 'rhwp-studio/package.json'));
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 
-test('issue_8160: JPEG 인쇄 프레임은 실제 Canvas의 독립 Print 경계 픽셀을 보존한다', async t => {
+// 고정형: 추가한 편람 140쪽의 수정 전 Native 100%, fresh WASM 99.98238%.
+// 주석 갱신: 2026-11-04 15:59 KST. 독립 Print 영역의 기존 2px 내용 경계를 고정한다.
+for (const [label, contractPath, regionId] of [
+  ['issue_8160 표지', 'tests/fixtures/issue8160/hwp2022.json', 'header-jpeg-print-frame'],
+  ['issue_8533 편람 140쪽', 'tests/fixtures/issue8533/handbook-print-frame.json', 'handbook-login-jpeg-print-frame'],
+]) test(`${label}: JPEG 인쇄 프레임은 실제 Canvas의 독립 Print 경계 픽셀을 보존한다`, async t => {
   const pkg = resolve(process.env.RHWP_SWEEP_TEST_WASM_PKG || join(root, 'pkg'));
-  const contract = JSON.parse(readFileSync(join(root, 'tests/fixtures/issue8160/hwp2022.json'), 'utf8'));
+  const contract = JSON.parse(readFileSync(join(root, contractPath), 'utf8'));
   const [region] = contract.browser_raster_regions;
-  assert.equal(region.id, 'header-jpeg-print-frame');
+  assert.equal(region.id, regionId);
   assert.equal(contract.dpi, 96);
   assert.equal(region.threshold, 232);
   assert.equal(region.symmetric_radius_pixels, 2);
@@ -133,10 +138,11 @@ test('issue_8160: JPEG 인쇄 프레임은 실제 Canvas의 독립 Print 경계 
     }
   }, {box: region.box, threshold: region.threshold, radius: region.symmetric_radius_pixels,
     pageIndex: region.page - 1, compat2024: contract.compat2024});
-  assert.equal(result.pageCount, contract.pages.length);
-  assert.equal(result.images.length, 2, '원본 표지 그림의 누락·중복');
-  assert.equal(result.images[0].mime, 'image/jpeg');
-  assert.equal(result.images[0].frame.length, 8);
+  assert.equal(result.pageCount, contract.page_count ?? contract.pages.length);
+  assert.equal(result.images.length, contract.image_count ?? 2, '원본 그림의 누락·중복');
+  const target = result.images[contract.frame_image_index ?? 0];
+  assert.equal(target.mime, 'image/jpeg');
+  assert.equal(target.frame.length, 8);
   assert.deepEqual(result.errors, []);
   assert.equal(result.width, region.box[2] - region.box[0]);
   assert.equal(result.height, region.box[3] - region.box[1]);

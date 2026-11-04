@@ -13,6 +13,72 @@ import {findChrome} from '../rasterize-svg-webfonts.mjs';
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const require = createRequire(join(root, 'rhwp-studio/package.json'));
 
+// 관계형: 기본 TTF가 공급하지 못한 글자만 검증된 다음 프로그램의 윤곽을 쓴다.
+// 주석 갱신: 2026-11-04 15:56 KST. 좌표 핀이 아닌 합성 공급자·프로필 계약이다.
+test('Print TTF 대체 글리프는 원 프로그램의 기하를 쓰고 Screen과 원 face는 보존한다', async t => {
+  const pkg = resolve(process.env.RHWP_SWEEP_TEST_WASM_PKG || join(root, 'pkg'));
+  const files = new Map([
+    ['/rhwp.js', ['application/javascript', readFileSync(join(pkg, 'rhwp.js'))]],
+    ['/rhwp_bg.wasm', ['application/wasm', readFileSync(join(pkg, 'rhwp_bg.wasm'))]],
+    ['/primary.ttf', ['application/octet-stream', readFileSync(join(root, 'tests/fixtures/fonts/RHWPEquationLatinOnly.ttf'))]],
+    ['/fallback.ttf', ['application/octet-stream', readFileSync(join(root, 'tests/fixtures/fonts/RHWPHostFixture-Regular.ttf'))]],
+  ]);
+  const server = createSweepServer(files, new Map());
+  await new Promise((accept, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', accept); });
+  t.after(async () => { server.closeAllConnections(); await new Promise(accept => server.close(accept)); });
+  const profile = createSweepBrowserProfile(join(root, 'output/pr-review/browser-profile-tests'), 'ttf-fallback');
+  let browser;
+  t.after(async () => {
+    if (browser) await browser.close();
+    rmSync(profile, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
+  });
+  browser = await require('puppeteer-core').launch({executablePath: findChrome(process.env.VISUAL_SWEEP_CHROME), headless: true, userDataDir: profile});
+  const page = await browser.newPage(); await page.goto(`http://127.0.0.1:${server.address().port}`);
+  const rows = await page.evaluate(async () => {
+    const wasm = await import('/rhwp.js'); await wasm.default();
+    const programs = [];
+    for (const [family, url] of [['RHWP Print Primary', '/primary.ttf'], ['RHWP Print Fallback', '/fallback.ttf']]) {
+      const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
+      const face = new FontFace(family, bytes); await face.load(); document.fonts.add(face);
+      programs.push({family, bytes});
+    }
+    const languages = ['Hangul', 'Latin', 'Hanja', 'Japanese', 'Other', 'Symbol', 'User'];
+    const source = new TextEncoder().encode(`<?xml version="1.0" encoding="UTF-8"?>
+      <HWPML Version="2.91"><HEAD SecCnt="1"><MAPPINGTABLE><FACENAMELIST>
+      ${languages.map(lang => `<FONTFACE Count="1" Lang="${lang}"><FONT Id="0" Name="RHWP Print Primary,RHWP Print Fallback" Type="ttf"/></FONTFACE>`).join('')}
+      </FACENAMELIST><CHARSHAPELIST Count="1"><CHARSHAPE Id="0" Height="2400"/>
+      </CHARSHAPELIST></MAPPINGTABLE></HEAD><BODY><SECTION Id="0"><P ParaShape="0">
+      <TEXT CharShape="0"><CHAR>H가</CHAR></TEXT></P></SECTION></BODY></HWPML>`);
+    const doc = new wasm.HwpDocument(source);
+    try {
+      doc.setHangul2024Compat(true);
+      const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+      const calls = [], paths = [];
+      const fillText = ctx.fillText.bind(ctx), fill = ctx.fill.bind(ctx);
+      ctx.fillText = (text, ...args) => { calls.push(text); return fillText(text, ...args); };
+      ctx.fill = (...args) => { paths.push(true); return fill(...args); };
+      const rows = [];
+      for (const supplied of [false, true]) {
+        if (supplied) for (const {family, bytes} of programs) doc.registerTextFontGlyphCoverage(family, bytes, 0);
+        for (const profile of ['screen', 'print']) {
+          calls.length = 0; paths.length = 0;
+          doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', profile);
+          rows.push({supplied, profile, calls: [...calls], paths: paths.length, tree: doc.getPageRenderTree(0)});
+        }
+      }
+      return rows;
+    } finally { doc.free(); }
+  });
+  const printed = rows.find(row => row.supplied && row.profile === 'print');
+  assert.ok(printed.calls.includes('H'), '원 face가 공급한 글자는 원 painter에 남는다');
+  assert.ok(!printed.calls.includes('가'), '검증된 대체 TTF의 윤곽을 기하적으로 재생한다');
+  for (const row of rows.filter(row => row !== printed)) {
+    assert.ok(row.calls.includes('가'), 'Screen 또는 미공급 프로그램에는 기존 painter를 쓴다');
+    assert.equal(row.tree, printed.tree, '공급과 출력 프로필이 조판·소속을 바꾸지 않는다');
+  }
+  assert.ok(printed.paths > rows[0].paths, '대체 글리프의 실제 path 재생이 있어야 한다');
+});
+
 test('실제 Canvas Print 글리프는 기하 모드를 소비하고 Screen으로 복귀한다', async t => {
   const pkg = resolve(process.env.RHWP_SWEEP_TEST_WASM_PKG || join(root, 'pkg'));
   const files = new Map([

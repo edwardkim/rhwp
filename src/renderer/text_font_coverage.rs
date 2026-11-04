@@ -32,6 +32,8 @@ pub(crate) struct TextFontCoverage(Arc<Catalog>);
 pub(crate) struct PaintFace {
     pub family: String,
     pub slanted: bool,
+    #[cfg(target_arch = "wasm32")]
+    pub weight: u16,
 }
 
 impl TextFontCoverage {
@@ -181,6 +183,8 @@ impl TextFontCoverage {
                 return Some(PaintFace {
                     family,
                     slanted: self.0.db.face(id)?.style != Style::Normal,
+                    #[cfg(target_arch = "wasm32")]
+                    weight: self.0.db.face(id)?.weight.0,
                 });
             }
         }

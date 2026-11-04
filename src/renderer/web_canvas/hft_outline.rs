@@ -7,10 +7,7 @@ impl WebCanvasRenderer {
     pub(super) fn draw_hft_outline(&self, text: &str, style: &TextStyle, font_size: f64) -> bool {
         // 이 cluster는 호출자가 old_hangul_descriptor로 전환해 그린다.
         // 원래 family의 CFF에도 glyph가 있어도 우선 선택된 전용 face를 덮지 않는다.
-        if !self.hft_outline_enabled
-            || !supports_style(style)
-            || crate::renderer::contains_old_hangul_jamo(text)
-        {
+        if !self.hft_outline_enabled || crate::renderer::contains_old_hangul_jamo(text) {
             return false;
         }
         let mut chars = text.chars();
@@ -20,11 +17,15 @@ impl WebCanvasRenderer {
         if chars.next().is_some() {
             return false;
         }
-        let Some(commands) = self
-            .hft_outline_fonts
-            .as_ref()
-            .and_then(|fonts| fonts.glyph(&style.font_family, character))
-        else {
+        let Some(commands) = self.hft_outline_fonts.as_ref().and_then(|fonts| {
+            if supports_style(style) {
+                fonts.glyph(&style.font_family, character)
+            } else if self.print_text_geometry {
+                fonts.print_fallback_glyph(style, character)
+            } else {
+                None
+            }
+        }) else {
             return false;
         };
         self.ctx.save();

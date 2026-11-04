@@ -24,12 +24,16 @@ pub(super) fn draw_encoded(
             .and_then(|raster| replay_raster(context, &raster))
             .is_some();
     }
-    let source = if bytes.starts_with(&[0xff, 0xd8]) {
+    decoded_source(bytes).is_some_and(|source| draw(context, &source, rectangle, page, scale))
+}
+
+/// 장치 프레임과 일반 Print 표본이 동일한 JPEG 복호화 RGB를 소비한다.
+pub(super) fn decoded_source(bytes: &[u8]) -> Option<HtmlCanvasElement> {
+    if bytes.starts_with(&[0xff, 0xd8]) {
         jpeg_replay::canvas(bytes)
     } else {
         super::cached_image_canvas(bytes)
-    };
-    source.is_some_and(|source| draw(context, &source, rectangle, page, scale))
+    }
 }
 
 pub(super) fn draw(
