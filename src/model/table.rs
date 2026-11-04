@@ -4,6 +4,8 @@ use super::paragraph::Paragraph;
 use super::shape::{common_obj_offsets, Caption};
 use super::*;
 
+#[path = "table/contradictory_grid.rs"]
+mod contradictory_grid;
 #[path = "table_inline_grid.rs"]
 mod inline_grid;
 #[path = "table/row_frames.rs"]
@@ -756,6 +758,15 @@ impl Table {
         let to_i32 = |width: u64| width.min(i32::MAX as u64) as i32;
         let mut owners =
             storage.collect(self.cells.iter().map(|cell| to_i32(u64::from(cell.width))))?;
+        // 칸 경계가 행마다 엇갈리는 표는 표 레이아웃이 하한 해 경계로 칸을 그린다.
+        // 문단 줄 나눔도 같은 경계 폭을 써야 측정과 배치가 같은 줄 수를 낸다.
+        if let Some(widths) = self.contradictory_cell_widths_hu() {
+            for (owner, width) in owners.iter_mut().zip(widths) {
+                *owner = width;
+            }
+            return Ok(owners);
+        }
+
         let col_count = usize::from(self.col_count);
         if owners.is_empty()
             || col_count == 0

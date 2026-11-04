@@ -5131,6 +5131,20 @@ impl LayoutEngine {
             if !constraints.satisfied_by(&col_widths) {
                 if let Some(solved) = constraints.solve() {
                     col_widths = solved;
+                } else if let Some(boundaries) = (inline_grid_width.is_none())
+                    .then(|| table.contradictory_column_boundaries_hu())
+                    .flatten()
+                {
+                    // 행마다 칸 경계가 엇갈리는 표: 다른 행이 고정한 경계를 지키고
+                    // 짧은 행의 칸이 남는 폭을 흡수하는 하한 해(문단 폭과 같은 경계).
+                    let spacing = i64::from(table.cell_spacing);
+                    col_widths = boundaries
+                        .windows(2)
+                        .map(|pair| {
+                            hwpunit_to_px((pair[1] - pair[0] - spacing) as i32, self.dpi)
+                                * width_scale
+                        })
+                        .collect();
                 }
             }
         }
