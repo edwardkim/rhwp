@@ -2233,6 +2233,7 @@ impl LayoutEngine {
                         commands.push(PathCommand::ClosePath);
                     }
                 }
+                // 변환된 꼭짓점과 hit-test 상자는 같은 최종 경계를 소비한다.
                 let (paint_x, paint_y, paint_w, paint_h) =
                     if source_affine && !poly.points.is_empty() {
                         (

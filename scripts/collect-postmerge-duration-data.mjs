@@ -18,7 +18,7 @@ const time = (value) => Date.parse(value || '');
 
 // Metrics provenance is separate from approval/CI reuse. A lint-only rerun does
 // not invalidate successful B/C/D/E measurements from the same head's earlier attempt.
-export function selectMeasuredDurationArtifacts({ run, pr, jobs, artifacts, repositoryId }) {
+function validateSuccessfulPrRun({ run, pr, repositoryId }) {
   if (!Number.isSafeInteger(repositoryId) || repositoryId < 1
       || !Number.isSafeInteger(pr?.number) || pr.number < 1
       || !Number.isSafeInteger(run?.id) || run.id < 1 || !Number.isSafeInteger(run.run_attempt) || run.run_attempt < 1
@@ -33,6 +33,10 @@ export function selectMeasuredDurationArtifacts({ run, pr, jobs, artifacts, repo
       || time(run.run_started_at || run.created_at) > time(pr.merged_at)) fail('invalid successful PR run');
   if (Array.isArray(run.pull_requests) && run.pull_requests.length
       && !run.pull_requests.some((entry) => entry.number === pr.number)) fail('run belongs to another PR');
+}
+
+export function selectMeasuredDurationArtifacts({ run, pr, jobs, artifacts, repositoryId }) {
+  validateSuccessfulPrRun({ run, pr, repositoryId });
   if (!Array.isArray(jobs) || !Array.isArray(artifacts)) fail('missing API evidence');
   const archiveLabels = archiveLabelsForRun(jobs, artifacts);
   const selected = archiveLabels.map((label) => {
@@ -128,6 +132,17 @@ export async function collectPostmergeDurations({ github, owner, repo, mergeSha,
     && run.conclusion === 'success' && time(run.created_at) >= time(pr.created_at)
     && time(run.run_started_at || run.created_at) <= time(pr.merged_at))
     .sort((a, b) => time(b.created_at) - time(a.created_at) || b.run_attempt - a.run_attempt).slice(0, 20);
+  // 최종 trailing fast-pass의 승인 신원과 실제 측정 worker의 신원은 구분한다.
+  const finalCandidate = runs.filter(run => run.head_sha === pr.head.sha
+    && run.head_repository?.id === pr.head.repo.id && run.head_branch === pr.head.ref && run.name === 'CI')
+    .sort((a, b) => time(b.created_at) - time(a.created_at) || b.run_attempt - a.run_attempt)[0];
+  if (!finalCandidate) return { ready: false, reason: 'final-head-ci-unavailable' };
+  const finalHeadRun = (await github.rest.actions.getWorkflowRun({ owner, repo, run_id: finalCandidate.id })).data;
+  try { validateSuccessfulPrRun({ run: finalHeadRun, pr, repositoryId: repository.id }); }
+  catch { return { ready: false, reason: 'final-head-ci-unavailable' }; }
+  if (finalHeadRun.head_sha !== pr.head.sha || finalHeadRun.run_attempt !== finalCandidate.run_attempt) {
+    return { ready: false, reason: 'final-head-ci-changed' };
+  }
   for (const candidate of candidates) {
     try {
       if (candidate.head_sha !== pr.head.sha) {
@@ -139,12 +154,25 @@ export async function collectPostmergeDurations({ github, owner, repo, mergeSha,
       const run = (await github.rest.actions.getWorkflowRun({ owner, repo, run_id: candidate.id })).data;
       // Do not reuse an earlier snapshot if someone reran or replaced the run.
       if (run.head_sha !== candidate.head_sha || run.run_attempt !== candidate.run_attempt) continue;
+      validateSuccessfulPrRun({ run, pr, repositoryId: repository.id });
       const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
         owner, repo, run_id: run.id, filter: 'latest', per_page: 100,
       });
       const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
         owner, repo, run_id: run.id, per_page: 100,
       });
+      // 문서-only CI의 생략 worker는 실패가 아니라 측정 자료가 없는 후보다.
+      const labels = archiveLabelsForRun(jobs, artifacts);
+      const noMeasurements = !artifacts.some(artifact =>
+        artifact.name.startsWith(`nextest-target-durations-${run.id}-`));
+      if (noMeasurements && labels.every(label => {
+        const matches = jobs.filter(job => job.name === `test-archive-${label}-shard-1`
+          || job.name === `test-archive-${label}-shard-1 / Default-feature tests (Archive ${label.toUpperCase()})`);
+        return matches.length === 1 && matches[0].status === 'completed' && matches[0].conclusion === 'skipped';
+      })) {
+        notice(`Duration candidate ${candidate.id}: workers skipped; no measurements; checking earlier code CI`);
+        continue;
+      }
       const measuredJobs = await resolveMeasuredJobs({ run, jobs, artifacts,
         listAttemptJobs: (attempt_number) => github.paginate(github.rest.actions.listJobsForWorkflowRunAttempt, {
           owner, repo, run_id: run.id, attempt_number, per_page: 100,
@@ -170,12 +198,19 @@ export async function collectPostmergeDurations({ github, owner, repo, mergeSha,
       const final = (await github.rest.actions.getWorkflowRun({ owner, repo, run_id: run.id })).data;
       if (final.status !== 'completed' || final.conclusion !== 'success'
           || final.head_sha !== run.head_sha || final.run_attempt !== run.run_attempt) fail('run changed during collection');
+      const approval = (await github.rest.actions.getWorkflowRun({ owner, repo, run_id: finalHeadRun.id })).data;
+      validateSuccessfulPrRun({ run: approval, pr, repositoryId: repository.id });
+      if (approval.head_sha !== pr.head.sha || approval.run_attempt !== finalHeadRun.run_attempt) {
+        fail('final head CI changed during collection');
+      }
       for (const report of normalized) {
         const directory = path.join(outputDir, `duration-${report.archive_label}`);
         fs.mkdirSync(directory, { recursive: true });
         fs.writeFileSync(path.join(directory, `target-durations-${report.archive_label}.json`), `${JSON.stringify(report)}\n`);
       }
       return { ready: true, reason: 'successful-pr-worker-measurements', pullNumber: pr.number,
+        finalHeadRunId: finalHeadRun.id, finalHeadRunAttempt: finalHeadRun.run_attempt,
+        finalHeadSha: pr.head.sha, reviewOnlyTail: run.head_sha !== pr.head.sha,
         sourceRunId: run.id, latestRunAttempt: run.run_attempt, measurementAttempts, testedMergeSha,
         sourceHeadSha: run.head_sha, artifactIds: selected.map(({ artifact }) => artifact.id) };
     } catch (error) {

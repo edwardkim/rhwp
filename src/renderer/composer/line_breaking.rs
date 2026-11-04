@@ -3817,6 +3817,18 @@ fn supports_inline_picture_frame_controls(para: &Paragraph) -> bool {
         })
 }
 
+// 양식만 있는 빈 문단도 그림과 같은 원시 인라인 슬롯을 프레임에 넘긴다.
+// 떠 있는 양식이나 다른 개체의 배치 소유권은 기존 경로에 둔다.
+pub(super) fn supports_inline_form_frame_controls(para: &Paragraph) -> bool {
+    para.controls
+        .iter()
+        .any(|control| matches!(control, Control::Form(form) if form.common.treat_as_char))
+        && para.controls.iter().all(|control| match control {
+            Control::Form(form) => form.common.treat_as_char,
+            other => control_is_width_neutral_marker(other),
+        })
+}
+
 /// 본문 뒤 남은 폭에 놓이지 않는 inline control은 별도 physical line을 가진다.
 ///
 /// 종전 cell reflow는 text token만 줄바꿈한 뒤 첫 LineSeg를 표 높이만큼 키웠다.
@@ -4329,6 +4341,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
         FramePurpose::Body => {
             supports_picture_band_frame_controls(para)
                 || supports_cached_body_frame_controls(para)
+                || supports_inline_form_frame_controls(para)
                 || (para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para))
                 || (para.line_segs.is_empty() && supports_overlay_table_frame_controls(para))
                 || supports_overlay_shape_frame_controls(para)
@@ -4340,7 +4353,9 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
         return Ok(None);
     }
 
-    let projected = if (para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para))
+    let projected = if (para.line_segs.is_empty()
+        && (supports_tac_table_band_frame_controls(para)
+            || supports_inline_form_frame_controls(para)))
         || no_ls_inline_picture_host_fill(para)
     {
         inline_frame_input::project_with_storage(para, styles, dpi, storage)?
@@ -5048,6 +5063,7 @@ pub(crate) fn resolve_stored_line_segs_in_frame_with_storage<S: crate::storage::
             if !supports_picture_band_frame_controls(para)
                 && !tac_table_host_fill
                 && !no_ls_inline_picture_host_fill(para)
+                && !(para.line_segs.is_empty() && supports_inline_form_frame_controls(para))
             {
                 if !supports_cached_body_frame_controls(para)
                     || (!stale && !para.line_segs.is_empty())
@@ -5699,7 +5715,10 @@ fn try_reflow_line_segs_impl<S: Storage>(
     let (marker_hang_px, indent_px) = list_marker_breaker_box(para, styles, indent_px);
     let available_width_px = (paragraph_box.width_px(dpi) - marker_hang_px).max(1.0);
 
-    if !split_stale_cell_reflow && supports_inline_picture_frame_controls(para) {
+    if !split_stale_cell_reflow
+        && (supports_inline_picture_frame_controls(para)
+            || supports_inline_form_frame_controls(para))
+    {
         // An edit invalidates the old text/control partition together. Project
         // invisible control slots before filling, rather than measuring text
         // alone and attaching an end-of-paragraph picture during paint. The
@@ -6457,9 +6476,12 @@ pub(crate) fn recalculate_section_vpos(
     // 직전 문단이 이번 편집의 변조 대상이었는가 + 직전 문단에 적용된 delta.
     let mut prev_modified = false;
     let mut prev_delta: i32 = 0;
+    // 직전 줄 보유 문단과 현재 문단 사이에 저장 줄이 없는 문단이 있었는가.
+    let mut skipped_unlined = false;
 
     for pi in start_para..paragraphs.len() {
         if paragraphs[pi].line_segs.is_empty() {
+            skipped_unlined = true;
             continue;
         }
 
@@ -6489,6 +6511,15 @@ pub(crate) fn recalculate_section_vpos(
         let delta = if is_reset {
             // 단/쪽 리셋 경계 — 저장 좌표 유지.
             0
+        } else if skipped_unlined && !para_modified {
+            // 저장 줄 없는 문단의 높이는 조판이 그때 정하고, 그 자리는 이 문단의 저장
+            // 좌표에만 남아 있다. 앞 문단 end 의 이동만 옮겨 그 간격을 지킨다.
+            let stored_prev_end = if prev_idx == Some(start_para) && !is_ignored(start_para) {
+                start_stored_end.or(orig_prev_end)
+            } else {
+                orig_prev_end
+            };
+            stored_prev_end.map_or(0, |end| next_vpos - end)
         } else if para_modified || prev_modified {
             // 변조 인접 경계 — 이동 후 흐름에 스타일 여백 gap 으로 다시 잇는다.
             let gap = prev_idx
@@ -6520,6 +6551,7 @@ pub(crate) fn recalculate_section_vpos(
         prev_modified = para_modified;
         prev_delta = delta;
         prev_idx = Some(pi);
+        skipped_unlined = false;
     }
 }
 

@@ -1,6 +1,6 @@
 //! 도형 생성/속성/그룹 native 명령 (object_ops 분할, #1904).
 
-mod group_geometry;
+pub(super) mod group_geometry;
 
 use super::MIN_SHAPE_SIZE;
 use crate::document_core::helpers::get_textbox_from_shape;

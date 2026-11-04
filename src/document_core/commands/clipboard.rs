@@ -84,6 +84,16 @@ fn bin_data_over_limit_error(bin_data_id: u16) -> HwpError {
     ))
 }
 
+pub(super) fn has_only_inline_forms(para: &Paragraph) -> bool {
+    para.field_ranges.is_empty()
+        && para.orphan_field_ends.is_empty()
+        && para.controls.iter().any(|c| matches!(c, Control::Form(_)))
+        && para.controls.iter().all(|c| {
+            matches!(c, Control::SectionDef(_) | Control::ColumnDef(_))
+                || matches!(c, Control::Form(form) if form.common.treat_as_char)
+        })
+}
+
 fn clipboard_paragraphs_contain_field(paragraphs: &[Paragraph]) -> bool {
     paragraphs.iter().any(|para| !para.field_ranges.is_empty())
 }
@@ -433,6 +443,60 @@ impl DocumentCore {
                 .get(section_idx)
                 .and_then(|section| section.paragraphs.get(para_idx))
         };
+        if start_para_idx > end_para_idx
+            || (start_para_idx == end_para_idx && start_logical > end_logical)
+            || [(start_para_idx, start_logical), (end_para_idx, end_logical)]
+                .into_iter()
+                .any(|(index, offset)| {
+                    para(index).is_none_or(|p| offset > logical_paragraph_length(p))
+                })
+        {
+            return Err(HwpError::RenderError(
+                "복사할 논리 범위가 올바르지 않습니다".into(),
+            ));
+        }
+        if start_para_idx == end_para_idx && start_logical == end_logical {
+            return Ok(super::super::helpers::json_ok_with("\"text\":\"\""));
+        }
+        if has_only_inline_forms(para(start_para_idx).unwrap())
+            || has_only_inline_forms(para(end_para_idx).unwrap())
+        {
+            let mut selected = Vec::new();
+            for index in start_para_idx..=end_para_idx {
+                let paragraph = para(index).unwrap();
+                if index != start_para_idx && index != end_para_idx {
+                    selected.push(paragraph.clone());
+                    continue;
+                }
+                let from = if index == start_para_idx {
+                    start_logical
+                } else {
+                    0
+                };
+                let to = if index == end_para_idx {
+                    end_logical
+                } else {
+                    logical_paragraph_length(paragraph)
+                };
+                if has_only_inline_forms(paragraph) {
+                    // 같은 글자 자리의 양식도 문단 경계에서 각 논리 칸으로 나눈다.
+                    let mut fragment = paragraph.clone();
+                    fragment.split_at(to);
+                    if from > 0 {
+                        fragment = fragment.split_at(from);
+                    }
+                    selected.push(fragment);
+                } else {
+                    let start = logical_to_text_offset(paragraph, from);
+                    let mut end = logical_to_text_offset(paragraph, to);
+                    end.1 |= to == logical_paragraph_length(paragraph);
+                    selected.push(clip_paragraph_caret_range_for_clipboard(
+                        paragraph, start, end,
+                    ));
+                }
+            }
+            return Ok(self.store_clipboard(selected));
+        }
         let start = para(start_para_idx).map_or((start_logical, false), |p| {
             logical_to_text_offset(p, start_logical)
         });
@@ -507,6 +571,10 @@ impl DocumentCore {
             ));
         }
 
+        Ok(self.store_clipboard(clip_paragraphs))
+    }
+
+    fn store_clipboard(&mut self, mut clip_paragraphs: Vec<Paragraph>) -> String {
         // 구조적 컨트롤(SectionDef, ColumnDef 등) 제거 — 텍스트 복사에 불필요
         for para in &mut clip_paragraphs {
             strip_structural_controls_for_text_clipboard(para);
@@ -527,10 +595,7 @@ impl DocumentCore {
             copied_table_text_reflowed: false,
         });
 
-        Ok(super::super::helpers::json_ok_with(&format!(
-            "\"text\":\"{}\"",
-            escaped
-        )))
+        super::super::helpers::json_ok_with(&format!("\"text\":\"{}\"", escaped))
     }
 
     /// 표 셀 내부 선택 영역을 내부 클립보드에 복사한다.

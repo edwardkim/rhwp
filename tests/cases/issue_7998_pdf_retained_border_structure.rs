@@ -1765,11 +1765,13 @@ fn row_projection_rejects_ambiguous_ids_and_physical_holes() {
     c.document_mut().sections[0].paragraphs[0]
         .controls
         .push(Control::Table(Box::new(original)));
+    // 행 격자는 같은 개체 번호의 사본에 새 번호를 주지만, PDF에서 가져온 칸 테두리 소유는
+    // 여전히 표 정체성으로 가려야 하므로 모호한 사본의 저장을 거절한다.
     assert!(c
         .export_hwpx_native()
         .unwrap_err()
         .to_string()
-        .contains("ID"));
+        .contains("ambiguous cell border paint ownership"));
     let mut c = merged_native();
     let ci = root(&c).0;
     let Control::Table(t) = &mut c.document_mut().sections[0].paragraphs[0].controls[ci] else {

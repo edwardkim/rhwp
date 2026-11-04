@@ -21519,9 +21519,9 @@ impl LayoutEngine {
                 crate::model::table::TablePageBreak::RowBreak
             );
         if !(native_row_source || hwpx_row_source)
-            || self.profile.get().session_edited()
-            // 다른 행의 재조판은 이 행의 저장 셀 상자를 무효화하지 않는다.
-            // 해당 행을 덮는 셀과 앞 흐름의 실제 변경만 프레임 수용을 막는다.
+            || (self.profile.get().session_edited()
+                && !crate::renderer::float_placement::stored_plain_table_source_is_current(table))
+            // 다른 행의 재조판과 이 행의 원본 프레임 소유를 아래에서 따로 확인한다.
             || self
                 .render_normalization
                 .borrow()

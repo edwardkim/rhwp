@@ -3,7 +3,7 @@
 이 장은 모든 `--json` 봉투에 실리는 두 키를 에이전트가 **어떻게 읽는지**만 적는다.
 키를 새로 만들지 않고, 문서 문자열을 바꾸지 않는다. 권위는
 `crates/rhwp-contracts/src/provenance.rs` 의 `marked()` 와
-[`mydocs/tech/envelope_provenance.md`](../../../mydocs/tech/envelope_provenance.md).
+[`mydocs/tech/envelope_provenance.md`](../../../../mydocs/tech/envelope_provenance.md).
 
 관련: [export-provenance-map.md](export-provenance-map.md),
 [command-field-catalog.md](command-field-catalog.md),
@@ -176,7 +176,10 @@
 
 ### 6.6 엔진-전용
 
-`capabilities`, `export-provenance-map`, `export-svg`, `convert`, `replay` 등.
+`capabilities`, `export-provenance-map`, `word-count`, `convert`, `replay` 등.
+
+`export-svg`·`export-pdf`·`export-png`는 선택적 글꼴 보고에 문서 문자열이
+포함되므로 서식 메타데이터 경로의 실제 출처 표지를 확인한다.
 
 표지는 `false` 여야 한다. 키가 없으면 미표기다. 산출 **파일**은 별개다.
 

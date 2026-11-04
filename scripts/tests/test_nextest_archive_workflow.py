@@ -71,9 +71,9 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         script = "\n".join(line.removeprefix("          ") for line in script.splitlines())
 
         cases = [
-            ("pull_request", "refs/pull/1/merge", "false", "release-test", "30"),
-            ("push", "refs/heads/devel", "false", "release-test", "30"),
-            ("workflow_dispatch", "refs/heads/feature", "false", "release-test", "30"),
+            ("pull_request", "refs/pull/1/merge", "false", "release-test", "60"),
+            ("push", "refs/heads/devel", "false", "release-test", "60"),
+            ("workflow_dispatch", "refs/heads/feature", "false", "release-test", "60"),
             ("push", "refs/heads/main", "false", "release", "60"),
             ("push", "refs/tags/v1.2.3", "false", "release", "60"),
             ("workflow_dispatch", "refs/heads/feature", "true", "release", "60"),
@@ -263,15 +263,15 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         script = "\n".join(line.removeprefix("          ") for line in script.splitlines())
 
         for profile, timeout, target_group, expected in (
-            ("release-test", "30", "lib", 0),
+            ("release-test", "60", "lib", 0),
             ("release", "60", "integration-b", 0),
             ("release", "60", "integration-c", 0),
             ("release", "60", "integration-d", 0),
-            ("release-test", "60", "lib", 1),
+            ("release-test", "30", "lib", 1),
             ("release", "30", "integration-b", 1),
             ("debug", "60", "lib", 1),
             ("release", "60", "integration", 1),
-            ("release-test", "30", "unknown", 1),
+            ("release-test", "60", "unknown", 1),
         ):
             with self.subTest(profile=profile, timeout=timeout, target_group=target_group):
                 result = run_script(
@@ -337,7 +337,11 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         refresh = (REPO_ROOT / ".github/workflows/refresh-nextest-duration.yml").read_text()
         self.assertNotIn("refresh-nextest-target-duration-data:", self.ci)
         self.assertIn("refresh-nextest-target-duration-data:", refresh)
-        self.assertIn("ci-metrics/nextest-target-durations", refresh)
+        # 게시 대상은 workflow가 호출하는 API publisher에서 고정한다.
+        publisher = (REPO_ROOT / "scripts/publish-nextest-duration-data.mjs").read_text()
+        self.assertIn("scripts/publish-nextest-duration-data.mjs", refresh)
+        self.assertIn("heads/ci-metrics/nextest-target-durations", publisher)
+        self.assertIn("force: false", publisher)
         self.assertIn("github.ref == 'refs/heads/devel'", refresh)
         self.assertIn("duration_policy_sha:", self.builder)
         self.assertIn(

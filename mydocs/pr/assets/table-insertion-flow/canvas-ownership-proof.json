@@ -1,0 +1,51 @@
+{
+  "source": "ac6534470739f8708e479be8de5bbcad990e08ae",
+  "rendererOverridesSha256": {
+    "src/renderer/typeset/table/block/entry.rs": "738e5a0c8b7597a884bceefb38639e0fecc2f523bb4115c10e090deb9b004707",
+    "src/renderer/typeset/section/vpos.rs": "327bb760fc45c2e6e28731d7a8e5c7696c40a33d6cfcdb458fe87e9864c6df1b",
+    "src/renderer/typeset/paragraph.rs": "6c9e42b2c19bccaf03b4f87d66f878d498c26b7aa285ba9a4f9396310ea5336e",
+    "src/renderer/typeset/paragraph/content.rs": "2fb1294834744b662a8585a8d6dc20236345813809bb887bb54364145c76c7b6",
+    "src/renderer/typeset/controls/order.rs": "7f45ae4ff68707946234300d4b7b3883d7c500cdefe52a8613e2665302874466",
+    "src/renderer/typeset.rs": "3fa6c324f1d92cef609022aa4bc185596aef2e9e86266b2a961453caf363003e",
+    "src/renderer/typeset/controls/stored_tac.rs": "5912767eca87d468dfd5c003e1024a5ce7a81d468851bfe14cdc444c6b3d40ae",
+    "src/renderer/layout/table_layout.rs": "0133ca1574f7c64c1da324d6b9fbc3ffff0e73b42d8c72b882d126753ae77780",
+    "src/renderer/float_placement.rs": "bdf9d673b0594deeaf4f5082015b73ddf428f5b2bf9f400d0164376926151cd2",
+    "src/renderer/layout/table_partial.rs": "e55b5021b24cd8c0e2d359bb2e1ba489fda88302bfe745ce5bb461f3bcd5804b"
+  },
+  "jsSha256": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+  "wasmSha256": "0d1f99f7915a61e1581afd89646eee423e34a21bd6671fa064e1d2238ececadc",
+  "nativeProofSha256": "812b5f0493631f322392efecf7f03ef4b472e02460be0402d0db37e18d7eb03e",
+  "sourceCanvasProofSha256": "1098e04330e2d5e1e211cb9aa3ff3078ed16f199b49ad4c7e68498214fe7da7d",
+  "rows": [
+    {
+      "case": "fresh-reference",
+      "page": 1,
+      "raw": 100.0,
+      "savedSha256": "c99160b2d024dedc467268ffc45f21a0dee5f0f377173d6ef2771bc7caf7b043",
+      "pdfSha256": "5325efb934e2b2e4a121e7060a12e7abe03284db033dbe6a0f544cbffd0ead48"
+    },
+    {
+      "case": "loaded-before",
+      "page": 1,
+      "raw": 100.0,
+      "savedSha256": "ca03160be4ec78a600b29e53a8790a0c40337774233a534a2ddc23adc0d71939",
+      "pdfSha256": "1041e76f06fae6dcc0890ed08cc1d14f02933a3d8f51bf5b9e3612c8e70afa57"
+    },
+    {
+      "case": "empty-host-after",
+      "page": 1,
+      "raw": 100.0,
+      "savedSha256": "f451e9919ed3f5f077b0434918762449092cfdecfab217fdbdb21c269fef18e6",
+      "pdfSha256": "eb2007bba04fcce0f90f27015bfd0739616881c20ee03ab71b640369d1aea452"
+    },
+    {
+      "case": "after-table-after",
+      "page": 1,
+      "raw": 100.0,
+      "savedSha256": "236c0e7c375d793bf5ab6c94377ee038fb3a21a941515d7b49ad298e3f265c35",
+      "pdfSha256": "9ccd60e8eb3d447ff64891b2ac46ae0bf84f1e1de55d3e219c8a81725515f728"
+    }
+  ],
+  "raw90GatePass": true,
+  "scope": "Existing two regression scenarios, four states, live freshWASM Canvas before export with the same bounds warmup and public API calls; exact independently printed model bytes. Not model/AI quality."
+}
