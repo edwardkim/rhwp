@@ -1,0 +1,24 @@
+{
+  "build_runtime_source": "a55c53a393",
+  "validation_candidate": "c3e28d2c6e44baa9714832e1521f5a733101a5fd",
+  "runtime_input_files": 2149,
+  "runtime_sources_changed": [],
+  "same_test_assertions": true,
+  "same_oracle_rows": true,
+  "non_runtime_delta_files": [
+    "mydocs/pr/assets/pr8585/corrected-native-p001.png",
+    "mydocs/pr/assets/pr8585/corrected-native-provenance.json",
+    "mydocs/pr/assets/pr8585/corrected-native.tsv",
+    "mydocs/pr/assets/pr8585/corrected-runtime-inputs.json",
+    "mydocs/pr/assets/pr8585/corrected-svg-photo-attributes.json",
+    "mydocs/pr/assets/pr8585/corrected-test-issue_7524_textbox_tac_picture_rows.log.txt",
+    "mydocs/pr/assets/pr8585/corrected-wasm-p001.png",
+    "mydocs/pr/assets/pr8585/corrected-wasm-provenance.json",
+    "mydocs/pr/assets/pr8585/corrected-wasm.tsv",
+    "mydocs/pr/assets/pr8585/original-head-new-relations.json",
+    "mydocs/pr/assets/pr8585/original-head-new-relations.log.txt",
+    "tests/cases/issue_7524_textbox_tac_picture_rows.rs",
+    "tests/fixtures/oracle_page_count_baseline.tsv"
+  ],
+  "receipt_scope": "optimized WASM and Native CLI built from the identical runtime source tree; only test measurement comments, oracle row placement, and review evidence differ"
+}

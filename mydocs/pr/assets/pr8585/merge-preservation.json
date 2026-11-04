@@ -1,0 +1,17 @@
+{
+  "base": "7fdd5441ff1e77c083818e920a48089f294de35e",
+  "candidate": "c3e28d2c6e44baa9714832e1521f5a733101a5fd",
+  "merge_tree": "81ef14dcf5263bf3928d53968322dc995c50645b",
+  "base_oracle_rows": 553,
+  "merged_oracle_rows": 554,
+  "all_base_rows_preserved": true,
+  "added_rows": [
+    "samples/issue7524/textbox_tac_picture_rows.hwp"
+  ],
+  "latest_base_before_trailing": "3a53945439862712be86764af73714827b15a44e",
+  "code_merge_tree": "eaed8d42dd52a7ba2229d0b6fcc14b0b6fb6ca86",
+  "base_8285_paths_byte_identically_preserved": {
+    "src/model/paragraph.rs": true,
+    "tests/cases/split_before_auto_number_placeholder.rs": true
+  }
+}

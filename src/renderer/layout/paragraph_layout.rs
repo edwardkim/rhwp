@@ -1388,6 +1388,23 @@ fn tac_offsets_for_line(
         .collect()
 }
 
+/// 본문과 글상자 개체가 공유하는 가운데 정렬의 말미 공백 수용 조건.
+pub(crate) fn center_alignment_excludes_trailing_space(
+    alignment: Alignment,
+    line: &ComposedLine,
+    last_inline_object_pos: Option<usize>,
+    is_last_line: bool,
+    stored_geometry_source: bool,
+) -> bool {
+    alignment == Alignment::Center
+        && (is_last_line || !stored_geometry_source)
+        && (last_inline_object_pos.is_some()
+            || line
+                .runs
+                .iter()
+                .any(|run| run.text.chars().any(|character| character != ' ')))
+}
+
 /// 정렬 폭 산정에 사용할 줄 단위 TAC 집합.
 ///
 /// 기본 줄 범위는 [`tac_offsets_for_line`]과 동일하게 엄격한 반열림 구간이다. 다만
@@ -7735,13 +7752,16 @@ impl LayoutEngine {
             // 개체 앞 공백과 개체 폭은 보존된다. 순수 텍스트 줄에서도
             // 한/글도 칸 안에서 말미 공백을 빼고 정렬한다(3079571 취소신청서 1쪽,
             // '신청하는' + 공백 5칸 — 한/글 대비 -15.02px = 5 × 6.008 ÷ 2).
-            let center_excludes_trailing_ws = alignment == Alignment::Center
-                && (is_last_line_of_para || !stored_geometry_source)
-                && (!line_tac_offsets_for_width.is_empty()
-                    || comp_line
-                        .runs
-                        .iter()
-                        .any(|r| r.text.chars().any(|c| c != ' ')));
+            let center_excludes_trailing_ws = center_alignment_excludes_trailing_space(
+                alignment,
+                comp_line,
+                line_tac_offsets_for_width
+                    .iter()
+                    .map(|(position, _, _)| *position)
+                    .max(),
+                is_last_line_of_para,
+                stored_geometry_source,
+            );
             // [#5820] 글상자(drawText) 안 문단은 표 셀이 아니다 — 한글은 글상자
             // 안에서도 오른쪽 정렬의 말미 공백을 제외한다(156560092 글상자:
             // [로고A][로고B][공백5] RIGHT 문단 — 한글 로고 우변 여백 4.1px,

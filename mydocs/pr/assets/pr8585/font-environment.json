@@ -1,0 +1,6 @@
+{
+  "id": "pr8585-local-verified-fonts",
+  "substitutions": {
+    "한컴 윤고딕 230": "HCR Dotum"
+  }
+}

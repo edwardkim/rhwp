@@ -1,0 +1,6 @@
+
+running 2 tests
+test photos_stay_inside_the_textbox ... ok
+test photos_wrap_into_rows_without_overlap ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s

@@ -18,7 +18,9 @@ use super::super::pagination::PageItem;
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, px_to_hwpunit, PathCommand, ShapeStyle, TextStyle};
-use super::paragraph_layout::trailing_space_width_after_last_inline_object;
+use super::paragraph_layout::{
+    center_alignment_excludes_trailing_space, trailing_space_width_after_last_inline_object,
+};
 use super::text_measurement::{
     estimate_text_width, is_cjk_char, is_vertical_rotate_char, resolved_to_text_style,
     vertical_substitute_char,
@@ -3845,7 +3847,7 @@ impl LayoutEngine {
                 })
                 .unwrap_or(0);
             // 개체가 놓인 줄의 y — 저장 사다리의 그 줄 `vertical_pos` 를 따른다.
-            let inline_obj_y = if inline_line_idx > 0 {
+            let mut inline_obj_y = if inline_line_idx > 0 {
                 para.line_segs
                     .get(inline_line_idx)
                     .map(|seg| {
@@ -3998,7 +4000,162 @@ impl LayoutEngine {
                 .map(|line| line.char_start)
                 .unwrap_or(0);
 
+            // 개체가 여러 줄에 나뉘면 개체마다 **자기 줄**의 정렬 시작·글자 전진 원점·y 를 쓴다.
+            // 위 기준 줄 하나(#6465)로 모두 재면 줄바꿈된 개체가 첫 줄 오른쪽으로 이어 붙어
+            // 글상자 밖으로 나간다. 줄 y 는 저장 사다리가 있으면 그 줄의 vpos, 없으면 조판한
+            // 줄 높이·줄 간격의 누적이다(본문 글줄이 쓰는 것과 같은 값).
+            let tac_line_plan = composed_paras.get(pi).and_then(|comp| {
+                let tac_width = |ctrl: &Control| -> Option<(f64, f64)> {
+                    match ctrl {
+                        Control::Shape(shape) if shape.as_ref().common().treat_as_char => {
+                            let c = shape.as_ref().common();
+                            Some((
+                                hwpunit_to_px(c.width as i32, self.dpi),
+                                hwpunit_to_px(c.height as i32, self.dpi),
+                            ))
+                        }
+                        Control::Picture(pic) if pic.common.treat_as_char => Some((
+                            hwpunit_to_px(pic.common.width as i32, self.dpi),
+                            hwpunit_to_px(pic.common.height as i32, self.dpi),
+                        )),
+                        Control::Equation(eq) => Some((
+                            hwpunit_to_px(
+                                crate::renderer::equation::flow_width_hwp(eq) as i32,
+                                self.dpi,
+                            ),
+                            hwpunit_to_px(
+                                crate::renderer::equation::flow_height_hwp(eq) as i32,
+                                self.dpi,
+                            ),
+                        )),
+                        Control::Table(table) if table.common.treat_as_char => Some((
+                            hwpunit_to_px(table.flow_width_hu() as i32, self.dpi)
+                                + hwpunit_to_px(table.outer_margin_left as i32, self.dpi)
+                                + hwpunit_to_px(table.outer_margin_right as i32, self.dpi),
+                            0.0,
+                        )),
+                        _ => None,
+                    }
+                };
+                let line_of = |pos: usize| {
+                    comp.lines
+                        .iter()
+                        .enumerate()
+                        .rev()
+                        .find(|(_, line)| line.char_start <= pos)
+                        .map(|(idx, _)| idx)
+                        .unwrap_or(0)
+                };
+                let ctrl_line: Vec<Option<usize>> = para
+                    .controls
+                    .iter()
+                    .enumerate()
+                    .map(|(ci, ctrl)| {
+                        tac_width(ctrl)?;
+                        Some(line_of(control_text_positions.get(ci).copied()?))
+                    })
+                    .collect();
+                let lines_used: std::collections::BTreeSet<usize> =
+                    ctrl_line.iter().flatten().copied().collect();
+                if lines_used.len() < 2 {
+                    return None;
+                }
+                let tab_width = styles
+                    .para_styles
+                    .get(comp.para_style_id as usize)
+                    .map(|s| s.default_tab_width)
+                    .unwrap_or(0.0);
+                let mut start_x = Vec::with_capacity(comp.lines.len());
+                let mut line_y = Vec::with_capacity(comp.lines.len());
+                let mut line_h = Vec::with_capacity(comp.lines.len());
+                let mut cursor_y = para_start_y;
+                for (li, line) in comp.lines.iter().enumerate() {
+                    let (mut w, mut h) = (0.0f64, 0.0f64);
+                    for (ci, ctrl) in para.controls.iter().enumerate() {
+                        if ctrl_line[ci] == Some(li) {
+                            if let Some((cw, ch)) = tac_width(ctrl) {
+                                w += cw;
+                                h = h.max(ch);
+                            }
+                        }
+                    }
+                    let text_w: f64 = line
+                        .runs
+                        .iter()
+                        .map(|run| {
+                            let mut ts = run.text_style(styles);
+                            ts.default_tab_width = tab_width;
+                            estimate_text_width(&run.text, &ts)
+                        })
+                        .sum();
+                    // 본문과 같은 소유 줄·말미 공백 계약을 쓴다. 마지막 개체 앞의
+                    // 공백은 개체 사이 내용이므로 가운데·오른쪽 정렬 폭에 남긴다.
+                    let last_inline_object_pos = ctrl_line
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, owner)| **owner == Some(li))
+                        .filter_map(|(ci, _)| control_text_positions.get(ci).copied())
+                        .max();
+                    let center_excludes_trailing_ws = center_alignment_excludes_trailing_space(
+                        para_alignment,
+                        line,
+                        last_inline_object_pos,
+                        li + 1 == comp.lines.len(),
+                        !crate::renderer::para_has_no_stored_line_segs(para),
+                    );
+                    let trailing_ws_width =
+                        if para_alignment == Alignment::Right || center_excludes_trailing_ws {
+                            trailing_space_width_after_last_inline_object(
+                                line,
+                                last_inline_object_pos,
+                                styles,
+                                center_excludes_trailing_ws,
+                                estimate_text_width,
+                            )
+                        } else {
+                            0.0
+                        };
+                    let total = w + text_w - trailing_ws_width;
+                    start_x.push(match para_alignment {
+                        Alignment::Center | Alignment::Distribute => {
+                            inner_area.x + (inner_area.width - total).max(0.0) / 2.0
+                        }
+                        Alignment::Right => inner_area.x + (inner_area.width - total).max(0.0),
+                        _ => inner_area.x,
+                    });
+                    let y = para
+                        .line_segs
+                        .get(li)
+                        .map(|seg| {
+                            inner_area.y
+                                + vert_offset
+                                + textbox_vpos_px(
+                                    seg.vertical_pos,
+                                    textbox_vpos_origin_hu,
+                                    self.dpi,
+                                )
+                        })
+                        .unwrap_or(cursor_y);
+                    line_y.push(y);
+                    line_h.push(h);
+                    cursor_y = y + hwpunit_to_px(line.line_height + line.line_spacing, self.dpi);
+                }
+                Some((ctrl_line, start_x, line_y, line_h))
+            });
+            let mut plan_line: Option<usize> = None;
+
             for (ctrl_idx_in_para, ctrl) in para.controls.iter().enumerate() {
+                if let Some((ctrl_line, start_x, line_y, line_h)) = tac_line_plan.as_ref() {
+                    if let Some(line) = ctrl_line.get(ctrl_idx_in_para).copied().flatten() {
+                        if plan_line != Some(line) {
+                            plan_line = Some(line);
+                            inline_x = start_x[line];
+                            text_cursor = composed_paras[pi].lines[line].char_start;
+                            inline_obj_y = line_y[line];
+                            max_inline_height = line_h[line];
+                        }
+                    }
+                }
                 let ctrl_text_pos = control_text_positions
                     .get(ctrl_idx_in_para)
                     .copied()
