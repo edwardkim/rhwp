@@ -347,7 +347,7 @@ fn caret_slot(para: &Paragraph, logical: usize) -> Result<(u32, usize), HwpError
     Ok((raw, ci))
 }
 
-fn active_shape(para: &Paragraph, pos: u32) -> u32 {
+pub(crate) fn active_shape(para: &Paragraph, pos: u32) -> u32 {
     para.char_shapes
         .iter()
         .rfind(|run| run.start_pos <= pos)
@@ -429,13 +429,14 @@ fn sync_markpen_marks(para: &mut Paragraph, extras: Vec<MarkpenMark>) {
     para.markpen_marks.sort_by_key(|mark| mark.utf16_pos);
 }
 
-struct Slot {
-    control: Control,
-    data: Option<Vec<u8>>,
-    shapes: Vec<CharShapeRef>,
-    tags: Vec<RangeTag>,
+/// 문단에서 뗀 8유닛 컨트롤 슬롯. 글자 모양·영역은 슬롯 시작 기준 좌표다.
+pub(crate) struct Slot {
+    pub(crate) control: Control,
+    pub(crate) data: Option<Vec<u8>>,
+    pub(crate) shapes: Vec<CharShapeRef>,
+    pub(crate) tags: Vec<RangeTag>,
 }
-fn remove_slot(para: &mut Paragraph, ci: usize) -> Result<(Slot, u32), HwpError> {
+pub(crate) fn remove_slot(para: &mut Paragraph, ci: usize) -> Result<(Slot, u32), HwpError> {
     let raw = control_stream_slots(para)
         .get(ci)
         .copied()
@@ -541,7 +542,12 @@ fn remove_slot(para: &mut Paragraph, ci: usize) -> Result<(Slot, u32), HwpError>
     Ok((slot, raw))
 }
 
-fn insert_slot(para: &mut Paragraph, raw: u32, ci: usize, slot: Slot) -> Result<(), HwpError> {
+pub(crate) fn insert_slot(
+    para: &mut Paragraph,
+    raw: u32,
+    ci: usize,
+    slot: Slot,
+) -> Result<(), HwpError> {
     let count = para
         .char_count
         .checked_add(8)

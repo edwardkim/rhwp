@@ -9000,6 +9000,35 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 구역의 쪽 번호 매기기를 정한다 (쪽 > 쪽 번호 매기기, #7635).
+    ///
+    /// position: 0 없음, 1~3 위 왼쪽·가운데·오른쪽, 4~6 아래, 7·8 바깥쪽 위·아래, 9·10 안쪽 위·아래.
+    /// format: 번호 모양(0 = 1,2,3). dash: 줄표(`- 1 -`).
+    /// 결과: `{ok, controlIdx, removed}` — 첫 문단에 넣은 컨트롤 차례와 지운 (문단, 컨트롤 차례)를 지운 차례대로.
+    #[wasm_bindgen(js_name = setPageNumberPosition)]
+    pub fn set_page_number_position(
+        &mut self,
+        section_idx: u32,
+        position: u32,
+        format: u32,
+        dash: bool,
+    ) -> Result<String, JsValue> {
+        self.set_page_number_position_native(
+            section_idx as usize,
+            u8::try_from(position).unwrap_or(u8::MAX),
+            u8::try_from(format).unwrap_or(u8::MAX),
+            dash,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 구역의 쪽 번호 매기기를 읽는다: `{ok, exists, position?, format?, dash?}` (#7635).
+    #[wasm_bindgen(js_name = getPageNumberPosition)]
+    pub fn get_page_number_position(&self, section_idx: u32) -> Result<String, JsValue> {
+        self.get_page_number_position_native(section_idx as usize)
+            .map_err(|e| e.into())
+    }
+
     /// 문단 서식을 적용한다 (본문 문단).
     /// 문단 번호 시작 방식 설정
     #[wasm_bindgen(js_name = setNumberingRestart)]
