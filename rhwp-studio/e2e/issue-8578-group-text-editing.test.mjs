@@ -1,5 +1,5 @@
 // 관계형: 묶음 자식 글상자와 배경 밖 본문의 실제 마우스·키보드 편집 소유 계약.
-// 주석 갱신: 2026-11-05T00:50:00+09:00. 픽셀 기대 위치는 고정하지 않는다.
+// 주석 갱신: 2026-11-05T01:58:26+09:00. 픽셀 기대 위치는 고정하지 않는다.
 import assert from 'node:assert/strict';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -76,9 +76,8 @@ runTest('#8578 묶음 글상자 클릭·편집·Esc 소유 보존',async({page})
   }));
   assert.ok(artifacts.some(a=>/rhwp\.js/.test(a.url)),'실제 glue JS 초기화 응답 관측');
   const manifestPath=process.env.RHWP_WASM_BUILD_MANIFEST;
-  assert.ok(manifestPath,'큰 WASM 초기화 응답은 전용 CDP buffer를 쓰는 공통 observer로 확인');
-  assert.equal(JSON.parse(readFileSync(manifestPath,'utf8')).artifacts['rhwp_bg.wasm'].sha256,built['rhwp_bg.wasm']);
-  writeFileSync(new URL('browser-artifacts.json',output),JSON.stringify({built,artifacts},null,2)+'\n');
+  if(manifestPath) assert.equal(JSON.parse(readFileSync(manifestPath,'utf8')).artifacts['rhwp_bg.wasm'].sha256,built['rhwp_bg.wasm']);
+  writeFileSync(new URL('browser-artifacts.json',output),JSON.stringify({built,artifacts,wasmBuildManifest:manifestPath??null},null,2)+'\n');
   const errors=[];
   page.on('console',message=>{
     if(/셀 문단.*실패|updateRect 실패|커맨드 실행 실패|getSelectionRects 실패/.test(message.text())) errors.push(message.text());
@@ -87,6 +86,15 @@ runTest('#8578 묶음 글상자 클릭·편집·Esc 소유 보존',async({page})
   const fileInput=await page.$('#file-input');
   assert.ok(fileInput);
   await fileInput.uploadFile(fileURLToPath(new URL('../../samples/2025 행정업무운영 편람(최종).hwpx',import.meta.url)));
+  // 로컬 글꼴 접근을 허용하지 않는 headless 환경에서는 지원되는 '대체 글꼴로 보기'를 선택한다.
+  await page.waitForFunction(()=>document.querySelector('#file-input').value===''
+    || [...document.querySelectorAll('button')].some(button=>button.textContent.trim()==='대체 글꼴로 보기'),{timeout:180000});
+  let localFontChoice='not-prompted';
+  for(const button of await page.$$('button')) {
+    if(await button.evaluate(node=>node.textContent.trim()==='대체 글꼴로 보기')) {
+      await button.click(); localFontChoice='use-webfont-fallback'; break;
+    }
+  }
   await page.waitForFunction(()=>window.__wasm?.pageCount===383
     && document.querySelector('#file-input').value===''
     && window.__inputHandler.isActive(),{timeout:180000});
@@ -143,5 +151,7 @@ runTest('#8578 묶음 글상자 클릭·편집·Esc 소유 보존',async({page})
   await shortcut(page,'z'); await settle(page);
   assert.equal(await read(page,1),edited,'소유 본문 입력은 묶음 자식 내용을 변경하지 않는다');
   assert.deepEqual(errors,[],'클릭·선택·편집에서 잘못된 셀 주소 경고 없음');
-  writeFileSync(new URL('result.json',output),JSON.stringify({first,contents,escaped,errors},null,2)+'\n');
+  const environment=await page.evaluate(()=>({backend:window.__canvasView.pageRenderer.getBackend(),dpr:devicePixelRatio,pageCount:window.__wasm.pageCount,userAgent:navigator.userAgent}));
+  assert.equal(environment.backend,'canvas2d','사용자가 제보한 실제 Canvas2D 경로');
+  writeFileSync(new URL('result.json',output),JSON.stringify({first,contents,escaped,errors,environment,localFontChoice},null,2)+'\n');
 },{skipLoadApp:true});

@@ -1,5 +1,5 @@
 //! 관계형: 묶음 글상자와 본문의 클릭 주소가 실제 원문 소유자를 가리키는지 검사한다.
-//! 주석 갱신: 2026-11-05T01:24:05+09:00.
+//! 주석 갱신: 2026-11-05T01:58:26+09:00.
 //! 입력: 행정업무운영 편람 HWPX. 시각 픽셀 위치를 고정하지 않고 최종 트리의 글자 위치로 클릭한다.
 //! Native/fresh WASM 시각 일치율은 이 주소 계약의 판정에 사용하지 않는다.
 
@@ -165,6 +165,32 @@ fn distinct_group_textboxes_resolve_to_their_actual_text() {
             "클릭 주소가 다른 원문을 가리킨다: {text}"
         );
     }
+}
+
+#[test]
+fn group_textbox_hyperlink_context_uses_the_same_editing_owner() {
+    use rhwp::document_core::hyperlink::HyperlinkTarget;
+    let mut core = load();
+    let body = HyperlinkTarget {
+        section: 0,
+        para: 4,
+        cell_path: vec![(0, 1, 0)],
+    };
+    let title = HyperlinkTarget {
+        section: 0,
+        para: 4,
+        cell_path: vec![(0, 0, 0)],
+    };
+    assert!(core.hyperlinks_native(&body).unwrap().is_empty());
+    core.insert_hyperlink_native(&body, 0, 3, "https://example.org/8578")
+        .unwrap();
+    let links = core.hyperlinks_native(&body).unwrap();
+    assert_eq!(links.len(), 1);
+    assert_eq!(links[0].uri, "https://example.org/8578");
+    assert!(
+        core.hyperlinks_native(&title).unwrap().is_empty(),
+        "제목의 링크 주소와 합치지 않는다"
+    );
 }
 
 #[test]
