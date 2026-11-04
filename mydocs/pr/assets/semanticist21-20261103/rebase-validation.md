@@ -108,3 +108,5 @@ rowbreak 5쪽은 charPr 26의 hangul font 8인 TTF 휴먼명조를 사용한다.
 ## 제출 head 223 이후의 최종 보정
 
 CodeQL 좌표 진단 3곳과 Native CLI의 과거 false 고정을 code `5e374d01f641745d20bc9424ce233021a327ed16`에서 보정했다. stock 12,475 PASS / 45 skip, Native CI 22개 target 합계 192 PASS, 별도 Native lib 전체 4,040 PASS / 12 ignored, Native 출처 11 PASS와 실제 보호 문서 정상 SVG/진단 부재를 완료했다. 아래의 시각 producer ef6/696은 조판 계산 동일성을 확인한 재사용 결과이며 이번 보정의 새 raster로 표시하지 않는다. [실패 원인·원 해결 이력·정확한 전체 Native 실행·재사용과 검증 한계](ci-head223-followup.md)를 따른다.
+
+[제출 직전 새 base와의 호환성·보존 확인](base-advance-compatibility.md)은 source branch의 반복 통합 없이 별도 merge-tree에서 수행했다.
