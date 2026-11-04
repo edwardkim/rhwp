@@ -56,7 +56,7 @@ Native/fresh WASM 시각 비교에는 설치된 시스템 글꼴 전체를 공�
 최소 글꼴 환경의 전체 Rust 검사는 `fd97ae040f`에서 12,498개를 실행해 12,497개 통과,
 1개 실패, 45개 건너뛰기로 끝났다. 실패한 `body_overflow_baseline` partition 14는 새 실물
 입력 `issue8470/42565_입법예고문.hwp`의 기준 누락이었다. 원 PR의 세로쓰기 표 나눔 금지와
-독립 Print의 16쪽·표 끝을 대조해 [보정 근거](body-overflow-42565-proof.json)를 남겼다.
+독립 Print의 16쪽·표 끝을 대조해 [보정 근거](body-overflow-42565-proof.md)를 남겼다.
 `70a9d870ee`에서 해당 입력의 body overflow 5건만 등록한 뒤 같은 최소 글꼴 환경의 해당
 검사 1개가 통과했다. 기존 입력의 허용치나 검사 구현은 바꾸지 않았다. 새 샘플 68개를
 명시적으로 공급한 보안 corpus 검사도 6개 모두 통과했다.
@@ -75,12 +75,12 @@ fresh WASM의 같은 대조와 Native Skia·lint는 아직 완료 전이다.
 
 ## 실제 가져오기·편집 경로
 
-[WASM 실제 API 대조](wasm-producer-parity.json)는 최적화한 fresh package에서 PDF
+[WASM 실제 API 대조](wasm-producer-parity.md)는 최적화한 fresh package에서 PDF
 가져오기 3종과 EMC 문서의 실제 글자 삭제·HWPX 저장을 실행한 결과다. 네 산출물이
 Native의 같은 API 동작 산출물과 바이트 단위로 같아 해당 HWPX의 전쪽 시각 검증을
 공유한다. 렌더링만 실행한 결과를 가져오기·편집 성공으로 대신하지 않는다.
 
-[Native 변경 전후 대조](native-producer-before-after.json)는 같은 원본에 base importer와
+[Native 변경 전후 대조](native-producer-before-after.md)는 같은 원본에 base importer와
 editor를 실행한 산출물을 별도로 비교한다. 2010·2020판은 정상 대조군으로 바이트가 같다.
 무표기본의 제목→본문 간격은 base의 2808HU에서 원본 PDF의 2424HU(5쪽)·2364HU(13쪽)로
 맞춰졌으며, 실제 생성 HWPX의 저장 줄에서도 같은 차이를 확인했다.

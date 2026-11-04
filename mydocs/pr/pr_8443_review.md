@@ -46,14 +46,14 @@
 
 composer/line_breaking.rs의 재조판·구역 vpos 재계산에서 편집한 문단과 후속 원본 문단을 구분한다. 보존한 점유를 뒤 문단의 실제 저장 원점과 저장·재개방 출력이 소비하는지 대조한다.
 
-EMC 실제 편집 결과의 7쪽을 독립 Print와 비교한다. 문단 기준 자리차지 개체를 소유하지 않는 일반 문단까지 점유 보존을 적용하지 않는 대조군을 유지한다. fresh WASM의 deleteText(0,114,0,1)→exportHwpx 결과도 Native 실제 편집 산출물과 바이트 단위로 일치했다. [WASM 실제 API 산출물 대조](assets/planet6897_20261103/wasm-producer-parity.json)를 연결한다.
+EMC 실제 편집 결과의 7쪽을 독립 Print와 비교한다. 문단 기준 자리차지 개체를 소유하지 않는 일반 문단까지 점유 보존을 적용하지 않는 대조군을 유지한다. fresh WASM의 deleteText(0,114,0,1)→exportHwpx 결과도 Native 실제 편집 산출물과 바이트 단위로 일치했다. [WASM 실제 API 산출물 대조](assets/planet6897_20261103/wasm-producer-parity.md)를 연결한다.
 
 관련 정식 회귀 파일: [issue_8440_edit_keeps_table_host_gap.rs](../../tests/cases/issue_8440_edit_keeps_table_host_gap.rs)
 
 ## 변경 전의 실제 가져오기·편집 결과
 
-[동일 원본의 base/candidate API 산출물 대조](assets/planet6897_20261103/native-producer-before-after.json)와
-[실제 WASM API와 Native 산출물 일치](assets/planet6897_20261103/wasm-producer-parity.json)를 함께 확인했습니다.
+[동일 원본의 base/candidate API 산출물 대조](assets/planet6897_20261103/native-producer-before-after.md)와
+[실제 WASM API와 Native 산출물 일치](assets/planet6897_20261103/wasm-producer-parity.md)를 함께 확인했습니다.
 
 같은 EMC 원본에서 글자를 삭제하고 저장한 base 산출물의 주장 쪽(7쪽)은 60.61%였습니다.
 현재 Native/WASM의 실제 편집 산출물과 독립 Print를 대조합니다. 아래 TSV는 변경 전 7쪽만 포함합니다.

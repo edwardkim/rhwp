@@ -48,7 +48,7 @@
 
 model/table.rs의 Table::layout_page_break가 측정·typeset·layout 공통 소비 지점이다. has_vertical_cell 캐시는 셀 구성·글 방향 편집 뒤 무효화하며 저장 attr 자체는 바꾸지 않는다.
 
-작은 표·본문보다 긴 표·걸침 위치가 다른 표를 독립 Print와 대조한다. 가로쓰기 표의 기존 분할과 편집·저장 왕복을 대조군으로 유지한다. 추가한 42565 실물은 devel 17쪽·본문 넘침 4건에서 Print와 같은 16쪽·5건으로 바뀐다. 추가 1건은 10쪽의 한 쪽 세로쓰기 표이며 Native 99.26%·fresh WASM 99.25%와 직접 판독으로 확인했다. 기존 기준선 행·공차는 유지하고 신규 입력의 정상 관측값 5건을 등록한다. [본문 경계와 독립 Print 대조 근거](assets/planet6897_20261103/body-overflow-42565-proof.json)를 연결한다.
+작은 표·본문보다 긴 표·걸침 위치가 다른 표를 독립 Print와 대조한다. 가로쓰기 표의 기존 분할과 편집·저장 왕복을 대조군으로 유지한다. 추가한 42565 실물은 devel 17쪽·본문 넘침 4건에서 Print와 같은 16쪽·5건으로 바뀐다. 추가 1건은 10쪽의 한 쪽 세로쓰기 표이며 Native 99.26%·fresh WASM 99.25%와 직접 판독으로 확인했다. 기존 기준선 행·공차는 유지하고 신규 입력의 정상 관측값 5건을 등록한다. [본문 경계와 독립 Print 대조 근거](assets/planet6897_20261103/body-overflow-42565-proof.md)를 연결한다.
 
 관련 정식 회귀 파일: [issue_8470_vertical_cell_table_no_split.rs](../../tests/cases/issue_8470_vertical_cell_table_no_split.rs)
 
