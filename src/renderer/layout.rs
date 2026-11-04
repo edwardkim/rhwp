@@ -11759,6 +11759,7 @@ impl LayoutEngine {
                                 tree,
                                 col_node,
                                 para,
+                                &para.text,
                                 comp,
                                 styles,
                                 col_area,

@@ -1233,6 +1233,7 @@ impl LayoutEngine {
                     tree,
                     parent,
                     para,
+                    "",
                     &composed,
                     styles,
                     col_area,

@@ -1,5 +1,5 @@
 //! 관계형: 묶음 글상자와 본문의 클릭 주소가 실제 원문 소유자를 가리키는지 검사한다.
-//! 주석 갱신: 2026-11-05T01:58:26+09:00.
+//! 주석 갱신: 2026-11-05T02:54:23+09:00.
 //! 입력: 행정업무운영 편람 HWPX. 시각 픽셀 위치를 고정하지 않고 최종 트리의 글자 위치로 클릭한다.
 //! Native/fresh WASM 시각 일치율은 이 주소 계약의 판정에 사용하지 않는다.
 
@@ -64,6 +64,78 @@ fn empty_group_owner_has_a_body_caret_on_its_own_page() {
         assert!(rect["height"].as_f64().unwrap() > 0.0);
         assert!(rect["y"].as_f64().unwrap() >= 0.0);
     }
+}
+
+#[test]
+fn group_start_caret_does_not_add_displayed_whitespace() {
+    let mut model = load().document().clone();
+    model.sections[0].paragraphs[4].text = "   ".to_owned();
+    let bytes = rhwp::serializer::hwpx::serialize_hwpx(&model).unwrap();
+    let core = DocumentCore::from_bytes(&bytes).unwrap();
+    let tree = core.build_page_render_tree(2).unwrap();
+    fn inspect(node: &RenderNode, found: &mut bool) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if run.section_index == Some(0)
+                && run.para_index == Some(4)
+                && run.cell_context.is_none()
+                && run.char_start == Some(0)
+            {
+                *found = true;
+                assert!(
+                    run.text.is_empty(),
+                    "시작 캐럿은 별도 표시 내용을 만들지 않는다"
+                );
+            }
+        }
+        for child in &node.children {
+            inspect(child, found);
+        }
+    }
+    let mut found = false;
+    inspect(&tree.root, &mut found);
+    assert!(found, "원 소유 본문의 시작 캐럿은 유지한다");
+    assert!(core.get_cursor_rect_native(0, 4, 0).is_ok());
+}
+
+#[test]
+fn nested_table_in_second_group_textbox_keeps_its_outer_owner() {
+    use rhwp::model::control::Control;
+    let mut seed = DocumentCore::new_empty();
+    seed.create_blank_document_native().unwrap();
+    seed.create_table_native(0, 0, 0, 1, 1).unwrap();
+    let ci = seed.document().sections[0].paragraphs[0]
+        .controls
+        .iter()
+        .position(|c| matches!(c, Control::Table(_)))
+        .unwrap();
+    seed.insert_text_in_cell_native(0, 0, ci, 0, 0, 0, "NESTED_BODY")
+        .unwrap();
+    let mut model = load().document().clone();
+    let Control::Shape(group) = &mut model.sections[0].paragraphs[4].controls[0] else {
+        panic!("원본 묶음");
+    };
+    group
+        .textbox_shape_at_mut(1)
+        .unwrap()
+        .drawing_mut()
+        .unwrap()
+        .text_box
+        .as_mut()
+        .unwrap()
+        .paragraphs = vec![seed.document().sections[0].paragraphs[0].clone()];
+    let bytes = rhwp::serializer::hwpx::serialize_hwpx(&model).unwrap();
+    let core = DocumentCore::from_bytes(&bytes).unwrap();
+    let h = hit(&core, 2, "NESTED_BODY");
+    assert_eq!(h["isTextBox"], true, "안 표도 바깥 글상자 소유를 유지한다");
+    let path = h["cellPath"].as_array().unwrap();
+    assert_eq!(path.len(), 2);
+    assert_eq!(path[0]["cellIndex"], 1, "제목이 아닌 두 번째 글상자");
+    assert_eq!(path[1]["cellIndex"], 0, "안 표의 실제 셀");
+    assert_eq!(
+        core.get_text_in_cell_by_path(0, 4, &[(0, 1, 0), (ci, 0, 0)], 0, 100)
+            .unwrap(),
+        "NESTED_BODY"
+    );
 }
 
 #[test]

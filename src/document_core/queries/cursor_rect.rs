@@ -2300,19 +2300,21 @@ impl DocumentCore {
                     run.is_textbox = false;
                     continue;
                 };
-                if ctx.in_textbox {
-                    let is_shape = self
-                        .document
-                        .sections
-                        .get(run.section_index)
-                        .and_then(|s| s.paragraphs.get(ctx.parent_para_index))
-                        .and_then(|p| p.controls.get(outer.control_index))
-                        .map(|c| matches!(c, Control::Shape(_)))
-                        .unwrap_or(false);
-                    run.is_textbox = is_shape;
-                } else {
-                    run.is_textbox = false;
-                }
+                // isTextBox는 바깥 편집 소유자가 글상자인지를 나타낸다. 안 표의 셀은
+                // ctx.in_textbox=false여도 글상자 소유 경로를 유지한다 (#919).
+                run.is_textbox = self
+                    .document
+                    .sections
+                    .get(run.section_index)
+                    .and_then(|s| s.paragraphs.get(ctx.parent_para_index))
+                    .and_then(|p| p.controls.get(outer.control_index))
+                    .and_then(|control| match control {
+                        Control::Shape(shape) => {
+                            super::super::helpers::get_textbox_at(shape, outer.cell_index)
+                        }
+                        _ => None,
+                    })
+                    .is_some();
             } else {
                 run.is_textbox = false;
             }

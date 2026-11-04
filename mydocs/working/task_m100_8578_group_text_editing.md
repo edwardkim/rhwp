@@ -120,3 +120,24 @@ undo/redo·목차 클릭·개체 선택·Esc가 통과했고 관련 경고는 0�
 [증적 디렉터리](../pr/assets/issue_8578/20261105/)에 보존한다. `.log`, 빌드 바이너리, 글꼴은 커밋하지 않는다.
 최소 글꼴 Linux 집중 6건도 PASS이며 전체 nextest·Native Skia 3종은 진행 중이다.
 전체 회귀의 최종 summary와 exit code를 확인하기 전에는 PR 준비 완료로 판정하지 않는다.
+
+## 전체 회귀에서 발견한 호환성 보정
+
+위 프로그램의 최소 글꼴 전체 nextest는 12,487건 실행, 12,485 PASS·2 FAIL·45 skip이었다
+(실행 1,082.523초). 따라서 위 시각·편집 통과만으로 해결 완료를 주장하지 않는다.
+
+- `issue_919_textbox_inner_empty_hit_returns_textbox_entry`: 원 해결 `14920220ac`와
+  [#919 완료 근거](https://github.com/edwardkim/rhwp/issues/919#issuecomment-4504068810)는
+  글상자 안 표의 셀도 바깥 글상자 소유를 유지하도록 한다. `CellContext.in_textbox`는 직접
+  글상자 문단 여부이므로 안 표에서 false가 된다. 실제 바깥 Shape와 indexed 글상자 주소로
+  `isTextBox`를 확인하여 중첩 표와 두 번째 묶음 글상자를 함께 지원한다.
+- `issue_1892_hwp3_group_roundtrip_preserves_owned_content_and_object_frames`: 원 해결
+  [#1905](https://github.com/edwardkim/rhwp/pull/1905)와 메인터너 관계 검사 정리 `6097253468`
+  (#8191)를 확인했다. 시작 캐럿에 원문 공백을 복제하면 HWP 저장 후 생긴 공백 표현만 표시
+  내용으로 추가된다. 기존 숨은 문단의 원문 오프셋 보존과 새 묶음의 시작 위치 캐럿을 구분해,
+  공통 생산기에 사용할 marker 문자열을 명시한다. 시작 캐럿은 빈 문자열이며 원문과 인쇄 흐름을
+  바꾸지 않는다. 기존 숨은 문단 호출은 계속 원문 공백을 전달한다.
+
+두 기존 검사의 단언과 기대값을 유지한다. 두 번째 묶음 글상자 안 표의 소유 경로와 공백 host의
+표시 내용 비생성 관계 검사를 추가했다. 기존 head의 추가 Skia 컴파일은 보정을 위해 중단했으며
+통과로 세지 않는다. 보정 후 관련 packet부터 다시 실행하고 최종 전체 검증·출력을 갱신한다.
