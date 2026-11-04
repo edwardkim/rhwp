@@ -10,23 +10,26 @@ use crate::model::control::Equation;
 const FAMILY: &str = "RHWP Legacy Equation, HyhwpEQ, serif";
 
 pub(super) fn matches_version(equation: &Equation) -> bool {
+    if equation.script.trim().is_empty()
+        || !equation.version_info.is_empty()
+        || equation.attr & 1 != 0
+        || equation.font_size == 0
+        || !(equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
+            || equation.font_name.eq_ignore_ascii_case("HancomEQN"))
+    {
+        return false;
+    }
     // 옛 엔진의 한쪽에만 붙은 일반 공백은 연산자 간격을 바꾼다.
     // 해당 미확인 조합은 공백을 버린 AST만으로 새 간격을 추정하지 않는다.
+    // 토큰화는 값 조건을 통과한 수식에만 한다.
     let tokens = super::super::document_script::tokenize(&equation.script);
-    let asymmetric_operator_space = tokens.windows(2).enumerate().any(|(index, pair)| {
+    !tokens.windows(2).enumerate().any(|(index, pair)| {
         index > 0
             && pair[0].ty == super::super::tokenizer::TokenType::Symbol
             && matches!(pair[0].value.as_str(), "+" | "-" | "=" | "<" | ">")
             && !pair[0].space_before
             && pair[1].space_before
-    });
-    !asymmetric_operator_space
-        && !equation.script.trim().is_empty()
-        && equation.version_info.is_empty()
-        && equation.attr & 1 == 0
-        && equation.font_size > 0
-        && (equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
-            || equation.font_name.eq_ignore_ascii_case("HancomEQN"))
+    })
 }
 
 fn glyph_width(character: char) -> Option<f64> {
