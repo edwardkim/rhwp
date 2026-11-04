@@ -1,5 +1,5 @@
 //! 관계형: 묶음 글상자와 본문의 클릭 주소가 실제 원문 소유자를 가리키는지 검사한다.
-//! 주석 갱신: 2026-11-05T02:54:23+09:00.
+//! 주석 갱신: 2026-11-05T03:02:25+09:00.
 //! 입력: 행정업무운영 편람 HWPX. 시각 픽셀 위치를 고정하지 않고 최종 트리의 글자 위치로 클릭한다.
 //! Native/fresh WASM 시각 일치율은 이 주소 계약의 판정에 사용하지 않는다.
 
@@ -67,33 +67,44 @@ fn empty_group_owner_has_a_body_caret_on_its_own_page() {
 }
 
 #[test]
-fn group_start_caret_does_not_add_displayed_whitespace() {
+fn group_start_caret_preserves_source_whitespace_without_duplication() {
     let mut model = load().document().clone();
     model.sections[0].paragraphs[4].text = "   ".to_owned();
     let bytes = rhwp::serializer::hwpx::serialize_hwpx(&model).unwrap();
     let core = DocumentCore::from_bytes(&bytes).unwrap();
     let tree = core.build_page_render_tree(2).unwrap();
-    fn inspect(node: &RenderNode, found: &mut bool) {
+    fn inspect(node: &RenderNode, editor_only: bool, found: &mut bool, source: &mut String) {
+        let editor_only = editor_only || node.editor_only;
         if let RenderNodeType::TextRun(run) = &node.node_type {
             if run.section_index == Some(0)
                 && run.para_index == Some(4)
                 && run.cell_context.is_none()
-                && run.char_start == Some(0)
+                && run.char_start.is_some()
             {
-                *found = true;
-                assert!(
-                    run.text.is_empty(),
-                    "시작 캐럿은 별도 표시 내용을 만들지 않는다"
-                );
+                *found |= run.char_start == Some(0);
+                if editor_only {
+                    assert!(
+                        run.text.is_empty(),
+                        "시작 캐럿은 별도 표시 내용을 만들지 않는다"
+                    );
+                } else {
+                    source.push_str(&run.text);
+                }
             }
         }
         for child in &node.children {
-            inspect(child, found);
+            inspect(child, editor_only, found, source);
         }
     }
     let mut found = false;
-    inspect(&tree.root, &mut found);
+    let mut source = String::new();
+    inspect(&tree.root, false, &mut found, &mut source);
     assert!(found, "원 소유 본문의 시작 캐럿은 유지한다");
+    assert_eq!(
+        source,
+        core.document().sections[0].paragraphs[4].text,
+        "실제 원문 공백을 삭제하거나 중복하지 않는다"
+    );
     assert!(core.get_cursor_rect_native(0, 4, 0).is_ok());
 }
 
@@ -110,6 +121,11 @@ fn nested_table_in_second_group_textbox_keeps_its_outer_owner() {
         .unwrap();
     seed.insert_text_in_cell_native(0, 0, ci, 0, 0, 0, "NESTED_BODY")
         .unwrap();
+    // 구역/단 정의가 있는 최상위 문단 전체를 글상자 안에 복제하지 않는다.
+    let mut table_paragraph = rhwp::model::paragraph::Paragraph::new_empty();
+    table_paragraph
+        .controls
+        .push(seed.document().sections[0].paragraphs[0].controls[ci].clone());
     let mut model = load().document().clone();
     let Control::Shape(group) = &mut model.sections[0].paragraphs[4].controls[0] else {
         panic!("원본 묶음");
@@ -122,7 +138,7 @@ fn nested_table_in_second_group_textbox_keeps_its_outer_owner() {
         .text_box
         .as_mut()
         .unwrap()
-        .paragraphs = vec![seed.document().sections[0].paragraphs[0].clone()];
+        .paragraphs = vec![table_paragraph];
     let bytes = rhwp::serializer::hwpx::serialize_hwpx(&model).unwrap();
     let core = DocumentCore::from_bytes(&bytes).unwrap();
     let h = hit(&core, 2, "NESTED_BODY");
@@ -131,8 +147,9 @@ fn nested_table_in_second_group_textbox_keeps_its_outer_owner() {
     assert_eq!(path.len(), 2);
     assert_eq!(path[0]["cellIndex"], 1, "제목이 아닌 두 번째 글상자");
     assert_eq!(path[1]["cellIndex"], 0, "안 표의 실제 셀");
+    assert_eq!(path[1]["controlIndex"], 0, "문단에 공급한 유일한 표");
     assert_eq!(
-        core.get_text_in_cell_by_path(0, 4, &[(0, 1, 0), (ci, 0, 0)], 0, 100)
+        core.get_text_in_cell_by_path(0, 4, &[(0, 1, 0), (0, 0, 0)], 0, 100)
             .unwrap(),
         "NESTED_BODY"
     );
