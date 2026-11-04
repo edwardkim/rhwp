@@ -5605,7 +5605,40 @@ impl LayoutEngine {
                                 // 셀에서는 layout_composed_paragraph 의 재가산 몫을
                                 // 빼고 밀어야 이중 가산이 없다(위 preserve 스냅과
                                 // 같은 규약). 그 외 형상은 기존 밀어내기 보존.
-                                let next_spacing_before = if preserve_linear_single_cell_vpos
+                                // 빈 host 의 글 위아래 블록 표가 밀어낸 흐름에서는 뒤 문단 앞 간격이
+                                // 표 띠에 흡수된다(`absorbed_block_host_successor_y`). 저장 vpos
+                                // 하한도 그 앞 간격을 빼고 적용해야 사다리를 넘어 밀지 않는다.
+                                // 쪽을 넘는 host(앞 조각에서 이어받음·다음 조각으로 이어짐)는 host
+                                // 글줄 끝과 표 하단이 이 조각에 함께 없다 — host 의 모든 유닛(글줄과
+                                // 중첩 표 모든 행)을 이 컷이 소유할 때만.
+                                let host_owned_here = self.cut_owns_whole_paragraph(
+                                    cell, table, styles, cut_units, cp_idx,
+                                );
+                                let absorbed_spacing = if wrap_successor.is_none()
+                                    && host_owned_here
+                                {
+                                    self.absorbed_block_host_successor_y(
+                                        para,
+                                        &composed_store
+                                            .get(cp_idx, cell, inner_width, styles, self)
+                                            .lines,
+                                        cp_idx,
+                                        cell.paragraphs.len(),
+                                        styles,
+                                        para_y_before_compose,
+                                        para_y,
+                                        next_para,
+                                    )
+                                    .map(|(y, spacing)| {
+                                        para_y = y;
+                                        spacing
+                                    })
+                                } else {
+                                    None
+                                };
+                                let next_spacing_before = if let Some(spacing) = absorbed_spacing {
+                                    spacing
+                                } else if preserve_linear_single_cell_vpos
                                     || wrap_successor.is_some()
                                     || (!self.profile.get().session_edited()
                                         && !self.render_normalization.borrow().cell_frame_reflowed(table, cell)
