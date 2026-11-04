@@ -66,6 +66,8 @@ pub(crate) mod legacy_font_advances;
 pub(crate) mod line_style;
 mod measured_glyph_supplier;
 pub(crate) mod metafile_geometry;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod native_webfonts;
 pub(crate) mod note_marker;
 pub(crate) mod note_separator;
 pub(crate) mod object_alignment;
@@ -793,6 +795,29 @@ pub(crate) fn canvas_cluster_fit(
     ink_width: Option<f64>,
     pin_ascii_advance: bool,
 ) -> Option<(f64, f64)> {
+    // 원본 TTF에 없는 작은 수학 기호는 대체 face로 그리되 원본의 반각
+    // 칸을 사용한다. 음수 자간은 윤곽을 누르지 않지만, 전각 대체 face의
+    // 양쪽 빈 공간은 반각 칸 중앙에 맞춰야 독립 Print와 같은 원점이 된다.
+    if style.source_font_is_ttf
+        && style.letter_spacing < 0.0
+        && matches!(cluster, "\u{2218}" | "\u{2219}")
+        && style
+            .native_otf_metrics
+            .as_ref()
+            .is_some_and(|font| cluster.chars().next().is_some_and(|ch| !font.has_glyph(ch)))
+    {
+        let advance =
+            style.glyph_fit_advance(layout_cluster_advance)? * style.script_advance_scale();
+        if advance > 0.0
+            && visual_width > advance + 0.25
+            // Skia 경계의 반올림 오차는 아래 상자 초과 판정과 같은 0.25px을 허용한다.
+            && ink_width.is_some_and(|ink| {
+                ink.is_finite() && ink > 0.0 && ink <= advance * 1.1 + 0.25
+            })
+        {
+            return Some((1.0, (advance - visual_width) / 2.0));
+        }
+    }
     // 호출자가 선택한 프로그램은 전진과 잉크 폭을 구분한다. 원본 HFT 선언이나
     // 폭 표의 신뢰만으로 일반 대체 face의 기존 맞춤까지 차단하지 않는다.
     if !style.fixed_glyph_advances && style.preserve_glyph_ink {
@@ -4381,6 +4406,64 @@ mod tests {
             None
         );
         assert_eq!(canvas_cluster_fit(&style, "a", 7.5, 15.0, None, true), None);
+
+        let mut fonts = native_pua_fonts::NativePuaFonts::default();
+        fonts
+            .register_otf_for_source(
+                "source",
+                false,
+                false,
+                true,
+                include_bytes!("../../tests/fixtures/fonts/RHWPEquationLatinOnly.ttf"),
+                0,
+            )
+            .unwrap();
+        let style = TextStyle {
+            source_font_is_ttf: true,
+            letter_spacing: -0.4,
+            native_otf_metrics: fonts.get_otf_for_source("source", false, false, true),
+            ..Default::default()
+        };
+        assert_eq!(
+            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(3.0), false),
+            Some((1.0, -3.0))
+        );
+        assert_eq!(
+            canvas_cluster_fit(&style, "∘", 6.0, 12.0, Some(3.0), false),
+            Some((1.0, -3.0))
+        );
+        assert_eq!(
+            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(6.4), false),
+            Some((1.0, -3.0))
+        );
+        assert_eq!(
+            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(6.8), false),
+            Some((1.0, -3.0))
+        );
+        assert_eq!(
+            canvas_cluster_fit(&style, "A", 6.0, 12.0, Some(3.0), false),
+            None
+        );
+        assert_eq!(
+            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(9.0), false),
+            None
+        );
+
+        let declared = TextStyle {
+            font_family: "휴먼명조,Haansoft Batang".into(),
+            glyph_fallback_advance_explicit: true,
+            source_font_is_ttf: true,
+            ..Default::default()
+        };
+        assert_eq!(
+            measured_glyph_supplier::family(&declared, "․"),
+            Some("Haansoft Batang")
+        );
+        let other = TextStyle {
+            font_family: "휴먼명조,Noto Serif".into(),
+            ..declared
+        };
+        assert_eq!(measured_glyph_supplier::family(&other, "․"), None);
     }
 
     #[test]

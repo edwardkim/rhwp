@@ -66,6 +66,9 @@
   항목을 PR CI에 넘기거나 Draft로 우회하지 않는다. 일반 제출은 검증을 완료한 Open PR이다.
   Draft는 조기 설계 논의·WIP 공유 등 특별한 목적과 작업지시자의 명시적 Draft 지시가 있는 경우만
   허용하며 목적·미완료 항목·완료 계획을 기록한다. 번호 확보·CI 대기는 예외 사유가 아니다.
+- 조판에 영향을 주는 변경이 포함된 PR은 제출 전 최종 head에서 행정업무운영 편람 HWPX Native
+  383쪽 `--handbook-gate`를 실행해 통과한다. 일반 Visual Sweep에서는 자동 실행하지 않으며,
+  실행과 판정은 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따른다.
 - Docker 설치는 로컬 검증의 필수 조건이 아니다. 사용 가능 환경과 불가 환경의
   [fresh WASM 실행 경로](mydocs/manual/pr_review/local_validation.md#환경에-따른-fresh-wasm-검증)를
   구분하고, 호스트 경로도 최적화·브라우저·시각 검증까지 동일하게 완료한다.
@@ -76,6 +79,9 @@
 - collaborator·maintainer의 예외 처리와 오늘할일·PR review 문서는 `pr_review_workflow.md`의
   라우팅 결과에 해당하는 역할별 자식 절차를 따른다. 모 문서만 읽고 세부 경로를 추정해 진행하지 않는다.
 - 작업 단계가 바뀌면 현재 단계의 변경을 커밋한 뒤 다음 단계 문서를 시작한다.
+- CI workflow·action·CI 실행/재사용 판정 정책을 수정한 PR의 후속 기록은 **옵션 2**로 처리한다.
+  원 PR의 Full CI·검토·승인·병합 뒤 review·오늘할일을 별도 기록 PR에 반영한다. 원 PR에 문서-only
+  trailing commit을 추가해 전체 CI를 반복하지 않는다. [정본 절차](mydocs/manual/pr_review/post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)를 따른다.
 - 새 테스트는 기존 자동 수집·suite·Native 실행 경로를 먼저 확인하고, `ci.yml`에
   불필요한 개별 호출이나 중복 검증을 추가하지 않는다. 실제 실행 누락이 있을 때의 추가 기준은
   [CI 테스트 호출 추가 기준](mydocs/manual/github_operations.md#531-ci-테스트-호출-추가-기준)을 따른다.
@@ -319,6 +325,9 @@ SHA-256·이전/보존 경로·활성 유지/제거 목록·복원 조건을 기
   경로·임시 output·review 문서 링크만으로 대체하지 않으며, PR head repository와 정확한 head SHA로
   고정한 raw URL을 쓴다. code head가 바뀌면 시각 증적과 본문 URL도 다시 만든다. merge 뒤에는
   같은 asset을 merge SHA로 고정한 URL로 contributor comment에 다시 남긴다.
+  원 PR의 시각 review·comment는 첫 게시부터 그 PR이 주장한 문서·페이지별 review·overlay 이미지를
+  정확한 commit SHA의 raw URL로 표시한다. 게시 전 입력·페이지·이미지 응답·해시를 대조하고 게시 후
+  본문과 표시를 재확인한다. 증적이 없으면 준비할 때까지 게시를 보류한다. [comment 정본](mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 따른다.
   검증 범위의 전체 TSV와 대표 review PNG 중 색상 경계 보정 전2px 내용 실루엣 일치율이 하나라도 **90% 미만**이거나 측정 불가이면
   `scripts/visual_sweep.py`의 `pr_review_gate`가 `re_review_required`가 된다. 이 상태에서는 새 PR을 만들지 않고,
   이미 열린 PR은 승인·통합하지 않는다. 기여자는 PDF/overlay 원인을 자기 branch에서 재검토·수정하고 새 head에서

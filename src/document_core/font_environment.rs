@@ -4,8 +4,22 @@ use crate::{error::HwpError, renderer::font_environment::FontEnvironment};
 impl DocumentCore {
     /// 호스트가 실제 프로그램을 준비할 문서 후보와 현재 명시 환경을 반환한다.
     pub fn get_document_font_selection_plan(&self) -> String {
+        let scoped_requests: Vec<_> =
+            FontEnvironment::document_requests_with_slots(&self.document.doc_info)
+                .into_iter()
+                .map(|(language_slot, font_id, request)| {
+                    serde_json::json!({
+                        "languageSlot": language_slot,
+                        "fontId": font_id,
+                        "source": request.source,
+                        "primary": request.primary,
+                        "substitute": request.substitute,
+                    })
+                })
+                .collect();
         serde_json::json!({
             "requests": FontEnvironment::document_requests(&self.document.doc_info),
+            "scopedRequests": scoped_requests,
             "environmentId": self.font_environment.as_ref().map(FontEnvironment::id),
             "embeddedFamilies": FontEnvironment::embedded_program_names(&self.document.doc_info),
         })

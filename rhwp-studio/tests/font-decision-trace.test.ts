@@ -7,6 +7,7 @@ import {
   type FontDecisionBackendV1,
 } from '../src/core/font-decision-trace.ts';
 import { resolveCanvasKitFontPlanWithRules } from '../src/core/font-loader.ts';
+
 import {
   FONT_RULE_CANVAS2D_PAINT_RULES,
 } from '../src/core/generated/font-rule-projections/canvas2d-paint.ts';
@@ -22,6 +23,13 @@ import {
   portableLayoutHash,
   validateTraceEnvelope,
 } from '../../scripts/font_decision_trace_contract.mjs';
+
+test('ROKG CanvasKit 공급은 지정 CDN을 사용하고 기존 Government face를 공급하지 않는다', () => {
+  const newPlan = resolveCanvasKitFontPlanWithRules(['ROKG']);
+  const oldPlan = resolveCanvasKitFontPlanWithRules(['Government_16040911']);
+  assert.match(JSON.stringify(newPlan), /Alex4386\/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2\/src\/assets\/fonts\/ROKG_R\.woff/);
+  assert.doesNotMatch(JSON.stringify(oldPlan), /Government_16040911\.ttf/);
+});
 
 const unsupported = (requested: string): FontDecisionBackendV1 => ({
   status: 'unsupported', certainty: 'unsupported', requested, candidates: [],

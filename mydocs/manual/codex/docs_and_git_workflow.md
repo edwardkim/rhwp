@@ -453,6 +453,11 @@ CI 실패·오류와 충돌이 함께 있으면 해당 PR 안에서 **rebase·�
   push 전 병합·링크 검증과 새 trailing head의 required check도 확인한다. 진행 중·실패·취소·미실행
   CI를 완료로 기록하거나 로컬 검증으로 대체하지 않는다. 상세 순서는
   [collaborator self PR](../pr_review/collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)을 따른다.
+- 원 PR에 CI workflow·action·CI 실행/재사용 판정 정책 변경이 포함되면 위의 동일 PR trailing
+  경로 대신 [옵션 2](../pr_review/post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)를 적용한다.
+  원 PR의 정확한 code head에서 Full CI·검토·승인·병합을 완료한 뒤, review·오늘할일·후속 증적을
+  최신 `upstream/devel` 기준 별도 기록 PR로 반영한다. 기록 추가로 전체 CI가 다시 실행되는지
+  확인하려고 원 PR에 시험 push하지 않는다.
 - 실수로 승인 없이 PR을 열었으면 작업지시자 지시에 따라 즉시 close하고, 후속 진행은 승인 대기 상태로 되돌린다.
 - PR 직전의 긴 전체 회귀·lint도 `local_validation.md` 4.3의 필수 범위이면 위 `PR 준비` 지시에
   포함된 실행 승인으로 완료한다. 이미 승인된 검증을 다시 묻거나 focused test만으로 대체하지 않는다.
@@ -464,6 +469,7 @@ CI 실패·오류와 충돌이 함께 있으면 해당 PR 안에서 **rebase·�
 
 - 구현 보고서는 task 브랜치에서 해당 단계의 소스 변경과 함께 커밋한다. collaborator self PR의
   PR review·오늘할일은 code head CI 성공 뒤 별도의 문서-only trailing commit으로 기록한다.
+  단, CI 실행 정의·판정 정책 변경 PR은 위의 옵션 2에 따라 병합 후 별도 기록 PR로 처리한다.
 - merge 전에는 `git status`를 확인한다.
 - 이슈 close 전에는 정정 commit이 `devel` 또는 대상 브랜치에 실제 포함되어 있는지 확인한다.
 - 사용자가 만들었을 수 있는 변경은 임의로 되돌리지 않는다.

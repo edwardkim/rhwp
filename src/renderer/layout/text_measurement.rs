@@ -934,16 +934,17 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
                     )
                 })
                 .flatten(),
-            native_otf_metrics: (!styles.has_exact_font_source(char_style_id, lang_index))
-                .then(|| {
-                    styles.native_pua_fonts.get_otf_for_source(
-                        cs.font_family_for_lang(lang_index),
-                        cs.bold,
-                        cs.italic,
-                        cs.source_ttf_for_lang(lang_index),
-                    )
-                })
-                .flatten(),
+            native_otf_metrics: (!styles.has_exact_font_source(char_style_id, lang_index)
+                && styles.allows_native_otf_metrics(char_style_id, lang_index))
+            .then(|| {
+                styles.native_pua_fonts.get_otf_for_source(
+                    cs.font_family_for_lang(lang_index),
+                    cs.bold,
+                    cs.italic,
+                    cs.source_ttf_for_lang(lang_index),
+                )
+            })
+            .flatten(),
             bidi_layout: None,
             emphasis_skip_first_cluster: false,
             top_underline_font_size: None,
@@ -1049,16 +1050,17 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
                     storage.bytes(std::mem::size_of::<crate::renderer::LatinSlotMetrics>())?;
                     Ok(Box::new(crate::renderer::LatinSlotMetrics {
                         font_family: storage.string(cs.font_family_for_lang(1))?,
-                        native_otf_metrics: (!styles.has_exact_font_source(char_style_id, 1))
-                            .then(|| {
-                                styles.native_pua_fonts.get_otf_for_source(
-                                    cs.font_family_for_lang(1),
-                                    cs.bold,
-                                    cs.italic,
-                                    cs.source_ttf_for_lang(1),
-                                )
-                            })
-                            .flatten(),
+                        native_otf_metrics: (!styles.has_exact_font_source(char_style_id, 1)
+                            && styles.allows_native_otf_metrics(char_style_id, 1))
+                        .then(|| {
+                            styles.native_pua_fonts.get_otf_for_source(
+                                cs.font_family_for_lang(1),
+                                cs.bold,
+                                cs.italic,
+                                cs.source_ttf_for_lang(1),
+                            )
+                        })
+                        .flatten(),
                         metric_font_family: cs
                             .metric_face_for_lang(1)
                             .map(|face| storage.string(face))
@@ -2234,6 +2236,18 @@ fn char_width_decision_with_hft_tracking<'a>(
             ) == Some(false);
         let verified_primary_missing = verified_primary_missing
             || verified_named_primary_missing
+            // 실제 선택한 원본 프로그램의 cmap이 결측을 확인하고 호출자가
+            // glyph 대체 공급자를 명시한 경우에도 같은 체인으로 전진을 구한다.
+            // 표시용 OS 폴백이나 프로그램 미준비만으로 원본 결측을 추정하지 않는다.
+            || (latin.is_none()
+                && style.source_font_is_ttf
+                && style.glyph_fallback_advance_explicit
+                // 기존 문장부호의 Print 전진 계약은 glyph 공급과 별개다.
+                && !is_narrow_punctuation(c)
+                && style
+                    .native_otf_metrics
+                    .as_ref()
+                    .is_some_and(|font| !font.has_glyph(c)))
             || (!style.source_font_is_hft
                 && measured_family == display_family
                 && KoPubFamily::from_primary(measured_family).is_some_and(|family| {

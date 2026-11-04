@@ -1,0 +1,427 @@
+{
+  "validatedRustSource": "c031a38a41670f5e4f6ab0268ef46c62ab1445f5",
+  "auditedHead": "a133525de9909aefff1846daad53f5650b2d1087",
+  "unchangedProductAndRustTestGitObjects": {
+    "src": "63d8c874f6feaf2c54ff021398bec0f1cc17bf76",
+    "crates": "9004e2965f0fa0f3e8e974d868abd78ac6395e01",
+    "tests": "ebf3e4d1614f8a9d021b1a7906a4f33a765098b2",
+    "Cargo.toml": "58cd8cb828326d314718f9ab9fe365973fe8ac88",
+    "Cargo.lock": "e249b95311567b3bf84f1c92800e80190eb3c089",
+    "build.rs": "a3103a33faf38a899edb68f64fd0739dd4950787",
+    "assets/fonts": "5a888b1085d56ab897017033f052d76422b30230",
+    "assets/font-rules": "c2a61f0413b955e3293ee104aab5c0509d7a857f",
+    "rhwp-studio/src": "7791190a85a27b55c3bd19bcc970df476532758a"
+  },
+  "fullNextest": {
+    "producerSourceHead": "c031a38a41670f5e4f6ab0268ef46c62ab1445f5",
+    "base": "7d06d5c706f1d89f1662e739abf2b1b25d2a98e4",
+    "result": "passed",
+    "run": 12424,
+    "passed": 12424,
+    "failed": 0,
+    "skipped": 45,
+    "testSeconds": 581.283,
+    "compileAndRunSeconds": 1303.629,
+    "exit": 0,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-full-nextest-minfont.log",
+    "sourceEquivalence": "authenticated-current-source-equivalence.json"
+  },
+  "actualCollection": {
+    "listedTests": 12424,
+    "declaredTestCount": 12469,
+    "previousResults": {
+      "PASS": 12424
+    },
+    "listedAfterRepairMatchesExecutedBeforeRepair": true,
+    "missing": [],
+    "added": [],
+    "excludedAtCollection": {
+      "{\"reason\": \"ignored\", \"status\": \"mismatch\"}": 45
+    }
+  },
+  "completedMainGates": [
+    {
+      "name": "authenticated-final-fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-final-fmt.log",
+      "exit": 0,
+      "seconds": 30.512
+    },
+    {
+      "name": "authenticated-native-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-native-build.log",
+      "exit": 0,
+      "seconds": 2.347
+    },
+    {
+      "name": "authenticated-fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-fresh-wasm.log",
+      "exit": 0,
+      "seconds": 293.03
+    },
+    {
+      "name": "authenticated-full-nextest-minfont",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/profile.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "FONTCONFIG_FILE=/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/fonts.conf",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-full-nextest-minfont.log",
+      "exit": 0,
+      "seconds": 1303.629
+    },
+    {
+      "name": "authenticated-clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-clippy-native.log",
+      "exit": 0,
+      "seconds": 137.778
+    },
+    {
+      "name": "authenticated-clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-clippy-wasm.log",
+      "exit": 0,
+      "seconds": 309.882
+    },
+    {
+      "name": "authenticated-workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-workspace-build.log",
+      "exit": 0,
+      "seconds": 997.325
+    },
+    {
+      "name": "authenticated-clippy-all-targets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-clippy-all-targets.log",
+      "exit": 0,
+      "seconds": 614.663
+    },
+    {
+      "name": "authenticated-skia-lib-minfont",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/profile.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "FONTCONFIG_FILE=/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/fonts.conf",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--workspace",
+        "--lib",
+        "--features",
+        "native-skia",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-skia-lib-minfont.log",
+      "exit": 0,
+      "seconds": 399.218
+    },
+    {
+      "name": "authenticated-skia-png",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/profile.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "FONTCONFIG_FILE=/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/fonts.conf",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "native_inline_object_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-skia-png.log",
+      "exit": 0,
+      "seconds": 281.938
+    },
+    {
+      "name": "authenticated-skia-pdf",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/profile.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "FONTCONFIG_FILE=/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/fonts.conf",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-skia-pdf.log",
+      "exit": 0,
+      "seconds": 61.333
+    },
+    {
+      "name": "authenticated-source-frame",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/profile.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "FONTCONFIG_FILE=/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/fonts.conf",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8533_display_substitute_source_frame",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-source-frame.log",
+      "exit": 0,
+      "seconds": 21.919
+    }
+  ],
+  "originalManifestFailure": [
+    {
+      "name": "authenticated-manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "7d06d5c706f1d89f1662e739abf2b1b25d2a98e4"
+      ],
+      "status": "failed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-manifest.log",
+      "exit": 1,
+      "seconds": 3.848
+    }
+  ],
+  "correctedManifestChecks": [
+    {
+      "name": "fmt",
+      "exit": 0,
+      "log": "output/pr-review/issue8153-handbook-gate/authenticated-manifest-repair-fmt.log",
+      "seconds": 20.116
+    },
+    {
+      "name": "manifest",
+      "exit": 0,
+      "log": "output/pr-review/issue8153-handbook-gate/authenticated-manifest-repair-manifest.log",
+      "seconds": 1.739
+    },
+    {
+      "name": "unit-tiers",
+      "exit": 0,
+      "log": "output/pr-review/issue8153-handbook-gate/authenticated-manifest-repair-unit-tiers.log",
+      "seconds": 17.304
+    }
+  ],
+  "additionalGates": [
+    {
+      "name": "authenticated-skia-missing-picture",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/profile.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "FONTCONFIG_FILE=/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/fonts.conf",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-skia-missing-picture.log",
+      "exit": 0,
+      "seconds": 35.623
+    },
+    {
+      "name": "authenticated-doc-tests",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/profile.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "FONTCONFIG_FILE=/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/fonts.conf",
+        "cargo",
+        "test",
+        "--locked",
+        "--doc",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-doc-tests.log",
+      "exit": 0,
+      "seconds": 919.946
+    },
+    {
+      "name": "authenticated-release-build",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/profile.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "FONTCONFIG_FILE=/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/fonts.conf",
+        "cargo",
+        "build",
+        "--locked",
+        "--release"
+      ],
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-release-build.log",
+      "exit": 0,
+      "seconds": 2186.625
+    },
+    {
+      "name": "authenticated-release-lib",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/profile.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "FONTCONFIG_FILE=/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/mac-minfont/fonts.conf",
+        "cargo",
+        "test",
+        "--locked",
+        "--release",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue8153-handbook-gate/authenticated-release-lib.log",
+      "exit": 0,
+      "seconds": 1451.703
+    }
+  ],
+  "latestHostContracts": {
+    "pythonTests": 240,
+    "nodeContracts": 34,
+    "hostCommit": "3ededa625581f4a4a052ef912dc30c0317fec0ed",
+    "pythonLogSha256": "abb542c0ce7dd7cb20f2cf8a168220e45031c4eb8763543795c723f4c41319db",
+    "nodeLogSha256": "bc25ce855e875f3ed48c3a12f54844d8e32a7420f01b08769cd0b174b8a1124f"
+  },
+  "visualValidation": "별도 current-host-verification.json과 전쪽 TSV를 감사한다. Rust PASS로 미완료 이미지 판정을 대체하지 않는다."
+}

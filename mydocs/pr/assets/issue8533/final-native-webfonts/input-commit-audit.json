@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "auditedHead": "4f8fca0a722f45597b480c506363522cbcffb730",
+  "documents": 37,
+  "uniqueFiles": 70,
+  "bindings": 74,
+  "trackedFiles": 70,
+  "localOnlyLargePdfs": 0,
+  "bindingTsv": "input-commit-audit.tsv",
+  "bindingTsvSha256": "92f9c486c69827859118182f73c2f4e8a634a54e8e59507d24868cc0b90f58da",
+  "scope": "원 PR 36문서와 편람1문서의 실제 원본/독립 PDF를 현재 commit 또는 허용된 큰 PDF와 대조"
+}
