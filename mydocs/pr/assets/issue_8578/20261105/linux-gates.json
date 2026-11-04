@@ -1,0 +1,119 @@
+{
+  "head": "e12096b9da2e7f00c03c5c175f76d198df284e56",
+  "steps": [
+    {
+      "step": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exitCode": 0,
+      "seconds": 3.971
+    },
+    {
+      "step": "focused",
+      "command": [
+        "node",
+        "/home/tsjang/rhwp/output/issue8578-20261105/focused-packet.mjs"
+      ],
+      "exitCode": 0,
+      "seconds": 88.698
+    },
+    {
+      "step": "full-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exitCode": 0,
+      "seconds": 1835.595
+    },
+    {
+      "step": "skia-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "exitCode": 0,
+      "seconds": 583.741
+    },
+    {
+      "step": "skia-png",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "exitCode": 0,
+      "seconds": 486.919
+    },
+    {
+      "step": "skia-pdf",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "exitCode": 0,
+      "seconds": 31.285
+    },
+    {
+      "step": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "22947f6a90c998e95fa51238d5b907a0ebd37162"
+      ],
+      "exitCode": 0,
+      "seconds": 2.362
+    },
+    {
+      "step": "unit-tiers",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "22947f6a90c998e95fa51238d5b907a0ebd37162"
+      ],
+      "exitCode": 0,
+      "seconds": 40.371
+    }
+  ],
+  "running": null,
+  "success": true
+}

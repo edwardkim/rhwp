@@ -1,0 +1,17 @@
+{
+  "head": "e12096b9da2e7f00c03c5c175f76d198df284e56",
+  "host": "ubuntu-ted3",
+  "os": "Ubuntu 24.04.3 LTS x86_64, Linux6.8.0-147-generic",
+  "minimal_fonts": "bwrap;system/user font dirs0;64 project/fixture font programs;RHWP_FONT_PATH unset",
+  "test_threads": 8,
+  "build_jobs": 8,
+  "exit_code": 0,
+  "tests_run": 12489,
+  "passed": 12489,
+  "failed": 0,
+  "slow": 7,
+  "skipped": 45,
+  "runtime_seconds": 1018.448,
+  "build_and_test_seconds": 1835.595,
+  "log_sha256": "e7ac7688a0a1813b372560df336aa52dc57c3df1125ca992a4c684e960909427"
+}

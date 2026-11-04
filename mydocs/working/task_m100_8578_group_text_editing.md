@@ -1,7 +1,12 @@
 # Task #8578 — 묶음 글상자 클릭과 Esc 편집 복귀
 
+최종 상태: 구현·필수 로컬 검증 완료, 원격 push·PR 생성 승인 대기.
+코드 검증 head는 `67c7814f6e2bc02cc6f69365f1c24f581a6826ca`, 최신 base는
+`e96b500e3ea259c821f05440f0388355916a9e9b`다. 아래 초기 단계와 중간 실패는 진행 이력이며,
+최종 판정은 마지막 절과 [검증 결과](../pr/assets/issue_8578/20261105/verification.json)를 따른다.
+
 - 작업 브랜치: `task/8578-group-text-editing`
-- 고정 base: `22947f6a90c998e95fa51238d5b907a0ebd37162`
+- 최초 고정 base: `22947f6a90c998e95fa51238d5b907a0ebd37162`
 - 원본: `samples/2025 행정업무운영 편람(최종).hwpx`
 - 원본 SHA-256: `c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6`
 
@@ -26,7 +31,7 @@
 Esc 복귀와 삭제·붙여넣기 착지는 분리한다. 독립 글상자, 중첩 묶음, 표 안 글상자와 개체 삭제의
 기존 계약을 대조군으로 검증한다. 좌표·폰트·인쇄 출력은 이번 수정의 목표값으로 변경하지 않는다.
 
-## 진행 중인 검증
+## 초기 단계의 검증 기록
 
 - Esc 수정 전 행위 검사: 소유 문단 4 대신 문단 5로 이동해 FAIL.
 - 최신 base fresh WASM 빌드 완료(호스트 locked wrapper `--no-opt`, Docker 결과 아님).
@@ -49,7 +54,7 @@ Esc 복귀와 삭제·붙여넣기 착지는 분리한다. 독립 글상자, 중
 - 후보 fresh WASM, 실제 브라우저 편집·undo/redo와 필수 범위 게이트: 아직 완료하지 않음.
 - 임시 로그·진단 스크립트: 기본 작업장의 ignored `output/issue8578/`.
 
-현재 해결 완료 또는 PR 제출 가능 상태로 판정하지 않는다.
+이 초기 단계에서는 해결 완료 또는 PR 제출 가능 상태로 판정하지 않았다.
 
 ## 실제 편집 경로에서 찾은 추가 원인
 
@@ -97,7 +102,7 @@ Column/Body 컨테이너에만 생산하여 머리말·꼬리말·각주의 전�
 첫 metadata 실행의 DNS 실패는 격리 환경의 resolv.conf symlink 대상 누락으로 확인하여 해당 DNS
 파일만 읽기 전용 노출했다. 이는 테스트 FAIL이 아니라 실행 전 인프라 오류이며 통과 결과로 세지 않는다.
 
-## 최종 프로그램의 편집·출력 보존 확인
+## 1차 프로그램의 편집·출력 보존 확인
 
 Rust/Studio 구현 head `124e02bf06805f65d792aab939b42aa2b56b2475`에서 Native 집중 6건 PASS,
 fmt·Native/WASM Clippy·workspace build·all-target Clippy·manifest·unit tiers·E2E manifest·
@@ -148,3 +153,50 @@ undo/redo·목차 클릭·개체 선택·Esc가 통과했고 관련 경고는 0�
 저장 전 seed 문단의 컨트롤 번호를 새 컨테이너 주소로 잘못 재사용하지 않는다.
 수정 후 Native 18건 packet은 18 PASS, 0 FAIL(9.700초)이며 기존 두 실패의 단언은 그대로다.
 이는 관련 집중 검사의 결과이며 새 전체 nextest·Skia·WASM·전쪽 검증은 별도로 완료한다.
+
+## 최종 검증과 문서 전용 리베이스
+
+보정 후 코드 `e12096b9da2e7f00c03c5c175f76d198df284e56`를 고정해 다음 검증을 완료했다.
+로그는 ignored `output/issue8578/final-v3/`에만 보존하고, 제출용 수치·명령·source 해시는
+[최종 증적](../pr/assets/issue_8578/20261105/producer.json)에 고정했다.
+
+| 검증 | 실제 결과 |
+| --- | --- |
+| 최소 글꼴 Linux 전체 nextest | 12,489 PASS·0 FAIL·45 skip, 실행 1,018.448초, exit 0 |
+| 최소 글꼴 Native Skia lib | 본체 3,858 PASS·12 ignore, 다른 libs 182 PASS, 0 FAIL |
+| 최소 글꼴 Native PNG·PDF | PNG 2 PASS, PDF 22 PASS |
+| 집중 packet | 새 #8578 8건 + 기존 #1892 5건 + #919 5건 = 18 PASS; Native·최소 글꼴 Linux 모두 PASS |
+| Mac 필수 게이트 | fmt·Native/WASM Clippy·workspace build·all-target Clippy·manifest·unit tiers·E2E manifest·TypeScript 포함 13단계 exit 0 |
+| Studio 전체 단위 검사 | 2,719 PASS·0 FAIL·2 skip; 이 실행 이후 Studio production source 변경 없음 |
+| 실제 브라우저 | Canvas2D 원본 파일 열기부터 3·4쪽 편집·선택·삭제·Enter·undo/redo·개체 선택·Esc·원 본문 실제 입력 PASS, 관련 경고 0 |
+| 독립 Print 전쪽 비교 | Native/fresh WASM 각각 383쪽, 최저 raw 99.96%, 미달·누락·중복·base 대비 하락 0 |
+
+위 항목은 서로 다른 실행 묶음이며 고유 테스트 총수로 합산하지 않는다. 최소 글꼴 회귀는
+ubuntu-ted3의 bwrap 안에서 시스템·사용자 글꼴 경로 0개와 프로젝트/fixture 프로그램 64개만
+노출했다. 시각 비교는 독립 Print와 같은 글꼴을 공급한 Mac 실행이며 최소 글꼴 시각 정합으로
+바꾸어 주장하지 않는다. 새 글꼴·검사 생략·문턱 완화는 없다.
+
+제출 전 새 upstream PR #8603을 확인했다. 추가분은 과거 PR 검토 문서 3개뿐이었다.
+로컬 백업 `backup/8578-before-e96b500-20261105`를 만든 뒤 충돌 없이 리베이스했으며,
+리베이스 후 코드 head는 `67c7814f6e2bc02cc6f69365f1c24f581a6826ca`다.
+`src`·`tests`·`rhwp-studio`·`scripts`·`crates`·`vendor`의 Git tree는 전후 동일하고
+새 검토 문서 3개도 upstream 원문과 같다. 이 PR의 기능은 기록 보존이므로 runtime 회귀 범위는
+비해당이며, 실제 diff와 소비 경로가 달라지지 않았음을 [동일성 증거](../pr/assets/issue_8578/20261105/source-equivalence.json)로 남겼다.
+
+리베이스 후에는 새 head에서 집중 18건(16.714초), fmt·새 base 기준 manifest/unit tier·TypeScript·
+실제 브라우저를 다시 통과했다. Native `--handbook-gate`도 전383쪽 새로 출력하여 통과했다.
+WASM 프로그램은 위 코드에서 빌드한 `a54403d36e2c54472e9daa0491e90c61359ade7dab0d8e154020d14a1404b149`이며
+문서 전용 rebase 후에도 source·pkg/public·실제 초기화 응답이 일치한다. Mac locked wrapper
+`--target web --out-dir pkg --no-opt`의 로컬 대체 빌드이고 Docker 최적화 빌드가 아니다.
+
+WASM PNG는 재출력했다고 주장하지 않는다. 프로그램·입력·PDF·source 동일성과 전쪽 PNG 해시를
+고정하고 정본 `--png-pair`로 base/후보 전쪽 TSV를 다시 산출했다. Native 전후 PNG도 전383쪽
+SHA가 동일하며, 두 backend의 최종 TSV는 각각 base 및 리베이스 전과 같다. [전후 비교](../pr/assets/issue_8578/20261105/tsv-before-after.json)와
+[전쪽 raster 해시](../pr/assets/issue_8578/20261105/raster-sha256.json)를 보존한다.
+TSV의 두 자리 표시값은 130쪽 99.96%, 나머지 382쪽 100.00%다. 표시의 반올림과 정밀값의
+정확한 100% 개수(Native 376쪽·WASM 380쪽)를 구분한다.
+
+3·4쪽 raw/review/overlay는 해당 원본과 독립 Print를 직접 대조했다. Studio raw 화면에는
+검사 중 입력 문자가 있고, 인쇄 PNG는 미편집 원본이다. 원본 HWPX·PDF·글꼴·조판 문턱은
+변경하지 않았다. 이전 두 실패는 기존 검사를 유지한 구현 보정으로 해결됐다.
+원격 push·PR 생성·이슈 종료는 아직 수행하지 않았으며, 사용자 승인 후 제출한다.

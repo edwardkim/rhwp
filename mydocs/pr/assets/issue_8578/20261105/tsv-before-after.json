@@ -1,0 +1,25 @@
+{
+  "native": {
+    "execution_head": "67c7814f6e2bc02cc6f69365f1c24f581a6826ca",
+    "artifact_producer_head": "e12096b9da2e7f00c03c5c175f76d198df284e56",
+    "pages": 383,
+    "minimum_raw": 99.96,
+    "below90": 0,
+    "tsv_differences": 0,
+    "before_tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "after_tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "mode": "fresh native export",
+    "changed_png_pages": []
+  },
+  "wasm": {
+    "execution_head": "67c7814f6e2bc02cc6f69365f1c24f581a6826ca",
+    "artifact_producer_head": "e12096b9da2e7f00c03c5c175f76d198df284e56",
+    "pages": 383,
+    "minimum_raw": 99.96,
+    "below90": 0,
+    "tsv_differences": 0,
+    "before_tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "after_tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "mode": "canonical PNG-pair recalculation; immutable e120 Canvas PNG reused with source equality"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "success": true,
-  "source_sha": "124e02bf06805f65d792aab939b42aa2b56b2475",
+  "source_sha": "e12096b9da2e7f00c03c5c175f76d198df284e56",
   "profile": "Mac locked wrapper web no-opt local alternative; not Docker optimized",
   "artifacts": {
     "rhwp.js": {
@@ -8,8 +8,8 @@
       "bytes": 528282
     },
     "rhwp_bg.wasm": {
-      "sha256": "9c3f92982f0cce3ee16af2860712afcdb5946f5c82971668db2bca205d6f6b61",
-      "bytes": 30462854
+      "sha256": "a54403d36e2c54472e9daa0491e90c61359ade7dab0d8e154020d14a1404b149",
+      "bytes": 30463210
     }
   }
 }

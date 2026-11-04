@@ -1,6 +1,8 @@
 {
-  "compiled_code_head": "124e02bf06805f65d792aab939b42aa2b56b2475",
-  "base": "22947f6a90c998e95fa51238d5b907a0ebd37162",
+  "validated_code_head": "67c7814f6e2bc02cc6f69365f1c24f581a6826ca",
+  "compiled_code_head": "e12096b9da2e7f00c03c5c175f76d198df284e56",
+  "base": "e96b500e3ea259c821f05440f0388355916a9e9b",
+  "base_artifact_source": "22947f6a90c998e95fa51238d5b907a0ebd37162",
   "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
   "pdf_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
   "source_hashes": {
@@ -14,39 +16,56 @@
     "src/document_core/hyperlink.rs": "5def87d7dd59af34b9012232b6a07fa997152d8bc8387fd8d50a6144686a5e70",
     "src/document_core/inline_control.rs": "fbffcefec1b404c45219d3441c7c142c636bf364a26d2b73ae6b24a9709ffcdc",
     "src/document_core/queries/cursor_nav.rs": "292998965841ee89043ece52bd463e79e15fd38cc8869d996d2399b742e09470",
-    "src/document_core/queries/cursor_rect.rs": "c10d7b5ff20379dabd9d8ed61dd7703caa5c7643c4dcfbe0ca9577379be3a6eb",
+    "src/document_core/queries/cursor_rect.rs": "097cc3d9331a40078db1a50e7d5b6fb9a1d6225f7d9b54200c4bb9d04cbff153",
     "src/document_core/queries/doc_tree_nav.rs": "f1dae81811ed5e274f0a4ca874a4ae383f7976605a8017e1159edd48f1a7d0e0",
     "src/document_core/queries/rendering.rs": "5b64dd0d4c34285233be715a65b5e27acd9c8919f4db07d8a6b9405cbd77da7a",
     "src/model/shape.rs": "0da9ebc9995ff825091506553fcd471b99537f2041f156d546ec45c05f15a66c",
-    "src/renderer/layout.rs": "aef7854075077036287e0906f5660f2d230392ec22a459899c7a9fcbd725b0d5",
-    "src/renderer/layout/shape_layout.rs": "b9376334aa09acc956ca51334f813cece80dd1032e1876b9640aa718e21cd7ff",
+    "src/renderer/layout.rs": "d8e81adf52ea15548066f5f33c6527285f5fd64ad852af7dc9bd875e3744dd4f",
+    "src/renderer/layout/hidden_paragraph_marker.rs": "25b595980374f9f5f9dfcfbf06d9effca733784aaea2a354aac21d9b6b1519b2",
+    "src/renderer/layout/shape_layout.rs": "6b5d57961f83872a1097c82a5a7c44fa43a0f95bb8aacfaf0de1903999eebf1d",
     "src/renderer/render_normalization.rs": "9bdb75eb91b07fc95e6ba6e9f68f06ae04f76a55f392c0e6b6db44ea889308e1",
     "src/renderer/render_tree.rs": "d3dac9199ae45f2759b18123ee55453c94c6734a288fce62b4ff6f27f11137ee",
-    "tests/cases/issue_8578_group_text_editing.rs": "f9fdf26c06d7f5b8e97548ccb4f15d1c7ee393dbb1684214d9c9cee318f1edf4"
+    "tests/cases/issue_8578_group_text_editing.rs": "e2b889ac904e9e9abb9a8e62b0aee645962659f9af26658c19ac97898ae07bba"
   },
   "final_browser_test_sha256": "674aa3576e7a203d7620fe19788ba2dd94eec77f534a1280702563ae7d83b0df",
   "final_browser_exit_code": 0,
-  "note": "강화한 브라우저 검사는 목차·Esc 본문의 실제 문자열 변경과 undo 복원까지 검사했다. 인쇄 프로그램의 Rust/Studio source는 compiled_code_head와 동일하다. Linux 전체 회귀와 Native Skia 3종은 아직 실행 중이며 완료 결과로 세지 않는다.",
+  "pdf_raster_policy": "pdfium_smooth_rgb_exact_dpi_v2",
+  "dpi": 96,
+  "silhouette_radius_px": 2,
+  "status": "validated-awaiting-user-pr-approval",
+  "note": "Native gate는 문서 전용 리베이스 후 새로 출력했다. WASM PNG는 source·프로그램·입력 해시를 검증하여 재사용하고 전쪽 TSV를 다시 계산했다. review/overlay는 새 Native PNG와 원 Canvas PNG가 판독한 쌍과 동일한 것을 SHA로 확인했다. Studio 화면은 편집 시나리오 중 입력 문자를 포함하며, 인쇄 PNG는 미편집 원본이다.",
   "artifacts": {
     "browser-artifacts.json": {
-      "sha256": "d2ec05655af2ddf5dd5a6768ee1af3642bf45d0800493c54b52ccb9ea3303bec",
-      "bytes": 632
+      "sha256": "8a439d3cd12d04a76cc2d965d05067d4fd4d32396a29b1de39bcb8b959edbea6",
+      "bytes": 641
     },
     "browser-result.json": {
       "sha256": "503f6a1ac32643d4394008581fea84386898c23f4a642ccf951cf63e006446ea",
       "bytes": 1262
     },
+    "full-nextest.json": {
+      "sha256": "6e9f246520585c5708bd6e60bdcdee3c54ea0633e4b22eaf6c07ed643972e10c",
+      "bytes": 545
+    },
+    "linux-gates.json": {
+      "sha256": "1c528fbd4ccb2be9f6517b890946b6b44902965b1b43aafccc050b77a5617147",
+      "bytes": 2404
+    },
     "mac-gates.json": {
-      "sha256": "99def52464626aad7dd857342ce6edb4c4d1324a121bfa2d6d118ca7ea96a988",
-      "bytes": 3405
+      "sha256": "2b6b18f200c59abaf4f6e50152f3aaabdbd28cfba05c436e5299e11ba76c8366",
+      "bytes": 3261
+    },
+    "minimal-fonts.json": {
+      "sha256": "0cc656966a10ed53afadc06c9ebef4d8d5b237bc65388b6f7a0b23daad6097e6",
+      "bytes": 12152
     },
     "native-base.tsv": {
       "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
       "bytes": 8428
     },
     "native-comparison.json": {
-      "sha256": "1d0311f5f4250c0efc3ca3161ad514879bb36f249c0cf883dce7aa0f87675d85",
-      "bytes": 224
+      "sha256": "8e49f72148ffe436b28b6a2a84bfe03ef9458f05cdc02520cf89174cc4ca0a06",
+      "bytes": 411
     },
     "native-head.tsv": {
       "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
@@ -84,53 +103,73 @@
       "sha256": "53b0bee944375902f88dc551632917e160e8a8e1a911e9b673dd8fb199da1acf",
       "bytes": 76180
     },
+    "post-rebase-checks.json": {
+      "sha256": "b9ea38f43b2fc48a23a0f0f859a6ff71473193b89616830728aee790691a3e2f",
+      "bytes": 1795
+    },
+    "raster-sha256.json": {
+      "sha256": "01f61f1493cffcae905f05630623b9691767a3816f12008019027eb76369839c",
+      "bytes": 173091
+    },
+    "source-equivalence.json": {
+      "sha256": "344b12adf6b287c201536a9bba3930a1b43f535594c0abbfb8f44352345e13b5",
+      "bytes": 1945
+    },
     "studio-page003-edit.png": {
-      "sha256": "0e30d459eade10471729d558bd510489ac6860acbad545209421958572a124ab",
-      "bytes": 110561
+      "sha256": "c4ad26af6c7da37dd66e37cdb20a3129eb0f738a943dd0f6a27c636324783589",
+      "bytes": 110543
     },
     "studio-page004-body.png": {
-      "sha256": "2104be92d25effffa5601c4058e4b9a9d2813da4de2aa62fbf808253cccb870d",
-      "bytes": 105446
+      "sha256": "866f0647a0d0a5f167315932d21cd42e1f7bd77d1a643130e89f5046dd3ad76d",
+      "bytes": 105425
+    },
+    "tsv-before-after.json": {
+      "sha256": "414a984561a4abf1def149e10a68f83e4be7b2b8a48115270f47ae76dc5c92a6",
+      "bytes": 1030
+    },
+    "verification.json": {
+      "sha256": "62b95c0f4d53e58500505a240c3862e7dc40ae7a898046e67f45864fbcd01080",
+      "bytes": 7340
     },
     "wasm-base.tsv": {
       "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
       "bytes": 8428
     },
     "wasm-build.json": {
-      "sha256": "b437a0afa849317c603cd69fa54caf9953a3daaaf42d3de415fea5d2c507380a",
+      "sha256": "cb220debc69c10e49aca47fbf7e6353fc68ef2afd9fc9b8237e9d7c59093ecdf",
       "bytes": 456
     },
     "wasm-comparison.json": {
-      "sha256": "1d0311f5f4250c0efc3ca3161ad514879bb36f249c0cf883dce7aa0f87675d85",
-      "bytes": 224
+      "sha256": "e1c0482f20972c4b0b45a71e5d0b2bf51f4c6020ca6e45754ad44aecd16e14b5",
+      "bytes": 445
     },
     "wasm-head.tsv": {
       "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
       "bytes": 8428
     },
     "wasm-p003-overlay.png": {
-      "sha256": "6fcc1095db47a8317d5706ff5951939048b63f892a019be75d1e8a8665d19c48",
-      "bytes": 74881
+      "sha256": "4f2756cc6a1bd65b2f816a6eba3cdc1e22f53117f706fbacbb1aea863d7ae245",
+      "bytes": 74541
     },
     "wasm-p003-raw.png": {
       "sha256": "7260f4afe134569fb8a0b778c3ac8809b5cf218c15564c24880a77ed1128375f",
       "bytes": 77567
     },
     "wasm-p003-review.png": {
-      "sha256": "96bb9943d33eb03a4d9e5170a8783765edf084e07b06fdf465984ed0b046381f",
-      "bytes": 205003
+      "sha256": "acf462e125a6e944b805bda64318359773e11857802103e21bd6d9ce75ab80ab",
+      "bytes": 204838
     },
     "wasm-p004-overlay.png": {
-      "sha256": "fe2fda4895d5412ce2241a5af4ccd03da876802e686524ae389e16788dc26456",
-      "bytes": 89957
+      "sha256": "f7456b8094fc94c5a69b7640157ca8e40f397a2c6f0aca010c8ebf9ec126bc1e",
+      "bytes": 89541
     },
     "wasm-p004-raw.png": {
       "sha256": "e31f308b1c7b511e45fee7997a6ac577b1b5865453e022d1ebb76cf4c6c73dfd",
       "bytes": 97064
     },
     "wasm-p004-review.png": {
-      "sha256": "7dac7177b37475be9c37a82cdb723535fb8dafc7716c30f62dd1d47ac52f4118",
-      "bytes": 241521
+      "sha256": "7fa1e6c1fa4652c3ff5f2ad5d8a71394fa7ca6c77c98034b5962223199f01958",
+      "bytes": 241322
     }
   }
 }

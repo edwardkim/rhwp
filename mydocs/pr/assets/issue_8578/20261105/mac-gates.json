@@ -1,5 +1,5 @@
 {
-  "head": "124e02bf06805f65d792aab939b42aa2b56b2475",
+  "head": "e12096b9da2e7f00c03c5c175f76d198df284e56",
   "base": "22947f6a90c998e95fa51238d5b907a0ebd37162",
   "steps": [
     {
@@ -10,24 +10,17 @@
         "--prepare"
       ],
       "exitCode": 0,
-      "seconds": 1.071
+      "seconds": 1.045
     },
     {
       "step": "focused",
       "command": [
         "node",
-        "scripts/run-rust-test.mjs",
-        "issue_8578_group_text_editing",
-        "--",
-        "--cargo-profile",
-        "release-test",
-        "--features",
-        "native-skia",
-        "--test-threads",
-        "8"
+        "/Users/tsjang/rhwp/output/issue8578/focused-packet.mjs",
+        "--skia"
       ],
       "exitCode": 0,
-      "seconds": 183.255
+      "seconds": 30.967
     },
     {
       "step": "native-cli",
@@ -44,7 +37,7 @@
         "rhwp"
       ],
       "exitCode": 0,
-      "seconds": 199.46
+      "seconds": 160.254
     },
     {
       "step": "wasm",
@@ -57,7 +50,7 @@
         "--no-opt"
       ],
       "exitCode": 0,
-      "seconds": 431.922
+      "seconds": 416.995
     },
     {
       "step": "fmt",
@@ -69,7 +62,7 @@
         "--check"
       ],
       "exitCode": 0,
-      "seconds": 13.291
+      "seconds": 16.067
     },
     {
       "step": "native-clippy",
@@ -82,7 +75,7 @@
         "warnings"
       ],
       "exitCode": 0,
-      "seconds": 70.746
+      "seconds": 26.091
     },
     {
       "step": "wasm-clippy",
@@ -100,7 +93,7 @@
         "warnings"
       ],
       "exitCode": 0,
-      "seconds": 61.129
+      "seconds": 23.423
     },
     {
       "step": "workspace-build",
@@ -111,7 +104,7 @@
         "--workspace"
       ],
       "exitCode": 0,
-      "seconds": 99.599
+      "seconds": 27.685
     },
     {
       "step": "all-target-clippy",
@@ -126,7 +119,7 @@
         "warnings"
       ],
       "exitCode": 0,
-      "seconds": 80.148
+      "seconds": 41.701
     },
     {
       "step": "manifest",
@@ -138,7 +131,7 @@
         "22947f6a90c998e95fa51238d5b907a0ebd37162"
       ],
       "exitCode": 0,
-      "seconds": 3.054
+      "seconds": 1.39
     },
     {
       "step": "unit-tiers",
@@ -150,7 +143,7 @@
         "22947f6a90c998e95fa51238d5b907a0ebd37162"
       ],
       "exitCode": 0,
-      "seconds": 20.237
+      "seconds": 17.157
     },
     {
       "step": "e2e-manifest",
@@ -159,7 +152,7 @@
         "scripts/check_e2e_manifest.py"
       ],
       "exitCode": 0,
-      "seconds": 0.273
+      "seconds": 0.144
     },
     {
       "step": "typecheck",
@@ -169,10 +162,10 @@
         "--noEmit"
       ],
       "exitCode": 0,
-      "seconds": 2.794
+      "seconds": 2.625
     }
   ],
   "running": null,
-  "native_sha256": "cd1ecf73533e1c8e55ce51f1ce0294ea91e536e8c98071ae0511fd883b0e06a0",
+  "native_sha256": "cd08b2188caf6017be6dfc9c8003f8c89c9f0fe69f48b6f4c1bd6fc741a78598",
   "success": true
 }

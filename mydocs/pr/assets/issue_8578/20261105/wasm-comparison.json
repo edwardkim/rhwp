@@ -1,9 +1,12 @@
 {
-  "head": "124e02bf06805f65d792aab939b42aa2b56b2475",
-  "base": "22947f6a90c998e95fa51238d5b907a0ebd37162",
+  "head": "67c7814f6e2bc02cc6f69365f1c24f581a6826ca",
+  "base": "e96b500e3ea259c821f05440f0388355916a9e9b",
+  "head_program_producer": "e12096b9da2e7f00c03c5c175f76d198df284e56",
+  "base_program_producer": "22947f6a90c998e95fa51238d5b907a0ebd37162",
   "pages": 383,
   "minimum_raw": 99.96,
   "below90": [],
   "tsv_row_differences": [],
-  "changed_png_pages": []
+  "changed_png_pages": [],
+  "mode": "immutable Canvas PNG plus post-rebase full PNG-pair recalculation"
 }
