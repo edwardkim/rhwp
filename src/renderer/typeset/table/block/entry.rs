@@ -1594,7 +1594,7 @@ impl TypesetEngine {
                                 .is_some_and(|previous| {
                                     previous.occupied_bottom <= placement.table_top
                                 }))
-                        && paragraphs_all
+                        && (paragraphs_all
                             .get(*para_index)
                             .and_then(|host| host.controls.get(*control_index))
                             .is_some_and(|control| {
@@ -1603,6 +1603,11 @@ impl TypesetEngine {
                                         && previous.common.flow_with_text
                                         && !previous.common.allow_overlap)
                             })
+                            || stored_frame_inside_tac_host_line(
+                                paragraphs_all.get(*para_index),
+                                *control_index,
+                                para,
+                            ))
                 })
         });
         // 전체 실측 상자가 저장 후속 줄을 새 쪽 원점에서 정확히 닫으면,
@@ -2820,4 +2825,37 @@ impl TypesetEngine {
             declared_table_height,
         })
     }
+}
+
+/// 앞 글자처럼 취급 표의 host 글줄은 저장 사다리에서 표 높이만큼 흐름을 차지한다.
+/// 뒤 문단의 저장 원점이 그 글줄이 끝나기 전이면 같은 쪽의 프레임이 아니다
+/// (한/글은 vpos 를 되감아 새 쪽에서 시작한다).
+fn stored_frame_inside_tac_host_line(
+    host: Option<&crate::model::paragraph::Paragraph>,
+    control_index: usize,
+    para: &crate::model::paragraph::Paragraph,
+) -> bool {
+    let Some(host) = host else {
+        return false;
+    };
+    if !matches!(host.controls.get(control_index),
+        Some(Control::Table(table)) if table.common.treat_as_char)
+        || host.line_segs.is_empty()
+        || host.line_segs.iter().any(is_synthetic_line_seg)
+    {
+        return false;
+    }
+    let Some(origin) = para
+        .line_segs
+        .first()
+        .filter(|line| !is_synthetic_line_seg(line))
+        .map(|line| line.vertical_pos)
+    else {
+        return false;
+    };
+    host.line_segs
+        .iter()
+        .map(|line| line.vertical_pos.saturating_add(line.line_height))
+        .max()
+        .is_some_and(|host_end| origin < host_end)
 }

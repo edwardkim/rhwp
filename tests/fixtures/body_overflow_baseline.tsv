@@ -227,3 +227,8 @@ issue8501/child_product_safety_rule.hwp	2
 # #7700: 같은 원본의 Native/fresh WASM 전103쪽90% 이상 확인 뒤 활성 복원.
 # 최소 글꼴 Mac 전쪽 실제 진단: 본문 넘침1·글자 겹침1. 기존 이관 전 허용2/1보다 늘리지 않는다.
 issue5679/10857_delegation_rules.hwp	1
+# #8596 새 fixture 1행 — 이 PR 이 만든 결손이 아니다. 정책심의 안건 10쪽 문단 110 의 TAC 표 마지막
+# 칸(테두리 없는 "※ 심의 착안사항" 2줄, 행 13)이 본문 바닥 1009.1px 아래 1013.5px 까지 칸 상자를
+# 차지한다(+4.4px). 한컴 2022 Print PDF 10쪽도 같은 글줄 잉크가 y=1009 까지 내려가 rhwp 와 같다
+# (pdf/issue8596_policy_committee_agenda-2020.pdf, 10쪽 raw Native 97.85 / WASM 99.95).
+issue8596/policy_committee_agenda.hwp	1
