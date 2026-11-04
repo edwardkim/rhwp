@@ -17,9 +17,11 @@ pub struct Composition {
     size_ratio: f64,
     /// 덧말이면 `characters`는 본말이고, 이 글자들을 본말 위나 아래에 작게 쓴다.
     ruby: Option<Box<RubyText>>,
+    /// 테두리 없는 겹침이 전각 한 칸을 차지하는지(HWP 전각 공백 표지).
+    full_width_cell: bool,
 }
 
-crate::storage::clone_fields!(Composition, {border, owner_style, characters, spread, size_ratio, ruby});
+crate::storage::clone_fields!(Composition, {border, owner_style, characters, spread, size_ratio, ruby, full_width_cell});
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct RubyText {
@@ -138,6 +140,8 @@ impl Composition {
                 styles.char_overlap_inner_size(co.inner_char_size),
             ),
             ruby: None,
+            // 한컴은 펼친 글자끼리 겹치기를 전각 한 칸에 그린다(HWP 원문은 그 칸을 전각 공백으로 둔다).
+            full_width_cell: border.is_none() && co.expansion == 0,
         }))
     }
 
@@ -200,6 +204,7 @@ impl Composition {
                 characters: ruby_characters,
                 below: ruby.pos_type == 1,
             })),
+            full_width_cell: false,
         }))
     }
 
@@ -226,6 +231,7 @@ impl Composition {
         }
         let character = self
             .border
+            .or_else(|| self.full_width_cell.then_some('\u{3000}'))
             .or_else(|| self.characters.first().map(|v| v.0))
             // 빈 겹침도 한컴 저장본의 전각 캐리어 한 칸을 점유한다.
             .unwrap_or('\u{3000}');
