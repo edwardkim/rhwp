@@ -290,3 +290,22 @@ root Clippy는 `declared_first_frame.rs:182`의 `question_mark` 한 건으로 ex
 `historical-native-display-comparison-4b149b6cdf.tsv`, `handbook-gate-4b149b6cdf/`,
 `logs/rebase-e8b36a41aa-new-source-supplier-minfont.log`,
 `logs/rebase-7bb9e66fd0-remaining-rust-native-clippy.log`에 있다.
+
+
+## Native 완료 자료 고정과 남은 검증 분리 — 2026-11-05
+
+고정 제품 `4b149b6cdf`의 검토 입력 80건·406쪽은 전쪽 90% 이상이며 최저 91.85%다.
+PR #8389·#8397 보존 범위는 17문서·1,770쪽, 원 TSV 2,153행의 표시값 하락 0행이다.
+Native 최저 94.96164%이며 `issue7905` 전 6쪽 최저도 98.86043%다.
+실제 Native TSV·출처 명세와 원 기준 대조를 정식 자산 `pr8389_8397/`에 고정했다.
+
+새 base PR #8548의 32입력·72쪽은 같은 글꼴 환경의 base/후보 raw가 전쪽 동일하다.
+65쪽은 PNG도 동일하고 7쪽은 raw가 같아도 경계 픽셀이 달라 추가 직접 판독 대상으로 유지한다.
+compact render-tree 동일성은 직렬화하지 않는 clip·page_fragment까지 같다는 근거로 사용하지 않는다.
+필수 편람 HWPX Native 383쪽 gate도 exit 0이며 최저 99.96463%다.
+같은 고정 제품·입력·PDF·환경의 캡처를 기존 보존 범위에도 재사용해 중복 출력하지 않았다.
+
+`b90db36de7`은 Clippy가 요구한 Option 반환 문법만 바꿨다. 이 커밋의 fmt와 root Clippy,
+남은 workspace·WASM lint·Native Skia 검증을 공용 target에서 순차 실행한다.
+새 제품의 해시와 실제 영향 경로를 확인하기 전에는 위 이전 제품의 캡처를 최종 head의 새 실측으로
+표시하지 않는다. fresh WASM 전체 비교·최종 개별 리뷰 갱신과 PR 생성은 아직 완료가 아니다.

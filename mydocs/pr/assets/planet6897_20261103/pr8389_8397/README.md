@@ -2,13 +2,18 @@
 
 ## Native 전쪽 결과
 
-2026-11-04에 제품 코드 `dc87f4fa2e`를 같은 입력·독립 한컴 Print PDF와 96 DPI로
-측정했다. 색상 경계 보정 전 2px 내용 실루엣의 표시값을 비교한다.
+Native는 2026-11-04~05 실행에서 제품 코드 `4b149b6cdf`·고정 base
+`7fdd5441ff`로 다시 확인했다. 색상 경계 보정 전 2px 내용 실루엣을 96 DPI로 측정했다.
 [원 PR 기준 2,153행 대조](native-display-comparison.tsv)는 중복을 제외하면 17문서·1,770쪽이며,
 **원 PR TSV 대비 하락 0행, 누락 0쪽**이다. 전쪽 최저 94.96%, 90% 미만 0쪽이다.
-문서별 전쪽 TSV는 [native](native/)에 보존했다. fresh WASM도 [원 PR 기준 2,153행 대조](wasm-display-comparison.tsv)를 완료했다.
-원 PR TSV 대비 하락 0행, 누락 0쪽이다. 문서별 전쪽 TSV는 [wasm](wasm/)에 보존했다.
-이는 리베이스 전 제품 코드의 실측이며, 새 base `1924d371d6`의 최종 검증을 대신하지 않는다.
+문서별 전쪽 TSV는 [native](native/)에, 실제 입력·PDF·제품·TSV 해시는
+[Native 출처 명세](native-provenance.json)에 보존했다. `issue7905` 6쪽도 모두 98% 이상이다.
+
+fresh WASM의 [기존 대조](wasm-display-comparison.tsv)와 [문서별 TSV](wasm/)는
+리베이스 전 제품 코드 `dc87f4fa2e`의 실측이다. 당시 원 PR TSV 대비 하락·누락은 0이었으나,
+현재 `7bb9e66fd0` 최적화 제품의 재측정은 진행 중이므로 두 실행을 혼용하지 않는다.
+또한 `b90db36de7`의 lint 문법 수정 뒤 제품 동등성은 별도 확인 중이다.
+위 Native 값을 해당 최종 head에서 새로 렌더링한 값으로 표시하지 않는다.
 `sample10`에는 원 검증과 같은 외부 참조 그림 `oracle.gif`·`rdb02.gif`·`s1.jpg`를 공급했다.
 [입력·PDF SHA와 Git 포함 명세](inputs.tsv)에 실측 파일과 저장소 파일의 일치를 기록했다.
 

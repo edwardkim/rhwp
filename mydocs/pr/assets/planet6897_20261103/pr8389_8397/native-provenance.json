@@ -1,0 +1,501 @@
+{
+  "recorded_at": "2026-11-04T15:53:00.083280+00:00",
+  "source_code": "4b149b6cdfc514b9858ed644be2cf8120c731cd4",
+  "base": "7fdd5441ff1e77c083818e920a48089f294de35e",
+  "documents": 17,
+  "unique_pages": 1770,
+  "reference_rows": 2153,
+  "original_display_drops": 0,
+  "note": "Captured with the pinned pre-lint product; this does not claim a new render of b90db36de7. Final product equivalence is pending.",
+  "captures": [
+    {
+      "document": "issue7905",
+      "pages": 6,
+      "minimum_raw": 98.86043,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/issue7905.tsv",
+      "tsv_sha256": "b828c10e23bcef9c5e7078451d3c8d92e1cb9811a7ac3a952c084a741f6ac6fe",
+      "capture_git_head": "7bb9e66fd006109ca9f7ee4c4d3f752c82e60fae",
+      "input": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+        "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1"
+      },
+      "independent_print": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+        "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": {
+        "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/12b238520c15a3ca59b644043b2bd7b5571f8410c434650dbd3e614f9868df1b.json",
+        "sha256": "12b238520c15a3ca59b644043b2bd7b5571f8410c434650dbd3e614f9868df1b"
+      },
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    },
+    {
+      "document": "issue8040-insert",
+      "pages": 4,
+      "minimum_raw": 99.98832,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/issue8040-insert.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "capture_git_head": "7bb9e66fd006109ca9f7ee4c4d3f752c82e60fae",
+      "input": {
+        "path": "samples/pr8040/exam-social-insert.hwp",
+        "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82"
+      },
+      "independent_print": {
+        "path": "pdf/pr8040/exam-social-insert-2020.pdf",
+        "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": null,
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    },
+    {
+      "document": "issue8040-insert-delete",
+      "pages": 4,
+      "minimum_raw": 99.98832,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/issue8040-insert-delete.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "capture_git_head": "7bb9e66fd006109ca9f7ee4c4d3f752c82e60fae",
+      "input": {
+        "path": "samples/pr8040/exam-social-insert-delete.hwp",
+        "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee"
+      },
+      "independent_print": {
+        "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+        "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": null,
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    },
+    {
+      "document": "sample16-hwpx",
+      "pages": 64,
+      "minimum_raw": 99.99273,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/sample16-hwpx.tsv",
+      "tsv_sha256": "804fedcc655075b2739abaf7adfb4764c1938357fcaeaaceb62dca421ecb4f49",
+      "capture_git_head": "7bb9e66fd006109ca9f7ee4c4d3f752c82e60fae",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5.hwpx",
+        "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c"
+      },
+      "independent_print": {
+        "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+        "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": {
+        "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/c29d42359d97154b1969e59db0e07dbae204a8cdf610c216d5b8cdca96ec8fd1.json",
+        "sha256": "c29d42359d97154b1969e59db0e07dbae204a8cdf610c216d5b8cdca96ec8fd1"
+      },
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    },
+    {
+      "document": "sample16-hwp2024",
+      "pages": 64,
+      "minimum_raw": 99.99273,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/sample16-hwp2024.tsv",
+      "tsv_sha256": "804fedcc655075b2739abaf7adfb4764c1938357fcaeaaceb62dca421ecb4f49",
+      "capture_git_head": "c241f1c92953497096840646b33830d5c8472d25",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+        "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d"
+      },
+      "independent_print": {
+        "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+        "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": {
+        "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/c29d42359d97154b1969e59db0e07dbae204a8cdf610c216d5b8cdca96ec8fd1.json",
+        "sha256": "c29d42359d97154b1969e59db0e07dbae204a8cdf610c216d5b8cdca96ec8fd1"
+      },
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    },
+    {
+      "document": "sample16-hwp2022",
+      "pages": 64,
+      "minimum_raw": 100.0,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/sample16-hwp2022.tsv",
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "capture_git_head": "c241f1c92953497096840646b33830d5c8472d25",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+        "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe"
+      },
+      "independent_print": {
+        "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+        "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": {
+        "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/20e918cc9c1d1c70e4152ca12d2d76e55079a74a7a0801ce132dca697a734623.json",
+        "sha256": "20e918cc9c1d1c70e4152ca12d2d76e55079a74a7a0801ce132dca697a734623"
+      },
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    },
+    {
+      "document": "handbook-hwp",
+      "pages": 383,
+      "minimum_raw": 99.96463,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/handbook-hwp.tsv",
+      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "capture_git_head": "c241f1c92953497096840646b33830d5c8472d25",
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwp",
+        "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f"
+      },
+      "independent_print": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+        "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": {
+        "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/9d1351039b7e802f708c5c1bab199b30c612eaf4ab9a3f9561d2eee1ceb892be.json",
+        "sha256": "9d1351039b7e802f708c5c1bab199b30c612eaf4ab9a3f9561d2eee1ceb892be"
+      },
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    },
+    {
+      "document": "handbook-hwpx",
+      "pages": 383,
+      "minimum_raw": 99.96463,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/handbook-hwpx.tsv",
+      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "capture_git_head": "c241f1c92953497096840646b33830d5c8472d25",
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+        "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6"
+      },
+      "independent_print": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+        "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": {
+        "path": "/home/tsjang/rhwp/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json",
+        "sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25"
+      },
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    },
+    {
+      "document": "seo-body-list-typed",
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/seo-body-list-typed.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_git_head": "e8b36a41aa4a7699ba6d263ae38471cab68c326e",
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+        "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687"
+      },
+      "independent_print": {
+        "path": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+        "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": null,
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    },
+    {
+      "document": "seo-helvetica-styles",
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/seo-helvetica-styles.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_git_head": "e8b36a41aa4a7699ba6d263ae38471cab68c326e",
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+        "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da"
+      },
+      "independent_print": {
+        "path": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+        "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": null,
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    },
+    {
+      "document": "seo-pic-crop-01",
+      "pages": 1,
+      "minimum_raw": 99.99756,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/seo-pic-crop-01.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_git_head": "e8b36a41aa4a7699ba6d263ae38471cab68c326e",
+      "input": {
+        "path": "samples/pic-crop-01.hwp",
+        "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c"
+      },
+      "independent_print": {
+        "path": "pdf/pic-crop-01-2022.pdf",
+        "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": null,
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    },
+    {
+      "document": "seo-shape-group-02",
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/seo-shape-group-02.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_git_head": "e8b36a41aa4a7699ba6d263ae38471cab68c326e",
+      "input": {
+        "path": "samples/shape-group-02.hwp",
+        "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f"
+      },
+      "independent_print": {
+        "path": "pdf/shape-group-02-hwp-2020.pdf",
+        "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": null,
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    },
+    {
+      "document": "seo-re-03-latin",
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/seo-re-03-latin.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_git_head": "e8b36a41aa4a7699ba6d263ae38471cab68c326e",
+      "input": {
+        "path": "samples/re-03-latin-only-hancom.hwp",
+        "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f"
+      },
+      "independent_print": {
+        "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": null,
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    },
+    {
+      "document": "sample10",
+      "pages": 763,
+      "minimum_raw": 99.41135,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/sample10.tsv",
+      "tsv_sha256": "6c0d5bc0bf5cec62683cad2892a6352c6039516fd6180c55dabb8d5e7cc7ed8b",
+      "capture_git_head": "e8b36a41aa4a7699ba6d263ae38471cab68c326e",
+      "input": {
+        "path": "samples/hwp3-sample10.hwp",
+        "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48"
+      },
+      "independent_print": {
+        "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+        "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": {
+        "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/51e6f2a1b7c5d70432903c81573de4e86ba9c03fe0bfd7f39aeab7ac649ae84e.json",
+        "sha256": "51e6f2a1b7c5d70432903c81573de4e86ba9c03fe0bfd7f39aeab7ac649ae84e"
+      },
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    },
+    {
+      "document": "yeongwol",
+      "pages": 4,
+      "minimum_raw": 99.96664,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/yeongwol.tsv",
+      "tsv_sha256": "45a954603af2a2a28fb05b309e9ae53da615aa3931846819f60c62a338b10121",
+      "capture_git_head": "c241f1c92953497096840646b33830d5c8472d25",
+      "input": {
+        "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+        "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09"
+      },
+      "independent_print": {
+        "path": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+        "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": {
+        "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/3df556f880e3d97085af8da867a183dff2471ffde534aa6098d556931156e76d.json",
+        "sha256": "3df556f880e3d97085af8da867a183dff2471ffde534aa6098d556931156e76d"
+      },
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    },
+    {
+      "document": "outline",
+      "pages": 9,
+      "minimum_raw": 99.99237,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/outline.tsv",
+      "tsv_sha256": "2e90560f2542d5150f6311d7a634c5a11e4901453b4730124a5957fd1d726c84",
+      "capture_git_head": "e8b36a41aa4a7699ba6d263ae38471cab68c326e",
+      "input": {
+        "path": "samples/task3307/issue3307_outline_number.hwpx",
+        "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d"
+      },
+      "independent_print": {
+        "path": "pdf/task3307/issue3307_outline_number-2020.pdf",
+        "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": {
+        "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/d9199bb8eab35bb4ec4c6d0b30aab05a69423ab2159fd0113d64f22eaca3876c.json",
+        "sha256": "d9199bb8eab35bb4ec4c6d0b30aab05a69423ab2159fd0113d64f22eaca3876c"
+      },
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    },
+    {
+      "document": "nested",
+      "pages": 17,
+      "minimum_raw": 94.96164,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr8389_8397/native/nested.tsv",
+      "tsv_sha256": "d8b72033b81c3cb82e1557089927e869f2833fec8b9e05678d8935972bcafc57",
+      "capture_git_head": "e8b36a41aa4a7699ba6d263ae38471cab68c326e",
+      "input": {
+        "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626"
+      },
+      "independent_print": {
+        "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+        "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b"
+      },
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+        "sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f"
+      },
+      "comparison_profile": "print",
+      "font_environment": {
+        "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/52721dab8cd8d1ec7803aa8d04a9dd9f25760fbaf9982b5a3c8f3837f70c06bb.json",
+        "sha256": "52721dab8cd8d1ec7803aa8d04a9dd9f25760fbaf9982b5a3c8f3837f70c06bb"
+      },
+      "sweep": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      }
+    }
+  ]
+}
