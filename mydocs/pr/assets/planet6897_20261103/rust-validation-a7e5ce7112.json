@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-11-04T17:45:00.732560+00:00",
+  "recorded_at": "2026-11-04T18:31:36.614559+00:00",
   "source_sha": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
   "base_sha": "22947f6a90c998e95fa51238d5b907a0ebd37162",
   "target_dir": "/home/tsjang/rhwp/target/pr-review",
@@ -693,12 +693,31 @@
       "ended_at": "2026-11-04T17:43:13.400557+00:00",
       "exit_code": 0,
       "source_sha": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973"
+    },
+    {
+      "name": "latest-native-root-clippy",
+      "command": [
+        "bash",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_minfont_review.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at": "2026-11-04T18:21:03.541016+00:00",
+      "ended_at": "2026-11-04T18:24:23.585542+00:00",
+      "exit_code": 0,
+      "source_sha": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973"
     }
   ],
   "pending": [
-    "latest Native/fresh optimized WASM products and consumers",
-    "latest rebase scoped before/after checks",
-    "WASM capture completeness and same-environment base comparisons",
-    "individual review final update and PR body"
-  ]
+    "actual new-base products and scoped preservation comparison",
+    "same-environment WASM base comparison",
+    "final individual reviews, headers and PR template"
+  ],
+  "successful_gate_count": 34
 }

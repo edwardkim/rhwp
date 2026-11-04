@@ -1,0 +1,91 @@
+{
+  "recorded_at": "2026-11-04T18:36:29.261347+00:00",
+  "input": "samples/issue8491/156736331-press-logo.hwpx",
+  "before": "4b149b6cdfc514b9858ed644be2cf8120c731cd4",
+  "after": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+  "method": "actual complete RGB comparison of already captured same-page PNGs; no renderer rerun",
+  "identical": 10,
+  "pages": 10,
+  "rows": [
+    {
+      "backend": "native",
+      "page": 1,
+      "old_png_sha256": "475743d7f79f5629debd5f0e6e887f5b5d8ceb3733a479352e5da85cc73923aa",
+      "new_png_sha256": "475743d7f79f5629debd5f0e6e887f5b5d8ceb3733a479352e5da85cc73923aa",
+      "rgb_identical": true,
+      "difference_box": null
+    },
+    {
+      "backend": "native",
+      "page": 2,
+      "old_png_sha256": "e2634009dde2f488bff11b53308136fa8ac2e4dce4475b189e7307fada7f348e",
+      "new_png_sha256": "e2634009dde2f488bff11b53308136fa8ac2e4dce4475b189e7307fada7f348e",
+      "rgb_identical": true,
+      "difference_box": null
+    },
+    {
+      "backend": "native",
+      "page": 3,
+      "old_png_sha256": "c97916c5140db4eb54f3eb4f9c7cca0e23854df9fd9380a53c8160708af6e309",
+      "new_png_sha256": "c97916c5140db4eb54f3eb4f9c7cca0e23854df9fd9380a53c8160708af6e309",
+      "rgb_identical": true,
+      "difference_box": null
+    },
+    {
+      "backend": "native",
+      "page": 4,
+      "old_png_sha256": "be82508683933bc5936f7b78cdf2609713e48e871b06c196552bdd74aa7ba67d",
+      "new_png_sha256": "be82508683933bc5936f7b78cdf2609713e48e871b06c196552bdd74aa7ba67d",
+      "rgb_identical": true,
+      "difference_box": null
+    },
+    {
+      "backend": "native",
+      "page": 5,
+      "old_png_sha256": "737aaf8543d353417978c25a50ea4c4e750751d28e2a56d7153652148fb13fe2",
+      "new_png_sha256": "737aaf8543d353417978c25a50ea4c4e750751d28e2a56d7153652148fb13fe2",
+      "rgb_identical": true,
+      "difference_box": null
+    },
+    {
+      "backend": "wasm",
+      "page": 1,
+      "old_png_sha256": "93b2712666966871ca96d55a9a5478ad5b76f94c8a613072c779568888b5fad8",
+      "new_png_sha256": "93b2712666966871ca96d55a9a5478ad5b76f94c8a613072c779568888b5fad8",
+      "rgb_identical": true,
+      "difference_box": null
+    },
+    {
+      "backend": "wasm",
+      "page": 2,
+      "old_png_sha256": "65ac272df22c706850815eb23427f5f312ef7ff18c863f6cb9bff84c6298a57d",
+      "new_png_sha256": "65ac272df22c706850815eb23427f5f312ef7ff18c863f6cb9bff84c6298a57d",
+      "rgb_identical": true,
+      "difference_box": null
+    },
+    {
+      "backend": "wasm",
+      "page": 3,
+      "old_png_sha256": "5fe389a61410fdf64f5d714392e9150509d6e11ddfe59e5bf72b66419d7bc545",
+      "new_png_sha256": "5fe389a61410fdf64f5d714392e9150509d6e11ddfe59e5bf72b66419d7bc545",
+      "rgb_identical": true,
+      "difference_box": null
+    },
+    {
+      "backend": "wasm",
+      "page": 4,
+      "old_png_sha256": "4000923190c9e32a4cfe6c8ab33696dc1f7b092acfde33d9ee20fc507ec1da4d",
+      "new_png_sha256": "4000923190c9e32a4cfe6c8ab33696dc1f7b092acfde33d9ee20fc507ec1da4d",
+      "rgb_identical": true,
+      "difference_box": null
+    },
+    {
+      "backend": "wasm",
+      "page": 5,
+      "old_png_sha256": "0f76ca42461a7366ad7e56a26e8d9fa6c1db2a78d180493a23070cdbd5ac371c",
+      "new_png_sha256": "0f76ca42461a7366ad7e56a26e8d9fa6c1db2a78d180493a23070cdbd5ac371c",
+      "rgb_identical": true,
+      "difference_box": null
+    }
+  ]
+}

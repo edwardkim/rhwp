@@ -18,11 +18,11 @@ PR 생성 전 승인 대기까지 준비하는 로컬 작업이다. 검토 범�
 | 전쪽 Native | 80입력·406쪽, 최저 91.85%, 90% 미만·누락·쪽수·입력/PDF 해시 불일치 0건 |
 | 전쪽 WASM | 중단 입력 36개 복구 완료. 80입력·406쪽, 최저 raw 92.03052%, 90% 미만·누락·쪽수·입력/제품 해시 오류 0건 |
 | PR #8389·#8397 보존 범위 | Native/fresh WASM 각각 17문서·1,770쪽, 원 TSV 2,153행 표시값 하락 0행 |
-| 최신 제품 후속 검사 | fresh 최적화 WASM·실제 브라우저/API와 리베이스 영향 경계 실행 중 |
+| 최신 제품 후속 검사 | 최적화 WASM·실제 브라우저/API와 영향 3입력·7쪽씩 통과. 새 기준 제품 및 같은 환경 base 대조는 진행 중 |
 | 개별 리뷰 | 39개 작성, 37개 수용 가능 기록·2개 공통 검증 대기. 최신 head의 최종 승인 확정 0개 |
 
 [전쪽 Native/fresh WASM 산출물 감사](whole-page-capture-summary.json),
-[Rust 33개 실제 성공 게이트](rust-validation-a7e5ce7112.json)와
+[Rust 34개 실제 성공 게이트](rust-validation-a7e5ce7112.json)와
 [원 PR 39개 head 재확인](source-head-recheck-20261105.tsv)을 연결한다. 모두 Open·non-Draft이고
 리뷰어 요청이 유지되며 원 head 변경은 없다. 현재 devel은 PR metadata의 `base.sha`가 아닌
 실제 `git/ref/heads/devel`을 따로 조회해 확인했다.
@@ -33,9 +33,11 @@ TSV·PNG는 원래의 producer·base·package 해시를 유지한다. 최신 sou
 실제 실행해 확인하며, 기존 보정 대상 PR #8498의 영향 5쪽은 리베이스 전 후보와 대조한다.
 최신 후보 집중 범위는 3문서·7쪽이고 새 base 자체 대조는 그중 2문서·2쪽이다.
 
-Native 대표 증적의 중복 제외 93개 입력·쪽 조합은 실제 원본·PDF·backend·source PNG 해시와
-대응함을 확인했다. 파일 대응 감사와 직접 판독·최종 승인 판정은 구분한다. WASM의 같은
-대표 증적 연결과 같은 환경 base 대조는 진행 중이다.
+[최신 제품 실행](latest-product-validation-a7e5ce7112.json)과
+[리베이스 영향 경계의 실제 전쪽 TSV·대표 PNG](rebase_scope_22947f6a90/README.md)를 별도로 보존한다.
+
+Native/fresh WASM 대표 증적의 중복 제외 93개 입력·쪽 조합은 실제 원본·PDF·backend·source PNG 해시와
+대응함을 확인했다. 파일 대응 감사와 직접 판독·최종 승인 판정은 구분한다. 같은 환경 base 대조는 진행 중이다.
 
 설치 글꼴이 없는 환경의 회귀와 전체 시스템 글꼴을 공급한 독립 Print 시각 측정은 별도 계약이다.
 원본·독립 PDF·실제 글꼴 공급/대체·DPI·프로필·조판 세대와 Native/fresh WASM 해시는 최종

@@ -1,0 +1,306 @@
+[
+  {
+    "pr": 8498,
+    "input": "samples/issue8491/156736331-press-logo.hwpx",
+    "pdf": "pdf/issue8491/156736331-press-logo-2022.pdf",
+    "page": 2,
+    "backend": "native",
+    "producer_code": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+    "raw": 99.94894,
+    "input_sha256": "b95e0a460042895aeebc60779479f0bb439bc51d5e7643fcb224cfb3595bce93",
+    "pdf_sha256": "099c4d8c1bd51f409494eb811bb6e99093e95e198e7ffbc638afe345363c5dec",
+    "native_product": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+      "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+      "sha256": "69113f81385355d22811a526ba8dd3e15c90bdffb58f858eddc59be4aef6c62b"
+    },
+    "wasm_product": null,
+    "files": {
+      "review": {
+        "path": "output/pr-review/planet6897-20261103/rebase-22947f6a90-panels/native/pr8498-p002/review/review_002.png",
+        "sha256": "96e3d63e5cff2683d6fbfb6eb3d756df1d1e9cf81449836d15c819eadc257207",
+        "committed_asset": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/pr8498-p002-native-review.png"
+      },
+      "overlay": {
+        "path": "output/pr-review/planet6897-20261103/rebase-22947f6a90-panels/native/pr8498-p002/overlay/overlay_002.png",
+        "sha256": "5c345fa11105f4d518fe46d98826722d6877b3bfb77503bf7a69bb20976841c4",
+        "committed_asset": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/pr8498-p002-native-overlay.png"
+      }
+    },
+    "direct_reading_current_checkpoint": false
+  },
+  {
+    "pr": 8498,
+    "input": "samples/issue8491/156736331-press-logo.hwpx",
+    "pdf": "pdf/issue8491/156736331-press-logo-2022.pdf",
+    "page": 5,
+    "backend": "native",
+    "producer_code": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+    "raw": 92.45232,
+    "input_sha256": "b95e0a460042895aeebc60779479f0bb439bc51d5e7643fcb224cfb3595bce93",
+    "pdf_sha256": "099c4d8c1bd51f409494eb811bb6e99093e95e198e7ffbc638afe345363c5dec",
+    "native_product": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+      "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+      "sha256": "69113f81385355d22811a526ba8dd3e15c90bdffb58f858eddc59be4aef6c62b"
+    },
+    "wasm_product": null,
+    "files": {
+      "review": {
+        "path": "output/pr-review/planet6897-20261103/rebase-22947f6a90-panels/native/pr8498-p005/review/review_005.png",
+        "sha256": "5e50221a749705fcd6874479eed7ad675fc1d8865eba18cbb2d972b187627f95",
+        "committed_asset": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/pr8498-p005-native-review.png"
+      },
+      "overlay": {
+        "path": "output/pr-review/planet6897-20261103/rebase-22947f6a90-panels/native/pr8498-p005/overlay/overlay_005.png",
+        "sha256": "500c419c57f0915dca9217c160b7f2838a8b0f0da61be9016ddaed51ca472e9b",
+        "committed_asset": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/pr8498-p005-native-overlay.png"
+      }
+    },
+    "direct_reading_current_checkpoint": false
+  },
+  {
+    "pr": 8585,
+    "input": "samples/issue7524/textbox_tac_picture_rows.hwp",
+    "pdf": "pdf/issue7524/textbox_tac_picture_rows-webhwp-print.pdf",
+    "page": 1,
+    "backend": "native",
+    "producer_code": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+    "raw": 99.95891,
+    "input_sha256": "ffc0a66e92b10ec2ea10167bca2a2721c68a4207aed4acf5b381ab5e7ca18d36",
+    "pdf_sha256": "212f1c608c99a1a427aa5302046d8479afb0a16fecc19c2fcf62afb7212653a5",
+    "native_product": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+      "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+      "sha256": "69113f81385355d22811a526ba8dd3e15c90bdffb58f858eddc59be4aef6c62b"
+    },
+    "wasm_product": null,
+    "files": {
+      "review": {
+        "path": "output/pr-review/planet6897-20261103/rebase-22947f6a90-panels/native/pr8585-p001/review/review_001.png",
+        "sha256": "5aaadda40e58d0d81278720656a8919fbc07a0aa0c3661c20f64996a138cddda",
+        "committed_asset": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/pr8585-p001-native-review.png"
+      },
+      "overlay": {
+        "path": "output/pr-review/planet6897-20261103/rebase-22947f6a90-panels/native/pr8585-p001/overlay/overlay_001.png",
+        "sha256": "51364632abda68df52702cf94ac9d0f74595ef38b9827f24c23d4e75c360b0b0",
+        "committed_asset": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/pr8585-p001-native-overlay.png"
+      }
+    },
+    "direct_reading_current_checkpoint": true
+  },
+  {
+    "pr": 8122,
+    "input": "samples/issue8122/textbox_valign_no_lineseg.hwp",
+    "pdf": "pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf",
+    "page": 1,
+    "backend": "native",
+    "producer_code": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+    "raw": 99.9275,
+    "input_sha256": "de374075cfc2c1ef945d3795bba194b90dc42d759caf8b478c603d4777cfb8ff",
+    "pdf_sha256": "0cfca5740c6fc9aaadf9db814e6e0503850d1f56013eb4bdda895bbc80dd0023",
+    "native_product": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+      "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+      "sha256": "69113f81385355d22811a526ba8dd3e15c90bdffb58f858eddc59be4aef6c62b"
+    },
+    "wasm_product": null,
+    "files": {
+      "review": {
+        "path": "output/pr-review/planet6897-20261103/rebase-22947f6a90-panels/native/pr8122-p001/review/review_001.png",
+        "sha256": "1a79a4ad74e7f8677ddc07e88c7fab9f5797acc04279448d84fd0b574598e423",
+        "committed_asset": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/pr8122-p001-native-review.png"
+      },
+      "overlay": {
+        "path": "output/pr-review/planet6897-20261103/rebase-22947f6a90-panels/native/pr8122-p001/overlay/overlay_001.png",
+        "sha256": "68163fb45046903adf40e69bd9d224c948956b76707930aac42c60ad436e5101",
+        "committed_asset": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/pr8122-p001-native-overlay.png"
+      }
+    },
+    "direct_reading_current_checkpoint": false
+  },
+  {
+    "pr": 8498,
+    "input": "samples/issue8491/156736331-press-logo.hwpx",
+    "pdf": "pdf/issue8491/156736331-press-logo-2022.pdf",
+    "page": 2,
+    "backend": "wasm",
+    "producer_code": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+    "raw": 99.98598,
+    "input_sha256": "b95e0a460042895aeebc60779479f0bb439bc51d5e7643fcb224cfb3595bce93",
+    "pdf_sha256": "099c4d8c1bd51f409494eb811bb6e99093e95e198e7ffbc638afe345363c5dec",
+    "native_product": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+      "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+      "sha256": "69113f81385355d22811a526ba8dd3e15c90bdffb58f858eddc59be4aef6c62b"
+    },
+    "wasm_product": {
+      "files": [
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/producer-packages/rebase-a7e5ce7112/rhwp.js",
+          "sha256": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/producer-packages/rebase-a7e5ce7112/rhwp_bg.wasm",
+          "sha256": "5b9319147bb66ad1f316354d9c3613f37ec34bb522323915abbb3d6591df12f2"
+        }
+      ],
+      "exporter_sha256": "2d4cc3fbbdf4b4f528aa683649434221a783300e821fe68aaa2ae1e1b63220ee",
+      "font_registration_sha256": "5259038f8caad1f1c1a0dd9c2106589350a7d41ef8c5916c0108a1675951f9fe",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "files": {
+      "review": {
+        "path": "output/pr-review/planet6897-20261103/rebase-22947f6a90-panels/wasm/pr8498-p002/review/review_002.png",
+        "sha256": "21310ce3e00e75bdd44978f3312b11a4a5dad739fae6fce2a798fc3c151513c5",
+        "committed_asset": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/pr8498-p002-wasm-review.png"
+      },
+      "overlay": {
+        "path": "output/pr-review/planet6897-20261103/rebase-22947f6a90-panels/wasm/pr8498-p002/overlay/overlay_002.png",
+        "sha256": "15622ac2ee98f30f67ac855d464fc21e0d8dc6e6209297c2c87cde813e60d192",
+        "committed_asset": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/pr8498-p002-wasm-overlay.png"
+      }
+    },
+    "direct_reading_current_checkpoint": false
+  },
+  {
+    "pr": 8498,
+    "input": "samples/issue8491/156736331-press-logo.hwpx",
+    "pdf": "pdf/issue8491/156736331-press-logo-2022.pdf",
+    "page": 5,
+    "backend": "wasm",
+    "producer_code": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+    "raw": 93.0547,
+    "input_sha256": "b95e0a460042895aeebc60779479f0bb439bc51d5e7643fcb224cfb3595bce93",
+    "pdf_sha256": "099c4d8c1bd51f409494eb811bb6e99093e95e198e7ffbc638afe345363c5dec",
+    "native_product": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+      "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+      "sha256": "69113f81385355d22811a526ba8dd3e15c90bdffb58f858eddc59be4aef6c62b"
+    },
+    "wasm_product": {
+      "files": [
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/producer-packages/rebase-a7e5ce7112/rhwp.js",
+          "sha256": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/producer-packages/rebase-a7e5ce7112/rhwp_bg.wasm",
+          "sha256": "5b9319147bb66ad1f316354d9c3613f37ec34bb522323915abbb3d6591df12f2"
+        }
+      ],
+      "exporter_sha256": "2d4cc3fbbdf4b4f528aa683649434221a783300e821fe68aaa2ae1e1b63220ee",
+      "font_registration_sha256": "5259038f8caad1f1c1a0dd9c2106589350a7d41ef8c5916c0108a1675951f9fe",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "files": {
+      "review": {
+        "path": "output/pr-review/planet6897-20261103/rebase-22947f6a90-panels/wasm/pr8498-p005/review/review_005.png",
+        "sha256": "1651f1466d20eec4142aefb64ec355bf34a9e25aa010af21890fa4082e979609",
+        "committed_asset": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/pr8498-p005-wasm-review.png"
+      },
+      "overlay": {
+        "path": "output/pr-review/planet6897-20261103/rebase-22947f6a90-panels/wasm/pr8498-p005/overlay/overlay_005.png",
+        "sha256": "1147a0eb844d1a652c3341e095c79a52b301e42022d3d3bc6d7ebde9b4706049",
+        "committed_asset": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/pr8498-p005-wasm-overlay.png"
+      }
+    },
+    "direct_reading_current_checkpoint": false
+  },
+  {
+    "pr": 8585,
+    "input": "samples/issue7524/textbox_tac_picture_rows.hwp",
+    "pdf": "pdf/issue7524/textbox_tac_picture_rows-webhwp-print.pdf",
+    "page": 1,
+    "backend": "wasm",
+    "producer_code": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+    "raw": 99.96404,
+    "input_sha256": "ffc0a66e92b10ec2ea10167bca2a2721c68a4207aed4acf5b381ab5e7ca18d36",
+    "pdf_sha256": "212f1c608c99a1a427aa5302046d8479afb0a16fecc19c2fcf62afb7212653a5",
+    "native_product": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+      "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+      "sha256": "69113f81385355d22811a526ba8dd3e15c90bdffb58f858eddc59be4aef6c62b"
+    },
+    "wasm_product": {
+      "files": [
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/producer-packages/rebase-a7e5ce7112/rhwp.js",
+          "sha256": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/producer-packages/rebase-a7e5ce7112/rhwp_bg.wasm",
+          "sha256": "5b9319147bb66ad1f316354d9c3613f37ec34bb522323915abbb3d6591df12f2"
+        }
+      ],
+      "exporter_sha256": "2d4cc3fbbdf4b4f528aa683649434221a783300e821fe68aaa2ae1e1b63220ee",
+      "font_registration_sha256": "5259038f8caad1f1c1a0dd9c2106589350a7d41ef8c5916c0108a1675951f9fe",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "files": {
+      "review": {
+        "path": "output/pr-review/planet6897-20261103/rebase-22947f6a90-panels/wasm/pr8585-p001/review/review_001.png",
+        "sha256": "08b64c12acff47ea398bf79d2d57d04b6b2f55f59b06256f2f91b786341ba70a",
+        "committed_asset": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/pr8585-p001-wasm-review.png"
+      },
+      "overlay": {
+        "path": "output/pr-review/planet6897-20261103/rebase-22947f6a90-panels/wasm/pr8585-p001/overlay/overlay_001.png",
+        "sha256": "a1a9335a648ac65f328a54a916e66adc9a3b6500f47c39f59e671a57e48a726a",
+        "committed_asset": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/pr8585-p001-wasm-overlay.png"
+      }
+    },
+    "direct_reading_current_checkpoint": true
+  },
+  {
+    "pr": 8122,
+    "input": "samples/issue8122/textbox_valign_no_lineseg.hwp",
+    "pdf": "pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf",
+    "page": 1,
+    "backend": "wasm",
+    "producer_code": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+    "raw": 99.92779,
+    "input_sha256": "de374075cfc2c1ef945d3795bba194b90dc42d759caf8b478c603d4777cfb8ff",
+    "pdf_sha256": "0cfca5740c6fc9aaadf9db814e6e0503850d1f56013eb4bdda895bbc80dd0023",
+    "native_product": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+      "path": "output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+      "sha256": "69113f81385355d22811a526ba8dd3e15c90bdffb58f858eddc59be4aef6c62b"
+    },
+    "wasm_product": {
+      "files": [
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/producer-packages/rebase-a7e5ce7112/rhwp.js",
+          "sha256": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/producer-packages/rebase-a7e5ce7112/rhwp_bg.wasm",
+          "sha256": "5b9319147bb66ad1f316354d9c3613f37ec34bb522323915abbb3d6591df12f2"
+        }
+      ],
+      "exporter_sha256": "2d4cc3fbbdf4b4f528aa683649434221a783300e821fe68aaa2ae1e1b63220ee",
+      "font_registration_sha256": "5259038f8caad1f1c1a0dd9c2106589350a7d41ef8c5916c0108a1675951f9fe",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "files": {
+      "review": {
+        "path": "output/pr-review/planet6897-20261103/rebase-22947f6a90-panels/wasm/pr8122-p001/review/review_001.png",
+        "sha256": "9c0579adcfad0daee615d883224754f3f8608a07882148983518ea032882c79b",
+        "committed_asset": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/pr8122-p001-wasm-review.png"
+      },
+      "overlay": {
+        "path": "output/pr-review/planet6897-20261103/rebase-22947f6a90-panels/wasm/pr8122-p001/overlay/overlay_001.png",
+        "sha256": "a00677d29af46b0283342b8702f55b3189957a1f84b0c2319d70bc75fda89a8c",
+        "committed_asset": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/pr8122-p001-wasm-overlay.png"
+      }
+    },
+    "direct_reading_current_checkpoint": false
+  }
+]

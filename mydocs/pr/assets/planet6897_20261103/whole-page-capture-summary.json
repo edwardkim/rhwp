@@ -34,10 +34,9 @@
   "latest_validation_source": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
   "latest_base": "22947f6a90c998e95fa51238d5b907a0ebd37162",
   "remaining_gates": [
-    "latest optimized WASM and actual browser/API consumers",
-    "same-environment WASM base comparison and inherited feature checks",
-    "scoped current-source before/after visual checks",
-    "final image reading, individual review/comment headers, PR template completion"
+    "same-environment WASM base comparison and actual inherited feature base/candidate checks",
+    "final image reading, individual review/comment headers and PR template completion"
   ],
-  "final_approval": false
+  "final_approval": false,
+  "latest_product_checks": "Optimized package, real browser/Workers/API and 3 input / 7 page per backend audit completed; see latest-product-validation-a7e5ce7112.json"
 }

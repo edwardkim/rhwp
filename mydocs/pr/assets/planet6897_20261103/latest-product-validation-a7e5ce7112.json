@@ -1,0 +1,318 @@
+{
+  "recorded_at": "2026-11-04T18:31:36.749179+00:00",
+  "source_sha": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+  "base_sha": "22947f6a90c998e95fa51238d5b907a0ebd37162",
+  "native_product": {
+    "source": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+    "binary": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+    "sha256": "69113f81385355d22811a526ba8dd3e15c90bdffb58f858eddc59be4aef6c62b",
+    "previous_binary": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-4b149b6cdf",
+    "previous_sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f",
+    "profile": "release-test",
+    "features": [
+      "native-skia"
+    ],
+    "jobs": 8,
+    "build_exit": 0,
+    "recorded_at": "2026-11-04T17:53:07.957505+00:00",
+    "byte_identical": false
+  },
+  "wasm_product": {
+    "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+    "rhwp_bg.wasm": "5b9319147bb66ad1f316354d9c3613f37ec34bb522323915abbb3d6591df12f2"
+  },
+  "actual_browser": {
+    "assertions": 271,
+    "workers": 17,
+    "rendered_saved_pages": 12,
+    "exit_code": 0
+  },
+  "public_api": {
+    "tests": 2,
+    "passed": 2,
+    "scope": "Number split/save/reopen compatibility; six photos in three rows/two columns with aligned columns",
+    "limitation": "Number public API also passed the old product and is not a detector for the internal char_count defect"
+  },
+  "producer_parity": {
+    "outputs": 4,
+    "byte_identical": 4,
+    "comparison": "New WASM actual PDF-import/edit outputs vs previously captured Native outputs; not a new Native importer execution"
+  },
+  "checks": [
+    {
+      "name": "focused-issue_8472_cell_picture_anchor",
+      "command": [
+        "bash",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_minfont_review.sh",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "--cargo-test",
+        "issue_8472_cell_picture_anchor",
+        "--",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "source_context": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+      "started_at": "2026-11-04T17:43:17.706712+00:00",
+      "ended_at": "2026-11-04T17:43:19.898633+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "focused-issue_8529_accepted_opening_frame",
+      "command": [
+        "bash",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_minfont_review.sh",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "--cargo-test",
+        "issue_8529_accepted_opening_frame",
+        "--",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "source_context": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+      "started_at": "2026-11-04T17:43:19.899417+00:00",
+      "ended_at": "2026-11-04T17:43:21.549053+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "focused-issue_7524_textbox_tac_picture_rows",
+      "command": [
+        "bash",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_minfont_review.sh",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "--cargo-test",
+        "issue_7524_textbox_tac_picture_rows",
+        "--",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "source_context": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+      "started_at": "2026-11-04T17:43:21.550197+00:00",
+      "ended_at": "2026-11-04T17:43:48.250436+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "focused-issue_6699_textbox_table_inline_pictures",
+      "command": [
+        "bash",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_minfont_review.sh",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "--cargo-test",
+        "issue_6699_textbox_table_inline_pictures",
+        "--",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "source_context": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+      "started_at": "2026-11-04T17:43:48.251861+00:00",
+      "ended_at": "2026-11-04T17:43:49.622496+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "focused-issue_8122_textbox_valign_no_lineseg",
+      "command": [
+        "bash",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_minfont_review.sh",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "--cargo-test",
+        "issue_8122_textbox_valign_no_lineseg",
+        "--",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "source_context": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+      "started_at": "2026-11-04T17:43:49.631997+00:00",
+      "ended_at": "2026-11-04T17:44:12.207036+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "native-build",
+      "command": [
+        "bash",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_minfont_review.sh",
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "source_context": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+      "started_at": "2026-11-04T17:44:12.207921+00:00",
+      "ended_at": "2026-11-04T17:53:06.844813+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "native-pin",
+      "command": [
+        "python3",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/pin_rebased_native_product.py"
+      ],
+      "source_context": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+      "started_at": "2026-11-04T17:53:07.076041+00:00",
+      "ended_at": "2026-11-04T17:53:07.995338+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "wasm-build",
+      "command": [
+        "sh",
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg"
+      ],
+      "source_context": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+      "started_at": "2026-11-04T17:53:08.011502+00:00",
+      "ended_at": "2026-11-04T18:15:14.815400+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "public-api-after",
+      "command": [
+        "node",
+        "--test",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rebase-22947f6a90-public-api.test.mjs"
+      ],
+      "source_context": "498e064d01063671d8b78c6bd5b4bfb9f742207a",
+      "started_at": "2026-11-04T18:15:15.431144+00:00",
+      "ended_at": "2026-11-04T18:15:16.812562+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "wasm-browser-runtime",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/pdf-import-wasm.test.mjs"
+      ],
+      "source_context": "498e064d01063671d8b78c6bd5b4bfb9f742207a",
+      "started_at": "2026-11-04T18:15:16.821431+00:00",
+      "ended_at": "2026-11-04T18:15:41.326980+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "wasm-producer-parity",
+      "command": [
+        "node",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/check-wasm-producer-parity.mjs"
+      ],
+      "source_context": "498e064d01063671d8b78c6bd5b4bfb9f742207a",
+      "started_at": "2026-11-04T18:15:41.340542+00:00",
+      "ended_at": "2026-11-04T18:15:56.271645+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "focused-visual-native",
+      "command": [
+        "python3",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_visual_pairs.py",
+        "native",
+        "--pairs",
+        "rebase-22947f6a90-focused-pairs.tsv",
+        "--code-label",
+        "a7e5ce7112",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+        "--page-workers",
+        "1"
+      ],
+      "source_context": "498e064d01063671d8b78c6bd5b4bfb9f742207a",
+      "started_at": "2026-11-04T18:15:56.284570+00:00",
+      "ended_at": "2026-11-04T18:17:08.624555+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "focused-visual-wasm",
+      "command": [
+        "python3",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_visual_pairs.py",
+        "wasm",
+        "--pairs",
+        "rebase-22947f6a90-focused-pairs.tsv",
+        "--code-label",
+        "a7e5ce7112",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-candidate-rebase-a7e5ce7112",
+        "--page-workers",
+        "1",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/producer-packages/rebase-a7e5ce7112"
+      ],
+      "source_context": "498e064d01063671d8b78c6bd5b4bfb9f742207a",
+      "started_at": "2026-11-04T18:17:08.625579+00:00",
+      "ended_at": "2026-11-04T18:21:01.023571+00:00",
+      "exit_code": 0
+    }
+  ],
+  "primary_studio_sync": {
+    "recorded_at": "2026-11-04T18:25:32.543829+00:00",
+    "producer_source": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+    "package": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/producer-packages/rebase-a7e5ce7112",
+    "method": "Atomic generated-artifact synchronization after optimized build and actual browser/API verification; JS unchanged, WASM updated. No user browser reload was invoked.",
+    "files": [
+      {
+        "path": "pkg/rhwp.js",
+        "before_sha256": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "after_sha256": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "changed": false
+      },
+      {
+        "path": "pkg/rhwp_bg.wasm",
+        "before_sha256": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1",
+        "after_sha256": "5b9319147bb66ad1f316354d9c3613f37ec34bb522323915abbb3d6591df12f2",
+        "changed": true
+      },
+      {
+        "path": "rhwp-studio/public/rhwp.js",
+        "before_sha256": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "after_sha256": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "changed": false
+      },
+      {
+        "path": "rhwp-studio/public/rhwp_bg.wasm",
+        "before_sha256": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1",
+        "after_sha256": "5b9319147bb66ad1f316354d9c3613f37ec34bb522323915abbb3d6591df12f2",
+        "changed": true
+      }
+    ],
+    "type_bindings": "byte-identical to pinned fresh package",
+    "git_note": "WASM outputs are ignored; no source/test/JS change introduced"
+  },
+  "remaining": [
+    "actual new-base and candidate feature comparison",
+    "same-environment old-base WASM corpus comparison",
+    "final direct reading, individual reviews, headers and PR body"
+  ],
+  "final_approval": false
+}
