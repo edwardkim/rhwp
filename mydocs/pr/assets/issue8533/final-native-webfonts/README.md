@@ -4,6 +4,7 @@ Issue: #8533. 검증 제품 소스는 `c031a38a41670f5e4f6ab0268ef46c62ab1445f5`
 
 - [원본·독립 Print PDF](input-index.md)
 - [전쪽 TSV 원본과 정밀 raw 값](tsv-index.md)
+- [현재 호스트의 원 PR 36문서 base/후보 대조](wasm-corpus-base-candidate.tsv) · [생산 신원·범위](wasm-corpus-base-candidate.json)
 - [대표 raw·review·overlay](png-index.md)
 - [실제 소비 경로·프로그램 공급·응답 해시](consumer-evidence.md)
 - [검증 실행·Rust 검사 소스 동일성](gate-results.md)
