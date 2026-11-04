@@ -124,3 +124,29 @@ ignored output의 `accepted-frame-4e182b94c4-native/pr8530-accepted-frame/`에
 이는 리베이스 전 고정 제품의 원인 확인 결과다. 새 base `782ab3e2d0` 반영 뒤의
 최종 Native/fresh WASM 출력으로 표기하지 않는다. fresh WASM 전쪽·확대 판독과
 정상 대조군을 완료한 뒤 새 프레임 관계 회귀를 추가하고 개별 리뷰를 최종 갱신한다.
+
+## 새 base 제품의 양쪽 전쪽·새 회귀 확인
+
+코드 `dd0ac546e3389f1703e67cb86f1c5bdf615ff0c9`의 Native/fresh WASM 전3쪽을
+새로 출력했다. Native는 99.94% / 100.00% / 100.00%, fresh WASM은
+99.96% / 100.00% / 100.00%다. 1·2쪽의 실제 review·overlay를 다시 생성해
+첫 프레임과 마지막 행·중첩 셀 경계·다음 조각의 시작을 독립 PDF와 직접 확인했다.
+새 Native의 세 PNG는 앞선 고정 제품 `4e182b94c4`의 세 PNG와도 바이트가 같다.
+
+원본 XML의 선언 68,454 HU를 독립 기대 크기로 사용하는 별도 검사
+`issue_8529_accepted_opening_frame::accepted_source_frame_is_not_extended_into_the_page_bottom_band`를
+추가했다. 표의 크기뿐 아니라 실제 끝 행을 포함한 셀의 포함, 첫 조각·다음 조각의
+내용 소유·보존·중복 여부를 확인한다. 첫 쪽의 양쪽 raw 98% 이상·직접 판독을 완료해
+±2 CSSpx 조건을 충족한다. 설치 글꼴을 요구하거나 글꼴이 없으면 건너뛰지 않는다.
+
+원본 XML과 수정 전·후 실제 렌더 트리를 같은 검사 조건에 대조했다.
+원본 912.72px에 대해 수정 전 상자는 934.5px로 조건을 위반하고, 수정 후는 913.0px로
+통과했다. 이 별도 진단과 새 Rust 검사 실행은 구분한다. 새 Rust 검사는 최소 글꼴 5개를
+노출한 Native Skia 기능 환경에서 1건 통과했다(exit 0, 나머지 304건은 집중 필터 제외).
+기존 컷 회귀의 assertion은 유지하고 측정 주석만 현재 근거로 갱신했다.
+
+현재 정식 전쪽 TSV·1·2쪽 review/overlay와 해시는
+`mydocs/pr/pr_8530_review.md`에 연결했다. 원시 실행은 ignored output의
+`logs/accepted-frame-regression-minfont.log`,
+`logs/accepted-frame-independent-before-after.json`에 있다.
+최종 전체 Rust·Skia·lint·새 base 비교와 다른 원 PR의 보존 검증은 아직 완료 전이다.
