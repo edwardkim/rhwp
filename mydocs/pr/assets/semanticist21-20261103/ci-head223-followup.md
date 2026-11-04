@@ -20,6 +20,62 @@ Native CI의 `cli_exit_codes_native::png_json_metadata_and_render_preserve_featu
 
 기존 실제 암호 HWPX CLI 회귀에 RHWP_LAYOUT_DEBUG와 제거한 채널을 추가한다. 정상 SVG 산출은 유지하며 보정 전/후를 실제 binary로 확인한다. 시각 증거는 조판 계산 동일성을 확인해 이미 검증한 Native/fresh WASM producer와 구분해 재사용한다.
 
-## 검증 상태
+## 최종 로컬 보정 검증
 
-현재 로컬 보정 중이며 아직 새 head를 push하지 않았다. 정확한 Native CI 목록·Rust lint·workspace·stock 회귀와 보호 문서 실제 CLI 검증을 완료한 뒤 같은 PR의 새 head를 제출한다. 원 PR의 기여 commit·CI 시간 예산·기존 검사를 유지하며, 기존 223 head의 다른 CI도 완료까지 관찰한다.
+보정 code head `5e374d01f641745d20bc9424ce233021a327ed16`에서 아래 검사를 완료했다. 검증 source를 바꾸지 않은 문서-only 제출 commit은 별도로 확인한다. CI의 Native release-test 22개 명령을 target·profile·feature·인자 그대로 실행했고 Cargo의 lock 강제만 추가했다. private/system 글꼴을 가리고 저장소의 허용 글꼴 5개만 노출한 최소 환경을 유지했다.
+
+- stock 전체: **Summary [ 604.964s] 12475 tests run: 12475 passed (1 slow), 45 skipped**.
+- Native CI 목록 합계: **192 PASS**, 실패 0건. 아래에서 library filter와 각 integration target을 구분한다.
+- Native 라이브러리 전체 재확인: **4,040 PASS / 12 ignored**, 실패 0건. CI의 skia filter 58건을 전체 4,040건으로 과장하지 않고 별도 실행했다.
+- 추가 Native 실제 출처 계약: 11 PASS.
+- 기존 실제 암호 HWPX CLI 회귀: 전체 실행 안에서 PASS했고 별도의 실제 export에서도 정상 SVG 생성·선택한 7개 진단 prefix 부재를 확인했다.
+
+| Native CI target | PASS | ignored | 컴파일 포함 초 |
+| --- | ---: | ---: | ---: |
+| skia-lib | 58 | 0 | 334.92 |
+| cli_exit_codes_native | 2 | 0 | 304.75 |
+| issue_1144_native | 1 | 0 | 2.48 |
+| issue_2225_missing_picture_placeholder | 2 | 0 | 15.41 |
+| render_p37_direct_pdf_export | 22 | 0 | 19.45 |
+| issue_7950_pdf_paint | 4 | 0 | 18.99 |
+| issue_2083_hide_fill_page_background | 1 | 0 | 0.77 |
+| issue_2292_chart_png_clip | 1 | 0 | 15.43 |
+| issue_2293_chart_png_text | 2 | 0 | 1.66 |
+| issue_7820_sixel_contract | 7 | 0 | 14.43 |
+| issue_8150_kitty_contract | 8 | 0 | 14.37 |
+| issue_4961_font_decision_trace | 12 | 0 | 18.28 |
+| issue_7902_original_frame_and_content | 7 | 0 | 20.52 |
+| issue_8160_hwp2022_paragraph_relations | 3 | 0 | 16.59 |
+| native_fractional_glyph_origin | 4 | 0 | 11.94 |
+| skia_native_glyph_replay | 10 | 0 | 18.10 |
+| issue_8153_opaque_mixed_axis_image_sampling | 2 | 0 | 22.39 |
+| issue_8153_print_glyph_geometry | 5 | 0 | 15.94 |
+| issue_8153_symbol_fallback | 1 | 0 | 14.80 |
+| issue_536_native_region_cache | 21 | 0 | 0.91 |
+| skia_region_plan | 10 | 0 | 14.46 |
+| skia_host_surface | 9 | 0 | 15.07 |
+
+| 나머지 게이트 | 종료 | 컴파일 포함 초 |
+| --- | ---: | ---: |
+| fmt | 0 | 23.79 |
+| manifest-prepare | 0 | 1.48 |
+| manifest-check | 0 | 0.71 |
+| unit-tiers | 0 | 1.58 |
+| clippy-root | 0 | 50.04 |
+| clippy-workspace | 0 | 70.78 |
+| clippy-wasm | 0 | 44.44 |
+| workspace-build | 0 | 46.29 |
+| full-nextest | 0 | 1400.84 |
+| native-provenance | 0 | 7.84 |
+
+### 실제 반례와 검증 한계
+
+출처 보정 전 ef6 Native binary는 table-vpos-01.hwp의 metadata-only 응답에 nativeFontSupply/fontEnvironment를 실제 싣고도 untrustedContent=false·빈 untrustedFields를 반환했다. 출처 선언을 보정한 실제 binary는 같은 요청에 true와 두 경로를 반환하며, 수정한 Native CLI 검사가 metadata-only/실제 PNG 양쪽에서 PASS했다. 기대값을 출력 품질·좌표에 맞춘 것이 아니다.
+
+기존 실제 암호 fixture는 이전 binary에서도 이번 새 세 진단 그룹을 직접 실행하지 않았다. 따라서 해당 fixture를 새 세 경로의 runtime 보정 전 FAIL 증거로 보고하지 않는다. 원래 H4 세 채널의 과거 음성/양성 대조는 유지하고, 이번 새 세 sink의 독립 before/after 판정은 CodeQL 결과를 확인한다. 새 head CodeQL 성공 전에는 해당 보정을 최종 완료로 판정하지 않는다. 경고 분류·query·workflow·판정 기준은 바꾸지 않았다.
+
+### 조판 증거의 재사용 근거
+
+223 → 5e의 제품 diff는 paragraph_layout.rs의 진단 출력과 로그 전용 순수 계산 제거다. 실제 text_y/y/line_height·원점·높이·줄 소유·분할·본문 점유·cell overflow 집계·paint·저장 계산은 같다. blank_spacer_line과 equation_only_endnote_tail_line은 후속 내용 점유에도 쓰이므로 유지했다. 제거한 미주 log tolerance getter는 layout.rs:4454의 세 Cell.get 비교와 순수 허용치 조건뿐이며 상태를 바꾸지 않는다. raw fallback은 원래 y_clamped=y를 그대로 소비한다.
+
+따라서 [Native/fresh WASM 32개 입력·72쪽, 실제 14개 역할·175쪽과 필수 Native 편람 383쪽](rebase-validation.md)의 renderer producer·SHA·TSV·직접 판독을 그대로 연결한다. 이 보정에서 새 픽셀을 측정했다고 바꾸어 적지 않는다. 새 레이아웃·baseline·px assertion을 추가하지 않았다. 실제 source와 계산 경로를 대조한 로그 보안 후속 보정으로 한정한다.

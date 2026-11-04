@@ -83,3 +83,7 @@ composer_without_stored_lines의 공통 줄 메트릭 → section vpos 누적 �
 현재 후보 `696240b004707a6686864f94130befe3dd7f213e`, 통합 base `1924d371d6757392d063b8dc2e9bbe9a298be817`다. [최신 전쪽·실제 API·저장·필수 편람 결과](assets/semanticist21-20261103/rebase-validation.md)와 [직접 판독](assets/semanticist21-20261103/direct-review.md)의 최신 devel 절이 아래 제출 기준이다. 과거 c6ad/e68/H4의 결과를 이 후보의 새 실행으로 표시하지 않는다. 제품 렌더링 source가 같은 Native producer와 새 fresh WASM 실행을 명시적으로 구분한다.
 
 stock nextest 12,475 PASS / 45 skip, Native 필수 3종·출처 계약·Rust lint·workspace·doc test·최적화 WASM·Studio 2,717건·운영 계약 275건을 통과했다. Native/WASM 각각 32개 입력·72쪽의 전쪽 raw 90% 미만과 누락·쪽수 불일치는 없다. 최신 base의 Native 편람 383쪽 gate도 최저 99.96465%·기준 대비 하락 0쪽으로 통과했다.
+
+## 223 head CI 후속 보정의 제출 기준
+
+최신 제품 보정은 `5e374d01f641745d20bc9424ce233021a327ed16`다. Native CLI의 추가 계약 target을 빠뜨린 것을 보완해 실제 Native CI 목록 22개 전체를 통과했다. stock 12,475건·Native 전체 lib 4,040건·실제 출처/보호 CLI도 통과했다. 코드 보정·기존 해결 이력·정확한 실행과 조판 증거 재사용은 [CI 후속 검증](assets/semanticist21-20261103/ci-head223-followup.md)을 따른다. 앞선 223 head의 성공하지 못한 CI를 재사용하지 않고 새 제출 head CI·CodeQL 성공과 self-review 뒤 통합한다.

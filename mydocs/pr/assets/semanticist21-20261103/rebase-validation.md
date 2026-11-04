@@ -104,3 +104,7 @@ rowbreak 5쪽은 charPr 26의 hangul font 8인 TTF 휴먼명조를 사용한다.
 원 PR #8211의 실제 live physical 21쪽·측정 소유 4개 상태, #8235의 실제 Form01 HWPX 1쪽에 review/overlay를 대응시킨다. #8292의 ID·행 격자 직렬화와 #8299의 순수 vpos 단위 계약에는 다른 문서 이미지를 원본 증거로 제시하지 않는다. 동일한 제출 head CI·self-review·merge 후 옵션 2의 별도 기록 PR과 승인된 원 PR별 후속 처리를 진행한다.
 
 [렌더링 source 동일성과 실제 글꼴의 SHA-256](rebase/source-and-fonts.md)을 연결한다.
+
+## 제출 head 223 이후의 최종 보정
+
+CodeQL 좌표 진단 3곳과 Native CLI의 과거 false 고정을 code `5e374d01f641745d20bc9424ce233021a327ed16`에서 보정했다. stock 12,475 PASS / 45 skip, Native CI 22개 target 합계 192 PASS, 별도 Native lib 전체 4,040 PASS / 12 ignored, Native 출처 11 PASS와 실제 보호 문서 정상 SVG/진단 부재를 완료했다. 아래의 시각 producer ef6/696은 조판 계산 동일성을 확인한 재사용 결과이며 이번 보정의 새 raster로 표시하지 않는다. [실패 원인·원 해결 이력·정확한 전체 Native 실행·재사용과 검증 한계](ci-head223-followup.md)를 따른다.
