@@ -15405,13 +15405,20 @@ impl LayoutEngine {
                     // 표 하단보다 훨씬 위인 저장 위치는 재배치 또는 표 높이 변화일 수
                     // 있으므로 간격을 없애는 근거로 쓰지 않는다. 기존 0.5px 환산 오차만
                     // 양방향으로 허용하며, 근거가 불충분하면 종전 간격을 유지한다.
+                    //
+                    // [#8567] 어울림 표가 뒤 문단을 표 옆 띠로 흡수했으면 흐름상 다음 문단은
+                    // 마지막 흡수 문단 뒤다. 띠 끝(`square_wrap_paras_source_bottom`)이 이미
+                    // 그 문단의 저장 위치까지 흐름을 옮겼으므로 같은 사다리 판정을 그 문단으로 한다.
+                    let ladder_next_index =
+                        Self::square_wrap_flow_successor(wrap_around_paras, para_index)
+                            .unwrap_or(para_index + 1);
                     let ladder_already_at_flow = self.profile.get().hwp5_stored_pagination_layout()
                         && para
                             .line_segs
                             .first()
                             .zip(
                                 paragraphs
-                                    .get(para_index + 1)
+                                    .get(ladder_next_index)
                                     .and_then(|next| next.line_segs.first()),
                             )
                             .is_some_and(|(host_first, next_first)| {
@@ -16692,6 +16699,27 @@ impl LayoutEngine {
         }
         let bottom = bottom?;
         (bottom > anchor_top).then(|| hwpunit_to_px(bottom - anchor_top, dpi))
+    }
+
+    /// [#8567] Square 어울림 표가 바로 뒤 문단들을 **통째로** 표 옆 띠에 흡수했을 때,
+    /// 흐름상 다음 문단(마지막 흡수 문단 바로 뒤)의 인덱스. 흡수가 없거나, 뒤 문단의
+    /// 앞 줄만 흡수(접두 흡수 — 나머지 줄이 같은 문단의 흐름으로 이어진다)했거나,
+    /// 흡수 문단이 host 뒤에 연속하지 않으면 `None` 이다.
+    fn square_wrap_flow_successor(
+        wrap_around_paras: &[super::pagination::WrapAroundPara],
+        table_para_index: usize,
+    ) -> Option<usize> {
+        let mut next = table_para_index + 1;
+        for wp in wrap_around_paras
+            .iter()
+            .filter(|wp| wp.table_para_index == table_para_index)
+        {
+            if wp.para_index != next || wp.start_line != 0 || wp.end_line != usize::MAX {
+                return None;
+            }
+            next += 1;
+        }
+        (next > table_para_index + 1).then_some(next)
     }
 
     /// 글상자(Shape) 2차 패스: z-order 정렬 후 렌더링.
