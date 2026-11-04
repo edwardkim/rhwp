@@ -1976,7 +1976,9 @@ impl TypesetEngine {
             vert_offset_overhead,
             page_avail,
             first_fragment_shortfall,
-            source_frame_bottom,
+            // 내용 예산에서 실제 수용한 원본 종료선을 방출에도 전달한다.
+            // 일반 행 프레임이 없는 병합 블록에서도 같은 인증을 보존한다.
+            source_frame_bottom: accepted_frame_bottom.or(source_frame_bottom),
             fragment_placement: fragment_placement
                 .or_else(|| self.stored_header_fragment_placement(st, input, host_before_overhead))
                 .or_else(|| {
