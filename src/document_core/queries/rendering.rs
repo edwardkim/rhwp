@@ -5260,6 +5260,7 @@ impl DocumentCore {
                     tables: Vec::new(),
                 });
         }
+        let tac_host_rows = self.tac_host_row_candidates();
         self.measured_tables[section_index] = pending.measured.tables.clone();
         self.measured_tables[section_index]
             .extend_from_slice(&self.pagination[section_index].endnote_measured_tables);
@@ -5283,6 +5284,10 @@ impl DocumentCore {
         let field_breaks =
             vec![std::collections::HashSet::new(); self.document.sections.len().max(1)];
         self.settle_body_page_fields(&field_breaks);
+        // 높이가 바뀐 글자처럼 취급 표의 저장 줄을 맞췄으면 그 줄로 다시 나눈다.
+        if self.sync_tac_host_rows(&tac_host_rows) {
+            self.paginate();
+        }
         let completed_page_count = self.pagination[section_index].pages.len() as u32;
         DeferredPaginationStepResult {
             state: DeferredPaginationJobState::Complete,
@@ -5418,6 +5423,8 @@ impl DocumentCore {
         let issue2424_invalidate_elapsed = issue2424_invalidate_started
             .map(|started| started.elapsed())
             .unwrap_or_default();
+        // 이번에 바뀐 문단의 글자처럼 취급 표는 측정 뒤 저장 줄을 맞춘다(아래 끝).
+        let tac_host_rows = self.tac_host_row_candidates();
         // [#2308] #2004 revision cache와 #2195 sparse overlay를 source IR에서 갱신한다.
         let issue2424_normalize_started = issue2424_profile_enabled.then(std::time::Instant::now);
         self.compute_render_normalized_with_storage(storage)?;
@@ -6211,6 +6218,11 @@ impl DocumentCore {
             );
         }
 
+        // 편집으로 높이가 바뀐 글자처럼 취급 표의 저장 줄을 맞췄으면 그 줄로 다시 나눈다.
+        // 다시 나눌 때는 측정 높이가 그대로라 한 번만 반복한다.
+        if self.sync_tac_host_rows(&tac_host_rows) {
+            return self.paginate_pass_with_storage(force_breaks, storage);
+        }
         Ok(())
     }
 
