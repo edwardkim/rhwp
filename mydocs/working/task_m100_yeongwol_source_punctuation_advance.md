@@ -58,3 +58,31 @@ PR #8389·#8397의 원 기준 99.60% / 99.99% / 99.97% / 100.00%를 모두 충�
 `logs/yeongwol-p3-current-auto-environment-font-trace.json`,
 `logs/rebase-2071603998-yeongwol-prior-native-programs-initial.log`,
 `rebase-2071603998-font-environment-check/yeongwol-prior-native-programs/silhouette.tsv`에 있다.
+
+## 새 base 후보의 재측정과 독립 회귀 반례
+
+새 base `7fdd5441ff` 반영 뒤 제품 `4b149b6cdf`의 Native와 빌드 head `7bb9e66fd0`의
+최적화 fresh WASM으로 같은 전4쪽을 재측정했다. Native는 99.98384 / 99.99067 /
+99.96664 / 99.99505%, fresh WASM은 99.98228 / 100.00000 / 99.97763 / 100.00000%다.
+두 제품의 runtime source tree가 같음을 확인했고 원본·PDF·양쪽 쪽수는 모두 4쪽이다.
+[전쪽 TSV·같은 쪽 review/overlay·직접 판독](../pr/assets/planet6897_20261103/original_supplier/README.md)을
+정식 자산에 보존했다. 원 PR의 표시값 하한을 각 쪽·경로에서 충족한다.
+
+기존 기호 검사만으로 이번 소비 순서 결함을 검출할 수 있는지도 점검했다. 실제 독립 공급자
+Haansoft Batang을 표시 face로 직접 지정하면 보정 전에도 폭이 맞으므로 새 결함의 검출
+증거로 쓰지 않는다. 공개 API에서 `preserveSourceMetrics=true`와 `바탕→Noto Sans KR ExtraLight`
+표시 치환을 선언해 원본 결측과 다른 표시 메트릭이 실제로 갈리는 반례를 실행했다.
+이전 base/40778 package는 원본 dot에 1200HU `heuristicFullwidth`, 보정 dd0와 새 fresh
+package는 208HU `metricGlyphFallback`을 반환했다. 원본은 바꾸지 않았다.
+
+새 이름의 `issue_8419_display_substitution_supplier_advance.rs`는 이 반례를 검사한다.
+기대값은 관측한 2.77px가 아니라 독립 HBATANG hmtx 178/1024em와 원본 글자 크기다.
+검증된 공급자·1HU 양자화·원본 dot의 고유한 글자 모양 소속과 실제 배치 폭,
+뒤 본문이 점유 끝에서 이어지는 관계를 함께 검사한다. 절대 px 위치를 고정하지 않고
+private/OTF 설치에 의존하지 않는다. 기존 기호 검사는 별개의 원본을 보호하므로 유지한다.
+
+전쪽 시각 측정과 공개 API의 수정 전/후 관측은 완료했다. 새 Rust 회귀의 최소 글꼴 실제
+실행은 공유 target의 base WASM 빌드가 끝난 뒤 집중 검사로 수행한다. 아직 Rust 실행의
+PASS를 선언하지 않으며, 검사 하나 추가를 이유로 앞서 통과한 전체 회귀를 반복하지 않는다.
+원시 API 관측은 ignored output의 `logs/yeongwol-supplier-before-after-probe.json`,
+`logs/yeongwol-supplier-current-7bb9-api.json`이다.
