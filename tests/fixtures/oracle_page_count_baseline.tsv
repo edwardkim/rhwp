@@ -578,3 +578,5 @@ tests/fixtures/semanticist21-20261103/polygon-vflip.hwpx	1	1
 tests/fixtures/semanticist21-20261103/spacing-after.hwpx	1	1
 tests/fixtures/semanticist21-20261103/spacing-before.hwpx	1	1
 tests/fixtures/semanticist21-20261103/spacing.hwpx	1	1
+# PR #8542: 같은 공개 HWP에 대응하는 samples/issue8539/nhis-dependent-requirements-2020.pdf, 전쪽 Native/Canvas 검증 완료.
+samples/issue8539/nhis-dependent-requirements.hwp	3	3

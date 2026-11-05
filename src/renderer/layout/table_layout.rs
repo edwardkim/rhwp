@@ -22362,14 +22362,22 @@ impl LayoutEngine {
         cut: &[usize],
         styles: &ResolvedStyleSet,
     ) -> f64 {
-        let declared = table
+        self.row_cut_content_height(table, row, &[], cut, styles)
+            .max(self.declared_row_frame_height(table, row))
+    }
+
+    /// 행의 선언 상자 높이(px): 병합하지 않은 칸의 저장 높이 중 최댓값.
+    pub(crate) fn declared_row_frame_height(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+    ) -> f64 {
+        table
             .cells
             .iter()
             .filter(|cell| cell.row as usize == row && cell.row_span <= 1)
             .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
-            .fold(0.0f64, f64::max);
-        self.row_cut_content_height(table, row, &[], cut, styles)
-            .max(declared)
+            .fold(0.0f64, f64::max)
     }
 
     /// A capacity-selected cut may separate distinct original text ranges at
@@ -23063,6 +23071,60 @@ impl LayoutEngine {
             let mut applied_trailing_trim = 0.0f64;
             let flow_range =
                 self.cell_cut_flow_range(cell, table, &units, start, units.len(), styles);
+            // [#8539] `[start, j]` 를 받을 때 끝 줄간격을 빼면 `limit` 안에 드는가. 들면 뺄 몫을 준다.
+            // 용량 컷과 아래 선언 상자 판정이 같은 끝 줄간격 계산을 소비한다(#7870 과 같은 원칙).
+            let trimmed_capacity_fit = |j: usize, h: f64, limit: f64| -> Option<f64> {
+                let u = &units[j];
+                let trailing_trim = match capacity {
+                    row_physical_band::RowCutCapacity::Content => self
+                        .native_saved_reset_cut_trailing_trim(
+                            table,
+                            cell,
+                            &units,
+                            start,
+                            j + 1,
+                            styles,
+                        ),
+                    row_physical_band::RowCutCapacity::Physical { .. } => self
+                        .row_cut_capacity_trailing_trim(table, cell, &units, start, j + 1, styles),
+                };
+                let (capacity_trim, fit_epsilon) = self.cell_cut_capacity_tail_trim(
+                    table,
+                    cell,
+                    &units,
+                    start,
+                    j + 1,
+                    trailing_trim,
+                    styles,
+                );
+                let trimmed_height = h + u.height - capacity_trim;
+                let trimmed_tolerance = capacity_tolerance::for_next_unit(
+                    cell,
+                    u,
+                    j.saturating_sub(start) + 1,
+                    trimmed_height,
+                    limit,
+                    fit_epsilon,
+                );
+                (capacity_trim > 0.0 && trimmed_height <= limit + trimmed_tolerance)
+                    .then_some(capacity_trim)
+            };
+            // [#8539] 행의 첫 조각에서 선언 상자가 이 쪽 남은 공간에 통째로 들면, 그 상자 안쪽의
+            // 저장 재시작은 이 쪽의 경계가 아니다 — 지금 배치와 다른 옛 조판이 남긴 쪽 경계다
+            // (law.go.kr 부양요건 9행: 선언 82.32px 가 남은 84.15px 에 들고 재시작은 51.2px 지점,
+            // 한/글 2020 은 셋째 줄까지 1쪽). 상자가 쪽을 넘는 행(16418295 6행 88.83 > 73.89)이나
+            // 상자 밖의 재시작(issue1937 6행)은 종전대로 저장 재시작을 쪽 경계로 따른다.
+            let declared_frame_content = (start == 0)
+                .then(|| {
+                    self.declared_row_frame_height(table, row)
+                        - hwpunit_to_px(
+                            cell.effective_vertical_padding_hu(&table.padding),
+                            self.dpi,
+                        )
+                })
+                .filter(|content| {
+                    *content > 0.0 && *content <= avail_height + ROW_CUT_CAPACITY_FP_EPSILON_PX
+                });
             while j < units.len() {
                 let u = &units[j];
                 let current_frame_cut = frame_cut_is_current(j);
@@ -23336,7 +23398,12 @@ impl LayoutEngine {
                         || shared_empty_frame)
                     && (strict_saved_frame_break
                         || ((!relaxed_hard_break
-                            || (!u.empty_spacer && h + unit_fit_height > avail_height))
+                            || (!u.empty_spacer
+                                && h + unit_fit_height > avail_height
+                                && !declared_frame_content.is_some_and(|content| {
+                                    h + ROW_CUT_CAPACITY_FP_EPSILON_PX < content
+                                        && trimmed_capacity_fit(j, h, content).is_some()
+                                })))
                             && !units[start..j].iter().all(|unit| unit.empty_spacer)
                             && !tiny_fragment_waste))
                 {
@@ -23428,45 +23495,7 @@ impl LayoutEngine {
                     // 물리 쪽 경계에서 제외하면 예산에 들어가는 경우, 그 줄까지
                     // 현 조각에 넣고 다음 문단 hard break 직전에서 멈춘다. source
                     // frame tail 흡수보다 먼저 적용해 본문 하단 침범을 피한다.
-                    let trailing_trim = match capacity {
-                        row_physical_band::RowCutCapacity::Content => self
-                            .native_saved_reset_cut_trailing_trim(
-                                table,
-                                cell,
-                                &units,
-                                start,
-                                j + 1,
-                                styles,
-                            ),
-                        row_physical_band::RowCutCapacity::Physical { .. } => self
-                            .row_cut_capacity_trailing_trim(
-                                table,
-                                cell,
-                                &units,
-                                start,
-                                j + 1,
-                                styles,
-                            ),
-                    };
-                    let (capacity_trim, fit_epsilon) = self.cell_cut_capacity_tail_trim(
-                        table,
-                        cell,
-                        &units,
-                        start,
-                        j + 1,
-                        trailing_trim,
-                        styles,
-                    );
-                    let trimmed_height = h + u.height - capacity_trim;
-                    let trimmed_tolerance = capacity_tolerance::for_next_unit(
-                        cell,
-                        u,
-                        j.saturating_sub(start) + 1,
-                        trimmed_height,
-                        avail_height,
-                        fit_epsilon,
-                    );
-                    if capacity_trim > 0.0 && trimmed_height <= avail_height + trimmed_tolerance {
+                    if let Some(capacity_trim) = trimmed_capacity_fit(j, h, avail_height) {
                         applied_trailing_trim = capacity_trim.min(u.height);
                         h += u.height - applied_trailing_trim;
                         j += 1;
