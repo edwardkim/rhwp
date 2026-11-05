@@ -3140,7 +3140,9 @@ impl HeightMeasurer {
                 let Control::Table(nested) = ctrl else {
                     return Ok(None);
                 };
-                if crate::renderer::float_placement::nested_table_is_overlay(nested) {
+                if crate::renderer::float_placement::nested_table_is_overlay(nested)
+                    || crate::renderer::float_placement::nested_table_is_page_overlay(nested)
+                {
                     return Ok(None);
                 }
                 if !crate::renderer::para_has_no_stored_line_segs(p)
@@ -3280,6 +3282,9 @@ impl HeightMeasurer {
                             return Ok(None);
                         };
                         if crate::renderer::float_placement::nested_table_is_overlay(nested)
+                            || crate::renderer::float_placement::nested_table_is_page_overlay(
+                                nested,
+                            )
                             || para_max_lh < nested.common.height as i32
                         {
                             return Ok(None);
