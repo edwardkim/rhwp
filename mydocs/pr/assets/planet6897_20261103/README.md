@@ -70,7 +70,7 @@
 ## PR #8389·#8397 보존
 
 - 직전 c183 Native: [17문서·1,770쪽·원 TSV 2,153행](current-c183a1ac61/pr8389_8397/native-validation.md), 표시값 하락·누락 0행.
-- 같은 c183 fresh WASM: 남은 실행·집계를 진행 중이다. 부분 실행을 17개 완료로 표시하지 않는다.
+- 같은 c183 fresh WASM: [17문서·1,770쪽·원 TSV 2,153행](current-c183a1ac61/pr8389_8397/wasm-validation.md), 표시값 하락·누락 0행으로 완료했다. 최신 ba2 source의 전쪽 재출력과 구분한다.
 - [이전 완료 제품의 Native/fresh WASM 전체 보존 기록](pr8389_8397/README.md)과 당시 원본 TSV는 그대로 유지했다.
 - 소수 셋째 자리에서 반올림한 두 자리 표시값은 낮아지면 안 된다. 상승은 허용한다.
 
