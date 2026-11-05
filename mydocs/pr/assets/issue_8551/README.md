@@ -2,6 +2,10 @@
 
 - 측정일: 2026-11-05 (Asia/Seoul)
 - base: `upstream/devel` `e96b500e3ea259c821f05440f0388355916a9e9b`
+- 재측정: 최신 `upstream/devel` `ed057276c1e0e07e743218d95641e015b46b6715`로 rebase한 head에서
+  합성·원본 109쪽·추출본 Native, 합성·원본 fresh WASM TSV와 대표 PNG를 다시 산출했다.
+  모든 head TSV와 PNG가 rebase 전 산출물과 바이트 단위로 같아 아래 파일을 그대로 유지한다.
+  편람 383쪽 gate도 rebase head에서 다시 실행했다.
 - 측정: `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`,
   지표 `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣 일치율).
   Native는 sweep 기본 Native 웹폰트 공급, fresh WASM은 같은 code head에서
