@@ -1,0 +1,32 @@
+{
+  "pdf": "pdf/semanticist21-20261008/issue5679-10857_delegation_rules-de43607f0507-2020.pdf",
+  "pdf_sha256": "90eda86b2b4dfeabc601cd9b583408c6528a9efabf4e626fd6f2e28e3bcb2b97",
+  "method": "PyMuPDF가 읽은 독립 Print의 선분 좌표72pt를96px로 환산. 원본PDF·정본PDFium래스터는바꾸지않음.",
+  "tolerance_px": 2,
+  "anchors": [
+    {
+      "page": 19,
+      "source_cell": "p67 r30 c0/c1",
+      "top": 299.67204,
+      "bottom": 695.23999,
+      "native_raw": 100,
+      "wasm_raw": 100
+    },
+    {
+      "page": 30,
+      "source_cell": "p70 r59 c2",
+      "top": 251.88403,
+      "bottom": 333.71468,
+      "adjacent_last_row_top": 280.33333,
+      "native_raw": 99.36627,
+      "wasm_raw": 99.36595
+    },
+    {
+      "page": 76,
+      "source_table": "p132",
+      "top": 399.24268,
+      "native_raw": 99.57115,
+      "wasm_raw": 99.57141
+    }
+  ]
+}

@@ -73,3 +73,15 @@ Base 공통103쪽 중 81쪽 미달, 최저50쪽8.62142%이며base105대Print103�
 27쪽은두출력모두`주요통계관리`가앞쪽으로넘어가지않은기존소속결함이다.현재상단96.4px는Print96.3747px와대응하고base94.5px보다정확하다.표높이339.1px는base/current같다.19쪽전체표높이는base920.9→current929.1px로Print928.744px에접근했지만내부행차이는남는다.59쪽의base단일앞표소속이current앞표+보호보상정책과표로바뀌어Print에가까워졌으나일부행높이는여전히미달이다.점수하락만으로별도회귀를면제하지않고같은원본의직접경계·소속을판독했다.
 
 실제TSV/PNG/hash/명령/판독은ignored `native-base-current-6024-full-comparison-v89.json`과양쪽canonical run에있다.로그/TSV/중간JSON은이asset폴더에커밋하지않는다.
+
+## 2026-11-06 활성 검증 복원
+
+같은 바이트의 원본을 `samples/issue5679/10857_delegation_rules.hwp`, 독립 Print를
+`pdf/semanticist21-20261008/issue5679-10857_delegation_rules-de43607f0507-2020.pdf`에
+복원했다. 이 폴더의 과거 이관 자산도 보존하며 SHA는 위 표와 같다. 전103쪽의 현재
+Native/fresh WASM 최저는94.75432/94.75587%, 90% 미만0·누락0이다. 정식 관계/px 검사는
+`tests/cases/issue_7700_source_owned_table_fragments.rs`에 등록한다. 오래된451.8px·105쪽
+pin이나8/14px 여유를 되살리지 않는다. 중요한19·30·76쪽은 현행98%조건과 독립 Print의
+±2px를 적용한다. 본문 넘침/글자 겹침 원장은 같은 최소 글꼴 실제 진단의1/1로 복원하며,
+이관 전2/1을 늘리지 않는다. 비시각IR의 보존용 별칭은 제거해 활성 원본이 중복 수집되지
+않도록 한다. 출력 개선과 정식 전체 게이트의 완료 여부는 해당 작업 계획과 최신 증적을 따른다.

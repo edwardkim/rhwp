@@ -9,10 +9,6 @@ const PRESERVED_HWP5_INPUTS: &[(&str, &str)] = &[
         "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
     ),
     (
-        "issue5679/10857_delegation_rules.hwp",
-        "mydocs/pr/assets/issue7700/delegation-rules/10857_delegation_rules.hwp",
-    ),
-    (
         "task2287/1342000_edu_curriculum_map.hwp",
         "mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp",
     ),
