@@ -1,7 +1,9 @@
-//! 관계형.
-//! 주석 갱신: MEASURED_AT.
-//! MEASURED_RAW
-//! 근거: EVIDENCE_PATH.
+//! 관계형·고정형(독립 Print 전체 쪽수, 줄마다 칸 소속).
+//! 주석 갱신: 2026-11-05T15:04:00+09:00 (새 파일).
+//! 2026-11-05 측정 raw(96dpi, pypdfium2, 2px 실루엣 threshold_boundary_color_support_v1, compat 2024):
+//! hancom-mac-200-b5.hwp 1쪽 Native 100.00000% / fresh WASM 100.00000%(미대응 0픽셀), 전1쪽 최저 같음.
+//! 수정 전 devel 6e1de4062: Native 77.50756% / fresh WASM 77.59633%.
+//! 근거: mydocs/pr/assets/issue_8628_wonggoji/{native,wasm,base}/ 의 TSV와 review·overlay PNG.
 //!
 //! 원고지 정서법(HWP5 구역 flags bit 22, HWPX `wonggojiFormat`)과 줄·글자 격자가 켜진 구역은
 //! 글자를 칸에 하나씩 놓는다. 입력은 rhwp로 만든 200자 원고지 서식(B5 가로, 칸 2863HU·줄 3968HU,
