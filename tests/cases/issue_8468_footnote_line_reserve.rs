@@ -257,3 +257,37 @@ fn partial_note_with_unsplittable_table_keeps_later_lines_above_its_prefix() {
         "{sample}: 각주 1 의 표 줄은 1쪽에 들어가지 않아 2쪽 각주 영역에 이어진다"
     );
 }
+
+#[test]
+fn partial_note_prefix_with_block_table_counts_table_height() {
+    // 각주 = 글 문단 + 글자처럼 취급하지 않은 위아래 배치 표(4행) + 긴 글 문단. 표는 host 줄의
+    // 줄 높이·줄간격 밖을 차지하므로 앞 조각 높이는 줄 합보다 표 높이만큼 크다(실문서 i628
+    // 95쪽 각주 56 의 형상). 한/글은 표와 뒤 글 일부까지 1쪽 각주에 두고 참조 줄 뒤 본문 줄은
+    // 그 앞 조각 위에 남는 만큼만 받는다(쪽 reset 줄 15). 앞 조각을 줄 합으로 재면 각주 영역이
+    // 작게 잡혀 본문 줄 3개가 더 1쪽에 들어가고 각주 위에 겹친다.
+    let sample = "samples/issue8468/line_reserve_F20_L30_A30_R4_B4.hwp";
+    let core = core(sample);
+    assert_eq!(core.page_count(), 2, "{sample}: 한컴 Print 2쪽");
+    assert_eq!(
+        fragments(&core),
+        vec![(1, 0, 15), (2, 15, 29)],
+        "{sample}: 긴 문단은 한/글 저장 쪽 reset 줄 15 에서 나뉜다"
+    );
+    assert_eq!(
+        note_starts_without_overlap(sample, &core),
+        expected(&[(1, &[1])]),
+        "{sample}: 각주 1 은 참조 줄이 있는 1쪽에서 시작하고 본문 줄과 겹치지 않는다"
+    );
+    let table_pages: Vec<u32> = (0..core.page_count())
+        .filter(|&page| {
+            let tree = core.build_page_render_tree(page).expect("page render tree");
+            footnote_area(&tree.root).is_some_and(has_note_table)
+        })
+        .map(|page| page + 1)
+        .collect();
+    assert_eq!(
+        table_pages,
+        vec![1],
+        "{sample}: 각주 1 의 블록 표는 앞 조각에 들어 1쪽 각주 영역에 그려진다"
+    );
+}
