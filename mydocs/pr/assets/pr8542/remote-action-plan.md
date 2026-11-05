@@ -46,7 +46,7 @@ workflow 취소·재실행·cache 삭제·CI 예산/정책 변경은 현재 실�
 
 ## 검토·증적
 
-- [검토 기록](../../pr_8542_review.md)
+- [검토 기록](../../archives/pr_8542_review.md)
 - [전쪽 TSV·빌드·입력·글꼴·직접 판독](visual-validation.md)
 
 최종 전체 회귀 12,640 PASS/45 skipped, Native 공식 3종 합계 4,064 PASS/12 ignored와 14개 gate를 완료했다. push할 문서 후행 HEAD를 확정해 이 계획을 원격 승인 질문에 연결한다.

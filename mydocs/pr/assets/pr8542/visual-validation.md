@@ -514,7 +514,7 @@ visual_sweep.py --silhouette-only --hwp samples/issue8539/nhis-dependent-require
 visual_sweep.py --handbook-gate --rhwp-bin <후보 Native> --out <handbook 출력> --resume
 ```
 
-기준 WASM 첫 최적화 실행도 종료 코드 143으로 중단됐다. 미완료 package를 검증에 사용하지 않았고 locked wrapper를 다시 실행해 최적화 포함 성공을 확인했다. 후보는 compile과 locked packaging을 순차로 완료했다. 모든 Cargo 작업은 같은 target에서 순차 실행했다. 중간 로그·JSON·일반 raster는 ignored output에만 두며 종료 정리 대상이다. 후속 회귀·lint 결과와 제출 후보는 [검토 문서](../../pr_8542_review.md)에 기록한다.
+기준 WASM 첫 최적화 실행도 종료 코드 143으로 중단됐다. 미완료 package를 검증에 사용하지 않았고 locked wrapper를 다시 실행해 최적화 포함 성공을 확인했다. 후보는 compile과 locked packaging을 순차로 완료했다. 모든 Cargo 작업은 같은 target에서 순차 실행했다. 중간 로그·JSON·일반 raster는 ignored output에만 두며 종료 정리 대상이다. 후속 회귀·lint 결과와 제출 후보는 [검토 문서](../../archives/pr_8542_review.md)에 기록한다.
 
 ## SVG 소비 경로 보충
 

@@ -2,13 +2,14 @@
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능 — #8539 해결 범위의 로컬 검증 완료.**
+**메인터너 보정 후 수용 가능 — 최종 후보의 검증과 self-review를 마치고 원 PR 병합 완료.**
 
 기여 기능은 독립 Print와 최신 devel 비교에서 수용할 근거를 확보했다. 검증한 code/data 후보는
 `790ef21567d041fe272253673fa63fb1ce7809df`다. 전체 12,640 PASS·45 skipped와 Native 공식 3종
 총 4,064 PASS·12 ignored, 필수 lint·383쪽 편람을 완료했다. 문서 후행은 code/data와 실행 source를 바꾸지 않는다.
-원격 push·본문 수정·GitHub review·comment·merge는 수행하지 않았다. 최신 후보의 GitHub CI와 원격
-처리 승인은 별도 조건이다. 최종 기록·제출 준비일은 2026-11-06 KST이며 측정과 필수 검사는 11월 5일에 완료했다.
+제출 head `9cb3b121c9249a00b169d68e2c2947aa31ce51be`의 필수 CI·최종 정책 감사가 모두 성공했고,
+2026-11-06T01:15:50+09:00에 merge `d33018ec05fe921a2146ec923ff45c4b4dd0c95e`로 통합했다.
+로컬 측정은 11월 5일, 원격 처리와 이 운영 기록은 11월 6일 KST다. 이슈·댓글·정리는 아래 정본 순서의 후속 범위다.
 
 ## 접수 정보와 경로
 
@@ -24,9 +25,10 @@
 | 로컬 접수 기록 | `1f5b3cd68e` |
 | 검증 보강 후보 | `790ef21567d041fe272253673fa63fb1ce7809df` |
 | 실행한 제품 src tree | `ceaa7c40545ca8036c71c880b8d4a8c447435a4e`, 보강 후보도 동일 |
+| 최종 제출 / merge | `9cb3b121c9249a00b169d68e2c2947aa31ce51be` / `d33018ec05fe921a2146ec923ff45c4b4dd0c95e` |
 | 검토 branch | `review/pr-8542-rowbreak-stored-restart` |
 | reviewer | `edwardkim`, 2026-11-05T21:35:47+09:00 요청 event와 REST users 재확인 |
-| 상태 | Open, non-Draft, devel 대상. head·CI·mergeability는 원격 처리 직전 재조회 |
+| 상태 | 원 PR MERGED, 2026-11-06T01:15:50+09:00, devel 포함 확인 |
 
 base route: `maintainer_general.md`.
 modifiers: `intake_and_review.md`, `local_validation.md`, `visual_fixture_evidence.md`,
@@ -45,10 +47,10 @@ loaded documents: `pr_review_workflow.md`, `pr_review/README.md`와 위 기본·
   [메인테이너 의견](https://github.com/edwardkim/rhwp/issues/8198#issuecomment-6579028228)을 대조했다.
 - #7870 원 기여 `717679359e6e128f26610727cf7c04d2f8ac6d5f` → 통합
   `bf4fc67e54b1cf8a370de1780cf34898faf19fee`는 중첩 표 atom의 이송 여백을 같은 용량 계산으로 맞췄다.
-  [기존 독립 검증](../report/issue7870/71352-p9-review.png)과 해당 커밋을 확인했다.
+  [기존 독립 검증](../../report/issue7870/71352-p9-review.png)과 해당 커밋을 확인했다.
 - #7965 → 통합 #8148, merge `2e087a5b4bc1515ad877e8020b30114639a59392`의 저장 프레임 소유 계약은
-  [기존 검토](archives/pr_7965_review.md)와 실제 `SourceFrameQuery`·row scan 경로를 대조했다.
-- [HWP 5.0 사양 설명본](../tech/한글문서파일형식_5.0_revision1.3.md)의 HWPUNIT(1/7200인치),
+  [기존 검토](pr_7965_review.md)와 실제 `SourceFrameQuery`·row scan 경로를 대조했다.
+- [HWP 5.0 사양 설명본](../../tech/한글문서파일형식_5.0_revision1.3.md)의 HWPUNIT(1/7200인치),
   셀 높이·저장 줄 필드를 확인했다. 재시작의 실제 소유·끝 줄간격은 같은 공개 저장본과 독립 Hwp 2020
   출력 및 반례로 확인했다. 입력 메타데이터를 수정해 조건을 만들지 않았다.
 
@@ -76,7 +78,7 @@ loaded documents: `pr_review_workflow.md`, `pr_review/README.md`와 위 기본·
 
 입력은 실제 저장된 HWP 5.0.3.4의 18행×3열 표다. 독립 PDF는 같은 국가법령정보센터 공개 서식의
 Hwp 2020 출력(3쪽)이며 기존 PR의 파일을 그대로 사용했다. source·PDF·실행 파일·글꼴의 해시,
-전체 TSV 원문·383쪽 편람 TSV·명령·PNG는 [검증 원장](assets/pr8542/visual-validation.md)에 보존했다.
+전체 TSV 원문·383쪽 편람 TSV·명령·PNG는 [검증 원장](../assets/pr8542/visual-validation.md)에 보존했다.
 
 | 입력 | SHA-256 |
 | --- | --- |
@@ -180,21 +182,60 @@ Node 24.15.0 실행 디렉터리와 Rust 도구·공용 target을 명시적으�
 [Proptest](https://github.com/edwardkim/rhwp/actions/runs/41643028349)와 정책 집계는 성공 상태를 확인했다.
 이는 아직 push하지 않은 새 후보의 GitHub CI가 아니다.
 
-## 원격 처리와 merge 후 comment 계획
+## 원격 처리·self-review·병합 결과
 
-[원격 처리안](assets/pr8542/remote-action-plan.md)과 PR 본문·감사 댓글 초안을 준비했다. 원격 범위를 승인받는다. 승인 뒤 원 기여 branch의 head가
-변하지 않았는지 확인해 fast-forward push하고, 새 head CI·self-review·실제 최신 base 병합 tree를 확인한다.
-merge는 기여 커밋을 보존하는 merge commit과 `--match-head-commit`을 사용한다. fork branch는 자동 삭제하지 않는다.
+작업지시자가 원 branch push·본문 보충·새 head CI·self-review·머지와 이슈·댓글·기록·동기화·정리를 승인했다.
+원 head `dc7553366f6c85035d510eaeb50eff2f25d83242`에서 제출 head로 fast-forward push했다. 첫 push의 LFS
+잠금 확인은 권한 오류였으나 변경 파일에 LFS·lockable 속성이 없음을 확인하고 그 push에서만 선택적 잠금
+검사를 제외했다. 영구 설정·제품 코드·LFS pointer는 바꾸지 않았다.
 
-후속 운영 기록은 [post_merge 7.1](../manual/pr_review/post_merge.md#71-후속-문서-처리-결정)의 maintainer 직접
-반영 범위(archive review·오늘할일·asset)만 사용한다. 이번 PR의 고유 diff에는 CI workflow/판정 정책 변경이 없어
-옵션 2 강제 대상이 아니다. 실제 merge SHA·운영 기록·devel sync 뒤 승인된 이슈 완료와 감사 댓글을 게시한다.
+PR 본문 API 동일성·UTF-8과 실제 GitHub 화면의 한글·증적 이미지 8개 정상 표시를 확인했다. 아래 결과는
+모두 같은 제출 head다. 로컬 전체 workspace의 12,640개와 CI root archive의 12,446개를 구분한다.
 
-감사 댓글에는 [Visual Sweep 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment),
-전 3쪽 수치·두 컷·직접 판독·기여/메인테이너 보강 범위를 적는다. `assets/pr8542/`의 1·2쪽 Native/Canvas
-review·overlay 8개를 실제 merge SHA의 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-sha>/mydocs/pr/assets/pr8542/…`
-이미지로 연결한다. asset 존재·응답·해시를 확인한 뒤 `--body-file`로 게시하고 API와 화면을 재확인한다.
+| 원격 게이트 | 실제 결과 |
+| --- | --- |
+| [CI](https://github.com/edwardkim/rhwp/actions/runs/42051780102) | attempt 2 SUCCESS. lint·Frontend와 archive A–E builder/worker는 attempt 1 성공을 유지 |
+| archive A / B / C / D / E | 3,801 / 1,953 / 2,254 / 2,222 / 2,216 PASS, 합계 12,446 PASS·45 skipped. 신규 #8539 회귀 3개도 C에서 실제 PASS |
+| Native | 첫 job은 `git fetch`에 30분을 써 빌드·테스트 전에 취소. 승인된 Native·종속 집계 각 1회 재실행 성공; 제품·workflow·검증 기준 변경 없음 |
+| Frontend | Studio unit 2,735 PASS·실패 0, 기존 skip 2. fresh WASM·Canvas 폰트·후속 E2E/빌드 gate 성공 |
+| [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/42051779943) | 모든 언어 SUCCESS |
+| [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/42051779982) | SUCCESS, Canvas 3개·직접 PDF 호환 3쪽 통과 |
+| [Adapter](https://github.com/edwardkim/rhwp/actions/runs/42051779866) / [Proptest](https://github.com/edwardkim/rhwp/actions/runs/42051779952) | SUCCESS |
+| [최종 정책 감사](https://github.com/edwardkim/rhwp/actions/runs/42061794815) | CI Impact Policy SUCCESS, GraphQL 전체 rollup SUCCESS·미완료/실패 0 |
 
-원격 조치 직전 head·required check·mergeable을 재조회한다. 완료 후 작업 전용 branch/worktree와 저장소 루트
-output 전체·사용 종료한 공용 `target/pr-review/debug`를 정리한다. 사용자/다른 작업의 worktree·소스·글꼴과
-contributor fork는 보존하며, 추가 압축·백업은 만들지 않는다.
+self-review에서는 최종 제품 diff와 공통 높이·trim·소유 판정의 소비 지점, 독립 출력·반례·기능 보존·측정
+한계를 다시 대조했고 추가 수정이 필요한 발견 사항은 없었다. GitHub APPROVE 게시 API는 502·불완전 응답으로
+등록되지 않았다. 실제 self-review 기록·작업지시자 머지 승인·필수 검사 성공은 확보했고, required review는 없었다.
+최종 SHA를 고정한 CLI merge가 GitHub GraphQL 오류로 실패해, 동일 SHA를 명시한 REST `merge_method=merge`로
+승인된 병합을 완료했다. 저장되지 않은 GitHub APPROVE를 성공했다고 기록하지 않는다.
+
+merge 직전 live devel `ece9c3383bb2c73e0f055459ede727a9d3101ac6`과 실제 `merge-tree --write-tree`를
+재확인했다. tree `1f4b092bbe888a514abf1e1bfaaa7ed0be5b5810`가 후보·실제 merge tree와 같으며 충돌이 없다.
+기여 커밋을 merge graph에 보존했고 contributor fork branch는 삭제하지 않는다.
+
+병합 후 [Refresh nextest target duration data](https://github.com/edwardkim/rhwp/actions/runs/42062564476)는
+SUCCESS였다. `ready=true`, `successful-pr-worker-measurements`, 최종 CI attempt 2와 B/C/D/E 실제 worker
+attempt 1을 검증해 `published=true`로 metadata commit `4d34dcc240e77dffe352b9f8f93de3b42c02f59f`에 게시했다.
+병합 뒤 검증 CI·CodeQL·Adapter·Proptest·Oracle을 시작하거나 재실행하지 않았다.
+
+## 후속 운영 기록과 종료 순서
+
+이번 PR의 고유 diff에는 CI workflow/action/실행·재사용 판정 정책 변경이 없다. 따라서 옵션 2 강제 대상이
+아니며 [post_merge 7.1](../../manual/pr_review/post_merge.md#71-후속-문서-처리-결정)의 maintainer 직접 반영으로
+이 archive·증적 참조·오늘 할 일만 한 운영 기록 commit에 반영한다. source·test·baseline·기존 sample은
+운영 기록에서 수정하지 않는다.
+
+운영 기록 작성 시 #8539는 OPEN이다. 이 commit의 원격 반영과 최종 devel fast-forward 뒤 승인 범위에 따라
+수동 close·이슈 후속 comment·원 PR 감사 comment를 순서대로 게시한다. 그 뒤 이번 작업 전용 worktree/branch,
+루트 output 전체와 사용 종료한 공용 `target/pr-review/debug`를 삭제한다. 실제 close·댓글 상태는 원 PR/이슈에서,
+종료 정리 결과는 output 밖 `/tmp/rhwp-pr8542-cleanup-20261106.json`에서 확인한다. 이는 정리 전에 완료를
+선언하는 기록이 아니다. 다른 작업의 worktree·사용자 자료·글꼴과 공유 target의 다른 profile은 보존한다.
+
+## Merge 후 contributor PR comment 계획
+
+[Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment), 전 3쪽 raw 수치·두 컷,
+직접 판독과 기여/메인테이너 보강 범위를 한국어 존댓말로 적는다. `assets/pr8542/`의 1·2쪽 Native/Canvas
+review·overlay 8개를 실제 merge `d33018ec05fe921a2146ec923ff45c4b4dd0c95e`에 고정한
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-sha>/mydocs/pr/assets/pr8542/…` 이미지로 연결한다.
+게시 전에 각 raw 이미지 형식·SHA-256을 정식 asset과 대조하고, 게시 뒤 API 본문과 실제 화면을 재확인한다.
+전쪽 raw 수치를 pixel 완전 일치나 사람의 판정 정확도로 부르지 않으며 같은 HWPX/2024 저장본까지 확대하지 않는다.
