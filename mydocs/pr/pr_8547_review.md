@@ -63,7 +63,7 @@ Native·fresh WASM을 96 DPI·같은 원본·같은 독립 Print PDF로 전 6쪽
 | --- | --- |
 | 원 PR | [PR #8547](https://github.com/edwardkim/rhwp/pull/8547) |
 | 원 head | `802078a02454a66ef3dc917d6ba2c6461709dcd5` |
-| 현재 통합 적용 커밋 | `a6f332bf20a5baaaae5e2b430bd7a5414f7ddafb, 029ca31d2e6279b872deb93292b2f5f3759ab3fd` |
+| 현재 통합 적용 커밋 | `70ee8b58a9db98f736812c6fca352fe9c279eb98, 07f17766b13c0f0629bee30943e400f9c6ef7ecf` |
 | 보정 전 필수 검증 제품 / 새 base | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` / `22947f6a90c998e95fa51238d5b907a0ebd37162` |
 | 전쪽 Native 측정 producer / 당시 base | `4b149b6cdfc514b9858ed644be2cf8120c731cd4` / `7fdd5441ff1e77c083818e920a48089f294de35e` |
 | fresh WASM 실제 빌드 | `7bb9e66fd006109ca9f7ee4c4d3f752c82e60fae` (위 제품 코드와 동등한 구현) |
@@ -171,3 +171,29 @@ raw 값은 1~6쪽 순서로 99.85%, 99.99%, **97.95%**, 100.00%, 100.00%, 100.00
 - 통합 PR이 병합되면 실제 merge SHA와 검증한 증거를 원 PR에 연결하고 후속 처리합니다.
 
 </details>
+
+## 최신 리베이스 이후 통합 검증 상태
+
+최신 base는 `f529dc92d4d172bf32390d7749743a45d9e41bfc`, 검증 시작 source는
+`ba2ebfd34a4ebf402bce8e002254b672a09ef764`다. 원 PR 39개와 메인터너 보정을 담은
+168개 커밋을 충돌 0건으로 리베이스했고 range-diff 전 행이 `=`로 대응했다.
+[원 head와 현재 적용 SHA](assets/planet6897_20261103/integration-commits.md)를 구분한다.
+
+최신 source의 최소 글꼴 Rust·Native Skia·lint·최적화 WASM 및 영향 경계 검증은 진행 중이다.
+완료 판정이나 최종 승인으로 표시하지 않는다. 검증 중 소스 해시를 고정하고 문서 갱신과 구분한다.
+충돌 없는 리베이스 뒤 기존 전쪽 비교를 반복하지 않는 작업지시자의 범위를 따른다.
+새 base 기능은 같은 시스템 글꼴 환경의 실제 base/candidate 출력과 영향 경계로 대조한다.
+새 base 대비 허용 하락은 0.1%p이며, 보호 PR #8389·#8397은 원 TSV의 소수 둘째 자리
+표시값 하락을 허용하지 않는다. 기존 TSV·PNG의 producer는 원래 출처대로 유지한다.
+
+직전 c183 제품에서는 [최소 글꼴 Rust 12,563 PASS와 필수 40개 실행](assets/planet6897_20261103/rust-validation-c183a1ac61.md),
+[Native 80입력·406쪽](assets/planet6897_20261103/current-c183a1ac61/native-validation.md),
+[fresh WASM 80입력·406쪽](assets/planet6897_20261103/current-c183a1ac61/wasm-validation.md),
+[실제 브라우저/API 실행](assets/planet6897_20261103/runtime-validation-c183a1ac61.md)을 완료했다.
+양쪽 전쪽 최저는 각각 92.45232%·92.87288%다. 이 결과를 최신 리베이스 제품의 재출력으로
+취급하지 않는다. 보호 범위 Native는 17문서·1,770쪽·원 TSV 2,153행의 하락·누락 0행이며,
+같은 c183 WASM 보호 범위의 남은 집계를 진행 중이다. [공식 증거 목록](assets/planet6897_20261103/README.md)과
+[재실행 명령·입력·Print PDF·조판 세대·글꼴 계약](assets/planet6897_20261103/visual-reproduction.md)을 연결한다.
+
+원 PR별 주장 쪽의 직접 판독·회귀 주석·최종 본문 감사를 마친 뒤 수용 판정을 확정한다.
+통합 PR 생성·push·원격 review·comment·close는 아직 수행하지 않았다. PR 생성 전 승인을 기다린다.

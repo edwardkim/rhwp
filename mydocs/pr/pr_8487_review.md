@@ -14,9 +14,9 @@
 | --- | --- |
 | 원 PR | [#8487](https://github.com/edwardkim/rhwp/pull/8487) · `planet6897` → `devel` |
 | 원 head | `da13253c689aa6cf698d011942f41faf5a6b563a` |
-| 통합 적용 커밋 | `8697562f7b4a52782ef0f99d9531e5d07db2b2ed, 1d84092c01ec4b891263c333232c3389eb884799` |
-| 최종 검토 기준 devel | `22947f6a90c998e95fa51238d5b907a0ebd37162` |
-| 최종 필수 검증 제품 코드 | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` |
+| 통합 적용 커밋 | `845f4aa837bbf8d0b1081a178025a79eb6c7de4c, 01e177203756805f3d0436d4c634764909e539cc` |
+| 이전 검토 기준 devel | `22947f6a90c998e95fa51238d5b907a0ebd37162` |
+| 이전 필수 검증 제품 코드 | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` |
 | 전쪽 시각 측정 producer / 당시 base | `4b149b6cdfc514b9858ed644be2cf8120c731cd4` / `7fdd5441ff1e77c083818e920a48089f294de35e` |
 | reviewer | `jangster77` 요청. 2026-11-04T17:44:08.556Z 원 head 불변·Open·non-Draft·요청 상태 재확인 |
 | 기본 경로 | `maintainer_general` |
@@ -65,24 +65,35 @@ missing_lines 입력에서 저장 줄이 없는 본문 순서와 뒤 문단을 �
 | --- | --- | --- |
 | `missing_lines.hwpx` 2쪽 · 저장 vpos 리셋 | 100.00% · [review](assets/planet6897_20261103/pr_8487/pr8487-claim-p002-missing_lines-native-review.png) / [overlay](assets/planet6897_20261103/pr_8487/pr8487-claim-p002-missing_lines-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8487/pr8487-claim-p002-missing_lines-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8487/pr8487-claim-p002-missing_lines-wasm-overlay.png) |
 
-## 통합 최종 검증 조건
-
-- 제품 `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973`의 전체 Rust 12,561개 통과와 Native Skia·CI 통합 모듈 21개·Rust lint를 확인했습니다.
-- 최적화 fresh WASM의 실제 브라우저 실행과 공개 API 검사를 완료했습니다.
-- 전쪽 측정 producer에서 Native/fresh WASM 각 80개 입력·406쪽은 모두 90% 이상입니다.
-- Native의 당시 base 대비 406쪽 대조와 PR #8389·#8397의 원 TSV 표시값 무하락 대조는 완료했습니다.
-- WASM의 당시 base 대비 전쪽 대조와 최신 base 기능 보존의 남은 실행은 아래와 같습니다.
-
-- 대기: 동일 환경에서 당시 base 대비 WASM 80개 입력·406쪽의 0.1%p 하락 게이트 완료
-- 새 base의 실제 Native/WASM 제품과 후보의 집중 대조 14쪽은 모두 같은 raw입니다. [실행·대조 원본](assets/planet6897_20261103/rebase_scope_22947f6a90/README.md)을 확인했습니다.
-- 대기: 주장 쪽 직접 판독·회귀 주석·수동 작성 리뷰와 PR 본문 최종 감사
-
-이 대기 항목을 완료하지 않은 상태에서는 최종 검증 완료·승인으로 판정하지 않습니다.
-[완료·대기 검증 원본 기록](assets/planet6897_20261103/intermediate-evidence-summary.md)
-
 ## Merge 후 원 PR 후속 처리
 
 통합 PR 생성·병합과 원 PR 댓글·닫기는 아직 수행하지 않았습니다.
 실제 병합 뒤 원 PR의 주장 문서·페이지에 대응하는 증거와 merge SHA를 연결합니다.
 
 <!-- planet6897-20261103-generated-review -->
+
+## 최신 리베이스 이후 통합 검증 상태
+
+최신 base는 `f529dc92d4d172bf32390d7749743a45d9e41bfc`, 검증 시작 source는
+`ba2ebfd34a4ebf402bce8e002254b672a09ef764`다. 원 PR 39개와 메인터너 보정을 담은
+168개 커밋을 충돌 0건으로 리베이스했고 range-diff 전 행이 `=`로 대응했다.
+[원 head와 현재 적용 SHA](assets/planet6897_20261103/integration-commits.md)를 구분한다.
+
+최신 source의 최소 글꼴 Rust·Native Skia·lint·최적화 WASM 및 영향 경계 검증은 진행 중이다.
+완료 판정이나 최종 승인으로 표시하지 않는다. 검증 중 소스 해시를 고정하고 문서 갱신과 구분한다.
+충돌 없는 리베이스 뒤 기존 전쪽 비교를 반복하지 않는 작업지시자의 범위를 따른다.
+새 base 기능은 같은 시스템 글꼴 환경의 실제 base/candidate 출력과 영향 경계로 대조한다.
+새 base 대비 허용 하락은 0.1%p이며, 보호 PR #8389·#8397은 원 TSV의 소수 둘째 자리
+표시값 하락을 허용하지 않는다. 기존 TSV·PNG의 producer는 원래 출처대로 유지한다.
+
+직전 c183 제품에서는 [최소 글꼴 Rust 12,563 PASS와 필수 40개 실행](assets/planet6897_20261103/rust-validation-c183a1ac61.md),
+[Native 80입력·406쪽](assets/planet6897_20261103/current-c183a1ac61/native-validation.md),
+[fresh WASM 80입력·406쪽](assets/planet6897_20261103/current-c183a1ac61/wasm-validation.md),
+[실제 브라우저/API 실행](assets/planet6897_20261103/runtime-validation-c183a1ac61.md)을 완료했다.
+양쪽 전쪽 최저는 각각 92.45232%·92.87288%다. 이 결과를 최신 리베이스 제품의 재출력으로
+취급하지 않는다. 보호 범위 Native는 17문서·1,770쪽·원 TSV 2,153행의 하락·누락 0행이며,
+같은 c183 WASM 보호 범위의 남은 집계를 진행 중이다. [공식 증거 목록](assets/planet6897_20261103/README.md)과
+[재실행 명령·입력·Print PDF·조판 세대·글꼴 계약](assets/planet6897_20261103/visual-reproduction.md)을 연결한다.
+
+원 PR별 주장 쪽의 직접 판독·회귀 주석·최종 본문 감사를 마친 뒤 수용 판정을 확정한다.
+통합 PR 생성·push·원격 review·comment·close는 아직 수행하지 않았다. PR 생성 전 승인을 기다린다.
