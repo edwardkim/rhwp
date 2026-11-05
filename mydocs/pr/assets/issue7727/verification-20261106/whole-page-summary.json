@@ -1,0 +1,29 @@
+{
+  "base": "170b886f167b705b6e630c5b34bb638d92fae0a9",
+  "code_head": "fc378076f23aa60838a2871a7532d09830384216",
+  "source_reused": true,
+  "runtime_changed": false,
+  "method": "canonical 96DPI compat2022 PDFium 2px raw. 원본 재출력 PNG의 hash/producer가 같은 조건에서 독립 PDF raster를 전쪽 새로 만들고 TSV를 다시 산출했다.",
+  "automatic_png_pair_gate": "not_evaluated; 이 빠른 모드의 상태를 자동 PR 승인으로 쓰지 않는다. 별도 문서 쪽수·내용 소속·대표 review 판독을 합쳐 판정한다.",
+  "reports": [
+    {
+      "backend": "native",
+      "pages": 204,
+      "same_base_candidate_pngs": 204,
+      "below90": 0,
+      "decline_over_0_1pp": 0,
+      "minimum_raw": 92.05,
+      "minimum_page": 11
+    },
+    {
+      "backend": "wasm",
+      "pages": 204,
+      "same_base_candidate_pngs": 204,
+      "below90": 0,
+      "decline_over_0_1pp": 0,
+      "minimum_raw": 92.16,
+      "minimum_page": 11
+    }
+  ],
+  "overall_pr_ready": false
+}
