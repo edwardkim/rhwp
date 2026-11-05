@@ -1,6 +1,6 @@
 //! 관계형 및 고정형 회귀: 구역 경계·저장 줄·내용 순서와 API 구역 수 계약. 좌표 비교는 원본 구역 위 여백과 실제 배치의 관계다.
-//! 주석 갱신: 2026-11-06T08:04:31+09:00 (Asia/Seoul).
-//! 직전 파일 변경: 9c4f8727d6ea3ea6730d31bdddb74ee371f42690, 작성 2026-11-03T18:27:10+09:00, 커밋 2026-11-06T03:15:17+09:00.
+//! 주석 갱신: 2026-11-06T08:25:01+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 5172f2d55c73b2ed33d4d3657d81e769bc9004c2, 작성 2026-11-06T08:13:58+09:00, 커밋 2026-11-06T08:13:58+09:00.
 //! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
 //! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
 //! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
@@ -11,7 +11,7 @@
 //! actual-api-merged.hwp (api-8541-merged-hwp): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
 //! actual-api-merged.hwpx (api-8541-merged-hwpx): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
 //! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
-//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.json.
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.md.
 //! 원본 형식 계약:
 //! 구역 나누기·합치기(`splitSection`·`mergeSection`) — 한/글 12.30(Mac) [쪽-구역 나누기]와 구역 경계 지우기.
 //!

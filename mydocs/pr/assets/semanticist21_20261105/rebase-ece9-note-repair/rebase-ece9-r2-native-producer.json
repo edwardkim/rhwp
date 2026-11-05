@@ -1,7 +1,0 @@
-{
-  "source_sha": "dc39658f812d22c961ddd0fbc8e71c7ec7a52e5b",
-  "binary": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/rhwp-rebase-ece9-r2-native",
-  "sha256": "f564cb394403e02085eaf1888615671ee4b7468a6a435cc5db3da2adb310f669",
-  "build_log": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/rebase-ece9-r2-native-build.log",
-  "exit_code": 0
-}

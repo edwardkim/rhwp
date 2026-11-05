@@ -1,13 +1,13 @@
 //! 관계형 및 고정형 회귀: 원본 모양 순서·표시 문자·전각 한 칸의 글자 크기 비율을 보존한다. 절대 배치 좌표는 고정하지 않는다. 같은 원본의 독립 한컴 Print 전체 1쪽과 대응 내용 보존을 함께 검사한다.
-//! 주석 갱신: 2026-11-06T08:04:31+09:00 (Asia/Seoul).
-//! 직전 파일 변경: bb9341a4b2767d7be2412df014cf5b512ce447ea, 작성 2026-11-05T07:25:55+09:00, 커밋 2026-11-06T03:15:46+09:00.
+//! 주석 갱신: 2026-11-06T08:25:01+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 5172f2d55c73b2ed33d4d3657d81e769bc9004c2, 작성 2026-11-06T08:13:58+09:00, 커밋 2026-11-06T08:13:58+09:00.
 //! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
 //! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
 //! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
 //! hancom-mac-shapes.hwp (8616-hancom-mac-shapes-hwp-2022): 전 1쪽, Native 최저 99.2128%, fresh WASM 최저 99.22558%.
 //! hancom-mac-shapes.hwpx (8616-hancom-mac-shapes-hwpx-2022): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
 //! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
-//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.json.
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.md.
 //! 원본 형식 계약:
 //! 한컴 Mac 12.30 글자 겹치기 창의 14개 모양을 읽고 그리고 저장한다.
 //!

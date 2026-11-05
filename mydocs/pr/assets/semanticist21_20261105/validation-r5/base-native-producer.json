@@ -1,8 +1,0 @@
-{
-  "source_sha": "170b886f167b705b6e630c5b34bb638d92fae0a9",
-  "binary": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/rhwp-base-170b-native",
-  "sha256": "09a3d39f157d38c4a498c023e36a949bed23d2a480918fa54d847967c281bcc4",
-  "rlib": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/fixture-generator/librhwp-base-170b.rlib",
-  "rlib_sha256": "d478ff9e6880bacff9a90d907efe51ebb33d5ddec2af334cc2d39c6f7a7dbc33",
-  "exit_code": 0
-}

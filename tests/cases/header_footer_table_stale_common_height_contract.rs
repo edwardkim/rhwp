@@ -1,6 +1,6 @@
 //! 관계형 회귀: 머리말·꼬리말 표의 셀 최소 높이·내용 포함·소속 보존과 정상 비인라인 대조. 과거의 2배 임계값·200px 핀은 사용하지 않는다.
-//! 주석 갱신: 2026-11-06T08:04:31+09:00 (Asia/Seoul).
-//! 직전 파일 변경: 87398b8d03fe4c88c4a20d100336fe40252bb955, 작성 2026-11-06T02:37:11+09:00, 커밋 2026-11-06T03:17:24+09:00.
+//! 주석 갱신: 2026-11-06T08:25:01+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 5172f2d55c73b2ed33d4d3657d81e769bc9004c2, 작성 2026-11-06T08:13:58+09:00, 커밋 2026-11-06T08:13:58+09:00.
 //! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
 //! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
 //! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
@@ -13,7 +13,7 @@
 //! non-inline-header-table.hwp (api-8571-non-inline-header-table-hwp): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
 //! non-inline-header-table.hwpx (api-8571-non-inline-header-table-hwpx): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
 //! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
-//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.json.
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.md.
 //! 원본 형식 계약:
 //! 관계형: 머리말·꼬리말 표의 셀 최소 높이·내용 포함·원본 소속 보존.
 //! 주석 갱신: 2026-11-06T02:33:40+09:00. 직전 파일 커밋: 2026-10-19T20:25:11+09:00,

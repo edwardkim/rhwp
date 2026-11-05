@@ -1,8 +1,0 @@
-{
-  "source_sha": "170b886f167b705b6e630c5b34bb638d92fae0a9",
-  "package": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/base-170b-wasm-pkg",
-  "wasm_sha256": "8a420d0b2e7895187cd917eca0e193c245316cf5ccd84e938b431d636f4d7ee6",
-  "glue_sha256": "8ad202184fcb970d908e338761e36863a1f7508806bd426be491bd3cc069a769",
-  "optimization": "wasm-pack managed wasm-opt",
-  "exit_code": 0
-}

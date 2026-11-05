@@ -2,16 +2,16 @@
 
 ## 최종 판정
 
-**머지 보류 — R5 통합 제품의 최종 검증 진행 중.**
+**머지 보류 — R6 전쪽 시각 검증과 개별 동작 판독 완료, 최종 편람·Rust 게이트 진행 중.**
 
-아래 입력의 Native/fresh WASM·직접 판독과 전체 필수 게이트를 완료한 뒤 최종 수용 판정을 갱신한다. 원격 comment·approve·push·merge·close는 실행하지 않았다.
+원본별 Native/fresh WASM 전쪽 TSV와 같은 주장 페이지의 review·overlay를 아래에 연결했다. 원격 PR 생성·CI·merge·close는 실제 실행 뒤 별도로 기록한다.
 
 ## 접수 정보
 
 - 원 PR: [PR #8616](https://github.com/edwardkim/rhwp/pull/8616), 작성자 `semanticist21`, reviewer `jangster77`.
 - 원 head: `5768ed5323238c5b1e1027eb0e0dcba6c62e26d8`. 2026-11-06 재조회에서 검토 시작 때와 같고 Open·Non-Draft다.
 - 고정 base: `170b886f167b705b6e630c5b34bb638d92fae0a9`(PR #8542 포함).
-- 현재 제품 source: `71e5e0ae2a72a6b8f51682d131077bd4df44994f`. 아래 표는 R5 실제 측정이며, 리베이스 전 R2/R3/R4 결과는 통합 분석과 기존 증적에서 구분한다.
+- 현재 제품 source: `86709ac16711820e61baa3b87e2c4ddaac23573e`. 아래 표는 R6 새 Native·fresh WASM 실제 측정이다. R5 과거 증거는 출처를 구분해 보존한다.
 - 통합 브랜치: `review/integration-20261105-semanticist21-open`.
 
 ## 원 주장과 실제 검증 범위
@@ -36,44 +36,61 @@
 
 ## 검증 입력과 전쪽 결과
 
-아래는 제품 `71e5e0ae2a72a6b8f51682d131077bd4df44994f`의 실제 R5 측정이다. Native·fresh WASM을 구분하고 아직 끝나지 않은 행은 진행 중으로 표시한다. 최종 수용은 전체 필수 검증 뒤 판정한다.
+제품 R6의 실제 전체 페이지 측정이다. 두 출력 경로와 독립 Print PDF의 전체 쪽수가 일치하며,
+모든 페이지가 90% 이상이다. 96 DPI·Print 프로필·색상 경계 보정 전 2px raw를 사용했다.
 
 | 같은 원본·용도 | 전체 쪽수 | Native 최저 raw·TSV | fresh WASM 최저 raw·TSV | 독립 Print PDF |
 | --- | ---: | --- | --- | --- |
-| [hancom-mac-shapes.hwp](../../samples/char_overlap/hancom-mac-shapes.hwp) — 글자 겹치기 14모양·PUA 숫자 | 1 | [99.2128%](assets/semanticist21_20261105/validation-r5/tsv/8616-hancom-mac-shapes-hwp-2022-native.tsv) | 진행 중 | [PDF](../../samples/char_overlap/hancom-mac-shapes.pdf) |
-| [hancom-mac-shapes.hwpx](../../samples/char_overlap/hancom-mac-shapes.hwpx) — HWPX 글자 겹치기 14모양 | 1 | [100.0%](assets/semanticist21_20261105/validation-r5/tsv/8616-hancom-mac-shapes-hwpx-2022-native.tsv) | 진행 중 | [PDF](../../samples/char_overlap/hancom-mac-shapes.pdf) |
-| [hancom-mac-dutmal.hwp](../../samples/dutmal/hancom-mac-dutmal.hwp) — 덧말 본말·덧말과 기준선 | 1 | [100.0%](assets/semanticist21_20261105/validation-r5/tsv/8616-hancom-mac-dutmal-hwp-2022-native.tsv) | 진행 중 | [PDF](../../samples/dutmal/hancom-mac-dutmal.pdf) |
-| [hancom-mac-dutmal.hwpx](../../samples/dutmal/hancom-mac-dutmal.hwpx) — HWPX 덧말 본말·덧말 | 1 | [100.0%](assets/semanticist21_20261105/validation-r5/tsv/8616-hancom-mac-dutmal-hwpx-2022-native.tsv) | 진행 중 | [PDF](../../pdf/semanticist21-20261105/pr8616/hancom-mac-dutmal-hwpx-2020.pdf) |
-| [hancom-mac-shapes.hwp](../../samples/char_overlap/hancom-mac-shapes.hwp) — 글자 겹치기 14모양·PUA 숫자 | 1 | [99.27308%](assets/semanticist21_20261105/validation-r5/tsv/8616-hancom-mac-shapes-hwp-2024-native.tsv) | 진행 중 | [PDF](../../samples/char_overlap/hancom-mac-shapes.pdf) |
-| [hancom-mac-shapes.hwpx](../../samples/char_overlap/hancom-mac-shapes.hwpx) — HWPX 글자 겹치기 14모양 | 1 | [100.0%](assets/semanticist21_20261105/validation-r5/tsv/8616-hancom-mac-shapes-hwpx-2024-native.tsv) | 진행 중 | [PDF](../../samples/char_overlap/hancom-mac-shapes.pdf) |
-| [hancom-mac-dutmal.hwp](../../samples/dutmal/hancom-mac-dutmal.hwp) — 덧말 본말·덧말과 기준선 | 1 | [100.0%](assets/semanticist21_20261105/validation-r5/tsv/8616-hancom-mac-dutmal-hwp-2024-native.tsv) | 진행 중 | [PDF](../../samples/dutmal/hancom-mac-dutmal.pdf) |
-| [36389301_결재문서본문_직장훈련계획_덧말.hwpx](../../samples/hwpx/opengov/36389301_결재문서본문_직장훈련계획_덧말.hwpx) — 원 PR의 결재 문서 덧말 본말·덧말 표시 | 2 | [100.0%](assets/semanticist21_20261105/validation-r5/tsv/8616-opengov-ruby-native.tsv) | 진행 중 | [PDF](../../pdf/semanticist21-20261105/pr8616/opengov-36389301-ruby-2020.pdf) |
-| [nonbmp-endnote-false.hwp](../../tests/fixtures/char_overlap_caret_axis/nonbmp-endnote-false.hwp) — 같은 검사 파일의 기존 ±2px 캐럿 핀을 유지하는 완료 페이지의 98% 조건 확인. 원 PR의 대표 문서로 대체하지 않음 | 1 | [100.0%](assets/semanticist21_20261105/validation-r5/tsv/8616-existing-caret-false-hwp-native.tsv) | 진행 중 | [PDF](../../pdf/issue7819_char_overlap_caret_axis/nonbmp-endnote-false-hwp-2020.pdf) |
-| [nonbmp-endnote-false.hwpx](../../tests/fixtures/char_overlap_caret_axis/nonbmp-endnote-false.hwpx) — 같은 검사 파일의 기존 ±2px 캐럿 핀을 유지하는 완료 페이지의 98% 조건 확인. 원 PR의 대표 문서로 대체하지 않음 | 1 | [100.0%](assets/semanticist21_20261105/validation-r5/tsv/8616-existing-caret-false-hwpx-native.tsv) | 진행 중 | [PDF](../../pdf/issue7819_char_overlap_caret_axis/nonbmp-endnote-false-hwpx-2020.pdf) |
-| [nonbmp-endnote-true.hwp](../../tests/fixtures/char_overlap_caret_axis/nonbmp-endnote-true.hwp) — 같은 검사 파일의 기존 ±2px 캐럿 핀을 유지하는 완료 페이지의 98% 조건 확인. 원 PR의 대표 문서로 대체하지 않음 | 1 | [100.0%](assets/semanticist21_20261105/validation-r5/tsv/8616-existing-caret-true-hwp-native.tsv) | 진행 중 | [PDF](../../pdf/issue7819_char_overlap_caret_axis/nonbmp-endnote-true-hwp-2020.pdf) |
-| [nonbmp-endnote-true.hwpx](../../tests/fixtures/char_overlap_caret_axis/nonbmp-endnote-true.hwpx) — 같은 검사 파일의 기존 ±2px 캐럿 핀을 유지하는 완료 페이지의 98% 조건 확인. 원 PR의 대표 문서로 대체하지 않음 | 1 | [100.0%](assets/semanticist21_20261105/validation-r5/tsv/8616-existing-caret-true-hwpx-native.tsv) | 진행 중 | [PDF](../../pdf/issue7819_char_overlap_caret_axis/nonbmp-endnote-true-hwpx-2020.pdf) |
+| [hancom-mac-shapes.hwp](../../samples/char_overlap/hancom-mac-shapes.hwp) — 글자 겹치기 14모양·PUA 숫자 | 1 | [99.2128%](assets/semanticist21_20261105/validation-r6/tsv/8616-hancom-mac-shapes-hwp-2022-native.tsv) | [99.22558%](assets/semanticist21_20261105/validation-r6/tsv/8616-hancom-mac-shapes-hwp-2022-wasm.tsv) | [PDF](../../samples/char_overlap/hancom-mac-shapes.pdf) |
+| [hancom-mac-shapes.hwpx](../../samples/char_overlap/hancom-mac-shapes.hwpx) — HWPX 글자 겹치기 14모양 | 1 | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-hancom-mac-shapes-hwpx-2022-native.tsv) | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-hancom-mac-shapes-hwpx-2022-wasm.tsv) | [PDF](../../samples/char_overlap/hancom-mac-shapes.pdf) |
+| [hancom-mac-dutmal.hwp](../../samples/dutmal/hancom-mac-dutmal.hwp) — 덧말 본말·덧말과 기준선 | 1 | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-hancom-mac-dutmal-hwp-2022-native.tsv) | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-hancom-mac-dutmal-hwp-2022-wasm.tsv) | [PDF](../../samples/dutmal/hancom-mac-dutmal.pdf) |
+| [hancom-mac-dutmal.hwpx](../../samples/dutmal/hancom-mac-dutmal.hwpx) — HWPX 덧말 본말·덧말 | 1 | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-hancom-mac-dutmal-hwpx-2022-native.tsv) | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-hancom-mac-dutmal-hwpx-2022-wasm.tsv) | [PDF](../../pdf/semanticist21-20261105/pr8616/hancom-mac-dutmal-hwpx-2020.pdf) |
+| [hancom-mac-shapes.hwp](../../samples/char_overlap/hancom-mac-shapes.hwp) — 글자 겹치기 14모양·PUA 숫자 | 1 | [99.27308%](assets/semanticist21_20261105/validation-r6/tsv/8616-hancom-mac-shapes-hwp-2024-native.tsv) | [99.25168%](assets/semanticist21_20261105/validation-r6/tsv/8616-hancom-mac-shapes-hwp-2024-wasm.tsv) | [PDF](../../samples/char_overlap/hancom-mac-shapes.pdf) |
+| [hancom-mac-shapes.hwpx](../../samples/char_overlap/hancom-mac-shapes.hwpx) — HWPX 글자 겹치기 14모양 | 1 | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-hancom-mac-shapes-hwpx-2024-native.tsv) | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-hancom-mac-shapes-hwpx-2024-wasm.tsv) | [PDF](../../samples/char_overlap/hancom-mac-shapes.pdf) |
+| [hancom-mac-dutmal.hwp](../../samples/dutmal/hancom-mac-dutmal.hwp) — 덧말 본말·덧말과 기준선 | 1 | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-hancom-mac-dutmal-hwp-2024-native.tsv) | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-hancom-mac-dutmal-hwp-2024-wasm.tsv) | [PDF](../../samples/dutmal/hancom-mac-dutmal.pdf) |
+| [36389301_결재문서본문_직장훈련계획_덧말.hwpx](../../samples/hwpx/opengov/36389301_결재문서본문_직장훈련계획_덧말.hwpx) — 원 PR의 결재 문서 덧말 본말·덧말 표시 | 2 | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-opengov-ruby-native.tsv) | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-opengov-ruby-wasm.tsv) | [PDF](../../pdf/semanticist21-20261105/pr8616/opengov-36389301-ruby-2020.pdf) |
+| [nonbmp-endnote-false.hwp](../../tests/fixtures/char_overlap_caret_axis/nonbmp-endnote-false.hwp) — 같은 검사 파일의 기존 ±2px 캐럿 핀을 유지하는 완료 페이지의 98% 조건 확인. 원 PR의 대표 문서로 대체하지 않음 | 1 | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-existing-caret-false-hwp-native.tsv) | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-existing-caret-false-hwp-wasm.tsv) | [PDF](../../pdf/issue7819_char_overlap_caret_axis/nonbmp-endnote-false-hwp-2020.pdf) |
+| [nonbmp-endnote-false.hwpx](../../tests/fixtures/char_overlap_caret_axis/nonbmp-endnote-false.hwpx) — 같은 검사 파일의 기존 ±2px 캐럿 핀을 유지하는 완료 페이지의 98% 조건 확인. 원 PR의 대표 문서로 대체하지 않음 | 1 | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-existing-caret-false-hwpx-native.tsv) | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-existing-caret-false-hwpx-wasm.tsv) | [PDF](../../pdf/issue7819_char_overlap_caret_axis/nonbmp-endnote-false-hwpx-2020.pdf) |
+| [nonbmp-endnote-true.hwp](../../tests/fixtures/char_overlap_caret_axis/nonbmp-endnote-true.hwp) — 같은 검사 파일의 기존 ±2px 캐럿 핀을 유지하는 완료 페이지의 98% 조건 확인. 원 PR의 대표 문서로 대체하지 않음 | 1 | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-existing-caret-true-hwp-native.tsv) | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-existing-caret-true-hwp-wasm.tsv) | [PDF](../../pdf/issue7819_char_overlap_caret_axis/nonbmp-endnote-true-hwp-2020.pdf) |
+| [nonbmp-endnote-true.hwpx](../../tests/fixtures/char_overlap_caret_axis/nonbmp-endnote-true.hwpx) — 같은 검사 파일의 기존 ±2px 캐럿 핀을 유지하는 완료 페이지의 98% 조건 확인. 원 PR의 대표 문서로 대체하지 않음 | 1 | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-existing-caret-true-hwpx-native.tsv) | [100.0%](assets/semanticist21_20261105/validation-r6/tsv/8616-existing-caret-true-hwpx-wasm.tsv) | [PDF](../../pdf/issue7819_char_overlap_caret_axis/nonbmp-endnote-true-hwpx-2020.pdf) |
 
-[원본·PDF SHA와 보존 경로](assets/semanticist21_20261105/validation-r5/inputs.json), [페이지별 정밀 raw·쪽수·producer](assets/semanticist21_20261105/validation-r5/measurements.json)를 연결한다. 실제 실행 파일과 커밋 파일의 동일성을 확인했으며, 다른 문서의 높은 수치로 미달 쪽을 상쇄하지 않는다.
+[원본·PDF SHA·producer·정밀 raw](assets/semanticist21_20261105/validation-r6/measurements.md), [측정 명령·환경](assets/semanticist21_20261105/validation-r6/README.md)를 연결한다. 원 PR 원본·실제 API 저장본·보충 대조군의 용도를 구분한다.
 
 ## 주장에 대응하는 페이지 증적
 
-다음 이미지는 같은 R5 측정의 실제 PNG로 현재 Visual Sweep 함수를 실행해 만들었다. 원본과 PDF를 다시 출력하지 않았고, 해당 입력·쪽의 raw가 TSV와 같은지 확인했다. 직접 판독 완료 여부와 전체 통과 판정은 별도로 기록한다.
+같은 원본·독립 PDF·페이지의 실제 PNG다. 직접 판독과 실제 API 검증을 구분한다. 일부 Native 패널은 현재 RHWP/PDF PNG 쌍의 SHA가 이전 판독 쌍과 각각 같음을 확인해 재사용했다.
 
-### native · 8616-hancom-mac-shapes-hwp-2022 · 1쪽
+### 8616-hancom-mac-shapes-hwp-2022 · 1쪽
 
 원 PR 한컴 저장본의 14개 겹침 모양·PUA 숫자와 전각 폭
 
-![같은 원본 1쪽 review](assets/semanticist21_20261105/validation-r5/png/pr8616/native/8616-hancom-mac-shapes-hwp-2022/review_001.png)
+**native raw 99.2128%** — 14개 모양의 순서·두 자리 12·반전 모양·뒤 한글·끝 문자열이 같은 첫 쪽에 남는다. PUA 자체가 본문으로 노출되지 않고 원·사각·삼각·순환 모양과 숫자가 보인다. 획 농도·경계의 차이는 raw와 구분한다.
 
-![같은 원본 1쪽 overlay](assets/semanticist21_20261105/validation-r5/png/pr8616/native/8616-hancom-mac-shapes-hwp-2022/overlay_001.png)
+![native 같은 원본 1쪽 review](assets/semanticist21_20261105/validation-r6/png/pr8616/native/8616-hancom-mac-shapes-hwp-2022/review_001.png)
 
-### native · 8616-hancom-mac-dutmal-hwpx-2022 · 1쪽
+![native 같은 원본 1쪽 overlay](assets/semanticist21_20261105/validation-r6/png/pr8616/native/8616-hancom-mac-shapes-hwp-2022/overlay_001.png)
+
+**wasm raw 99.22558%** — 14개 모양의 원·반전원·사각형·삼각형·순환 기호와 PUA 숫자12, 아래 한글 겹침 글자·후속 끝 글자가 보존된다. 자원 글리프의 미세한 윤곽 차이는 있으나 전각 칸·문자 순서는 대응한다.
+
+![wasm 같은 원본 1쪽 review](assets/semanticist21_20261105/validation-r6/png/pr8616/wasm/8616-hancom-mac-shapes-hwp-2022/review_001.png)
+
+![wasm 같은 원본 1쪽 overlay](assets/semanticist21_20261105/validation-r6/png/pr8616/wasm/8616-hancom-mac-shapes-hwp-2022/overlay_001.png)
+
+### 8616-hancom-mac-dutmal-hwpx-2022 · 1쪽
 
 원 PR의 본말·덧말 실제 표시
 
-![같은 원본 1쪽 review](assets/semanticist21_20261105/validation-r5/png/pr8616/native/8616-hancom-mac-dutmal-hwpx-2022/review_001.png)
+**native raw 100.0%** — 漢字·한·대한민국만세·글자·스타일의 본말과 위·아래 덧말의 소속을 대조했다. 본문 앞 가·뒤 나·후속 문자열과 덧말의 위아래 위치, 차례제목의 색상·크기를 보존한다.
 
-![같은 원본 1쪽 overlay](assets/semanticist21_20261105/validation-r5/png/pr8616/native/8616-hancom-mac-dutmal-hwpx-2022/overlay_001.png)
+![native 같은 원본 1쪽 review](assets/semanticist21_20261105/validation-r6/png/pr8616/native/8616-hancom-mac-dutmal-hwpx-2022/review_001.png)
+
+![native 같은 원본 1쪽 overlay](assets/semanticist21_20261105/validation-r6/png/pr8616/native/8616-hancom-mac-dutmal-hwpx-2022/overlay_001.png)
+
+**wasm raw 100.0%** — 본말 漢字·한·대한민국만세·글자·스타일 및 위·아래 덧말의 소속과 순서, 후속 본문 원점이 독립 Print와 대응한다.
+
+![wasm 같은 원본 1쪽 review](assets/semanticist21_20261105/validation-r6/png/pr8616/wasm/8616-hancom-mac-dutmal-hwpx-2022/review_001.png)
+
+![wasm 같은 원본 1쪽 overlay](assets/semanticist21_20261105/validation-r6/png/pr8616/wasm/8616-hancom-mac-dutmal-hwpx-2022/overlay_001.png)
 
 ## 회귀와 조판 원칙 준수
 
@@ -82,12 +99,22 @@
 - [tests/cases/compose_controls_insert.rs](../../tests/cases/compose_controls_insert.rs)
 - [tests/cases/ruby_hancom_render.rs](../../tests/cases/ruby_hancom_render.rs)
 
-- [최소 글꼴 집중 회귀](assets/semanticist21_20261105/validation-r5/focused-regression.txt)는 184건 PASS다. 전체 Rust 회귀 완료로 대신하지 않는다.
-- R5 Native 전체는 128개 입력·301쪽, 최저 91.81%다. [전체 Rust 목록 대조](assets/semanticist21_20261105/validation-r5/full-rust-inventory-audit.json)에서 최소 글꼴 5개·55개 binary·12,735건 PASS·45건 ignored를 확인했고 누락·중복은 없다. [실제 브라우저·생성 타입 검증](assets/semanticist21_20261105/validation-r5/ui/README.md)도 완료했다. fresh WASM·새 base 대비 비교·보호 PR #8389/#8397·편람 게이트·lint·Native Skia의 최종 결과는 계속 통합한다.
-- 원본 단위·참조 보존과 실물 배치의 절대 좌표 고정을 구분한다. 완료 페이지의 Native/fresh WASM 양쪽 raw 98% 이상과 독립 PDF 확대 판독을 확인한 핀만 유지하며, 회귀 첫머리를 실제 측정 근거로 갱신한다.
-- 리베이스 전 R2/R3의 성공 기록과 현재 R5를 구분한다. source·측정 조건이 같은 완전한 증거만 재사용하고 현재 제품의 실패를 과거 통과로 덮지 않는다.
+- 현재 전쪽 검증은 Native 128입력·301쪽 최저 91.81401%, fresh WASM 128입력·301쪽 최저 91.17272%다. 같은 새 base의 각 301쪽 대비 하락 0쪽이다. [현재 증거](assets/semanticist21_20261105/validation-r6/README.md)를 연결한다.
+- 실제 API 12그룹·브라우저 동작·TypeScript/production build·생성 타입 export와 소비 검사는 [API](assets/semanticist21_20261105/validation-r6/api/README.md)·[UI](assets/semanticist21_20261105/validation-r6/ui/README.md)에 연결했다. 원래 R5 전체 Rust 12,735건을 R6 새 실행으로 표현하지 않는다.
+- 최종 코드 커밋 `5172f2d55c73b2ed33d4d3657d81e769bc9004c2`의 공식 편람 게이트와 최소 글꼴 전체 Rust·lint·Native Skia·release·doctest를 진행 중이다. 이 필수 단계 전에는 최종 승인·PR 생성으로 넘어가지 않는다.
+- 실제 assertion을 확인해 관계형·고정형을 구분하고 27개 파일 첫머리를 실제 측정값으로 갱신했다. 원본 단위·비율 계약은 유지하며, [17개 완료 페이지](assets/semanticist21_20261105/validation-r6/qualification.md)는 양쪽 98% 이상과 독립 확대 판독 근거로 기존 고정 좌표를 유지한다.
 - 웹폰트 시간 제한·오프라인 검사는 관련 충돌이 없으므로 작업지시자 지시에 따라 반복하지 않는다.
 
-## Merge 후 처리 계획
+## Merge 후 contributor PR comment 계획
 
-통합 PR의 검증·CI·작업지시자 승인 후 원 PR별 해결 범위와 같은 원본·페이지의 증적을 연결한다. 한국어 존댓말의 기존 comment 수정안을 준비하고, 원격 게시·close·merge는 승인 범위에 따라 별도로 수행한다.
+통합 PR의 실제 CI URL·code/trailing head와 확정 merge SHA를 기록한 뒤 원 PR에 한국어 존댓말로 결과를 게시한다. 기존 comment가 있으면 해당 comment를 수정하고 API로 다시 확인한다. 원 기여의 해결 범위와 위 공통 메인터너 보정을 구분한다.
+
+- 실제 확인 페이지: 8616-hancom-mac-shapes-hwp-2022 p1, 8616-hancom-mac-dutmal-hwpx-2022 p1.
+- Native/fresh WASM의 위 같은 원본·쪽 review와 overlay를 사용한다. 수치와 직접 판독 결론·한계는 본문 관측을 그대로 반영한다.
+- 대표 이미지 안정 경로: `mydocs/pr/assets/semanticist21_20261105/validation-r6/png/pr8616/<backend>/<key>/<review 또는 overlay>_NNN.png`. 같은 PR의 추가 완료 페이지는 [패널 목록](assets/semanticist21_20261105/validation-r6/panels.md)을 따른다.
+- URL은 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/` 뒤에 위 실제 경로를 붙인다. devel 포함 확인 후 `--body-file` 게시·API 재조회한다.
+- 문서 비교는 [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 따른다. 원 PR·관련 이슈 close는 같은 해결 범위의 완료와 포함 관계를 확인한 뒤 처리한다.
+
+## Mac 네 원본의 전체 페이지 계약
+
+HWP/HWPX 겹침·덧말 네 입력의 전체 1쪽을 독립 Print와 대조했다. 기존 모양·내용 순서 검사는 유지하고 전체 쪽수·내용 보존 검사를 보완했다. [관련 6건 최소 글꼴 PASS](assets/semanticist21_20261105/validation-r6/runtime-checks.md)를 연결한다. Mac PDF의 버전을 2020으로 재표기하거나 oracle PDF 선택 정책을 완화하지 않았다.

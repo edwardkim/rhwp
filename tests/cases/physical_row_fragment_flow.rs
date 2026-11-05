@@ -1,13 +1,13 @@
 //! 관계형 회귀: 원본 물리 행 조각의 같은 행·가로 비겹침·다음 행 순서·본문 내용 보존. 절대 px 좌표는 고정하지 않는다.
-//! 주석 갱신: 2026-11-06T08:04:31+09:00 (Asia/Seoul).
-//! 직전 파일 변경: aa4f6b847481569f2751821091f4ecb28cc02e6d, 작성 2026-11-06T00:54:26+09:00, 커밋 2026-11-06T03:17:21+09:00.
+//! 주석 갱신: 2026-11-06T08:25:01+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 5172f2d55c73b2ed33d4d3657d81e769bc9004c2, 작성 2026-11-06T08:13:58+09:00, 커밋 2026-11-06T08:13:58+09:00.
 //! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
 //! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
 //! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
 //! moved-terminal-tab.hwp (api-8549-moved-terminal-tab-hwp): 전 1쪽, Native 최저 99.92003%, fresh WASM 최저 99.92149%.
 //! moved-terminal-tab.hwpx (api-8549-moved-terminal-tab-hwpx): 전 1쪽, Native 최저 99.91994%, fresh WASM 최저 99.92141%.
 //! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
-//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.json.
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.md.
 //! 원본 형식 계약:
 //! 관계형: 원본의 물리 행 조각 소유·본문 순서·내용 보존.
 //! 주석 갱신: 2026-11-06T00:51:56+09:00. 신규 파일이므로 직전 파일 변경 커밋은 없다.

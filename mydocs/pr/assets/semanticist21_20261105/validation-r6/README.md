@@ -1,75 +1,50 @@
-# R6 실제 검증 증거
+# R6 최종 시각 증적
 
-제품 source는 `86709ac16711820e61baa3b87e2c4ddaac23573e`, 빌드 시 Git HEAD는 `1da15804ebb5d6fc8f63b7ccb8410018bd42c29d`다.
-이후 변경한 테스트·주석·증적은 제품 소스와 구분한다. Native와 최적화 fresh WASM은 각각 새로
-생성한 실제 출력이며, R5 점수를 R6로 바꿔 적지 않았다.
+제품 `86709ac16711820e61baa3b87e2c4ddaac23573e`의 실제 새 출력이다.
+Native·최적화 fresh WASM 각각 128입력·301쪽이고 독립 Print PDF 전체 쪽수와 같다.
+Native 전쪽 최저 91.81401%, fresh WASM 전쪽 최저 91.17272%, 미달·누락 0쪽.
+새 base `170b886f167b705b6e630c5b34bb638d92fae0a9`의 각 301쪽 대비 하락 자체가 0쪽이다.
 
-| 경로 | 입력 수 | 전체 쪽수 | 전쪽 최저 raw |
-| --- | ---: | ---: | ---: |
-| Native | 128 | 301 | 91.81401% |
-| fresh WASM | 128 | 301 | 91.17272% |
+- [원본·PDF·producer SHA와 입력별 전쪽 결과](measurements.md)
+- [실제 MCP Print job·한컴 제품·Print 경로](print-sources.md)
+- [현재 전쪽 TSV 원문](tsv) · [같은 base의 전쪽 TSV 원문](base-tsv)
+- [반올림 전 전쪽 base 대조](base-comparison.md)
+- [주장 페이지·직접 판독·최종 review/overlay](panels.md)
+- [실제 공급 글꼴·동일 WOFF 변환의 조건 대조](fonts.md)
+- [17개 고정 페이지와 회귀 첫머리 근거](qualification.md)
+- [실제 API·독립 CFB·브라우저·집중 회귀](runtime-checks.md)
 
-전체 독립 PDF 쪽수와 RHWP 쪽수가 같고 미달·측정 누락이 없다.
-각 경로 301쪽의 고정 base `170b886f167b705b6e630c5b34bb638d92fae0a9` 대조에서도
-하락 자체가 0쪽이다. [Native 대조](native-new-base-comparison.json)와
-[WASM 대조](wasm-new-base-comparison.json)에 반올림 전 수치를 보존했다.
-입력별 전쪽 TSV는 [tsv](tsv), 변경 전 base TSV는 [base-tsv](base-tsv)다.
-후보와 변경 전 결과를 혼동하지 않는다.
+## 재현 조건과 명령
 
-## 원본·측정·직접 판독
-
-[measurements.json](measurements.json)에 원본·독립 한컴 Print PDF의 정식 경로와 SHA-256,
-compat, DPI, 전체 쪽수, 정밀 raw, producer, 실제 공급 글꼴을 입력·backend별로 기록했다.
-원본과 PDF는 [기존 입력 목록](../validation-r5/inputs.json)의 정식 파일과 같은 SHA임을 확인했다.
-Mac 12.30 Print와 2020/2024 MCP Print는 출처를 구분하며 임의로 출력 버전을 바꾸지 않는다.
-[panels.json](panels.json)은 원 PR 주장 → 같은 원본·쪽 → 실제 review/overlay → TSV를 연결한다.
-[새 직접 판독](direct-readings-new.json)과 [실제 PNG 쌍 동일성에 따른 판독 재사용](direct-readings-reused.json)을 구분했다.
-90% 또는 100% raw가 픽셀 완전 동일이나 모든 필드 값의 동일성을 뜻하지 않는다.
-특히 PR #8564는 Print 과정에서 재평가된 파일명 필드 값 차이를 판독 기록에 명시했다.
-
-## 재현 명령과 환경
-
-공통 조건은 96 DPI, Print 프로필, 색상 경계 보정 전 2px 내용 실루엣 raw다.
-Native 실제 명령은 다음 형식이다. `--font-environment`와 외부 이미지 공급은 measurements의 해당 입력 조건을 유지한다.
+2026-11-06 KST, 96 DPI, Print 프로필, PDFium 5.13.0/153, 색상 경계 보정 전 2px raw.
+사용한 원본과 독립 Print는 measurements.md의 정식 파일과 같은 SHA다.
+Mac 12.30 Print·2020/2024 MCP Print의 출처를 구분하고, PDF를 재출력하거나 이름만 바꿔 기준을 바꾸지 않는다.
+시각 검증에는 실제 설치 글꼴 전체 1,906 face와 기존 승인 대체 설정을 공급한다.
+회귀는 저장소 공개 글꼴 5개만 노출한 별도 최소 환경이며, 비공개 글꼴 프로그램을 포함하지 않는다.
 
 ```bash
 venv/bin/python scripts/visual_sweep.py --silhouette-only --resume \
-  --dpi 96 --page-workers 1 --rhwp-bin <동일 SHA의 Native 실행 파일> \
-  --hwp <정식 HWP/HWPX> --pdf <독립 Print PDF> --key <키> --compat <원본 compat> \
-  --out output/pr-review/<review-id>/<키>
+  --hwp <정식 원본> --pdf <독립 Print PDF> --key <키> --compat <입력 compat> \
+  --dpi 96 --page-workers 1 --rhwp-bin <동일 SHA Native> --out output/pr-review/<검토>/<키>
 ```
 
-WASM은 정본 exporter로 전체 쪽을 출력한 뒤 정본 PDF raster·PNG pair 점수를 산출했다.
-사전 생성 catalogue는 정본 helper가 실제 시스템 전체 글꼴에서 만든 1,906 face 목록이다.
-대형 문서는 protocolTimeoutMs=3600000, 전체 export 제한 14400초를 명시했으며 점수 계산은 바꾸지 않았다.
+WASM은 현재 최적화 패키지를 정본 exporter에 공급해 전체 쪽을 새로 출력했다.
+options에는 pages=null, workers=1, scale=1, compat·fontEnvironment·linkedImages를 지정했다.
+대형 입력은 protocolTimeoutMs=3600000·명령 timeout 14400초를 명시하며 점수는 바꾸지 않았다.
 
 ```bash
 node scripts/export-wasm-png-for-sweep.mjs --pkg <fresh 최적화 패키지> \
-  --input <정식 원본> --out <출력 경로> --fonts <실제 시스템 catalogue> --options <canvas-options.json>
-venv/bin/python scripts/visual_sweep_pdf.py --pdf <독립 Print PDF> --dpi 96 --prefix <출력 경로>/pdf_png/pdf
+  --input <정식 원본> --out <출력> --fonts <정본 helper의 실제 시스템 catalogue> --options <options 파일>
+venv/bin/python scripts/visual_sweep_pdf.py --pdf <독립 Print PDF> --dpi 96 --prefix <출력>/pdf_png/pdf
 venv/bin/python scripts/visual_sweep.py --silhouette-only --resume \
-  --png-pair <출력 경로>/rhwp_png <출력 경로>/pdf_png --key <키> --out <출력 경로>/scores
+  --png-pair <출력>/rhwp_png <출력>/pdf_png --key <키> --out <출력>/scores
 ```
 
-PNG pair 모드에는 정본 `run_manifest.json`이 생기지 않는다. 실제 exporter 영수증의 모든 페이지·PNG SHA와
-독립 PDF 전체 쪽수를 별도로 대조했다. 없는 manifest를 위조하지 않았다.
-Native [producer](native-producer.json), WASM [producer](wasm-producer.json),
-[시스템 catalogue 동일성](system-font-catalog-comparison.json), [동일 WOFF 테이블 대조](font-table-comparison.json)를 보존했다.
-비공개 글꼴 파일은 포함하지 않는다. 시각 검증은 설치 글꼴 전체를 사용하며,
-회귀 테스트는 저장소 공개 글꼴 5개만 노출한 별도 최소 환경에서 실행한다.
+PNG pair에는 정본 run_manifest가 없으므로 전체 exporter metadata의 페이지·PNG SHA와
+독립 PDF 쪽수를 별도로 검증했다. 없는 manifest를 위조하지 않았다.
+90% 또는 100% raw를 RGB 완전 동일·내용 전수 동일로 표현하지 않는다.
+PR #8564의 동적 파일명 재평가 차이는 직접 판독과 API 기록에 명시한다.
 
-## 동작과 회귀
-
-- [빈 번호 머리 공통 간격 보정](empty-numbering/README.md): 수정 전 2 FAIL, 수정 후 원본·0 거리 대조·독립 원점 등 8 PASS.
-- [Mac 네 원본의 전체 1쪽·내용 보존 검사](mac-page-contracts-minimal.txt): 관련 6 PASS.
-- 27개 테스트 파일 첫머리에 실제 양쪽 전쪽 수치와 이전 Git 시각을 기록했다.
-  [17개 고정 페이지 승인](pin-reading-approval.json)은 양쪽 raw 98% 이상·독립 확대 판독 근거다.
-- [현재 WASM 실제 API](api/actual-results.json) 12그룹 PASS.
-  [저장 바이트 동일성](api/saved-byte-comparison.json)으로 기존 독립 CFB 검사의 재사용 범위를 제한했다.
-- 실제 브라우저 스타일 편집·실패 원자성·undo, base PR #8630 그룹 편집·undo/redo/Esc,
-  TypeScript·Vite production build 및 실제 생성 타입 export·인수 검사와 소비 테스트를 [ui](ui)에 보존했다.
-
-최종 커밋의 공식 Native 383쪽 편람 게이트와 R6 전체 Rust·lint·Skia·release·doctest는 이 단계 뒤 실행한다.
-이 파일의 후보 수치 완료를 해당 필수 게이트 완료나 최종 머지 승인으로 읽지 않는다.
-
-보존한 실행 로그는 원래 출력의 마지막 빈 줄만 정리했다.
+최종 코드의 공식 Native 편람 383쪽 gate와 R6 전체 Rust·lint·Skia·release·doctest는
+실제 종료 뒤 최종 검증 기록에서 확정한다. 후보 시각 수치 완료를 해당 필수 검증 완료로 대신하지 않는다.
+원시 실행 로그·metric/run JSON은 output의 로컬 검증 자료이며 제출하지 않는다.

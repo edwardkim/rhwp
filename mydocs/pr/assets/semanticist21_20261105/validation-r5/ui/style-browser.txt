@@ -1,7 +1,0 @@
-  ➜  Local:   http://127.0.0.1:7790/
-=== E2E: 스타일 생성 반환과 실제 모달·undo 소비 ===
-
-  [browser] headless Chrome 실행
-  [wasm-artifact] matched 1d64c3307cf85a5fde220d501cc32c5ff45ded2b3c048b059b769c21f6e46bb9
-
-📋 HTML 보고서: ../output/e2e/r5_style_browser_probe.mjs-report.html

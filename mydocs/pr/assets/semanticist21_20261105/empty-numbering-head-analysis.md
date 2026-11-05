@@ -51,5 +51,5 @@ HWPX의 수준 9·10 `paraHead`는 문자열이 비어 있지만 `textOffsetType
 원래 R5 라이브러리 SHA `9300b684b8145abf1c2626dd2143a3bd002f0035fbd13b793189f624f7811f2e`에
 관계 검사 드라이버를 연결했다. 최소 공개 글꼴 5개 환경에서 HWP·HWPX 둘 다 실패했다.
 저장 줄 시작 차이를 뺀 본문 상대 거리 비율은 약 `0.0025`, 원본 머리 속성은 `0.5`다.
-[실행 원문](empty-numbering-before.txt)에 두 실패를 보존한다. 실패 기대값을 완화하지 않는다.
+[실행 결과 기록](validation-r6/runtime-checks.md)에 두 실패를 보존한다. 실패 기대값을 완화하지 않는다.
 R6 제품 `86709ac16711820e61baa3b87e2c4ddaac23573e`의 Native 빌드 뒤 같은 관계 검사는 최소 글꼴에서 2건 모두 통과했다. 기존 집중 회귀 184건도 통과했다. HWP/HWPX 원본은 같은 독립 Print PDF로 Native 전 1쪽을 다시 측정해 각각 100.00000%였으며, 개요 9·10수준 본문 간격과 기존 가시 번호를 review·overlay에서 직접 대조했다. [Native 결과와 실제 증거](validation-r6/empty-numbering/README.md)를 연결한다. fresh WASM도 같은 두 원본에서 100.00000%였고 review·overlay 직접 판독을 완료했다. 같은 입력의 정본 실행과 별도 export+PNG-pair는 실제 raster 해시가 같다. 기존 3건과 신규 5건을 포함한 정식 회귀 8건이 최소 글꼴 환경에서 통과했다. 독립 Print의 1쪽 본문 시작 2개는 양쪽 100.00% 조건에 따라 ±1 CSSpx로 고정하고 관계·내용 보존 검사도 유지했다. 통합 전쪽·보호 PR 대조와 전체 필수 검증은 계속 진행한다.

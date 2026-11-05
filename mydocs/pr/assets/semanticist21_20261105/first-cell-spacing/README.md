@@ -8,7 +8,7 @@ R1의 개체 줄 소유 정보가 생겨도 저장 원점이 생긴 것은 아�
 
 실제 출력을 먼저 양쪽 100%로 복구하고 같은 영역을 확대 판독한 뒤, 이 기대값을 원본 HWPX의 `HwpUnitChar prev + Table.outer_margin_top`과 실제 상대 공간의 비율 관계로 정정했다. 원본 1200HU를 임의 px 상수로 바꿔 고정하지 않고 소속·간격 보존을 유지한다. 정상 36494836(저장 줄·탭)과 36312980(셀 사다리·정렬)도 각 전 1쪽 Native/fresh WASM 100%/100%, 99.87%/100%로 확인했다. 기존 완료 페이지의 독립 ±2px 좌표 검사는 그대로 유지한다.
 
-[같은 원본별 측정·SHA](measurements.json), [Native producer](r4-native-producer.json), [최적화 fresh WASM producer](r4-wasm-producer.json)를 연결한다. 입력·PDF는 기존 Git 파일과 실행 바이트의 동일성을 확인했으며 중복 사본을 추가하지 않는다. 같은 폴더의 native/wasm TSV는 페이지별 원본이다. 최소 글꼴 5개에서 관계 검사를 실행하며 시스템 상용 글꼴을 전제로 하지 않는다.
+[같은 원본별 측정·SHA](../validation-r6/measurements.md), [Native producer](../historical-validation.md), [최적화 fresh WASM producer](../historical-validation.md)를 연결한다. 입력·PDF는 기존 Git 파일과 실행 바이트의 동일성을 확인했으며 중복 사본을 추가하지 않는다. 같은 폴더의 native/wasm TSV는 페이지별 원본이다. 최소 글꼴 5개에서 관계 검사를 실행하며 시스템 상용 글꼴을 전제로 하지 않는다.
 
 ![Native review](png/native/review_001.png)
 ![Native overlay](png/native/overlay_001.png)
@@ -19,4 +19,4 @@ R1의 개체 줄 소유 정보가 생겨도 저장 원점이 생긴 것은 아�
 
 초기 관계 검사 작성에서 IR의 2배 문단 여백을 실제 HWPUNIT으로 읽은 오류도 원본 XML로 확인했다. 원본 paraPr 4의 `prev=1200`, `unit=HWPUNIT`을 독립 XML 독자로 읽으며 제품의 마진 해석 helper를 기대값에 재사용하지 않는다. 실제 출력이나 허용 오차를 바꿔 이 작성 오류를 가리지 않는다.
 
-[정정 후 최소 글꼴 집중 결과](regression-result.json)는 해당 기존 모듈 4건 PASS다. 전체 181건을 다시 실행했다고 쓰지 않으며, 앞선 181건 실행의 180 PASS/1 FAIL과 구분한다. 원래 전체 Rust 5건 실패의 나머지 원인 정리와 최종 전체 검증도 통합 원장에서 별도로 추적한다.
+[정정 후 최소 글꼴 집중 결과](../historical-validation.md)는 해당 기존 모듈 4건 PASS다. 전체 181건을 다시 실행했다고 쓰지 않으며, 앞선 181건 실행의 180 PASS/1 FAIL과 구분한다. 원래 전체 Rust 5건 실패의 나머지 원인 정리와 최종 전체 검증도 통합 원장에서 별도로 추적한다.

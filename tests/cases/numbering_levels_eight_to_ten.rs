@@ -1,6 +1,6 @@
 //! 관계형 및 고정형 회귀: 원본 번호 수준·마커·왕복 보존과 빈 머리 본문 거리의 관계. 양쪽 100.00% 완료 1쪽의 독립 Print 본문 시작은 ±1 CSSpx로 보호한다.
-//! 주석 갱신: 2026-11-06T08:04:31+09:00 (Asia/Seoul).
-//! 직전 파일 변경: 2052a7921253b0b0445feed7735ba54917223749, 작성 2026-11-03T16:15:47+09:00, 커밋 2026-11-06T03:15:03+09:00.
+//! 주석 갱신: 2026-11-06T08:25:01+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 5172f2d55c73b2ed33d4d3657d81e769bc9004c2, 작성 2026-11-06T08:13:58+09:00, 커밋 2026-11-06T08:13:58+09:00.
 //! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
 //! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
 //! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
@@ -9,7 +9,7 @@
 //! levels.hwpx (8527-levels-hwpx-2022): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
 //! 고정 1쪽: Native 100.0%, fresh WASM 100.0%; 같은 영역의 독립 Print 확대 판독 완료.
 //! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
-//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.json.
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.md.
 //! 원본 형식 계약:
 //! 관계형·고정형: 검사 대상 — 한/글 12.30이 저장한 8~10수준 개요·번호 문단.
 //! 입력·기준: `tests/fixtures/numbering_levels/levels.hwp`·`levels.hwpx`(한/글 12.30 Mac 저장본, 저장자 이름만

@@ -1,6 +1,6 @@
 //! 관계형 및 고정형 회귀: 누름틀·탭 소유·셀 정렬·원본 앞 간격 관계와 완료 첫 쪽의 독립 Print 좌표 ±2 CSSpx.
-//! 주석 갱신: 2026-11-06T08:04:31+09:00 (Asia/Seoul).
-//! 직전 파일 변경: 71e5e0ae2a72a6b8f51682d131077bd4df44994f, 작성 2026-11-06T03:14:53+09:00, 커밋 2026-11-06T03:17:25+09:00.
+//! 주석 갱신: 2026-11-06T08:25:01+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 5172f2d55c73b2ed33d4d3657d81e769bc9004c2, 작성 2026-11-06T08:13:58+09:00, 커밋 2026-11-06T08:13:58+09:00.
 //! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
 //! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
 //! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
@@ -11,7 +11,7 @@
 //! 36312980_broken_cell_ladder_center.hwpx (issue7344-broken-cell-ladder): 전 1쪽, Native 최저 99.86918%, fresh WASM 최저 100.0%.
 //! 고정 1쪽: Native 99.86918%, fresh WASM 100.0%; 같은 영역의 독립 Print 확대 판독 완료.
 //! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
-//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.json.
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.md.
 //! 원본 형식 계약:
 //! 관계형·고정형: 누름틀·탭 소유, 셀 정렬·원본 간격 및 완료 쪽의 독립 Print 좌표.
 //! 주석 갱신: 2026-11-06T03:10:15+09:00. 직전 파일 변경:

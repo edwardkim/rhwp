@@ -2,16 +2,16 @@
 
 ## 최종 판정
 
-**머지 보류 — R5 통합 제품의 최종 검증 진행 중.**
+**머지 보류 — R6 전쪽 시각 검증과 개별 동작 판독 완료, 최종 편람·Rust 게이트 진행 중.**
 
-아래 입력의 Native/fresh WASM·직접 판독과 전체 필수 게이트를 완료한 뒤 최종 수용 판정을 갱신한다. 원격 comment·approve·push·merge·close는 실행하지 않았다.
+원본별 Native/fresh WASM 전쪽 TSV와 같은 주장 페이지의 review·overlay를 아래에 연결했다. 원격 PR 생성·CI·merge·close는 실제 실행 뒤 별도로 기록한다.
 
 ## 접수 정보
 
 - 원 PR: [PR #8564](https://github.com/edwardkim/rhwp/pull/8564), 작성자 `semanticist21`, reviewer `jangster77`.
 - 원 head: `5477f2cc6c4daf93ea315828650ae94eaf15b1b7`. 2026-11-06 재조회에서 검토 시작 때와 같고 Open·Non-Draft다.
 - 고정 base: `170b886f167b705b6e630c5b34bb638d92fae0a9`(PR #8542 포함).
-- 현재 제품 source: `71e5e0ae2a72a6b8f51682d131077bd4df44994f`. 아래 표는 R5 실제 측정이며, 리베이스 전 R2/R3/R4 결과는 통합 분석과 기존 증적에서 구분한다.
+- 현재 제품 source: `86709ac16711820e61baa3b87e2c4ddaac23573e`. 아래 표는 R6 새 Native·fresh WASM 실제 측정이다. R5 과거 증거는 출처를 구분해 보존한다.
 - 통합 브랜치: `review/integration-20261105-semanticist21-open`.
 
 ## 원 주장과 실제 검증 범위
@@ -33,49 +33,64 @@
 
 ## 검증 입력과 전쪽 결과
 
-아래는 제품 `71e5e0ae2a72a6b8f51682d131077bd4df44994f`의 실제 R5 측정이다. Native·fresh WASM을 구분하고 아직 끝나지 않은 행은 진행 중으로 표시한다. 최종 수용은 전체 필수 검증 뒤 판정한다.
+제품 R6의 실제 전체 페이지 측정이다. 두 출력 경로와 독립 Print PDF의 전체 쪽수가 일치하며,
+모든 페이지가 90% 이상이다. 96 DPI·Print 프로필·색상 경계 보정 전 2px raw를 사용했다.
 
 | 같은 원본·용도 | 전체 쪽수 | Native 최저 raw·TSV | fresh WASM 최저 raw·TSV | 독립 Print PDF |
 | --- | ---: | --- | --- | --- |
-| [date-path-context-before.hwp](../../tests/fixtures/semanticist21_integration_review/pr8564/date-path-context-before.hwp) — 한컴이 갱신한 날짜·파일명 코드 표시 상태, 원본 경계 입력 검사의 보충 대조 | 1 | [91.81401%](assets/semanticist21_20261105/validation-r5/tsv/8564-.result.9d14e579-4810-4dc8-b9db-a0cf0bb4bd23.partial-hwp-2022-native.tsv) | 진행 중 | [PDF](../../pdf/semanticist21-20261105/pr8564/date-path-context-before-2020.pdf) |
-| [date-path-context-edited.hwp](../../tests/fixtures/semanticist21_integration_review/pr8564/date-path-context-edited.hwp) — 코드 밖 경계 입력 후 독립 Print | 1 | [92.01038%](assets/semanticist21_20261105/validation-r5/tsv/api-8564-context-after-native.tsv) | 진행 중 | [PDF](../../pdf/semanticist21-20261105/pr8564/date-path-context-after-2020.pdf) |
+| [date-path-context-before.hwp](../../tests/fixtures/semanticist21_integration_review/pr8564/date-path-context-before.hwp) — 한컴이 갱신한 날짜·파일명 코드 표시 상태, 원본 경계 입력 검사의 보충 대조 | 1 | [91.81401%](assets/semanticist21_20261105/validation-r6/tsv/8564-.result.9d14e579-4810-4dc8-b9db-a0cf0bb4bd23.partial-hwp-2022-native.tsv) | [91.17272%](assets/semanticist21_20261105/validation-r6/tsv/8564-.result.9d14e579-4810-4dc8-b9db-a0cf0bb4bd23.partial-hwp-2022-wasm.tsv) | [PDF](../../pdf/semanticist21-20261105/pr8564/date-path-context-before-2020.pdf) |
+| [date-path-context-edited.hwp](../../tests/fixtures/semanticist21_integration_review/pr8564/date-path-context-edited.hwp) — 코드 밖 경계 입력 후 독립 Print | 1 | [92.01038%](assets/semanticist21_20261105/validation-r6/tsv/api-8564-context-after-native.tsv) | [92.28612%](assets/semanticist21_20261105/validation-r6/tsv/api-8564-context-after-wasm.tsv) | [PDF](../../pdf/semanticist21-20261105/pr8564/date-path-context-after-2020.pdf) |
 
-[원본·PDF SHA와 보존 경로](assets/semanticist21_20261105/validation-r5/inputs.json), [페이지별 정밀 raw·쪽수·producer](assets/semanticist21_20261105/validation-r5/measurements.json)를 연결한다. 실제 실행 파일과 커밋 파일의 동일성을 확인했으며, 다른 문서의 높은 수치로 미달 쪽을 상쇄하지 않는다.
+[원본·PDF SHA·producer·정밀 raw](assets/semanticist21_20261105/validation-r6/measurements.md), [측정 명령·환경](assets/semanticist21_20261105/validation-r6/README.md)를 연결한다. 원 PR 원본·실제 API 저장본·보충 대조군의 용도를 구분한다.
 
 ## 주장에 대응하는 페이지 증적
 
-다음 이미지는 같은 R5 측정의 실제 PNG로 현재 Visual Sweep 함수를 실행해 만들었다. 원본과 PDF를 다시 출력하지 않았고, 해당 입력·쪽의 raw가 TSV와 같은지 확인했다. 직접 판독 완료 여부와 전체 통과 판정은 별도로 기록한다.
+같은 원본·독립 PDF·페이지의 실제 PNG다. 직접 판독과 실제 API 검증을 구분한다. 일부 Native 패널은 현재 RHWP/PDF PNG 쌍의 SHA가 이전 판독 쌍과 각각 같음을 확인해 재사용했다.
 
-### native · api-8564-context-after · 1쪽
+### api-8564-context-after · 1쪽
 
 실제 날짜·파일 경로 코드 앞뒤 입력이 필드 밖에 남는 저장 결과
 
-![같은 원본 1쪽 review](assets/semanticist21_20261105/validation-r5/png/pr8564/native/api-8564-context-after/review_001.png)
+**native raw 92.01038%** — 날짜 앞뒤 A앞·뒤B와 파일명 앞의 앞·뒤C를 직접 대조했다. 인쇄 때 파일명 코드가 임시 이름으로 재평가되어 문자열 길이가 다르다. api/pr8564-print-context.json에 독립 영수증·빈 기본 Scripts·실제 PDF 문자열을 기록했고 위치 오차나 동일 문자열의 일치로 주장하지 않는다.
 
-![같은 원본 1쪽 overlay](assets/semanticist21_20261105/validation-r5/png/pr8564/native/api-8564-context-after/overlay_001.png)
+![native 같은 원본 1쪽 review](assets/semanticist21_20261105/validation-r6/png/pr8564/native/api-8564-context-after/review_001.png)
+
+![native 같은 원본 1쪽 overlay](assets/semanticist21_20261105/validation-r6/png/pr8564/native/api-8564-context-after/overlay_001.png)
+
+**wasm raw 92.28612%** — 날짜 필드 전후 A앞·뒤B, 경로 필드 전후 앞·뒤C가 보존된다. 파일명 필드는 MCP scripts_disabled 인쇄의 임시 서버 파일명과 RHWP 저장 파일명이 달라 내용이 중첩되지 않는다. 기존 독립 변환 영수증으로 확인한 동적 필드 재평가 차이이며 동일 문자열 일치로 주장하지 않는다.
+
+![wasm 같은 원본 1쪽 review](assets/semanticist21_20261105/validation-r6/png/pr8564/wasm/api-8564-context-after/review_001.png)
+
+![wasm 같은 원본 1쪽 overlay](assets/semanticist21_20261105/validation-r6/png/pr8564/wasm/api-8564-context-after/overlay_001.png)
 
 ## 파일명 코드의 독립 Print 평가 문맥
 
-[Print 영수증·원시 Scripts 스트림·추출 문자열](assets/semanticist21_20261105/validation-r5/api/pr8564-print-context.json)을 대조했다.
+[Print 영수증·원시 Scripts 스트림·추출 문자열](assets/semanticist21_20261105/validation-r6/runtime-checks.md)을 대조했다.
 한컴 2020 MCP의 Print는 `input_preprocess=scripts_disabled`이며, 두 HWP의 Scripts는
 실행 코드가 없는 동일한 빈 기본 스텁이다. 파일명 코드는 인쇄 시 서버의 `rhwp-no-scripts-*.hwp`로
 재평가되어 RHWP가 보존한 `.result.*.partial.hwp` 캐시와 다르다. 이 문자열 길이 차이를
 조판 개선으로 주장하거나 가리지 않는다. 날짜·파일명 양끝의 `앞`·`뒤`와 다음 본문 `C`는 보존된다.
 
 따라서 위 보충 snapshot은 원본 파일명이 완전히 같은 출력의 증거가 아니다. 원 주장인 필드 경계는
-[같은 원본의 실제 공개 API 전후 대조](assets/semanticist21_20261105/validation-r5/api/api-before-after.json)에서
+[같은 원본의 실제 공개 API 전후 대조](assets/semanticist21_20261105/validation-r6/runtime-checks.md)에서
 base가 앞뒤 글자를 필드 값에 포함해 실패하고 후보는 원래 필드 값을 보존해 통과함으로 확인했다.
 
 ## 회귀와 조판 원칙 준수
 
 - [tests/cases/date_path_code_boundary_typing.rs](../../tests/cases/date_path_code_boundary_typing.rs)
 
-- [최소 글꼴 집중 회귀](assets/semanticist21_20261105/validation-r5/focused-regression.txt)는 184건 PASS다. 전체 Rust 회귀 완료로 대신하지 않는다.
-- R5 Native 전체는 128개 입력·301쪽, 최저 91.81%다. [전체 Rust 목록 대조](assets/semanticist21_20261105/validation-r5/full-rust-inventory-audit.json)에서 최소 글꼴 5개·55개 binary·12,735건 PASS·45건 ignored를 확인했고 누락·중복은 없다. [실제 브라우저·생성 타입 검증](assets/semanticist21_20261105/validation-r5/ui/README.md)도 완료했다. fresh WASM·새 base 대비 비교·보호 PR #8389/#8397·편람 게이트·lint·Native Skia의 최종 결과는 계속 통합한다.
-- 원본 단위·참조 보존과 실물 배치의 절대 좌표 고정을 구분한다. 완료 페이지의 Native/fresh WASM 양쪽 raw 98% 이상과 독립 PDF 확대 판독을 확인한 핀만 유지하며, 회귀 첫머리를 실제 측정 근거로 갱신한다.
-- 리베이스 전 R2/R3의 성공 기록과 현재 R5를 구분한다. source·측정 조건이 같은 완전한 증거만 재사용하고 현재 제품의 실패를 과거 통과로 덮지 않는다.
+- 현재 전쪽 검증은 Native 128입력·301쪽 최저 91.81401%, fresh WASM 128입력·301쪽 최저 91.17272%다. 같은 새 base의 각 301쪽 대비 하락 0쪽이다. [현재 증거](assets/semanticist21_20261105/validation-r6/README.md)를 연결한다.
+- 실제 API 12그룹·브라우저 동작·TypeScript/production build·생성 타입 export와 소비 검사는 [API](assets/semanticist21_20261105/validation-r6/api/README.md)·[UI](assets/semanticist21_20261105/validation-r6/ui/README.md)에 연결했다. 원래 R5 전체 Rust 12,735건을 R6 새 실행으로 표현하지 않는다.
+- 최종 코드 커밋 `5172f2d55c73b2ed33d4d3657d81e769bc9004c2`의 공식 편람 게이트와 최소 글꼴 전체 Rust·lint·Native Skia·release·doctest를 진행 중이다. 이 필수 단계 전에는 최종 승인·PR 생성으로 넘어가지 않는다.
+- 실제 assertion을 확인해 관계형·고정형을 구분하고 27개 파일 첫머리를 실제 측정값으로 갱신했다. 원본 단위·비율 계약은 유지하며, [17개 완료 페이지](assets/semanticist21_20261105/validation-r6/qualification.md)는 양쪽 98% 이상과 독립 확대 판독 근거로 기존 고정 좌표를 유지한다.
 - 웹폰트 시간 제한·오프라인 검사는 관련 충돌이 없으므로 작업지시자 지시에 따라 반복하지 않는다.
 
-## Merge 후 처리 계획
+## Merge 후 contributor PR comment 계획
 
-통합 PR의 검증·CI·작업지시자 승인 후 원 PR별 해결 범위와 같은 원본·페이지의 증적을 연결한다. 한국어 존댓말의 기존 comment 수정안을 준비하고, 원격 게시·close·merge는 승인 범위에 따라 별도로 수행한다.
+통합 PR의 실제 CI URL·code/trailing head와 확정 merge SHA를 기록한 뒤 원 PR에 한국어 존댓말로 결과를 게시한다. 기존 comment가 있으면 해당 comment를 수정하고 API로 다시 확인한다. 원 기여의 해결 범위와 위 공통 메인터너 보정을 구분한다.
+
+- 실제 확인 페이지: api-8564-context-after p1.
+- Native/fresh WASM의 위 같은 원본·쪽 review와 overlay를 사용한다. 수치와 직접 판독 결론·한계는 본문 관측을 그대로 반영한다.
+- 대표 이미지 안정 경로: `mydocs/pr/assets/semanticist21_20261105/validation-r6/png/pr8564/<backend>/<key>/<review 또는 overlay>_NNN.png`. 같은 PR의 추가 완료 페이지는 [패널 목록](assets/semanticist21_20261105/validation-r6/panels.md)을 따른다.
+- URL은 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/` 뒤에 위 실제 경로를 붙인다. devel 포함 확인 후 `--body-file` 게시·API 재조회한다.
+- 문서 비교는 [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 따른다. 원 PR·관련 이슈 close는 같은 해결 범위의 완료와 포함 관계를 확인한 뒤 처리한다.

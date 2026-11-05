@@ -173,9 +173,9 @@ PR #8571의 머리말 TAC 표는 수동 표 배치 분기에서 공통 글줄 �
 `rebase-ece9-native-check.log`에 둔다. 최종 수용 근거는 후속 실제 검증을 마친 뒤 정식 증적 경로에 보존한다.
 
 
-리베이스 결과·명령·종료 코드는 [결과 기록](rebase-ece9-result.json), 충돌별 소비 계약은
-[충돌 해소 기록](rebase-ece9-resolutions.json), 원 PR 18건·원본 SHA 44개와 새 적용 SHA의 대응은
-[체리픽 대응표](applied-commits-after-ece9.json)에 보존했다. 웹폰트 구현·테스트 파일은 새 base와 동일하다.
+리베이스 결과·명령·종료 코드는 [결과 기록](historical-validation.md), 충돌별 소비 계약은
+[충돌 해소 기록](historical-validation.md), 원 PR 18건·원본 SHA 44개와 새 적용 SHA의 대응은
+[체리픽 대응표](historical-validation.md)에 보존했다. 웹폰트 구현·테스트 파일은 새 base와 동일하다.
 
 
 ### 리베이스 후 실제 실패 네 건과 공통 소비 순서 보정
@@ -384,7 +384,7 @@ R4 실제 Native 빌드(8 jobs)는 19분 30초에 완료했다. 같은 #7344 원
 
 제품 source `71e5e0ae2a72a6b8f51682d131077bd4df44994f`의 최적화 fresh WASM 공개 API 12그룹을 실행해 모두 통과했다. 같은 Native rlib의 실제 API 생성기 5개에서 출력한 HWP/HWPX 20개도 R4와 SHA가 모두 같다. 따라서 같은 바이트의 입력에 대한 기존 독립 Print PDF를 재사용하며, 문서를 다시 인쇄하지 않았다. API·저장 계약 통과와 전쪽 시각 통과는 별도로 판정한다.
 
-최종 시각 비교 계획 128개 항목의 원본·PDF 256행을 SHA로 대응했다. 기존 정식 파일을 우선 재사용했고, 실제 API 작업 뒤 생성된 구역 분할·합침, 셀 입력, 문자·그림 글머리표 자료 18개는 output에만 있던 것을 정식 경로로 보존했다. 이전 제어 입력과 다른 바이트는 덮어쓰지 않고 별도 이름을 썼다. [입력 대응 원장](validation-r5/inputs.json)의 상태는 아직 시각 검증 진행 중이며, 실제 final TSV·확대 판독·전체 Rust·lint 게이트가 끝나기 전에는 PR 준비 완료가 아니다.
+최종 시각 비교 계획 128개 항목의 원본·PDF 256행을 SHA로 대응했다. 기존 정식 파일을 우선 재사용했고, 실제 API 작업 뒤 생성된 구역 분할·합침, 셀 입력, 문자·그림 글머리표 자료 18개는 output에만 있던 것을 정식 경로로 보존했다. 이전 제어 입력과 다른 바이트는 덮어쓰지 않고 별도 이름을 썼다. [입력 대응 원장](validation-r6/measurements.md)의 상태는 아직 시각 검증 진행 중이며, 실제 final TSV·확대 판독·전체 Rust·lint 게이트가 끝나기 전에는 PR 준비 완료가 아니다.
 
 ### R5 Native 전쪽 완료와 개별 PR 증적 현재화
 

@@ -18,7 +18,7 @@
 | [moved-terminal-tab.hwp](../../../../../../tests/fixtures/semanticist21_integration_review/pr8549/moved-terminal-tab.hwp) | [PDF](../../../../../../pdf/semanticist21-20261105/pr8549/moved-terminal-tab-hwp-2020.pdf) | 1 | [99.92%](api-8549-moved-terminal-tab-hwp-native.tsv) | [99.92%](api-8549-moved-terminal-tab-hwp-wasm.tsv) |
 | [moved-terminal-tab.hwpx](../../../../../../tests/fixtures/semanticist21_integration_review/pr8549/moved-terminal-tab.hwpx) | [PDF](../../../../../../pdf/semanticist21-20261105/pr8549/moved-terminal-tab-hwpx-2020.pdf) | 1 | [99.92%](api-8549-moved-terminal-tab-hwpx-native.tsv) | [99.92%](api-8549-moved-terminal-tab-hwpx-wasm.tsv) |
 
-각 입력·두 경로 모두 독립 PDF와 1쪽으로 일치하고 누락·90% 미달은 없다. [입력 SHA·정식 경로](inputs.json), [실제 측정 기록](measurements.json), [Native producer](pr8549-r3-native-producer.json), [fresh WASM producer](pr8549-r3-wasm-producer.json)를 보존한다. 이 다섯 입력의 통과를 다른 통합 대상·보호 문서·전체 회귀의 완료로 확대하지 않는다.
+각 입력·두 경로 모두 독립 PDF와 1쪽으로 일치하고 누락·90% 미달은 없다. [입력 SHA·정식 경로](../../validation-r6/measurements.md), [실제 측정 기록](../../validation-r6/measurements.md), [Native producer](../../validation-r6/runtime-checks.md), [fresh WASM producer](../../validation-r6/runtime-checks.md)를 보존한다. 이 다섯 입력의 통과를 다른 통합 대상·보호 문서·전체 회귀의 완료로 확대하지 않는다.
 
 ## 주장한 페이지의 직접 판독
 
@@ -31,6 +31,6 @@
 
 [회귀](../../../../../../tests/cases/physical_row_fragment_flow.rs)는 같은 행의 조각 y 관계·수평 비중첩, 다음 행 전진, 일반 행의 순서, HWP/HWPX 뒤 문단의 내용 보존을 검사한다. 절대 px 좌표나 전체 SVG 해시를 고정하지 않는다. 첫 줄부터 실제 측정 방법·쪽별 수치·정식 근거를 기록했다.
 
-수정 전 `dc39658f812d22c961ddd0fbc8e71c7ec7a52e5b`의 고정 rlib와 수정 후 제품 rlib에 같은 검사 본문을 각각 연결했다. 저장소 허용 글꼴 5개만 노출하는 bwrap 격리에서 [수정 전 2 FAIL](physical-row-before-r2-minimal.txt) / [수정 후 2 PASS](physical-row-after-r3-minimal.txt), exit 101 / 0을 확인했다. [실행 결과](physical-row-regression-before-after.json)는 두 실행의 출처를 구분한다. 개인 OTF나 시스템 상용 글꼴 설치를 요구하지 않으며 검사 skip도 없다.
+수정 전 `dc39658f812d22c961ddd0fbc8e71c7ec7a52e5b`의 고정 rlib와 수정 후 제품 rlib에 같은 검사 본문을 각각 연결했다. 저장소 허용 글꼴 5개만 노출하는 bwrap 격리에서 [수정 전 2 FAIL](../../validation-r6/runtime-checks.md) / [수정 후 2 PASS](../../validation-r6/runtime-checks.md), exit 101 / 0을 확인했다. [실행 결과](../../historical-validation.md)는 두 실행의 출처를 구분한다. 개인 OTF나 시스템 상용 글꼴 설치를 요구하지 않으며 검사 skip도 없다.
 
 기존 정확한 줄 시작 경계 검사와 정상 행 검사는 유지했다. 기존 35모듈과 각주 관계 검사를 합친 최소 글꼴 집중 171건도 모두 통과했다. 원본·Print의 전체 시각 선행 조건을 충족한 뒤 이 두 관계 검사를 정식 suite 자동 수집 경로에 추가했다. 최종 전체 회귀·보호 문서의 검증은 통합 리뷰에서 별도로 완료해야 한다.
