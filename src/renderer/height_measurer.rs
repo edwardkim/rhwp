@@ -1847,6 +1847,7 @@ pub struct HeightMeasurer {
 /// 뜻이 있고(좌우분할 · 쪽 리셋 · 중복), **이중 계상이 실제로 드러나는 것은 좌우분할
 /// 하나뿐**이다. cs·sw 가 같은 쌍(쪽 리셋·중복)은 렌더 결함이 0 이라 건드리면 안 된다
 /// — 10k 모집단 실측에서 확인된 구분이다.
+/// bit31 행도 FIRST..LAST·비중첩 수평 구간이 물리 행 소유를 입증하면 같은 전진을 공유한다.
 pub(crate) fn stored_seg_is_row_fragment(para: &Paragraph, idx: usize) -> bool {
     use crate::model::paragraph::LineSeg;
     let segs = &para.line_segs;
@@ -1854,10 +1855,11 @@ pub(crate) fn stored_seg_is_row_fragment(para: &Paragraph, idx: usize) -> bool {
         return false;
     }
     let (cur, prev) = (&segs[idx], &segs[idx - 1]);
-    cur.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-        && prev.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-        && cur.vertical_pos == prev.vertical_pos
+    cur.vertical_pos == prev.vertical_pos
         && cur.column_start != prev.column_start
+        && ((cur.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && prev.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+            || crate::renderer::stored_line_ladder::has_declared_fragment_boundary(para, idx))
 }
 
 /// 그림만 담은 셀에서 서로 겹쳐 기록된 저장 줄의 실제 세로 범위를 반환한다.

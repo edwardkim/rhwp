@@ -53,7 +53,7 @@ review·overlay에서 함께 확인할 수 있다.
 새 제품과 대조한 [전체 결과](rebase-ece9-r2-pre-rebase-native-comparison.json)에서
 표시값 하락은 **0쪽**이다. 새 base `ece9c3383bb2c73e0f055459ede727a9d3101ac6`와
 104사례·262쪽을 비교한 [Native 결과](rebase-ece9-r2-native-comparison.json)도
-2%p 초과 하락은 없다. 후보 전쪽 최저값은 92.35%다.
+2%p 초과 하락은 없다. 후보 전쪽 최저값은 91.36%다.
 새 base에 포함된 PR #8640의 실제 46상태·124쪽을 포함한다.
 
 새 `note_separator_declared_width` 회귀는 HWP/HWPX 각각 네 복선·삼중선의 원본 선 종류,
