@@ -16,6 +16,14 @@ pub(crate) const DIVIDE_BY_ZERO: &str = "0으로 나눌 수 없음";
 /// 결과가 유한한 숫자가 아닌 계산식(SQRT(-1) 등)의 오류.
 pub(crate) const NOT_FINITE: &str = "계산 결과가 유한한 숫자가 아닙니다";
 
+fn finite_result(result: f64) -> Result<f64, String> {
+    if result.is_finite() {
+        Ok(result)
+    } else {
+        Err(NOT_FINITE.into())
+    }
+}
+
 /// 구문·참조는 맞지만 값을 낼 수 없는 계산식인가. 한/글 12.30은 1/0·MOD(5,0)·SQRT(-1)·LN(0)·
 /// ASIN(2)를 모두 셀에 "잘못된 계산식"으로 쓴다.
 pub(crate) fn is_invalid_result_error(error: &str) -> bool {
@@ -52,7 +60,7 @@ pub fn evaluate_formula(
     get_cell: CellValueFn,
 ) -> Result<f64, String> {
     let ast = parse_formula(formula).ok_or_else(|| "수식 파싱 실패".to_string())?;
-    eval_node(
+    finite_result(eval_node(
         &ast,
         ctx,
         &Cells {
@@ -60,7 +68,7 @@ pub fn evaluate_formula(
             same_direction: &|_, _, _| false,
             round: false,
         },
-    )
+    )?)
 }
 
 /// 한/글 계산식 필드의 평가. 함수 결과를 소수 여섯째 자리로 맞춘 뒤 다음 연산에 쓰고(한/글 12.30:
@@ -77,7 +85,7 @@ pub(crate) fn evaluate_formula_in_table(
 ) -> Result<(f64, Vec<(usize, usize)>), String> {
     let refs = formula_references(formula, ctx)?;
     let ast = parse_formula(formula).ok_or_else(|| "수식 파싱 실패".to_string())?;
-    let result = eval_node(
+    let result = finite_result(eval_node(
         &ast,
         ctx,
         &Cells {
@@ -85,10 +93,7 @@ pub(crate) fn evaluate_formula_in_table(
             same_direction,
             round: true,
         },
-    )?;
-    if !result.is_finite() {
-        return Err(NOT_FINITE.into());
-    }
+    )?)?;
     Ok((result, refs))
 }
 
