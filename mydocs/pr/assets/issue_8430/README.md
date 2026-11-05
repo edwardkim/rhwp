@@ -1,9 +1,14 @@
 # #8430 WASM 합성 굵기 윤곽 paint 시각 증적
 
 - 측정일: 2026-11-05 (Asia/Seoul)
-- code head: `b0bb24ba912dd73a7967664f9d2f35cb5da792d3`
-  (최신 `upstream/devel` `e96b500e3e` + PR #8431 head `1847f1e602` merge + #8430 커밋)
-- base: `bdc6037ca6` (위 merge 커밋, #8430 변경 전)
+- code head: `4f8570309e925468552036f4c20d099011d55a35`
+  (`upstream/devel` `6e1de406209ba9a58032f6ca6de45b18aa687d1c` + #8430 커밋.
+  #8431은 통합 PR #8622로 devel에 반영됐다)
+- base: `6e1de406209ba9a58032f6ca6de45b18aa687d1c` (`upstream/devel`, #8430 변경 전)
+- 재측정: 처음 제출 head `b0bb24ba91`(base `bdc6037ca6` = `e96b500e3e` + #8431 head merge)를
+  위 devel로 rebase한 뒤 base·head Native와 fresh WASM을 모두 다시 빌드해 아래 전쪽 TSV·PNG gate·
+  확대 판독·잉크 농도·브라우저 계약 테스트를 다시 산출했다. 전쪽 TSV 8개와 대표 PNG 6장은 이전
+  산출물과 바이트 단위로 같고, 수치도 모두 같다.
 - 원본: `samples/issue8423/30396-childcare-leave-recommendation.hwp`
   (SHA-256 `f46bfde221a2876cae05e25255698b84f6b34e79df8b13610cb08fa4ff8ccd74`, PR #8431이 추가)
 - 기준 PDF: `pdf/issue8423/30396-childcare-leave-recommendation-2022.pdf`
@@ -38,7 +43,7 @@ Native는 변경 코드가 `cfg(target_arch = "wasm32")`·web canvas 전용이�
 | fresh WASM | plain | `font_mismatch_exception` (p1 87.05%) | 25 / 25 |
 
 기본 글꼴 p1의 예외 증거는 [`font-exception-p1.json`](font-exception-p1.json)
-(SHA-256 `83dfd25aefc6c910ea830fee28ee3e3632bc9cdc608a51514e2d556db688441a`)이다.
+(SHA-256 `e915b4a51a70727bb198057a223c7670d63511c7048456aa624c55adb610eabf`)이다.
 p1 overlay에서 줄 시작·기준선·문단 위치는 PDF와 같고, 차이는 대체 face의 글리프 모양·전진폭이다.
 같은 쪽은 명시 글꼴 환경에서 Native 99.96% / WASM 99.89%다.
 
