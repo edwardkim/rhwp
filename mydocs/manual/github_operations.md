@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/github_operations.md
-last_verified: 2026-11-04
+last_verified: 2026-11-05
 ---
 
 # GitHub 저장소 운영 매뉴얼
@@ -119,29 +119,57 @@ required check나 권한 변경을 단순 YAML 수정으로 취급하는 것도 
 7. **적용과 완료를 구분한다.** merge나 설정 변경은 적용일 뿐이다. 예상 event에서 기대한 run 또는
    no-run, required check, 비용·시간, 부작용과 rollback 가능성을 확인해야 완료다.
 
-### 2.3 이슈 폼 선택값의 자동 라벨링 (#7447)
+### 2.3 이슈 폼·자유 형식 보고서의 자동 라벨링 (#7447)
 
 `.github/ISSUE_TEMPLATE/`의 4개 폼은 사용 경로를 수집한다.
-`.github/workflows/issue-form-labels.yml`은 `issues.opened`와 본문이 바뀐 `issues.edited`에서
+`.github/workflows/issue-form-labels.yml`은 `issues.opened`와 본문·제목이 바뀐 `issues.edited`에서
 Studio → `rhwp-studio`, CLI → `cli`, 브라우저 확장 → `browser-extension`,
-라이브러리/API → `api`, MCP → `mcp`를 추가한다. OS·문서 형식·증상은 본문 정보로만 남긴다.
+라이브러리/API → `api`, MCP → `mcp`를 추가한다. 기존 완전한 폼의 기본 유형 라벨은 폼이
+담당한다. `Studio — 설명`, `CLI(native)`처럼 알려진 선택값 뒤에 설명을 붙인 경우도 단일
+사용 경로가 명확하면 처리한다. 복수 경로, 중복 필드, 여러 폼의 필수 필드가 섞이면 보류한다.
+
+자유 형식·GitHub API 등록 이슈에는 다음의 제한된 근거를 추가로 사용한다.
+
+- 제목에 명시한 Studio·CLI·브라우저 확장·API·MCP 또는 본문에 명시한
+  `rhwp-studio/`, `rhwp-chrome/`, `rhwp-firefox/`, `@rhwp/core`, `@rhwp/editor` 경로다.
+  여러 경로가 충돌하면 사용 경로만 보류한다. GitHub API로 등록했다는 사실은 `api` 근거가 아니다.
+  Visual Studio·Visual Studio Code·Android Studio라는 다른 IDE 이름은 Studio 근거에서 제외하되,
+  별도의 `[studio]` 표시나 `rhwp-studio/` 경로가 있으면 독립적인 근거로 사용한다.
+- 제목 선두의 `[Bug]`·`bug:`, `[Feature]`·`enhancement:`, `[Docs]`, `[Test]` 같은
+  명시적 유형을 각각 `bug`, `enhancement`, `documentation`, `test`로 대응한다.
+  같은 뜻의 한국어 표시도 지원한다. 서로 다른 유형 표시가 겹치면 유형 분류를 보류한다.
+  `[API]` 제목의 `API가 없다`와 본문의 별도 `제안하는 API입니다` 문장이 함께 있으면
+  미지원 API 제안으로 보고 `enhancement`를 선택한다. 저장 언급만으로 직렬화 결함을 추정하지 않는다.
+- 명확한 bug·enhancement 제목에서 글꼴·폰트·font를 명시하면 `font`, 조판·렌더링·rendering을
+  명시하면 `rendering`을 추가할 수 있다. 일반 본문 단어, OS, 문서 형식, 샘플 출처·생성 도구,
+  재현되지 않은 결함은 추정 분류하지 않는다. 명시적 유형이 없는 테스트·샘플 조사는 수동으로 남긴다.
+- 기존 사용 경로·유형 결정과 다른 자유 형식 추론은 보류한다. 완전한 폼의 명시적인 사용 경로
+  변경은 종전대로 추가 전용이다. 알 수 없는 폼 선택값을 제목·본문의 다른 언급으로 덮어쓰지 않는다.
+  완전한 폼의 미지원·복수 사용 경로와 중복·혼합 폼 구조는 유형·영역 추론도 수행하지 않는다.
+  불완전한 폼은 사용 경로를 보류하되 제목에 독립적으로 명시한 유형·영역은 분류할 수 있다.
 
 - **추가 전용**이다. Studio → CLI로 응답을 바꿔도 기존 Studio 라벨은 남는다.
   기존 라벨의 소유자를 추정해 삭제하지 않으며 잘못된 분류는 메인터너가 수동 정리한다.
 - 이슈 이벤트 이력에 제거된 기록이 있는 라벨은 재실행·응답 수정으로도 다시 붙이지 않는다.
   다시 필요하면 메인터너가 직접 추가한다. 자동화별 소유권 기록이나 자동 댓글은 만들지 않는다.
-- 최신 본문·라벨과 전체 제거 이력을 읽으며, 허용된 라벨이 저장소에 없으면 경고하고 건너뛴다.
-  일반 본문·알 수 없는 선택값은 건너뛰고 새 라벨은 생성하지 않는다.
+- 최신 제목·본문·라벨과 전체 제거 이력을 읽으며, 허용된 라벨이 저장소에 없으면 해당 라벨을
+  경고하고 건너뛴다. 독립적으로 판단된 다른 라벨은 처리할 수 있으며 새 라벨은 생성하지 않는다.
 - GitHub 응답은 수정 가능한 Markdown이므로 폼 출처 인증으로 취급하지 않는다. 알려진 폼의
-  제목 구조를 복사한 본문도 같은 입력으로 처리되지만 부여 가능한 라벨은 위 5개로 제한된다.
-- 본문을 실행하거나 로그에 출력하지 않는다. checkout 없이 SHA 고정 github-script와
+  제목 구조를 복사한 본문도 같은 입력으로 처리되지만 부여 가능한 라벨은 위 11개로 제한된다.
+- 코드 블록·인용·HTML 주석·URL은 근거에서 제외한다. 제목·본문을 실행하거나 로그에 출력하지 않는다.
+  `ambiguous-form`, `ambiguous-surface`, `ambiguous-kind`, `unknown-form-surface`, `incomplete-form`,
+  `no-surface-evidence`, `no-kind-evidence`, `existing-surface-decision`, `existing-kind-decision`,
+  `already-present`, `previously-removed`, `missing-repository-label`, `snapshot-changed`,
+  `not-open-issue`, `unsupported-event` 사유를 Actions 로그에 남긴다. 댓글은 생성하지 않는다.
+  checkout 없이 SHA 고정 github-script와
   `issues: write`만 사용하며 이슈별로 실행을 직렬화한다. 쓰기 직전 상태를 재확인하지만
   GitHub API의 읽기와 라벨 추가는 원자적 연산이 아니므로 동시 편집을 완전히 잠그지는 않는다.
 
 로컬 검증은 `node --test scripts/tests/issue-form-labels.test.mjs`와 YAML 파싱·actionlint로 한다.
 CI에서는 기존 Lint job의 `Validate workflow contracts` 단계가 같은 테스트를 실행한다.
 폼과 `issues` workflow는 기본 브랜치에서 활성화되므로 `devel` 병합과 `main` 적용을 구분한다.
-적용 후 실제 폼 표시, 이슈 생성·본문 수정의 라벨 추가, 기존/제거 라벨 보존과 Blank issue를 확인한다.
+적용 후 실제 폼 표시, 폼·자유 형식 이슈 생성과 본문·제목 수정의 라벨 추가, 기존/제거 라벨 보존과
+모호한 Blank issue의 보류 사유를 확인한다. 과거 이슈의 일괄 라벨링은 이 workflow의 실행 범위가 아니다.
 보안 신고는 기존 GitHub 보안 신고 경로를 유지하고, 사용법 질문은 config의 Discussions 링크로 안내한다.
 
 되돌릴 때는 해당 폼·workflow 변경을 revert한다. 이미 부여한 라벨을 일괄 삭제하지 않는다.

@@ -3,14 +3,15 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { test } from 'node:test';
 
 const root = new URL('../../', import.meta.url);
-const read = (path) => readFileSync(new URL(path, root), 'utf8');
+const read = (path) => readFileSync(new URL(path, root), 'utf8').replaceAll('\r\n', '\n');
 const workflow = read('.github/workflows/issue-form-labels.yml');
 const script = workflow.split('          script: |\n')[1]
   .split('\n').map((line) => line.replace(/^            /, '')).join('\n');
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
 // Execute the shipped workflow, not a second implementation of its classifier.
 const run = new AsyncFunction('github', 'context', 'core', script);
-const labels = ['rhwp-studio', 'cli', 'browser-extension', 'api', 'mcp'];
+const labels = ['rhwp-studio', 'cli', 'browser-extension', 'api', 'mcp',
+  'bug', 'enhancement', 'documentation', 'test', 'font', 'rendering'];
 
 function form(surface = 'Studio', kind = 'document') {
   const responses = {
@@ -51,8 +52,9 @@ async function simulate(options = {}) {
         assert.equal(params.owner, 'edwardkim');
         assert.equal(params.repo, 'rhwp');
         assert.equal(params.issue_number, 123);
-        assert.equal(params.labels.length, 1);
-        assert.ok(labels.includes(params.labels[0]));
+        assert.ok(params.labels.length > 0);
+        assert.equal(new Set(params.labels).size, params.labels.length);
+        assert.ok(params.labels.every((label) => labels.includes(label)));
         if (options.addError) throw new Error('Write denied');
         current.labels.push(...params.labels.map((name) => ({ name })));
       },
@@ -184,9 +186,9 @@ test('closed issues and PR-shaped objects are not modified', async () => {
   }
 });
 
-test('title-only edits, label events and PR payloads do not even query APIs', async () => {
+test('unrelated edits, label events and PR payloads do not even query APIs', async () => {
   for (const payload of [
-    { action: 'edited', changes: { title: { from: 'old title' } } },
+    { action: 'edited', changes: { assignees: {} } },
     { action: 'labeled' }, { issue: { number: 123, pull_request: {} } }, { issue: null },
   ]) {
     assert.deepEqual((await simulate({ payload })).calls, []);
@@ -205,6 +207,7 @@ test('workflow has narrow triggers and permissions, no checkout or issue interpo
   assert.match(workflow, /cancel-in-progress: false/);
   assert.match(workflow, /github\.repository == 'edwardkim\/rhwp'/);
   assert.match(workflow, /github\.event\.changes\.body != null/);
+  assert.match(workflow, /github\.event\.changes\.title != null/);
   assert.match(workflow, /timeout-minutes: 3/);
   assert.match(workflow, /uses: actions\/github-script@[a-f0-9]{40}/);
   assert.doesNotMatch(workflow, /actions\/checkout|pull_request_target|workflow_dispatch/);
@@ -242,4 +245,199 @@ test('shipped form choices match the supported classifier and contain no OS labe
   assert.match(config, /^blank_issues_enabled: true/m);
   assert.match(config, /https:\/\/github.com\/edwardkim\/rhwp\/discussions/);
   assert.doesNotMatch(read('CONTRIBUTING.md'), /template=bug_report\.md/);
+});
+
+const freeIssue = (title, body = '## 현상\n\n재현 절차와 기대 동작', extra = {}) =>
+  ({ title, body, labels: [], ...extra });
+const added = (result) => result.writes.flatMap((write) => write.labels).sort();
+const reason = (result, code) => assert.ok(
+  result.info.some((message) => message.includes(code)), `Missing skip reason: ${code}`);
+
+test('free-form Studio webfont report #8614 adds only evidence-backed labels', async () => {
+  const result = await simulate({ issue: freeIssue(
+    '[Bug] Studio 웹폰트 응답 무기한 대기로 문서 초기화가 멈춤',
+    '## 현상\n\n웹폰트 로딩 상태에서 멈춥니다.\n\n' +
+    '`rhwp-studio/src/main.ts`의 initialize는 `await loadWebFonts()` 이후 초기화합니다.\n' +
+    '`rhwp-studio/src/core/font-loader.ts`의 `FontFace.load()`에 대기 제한이 없습니다.',
+  ) });
+  assert.deepEqual(added(result), ['bug', 'font', 'rhwp-studio']);
+  assert.equal(result.writes.length, 1);
+});
+
+test('API creation is not the api product surface; clear proposed API #8021 is enhancement', async () => {
+  const result = await simulate({ issue: freeIssue(
+    '[API] 색인 표시를 넣고 읽는 API가 없다 — IndexMark는 읽고 저장만 한다',
+    '저장: HWP와 HWPX를 정상적으로 씁니다.\n\n제안하는 API입니다.\n\n' +
+    '- `insertIndexMark(sec, para, offset, firstKey, secondKey)`\n- `getIndexMarks()`',
+  ) });
+  assert.deepEqual(added(result), ['api', 'enhancement']);
+  const apiCreated = await simulate({ issue: freeIssue('문서 처리 확인', 'GitHub API로 등록했습니다.') });
+  assert.deepEqual(added(apiCreated), []);
+  reason(apiCreated, 'no-surface-evidence');
+  reason(apiCreated, 'no-kind-evidence');
+  assert.deepEqual(added(await simulate({ issue: freeIssue('GitHub API 이슈 등록', '') })), []);
+});
+
+test('described single-surface form values work without changing exact form defaults', async () => {
+  assert.deepEqual(added(await simulate({ issue: { body: form('Studio — 브라우저 편집기') } })), ['rhwp-studio']);
+  assert.deepEqual(added(await simulate({ issue: { body: form('CLI(native)') } })), ['cli']);
+  const result = await simulate({ issue: { body: form('CLI(native), WASM(rhwp-studio)') } });
+  assert.deepEqual(added(result), []);
+  reason(result, 'ambiguous-surface');
+});
+
+test('free-form explicit surfaces, kinds and domains use a fixed allowlist', async () => {
+  for (const [title, expected] of [
+    ['[Bug] CLI 변환 실패', ['bug', 'cli']],
+    ['[Docs] API 예제 보완', ['api', 'documentation']],
+    ['[Feature] MCP 도구 추가', ['enhancement', 'mcp']],
+    ['[Bug] 브라우저 확장 렌더링 오류', ['browser-extension', 'bug', 'rendering']],
+    ['[Test] CLI 회귀 검사 보강', ['cli', 'test']],
+  ]) {
+    assert.deepEqual(added(await simulate({ issue: freeIssue(title) })), expected.sort());
+  }
+});
+
+test('only explicit product paths/packages in prose supply body-only surface evidence', async () => {
+  for (const [body, expected] of [
+    ['`rhwp-studio/src/main.ts`에서 초기화가 멈춥니다.', ['rhwp-studio']],
+    ['`@rhwp/core` 사용 중입니다.', ['api']],
+    ['`rhwp-firefox/src/viewer.js`에서 발생합니다.', ['browser-extension']],
+    ['API로 이슈를 등록했습니다. CLI와 MCP도 참고했습니다.', []],
+  ]) {
+    assert.deepEqual(added(await simulate({ issue: freeIssue('확인 요청', body) })), expected);
+  }
+});
+
+test('third-party Studio IDE names are not the rhwp Studio surface', async () => {
+  for (const title of [
+    '[Bug] Visual Studio에서 빌드 실패',
+    '[Bug] Android Studio integration fails',
+    '[Bug] Visual Studio Code integration fails',
+  ]) {
+    const result = await simulate({ issue: freeIssue(title) });
+    assert.deepEqual(added(result), ['bug']);
+    reason(result, 'no-surface-evidence');
+  }
+  for (const issue of [
+    freeIssue('[Bug][studio] Visual Studio에서 재현한 오류'),
+    freeIssue('[Bug] Android Studio integration fails', '`rhwp-studio/src/main.ts`에서 발생합니다.'),
+    freeIssue('[Bug] rhwp-studio와 Visual Studio 연동 오류'),
+  ]) {
+    assert.deepEqual(added(await simulate({ issue })), ['bug', 'rhwp-studio']);
+  }
+});
+
+test('ambiguous surfaces or kinds are skipped independently with explicit reasons', async () => {
+  const surface = await simulate({ issue: freeIssue('[Bug] CLI와 Studio 결과 차이') });
+  assert.deepEqual(added(surface), ['bug']);
+  reason(surface, 'ambiguous-surface');
+  const kind = await simulate({ issue: freeIssue('[Bug][Feature] CLI 동작 변경') });
+  assert.deepEqual(added(kind), ['cli']);
+  reason(kind, 'ambiguous-kind');
+});
+
+test('manual free-form surface and kind decisions are preserved', async () => {
+  const result = await simulate({ issue: freeIssue('[Bug] Studio 글꼴 오류', '',
+    { labels: ['api', 'enhancement', 'custom'] }) });
+  assert.deepEqual(added(result), []);
+  assert.deepEqual(result.current.labels, ['api', 'enhancement', 'custom']);
+  reason(result, 'existing-surface-decision');
+  reason(result, 'existing-kind-decision');
+});
+
+test('inferred labels are idempotent and manual removals suppress only that label', async () => {
+  const first = await simulate({ issue: freeIssue('[Bug] Studio 글꼴 로딩 실패') });
+  const retry = await simulate({ issue: first.current });
+  assert.deepEqual(added(retry), []);
+  reason(retry, 'already-present');
+  const removed = await simulate({ issue: freeIssue('[Bug] Studio 글꼴 로딩 실패'),
+    events: [{ event: 'unlabeled', label: { name: 'font' } }] });
+  assert.deepEqual(added(removed), ['bug', 'rhwp-studio']);
+  reason(removed, 'previously-removed');
+});
+
+test('uncertain test/provenance investigations never imply bug or serialization', async () => {
+  for (const issue of [
+    freeIssue('[7445] 끝 탭 런·charX·hit-test 회귀 재구축',
+      '이번 실패는 화면 위치 결함 입증이 아니라 단일 런 문자열 가정이 깨진 것입니다.'),
+    freeIssue('[samples] 저장 조판 rhwp 산출 추정, 기준 재검토 필요',
+      '추정, 미재현. 현재 rhwp로 재현되지 않는다. 샘플 출처 조사 필요.'),
+  ]) {
+    const result = await simulate({ issue });
+    assert.deepEqual(added(result), []);
+    reason(result, 'no-kind-evidence');
+  }
+});
+
+test('code fences, quoted reports, comments and URLs are not evidence or log content', async () => {
+  const body = '```md\n' + form() + '\n```\n' +
+    '> [Bug] CLI 오류\n> rhwp-studio/src/main.ts\n' +
+    '<!-- rhwp-studio/src/main.ts -->\n' +
+    '[다른 보고서](https://example.org/rhwp-studio/src/main.ts)\n' +
+    '<img src="data:image/png;base64,PRIVATE_ATTACHMENT">';
+  const result = await simulate({ issue: freeIssue('확인 요청', body) });
+  assert.deepEqual(added(result), []);
+  assert.doesNotMatch(result.info.join('\n'), /PRIVATE_ATTACHMENT|example\.org|확인 요청/);
+  for (const code of [
+    '    rhwp-studio/src/main.ts', '\trhwp-studio/src/main.ts',
+    '```js\n```not-a-closing-fence\nrhwp-studio/src/main.ts',
+    '~~~~\n~~~\nrhwp-studio/src/main.ts',
+  ]) {
+    assert.deepEqual(added(await simulate({ issue: freeIssue('확인 요청', code) })), []);
+  }
+});
+
+test('free-form classification rechecks title and every label before the batch write', async () => {
+  for (const latest of [
+    { title: '[Feature] CLI 개선' },
+    { labels: ['enhancement'] },
+    { labels: [{ name: 'custom' }] },
+    { pull_request: {} },
+  ]) {
+    const result = await simulate({ issue: freeIssue('[Bug] Studio 글꼴 오류'), latest });
+    assert.deepEqual(added(result), []);
+    reason(result, 'snapshot-changed');
+  }
+});
+
+test('title-only edits reclassify current title, unrelated edits remain no-ops', async () => {
+  const result = await simulate({ issue: freeIssue('[Bug] CLI 변환 실패'),
+    payload: { action: 'edited', changes: { title: { from: '확인 요청' } } } });
+  assert.deepEqual(added(result), ['bug', 'cli']);
+  const unrelated = await simulate({ payload: { action: 'edited', changes: { assignees: {} } } });
+  assert.deepEqual(unrelated.calls, []);
+  reason(unrelated, 'unsupported-event');
+});
+
+test('missing inferred labels permit independent available labels, never creation', async () => {
+  const result = await simulate({ issue: freeIssue('[Bug] Studio 글꼴 오류'), available: ['bug', 'rhwp-studio'] });
+  assert.deepEqual(added(result), ['bug', 'rhwp-studio']);
+  assert.equal(result.warnings.length, 1);
+  assert.match(result.warnings[0], /missing-repository-label: font/);
+});
+
+test('unsupported or duplicate form responses cannot escape through title/path hints', async () => {
+  for (const [body, code] of [
+    [form('모름'), 'unknown-form-surface'],
+    [form('Studio, CLI'), 'ambiguous-surface'],
+    [form() + '\n\n### 사용 경로\n\nCLI', 'ambiguous-form'],
+    [form() + '\n\n### 동작 문제와 기대 결과\n\n오류\n\n### 재현 순서\n\n실행', 'ambiguous-form'],
+    ['### 사용 경로\n\nStudio', 'incomplete-form'],
+    ['### 사용 경로\n\nStudio — 브라우저 편집기', 'incomplete-form'],
+  ]) {
+    const result = await simulate({ issue: freeIssue('[Bug] Studio 글꼴 오류', body) });
+    // Unsupported complete forms block every fallback, including type/domain hints.
+    // Incomplete forms suppress surface hints but retain independently explicit title evidence.
+    assert.deepEqual(added(result), code === 'incomplete-form' ? ['bug', 'font'] : []);
+    reason(result, code);
+  }
+});
+
+test('all skip paths explain decisions without leaking raw issue content', async () => {
+  const closed = await simulate({ issue: { state: 'closed' } });
+  reason(closed, 'not-open-issue');
+  const empty = await simulate({ issue: freeIssue('', null) });
+  reason(empty, 'no-surface-evidence');
+  reason(empty, 'no-kind-evidence');
 });
