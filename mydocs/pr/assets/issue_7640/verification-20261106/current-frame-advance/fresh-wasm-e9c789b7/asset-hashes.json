@@ -1,0 +1,98 @@
+{
+  "README.md": {
+    "sha256": "daa7b0c9c4f923f789aa945dedcfbbf2ee56494bc1c386711969402df5359712",
+    "bytes": 1429
+  },
+  "actual-init-responses.json": {
+    "sha256": "980389f5dc1e35048db6908a34211234c6b901a09d5d77849a9b5d4e8dd3a641",
+    "bytes": 813
+  },
+  "base-candidate-comparison.json": {
+    "sha256": "a0803322405b7d2a7622f7d564707c43786bb040e1279a4955833622c83e83db",
+    "bytes": 10600
+  },
+  "issue7375-control-wasm-all-pages.tsv": {
+    "sha256": "9629baea6ce93e0841d22028a5920c97b43dbf08fe8fe0d5d94c5722b216eb66",
+    "bytes": 1119
+  },
+  "issue7375-png-byte-comparison.json": {
+    "sha256": "4b5af00345204392b109f80187f303df996018bb7272b7dc3588315175d9ca91",
+    "bytes": 681
+  },
+  "original-wasm-all-pages.tsv": {
+    "sha256": "a43b24684f6bcaaab2815670bbdcb47e2a8f96427daffcabbe09dc4533761a31",
+    "bytes": 504
+  },
+  "original-wasm-p018-overlay.png": {
+    "sha256": "3791bae4ad4022ca92d0fabad86e4cb2e91a6760b30c872269c35070ed0f1a0d",
+    "bytes": 262591
+  },
+  "original-wasm-p018-raw.png": {
+    "sha256": "164a236e06349db938cd5289f22ed77aaae979696a7fe3a853cecbb8fbef977b",
+    "bytes": 254474
+  },
+  "original-wasm-p018-review.png": {
+    "sha256": "55894ee3a47ded453a11bfeee96c39e55eb452e2f0ce24f32e2b369bd640b0f8",
+    "bytes": 757996
+  },
+  "resaved-wasm-all-pages.tsv": {
+    "sha256": "a46bd97d81615fb1450e405c3232da01642b628085978a6b9fe1d2c01619f169",
+    "bytes": 504
+  },
+  "resaved-wasm-p011-overlay.png": {
+    "sha256": "bc44eb812d818441f2e23753b0b12d54b0a639e2d3201e58c0caeccb27a8e4d9",
+    "bytes": 252301
+  },
+  "resaved-wasm-p011-raw.png": {
+    "sha256": "1cf76c15716158466816c124e41856bba4a4e39b1515ea12a0721833881d1f10",
+    "bytes": 254594
+  },
+  "resaved-wasm-p011-review.png": {
+    "sha256": "64996ec8cc3c5707d03c4d4d7a27fe2a7dd78cbc59c574ca8b82b35a230dbfdb",
+    "bytes": 726182
+  },
+  "resaved-wasm-p018-overlay.png": {
+    "sha256": "7a19692785cb7b0dbca6b9ecb8883bfdd85b60cd26b8cea773f23ae349aed189",
+    "bytes": 261845
+  },
+  "resaved-wasm-p018-raw.png": {
+    "sha256": "39af8e36a69ae7c188d342ad7b27e5799b4362a8c2917992e8dd05710c6831f9",
+    "bytes": 254735
+  },
+  "resaved-wasm-p018-review.png": {
+    "sha256": "d6ec42e349a27b820f2b45b85466fc6c7dc66c05a7d2317a75491de3ffc35c96",
+    "bytes": 757873
+  },
+  "resaved-wasm-p019-overlay.png": {
+    "sha256": "5f247dd2348050662209d6d0d0d7b1b3d5b747a9718ead01618b929d7541e345",
+    "bytes": 266611
+  },
+  "resaved-wasm-p019-raw.png": {
+    "sha256": "fdfbbd6906e437dfa9338ad37d6e46b37040dfe3a6db7d37d69b73d6ce93432e",
+    "bytes": 266900
+  },
+  "resaved-wasm-p019-review.png": {
+    "sha256": "1a42d7c35db82656a45b03a83bb85d83bd7b6e6f98972ff0d52ff55a609f421a",
+    "bytes": 777700
+  },
+  "resaved-wasm-p020-overlay.png": {
+    "sha256": "e9e7ae62ddf396e7216ca434a2c9280d65400e2c400f7e2e1440d4f85ef2f83a",
+    "bytes": 248391
+  },
+  "resaved-wasm-p020-raw.png": {
+    "sha256": "c3a66c2f4434881aba4e2fd65fd94fc8a321b0314e9d028312588628f3dbe04d",
+    "bytes": 271506
+  },
+  "resaved-wasm-p020-review.png": {
+    "sha256": "aa6f3c3b770deb6a1340b813baa51fc1d7f71159423c3488d3872a7cc2a17349",
+    "bytes": 726834
+  },
+  "validation.json": {
+    "sha256": "527d6f6cb6a22bcbed0cc55e971ff330b9fbf36509d6eef430d531ac0381ecbc",
+    "bytes": 10619
+  },
+  "wasm-producer.json": {
+    "sha256": "65e53b47bdd8e50a6b1375ac4eacd99167c19787118a971cac300b28dcc67c2e",
+    "bytes": 1150
+  }
+}

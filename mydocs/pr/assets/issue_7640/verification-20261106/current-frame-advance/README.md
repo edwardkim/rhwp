@@ -21,6 +21,7 @@
 해당 후보를 철회하고 직접적인 전진폭 재측정 증거를 기존 경로가 공유하게 했다. 별도 조판
 모델 필드나 새 프레임 소유 경로는 남기지 않았다. 그 후보의 통과 수치는 제출 근거가 아니다.
 
-현재 소스의 fresh WASM·최종 전체 nextest·편람 최종 게이트는 아직 미완료다. 이 Native 단계로
+Native 단계 이후 같은 구현의 fresh WASM 전쪽은 통과했으나 전체 nextest 1건이 실패했다.
+[후속 WASM 증적과 보류 사유](fresh-wasm-e9c789b7/README.md)를 따른다. 이 단계로
 #7640 해결 완료나 PR 제출 완료를 판정하지 않는다. 해시·입력·실행 근거는 `validation.json`,
 로그·중간 진단은 ignored `output/open-issues-oldest-20261105/post-rebase-ece9/`에 보존한다.

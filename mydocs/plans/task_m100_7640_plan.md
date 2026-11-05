@@ -180,3 +180,20 @@ Issue: [#7640](https://github.com/edwardkim/rhwp/issues/7640)
 - [이번 단계 증적](../pr/assets/issue_7640/verification-20261106/current-frame-advance/README.md).
   다음은 새 code head의 fresh WASM 전쪽·최종 전체 회귀·변경 범위 게이트다. 아직 #7640 전체
   해결·PR 제출 완료를 판정하지 않으며 다음 이슈는 이 검증 뒤 같은 브랜치에서 이어 간다.
+
+## fresh WASM 전쪽과 전체 회귀의 보류 반례
+
+- code `e9c789b7ab`의 새 Mac locked web no-opt 빌드로 원본·재저장본 각 21쪽과 #7375 50쪽을
+  완료했다. 재저장본 최저 99.02457%, 원본 최저 98.77736%이며 모두 쪽수 일치·미달/누락 0이다.
+- Native와 별도로 고정 devel WASM 42쪽을 새로 출력해 원 raw 소수값을 대조했다. 원본·재저장본
+  모두 페이지별 0.1%p 초과 하락이 없고 #7375 50쪽 PNG도 base/이전 후보와 모두 같다.
+  실제 초기화 응답·root pkg·Studio public JS/WASM hash를 확인했다.
+- Mac 최소 글꼴 전체 회귀는 12,641건 실행, 12,640 PASS / 1 FAIL / 45 skipped, 실제 테스트
+  477.055초였다. 실패는 exam_science.hwp의 원본 다단 뒤 표 간격 관계다.
+- 과거 producer들을 직접 실행해 첫 현재 프레임 보정부터 4쪽 앞 문단의 0.333px 전진이
+  사라졌음을 확인했다. 원본 문단 117은 글자 없는 수식 호스트이나 글자 크기1150HU와
+  저장 LH=TH1150·BL978이 별도 글자 상자를 소유한다. 현재 수식 상자는1125HU다.
+  빈 run만으로 상자를 새로 만들지 않는 것과 원본이 증명한 빈 글줄 상자를 지우는 것을
+  구분해 공통 합집합을 보정한다. 검사 완화·특정 문서 분기는 추가하지 않는다.
+- [WASM 전쪽·대표 이미지·실패 범위](../pr/assets/issue_7640/verification-20261106/current-frame-advance/fresh-wasm-e9c789b7/README.md).
+  보정 뒤 영향 출력·기존 검사·전체/범위 게이트를 재검증하기 전 해결로 판정하지 않는다.

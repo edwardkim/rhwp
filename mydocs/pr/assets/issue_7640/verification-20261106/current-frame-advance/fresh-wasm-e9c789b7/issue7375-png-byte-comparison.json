@@ -1,0 +1,21 @@
+{
+  "candidate": "output/open-issues-oldest-20261105/post-rebase-ece9/issue7640-final-e9c789b7/issue7375-control-wasm/issue7375-control-wasm/rhwp_png",
+  "controls": [
+    {
+      "reference": "output/open-issues-oldest-20261105/post-rebase-ece9/wasm-whole/issue7375-rebased-wasm/rhwp_png",
+      "reference_count": 50,
+      "candidate_count": 50,
+      "missing": [],
+      "extra": [],
+      "changed": []
+    },
+    {
+      "reference": "output/open-issues-oldest-20261105/post-rebase-ece9/current-base-wasm/issue7375-current-base-wasm/rhwp_png",
+      "reference_count": 50,
+      "candidate_count": 50,
+      "missing": [],
+      "extra": [],
+      "changed": []
+    }
+  ]
+}

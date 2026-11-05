@@ -1,0 +1,30 @@
+{
+  "head": "e9c789b7abaf45c004afecb047a040b016c716d4",
+  "profile": "Mac locked web --no-opt local alternative",
+  "docker_optimized": false,
+  "artifacts": {
+    "rhwp.js": {
+      "sha256": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+      "bytes": 536865,
+      "studio_public_sha256": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b"
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "12611f3b8579f6326b9b6486f5f27946dafc216fe8a5279b748d8257bf845d07",
+      "bytes": 30701834,
+      "studio_public_sha256": "12611f3b8579f6326b9b6486f5f27946dafc216fe8a5279b748d8257bf845d07"
+    },
+    "rhwp.d.ts": {
+      "sha256": "8160a419b532814c4ba8006ab487d47ed54c41553b11282eab77a8e0f8744798",
+      "bytes": 214580
+    },
+    "rhwp_bg.wasm.d.ts": {
+      "sha256": "2845d0d99bedba40ceb18663c1052b9f245a1fbbc07b0f9aa29a1428c200ae97",
+      "bytes": 75003
+    },
+    "package.json": {
+      "sha256": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+      "bytes": 429
+    }
+  },
+  "frozen_pkg": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/issue7640-final-e9c789b7/pkg"
+}

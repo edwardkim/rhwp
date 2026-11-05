@@ -1,0 +1,27 @@
+{
+  "head": "e9c789b7abaf45c004afecb047a040b016c716d4",
+  "kind": "새 browser 탭 초기화 요청의 실제 응답 hash; screenshot 및 문서 시각 판정 아님",
+  "success": true,
+  "initialized": {
+    "version": "0.9.0",
+    "hasDocumentAPI": true
+  },
+  "responses": [
+    {
+      "url": "http://127.0.0.1:52397/rhwp.js",
+      "status": 200,
+      "bytes": 536865,
+      "sha256": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+      "fromCache": false
+    },
+    {
+      "url": "http://127.0.0.1:52397/rhwp_bg.wasm",
+      "status": 200,
+      "bytes": 30701834,
+      "sha256": "12611f3b8579f6326b9b6486f5f27946dafc216fe8a5279b748d8257bf845d07",
+      "source": "actual initialization fetch clone",
+      "fromCache": false
+    }
+  ],
+  "createdAt": "2026-11-05T16:41:42.272Z"
+}
