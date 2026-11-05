@@ -97,3 +97,12 @@
 `c6120525f8` Native(`7c47905d1857c84c00839239d35ad0adc3b977956cc061c986fabd8c0df4e939`)에서 각주 전 2쪽과 미주 세 원본 전 12쪽은 모두 raw 100%다. 같은 head의 원 PR 회귀 모듈 10개를 실제 Native library에 연결해 최소 글꼴 환경에서 실행한 진단 검사 42건은 통과했다. 이 실행은 정식 nextest 전체 회귀·fresh WASM 완료와 구분한다.
 
 추가 API 경계의 실제 실패: `set_section_def_all_native({"outlineNumberingId":65536,"pageNum":5})`는 성공을 반환하면서 ID 1→0·pageNum 0→5로 바뀌었다. 새 ID를 기존 `json_u16`의 `as u16`으로 읽어 overflow가 감겼기 때문이다. 해당 새 필드만 typed JSON의 `Option<u16>`으로 먼저 검증하고 ID 존재를 확인한 뒤 기존 갱신 경로에 전달한다. 다른 구역 필드의 파싱·저장 의미는 유지한다. 기존 무효 ID 검사를 overflow·음수·분수·문자열·객체로 넓혀 전체 상태가 불변인지 확인한다. Studio `SectionDef`에도 선택적 ID 선언을 보완한다. 실제 실패 전 출력은 보존했고 수정 후 검증은 재실행 전이다.
+
+
+## 확대 판독에서 확인한 저장 선 종류의 후속 보정
+
+Native의 원본 38쪽·실제 편집 저장 60쪽·PDF 대조군 12쪽은 전 110쪽 raw 90% 이상(최저 96.60%)이다. 이를 최종 완료로 판정하지 않았다. `footnote-shape-applied.hwpx` 2쪽 확대 판독에서 후보는 짧은 점선, 동일 입력의 독립 Windows Print는 긴 파선이었다. HWP와 HWPX의 선 이름 변환이 서로 반대로 처리되는 기존 결함이다.
+
+선행 해결을 추적했다: #3930 → 원 PR #4058 → `47216ca6bd0eab6540ff925eaeaee3291f7a7d94` → merge `efed25b43a`. 이 보정은 현재 base의 조상이며, header parser/serializer의 독립 계약 검사도 남아 있다. `parse_border_line_type_code`와 `border_line_type_str`는 HWP5 raw 2 ↔ HWPX `DOT`, raw 3 ↔ `DASH`를 보존한다. 그런데 각주의 `section.rs` parser와 `note_line_type_str`는 반대의 별도 매핑을 유지했다.
+
+같은 raw 3의 HWP 저장본 Print는 잉크 1.679pt/간격 2.519pt, 기존 HWPX 저장본(`type=DOT`) Print는 잉크 8.276pt/간격 5.037pt였다(획 폭은 둘 다 약 1.079pt). 임의로 둘 중 하나의 화면에 맞추지 않고, 기존 공통 LineType2 parser/serializer 결과를 각주도 소비하도록 보정한다. 기존 잘못 저장된 HWPX도 해당 파일의 실제 `DOT` 의미대로 읽고, 새 저장본은 원 HWP raw 3을 `DASH`로 보존하게 한다. 현재는 원인·선행 근거 확인을 완료했으며, 해당 source 보정과 새 저장본 Print 재확인은 아직 진행 전이다.
