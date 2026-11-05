@@ -649,80 +649,7 @@ impl DocumentCore {
             .section_def
             .endnote_shape
             .clone();
-        let start_number = shape.start_number.max(1);
         let number_format_code = Self::footnote_shape_number_format_code(shape.number_format);
-        let endnote_number = {
-            let mut count = 0u16;
-            let section = &self.document.sections[section_idx];
-            for (pi, para) in section.paragraphs.iter().enumerate() {
-                let is_before = pi < para_idx;
-                let is_same = pi == para_idx;
-                for (ci, ctrl) in para.controls.iter().enumerate() {
-                    match ctrl {
-                        Control::Endnote(_) => {
-                            if is_before {
-                                count += 1;
-                            } else if is_same {
-                                let positions =
-                                    crate::document_core::helpers::find_control_text_positions(
-                                        para,
-                                    );
-                                let pos = positions.get(ci).copied().unwrap_or(usize::MAX);
-                                if pos <= char_offset {
-                                    count += 1;
-                                }
-                            }
-                        }
-                        // [Task #825 후속] 각주와 동일한 결함 — is_same 일 때 Table 위치가
-                        // char_offset 보다 뒤면 그 안의 미주는 아직 선행이 아니다.
-                        Control::Table(table)
-                            if is_before
-                                || (is_same && {
-                                    let positions =
-                                        crate::document_core::helpers::find_control_text_positions(
-                                            para,
-                                        );
-                                    positions.get(ci).copied().unwrap_or(usize::MAX) <= char_offset
-                                }) =>
-                        {
-                            for cell in &table.cells {
-                                for cp in &cell.paragraphs {
-                                    count +=
-                                        cp.controls
-                                            .iter()
-                                            .filter(|c| matches!(c, Control::Endnote(_)))
-                                            .count() as u16;
-                                }
-                            }
-                        }
-                        Control::Shape(shape)
-                            if is_before
-                                || (is_same && {
-                                    let positions =
-                                        crate::document_core::helpers::find_control_text_positions(
-                                            para,
-                                        );
-                                    positions.get(ci).copied().unwrap_or(usize::MAX) <= char_offset
-                                }) =>
-                        {
-                            if let Some(text_box) =
-                                shape.drawing().and_then(|d| d.text_box.as_ref())
-                            {
-                                for tp in &text_box.paragraphs {
-                                    count +=
-                                        tp.controls
-                                            .iter()
-                                            .filter(|c| matches!(c, Control::Endnote(_)))
-                                            .count() as u16;
-                                }
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-            }
-            start_number.saturating_add(count)
-        };
 
         let (default_char_shape_id, para_shape_id, style_id) =
             self.endnote_style_defaults(section_idx, para_idx, char_offset);
@@ -737,9 +664,10 @@ impl DocumentCore {
             shape.suffix_char
         };
 
+        // 번호는 넣은 뒤 `refresh_endnote_numbers`가 구역의 번호 매기기대로 매긴다.
         let inner_para = Self::make_note_inner_paragraph(
             crate::model::control::AutoNumberType::Endnote,
-            endnote_number,
+            0,
             number_format_code,
             prefix_char,
             suffix_char,
@@ -749,7 +677,6 @@ impl DocumentCore {
         );
 
         let endnote = Endnote {
-            number: endnote_number,
             paragraphs: vec![inner_para],
             before_decoration_letter: prefix_char as u16,
             after_decoration_letter: suffix_char as u16,
@@ -785,14 +712,20 @@ impl DocumentCore {
         paragraph.has_para_text = true;
         self.shift_active_field_for_control_insert(section_idx, para_idx, insert_idx);
 
-        let mut next_number = start_number;
-        Self::renumber_paragraph_endnotes_with_shape(
+        Self::sync_paragraph_endnotes_with_shape(
             &mut self.document.sections[section_idx].paragraphs,
-            &mut next_number,
             number_format_code,
             prefix_char,
             suffix_char,
         );
+        self.refresh_endnote_numbers(section_idx);
+        let endnote_number = match self.document.sections[section_idx].paragraphs[para_idx]
+            .controls
+            .get(insert_idx)
+        {
+            Some(Control::Endnote(note)) => note.number,
+            _ => 0,
+        };
 
         self.reflow_footnote_paragraph(section_idx, para_idx, insert_idx, 0);
 
