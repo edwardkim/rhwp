@@ -93,3 +93,17 @@ gate·다음 오래된 이슈 작업은 아직 완료로 표시하지 않습니�
 Native 실행에서 복원 전 제외를 검출한 [3PASS/1FAIL](corpus-before-native.json) →
 복원 후 [4PASS/0FAIL](corpus-after-native.json)을 확인했습니다. 등록된 검사 수는 4건으로 같습니다.
 본문과 그림 배치는 바뀌지 않으며, 새 전체 회귀에서 복원한 코퍼스 수집 경로도 실행합니다.
+
+
+## 코퍼스 복원 커밋의 최종 로컬 검증
+
+커밋 `9b4c850535b3d260abecc22f833f878c804b3952`의 [최종 검증](final-gates.json)은
+Mac 최소 글꼴·jobs 8·threads 8·Cargo 순차 조건입니다. 전체 nextest는
+12,657PASS/0FAIL/45skip, 테스트 실행411.620초로 완료했습니다. 복원한 네 검사도 실제 포함됐습니다.
+Native Skia 라이브러리4,039PASS/0FAIL/12ignore, PNG2PASS, 직접PDF22PASS와
+fmt·Native feature/기본/WASM/all-target Clippy·workspace build·고정base manifest/unit-tier가 모두 통과했습니다.
+runtime은 이전 코드와 같고 새 WASM 구현 변경은 없으므로 기존 frozen fresh WASM의 producer와
+전204쪽 A/B를 재사용했습니다. 새 테스트와 원장은 이 최종 전체 회귀에서 검증했습니다.
+
+#7727의 로컬 기준·회귀 복원 검증은 완료했습니다. 원격 PR·통합·이슈 close와
+최종 제출 head의 편람 gate 및 전체 오래된 이슈 목표는 별도로 남아 있습니다.

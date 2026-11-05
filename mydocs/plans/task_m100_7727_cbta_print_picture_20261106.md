@@ -118,3 +118,13 @@ PNG2PASS, 직접 PDF22PASS다. Native feature 전체 target Clippy와 fmt도 통
 6개 축 제외와 body/text 개별 제외를 해제했다. 해당 세 원장에 0을 명시하고 다른 입력은 유지했다.
 제외 재도입을 차단하는 원문 소유 검사는 Native 복원 전 3PASS/1FAIL → 복원 후 4PASS/0FAIL이다.
 이 단계를 커밋한 뒤 새 테스트 head의 전체 nextest와 범위별 게이트를 순차 실행한다.
+
+
+## 코퍼스 복원 후 전체 검증 완료
+
+커밋 `9b4c850535`에서 Mac 최소 글꼴 전체 nextest12,657PASS/0FAIL/45skip,
+411.620초를 확인했다. 복원한 네 검사와 코퍼스 수집 경로도 포함된다.
+Native Skia4,039+2+22PASS 및 fmt·Native/기본/WASM/all-target Clippy·workspace build·
+고정base manifest/unit-tier 모두 exit0이다. `final-gates.json`에 실제 명령·로그 hash를 보존했다.
+이슈#7727의 로컬 검증을 마치고 다음 오래된 #7728의 별도 원인 보정으로 진행한다.
+원격통합·이슈종료·최종 제출 편람 gate 및 전체 오래된 이슈 목표의 완료로 확대하지 않는다.
