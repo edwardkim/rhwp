@@ -1,6 +1,9 @@
-//! 원본 프로그램의 굵은 글자 전진 간격과 자연 글리프 폭을 분리한다.
+//! 관계형·고정형: 원본 프로그램의 굵은 글자 전진 간격과 자연 글리프 폭을 분리한다.
+//! 주석 갱신: 2026-11-05 11:40 (+0900). 직전 파일 변경 6097253468 (2026-10-24 15:11:35 +0900).
 //! 독립 issue265 Print12쪽 T2/Widths의 한글은1000/1000em, TJ는약0.05em 추가 전진.
 //! 원문 소유·내용 관계와 저장본의 완료 Print 3·8·12쪽 ±2CSSpx 좌표를 보호한다.
+//! 글리프 늘림 검사는 metric_font_family 로 굵기 간격을 판정하고, 그리는 프로그램은
+//! 설치 글꼴 대신 저장소 OFL `ttfs/opensource/NotoSansKR-Regular.ttf` 로 공급한다(#8613).
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::{
@@ -529,6 +532,9 @@ fn native_bold_tracking_does_not_stretch_the_actual_glyph() {
         let mut run = source.clone();
         run.text = "작".into();
         run.layout_positions = None;
+        // 굵기 간격 판정은 metric_font_family 만 본다. 그리는 프로그램은 설치 글꼴이 아니라
+        // 저장소 OFL 글꼴로 명시해 공급한다(#8613).
+        run.style.font_family = "Noto Sans KR".into();
         if natural {
             run.style.metric_font_family = None;
         }
@@ -545,6 +551,10 @@ fn native_bold_tracking_does_not_stretch_the_actual_glyph() {
             ),
         );
         SkiaLayerRenderer::new()
+            .try_with_font_data(&[
+                include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf").to_vec(),
+            ])
+            .unwrap()
             .render_pixels_with_options(
                 &layer,
                 RasterRenderOptions {

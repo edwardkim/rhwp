@@ -1025,7 +1025,9 @@ fn rasterize_svg_document_in_device_window(
     bytes: &[u8],
     window: SvgDeviceWindow,
 ) -> Option<Vec<u8>> {
-    if bytes.is_empty() || bytes.len() > MAX_SVG_FRAGMENT_BYTES {
+    // 완결 문서 경로(`rasterize_svg_document_to_png`)와 같은 문서 예산을 쓴다. 조각 상한을
+    // 쓰면 4MiB 를 넘는 완결 WMF/EPS 그림이 회색 자리표시자로 떨어진다(#8613).
+    if bytes.is_empty() || bytes.len() > MAX_SVG_DOCUMENT_BYTES {
         return None;
     }
     let options = svg_parse_options();

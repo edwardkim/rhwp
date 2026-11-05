@@ -1,4 +1,7 @@
-//! 공개 Native raster 경로의 기존 단위 검사를 integration 경로로 이관한다.
+//! 관계형·고정형: 공개 Native raster 경로의 기존 단위 검사를 integration 경로로 이관한다.
+//! 주석 갱신: 2026-11-05 11:40 (+0900). 직전 파일 변경 6097253468 (2026-10-24 15:11:35 +0900).
+//! 합성 paint 트리와 저장소 fixture 글꼴만 쓰는 계약 검사라 독립 PDF 시각 측정 대상이 아니다.
+//! 고정형은 합성 캔버스의 픽셀 색·잉크 폭 상한이고, 관계형은 같은 렌더러의 다른 입력끼리의 잉크 폭 비교다.
 #![cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]
 use rhwp::paint::{LayerNode, PageLayerTree, PaintOp};
 use rhwp::renderer::layer_renderer::{LayerRasterRenderer, RasterRenderOptions};
@@ -212,10 +215,21 @@ fn text_glyph_fit_uses_layout_advance_without_distribution_spacing() {
         "합의한 8px advance 안의 글리프가 뒤 글자를 침범하지 않는다: {}",
         ink_width(&compact)
     );
+    // 넘치는 잉크만 칸 폭에 맞추는 #8319 계약에서 compact 는 잉크를 8px 로 누른다.
+    // 음수 자간은 그 맞춤에서 빠지므로, 같은 원점 위상(advance 30.8 → 가운데 정렬
+    // 이동 1px)에서 칸을 넘지 않는 자연 폭 렌더와 잉크 폭이 같아야 한다(#8613).
     let negative = render(8.0, 0.0, -2.0);
-    assert!(
-        ink_width(&negative) > ink_width(&compact) * 2,
+    let natural = render(30.8, 0.0, 0.0);
+    assert_eq!(
+        ink_width(&negative),
+        ink_width(&natural),
         "음수 자간은 후속 원점의 겹침을 허용하며 글리프 자체를 압축하지 않는다"
+    );
+    assert!(
+        ink_width(&negative) > ink_width(&compact),
+        "음수 자간 글리프는 칸에 맞춘 compact 글리프보다 넓다: {} <= {}",
+        ink_width(&negative),
+        ink_width(&compact)
     );
 }
 
