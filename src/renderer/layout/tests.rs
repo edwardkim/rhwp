@@ -184,6 +184,7 @@ fn footnote_separator_caller_uses_absolute_hwpunit_width() {
         ..Default::default()
     }];
     let footnotes = vec![FootnoteRef {
+        column_index: 0,
         number: 1,
         source: FootnoteSource::Body {
             para_index: 0,
@@ -206,6 +207,7 @@ fn footnote_separator_caller_uses_absolute_hwpunit_width() {
         &ResolvedStyleSet::default(),
         &area,
         &shape,
+        &[0],
         &[],
     );
 

@@ -22,6 +22,7 @@ pub(crate) mod cell_paragraph_spacing;
 pub mod char_overlap;
 pub mod composer;
 mod conjoining_jamo;
+pub(crate) mod footnote_frames;
 pub use conjoining_jamo::IsolatedJamoFont;
 pub(crate) mod emphasis;
 pub(crate) mod enclosed_pua_geometry;

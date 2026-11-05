@@ -3905,6 +3905,7 @@ mod column_separators;
 mod fill_background;
 mod fixed_textbox_flow;
 mod floating_equation;
+mod footnote_frames;
 mod header_footer_layout;
 mod hidden_paragraph_marker;
 mod nested_table_origin;
@@ -4959,7 +4960,7 @@ impl LayoutEngine {
 
         // 단별 콘텐츠 레이아웃
         let mut paper_images: Vec<RenderNode> = Vec::new();
-        let body_content_bottom = self.build_columns(
+        let body_flow_bottoms = self.build_columns(
             tree.frame_mut(),
             &mut body_node,
             &mut paper_images,
@@ -5132,7 +5133,7 @@ impl LayoutEngine {
             styles,
             layout,
             bin_data_content,
-            body_content_bottom,
+            &body_flow_bottoms,
         );
 
         // 꼬리말 + 쪽 번호 (감추기 설정 시 건너뜀)
@@ -6534,74 +6535,6 @@ impl LayoutEngine {
         footer_node
     }
 
-    /// 본문 단에 놓인 글줄·표의 가장 낮은 하단. 글줄은 줄간격을 뺀 줄 높이까지다.
-    fn body_flow_bottom(root: &RenderNode) -> Option<f64> {
-        root.children
-            .iter()
-            .filter(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
-            .flat_map(|body| &body.children)
-            .filter(|column| matches!(column.node_type, RenderNodeType::Column(_)))
-            .flat_map(|column| &column.children)
-            .filter(|item| {
-                matches!(
-                    item.node_type,
-                    RenderNodeType::TextLine(_) | RenderNodeType::Table(_)
-                )
-            })
-            .map(|item| item.bbox.y + item.bbox.height)
-            .reduce(f64::max)
-    }
-
-    /// 각주 영역 노드를 생성하여 tree에 추가한다.
-    #[allow(clippy::too_many_arguments)]
-    fn build_footnote_area(
-        &self,
-        tree: &mut PageRenderTree,
-        page_content: &PageContent,
-        paragraphs: &[Paragraph],
-        footnote_shape: &FootnoteShape,
-        styles: &ResolvedStyleSet,
-        layout: &PageLayoutInfo,
-        bin_data_content: &[BinDataContent],
-        body_content_bottom: f64,
-    ) {
-        let mut footnote_layout = layout.clone();
-        if !page_content.footnotes.is_empty() {
-            let fn_height = self.estimate_footnote_area_height(
-                &page_content.footnotes,
-                paragraphs,
-                footnote_shape,
-                styles,
-                layout.body_area.width,
-            );
-            footnote_layout.update_footnote_area(fn_height);
-            if footnote_shape.print_inline_after_text {
-                footnote_layout.footnote_area.y = body_content_bottom;
-            }
-        }
-
-        if !page_content.footnotes.is_empty() {
-            let fn_id = tree.next_id();
-            let mut fn_node = RenderNode::new(
-                fn_id,
-                RenderNodeType::FootnoteArea,
-                layout_rect_to_bbox(&footnote_layout.footnote_area),
-            );
-
-            self.layout_footnote_area(
-                tree.frame_mut(),
-                &mut fn_node,
-                &page_content.footnotes,
-                paragraphs,
-                styles,
-                &footnote_layout.footnote_area,
-                footnote_shape,
-                bin_data_content,
-            );
-            tree.root.children.push(fn_node);
-        }
-    }
-
     /// 쪽 번호를 렌더링한다.
     fn build_page_number(
         &self,
@@ -6806,8 +6739,8 @@ impl LayoutEngine {
         layout: &PageLayoutInfo,
         outline_numbering_id: u16,
         wrap_around_paras: &[super::pagination::WrapAroundPara],
-    ) -> f64 {
-        let mut body_flow_bottom = layout.body_area.y;
+    ) -> footnote_frames::BodyFlowBottoms {
+        let mut body_flow_bottoms = footnote_frames::BodyFlowBottoms::new(layout.body_area.y);
         let mut prev_zone_y_end: f64 = 0.0;
         let mut current_zone_start_y: f64 = 0.0;
         let mut last_zone_y_offset: f64 = -1.0;
@@ -7104,9 +7037,7 @@ impl LayoutEngine {
                     self.dpi,
                 ));
             // 수용 판정과 같은 저장 내용 하단일 때만 새 텍스트 영역과 겹치는 뒤 여백을 제외한다.
-            if body_content_bottom.is_finite() {
-                body_flow_bottom = body_flow_bottom.max(body_content_bottom);
-            }
+            body_flow_bottoms.record(col_content.column_index, body_content_bottom);
             let closing_content_bottom = (blank_band_tail.is_none() && apply_trailing_ls_subtract)
                 .then(|| {
                     let PageItem::FullParagraph { para_index } = col_content.items.last()? else {
@@ -7244,7 +7175,7 @@ impl LayoutEngine {
                 prev_zone_sep_y_end,
             );
         }
-        body_flow_bottom
+        body_flow_bottoms
     }
 
     /// [Task #866 v2 Stage 3] 단일 zone 의 단 구분선을 emit.

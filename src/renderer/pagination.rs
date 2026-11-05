@@ -955,6 +955,8 @@ crate::storage::clone_copy!(FootnoteFragment);
 /// 페이지에 배치되는 각주 참조
 #[derive(Debug, Clone)]
 pub struct FootnoteRef {
+    /// 참조를 수용한 본문 단. 번호 순서와 물리 각주 프레임의 소유를 구분한다.
+    pub column_index: u16,
     /// 각주 번호 (1-based)
     pub number: u16,
     /// 출처
@@ -962,7 +964,7 @@ pub struct FootnoteRef {
     /// `None`이면 각주 전체를 그린다.
     pub fragment: Option<FootnoteFragment>,
 }
-crate::storage::clone_fields!(FootnoteRef, {number, source, fragment});
+crate::storage::clone_fields!(FootnoteRef, {column_index, number, source, fragment});
 
 /// 다음 원본 저장 줄이 확인한 재조판 문단의 실제 소비와 단 원점.
 #[derive(Debug, Clone, Copy)]
@@ -1947,6 +1949,7 @@ impl PaginationResult {
                             },
                         };
                         FootnoteRef {
+                            column_index: f.column_index,
                             number: f.number,
                             source,
                             fragment: f.fragment,

@@ -90,6 +90,7 @@ impl TypesetEngine {
             footnote_between_notes_margin,
             column_def.column_type,
         );
+        st.configure_footnote_placement(footnote_shape.placement);
         st.initialize_source(
             hide_empty_line,
             profile,

@@ -1598,6 +1598,7 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         fn_area: &LayoutRect,
         shape: &FootnoteShape,
+        source_indices: &[usize],
         bin_data_content: &[BinDataContent],
     ) {
         let mut y = fn_area.y;
@@ -1643,7 +1644,8 @@ impl LayoutEngine {
         // 각주 TextRun에 마커를 인코딩하여 히트테스트에서 식별 가능하도록 함
         // section_index = footnote_index (footnotes 배열 인덱스)
         // para_index = usize::MAX - 2000 - fn_para_idx (각주 내 문단 인덱스)
-        for (i, fn_ref) in footnotes.iter().enumerate() {
+        for (frame_index, fn_ref) in footnotes.iter().enumerate() {
+            let i = source_indices[frame_index];
             let fn_paras = get_footnote_paragraphs(fn_ref, paragraphs);
             let number_text = format_footnote_number(
                 fn_ref.number,
