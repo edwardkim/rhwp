@@ -1,0 +1,13 @@
+/home/tsjang/rhwp/ttfs/opensource/NotoSansKR-Regular.ttf
+/home/tsjang/rhwp/ttfs/opensource/RHWPOldHangul-Regular.otf
+/home/tsjang/rhwp/ttfs/opensource/RHWPPublicBatang-Regular.ttf
+/home/tsjang/rhwp/ttfs/opensource/NotoSansKR-ExtraLight.ttf
+/home/tsjang/rhwp/ttfs/opensource/NotoSansSymbols2-Regular.ttf
+   Compiling rhwp v0.9.0 (/home/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 19m 41s
+────────────
+ Nextest run ID 810934d7-11e9-496d-b11c-816cce4ea34c with nextest profile: default
+    Starting 1 test across 55 binaries (12779 tests skipped)
+        PASS [   0.072s] (1/1) rhwp::issue_2833_hml_adapter_row_sizes inflated_row_count_does_not_slow_down_parsing
+────────────
+     Summary [   0.210s] 1 test run: 1 passed, 12779 skipped

@@ -20,3 +20,7 @@ Native·fresh WASM 검증에는 설치된 시스템 글꼴과 승인된 대체 �
 갱신: 2026-11-06T04:33:44+09:00.
 
 전체 Rust는 [목록 대조](full-rust-inventory-audit.json)에서 12,735건 PASS·45건 ignored·누락 0을 확인했다. [실제 API 전후 비교](api/README.md)와 [브라우저 검증](ui/README.md)을 별도로 보존한다. 나머지 시각·lint 게이트는 진행 중이다.
+
+[전체 실행 원문](full-rust-remaining-tests.txt)과 [독립 성능 실행 원문](full-rust-isolated-performance.txt), [실제 확대 판독 기록](direct-readings.json)을 보존한다. 실행 로그는 마지막 빈 줄만 정리했다.
+
+[Native 글꼴 조건 검토](native-font-condition-review.json)와 [독립 원시 테이블 대조](font-table-comparison.json)는 같은 WOFF 재저장의 시각·체크섬 해시 차이 3건을 한정해 설명한다. 다른 글꼴 조건은 자동으로 수용하지 않는다.

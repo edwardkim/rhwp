@@ -1,0 +1,108 @@
+[
+  {
+    "pr": 8542,
+    "key": "inherited8542-nhis-dependent-requirements",
+    "backend": "native",
+    "pages": [
+      2
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "53d7763a0e5c9860e62c8dc3b20cfb515aac6f6eceeeef01ff0fb1abbdfe8fef",
+    "pdf_sha256": "a54a96205d1916b44d98a71caf6114d47ddb34ebfa9f34263228f875e90e5da6",
+    "read_at": "2026-11-06T04:06:26+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/inherited8542-nhis-dependent-requirements/reuse-receipt.json",
+    "observations": "같은 2쪽의 이어받기 시작·행 6~10·칸별 글줄 소속·하단 표 경계를 대조했다. 줄바꿈과 표 경계는 유지된다. 글자 획의 미세한 모양 차이는 점수와 구분해 기록한다.",
+    "state": "선택 영역 직접 판독 완료; 통합 전체 게이트는 별도"
+  },
+  {
+    "pr": 8570,
+    "key": "api-8570-non-inline-cell-table-hwpx",
+    "backend": "native",
+    "pages": [
+      1
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "7cb18664b9a752375cd8531a065195abb94adf404415fec9c4dffe654b7c8870",
+    "pdf_sha256": "df330f5d985b897a7ed69e5fe6aa79e53779ff4864fcc0b7faca775d70d911f3",
+    "read_at": "2026-11-06T04:06:26+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/api-8570-non-inline-cell-table-hwpx/reuse-receipt.json",
+    "observations": "실제 공개 API 생성 HWPX와 독립 Print의 같은 1쪽이다. 안쪽 표는 두 번째 바깥 칸 안에 있고 위·아래 여백, 2×2 격자와 안쪽 표 문자열, 바깥 다음 행이 보존된다. 선의 안티앨리어싱·농도 차이를 raw 100%의 픽셀 완전 일치로 부르지 않는다.",
+    "state": "선택 영역 직접 판독 완료; 통합 전체 게이트는 별도"
+  },
+  {
+    "pr": 8538,
+    "key": "8538-shape-hwp-2022",
+    "backend": "native",
+    "pages": [
+      4,
+      5
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "2ebcb057709da85d59f5f5eb29a997763e19324ab47eef3fbf30c6792d27bb91",
+    "pdf_sha256": "2dd3906646849b23b50e57ab55659e9cc223bc776d754dba968a144a4ce08aae",
+    "read_at": "2026-11-06T05:43:33+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8538-shape-hwp-2022/reuse-receipt.json",
+    "observations": "4쪽의 본문 바로 아래 구분선과 각주 두 줄, 5쪽 하단 작은 번호·각주 두 줄을 대조했다. 본문 개행·1) 2) 소속·선 시작·종료·각주 위치를 보존한다. raw 100%를 픽셀 바이트의 동일성으로 표현하지 않는다.",
+    "state": "해당 영역 직접 판독 완료; fresh WASM·통합 게이트는 별도"
+  },
+  {
+    "pr": 8616,
+    "key": "8616-hancom-mac-shapes-hwp-2022",
+    "backend": "native",
+    "pages": [
+      1
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "b1c1a9c04bf63b8093e163d419a600be69a7306242fa4237c182160643ac9432",
+    "pdf_sha256": "348a77671bcd52413800112988bcd3fdf5345d9fc67b9b316de71c4cebb84a9a",
+    "read_at": "2026-11-06T05:43:33+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8616-hancom-mac-shapes-hwp-2022/reuse-receipt.json",
+    "observations": "14개 모양의 순서·두 자리 12·반전 모양·뒤 한글·끝 문자열이 같은 첫 쪽에 남는다. PUA 자체가 본문으로 노출되지 않고 원·사각·삼각·순환 모양과 숫자가 보인다. 획 농도·경계의 차이는 raw와 구분한다.",
+    "state": "해당 영역 직접 판독 완료; fresh WASM·통합 게이트는 별도"
+  },
+  {
+    "pr": 8629,
+    "key": "8629-hancom-mac-200-b5-hwp-2022",
+    "backend": "native",
+    "pages": [
+      1
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "aee3057cbc9571400ca9c741ad5210ce2320faa0c2056da9b9773f0d7abb814c",
+    "pdf_sha256": "8a640b6011721f3507c34798a3d196567a5106dcbbeeeafb4b71315147393456",
+    "read_at": "2026-11-06T05:43:33+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8629-hancom-mac-200-b5-hwp-2022/reuse-receipt.json",
+    "observations": "B5 200자 원고지의 한글 한 칸·영문 숫자 묶음·쉼표와 마침표·줄끝 영문 매달기 E FG·다음 줄 끝 다.의 소속을 대조했다. 글자가 누락되지 않고 격자 내 원점·행 구성이 유지된다. 하단 격자 획의 서브픽셀 차이를 숨기지 않는다.",
+    "state": "해당 영역 직접 판독 완료; fresh WASM·통합 게이트는 별도"
+  },
+  {
+    "pr": 8564,
+    "key": "api-8564-context-after",
+    "backend": "native",
+    "pages": [
+      1
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "122d77da16b50d15906833806871f5046541d89c4a2a00fe7d4941cc569227a4",
+    "pdf_sha256": "a25f0c071774fcdd6b4f7d04772d3fb76220c88eb57404450555ae487e312608",
+    "read_at": "2026-11-06T05:43:34+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/api-8564-context-after/reuse-receipt.json",
+    "observations": "날짜 앞뒤 A앞·뒤B와 파일명 앞의 앞·뒤C를 직접 대조했다. 인쇄 때 파일명 코드가 임시 이름으로 재평가되어 문자열 길이가 다르다. api/pr8564-print-context.json에 독립 영수증·빈 기본 Scripts·실제 PDF 문자열을 기록했고 위치 오차나 동일 문자열의 일치로 주장하지 않는다.",
+    "state": "해당 영역 직접 판독 완료; fresh WASM·통합 게이트는 별도"
+  },
+  {
+    "pr": 8616,
+    "key": "8616-hancom-mac-dutmal-hwpx-2022",
+    "backend": "native",
+    "pages": [
+      1
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "64fcc6780e5a5bd0b53456b3fc6f067a3608d19c7ba03f1eb6d324987b95b509",
+    "pdf_sha256": "d0e0e31cfa7a8e0708f7f9a6c34c91e0423990d43dd9793cd4ed08d97ea1bc8e",
+    "read_at": "2026-11-06T05:43:34+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8616-hancom-mac-dutmal-hwpx-2022/reuse-receipt.json",
+    "observations": "漢字·한·대한민국만세·글자·스타일의 본말과 위·아래 덧말의 소속을 대조했다. 본문 앞 가·뒤 나·후속 문자열과 덧말의 위아래 위치, 차례제목의 색상·크기를 보존한다.",
+    "state": "해당 영역 직접 판독 완료; fresh WASM·통합 게이트는 별도"
+  }
+]

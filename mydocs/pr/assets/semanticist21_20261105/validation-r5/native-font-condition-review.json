@@ -1,0 +1,31 @@
+{
+  "product_source": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+  "state": "manual_condition_review_passed",
+  "scope": "이 세 실행의 정확한 provenance 지문만 수용; 향후 다른 조건을 자동 수용하지 않음",
+  "rows": [
+    {
+      "key": "inherited8640-equal-height",
+      "field": "font_supply",
+      "base_record_sha256": "0bbfeaf095db446362fa051783921f1a2c79b6511d5f1639e455148364532298",
+      "candidate_record_sha256": "06d43bcfcbf716bd6c823e2c4182ffefcf0b800ca9964cbb129ba1ca2bda3eca",
+      "state": "accepted_same_source_font",
+      "basis": "같은 원본 WOFF SHA와 같은 변환 코드. 현재 SFNT·WOFF의 19개 원시 테이블은 head의 created/modified/checkSumAdjustment만 정규화하면 모두 같다. 변환기의 기본 recalcTimestamp가 SFNT 바이트 해시에 영향을 준다. 이전 SFNT 바이트는 별도 보존되지 않아 이전 바이트의 테이블을 직접 측정한 것으로 표현하지 않는다."
+    },
+    {
+      "key": "inherited8640-equal-width",
+      "field": "font_supply",
+      "base_record_sha256": "cb603bbcb4026745d13e64722822737bb211c4399816883264098c7d063d1344",
+      "candidate_record_sha256": "c469e600aefda45b7ff7f495082410f1e6815e3bde7021365d056f985f34522c",
+      "state": "accepted_same_source_font",
+      "basis": "같은 원본 WOFF SHA와 같은 변환 코드. 현재 SFNT·WOFF의 19개 원시 테이블은 head의 created/modified/checkSumAdjustment만 정규화하면 모두 같다. 변환기의 기본 recalcTimestamp가 SFNT 바이트 해시에 영향을 준다. 이전 SFNT 바이트는 별도 보존되지 않아 이전 바이트의 테이블을 직접 측정한 것으로 표현하지 않는다."
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwp",
+      "field": "font_supply",
+      "base_record_sha256": "0618e6fc25c9cbee4db1ce8ef4c61387ce6c37190e132e9f260e0b6fa4288342",
+      "candidate_record_sha256": "c4607042146469b5dc7afbd53a9f43bd6bfbfd7bf91b28f07ca77f19d4f823fb",
+      "state": "accepted_same_source_font",
+      "basis": "같은 원본 WOFF SHA와 같은 변환 코드. 현재 SFNT·WOFF의 19개 원시 테이블은 head의 created/modified/checkSumAdjustment만 정규화하면 모두 같다. 변환기의 기본 recalcTimestamp가 SFNT 바이트 해시에 영향을 준다. 이전 SFNT 바이트는 별도 보존되지 않아 이전 바이트의 테이블을 직접 측정한 것으로 표현하지 않는다."
+    }
+  ]
+}
