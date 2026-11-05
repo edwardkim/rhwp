@@ -1260,7 +1260,7 @@ pub(crate) fn create_box_border_line_nodes(
         }
 
         BorderLineType::Circle => {
-            create_circle_dot_nodes(tree, border.color, base_width, x1, y1, x2, y2)
+            create_circle_dot_nodes(tree, border.color, border.width, x1, y1, x2, y2)
         }
 
         BorderLineType::Wave | BorderLineType::DoubleWave => create_wave_nodes(
@@ -1323,19 +1323,18 @@ fn create_path_node(
     )
 }
 
-/// 원형 점선(7). 한/글 2020·2022·2024 인쇄 PDF는 굵기 w가 5칸·12칸(1/600 inch)일 때
-/// 지름 6칸·12칸의 채운 원을 2w 간격으로 선 시작점부터 끝점까지 선 위에 찍는다.
-/// 지름은 w로 둔다.
+/// 원형 점선(7). 선언 굵기 index의 공통 Print 지름·중심 간격을 소비한다.
+/// 이미 반올림한 실선 폭에서 원형 점의 물리 pen을 다시 추정하지 않는다.
 fn create_circle_dot_nodes(
     tree: &mut PageLayoutContext,
     color: u32,
-    w: f64,
+    width: u8,
     x1: f64,
     y1: f64,
     x2: f64,
     y2: f64,
 ) -> Vec<RenderNode> {
-    let pitch = 2.0 * w;
+    let (diameter, pitch) = crate::renderer::stroke_pattern::border_circle(width);
     if pitch <= 0.0 {
         return vec![];
     }
@@ -1345,7 +1344,7 @@ fn create_circle_dot_nodes(
     } else {
         (1.0, 0.0)
     };
-    let r = w / 2.0;
+    let r = diameter / 2.0;
     // 사분 원호를 3차 베지어로 근사하는 조절점 거리
     let k = r * 0.552_284_749_830_793_6;
     let count = (len / pitch + 1e-6).floor() as usize + 1;
