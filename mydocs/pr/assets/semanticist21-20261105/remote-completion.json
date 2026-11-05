@@ -1,0 +1,160 @@
+{
+  "integration_pr": 8609,
+  "merge_sha": "e9d4a23be4523a97c29ce6f5e407aba6c4cfb26c",
+  "code_ci_head": "da0074f41ee01d7fa79e6bd4ffd5cadf7c69665d",
+  "final_pr_head": "1557f70b03b92f0af88fb0e6f4ef280df4b8683a",
+  "original_prs": [
+    {
+      "number": 8326,
+      "head": "32c2a1e9febb303ac0662021279cf9171b346cb8",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8326"
+    },
+    {
+      "number": 8331,
+      "head": "5b36dbd078acd5add18592511682ce268dd66e82",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8331"
+    },
+    {
+      "number": 8332,
+      "head": "c773e5060c0f186b4bf8281133004f5afe120fa4",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8332"
+    },
+    {
+      "number": 8347,
+      "head": "19aed211d178996cf83aae89388ed91d6ec93bcf",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8347"
+    },
+    {
+      "number": 8349,
+      "head": "ffc0550e8b9c6db8627f9a82cc7f0f3ff39a5415",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8349"
+    },
+    {
+      "number": 8358,
+      "head": "9a709cdcd31300731cefbdbec4a978557f871183",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8358"
+    },
+    {
+      "number": 8359,
+      "head": "2587dd58dac9a8bf312d7cd2f59b37e803d1a387",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8359"
+    },
+    {
+      "number": 8363,
+      "head": "9d6e420da55d4b9d9684c0e9c8f61cdf84ff29ff",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8363"
+    },
+    {
+      "number": 8366,
+      "head": "5993e4d32e08cce8785e79364dd6ac66eab80dfb",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8366"
+    },
+    {
+      "number": 8367,
+      "head": "0f73bc67fcffb6126c745d86685df893ffb5267b",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8367"
+    }
+  ],
+  "self_review": {
+    "id": 5778015173,
+    "html_url": "https://github.com/edwardkim/rhwp/pull/8609#pullrequestreview-5778015173",
+    "commit_id": "1557f70b03b92f0af88fb0e6f4ef280df4b8683a",
+    "state": "COMMENTED",
+    "submitted_at": "2026-11-05T00:30:00Z"
+  },
+  "postmerge_automation": {
+    "duration": {
+      "run_id": 41941963866,
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41941963866",
+      "conclusion": "success",
+      "collection": {
+        "ready": true,
+        "reason": "successful-pr-worker-measurements",
+        "pullNumber": 8609,
+        "finalHeadRunId": 41941236661,
+        "finalHeadRunAttempt": 1,
+        "finalHeadSha": "1557f70b03b92f0af88fb0e6f4ef280df4b8683a",
+        "reviewOnlyTail": true,
+        "sourceRunId": 41937077126,
+        "latestRunAttempt": 1,
+        "measurementAttempts": {
+          "b": 1,
+          "c": 1,
+          "d": 1,
+          "e": 1
+        },
+        "testedMergeSha": "04a4c1f0e222628eb2eab748a8d1d82ed8a55704",
+        "sourceHeadSha": "da0074f41ee01d7fa79e6bd4ffd5cadf7c69665d",
+        "artifactIds": [
+          13375776724,
+          13376216331,
+          13374589681,
+          13374774313
+        ]
+      },
+      "publication": {
+        "published": true,
+        "reason": "published",
+        "previousSha": "87699da7ef32fffe1dae581a5b3d32075a002c3d",
+        "commitSha": "8bcf7906f2d923d19e8b65621dbb307ee7c0f117",
+        "blobSha": "cab4d5513748c69aa3cfab9232f970c61bee0b1c",
+        "sourceMergeSha": "e9d4a23be4523a97c29ce6f5e407aba6c4cfb26c"
+      }
+    },
+    "linked_issue_workflow": {
+      "run_id": 41941963864,
+      "conclusion": "success",
+      "closed_issue_ids": []
+    },
+    "verification_ci_started_after_merge": false
+  },
+  "new_issue_closures_by_maintainer": [],
+  "source_fork_branches_deleted": false,
+  "comments_and_cleanup": "Approved follow-up actions; actual results are recorded in original PR comments and local completion/cleanup receipts.",
+  "related_unresolved_issues_kept_open": [
+    8236
+  ],
+  "related_unprocessed_prs_kept_open": [
+    8368
+  ]
+}

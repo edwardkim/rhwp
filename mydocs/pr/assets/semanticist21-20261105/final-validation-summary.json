@@ -74,7 +74,7 @@
       "0"
     ]
   ],
-  "remote_operations": "Corrected code head da0074f41ee01d7fa79e6bd4ffd5cadf7c69665d passed Full CI, independent GHAS CodeQL, Render Diff, Adapter, Proptest and CI Impact Policy. Review-only trailing commit and exact-head merge remain.",
+  "remote_operations": "Merged in PR #8609 at e9d4a23be4523a97c29ce6f5e407aba6c4cfb26c; all ten originals indirectly MERGED. Final fast-pass, aggregate, self-review and post-merge duration publication verified. Approved comments and cleanup follow.",
   "all_required_local_gates": "passed",
   "final_metadata_checks": "final-metadata-check-runs.json",
   "security_followup": "ci-security-followup.md",
@@ -291,5 +291,6 @@
     "github_new_head_codeql": "Pending independent analysis; no dismissal or security-setting changes"
   },
   "independent_codeql": "security-codeql-after.json",
-  "root_clippy_separate_check": "security-root-clippy.json"
+  "root_clippy_separate_check": "security-root-clippy.json",
+  "remote_completion": "remote-completion.json"
 }

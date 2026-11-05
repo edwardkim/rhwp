@@ -20,7 +20,7 @@
 5. 원 PR 10개가 간접 MERGED로 반영됐는지 확인한다. 반영되지 않은 원 PR은 통합 수용 근거와 함께 완료 처리하는 범위까지 승인받는다. 감사 댓글에는 통합 PR·검증·보정 내용을 연결하고, CI 시간 초과를 기여자 소스 결함으로 쓰지 않는다.
 6. 검토 기록·archive·오늘할일의 필요한 후속 반영을 canonical 역할 절차로 마치고 devel 동기화·검토 전용 branch/worktree·output 전체·검토 debug를 정리한다. contributor fork branch와 다른 작업은 보존한다.
 
-관련 issue는 해결 범위를 확인하며, 성능 문서의 기존 조판 차이나 #8368 등 미해결 범위를 자동 종료하지 않는다. 공개 댓글의 구체 문구는 아래 초안을 바탕으로 실제 integration PR·merge SHA·CI URL을 확정한 뒤 채운다.
+관련 issue와 별도 PR은 해결 범위를 확인하며, 성능 문서의 기존 조판 차이나 별도 PR #8368 등 미처리 범위를 자동 종료하지 않는다. 공개 댓글의 구체 문구는 아래 초안을 바탕으로 실제 integration PR·merge SHA·CI URL을 확정한 뒤 채운다.
 
 ## 원 PR 후속 댓글 공통 초안
 
