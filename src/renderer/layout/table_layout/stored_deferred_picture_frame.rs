@@ -33,7 +33,7 @@ impl LayoutEngine {
         let profile = self.profile.get();
         if !(profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout())
             || table.common.treat_as_char
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || cell.row_span != 1
             || cell.col_span != table.col_count
         {

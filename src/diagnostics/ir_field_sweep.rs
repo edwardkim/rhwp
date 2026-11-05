@@ -953,6 +953,7 @@ fn sweep_table(base: &str, a: &Table, b: &Table, out: &mut DivergenceCollector) 
         raw_ctrl_seal: _,
         raw_table_record_attr,
         raw_table_record_extra,
+        layout_page_break_cache: _,
     } = a;
 
     macro_rules! f {

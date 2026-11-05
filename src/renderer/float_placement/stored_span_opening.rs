@@ -60,7 +60,7 @@ pub(crate) fn stored_span_opening_frame(
         || table_reflowed
         || table.common.treat_as_char
         || table.common.text_wrap != TextWrap::TopAndBottom
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || table.common.height == 0
         || table.common.height > i32::MAX as u32
         || row >= usize::from(table.row_count)

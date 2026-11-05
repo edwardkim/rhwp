@@ -29,7 +29,7 @@ impl TypesetEngine {
             && (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
             && input.ft.table_footnotes.is_empty()
             && input.table.caption.is_none()
-            && input.table.page_break == crate::model::table::TablePageBreak::RowBreak
+            && input.table.layout_page_break() == crate::model::table::TablePageBreak::RowBreak
             && !input.table.common.treat_as_char
             && input.table.common.vert_rel_to == crate::model::shape::VertRelTo::Para
             && signed_hwpunit(input.table.common.vertical_offset) == 0
@@ -244,13 +244,8 @@ impl TypesetEngine {
         // 표 내 각주를 고려한 가용 높이 계산 (Paginator engine.rs:583-586 동일)
         let mut total_footnote =
             st.projected_footnote_height(ft.table_footnote_height, ft.table_footnote_count);
-        // [#1921 d=+1 / Task #1725 동형] tail-before-vpos-reset 표는 각주 안전마진
-        // (보수 버퍼 40px)을 완화한다. 한글은 stored vpos 상 쪽 하단에 표+각주를
-        // 여유 수 px 로 타이트하게 배치하는데(75828 pi134: 표 하단 912.2 + 각주
-        // 46.1 = 958.3 ≤ 971.3), rhwp 의 보수 버퍼가 표를 다음 쪽으로 밀어
-        // 이후 stored vpos=0 신호 연쇄로 문서 끝까지 +1쪽이 된다. 다음 문단의
-        // stored LINE_SEG 가 새 쪽 시작(vpos≤500)을 명시할 때만 완화하므로
-        // 겹침 위험은 stored 배치가 보증하는 범위로 한정된다.
+        // [#1921 d=+1] 다음 문단의 stored LINE_SEG 가 새 쪽 시작(vpos≤500)을 명시하는
+        // tail-before-vpos-reset 표를 구분한다.
         let table_anchor_vpos = para
             .line_segs
             .iter()
@@ -303,7 +298,7 @@ impl TypesetEngine {
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common)
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 )
                 && ft.table_footnotes.is_empty()
@@ -328,7 +323,7 @@ impl TypesetEngine {
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common)
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 )
                 && !para_has_visible_text(para)
@@ -366,7 +361,7 @@ impl TypesetEngine {
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common)
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 )
                 && table.row_count > 1
@@ -380,22 +375,8 @@ impl TypesetEngine {
         // 소비한다. 고정 안전 여유를 다시 빼서 마지막 행을 이월하지 않는다.
         let uses_reserved_footnote_boundary =
             ft.table_footnote_count == 0 && st.current_footnote_height > 0.0;
-        let mut fn_margin = if total_footnote > 0.0 {
-            if uses_reserved_footnote_boundary
-                || next_starts_new_page
-                || internal_reset_tail_uses_actual_footnote_boundary
-                || native_single_rowbreak_full_table_fits_actual_footnote_boundary
-            {
-                0.0
-            } else {
-                st.footnote_safety_margin
-            }
-        } else {
-            0.0
-        };
         let mut available =
-            (st.base_available_height() - total_footnote - fn_margin - st.current_zone_y_offset)
-                .max(0.0);
+            (st.base_available_height() - total_footnote - st.current_zone_y_offset).max(0.0);
 
         let declared_object_total = raw_table_ctrl_height_px(table, self.dpi)
             .unwrap_or_else(|| hwpunit_to_px(table.common.height as i32, self.dpi).max(0.0))
@@ -405,7 +386,7 @@ impl TypesetEngine {
             && is_para_topbottom_float(&table.common)
             && !para_has_visible_text(para)
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             ) {
             let declared_height = hwpunit_to_px(table.common.height as i32, self.dpi).max(0.0);
@@ -436,7 +417,7 @@ impl TypesetEngine {
                 para_idx, st.section_index, ft.effective_height, host_spacing_total, table_total,
                 mt_sum, mt_rows, mt_cs, st.current_height, table.common.treat_as_char, table.row_count,
                 available, st.base_available_height(), total_footnote, st.current_zone_y_offset,
-                declared_object_total, table.page_break,
+                declared_object_total, table.layout_page_break(),
                 mt.map(|m| m.row_heights.clone()).unwrap_or_default(),
             );
         }
@@ -554,7 +535,7 @@ impl TypesetEngine {
             && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
             && matches!(table.common.vert_rel_to, VertRelTo::Para)
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && table.cells.iter().any(|cell| {
@@ -605,7 +586,13 @@ impl TypesetEngine {
                 // (footer 351.4px 선언 vs 302.3px 측정) fit 이 과소된다 → 선언 높이로 판정·예약.
                 let declared_px =
                     crate::renderer::hwpunit_to_px(table.common.height as i32, self.dpi);
-                let block_height = table_total.max(declared_px);
+                // [#8525] 띠(하단 배타 영역)는 쪽 아래에 절대 배치되는 표 상자 자체다. host
+                // 문단 간격(`host_spacing`)은 host 글줄의 흐름 몫이라 띠에 넣지 않는다 — 한/글
+                // Print 의 틀 높이는 그린 표 높이와 같다(36443518: 101.27px ≈ 선언 101.24px. host
+                // 간격 100HU 를 더한 102.57px 띠가 마지막 글줄을 다음 쪽으로 밀었다). 저장 사다리
+                // 롤백(`consumed`)은 저장 vpos 가 누적한 몫이라 종전 값(`ladder_block_height`)을 둔다.
+                let block_height = ft.effective_height.max(declared_px);
+                let ladder_block_height = table_total.max(declared_px);
                 // [Task #1658 v3] 한글 실측(stage1): 하단 고정 틀은 본문 하단에
                 // 절대배치(다수 시 서로 겹침 허용)되고 본문 텍스트는 하단 배타 영역
                 // (= 최대 블록 높이) 위까지만 흐른다 — flow 소비 모델이 아니다
@@ -767,7 +754,29 @@ impl TypesetEngine {
                         st.vpos_compacted_stored_delta,
                     );
                 }
-                if sync_h + uncertain_anchor_margin <= avail_after {
+                // [#8467] 결재란 앵커 문단 자신의 글줄(높이 + 줄 간격)도 배타 영역 위에 들어가야
+                // 한다. 한/글 2020·2022·2024 Print 는 이 줄이 띠를 침범하면 결재란을 다음 쪽으로
+                // 넘긴다 — 10k 결재문서 1482건 중 흡수 54건을 실제 레이아웃 본문 끝 기준으로 재면
+                // 분할 47건은 모두 `본문 끝 + 앞 줄 간격 + 앵커 줄(lh+ls)` 가 띠 위끝을 넘고(최대 -0.9px),
+                // 흡수 4건은 모두 들어간다(0.0~10.1px). 앞 줄 간격은 cur_h 가 이미 담고 있다.
+                // 한/글 2020·2024(MCP)와 2022(오라클) Print 의 쪽수가 판정 문서 12건에서 모두 같다.
+                // 같은 문단의 둘째 결재란은 그 줄을 첫 결재란과 공유하므로 다시 세지 않는다
+                // (36373027 ci0·ci2, 한/글 1쪽).
+                let first_footer_of_host = !para.controls[..ctrl_idx].iter().any(|control| {
+                    matches!(control, Control::Table(t) if is_page_bottom_fixed_float(&t.common))
+                });
+                // 저장 줄 없이 합성한 줄도 그리는 표 높이를 담는다(#8507). 그 문단이 있는 쪽도
+                // 같은 흐름 좌표로 판정한다.
+                let host_line_advance = first_footer_of_host
+                    .then(|| crate::renderer::layout::control_line_seg_index(para, ctrl_idx))
+                    .flatten()
+                    .and_then(|line| para.line_segs.get(line))
+                    .filter(|seg| !crate::renderer::typeset::is_synthetic_line_seg(seg))
+                    .map(|seg| {
+                        hwpunit_to_px(seg.line_height.max(0) + seg.line_spacing.max(0), self.dpi)
+                    })
+                    .unwrap_or(0.0);
+                if sync_h + host_line_advance + uncertain_anchor_margin <= avail_after {
                     // 현재 쪽 하단에 배치 — 본문 흐름은 vpos 동기 위치까지만 전진.
                     st.align_flow_to(sync_h);
                 } else if !st.current_items.is_empty() {
@@ -798,7 +807,7 @@ impl TypesetEngine {
                 );
                 // 저장 사다리에서 뺄 몫도 절대배치 본체만이다. 호스트 글줄의
                 // 전진은 위에서 발행한 PartialParagraph의 같은 메트릭을 유지한다.
-                let consumed = block_height.max(0.0);
+                let consumed = ladder_block_height.max(0.0);
                 st.reserve_bottom_fixed_flow(
                     consumed,
                     st.current_bottom_fixed_exclusion.max(block_height + v_off),
@@ -943,7 +952,7 @@ impl TypesetEngine {
         let mut placement_para_start_height = para_start_height;
         if is_para_topbottom_float(&table.common)
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && has_preceding_coanchored_float
@@ -990,7 +999,7 @@ impl TypesetEngine {
             && table.col_count == 1
             && table.cells.len() == 1
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && signed_hwpunit(table.common.vertical_offset) <= 0
@@ -1073,7 +1082,7 @@ impl TypesetEngine {
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common)
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 )
                 && table.row_count > 1
@@ -1150,7 +1159,7 @@ impl TypesetEngine {
                     && !table.common.treat_as_char
                     && is_para_topbottom_float(&table.common)
                     && matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     )
                     && table.row_count > 1
@@ -1184,7 +1193,7 @@ impl TypesetEngine {
                     && !table.common.treat_as_char
                     && is_para_topbottom_float(&table.common)
                     && matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     )
                     && !para_has_visible_text(para)
@@ -1232,7 +1241,7 @@ impl TypesetEngine {
                     && !table.common.treat_as_char
                     && is_para_topbottom_float(&table.common)
                     && matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     )
                     && !para_has_visible_text(para)
@@ -1269,7 +1278,7 @@ impl TypesetEngine {
                     && !table.common.treat_as_char
                     && is_para_topbottom_float(&table.common)
                     && matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     )
                     && !para_has_visible_text(para)
@@ -1321,7 +1330,7 @@ impl TypesetEngine {
                     && !table.common.treat_as_char
                     && is_para_topbottom_float(&table.common)
                     && matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     )
                     && !para_has_visible_text(para)
@@ -1378,7 +1387,7 @@ impl TypesetEngine {
                     && table.col_count == 1
                     && table.cells.len() == 1
                     && matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     )
                     && !para_has_visible_text(para)
@@ -1391,7 +1400,7 @@ impl TypesetEngine {
                 st.profile.hwp5_stored_pagination_layout()
                     && !table.common.treat_as_char
                     && matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     )
                     && !para_has_visible_text(para)
@@ -1428,7 +1437,7 @@ impl TypesetEngine {
                 // 다음 쪽). 분할 스캐너가 경계를 정하게 한다.
                 && !(self.profile.get().session_edited()
                     && matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     ))
             {
@@ -1626,13 +1635,6 @@ impl TypesetEngine {
         // 안전 여유 때문에 원점을 버리고 표를 위로 당기는 폴백으로 바꾸지 않는다.
         let actual_footnote_boundary =
             (st.base_available_height() - total_footnote - st.current_zone_y_offset).max(0.0);
-        if fn_margin > 0.0
-            && original_control_frame
-                .is_some_and(|placement| placement.occupied_bottom <= actual_footnote_boundary)
-        {
-            fn_margin = 0.0;
-            available = actual_footnote_boundary;
-        }
         let closed_source_frame_key = (
             st.pages.len(),
             st.current_column,
@@ -2384,7 +2386,7 @@ impl TypesetEngine {
             && !table.common.treat_as_char
             && is_para_topbottom_float(&table.common)
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && table.row_count > 1
@@ -2434,7 +2436,7 @@ impl TypesetEngine {
         // 그대로 소유한다. #2439 양수 오프셋 RowBreak 의 host 줄 꼬리(`strict_following_plain_text_fit`)는
         // 별도 계약이라 제외한다.
         let resolved_host_placement = resolved_host_placement.or_else(|| {
-            (table.page_break != crate::model::table::TablePageBreak::None
+            (table.layout_page_break() != crate::model::table::TablePageBreak::None
                 && unconstrained_host_placement.is_none()
                 && !ft.strict_following_plain_text_fit
                 && legacy_whole_fits)
@@ -2558,7 +2560,7 @@ impl TypesetEngine {
         let mut computed_host_tail = None;
         let mut split_host_fragment = None;
         if let Some(handoff) = resolved_host_placement.and_then(|placement| {
-            self.place_computed_split_host(st, input, placement, whole_frame_budget, fn_margin)
+            self.place_computed_split_host(st, input, placement, whole_frame_budget)
         }) {
             match handoff {
                 super::split_host::SplitHostHandoff::Placed => return None,
@@ -2588,7 +2590,7 @@ impl TypesetEngine {
                     // 사용할 수 있다. 뒤 바깥 여백은 후속 흐름에 예약하지만 본체를
                     // 다음 쪽으로 밀 이유가 아니다(독립 Print의 작은 용지 대조).
                     || (p.flow == crate::renderer::float_placement::ParagraphFloatFlow::EmptyHost
-                        && matches!(table.page_break, crate::model::table::TablePageBreak::None)
+                        && matches!(table.layout_page_break(), crate::model::table::TablePageBreak::None)
                         && ft.table_footnotes.is_empty()
                         && st.current_footnote_height <= 0.0
                         && p.table_top + ft.effective_height <= available + below_body_slack)
@@ -2604,7 +2606,7 @@ impl TypesetEngine {
                 && !coanchored_visible_float
                 && saved_table_source_frame.is_none()
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 ) {
                 ft.host_spacing.after - ft.host_spacing.after_for_fit
@@ -2706,7 +2708,7 @@ impl TypesetEngine {
             && table.row_count == 1
             && table.col_count == 1
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && effective_row_geometry_table.row_count == 1
@@ -2730,7 +2732,7 @@ impl TypesetEngine {
         if !table.common.treat_as_char
             && table.row_count == 1
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && !para_has_stored_line_seg
@@ -2771,8 +2773,10 @@ impl TypesetEngine {
         let below_body_slack =
             (st.layout.page_height - (st.layout.body_area.y + st.layout.body_area.height)).max(0.0);
         let table_only_height = (table_total - host_spacing_total).max(0.0);
-        if matches!(table.page_break, crate::model::table::TablePageBreak::None)
-            && table_only_height > st.base_available_height()
+        if matches!(
+            table.layout_page_break(),
+            crate::model::table::TablePageBreak::None
+        ) && table_only_height > st.base_available_height()
             && table_only_height <= st.base_available_height() + below_body_slack
         {
             if !st.current_items.is_empty() {
@@ -2803,7 +2807,6 @@ impl TypesetEngine {
             host_spacing_total,
             table_total,
             stored_ordinary_rowbreak_rewind_uses_actual_footnote_boundary,
-            fn_margin,
             available,
             declared_object_total,
             native_hwp5_internal_reset_rewind_needs_anchor_resync,

@@ -29,7 +29,7 @@ pub(crate) fn standalone_table_fragment_owner_with_storage<S: crate::storage::St
             matches!(control, Control::Table(table)
                 if table.common.treat_as_char
                 && table.row_count > 1
-                && table.page_break == crate::model::table::TablePageBreak::RowBreak)
+                && table.layout_page_break() == crate::model::table::TablePageBreak::RowBreak)
         }))
 }
 
@@ -58,14 +58,18 @@ pub(crate) fn supports_table_text_rows_with_storage<S: crate::storage::Storage>(
         super::super::composer::expand_pua_display_text_with_storage(&para.text, storage)?
             .chars()
             .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace());
-    let has_composed_object_row = flow_objects == 1
-        && !has_text
-        && para.line_segs.len() == 1
+    // [#8507] 텍스트 스트림이 빈 host 는 줄 재조판이 개체 줄을 한 번 정한다. 필드 시작 뒤로
+    // 넘긴 표는 빈 필드 줄 + 표 줄의 두 줄이 되며, 그 줄 구성도 이 계획이 다시 나누지 않는다.
+    // 작성 개행·공백만 있는 문단은 여러 줄이어도 기존처럼 이 계획이 줄을 소유한다.
+    let single_composed_row = para.line_segs.len() == 1
         && para.line_segs[0].tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
             != 0
         && para.controls.iter().enumerate().any(|(control, _)| {
             super::super::composer::owned_rowbreak_tac_height(para, control).is_some()
         });
+    let has_composed_object_row = flow_objects == 1
+        && !has_text
+        && (single_composed_row || super::super::para_has_composed_object_rows(para));
     // 본문 축만 새로 만든 경우 텍스트가 없는 문단의 저장 줄은 여전히
     // 유효한 개체 높이를 소유한다. 줄 하나가 단일 TAC 표의 외곽 상자를
     // 정확히 담을 때만 재구성된 축에서 같은 물리 줄 계획을 사용한다.

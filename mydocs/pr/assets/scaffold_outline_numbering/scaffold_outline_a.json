@@ -1,0 +1,73 @@
+{
+ "version": "1",
+ "title": "개요 번호 A",
+ "outline_numbering": [
+  {
+   "text": "^1.",
+   "num_format": "roman_capital"
+  },
+  {
+   "text": "^2."
+  },
+  {
+   "text": "^3.",
+   "num_format": "hangul_syllable"
+  }
+ ],
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 1,
+   "text": "추진 배경"
+  },
+  {
+   "type": "heading",
+   "level": 2,
+   "text": "현황"
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "세부 내용"
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "넷째 수준"
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "다섯째 수준"
+  },
+  {
+   "type": "heading",
+   "level": 6,
+   "text": "여섯째 수준"
+  },
+  {
+   "type": "heading",
+   "level": 7,
+   "text": "일곱째 수준"
+  },
+  {
+   "type": "paragraph",
+   "text": "본문"
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "둘째 세부"
+  },
+  {
+   "type": "heading",
+   "level": 2,
+   "text": "둘째 현황"
+  },
+  {
+   "type": "heading",
+   "level": 1,
+   "text": "추진 계획"
+  }
+ ]
+}

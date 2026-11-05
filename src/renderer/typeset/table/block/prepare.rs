@@ -46,7 +46,6 @@ impl TypesetEngine {
             host_spacing_total,
             mut table_total,
             stored_ordinary_rowbreak_rewind_uses_actual_footnote_boundary,
-            mut fn_margin,
             mut available,
             declared_object_total,
             native_hwp5_internal_reset_rewind_needs_anchor_resync,
@@ -103,7 +102,7 @@ impl TypesetEngine {
         let row_has_stored_square_picture_flow = |row: usize| {
             if !st.profile.hwp5_stored_pagination_layout()
                 || !matches!(
-                    row_geometry_table.page_break,
+                    row_geometry_table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 )
             {
@@ -211,7 +210,7 @@ impl TypesetEngine {
                 .render_normalization
                 .table_text_reflowed(row_geometry_table)
             && std::ptr::eq(row_geometry_table, table)
-            && table.page_break == crate::model::table::TablePageBreak::CellBreak
+            && table.layout_page_break() == crate::model::table::TablePageBreak::CellBreak
             && !table.common.treat_as_char
             && is_para_topbottom_float(&table.common)
             && table.common.height > 0
@@ -322,6 +321,9 @@ impl TypesetEngine {
                 }
             })
             .collect();
+        // 첫 저장 프레임의 잔여도 스캔이 수용하는 앞 행의 물리 원점으로 계산한다.
+        // 중간 paint 높이 해소가 캐시에 남으면 같은 컷을 받은 뒤 끝 행을 다시 늘린다.
+        layout_engine.remember_stored_frame_rows(row_geometry_table, &whole_row_fit_h);
         // p106은 paint footprint 기준 row 0–3이 body bottom보다 3.9px 앞에서
         // 끝나지만, 한컴은 다음 행을 이어받기 조각으로 소유한다. 이 4px은 저장
         // 되감김 첫 조각의 꼬리말 경계에 있는 기존 여유이며 전역 안전
@@ -406,14 +408,8 @@ impl TypesetEngine {
         // 유지한다.
         let no_table_note_available = {
             let projected = st.projected_footnote_height(0.0, 0);
-            let margin = if projected > 0.0 {
-                st.footnote_safety_margin
-            } else {
-                0.0
-            };
             (st.base_available_height()
                 - projected
-                - margin
                 - st.current_zone_y_offset
                 - st.layout.pagination_tolerance_px)
                 .max(0.0)
@@ -434,7 +430,7 @@ impl TypesetEngine {
                 && st.profile.hwp5_stored_pagination_layout()
                 && is_para_topbottom_float(&table.common)
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 )
                 && !para_has_visible_text(para)
@@ -469,7 +465,7 @@ impl TypesetEngine {
         let queue_table_footnotes = !table.common.treat_as_char
             && (st.profile.hwp5_stored_pagination_layout() || hwpx_stored_table_footnote_queue)
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && !ft.table_footnotes.is_empty()
@@ -510,20 +506,8 @@ impl TypesetEngine {
                 st.reserve_painted_footnote_area(height);
             }
             total_footnote = st.projected_footnote_height(0.0, 0);
-            fn_margin = if total_footnote > 0.0 {
-                if next_starts_new_page || current_painted_note_height.is_some() {
-                    0.0
-                } else {
-                    st.footnote_safety_margin
-                }
-            } else {
-                0.0
-            };
-            available = (st.base_available_height()
-                - total_footnote
-                - fn_margin
-                - st.current_zone_y_offset)
-                .max(0.0);
+            available =
+                (st.base_available_height() - total_footnote - st.current_zone_y_offset).max(0.0);
             // row cut과 문서 저장 높이의 sub-pixel 변환 차이로, 기준 PDF에서
             // 정확히 바닥에 닿는 마지막 행을 불필요하게 다음 fragment로 보내지
             // 않도록 이 작은 queue 경로에만 round-off 여유를 준다. 위의 대형
@@ -652,7 +636,7 @@ impl TypesetEngine {
                     ) || ((st.profile.hwp5_stored_pagination_layout()
                         || st.profile.hwpx_stored_layout())
                         && !st.profile.session_edited()
-                        && matches!(table.page_break, crate::model::table::TablePageBreak::RowBreak)
+                        && matches!(table.layout_page_break(), crate::model::table::TablePageBreak::RowBreak)
                         && crate::renderer::float_placement::ParagraphFloatPlacement::stored_host_lines_are_valid(
                             para, table, ctrl_idx,
                         )) || (para_has_non_whitespace_text(para)
@@ -972,7 +956,7 @@ impl TypesetEngine {
         // [#7732] 이 쪽에 표가 다 들어가지 않으면 표 각주는 첫 조각 쪽에 오지 않는다 — 한/글은
         // 행을 칸 각주 때문에 줄이지 않고, 칸 각주는 조각 뒤 남는 공간이나 표가 끝나는 쪽에
         // 놓는다(합성 `samples/issue1937/gen_cell_notes_multipage.py`, 한/글 2020·2024).
-        let table_fn_reserved = (total_footnote - st.current_footnote_height).max(0.0) + fn_margin;
+        let table_fn_reserved = (total_footnote - st.current_footnote_height).max(0.0);
         let table_continues_past_page = all_rows_h > remaining_with(table_fn_reserved) + 0.5;
         let first_unit_note_release = if table_fn_reserved > 0.5
             && !ft.table_footnotes.is_empty()
@@ -1014,7 +998,7 @@ impl TypesetEngine {
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common)
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 )
                 && ft.table_footnotes.is_empty()
@@ -1074,7 +1058,7 @@ impl TypesetEngine {
                     && !table.common.treat_as_char
                     && is_para_topbottom_float(&table.common)
                     && matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     )
                     && !para_has_visible_text(para)
@@ -1132,10 +1116,72 @@ impl TypesetEngine {
             // 1×1 단일 셀(row_count==1, 행 경계 없어 셀 내부 컷 필요, #874)은 제외 —
             // fits_fresh_page/row_count 조건으로 기존 force-split(렌더러 경계 컷) 유지.
             let fits_fresh_page = unit_fits_fresh_page;
+            // 셀 단위로 나누는 표의 첫 행은 선언 높이가 아니라 내용으로 수용한다. 내용과 안
+            // 여백이 남은 공간에 들면 한/글은 행을 이 쪽에 두고 쪽 바닥에서 닫는다(행 스캐너의
+            // 같은 규칙과 한 계약). 넘치는 선언 몫은 다음 조각이 행 자신의 칸 선언으로 다시
+            // 재며 1282HU 이하이면 쪽 경계에서 버린다.
+            // 머리 행은 본문 행 없이 쪽 끝에 홀로 남지 않는다 — 다음 조각이 같은 머리 행을 다시
+            // 그리므로 그 조각은 머리만 두 번 나오는 빈 조각이다(한/글 2020: 1740000 중간보고서
+            // 59쪽 31×6 표, 첫 행 머리 행이 남은 30.9px 에 내용이 들어도 표 전체가 60쪽에서 시작).
+            let first_row_is_repeated_header = row_geometry_table.repeat_header
+                && row_geometry_table
+                    .cells
+                    .iter()
+                    .any(|cell| cell.row == 0 && cell.is_header);
+            // 저장 줄이 앞 문단보다 위로 되감기면 한/글은 이 호스트를 다음 쪽에서 시작했다 — 그
+            // 기록이 쪽 경계다(경찰대학 발전방안 57→58쪽 <표 19> 4×3 표: 호스트 vpos 6198 <
+            // 앞 문단 49523, 남은 25.3px 에 첫 행 내용이 들어도 표는 58쪽에서 시작).
+            let host_starts_new_stored_page = (st.profile.hwp5_stored_pagination_layout()
+                || st.profile.hwpx_stored_layout())
+                && !st.profile.session_edited()
+                && para
+                    .line_segs
+                    .iter()
+                    .find(|seg| !is_synthetic_line_seg(seg))
+                    .zip(
+                        para_idx
+                            .checked_sub(1)
+                            .and_then(|previous| paragraphs_all.get(previous))
+                            .and_then(|previous| {
+                                previous
+                                    .line_segs
+                                    .iter()
+                                    .rev()
+                                    .find(|seg| !is_synthetic_line_seg(seg))
+                            }),
+                    )
+                    .is_some_and(|(current, previous)| {
+                        current.vertical_pos < previous.vertical_pos
+                    });
+            let first_row_content_fits_here = mt.allows_row_break_split()
+                && matches!(
+                    table.common.text_wrap,
+                    crate::model::shape::TextWrap::TopAndBottom
+                )
+                && first_block_is_single_row
+                && !first_row_is_repeated_header
+                && !host_starts_new_stored_page
+                && !st.current_items.is_empty()
+                && {
+                    let (res, _) = layout_engine.advance_row_cut_for_physical_band(
+                        row_geometry_table,
+                        0,
+                        &[],
+                        remaining_on_page_for_first_unit,
+                        styles,
+                    );
+                    res.fully_consumed
+                        && !res.end_cut.is_empty()
+                        && layout_engine.row_content_fits_page_rest(
+                            res.consumed_height + mt.max_padding_for_row(0),
+                            remaining_on_page_for_first_unit,
+                        )
+                };
             let multirow_clean_defer = !first_row_splittable
                 && row_count > 1
                 && first_block_end < row_count
-                && fits_fresh_page;
+                && fits_fresh_page
+                && !first_row_content_fits_here;
             // A native HWP5 host whose stored anchor overlaps the current flow,
             // whose declared bottom crosses this body frame, and whose following
             // paragraph rewinds owns a physical first fragment here.  The generic
@@ -1306,7 +1352,7 @@ impl TypesetEngine {
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common)
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 ))
                 || native_hwp5_host_precedes_first_fragment)
@@ -1521,7 +1567,6 @@ impl TypesetEngine {
             total_footnote_height: total_footnote,
             queue_table_footnotes,
             table_footnotes: ft.table_footnotes.clone(),
-            footnote_margin: fn_margin,
             host_spacing_total: host_spacing_total - deferred_column_top_released_before,
             host_spacing_before: ft.host_spacing.before - deferred_column_top_released_before,
             host_spacing_after_only: ft.host_spacing.spacing_after_only,
@@ -1604,7 +1649,7 @@ impl TypesetEngine {
                             )
                             || table.common.vertical_offset != 0
                             || !matches!(
-                                table.page_break,
+                                table.layout_page_break(),
                                 crate::model::table::TablePageBreak::RowBreak
                             )
                             || table.row_count <= 1

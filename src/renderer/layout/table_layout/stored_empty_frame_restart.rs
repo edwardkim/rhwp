@@ -100,7 +100,7 @@ impl LayoutEngine {
             || !start.is_empty()
             || end != [1]
             || table.common.treat_as_char
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || table.row_count <= 1
         {
             return false;
@@ -226,7 +226,7 @@ impl LayoutEngine {
                 .borrow()
                 .cell_frame_reflowed(table, cell)
             || table.common.treat_as_char
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || cell.row_span != 1
             || cell.col != 0
             || cell.col_span != table.col_count

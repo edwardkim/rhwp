@@ -21,7 +21,7 @@ pub(crate) fn stored_hwpx_cut_owns_outer_frame(
         && table.common.text_wrap == TextWrap::TopAndBottom
         && table.common.vert_rel_to == VertRelTo::Para
         && table.common.vert_align == VertAlign::Top
-        && table.page_break == TablePageBreak::RowBreak
+        && table.layout_page_break() == TablePageBreak::RowBreak
         && host.text.trim().is_empty()
         && !host.stored_text_partition_is_dirty()
         && !host.cell_format_vpos_dirty

@@ -82,6 +82,21 @@ pub struct Table {
     pub raw_table_record_attr: u32,
     /// HWPTAG_TABLE 레코드의 border_fill_id 이후 추가 바이트 (라운드트립 보존용)
     pub raw_table_record_extra: Vec<u8>,
+    /// [#8470] [`Table::layout_page_break`] 의 세로쓰기 칸 판정 캐시. 저장되지 않는다.
+    /// 셀 구성·글 방향을 바꾸면 [`Table::invalidate_layout_page_break`] 로 비운다.
+    #[serde(skip)]
+    pub layout_page_break_cache: LayoutPageBreakCache,
+}
+
+/// [#8470] 세로쓰기 칸 유무 캐시. 큰 표(5만 칸)에서 조판이 칸마다 나눔 방식을 물어
+/// 매번 모든 칸을 훑지 않도록 한 번만 계산한다. 디버그 출력은 값과 무관하게 같다.
+#[derive(Clone, Default)]
+pub struct LayoutPageBreakCache(std::sync::OnceLock<bool>);
+
+impl std::fmt::Debug for LayoutPageBreakCache {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("LayoutPageBreakCache")
+    }
 }
 
 /// 표 쪽 나눔 종류
@@ -552,6 +567,33 @@ impl Cell {
 }
 
 impl Table {
+    /// 조판이 따르는 쪽 경계 나눔 방식.
+    ///
+    /// 셀 하나라도 세로쓰기(`text_direction != 0`)이면 한/글은 저장된 나눔 값(셀 단위로
+    /// 나눔·나눔)과 관계없이 이 표를 「나누지 않음」과 똑같이 조판한다 — 쪽 경계에서
+    /// 자르지 않고, 남은 공간에 안 맞으면 통째로 다음 쪽에 놓으며, 본문보다 길면 넘쳐
+    /// 그린다. 걸침 유무·걸침 위치·넘침량과 무관하다(docs#333 합성 실측, 한/글 2020
+    /// 엔진 `samples/issue8470/`). 저장 값 `page_break` 는 그대로 두어 저장 왕복을 지킨다.
+    pub fn layout_page_break(&self) -> TablePageBreak {
+        if self.page_break != TablePageBreak::None && self.has_vertical_cell() {
+            TablePageBreak::None
+        } else {
+            self.page_break
+        }
+    }
+
+    fn has_vertical_cell(&self) -> bool {
+        *self
+            .layout_page_break_cache
+            .0
+            .get_or_init(|| self.cells.iter().any(|cell| cell.text_direction != 0))
+    }
+
+    /// 셀 구성이나 칸 글 방향을 바꾼 뒤 조판 나눔 방식 캐시를 비운다.
+    pub fn invalidate_layout_page_break(&mut self) {
+        self.layout_page_break_cache = LayoutPageBreakCache::default();
+    }
+
     /// 저장 글줄과 표 전체의 완결한 구획이 입증하는 물리 셀 폭을 복구한다.
     /// 재조판 전에 한 번 적용해 측정·편집·배치가 같은 폭을 사용한다.
     /// 원본 폭이 이미 닫히거나 후보가 전체 행을 닫지 못하면 변경하지 않는다.
@@ -1090,6 +1132,7 @@ impl Table {
         &mut self,
         storage: &S,
     ) -> Result<(), S::Error> {
+        self.invalidate_layout_page_break();
         let rc = self.row_count as usize;
         let cc = self.col_count as usize;
         let requested = rc.saturating_mul(cc);

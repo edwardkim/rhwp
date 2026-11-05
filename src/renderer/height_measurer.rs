@@ -1143,14 +1143,15 @@ pub(crate) fn trim_stored_hwpx_inline_row_trailing_spacing_with_storage<
         // 완결된 HWPX 1×1 CELL 프레임(모델 RowBreak)은 작은 초기 셀 높이를 저장할 수 있다.
         // 저장된 마지막 글자 끝과 안 여백의 합이 바깥 상자를 정확히 닫을 때만
         // 그 상자가 안 여백을 소유한다. 이어지는 셀의 중간 컷과는 다른 계약이다.
-        let single_cell_frame = matches!(table.page_break, TablePageBreak::RowBreak)
+        let single_cell_frame = matches!(table.layout_page_break(), TablePageBreak::RowBreak)
             && table.row_count == 1
             && table.col_count == 1
             && table.cells.len() == 1
             && table.cells[0].vertical_padding_guard_height_hu(table) == table.common.height;
         if !table.common.treat_as_char
             || !(single_cell_frame
-                || (matches!(table.page_break, TablePageBreak::RowBreak) && table.row_count >= 2))
+                || (matches!(table.layout_page_break(), TablePageBreak::RowBreak)
+                    && table.row_count >= 2))
             || measured.row_heights.len() != table.row_count as usize
             || table.common.height == 0
             || table.cells.iter().any(|cell| cell.row_span != 1)
@@ -3994,7 +3995,7 @@ let body_height=match nested_body_heights
                             if stored_square_picture_anchor {
                                 let row_advance = if self.is_native_hwp5
                                     && !table.common.treat_as_char
-                                    && matches!(table.page_break, TablePageBreak::RowBreak)
+                                    && matches!(table.layout_page_break(), TablePageBreak::RowBreak)
                                 {
                                     stored_square_picture_empty_anchor_advance(cell, pidx, styles, self.dpi)
                                         .map_or(0.0, |step| hwpunit_to_px(step, self.dpi))
@@ -4103,7 +4104,7 @@ let body_height=match nested_body_heights
                                 // em 으로 렌더 → synthetic 시 em(max_fs). hwp3 synthetic 선례 확장.
                                 let synthetic_line = p.line_segs.is_empty()
                                     && !p.text.is_empty()
-                                    && matches!(table.page_break, TablePageBreak::CellBreak);
+                                    && matches!(table.layout_page_break(), TablePageBreak::CellBreak);
                                 let line_count = comp.lines.len();
                                 // [#2070 stage10] 저장 LINE_SEG vpos 리셋 줄(원저작
                                 // 분할 흔적)도 전량 계상 — 한글 원본 오라클(개정안{{0}}
@@ -4399,7 +4400,7 @@ let body_height=match nested_body_heights
                     // 일반 표·텍스트 셀·나란히 놓인 단일 그림은 기존 max 규칙을
                     // 유지한다.
                     let stacked_stored_picture_h = if table.common.treat_as_char
-                        && matches!(table.page_break, TablePageBreak::RowBreak)
+                        && matches!(table.layout_page_break(), TablePageBreak::RowBreak)
                         && cell.paragraphs.len() == 1
                         && cell.paragraphs[0].text.trim().is_empty()
                     {
@@ -4509,10 +4510,40 @@ let body_height=match nested_body_heights
                             if crate::renderer::para_has_no_stored_line_segs(pp) {
                                 return hwpunit_to_px(400, self.dpi);
                             }
-                            pp.line_segs
-                                .iter()
-                                .map(|seg| hwpunit_to_px(seg.line_height.max(0), self.dpi))
-                                .sum::<f64>()
+                            // [#8427] 개체가 이 문단 기준(vert=문단)이면 한/글은 개체를 문단
+                            // 앞 간격 **전** 원점에 놓는다(30396 18쪽: 문단 앞 간격 500HU 인
+                            // 빈 셀 문단의 그림이 셀 내용 상단에 놓이고 행은 그림 흐름 높이만
+                            // 차지). 그 간격도 개체 자리에 흡수되므로 줄과 함께 뺀다.
+                            let para_relative_object = pp.controls.iter().any(|c| match c {
+                                Control::Picture(pic) => {
+                                    !pic.common.treat_as_char
+                                        && matches!(
+                                            pic.common.vert_rel_to,
+                                            crate::model::shape::VertRelTo::Para
+                                        )
+                                }
+                                Control::Shape(sh) => {
+                                    !sh.common().treat_as_char
+                                        && matches!(
+                                            sh.common().vert_rel_to,
+                                            crate::model::shape::VertRelTo::Para
+                                        )
+                                }
+                                _ => false,
+                            });
+                            let absorbed_spacing_before = if para_relative_object {
+                                styles
+                                    .para_styles
+                                    .get(pp.para_shape_id as usize)
+                                    .map_or(0.0, |style| style.spacing_before.max(0.0))
+                            } else {
+                                0.0
+                            };
+                            absorbed_spacing_before
+                                + pp.line_segs
+                                    .iter()
+                                    .map(|seg| hwpunit_to_px(seg.line_height.max(0), self.dpi))
+                                    .sum::<f64>()
                         })
                         .sum();
                     let additive = (text_height - empty_para_line_height).max(0.0) + non_inline_h;
@@ -4610,14 +4641,32 @@ let body_height=match nested_body_heights
                             hwpunit_to_px(seg.line_height, self.dpi) + 0.5 >= obj_h
                         })
                     });
-                    let trust_stored = (depth > 0 || table.common.treat_as_char)
-                        && non_inline_h > 0.0
-                        && (ladder_absorbed_objects
-                            || ladder_pushed_following_line
-                            || ladder_line_covers_object)
-                        && stored_extent > 0.0
-                        && stored_extent + 0.5 < additive
-                        && wrap_bottom <= stored_extent + 0.5;
+                    // [#8472] 본문 직속 비-TAC 표도 같다 — 배치가 이미 저장 vpos 를 쓰므로 측정이
+                    // 줄 합 + 개체 높이를 따로 쌓으면 그림 앵커 줄이 두 번 들어간다(종합보고서 32쪽
+                    // 차트 칸: 저장 205.7px, 쌓은 값 224.9px). 다만 그런 표의 칸은 쪽을 넘길 수 있다.
+                    // 사다리가 칸 안에서 되감기면 한/글이 칸을 여러 쪽에 나눠 기록한 것이라 최댓값은
+                    // 칸 높이가 아니다(도덕과 교육과정 시안 138쪽 2×1 표: 그림 617·686px 칸의 사다리가
+                    // 55938→51436 으로 되감김, 최댓값 759px). 그 경우는 종전 합산을 쓴다.
+                    let stored_ladder_single_frame = {
+                        let mut previous = i32::MIN;
+                        cell.paragraphs
+                            .iter()
+                            .flat_map(|pp| pp.line_segs.iter())
+                            .all(|seg| {
+                                let ok = seg.vertical_pos >= previous;
+                                previous = seg.vertical_pos;
+                                ok
+                            })
+                    };
+                    let trust_stored =
+                        (depth > 0 || table.common.treat_as_char || stored_ladder_single_frame)
+                            && non_inline_h > 0.0
+                            && (ladder_absorbed_objects
+                                || ladder_pushed_following_line
+                                || ladder_line_covers_object)
+                            && stored_extent > 0.0
+                            && stored_extent + 0.5 < additive
+                            && wrap_bottom <= stored_extent + 0.5;
                     // [#6135] 반대 방향 — 저장 ladder 가 additive 보다 **큰** 경우.
                     // 순수 텍스트 셀의 첫 줄 `vertical_pos > 0` 은 한글이 그 줄 위에
                     // 자리를 잡아 뒀다는 뜻이고, layout 은 그 vpos 를 그대로 존중해
@@ -5059,7 +5108,7 @@ let body_height=match nested_body_heights
                                 // em 으로 렌더 → synthetic 시 em(max_fs). hwp3 synthetic 선례 확장.
                                 let synthetic_line = p.line_segs.is_empty()
                                     && !p.text.is_empty()
-                                    && matches!(table.page_break, TablePageBreak::CellBreak);
+                                    && matches!(table.layout_page_break(), TablePageBreak::CellBreak);
                                 let line_count = comp.lines.len();
                                 // [#2070 stage10] 저장 LINE_SEG vpos 리셋 줄(원저작
                                 // 분할 흔적)도 전량 계상 — 한글 원본 오라클(개정안{{0}}
@@ -5564,7 +5613,7 @@ let body_height=match nested_body_heights
                 if fire && std::env::var("RHWP_DIAG_5757").is_ok() {
                     eprintln!(
                         "DIAG5757 fire rows={row_count} common={common_h:.1} declared={declared_rows_sum:.1} raw={raw_table_height:.1} wrap={:?} pb={:?}",
-                        table.common.text_wrap, table.page_break,
+                        table.common.text_wrap, table.layout_page_break(),
                     );
                 }
                 fire
@@ -5762,7 +5811,7 @@ let body_height=match nested_body_heights
                             // [Issue #1842] 부재 LINE_SEG 셀 → em(max_fs), max_fs*ls% 팽창 방지.
                             let synthetic_line = p.line_segs.is_empty()
                                 && !p.text.is_empty()
-                                && matches!(table.page_break, TablePageBreak::CellBreak);
+                                && matches!(table.layout_page_break(), TablePageBreak::CellBreak);
                             let line_count = comp.lines.len();
                             for (li, line) in comp.lines.iter().enumerate() {
                                 if skip_same_vertpos_composed_fragment(&p.line_segs, line_count, li)
@@ -6030,7 +6079,7 @@ let mut tables=p.controls.iter().filter_map(|c| match c{Control::Table(t)=>Some(
                 .filter(|c| c.row == 0)
                 .any(|c| c.is_header),
             cells: measured_cells,
-            page_break: table.page_break,
+            page_break: table.layout_page_break(),
             row_block_start,
             row_block_end,
         })

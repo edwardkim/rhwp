@@ -1500,9 +1500,11 @@ impl DocumentCore {
                     _ => crate::model::table::VerticalAlign::Top,
                 };
             }
-            if let Some(v) = top_u8("textDirection") {
+            let text_direction_changed = top_u8("textDirection").is_some_and(|v| {
+                let changed = cell.text_direction != v;
                 cell.text_direction = v;
-            }
+                changed
+            });
             if let Some(v) = top_bool("isHeader") {
                 cell.set_header(v);
             }
@@ -1533,6 +1535,9 @@ impl DocumentCore {
                         &original_width.to_le_bytes(),
                     );
                 }
+            }
+            if text_direction_changed {
+                table.invalidate_layout_page_break();
             }
             (needs_reflow, table.cells[cell_idx].paragraphs.len())
         };

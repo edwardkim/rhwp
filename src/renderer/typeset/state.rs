@@ -670,17 +670,7 @@ impl TypesetState {
         note_count: usize,
     ) -> f64 {
         let total_footnote = self.projected_footnote_height(note_content_height, note_count);
-        let fn_margin = if total_footnote > 0.0 {
-            self.data.footnote_safety_margin
-        } else {
-            0.0
-        };
-
-        (self.base_available_height()
-            - total_footnote
-            - fn_margin
-            - self.data.current_zone_y_offset)
-            .max(0.0)
+        (self.base_available_height() - total_footnote - self.data.current_zone_y_offset).max(0.0)
     }
 
     /// 항목 추가 → lane 예약 → 흐름 높이 반영 순서를 보존한다.
@@ -1203,7 +1193,6 @@ impl TypesetState {
             vpos_ladder_dirty: self.data.vpos_ladder_dirty,
             stored_vpos_base: self.data.vpos_page_base,
             current_footnote_height: self.data.current_footnote_height,
-            footnote_safety_margin: self.data.footnote_safety_margin,
             footnote_separator_overhead: self.data.footnote_separator_overhead,
             footnote_between_notes_margin: self.data.footnote_between_notes_margin,
             current_zone_y_offset: self.data.current_zone_y_offset,
@@ -1418,34 +1407,6 @@ impl TypesetState {
             0.0
         } else {
             layout_drift_safety_px
-        }
-    }
-
-    /// float 배제 영역을 반영한 상태에서 각주 안전여백 반환 flag를 소비한다.
-    pub(super) fn take_paragraph_footnote_margin_addback(
-        &mut self,
-        strict_after_empty_host_float: bool,
-    ) -> f64 {
-        // [Task #1725] tail-before-vpos-reset 문단은 각주 안전마진(보수 버퍼 40px)만 1회 되돌려
-        // 본문에 유지한다. 한글 LINESEG 는 이 tail 문단을 본문(각주 위)에 배치하는데, rhwp 각주
-        // 예약의 보수 버퍼가 tail 을 수 px 밀어 near-empty 페이지 over-pagination(국제고속선기준
-        // 258 vs 242)을 만든다. 다음 문단이 새 페이지를 시작(vpos-reset)하므로 tail 을 현재
-        // 페이지에 두는 것이 한글 정합. (실제 각주 높이는 유지 — 버퍼만 완화하여 겹침 위험 최소화;
-        // 버퍼 초과분은 별도 원인이라 여기서 다루지 않는다.)
-        if strict_after_empty_host_float {
-            self.data.skip_footnote_margin_once = false;
-            0.0
-        } else if self.data.skip_footnote_margin_once {
-            self.data.skip_footnote_margin_once = false;
-            if self.data.current_footnote_height > 0.0
-                && !self.data.current_footnote_body_bottom_reserved
-            {
-                self.data.footnote_safety_margin
-            } else {
-                0.0
-            }
-        } else {
-            0.0
         }
     }
 

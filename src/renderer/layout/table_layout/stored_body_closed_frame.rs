@@ -197,7 +197,7 @@ impl LayoutEngine {
             || table.common.height == 0
             || table.common.height > i32::MAX as u32
             || table.row_count <= 1
-            || table.page_break != crate::model::table::TablePageBreak::RowBreak
+            || table.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
             || table.caption.is_some()
             // 셀 글줄의 관측 정규화와 원본 호스트의 물리 종료선은 별도 소유다.
             // 명시적 전체 편집·출처 미확정 재조판은 종전대로 프레임을 무효화한다.

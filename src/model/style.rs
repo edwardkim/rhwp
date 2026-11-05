@@ -912,7 +912,7 @@ pub struct ShapeBorderLine {
 }
 
 /// 글자 모양 수정 사항 (None이면 해당 속성 변경 안 함)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct CharShapeMods {
     pub bold: Option<bool>,
     pub italic: Option<bool>,
@@ -1084,7 +1084,7 @@ impl CharShapeMods {
 }
 
 /// 문단 모양 수정 사항 (None이면 해당 속성 변경 안 함)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct ParaShapeMods {
     pub alignment: Option<Alignment>,
     pub line_spacing: Option<i32>,

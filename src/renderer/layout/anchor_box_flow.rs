@@ -71,7 +71,7 @@ pub(super) fn offset_table_has_stored_outer_box(
         || signed_hwpunit(common.vertical_offset) <= 0
         || signed_hwpunit(common.horizontal_offset) < 0
         || signed_hwpunit(common.height) <= 0
-        || !matches!(table.page_break, TablePageBreak::None)
+        || !matches!(table.layout_page_break(), TablePageBreak::None)
         || table.caption.is_some()
         || table.outer_margin_top <= 0
         || table.outer_margin_top != table.outer_margin_bottom

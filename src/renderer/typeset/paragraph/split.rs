@@ -49,7 +49,7 @@ pub(in crate::renderer::typeset) fn refine_split_boundary(
                             crate::model::shape::VertRelTo::Para
                         )
                         && matches!(
-                            table.page_break,
+                            table.layout_page_break(),
                             crate::model::table::TablePageBreak::RowBreak
                         )
                 } else {

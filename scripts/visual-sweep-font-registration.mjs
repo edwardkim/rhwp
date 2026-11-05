@@ -156,6 +156,7 @@ export async function prepareHftOtfFonts(owner, fonts, loadBytes) {
     const selectedFaces = selectMetafileFontFaces(fonts, [{families: sourceProgramFamilies(request.family, request.source_ttf),
       weight: request.source_ttf ? 400 : (request.bold ? 700 : 400), italic: request.italic}]);
     const selected = [], seen = new Set();
+    let selectedBytes = 0;
     for (const key of selectedFaces) {
       const matches = fonts.filter(record => record.families.some(name =>
         `${name.toLowerCase()}|${record.weight}|${record.style}` === key));
@@ -168,10 +169,12 @@ export async function prepareHftOtfFonts(owner, fonts, loadBytes) {
         seen.add(record.sha256);
         let bytes = loaded.get(record.sha256);
         if (!bytes) { bytes = await loadBytes(record); loaded.set(record.sha256, bytes); }
-        if (bytes.byteLength < 4) continue;
+        if (bytes.byteLength < 4 || bytes.byteLength > 32 * 1024 * 1024
+            || selectedBytes + bytes.byteLength > 64 * 1024 * 1024) continue;
         const signature = new DataView(bytes).getUint32(0);
         if (request.source_ttf ? ![0x00010000, 0x74727565].includes(signature) : signature !== 0x4f54544f) continue;
         selected.push(new Uint8Array(bytes));
+        selectedBytes += bytes.byteLength;
         proofs.push({family: request.family, bold: request.bold, italic: request.italic, sourceTtf: Boolean(request.source_ttf),
           weight: record.weight, style: record.style, sha256: record.sha256});
       }

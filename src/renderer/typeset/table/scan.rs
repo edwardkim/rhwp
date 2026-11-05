@@ -174,14 +174,51 @@ impl RowBlockQuery<'_> {
         offsets
     }
 
-    fn row_cut_height(
+    /// 이어받는 블록의 걸침 칸이 남은 내용으로 요구하는 높이가 행 합보다 크면 그 차액.
+    /// 배치의 블록-합 보정(걸침 칸 컷 가시 높이 > 행 높이 합이면 마지막 행에 가산)과
+    /// 같은 칸·같은 컷 색인·같은 비교 기준을 쓴다(#8532).
+    fn continuation_span_deficit(&self, block: &RowBlockCandidate, start: &[usize]) -> f64 {
+        let mut cells = LayoutEngine::row_block_cells(self.table, block.b_start, block.b_end);
+        cells.sort_by_key(|cell| (cell.row, cell.col));
+        let target = cells
+            .iter()
+            .enumerate()
+            .filter(|(_, cell)| {
+                cell.row_span > 1
+                    && (cell.row as usize) >= block.b_start
+                    && (cell.row as usize) < block.b_end
+            })
+            .map(|(index, cell)| {
+                self.layout_engine.cell_cut_visible_height(
+                    cell,
+                    self.table,
+                    self.styles,
+                    start.get(index).copied().unwrap_or(0),
+                    usize::MAX,
+                )
+            })
+            .fold(0.0f64, f64::max);
+        if target <= 0.0 {
+            return 0.0;
+        }
+        let rows: f64 = (block.b_start..block.b_end)
+            .map(|row| self.row_cut_base_height(block, row, start, &[]))
+            .sum();
+        if target > rows + 0.5 {
+            target - rows
+        } else {
+            0.0
+        }
+    }
+
+    fn row_cut_base_height(
         &self,
         block: &RowBlockCandidate,
         row: usize,
         start: &[usize],
         end: &[usize],
     ) -> f64 {
-        let height = if !start.is_empty()
+        if !start.is_empty()
             && end.is_empty()
             && self
                 .mt
@@ -210,7 +247,29 @@ impl RowBlockQuery<'_> {
                         self.styles,
                     )
                 })
-        };
+        }
+    }
+
+    fn row_cut_height(
+        &self,
+        block: &RowBlockCandidate,
+        row: usize,
+        start: &[usize],
+        end: &[usize],
+    ) -> f64 {
+        let mut height = self.row_cut_base_height(block, row, start, end);
+        // 이어받는 블록이 온전히 남으면(끝 컷 없음) 배치는 걸침 칸의 남은 내용이
+        // 행 합을 넘는 만큼 마지막 행을 늘려 그린다. 예약도 같은 높이를 쓴다(#8532).
+        if !start.is_empty()
+            && end.is_empty()
+            && row + 1 == block.b_end
+            && !self
+                .mt
+                .fragment_block_frames
+                .contains(&(block.b_start, block.b_end))
+        {
+            height += self.continuation_span_deficit(block, start);
+        }
         // 내용 컷은 앞 조각에서 소비한 유닛만 나타낸다. 그 조각이 넘긴
         // 물리 잔여 상자는 현재 첫 행이 완결될 때도 소유하므로, 행 원점·
         // 블록 요구 높이·흐름 예약이 그리기와 같은 높이를 사용한다.

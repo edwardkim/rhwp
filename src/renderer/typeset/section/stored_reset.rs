@@ -194,6 +194,27 @@ impl TypesetEngine {
                     )
                     && !para_is_page_bottom_fixed_table_anchor(para)
                     && !para_hosts_page_anchored_block(para);
+                // 글자 없는 표 host 문단(글자처럼 취급하지 않는 문단 기준 자리차지 표만)도
+                // 새 쪽 첫 줄의 저장 vpos 를 문단 위 간격으로 적는다. 표 자체는 host 줄 뒤에
+                // 놓이므로 host 줄의 원점이 곧 표가 놓인 쪽이다 — 앞 쪽 하단에서 되감긴
+                // 이 원점은 쪽 경계다(#1086 의 표 host 는 HWP3 원점 허용 경로).
+                let near_top_table_host = has_table_control
+                    && !para_has_visible_text(para)
+                    && !profile.session_edited()
+                    && para.controls.iter().all(|control| match control {
+                        Control::Table(table) => {
+                            !table.common.treat_as_char
+                                && matches!(
+                                    table.common.text_wrap,
+                                    crate::model::shape::TextWrap::TopAndBottom
+                                )
+                                && matches!(
+                                    table.common.vert_rel_to,
+                                    crate::model::shape::VertRelTo::Para
+                                )
+                        }
+                        _ => false,
+                    });
                 // [#1921 d=-1] 네이티브 HWP5/HWPX 의 비영 near-top reset:
                 // 한글은 새 쪽 첫 줄의 stored vpos 를 0 이 아니라 해당 문단의
                 // spacing_before 로 기록하기도 한다 (조문별/규제영향분석서 클래스,
@@ -212,8 +233,8 @@ impl TypesetEngine {
                         && para_sb_hu_for_reset > 0
                         && (cv - para_sb_hu_for_reset).abs() <= 150
                         && !shape_only_para
-                        && !has_table_control
-                        && para_has_visible_text(para)
+                        && ((!has_table_control && para_has_visible_text(para))
+                            || near_top_table_host)
                         && prev_vpos_end > 60_000
                         // [#5941 축 B] `#5921` 의 완화("이번 쪽 잔여에 들어가면 저장
                         // near-top 리셋을 버린다")를 **네이티브 HWP5 저장 조판 프로파일의
@@ -343,6 +364,17 @@ impl TypesetEngine {
                         para,
                         crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi),
                     );
+                // 직전 저장 리셋 뒤의 사다리가 그 구간 내용의 높이를 담지 못했으면 그 끝의
+                // vpos 0 은 이 쪽 기하의 쪽 경계가 아니다(한/글은 다시 흘린다). 증거는 두
+                // 가지다: 저장 줄 없는 보이는 문단에 자리를 남기지 않은 사다리, 저장 줄을
+                // 대신해 다시 만든 줄 때문에 본문 아래에서 시작하게 된 보이는 글줄.
+                let stored_ladder_misses_content = st.col_count == 1
+                    && cv == 0
+                    && stored_segment_ladder_misses_content(
+                        paragraphs,
+                        para_idx,
+                        crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi),
+                    );
                 let trigger = if st.col_count > 1 {
                     if is_distribute {
                         cv < prev_vpos_end && prev_vpos_end > 0
@@ -355,6 +387,7 @@ impl TypesetEngine {
                     // 시작 위치가 충분히 진행한 기존 되감김 조건을 유지한다.
                     (cv == 0
                             && pv > 5000
+                            && !stored_ladder_misses_content
                             && !hwp3_content_vpos_zero_reset
                             && !para_is_page_bottom_fixed_table_anchor(para)
                             // [#6535 잔여] 쪽-앵커 블록의 vpos=0 은 절대배치 산물이지
@@ -551,4 +584,51 @@ fn stored_inline_shape_restarts_column(
         && i64::from(after.vertical_pos) < previous_end
         && previous_end + i64::from(line.line_height) + i64::from(line.line_spacing)
             > i64::from(body_height_hu)
+}
+
+/// `para_idx` 앞의 같은 저장 쪽 구간(직전 vpos 되감김 뒤)의 사다리가 내용의 높이를
+/// 담지 못했는지 본다.
+///
+/// - 저장 줄이 없는 보이는 문단이 있는데, 그 앞뒤 저장 줄 사이에 자리가 남지 않았다
+///   (사다리가 그 문단의 높이를 세지 않았다). 자리를 남긴 사다리는 그 문단을 이미 센
+///   한/글 저장본이다.
+/// - 구간에 다시 만든 줄(구현 속성 표지, 저장 줄을 대신해 재조판한 줄)이 있고, 그 결과
+///   보이는 글줄이 본문 높이(`body_hu`) 바깥에서 시작한다. 저장 줄만으로 이어진 사다리가
+///   쪽을 넘어 누적되는 것(HWP3 변환본 등)은 한/글도 그 vpos 0 을 쪽 경계로 쓴다.
+fn stored_segment_ladder_misses_content(
+    paragraphs: &[Paragraph],
+    para_idx: usize,
+    body_hu: i32,
+) -> bool {
+    // 저장 줄 없는 보이는 문단 묶음 바로 뒤에 오는 줄의 vpos.
+    let mut later_vpos: Option<i32> = None;
+    let mut unstored_visible_before_later = false;
+    let mut rebuilt_line = false;
+    let mut text_line_below_body = false;
+    for para in paragraphs[..para_idx].iter().rev() {
+        if para.line_segs.is_empty() {
+            unstored_visible_before_later |= para_has_visible_text(para);
+            continue;
+        }
+        let visible = para_has_visible_text(para);
+        for line in para.line_segs.iter().rev() {
+            if let Some(later) = later_vpos {
+                if line.vertical_pos > later {
+                    return rebuilt_line && text_line_below_body;
+                }
+                let advance_end = line
+                    .vertical_pos
+                    .saturating_add(line.line_height)
+                    .saturating_add(line.line_spacing);
+                if unstored_visible_before_later && later <= advance_end {
+                    return true;
+                }
+            }
+            unstored_visible_before_later = false;
+            rebuilt_line |= is_synthetic_line_seg(line);
+            text_line_below_body |= visible && line.vertical_pos > body_hu;
+            later_vpos = Some(line.vertical_pos);
+        }
+    }
+    rebuilt_line && text_line_below_body
 }

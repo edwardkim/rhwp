@@ -4,7 +4,7 @@
 //! 만들기 위해 작성하는 최상위 JSON 이며, `version="1"` 로 고정한다.
 //!
 //! 설계 원칙(왕복 정직성): 이 스키마는 rhwp 가 파싱해 되읽었을 때 **바이트 그대로**
-//! 복원되는 기능만 노출한다 — 문서 제목, 개요 수준 제목(1~7), 본문 문단, 단순 표.
+//! 복원되는 기능만 노출한다 — 문서 제목, 개요 수준 제목(1~7), 개요 번호 모양, 본문 문단, 단순 표.
 //! 미지 필드는 조용히 버리지 않고 [`Block`] 의 수동 `Deserialize` 로 즉시 거부한다
 //! (`src/parser/ingest/schema.rs` 의 `StemBlock` 규약과 정합 — 기계 생성 입력은
 //! 관용 파싱의 이득이 없고 실패는 빠를수록 싸다).
@@ -34,10 +34,85 @@ pub struct ScaffoldSpec {
     #[serde(default = "default_page_size")]
     pub page_size: PageSize,
 
+    /// 개요 번호 모양 — 수준 1 부터 차례로 최대 7개.
+    ///
+    /// 생략하면 번호 정의를 만들지 않는다(종전 산출). 지정하면 문서에 문단 번호 정의 하나를
+    /// 만들고 구역의 개요 번호(`secPr@outlineShapeIDRef`)가 그것을 가리킨다. 지정하지 않은
+    /// 뒤쪽 수준은 한/글 새 문서의 개요 기본값([`OUTLINE_DEFAULTS`])으로 채운다.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub outline_numbering: Option<Vec<OutlineLevel>>,
+
     /// 본문 블록 시퀀스 (제목/문단/표).
     #[serde(default)]
     pub blocks: Vec<Block>,
 }
+
+/// 개요 번호 한 수준.
+///
+/// `text` 는 한/글 문단 번호 형식 문자열이다 — `^1`~`^7` 이 그 수준의 번호로 바뀐다
+/// (예: `"^1."` + `roman_capital` → `I.`, `"(^5)"` → `(1)`). 자기 수준보다 깊은 수준은
+/// 가리킬 수 없다.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct OutlineLevel {
+    /// 번호 형식 문자열 (`^N` 자리에 번호).
+    pub text: String,
+    /// 번호 글자 모양. 생략하면 `digit`.
+    #[serde(default)]
+    pub num_format: OutlineNumFormat,
+}
+
+/// 개요 번호 글자 모양 — OWPML `paraHead@numFormat` 의 낱말을 소문자로 쓴다.
+///
+/// HWPX 로 저장한 뒤 한/글이 그 모양대로 그리는 형식만 연다. 코드 12·13(일이삼·一二三)은
+/// HWPX 직렬화(`serializer/hwpx/header.rs` `numbering_format_str`)가 OWPML 표준 낱말
+/// (`HANGUL_PHONETIC`·`IDEOGRAPH`)이 아닌 `HANGUL_NUMBER`·`HANJA_NUMBER` 로 써서 한/글이
+/// 숫자로 그리므로 열지 않는다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum OutlineNumFormat {
+    /// 1, 2, 3
+    #[default]
+    Digit,
+    /// ①, ②, ③
+    CircledDigit,
+    /// Ⅰ, Ⅱ, Ⅲ
+    RomanCapital,
+    /// ⅰ, ⅱ, ⅲ
+    RomanSmall,
+    /// A, B, C
+    LatinCapital,
+    /// a, b, c
+    LatinSmall,
+    /// 가, 나, 다
+    HangulSyllable,
+}
+
+impl OutlineNumFormat {
+    /// 문단 번호 형식 코드 (HWP5 표 43 / OWPML NumberType1 순서).
+    pub fn code(self) -> u8 {
+        match self {
+            OutlineNumFormat::Digit => 0,
+            OutlineNumFormat::CircledDigit => 1,
+            OutlineNumFormat::RomanCapital => 2,
+            OutlineNumFormat::RomanSmall => 3,
+            OutlineNumFormat::LatinCapital => 4,
+            OutlineNumFormat::LatinSmall => 5,
+            OutlineNumFormat::HangulSyllable => 8,
+        }
+    }
+}
+
+/// 한/글 새 문서의 개요 번호 기본값 — `1.` `가.` `1)` `가)` `(1)` `(가)` `①`.
+pub const OUTLINE_DEFAULTS: [(&str, OutlineNumFormat); 7] = [
+    ("^1.", OutlineNumFormat::Digit),
+    ("^2.", OutlineNumFormat::HangulSyllable),
+    ("^3)", OutlineNumFormat::Digit),
+    ("^4)", OutlineNumFormat::HangulSyllable),
+    ("(^5)", OutlineNumFormat::Digit),
+    ("(^6)", OutlineNumFormat::HangulSyllable),
+    ("^7", OutlineNumFormat::CircledDigit),
+];
 
 fn default_font() -> String {
     "함초롬바탕".to_string()

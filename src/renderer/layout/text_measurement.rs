@@ -2172,6 +2172,30 @@ fn char_width_decision_with_hft_tracking<'a>(
             embedded.em_fraction = Some(em);
             embedded.width_source = "sourceContextualMetric";
         }
+        // 표시용 family로 내려가기 전에 원본 결측 기호의 검증된 공급 계약을
+        // 해소한다. 표시 치환이 원본의 독립 Print 전진을 전각 추정으로 바꾸지 않는다.
+        if embedded.width_px.is_none()
+            && latin.is_none()
+            && !style.hft_hangul_face
+            && !style.hft_fullwidth_dot
+        {
+            if let Some(metric) = embedded.metric.and_then(|primary| {
+                font_metrics_data::verified_missing_glyph_supplier(primary.metric, c)
+                    .and_then(|face| font_metrics_data::find_metric_decision(face, false, false))
+            }) {
+                if let Some(width) = metric.metric.get_width(c) {
+                    embedded = EmbeddedWidthDecision {
+                        width_px: Some(quantize_hwp_px(
+                            font_size * f64::from(width) / f64::from(metric.metric.em_size),
+                        )),
+                        em_fraction: Some(f64::from(width) / f64::from(metric.metric.em_size)),
+                        width_source: "metricGlyphFallback",
+                        metric: Some(metric),
+                        character_match: "hit",
+                    };
+                }
+            }
+        }
         // 부분 표의 미수집은 글리프 부재가 아니다. 확인한 원본 폭이 없으면
         // 기존 표시 face의 폭을 보존한다. ASCII 밖의 전각 괄호도 반각으로 줄이지 않는다.
         if (c.is_ascii_graphic() || source_hft_metric)
@@ -2313,32 +2337,6 @@ fn char_width_decision_with_hft_tracking<'a>(
                     );
                     embedded.width_source = "declaredGlyphFallbackMetric";
                     break;
-                }
-            }
-        }
-        // 원 프로그램에서 결측이며 독립 Print로 확인한 공급 face의 전진을 쓴다.
-        // 돋움체→한컴바탕과 굴림→한컴돋움은 같은 결측 기호라도 공급자가 다르다.
-        // 실제 굴림 글리프 hit와 HFT 치환은 보존하고, 확인된 결측만 대체한다.
-        if embedded.width_px.is_none()
-            && latin.is_none()
-            && !style.hft_hangul_face
-            && !style.hft_fullwidth_dot
-            && metric_family == display_family
-        {
-            if let Some(metric) = embedded.metric.and_then(|primary| {
-                font_metrics_data::verified_missing_glyph_supplier(primary.metric, c)
-                    .and_then(|face| font_metrics_data::find_metric_decision(face, false, false))
-            }) {
-                if let Some(width) = metric.metric.get_width(c) {
-                    embedded = EmbeddedWidthDecision {
-                        width_px: Some(quantize_hwp_px(
-                            font_size * f64::from(width) / f64::from(metric.metric.em_size),
-                        )),
-                        em_fraction: Some(f64::from(width) / f64::from(metric.metric.em_size)),
-                        width_source: "metricGlyphFallback",
-                        metric: Some(metric),
-                        character_match: "hit",
-                    };
                 }
             }
         }
