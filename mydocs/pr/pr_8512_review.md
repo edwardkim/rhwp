@@ -53,6 +53,14 @@ typeset의 문단 가시 글자 판정과 줄 점유 판정을 분리하고, 표
 
 관련 정식 회귀 파일: [issue_8510_whitespace_decoration_host.rs](../../tests/cases/issue_8510_whitespace_decoration_host.rs)
 
+## 최신 Native 주장 쪽의 재확인
+
+최신 리베이스 source에서 같은 원본·독립 Print의 전쪽 Native는 90% 이상이며,
+직전 후보와 정밀 raw를 대조해 0.1%p 초과 하락이 없다.
+[최신 review·별도 overlay와 실제 관측](assets/planet6897_20261103/rebase8609/native-details.md)을
+연결한다. 기존 미세 차이와 이번 PR의 개선 범위를 구분하며 전체 모양이 완전히 같다고 주장하지 않는다.
+fresh WASM의 최신 재확인과 통합 최종 판정은 아직 진행 중이다.
+
 ## 검증 입력 커밋 확인
 
 이번 통합의 [입력·PDF SHA-256 대조표](assets/planet6897_20261103/input-integrity.tsv)에 있는

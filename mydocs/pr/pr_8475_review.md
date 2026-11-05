@@ -21,6 +21,17 @@ Native/fresh WASM 전쪽·확대 판독과 최종 공통 검증 전까지 보류
 완료된 검증과 남은 공통 검증을 아래에서 구분합니다. 최종 수용 판정과 PR 생성은 아직 대기입니다.
 아래 값은 명시한 코드 SHA의 실측 결과이며 원 PR의 승인이나 닫기를 뜻하지 않습니다.
 
+## 최신 리베이스 Native 확인
+
+최신 제품 source `ba2ebfd34a4ebf402bce8e002254b672a09ef764`에서 두 문제 입력의 전5쪽이
+각각 100.00%이며 마지막 `력`까지 칸 내부 한 세로줄에 보존됐다.
+[fit 5쪽 review·별도 overlay](assets/planet6897_20261103/rebase8609/native-vertical-fit/README.md)와
+[초과 높이 입력 5쪽 직접 판독](assets/planet6897_20261103/rebase8609/native-details.md)을 연결한다.
+정상 저장 줄·실물·개요·표 경계까지 포함한 Native 10입력·43쪽은
+[정밀 raw 대조](assets/planet6897_20261103/rebase8609/native-own-validation.md)에서
+90% 미만·누락·쪽수 차이·직전 후보 대비 0.1%p 초과 하락 0쪽이다.
+fresh WASM·새 base 자체 대조와 전체 공통 검증 전에는 최종 수용으로 바꾸지 않는다.
+
 ## 세로쓰기 글자 보존 보정의 현재 증거
 
 보정 소스 `37e5bba3007614d9304c3dbf863503a8c7340405`의 Native 제품을 별도로
