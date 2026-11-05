@@ -144,22 +144,40 @@ impl LayoutEngine {
             {
                 // 글줄에 참여하는 표는 본문·각주와 같은 줄 배치 결과를 소비한다.
                 // 표만 따로 배치하면 바깥여백과 같은 줄의 앞뒤 글을 잃는다.
-                let comp = self.compose_header_footer_paragraph(para, page_number, styles);
-                y_offset = self
-                    .layout_inline_table_paragraph(
+                if let Some((plan, measured)) =
+                    self.header_footer_inline_table_plan(para, i, styles, area, y_offset)
+                {
+                    self.layout_inline_flow_plan(
                         tree,
                         area_node,
                         para,
-                        Some(&comp),
                         styles,
                         area,
-                        y_offset,
                         outer_section_index.unwrap_or(0),
                         i,
                         bin_data_content,
-                        &[],
-                    )
-                    .flow_bottom;
+                        &measured,
+                        &plan,
+                    );
+                    y_offset = area.y + plan.end;
+                } else {
+                    let comp = self.compose_header_footer_paragraph(para, page_number, styles);
+                    y_offset = self
+                        .layout_inline_table_paragraph(
+                            tree,
+                            area_node,
+                            para,
+                            Some(&comp),
+                            styles,
+                            area,
+                            y_offset,
+                            outer_section_index.unwrap_or(0),
+                            i,
+                            bin_data_content,
+                            &[],
+                        )
+                        .flow_bottom;
+                }
             } else if has_table {
                 for (ci, ctrl) in para.controls.iter().enumerate() {
                     if let Control::Table(t) = ctrl {
@@ -489,6 +507,89 @@ impl LayoutEngine {
         );
         *self.para_border_ranges.borrow_mut() = parent_border_ranges;
         self.border_box_override.set(parent_border_override);
+    }
+
+    /// 저장 줄이 없는 TAC 표는 본문과 같은 상자·줄 소속·점유 결과를 사용한다.
+    /// 글자용 합성 기준선으로 표 상단을 다시 추측하지 않는다. 필드 치환과
+    /// 그림·도형의 머리말 전용 주소는 각자의 기존 소비 경로에 남긴다.
+    fn header_footer_inline_table_plan(
+        &self,
+        para: &Paragraph,
+        para_index: usize,
+        styles: &ResolvedStyleSet,
+        area: &LayoutRect,
+        y: f64,
+    ) -> Option<(
+        crate::renderer::inline_flow::InlineFlowPlan,
+        Vec<MeasuredTable>,
+    )> {
+        if !crate::renderer::para_has_no_stored_line_segs(para)
+            || para
+                .text
+                .chars()
+                .any(|ch| matches!(ch, '\u{0015}' | '\u{0016}' | '\u{0017}'))
+            || !para.controls.iter().all(|control| {
+                matches!(control, Control::Table(table) if table.common.treat_as_char)
+                    || matches!(
+                        control,
+                        Control::SectionDef(_)
+                            | Control::ColumnDef(_)
+                            | Control::PageNumberPos(_)
+                            | Control::PageNumCtrl(_)
+                    )
+            })
+        {
+            return None;
+        }
+        let style = styles.para_styles.get(para.para_shape_id as usize)?;
+        let profile = self.profile.get();
+        let measurer = crate::renderer::height_measurer::HeightMeasurer::new(self.dpi)
+            .with_stored_geometry_policy(profile.stored_geometry_policy())
+            .with_native_hwp5(profile.hwp5_stored_pagination_layout())
+            .with_hwpx_stored_layout(profile.hwpx_stored_layout())
+            .with_session_edited(profile.session_edited());
+        let measured: Vec<_> = para
+            .controls
+            .iter()
+            .enumerate()
+            .filter_map(|(index, control)| match control {
+                Control::Table(table) => {
+                    Some(measurer.measure_table(table, para_index, index, styles))
+                }
+                _ => None,
+            })
+            .collect();
+        let container = LayoutRect {
+            x: area.x + style.margin_left,
+            width: area.width - style.margin_left - style.margin_right,
+            ..*area
+        };
+        let (body_x, body_y, body_width, body_height) = self.current_body_area.get();
+        let body = LayoutRect {
+            x: body_x,
+            y: body_y,
+            width: body_width,
+            height: body_height,
+        };
+        let paper = LayoutRect {
+            x: 0.0,
+            y: 0.0,
+            width: self.current_paper_width.get(),
+            height: self.current_page_height.get(),
+        };
+        let frame = crate::renderer::float_placement::ObjectPlacementFrame {
+            container: &container,
+            column: area,
+            body: &body,
+            paper: &paper,
+            paragraph_y: y,
+            alignment: style.alignment,
+            dpi: self.dpi,
+        };
+        let mut plan =
+            crate::renderer::inline_flow::plan(para, para_index, styles, &measured, &frame, &[])?;
+        plan.relative_to(area.x, area.y);
+        Some((plan, measured))
     }
 
     /// 머리말·꼬리말 안 용지·쪽 기준 개체를 재는 틀.
