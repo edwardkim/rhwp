@@ -4458,7 +4458,10 @@ impl LayoutEngine {
                 let mt = measured_tables
                     .iter()
                     .find(|mt| mt.para_index == para_index && mt.control_index == *ctrl_idx);
-                let tw = table_widths[table_idx];
+                // [#8647] 표 뒤 펜은 정렬 폭과 같은 **선언 폭**으로 전진한다(#6601·#5785 계약).
+                // `table_widths`(col_span==1 셀 최댓값 합)는 병합 셀이 많은 표에서 과소합산돼
+                // 같은 줄의 다음 표가 앞 표 위에 겹친다(docs#480 표0 149px → 약 30px).
+                let tw = table_declared_widths[table_idx];
                 let tbl_h = mt
                     .map(|m| m.total_height)
                     .unwrap_or_else(|| hwpunit_to_px(tbl.common.height as i32, self.dpi));
@@ -4602,7 +4605,8 @@ impl LayoutEngine {
             let mt = measured_tables
                 .iter()
                 .find(|mt| mt.para_index == para_index && mt.control_index == *ctrl_idx);
-            let tw = table_widths[table_idx];
+            // [#8647] 위 중간 표와 같은 선언 폭 전진.
+            let tw = table_declared_widths[table_idx];
             let (om_left, om_right) = table_om_px[table_idx];
             let tbl_h = mt
                 .map(|m| m.total_height)
