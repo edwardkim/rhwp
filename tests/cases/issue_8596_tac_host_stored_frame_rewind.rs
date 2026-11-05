@@ -2,7 +2,8 @@
 //! 자리차지 표 프레임은 같은 쪽의 프레임이 아니다. 한/글은 vpos 를 되감아 그 표를 새 쪽에서
 //! 시작한다. 앞 TAC 표가 이미 끝난 뒤의 저장 원점은 흐름 커서가 조금 아래여도 같은 쪽에 둔다.
 //!
-//! 주석 갱신: 2026-11-04 22:34 (KST)
+//! 주석 갱신: 2026-11-05 20:08 (KST) — 직전 파일 변경 커밋 `032dcb80e3`(2026-11-05 18:44:11 +0900,
+//! devel `a95d1d5afa` rebase). 처음 작성: 2026-11-04 22:34 (KST).
 //!
 //! - 입력 1: `samples/issue8596/certificate_table.hwpx` — 부천시 지방공무원 인사 규칙
 //!   [별표 5의2] 경력경쟁임용 자격증 구분표(한컴 2020 저장, 공개 자치법규 원본 그대로).
@@ -18,22 +19,28 @@
 //!   조판 커서가 저장 원점보다 아래라 앞 표 종류와 무관하게 되돌림을 판정하면 넘어간다.
 //! - 독립 기준: 같은 입력의 한컴오피스 2022 Print PDF `pdf/issue8596_*-2020.pdf`
 //!   (입력 1: 9쪽, 입력 2: 14쪽, 입력 3: 2쪽).
-//! - 수정 전 rhwp(devel 7fdd5441ff): 입력 1 은 8쪽(2쪽에 문단 4·5 표가 같은 원점에 겹침),
-//!   입력 2 는 13쪽. 앞 표 종류만 넓힌 중간안은 입력 3 을 3쪽으로 만들었다.
+//! - 수정 전 rhwp(devel 7fdd5441ff, 그리고 rebase base `a95d1d5afa`): 입력 1 은 8쪽(2쪽에
+//!   문단 4·5 표가 같은 원점에 겹침), 입력 2 는 13쪽. 앞 표 종류만 넓힌 중간안은 입력 3 을
+//!   3쪽으로 만들었다.
 //!
-//! 측정(2026-11-04, `scripts/visual_sweep.py --silhouette-only --dpi 96`, 판정값
-//! `silhouette_raw_match_percent` = 색상 경계 보정 전 2px 이웃 내용 실루엣, 수정 head 코드):
+//! 측정(2026-11-05, macOS, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`,
+//! 판정값 `silhouette_raw_match_percent` = 색상 경계 보정 전 2px 이웃 내용 실루엣. Native 는 sweep
+//! 기본 웹폰트 공급, fresh WASM 은 `--font-path ttfs/opensource`. code head `032dcb80e3`):
 //!
 //! | 입력 | 전체 쪽수(한컴=rhwp) | Native 최저(쪽) | fresh WASM 최저(쪽) | 변경 쪽 Native / WASM |
 //! |---|---|---|---|---|
-//! | certificate_table | 9 | 99.98 (6) | 99.99 (6) | 2쪽 100.00 / 100.00, 3쪽 100.00 / 100.00 |
-//! | policy_committee_agenda | 14 | 95.19 (7) | 97.80 (7) | 10쪽 97.85 / 99.95, 11쪽 97.87 / 99.96 |
-//! | idol_goods_trimmed | 2 | 99.67 (1) | 99.70 (1) | 1쪽 99.67 / 99.70 |
+//! | certificate_table | 9 | 99.87 (7) | 99.96 (6) | 2쪽 99.96 / 100.00, 3쪽 99.96 / 100.00 |
+//! | policy_committee_agenda | 14 | 92.50 (7) | 95.51 (10) | 10쪽 93.49 / 95.51, 11쪽 96.87 / 99.20 |
+//! | idol_goods_trimmed | 2 | 99.50 (1) | 99.64 (1) | 1쪽 99.50 / 99.64 |
 //!
-//! 두 경로 전쪽 최저: 95.19(policy_committee_agenda 7쪽 Native). 수정 전 Native 는 입력 1 이
-//! 8쪽·입력 2 가 13쪽으로 한컴과 쪽수가 달라 쪽별 대조가 성립하지 않았다.
+//! 두 경로 전쪽 최저: 92.50(policy_committee_agenda 7쪽 Native). 이 쪽은 수정 전 base 와 값이
+//! 같아 이 변경의 영향 쪽이 아니다. 수정 전 base 는 입력 1 이 8쪽·입력 2 가 13쪽으로 한컴과
+//! 쪽수가 달라 쪽별 대조가 성립하지 않는다. rebase 전 code head `846f6cccf6` 를 같은 macOS 환경에서
+//! 측정한 값은 위 표와 전쪽 동일하다. 처음 기록(2026-11-04, Windows 측정, 입력 2 Native 최저 95.19)
+//! 과의 차이는 측정 환경의 글꼴 공급 차이다.
 //!
-//! 증거: `mydocs/pr/assets/issue_8596/{native,wasm}/*_silhouette.tsv`, `review/*.png`.
+//! 증거: `mydocs/pr/assets/issue_8596/{native,wasm}/*_silhouette.tsv`(head),
+//! `mydocs/pr/assets/issue_8596/base/{native,wasm}/*_silhouette.tsv`(base `a95d1d5afa`), `review/*.png`.
 //! 검사는 표의 쪽 소속·같은 쪽 표끼리 겹치지 않음·반례의 위아래 순서를 보는 관계형과,
 //! 독립 PDF 전체 쪽수를 고정하는 고정형이다. 절대 px 좌표는 고정하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
