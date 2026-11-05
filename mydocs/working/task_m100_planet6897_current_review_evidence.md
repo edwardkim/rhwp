@@ -25,10 +25,10 @@
 - 최신 리베이스의 Native 집중 대조는 기존 후보의 PR #8498 입력 5쪽과 새 base의
   PR #8585 입력·정상 대조군 PR #8122 입력 각 1쪽, 합계 7쪽이 모두 정확히 같은 raw다.
 
-[준비 상태와 실제 성공 검증 47개](../pr/assets/planet6897_20261103/review-preparation-a7e5ce7112.json),
-[직접 판독 기록](../pr/assets/planet6897_20261103/direct-reading-current.json),
-[주석 외 본문 불변](../pr/assets/planet6897_20261103/regression-header-body-equivalence.json),
-[최신 Native 집중 대조](../pr/assets/planet6897_20261103/rebase_scope_22947f6a90/native-base-comparison.json)를
+[준비 상태와 실제 성공 검증 47개](../pr/assets/planet6897_20261103/intermediate-evidence-summary.md),
+[직접 판독 기록](../pr/assets/planet6897_20261103/direct-reading-current.md),
+[주석 외 본문 불변](../pr/assets/planet6897_20261103/test-header-only-audit.md),
+[최신 Native 집중 대조](../pr/assets/planet6897_20261103/rebase_scope_22947f6a90/README.md)를
 정식 증거로 보존한다. 실제 전체 Rust 12,561개 통과와 34개 Rust gate, fresh WASM 실행 결과는
 이전 단계의 제품 검증 기록을 재사용한다.
 
@@ -47,8 +47,8 @@
 
 앞 단계는 `d5f1feb913`에 커밋했다. 이후 새 base의 최적화 WASM 빌드와 공개 API·집중
 시각 대조가 실제 종료 코드 0으로 끝났다. 기존 후보와 새 base의 대응 범위를 구분한
-Native/fresh WASM 합계 14쪽은 정밀 raw가 모두 같다. [새 base 실행](../pr/assets/planet6897_20261103/rebase_scope_22947f6a90/base-product-execution.json)과
-[실제 대조](../pr/assets/planet6897_20261103/rebase_scope_22947f6a90/base-comparison.json)를 보존했다.
+Native/fresh WASM 합계 14쪽은 정밀 raw가 모두 같다. [새 base 실행](../pr/assets/planet6897_20261103/rebase_scope_22947f6a90/README.md)과
+[실제 대조](../pr/assets/planet6897_20261103/rebase_scope_22947f6a90/README.md)를 보존했다.
 
 수동 작성 리뷰 4개에도 현재 실측 TSV·대응 PNG와 최신 검증/대기 상태를 별도 경로로
 추가했다. 이전 상세 분석과 당시 증적은 이력으로 명확히 구분해 유지했다. 이로써 39개
@@ -64,7 +64,7 @@ PDF를 다시 출력하지 않았다. 개요 번호 순서·본문 보존·간�
 17문서의 양쪽 TSV를 직접 연결했다. PR #8477의 주장 입력 2쪽 review/overlay 네 장도
 본문에 표시한다. 61,821자로 GitHub 65,536자 제한 안이며, 고정 SHA의 링크 대상 Git blob이
 모두 존재한다. 원본·PDF 다운로드와 원본별 근거는 같은 행의 개별 리뷰에서 연결한다.
-본문은 아직 게시하지 않았다. [본문 준비 감사](../pr/assets/planet6897_20261103/pr-body-preparation-audit.json)에
+본문은 아직 게시하지 않았다. [본문 준비 감사](../pr/assets/planet6897_20261103/intermediate-evidence-summary.md)에
 본문 SHA와 범위·미완료 조건을 기록했다. PR #8540의 A/B 양쪽 판독 네 건도 추가해 정식
 직접 판독 기록은 현재 30건이다. 나머지 범위를 직접 판독한 것으로 추정하지 않는다.
 

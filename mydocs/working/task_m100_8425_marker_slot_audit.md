@@ -29,7 +29,7 @@ bit 3만 켜며 bit 2는 꺼져 있다. 그런데 `list_marker_geometry_for`는 
 같다. 현재 Native의 시작점은 1수준에서 약 2.07 CSSpx, 7수준에서 약 14.51 CSSpx
 왼쪽이다. 이 수치는 수정 상수나 고정 회귀 기대값이 아니라 결함의 진단 관측이다.
 
-[원본·PDF 해시와 수준별 실제 관측](../pr/assets/planet6897_20261103/pr_8433/marker-slot-diagnostic.json)을
+[원본·PDF 해시와 수준별 실제 관측](../pr/assets/planet6897_20261103/intermediate-evidence-summary.md)을
 보존했다. 사용한 Native 트리는 전쪽 TSV와 같은 `4b149b6cdf` 캡처다. 새 제품의
 재출력으로 표시하지 않는다. 보조 `rhwp-q font-trace`는 backend paint를 지원하지
 않는다고 명시하므로 그 결과만으로 실제 Bold 면 선택이나 획 차이의 원인을 확정하지 않는다.
@@ -97,7 +97,7 @@ NUMBER를 사용하고 `useInstWidth=1`인 정의를 참조한다. 입력 XML의
 번호 반례는 유지한다. 새 함수를 포함한 최소 글꼴 집중 6건은 아래 재실행 기록에서 통과했고,
 전체 회귀는 별도로 진행 중이다.
 
-[같은 관계의 수정 전·후 진단](../pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/number-slot-before-after.json)은
+[같은 관계의 수정 전·후 진단](../pr/assets/planet6897_20261103/intermediate-evidence-summary.md)은
 기존 실제 Native 출력에서 일곱 수준 모두 실패하고 보정 출력에서는 모두 통과했다.
 이는 실제 출력 트리의 관계 진단이며 이전 버전에서 새 Rust 함수를 실행했다고 주장하지
 않는다. 기대값은 보정 출력이 아니라 원본 글자 크기와 두 독립 Print의 형식 예약에서 정했다.
@@ -116,12 +116,12 @@ NUMBER를 사용하고 `useInstWidth=1`인 정의를 참조한다. 입력 XML의
 Rust 검사 v2 소스 스냅샷을 분리했습니다. 제품·입력 바이트는 변하지 않아 진행 중인 시각 검사는 유지합니다.
 
 재실행에서 기본 개요 4개와 표 원본 프레임 관계 2개가 모두 통과했습니다. 명령·종료 시각·파일 해시는
-[집중 회귀 기록](../pr/assets/planet6897_20261103/marker-slot-focused-regression-c183a1ac61.json)에 보존했습니다.
+[집중 회귀 기록](../pr/assets/planet6897_20261103/rust-validation-c183a1ac61.md)에 보존했습니다.
 전체 필수 검증은 별도로 진행 중입니다.
 
 ## 2026-11-05 최신 Native 전쪽 완료
 
 제품 `c183a1ac61`의 Native 80개 입력·406쪽을 완료했습니다. 최저 raw 92.45232%,
 90% 미만·누락·독립 PDF와 쪽수 불일치·입력/PDF 해시 오류는 모두 0건입니다.
-[전쪽 감사와 실제 TSV 원본](../pr/assets/planet6897_20261103/current-c183a1ac61/native-audit.json)을
+[전쪽 감사와 실제 TSV 원본](../pr/assets/planet6897_20261103/current-c183a1ac61/native-validation.md)을
 보존했습니다. fresh WASM 전쪽·보호 PR 무하락·전체 Rust 검증의 완료와는 구분합니다.

@@ -19,7 +19,7 @@
 Print y=996/1025다. 아래 선만 12 CSSpx 차이가 난다. 이 값은 진단 관측이며 98% 미만인
 3쪽에 새 절대 px 회귀를 추가한 것이 아니다.
 
-[원본 레코드·페이지 항목·PNG 관측](../pr/assets/planet6897_20261103/pr_8547/boundary-diagnostic/observations.json)을
+[원본 레코드·페이지 항목·PNG 관측](../pr/assets/planet6897_20261103/intermediate-evidence-summary.md)을
 같이 보존한다. 입력 SHA는 `797268d10fc7605ae5e0e299e9fb386ea6c204f35ef4c4879bb611e66ef4545a`다.
 원본 CFB를 직접 해제해 읽었으며 엔진의 HWPX 재저장본을 근거로 사용하지 않았다.
 

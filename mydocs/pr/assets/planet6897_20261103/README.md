@@ -9,28 +9,28 @@ PR 생성 전 승인 대기까지 준비하는 로컬 작업이다. 검토 범�
 제품 코드 `c183a1ac61c2aa4188989fd93032cae68d3538c1`에서 기본 개요 예약 폭과 저장 줄
 재시작 표의 하단 보정을 검증하고 있습니다. 같은 원본·기존 독립 Print의 13개 조합·73쪽은
 Native/fresh WASM 모두 완료했고 최저 95.98%·96.12%, 이전 표시값 하락은 양쪽 0쪽입니다.
-[번호 전쪽 증거](pr_8433/reference-width-c183a1ac61/native-selected-audit.json),
-[같은 fresh WASM 증거](pr_8433/reference-width-c183a1ac61/wasm-selected-audit.json),
-[표 하단과 이어받기 증거](pr_8547/closing-frame-c183a1ac61/provenance.json)를 구분합니다.
+[번호 전쪽 증거](intermediate-evidence-summary.md),
+[같은 fresh WASM 증거](intermediate-evidence-summary.md),
+[표 하단과 이어받기 증거](intermediate-evidence-summary.md)를 구분합니다.
 
-[최소 글꼴 집중 회귀 6개](marker-slot-focused-regression-c183a1ac61.json)와
-[실제 최적화 WASM의 공개 API·브라우저 검사](runtime-validation-c183a1ac61.json)는 통과했습니다.
-최신 Native의 [80개 입력·406쪽 전쪽 감사와 TSV 원본](current-c183a1ac61/native-audit.json)은
+[최소 글꼴 집중 회귀 6개](rust-validation-c183a1ac61.md)와
+[실제 최적화 WASM의 공개 API·브라우저 검사](runtime-validation-c183a1ac61.md)는 통과했습니다.
+최신 Native의 [80개 입력·406쪽 전쪽 감사와 TSV 원본](current-c183a1ac61/native-validation.md)은
 완료했습니다. 최저 raw는 92.45232%이며 90% 미만·누락·쪽수·입력/PDF 해시 오류는 0건입니다.
-[당시 고정 base와의 동일 환경 대조](current-c183a1ac61/native-base-comparison.json)에서도
+[당시 고정 base와의 동일 환경 대조](current-c183a1ac61/native-validation.md)에서도
 비교 가능한 396쪽의 0.1%p 초과 하락은 0쪽입니다. base 파싱 거부 6쪽의 출력과
 누락 4쪽의 복원은 수치 비교와 구분합니다. 최신 devel 전체를 새로 출력한 결과로 표시하지 않습니다.
-[최신 제품의 전체 최소 글꼴 Rust 회귀](full-nextest-c183a1ac61.json)는
+[최신 제품의 전체 최소 글꼴 Rust 회귀](rust-validation-c183a1ac61.md)는
 12,563/12,563 PASS·45 skipped·exit 0으로 완료했습니다.
 [Rust·Native 집중 검사 40개 묶음](rust-validation-c183a1ac61.md)은 모두 exit 0이며,
 Native Skia 라이브러리 4,040 PASS·12 ignored와 CI integration 21개 모듈을 포함합니다.
-[별도 필수 편람 Native 383쪽 게이트](current-c183a1ac61/handbook-audit.json)도
+[별도 필수 편람 Native 383쪽 게이트](current-c183a1ac61/native-validation.md)도
 최저 99.96%, 기존 기준 표시값 하락 0쪽으로 통과했습니다. fresh WASM 80개 입력의
 [전쪽 80입력·406쪽 감사](current-c183a1ac61/wasm-validation.md)는 완료됐으며 최저 92.87288%, 90% 미만·누락·쪽수·해시 오류 0건입니다.
-[PR #8389·#8397의 Native 보호 범위](current-c183a1ac61/pr8389_8397/native-audit.json)는
+[PR #8389·#8397의 Native 보호 범위](current-c183a1ac61/pr8389_8397/native-validation.md)는
 17문서·1,770쪽과 원 TSV 2,153행을 모두 대조해 표시값 하락·누락 0행입니다.
 `issue7905` 6쪽도 전쪽 98% 이상이며 최저 98.86%입니다.
-[새 base 영향 범위의 Native 3문서·7쪽 실제 대조](current-c183a1ac61/rebase-scope-native-audit.json)도
+[새 base 영향 범위의 Native 3문서·7쪽 실제 대조](current-c183a1ac61/rebase-scope-native-validation.md)도
 0.1%p 초과 하락 없이 완료했습니다. fresh WASM의 해당 최종 대조는 완료 전입니다.
 아래 직전 완료 결과를 새 보정 제품의 전체 통과로 표시하지 않습니다. PR 생성·원격 작업은
 수행하지 않았으며 최종 준비 후 작업지시자 승인을 기다립니다.
@@ -67,8 +67,8 @@ Native/fresh WASM 전쪽은 각각 6입력·29쪽을 완료했습니다. 두 문
 | 보정 전 제품 후속 검사 | 최적화 WASM·실제 브라우저/API 통과. 새 base/후보와 리베이스 전 후보의 영향 3입력·7쪽씩, 총 14쪽 raw 동일. 당시 base의 전쪽 WASM 대조는 진행 중 |
 | 개별 리뷰 | 39개 모두 현재 증적·최신 검증/대기 상태 갱신. 조건부 수용 기록이며 최종 승인 확정 0개 |
 
-[전쪽 Native/fresh WASM 산출물 감사](whole-page-capture-summary.json),
-[Rust 34개 실제 성공 게이트](rust-validation-a7e5ce7112.json)와
+[전쪽 Native/fresh WASM 산출물 감사](intermediate-evidence-summary.md),
+[Rust 34개 실제 성공 게이트](intermediate-evidence-summary.md)와
 [원 PR 39개 head 재확인](source-head-recheck-20261105.tsv)을 연결한다. 모두 Open·non-Draft이고
 리뷰어 요청이 유지되며 원 head 변경은 없다. 현재 devel은 PR metadata의 `base.sha`가 아닌
 실제 `git/ref/heads/devel`을 따로 조회해 확인했다.
@@ -79,12 +79,12 @@ TSV·PNG는 원래의 producer·base·package 해시를 유지한다. 최신 sou
 실제 실행해 확인하며, 기존 보정 대상 PR #8498의 영향 5쪽은 리베이스 전 후보와 대조한다.
 최신 후보 집중 범위는 3문서·7쪽이고 새 base 자체 대조는 그중 2문서·2쪽이다.
 
-[최신 제품 실행](latest-product-validation-a7e5ce7112.json),
-[새 base 제품과의 실제 14쪽 대조](rebase_scope_22947f6a90/base-comparison.json)와
+[최신 제품 실행](intermediate-evidence-summary.md),
+[새 base 제품과의 실제 14쪽 대조](rebase_scope_22947f6a90/README.md)와
 [리베이스 영향 경계의 실제 전쪽 TSV·대표 PNG](rebase_scope_22947f6a90/README.md)를 별도로 보존한다.
 
 Native/fresh WASM 대표 증적의 중복 제외 93개 입력·쪽 조합은 실제 원본·PDF·backend·source PNG 해시와
-대응함을 확인했다. 파일 대응 감사와 직접 판독·최종 승인 판정은 구분한다. [상속 기능 WASM 32입력·72쪽 대조](inherited-8548-wasm-preservation.json)는 같은 원본·PDF·글꼴
+대응함을 확인했다. 파일 대응 감사와 직접 판독·최종 승인 판정은 구분한다. [상속 기능 WASM 32입력·72쪽 대조](intermediate-evidence-summary.md)는 같은 원본·PDF·글꼴
 프로그램·공급 순서와 출력 조건에서 정밀 raw가 72쪽 모두 같다. 주 검증 대상 80입력의
 WASM base 대조는 진행 중이다.
 

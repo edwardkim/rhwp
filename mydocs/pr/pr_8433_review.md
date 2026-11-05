@@ -22,14 +22,14 @@
 
 세 영역의 review와 별도 overlay를 직접 읽어 제목 시작·긴 제목의 내어쓰기와 원 회귀의
 개요·리터럴 번호·내용 순서를 확인했습니다. 탐침은 이전 Native 91.85%·91.97%에서
-100.00%로 개선됐습니다. [13개 입력·Print 조합 73쪽의 Native 대조](assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/native-selected-audit.json)는
-모두 90% 이상이고 이전 표시값 하락은 0쪽입니다. [실제 Native 제품](assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/native-product.json)의
+100.00%로 개선됐습니다. [13개 입력·Print 조합 73쪽의 Native 대조](assets/planet6897_20261103/intermediate-evidence-summary.md)는
+모두 90% 이상이고 이전 표시값 하락은 0쪽입니다. [실제 Native 제품](assets/planet6897_20261103/intermediate-evidence-summary.md)의
 소스·실행 파일 해시를 연결했습니다. 글머리표 대조군 전 4쪽과 실제 NUMBER 문단을 쓰는 별도 대조군 전 2쪽은
 보정 전·후 Native·WASM 모두 100.00%입니다. 번호 정의의 존재와 실제 문단의 사용을 구분했습니다.
 
-[fresh WASM의 같은 13개 조합·73쪽 대조](assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/wasm-selected-audit.json)도
+[fresh WASM의 같은 13개 조합·73쪽 대조](assets/planet6897_20261103/intermediate-evidence-summary.md)도
 완료했습니다. 전쪽 최저는 Native 95.98% / fresh WASM 96.12%이며 이전 표시값 하락은 양쪽 모두 0쪽입니다.
-[글머리표·명시적 번호 대조군](assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/control-provenance.json)의
+[글머리표·명시적 번호 대조군](assets/planet6897_20261103/intermediate-evidence-summary.md)의
 실제 사용 경로와 각 전쪽 TSV를 보존했습니다. 새 보정의 필수 회귀·통합 검증은 진행 중입니다. 아래 기존 측정은 보정 전
 제품의 결과로 보존하며 새 보정의 완료나 최종 승인으로 표시하지 않습니다.
 
@@ -42,14 +42,14 @@
 | issue3307 · 2020 | [전 9쪽](assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/issue3307-p007-wasm.tsv) · 최저 99.94%, 7쪽 99.99% | [7쪽 review](assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/issue3307-p007-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/issue3307-p007-wasm-overlay.png) |
 
 세 영역의 fresh WASM review와 별도 overlay를 직접 판독했습니다. 제목 시작점과 긴 제목의
-이어지는 줄, 실물 7쪽의 번호·본문·리터럴 번호가 보존됩니다. [최적화 제품과 PNG 연결](assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/wasm-provenance.json)을
+이어지는 줄, 실물 7쪽의 번호·본문·리터럴 번호가 보존됩니다. [최적화 제품과 PNG 연결](assets/planet6897_20261103/intermediate-evidence-summary.md)을
 기록했으며 PDF를 재산출하지 않았습니다.
 
 ## 새 보정의 최소 글꼴 집중 회귀
 
 원본·독립 Print의 양쪽 전쪽 측정 뒤 실제 최소 글꼴 환경에서 정식 검사를 실행했습니다.
 기본 개요 4개와 저장 줄 재시작 표 2개, 총 6개가 통과했습니다.
-[실행 명령·종료 코드·검사 파일 해시](assets/planet6897_20261103/marker-slot-focused-regression-c183a1ac61.json)를
+[실행 명령·종료 코드·검사 파일 해시](assets/planet6897_20261103/rust-validation-c183a1ac61.md)를
 연결합니다. 원본 장평을 누락한 첫 검사 실패와 수정 근거도 같은 기록에 구분했습니다.
 전체 Rust·공통 영향 범위의 최종 검증은 아직 진행 중이며 집중 검사 통과로 대신하지 않습니다.
 
@@ -121,13 +121,13 @@ levels probe와 issue3307 원본의 대응 줄에서 번호·본문의 상대 �
 굵기에 가시 차이가 남습니다. 90% 통과만으로 해당 차이를 정상으로 판정하지 않습니다.
 원 PR 본문과 원본 HWPX의 글자 속성·PDF의 실제 글꼴 및 번호 폭을 대조했습니다.
 이 차이는 위 `c183a1ac61`의 참조 폭 보정으로 해소했으며, 같은 두 탐침은 Native·WASM 모두 100.00%입니다.
-[직접 판독 기록](assets/planet6897_20261103/direct-reading-current.json)에 해당 파일의 해시를
+[직접 판독 기록](assets/planet6897_20261103/direct-reading-current.md)에 해당 파일의 해시를
 연결했습니다. 원 PR이 주로 검증한 `issue3307_outline_number.hwpx` 7쪽의 개선과 탐침의
 보정 전 차이를 구분합니다. 최종 공통 검증은 별도로 완료해야 합니다.
 
 기존 증적 표의 2020 Print 탐침 행은 같은 HWPX의 2024 PDF 점수를 잘못 가져왔습니다.
 이미지와 TSV는 올바른 2020 자료였으며, 이미지의 입력·PDF 해시 기록으로 점수 연결을
-수정했습니다. [전체 주장 행 대조](assets/planet6897_20261103/claim-table-score-audit.json)는
+수정했습니다. [전체 주장 행 대조](assets/planet6897_20261103/direct-reading-image-sha256.md)는
 96개 행을 확인하고 실제 수치 정정 1개 행을 기록합니다. PDF나 엔진 출력을 재생성하지 않았습니다.
 
 ## 통합 최종 검증 조건
@@ -139,11 +139,11 @@ levels probe와 issue3307 원본의 대응 줄에서 번호·본문의 상대 �
 - WASM의 당시 base 대비 전쪽 대조와 최신 base 기능 보존의 남은 실행은 아래와 같습니다.
 
 - 대기: 동일 환경에서 당시 base 대비 WASM 80개 입력·406쪽의 0.1%p 하락 게이트 완료
-- 새 base의 실제 Native/WASM 제품과 후보의 집중 대조 14쪽은 모두 같은 raw입니다. [실행·대조 원본](assets/planet6897_20261103/rebase_scope_22947f6a90/base-comparison.json)을 확인했습니다.
+- 새 base의 실제 Native/WASM 제품과 후보의 집중 대조 14쪽은 모두 같은 raw입니다. [실행·대조 원본](assets/planet6897_20261103/rebase_scope_22947f6a90/README.md)을 확인했습니다.
 - 대기: 주장 쪽 직접 판독·회귀 주석·수동 작성 리뷰와 PR 본문 최종 감사
 
 이 대기 항목을 완료하지 않은 상태에서는 최종 검증 완료·승인으로 판정하지 않습니다.
-[완료·대기 검증 원본 기록](assets/planet6897_20261103/review-preparation-a7e5ce7112.json)
+[완료·대기 검증 원본 기록](assets/planet6897_20261103/intermediate-evidence-summary.md)
 
 ## Merge 후 원 PR 후속 처리
 

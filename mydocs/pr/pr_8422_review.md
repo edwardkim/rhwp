@@ -70,7 +70,7 @@ src/renderer/typeset.rs의 표 줄 전진과 src/renderer/layout.rs의 저장 �
 
 ## 현재 대표 페이지 직접 판독
 
-[판독 기록·실제 PNG SHA-256](assets/planet6897_20261103/direct-reading-current.json)에 같은 원본·쪽의 관측을 남겼습니다.
+[판독 기록·실제 PNG SHA-256](assets/planet6897_20261103/direct-reading-current.md)에 같은 원본·쪽의 관측을 남겼습니다.
 
 - native 3쪽: 목차 제목 표 뒤 본문과 후행 줄간격·줄바꿈을 대조했다. 원 PR이 밝힌 휴먼둥근헤드라인 제목 획 모양 차이는 남으며 배치 개선과 구분한다.
 - wasm 3쪽: fresh WASM의 목차 제목 표 뒤 본문과 후행 줄간격·목차 항목의 줄바꿈을 Native/독립 PDF와 대조했다. 원 PR의 제목 글꼴 획 차이는 남으며 줄간격 개선과 구분한다.
@@ -86,11 +86,11 @@ src/renderer/typeset.rs의 표 줄 전진과 src/renderer/layout.rs의 저장 �
 - WASM의 당시 base 대비 전쪽 대조와 최신 base 기능 보존의 남은 실행은 아래와 같습니다.
 
 - 대기: 동일 환경에서 당시 base 대비 WASM 80개 입력·406쪽의 0.1%p 하락 게이트 완료
-- 새 base의 실제 Native/WASM 제품과 후보의 집중 대조 14쪽은 모두 같은 raw입니다. [실행·대조 원본](assets/planet6897_20261103/rebase_scope_22947f6a90/base-comparison.json)을 확인했습니다.
+- 새 base의 실제 Native/WASM 제품과 후보의 집중 대조 14쪽은 모두 같은 raw입니다. [실행·대조 원본](assets/planet6897_20261103/rebase_scope_22947f6a90/README.md)을 확인했습니다.
 - 대기: 주장 쪽 직접 판독·회귀 주석·수동 작성 리뷰와 PR 본문 최종 감사
 
 이 대기 항목을 완료하지 않은 상태에서는 최종 검증 완료·승인으로 판정하지 않습니다.
-[완료·대기 검증 원본 기록](assets/planet6897_20261103/review-preparation-a7e5ce7112.json)
+[완료·대기 검증 원본 기록](assets/planet6897_20261103/intermediate-evidence-summary.md)
 
 ## Merge 후 원 PR 후속 처리
 

@@ -19,10 +19,10 @@ Native·fresh WASM을 96 DPI·같은 원본·같은 독립 Print PDF로 전 6쪽
 | 전 6쪽 TSV | [TSV](assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/native.tsv) · 최저 99.85% | [TSV](assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/wasm.tsv) · 최저 99.87% |
 | 3쪽 · 위생 앞 조각의 아래 외곽 | [review](assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/native-p003-review.png) / [overlay](assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/native-p003-overlay.png) | [review](assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/wasm-p003-review.png) / [overlay](assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/wasm-p003-overlay.png) |
 | 4쪽 · 영양사 이어받기와 뒤 행 | [review](assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/native-p004-review.png) / [overlay](assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/native-p004-overlay.png) | [review](assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/wasm-p004-review.png) / [overlay](assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/wasm-p004-overlay.png) |
-| 전쪽 무하락 대조 | [Native 비교](assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/native-comparison.json) | [WASM 비교](assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/wasm-comparison.json) |
-| 실제 제품과 소스 연결 | [제품·소스](assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/native-product.json) | [빌드·패키지·증적 해시](assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/wasm-provenance.json) |
+| 전쪽 무하락 대조 | [Native 비교](assets/planet6897_20261103/intermediate-evidence-summary.md) | [WASM 비교](assets/planet6897_20261103/intermediate-evidence-summary.md) |
+| 실제 제품과 소스 연결 | [제품·소스](assets/planet6897_20261103/intermediate-evidence-summary.md) | [빌드·패키지·증적 해시](assets/planet6897_20261103/intermediate-evidence-summary.md) |
 
-[앞·뒤 쪽수·내용 컷 대조](assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/page3-owned-cut.json)에서
+[앞·뒤 쪽수·내용 컷 대조](assets/planet6897_20261103/intermediate-evidence-summary.md)에서
 6쪽과 내용 컷은 그대로이며 실제 물리 점유만 보정됐습니다. Native·WASM의 3·4쪽 review와
 별도 overlay를 직접 판독해 3쪽 표 하단, 4쪽 영양사 이어받기와 뒤 행의 소유·순서를
 확인했습니다. 100.00%는 2px 관용 실루엣 표시값이며 엄격 RGB 완전 일치를 뜻하지 않습니다.
@@ -43,7 +43,7 @@ Native·fresh WASM을 96 DPI·같은 원본·같은 독립 Print PDF로 전 6쪽
 | 4 · 영양사 이어받기와 뒤 행 | [review](assets/planet6897_20261103/pr_8547/closing-frame-c183a1ac61/native-p004-review.png) / [overlay](assets/planet6897_20261103/pr_8547/closing-frame-c183a1ac61/native-p004-overlay.png) | [review](assets/planet6897_20261103/pr_8547/closing-frame-c183a1ac61/wasm-p004-review.png) / [overlay](assets/planet6897_20261103/pr_8547/closing-frame-c183a1ac61/wasm-p004-overlay.png) |
 
 양쪽 두 쪽을 직접 읽어 위생사·영양사의 쪽 소유와 표 하단·후속 행을 확인했습니다.
-[실제 제품과 증적 해시](assets/planet6897_20261103/pr_8547/closing-frame-c183a1ac61/provenance.json)를
+[실제 제품과 증적 해시](assets/planet6897_20261103/intermediate-evidence-summary.md)를
 연결했습니다. 원본의 호스트 위치·개체 오프셋·선언 높이와 마지막 셀 종료의 관계를
 검사하는 `stored_restart_block_owns_source_host_frame_bottom`을 추가했습니다. 글꼴 설치나
 절대 px에 의존하지 않으며 기존 6쪽 내용·소속 검사도 유지합니다. 새 검사의 최소 글꼴
@@ -53,7 +53,7 @@ Native·fresh WASM을 96 DPI·같은 원본·같은 독립 Print PDF로 전 6쪽
 
 원본·독립 Print의 양쪽 전쪽 측정 뒤 실제 최소 글꼴 환경에서 정식 검사를 실행했습니다.
 기본 개요 4개와 저장 줄 재시작 표 2개, 총 6개가 통과했습니다.
-[실행 명령·종료 코드·검사 파일 해시](assets/planet6897_20261103/marker-slot-focused-regression-c183a1ac61.json)를
+[실행 명령·종료 코드·검사 파일 해시](assets/planet6897_20261103/rust-validation-c183a1ac61.md)를
 연결합니다. 원본 장평을 누락한 첫 검사 실패와 수정 근거도 같은 기록에 구분했습니다.
 전체 Rust·공통 영향 범위의 최종 검증은 아직 진행 중이며 집중 검사 통과로 대신하지 않습니다.
 
@@ -71,8 +71,8 @@ Native·fresh WASM을 96 DPI·같은 원본·같은 독립 Print PDF로 전 6쪽
 
 기존 전쪽 TSV/PNG는 실제 측정 producer의 결과로 재사용합니다. 최신 소스의 재출력으로 표시하지 않습니다.
 보정 전 제품의 최소 글꼴 전체 Rust 12,561개 통과·Native Skia·Rust lint 및 fresh WASM 실제 실행과
-새 base 기능 보존 집중 대조 14쪽을 완료했습니다. [제품 검증](assets/planet6897_20261103/latest-product-validation-a7e5ce7112.json)과
-[최신 리베이스 대조](assets/planet6897_20261103/rebase_scope_22947f6a90/base-comparison.json)를 연결합니다.
+새 base 기능 보존 집중 대조 14쪽을 완료했습니다. [제품 검증](assets/planet6897_20261103/intermediate-evidence-summary.md)과
+[최신 리베이스 대조](assets/planet6897_20261103/rebase_scope_22947f6a90/README.md)를 연결합니다.
 
 ## 보정 전 전쪽 Native/fresh WASM 증적
 
@@ -91,14 +91,14 @@ Native·fresh WASM을 96 DPI·같은 원본·같은 독립 Print PDF로 전 6쪽
 
 Native/fresh WASM의 3·4쪽을 각각 직접 대조했습니다. 위생 묶음의 앞 조각은 3쪽, 이어받는 내용은 4쪽에 보존됩니다. 다만 3쪽 마지막 행 아래 외곽 높이는 독립 Print와 다릅니다. 원본 저장값·원 해결 PR과 현재 조각의 요구/예약/실제 높이를 대조하기 전에는 이 차이를 정상이나 해결 완료로 판정하지 않습니다. 4쪽의 행·내용 순서와 외곽은 대응합니다.
 
-[직접 판독 기록과 PNG 해시](assets/planet6897_20261103/direct-reading-current.json)에 실제 관측을 보존했습니다.
+[직접 판독 기록과 PNG 해시](assets/planet6897_20261103/direct-reading-current.md)에 실제 관측을 보존했습니다.
 
 ## 남은 통합 검증과 원격 조건
 
 동일 환경의 당시 base 대비 Native·WASM 각각 80개 입력·406쪽 대조는 하락 허용폭 0.1%p 초과 0쪽으로 완료했습니다.
-[당시 제품의 대조 기록](assets/planet6897_20261103/base-comparison-capture-4b149b6cdf.json)을 연결하며,
+[당시 제품의 대조 기록](assets/planet6897_20261103/intermediate-evidence-summary.md)을 연결하며,
 새 보정 제품의 정상 대조군·회귀 검증과 주장별 증적 최종 감사는 남아 있습니다.
-[완료·대기 검증 기록](assets/planet6897_20261103/review-preparation-a7e5ce7112.json)을 따릅니다.
+[완료·대기 검증 기록](assets/planet6897_20261103/intermediate-evidence-summary.md)을 따릅니다.
 
 아래 선행 분석은 당시 코드·증적의 기록입니다. 당시 남은 검증 문장은 현재 상태가 아니며 위 현재 기록과 구분합니다.
 

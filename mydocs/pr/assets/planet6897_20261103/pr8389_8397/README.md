@@ -7,12 +7,12 @@ Native는 2026-11-04~05 실행에서 제품 코드 `4b149b6cdf`·고정 base
 [원 PR 기준 2,153행 대조](native-display-comparison.tsv)는 중복을 제외하면 17문서·1,770쪽이며,
 **원 PR TSV 대비 하락 0행, 누락 0쪽**이다. 전쪽 최저 94.96%, 90% 미만 0쪽이다.
 문서별 전쪽 TSV는 [native](native/)에, 실제 입력·PDF·제품·TSV 해시는
-[Native 출처 명세](native-provenance.json)에 보존했다. `issue7905` 6쪽도 모두 98% 이상이다.
+[Native 출처 명세](README.md)에 보존했다. `issue7905` 6쪽도 모두 98% 이상이다.
 
 fresh WASM도 `7bb9e66fd0` 최적화 제품(실제 제품 코드 `4b149b6cdf`와 동일)의
 17문서·1,770쪽 재측정을 마쳤다. [원 PR 기준 2,153행 대조](wasm-display-comparison.tsv)는
 전 행 통과·하락 0행·누락 0쪽이다. [문서별 TSV](wasm/)와
-[WASM 출처 명세](wasm-provenance.json)에 실제 입력·PDF·package 해시를 보존했다.
+[WASM 출처 명세](README.md)에 실제 입력·PDF·package 해시를 보존했다.
 
 위 값은 고정 base `7fdd5441ff` 당시 제품의 실제 캡처다. 최신 base `22947f6a90` 반영 뒤에는
 추가된 번호 자리표·글상자 다중 그림 배치와 실제 영향 경로를 집중 검증한다.

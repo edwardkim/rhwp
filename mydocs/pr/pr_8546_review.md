@@ -21,8 +21,8 @@
 
 기존 전쪽 TSV/PNG는 실제 측정 producer의 결과로 재사용합니다. 최신 소스의 재출력으로 표시하지 않습니다.
 최신 제품의 최소 글꼴 전체 Rust 12,561개 통과·Native Skia·Rust lint 및 fresh WASM 실제 실행과
-새 base 기능 보존 집중 대조 14쪽을 완료했습니다. [제품 검증](assets/planet6897_20261103/latest-product-validation-a7e5ce7112.json)과
-[최신 리베이스 대조](assets/planet6897_20261103/rebase_scope_22947f6a90/base-comparison.json)를 연결합니다.
+새 base 기능 보존 집중 대조 14쪽을 완료했습니다. [제품 검증](assets/planet6897_20261103/intermediate-evidence-summary.md)과
+[최신 리베이스 대조](assets/planet6897_20261103/rebase_scope_22947f6a90/README.md)를 연결합니다.
 
 ## 현재 전쪽 Native/fresh WASM 증적
 
@@ -42,12 +42,12 @@
 
 2024 기준 2쪽의 선행 TAC 도형 → 표 A → 표 B → 뒤 본문 순서를 Native/WASM에서 다시 직접 대조했습니다. 표끼리 겹치지 않지만 표 B와 뒤 본문의 세로 위치·표 선에는 작은 차이가 남습니다. 선행 작성자가 별도 이슈 #8544로 구분한 범위와 현재 원 PR의 줄 소유 계약을 구분해 판단합니다.
 
-[직접 판독 기록과 PNG 해시](assets/planet6897_20261103/direct-reading-current.json)에 실제 관측을 보존했습니다.
+[직접 판독 기록과 PNG 해시](assets/planet6897_20261103/direct-reading-current.md)에 실제 관측을 보존했습니다.
 
 ## 남은 통합 검증과 원격 조건
 
 동일 환경의 당시 base 대비 WASM 80개 입력·406쪽 0.1%p 하락 게이트와 주장별 증적 최종 감사가 남았습니다.
-[완료·대기 검증 기록](assets/planet6897_20261103/review-preparation-a7e5ce7112.json)을 따릅니다.
+[완료·대기 검증 기록](assets/planet6897_20261103/intermediate-evidence-summary.md)을 따릅니다.
 
 아래 선행 분석은 당시 코드·증적의 기록입니다. 당시 남은 검증 문장은 현재 상태가 아니며 위 현재 기록과 구분합니다.
 

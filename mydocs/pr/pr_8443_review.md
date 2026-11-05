@@ -79,7 +79,7 @@ EMC 실제 편집 결과의 7쪽을 독립 Print와 비교한다. 문단 기준 
 
 ## 현재 대표 페이지 직접 판독
 
-[판독 기록·실제 PNG SHA-256](assets/planet6897_20261103/direct-reading-current.json)에 같은 원본·쪽의 관측을 남겼습니다.
+[판독 기록·실제 PNG SHA-256](assets/planet6897_20261103/direct-reading-current.md)에 같은 원본·쪽의 관측을 남겼습니다.
 
 - native 7쪽: 실제 EMC 편집 저장본의 전도성 RF·통신 포트·함체 포트 세 표와 사이 본문을 대조했다. 표 프레임·행 순서·표 뒤 간격을 보존하고 누락/겹침은 보이지 않는다. 작은 글자의 획·래스터 경계 차이는 별도로 남는다.
 
@@ -92,11 +92,11 @@ EMC 실제 편집 결과의 7쪽을 독립 Print와 비교한다. 문단 기준 
 - WASM의 당시 base 대비 전쪽 대조와 최신 base 기능 보존의 남은 실행은 아래와 같습니다.
 
 - 대기: 동일 환경에서 당시 base 대비 WASM 80개 입력·406쪽의 0.1%p 하락 게이트 완료
-- 새 base의 실제 Native/WASM 제품과 후보의 집중 대조 14쪽은 모두 같은 raw입니다. [실행·대조 원본](assets/planet6897_20261103/rebase_scope_22947f6a90/base-comparison.json)을 확인했습니다.
+- 새 base의 실제 Native/WASM 제품과 후보의 집중 대조 14쪽은 모두 같은 raw입니다. [실행·대조 원본](assets/planet6897_20261103/rebase_scope_22947f6a90/README.md)을 확인했습니다.
 - 대기: 주장 쪽 직접 판독·회귀 주석·수동 작성 리뷰와 PR 본문 최종 감사
 
 이 대기 항목을 완료하지 않은 상태에서는 최종 검증 완료·승인으로 판정하지 않습니다.
-[완료·대기 검증 원본 기록](assets/planet6897_20261103/review-preparation-a7e5ce7112.json)
+[완료·대기 검증 원본 기록](assets/planet6897_20261103/intermediate-evidence-summary.md)
 
 ## Merge 후 원 PR 후속 처리
 
