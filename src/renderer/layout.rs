@@ -12644,25 +12644,22 @@ impl LayoutEngine {
         );
         let center_y = y_offset + geometry.center_offset;
         if geometry.width > 0.0 && super::note_separator::has_ink(color) {
-            let (dash, line_type) = super::line_style::hwp_line_type(line_type);
             let sep_length = note_separator_length_px(separator_length, col_area.width, self.dpi);
-            let line_id = tree.next_id();
-            let sep_line = LineNode::new(
-                col_area.x,
-                center_y,
-                col_area.x + sep_length,
-                center_y,
-                LineStyle {
-                    color,
-                    width: geometry.width,
-                    dash,
-                    line_type,
-                    ..Default::default()
-                },
-            );
-            let sep_bbox = sep_line.ink_bbox();
-            let line_node = RenderNode::new(line_id, RenderNodeType::Line(sep_line), sep_bbox);
-            col_node.children.push(line_node);
+            let border = crate::model::style::BorderLine {
+                line_type: border_rendering::border_line_type_from_code(line_type),
+                width: line_width_raw,
+                color,
+            };
+            col_node
+                .children
+                .extend(border_rendering::create_border_line_nodes(
+                    tree,
+                    &border,
+                    col_area.x,
+                    center_y,
+                    col_area.x + sep_length,
+                    center_y,
+                ));
         }
         y_offset + geometry.advance
     }

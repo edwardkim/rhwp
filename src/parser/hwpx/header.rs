@@ -2488,7 +2488,7 @@ fn parse_border_line_type(attr: &quick_xml::events::attributes::Attribute) -> Bo
     }
 }
 
-fn parse_border_line_type_code(attr: &quick_xml::events::attributes::Attribute) -> u8 {
+pub(super) fn parse_border_line_type_code(attr: &quick_xml::events::attributes::Attribute) -> u8 {
     match parse_border_line_type(attr) {
         BorderLineType::None => 0,
         BorderLineType::Solid => 1,

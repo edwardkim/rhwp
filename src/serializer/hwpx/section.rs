@@ -295,20 +295,7 @@ fn page_starts_on_str(page_num_type: u8) -> &'static str {
 
 /// [#1984] noteLine `type` u8 → HWPX 문자열 (parser noteLine type 역매핑).
 fn note_line_type_str(t: u8) -> &'static str {
-    match t {
-        0 => "NONE",
-        2 => "DASH",
-        3 => "DOT",
-        4 => "DASH_DOT",
-        5 => "DASH_DOT_DOT",
-        6 => "LONG_DASH",
-        7 => "CIRCLE",
-        8 => "DOUBLE_SLIM",
-        9 => "SLIM_THICK",
-        10 => "THICK_SLIM",
-        11 => "SLIM_THICK_SLIM",
-        _ => "SOLID",
-    }
+    super::header::border_line_type_str(super::header::border_line_type_from_code(t))
 }
 
 /// [#1984] separator_color(0xBBGGRR LE) → "#RRGGBB" (parser noteLine color 역매핑).

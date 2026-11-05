@@ -1455,24 +1455,9 @@ fn parse_note_pr_children(
                                     }
                                 }
                                 b"type" => {
-                                    if let Ok(s) =
-                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
-                                    {
-                                        shape.separator_line_type = match s {
-                                            "SOLID" => 1,
-                                            "DASH" => 2,
-                                            "DOT" => 3,
-                                            "DASH_DOT" => 4,
-                                            "DASH_DOT_DOT" => 5,
-                                            "LONG_DASH" => 6,
-                                            "CIRCLE" => 7,
-                                            "DOUBLE_SLIM" => 8,
-                                            "SLIM_THICK" => 9,
-                                            "THICK_SLIM" => 10,
-                                            "SLIM_THICK_SLIM" => 11,
-                                            "NONE" => 0,
-                                            _ => 1, // default SOLID
-                                        };
+                                    if std::str::from_utf8(attr.value.as_ref().as_bytes()).is_ok() {
+                                        shape.separator_line_type =
+                                            super::header::parse_border_line_type_code(&attr);
                                     }
                                 }
                                 b"width" => {

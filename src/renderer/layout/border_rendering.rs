@@ -1596,7 +1596,7 @@ fn create_editor_only_line(
         .collect()
 }
 
-fn border_line_type_from_code(code: u8) -> BorderLineType {
+pub(super) fn border_line_type_from_code(code: u8) -> BorderLineType {
     match code {
         0 => BorderLineType::None,
         1 => BorderLineType::Solid,

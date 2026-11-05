@@ -1579,25 +1579,23 @@ impl LayoutEngine {
             let line_width = border_width_to_px(shape.separator_line_width).max(0.5);
 
             if crate::renderer::note_separator::has_ink(shape.separator_color) {
-                let (dash, line_type) =
-                    super::super::line_style::hwp_shape_line_type(shape.separator_line_type);
-                let sep_id = tree.next_id();
-                let sep_line = LineNode::new(
-                    fn_area.x,
-                    y,
-                    fn_area.x + sep_length,
-                    y,
-                    LineStyle {
-                        color: shape.separator_color,
-                        width: line_width,
-                        dash,
-                        line_type,
-                        ..Default::default()
-                    },
-                );
-                let sep_bbox = sep_line.ink_bbox();
-                let sep_node = RenderNode::new(sep_id, RenderNodeType::Line(sep_line), sep_bbox);
-                fn_node.children.push(sep_node);
+                let border = crate::model::style::BorderLine {
+                    line_type: super::border_rendering::border_line_type_from_code(
+                        shape.separator_line_type,
+                    ),
+                    width: shape.separator_line_width,
+                    color: shape.separator_color,
+                };
+                fn_node
+                    .children
+                    .extend(super::border_rendering::create_border_line_nodes(
+                        tree,
+                        &border,
+                        fn_area.x,
+                        y,
+                        fn_area.x + sep_length,
+                        y,
+                    ));
             }
             y += line_width;
 

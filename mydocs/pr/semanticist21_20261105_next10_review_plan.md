@@ -106,3 +106,6 @@ Native의 원본 38쪽·실제 편집 저장 60쪽·PDF 대조군 12쪽은 전 1
 선행 해결을 추적했다: #3930 → 원 PR #4058 → `47216ca6bd0eab6540ff925eaeaee3291f7a7d94` → merge `efed25b43a`. 이 보정은 현재 base의 조상이며, header parser/serializer의 독립 계약 검사도 남아 있다. `parse_border_line_type_code`와 `border_line_type_str`는 HWP5 raw 2 ↔ HWPX `DOT`, raw 3 ↔ `DASH`를 보존한다. 그런데 각주의 `section.rs` parser와 `note_line_type_str`는 반대의 별도 매핑을 유지했다.
 
 같은 raw 3의 HWP 저장본 Print는 잉크 1.679pt/간격 2.519pt, 기존 HWPX 저장본(`type=DOT`) Print는 잉크 8.276pt/간격 5.037pt였다(획 폭은 둘 다 약 1.079pt). 임의로 둘 중 하나의 화면에 맞추지 않고, 기존 공통 LineType2 parser/serializer 결과를 각주도 소비하도록 보정한다. 기존 잘못 저장된 HWPX도 해당 파일의 실제 `DOT` 의미대로 읽고, 새 저장본은 원 HWP raw 3을 `DASH`로 보존하게 한다. 현재는 원인·선행 근거 확인을 완료했으며, 해당 source 보정과 새 저장본 Print 재확인은 아직 진행 전이다.
+
+
+저장 선 종류 보정은 header의 기존 LineType2 변환 함수를 각주·미주도 재사용하도록 적용했다. paint도 같은 `BorderLine` 생산 결과와 `create_border_line_nodes`를 소비해 16개 선언 굵기의 공통 Print 반복 구간을 쓴다. `stroke_pattern/border.rs`의 raw 폭 index 6은 짧은 점/공백 14/21, 긴 점/공백 69/42(1/600 inch)이며, 이번 독립 Print에서 측정한 1.679/2.519pt와 8.276/5.037pt에 부합한다. 문서 ID나 화면 픽셀에 맞춘 상수를 추가하지 않았다. 각주·미주의 기존 예약·흐름 높이는 유지하며 실제 선만 공통 결과를 소비하게 했다. 수정 후 전쪽·왕복·정상 대조군은 재검증 전이다.
