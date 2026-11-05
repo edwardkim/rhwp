@@ -2,7 +2,7 @@
 
 ## 현재 판정과 기준
 
-**로컬 보정과 필수 검증 완료. 10건 모두 메인터너 보정 후 수용 가능하며, 성능 PR 2건의 기존 조판 차이는 작업지시자가 한정 예외를 승인했다.** [선정·수행 계획](semanticist21_20261105_review_plan.md)의 대상 10건을 유지한다. 최초 선정 뒤 reviewer `edwardkim`을 지정했으므로 현재 reviewer 필터로 다음 10건을 다시 고르지 않는다.
+**통합과 승인된 후속 처리 완료. 통합 PR #8609와 원 PR 10건 모두 MERGED이며, CI·self-review·감사 댓글·devel 동기화·종료 정리를 확인했다.** [선정·수행 계획](semanticist21_20261105_review_plan.md)의 대상 10건을 유지한다. 최초 선정 뒤 reviewer `edwardkim`을 지정했으므로 현재 reviewer 필터로 다음 10건을 다시 고르지 않는다.
 
 - 비교 base: `22947f6a90c998e95fa51238d5b907a0ebd37162`.
 - 마지막 확인한 원격 devel: `e96b500e3ea259c821f05440f0388355916a9e9b`. 이후 추가된 파일은 이전 PR 검토 기록 3개뿐이며 제품 코드·테스트·설정의 변경은 없다. 현재 후보와의 merge-tree도 충돌 없이 성공했다. [차이 근거](../assets/semanticist21-20261105/latest-base-refresh.json).
@@ -14,14 +14,14 @@
 
 | PR | 문서 / 전체 쪽수(경로별) | Native 최저 | fresh WASM 최저 | 상태 |
 | --- | --- | --- | --- | --- |
-| #8326 | 4개 / 40쪽 | 98.43% | 98.43% | 기능·전쪽 출력·전체 회귀 완료, 로컬 필수 검증 완료, 원격 단계 대기 |
-| #8347 | 1개 / 7쪽 | 99.32% | 99.98% | 기능·전쪽 출력·전체 회귀 완료, 로컬 필수 검증 완료, 원격 단계 대기 |
-| #8349 | 20개 / 20쪽 | 98.83% | 90.63% | 기능·전쪽 출력·전체 회귀 완료, 로컬 필수 검증 완료, 원격 단계 대기 |
-| #8358 | 1개 / 4쪽 | 100.00% | 100.00% | 기능·전쪽 출력·전체 회귀 완료, 로컬 필수 검증 완료, 원격 단계 대기 |
-| #8359 | 1개 / 1쪽 | 100.00% | 100.00% | 기능·전쪽 출력·전체 회귀 완료, 로컬 필수 검증 완료, 원격 단계 대기 |
-| #8363 | 1개 / 1쪽 | 100.00% | 100.00% | 기능·전쪽 출력·전체 회귀 완료, 로컬 필수 검증 완료, 원격 단계 대기 |
-| #8366 | 1개 / 1쪽 | 95.61% | 96.79% | 기능·전쪽 출력·전체 회귀 완료, 로컬 필수 검증 완료, 원격 단계 대기 |
-| #8367 | 1개 / 1쪽 | 94.92% | 94.81% | 기능·전쪽 출력·전체 회귀 완료, 로컬 필수 검증 완료, 원격 단계 대기 |
+| #8326 | 4개 / 40쪽 | 98.43% | 98.43% | 검증 후 통합 완료, 원 PR MERGED |
+| #8347 | 1개 / 7쪽 | 99.32% | 99.98% | 검증 후 통합 완료, 원 PR MERGED |
+| #8349 | 20개 / 20쪽 | 98.83% | 90.63% | 검증 후 통합 완료, 원 PR MERGED |
+| #8358 | 1개 / 4쪽 | 100.00% | 100.00% | 검증 후 통합 완료, 원 PR MERGED |
+| #8359 | 1개 / 1쪽 | 100.00% | 100.00% | 검증 후 통합 완료, 원 PR MERGED |
+| #8363 | 1개 / 1쪽 | 100.00% | 100.00% | 검증 후 통합 완료, 원 PR MERGED |
+| #8366 | 1개 / 1쪽 | 95.61% | 96.79% | 검증 후 통합 완료, 원 PR MERGED |
+| #8367 | 1개 / 1쪽 | 94.92% | 94.81% | 검증 후 통합 완료, 원 PR MERGED |
 
 저장 재열기를 포함해 경로별 **30개 문서 75쪽 모두 90% 이상**이다. 원본·저장본을 합친 base/후보 228쪽 비교에서 2%p 초과 하락은 없었다. [쪽별 차이](../assets/semanticist21-20261105/base-candidate-page-deltas.json). 최종 runtime에서 모든 PNG를 다시 출력했으며, 독립 Print와 직접 확대 판독한 사전 출력과 75쪽씩 모두 바이트가 같다. [최종 전쪽 결과·PNG 해시](../assets/semanticist21-20261105/functional-final-visual-results.json). 새 측정을 직접 판독 대신 해시만으로 처음 승인한 것이 아니라, 이미 판독한 출력과 동일함을 확인했다.
 
@@ -61,7 +61,7 @@
 4. 원 CI 실패 4건은 source 오류나 assertion 실패가 아닌 checkout/build 시간 초과로 판단했다. 현재 정책과 새 후보 검증으로 처리하며 재작업 댓글을 선택하지 않았다. [실제 job·annotation](../assets/semanticist21-20261105/original-ci-failures.json).
 5. 성능 문서의 기존 미달은 예외 결정 전까지 수용에 적용하지 않는다. #8368의 다른 테두리 유형 차이 등 개별 기록에 명시한 기존 범위는 이 작업의 해결 성과나 자동 issue 종료 대상으로 삼지 않는다.
 
-[95개 최종 대표 PNG 목록](../assets/semanticist21-20261105/representative-final-pngs.json), [전쪽 TSV](../assets/semanticist21-20261105/visual-manifest.json), [원격 처리 제안](../assets/semanticist21-20261105/remote-action-plan.md). 검토는 아직 종료되지 않았다. 승인된 원격 실행 단계가 남아 있어 현재 후보 branch/worktree를 유지한다. merge·close 등 검토 종료 시 canonical 절차에 따라 output 전체와 검토 debug를 정리한다.
+[95개 최종 대표 PNG 목록](../assets/semanticist21-20261105/representative-final-pngs.json), [전쪽 TSV](../assets/semanticist21-20261105/visual-manifest.json), [원격 처리 제안](../assets/semanticist21-20261105/remote-action-plan.md). 검토와 후속 처리를 종료했고 후보 branch/worktree를 제거했다. merge·close 등 검토 종료 시 canonical 절차에 따라 output 전체와 검토 debug를 정리한다.
 
 ## 원격 처리 승인
 
@@ -88,3 +88,7 @@
 병합 후 [duration 갱신](https://github.com/edwardkim/rhwp/actions/runs/41941963866)은 `ready:true`·`published:true`이며 code run `41937077126`의 B/C/D/E 실제 측정 artifact를 검증해 metadata commit `8bcf7906f2d923d19e8b65621dbb307ee7c0f117`으로 게시했다. 병합 후 제품 검증 CI를 새로 실행하지 않았다. 별도 PR #8368과 이슈 #8236은 열린 상태로 보존했고 관련 신규 issue close는 없다. [확정 결과와 원 PR별 상태](../assets/semanticist21-20261105/remote-completion.json), [실제 metadata 결과](../assets/semanticist21-20261105/postmerge-automation.json).
 
 후속 기록은 maintainer 직접 반영(Option M)으로 source·test·workflow·baseline을 포함하지 않는 운영 문서 commit에 담는다. 승인된 원 PR별 감사 댓글·devel 동기화·소유 worktree/branch·output 전체·검토 debug 정리를 마친 실행 실적은 원 PR 댓글과 로컬 종료 기록에서 확인한다.
+
+## 후속 처리 종료
+
+원 PR 10건의 감사 댓글을 모두 게시했고 API 본문과 실제 GitHub 화면의 review/overlay 56개를 확인했다. 검토 전용 local/remote branch와 worktree, 저장소 root output 전체 및 target/pr-review/debug를 제거했다. 확보 공간은 24.75 GiB, Linux 여유 공간은 204.33 GiB다. 다른 worktree·target profile과 배포 WASM은 보존했다. [댓글 URL·검증·종료 상태](../assets/semanticist21-20261105/remote-completion.json).

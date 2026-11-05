@@ -150,7 +150,93 @@
   },
   "new_issue_closures_by_maintainer": [],
   "source_fork_branches_deleted": false,
-  "comments_and_cleanup": "Approved follow-up actions; actual results are recorded in original PR comments and local completion/cleanup receipts.",
+  "comments_and_cleanup": {
+    "comments_posted": 10,
+    "api_bodies_verified": true,
+    "browser_images_verified": 56,
+    "comments": [
+      {
+        "pr": 8326,
+        "url": "https://github.com/edwardkim/rhwp/pull/8326#issuecomment-6646330645",
+        "body_sha256": "31da8b95c63cda1e6e53eb670767f06a23eb044ccadbfb7651500a9bbfd0a6f8",
+        "displayed_images": 8
+      },
+      {
+        "pr": 8331,
+        "url": "https://github.com/edwardkim/rhwp/pull/8331#issuecomment-6646331115",
+        "body_sha256": "1562ec16c985314856390b3658b237ba1e716051b8caf66fb91156e4c10c2710",
+        "displayed_images": 8
+      },
+      {
+        "pr": 8332,
+        "url": "https://github.com/edwardkim/rhwp/pull/8332#issuecomment-6646331578",
+        "body_sha256": "06bd642801480340da3deae2a8372afc01b3d2e907943b2b34a9c4992bb77908",
+        "displayed_images": 4
+      },
+      {
+        "pr": 8347,
+        "url": "https://github.com/edwardkim/rhwp/pull/8347#issuecomment-6646332079",
+        "body_sha256": "fe08ac4a10eb123153c7ab0be663c88f8f6bc2b713aea6293b7df9801e60ff27",
+        "displayed_images": 8
+      },
+      {
+        "pr": 8349,
+        "url": "https://github.com/edwardkim/rhwp/pull/8349#issuecomment-6646332657",
+        "body_sha256": "4fb4b413c285f10482d8d35b8a69cf34ddaaa662e5f3afd8c51ef91f71709943",
+        "displayed_images": 4
+      },
+      {
+        "pr": 8358,
+        "url": "https://github.com/edwardkim/rhwp/pull/8358#issuecomment-6646333333",
+        "body_sha256": "0b0ca029dd6dcb43cb4ea202daa17504a202821b70158982aa32b95fb1f7337a",
+        "displayed_images": 8
+      },
+      {
+        "pr": 8359,
+        "url": "https://github.com/edwardkim/rhwp/pull/8359#issuecomment-6646333890",
+        "body_sha256": "715c2517e2f4ae69e860fdf3a21aa6d8a54184ee284db2f349d42b5474f150ca",
+        "displayed_images": 4
+      },
+      {
+        "pr": 8363,
+        "url": "https://github.com/edwardkim/rhwp/pull/8363#issuecomment-6646334440",
+        "body_sha256": "bf75016eeb6b72a11402e0267572c399780c63fb357cc4dd47b7f1d4f1c92b04",
+        "displayed_images": 4
+      },
+      {
+        "pr": 8366,
+        "url": "https://github.com/edwardkim/rhwp/pull/8366#issuecomment-6646334969",
+        "body_sha256": "4bd51faad800aaad04a80336900ca1348facf046a271fa1a50c49c5e7772afd3",
+        "displayed_images": 4
+      },
+      {
+        "pr": 8367,
+        "url": "https://github.com/edwardkim/rhwp/pull/8367#issuecomment-6646335495",
+        "body_sha256": "0f87fe348d7c6de1fb266cfac87553f9cb5ad21b5bf2a59d3a246e2c77530f3d",
+        "displayed_images": 4
+      }
+    ],
+    "cleanup_complete": true,
+    "reclaimed_bytes": 26571051008,
+    "free_after_bytes": 219395297280,
+    "local_cleanup_receipt": "mydocs/privacy/pr8609-cleanup.json",
+    "local_completion_receipt": "mydocs/privacy/pr8609-completion.json",
+    "review_worktree_removed": true,
+    "review_local_remote_branches_removed": true,
+    "root_output_absent": true,
+    "review_debug_absent": true,
+    "foreign_worktree_preserved": true,
+    "deployment_wasm_unchanged": true,
+    "other_review_target_profiles_retained": [
+      "doc",
+      "package",
+      "release",
+      "release-test",
+      "tmp",
+      "wasm32-unknown-unknown",
+      "x86_64-unknown-linux-gnu"
+    ]
+  },
   "related_unresolved_issues_kept_open": [
     8236
   ],

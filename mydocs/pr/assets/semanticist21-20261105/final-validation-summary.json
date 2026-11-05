@@ -74,7 +74,7 @@
       "0"
     ]
   ],
-  "remote_operations": "Merged in PR #8609 at e9d4a23be4523a97c29ce6f5e407aba6c4cfb26c; all ten originals indirectly MERGED. Final fast-pass, aggregate, self-review and post-merge duration publication verified. Approved comments and cleanup follow.",
+  "remote_operations": "Complete: PR #8609 and all ten originals MERGED; CI, GHAS, self-review, duration publication, ten thank-you comments, 56 displayed images, devel sync and dedicated cleanup verified.",
   "all_required_local_gates": "passed",
   "final_metadata_checks": "final-metadata-check-runs.json",
   "security_followup": "ci-security-followup.md",
