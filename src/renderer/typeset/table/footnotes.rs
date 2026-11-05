@@ -160,9 +160,6 @@ impl TypesetEngine {
                     && st.current_height + projected <= physical_capacity + 0.5;
             }
             let draw_separator = fragment.map(|f| f.draw_separator).unwrap_or(true);
-            // 단일단의 중간 RowBreak fragment 뒤에는 같은 page에 이어질 본문이 없다.
-            // 다음 fragment가 새 page에서 시작하므로, 이 fragment의 table-cell 각주는
-            // 일반 본문 후속 배치를 위한 40px safety buffer를 중복 예약하지 않는다.
             // `current_height`는 flow origin 기준이고 FootnoteArea는 page-body 기준으로
             // 내려온다. native HWP5 table fragment에서는 이 두 origin의 차이만큼 table
             // 하단이 separator에 먼저 닿는다. queue 대상에만 32px 물리 guard를 둬
@@ -181,7 +178,6 @@ impl TypesetEngine {
             st.footnote_fragment_fits_current_page(
                 content_height,
                 draw_separator,
-                (terminal_fragment || st.col_count != 1) && !relax_terminal_table_footnote_fit,
                 table_footnote_overlap_guard,
             )
         };

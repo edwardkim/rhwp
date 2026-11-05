@@ -153,7 +153,7 @@ impl LayoutEngine {
         // 재생성됐다는 이유로 완결한 문단 컷을 고정 px 고아 기준에 넘기지 않는다.
         let profile = self.profile.get();
         if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || table.common.treat_as_char
         {
             return None;

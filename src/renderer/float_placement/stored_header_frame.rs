@@ -123,7 +123,7 @@ pub(crate) fn stored_repeated_header_rowbreak_outer_frame(
             table.common.horz_rel_to,
             HorzRelTo::Para | HorzRelTo::Column
         )
-        && table.page_break == TablePageBreak::RowBreak
+        && table.layout_page_break() == TablePageBreak::RowBreak
         && table.repeat_header
         && !table.leading_header_rows().is_empty()
 }
@@ -169,7 +169,7 @@ pub(crate) fn stored_rowbreak_opening_uses_host_budget(
 ) -> bool {
     (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
         && !profile.session_edited()
-        && table.page_break == TablePageBreak::RowBreak
+        && table.layout_page_break() == TablePageBreak::RowBreak
         && table.row_count > 1
         && table.outer_margin_top > 0
         && table.caption.is_none()
@@ -237,7 +237,7 @@ pub(crate) fn stored_whole_header_next_page_placement(
         || !super::is_para_topbottom_float(&table.common)
         || table.common.vert_rel_to != VertRelTo::Para
         || table.common.vert_align != crate::model::shape::VertAlign::Top
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || !table.repeat_header
         || table.row_count <= 1
         || table.leading_header_rows().len() != usize::from(table.row_count)

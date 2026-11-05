@@ -60,7 +60,8 @@ impl<'a> CellCutFrame<'a> {
         }
     }
 
-    fn content_height(&self, end: usize, content_advance: f64) -> f64 {
+    /// 안여백을 제외한 내용 점유. 정렬은 물리 상자 높이를 다시 소비하지 않는다.
+    pub(super) fn content_height(&self, end: usize, content_advance: f64) -> f64 {
         let trim = self.engine.physical_cut_trailing_trim(
             self.table,
             self.cell,
@@ -219,7 +220,7 @@ impl LayoutEngine {
             .iter()
             .any(|cell| self.cell_has_top_and_bottom_non_inline_flow(cell));
         let relaxed_hard_break = matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         ) && (table.col_count <= 2 || table.row_count > 5)
             && !block_has_top_and_bottom_flow;

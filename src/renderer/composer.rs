@@ -21,6 +21,7 @@ pub use crate::renderer::layout_frame::ParagraphBox;
 mod frame_geometry;
 mod inline_table_frame;
 mod nested_table_frames;
+mod vertical_cell_lines;
 pub(crate) use inline_table_frame::{
     inline_table_needs_reflow_measurement, inline_table_needs_reflow_measurement_with_storage,
     inline_table_width_cache_is_stale, inline_table_width_cache_is_stale_with_storage,
@@ -31,6 +32,7 @@ pub(crate) use nested_table_frames::{
     recompose_cell_lines_with_nested_tables, recompose_cell_lines_with_nested_tables_with_storage,
     table_cells_have_no_stored_lines,
 };
+pub(crate) use vertical_cell_lines::compose_vertical_cell_lines;
 mod inline_frame_admission;
 mod inline_picture_metrics;
 mod resolved_fields;

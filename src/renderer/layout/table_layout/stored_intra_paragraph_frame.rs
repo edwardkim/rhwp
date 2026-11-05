@@ -125,6 +125,20 @@ impl LayoutEngine {
             + hwpunit_to_px(table.cell_spacing as i32, self.dpi)
                 * usize::from(cell.row_span).saturating_sub(1) as f64;
         let end = hwpunit_to_px(table.common.height as i32, self.dpi);
+        if std::env::var_os("RHWP_DIAG_SCAN").is_some() {
+            eprintln!(
+                "DIAG_SCAN STORED_CELL_FRAME table={:p} row={} span={} origin={:.6} current={:.6} end={:.6} cached={}",
+                table,
+                row,
+                cell.row_span,
+                origin,
+                current,
+                end,
+                self.stored_frame_row_plans
+                    .borrow()
+                    .contains_key(&(table as *const Table as usize)),
+            );
+        }
         // A completed opening row or a later frame cannot authenticate this
         // partial source row. Unknown zero-height rows are not a physical origin.
         if !origin.is_finite() || !current.is_finite() || end <= origin || end >= origin + current {

@@ -43,7 +43,7 @@ impl TypesetEngine {
         };
         if table.common.treat_as_char
             || !matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             || table.row_count <= 1
@@ -81,7 +81,6 @@ impl TypesetEngine {
             section_index,
             footnote_separator_overhead_px(footnote_shape, self.dpi),
             footnote_between_notes_margin_px(footnote_shape, self.dpi),
-            hwpunit_to_px(3000, self.dpi),
             column_def.column_type,
         );
         state.initialize_source(
@@ -93,7 +92,6 @@ impl TypesetEngine {
             skip_spacing_before_prededuct,
         );
         state.initialize_zone_spacing(column_def_design_spacing_px(column_def, self.dpi), false);
-        state.record_footer_presence(true);
         state.ensure_page();
 
         let column_width = state

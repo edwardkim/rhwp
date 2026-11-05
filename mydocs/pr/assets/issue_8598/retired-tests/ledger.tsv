@@ -1,0 +1,2 @@
+issue	previous_path	preserved_path	source_commit	git_blob	sha256	test_function	action	restore_condition
+8598	tests/issue_713.rs	mydocs/pr/assets/issue_8598/retired-tests/issue_713.rs.txt	ea564999e1e8a343c3129fa9c3a8bda88ab3e668	ceaf84a497f9f15cb5590acdfc4295ad42fa9d07	b43b84698db03567b5996102cf17943042fb4106ee4960b4f400bfbe03335be8	issue_713_rowbreak_table_no_intra_row_split	전체 모듈 1함수 활성 제거; 원본·PDF·공유 정상 계약 유지	전쪽 Native/fresh WASM raw 90% 이상·독립 Print 확대 판독 뒤 새 이름의 관계형 검사 복원

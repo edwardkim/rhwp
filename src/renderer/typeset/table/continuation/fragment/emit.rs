@@ -68,6 +68,29 @@ impl TypesetEngine {
         let stored_complete_extent = self
             .stored_partial_fragment_complete_extent(input, budget, &scan)
             .or_else(|| self.stored_body_closing_fragment_extent(st, input, budget, &scan));
+        let trace_frame = |stage: &str, end: usize, height: f64, last: Option<f64>| {
+            if std::env::var_os("RHWP_DIAG_SCAN").is_some() {
+                let prefix_end = end.saturating_sub(1);
+                eprintln!(
+                    "DIAG_SCAN FRAGMENT_FRAME stage={} pi={} rows={}..{} continuation={} height={:.6} last={:?} cut_prefix={:.6} measured_prefix={:.6}",
+                    stage,
+                    para_idx,
+                    cursor_row,
+                    end,
+                    is_continuation,
+                    height,
+                    last,
+                    cut_row_h.iter().take(prefix_end).sum::<f64>(),
+                    mt.row_heights.iter().take(prefix_end).sum::<f64>(),
+                );
+            }
+        };
+        trace_frame(
+            "scan",
+            scan.end_row,
+            scan.consumed,
+            scan.end_row_height_override,
+        );
         let nested_opening_extent = (!is_continuation
             && cursor_row == 0
             && start_cut.is_empty()
@@ -244,6 +267,12 @@ impl TypesetEngine {
                 partial_height += height - current_content;
             }
         }
+        trace_frame(
+            "stored-row",
+            end_row,
+            partial_height,
+            end_row_height_override,
+        );
         // 원본 셀의 저장 쪽 0에서 재개하는 새 단은 실제 좌표축을 가진다.
         // 후속 TAC가 이 증거를 잃고 누적 좌표를 임의의 0 기준으로 읽지 않게 한다.
         let resumed_stored_page_frame = is_continuation
@@ -794,6 +823,12 @@ impl TypesetEngine {
         }
         // 종료 상자의 마지막 유닛 뒤 빈 공간은 누적 상자와 잔여의 합이 cellSz를 닫고
         // 다음 원본 줄이 전체 바깥 상자를 닫을 때만 수용한다. 같은 계획이 후속 간격을 소유한다.
+        trace_frame(
+            "opening-frame",
+            end_row,
+            partial_height,
+            end_row_height_override,
+        );
         if single_cell_fragment_shape
             && two_frame_successor_origin.is_some()
             && is_continuation
@@ -1238,7 +1273,12 @@ impl TypesetEngine {
                 let terminal_spacing = terminal_successor_gap
                     .unwrap_or(host_spacing_after_only + terminal_host_spacing);
                 st.advance_flow_by(occupied + terminal_spacing);
-                terminal_host_push = terminal_spacing;
+                // [#8468] host 글줄은 조각 하단 + 바깥 아래 여백에 놓인다. 다음 문단과의
+                // 종료 간격은 그 글줄 뒤의 흐름이라 첫 줄의 앞 간격에 넣지 않는다(전진량은 같다).
+                terminal_host_push = input
+                    .prepared
+                    .terminal_outer_bottom_flow
+                    .clamp(0.0, terminal_spacing.max(0.0));
                 flow_after_terminal_advance = st.current_height;
                 self.consume_stored_terminal_empty_line_gap(st, &input, is_continuation);
             }
@@ -1385,11 +1425,26 @@ impl TypesetEngine {
             });
         }
 
+        // 같은 저장 컷으로 이미 첫 물리 프레임을 닫았으면 그 뒤의 본문 여유는
+        // 이 표 조각의 빈 띠가 아니다. 일반 쪽 하단 예산으로 다시 확장하면
+        // 스캔이 확정한 끝 행과 이어받기 원장에 그 여유가 중복 가산된다.
+        let accepted_opening_frame = saved_opening_frame.filter(|height| {
+            let roundoff = f64::EPSILON * (height.abs() + partial_height.abs()).max(1.0) * 8.0;
+            !is_continuation
+                && cursor_row == 0
+                && start_cut.is_empty()
+                && end_row_height_override.is_some()
+                && (partial_height - height).abs() <= roundoff
+                && (consumed + header_overhead - height).abs() <= roundoff
+        });
+        let blank_frame_for_rows = budget.reflow_blank_avail_for_rows.map(|frame| {
+            accepted_opening_frame.map_or(frame, |source_frame| frame.min(source_frame))
+        });
         // 쪽 끝 빈 띠는 실제 물리 경계와 수용한 조각 상자의 차이다.
         // 원본 프레임이 이미 예약한 띠는 그리기 높이에 다시 더하지 않는다.
         let ledger_page_end_band = if split_block_start.is_some() {
             0.0
-        } else if let Some(frame_rows) = budget.reflow_blank_avail_for_rows {
+        } else if let Some(frame_rows) = blank_frame_for_rows {
             // 물리 경계에는 아래 바깥여백과 실제 각주 공간이 이미 반영돼 있다.
             (frame_rows + header_overhead - partial_height).max(0.0)
         } else {
@@ -1672,6 +1727,12 @@ impl TypesetEngine {
         }
 
         let accepted_straddle_cells = if !start_cut_is_block && split_block_start.is_none() {
+            trace_frame(
+                "physical-band",
+                end_row,
+                partial_height,
+                end_row_height_override,
+            );
             layout_engine.accepted_straddle_fragment_units(
                 row_geometry_table,
                 &mt.row_heights,

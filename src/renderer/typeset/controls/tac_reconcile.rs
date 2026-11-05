@@ -159,12 +159,14 @@ pub(super) fn measure(
     for (ci, c) in para.controls.iter().enumerate() {
         if let Control::Table(t) = c {
             if flow.is_effective_tac_table(para, t, fmt) {
-                let seg_index =
-                    if profile.hwp5_stored_pagination_layout() && !profile.session_edited() {
-                        crate::renderer::layout::control_line_seg_index(para, ci).unwrap_or(tac_idx)
-                    } else {
-                        tac_idx
-                    };
+                let composed_rows = crate::renderer::para_has_composed_object_rows(para);
+                let seg_index = if composed_rows
+                    || (profile.hwp5_stored_pagination_layout() && !profile.session_edited())
+                {
+                    crate::renderer::layout::control_line_seg_index(para, ci).unwrap_or(tac_idx)
+                } else {
+                    tac_idx
+                };
                 tac_owned_lines.push(seg_index);
                 if let Some(seg) = para.line_segs.get(seg_index) {
                     let seg_lh = hwpunit_to_px(seg.line_height, dpi);
@@ -240,11 +242,22 @@ pub(super) fn measure(
                 _ => false,
             })
             .count();
-        if prior_tac_count == 0 {
+        // 개체가 소유한 줄. 저장 HWP5 는 원시 제어 위치로, 그 밖은 앞 TAC 개체 수로 정한다.
+        let owned_line = if profile.hwp5_stored_pagination_layout() && !profile.session_edited() {
+            crate::renderer::layout::control_line_seg_index(para, ci).unwrap_or(prior_tac_count)
+        } else {
+            prior_tac_count
+        };
+        // [#8543] 맨 앞 TAC 그림/도형도 자기 줄을 소유하면 그 줄을 센다. 종전에는 앞 TAC 개체가
+        // 없으면 건너뛰어, 쪽 머리 글뒤로 묶음 도형 줄(i270 문단 44 줄 0, 53.4px)을 상한이 되감고
+        // 뒤 표가 그만큼 위에 놓였다. 이미 센 줄(같은 줄의 표 등)은 다시 세지 않는다.
+        if (prior_tac_count == 0 && owned_line == 0 && para.line_segs.len() <= 1)
+            || tac_owned_lines.contains(&owned_line)
+        {
             continue;
         }
-        tac_owned_lines.push(prior_tac_count);
-        if let Some(seg) = para.line_segs.get(prior_tac_count) {
+        tac_owned_lines.push(owned_line);
+        if let Some(seg) = para.line_segs.get(owned_line) {
             let lh = hwpunit_to_px(seg.line_height, dpi);
             let ls_extra = if seg.line_spacing > 0 {
                 hwpunit_to_px(seg.line_spacing, dpi)
@@ -259,6 +272,18 @@ pub(super) fn measure(
     // 문단의 흐름을 전진시킨다. 표 줄만 세면 상한이 그 글줄을 되감아, 뒤 문단의
     // 조판 원점이 저장 사다리보다 그만큼 위로 간다(#8095, 156465345 1쪽 pi=0:
     // 표 줄 231.6px 만 세어 제목 줄 44.8px 를 잃었다).
+    // [#8507] 재조판한 개체 줄의 표 앞 줄(필드 시작만 남은 빈 줄)은 이 문단이 쌓는 줄이다.
+    // 저장 앵커 줄의 회수 계약(#5524)과 달리 rhwp 가 정한 줄 구성이라 그대로 센다.
+    if crate::renderer::para_has_composed_object_rows(para)
+        && fmt.line_heights.len() == para.line_segs.len()
+        && fmt.line_spacings.len() == fmt.line_heights.len()
+    {
+        if let Some(&first_owned) = tac_owned_lines.iter().min() {
+            tac_seg_total += (0..first_owned)
+                .map(|index| fmt.line_heights[index] + fmt.line_spacings[index])
+                .sum::<f64>();
+        }
+    }
     // 표 줄 **뒤** 같은 저장 프레임의 글줄만 센다. 표 앞 앵커 줄(한/글 2024 는 흐름에서
     // 회수한다, #5524)과 저장 되감김 뒤 줄(다음 쪽 몫, #5700)은 이 문단 상한에 넣지 않는다.
     if tac_seg_total > 0.0
@@ -295,6 +320,13 @@ pub(super) fn measure(
                 _ => None,
             })
             .sum();
+        // 재조판한 개체 줄 높이는 줄 재조판이 표 + 바깥 위·아래 여백으로 만든 값이다(#8507).
+        // 그 줄을 센 합에 바깥 위 여백을 다시 더하지 않는다.
+        let outer_top = if crate::renderer::para_has_composed_object_rows(para) {
+            0.0
+        } else {
+            outer_top
+        };
         let owned_row_total = effective_sb + outer_top + tac_seg_total;
         if has_owned_rowbreak_tac_frame {
             owned_row_total

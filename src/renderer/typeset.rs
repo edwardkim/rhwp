@@ -223,6 +223,24 @@ struct TableCellFootnote {
 }
 crate::storage::clone_fields!(TableCellFootnote, {number, cell_path, row, content_height, fragment_split});
 
+/// 배치 중인 본문 문단의 각주 한 개. `line` 은 참조 표시가 든 저장 줄이다.
+///
+/// 한/글은 각주를 참조 줄과 같은 쪽 아래에 두며, 참조 줄 뒤의 본문 줄은 그 각주
+/// 영역 위에서 끝난다. 분할 판정은 이미 받은 줄의 각주를 다음 줄보다 먼저 예약한다.
+#[derive(Debug, Clone)]
+pub(in crate::renderer::typeset) struct OwnLineNote {
+    pub para_index: usize,
+    pub line: usize,
+    pub control_index: usize,
+    pub number: u16,
+    pub content_height: f64,
+    /// 각주 전체를 펼친 줄의 (줄 높이, 줄간격). 넘친 각주를 줄 단위로 나눌 때 쓴다.
+    /// 구성 줄이 저장 줄과 일대일이 아니면 비워 둔다(통째로만 옮긴다).
+    pub lines: Vec<(f64, f64)>,
+    /// 저장 각주 줄 사다리가 가리키는 한/글의 쪽 나눔.
+    pub stored_split: Option<NativeHwp5FootnoteFragmentSplit>,
+}
+
 // ========================================================
 // FormattedTable — 표의 format() 결과
 // ========================================================
@@ -626,7 +644,7 @@ fn partial_rowbreak_fragment_spacing_px(
 ) -> (f64, f64) {
     let repeats_outer_margin = !table.common.treat_as_char
         && is_para_topbottom_float(&table.common)
-        && match table.page_break {
+        && match table.layout_page_break() {
             crate::model::table::TablePageBreak::RowBreak => repeat_outer_margin,
             crate::model::table::TablePageBreak::CellBreak => repeat_cellbreak_outer_margin,
             crate::model::table::TablePageBreak::None => false,
@@ -855,7 +873,7 @@ fn native_hwp5_figure_table_overlay_guide_empty(
                         if !table.common.treat_as_char
                             && is_para_topbottom_float(&table.common)
                             && matches!(
-                                table.page_break,
+                                table.layout_page_break(),
                                 crate::model::table::TablePageBreak::RowBreak
                             )
                             && table.row_count == 2
@@ -963,6 +981,20 @@ fn para_has_treat_as_char_picture_or_shape(para: &Paragraph) -> bool {
         Control::Picture(pic) => pic.common.treat_as_char,
         Control::Shape(shape) => shape.common().treat_as_char,
         _ => false,
+    })
+}
+
+/// 저장 HWP5 표 앞줄이 빈 앵커가 아니라 TAC 그림·도형이 소유한 줄인지 확인한다.
+fn hwp5_tac_prefix_has_owned_object_line(para: &Paragraph, table_line: usize) -> bool {
+    para.controls.iter().enumerate().any(|(index, control)| {
+        let is_tac_object = match control {
+            Control::Picture(picture) => picture.common.treat_as_char,
+            Control::Shape(shape) => shape.common().treat_as_char,
+            _ => false,
+        };
+        is_tac_object
+            && crate::renderer::layout::control_line_seg_index(para, index)
+                .is_some_and(|line| line < table_line)
     })
 }
 
@@ -1889,7 +1921,7 @@ fn is_single_noninline_picture_table(table: &crate::model::table::Table) -> bool
         || table.col_count != 1
         || table.cells.len() != 1
         || !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         )
     {
@@ -1930,7 +1962,7 @@ use crate::renderer::stored_float_anchor::{
 fn is_stored_anchor_picture_table(table: &crate::model::table::Table) -> bool {
     !table.common.treat_as_char
         && matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         )
         && (is_single_noninline_picture_table(table)
@@ -1952,7 +1984,7 @@ fn is_single_rowbreak_table_with_trustworthy_declared_height(
         || table.col_count != 1
         || table.cells.len() != 1
         || !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         )
     {
@@ -2026,10 +2058,12 @@ fn cell_has_internal_saved_vpos_reset(cell: &crate::model::table::Cell) -> bool 
 /// 표가 그려진다 — 1490000 149쪽 실측 겹침 134 -> 156. 오프셋 0 float 과 `treat_as_char`
 /// 표는 흐름이 밴드를 실제로 소비하므로 해당 없다.
 pub(in crate::renderer) fn none_table_is_atomic_here(table: &crate::model::table::Table) -> bool {
-    matches!(table.page_break, crate::model::table::TablePageBreak::None)
-        && !(!table.common.treat_as_char
-            && is_para_topbottom_float(&table.common)
-            && signed_hwpunit(table.common.vertical_offset) > 0)
+    matches!(
+        table.layout_page_break(),
+        crate::model::table::TablePageBreak::None
+    ) && !(!table.common.treat_as_char
+        && is_para_topbottom_float(&table.common)
+        && signed_hwpunit(table.common.vertical_offset) > 0)
 }
 
 /// [#7288] «쪽 경계에서» 값 1 «셀 단위로 나눔» 의 **행 원자 규칙**을 이 표에 걸 수 있는가.
@@ -2053,7 +2087,7 @@ pub(in crate::renderer) fn cell_unit_row_is_atomic_here(
     table: &crate::model::table::Table,
 ) -> bool {
     matches!(
-        table.page_break,
+        table.layout_page_break(),
         crate::model::table::TablePageBreak::CellBreak
     )
 }
@@ -2437,7 +2471,7 @@ fn native_hwp5_rowbreak_host_precedes_first_fragment(
         || !visible_host_is_numbered_table_caption(para)
         || !is_para_topbottom_float(&table.common)
         || !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         )
         || para
@@ -2916,7 +2950,6 @@ fn saved_line_clears_footnote_area(
     current_footnote_height: f64,
     is_single_column: bool,
     overflow: f64,
-    footnote_safety_margin: f64,
     saved_bounds: Option<(f64, f64)>,
     base_available_height: f64,
     fragment_flow_top: f64,
@@ -2924,7 +2957,7 @@ fn saved_line_clears_footnote_area(
 ) -> bool {
     current_footnote_height > 0.0
         && is_single_column
-        && overflow <= footnote_safety_margin
+        && overflow <= 0.0
         && saved_bounds.is_some_and(|(top, bottom)| {
             let text_limit = base_available_height - current_footnote_height;
             top >= 0.0
@@ -3203,7 +3236,7 @@ fn para_near_rowbreak_table(paragraphs: &[Paragraph], para_idx: usize) -> bool {
                 control,
                 Control::Table(table)
                     if matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     )
             )
@@ -3220,7 +3253,7 @@ fn section_has_zero_high_attr_rowbreak_table(paragraphs: &[Paragraph]) -> bool {
                 control,
                 Control::Table(table)
                     if matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     ) && (table.raw_table_record_attr & 0xff00_0000) == 0
             )
@@ -4318,7 +4351,7 @@ impl TypesetEngine {
             && table.common.treat_as_char
             && table.common.flow_with_text
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && tac_count == 1
@@ -4431,6 +4464,14 @@ impl TypesetEngine {
         } else if st.profile.hangul2024_layout()
             && tac_seg_idx > 0
             && tac_seg_idx < fmt.line_heights.len()
+            // [#8507] 필드 시작 뒤로 넘긴 표의 빈 필드 줄은 한/글 2024 도 쌓는다(합성
+            // field_over19·field_over1414 의 2020·2024 Print 래스터 동일). 줄 재조판이 정한
+            // 개체 줄은 저장 재저장본의 앞 앵커 줄 회수 대상이 아니다.
+            && !crate::renderer::para_has_composed_object_rows(para)
+            // [#8543] 앞 저장 줄이 TAC 도형·그림의 실제 줄이면 빈 앵커로 회수할 수 없다.
+            // 한컴 2024 Print도 이 줄을 남긴다. #5524의 빈 앵커 회수는 유지한다.
+            && !(st.profile.hwp5_stored_pagination_layout()
+                && hwp5_tac_prefix_has_owned_object_line(para, tac_seg_idx))
         {
             // [compat 2024] 한글 2024 는 자리차지 표 앵커 문단의 선행 앵커 줄
             // 세그먼트를 흐름에 계상하지 않는다 — 2022 재저장본은 앵커 문단
@@ -4840,8 +4881,16 @@ impl TypesetEngine {
             }
         }
 
+        // [#8474] 단 맨 위에서는 저장 첫 줄이 증언하는 쪽 위 간격을 원점에 둔다.
+        // paint 는 이 계획의 원점을 그대로 쓴다(`layout_table_control_block`).
         let leading_spacing = if st.current_height < 1.0 {
-            0.0
+            crate::renderer::stored_line_ladder::stored_column_top_spacing(
+                para,
+                fmt.spacing_before,
+                (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+                    && !st.profile.session_edited(),
+                self.dpi,
+            )
         } else {
             fmt.spacing_before
         };
@@ -5480,8 +5529,15 @@ impl TypesetEngine {
                 .copied();
             let v_off_px = hwpunit_to_px(signed_vertical_offset, self.dpi);
             let outer_top_px = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
+            let pushed_anchor_top = crate::renderer::layout::pushed_anchor_line_table_top_px(
+                para, table, ctrl_idx, self.dpi,
+            );
             let table_top = if let Some(placement) = resolved {
                 placement.table_top
+            } else if let Some(top) = pushed_anchor_top {
+                // [#8435] 앞 TAC 줄 뒤에 앵커돼 그 줄을 밀어낸 표는 앵커 줄 자리(앞 줄 끝)
+                // + 바깥 위 여백이 상단이다 — layout 과 같은 helper 를 소비한다.
+                para_start_height + top + v_off_px
             } else if signed_vertical_offset > 0 {
                 // [#6879] 세로 기준점은 앵커 줄이다 — layout 이 같은 값을 더하므로
                 // 흐름 예약도 함께 내려야 배치와 어긋나지 않는다. layout 과 **같은**
@@ -6196,11 +6252,18 @@ impl TypesetEngine {
             let occupied_end = st.current_height;
             st.advance_flow_by(fmt.total_height - fmt.height_for_fit);
             // 같은 줄의 확정 끝에도 복원한 간격을 반영해 뒤 상한이 되감지 않게 한다.
+            // [#8418] 저장 pen이 소유한 끝은 1HU 이내의 환산 잡음까지 같은 끝으로 본다.
             if let Some(mut placement) = st
                 .inline_placements
                 .get(&(para_idx, ctrl_idx))
                 .copied()
-                .filter(|placement| placement.advance_end == Some(occupied_end))
+                .filter(|placement| {
+                    placement.advance_end == Some(occupied_end)
+                        || (placement.stored_horizontal_pen.is_some()
+                            && placement
+                                .advance_end
+                                .is_some_and(|end| (end - occupied_end).abs() <= self.dpi / 7200.0))
+                })
             {
                 placement.advance_end = Some(st.current_height);
                 st.record_inline_placement((para_idx, ctrl_idx), placement);
@@ -6521,7 +6584,7 @@ impl TypesetEngine {
         if !para_has_visible_text(para)
             || !crate::renderer::float_placement::is_para_topbottom_float(&table.common)
             || !matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
         {
@@ -7234,7 +7297,6 @@ mod tests {
                 footnote_height,
                 is_single_column,
                 overflow,
-                40.0,
                 bounds,
                 1_000.0,
                 current_height,
@@ -7246,8 +7308,7 @@ mod tests {
             saved_line_clears_footnote_area(
                 300.0,
                 true,
-                40.0,
-                40.0,
+                0.0,
                 bounds,
                 1_000.0,
                 fragment_top,
@@ -7268,35 +7329,35 @@ mod tests {
         );
 
         assert!(
-            allows(300.0, true, 40.0, Some((200.0, 700.0)), 216.0),
-            "각주 위 저장 좌표, 안전마진 이하 초과, 16px 흐름 허용오차의 경계값은 허용한다"
+            allows(300.0, true, 0.0, Some((200.0, 700.0)), 216.0),
+            "각주 위 저장 좌표, 넘침 없음, 16px 흐름 허용오차의 경계값은 허용한다"
         );
         assert!(
-            !allows(0.0, true, 40.0, Some((200.0, 700.0)), 216.0),
+            !allows(0.0, true, 0.0, Some((200.0, 700.0)), 216.0),
             "각주가 없으면 예외를 적용하지 않는다"
         );
         assert!(
-            !allows(300.0, false, 40.0, Some((200.0, 700.0)), 216.0),
+            !allows(300.0, false, 0.0, Some((200.0, 700.0)), 216.0),
             "다단에는 적용하지 않는다"
         );
         assert!(
-            !allows(300.0, true, 40.1, Some((200.0, 700.0)), 216.0),
-            "안전마진보다 큰 초과는 허용하지 않는다"
+            !allows(300.0, true, 0.1, Some((200.0, 700.0)), 216.0),
+            "각주 위 저장 좌표라도 본문 끝을 넘는 줄은 허용하지 않는다"
         );
         assert!(
-            !allows(300.0, true, 40.0, Some((200.0, 700.1)), 216.0),
+            !allows(300.0, true, 0.0, Some((200.0, 700.1)), 216.0),
             "저장 줄 하단이 각주 영역에 닿으면 허용하지 않는다"
         );
         assert!(
-            !allows(300.0, true, 40.0, Some((-0.1, 700.0)), 0.0),
+            !allows(300.0, true, 0.0, Some((-0.1, 700.0)), 0.0),
             "쪽 밖 음수 저장 좌표는 허용하지 않는다"
         );
         assert!(
-            !allows(300.0, true, 40.0, Some((1_000.1, 700.0)), 0.0),
+            !allows(300.0, true, 0.0, Some((1_000.1, 700.0)), 0.0),
             "본문 높이를 넘는 저장 좌표는 허용하지 않는다"
         );
         assert!(
-            !allows(300.0, true, 40.0, Some((200.0, 700.0)), 216.1),
+            !allows(300.0, true, 0.0, Some((200.0, 700.0)), 216.1),
             "흐름 커서가 저장 좌표보다 낮으면 허용하지 않는다"
         );
     }
@@ -7882,7 +7943,6 @@ mod tests {
             total_footnote_height: 0.0,
             queue_table_footnotes: false,
             table_footnotes: Vec::new(),
-            footnote_margin: 0.0,
             host_spacing_total: 0.0,
             host_spacing_before: 0.0,
             host_spacing_after_only: 0.0,
@@ -7899,7 +7959,7 @@ mod tests {
         };
         let flow_layout =
             PageLayoutInfo::from_page_def(&a4_page_def(), &ColumnDef::default(), DEFAULT_DPI);
-        let flow_state = TypesetState::new(flow_layout, 1, 0, 0.0, 0.0, 0.0, Default::default());
+        let flow_state = TypesetState::new(flow_layout, 1, 0, 0.0, 0.0, Default::default());
         let mut context = BlockTableContinuationContext::new(0, prepared, flow_state);
         assert_eq!(context.fragment_budget, 1, "zero budget clamps to one");
         assert_eq!(context.steps_completed, 0);

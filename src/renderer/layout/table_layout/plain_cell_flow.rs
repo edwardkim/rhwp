@@ -91,6 +91,18 @@ impl super::LayoutEngine {
         complete_row_blank_tail_is_absorbed(tail, self.dpi)
     }
 
+    /// 셀 단위로 나누는 표의 쪽 끝 행을 이 쪽에 둘 수 있는가 — 선언 높이가 아니라 행 내용
+    /// (글줄과 칸 안 여백)이 남은 공간보다 **작아야** 한다. 비교는 HU 격자에서 한다.
+    ///
+    /// 한/글 2020 Print 합성(`samples/issue8464/gen_row_content_fit.py`, 12pt 한 줄 행,
+    /// 내용 1200 + 칸 여백 141×2 = 1482HU): 남은 공간이 내용보다 2·4·6·8·12HU 크면 행을
+    /// 이 쪽에 두고, 같거나(0HU) 작으면 다음 쪽으로 넘긴다. 10pt(1282HU)도 같은 경계다.
+    /// 선언 높이·줄간격·저장 줄 유무(한/글이 HWP 로 다시 저장한 입력)와 무관했다.
+    pub(crate) fn row_content_fits_page_rest(&self, content: f64, rest: f64) -> bool {
+        crate::renderer::px_to_hwpunit(content, self.dpi)
+            < crate::renderer::px_to_hwpunit(rest, self.dpi)
+    }
+
     /// 현재 행을 넘어 계속되는 병합 칸의 독립적인 빈 최소 공간.
     /// 글줄이 재조판된다는 사실만으로 쪽 끝의 빈 띠를 소유하지 않는다.
     pub(crate) fn row_has_continuing_reflow_minimum(
@@ -252,7 +264,7 @@ impl super::LayoutEngine {
         accepted: &[crate::renderer::pagination::StraddleCellCarry],
         styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) -> bool {
-        if table.page_break != crate::model::table::TablePageBreak::RowBreak
+        if table.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
             || !self.indexed_row_cut_cell_order(table, row).is_empty()
         {
             return false;

@@ -1,5 +1,6 @@
 //! 문서 생성/로딩/저장/설정 관련 native 메서드
 
+mod cell_line_frame;
 mod grown_table_heights;
 mod hft_outline_fonts;
 mod initial_fields;
@@ -885,21 +886,20 @@ impl DocumentCore {
                 for ctrl in &mut para.controls {
                     if let Control::Table(ref mut table) = ctrl {
                         let is_rowbreak_table = matches!(
-                            table.page_break,
+                            table.layout_page_break(),
                             crate::model::table::TablePageBreak::RowBreak
                         );
                         let owner_widths = table.paragraph_frame_owner_widths();
                         let table_padding = table.padding;
                         for (cell, owner_width) in table.cells.iter_mut().zip(owner_widths) {
-                            let cell_w_px = crate::renderer::hwpunit_to_px(owner_width, dpi);
-                            let frame_padding = cell.paragraph_frame_padding(&table_padding);
-                            let pad_left =
-                                crate::renderer::hwpunit_to_px(frame_padding.left as i32, dpi);
-                            let pad_right =
-                                crate::renderer::hwpunit_to_px(frame_padding.right as i32, dpi);
-                            let cell_inner_width = crate::renderer::composer::cell_inner_text_width(
-                                cell_w_px, pad_left, pad_right, dpi,
-                            );
+                            let Some(cell_inner_width) = cell_line_frame::inline_extent_px(
+                                cell,
+                                owner_width,
+                                &table_padding,
+                                dpi,
+                            ) else {
+                                continue;
+                            };
                             // [#2195/#2146] 사선(대각선) 셀의 빈 문단은 코너 라벨의
                             // 짝 — 한글은 흐름 배치하지 않으므로 합성 제외 (21761835
                             // r0 라벨 셀 선언 52.4px 유지, 합성 시 +2.4 팽창).
@@ -1944,13 +1944,11 @@ impl DocumentCore {
                         .is_some_and(crate::renderer::layout::border_style_has_diagonal)
             };
             for (cell, owner_width) in table.cells.iter_mut().zip(owner_widths) {
-                let padding = cell.paragraph_frame_padding(&table_padding);
-                let inner_width = crate::renderer::composer::cell_inner_text_width(
-                    crate::renderer::hwpunit_to_px(owner_width, dpi),
-                    crate::renderer::hwpunit_to_px(padding.left as i32, dpi),
-                    crate::renderer::hwpunit_to_px(padding.right as i32, dpi),
-                    dpi,
-                );
+                let Some(inner_width) =
+                    cell_line_frame::inline_extent_px(cell, owner_width, &table_padding, dpi)
+                else {
+                    continue;
+                };
                 let diagonal = bf_has_diagonal(cell.border_fill_id)
                     || table.zones.iter().any(|zone| {
                         zone.start_row <= cell.row
@@ -2295,15 +2293,14 @@ impl DocumentCore {
                         let owner_widths = table.paragraph_frame_owner_widths();
                         let table_padding = table.padding;
                         for (cell, owner_width) in table.cells.iter_mut().zip(owner_widths) {
-                            let cell_w_px = crate::renderer::hwpunit_to_px(owner_width, dpi);
-                            let frame_padding = cell.paragraph_frame_padding(&table_padding);
-                            let pad_left =
-                                crate::renderer::hwpunit_to_px(frame_padding.left as i32, dpi);
-                            let pad_right =
-                                crate::renderer::hwpunit_to_px(frame_padding.right as i32, dpi);
-                            let cell_inner_width = crate::renderer::composer::cell_inner_text_width(
-                                cell_w_px, pad_left, pad_right, dpi,
-                            );
+                            let Some(cell_inner_width) = cell_line_frame::inline_extent_px(
+                                cell,
+                                owner_width,
+                                &table_padding,
+                                dpi,
+                            ) else {
+                                continue;
+                            };
                             for cell_para in &mut cell.paragraphs {
                                 if Self::needs_reflow_broadly(cell_para) {
                                     // 셀 내용 상자 — 위와 같은 이유로 미스냅.

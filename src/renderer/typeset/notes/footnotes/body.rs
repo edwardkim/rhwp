@@ -171,7 +171,6 @@ impl TypesetEngine {
             if !st.footnote_fragment_fits_current_page(
                 content_height,
                 draw_separator,
-                true,
                 overlap_guard,
             ) {
                 // terminal 표가 이미 확정된 page의 body/각주 lane을
@@ -214,7 +213,7 @@ impl TypesetEngine {
                     para,
                 )
                 .is_none()
-                && !st.footnote_fragment_fits_current_page(content_height, true, false, 0.0);
+                && !st.footnote_fragment_fits_current_page(content_height, true, 0.0);
             let body_tail_reset =
                 native_hwp5_body_footnote_tail_reset(st, para_idx, para, ctrl_idx);
             // 두 줄 각주는 full-note owner route와 다른 계약이다. marker

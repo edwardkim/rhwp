@@ -98,9 +98,13 @@ pub(crate) fn normalized_host_with_table_height_with_storage<S: crate::storage::
                     });
                 let outside_row = declared.checked_add(margins)? > stored.line_height;
                 let height = if !table.common.size_protect && (stale_empty || outside_row) {
-                    let height =
-                        crate::storage::optional(measure(table, index), failure)??.max(declared);
-                    table_height = Some(u32::try_from(height).ok()?);
+                    // 줄은 실제로 그리는 표를 담는다. 행 합이 선언보다 작으면 한/글은 행
+                    // 높이로 그리고 줄도 그만큼만 차지한다(`inline_control_occupied_size_hwp`
+                    // 와 같은 규칙). 선언은 내용이 넘칠 때만 행에 밀려 커진다.
+                    let height = crate::storage::optional(measure(table, index), failure)??;
+                    if height > declared {
+                        table_height = Some(u32::try_from(height).ok()?);
+                    }
                     height
                 } else {
                     declared

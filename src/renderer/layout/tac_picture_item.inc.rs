@@ -13,6 +13,7 @@ impl LayoutEngine {
         control_index: usize,
         ctx: &ColumnItemCtx,
         y_offset: f64,
+        stored_line_y: Option<f64>,
     ) -> f64 {
         let ColumnItemCtx {
             page_content,
@@ -90,8 +91,10 @@ impl LayoutEngine {
                 reserved_based
             }
         };
-        let default_pic_y =
-            self.compute_tac_picture_shape_y(para, comp, styles, para_y_for_pic, pic_h);
+        // [#8441] 저장 줄 사다리로 정한 줄 위치가 있으면 그것이 원점이다.
+        let default_pic_y = stored_line_y.unwrap_or_else(|| {
+            self.compute_tac_picture_shape_y(para, comp, styles, para_y_for_pic, pic_h)
+        });
         let para_style_id = comp
             .map(|c| c.para_style_id as usize)
             .unwrap_or(para.para_shape_id as usize);
@@ -112,8 +115,19 @@ impl LayoutEngine {
         // para_margin_left 만큼 더 오른쪽으로 밀리는 결함이 있었다
         // (exam_kor.hwp p18/pi=46,50,54,56... 실측 확인 — inner_pad_left=11.33px
         // 만큼 이중 가산). paragraph_layout.rs 와 동일하게 가산 없이 통일한다.
-        let mut effective_margin_left =
-            tac_picture_effective_margin_left(para_margin_left, para_indent);
+        // [#8441] 그림이 실린 저장 줄이 첫 줄이 아니면 그 줄은 이어지는 줄의 여백을 쓴다:
+        // 내어쓰기(indent<0)는 둘째 줄부터 |indent| 만큼 들어가고, 들여쓰기는 첫 줄에만 준다.
+        // (한컴 2022 Print 실측: 156715172·156509623·156532689·156767332 의 TAC 표 다음 줄
+        // 그림 왼끝 = 왼쪽 여백 + |indent|.)
+        // 글자가 있는 줄의 그림은 문자 위치가 가로 원점을 정하므로 이 규칙 밖이다.
+        let picture_line = control_line_seg_index(para, control_index)
+            .filter(|_| !para_has_visible_text(para))
+            .unwrap_or(0);
+        let mut effective_margin_left = if picture_line > 0 {
+            para_margin_left + (-para_indent).max(0.0)
+        } else {
+            tac_picture_effective_margin_left(para_margin_left, para_indent)
+        };
         // [Task #534 v2] LINE_SEG.column_start 는 Square wrap 인라인 표/그림이
         // 좌측에 floating 시 표 영역 이후 텍스트 시작 위치를 HWP IR 가 인코딩.
         // layout_shape_item 은 col_area.x 그대로 사용 → picture (TAC) 가 표
@@ -121,7 +135,7 @@ impl LayoutEngine {
         // 표시기 + 그림). cs 가 effective_margin_left 보다 크면 cs 우선.
         let line_seg_cs_px = para
             .line_segs
-            .first()
+            .get(picture_line)
             .map(|s| hwpunit_to_px(s.column_start, self.dpi))
             .unwrap_or(0.0);
         if line_seg_cs_px > effective_margin_left {

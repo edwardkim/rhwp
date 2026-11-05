@@ -12,9 +12,13 @@ struct Owner {
 impl Owner {
     fn finish_list(&self) -> Result<(), BodyTextError> {
         if let Some(declared) = self.declared {
-            // #6856: Hancom rejects the maintainer-checked zero-paragraph fixture.
-            // No owned list is a rectangle; an owned list must declare a paragraph.
-            if declared == 0 || u64::from(declared) > self.paragraphs as u64 {
+            // #6856: Hancom rejects the maintainer-checked zero-paragraph fixture
+            // (declared 0, no owned paragraph). An owned list must hold a paragraph.
+            // [#8432] Hancom opens lists that declare 0 but still own paragraph
+            // records (156761223·156690773: declared 0, found 1); the drawing
+            // parser reads owned paragraphs by record level, not by the count.
+            let empty = declared == 0 && self.paragraphs == 0;
+            if empty || u64::from(declared) > self.paragraphs as u64 {
                 return Err(BodyTextError::DrawingTextStructure(format!(
                     "rectangle at level {} declares {} paragraphs, found {}",
                     self.level, declared, self.paragraphs

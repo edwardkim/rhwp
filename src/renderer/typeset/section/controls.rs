@@ -770,6 +770,11 @@ impl TypesetEngine {
                         }
                     }
                 }
+                Control::Footnote(_)
+                    if st.line_registered_notes.contains(&(para_idx, ctrl_idx)) =>
+                {
+                    // 분할 조각 확정 때 참조 줄의 쪽에 이미 등록했다.
+                }
                 Control::Footnote(fn_ctrl) => {
                     self.register_body_footnote(
                         st,

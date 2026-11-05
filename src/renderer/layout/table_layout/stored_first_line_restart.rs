@@ -25,7 +25,7 @@ impl LayoutEngine {
                 .borrow()
                 .table_text_reflowed(table)
             || table.common.treat_as_char
-            || !matches!(table.page_break, TablePageBreak::RowBreak)
+            || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
             || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
             || start_cut != 0
             || end_cut != 1

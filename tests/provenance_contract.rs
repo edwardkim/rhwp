@@ -1,3 +1,8 @@
+//! 관계형(보안 출처): 실제 문서 값과 도구의 정적 경로 메타데이터를 구분한다.
+//! 주석 갱신: 2026-11-04T21:47:31+09:00; 직전 파일 변경: 2026-11-04T21:22:50+09:00
+//! (`990bb2fccf49803c0d6b3fdeb0225069133d7170`). 실제 문서의 래스터 배치를 검사하지
+//! 않으므로 raw·DPI는 비해당이다. 원본 응답의 출처 계약과 실제 CLI를 검사한다.
+//! 근거: mydocs/working/task_m100_planet6897_native_output_provenance.md.
 //! [#3787 S1] 봉투 출처 표지 드리프트 가드.
 //!
 //! 계약: 모든 `--json` 봉투는 `untrustedContent`(bool)와 `untrustedFields`(경로 배열)를
@@ -311,6 +316,22 @@ fn is_caller_echo(path: &str) -> bool {
 /// 봉투를 훑어 **문서 문자열이 실제로 나타난** 경로들을 모은다.
 /// 경로 표기는 지도와 같다: `.` 은 객체 하위, `[]` 는 배열 전개.
 fn scan(v: &Value, path: &str, or: &DocOracle, recipe: &Recipe, out: &mut BTreeSet<String>) {
+    // 최상위 표지의 정적 경로 이름은 도구가 생성한 메타데이터다. 그 이름이
+    // 문서 토큰과 우연히 같아도 문서 값의 유출로 세지 않는다. 정확히 선언된
+    // 경로만 허용하므로 위조 표지와 중첩된 문서 필드는 계속 아래에서 검사한다.
+    if path == "untrustedFields"
+        && v.as_array().is_some_and(|values| {
+            rhwp::provenance::entry(recipe.command).is_some_and(|entry| {
+                values.iter().all(|value| {
+                    value
+                        .as_str()
+                        .is_some_and(|path| entry.untrusted.iter().any(|field| field.path == path))
+                })
+            })
+        })
+    {
+        return;
+    }
     match v {
         Value::String(s) => {
             if !is_caller_echo(path) && or.hits(s) && !is_recipe_path_echo(recipe, path, s) {
@@ -335,6 +356,52 @@ fn scan(v: &Value, path: &str, or: &DocOracle, recipe: &Recipe, out: &mut BTreeS
         }
         _ => {}
     }
+}
+
+#[test]
+fn static_path_metadata_does_not_hide_document_values_or_forged_paths() {
+    let oracle = DocOracle {
+        tokens: vec!["nativeFontSupply".into()],
+        exact: BTreeSet::new(),
+    };
+    let recipe = Recipe {
+        command: "export-svg",
+        doc: None,
+        args: Vec::new(),
+        stdin: None,
+        exit: 0,
+        ndjson: false,
+    };
+    let mut envelope = rhwp::provenance::marked(
+        serde_json::json!({"nativeFontSupply": {"unavailable": ["nativeFontSupply-document-font"]}}),
+        recipe.command,
+    );
+    assert!(envelope["untrustedFields"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|value| value.as_str().is_some_and(|path| oracle.hits(path))));
+    let mut found = BTreeSet::new();
+    scan(&envelope, "", &oracle, &recipe, &mut found);
+    assert_eq!(
+        found,
+        BTreeSet::from(["nativeFontSupply.unavailable[]".into()])
+    );
+
+    envelope["untrustedFields"] = serde_json::json!(["nativeFontSupply-document-font"]);
+    envelope["fontEnvironment"] =
+        serde_json::json!({"untrustedFields": ["nativeFontSupply-document-font"]});
+    let mut found = BTreeSet::new();
+    scan(&envelope, "", &oracle, &recipe, &mut found);
+    assert!(found.contains("nativeFontSupply.unavailable[]"));
+    assert!(
+        found.contains("untrustedFields[]"),
+        "위조한 경로는 제외하지 않는다"
+    );
+    assert!(
+        found.contains("fontEnvironment.untrustedFields[]"),
+        "중첩된 문서 값은 검사한다"
+    );
 }
 
 // ── 호출 레시피 ────────────────────────────────────────────────────────────

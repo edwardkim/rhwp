@@ -652,6 +652,7 @@ pub(super) fn bullet_marker_text(
                 width_adjust: 0,
                 text_distance: 50,
                 char_shape_id: u32::MAX,
+                reference_width_em: None,
             },
         ));
     }
@@ -684,6 +685,7 @@ pub(super) fn bullet_marker_text(
             width_adjust: bullet.width_adjust,
             text_distance: bullet.text_distance,
             char_shape_id: bullet.char_shape_id,
+            reference_width_em: None,
         },
     ))
 }
@@ -709,6 +711,7 @@ pub(crate) fn numbering_head_text(
     // 기본 모양(전 수준 ^N)으로 fallback 한다. NUMBER 는 불변 —
     // 정의 없는 NUMBER 는 종전대로 번호를 그리지 않는다.
     let synthesized_default;
+    let mut reference_width_em = None;
     let numbering = match numbering_id
         .checked_sub(1)
         .and_then(|i| styles.numberings.get(i as usize))
@@ -716,6 +719,9 @@ pub(crate) fn numbering_head_text(
         Some(n) => n,
         None if para_style.head_type == HeadType::Outline => {
             synthesized_default = crate::renderer::layout::utils::default_outline_numbering();
+            // 내장 ^N은 각 수준의 한 자리 참조 형식을 예약한다. 실제 계수기의
+            // 자릿수나 선택된 글꼴의 숫자·마침표 전진폭으로 영역을 바꾸지 않는다.
+            reference_width_em = Some(level.min(6) + 1);
             &synthesized_default
         }
         None => return None,
@@ -742,6 +748,7 @@ pub(crate) fn numbering_head_text(
             width_adjust: head.width_adjust,
             text_distance: head.text_distance,
             char_shape_id: head.char_shape_id,
+            reference_width_em,
         },
     ))
 }
@@ -1062,7 +1069,7 @@ fn viewtext_table_suffix_label_right(
         || !line_text.trim_start().starts_with('(')
         || !table.common.treat_as_char
         || !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         )
         || table.padding.left <= 0

@@ -54,7 +54,6 @@ impl TypesetEngine {
             .or(input.fragment_row_heights)
             .unwrap_or(&input.prepared.whole_row_fit_heights);
         let total_footnote = input.prepared.total_footnote_height;
-        let fn_margin = input.prepared.footnote_margin;
         let strict_following_plain_text_fit = input.prepared.strict_following_plain_text_fit;
         let source_next_positive_rewind = input.prepared.source_next_positive_rewind;
         let cursor_row = input.start.cursor_row;
@@ -491,7 +490,7 @@ impl TypesetEngine {
         // 함께 다음 조각으로 — 한글 규칙).
         // [#7732] 표 각주를 이 쪽에서 빼면 남는 각주는 이미 정해진 쪽 각주뿐이라 경계가 확정이다.
         // 그 경계를 지키는 40px 여유도 함께 되돌린다(한/글은 각주 구분선 바로 위까지 행을 놓는다).
-        let table_fn_reserved = (total_footnote - st.current_footnote_height).max(0.0) + fn_margin;
+        let table_fn_reserved = (total_footnote - st.current_footnote_height).max(0.0);
         let is_split_fragment = end_row < row_count || split_end_limit > 0.0;
         // [#7732] 앵커 줄이 자기 각주와 함께 다음 조각으로 간다는 #2097 가정은 한/글 출력과
         // 다르다. 한/글은 칸 각주 때문에 행을 줄이지 않고, 앵커가 이 조각에 있어도 각주는
@@ -610,13 +609,8 @@ impl TypesetEngine {
                     .fold((0.0, 0usize), |(height, count), note| {
                         (height + note.content_height, count + 1)
                     });
-                let terminal_note_reservation = st
-                    .projected_fresh_footnote_height(terminal_note_content, terminal_note_count)
-                    + if terminal_note_count > 0 {
-                        st.footnote_safety_margin
-                    } else {
-                        0.0
-                    };
+                let terminal_note_reservation =
+                    st.projected_fresh_footnote_height(terminal_note_content, terminal_note_count);
                 let terminal_block_fits = last.block_size > 1
                     && last.b_start >= cursor_row
                     && rows.required_height(&last, &[])

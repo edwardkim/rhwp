@@ -12,7 +12,6 @@ impl TypesetState {
         section_index: usize,
         footnote_separator_overhead: f64,
         footnote_between_notes_margin: f64,
-        footnote_safety_margin: f64,
         column_type: ColumnType,
     ) -> Self {
         Self {
@@ -42,6 +41,8 @@ impl TypesetState {
                 square_band_top: None,
                 current_footnote_height: 0.0,
                 deferred_body_footnotes: Vec::new(),
+                own_line_notes: Vec::new(),
+                line_registered_notes: std::collections::HashSet::new(),
                 current_footnote_body_bottom_reserved: false,
                 deferred_hwpx_note_body: false,
                 current_bottom_fixed_exclusion: 0.0,
@@ -52,8 +53,6 @@ impl TypesetState {
                 current_page_has_footnote_separator: false,
                 footnote_separator_overhead,
                 footnote_between_notes_margin,
-                footnote_safety_margin,
-                section_has_no_footer: false,
                 current_zone_y_offset: 0.0,
                 current_zone_layout: None,
                 on_first_multicolumn_page: false,
@@ -93,7 +92,6 @@ impl TypesetState {
                 pre_emitted_host_heights: std::collections::HashMap::new(),
                 pre_emitted_host_content_heights: std::collections::HashMap::new(),
                 skip_safety_margin_once: false,
-                skip_footnote_margin_once: false,
                 tail_saved_bounds_once: None,
                 strict_plain_text_fit_after_empty_host_float_once: false,
                 profile: Default::default(),
@@ -161,7 +159,6 @@ impl TypesetState {
             self.data.section_index,
             self.data.footnote_separator_overhead,
             self.data.footnote_between_notes_margin,
-            self.data.footnote_safety_margin,
             self.data.current_zone_column_type,
         )
     }
@@ -187,48 +184,19 @@ impl TypesetState {
     /// 사용 가능한 본문 높이 (각주, 존 오프셋 차감)
     pub(in crate::renderer::typeset) fn available_height(&self) -> f64 {
         let base = self.base_available_height();
-        // 실제 각주 조판 높이를 예약한 경우에는 추정 오차용 버퍼를 또 빼지 않는다.
-        // 같은 물리 높이가 본문과 paint의 경계이며 꼬리말 회수도 이미 금지돼 있다.
-        let fn_margin = if self.data.current_footnote_height > 0.0
-            && !self.data.current_footnote_body_bottom_reserved
-        {
-            self.data.footnote_safety_margin
-        } else {
-            0.0
-        };
-        // [#2559] 한글은 꼬리말 콘텐츠가 없는 구역에서 각주가 빈 꼬리말 밴드까지
-        // 사용하도록 배치한다. 밴드를 초과하는 각주 높이만 본문을 줄여야 조기
-        // 개행이 누적되지 않는다. 실제 꼬리말이 있으면 점유 가능성이 있으므로
-        // 보수적으로 밴드를 회수하지 않는다.
-        let footnote_penalty =
-            (self.data.current_footnote_height - self.footer_band_reclaim()).max(0.0);
+        let footnote_penalty = self.data.current_footnote_height.max(0.0);
         let available = (base
             - footnote_penalty
-            - fn_margin
             - self.data.current_zone_y_offset
             - self.data.current_bottom_fixed_exclusion)
             .max(0.0);
-        // 빈 꼬리말 밴드가 각주를 모두 받으면 보수 여백은 각주 자신의 높이를 넘어 본문을
-        // 깎지 않는다. paint 는 각주 영역을 본문 바닥 − 각주 높이에서 연다(1613000 84쪽:
-        // 각주 31.4px, 보수 여백 40px 이 빈 문단 `pi=817` 을 85쪽으로 밀었다).
-        let available = if footnote_penalty <= 0.0 && fn_margin > 0.0 {
-            available.max(
-                (base
-                    - self.data.current_footnote_height
-                    - self.data.current_zone_y_offset
-                    - self.data.current_bottom_fixed_exclusion)
-                    .max(0.0),
-            )
-        } else {
-            available
-        };
         let available = if self.data.profile.hwpx_stored_layout()
             && self.data.deferred_hwpx_note_body
             && self.data.current_footnote_height > 0.0
         {
             // HWPX의 FootnoteArea는 본문 하단에서 위로 자리를 차지한다.
-            // 비어 있는 footer 밴드 회수만 믿고 본문을 각주 영역 안으로
-            // 허용하지 않는다. 측정과 줄 분할이 같은 물리 경계를 쓴다.
+            // 본문을 각주 영역 안으로 허용하지 않는다.
+            // 측정과 줄 분할이 같은 물리 경계를 쓴다.
             available.min(
                 (base
                     - self.data.current_footnote_height
@@ -242,12 +210,10 @@ impl TypesetState {
         // [#3707 진단] 가용 높이의 차감 내역과 최종 물리 경계를 함께 기록한다.
         if std::env::var("RHWP_DIAG_AVAIL").is_ok() {
             eprintln!(
-                "DIAG_AVAIL base={:.1} fn_h={:.1} reclaim={:.1} penalty={:.1} fn_margin={:.1} zone_y={:.1} bottom_fixed={:.1} → {:.1}",
+                "DIAG_AVAIL base={:.1} fn_h={:.1} penalty={:.1} zone_y={:.1} bottom_fixed={:.1} → {:.1}",
                 base,
                 self.data.current_footnote_height,
-                self.footer_band_reclaim(),
                 footnote_penalty,
-                fn_margin,
                 self.data.current_zone_y_offset,
                 self.data.current_bottom_fixed_exclusion,
                 available,
@@ -801,6 +767,25 @@ impl TypesetState {
                 continue;
             }
             if !matches!(common.vert_rel_to, VertRelTo::Para) {
+                continue;
+            }
+            // [#8435] 앞 TAC 줄 뒤 줄에 앵커돼 그 줄을 자기 아래로 민 개체는 이 문단의
+            // 저장 사다리 안(새 쪽)에 자기 밴드를 이미 갖는다. 리셋된 첫 줄과 함께 다음
+            // 쪽에 놓이며 떠나는 쪽 말미로 흘리지 않는다 (156638890 3쪽: 담당 부서 표
+            // 아래 로고 글상자, 한컴 2022 Print 도 3쪽).
+            let caption_free = match ctrl {
+                Control::Picture(picture) => picture.caption.is_none(),
+                _ => true,
+            };
+            if caption_free
+                && crate::renderer::layout::stored_pushed_anchor_line_offset_hu(
+                    para,
+                    common,
+                    i64::from(common.margin.top) + i64::from(common.margin.bottom),
+                    ctrl_idx,
+                )
+                .is_some()
+            {
                 continue;
             }
             let height = hwpunit_to_px(common.height as i32, dpi)

@@ -205,15 +205,34 @@ pub fn resolve_numbering_id(
 /// (fixture 수준 스윕을 한컴 2020 MCP 로 실측, task #3307 Stage 1). 이는 기존
 /// `^N` 제어코드와 동일하므로 형식 문자열만 합성한다. 기본 모양은 한컴이 파일에
 /// 실체화하지 않는 편집기 내장 동작이라(재저장 실험으로 확인) 합성이 유일한 경로다.
+///
+/// [#8425] 머리 모양도 한컴 내장 값으로 합성한다. 한컴 2020(11.0.0.9136)·2024(13.0.0.3901)
+/// Print 출력에서 12pt 개요 제목의 본문은 `번호 시작 + 수준별 참조 형식 폭 + 6.0pt`
+/// (= 거리 50%)에서 시작한다. ^N의 예약 폭은 수준당 1em이며 실제 숫자·마침표의
+/// 글리프 폭과 구분한다. 두 줄로 넘친 제목의 둘째 줄은 번호가 아니라 본문
+/// 시작 위치에서 이어진다(자동 내어쓰기). 너비 보정은 0, 정렬은 왼쪽이다. 글자 모양은
+/// 참조하지 않아(`u32::MAX`) 번호를 문단 글자 모양으로 재고 그린다 — 정의 없는 기본
+/// 글머리표(`paragraph_layout` 의 `●` 합성)와 같은 머리 모양이다.
 pub(crate) fn default_outline_numbering() -> Numbering {
     let mut n = Numbering::default();
     for f in n.level_formats.iter_mut() {
         *f = "^N".to_string();
     }
+    for head in n.heads.iter_mut() {
+        head.attr = DEFAULT_OUTLINE_HEAD_AUTO_INDENT;
+        head.width_adjust = 0;
+        head.text_distance = DEFAULT_OUTLINE_HEAD_TEXT_DISTANCE_PERCENT;
+        head.char_shape_id = u32::MAX;
+    }
     n.start_number = 1;
     n.level_start_numbers = [1; 7];
     n
 }
+
+/// 머리 모양 속성 bit 3: 자동 내어쓰기. bit 4(거리 단위) 0 은 글자 크기 대비 % 다.
+const DEFAULT_OUTLINE_HEAD_AUTO_INDENT: u32 = 1 << 3;
+/// 한컴 내장 기본 개요의 본문과의 거리 — 글자 크기의 50%.
+const DEFAULT_OUTLINE_HEAD_TEXT_DISTANCE_PERCENT: i16 = 50;
 
 /// 번호 형식 문자열의 `^` 제어코드를 실제 번호로 치환.
 ///

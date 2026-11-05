@@ -29,7 +29,7 @@ impl LayoutEngine {
                 .borrow()
                 .table_text_reflowed(table)
             || table.common.treat_as_char
-            || !matches!(table.page_break, TablePageBreak::RowBreak)
+            || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
             || cell.row_span != 1
             || cell.dirty_flag
             || Self::row_has_prior_rowspan_cover(table, usize::from(cell.row))
