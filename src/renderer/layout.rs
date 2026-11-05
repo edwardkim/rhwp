@@ -4771,7 +4771,7 @@ impl LayoutEngine {
 
         // 단별 콘텐츠 레이아웃
         let mut paper_images: Vec<RenderNode> = Vec::new();
-        self.build_columns(
+        let body_content_bottom = self.build_columns(
             tree.frame_mut(),
             &mut body_node,
             &mut paper_images,
@@ -4944,6 +4944,7 @@ impl LayoutEngine {
             styles,
             layout,
             bin_data_content,
+            body_content_bottom,
         );
 
         // 꼬리말 + 쪽 번호 (감추기 설정 시 건너뜀)
@@ -6329,6 +6330,7 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         layout: &PageLayoutInfo,
         bin_data_content: &[BinDataContent],
+        body_content_bottom: f64,
     ) {
         let mut footnote_layout = layout.clone();
         if !page_content.footnotes.is_empty() {
@@ -6340,6 +6342,9 @@ impl LayoutEngine {
                 layout.body_area.width,
             );
             footnote_layout.update_footnote_area(fn_height);
+            if footnote_shape.print_inline_after_text {
+                footnote_layout.footnote_area.y = body_content_bottom;
+            }
         }
 
         if !page_content.footnotes.is_empty() {
@@ -6563,7 +6568,8 @@ impl LayoutEngine {
         layout: &PageLayoutInfo,
         outline_numbering_id: u16,
         wrap_around_paras: &[super::pagination::WrapAroundPara],
-    ) {
+    ) -> f64 {
+        let mut body_flow_bottom = layout.body_area.y;
         let mut prev_zone_y_end: f64 = 0.0;
         let mut current_zone_start_y: f64 = 0.0;
         let mut last_zone_y_offset: f64 = -1.0;
@@ -6860,6 +6866,9 @@ impl LayoutEngine {
                     self.dpi,
                 ));
             // 수용 판정과 같은 저장 내용 하단일 때만 새 텍스트 영역과 겹치는 뒤 여백을 제외한다.
+            if body_content_bottom.is_finite() {
+                body_flow_bottom = body_flow_bottom.max(body_content_bottom);
+            }
             let closing_content_bottom = (blank_band_tail.is_none() && apply_trailing_ls_subtract)
                 .then(|| {
                     let PageItem::FullParagraph { para_index } = col_content.items.last()? else {
@@ -6997,6 +7006,7 @@ impl LayoutEngine {
                 prev_zone_sep_y_end,
             );
         }
+        body_flow_bottom
     }
 
     /// [Task #866 v2 Stage 3] 단일 zone 의 단 구분선을 emit.

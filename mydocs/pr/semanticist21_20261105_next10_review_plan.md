@@ -84,3 +84,6 @@
 - #8385: `Table::equalize_cell_block → per_line → n`에서 빈 줄의 `n == 0` 확인보다 나눗셈이 먼저 실행됐다. 검증을 앞당겨 오류를 반환한다. 현재는 코드 검토로 확인했으며 실제 수정 전 실패·수정 후 통과는 아직 실행 전이다.
 - #8494 독립 Print 준비 중 기존 바탕쪽 텍스트 좌표 오류를 확인했다. `restart-5.hwpx`의 `masterpage0/1.xml`은 `textWidth=42520`, `textHeight=65762`, 첫 저장 줄 `vertpos=0`이다. 독립 Windows 한컴 2020 Print PDF의 `바탕쪽표식`은 x=85.03391pt, y=99.38459pt에 있으며 본문 텍스트 프레임 원점과 일치한다. 기준 Native는 이를 용지 (0,0)에 그린다. `build_master_page → paper_area 기반 mp_y_offset 및 layout_paragraph 영역 → 각 backend` 연결에서 텍스트 프레임 원점을 잘못 공급했다. 이미 바탕쪽 단 구분선이 소비하는 본문 원점과 같은 프레임을 일반 텍스트에도 공급한다. 도형·그림의 Paper/Page 기준 위치는 기존 경로를 유지한다. 보정 후 전쪽 측정과 실제 master 원점·도형 대조는 아직 완료 전이다.
 - #8488: 독립 Mac Print와 기준 Native의 각주 위치·선·위첨자가 다르다. API의 저장 보존과 실제 각주 배치를 구분해 원인을 조사하고 있으며, 낮은 점수를 시각 통과로 기록하지 않는다.
+
+
+각주 배치의 원인 연결: `build_single_column`은 이미 마지막 본문 항목의 실제 점유 하단(`last_item_content_bottom`)을 반환하지만, `build_columns`가 이를 각주 배치에 전달하지 않았다. `print_inline_after_text`가 설정된 경우 그 공통 결과를 각주 원점으로 사용한다. 빈 줄의 점유와 부동 도형의 잉크를 혼동하지 않는다. 기존 쪽별 각주 예약·분할 큐는 유지한다. 구분선은 고정 실선 대신 기존 HWP 선 스타일 변환을 소비한다. 자동 번호의 위첨자는 composer가 `footnote_marker`로 생산했으나 `ComposedTextRun::text_style`에서 소비하지 않았다. 일반 글자 위첨자와 다른 주석 번호의 3/4 크기·기준선(-0.21em) 계약을 공통 `ScriptMetricsContract`에 명시해 측정·각 paint로 전달한다. 기존 `FootnoteMarkerNode`의 독립 계약 및 Mac Print의 본문 9pt/번호 6.72pt와 대조한다. 현재 보정 후 실제 전쪽·반례 검증은 진행 전이며 수용 판정을 보류한다.

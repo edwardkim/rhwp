@@ -1568,6 +1568,8 @@ impl LayoutEngine {
             let line_width = border_width_to_px(shape.separator_line_width).max(0.5);
 
             if crate::renderer::note_separator::has_ink(shape.separator_color) {
+                let (dash, line_type) =
+                    super::super::line_style::hwp_shape_line_type(shape.separator_line_type);
                 let sep_id = tree.next_id();
                 let sep_line = LineNode::new(
                     fn_area.x,
@@ -1577,7 +1579,8 @@ impl LayoutEngine {
                     LineStyle {
                         color: shape.separator_color,
                         width: line_width,
-                        dash: StrokeDash::Solid,
+                        dash,
+                        line_type,
                         ..Default::default()
                     },
                 );

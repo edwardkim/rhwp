@@ -152,6 +152,11 @@ impl ComposedTextRun {
         style.regenerated_font_metrics = self.regenerated_font_metrics;
         style.literal_figure_space = self.literal_figure_space;
         style.literal_soft_hyphen = self.literal_soft_hyphen;
+        if self.footnote_marker.is_some() {
+            style.script_metrics = super::script_metrics::ScriptMetricsContract::NoteReference;
+            style.superscript = true;
+            style.subscript = false;
+        }
         if self.literal_figure_space {
             style.literal_figure_space_em =
                 styles.literal_figure_space_em(self.char_style_id, self.lang_index);
