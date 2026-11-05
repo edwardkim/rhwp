@@ -142,3 +142,7 @@ task2430/1382000_domestic_violence_survey.hwp	1
 # #8501 신규 공개 샘플(법령안 67477, 한/글 2020 저장): 수정 전(#8493 위)과 수정 후의 값이 같다 — 8·9쪽
 # 표(pi=38·39)가 본문 아래로 넘치는 기존 형상이며 이 PR 범위 밖이다. 같은 문서 전쪽 silhouette 은 98.8% 이상.
 issue8501/child_product_safety_rule.hwp	1
+# #8641 신규 공개 샘플(서울시 결재문서 36306589, 한/글 2020 저장): 수정 전(devel ece9c3383b)과 수정 후의
+# 값이 같다 — 맨 위 6×6 제목 표 첫 칸의 두 줄 글자 상자(높이 32px, 줄 간격 28.8px)가 3.2px 겹치는 기존
+# 형상이며 이 PR 범위 밖이다. 같은 문서 1쪽 silhouette 은 Native·fresh WASM 99.98%.
+issue8641/field_table_after_page_box.hwpx	6
