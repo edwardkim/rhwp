@@ -4,15 +4,45 @@
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     (
         "commands/compose_controls.rs",
-        "insert_ruby_native",
+        "insert_ruby_at",
         Exempt::DelegatesTo("insert_compose_control"),
         "입력을 덧말로 만든 뒤 넣기 공통 함수에 위임한다. 공통 함수가 구역의 raw_stream을 비운다.",
     ),
     (
         "commands/compose_controls.rs",
-        "insert_char_overlap_native",
+        "insert_char_overlap_at",
         Exempt::DelegatesTo("insert_compose_control"),
         "입력을 글자 겹침으로 만든 뒤 넣기 공통 함수에 위임한다. 공통 함수가 구역의 raw_stream을 비운다.",
+    ),
+    (
+        "commands/compose_controls.rs",
+        "set_compose_control_at",
+        Exempt::DelegatesTo("after_compose_edit"),
+        "컨트롤을 바꾼 뒤 다시 짜기 공통 함수에 위임한다. 공통 함수가 구역의 raw_stream을 비운다.",
+    ),
+    (
+        "commands/compose_controls.rs",
+        "insert_ruby_native",
+        Exempt::DelegatesTo("insert_ruby_at"),
+        "본문 문단 주소로 영역 공통 함수에 위임한다.",
+    ),
+    (
+        "commands/compose_controls.rs",
+        "insert_char_overlap_native",
+        Exempt::DelegatesTo("insert_char_overlap_at"),
+        "본문 문단 주소로 영역 공통 함수에 위임한다.",
+    ),
+    (
+        "commands/compose_controls.rs",
+        "set_compose_control_native",
+        Exempt::DelegatesTo("set_compose_control_at"),
+        "본문 문단 주소로 영역 공통 함수에 위임한다.",
+    ),
+    (
+        "commands/compose_controls.rs",
+        "delete_compose_control_native",
+        Exempt::DelegatesTo("delete_compose_control_at"),
+        "본문 문단 주소로 영역 공통 함수에 위임한다.",
     ),
     (
         "host_font_environment.rs",

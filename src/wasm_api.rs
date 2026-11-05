@@ -103,6 +103,34 @@ fn deferred_pagination_result_json(result: DeferredPaginationStepResult) -> Stri
     .to_string()
 }
 
+/// 셀 경로 덧말·글자 겹침 API의 문단 주소.
+fn compose_cell(
+    sec: u32,
+    parent_para: u32,
+    path: &[(usize, usize, usize)],
+) -> crate::document_core::ComposeHost<'_> {
+    crate::document_core::ComposeHost::Cell {
+        sec: sec as usize,
+        parent_para: parent_para as usize,
+        path,
+    }
+}
+
+/// 각주·미주 덧말·글자 겹침 API의 문단 주소.
+fn compose_note(
+    sec: u32,
+    para: u32,
+    control: u32,
+    note_para: u32,
+) -> crate::document_core::ComposeHost<'static> {
+    crate::document_core::ComposeHost::Note {
+        sec: sec as usize,
+        para: para as usize,
+        control: control as usize,
+        note_para: note_para as usize,
+    }
+}
+
 /// [Task #1161] 클립보드 API 의 cellPath JSON 인자 파싱.
 /// 빈 문자열 또는 `"[]"` 면 본문(빈 경로), 그 외에는
 /// `[{"controlIndex","cellIndex","cellParaIndex"}, ...]` 를 파싱한다.
@@ -9656,6 +9684,199 @@ impl HwpDocument {
             .delete_compose_control_native(
                 sec as usize,
                 para as usize,
+                ctrl_idx as usize,
+                keep_main_text,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 셀 경로(표 셀·중첩 셀·글상자, 머리말·꼬리말 뿌리)의 문단에 덧말을 넣는다. 입력은 `insertRuby`와 같다.
+    #[wasm_bindgen(js_name = insertRubyByPath)]
+    pub fn insert_ruby_by_path(
+        &mut self,
+        sec: u32,
+        parent_para: u32,
+        path_json: &str,
+        char_offset: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.core
+            .insert_ruby_at(
+                compose_cell(sec, parent_para, &path),
+                char_offset as usize,
+                json,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 셀 경로의 문단에 글자 겹침을 넣는다. 입력은 `insertCharOverlap`과 같다.
+    #[wasm_bindgen(js_name = insertCharOverlapByPath)]
+    pub fn insert_char_overlap_by_path(
+        &mut self,
+        sec: u32,
+        parent_para: u32,
+        path_json: &str,
+        char_offset: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.core
+            .insert_char_overlap_at(
+                compose_cell(sec, parent_para, &path),
+                char_offset as usize,
+                json,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 셀 경로 문단의 덧말·글자 겹침 하나의 값.
+    #[wasm_bindgen(js_name = getComposeControlByPath)]
+    pub fn get_compose_control_by_path(
+        &self,
+        sec: u32,
+        parent_para: u32,
+        path_json: &str,
+        ctrl_idx: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.core
+            .get_compose_control_at(compose_cell(sec, parent_para, &path), ctrl_idx as usize)
+            .map_err(|e| e.into())
+    }
+
+    /// 셀 경로 문단의 덧말·글자 겹침 하나를 고친다.
+    #[wasm_bindgen(js_name = setComposeControlByPath)]
+    pub fn set_compose_control_by_path(
+        &mut self,
+        sec: u32,
+        parent_para: u32,
+        path_json: &str,
+        ctrl_idx: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.core
+            .set_compose_control_at(
+                compose_cell(sec, parent_para, &path),
+                ctrl_idx as usize,
+                json,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 셀 경로 문단의 덧말·글자 겹침 하나를 지운다. `keep_main_text`면 본말을 글로 남긴다.
+    #[wasm_bindgen(js_name = deleteComposeControlByPath)]
+    pub fn delete_compose_control_by_path(
+        &mut self,
+        sec: u32,
+        parent_para: u32,
+        path_json: &str,
+        ctrl_idx: u32,
+        keep_main_text: bool,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.core
+            .delete_compose_control_at(
+                compose_cell(sec, parent_para, &path),
+                ctrl_idx as usize,
+                keep_main_text,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 각주·미주 문단에 덧말을 넣는다. 주소는 `insertTextInFootnote`와 같다.
+    #[wasm_bindgen(js_name = insertRubyInFootnote)]
+    pub fn insert_ruby_in_footnote(
+        &mut self,
+        sec: u32,
+        para: u32,
+        control_idx: u32,
+        fn_para: u32,
+        char_offset: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .insert_ruby_at(
+                compose_note(sec, para, control_idx, fn_para),
+                char_offset as usize,
+                json,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 각주·미주 문단에 글자 겹침을 넣는다.
+    #[wasm_bindgen(js_name = insertCharOverlapInFootnote)]
+    pub fn insert_char_overlap_in_footnote(
+        &mut self,
+        sec: u32,
+        para: u32,
+        control_idx: u32,
+        fn_para: u32,
+        char_offset: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .insert_char_overlap_at(
+                compose_note(sec, para, control_idx, fn_para),
+                char_offset as usize,
+                json,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 각주·미주 문단의 덧말·글자 겹침 하나의 값.
+    #[wasm_bindgen(js_name = getComposeControlInFootnote)]
+    pub fn get_compose_control_in_footnote(
+        &self,
+        sec: u32,
+        para: u32,
+        control_idx: u32,
+        fn_para: u32,
+        ctrl_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.core
+            .get_compose_control_at(
+                compose_note(sec, para, control_idx, fn_para),
+                ctrl_idx as usize,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 각주·미주 문단의 덧말·글자 겹침 하나를 고친다.
+    #[wasm_bindgen(js_name = setComposeControlInFootnote)]
+    pub fn set_compose_control_in_footnote(
+        &mut self,
+        sec: u32,
+        para: u32,
+        control_idx: u32,
+        fn_para: u32,
+        ctrl_idx: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .set_compose_control_at(
+                compose_note(sec, para, control_idx, fn_para),
+                ctrl_idx as usize,
+                json,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 각주·미주 문단의 덧말·글자 겹침 하나를 지운다. `keep_main_text`면 본말을 글로 남긴다.
+    #[wasm_bindgen(js_name = deleteComposeControlInFootnote)]
+    pub fn delete_compose_control_in_footnote(
+        &mut self,
+        sec: u32,
+        para: u32,
+        control_idx: u32,
+        fn_para: u32,
+        ctrl_idx: u32,
+        keep_main_text: bool,
+    ) -> Result<String, JsValue> {
+        self.core
+            .delete_compose_control_at(
+                compose_note(sec, para, control_idx, fn_para),
                 ctrl_idx as usize,
                 keep_main_text,
             )
