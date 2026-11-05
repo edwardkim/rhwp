@@ -45,7 +45,7 @@
 
 세 실패 모두 현재 단계에서는 메인터너 측 최신 base 통합·검증을 택한다. 공개 재작업 댓글은 게시하지 않았다. 로그는 `output/pr-review/semanticist21-20261105-next10/ci/`의 임시 자료이며, `gh run view --log`의 빈 응답은 증거로 사용하지 않았다. jobs REST 원본 로그·annotation·시각·실패 step을 확인했다. workflow 취소·재실행·설정 변경은 하지 않았다.
 
-## 충돌 보정안 — 작업지시자 결정 대기
+## 충돌 보정안 — 작업지시자 승인 완료
 
 동일한 base와 각 원 head로 수행한 `git merge-tree --write-tree --name-only`에서 아래 세 파일에 충돌이 있다. 나머지 8건의 개별 병합 시뮬레이션은 충돌 없이 종료했다. 누적 통합의 추가 충돌·기능 간 상호작용은 아직 판정하지 않았다.
 
@@ -54,7 +54,7 @@
 | #8368 | `src/renderer/layout.rs`, `src/renderer/layout/paragraph_layout.rs` | 원 기여의 `far_side`와 공통 `create_box_border_line_nodes`를 통합하되, #8366·#8609의 `text_border_is_drawn` 가시성 계약을 유지한다. 경로 노드의 세로 이동은 기존 공통 payload 이동 helper를 소비하게 한다. 입체선 비표시·기존 아래 쇄선·일반 테두리와 원형/물결선 반례를 함께 검증한다. |
 | #8369 | `src/renderer/skia/text_replay.rs` | 원 기여의 공통 `char_outline_stroke`(굵기·반복 구간)와 Native device 하한을 통합하되, #8403·#8410의 명시 `TextPaint` 채움·획 색·alpha·폭·join·miter 및 현재 shaping·그림자·양각 경로를 보존한다. HWP outline과 PDF 명시 paint가 서로의 획을 덮지 않는 실제 backend 대조군을 실행한다. |
 
-[로컬 사전 검증 4.2](../manual/pr_review/local_validation.md#42-merge-simulation)의 충돌 해결 방침 승인 전에는 이 세 파일을 보정하지 않는다. 충돌 없는 8건의 자료 조사·원 해결 이력 확인은 계속할 수 있다. 이번 CI 원인 처리 판단을 충돌 방침 승인으로 간주하지 않는다.
+작업지시자는 이번 응답에서 “기존 계약 보존·메인테이너 보정 승인”을 선택했다. 위 세 파일과 같은 계약의 누적 충돌 보정 및 10건 필수 로컬 검증을 승인한 범위로 진행한다. 원격 push·PR 생성·merge는 이 승인에 포함되지 않는다.
 
 ## 한 단위의 통합·검증 계획
 
@@ -72,4 +72,6 @@
 
 완료: 10건 선정·원 PR별 reviewer 지정/API 확인·head 고정·본문/diff/CI 조사, 10건 개별 merge-tree, 격리 worktree 생성, CI 실패 3건의 실제 로그와 선행 보정 확인.
 
-미완료: 충돌 방침 결정, 기능 누적 적용·메인터너 보정, 현재 base/후보의 실제 동작·시각·필수 로컬 검증, 수용 판정, 원격 push·통합 PR·merge·후속 댓글. 원 PR CI 성공이나 기여자 측 측정은 이번 통합 후보의 검증 완료로 간주하지 않는다.
+완료: 충돌 보정 방침의 작업지시자 승인.
+
+미완료: 기능 누적 적용·메인터너 보정, 현재 base/후보의 실제 동작·시각·필수 로컬 검증, 수용 판정, 원격 push·통합 PR·merge·후속 댓글. 원 PR CI 성공이나 기여자 측 측정은 이번 통합 후보의 검증 완료로 간주하지 않는다.
