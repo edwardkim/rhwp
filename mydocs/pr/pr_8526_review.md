@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 최종 통합 후보의 행 조각 추가 보정·전체 회귀·fresh WASM과 필수 품질 보존 검증 진행 중.**
+**머지 보류 — 셀 첫 줄 간격 보정 제품의 전쪽 Native/fresh WASM·전체 회귀·보호 문서 최종 검증 진행 중.**
 
 원 PR head와 메인터너 보정 제품을 구분한다. 원격 comment·approve·push·merge·close는 실행하지 않았다. 검증 완료 뒤 판정과 증적을 갱신한다.
 
@@ -11,7 +11,7 @@
 - 원 PR: [PR #8526](https://github.com/edwardkim/rhwp/pull/8526), 작성자 `semanticist21`, reviewer `jangster77`.
 - 원 head: `a4ce64e250512153d3db6e27d88bb9448f120ee2`. 2026-11-05 재조회에서 검토 시작 때와 같고 Open·Non-Draft다.
 - 고정 base: `ece9c3383bb2c73e0f055459ede727a9d3101ac6`.
-- 현재 보정 후보: `a314d7a24d3234305abff43149f575853db31105`. 아래 완료된 R2 측정 제품은 `dc39658f812d22c961ddd0fbc8e71c7ec7a52e5b`이며 새 후보 측정으로 바꾸어 쓰지 않는다.
+- 현재 보정 제품: `2de033b4e42be406a01ea0b9053a4531247e147c`(셀 첫 줄 간격 보존). 직전 행 조각 보정 제품은 `a314d7a24d3234305abff43149f575853db31105`다. 아래 완료된 R2 측정 제품은 `dc39658f812d22c961ddd0fbc8e71c7ec7a52e5b`이며 새 후보 측정으로 바꾸어 쓰지 않는다.
 - 통합 브랜치: `review/integration-20261105-semanticist21-open`.
 
 ## 원 주장과 실제 검증 범위
@@ -67,3 +67,5 @@
 PR #8526이 잘못된 삽입 위치를 -1로 거절하면서, 이전 Node 소스 검사의 ‘항상 push·항상 성공’ 가정이 맞지 않게 됐다. 원 해결 PR #3400·issue #3438의 보정 이력을 대조했다. 실제 생성·삽입·거절의 Rust 보호는 유지하고, UI에서 음수 ID로 모양 적용·성공 알림을 진행하지 않도록 보완했다. 실제 확인 메서드를 실행한 보정 전 2 FAIL / 보정 후 관련 14 PASS, 최적화 fresh WASM의 실제 -1·문서 보존·정상 삽입을 확인했다.
 
 [분석·실행 근거](assets/semanticist21_20261105/style-return-contract/README.md). TypeScript·production build도 통과했으며 실제 browser 소비 검증과 전체 통합 게이트를 완료한 뒤 최종 판정을 갱신한다. 이 UI/API 검사에 다른 문서의 시각 수치를 붙이지 않는다.
+
+현재 UI 전체 Node 검사는 2026-11-06에 2,723건 모두 통과했다. 실제 브라우저의 실패 모달 유지·성공 생성·undo 복원과 초기화 WASM 응답 SHA도 [소비 경계 증거](assets/semanticist21_20261105/style-return-contract/README.md)에 연결한다. 이 결과는 아직 실행 중인 새 조판 제품의 전쪽 시각 검증을 대신하지 않는다.
