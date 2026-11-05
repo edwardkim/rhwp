@@ -1,5 +1,16 @@
 //! 관계형: 저장 HWP5 TAC 표 줄 뒤 간격을 다음 문단 저장 vpos 가 전량 증명하면 조판도 전량을 남긴다.
-//! 주석 갱신: 2026-11-04 00:30 KST (새 파일). 측정 근거 미완료 — #8486(각주 안전여백 제거) 반영 뒤 전쪽 Native·fresh WASM 으로 다시 재어 채운다(10k 5690000-202000006 이 여백 3000HU 때문에 185→186쪽).
+//! 주석 갱신: 2026-11-05T22:50:00+09:00 (새 파일, 직전 파일 커밋 없음).
+//! 측정(2026-11-05, 제품 코드 head `e8e351687a`·base devel `a95d1d5afa`, `scripts/visual_sweep.py --silhouette-only
+//! --compat 2022 --dpi 96`, 판정값 `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣),
+//! `RHWP_FONT_PATH=ttfs/hwp:ttfs/windows`, Native Skia / fresh WASM Canvas):
+//! - 입력 `samples/issue8543/leading_shape_line-2020.hwp`, 독립 Print `pdf/issue8543/leading_shape_line-2020.pdf`
+//!   (한/글 2020, 전체 2쪽 = rhwp 2쪽).
+//! - head: Native 100.00/100.00%, fresh WASM 100.00/100.00%(전쪽 최저 두 경로 모두 100.00%).
+//! - base: 2쪽 Native 93.14% / fresh WASM 92.99%(표 B 가 2.2px 위).
+//! - 10k 코퍼스 11,423건 dump-pages A/B: 출력 변화 55건, 쪽수 변화 0건(5690000-202000006 은 #8486 반영 뒤 185=185).
+//!   변화 문서 중 한컴 Print 가 있는 37건 Native: +0.5 이상 개선 15쪽, 하락 1쪽(1500000-200600011 40쪽
+//!   32.92→29.36, base 부터 쪽 흐름이 어긋난 기존 미달), 90 경계를 내려간 쪽 0.
+//! - 근거: `mydocs/pr/assets/issue_8544/{base,head}/{native,wasm}/`, `corpus/`, `png/`, `handbook/`.
 //!
 //! #8544 TAC 표 host 마지막 줄 뒤 간격을, 다음 문단 첫 저장 줄이 `vpos + lh + ls` 에서 정확히 시작해
 //! 전량을 증명해도 조판 상한이 절반만 세어 뒤 TAC 표가 (ls/2 − 바깥 위 여백)만큼 위에 놓였다.
