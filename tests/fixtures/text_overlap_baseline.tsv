@@ -152,3 +152,5 @@ issue5679/10857_delegation_rules.hwp	1
 # 값이 같다 — 맨 위 6×6 제목 표 첫 칸의 두 줄 글자 상자(높이 32px, 줄 간격 28.8px)가 3.2px 겹치는 기존
 # 형상이며 이 PR 범위 밖이다. 같은 문서 1쪽 silhouette 은 Native·fresh WASM 99.98%.
 issue8641/field_table_after_page_box.hwpx	6
+# #8641 새 fixture: #8645·#8649 합본과 이 수정의 대조에서 보고서 2 → 2(이 수정으로 늘지 않음, 표 겹침은 문서 고유).
+issue8641/labor_standards_report.hwp	2
