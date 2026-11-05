@@ -103,11 +103,12 @@ fn levels_and_defaults() {
     assert_eq!(doc.doc_info.numberings.len(), 1);
     assert_eq!(doc.sections[0].section_def.outline_numbering_id, 1);
     let n = &doc.doc_info.numberings[0];
+    assert_eq!(n.level_formats.len(), rhwp::model::style::NUMBERING_LEVELS);
     let formats: Vec<&str> = n.level_formats.iter().map(String::as_str).collect();
     assert_eq!(
         formats,
-        vec!["^1.", "^2.", "^3.", "^4)", "(^5)", "(^6)", "^7"],
-        "4~7 수준은 한/글 기본값"
+        vec!["^1.", "^2.", "^3.", "^4)", "(^5)", "(^6)", "^7", "", "", ""],
+        "4~7 수준은 한/글 기본값이며 Scaffold가 지정하지 않는 8~10 수준은 빈 형식"
     );
     assert_eq!(
         codes(&doc),
@@ -119,13 +120,16 @@ fn levels_and_defaults() {
             OUTLINE_DEFAULTS[4].1.code(),
             OUTLINE_DEFAULTS[5].1.code(),
             OUTLINE_DEFAULTS[6].1.code(),
+            OutlineNumFormat::Digit.code(),
+            OutlineNumFormat::Digit.code(),
+            OutlineNumFormat::Digit.code(),
         ]
     );
     for h in &n.heads {
         assert_eq!(
-            (h.attr >> 5) & 0x0f,
+            (h.attr >> 5) & 0x1f,
             u32::from(h.number_format),
-            "속성 bit 5~8"
+            "속성 bit 5~9"
         );
     }
 }

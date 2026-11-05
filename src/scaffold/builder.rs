@@ -248,7 +248,7 @@ fn outline_numbering(levels: &[OutlineLevel]) -> crate::model::style::Numbering 
         let code = format.code();
         n.level_formats[i] = text.to_string();
         n.heads[i] = NumberingHead {
-            // 번호 형식 코드는 속성 bit 5~8 에도 둔다(HWPX 파서와 같은 표현).
+            // 번호 형식 코드는 속성 bit 5~9에도 둔다(HWPX 파서와 같은 표현).
             attr: OUTLINE_HEAD_ATTR | (u32::from(code) << 5),
             width_adjust: 0,
             text_distance: OUTLINE_TEXT_OFFSET,

@@ -227,7 +227,7 @@ fn compose_controls_work_in_cells_text_boxes_and_notes() {
     doc.insert_text_in_cell_native(0, tp, tc, 0, 0, 0, "셀글")
         .unwrap();
     let nested = doc
-        .create_table_in_cell_by_path_native(0, tp, &[(tc, 1, 0)], 0, 1, 1, None, None)
+        .create_table_in_cell_by_path_native(0, tp, &[(tc, 1, 0)], 0, 1, 1, None, None, true)
         .unwrap();
     let nested: serde_json::Value = serde_json::from_str(&nested).unwrap();
     let nested_path: Vec<(usize, usize, usize)> = nested["cellPath"]
@@ -451,4 +451,76 @@ fn ruby_only_paragraph_raises_its_line_in_the_body_cells_and_notes() {
             assert_eq!(rows(&reopened), expected, "{format}");
         }
     }
+}
+
+/// 도움말의 공백 제외·아홉 글자 제한을 공개 입력 경로에서도 지킨다.
+#[test]
+fn overlap_input_drops_spaces_and_keeps_hancom_limits() {
+    let mut doc = document();
+    doc.insert_char_overlap_native(0, 0, 1, r#"{"text":"1 2","shape":1,"innerSize":-3}"#)
+        .unwrap();
+    let overlap = doc.document().sections[0].paragraphs[0]
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            Control::CharOverlap(overlap) => Some(overlap),
+            _ => None,
+        })
+        .unwrap();
+    assert_eq!(overlap.chars, vec!['1', '2']);
+    assert_eq!(overlap.char_shape_ids, vec![0, 0, 0]);
+    assert!(!overlap.hwp_wire_chars);
+    for input in [
+        r#"{"text":"   ","shape":1,"innerSize":-3}"#,
+        r#"{"text":"가나다라마바사아자차","shape":1,"innerSize":-3}"#,
+        r#"{"text":"가","shape":14,"innerSize":-3}"#,
+        r#"{"text":"가","shape":1,"innerSize":3}"#,
+    ] {
+        assert!(
+            doc.insert_char_overlap_native(0, 0, 1, input).is_err(),
+            "{input}"
+        );
+    }
+}
+
+/// 덧말의 스타일 선택과 해제는 공개 편집 경로에서도 option 비트를 함께 바꾼다.
+#[test]
+fn ruby_style_sets_option_bit_and_clears_it() {
+    let mut doc = document();
+    doc.insert_ruby_native(
+        0,
+        0,
+        1,
+        r#"{"mainText":"漢字","rubyText":"한자","below":true,"styleId":17}"#,
+    )
+    .unwrap();
+    let index = doc.document().sections[0].paragraphs[0]
+        .controls
+        .iter()
+        .position(|control| matches!(control, Control::Ruby(_)))
+        .unwrap();
+    let ruby = |doc: &HwpDocument| match &doc.document().sections[0].paragraphs[0].controls[index] {
+        Control::Ruby(ruby) => ruby.clone(),
+        _ => panic!("덧말 소속 유지"),
+    };
+    let styled = ruby(&doc);
+    assert_eq!(
+        (
+            styled.pos_type,
+            styled.option,
+            styled.style_id_ref,
+            styled.align
+        ),
+        (1, 4, 17, 3)
+    );
+    doc.set_compose_control_native(0, 0, index, r#"{"mainText":"漢字","rubyText":"한자"}"#)
+        .unwrap();
+    let plain = ruby(&doc);
+    assert_eq!(
+        (plain.pos_type, plain.option, plain.style_id_ref),
+        (0, 0, 0)
+    );
+    assert!(doc
+        .insert_ruby_native(0, 0, 1, r#"{"mainText":" ","rubyText":"x"}"#)
+        .is_err());
 }
