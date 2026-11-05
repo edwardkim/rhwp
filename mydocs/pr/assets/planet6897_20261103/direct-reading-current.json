@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-11-04T23:56:29.022054+00:00",
+  "recorded_at": "2026-11-05T00:00:37.682092+00:00",
   "records": [
     {
       "pr": 8422,
@@ -21,7 +21,10 @@
         }
       },
       "observation": "목차 제목 표 뒤 본문과 후행 줄간격·줄바꿈을 대조했다. 원 PR이 밝힌 휴먼둥근헤드라인 제목 획 모양 차이는 남으며 배치 개선과 구분한다.",
-      "status": "read; final common approval is pending"
+      "status": "read; final common approval is pending",
+      "input": "samples/issue8418/30026-safety-reform-toc.hwp",
+      "pdf": "pdf/issue8418/30026-safety-reform-toc-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8434,
@@ -43,7 +46,10 @@
         }
       },
       "observation": "선언 0 글상자 입력이 정상 해석돼 본문·담당 부서 표·배너와 정책브리핑 로고를 보존한다. 독립 PDF와 표 원점·뒤 로고의 비겹침·내용 순서를 확인했다.",
-      "status": "read; final common approval is pending"
+      "status": "read; final common approval is pending",
+      "input": "samples/issue8432/156690773-declared-zero-textbox.hwp",
+      "pdf": "pdf/issue8432/156690773-declared-zero-textbox-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8461,
@@ -65,7 +71,10 @@
         }
       },
       "observation": "본문 여러 줄 뒤 TAC 로고가 담당 부서 표 아래에 보존된다. 표·글줄·로고 겹침이나 누락은 보이지 않으며 본문의 줄바꿈·목록·쪽번호도 대응한다.",
-      "status": "read; final common approval is pending"
+      "status": "read; final common approval is pending",
+      "input": "samples/issue8458/156759019-text-line-tac-logo.hwp",
+      "pdf": "pdf/issue8458/156759019-text-line-tac-logo-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8444,
@@ -87,7 +96,10 @@
         }
       },
       "observation": "첫 쪽 제목·본문 뒤 담당 부서 표와 로고가 같은 쪽에서 차례로 보존된다. 표 아래 로고와 쪽번호가 독립 Print와 대응하며 본문/그림을 아래 쪽으로 밀거나 누락하지 않는다.",
-      "status": "read; final common approval is pending"
+      "status": "read; final common approval is pending",
+      "input": "samples/issue8441/156578788-tac-logo-line.hwp",
+      "pdf": "pdf/issue8441/156578788-tac-logo-line-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8498,
@@ -109,7 +121,10 @@
         }
       },
       "observation": "보도자료 본문·제목·하단 담당 부서 표 및 두 로고를 대조했다. 표와 로고를 같은 쪽에 보존하고 로고는 표 아래에 있으며, 제목/본문의 줄바꿈과 후속 내용이 대응한다.",
-      "status": "read; final common approval is pending"
+      "status": "read; final common approval is pending",
+      "input": "samples/issue8491/156602236-press-logo.hwpx",
+      "pdf": "pdf/issue8491/156602236-press-logo-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8443,
@@ -131,7 +146,10 @@
         }
       },
       "observation": "실제 EMC 편집 저장본의 전도성 RF·통신 포트·함체 포트 세 표와 사이 본문을 대조했다. 표 프레임·행 순서·표 뒤 간격을 보존하고 누락/겹침은 보이지 않는다. 작은 글자의 획·래스터 경계 차이는 별도로 남는다.",
-      "status": "read; final common approval is pending"
+      "status": "read; final common approval is pending",
+      "input": "mydocs/pr/assets/issue_8440/integration_20261103/pr8443-emc-edit.hwpx",
+      "pdf": "pdf/issue-8440/emc_edit-2024.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8422,
@@ -153,7 +171,10 @@
         }
       },
       "observation": "fresh WASM의 목차 제목 표 뒤 본문과 후행 줄간격·목차 항목의 줄바꿈을 Native/독립 PDF와 대조했다. 원 PR의 제목 글꼴 획 차이는 남으며 줄간격 개선과 구분한다.",
-      "status": "read; final common approval is pending"
+      "status": "read; final common approval is pending",
+      "input": "samples/issue8418/30026-safety-reform-toc.hwp",
+      "pdf": "pdf/issue8418/30026-safety-reform-toc-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8434,
@@ -175,7 +196,10 @@
         }
       },
       "observation": "fresh WASM에서도 선언 0 글상자 문서의 본문·담당 부서 표·하단 배너 및 로고가 독립 PDF와 같은 순서·위치로 보존된다. 누락/겹침은 보이지 않는다.",
-      "status": "read; final common approval is pending"
+      "status": "read; final common approval is pending",
+      "input": "samples/issue8432/156690773-declared-zero-textbox.hwp",
+      "pdf": "pdf/issue8432/156690773-declared-zero-textbox-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8422,
@@ -198,7 +222,9 @@
         }
       },
       "observation": "TAC 표 뒤 본문의 줄 순서·줄바꿈·줄간격을 대조했다. 목록 첫 줄의 들여쓰기와 일부 글꼴 획 차이는 남으며 전체 픽셀 일치로 판정하지 않는다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue8418/30026-safety-reform-toc-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8434,
@@ -221,7 +247,9 @@
         }
       },
       "observation": "선언 0 글상자 입력의 마지막 본문, 담당 부서 표, 정책브리핑·OPEN 로고가 같은 쪽에 차례로 보존된다. 표 외곽과 두 행, 표 아래 로고의 간격·비겹침을 대조했다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue8432/156761223-declared-zero-textbox-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8444,
@@ -244,7 +272,9 @@
         }
       },
       "observation": "보도정정자료 제목 상자·본문 뒤 담당 부서 표와 두 로고가 같은 쪽에 보존된다. TAC 로고를 다음 쪽으로 밀거나 본문과 겹치는 현상은 보이지 않는다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue8441/156669499-tac-logo-line-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8448,
@@ -267,7 +297,9 @@
         }
       },
       "observation": "리셋된 빈 줄을 포함한 보도자료에서 제목·본문·각주 뒤 담당 부서 표와 로고가 같은 쪽에 순서대로 남는다. 첫 줄·빈 줄이 뒤 로고 원점을 이중 전진시키지 않는지 대조했다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue8446/156569782-reset-line-logo-empty-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8461,
@@ -290,7 +322,9 @@
         }
       },
       "observation": "12쪽 용어 표의 각 행과 내용 순서·표 끝·각주·쪽번호를 대조했다. 본문의 글꼴 폭과 획 차이는 남지만 표 행 경계·각주 소속은 대응한다. 이 쪽을 98% 이상 좌표 고정 근거로 사용하지 않는다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue8458/156759019-text-line-tac-logo-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8465,
@@ -313,7 +347,9 @@
         }
       },
       "observation": "개인정보보호법 상자와 본문 뒤 정책브리핑·OPEN 로고가 같은 쪽에서 보존된다. 붙임 제목·후속 표와 로고가 겹치지 않으며 표의 행 순서와 내용은 대응한다. 일부 글꼴 획 차이는 남는다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue8462/156552561-offpage-textbox-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8465,
@@ -336,7 +372,9 @@
         }
       },
       "observation": "보도자료 제목·본문·담당 부서 표 뒤 정책브리핑·광고 배너·OPEN 로고를 대조했다. 페이지 밖 앵커 때문에 사라지던 하단 그림의 보존과 내용 순서·비겹침을 확인했다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue8462/156633674-offpage-logo-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8428,
@@ -359,7 +397,9 @@
         }
       },
       "observation": "HWP 입력의 표 안 농촌진흥청 로고와 광복80 그림을 대조했다. 두 그림이 머리 표에 포함되고 제목 표·세 부제·후속 본문이 순서대로 보존된다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue2004_cell_image_stack-hwp-2020.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8428,
@@ -382,7 +422,9 @@
         }
       },
       "observation": "HWPX 입력의 같은 표 안 로고 두 개를 별도로 대조했다. 그림 포함·제목과 세 부제·후속 본문의 줄바꿈과 비겹침이 독립 Print와 대응한다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue2004_cell_image_stack-hwpx-2020.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8422,
@@ -405,7 +447,9 @@
         }
       },
       "observation": "TAC 표 뒤 본문의 줄 순서·줄바꿈·줄간격을 대조했다. 목록 첫 줄의 들여쓰기와 일부 글꼴 획 차이는 남으며 전체 픽셀 일치로 판정하지 않는다. WASM에서는 일부 굵은 글자의 획 표현도 PDF와 다르며 배치 주장과 구분한다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue8418/30026-safety-reform-toc-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8434,
@@ -428,7 +472,9 @@
         }
       },
       "observation": "선언 0 글상자 입력의 마지막 본문, 담당 부서 표, 정책브리핑·OPEN 로고가 같은 쪽에 차례로 보존된다. 표 외곽과 두 행, 표 아래 로고의 간격·비겹침을 대조했다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue8432/156761223-declared-zero-textbox-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8444,
@@ -451,7 +497,9 @@
         }
       },
       "observation": "보도정정자료 제목 상자·본문 뒤 담당 부서 표와 두 로고가 같은 쪽에 보존된다. TAC 로고를 다음 쪽으로 밀거나 본문과 겹치는 현상은 보이지 않는다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue8441/156669499-tac-logo-line-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8448,
@@ -474,7 +522,9 @@
         }
       },
       "observation": "리셋된 빈 줄을 포함한 보도자료에서 제목·본문·각주 뒤 담당 부서 표와 로고가 같은 쪽에 순서대로 남는다. 첫 줄·빈 줄이 뒤 로고 원점을 이중 전진시키지 않는지 대조했다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue8446/156569782-reset-line-logo-empty-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8461,
@@ -497,7 +547,9 @@
         }
       },
       "observation": "12쪽 용어 표의 각 행과 내용 순서·표 끝·각주·쪽번호를 대조했다. 본문의 글꼴 폭과 획 차이는 남지만 표 행 경계·각주 소속은 대응한다. 이 쪽을 98% 이상 좌표 고정 근거로 사용하지 않는다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue8458/156759019-text-line-tac-logo-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8465,
@@ -520,7 +572,9 @@
         }
       },
       "observation": "개인정보보호법 상자와 본문 뒤 정책브리핑·OPEN 로고가 같은 쪽에서 보존된다. 붙임 제목·후속 표와 로고가 겹치지 않으며 표의 행 순서와 내용은 대응한다. 일부 글꼴 획 차이는 남는다. WASM에서는 일부 굵은 글자의 획 표현도 PDF와 다르며 배치 주장과 구분한다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue8462/156552561-offpage-textbox-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8465,
@@ -543,7 +597,9 @@
         }
       },
       "observation": "보도자료 제목·본문·담당 부서 표 뒤 정책브리핑·광고 배너·OPEN 로고를 대조했다. 페이지 밖 앵커 때문에 사라지던 하단 그림의 보존과 내용 순서·비겹침을 확인했다. WASM에서는 일부 굵은 글자의 획 표현도 PDF와 다르며 배치 주장과 구분한다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue8462/156633674-offpage-logo-2022.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8428,
@@ -566,7 +622,9 @@
         }
       },
       "observation": "HWP 입력의 표 안 농촌진흥청 로고와 광복80 그림을 대조했다. 두 그림이 머리 표에 포함되고 제목 표·세 부제·후속 본문이 순서대로 보존된다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue2004_cell_image_stack-hwp-2020.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8428,
@@ -589,7 +647,9 @@
         }
       },
       "observation": "HWPX 입력의 같은 표 안 로고 두 개를 별도로 대조했다. 그림 포함·제목과 세 부제·후속 본문의 줄바꿈과 비겹침이 독립 Print와 대응한다.",
-      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기",
+      "pdf": "pdf/issue2004_cell_image_stack-hwpx-2020.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8540,
@@ -612,7 +672,9 @@
         }
       },
       "observation": "A/B의 제목과 수준별 개요 번호, 본문 뒤 이어지는 번호 순서·간격·줄바꿈을 독립 Print와 대조했다. 두 backend raw 100%와 획 단위의 완전한 일치를 구분한다.",
-      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기",
+      "pdf": "pdf/issue8540/scaffold_outline_a-2024.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8540,
@@ -635,7 +697,9 @@
         }
       },
       "observation": "A/B의 제목과 수준별 개요 번호, 본문 뒤 이어지는 번호 순서·간격·줄바꿈을 독립 Print와 대조했다. 두 backend raw 100%와 획 단위의 완전한 일치를 구분한다.",
-      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기",
+      "pdf": "pdf/issue8540/scaffold_outline_a-2024.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8540,
@@ -658,7 +722,9 @@
         }
       },
       "observation": "A/B의 제목과 수준별 개요 번호, 본문 뒤 이어지는 번호 순서·간격·줄바꿈을 독립 Print와 대조했다. 두 backend raw 100%와 획 단위의 완전한 일치를 구분한다.",
-      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기",
+      "pdf": "pdf/issue8540/scaffold_outline_b-2024.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8540,
@@ -681,7 +747,9 @@
         }
       },
       "observation": "A/B의 제목과 수준별 개요 번호, 본문 뒤 이어지는 번호 순서·간격·줄바꿈을 독립 Print와 대조했다. 두 backend raw 100%와 획 단위의 완전한 일치를 구분한다.",
-      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기",
+      "pdf": "pdf/issue8540/scaffold_outline_b-2024.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8546,
@@ -1231,7 +1299,10 @@
         }
       },
       "observation": "위생 앞 조각의 아래 외곽이 독립 Print와 대응한다. 위생사만 앞 조각에 남고 영양사는 다음 쪽으로 이어지며 다른 행의 내용·선·순서도 보존된다.",
-      "status": "read; regression and final common approval are pending"
+      "status": "read; regression and final common approval are pending",
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8547,
@@ -1253,7 +1324,10 @@
         }
       },
       "observation": "영양사 이어받기와 의료기술·의무·약무 이후 행의 순서가 보존된다. 마지막 rowspan의 열린 왼쪽 외곽과 다른 셀의 하단도 Print와 대응한다.",
-      "status": "read; regression and final common approval are pending"
+      "status": "read; regression and final common approval are pending",
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8476,
@@ -1419,7 +1493,10 @@
           "capture_path": "output/pr-review/planet6897-20261103/marker-slot-panels/native/pr8433-levels-d014d88d/overlay/overlay_001.png",
           "sha256": "1af1e65040f2b45d9a4da5cace33118d2382bb9285fb3c65830f0aed8a2ca931"
         }
-      }
+      },
+      "input": "mydocs/pr/assets/issue_8425/probe/levels.hwpx",
+      "pdf": "pdf/issue-8425/levels-2024.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8433,
@@ -1441,7 +1518,10 @@
           "capture_path": "output/pr-review/planet6897-20261103/marker-slot-panels/native/pr8433-levels-493f24c1/overlay/overlay_001.png",
           "sha256": "050676d993e894fd2a0dc65ee1ca54f8055309ade2dfabd7f69b5c7b5bcb2c86"
         }
-      }
+      },
+      "input": "mydocs/pr/assets/issue_8425/probe/levels.hwpx",
+      "pdf": "pdf/issue-8425/levels-2020.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8433,
@@ -1463,7 +1543,10 @@
           "capture_path": "output/pr-review/planet6897-20261103/marker-slot-panels/native/pr8433-issue3307_outline_number-8704d61b/overlay/overlay_007.png",
           "sha256": "57124f5051682bae564bab82cb072153a10d4c87dc30168a921ae2c5c5edd6c8"
         }
-      }
+      },
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8475,
@@ -1653,7 +1736,10 @@
           "capture_path": "output/pr-review/planet6897-20261103/marker-slot-panels/wasm/pr8433-levels-d014d88d/overlay/overlay_001.png",
           "sha256": "78d816ad3ce8a9d5c00f1b2739c1df847f1907e9c95840c78595e6494bffc777"
         }
-      }
+      },
+      "input": "mydocs/pr/assets/issue_8425/probe/levels.hwpx",
+      "pdf": "pdf/issue-8425/levels-2024.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8433,
@@ -1675,7 +1761,10 @@
           "capture_path": "output/pr-review/planet6897-20261103/marker-slot-panels/wasm/pr8433-levels-493f24c1/overlay/overlay_001.png",
           "sha256": "392d75ab0320cf08464bcda9710bfc3b67b90d728b85024a1e9142b61b0b3aaa"
         }
-      }
+      },
+      "input": "mydocs/pr/assets/issue_8425/probe/levels.hwpx",
+      "pdf": "pdf/issue-8425/levels-2020.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8433,
@@ -1697,7 +1786,10 @@
           "capture_path": "output/pr-review/planet6897-20261103/marker-slot-panels/wasm/pr8433-issue3307_outline_number-8704d61b/overlay/overlay_007.png",
           "sha256": "7046764fda4b1c2f6903862dc355975c160dd6c45aa2206e73bc82d194395adc"
         }
-      }
+      },
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8547,
@@ -1719,7 +1811,10 @@
           "capture_path": "output/pr-review/planet6897-20261103/marker-slot-panels/native/pr8547-gangseo_exempt_certificates-e5b4dd3b/overlay/overlay_003.png",
           "sha256": "533066e450e6f4a039e36bffa7ee7755bc92db8effe454b7c3c099b8e78e369e"
         }
-      }
+      },
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8547,
@@ -1741,7 +1836,10 @@
           "capture_path": "output/pr-review/planet6897-20261103/marker-slot-panels/native/pr8547-gangseo_exempt_certificates-e5b4dd3b/overlay/overlay_004.png",
           "sha256": "330f5dee77e5dbcddfa9e2074cb077dfed1f37f86fe02229a2bdb0ba011bc4bb"
         }
-      }
+      },
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8547,
@@ -1763,7 +1861,10 @@
           "capture_path": "output/pr-review/planet6897-20261103/marker-slot-panels/wasm/pr8547-gangseo_exempt_certificates-e5b4dd3b/overlay/overlay_003.png",
           "sha256": "e1c237d8956a8ade1d9ad242d9bcdcf75e5fa3f8cb5da2f90029b52c491bfb6d"
         }
-      }
+      },
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8547,
@@ -1785,7 +1886,10 @@
           "capture_path": "output/pr-review/planet6897-20261103/marker-slot-panels/wasm/pr8547-gangseo_exempt_certificates-e5b4dd3b/overlay/overlay_004.png",
           "sha256": "643b16307615122f241971551558645cb37e7c913c0cabfd7a21647a8d47fec6"
         }
-      }
+      },
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "input_binding_verified_from_existing_capture": true
     },
     {
       "pr": 8429,
@@ -3519,9 +3623,105 @@
       },
       "observation": "정상 저장 세로줄 대조군이다. 담당·세부 업무·기한의 상자와 세로 제목의 소속을 보존한다. 독립 Print에는 있는 상자 사이 연결 화살표가 RHWP에는 없고 제목 굵기·세로 글자 간격도 일부 다르다. 이전 c183 PNG와 바이트가 동일해 이번 합성 줄 보정으로 새로 생긴 차이로 분류하지 않으며, 원본 전체의 완전 일치를 주장하지 않는다.",
       "status": "Native 주장 쪽 판독 완료; fresh WASM 및 최종 공통 검증 대기"
+    },
+    {
+      "pr": 8486,
+      "input": "samples/issue8468/line_reserve_F20_L30_A40_R12.hwp",
+      "pdf": "pdf/issue8468/line_reserve_F20_L30_A40_R12-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-05T00:00:37.682092+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8486/pr8486-claim-p001-line_reserve_F20_L-86974c-native-review.png",
+          "sha256": "205d040d169ea3b99ec6274ca2fabc8e4949fb0e91e2294260ed134639109c7a",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p001-line_reserve_F20_L-86974c/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8486/pr8486-claim-p001-line_reserve_F20_L-86974c-native-overlay.png",
+          "sha256": "7cb1b5209f1761acfd15bfb0ce9668e3fb4cd826afff64321a4f8cac3874e5fb",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p001-line_reserve_F20_L-86974c/overlay/overlay_001.png"
+        }
+      },
+      "observation": "A=40의 각주 예약 입력이다. 채움 01–20 뒤의 본문은 쪽 하단의 042까지 이어지고, 041의 각주 표지와 분리선 아래 각주 1 본문 두 줄이 보존된다. 각주가 본문과 겹치거나 긴 문단 전체를 다음 쪽으로 이동시키지 않으며 Print와 같은 본문 끝·각주 위치 관계를 확인했다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8486,
+      "input": "samples/issue8468/line_reserve_F20_L30_A46_R12.hwp",
+      "pdf": "pdf/issue8468/line_reserve_F20_L30_A46_R12-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-05T00:00:37.682092+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8486/pr8486-claim-p001-line_reserve_F20_L-fe82a3-native-review.png",
+          "sha256": "b7288253d9098e3d55bcb2ec9973c2feec848a9b47d854d8c20e83c75f91f7fc",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p001-line_reserve_F20_L-fe82a3/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8486/pr8486-claim-p001-line_reserve_F20_L-fe82a3-native-overlay.png",
+          "sha256": "80dc6ff1c24b26905f410033c5dd827625bb57474627ec166238b03313a9cba5",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p001-line_reserve_F20_L-fe82a3/overlay/overlay_001.png"
+        }
+      },
+      "observation": "A=46의 경계 대조 입력이다. 채움 01–20 뒤 긴 본문이 048까지 이어지고 047의 각주 표지는 남는다. Print와 RHWP 모두 이 쪽에는 각주 분리선과 각주 본문이 없으며, 앞 A=40 입력과 각주 수용 경계가 달라지는 것을 확인했다. 이 1쪽 그림만으로 다음 쪽의 각주 내용 보존까지 입증하지 않는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8486,
+      "input": "samples/issue8468/line_reserve_F20_L30_A40_R12.hwp",
+      "pdf": "pdf/issue8468/line_reserve_F20_L30_A40_R12-2020.pdf",
+      "page": 1,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-05T00:00:37.682092+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8486/pr8486-claim-p001-line_reserve_F20_L-86974c-wasm-review.png",
+          "sha256": "909a6144e8620194683f2e607ae9373ffcc3f5171a46ae6eacdf23a4fb052d0f",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8486-claim-p001-line_reserve_F20_L-86974c/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8486/pr8486-claim-p001-line_reserve_F20_L-86974c-wasm-overlay.png",
+          "sha256": "6694e229017db072c5e621f5d6c655f14700a3444051c9b4ec0c79928bc5a9d2",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8486-claim-p001-line_reserve_F20_L-86974c/overlay/overlay_001.png"
+        }
+      },
+      "observation": "A=40의 각주 예약 입력이다. 채움 01–20 뒤의 본문은 쪽 하단의 042까지 이어지고, 041의 각주 표지와 분리선 아래 각주 1 본문 두 줄이 보존된다. 각주가 본문과 겹치거나 긴 문단 전체를 다음 쪽으로 이동시키지 않으며 Print와 같은 본문 끝·각주 위치 관계를 확인했다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8486,
+      "input": "samples/issue8468/line_reserve_F20_L30_A46_R12.hwp",
+      "pdf": "pdf/issue8468/line_reserve_F20_L30_A46_R12-2020.pdf",
+      "page": 1,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-05T00:00:37.682092+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8486/pr8486-claim-p001-line_reserve_F20_L-fe82a3-wasm-review.png",
+          "sha256": "c3cddcbcdd3f99bd559ff3d9e1d7c27f53b1309c44dceddc09a14e34afa5abb7",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8486-claim-p001-line_reserve_F20_L-fe82a3/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8486/pr8486-claim-p001-line_reserve_F20_L-fe82a3-wasm-overlay.png",
+          "sha256": "42f509fd636d07393cbc6523af23e0c4aff1acf90d16573152582b05fbe864f1",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8486-claim-p001-line_reserve_F20_L-fe82a3/overlay/overlay_001.png"
+        }
+      },
+      "observation": "A=46의 경계 대조 입력이다. 채움 01–20 뒤 긴 본문이 048까지 이어지고 047의 각주 표지는 남는다. Print와 RHWP 모두 이 쪽에는 각주 분리선과 각주 본문이 없으며, 앞 A=40 입력과 각주 수용 경계가 달라지는 것을 확인했다. 이 1쪽 그림만으로 다음 쪽의 각주 내용 보존까지 입증하지 않는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
     }
   ],
-  "record_count": 149,
+  "record_count": 153,
   "final_approval": false,
   "note": "직접 본 PNG의 해시와 관측만 기록한다. 기록되지 않은 쪽이나 최종 공통 검증의 완료를 주장하지 않는다."
 }

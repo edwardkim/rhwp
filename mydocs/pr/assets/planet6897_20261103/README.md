@@ -45,7 +45,7 @@ PR #8475는 별도 보정 대상으로 유지합니다. 새 관계 검사 2개�
 실제로 실패하며 세로줄 분산·칸 밖 글자 배치를 재현했습니다. 초기 검증 폴더의 자료 누락으로
 발생한 컴파일 오류는 이 재현 결과에서 제외했습니다. 보정 소스 `37e5bba300`은 별도
 worktree에서 검증 중이며, 위 `c183a1ac61`의 통과 결과로 대신하지 않습니다.
-[기본 옵션의 집중 검사](pr_8475/vertical-axis-focused-37e5bba300.json)는 같은 검출 함수의
+[기본 옵션의 집중 검사](pr_8475/vertical-axis-focused-37e5bba300.md)는 같은 검출 함수의
 수정 전 2 FAIL·수정 후 2 PASS와 기존 대조 5 PASS를 확인했습니다. 보정 후 실제
 Native/fresh WASM 전쪽·확대 판독과 최종 공통 검증은 아직 완료 전입니다.
 
@@ -183,8 +183,8 @@ PR 생성은 작업지시자의 별도 승인 전까지 대기한다. 로컬 검
 PR #8475의 별도 보정 소스 `37e5bba300`을 실제 컴파일한 Native 제품에서 두 문제
 입력의 각 5쪽은 모두 100.00%다. 6입력·29쪽 대조에서 두 문제 쪽만 개선됐고 나머지
 27쪽은 직전 `c183a1ac61` 후보의 PNG 바이트와 같다.
-[전쪽 대조](pr_8475/vertical-axis-37e5bba300/native/audit.json)와
-[주장 쪽 review·overlay 및 직접 판독](pr_8475/vertical-axis-37e5bba300/native/direct-reading.json)을 보존했다.
+[전쪽 대조](pr_8475/vertical-axis-37e5bba300/native/README.md)와
+[주장 쪽 review·overlay 및 직접 판독](pr_8475/vertical-axis-37e5bba300/native/README.md)을 보존했다.
 이 보정은 아직 통합 브랜치의 제품 코드에 적용하지 않았으며 fresh WASM과 해당 소스의
 최종 필수 검증은 진행 중이다. 기존 `c183a1ac61` 전체 검증을 새 보정 소스의 통과로
 표시하지 않는다.

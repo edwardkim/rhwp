@@ -10,7 +10,7 @@ Native/fresh WASM 양쪽에서 확인했으며 98%대 점수만으로 면제하�
 [소유권·합성 줄 경로 분석](../working/task_m100_8470_vertical_synthetic_frame.md)에 따라
 이 주장 칸의 글자 보존까지 보정·재검증한 뒤 최종 판정을 갱신합니다.
 
-별도 보정 소스 `37e5bba300`에서 [같은 관계 검사의 수정 전후 실행](assets/planet6897_20261103/pr_8475/vertical-axis-focused-37e5bba300.json)을 확인했습니다.
+별도 보정 소스 `37e5bba300`에서 [같은 관계 검사의 수정 전후 실행](assets/planet6897_20261103/pr_8475/vertical-axis-focused-37e5bba300.md)을 확인했습니다.
 검출 assertion을 바꾸지 않고 수정 전 2 FAIL에서 수정 후 2 PASS로 바뀌었으며,
 기존 표 나눔 4개와 저장 세로줄 정상 대조 1개도 최소 글꼴 환경에서 통과했습니다.
 이 소스는 별도 검증 worktree에 있으며 아직 통합 브랜치의 제품 코드에 적용하지 않았습니다.
@@ -25,9 +25,8 @@ Native/fresh WASM 전쪽·확대 판독과 최종 공통 검증 전까지 보류
 
 보정 소스 `37e5bba3007614d9304c3dbf863503a8c7340405`의 Native 제품을 별도로
 빌드해 실제 컴파일 의존성에 새 공통 helper가 포함됐음을 확인했습니다.
-[제품·명령·SHA](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/product.json),
-[전쪽 raw·직전 후보 대조](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/audit.json),
-[직접 판독과 PNG 해시](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/direct-reading.json)를 보존했습니다.
+[제품·명령·SHA와 전쪽 대조](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/README.md),
+[주장 쪽 직접 판독](assets/planet6897_20261103/direct-reading-current.md)을 보존했습니다.
 
 | 입력 | 보정 후 Native 전쪽 TSV · 최저 raw | 직접 확인한 주장 쪽 |
 | --- | --- | --- |

@@ -103,7 +103,7 @@ PR 8475 기록에 있다. 기존 PNG의 producer `4b149b6cdf`와 새 측정 제�
   남기는 합성 줄도 같은 단일 세로줄을 나타내는지 검사한다. 절대 px나 특정 글꼴 폭으로
   기대값을 맞추지 않는다.
 
-[실제 수정 전후 실행 원장](../pr/assets/planet6897_20261103/pr_8475/vertical-axis-focused-37e5bba300.json)에
+[실제 수정 전후 실행 원장](../pr/assets/planet6897_20261103/pr_8475/vertical-axis-focused-37e5bba300.md)에
 검출 함수의 동일 SHA와 각 로그 SHA를 기록했다. 동일 검출 assertion으로 수정 전
 0 PASS·2 FAIL, 수정 후 2 PASS·0 FAIL이다. 기존 표 나눔 4개와 정상 저장 세로줄 1개도
 통과했다. 모두 공개 글꼴 5개만 노출한 최소 글꼴 환경과 기본 컴파일 옵션을 사용했다.
@@ -130,7 +130,7 @@ overlay를 대조해 마지막 글자 복원·동일 세로줄·셀 내부 포�
 나머지 27쪽은 직전 후보의 Native PNG와 바이트가 같고 두 문제 쪽만 바뀌었다.
 실물 16쪽 최저는 94.92448%, 저장 줄 정상 대조 1쪽은 97.97401%로 유지됐다.
 
-[보정 후 Native 전쪽·판독 증거](../pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/direct-reading.json)에
+[보정 후 Native 전쪽·판독 증거](../pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/README.md)에
 실제 입력·PDF·제품 SHA·TSV·PNG와 관측을 연결했다. 실물 10쪽의 유효한 저장 세로줄
 간격과 정상 대조의 연결 화살표 등 기존 차이도 별도로 적었다. 이들은 직전 후보와 같은
 출력이며, 저장 줄이 없는 축약 입력의 누락 복원을 전체 기존 표현 차이의 해결로 쓰지 않는다.
