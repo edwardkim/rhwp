@@ -1,0 +1,567 @@
+{
+  "producer": {
+    "parent_head": "d3582c4993056897104a1e5cb8cafde8780b6b96",
+    "wait_pid": 74331,
+    "source_files": {
+      "src/renderer/equation/mod.rs": "0081f6aff9c35f5df2a1c695945717b17b3419b8b7b4edd3f452a002f5caae6d",
+      "src/renderer/composer/equation_line_metrics.rs": "13e1fe6a32b9fea2ce692aaf21e33805b4720848cf6f0a0adfa2563f490f3a1f",
+      "src/renderer/skia/text_replay/fonts.rs": "dc3a62f7b0bb11f1e10e28fba89fa18ecc2b395df29e92a0f03bbfb669404bd8",
+      "tests/cases/issue_7640_resaved_endnote_frame.rs": "d9a9b7b038b31e939e7787f91f7fb8cb86a5f2515dc717ca2e89bfe1caf17bcc"
+    },
+    "binary": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rhwp-issue7640-frame-native",
+    "binary_sha256": "7d5e93cf35bbebdb5ae8f3d8f665865aa4b30bc40057e157fae6db999f6c8975"
+  },
+  "source_test_comment_notice": "producer의 테스트 파일 해시는 처음 2 PASS를 얻은 주석 버전이다. 이후 Native 11쪽 수치를 헤더에 반영했고 검사 본문은 유지했다. CLI는 해당 integration test source를 컴파일하지 않는다.",
+  "tests": {
+    "first_relation_before": {
+      "passed": 0,
+      "failed": 1,
+      "seconds": 1.326,
+      "actual_columns": [
+        1,
+        1
+      ],
+      "expected_columns": [
+        0,
+        0
+      ]
+    },
+    "first_relation_after": {
+      "passed": 1,
+      "failed": 0,
+      "seconds": 1.407
+    },
+    "protected_complex_controls": {
+      "passed": 2,
+      "failed": 0,
+      "seconds": 6.705
+    },
+    "related": {
+      "pid": 93614,
+      "current": "complete",
+      "success": true,
+      "cases": [
+        "equation_completed_document_boundaries",
+        "equation_flow_metrics_cache",
+        "equation_render_cache_contract",
+        "issue_7445_participating_equation_frame",
+        "issue_7642_oct_endnote_relations"
+      ],
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test",
+        "regression_suite_002",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_014",
+        "-E",
+        "test(/(^|::)(equation_completed_document_boundaries|equation_flow_metrics_cache|equation_render_cache_contract|issue_7445_participating_equation_frame|issue_7642_oct_endnote_relations)::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 292.217
+    },
+    "final_focus": {
+      "passed": 2,
+      "failed": 0,
+      "seconds": 8.536,
+      "test_source_sha256": "ed29b7cd21142023775789b18fe26b49e540c84be4e9d49a361fdbe39f15d3ab"
+    }
+  },
+  "native": {
+    "pages": 21,
+    "run_state": "complete",
+    "gate": {
+      "status": "re_review_required",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 18,
+          "silhouette_raw_match_percent": 39.24158
+        },
+        {
+          "page": 19,
+          "silhouette_raw_match_percent": 42.58867
+        },
+        {
+          "page": 20,
+          "silhouette_raw_match_percent": 66.05146
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 21,
+        "pdf": 21
+      },
+      "page_count_mismatch": false
+    },
+    "page11_before": 53.60031,
+    "page11_after": 99.66679
+  },
+  "issue7375_control": {
+    "scope": "#7640 현재 줄 캐시·Native 글꼴 보정 전후의 #7375 원본 50쪽",
+    "pages": 50,
+    "identical_pages": 50,
+    "differences": [],
+    "before_source": "a7f4dd73109ce451d6738a1df2054515a7a22202",
+    "after_producer": {
+      "parent_head": "d3582c4993056897104a1e5cb8cafde8780b6b96",
+      "wait_pid": 74331,
+      "source_files": {
+        "src/renderer/equation/mod.rs": "0081f6aff9c35f5df2a1c695945717b17b3419b8b7b4edd3f452a002f5caae6d",
+        "src/renderer/composer/equation_line_metrics.rs": "13e1fe6a32b9fea2ce692aaf21e33805b4720848cf6f0a0adfa2563f490f3a1f",
+        "src/renderer/skia/text_replay/fonts.rs": "dc3a62f7b0bb11f1e10e28fba89fa18ecc2b395df29e92a0f03bbfb669404bd8",
+        "tests/cases/issue_7640_resaved_endnote_frame.rs": "d9a9b7b038b31e939e7787f91f7fb8cb86a5f2515dc717ca2e89bfe1caf17bcc"
+      },
+      "binary": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rhwp-issue7640-frame-native",
+      "binary_sha256": "7d5e93cf35bbebdb5ae8f3d8f665865aa4b30bc40057e157fae6db999f6c8975"
+    },
+    "rows": [
+      {
+        "page": "rhwp_001.png",
+        "before_sha256": "80d601704fb3a6836dfcdc3297b0b784e9562676d6c78a95c37aa86c594eb3e8",
+        "after_sha256": "80d601704fb3a6836dfcdc3297b0b784e9562676d6c78a95c37aa86c594eb3e8",
+        "identical": true
+      },
+      {
+        "page": "rhwp_002.png",
+        "before_sha256": "96df6c753808e80d6cb3efbbc1b09293c23bd8e382a7d5dc863407983e0515f7",
+        "after_sha256": "96df6c753808e80d6cb3efbbc1b09293c23bd8e382a7d5dc863407983e0515f7",
+        "identical": true
+      },
+      {
+        "page": "rhwp_003.png",
+        "before_sha256": "358f0a43fcec13416aaff339d2213ef4285ba078646000f921b0d135901bf45b",
+        "after_sha256": "358f0a43fcec13416aaff339d2213ef4285ba078646000f921b0d135901bf45b",
+        "identical": true
+      },
+      {
+        "page": "rhwp_004.png",
+        "before_sha256": "d47e7df902a9c182da4ce1c629069252b520679dfa1ee64d01e74c718a526ef4",
+        "after_sha256": "d47e7df902a9c182da4ce1c629069252b520679dfa1ee64d01e74c718a526ef4",
+        "identical": true
+      },
+      {
+        "page": "rhwp_005.png",
+        "before_sha256": "f199aeaffca9b73ee6d243f8a52992649267723bb1ca23270d9d1b2b61d5ea7f",
+        "after_sha256": "f199aeaffca9b73ee6d243f8a52992649267723bb1ca23270d9d1b2b61d5ea7f",
+        "identical": true
+      },
+      {
+        "page": "rhwp_006.png",
+        "before_sha256": "c0cff3711b8009050a6fecd80cd4796528751bdfca2dbaeae809b275e0577a90",
+        "after_sha256": "c0cff3711b8009050a6fecd80cd4796528751bdfca2dbaeae809b275e0577a90",
+        "identical": true
+      },
+      {
+        "page": "rhwp_007.png",
+        "before_sha256": "1255b193a7655d316a9aeee228ea4d7f96b7456d4d450a19694c32ccd2cddef7",
+        "after_sha256": "1255b193a7655d316a9aeee228ea4d7f96b7456d4d450a19694c32ccd2cddef7",
+        "identical": true
+      },
+      {
+        "page": "rhwp_008.png",
+        "before_sha256": "06de3fe16864115fb42c982f81e3629fff47a75615568b31caf4c139bb647175",
+        "after_sha256": "06de3fe16864115fb42c982f81e3629fff47a75615568b31caf4c139bb647175",
+        "identical": true
+      },
+      {
+        "page": "rhwp_009.png",
+        "before_sha256": "4fc8db430653f3462fe4f2a9e736a199b9fe611936aa1d569fcb8da0bd6b3b32",
+        "after_sha256": "4fc8db430653f3462fe4f2a9e736a199b9fe611936aa1d569fcb8da0bd6b3b32",
+        "identical": true
+      },
+      {
+        "page": "rhwp_010.png",
+        "before_sha256": "ef19fd2978e25d64a74e6c3186a1dcfda8f8d4e205f9cf260e352847b808de76",
+        "after_sha256": "ef19fd2978e25d64a74e6c3186a1dcfda8f8d4e205f9cf260e352847b808de76",
+        "identical": true
+      },
+      {
+        "page": "rhwp_011.png",
+        "before_sha256": "d3ec453630e8d38268a907b7f15bede9b104763be98c86a452488d9113eaff3c",
+        "after_sha256": "d3ec453630e8d38268a907b7f15bede9b104763be98c86a452488d9113eaff3c",
+        "identical": true
+      },
+      {
+        "page": "rhwp_012.png",
+        "before_sha256": "38149cc3b2edd8e6e494447756b97c9a15ecd1c5de961977d219fadee5b15ce3",
+        "after_sha256": "38149cc3b2edd8e6e494447756b97c9a15ecd1c5de961977d219fadee5b15ce3",
+        "identical": true
+      },
+      {
+        "page": "rhwp_013.png",
+        "before_sha256": "519b597a56f5a0127aff75049bb67cbc7872c6c0eee846f6cb53fd931339c58f",
+        "after_sha256": "519b597a56f5a0127aff75049bb67cbc7872c6c0eee846f6cb53fd931339c58f",
+        "identical": true
+      },
+      {
+        "page": "rhwp_014.png",
+        "before_sha256": "c74411f297fb0ccdbde45f3c8b8326341b39477fb4972ce886d5836e6e9645a4",
+        "after_sha256": "c74411f297fb0ccdbde45f3c8b8326341b39477fb4972ce886d5836e6e9645a4",
+        "identical": true
+      },
+      {
+        "page": "rhwp_015.png",
+        "before_sha256": "5f39e4b75714e8fed6b5e46ae60fa990831238698f0f2e853ceb122e1b1407ac",
+        "after_sha256": "5f39e4b75714e8fed6b5e46ae60fa990831238698f0f2e853ceb122e1b1407ac",
+        "identical": true
+      },
+      {
+        "page": "rhwp_016.png",
+        "before_sha256": "beae641b8519af6743879fc702d6d658a1e14fe7ff10df82a8bcc77c8e4ab063",
+        "after_sha256": "beae641b8519af6743879fc702d6d658a1e14fe7ff10df82a8bcc77c8e4ab063",
+        "identical": true
+      },
+      {
+        "page": "rhwp_017.png",
+        "before_sha256": "1a41008e61f98f1d78815f4d85b8829b51b7f1c94b44ea5d14a1f230b52a5ecc",
+        "after_sha256": "1a41008e61f98f1d78815f4d85b8829b51b7f1c94b44ea5d14a1f230b52a5ecc",
+        "identical": true
+      },
+      {
+        "page": "rhwp_018.png",
+        "before_sha256": "299885a3c75f33d79799d11ffcc31b74499dcea166463202fe40ea246e5b8549",
+        "after_sha256": "299885a3c75f33d79799d11ffcc31b74499dcea166463202fe40ea246e5b8549",
+        "identical": true
+      },
+      {
+        "page": "rhwp_019.png",
+        "before_sha256": "fd314304697e0e8bed8f4447fea69a194b12770443f6bebd2163eb7430586c51",
+        "after_sha256": "fd314304697e0e8bed8f4447fea69a194b12770443f6bebd2163eb7430586c51",
+        "identical": true
+      },
+      {
+        "page": "rhwp_020.png",
+        "before_sha256": "962763718741901c6d2aa6051e8046e3f1dbbc54d6ff60c837e887534a22d1d7",
+        "after_sha256": "962763718741901c6d2aa6051e8046e3f1dbbc54d6ff60c837e887534a22d1d7",
+        "identical": true
+      },
+      {
+        "page": "rhwp_021.png",
+        "before_sha256": "857b1e67c8fc2f105a1e4f3d236d7b90b36a1c8610d948a4159d93a4fcd03686",
+        "after_sha256": "857b1e67c8fc2f105a1e4f3d236d7b90b36a1c8610d948a4159d93a4fcd03686",
+        "identical": true
+      },
+      {
+        "page": "rhwp_022.png",
+        "before_sha256": "ef335e8e1b82af59fe40991612d0cb7964e85859bb421e629c72fee409e355e6",
+        "after_sha256": "ef335e8e1b82af59fe40991612d0cb7964e85859bb421e629c72fee409e355e6",
+        "identical": true
+      },
+      {
+        "page": "rhwp_023.png",
+        "before_sha256": "2266c21796ccdd26d18c7649e8e64490b151c8f2f26680737ce0dceb575418b6",
+        "after_sha256": "2266c21796ccdd26d18c7649e8e64490b151c8f2f26680737ce0dceb575418b6",
+        "identical": true
+      },
+      {
+        "page": "rhwp_024.png",
+        "before_sha256": "e92e1cf6edfd700b68c390af8a816f410a3726d8fcca1ee196f3fcbf34d22165",
+        "after_sha256": "e92e1cf6edfd700b68c390af8a816f410a3726d8fcca1ee196f3fcbf34d22165",
+        "identical": true
+      },
+      {
+        "page": "rhwp_025.png",
+        "before_sha256": "41244580a4aafa10f8a0bf4d610e81777f85d054e89f90a26f246283429c6a15",
+        "after_sha256": "41244580a4aafa10f8a0bf4d610e81777f85d054e89f90a26f246283429c6a15",
+        "identical": true
+      },
+      {
+        "page": "rhwp_026.png",
+        "before_sha256": "02b8365b88560bfbd3d61b94a3fbc05071ad705a3fc8e7da2dc6d6ba0a8fa75a",
+        "after_sha256": "02b8365b88560bfbd3d61b94a3fbc05071ad705a3fc8e7da2dc6d6ba0a8fa75a",
+        "identical": true
+      },
+      {
+        "page": "rhwp_027.png",
+        "before_sha256": "a831ff8d718bf298f04e546fc8fa786cd5e678b58dc6a87cb8b039b4db10ec88",
+        "after_sha256": "a831ff8d718bf298f04e546fc8fa786cd5e678b58dc6a87cb8b039b4db10ec88",
+        "identical": true
+      },
+      {
+        "page": "rhwp_028.png",
+        "before_sha256": "95406d9f0beb57e06b9afdaf942fcc25d6f5f79990169fdebe48b088d69d1c39",
+        "after_sha256": "95406d9f0beb57e06b9afdaf942fcc25d6f5f79990169fdebe48b088d69d1c39",
+        "identical": true
+      },
+      {
+        "page": "rhwp_029.png",
+        "before_sha256": "af86f98b9eceb8135b0fd6b7f5c765c9f6ba7f86a286c6cd5f4d2d7f5578e960",
+        "after_sha256": "af86f98b9eceb8135b0fd6b7f5c765c9f6ba7f86a286c6cd5f4d2d7f5578e960",
+        "identical": true
+      },
+      {
+        "page": "rhwp_030.png",
+        "before_sha256": "34ee5567429fb97d223ec21cf10def2cebae2ed253ff41a0934f9019d428f665",
+        "after_sha256": "34ee5567429fb97d223ec21cf10def2cebae2ed253ff41a0934f9019d428f665",
+        "identical": true
+      },
+      {
+        "page": "rhwp_031.png",
+        "before_sha256": "96277097d1f3f6abc912f1da830705475cf93fc8f920d0744be477a44e3c2be7",
+        "after_sha256": "96277097d1f3f6abc912f1da830705475cf93fc8f920d0744be477a44e3c2be7",
+        "identical": true
+      },
+      {
+        "page": "rhwp_032.png",
+        "before_sha256": "91e1f913398191efa7429ab7f4e332383e4da573e783d40bb0098c608bb94a0e",
+        "after_sha256": "91e1f913398191efa7429ab7f4e332383e4da573e783d40bb0098c608bb94a0e",
+        "identical": true
+      },
+      {
+        "page": "rhwp_033.png",
+        "before_sha256": "03ef771b65bf6230e3e141eba20746f47846f7186699185acad16378999eb8e3",
+        "after_sha256": "03ef771b65bf6230e3e141eba20746f47846f7186699185acad16378999eb8e3",
+        "identical": true
+      },
+      {
+        "page": "rhwp_034.png",
+        "before_sha256": "9d966f7b3cf7d96fb75bb19ee79ca747f669e7085f7c982a337574286083f0ec",
+        "after_sha256": "9d966f7b3cf7d96fb75bb19ee79ca747f669e7085f7c982a337574286083f0ec",
+        "identical": true
+      },
+      {
+        "page": "rhwp_035.png",
+        "before_sha256": "8e972ebec4634639aecebeecc9ec286d6a427ab46d9c0a38afacbb9386bc64c7",
+        "after_sha256": "8e972ebec4634639aecebeecc9ec286d6a427ab46d9c0a38afacbb9386bc64c7",
+        "identical": true
+      },
+      {
+        "page": "rhwp_036.png",
+        "before_sha256": "10d991f1dfefc29249444a5d0fa11af5e84d72f05e0a39d3b8163da4f0d1549f",
+        "after_sha256": "10d991f1dfefc29249444a5d0fa11af5e84d72f05e0a39d3b8163da4f0d1549f",
+        "identical": true
+      },
+      {
+        "page": "rhwp_037.png",
+        "before_sha256": "f5cc072bbdb504288afae607d64bd482dbf0a1067f217d841f80c0074983bfef",
+        "after_sha256": "f5cc072bbdb504288afae607d64bd482dbf0a1067f217d841f80c0074983bfef",
+        "identical": true
+      },
+      {
+        "page": "rhwp_038.png",
+        "before_sha256": "a65919f6d9da72233e05849805e1ee36363398823e7c196c4dd5a3e976a0f96b",
+        "after_sha256": "a65919f6d9da72233e05849805e1ee36363398823e7c196c4dd5a3e976a0f96b",
+        "identical": true
+      },
+      {
+        "page": "rhwp_039.png",
+        "before_sha256": "63b6a50459f43df15da0c2c67a67423742790704cb9a273ad7879cf9ce197d1b",
+        "after_sha256": "63b6a50459f43df15da0c2c67a67423742790704cb9a273ad7879cf9ce197d1b",
+        "identical": true
+      },
+      {
+        "page": "rhwp_040.png",
+        "before_sha256": "444ca6d5c056d8b674e2bb41380fc87cf0d2f0597c3a559ee00f9d43046cc9df",
+        "after_sha256": "444ca6d5c056d8b674e2bb41380fc87cf0d2f0597c3a559ee00f9d43046cc9df",
+        "identical": true
+      },
+      {
+        "page": "rhwp_041.png",
+        "before_sha256": "a0835ea4009fd4c86355a8c3d77c93fcbd45fb1014c6af7f168622e2d4af4f0a",
+        "after_sha256": "a0835ea4009fd4c86355a8c3d77c93fcbd45fb1014c6af7f168622e2d4af4f0a",
+        "identical": true
+      },
+      {
+        "page": "rhwp_042.png",
+        "before_sha256": "eac2e38599f8e6206f060245107c632dcd5bed8b71fb64e4113f667a156890bf",
+        "after_sha256": "eac2e38599f8e6206f060245107c632dcd5bed8b71fb64e4113f667a156890bf",
+        "identical": true
+      },
+      {
+        "page": "rhwp_043.png",
+        "before_sha256": "d4c169205ecb44e7b68b3056ad72db0750322ed398ad1637ace6c01d0d5fa76d",
+        "after_sha256": "d4c169205ecb44e7b68b3056ad72db0750322ed398ad1637ace6c01d0d5fa76d",
+        "identical": true
+      },
+      {
+        "page": "rhwp_044.png",
+        "before_sha256": "94a29c4cd92df922afbd333f74412ea18a8e4161f806033a3a855a23fc811fcf",
+        "after_sha256": "94a29c4cd92df922afbd333f74412ea18a8e4161f806033a3a855a23fc811fcf",
+        "identical": true
+      },
+      {
+        "page": "rhwp_045.png",
+        "before_sha256": "8a5792207be922e5cb3ffbd1a087b9083a5b8d757513b637bbe8975ca2c2c781",
+        "after_sha256": "8a5792207be922e5cb3ffbd1a087b9083a5b8d757513b637bbe8975ca2c2c781",
+        "identical": true
+      },
+      {
+        "page": "rhwp_046.png",
+        "before_sha256": "ebae981ef6ed29fc5a9bdc350df732617223f6dbcf7b9601541403ed039bfc94",
+        "after_sha256": "ebae981ef6ed29fc5a9bdc350df732617223f6dbcf7b9601541403ed039bfc94",
+        "identical": true
+      },
+      {
+        "page": "rhwp_047.png",
+        "before_sha256": "d0f86fb80da248e49f17226fae218ac19e4a24251709c72de53e572d717b82ff",
+        "after_sha256": "d0f86fb80da248e49f17226fae218ac19e4a24251709c72de53e572d717b82ff",
+        "identical": true
+      },
+      {
+        "page": "rhwp_048.png",
+        "before_sha256": "9ca2bddba5aba107ffce4c28399d03995e90df208a5534f500472b5ecc49cb08",
+        "after_sha256": "9ca2bddba5aba107ffce4c28399d03995e90df208a5534f500472b5ecc49cb08",
+        "identical": true
+      },
+      {
+        "page": "rhwp_049.png",
+        "before_sha256": "777285ff9a2139d3d2949121a16e9f7acf8ac3a3ff7f32ff55691269ac573205",
+        "after_sha256": "777285ff9a2139d3d2949121a16e9f7acf8ac3a3ff7f32ff55691269ac573205",
+        "identical": true
+      },
+      {
+        "page": "rhwp_050.png",
+        "before_sha256": "910d4d631362ada1aa328ce578f73af3639bb2319096a5046245d6bc9303c731",
+        "after_sha256": "910d4d631362ada1aa328ce578f73af3639bb2319096a5046245d6bc9303c731",
+        "identical": true
+      }
+    ]
+  },
+  "acceptance": "보정 단계의 부분 검증. #7640의 18·19·20쪽과 fresh WASM·새 소스 전체 게이트는 미완료. PR·이슈 종료 없음.",
+  "whole_sweep_collection": {
+    "pid": 79478,
+    "current": "complete",
+    "steps": [
+      {
+        "name": "native-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--bin",
+          "rhwp"
+        ],
+        "exit_code": 0,
+        "seconds": 169.303
+      },
+      {
+        "name": "issue7640-frame-native",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--file-target",
+          "issue7640-frame-native",
+          "tests/fixtures/pr7600-equation-font-frame/nov-original-resaved-2020.hwp",
+          "pdf/pr7600-equation-font-frame-diagnostic/nov-original-resaved-print-2020.pdf",
+          "--rasterizer",
+          "png",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rhwp-issue7640-frame-native",
+          "--dpi",
+          "96",
+          "--compat",
+          "2022",
+          "--page-workers",
+          "8",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--embed-fonts",
+          "full",
+          "--out",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/issue7640-frame-native"
+        ],
+        "exit_code": 1,
+        "seconds": 109.189,
+        "run_state": "complete",
+        "gate": {
+          "status": "re_review_required",
+          "metric": "silhouette_raw_match_percent",
+          "minimum_silhouette_raw_match_percent": 90.0,
+          "below_threshold_pages": [
+            {
+              "page": 18,
+              "silhouette_raw_match_percent": 39.24158
+            },
+            {
+              "page": 19,
+              "silhouette_raw_match_percent": 42.58867
+            },
+            {
+              "page": 20,
+              "silhouette_raw_match_percent": 66.05146
+            }
+          ],
+          "unavailable_metric_pages": [],
+          "font_mismatch_evidence": null,
+          "document_page_counts": {
+            "rhwp": 21,
+            "pdf": 21
+          },
+          "page_count_mismatch": false
+        }
+      },
+      {
+        "name": "issue7375-frame-control-native",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--file-target",
+          "issue7375-frame-control-native",
+          "samples/issue7333/aaaaaa.hwp",
+          "pdf/issue7333/aaaaaa-2020.pdf",
+          "--rasterizer",
+          "png",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rhwp-issue7640-frame-native",
+          "--dpi",
+          "96",
+          "--compat",
+          "2022",
+          "--page-workers",
+          "8",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--embed-fonts",
+          "full",
+          "--out",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/issue7375-frame-control-native"
+        ],
+        "exit_code": 0,
+        "seconds": 318.693,
+        "run_state": "complete",
+        "gate": {
+          "status": "passed",
+          "metric": "silhouette_raw_match_percent",
+          "minimum_silhouette_raw_match_percent": 90.0,
+          "below_threshold_pages": [],
+          "unavailable_metric_pages": [],
+          "font_mismatch_evidence": null,
+          "document_page_counts": {
+            "rhwp": 50,
+            "pdf": 50
+          },
+          "page_count_mismatch": false
+        }
+      }
+    ],
+    "success": true,
+    "acceptance": "개별 gate 결과를 따른다. 전쪽 수집 완료와 시각 통과를 구분한다."
+  },
+  "static_policy_checks": {
+    "manifest": "PASS",
+    "unit_tiers": "PASS",
+    "fmt": "PASS"
+  }
+}

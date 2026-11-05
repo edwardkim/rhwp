@@ -197,6 +197,28 @@ fn compute_flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u32,
 pub(crate) fn normalized_simple_math_metrics(
     equation: &crate::model::control::Equation,
 ) -> Option<(u32, u32, i32)> {
+    simple_math_frame_metrics(equation, false)
+}
+
+/// 개체 상자와 기준선은 이미 현재 논리 프레임이고, 호스트 줄 캐시만 낡은 경우를 구분한다.
+/// 별도 선언 프레임·크기 보호·미지원 복합 구조는 현재 프레임으로 재해석하지 않는다.
+pub(crate) fn has_current_simple_math_frame(equation: &crate::model::control::Equation) -> bool {
+    if declared_frame::retains_unpositioned_host_frame(equation)
+        || equation.retains_legacy_source_frame()
+    {
+        return false;
+    }
+    simple_math_frame_metrics(equation, true).is_some_and(|(_, height, baseline)| {
+        height == equation.common.height
+            && (i64::from(baseline) - i64::from(height) * i64::from(equation.baseline) / 100).abs()
+                <= 1
+    })
+}
+
+fn simple_math_frame_metrics(
+    equation: &crate::model::control::Equation,
+    include_current: bool,
+) -> Option<(u32, u32, i32)> {
     // A valid legacy logical frame is shared by flow and HFT paint. Modern
     // simple-math cache normalization must not replace that stored owner;
     // editing refreshes the legacy frame before this query is called.
@@ -232,7 +254,7 @@ pub(crate) fn normalized_simple_math_metrics(
     }
     let (height, baseline) = font_frame.unwrap_or((intrinsic.height, intrinsic.baseline));
     let height = super::px_to_hwpunit(height, super::DEFAULT_DPI).max(1) as u32;
-    if equation.common.height <= height {
+    if equation.common.height < height || (!include_current && equation.common.height == height) {
         return None;
     }
     // 높이가 무효여도 미지원 구조의 폭까지 무효라고 추정하지 않는다.
