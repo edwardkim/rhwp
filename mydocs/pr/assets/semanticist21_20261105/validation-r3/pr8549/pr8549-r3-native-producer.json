@@ -1,0 +1,9 @@
+{
+  "source_sha": "a314d7a24d3234305abff43149f575853db31105",
+  "binary": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/rhwp-pr8549-r3-native",
+  "sha256": "78a4670707a43433cbf46125e22003ff444840f449c5f708bb74025ee6569626",
+  "rlib": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/fixture-generator/librhwp-pr8549-r3.rlib",
+  "rlib_sha256": "0a2fa8543cd77350ad24bbeae9970a9f4790d9025cc8d2a190de97219fc868f1",
+  "build_log": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/pr8549-r3-native-build.log",
+  "exit_code": 0
+}

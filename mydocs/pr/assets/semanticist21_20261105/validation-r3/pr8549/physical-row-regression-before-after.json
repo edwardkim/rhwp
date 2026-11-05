@@ -1,0 +1,14 @@
+[
+  {
+    "library": "librhwp-rebase-r2.rlib",
+    "state": "before-r2",
+    "exit_code": 101,
+    "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/physical-row-before-r2-minimal.log"
+  },
+  {
+    "library": "librhwp-pr8549-r3.rlib",
+    "state": "after-r3",
+    "exit_code": 0,
+    "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/physical-row-after-r3-minimal.log"
+  }
+]
