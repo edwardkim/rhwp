@@ -35,10 +35,18 @@
 
 새 Native CLI의 SHA-256은 `0601fadafa75922fe57470ed31fdceb06f26bea10f4fb5d4a04c9383938b4f67`이다. 같은 최소 글꼴·실제 암호 HWPX·stdin 인증·진단 환경변수로 실행했을 때 DIAG_TRUST·DIAG_ROWH·DIAG_ROWH_PARA·DIAG_ROWH_LINE·DIAG_SPANH는 모두 0회다. 보정 전 DIAG_TRUST 24회·DIAG_ROWH 24회에서 실제 로그 부재 계약이 FAIL→PASS로 바뀌었고, 생성 SVG 24쪽 전부의 SHA-256은 이전 Native producer와 같다. [실측](security-rowh-after.json), [진단 블록 외 코드의 정확한 동일성](security-source-equivalence.json). 이 SVG 동일성을 독립 Print 피델리티로 보고하지 않는다.
 
-보정 source `d75809517f9185277248dd6be995e89792563222`의 전체 최소 글꼴 회귀는 12,499 PASS / 45 기존 skip(703.112초)다. 보강한 실제 암호 fixture의 stderr 계약도 이 전체 실행에서 PASS했다. 나머지 Native·문서 예제 gate와 새 head의 독립 CodeQL은 실제 완료 후 기록한다.
+보정 source `d75809517f9185277248dd6be995e89792563222`의 전체 최소 글꼴 회귀는 12,499 PASS / 45 기존 skip(703.112초)다. 보강한 실제 암호 fixture의 stderr 계약도 이 전체 실행에서 PASS했다. 나머지 Native·문서 예제 gate와 새 head의 독립 CodeQL 결과는 아래 최종 결과에 기록했다.
 
 ## 보정 source의 최종 로컬 결과
 
 최소 글꼴 환경에서 fmt·workspace all-target Clippy·WASM32 Clippy·workspace build·manifest/unit 정책·전체 회귀가 통과했다. 전체 nextest는 12,499 PASS / 45 기존 skip이며, Native CI의 실제 22개 명령은 192 PASS, 별도의 Native 전체 라이브러리는 4040 PASS / 12 ignored다. 문서 예제 8 PASS / 3 ignored도 확인했다. 중복되는 library 필터와 전체 library 수량을 합산하지 않는다. [명령·종료·로그 해시](security-local-gate-runs.json), [집계](security-local-validation.json).
 
 [첫 제출의 실제 Actions·GHAS 결과](initial-github-ci.json)와 이번 로컬 보정 결과를 분리했다. 새 제출 head의 독립 CodeQL·필수 CI 성공을 확인한 뒤에만 self-review·merge를 완료한다.
+
+## 새 head의 독립 CodeQL과 최종 CI
+
+code head `da0074f41ee01d7fa79e6bd4ffd5cadf7c69665d`의 [Full CI](https://github.com/edwardkim/rhwp/actions/runs/41937077126)·[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/41937077195)·[Render Diff](https://github.com/edwardkim/rhwp/actions/runs/41937077068)·Adapter·Proptest와 최종 CI 정책 status가 모두 성공했다. 독립 GHAS `CodeQL`도 success다.
+
+Rust analysis `2099534274`의 실제 tested merge는 `04a4c1f0e222628eb2eab748a8d1d82ed8a55704`이며 부모에 위 code head와 최신 devel을 포함한다. SARIF 결과는 **126→122개**, PR merge-ref open은 **12→10개**다. #481·#482는 같은 ref에서 fixed이며, 나머지 open 10개 ID는 이전과 같다. 코드 삭제로 같은 진단 그룹의 네 결과가 사라졌으며 alert 분류·보안 설정·query·workflow는 바꾸지 않았다. fixed instance의 commit_sha는 마지막 발견 commit `323280a8...`를 보존하는 API 값이므로 새 tested merge SHA와 혼동하지 않는다. [새 분석·부모·fixed instance·GHAS 원문 요약](security-codeql-after.json), [직전 Rust 결과와 open ID](codeql-current-before-new-upload.json).
+
+workspace all-target Clippy에 더해 [root Clippy도 별도 재확인](security-root-clippy.json)했다. source는 동일한 `d75809517f`이며 실패는 없다. 최종 review 문서 전용 head는 실제 fast-pass와 필수 집계를 확인한 뒤 merge한다.

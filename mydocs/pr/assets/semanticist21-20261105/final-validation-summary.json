@@ -74,7 +74,7 @@
       "0"
     ]
   ],
-  "remote_operations": "PR #8609 initial Actions gates passed but GHAS failed on two existing row-height diagnostics. Maintainer source d75809517f removes those opt-in channels; mandatory local validation passed. Ready to push corrected head; new-head independent CodeQL and CI pending.",
+  "remote_operations": "Corrected code head da0074f41ee01d7fa79e6bd4ffd5cadf7c69665d passed Full CI, independent GHAS CodeQL, Render Diff, Adapter, Proptest and CI Impact Policy. Review-only trailing commit and exact-head merge remain.",
   "all_required_local_gates": "passed",
   "final_metadata_checks": "final-metadata-check-runs.json",
   "security_followup": "ci-security-followup.md",
@@ -289,5 +289,7 @@
     "source_equivalence": "security-source-equivalence.json",
     "fresh_visual_measurement_claimed": false,
     "github_new_head_codeql": "Pending independent analysis; no dismissal or security-setting changes"
-  }
+  },
+  "independent_codeql": "security-codeql-after.json",
+  "root_clippy_separate_check": "security-root-clippy.json"
 }

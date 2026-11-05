@@ -48,4 +48,4 @@
 6. 필수 최종 Rust lint 묶음·suite/unit 정책·최소 글꼴 focused/전체 release-test·Native 공식 3종·최적화 fresh WASM·해당 Studio 검사와 실제 브라우저·입력 commit/보안 확인을 완료한다. 조판 영향이 있으므로 최종 head에서 Native 편람 383쪽 `--handbook-gate`를 통과한다.
 7. 원 PR별 최종 review·검증 증적·CI 처리 판단·필요한 댓글을 준비한다. 통합 후보가 준비되면 exact SHA·증거와 함께 원격 push/Open PR/CI/self-review/merge 실행안을 구체화한다. 필수 증거·회귀 실패는 완료로 대신하지 않는다.
 
-로컬 통합의 원 head·merge commit·추가 보정 ancestry는 [원 기여 보존 기록](assets/semanticist21-20261105/contribution-ancestry.json)에 있다. 원격 실행은 본 계획의 별도 승인 범위를 유지한다.
+로컬 통합의 원 head·merge commit·추가 보정 ancestry는 [원 기여 보존 기록](../assets/semanticist21-20261105/contribution-ancestry.json)에 있다. 원격 실행은 본 계획의 별도 승인 범위를 유지한다.

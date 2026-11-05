@@ -10,7 +10,7 @@
 - 원 head: `ffc0550e8b9c6db8627f9a82cc7f0f3ff39a5415`, reviewer `edwardkim`, 지정 시각 `2026-11-05T00:26:55.219970+09:00`; API 재확인 완료.
 - 실제 검증 base: `22947f6a90c998e95fa51238d5b907a0ebd37162`. 충돌 simulation: clean.
 - [공통 수행 계획](semanticist21_20261105_review_plan.md). CI 참고값: Build & Test: failure, build-test-archive-b / Build test archive (b): cancelled, Lint (fmt, clippy, WASM check): cancelled.
-- 기여자의 주장과 독립 측정·메인터너 보정 결과는 별도로 기록한다. 조판 원칙·입력 commit·전쪽 Native/fresh WASM·실행/반례와 로컬 gate는 아래 기록 및 [공통 최종 결과](assets/semanticist21-20261105/final-validation-summary.json)에 연결했다. 원 head의 CI 상태와 새 보정 후보의 실제 검증 결과를 혼동하지 않는다.
+- 기여자의 주장과 독립 측정·메인터너 보정 결과는 별도로 기록한다. 조판 원칙·입력 commit·전쪽 Native/fresh WASM·실행/반례와 로컬 gate는 아래 기록 및 [공통 최종 결과](../assets/semanticist21-20261105/final-validation-summary.json)에 연결했다. 원 head의 CI 상태와 새 보정 후보의 실제 검증 결과를 혼동하지 않는다.
 
 ## 실제 head와 공통 소비 지점
 
@@ -22,7 +22,7 @@ Hancom 2024 Print가 있는 공개 대조군 20개를 각각 1쪽 전체로 비�
 
 ## 공통 최종 검증과 원격 조건
 
-최종 runtime `2f44d7d0ab`에서 전체 12,499개·Native 공식 3종 4,064개·집중 21개·Studio 2,720개를 통과했다. Rust lint 묶음·TypeScript·production build·문서 예제·suite/unit 정책도 통과했다. [전체 검증 요약](assets/semanticist21-20261105/final-validation-summary.json), [최종 PNG와 해시](assets/semanticist21-20261105/representative-final-pngs.json), [원 기여 보존](assets/semanticist21-20261105/contribution-ancestry.json).
+최종 runtime `2f44d7d0ab`에서 전체 12,499개·Native 공식 3종 4,064개·집중 21개·Studio 2,720개를 통과했다. Rust lint 묶음·TypeScript·production build·문서 예제·suite/unit 정책도 통과했다. [전체 검증 요약](../assets/semanticist21-20261105/final-validation-summary.json), [최종 PNG와 해시](../assets/semanticist21-20261105/representative-final-pngs.json), [원 기여 보존](../assets/semanticist21-20261105/contribution-ancestry.json).
 
 원격 push·Open 통합 PR·해당 head CI·self-review·merge·후속 댓글·정리를 작업지시자가 승인했다. 실제 실행과 성공을 확인한 뒤 원격 결과를 기록한다.
 
@@ -34,7 +34,15 @@ shape 3의 파란 아래 일점쇄선이 원본 run 위상과 일치한다. 빨�
 
 | 입력·쪽 | 경로 | raw 실루엣(2px) | pixel match | 내용 픽셀 보조값 | review / overlay |
 | --- | --- | --- | --- | --- | --- |
-| `decoration-top-probe-shape-3` 1쪽 | native | 100.00000% | 98.70924% | 44.40093% | [review](assets/semanticist21-20261105/comment-evidence/pr8349-decoration-top-probe-shape-3/native/review/review_001.png) / [overlay](assets/semanticist21-20261105/comment-evidence/pr8349-decoration-top-probe-shape-3/native/overlay/overlay_001.png) |
-| `decoration-top-probe-shape-3` 1쪽 | wasm | 100.00000% | 98.69027% | 44.23628% | [review](assets/semanticist21-20261105/comment-evidence/pr8349-decoration-top-probe-shape-3/wasm/review/review_001.png) / [overlay](assets/semanticist21-20261105/comment-evidence/pr8349-decoration-top-probe-shape-3/wasm/overlay/overlay_001.png) |
+| `decoration-top-probe-shape-3` 1쪽 | native | 100.00000% | 98.70924% | 44.40093% | [review](../assets/semanticist21-20261105/comment-evidence/pr8349-decoration-top-probe-shape-3/native/review/review_001.png) / [overlay](../assets/semanticist21-20261105/comment-evidence/pr8349-decoration-top-probe-shape-3/native/overlay/overlay_001.png) |
+| `decoration-top-probe-shape-3` 1쪽 | wasm | 100.00000% | 98.69027% | 44.23628% | [review](../assets/semanticist21-20261105/comment-evidence/pr8349-decoration-top-probe-shape-3/wasm/review/review_001.png) / [overlay](../assets/semanticist21-20261105/comment-evidence/pr8349-decoration-top-probe-shape-3/wasm/overlay/overlay_001.png) |
 
-자동 geometry 후보 추출은 수행하지 않았으므로 후보 수를 0으로 쓰지 않는다. TSV-only 전쪽 raw 측정과 직접 판독을 구분한다. 해당 기능 검증 문서의 Native/fresh WASM 전쪽 raw 90% 미만은 0쪽이다. 내용 픽셀 보조값은 사람의 판정 정확도가 아니며 승인 gate를 대신하지 않는다. [Visual Sweep 댓글 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)과 [전쪽 TSV manifest](assets/semanticist21-20261105/visual-manifest.json)를 연결한다.
+자동 geometry 후보 추출은 수행하지 않았으므로 후보 수를 0으로 쓰지 않는다. TSV-only 전쪽 raw 측정과 직접 판독을 구분한다. 해당 기능 검증 문서의 Native/fresh WASM 전쪽 raw 90% 미만은 0쪽이다. 내용 픽셀 보조값은 사람의 판정 정확도가 아니며 승인 gate를 대신하지 않는다. [Visual Sweep 댓글 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)과 [전쪽 TSV manifest](../assets/semanticist21-20261105/visual-manifest.json)를 연결한다.
+
+## GitHub CI와 self-review
+
+[통합 PR #8609](https://github.com/edwardkim/rhwp/pull/8609)의 code head `da0074f41ee01d7fa79e6bd4ffd5cadf7c69665d`에서 [Full CI](https://github.com/edwardkim/rhwp/actions/runs/41937077126)·[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/41937077195)·[Render Diff](https://github.com/edwardkim/rhwp/actions/runs/41937077068)·Adapter·Proptest와 최종 CI 정책 집계의 성공을 확인했다. self-review의 추가 차단 사항은 없으며 통합 후보는 승인이다. [실제 check·job 결과](../assets/semanticist21-20261105/github-ci-code-head.json), [self-review 근거](../assets/semanticist21-20261105/self-review.json).
+
+이 기록은 녹색 code head 뒤의 문서 전용 single-parent trailing commit이다. 새 trailing head의 실제 fast-pass·필수 집계·최신 base 충돌 상태를 확인한 뒤 승인된 merge를 진행한다.
+
+공통 보안 후속으로 기존 행 높이 진단 출력 두 그룹과 같은 채널의 span 진단만 제거했다. 보정 source `d75809517f`에서 전체 회귀 12,499개·Native CI 22개 명령 192개·Native 전체 라이브러리 4,040개를 통과했고, 실제 암호 Native CLI의 SVG 24쪽은 이전과 같다. 새 code head `da0074f41e`의 독립 GHAS CodeQL도 성공했다. 진단 외 조판 코드와 기존 시각 producer를 구분한 [실제 근거](../assets/semanticist21-20261105/ci-security-followup.md)를 후속 댓글과 함께 연결한다.
