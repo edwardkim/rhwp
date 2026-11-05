@@ -13,7 +13,7 @@ WASM의 당시 base 대비 전쪽 대조와 최신 필수 검증은 완료했으
 | --- | --- |
 | 원 PR | [PR #8477](https://github.com/edwardkim/rhwp/pull/8477) |
 | 원 head | `d53da96d75daf912d3e53d9137eadc7770732bbf` |
-| 현재 통합 적용 커밋 | `ede099476e5c4787fecdefad9e437f6f44d19cca, 4b890c7abf57714e826855ed00929d7478018d9d, 3dec4ed06d2b427f666d43b6c85b69efdef82cce, fdb7667a85797061b433a82e28fd87c02c45ec4c` |
+| 현재 통합 적용 커밋 | `bc53d309003ba5eceb002a91566b083d99f55e23, 74e8d3bc44d92ccd50a223cbd468123d29ef40b5, 2bee09e883f7e153117d15c1de9413ad10e5b223, f1bf4da00f0668b1e852bb5422f85067cef81d00` |
 | 이전 완료 제품 / 당시 base | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` / `22947f6a90c998e95fa51238d5b907a0ebd37162` |
 | 전쪽 Native 측정 producer / 당시 base | `4b149b6cdfc514b9858ed644be2cf8120c731cd4` / `7fdd5441ff1e77c083818e920a48089f294de35e` |
 | fresh WASM 실제 빌드 | `7bb9e66fd006109ca9f7ee4c4d3f752c82e60fae` (위 제품 코드와 동등한 구현) |
@@ -140,8 +140,8 @@ PDF 래스터는 pypdfium2 5.13.0 / PDFium 153.0.7999.0의 `pdfium_smooth_rgb_ex
 
 ## 최신 통합 검증 상태
 
-현재 base는 `ed057276c1e0e07e743218d95641e015b46b6715`입니다. 이 갱신은 후속 문서 14개뿐이고,
-183개 패치가 충돌 0건·range-diff 모두 `=`로 리베이스됐습니다. 제품·테스트·fixture·검증 도구의 내용은
+현재 base는 `d4a72efd7c91d1e25092ed30b9d44e43cbebb9f0`입니다. 직전 문서 갱신 뒤 PR #8618의 이슈 라벨링 workflow·계약 검사·운영 문서 3개가 추가됐습니다.
+184개 패치가 충돌 0건·range-diff 모두 `=`로 리베이스됐습니다. 제품·테스트·fixture·검증 도구의 내용은
 리베이스 전과 같으므로 완료 증거를 재사용합니다. 실제 측정 source는
 `ba2ebfd34a4ebf402bce8e002254b672a09ef764`이며 문서 commit을 새 렌더 제품으로 표시하지 않습니다.
 [현재 적용 SHA 39개](assets/planet6897_20261103/integration-commits.md)를 확인합니다.

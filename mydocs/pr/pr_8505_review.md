@@ -14,7 +14,7 @@
 | --- | --- |
 | 원 PR | [#8505](https://github.com/edwardkim/rhwp/pull/8505) · `planet6897` → `devel` |
 | 원 head | `4b3426fcd6f91c16a4d03e1ab5b293ebe1956948` |
-| 현재 통합 적용 커밋 | `6fe8e6e2a1bac68e9dff2924cc2e9ecab10ea620, 5b1d4853dc73589d6cadd610a2e660e7739c6702, fb7acf2b200cb4642dedc2dce87f3b84daa7aa91, 24a6f933bedcb2cab82a73c854b26241ea84e4a4, 993b0a05208cb939181b090bb80bb3186ec8b0b8` |
+| 현재 통합 적용 커밋 | `f22bb32f651453a41757d49a5438099a2ef16ea5, 44edfa637d7e7097e905a7f74ec92037c76fe08f, 62112cd8bb6575c78a0fc7741c36a6d543c78982, e6674c73e6473e545384986332928399739e6994, b56b73595a8eb839f06ffbb8d041d1d4d18946ff` |
 | 이전 검토 기준 devel | `22947f6a90c998e95fa51238d5b907a0ebd37162` |
 | 이전 필수 검증 제품 코드 | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` |
 | 초기 대표 PNG producer / 당시 base | `4b149b6cdfc514b9858ed644be2cf8120c731cd4` / `7fdd5441ff1e77c083818e920a48089f294de35e` |
@@ -73,8 +73,8 @@ typeset/table의 저장 재시작 경계·요구 높이·예산과 실제 이어
 
 ## 최신 통합 검증 상태
 
-현재 base는 `ed057276c1e0e07e743218d95641e015b46b6715`입니다. 이 갱신은 후속 문서 14개뿐이고,
-183개 패치가 충돌 0건·range-diff 모두 `=`로 리베이스됐습니다. 제품·테스트·fixture·검증 도구의 내용은
+현재 base는 `d4a72efd7c91d1e25092ed30b9d44e43cbebb9f0`입니다. 직전 문서 갱신 뒤 PR #8618의 이슈 라벨링 workflow·계약 검사·운영 문서 3개가 추가됐습니다.
+184개 패치가 충돌 0건·range-diff 모두 `=`로 리베이스됐습니다. 제품·테스트·fixture·검증 도구의 내용은
 리베이스 전과 같으므로 완료 증거를 재사용합니다. 실제 측정 source는
 `ba2ebfd34a4ebf402bce8e002254b672a09ef764`이며 문서 commit을 새 렌더 제품으로 표시하지 않습니다.
 [현재 적용 SHA 39개](assets/planet6897_20261103/integration-commits.md)를 확인합니다.

@@ -8,7 +8,7 @@
 | 항목 | 실제 상태 |
 | --- | --- |
 | 통합 브랜치 | `review/integration-20261103-planet6897-open` |
-| 현재 PR base | `ed057276c1e0e07e743218d95641e015b46b6715` |
+| 현재 PR base | `d4a72efd7c91d1e25092ed30b9d44e43cbebb9f0` |
 | 실제 기능 대조 base | `f529dc92d4d172bf32390d7749743a45d9e41bfc`; 현재 base와 제품·테스트·fixture·도구 내용이 같음 |
 | 리베이스 결과 제품 계열 | `dda217dba06e33eb0749a24872a60e99e9e63e8a` |
 | 검증 시작 source | `ba2ebfd34a4ebf402bce8e002254b672a09ef764`; 이후 문서 커밋과 제품 소스를 구분 |

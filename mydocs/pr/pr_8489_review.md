@@ -14,7 +14,7 @@
 | --- | --- |
 | 원 PR | [#8489](https://github.com/edwardkim/rhwp/pull/8489) · `planet6897` → `devel` |
 | 원 head | `259b8024660bdcc476164ae714b2346bba9b1fa1` |
-| 현재 통합 적용 커밋 | `e2913f6f9db45a3d04c05b624d6b46f77dc17ad3, e1350f698d4fef189a0eb1e4250ebb9635014099, 4e76a482d111ab0a5a07a7ae8811c1a3a471d9f7, 382bcd399c00a1c76a42ddc2fa4c301503e65f1a` |
+| 현재 통합 적용 커밋 | `1301f3e9da34f7cc12cad712f83adbde49c64baf, c06485dcb9b2ede3e9f66841234e96e72b06d90f, 3db1b7f988b6abe286c8a5b529bba2ef8e1ae890, 89db84838e3c78c90840af3d42538fb86204bf17` |
 | 이전 검토 기준 devel | `22947f6a90c998e95fa51238d5b907a0ebd37162` |
 | 이전 필수 검증 제품 코드 | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` |
 | 초기 대표 PNG producer / 당시 base | `4b149b6cdfc514b9858ed644be2cf8120c731cd4` / `7fdd5441ff1e77c083818e920a48089f294de35e` |
@@ -81,8 +81,8 @@ S1·S2·S3의 위 간격 순서와 S4 표 위끝의 관계를 확인한다. 입�
 
 ## 최신 통합 검증 상태
 
-현재 base는 `ed057276c1e0e07e743218d95641e015b46b6715`입니다. 이 갱신은 후속 문서 14개뿐이고,
-183개 패치가 충돌 0건·range-diff 모두 `=`로 리베이스됐습니다. 제품·테스트·fixture·검증 도구의 내용은
+현재 base는 `d4a72efd7c91d1e25092ed30b9d44e43cbebb9f0`입니다. 직전 문서 갱신 뒤 PR #8618의 이슈 라벨링 workflow·계약 검사·운영 문서 3개가 추가됐습니다.
+184개 패치가 충돌 0건·range-diff 모두 `=`로 리베이스됐습니다. 제품·테스트·fixture·검증 도구의 내용은
 리베이스 전과 같으므로 완료 증거를 재사용합니다. 실제 측정 source는
 `ba2ebfd34a4ebf402bce8e002254b672a09ef764`이며 문서 commit을 새 렌더 제품으로 표시하지 않습니다.
 [현재 적용 SHA 39개](assets/planet6897_20261103/integration-commits.md)를 확인합니다.

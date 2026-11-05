@@ -21,3 +21,15 @@ ed057은 그 기준의 제품 내용과 같으므로 해당 실제 대조는 현
 기존 전쪽 비교를 반복하지 않는 작업 지시를 따르며 새 base 대비 정밀 raw 0.1%p 초과 하락은 허용하지 않는다.
 [전체 검증 목록](README.md), [실제 필수 41개 실행](rebase8609/rust-regression-validation.md),
 [원 PR의 현재 적용 SHA](integration-commits.md)를 함께 확인한다.
+
+## PR 제출 직전의 이슈 라벨링 base 갱신
+
+최신 base는 `d4a72efd7c91d1e25092ed30b9d44e43cbebb9f0`이며 PR #8618의 workflow·Node 계약 검사·운영 문서 3개만 추가됐다.
+위 문서 전용 리베이스 이후 184개 패치를 다시 적용했고 모두 `=`·충돌 0건이다.
+이전 head `15cc3424fecdb9813b341e3f6a613452d5d3c2ce`, 적용 직후 head `750e3c7aef83d8dd61b1b82ad1190e00d0f95f7d`를 비교한 tree 차이도 이 3개뿐이다.
+렌더·Rust 테스트·fixture·글꼴은 그대로이므로 전체 회귀·전쪽 렌더를 반복하지 않았다.
+`node --test scripts/tests/issue-form-labels.test.mjs`는 실제 반영된 workflow를 실행해 32 PASS·0 FAIL이다.
+새 base SHA의 manifest·unit-tier 정책과 fmt도 통과했다.
+
+제출 diff 공백 검사에서 Native 표시값 대조표의 CRLF만 LF로 정리했다.
+비교 수치·행 순서와 별도 보존한 전쪽 원 TSV 바이트는 바꾸지 않았다.

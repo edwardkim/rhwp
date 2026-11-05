@@ -13,7 +13,7 @@ WASM의 당시 base 대비 전쪽 대조와 최신 필수 검증은 완료했으
 | --- | --- |
 | 원 PR | [PR #8546](https://github.com/edwardkim/rhwp/pull/8546) |
 | 원 head | `c08cb8030eff594f6f987832cc35d2bb8ae68943` |
-| 현재 통합 적용 커밋 | `5e52498e91be6c5e165b6761bdf3551e548fbf8e` |
+| 현재 통합 적용 커밋 | `012e2a08cfc0a9458e310538c61990a4e464a07b` |
 | 이전 완료 제품 / 당시 base | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` / `22947f6a90c998e95fa51238d5b907a0ebd37162` |
 | 전쪽 Native 측정 producer / 당시 base | `4b149b6cdfc514b9858ed644be2cf8120c731cd4` / `7fdd5441ff1e77c083818e920a48089f294de35e` |
 | fresh WASM 실제 빌드 | `7bb9e66fd006109ca9f7ee4c4d3f752c82e60fae` (위 제품 코드와 동등한 구현) |
@@ -132,8 +132,8 @@ WASM의 당시 base 대비 전쪽 대조와 최신 필수 검증은 완료했으
 
 ## 최신 통합 검증 상태
 
-현재 base는 `ed057276c1e0e07e743218d95641e015b46b6715`입니다. 이 갱신은 후속 문서 14개뿐이고,
-183개 패치가 충돌 0건·range-diff 모두 `=`로 리베이스됐습니다. 제품·테스트·fixture·검증 도구의 내용은
+현재 base는 `d4a72efd7c91d1e25092ed30b9d44e43cbebb9f0`입니다. 직전 문서 갱신 뒤 PR #8618의 이슈 라벨링 workflow·계약 검사·운영 문서 3개가 추가됐습니다.
+184개 패치가 충돌 0건·range-diff 모두 `=`로 리베이스됐습니다. 제품·테스트·fixture·검증 도구의 내용은
 리베이스 전과 같으므로 완료 증거를 재사용합니다. 실제 측정 source는
 `ba2ebfd34a4ebf402bce8e002254b672a09ef764`이며 문서 commit을 새 렌더 제품으로 표시하지 않습니다.
 [현재 적용 SHA 39개](assets/planet6897_20261103/integration-commits.md)를 확인합니다.

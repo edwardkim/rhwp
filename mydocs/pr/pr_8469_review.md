@@ -14,7 +14,7 @@
 | --- | --- |
 | 원 PR | [#8469](https://github.com/edwardkim/rhwp/pull/8469) · `planet6897` → `devel` |
 | 원 head | `4bc1c3f0f70e28bc88d05c00540671529c6c5a86` |
-| 현재 통합 적용 커밋 | `fe173d0ab0793319b8297f4edb660b9d61a5357b, 31e57b0c0b7e4e017477f8787d877d7ed1756c82, a8ecf7b0ba5c2a7434ab57f10037952fa38b8bcd` |
+| 현재 통합 적용 커밋 | `502d24a88af72423a81f1bcb3fd42941be8ca2d0, 4671e87b13dc74d441b8f119f24ae80e874960f5, 1bdc25ef4210ac4b7bcecc932e070ea04b762a75` |
 | 이전 검토 기준 devel | `22947f6a90c998e95fa51238d5b907a0ebd37162` |
 | 이전 필수 검증 제품 코드 | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` |
 | 초기 대표 PNG producer / 당시 base | `4b149b6cdfc514b9858ed644be2cf8120c731cd4` / `7fdd5441ff1e77c083818e920a48089f294de35e` |
@@ -81,8 +81,8 @@ h2505·h2570·h3180 및 글자 크기가 다른 d14·d16에서 수용·이월 �
 
 ## 최신 통합 검증 상태
 
-현재 base는 `ed057276c1e0e07e743218d95641e015b46b6715`입니다. 이 갱신은 후속 문서 14개뿐이고,
-183개 패치가 충돌 0건·range-diff 모두 `=`로 리베이스됐습니다. 제품·테스트·fixture·검증 도구의 내용은
+현재 base는 `d4a72efd7c91d1e25092ed30b9d44e43cbebb9f0`입니다. 직전 문서 갱신 뒤 PR #8618의 이슈 라벨링 workflow·계약 검사·운영 문서 3개가 추가됐습니다.
+184개 패치가 충돌 0건·range-diff 모두 `=`로 리베이스됐습니다. 제품·테스트·fixture·검증 도구의 내용은
 리베이스 전과 같으므로 완료 증거를 재사용합니다. 실제 측정 source는
 `ba2ebfd34a4ebf402bce8e002254b672a09ef764`이며 문서 commit을 새 렌더 제품으로 표시하지 않습니다.
 [현재 적용 SHA 39개](assets/planet6897_20261103/integration-commits.md)를 확인합니다.

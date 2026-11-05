@@ -14,7 +14,7 @@
 | --- | --- |
 | 원 PR | [#8431](https://github.com/edwardkim/rhwp/pull/8431) · `planet6897` → `devel` |
 | 원 head | `1847f1e60293cfa78156479786905f1c3697b295` |
-| 현재 통합 적용 커밋 | `260485295089a0a006c269cf516f4f620c83e977, 5c05b13ba58af6de267a3289796e1593b45fd3e9, e4bbbbb889c86ec7cd6ec829e9e97d85975304af, 347d17dc7554354d0b940c21f1c8e8af040e5afe, 3563515554c11f5088f9bc58992a934d472ccea9` |
+| 현재 통합 적용 커밋 | `87c219912b39a5bace409444d706f337b19d79ad, 8aad699a0ec9c122e218165f3e7047d6f64bd8d9, d534dc86a050a821a3e53d5e6a73d495ce38b871, 6c401dd398bb234d3bcee82e5d0d24d01772a5db, 9298a8572f69c0ec8772313749c1f778b0a4ddfd` |
 | 이전 검토 기준 devel | `22947f6a90c998e95fa51238d5b907a0ebd37162` |
 | 이전 필수 검증 제품 코드 | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` |
 | 초기 대표 PNG producer / 당시 base | `4b149b6cdfc514b9858ed644be2cf8120c731cd4` / `7fdd5441ff1e77c083818e920a48089f294de35e` |
@@ -73,8 +73,8 @@ parser/doc_info.rs의 버전별 속성 해석에서 시작해 layout.rs·height_
 
 ## 최신 통합 검증 상태
 
-현재 base는 `ed057276c1e0e07e743218d95641e015b46b6715`입니다. 이 갱신은 후속 문서 14개뿐이고,
-183개 패치가 충돌 0건·range-diff 모두 `=`로 리베이스됐습니다. 제품·테스트·fixture·검증 도구의 내용은
+현재 base는 `d4a72efd7c91d1e25092ed30b9d44e43cbebb9f0`입니다. 직전 문서 갱신 뒤 PR #8618의 이슈 라벨링 workflow·계약 검사·운영 문서 3개가 추가됐습니다.
+184개 패치가 충돌 0건·range-diff 모두 `=`로 리베이스됐습니다. 제품·테스트·fixture·검증 도구의 내용은
 리베이스 전과 같으므로 완료 증거를 재사용합니다. 실제 측정 source는
 `ba2ebfd34a4ebf402bce8e002254b672a09ef764`이며 문서 commit을 새 렌더 제품으로 표시하지 않습니다.
 [현재 적용 SHA 39개](assets/planet6897_20261103/integration-commits.md)를 확인합니다.
