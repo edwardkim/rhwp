@@ -3663,7 +3663,8 @@ pub(crate) fn control_is_float_shape_beside_text(control: &Control) -> bool {
         if crate::renderer::float_placement::shape_wraps_beside_text(shape.common()))
 }
 
-/// 대체 메트릭으로 폭이 바뀐 수식의 첫 소유 줄만 저장 캐시 경계로 삼는다.
+/// 글자 전진폭을 다시 측정한 수식의 첫 소유 줄만 저장 캐시 경계로 삼는다.
+/// 상자 높이가 이미 현재 값이어도 같은 재측정 증거를 소비하며 저장 폭은 보존한다.
 /// 앞쪽의 정상 줄과 각주 앵커까지 함께 재조판하면 무관한 문단 배치가 바뀐다.
 pub(super) fn remeasured_equation_start_row(para: &Paragraph) -> Option<usize> {
     let positions = super::find_render_inline_control_positions(para);
@@ -3675,7 +3676,10 @@ pub(super) fn remeasured_equation_start_row(para: &Paragraph) -> Option<usize> {
                 return None;
             };
             if !equation.common.treat_as_char
-                || crate::renderer::equation::flow_width_hwp(equation) == equation.common.width
+                || (crate::renderer::equation::flow_width_hwp(equation) == equation.common.width
+                    && !crate::renderer::equation::current_simple_math_advance_was_remeasured(
+                        equation,
+                    ))
             {
                 return None;
             }

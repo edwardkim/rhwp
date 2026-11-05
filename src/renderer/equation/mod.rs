@@ -203,14 +203,30 @@ pub(crate) fn normalized_simple_math_metrics(
 /// 개체 상자와 기준선은 이미 현재 논리 프레임이고, 호스트 줄 캐시만 낡은 경우를 구분한다.
 /// 별도 선언 프레임·크기 보호·미지원 복합 구조는 현재 프레임으로 재해석하지 않는다.
 pub(crate) fn has_current_simple_math_frame(equation: &crate::model::control::Equation) -> bool {
+    current_simple_math_metrics(equation).is_some()
+}
+
+/// 현재 저장 상자를 보존해도, 검증된 전진폭으로 다시 측정한 줄은 가로 캐시를 재확인한다.
+/// 높이 캐시가 달라졌다는 이유만으로 미지원 복합 수식의 가로 분할까지 무효화하지 않는다.
+pub(crate) fn current_simple_math_advance_was_remeasured(
+    equation: &crate::model::control::Equation,
+) -> bool {
+    current_simple_math_metrics(equation)
+        .is_some_and(|(width, _, _)| width != equation.common.width)
+}
+
+fn current_simple_math_metrics(
+    equation: &crate::model::control::Equation,
+) -> Option<(u32, u32, i32)> {
     if declared_frame::retains_unpositioned_host_frame(equation)
         || equation.retains_legacy_source_frame()
     {
-        return false;
+        return None;
     }
-    simple_math_frame_metrics(equation, true).is_some_and(|(_, height, baseline)| {
-        height == equation.common.height
-            && (i64::from(baseline) - i64::from(height) * i64::from(equation.baseline) / 100).abs()
+    simple_math_frame_metrics(equation, true).filter(|(_, height, baseline)| {
+        *height == equation.common.height
+            && (i64::from(*baseline) - i64::from(*height) * i64::from(equation.baseline) / 100)
+                .abs()
                 <= 1
     })
 }

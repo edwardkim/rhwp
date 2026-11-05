@@ -1,0 +1,70 @@
+{
+  "README.md": {
+    "sha256": "46b4f3b7f8787413dd04ed1645a93fbe6dee9f3cf07757d89d9fda43c0a980e4",
+    "bytes": 2295
+  },
+  "after-native-p018-overlay.png": {
+    "sha256": "1810f99863e368494fee155e9797bf301a9155d974198a262fb025e36b694e0a",
+    "bytes": 261625
+  },
+  "after-native-p018-raw.png": {
+    "sha256": "e21a20157e5edf77b48cfa60fd32215c6daac031c07e399251fed5007a0df3b9",
+    "bytes": 234327
+  },
+  "after-native-p018-review.png": {
+    "sha256": "f14a945fccc78ffefac716a0d48419de86b6e894b6e858993e3144059d4cc771",
+    "bytes": 755245
+  },
+  "after-native-p019-overlay.png": {
+    "sha256": "d22a9253cd52efdeab384c6d528220a349c65ba98043a0e84cad48ce0f648680",
+    "bytes": 268339
+  },
+  "after-native-p019-raw.png": {
+    "sha256": "0627342c75227a4636164e1f68a3f79ebf3a56822a76bd71deee7c179ae84a40",
+    "bytes": 248013
+  },
+  "after-native-p019-review.png": {
+    "sha256": "55a07d23fa3c73520c2e3b525324c5b264aea0c79010aeb09c8cb41bc52da814",
+    "bytes": 783769
+  },
+  "before-native-p018-overlay.png": {
+    "sha256": "854b6d7c6c4d506f71e9ba3048755b6077f470b8abb8a7573ef9b6757ab8946a",
+    "bytes": 262894
+  },
+  "before-native-p018-raw.png": {
+    "sha256": "89ede1d5761080174bab4fab2e80bb8f31297b94be929e7d5e07e1f0ff0daf6a",
+    "bytes": 233902
+  },
+  "before-native-p018-review.png": {
+    "sha256": "7af5c3cde5526c745d5d9415d8ad1a5a648fa0a5a04a7480da8eb3c9b9ec3a93",
+    "bytes": 760370
+  },
+  "issue7375-native-control-all50-silhouette.tsv": {
+    "sha256": "363390f0ef544bbde7e8465ddda8cf8fa85adeafc29e38c93a38ccdcec4ec15d",
+    "bytes": 1138
+  },
+  "original-native-all21-silhouette.tsv": {
+    "sha256": "b21868ec787b08b468e219664f46344e6baff899134728c2c53835a0420e46c3",
+    "bytes": 504
+  },
+  "original-native-p021-overlay.png": {
+    "sha256": "ffc353f99ddbe7746baab18a6004a34f8a08aef3a6de7d3f6acb6e87bc41a7fa",
+    "bytes": 252197
+  },
+  "original-native-p021-raw.png": {
+    "sha256": "51b73a9e7bb9804b13152aa006568765c3ea9207ada296a1349f0018c8be9d2b",
+    "bytes": 264214
+  },
+  "original-native-p021-review.png": {
+    "sha256": "49b62bddf0f7bd204173fcb0aa5c9613c488c18aedaa9580bb65caaa9dd542a1",
+    "bytes": 772042
+  },
+  "resaved-native-all21-silhouette.tsv": {
+    "sha256": "879557f5d80e980f478315464adaba310ff857c878472c07385e78fc9d8072e1",
+    "bytes": 504
+  },
+  "validation.json": {
+    "sha256": "b154a3592e4663778f79265ab6a1b6d3ed69961937a9f1f775a79a3c5a635a0e",
+    "bytes": 28938
+  }
+}

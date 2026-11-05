@@ -1,13 +1,14 @@
-//! 검사 유형: 관계형. 독립 한컴 Print가 같은 원본·재저장본의 수식 단 소속을 검사한다.
-//! 작성 시 Native 전 21쪽 중 7쪽 미달·11쪽 53.60031%. 보정 후보의 11쪽은 99.66679%다.
-//! 추가한 저장 예약 소유 검사의 17쪽 Native 작성 기준은 94.69512%다.
-//! 현재 장식 프레임 검사의 19쪽 Native 작성 기준은 95.41891%다.
-//! 장식 검사는 절대 화면 좌표가 아니라 현재 저장 프레임의 단위 보존과 실제 단 소속을 비교한다.
-//! 작성 기준에서 전쪽 90% 조건을 충족하지 못해 절대 px 핀을 두지 않았다.
-//! 이 단계의 fresh WASM은 미실행이며 최신 전쪽 판정은 계획서와 단계 증적을 따른다.
-//! 주석 갱신: 2026-11-06 00:13:00 KST.
-//! 근거: mydocs/plans/task_m100_7640_plan.md 및 같은 입력의 한컴 2020 Print 11쪽.
-//! 수식 프레임의 저장 캐시 차이로 앞 단에 들어갈 마지막 수식이 다음 단으로 밀리면 실패한다.
+//! 검사 유형: 관계형(소유·순서·원본 프레임·비겹침), 고정형(독립 Print 21쪽 쪽수).
+//! 주석 갱신: 2026-11-06 01:06:03 KST.
+//! 직전 파일 변경: 2026-11-06 00:22:54 KST, 9af158c585464504216baad8e5ebdf518e65d14e.
+//! 2026-11-06 canonical raw 2px, 96DPI, compat2022, Native 직접 PNG 전쪽 측정.
+//! 재저장본 21/21쪽 Native 최저 99.03802%; 11쪽 99.66679%, 17쪽 99.14958%,
+//! 18쪽 99.03802%, 19쪽 99.47824%, 20쪽 99.73017%. fresh WASM은 새 소스로 미실행.
+//! 원본 21/21쪽 Native 최저 98.78595%; PR7600 input-09 Print로 따로 대조했다.
+//! 최초 작성 시 재저장본 7쪽 미달·11쪽 53.60031%, 17쪽 94.69512%, 18쪽 85.61347%였다.
+//! 실물 절대 px 좌표는 고정하지 않으며 현재 저장 프레임의 정수 단위 보존을 비교한다.
+//! 근거: mydocs/plans/task_m100_7640_plan.md 및 같은 입력의 독립 한컴 2020 Print.
+//! 단계 증적: mydocs/pr/assets/issue_7640/verification-20261106/current-frame-advance/.
 
 use rhwp::model::control::Control;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -284,5 +285,126 @@ fn ellipse_tail_integral_keeps_its_print_column_after_resave() {
             [1],
             "독립 Print 19쪽 오른쪽 단의 마지막 적분식이 다음 쪽으로 밀리지 않는다: {input}"
         );
+    }
+}
+
+#[test]
+fn refreshed_equation_host_rebuilds_the_shared_print_line_partition() {
+    for input in [
+        "samples/3-11월_실전_통합_2022.hwp",
+        "tests/fixtures/pr7600-equation-font-frame/nov-original-resaved-2020.hwp",
+    ] {
+        let mut document = DocumentCore::from_bytes(&std::fs::read(input).unwrap()).unwrap();
+        document.set_hangul2024_compat(false);
+        let page = document.build_page_render_tree(17).unwrap();
+        let mut all = Vec::new();
+        walk(&page.root, &mut all);
+        let mut equations: Vec<_> = all
+            .iter()
+            .filter_map(|node| match &node.node_type {
+                RenderNodeType::Equation(equation)
+                    if equation.note_ref.as_ref().is_some_and(|source| {
+                        source.kind == "endnote"
+                            && source.section_index == 0
+                            && source.para_index == 340
+                            && source.control_index == 0
+                            && source.note_para_index == 26
+                    }) =>
+                {
+                    Some((
+                        equation.control_index.unwrap(),
+                        equation.para_index.unwrap(),
+                        node.bbox,
+                    ))
+                }
+                _ => None,
+            })
+            .collect();
+        equations.sort_by_key(|(control, _, _)| *control);
+        assert_eq!(equations.len(), 3, "같은 문단의 원본 수식 소속·누락·중복");
+        assert_eq!(
+            equations
+                .iter()
+                .map(|(control, _, _)| *control)
+                .collect::<Vec<_>>(),
+            [0, 1, 2],
+            "원본 수식 순서"
+        );
+        assert!(
+            equations[2].2.y >= equations[0].2.y + equations[0].2.height,
+            "독립 Print 18쪽의 마지막 f'(0)=0은 다음 글줄에 남는다: {input}"
+        );
+        let rows: Vec<_> = all
+            .iter()
+            .filter(|node| {
+                matches!(&node.node_type,
+            RenderNodeType::TextLine(line) if line.para_index == Some(equations[0].1))
+            })
+            .collect();
+        assert_eq!(rows.len(), 2, "두 입력의 Print 글줄 소속: {input}");
+        fn text(node: &RenderNode, value: &mut String) {
+            if let RenderNodeType::TextRun(run) = &node.node_type {
+                value.push_str(&run.text);
+            }
+            for child in &node.children {
+                text(child, value);
+            }
+        }
+        let mut actual_text = String::new();
+        for row in rows {
+            text(row, &mut actual_text);
+        }
+        assert_eq!(actual_text, "에서  또는 이다.", "본문의 누락·중복 없음");
+    }
+}
+
+#[test]
+fn validated_fraction_rows_keep_their_non_overlapping_print_occupancy() {
+    fn text(node: &RenderNode) -> String {
+        let mut value = match &node.node_type {
+            RenderNodeType::TextRun(run) => run.text.clone(),
+            _ => String::new(),
+        };
+        for child in &node.children {
+            value.push_str(&text(child));
+        }
+        value
+    }
+    for input in [
+        "samples/3-11월_실전_통합_2022.hwp",
+        "tests/fixtures/pr7600-equation-font-frame/nov-original-resaved-2020.hwp",
+    ] {
+        let mut document = DocumentCore::from_bytes(&std::fs::read(input).unwrap()).unwrap();
+        document.set_hangul2024_compat(false);
+        let page = document.build_page_render_tree(18).unwrap();
+        let mut all = Vec::new();
+        walk(&page.root, &mut all);
+        let owners: Vec<_> = all
+            .iter()
+            .filter_map(|node| match &node.node_type {
+                RenderNodeType::TextLine(line) if text(node).contains("을 대입하여 정리하면") => {
+                    line.para_index
+                }
+                _ => None,
+            })
+            .collect();
+        assert_eq!(
+            owners.len(),
+            1,
+            "독립 Print의 대입·미분 문단이 한 번만 표시된다"
+        );
+        let rows: Vec<_> = all
+            .iter()
+            .filter(|node| {
+                matches!(&node.node_type,
+            RenderNodeType::TextLine(line) if line.para_index == Some(owners[0]))
+            })
+            .collect();
+        assert_eq!(rows.len(), 2, "유효한 분수 문단의 두 글줄 소속");
+        assert!(
+            rows[1].bbox.y >= rows[0].bbox.y + rows[0].bbox.height,
+            "뒤 글줄이 앞 분수의 실제 점유 상자를 침범하지 않는다: {input}"
+        );
+        assert_eq!(text(rows[1]), "이다.", "뒤 본문의 소속·누락·중복 없음");
     }
 }
