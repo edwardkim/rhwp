@@ -5969,6 +5969,16 @@ fn try_reflow_line_segs_impl<S: Storage>(
             if let Some(height_hwp) = inline_control_line_height_hwp(para) {
                 apply_inline_control_line_height(&mut seg, height_hwp);
             }
+            // 덧말만 든 문단도 글자 있는 줄처럼 덧말 높이·기준선·간격을 쓴다(한컴 12.30 저장 줄).
+            if let Some((height_hwp, baseline)) =
+                inline_control_flow::empty_text_ruby_row(para, styles)
+            {
+                if height_hwp > seg.line_height {
+                    apply_inline_control_line_height(&mut seg, height_hwp);
+                    seg.baseline_distance = baseline;
+                    seg.line_spacing = compute_line_spacing_hwp(ls_type, ls_value, height_hwp, dpi);
+                }
+            }
             mark_indented_lines(
                 std::slice::from_mut(&mut seg),
                 0,
