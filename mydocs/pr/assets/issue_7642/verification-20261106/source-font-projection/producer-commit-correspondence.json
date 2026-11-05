@@ -1,0 +1,12 @@
+{
+  "commit": "0184227683a6219fddfd5749d230f7220f482130",
+  "producer_parent": "ae80442566a3374b977c4899babd09f3fbf53075",
+  "all_compiled_runtime_files_identical": true,
+  "native_binary_sha256": "4a81198d4c0e70c312ec54b30c87f3247e342f4e9c213e14d9cc77c1414aecd2",
+  "wasm_producer_sha256": "348ab23a4d699790f449a432ae6864c4903bb109ec131657f1ef9821560652de",
+  "changed_since_native_required_gates": [
+    "tests/cases/issue_7642_native_command_literal_relations.rs"
+  ],
+  "change_scope": "runtime 불변. 독립 Print 원점의 회귀 검사와 주석만 추가. 해당 Native suite 최종7PASS.",
+  "native_final_suite_log": "glyph-slot-native-adapter.log"
+}

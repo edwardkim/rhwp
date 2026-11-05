@@ -1,0 +1,18 @@
+{
+  "runtime_changed": false,
+  "helper_source_unchanged": true,
+  "cases": [
+    {
+      "path": "tests/cases/issue_8153_symbol_coverage.rs",
+      "assertion_body_unchanged": true,
+      "body_sha256": "2aed8aa24bfb140eb10ea8e5ca0e992c6e6efb49d58b7f1051875e3d82e35ed6",
+      "prior_commit": "c417310cab 2026-10-30T19:50:11+09:00"
+    },
+    {
+      "path": "tests/cases/issue_8153_symbol_fallback.rs",
+      "assertion_body_unchanged": true,
+      "body_sha256": "730123763d157746469b7c38a3a1292b821cf7b9e4a68223fd18f2738214117a",
+      "prior_commit": "c417310cab 2026-10-30T19:50:11+09:00"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "commit": "dce48c65da5ae2dc2edbc3498009a5681bc68144",
+  "validated_parent": "0184227683a6219fddfd5749d230f7220f482130",
+  "validated_source_files": 6415,
+  "all_validated_source_files_identical": true,
+  "compiled_runtime_files_identical_to_visual_producer": true,
+  "runtime_file_count": 2110,
+  "differences_within_native_runtime_snapshot": [],
+  "changes_since_implementation_commit": [
+    "mydocs/plans/task_m100_7642_glyph_projection_20261106.md",
+    "scripts/rust-test-suite-manifest.mjs",
+    "scripts/tests/rust-test-suite-manifest.test.mjs",
+    "tests/cases/issue_8153_symbol_coverage.rs",
+    "tests/cases/issue_8153_symbol_fallback.rs"
+  ],
+  "test_only_fix": "같은 helper의 중복 mod를 파생 harness 루트의 단일 mod로 바꿈. 두 검사 assertion 본문과 helper 구현 불변.",
+  "native_3_gates_runtime_identical": true,
+  "native_focused_after_fix_passed": 11,
+  "node_contracts_passed": 26,
+  "wasm_artifact_hashes": {
+    "rhwp.js": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+    "rhwp_bg.wasm": "6d0d843f939b033b18fb636f0b64a21734c199aa849c68dea4b0be1b406f032f"
+  },
+  "earlier_correspondence": "producer-commit-correspondence.json"
+}

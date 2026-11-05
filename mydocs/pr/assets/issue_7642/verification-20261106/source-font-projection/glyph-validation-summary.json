@@ -1,0 +1,255 @@
+{
+  "commit": "dce48c65da5ae2dc2edbc3498009a5681bc68144",
+  "base": "170b886f167b705b6e630c5b34bb638d92fae0a9",
+  "scope": "#7642 로컬 구현 단계. 최종 제출 편람 gate·다음 이슈·원격 통합은 아직 미완료.",
+  "full_nextest": {
+    "head": "0184227683a6219fddfd5749d230f7220f482130",
+    "exit_code": 0,
+    "command_seconds": 889.113,
+    "summaries": [
+      "     Summary [ 422.229s] 12649 tests run: 12649 passed (1 slow), 45 skipped"
+    ],
+    "source_state": "glyph-final-v2-gates-state.json"
+  },
+  "steps": [
+    {
+      "name": "shared-helper-native-focused",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test",
+        "regression_suite_011",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_015",
+        "-E",
+        "test(/(^|::)(issue_8153_symbol_coverage|issue_8153_symbol_fallback|issue_7642_native_command_literal_relations)::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "started_at": "2026-11-05T19:46:46.448536+00:00",
+      "pid": 23075,
+      "exit_code": 0,
+      "seconds": 224.042,
+      "log_sha256": "deda1a087679bd4c10d522b74231e16b995e37c622993c6605fb1de0394bebed"
+    },
+    {
+      "name": "native-feature-clippy",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--features",
+        "native-skia",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at": "2026-11-05T19:50:31.572083+00:00",
+      "pid": 39183,
+      "exit_code": 0,
+      "seconds": 17.435,
+      "log_sha256": "83691847c93df0f8d2d57d6f7473acb67f8459eea160841af7dd93bcb93ffe2e"
+    },
+    {
+      "name": "default-clippy",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at": "2026-11-05T19:50:49.999023+00:00",
+      "pid": 40640,
+      "exit_code": 0,
+      "seconds": 46.162,
+      "log_sha256": "f850fcea6d5a3d9d5c5c30dcf7f0a906e3970f577d5956353cd47ff01f6458b2"
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at": "2026-11-05T19:51:36.896777+00:00",
+      "pid": 43785,
+      "exit_code": 0,
+      "seconds": 24.752,
+      "log_sha256": "59fdc473f2edb75a6f3fd841ae8922d230b55b7f30a9e62d2677dbc59b7ae2b4"
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "started_at": "2026-11-05T19:52:02.202847+00:00",
+      "pid": 45737,
+      "exit_code": 0,
+      "seconds": 35.845,
+      "log_sha256": "4898c9284cb40cf9fe6198f72cce9f257857ec7fd99c141509af695aa5e4b483"
+    },
+    {
+      "name": "all-target-clippy",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at": "2026-11-05T19:52:39.105815+00:00",
+      "pid": 48328,
+      "exit_code": 0,
+      "seconds": 47.362,
+      "log_sha256": "07d9b6c24b47aded28847203320c4b5e3065f6cad619f19ad721832e2bd2efd4"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "started_at": "2026-11-05T19:53:27.279362+00:00",
+      "pid": 51888,
+      "exit_code": 0,
+      "seconds": 14.152,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "170b886f167b705b6e630c5b34bb638d92fae0a9"
+      ],
+      "started_at": "2026-11-05T19:53:41.906251+00:00",
+      "pid": 52929,
+      "exit_code": 0,
+      "seconds": 1.282,
+      "log_sha256": "e196235b7cc384b94b72c31003c1ce50d1518f8ec111f5b6050a7386ad2e74d3"
+    },
+    {
+      "name": "unit-tiers",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "170b886f167b705b6e630c5b34bb638d92fae0a9"
+      ],
+      "started_at": "2026-11-05T19:53:43.487698+00:00",
+      "pid": 52978,
+      "exit_code": 0,
+      "seconds": 16.004,
+      "log_sha256": "2c6dbaab2093a94c2fa3ec11190f384180b922a10025e3466a44f53c6611685c"
+    },
+    {
+      "name": "full-nextest",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "started_at": "2026-11-05T19:54:00.017975+00:00",
+      "pid": 56039,
+      "exit_code": 0,
+      "seconds": 889.113,
+      "log_sha256": "e055d2a2ddec166ac77ce04a6e9a6c1ad89832776095ffd5745b1cb0a8973d00"
+    }
+  ],
+  "native_required": {
+    "lib": {
+      "log_sha256": "0e338a053050d1e9d02023025d58756647f5defa6eb212763d5dbf3ca3d08ea7",
+      "summaries": [
+        "test result: ok. 3857 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 11.81s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    "png": {
+      "log_sha256": "150a672d71878af042cfd6f7969e461bc00fcb574564c1a408b0d70f82673948",
+      "summaries": [
+        "\n     Summary [   2.422s] 2 tests run: 2 passed, 290 skipped"
+      ]
+    },
+    "pdf": {
+      "log_sha256": "380d0b425c2987a490dc0827312a95bf33000606ada4b8bbd2a8ab5afffc2f63",
+      "summaries": [
+        "\n     Summary [   1.863s] 22 tests run: 22 passed, 274 skipped"
+      ]
+    }
+  },
+  "visual_comparison": "glyph-base-candidate-page-comparison.json",
+  "correspondence": "helper-commit-correspondence.json",
+  "prior_clippy_failure": "glyph-final-native-feature-clippy.log의 duplicate_mod를 검사 로딩 보정으로 해결; warning allow나 assertion 삭제 없음."
+}

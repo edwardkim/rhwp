@@ -1,0 +1,31 @@
+{
+  "head": "ae80442566a3374b977c4899babd09f3fbf53075",
+  "source_diff_sha256": "a7b141c9ce8e63543b1cb27f9758eb0017c936158e3c0ee0e9ed92e9d7da9b9b",
+  "artifacts": {
+    "rhwp.js": {
+      "sha256": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+      "bytes": 536865,
+      "studio_public_sha256": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b"
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "6d0d843f939b033b18fb636f0b64a21734c199aa849c68dea4b0be1b406f032f",
+      "bytes": 30704235,
+      "studio_public_sha256": "6d0d843f939b033b18fb636f0b64a21734c199aa849c68dea4b0be1b406f032f"
+    },
+    "rhwp.d.ts": {
+      "sha256": "8160a419b532814c4ba8006ab487d47ed54c41553b11282eab77a8e0f8744798",
+      "bytes": 214580
+    },
+    "rhwp_bg.wasm.d.ts": {
+      "sha256": "2845d0d99bedba40ceb18663c1052b9f245a1fbbc07b0f9aa29a1428c200ae97",
+      "bytes": 75003
+    },
+    "package.json": {
+      "sha256": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+      "bytes": 429
+    }
+  },
+  "pkg": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/glyph-pkg",
+  "profile": "Mac locked web no-opt 로컬 대체 빌드",
+  "docker_optimized": false
+}
