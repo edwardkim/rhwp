@@ -515,3 +515,36 @@ visual_sweep.py --handbook-gate --rhwp-bin <후보 Native> --out <handbook 출�
 ```
 
 기준 WASM 첫 최적화 실행도 종료 코드 143으로 중단됐다. 미완료 package를 검증에 사용하지 않았고 locked wrapper를 다시 실행해 최적화 포함 성공을 확인했다. 후보는 compile과 locked packaging을 순차로 완료했다. 모든 Cargo 작업은 같은 target에서 순차 실행했다. 중간 로그·JSON·일반 raster는 ignored output에만 두며 종료 정리 대상이다. 후속 회귀·lint 결과와 제출 후보는 [검토 문서](../../pr_8542_review.md)에 기록한다.
+
+## SVG 소비 경로 보충
+
+원 이슈의 SVG API 경로도 같은 소스·입력·독립 PDF·TTF·96dpi·print·compat 2022로 확인했다. `--rasterizer svg --embed-fonts=full`을 추가했으며 Native/최적화 WASM의 전 3쪽 raw는 각각 100.00000 / 100.00000 / 99.99639%다(3쪽 raw 미대응 1px, TSV 표시는 100.00%). SVG 결과를 앞의 직접 Native PNG·Canvas 검증으로 대신하지 않았다.
+
+### Native SVG
+
+TSV SHA-256 `371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af`.
+
+```tsv
+page	tolerant_content_match_percent	below_90	silhouette_raw_match_percent	silhouette_boundary_reconciled_pixels
+1	100.00	0	100.00	0
+2	100.00	0	100.00	0
+3	100.00	0	100.00	0
+```
+
+### fresh WASM SVG
+
+TSV SHA-256 `371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af`.
+
+```tsv
+page	tolerant_content_match_percent	below_90	silhouette_raw_match_percent	silhouette_boundary_reconciled_pixels
+1	100.00	0	100.00	0
+2	100.00	0	100.00	0
+3	100.00	0	100.00	0
+```
+
+
+## 최종 code/data 검증과 source 동일성
+
+`790ef21567d041fe272253673fa63fb1ce7809df`에서 14개 필수 gate가 모두 성공했다. 전체 nextest 12,640 PASS/45 skipped, Native lib 4,040 PASS/12 ignored·placeholder 2 PASS·직접 PDF 22 PASS다. 신규 원본 1개를 명시한 보안 계약 6개와 기존 SVG snapshot 4개는 전체 회귀에서 실제 PASS다. 새 회귀 3개는 최소 글꼴 환경에서도 별도로 통과했다.
+
+`git show`로 원본/PDF의 Git blob과 실제 사용 파일이 같음을 확인했다. 원 기여의 회귀 파일에서 `//!` 모듈 주석을 제외한 source는 보강 뒤에도 바이트가 같아 assertion을 바꾸지 않았음을 확인했다. 제품 src tree는 빌드/시각 측정 때와 같은 `ceaa7c40545ca8036c71c880b8d4a8c447435a4e`다. Cargo.lock과 build.rs 및 crate/vendor 제품 source도 바꾸지 않았다. 실제 단계·소요·노출 글꼴·필터와 기존 ignored의 구분은 검토 문서에 기록했다.
