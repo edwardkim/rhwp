@@ -1185,6 +1185,8 @@ export interface LayerPageBackgroundOp {
 }
 
 export interface LayerTextStyle {
+  /** Rust의 공통 한컴 Print pen 결과. 명시 textPaint에는 적용하지 않는다. */
+  outlineStroke?: { width: number; intervals: number[] };
   textPaint?: {
     width: number;
     paint: { fill: boolean; width_mpt: number; stroke_color: number; fill_alpha: number;

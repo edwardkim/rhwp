@@ -48,3 +48,11 @@ CI 실패의 메인터너 처리 판단은 작업지시자의 위임 범위에�
 ## Merge 후 contributor PR comment 계획
 
 아직 확정하지 않았다. 실제 원 PR이 주장한 문서·페이지의 Native/fresh WASM review·overlay와 지표·남은 차이를 확인한 뒤 안정 경로와 SHA 고정 URL을 이 절에 기록한다. 이미지·해시·원본/쪽 대응을 게시 전에, API 본문·실제 화면을 게시 뒤 확인한다. 이 접수 기록을 완료 댓글로 게시하지 않는다.
+
+## 누적 적용 중 확인과 보정
+
+원 기여 head를 조상으로 보존한 `359fb96852`에서 Native 문자 재생 충돌을 보정했다. 기존 #8410의 명시 TextPaint가 있으면 그 계약을 우선하며, HWP outline에만 공통 pen·dash와 장치 하한을 적용한다. shaping과 그림자·양각/음각 호출은 유지했다.
+
+추가로 원 PR이 미검증으로 명시한 CanvasKit은 기존 글자 크기 비례 획과 흰 채움을 사용하고 있었다. 별도 수치 표를 복제하지 않고 Rust 공통 `char_outline_stroke` → paint JSON의 `outlineStroke` → CanvasKit의 textRun/glyphRun 소비 경로를 연결했다. 명시 TextPaint는 이 descriptor를 내보내지 않으며, 이전 producer의 descriptor 부재는 unsupported fallback으로 구분한다. 실제 출력 검증은 아직 완료하지 않았다.
+
+초기 TypeScript 검사와 기존 Studio 테스트는 2,720 PASS·기존 skip 2였다. 이 실행에는 타입 import용 기존 package를 임시 복사했고, 현재 Rust의 fresh WASM 실행 또는 시각 증거로 세지 않는다. 새 package 빌드 뒤 실제 backend·문서 검증을 완료한다.
