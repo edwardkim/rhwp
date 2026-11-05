@@ -1,3 +1,10 @@
+//! 검사 유형: 관계형·고정형(독립 물리 pen·선 종류); 페이지 절대 px 좌표 핀 없음.
+//! 주석 갱신: 2026-11-05T14:31:40+09:00; 직전 파일 변경: 3c5accd7b604594585ebc1b1fe96ea155069821e 2026-10-29T16:27:31+09:00.
+//! 측정일 2026-11-05, 제품 source 6337fe4d10; 96 DPI·Print·Native Skia/fresh WASM Canvas·2px raw 실루엣.
+//! outline: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105-next10/validation/pre8622/candidate/{native,wasm}/<위 key>.tsv, validation.md 및 같은 영역의 독립 Print 확대 판독.
+//! 순수 API/합성 계약 검사와 실물 문서의 시각 측정은 구분한다. 계산한 원본 크기·관계는 유지한다.
+//!
 //! 글자 외곽선 종류(1~6)를 한컴 인쇄와 같은 pen과 반복 구간으로 긋는다.
 //!
 //! rhwp로 만든 시험 문서를 한컴 한글 12.30(Mac)에서 인쇄한 PDF

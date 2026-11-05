@@ -30,3 +30,16 @@
 | `tests/fixtures/semanticist21_next10_review/uneven-width-edited.hwpx` | `6c39965155be3b1dc987dc8454c0e9093d9322390d99613b68aae742946478fd` | [uneven-width-edited-hwpx-2020.pdf](../../../../pdf/semanticist21-20261105-next10/uneven-width-edited-hwpx-2020.pdf) | `3f66399bc0d9881115d5c4e7c0c18acf4bd5c0c5e5a02d5732b5d8779ce82698` |
 
 Print 확보만으로 시각 통과를 판정하지 않는다. 최종 후보의 전쪽 Native/fresh WASM TSV와 확대 판독을 별도 기록한다.
+
+
+## 최종 보정 저장본과 원본 대조군 보완
+
+선 종류를 보존한 `footnote-shape-corrected.hwpx`는 실제 Native CLI 저장본이며, `footnote-shape-configured.hwpx`는 최종 fresh WASM의 실제 `applyFootnoteShape` 호출과 옵션 조회 확인 후 저장한 파일이다. 후자는 페이지 아래 각주·빨간 구분선·numberCodeSuperscript=false·digit 포맷을 명시해 빈 옵션 적용과 구분했다. 나머지 세 입력은 원 기여의 실제 편집 전 원본이다. 같은 입력을 독립 한컴 2020(11.0.0.9136), `pdf_print_method=0`, `hancom2020_pdf_driver_one_up`로 인쇄했고 다운로드 bytes/해시를 확인했다.
+
+| 입력 | 입력 SHA-256 | 독립 Print | PDF SHA-256 |
+| --- | --- | --- | --- |
+| `tests/fixtures/semanticist21_next10_review/footnote-shape-corrected.hwpx` | `feb37b65b8ef714bbfbc45940403551f4e5681d0ab0aed3b8380ecb71cc76673` | [footnote-shape-corrected-hwpx-2020.pdf](../../../../pdf/semanticist21-20261105-next10/footnote-shape-corrected-hwpx-2020.pdf) | `10666be5c2f124ea9a5f42cc64b8854b222e96e3313eb532a07f440e5ea88050` |
+| `tests/fixtures/table_equal_cell_sizes/original.hwp` | `e3ee5a9615b329e7cd5817e09e905b9973538d3eeceaf5a2f1338f4218766a31` | [equalize-original-2020.pdf](../../../../pdf/semanticist21-20261105-next10/equalize-original-2020.pdf) | `2443783fe29d72e60643731aa071e1c86def2eca21026f5c6df2d03eea32b4b5` |
+| `tests/fixtures/table_equal_cell_sizes/uneven-height.hwp` | `003f6a7f48cc87e60b7d1b023330ebaf958f6ae94fc0c9a3fadc7fc727277b4d` | [uneven-height-original-2020.pdf](../../../../pdf/semanticist21-20261105-next10/uneven-height-original-2020.pdf) | `2edd6f096081683f1c6412d5381f25578a9f70c3edef07327393b95eb35a3038` |
+| `tests/fixtures/table_equal_cell_sizes/uneven-width.hwp` | `3b480c147060bf93582bcf1e3fa2a1af71f22ee4632207dc9db8996b345e697f` | [uneven-width-original-2020.pdf](../../../../pdf/semanticist21-20261105-next10/uneven-width-original-2020.pdf) | `64e16d4ff2ffea5a43b8547e9463b0a73f16cf8e7edc11925be06b3adcfaa72c` |
+| `tests/fixtures/semanticist21_next10_review/footnote-shape-configured.hwpx` | `7444fb2a0a42f907c67b29f858347fe754f8f866b5413c5770357df008840796` | [footnote-shape-configured-hwpx-2020.pdf](../../../../pdf/semanticist21-20261105-next10/footnote-shape-configured-hwpx-2020.pdf) | `b6bbe9db15978c484cce138b13b89e1bc4cd18b73cdfa1bf867ef39997c0863a` |

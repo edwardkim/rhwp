@@ -1,3 +1,16 @@
+//! 검사 유형: 고정형(독립 함수 의미와 계산 결과); 페이지 절대 px 좌표 핀 없음.
+//! 주석 갱신: 2026-11-05T13:37:58+09:00; 직전 파일 변경: 19745abf26050a5390c2b8e91627adcad24e8cad 2026-11-03T00:01:08+09:00.
+//! 측정일 2026-11-05, 제품 source 6337fe4d10; 96 DPI·Print·Native Skia/fresh WASM Canvas·2px raw 실루엣.
+//! table-formula-easy: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! table-formula-hancom-result: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! table-formula-stale: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! table-formula-cycles: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! table-formula-easy-edited-hwpx: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! table-formula-recalculated-hwp: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! table-formula-recalculated-hwpx: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105-next10/validation/pre8622/candidate/{native,wasm}/<위 key>.tsv, validation.md 및 같은 영역의 독립 Print 확대 판독.
+//! 순수 API/합성 계약 검사와 실물 문서의 시각 측정은 구분한다. 계산한 원본 크기·관계는 유지한다.
+//!
 //! 계산식 함수의 뜻을 한/글에 맞춘다.
 //!
 //! 한컴 도움말(`table/calculation/calculation(function).htm`)은 LOG를 상용로그(밑 10),

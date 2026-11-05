@@ -1,3 +1,16 @@
+//! 검사 유형: 관계형·고정형(한컴 계산 결과·필드 보존); 페이지 절대 px 좌표 핀 없음.
+//! 주석 갱신: 2026-11-05T13:37:58+09:00; 직전 파일 변경: 76ac4bedc7bfbd590f5b39bb6e99026239999433 2026-11-05T12:25:04+09:00.
+//! 측정일 2026-11-05, 제품 source 6337fe4d10; 96 DPI·Print·Native Skia/fresh WASM Canvas·2px raw 실루엣.
+//! table-formula-easy: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! table-formula-hancom-result: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! table-formula-stale: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! table-formula-cycles: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! table-formula-easy-edited-hwpx: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! table-formula-recalculated-hwp: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! table-formula-recalculated-hwpx: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105-next10/validation/pre8622/candidate/{native,wasm}/<위 key>.tsv, validation.md 및 같은 영역의 독립 Print 확대 판독.
+//! 순수 API/합성 계약 검사와 실물 문서의 시각 측정은 구분한다. 계산한 원본 크기·관계는 유지한다.
+//!
 //! 표 계산식은 결과 글이 아니라 한/글 12.30처럼 셀의 FORMULA 필드로 남고, 셀을 고치면 다시 계산한다.
 //!
 //! 기대값은 한/글 12.30 Mac에서 직접 계산해 저장한 값이다. `table_formula/stale.hwpx`는 한/글

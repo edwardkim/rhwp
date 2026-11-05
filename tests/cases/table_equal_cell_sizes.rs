@@ -1,3 +1,24 @@
+//! 검사 유형: 관계형·고정형(독립 한컴 격자·원본 HU 크기); 페이지 절대 px 좌표 핀 없음.
+//! 주석 갱신: 2026-11-05T14:31:40+09:00; 직전 파일 변경: 6a31cb47a088ac13ecbe641900318c9dbc9ff4e3 2026-10-30T14:08:45+09:00.
+//! 측정일 2026-11-05, 제품 source 6337fe4d10; 96 DPI·Print·Native Skia/fresh WASM Canvas·2px raw 실루엣.
+//! equal-height: 전7쪽 Native 최저 99.56% / fresh WASM 최저 99.57%; 누락 없음.
+//! equal-width: 전7쪽 Native 최저 99.55% / fresh WASM 최저 99.57%; 누락 없음.
+//! uneven-height: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! uneven-width: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! equal-height-edited-hwp: 전7쪽 Native 최저 99.12% / fresh WASM 최저 99.72%; 누락 없음.
+//! equal-height-edited-hwpx: 전7쪽 Native 최저 99.12% / fresh WASM 최저 99.72%; 누락 없음.
+//! equal-width-edited-hwp: 전7쪽 Native 최저 99.12% / fresh WASM 최저 99.72%; 누락 없음.
+//! equal-width-edited-hwpx: 전7쪽 Native 최저 99.12% / fresh WASM 최저 99.72%; 누락 없음.
+//! uneven-height-edited-hwp: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! uneven-height-edited-hwpx: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! uneven-width-edited-hwp: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! uneven-width-edited-hwpx: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! equalize-original: 전7쪽 Native 최저 99.12% / fresh WASM 최저 99.72%; 누락 없음.
+//! uneven-height-original: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! uneven-width-original: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105-next10/validation/pre8622/candidate/{native,wasm}/<위 key>.tsv, validation.md 및 같은 영역의 독립 Print 확대 판독.
+//! 순수 API/합성 계약 검사와 실물 문서의 시각 측정은 구분한다. 계산한 원본 크기·관계는 유지한다.
+//!
 //! 고정형(한컴 저장본 대조): 셀 블록의 너비·높이를 같게 맞추면 한컴처럼 격자를 다시 나눈다.
 //!
 //! 측정일 2026-10-30. 줄마다 칸 수가 다른 블록은 `uneven-*` 시험 문서와 한컴 저장본으로 따로 대조한다.
@@ -249,5 +270,25 @@ fn rows_of_a_reopened_table_shrink_to_the_equal_height() {
     assert_eq!(heights.len(), 4);
     for height in heights {
         assert!((height - 4500.0 / 75.0).abs() < 0.05, "칸 높이 {height}");
+    }
+}
+
+#[test]
+fn empty_selected_grid_line_rejects_before_mutation() {
+    let mut empty = Table {
+        row_count: 1,
+        col_count: 1,
+        ..Default::default()
+    };
+    let before = format!("{empty:?}");
+    for axis in [CellSizeAxis::Height, CellSizeAxis::Width] {
+        assert!(empty
+            .equalize_cell_block(axis, (0, 0, 0, 0), &[0, 100])
+            .is_err());
+        assert_eq!(
+            format!("{empty:?}"),
+            before,
+            "invalid empty line must not mutate the table"
+        );
     }
 }

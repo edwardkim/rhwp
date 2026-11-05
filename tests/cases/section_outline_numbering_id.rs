@@ -1,3 +1,11 @@
+//! 검사 유형: 관계형·고정형(번호 정의와 표시 문자열); 페이지 절대 px 좌표 핀 없음.
+//! 주석 갱신: 2026-11-05T14:31:40+09:00; 직전 파일 변경: 49dfa0ea644c3eabc724be11506ae4a9d94d1c27 2026-11-05T11:53:56+09:00.
+//! 측정일 2026-11-05, 제품 source 6337fe4d10; 96 DPI·Print·Native Skia/fresh WASM Canvas·2px raw 실루엣.
+//! outline-id2-hwp: 전1쪽 Native 최저 96.49% / fresh WASM 최저 97.10%; 누락 없음.
+//! outline-id2-hwpx: 전1쪽 Native 최저 96.49% / fresh WASM 최저 97.10%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105-next10/validation/pre8622/candidate/{native,wasm}/<위 key>.tsv, validation.md 및 같은 영역의 독립 Print 확대 판독.
+//! 순수 API/합성 계약 검사와 실물 문서의 시각 측정은 구분한다. 계산한 원본 크기·관계는 유지한다.
+//!
 //! 구역 정의의 개요 번호 모양(번호 정의 ID)을 바꾸고 읽으며, HWP·HWPX 저장 뒤에도 남긴다.
 //!
 //! 한/글의 서식 > 개요 번호 모양은 구역의 `outlineShapeIDRef`(HWP5 구역 정의의 개요 번호

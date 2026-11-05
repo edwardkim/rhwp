@@ -1,19 +1,21 @@
 # 다음 10건의 누적 검증 기록
 
-**상태: 최종 검증 진행 중. 수용·PR 제출 완료가 아니다.**
+**최신 devel #8622 반영 후의 최종 검증을 진행 중이다. PR 제출·수용 완료가 아니다.**
 
-대상: #8368·#8369·#8385·#8484·#8488·#8490·#8492·#8494·#8500·#8504.
-원 head·기준 SHA·승인 범위는 [계획](../../semanticist21_20261105_next10_review_plan.md)에 기록했다.
+대상은 #8368·#8369·#8385·#8484·#8488·#8490·#8492·#8494·#8500·#8504다. 원 head 10개를 merge 조상으로 보존했으며 contributor branch에 push하지 않았다. 현재 승인 범위는 로컬 보정과 필수 검증이다.
 
-- 원 head 10개를 merge 조상으로 보존했다. 공개 원 branch에 push하지 않았다.
-- 현재 제품 source `6337fe4d102b591b65c61b92a8da8b2df71eb8cb`의 Native CLI SHA-256은 `b4fc22625e0a840d978bc492832b1bf8a5d35584e0970aa8c073bfde21cd7a92`다.
-- 이전 source `053df068bbc25c8100fb1e7f5960e9ef3d800b60`의 최적화 fresh WASM 첫 진단에서 글자 외곽선 1쪽 raw 100%, 각주 2쪽·미주 4쪽 raw 100%였다. 이후 각주 선 종류와 원형 점선 보정을 반영한 **최종 WASM·전쪽 검증은 아직 진행 중**이다.
-- 같은 이전 WASM의 실제 제품 API 검증 9개 묶음은 통과했다. 계산식은 저장된 FORMULA 필드 생성·조회·명시적 재계산 API를 검사하며 Studio 타이핑 자동 재계산 UI를 완성했다고 주장하지 않는다.
-- CanvasKit 글자 외곽선 회귀는 여섯 종류의 실제 잉크, 투명한 내부와 Rust 공통 획·점선 소비를 검사한다. 효과 경계는 번들 Noto fallback으로 확인하고 독립 Print 글꼴 일치는 별도 전쪽 측정으로 판단한다. 실제 outline 생산자는 TextRun이며 glyphRun 경로를 실행한 것으로 기록하지 않는다.
-- 원형 점선의 독립 Windows 2020/2024 16종 계약은 [측정 근거](circle-print-geometry.md)에 있다.
-- 각주 선 종류는 기존 #3930 → #4058 → `47216ca6bd`의 공통 LineType2를 재사용해 새 저장본을 DASH로 보존한다. 이미 잘못 저장된 DOT 파일은 해당 파일에 기록된 긴 파선으로 해석한다.
-- 일반 바탕쪽 텍스트는 저장 텍스트 프레임 원점을 소비한다. Paper/Page 상대 도형의 기존 분기는 유지한다. 각주 inline 배치는 공통 본문 마지막 줄의 실제 점유 하단을 소비하며 기존 예약·분할 큐를 변경하지 않는다.
-- 첫 편람 실행은 다른 샘플용 10개 글꼴을 전달해 실패했다. source `55a223adb8`를 편람의 기존 고정 KoPub/HCR 환경으로 실행한 383쪽은 최저 99.96%, 370쪽 100%로 통과했다. 원형 점선 보정 후 최종 gate는 다시 실행한다. baseline과 허용값은 바꾸지 않았다.
-- 최소 글꼴 전체 nextest 첫 실행은 source `76ac4bedc7`의 중간 실행이다. 후속 빌드 순서를 바꾸는 로컬 runner 중단으로 전체 완료 요약이 없으므로 통과로 사용하지 않는다. 최종 source의 canonical 전체 회귀를 완료해야 한다.
+## 완료해 보존한 이전 source
 
-최종 전체 TSV·대표 이미지·확대 판독·Native 공식 3종·전체 회귀·lint·새 devel 보존 결과를 확보한 뒤 이 기록과 개별 PR 판정을 확정한다.
+제품 source `6337fe4d102b591b65c61b92a8da8b2df71eb8cb`, base `ed057276c1e0e07e743218d95641e015b46b6715`(중간 d4a72efd7c와 제품 tree 같음).
+
+- 문서별 글꼴 한도 안의 실제 Native/fresh WASM: 각각 46상태·124쪽, 최저 96.49% / 97.10%, 90% 미만·누락·독립 PDF 쪽수 불일치·2%p 초과 하락 없음.
+- 최소 글꼴 전체 nextest 12,544 PASS·45 SKIP·exit 0. 실제 Native 공식 3종 4,064 PASS·12 IGNORE, 모든 Rust lint·workspace build, Studio TypeScript·2,720 tests·build 통과.
+- 최적화 WASM의 실제 API 9묶음과 한컴 계산 기대값 37개, 실제 Studio Canvas2D 6장면, CanvasKit의 문자 획·공통 테두리/각주 소비 검사를 별도로 실행했다.
+- Canonical KoPub/HCR 편람 Native 383쪽 passed·최저 99.96%다. 일반 샘플 글꼴 팩을 공급한 초기 실패와 구분한다.
+- 검증 입력 오류를 보정한 보안 suite 6개 및 fixture 45개 × CLI 세 탐지기 검사를 완료했다. `samples/`의 신규/변경 문서는 없다.
+
+[실제 실행 기록](pre8622-validation.md), [전쪽 TSV·입력/PDF 해시](validation/pre8622/summary.json), [확대 판독과 대표 이미지](validation/pre8622/direct-reading.md), [글꼴 공급 보정](font-qualification.md), [원형 점선 독립 측정](circle-print-geometry.md)을 연결한다.
+
+## 새 base의 검증
+
+원격 devel에 [#8622](https://github.com/edwardkim/rhwp/pull/8622), `6e1de406209ba9a58032f6ca6de45b18aa687d1c`가 추가됐다. 이 변경은 제품 코드가 같지 않으므로 위 결과를 새 후보의 결과로 재사용하지 않는다. [최신 base 기능 보존 계획](rebase8622-plan.md)에 따라 별도 base 산출물·통합 후보의 실제 출력과 동작을 대조하고 최종 필수 검증을 완료한다.

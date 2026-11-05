@@ -1,7 +1,15 @@
-//! 관계형·고정형: 편집한 미주 번호를 한/글 저장본과 대조하고, 한/글이 저장한 번호를 기대값으로 검사한다.
-//! 주석 갱신: 2026-11-04T19:09:06+09:00; 새 파일이므로 직전 파일 변경 커밋은 없다.
-//! 편집 명령이 저장하는 번호와 모든 쪽에 그린 `N)`의 순서를 보는 계약이며 쪽의 px 좌표나 일치율을 주장하지 않는다.
-//! 문서를 여는 조판은 바꾸지 않아 시각 raw 측정은 비해당이다. 기준은 한/글 12.30(Mac) 저장본 세 개다.
+//! 검사 유형: 관계형·고정형(독립 미주 번호); 페이지 절대 px 좌표 핀 없음.
+//! 주석 갱신: 2026-11-05T13:37:58+09:00; 직전 파일 변경: bc7cedcc7eacc2e18a4e25f78c6b115517400d08 2026-11-04T19:09:06+09:00.
+//! 측정일 2026-11-05, 제품 source 6337fe4d10; 96 DPI·Print·Native Skia/fresh WASM Canvas·2px raw 실루엣.
+//! endnote-restart5: 전4쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! endnote-continue: 전4쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! endnote-new20: 전4쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! endnote-continued-hwp: 전4쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! endnote-continued-hwpx: 전4쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! endnote-deleted-hwpx: 전4쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! endnote-inserted-hwpx: 전4쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105-next10/validation/pre8622/candidate/{native,wasm}/<위 key>.tsv, validation.md 및 같은 영역의 독립 Print 확대 판독.
+//! 순수 API/합성 계약 검사와 실물 문서의 시각 측정은 구분한다. 계산한 원본 크기·관계는 유지한다.
 //!
 //! 미주 번호는 구역마다 미주 모양의 번호 매기기를 따른다(한/글 12.30 Mac).
 //!
@@ -198,4 +206,48 @@ fn new_number_control_sets_next_endnote() {
 
     delete_first_endnote(&mut doc, 1);
     assert_eq!(numbers(&doc), [vec![], vec![20]]);
+}
+
+#[test]
+fn source_master_text_uses_the_body_text_frame_origin() {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    fn text<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        if matches!(&node.node_type, RenderNodeType::TextRun(run) if run.display_or_text().contains("바탕쪽표식"))
+        {
+            out.push(node);
+        }
+        for child in &node.children {
+            text(child, out);
+        }
+    }
+    let core = rhwp::document_core::DocumentCore::from_bytes(
+        &std::fs::read(format!("{DIR}/restart-5.hwpx")).unwrap(),
+    )
+    .unwrap();
+    let tree = core.build_page_render_tree(0).unwrap();
+    let body = tree
+        .root
+        .children
+        .iter()
+        .find(|n| matches!(n.node_type, RenderNodeType::Body { .. }))
+        .unwrap();
+    let master = tree
+        .root
+        .children
+        .iter()
+        .find(|n| matches!(n.node_type, RenderNodeType::MasterPage))
+        .unwrap();
+    let mut labels = Vec::new();
+    text(master, &mut labels);
+    assert_eq!(
+        labels.len(),
+        1,
+        "source master label is neither lost nor duplicated"
+    );
+    let label = labels[0];
+    assert!(
+        label.bbox.x >= body.bbox.x && label.bbox.y >= body.bbox.y,
+        "master normal text starts in the source body text frame"
+    );
+    assert!(label.bbox.x + label.bbox.width <= body.bbox.x + body.bbox.width);
 }

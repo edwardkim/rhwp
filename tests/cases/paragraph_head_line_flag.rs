@@ -1,3 +1,13 @@
+//! 검사 유형: 관계형·고정형(원본 문단 머리 플래그); 페이지 절대 px 좌표 핀 없음.
+//! 주석 갱신: 2026-11-05T14:31:40+09:00; 직전 파일 변경: bd8c7677cd424d228094a0ea06912b0e5ffc7b80 2026-11-03T06:00:37+09:00.
+//! 측정일 2026-11-05, 제품 source 6337fe4d10; 96 DPI·Print·Native Skia/fresh WASM Canvas·2px raw 실루엣.
+//! paragraph-heads: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! paragraph-head-edited-hwp: 전1쪽 Native 최저 99.71% / fresh WASM 최저 99.69%; 누락 없음.
+//! paragraph-head-edited-hwpx: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! paragraph-head-off-hwpx: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105-next10/validation/pre8622/candidate/{native,wasm}/<위 key>.tsv, validation.md 및 같은 영역의 독립 Print 확대 판독.
+//! 순수 API/합성 계약 검사와 실물 문서의 시각 측정은 구분한다. 계산한 원본 크기·관계는 유지한다.
+//!
 //! 한/글(12.30 Mac)은 문단 머리(글머리표·그림 글머리표·번호·개요)가 있는 문단의 첫 줄에만
 //! 줄 플래그 bit 21(`TAG_PARAGRAPH_HEAD`)을 켠다. 둘째 줄 이후와 머리를 끈 문단은 끈다.
 //! HWP `PARA_LINE_SEG`와 HWPX `flags`가 같다. 비트가 꺼진 글머리표 문단은 한/글이

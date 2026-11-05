@@ -1,12 +1,18 @@
+//! 검사 유형: 관계형·고정형(독립 물리 pen과 선 종류 기하); 페이지 절대 좌표 핀 없음.
+//! 주석 갱신: 2026-11-05T13:18:44+09:00; 직전 파일 변경: 7915a7ed9f75f559f3e82aa9a18feb80c0326ce1 2026-10-29T16:17:52+09:00.
+//! 측정일 2026-11-05, source 6337fe4d10; 96 DPI·Print·2px raw 실루엣(Native Skia/fresh WASM Canvas).
+//! borders 전1쪽 Native 최저 98.04% / fresh WASM 최저 97.73%; 누락 없음. 관계 검사로 본문 프레임과 선 패턴을 구분한다.
+//! 증거: mydocs/pr/assets/semanticist21-20261105-next10/validation/pre8622/candidate/{native,wasm}/borders.tsv 및 circle-print-geometry.md.
+//! 독립 PDF와 변경 영역을 직접 확대 판독한다.
+//!
 //! 글자·문단 테두리의 원형 점선(7)·물결선(12)·이중 물결선(13)을 한컴 인쇄 기하로 긋는다.
 //!
 //! 단위는 1/600 inch 한 칸, w는 테두리 굵기다. 수정 전에는 원형 점선이 [2 2] 사각
 //! 점선으로, 물결선 두 종류가 실선으로 그려졌다.
 //!
-//! 원형 점선은 저장소의 한/글 2020·2022·2024 인쇄 PDF로 쟀다
-//! (`pdf/pr-1674-2020.pdf`·`pdf/pr-1674-2024.pdf` 20쪽, `pdf/tac_object_host_line_height-2020.pdf`
-//! 2쪽은 w 5칸, `pdf/2022년 국립국어원 업무계획-2022.pdf` 20쪽은 w 12칸). 채운 원의 지름은
-//! 6칸·12칸, 간격은 2w이고 선 시작점부터 선 위에 놓인다.
+//! 원형 점선은 Windows 한컴 2020/2024의 16개 선언 굵기 Print를 대조했다.
+//! index 10(1.0 mm)은 실제 지름 36칸·중심 간격 88칸이다. 반올림한 실선 폭 w로
+//! 지름과 주기를 다시 추정하지 않는다. 측정표는 정식 검토 증적에 연결한다.
 //!
 //! 물결선은 rhwp로 만든 시험 문서를 한컴 한글 12.30(Mac)에서 인쇄한 PDF
 //! (`pdf/border_line_types/`, w 24칸)로 쟀다. 위아래 폭 w인 45° 지그재그를 굵기 w/4로
@@ -57,14 +63,24 @@ fn circle_and_wave_borders_follow_hancom_print_geometry() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let core = DocumentCore::from_bytes(&std::fs::read(path).expect("read sample")).expect("open");
     let page = core.build_page_render_tree(0).expect("page 1 render tree");
+    let body_width = page
+        .root
+        .children
+        .iter()
+        .find(|n| matches!(n.node_type, RenderNodeType::Body { .. }))
+        .unwrap()
+        .bbox
+        .width;
     let mut found = Vec::new();
     paths(&page.root, &mut found);
 
-    // 문단 테두리의 가로 변만 본문 폭(500px 넘게)을 차지한다.
+    // 문단 테두리의 가로 변은 짧은 글자 테두리와 달리 본문 프레임 너비를 차지한다.
     let waves: Vec<&Vec<(f64, f64)>> = found
         .iter()
         .filter(|(points, stroke, filled)| {
-            !filled && near(*stroke, W / 4.0) && points.last().unwrap().0 - points[0].0 > 500.0
+            !filled
+                && near(*stroke, W / 4.0)
+                && points.last().unwrap().0 - points[0].0 > body_width / 2.0
         })
         .map(|(points, ..)| points)
         .collect();
@@ -108,7 +124,7 @@ fn circle_and_wave_borders_follow_hancom_print_geometry() {
         "바깥 가닥은 같은 자리에서 시작"
     );
 
-    // 원형 점선: 지름 w의 채운 원을 2w 간격으로 선 위에 찍는다.
+    // 원형 점선: 같은 선언 index의 독립 Print 지름·중심 간격으로 선 위에 찍는다.
     let circles: Vec<&Vec<(f64, f64)>> = found
         .iter()
         .filter(|(points, _, filled)| *filled && points.len() % 5 == 0)
@@ -116,13 +132,13 @@ fn circle_and_wave_borders_follow_hancom_print_geometry() {
         .collect();
     let row = circles
         .iter()
-        .find(|points| points.len() / 5 > 30)
+        .find(|points| points.last().unwrap().0 - points[0].0 > body_width / 2.0)
         .expect("문단 원형 점선 가로 변");
     let centers: Vec<(f64, f64)> = row.chunks(5).map(|c| (c[1].0, c[0].1)).collect();
     let radius = row[0].0 - centers[0].0;
-    assert!(near(radius, W / 2.0), "반지름 {radius:.3}");
+    assert!(near(radius, 36.0 * UNIT / 2.0), "반지름 {radius:.3}");
     for pair in centers.windows(2) {
-        assert!(near(pair[1].0 - pair[0].0, 2.0 * W), "점 간격");
+        assert!(near(pair[1].0 - pair[0].0, 88.0 * UNIT), "점 간격");
         assert!(near(pair[1].1, pair[0].1), "선 위에 찍는다");
     }
 }

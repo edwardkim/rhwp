@@ -1,3 +1,14 @@
+//! 검사 유형: 관계형·고정형(독립 저장 속성·번호); 페이지 절대 px 좌표 핀 없음.
+//! 주석 갱신: 2026-11-05T14:31:40+09:00; 직전 파일 변경: 76ac4bedc7bfbd590f5b39bb6e99026239999433 2026-11-05T12:25:04+09:00.
+//! 측정일 2026-11-05, 제품 source 6337fe4d10; 96 DPI·Print·Native Skia/fresh WASM Canvas·2px raw 실루엣.
+//! footnote-shape: 전2쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! footnote-shape-applied-hwp: 전2쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! footnote-shape-applied-hwpx: 전2쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! footnote-shape-corrected-hwpx: 전2쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! footnote-shape-configured-hwpx: 전2쪽 Native 최저 99.92% / fresh WASM 최저 99.92%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105-next10/validation/pre8622/candidate/{native,wasm}/<위 key>.tsv, validation.md 및 같은 영역의 독립 Print 확대 판독.
+//! 순수 API/합성 계약 검사와 실물 문서의 시각 측정은 구분한다. 계산한 원본 크기·관계는 유지한다.
+//!
 //! 각주 모양(주석 모양 > 각주 모양 탭)을 읽고 바꾼다.
 //!
 //! 시험 문서는 한/글 12.30(Mac)에서 각주 모양을 ①,②,③·앞뒤 장식 문자 [ ]·구분선 파선
@@ -205,4 +216,73 @@ fn invalid_input_leaves_the_shape_unchanged() {
         assert_eq!(shape(&core), before, "{props}");
     }
     assert!(core.get_footnote_shape_native(9).is_err());
+}
+
+#[test]
+fn inline_note_area_follows_the_owned_body_line_and_does_not_cover_its_head() {
+    fn lines<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+            out.push(node);
+        }
+        for child in &node.children {
+            lines(child, out);
+        }
+    }
+    fn runs<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        if matches!(
+            node.node_type,
+            RenderNodeType::TextRun(_) | RenderNodeType::FootnoteMarker(_)
+        ) {
+            out.push(node);
+        }
+        for child in &node.children {
+            runs(child, out);
+        }
+    }
+    let mut source = sample();
+    source.apply_footnote_shape_native(0, "{}").unwrap();
+    for (label, core) in [
+        ("original", sample()),
+        ("hwp", open(&source.export_hwp_native().unwrap())),
+        ("hwpx", open(&source.export_hwpx_native().unwrap())),
+    ] {
+        for page in 0..core.page_count() {
+            let tree = core.build_page_render_tree(page).unwrap();
+            let body = tree
+                .root
+                .children
+                .iter()
+                .find(|n| matches!(n.node_type, RenderNodeType::Body { .. }))
+                .unwrap();
+            let area = tree
+                .root
+                .children
+                .iter()
+                .find(|n| matches!(n.node_type, RenderNodeType::FootnoteArea))
+                .unwrap();
+            let mut body_lines = Vec::new();
+            lines(body, &mut body_lines);
+            let body_end = body_lines
+                .iter()
+                .map(|n| n.bbox.y + n.bbox.height)
+                .fold(f64::NEG_INFINITY, f64::max);
+            assert!((area.bbox.y - body_end).abs() < 1e-6, "{label} p{page}: inline notes follow the last occupied line, including the otherwise empty second-page body line");
+            let mut body_runs = Vec::new();
+            runs(body, &mut body_runs);
+            let head = body_runs.iter().find(|n| matches!(&n.node_type, RenderNodeType::TextRun(run) if matches!(run.display_or_text(), "I" | "II"))).expect("Roman paragraph head");
+            let reference = body_runs
+                .iter()
+                .find(|n| matches!(n.node_type, RenderNodeType::FootnoteMarker(_)))
+                .expect("body note reference");
+            assert!(
+                head.bbox.x + head.bbox.width <= reference.bbox.x,
+                "{label} p{page}: paragraph head precedes the note reference without overlap"
+            );
+            let mut note_lines = Vec::new();
+            lines(area, &mut note_lines);
+            assert!(!note_lines.is_empty());
+            assert!(note_lines.iter().all(|line| line.bbox.y >= area.bbox.y
+                && line.bbox.y + line.bbox.height <= area.bbox.y + area.bbox.height + 1e-6));
+        }
+    }
 }

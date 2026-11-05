@@ -1,3 +1,10 @@
+//! 검사 유형: 고정형(독립 한컴 저장 속성); 페이지 절대 px 좌표 핀 없음.
+//! 주석 갱신: 2026-11-05T13:37:58+09:00; 직전 파일 변경: c1dc63845879c92506a1da1aaa17ef233b7c68d2 2026-11-03T00:03:19+09:00.
+//! 측정일 2026-11-05, 제품 source 6337fe4d10; 96 DPI·Print·Native Skia/fresh WASM Canvas·2px raw 실루엣.
+//! drop-cap: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105-next10/validation/pre8622/candidate/{native,wasm}/<위 key>.tsv, validation.md 및 같은 영역의 독립 Print 확대 판독.
+//! 순수 API/합성 계약 검사와 실물 문서의 시각 측정은 구분한다. 계산한 원본 크기·관계는 유지한다.
+//!
 //! 문단 첫 글자 장식 방식을 읽고 바꾸며, HWP·HWPX 저장 뒤에도 남긴다.
 //!
 //! 한/글 12.30(Mac)의 서식 > 문단 첫 글자 장식…은 문단 첫 글자를 글상자(사각형)로 옮기고
