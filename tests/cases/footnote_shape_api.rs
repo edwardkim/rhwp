@@ -16,10 +16,10 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use serde_json::{json, Value};
 
 const SAMPLE: &str = "tests/fixtures/footnote_shape/restart-page.hwp";
-/// 구분선 종류는 뺐다. 이 문서의 HWP 저장값(3)을 한/글은 HWPX에 `DASH`로 쓰지만 rhwp HWPX
-/// 저장은 이 모양 API와 별개로 3을 `DOT`으로 쓴다.
-const HANCOM_FOOTNOTE_PR: [&str; 4] = [
+/// HWP raw 3도 공통 LineType2 계약에 따라 한/글과 같은 `DASH`로 보존한다.
+const HANCOM_FOOTNOTE_PR: [&str; 5] = [
     r#"<hp:autoNumFormat type="CIRCLED_DIGIT" userChar="" prefixChar="[" suffixChar="]" supscript="1"/>"#,
+    r##"<hp:noteLine length="-1" type="DASH" width="0.4 mm" color="#000000"/>"##,
     r#"<hp:noteSpacing betweenNotes="425" belowLine="708" aboveLine="1133"/>"#,
     r#"<hp:numbering type="ON_PAGE" newNum="1"/>"#,
     r#"<hp:placement place="RIGHT_MOST_COLUMN" beneathText="1"/>"#,

@@ -77,8 +77,8 @@ fn recalculate(doc: &mut DocumentCore) -> Value {
 }
 
 /// 한/글 12.30이 `stale.hwpx`의 F1에 7을 치자 다시 계산해 저장한 결과(`cprobe1-hc.hwpx`).
-/// ROUND(1/3,7)의 D8은 이 평가기에 자릿수 ROUND가 없어 빼었다(#8484).
-const HANCOM_RESULTS: [(&str, &str); 36] = [
+/// #8484를 함께 통합해 LN과 자릿수 ROUND도 같은 실제 필드 경로로 대조한다.
+const HANCOM_RESULTS: [(&str, &str); 37] = [
     ("D1", "20.00"),         // AVG(LEFT): 빈 셀은 세지 않는다
     ("D2", "6"),             // PRODUCT(LEFT): 빈 셀은 곱하지 않는다
     ("C3", "3"),             // SUM(LEFT)
@@ -91,13 +91,14 @@ const HANCOM_RESULTS: [(&str, &str); 36] = [
     ("D6", "2.00"),          // =AVG(A6:C6): 범위 평균은 계산식 칸을 넣는다
     ("A7", "잘못된 계산식"), // =1/0
     ("B7", "잘못된 계산식"), // =SQRT(-1)
-    ("C7", "잘못된 계산식"), // =1/0 (한/글 저장본은 =LN(0))
+    ("C7", "잘못된 계산식"), // =LN(0)
     ("D7", "잘못된 계산식"), // =MOD(5,0)
     ("E7", "잘못된 계산식"), // =ASIN(2)
     ("F7", "1"),             // =A7+1: 글 셀은 0
     ("A8", "1,414,214,000"), // =SQRT(2)*1000000000: 함수 결과를 소수 여섯째 자리로 맞춘다
     ("B8", "1.23457"),       // =SUM(0.1234567,0)*10
     ("C8", "1,000,000"),     // =1/3*3000000: 사칙연산은 맞추지 않는다
+    ("D8", "333,333"),       // =ROUND(1/3,7)*1000000: 필드 함수 결과는 여섯째 자리
     ("E8", "2,333,333"),     // =AVG(1,2,4)*1000000
     ("F8", "3"),             // =ABS(-0.0000025)*1000000
     ("A9", "10"),            // =B10+0: 뒤 셀 계산식의 새 값을 쓴다
@@ -121,11 +122,6 @@ const HANCOM_RESULTS: [(&str, &str); 36] = [
 fn recalculates_a_table_the_way_hancom_did() {
     let mut doc = open("stale.hwpx");
     assert_eq!(cell(&doc, "D1").1, "999");
-    // C7의 =LN(0)은 이 평가기에 LN이 없어 같은 "잘못된 계산식"을 내는 식으로 바꿔 둔다(#8484).
-    let (pi, ci) = first_table(&doc);
-    let (c7, _) = cell(&doc, "C7");
-    doc.set_table_cell_formula(0, pi, ci, c7, "=1/0", "%g,")
-        .unwrap();
     retype(&mut doc, "F1", "7");
     recalculate(&mut doc);
     for (name, expected) in HANCOM_RESULTS {
@@ -135,6 +131,8 @@ fn recalculates_a_table_the_way_hancom_did() {
     let commands = formula_commands(&doc);
     assert!(commands.contains(&"=SQRT(2)*1000000000??%g,;;1,414,214,000".to_string()));
     assert!(commands.contains(&"=1/0??%g,;;잘못된 계산식".to_string()));
+    assert!(commands.contains(&"=LN(0)??%g,;;잘못된 계산식".to_string()));
+    assert!(commands.contains(&"=ROUND(1/3,7)*1000000??%g,;;333,333".to_string()));
     // 이미 맞는 표는 다시 계산해도 바뀌지 않는다.
     assert_eq!(recalculate(&mut doc)["changed"], serde_json::json!([]));
 }
