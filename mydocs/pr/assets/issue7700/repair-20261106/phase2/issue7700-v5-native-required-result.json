@@ -1,0 +1,109 @@
+{
+  "observed_at": "2026-11-05T21:06:34.673397+00:00",
+  "scope": "#7700 v5 공통 조판 후보의 Mac 최소 글꼴 Native Skia 필수3종. 기본 전체 nextest나 시각 sweep으로 대체하지 않음.",
+  "head": "95d445252a1bc20cba65d0996aec32a1762350ed",
+  "runtime_source_producer": "issue7700-joint-v5-native-producer.json",
+  "source_diff_sha256": "f339a8fd9d76b389f34b902f3b208f0e6280fed5a63c80f0f331c3a9c69d8d7d",
+  "source_guarded_file_count": 6415,
+  "guarded_sources_and_head_unchanged": true,
+  "minimum_font_sandbox": "output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+  "minimum_font_sandbox_sha256": "3ed96e145379aab622c4510cb42c016664bec9a28256b31b20b1d1f5b26eefdf",
+  "jobs": 8,
+  "threads": 8,
+  "cargo_sequential": true,
+  "steps": [
+    {
+      "name": "lib",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "pid": 46848,
+      "exit_code": 0,
+      "seconds": 225.24,
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v5-native-lib.log",
+      "log_sha256": "c31a403d8b2762267e77edefaba656ad1a9fb7df28e0469bd659a5b16a6f4242",
+      "summaries": [
+        "test result: ok. 3857 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 14.22s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "name": "png",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "pid": 62974,
+      "exit_code": 0,
+      "seconds": 240.612,
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v5-native-png.log",
+      "log_sha256": "20686b9d3d95b0114706449047b38bd129f158f161e8cb3fe937ae74e7cb3f5f",
+      "summaries": [
+        "Summary [   2.556s] 2 tests run: 2 passed, 300 skipped"
+      ]
+    },
+    {
+      "name": "pdf",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "pid": 79904,
+      "exit_code": 0,
+      "seconds": 18.379,
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v5-native-pdf.log",
+      "log_sha256": "eee33d2642e34c071c380133b34ce5f797875ff724c3f37d445a8ac3599e8bea",
+      "summaries": [
+        "Summary [   1.852s] 22 tests run: 22 passed, 272 skipped"
+      ]
+    }
+  ],
+  "counts": {
+    "native_lib_total_passed": 4039,
+    "native_lib_root_passed": 3857,
+    "native_lib_other_members_passed": 182,
+    "native_lib_ignored": 12,
+    "png_passed": 2,
+    "pdf_passed": 22,
+    "failed": 0
+  }
+}

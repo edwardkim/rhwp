@@ -7194,6 +7194,14 @@ impl LayoutEngine {
             row_heights[0] = frame.parent_height - cell_spacing * 2.0;
         }
 
+        #[cfg(not(target_arch = "wasm32"))]
+        if std::env::var_os("RHWP_DIAG_ROWH").is_some() {
+            eprintln!(
+                "DIAG_FRAGMENT_ROWH id={} rows={start_row}..{end_row} start_block={start_cut_is_block} end_block={is_block_split} measured={} resolved={resolved_row_heights:?} fragment={row_heights:?}",
+                table.common.instance_id, measured_table.is_some(),
+            );
+        }
+
         // ── 4. 렌더링할 행 목록 구성 ──
         // is_continuation && repeat_header → start_row 이전의 반복 제목행만 반복.
         // [Task #1716] 반복 대상은 표 상단의 연속 제목행 블록만(흩어진 하위 is_header 제외).

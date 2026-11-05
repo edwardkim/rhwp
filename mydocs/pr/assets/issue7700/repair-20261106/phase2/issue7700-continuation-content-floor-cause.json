@@ -1,0 +1,37 @@
+{
+  "kind": "수정 전 실제 측정→조각→paint의 하한 소실 진단. 제품 보정은 아직 적용 전.",
+  "source_cell": {
+    "paragraph": 70,
+    "row": 59,
+    "col": 2,
+    "row_span": 2,
+    "text": [
+      "정부기능분류 ",
+      "시스템(BRM) 운영"
+    ],
+    "declared_hu": 4268,
+    "declared_px": 56.906666666666666,
+    "source_line_count": 5,
+    "content_px": 66.66666666666667,
+    "padding_top_bottom_hu": [
+      567,
+      567
+    ]
+  },
+  "original_measured_row60_px": 53.33333333333334,
+  "fragment_row60_px": 28.453333333333333,
+  "lost_content_floor_px": 24.88,
+  "observed_source_frame": {
+    "before_row55": 41.78666666666667,
+    "replanned_row55": 58.880000000000294,
+    "other_parent_row": 44,
+    "other_parent_span": 17
+  },
+  "confirmed_cause": "stored_fragment_row_plan이 다른 걸침 셀의 수용 prefix 변경으로 종료 행60을 다시 풀면서, 같은 행에서 끝나는 새 셀(59,2)의 실제 내용81.786667px 대신 선언56.906667px만 적용한다. 측정에서 더했던24.88px가 사라지고 뒤 행·쪽 소속이 앞당겨진다.",
+  "source": "src/renderer/typeset/table/continuation/fragment/physical_rows.rs의 closing.iter().fold",
+  "logs": {
+    "issue7700-v3-measure-to-paint.log": "684ab5a2e1d9c6904db8678b42170dde05585c8ab35a59eb95132105395b859d",
+    "issue7700-span-owner-units.log": "866627080ac08ce8820719d2ffbe7eb1329b18e39c7126f7a1530318a3efd188"
+  },
+  "next_fix": "선언과 실제 전체 내용/여백의 공통 물리 요구 중 큰 값을 같은 수용 행 prefix에서 차감한다. 이후 Native 전103쪽과 fresh WASM 전쪽·기존 대조·회귀를 실제 확인한다."
+}

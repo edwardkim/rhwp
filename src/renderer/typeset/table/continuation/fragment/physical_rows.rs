@@ -580,7 +580,13 @@ impl TypesetEngine {
                 let first = cell.row as usize;
                 let used = heights[first..row].iter().sum::<f64>()
                     + prepared.cell_spacing * (row - first) as f64;
-                height.max(hwpunit_to_px(cell.height as i32, self.dpi) - used)
+                // 같은 종료 행에 새로 시작한 병합 칸도 실제 내용 하한을 소유한다.
+                // 다른 걸침 칸의 앞 상자가 바뀌었다고 선언만 다시 풀면, 측정에서
+                // 이미 확보한 내용·안여백 성장분이 이 조각에서 사라진다.
+                let content =
+                    layout.cell_cut_visible_height(cell, table, source.styles, 0, usize::MAX);
+                let minimum = hwpunit_to_px(cell.height as i32, self.dpi).max(content);
+                height.max(minimum - used)
             });
             heights[row] = required;
         }
