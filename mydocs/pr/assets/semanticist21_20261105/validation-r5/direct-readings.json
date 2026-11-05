@@ -104,5 +104,238 @@
     "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8616-hancom-mac-dutmal-hwpx-2022/reuse-receipt.json",
     "observations": "漢字·한·대한민국만세·글자·스타일의 본말과 위·아래 덧말의 소속을 대조했다. 본문 앞 가·뒤 나·후속 문자열과 덧말의 위아래 위치, 차례제목의 색상·크기를 보존한다.",
     "state": "해당 영역 직접 판독 완료; fresh WASM·통합 게이트는 별도"
+  },
+  {
+    "pr": 8536,
+    "key": "8536-note-formats-hwp-2022",
+    "backend": "native",
+    "pages": [
+      7,
+      18
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "c0150356a4f44e15a8100549f0f1e15172f0f95836a6988392703f7e4febdb77",
+    "pdf_sha256": "433cf379642dbbca3de6a2e299ef36d096c2505f96a9424d6f5d8de37d11b892",
+    "read_at": "2026-11-06T05:49:11+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8536-note-formats-hwp-2022/reuse-receipt.json",
+    "observations": "7쪽 원문자 알파벳 각주 A/B/C와 하단 G쪽번호, 18쪽 기호 */†/‡와 하단 기호번호를 대조했다. 위첨자·각주 순서·본문 내용·하단 쪽번호 소속이 보존된다. 18쪽 구분선의 약1px 세로 획차이를 raw100의 완전픽셀동일로 해석하지 않는다.",
+    "state": "해당 영역 직접 판독 완료; fresh WASM 및 핀 승인 별도"
+  },
+  {
+    "pr": 8577,
+    "key": "8577-hancom-page-number-top-hwpx-2022",
+    "backend": "native",
+    "pages": [
+      1,
+      2
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "4411fc1d14dea62152f72801a26aa1849966adb0acf635d26d7195c7d0e77bc0",
+    "pdf_sha256": "6fe2ac36d39f82b7d09da6c10740d599aa2ad6620270e0735e3fb18ec3a5ae33",
+    "read_at": "2026-11-06T05:49:11+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8577-hancom-page-number-top-hwpx-2022/reuse-receipt.json",
+    "observations": "머리말 높이가 다른 두 쪽의 상단 쪽번호 -1-·-2-와 본문 1쪽·2쪽을 독립 Print와 대조했다. 상단 번호 기준선·장식·본문과의 선후 관계가 모두 일치한다.",
+    "state": "해당 영역 직접 판독 완료; fresh WASM 및 핀 승인 별도"
+  },
+  {
+    "pr": 8526,
+    "key": "api-8526-inserted-style-hwpx",
+    "backend": "native",
+    "pages": [
+      1
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "904c5c6c78ea156bd447f63cb983c11ae46709534050a8464f965241037b33c4",
+    "pdf_sha256": "92323cbdf54adee2f433f4304c4d51d4824d86cdd271420e2f741949dcab7591",
+    "read_at": "2026-11-06T06:19:17.606558+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/api-8526-inserted-style-hwpx/reuse-receipt.json",
+    "observations": "같은 본문의 글자와 시작 위치를 대조했다. 스타일 삽입 ID·참조 무변경은 그림만으로 입증하지 않으며 별도 실제 API 검사를 연결한다.",
+    "state": "선택 영역 직접 판독 완료; 통합 전체 게이트는 별도"
+  },
+  {
+    "pr": 8527,
+    "key": "8527-levels-hwp-2022",
+    "backend": "native",
+    "pages": [
+      1
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "55746c0211f05ef27ef293ad352e94d946d99b2f0251594faeb60a5e4cf31866",
+    "pdf_sha256": "26e7f539286cb882eaef7b35ede404eeafff309188ecd33ad236cb5d0384bd1e",
+    "read_at": "2026-11-06T06:19:17.627771+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8527-levels-hwp-2022/reuse-receipt.json",
+    "observations": "결함 확인: 빈 번호 모양의 9·10수준 본문이 독립 Print보다 약 6.67 CSSpx 왼쪽이다. raw 95% 통과와 무관하게 간격 누락을 보류하고 공통 MarkerHead 처리 보정을 R6에서 검증한다.",
+    "state": "결함 확인; R6 보정 재검증 필요"
+  },
+  {
+    "pr": 8528,
+    "key": "8528-follow-two-sizes-hwp-2022",
+    "backend": "native",
+    "pages": [
+      1
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "94306aa8dd8cdac456bfa666b5832fe8857491497720c85c8f5c8d43fc7df6f2",
+    "pdf_sha256": "78dbee13ba462acac71b7c015713b4605505ede3e70cf4d04abbead017bd2860",
+    "read_at": "2026-11-06T06:19:17.643181+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8528-follow-two-sizes-hwp-2022/reuse-receipt.json",
+    "observations": "20pt·10pt 본문 두 행에서 이탤릭 번호의 크기가 끝 글자 크기를 따르며 본문과의 간격이 독립 Print와 맞는다.",
+    "state": "선택 영역 직접 판독 완료; 통합 전체 게이트는 별도"
+  },
+  {
+    "pr": 8541,
+    "key": "api-8541-split-hwpx",
+    "backend": "native",
+    "pages": [
+      1,
+      2
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "04f6270e56e8751dbb8d071e96248fab7048ab32ad866829d97d4bdbfa7761fc",
+    "pdf_sha256": "7d86dbea75027af420f6f1b8c2d60589fc277b054fef872517f1ef2843ac60cb",
+    "read_at": "2026-11-06T06:19:17.656169+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/api-8541-split-hwpx/reuse-receipt.json",
+    "observations": "분할본은 앞·뒤가 각 1·2쪽에 있고 합침본은 한 쪽에서 앞·뒤 순서를 보존한다. 원본 내용의 쪽 소속과 줄 순서를 Print와 대조했다.",
+    "state": "선택 영역 직접 판독 완료; 통합 전체 게이트는 별도"
+  },
+  {
+    "pr": 8541,
+    "key": "api-8541-merged-hwpx",
+    "backend": "native",
+    "pages": [
+      1
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "a015ff435ed39f80608cdb786490db237e76da1e35e433afdb9ee9ab2862a06d",
+    "pdf_sha256": "49c00170c2996de4c371e3f9381268e7f81a10895848e47b8b12a906137d97e2",
+    "read_at": "2026-11-06T06:19:17.656433+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/api-8541-merged-hwpx/reuse-receipt.json",
+    "observations": "분할본은 앞·뒤가 각 1·2쪽에 있고 합침본은 한 쪽에서 앞·뒤 순서를 보존한다. 원본 내용의 쪽 소속과 줄 순서를 Print와 대조했다.",
+    "state": "선택 영역 직접 판독 완료; 통합 전체 게이트는 별도"
+  },
+  {
+    "pr": 8549,
+    "key": "api-8549-moved-terminal-tab-hwp",
+    "backend": "native",
+    "pages": [
+      1
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "4db4db7ffa5c79590ebd3f0887a640ef1f806e1c9fbea91994c75aea4ea2194b",
+    "pdf_sha256": "f96fa2ff38656b5efefbf704a1138c507c5112a6732883f7d8de96f9ff146e52",
+    "read_at": "2026-11-06T06:19:17.674506+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/api-8549-moved-terminal-tab-hwp/reuse-receipt.json",
+    "observations": "옮긴 그림 전후 탭·글자처럼 취급 개체의 두 물리 행과 순서가 Print와 맞는다. 그림 가장자리의 색상·안티앨리어싱 차이는 픽셀 완전 일치로 표현하지 않는다.",
+    "state": "선택 영역 직접 판독 완료; 통합 전체 게이트는 별도"
+  },
+  {
+    "pr": 8558,
+    "key": "api-8558-actual-r3-character-bullet-hwp",
+    "backend": "native",
+    "pages": [
+      1
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "0c3f81df01c542b62a47e7668400cf3fccffeb5bda7aac1a9dbc0e899f13319b",
+    "pdf_sha256": "c8434e0f21b278fd19683bb1e8722369ad416a20f4f0481c88f7d7d6048d919d",
+    "read_at": "2026-11-06T06:19:17.693338+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/api-8558-actual-r3-character-bullet-hwp/reuse-receipt.json",
+    "observations": "실제 API 저장본의 문자 글머리표 모양·간격과 HWPX 빨간 사각 그림 글머리표·가 문단 간격을 Print와 대조했다. API 구조 검사는 별도로 연결한다.",
+    "state": "선택 영역 직접 판독 완료; 통합 전체 게이트는 별도"
+  },
+  {
+    "pr": 8558,
+    "key": "api-8558-actual-r3-picture-bullet-hwpx",
+    "backend": "native",
+    "pages": [
+      1
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "a86774f168ebaf8ce0807217d04bda6e208051c4e682ec6e4c90128cd275ee6f",
+    "pdf_sha256": "7ea8547a3be06a98b608f28eede8ed993571212f39e0c03aa9698a0f63d072b6",
+    "read_at": "2026-11-06T06:19:17.703151+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/api-8558-actual-r3-picture-bullet-hwpx/reuse-receipt.json",
+    "observations": "실제 API 저장본의 문자 글머리표 모양·간격과 HWPX 빨간 사각 그림 글머리표·가 문단 간격을 Print와 대조했다. API 구조 검사는 별도로 연결한다.",
+    "state": "선택 영역 직접 판독 완료; 통합 전체 게이트는 별도"
+  },
+  {
+    "pr": 8571,
+    "key": "header-tac-pair-wrap",
+    "backend": "native",
+    "pages": [
+      1
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "c8784e0b26082b32715c50d810b3d31bbc473068c052158b4582afddba812cdc",
+    "pdf_sha256": "7a2cc523e465292f4c7e86b859bc606bb82e055c60933569346317eb66dd2ea9",
+    "read_at": "2026-11-06T06:19:17.712714+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/header-tac-pair-wrap/reuse-receipt.json",
+    "observations": "머리말 가용 폭을 넘긴 두 표가 각각 다른 줄을 차지하며 격자와 본문 시작이 Print와 맞는다.",
+    "state": "선택 영역 직접 판독 완료; 통합 전체 게이트는 별도"
+  },
+  {
+    "pr": 8572,
+    "key": "8572-fix-typed-hwp-2022",
+    "backend": "native",
+    "pages": [
+      1,
+      2
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "bc5a8bcdc54ed7e28e5f57e669cb022be80dfac10ea5da20627bd20c81d70004",
+    "pdf_sha256": "93409e6622bf8895b92049a8380ed7b95a94eef6d689af6620ceb5e821b0de13",
+    "read_at": "2026-11-06T06:19:17.726695+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8572-fix-typed-hwp-2022/reuse-receipt.json",
+    "observations": "수정 저장본 p1의 표안한글 제목 표 확장·후속 Ⅰ 표 간격과 p2 첫 3D 프린터 문단을 같은 Print와 대조했다. 표안한글은 PDF 텍스트에서도 확인된 원문이다.",
+    "state": "선택 영역 직접 판독 완료; 통합 전체 게이트는 별도"
+  },
+  {
+    "pr": 8586,
+    "key": "8586-hancom-page-number-sections-hwpx-2022",
+    "backend": "native",
+    "pages": [
+      1,
+      2
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "79b8a99e5da76863402a9f2500cb24d50bec8db79186a4ec50fd2eb588ebd430",
+    "pdf_sha256": "0451615391b214b1d08d3b1f6292275279aeabb18561e4f3f2ea35b5ea125f92",
+    "read_at": "2026-11-06T06:19:17.734434+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8586-hancom-page-number-sections-hwpx-2022/reuse-receipt.json",
+    "observations": "두 구역의 우상단 -1-·-2- 쪽 번호와 본문 쪽 소속·상단 간격을 Print와 대조했다.",
+    "state": "선택 영역 직접 판독 완료; 통합 전체 게이트는 별도"
+  },
+  {
+    "pr": 8602,
+    "key": "api-8602-empty-deleted-hwp",
+    "backend": "native",
+    "pages": [
+      1
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "a2ec7d4fe6dcb4520a113693dd615ac654fc7a8ff47c63c1d3d7bd9cc37c3cf5",
+    "pdf_sha256": "100f5db4c3fa79aa3d4bbb600b8e6688b92fa766b591ee5369375a6acacaf789",
+    "read_at": "2026-11-06T06:19:17.739046+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/api-8602-empty-deleted-hwp/reuse-receipt.json",
+    "observations": "삭제 후 빈 문단은 인쇄에서 별도 글자를 만들지 않고 앞 문단을 보존한다. PARA_TEXT 삭제 자체는 그림의 차이가 아니라 독립 CFB 레코드 검사로 입증한다.",
+    "state": "선택 영역 직접 판독 완료; 통합 전체 게이트는 별도"
+  },
+  {
+    "pr": 8537,
+    "key": "8536-note-formats-hwp-2022",
+    "backend": "native",
+    "pages": [
+      2,
+      3,
+      12,
+      14
+    ],
+    "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+    "input_sha256": "c0150356a4f44e15a8100549f0f1e15172f0f95836a6988392703f7e4febdb77",
+    "pdf_sha256": "433cf379642dbbca3de6a2e299ef36d096c2505f96a9424d6f5d8de37d11b892",
+    "read_at": "2026-11-06T06:20:27.716995+09:00",
+    "review_receipt": "output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8536-note-formats-hwp-2022/reuse-receipt.json",
+    "observations": "p2 파선·p3 점선·p12 물결선은 본문·각주 소속과 함께 대조했다. p14는 THICK3D라는 저장 속성을 가지지만 이 독립 Print와 RHWP 모두 구분선이 보이지 않는다. 이를 입체선의 눈에 보이는 렌더링 구현 증거로 승격하지 않는다. 코드·이름 보존은 별도 HWP/HWPX 교차 저장 assertion으로 검증한다. 선의 1px 위상 차이가 raw100에서 남을 수 있음을 구분한다.",
+    "state": "선택 영역 직접 판독 완료; 저장 계약과 시각 증거의 범위 구분"
   }
 ]

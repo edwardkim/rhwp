@@ -24,6 +24,8 @@
 
 이 PR의 `line-types.hwp/.hwpx`는 PR #8536의 `note-formats.hwp/.hwpx`와 원본·독립 PDF·compat의 SHA가 같다. 아래는 같은 바이트의 전쪽 측정 재사용이며 유사 문서 대체가 아니다.
 
+직접 판독 범위: 2쪽 파선·3쪽 점선·12쪽 물결선을 대조했다. 14쪽의 저장 속성은 `THICK3D`이지만 이 한컴 Print와 RHWP 모두 구분선이 보이지 않는다. 14쪽 이미지는 동일 출력 유지의 근거이며, 보이는 입체선 구현의 증거로 사용하지 않는다. 원 주장인 선 코드·이름 보존은 `note_separator_line_types`의 19구역 HWP/HWPX 교차 저장 검사로 입증한다.
+
 ## 체리픽과 메인터너 보정
 
 | 원 commit | 170b 리베이스 후 적용 commit |
