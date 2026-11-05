@@ -191,9 +191,82 @@ Issue: [#7640](https://github.com/edwardkim/rhwp/issues/7640)
 - Mac 최소 글꼴 전체 회귀는 12,641건 실행, 12,640 PASS / 1 FAIL / 45 skipped, 실제 테스트
   477.055초였다. 실패는 exam_science.hwp의 원본 다단 뒤 표 간격 관계다.
 - 과거 producer들을 직접 실행해 첫 현재 프레임 보정부터 4쪽 앞 문단의 0.333px 전진이
-  사라졌음을 확인했다. 원본 문단 117은 글자 없는 수식 호스트이나 글자 크기1150HU와
-  저장 LH=TH1150·BL978이 별도 글자 상자를 소유한다. 현재 수식 상자는1125HU다.
+  사라졌음을 확인했다. 원본 문단 117은 글자 없는 수식 호스트이나 글자 크기 1150HU와
+  저장 LH=TH1150·BL978이 별도 글자 상자를 소유한다. 현재 수식 상자는 1125HU다.
   빈 run만으로 상자를 새로 만들지 않는 것과 원본이 증명한 빈 글줄 상자를 지우는 것을
   구분해 공통 합집합을 보정한다. 검사 완화·특정 문서 분기는 추가하지 않는다.
 - [WASM 전쪽·대표 이미지·실패 범위](../pr/assets/issue_7640/verification-20261106/current-frame-advance/fresh-wasm-e9c789b7/README.md).
   보정 뒤 영향 출력·기존 검사·전체/범위 게이트를 재검증하기 전 해결로 판정하지 않는다.
+
+## 글리프 없는 호스트의 독립 글자 상자 보정
+
+- 실패 입력의 새 Native/fresh WASM 전 4쪽은 각각 최저 97.12929%/96.94600%로 90% 이상이다.
+  정확한 Print PDF는 tests의 독립 근거와 같은 SHA 1c828fef29d7761d8ef46c8da50cc59936a95128920453ca5cc0d6440ac82d14다.
+  따라서 4쪽의 독립 글자 상자 관계 검사를 보강했다. 절대 px 위치는 고정하지 않는다.
+- 원본 글자 크기·TH·기준선이 같은 상자를 소유하는데 수식 상자만으로 높이를 줄인 반례다.
+  기존 후속 표 간격과 새 관계 검사의 실제 4 PASS/2 FAIL을 재현했다.
+- 첫 시도는 조합 run에서 글자 스타일을 찾았으나, 글자 없는 수식 호스트는 그 run이 비어 있어
+  같은 2 FAIL이 남았다. 이 시도를 채택 결과로 기록하지 않는다.
+- 기존 원본 글자 모양 위치 질의 `char_shape_id_at`를 사용해 활성 글자 크기를 확인한다. 온전한
+  저장 줄의 TH·기준선과 이 크기가 일치하면 글리프 없이도 공통 기준선 합집합에 보존한다.
+  과거 수식 캐시와 우연한 빈 run의 존재를 그 소유 증거로 사용하지 않는다.
+- 보정 뒤 최소 글꼴·일반 Mac 환경 모두 6 PASS다. 아직 새 소스의 Native Skia 필수 3종·
+  전체 회귀·fresh WASM·영향 전쪽 검증은 완료하지 않았으며 이전 e9 결과와 구분한다.
+
+## 독립 글자 상자 보정의 Native 검증
+
+- 최소 글꼴 Native 집중 묶음은 45 PASS다. 새 수식 줄 소유·기존 표 간격·#7640의 7개
+  관계·완료 문서/캐시/참여 줄·10월 미주와 기존 glyph 프로그램 대조군을 포함한다.
+- 같은 새 소스의 필수 Native Skia 3종도 모두 PASS다. lib 4,039 PASS·12 ignored,
+  PNG 2 PASS, PDF 22 PASS이며 기존 필터 제외 수를 실제 실행 수에 더하지 않는다.
+- 현재 새 Native 출력은 과학 시험지 4쪽 최저 97.11295%, 재저장 수학 21쪽 최저 99.03802%,
+  원본 수학 21쪽 최저 98.78595%로 각각 완료했다. 세 입력 모두 고정 devel 대비 0.1%p
+  초과 하락이 없으며 과학 시험지 4쪽의 표·후속 흐름 review/overlay를 직접 판독했다.
+- 나머지 대조군·fresh WASM·최종 전체 회귀와 lint/build는
+  output/open-issues-oldest-20261105/post-rebase-ece9/issue7640-character-strut-20261106의
+  gates/visual driver에서 source hash를 고정해 진행한다. 이 중간 결과로 전체 완료를
+  판정하지 않으며 검증 종료 전에 HEAD·구현을 다시 변경하지 않는다.
+
+## 독립 글자 상자의 새 전쪽·전체 회귀 확인
+
+- 같은 source hash `3763725e9710209e9b4ae923e6960ebfbd01f65f797412e5684fcc24fbc5273d`의
+  Mac 최소 글꼴 전체 nextest가 12,642 PASS / 0 FAIL / 45 skipped로 완료했다.
+  실제 테스트 511.841초이며 컴파일을 포함한 명령 시간은 1,215.586초다. 직전 실패였던
+  후속 표 간격 검사와 새 독립 글자 상자 검사도 전체 실행 안에서 PASS다.
+- 새 Native/fresh WASM 각 99쪽, 총 198쪽의 canonical 전쪽 TSV를 다시 산출했다.
+  쪽수 일치·누락 0·90% 미달 0·고정 devel 대비 raw 0.1%p 초과 하락 0이다.
+
+| 입력 | 쪽수 | Native 최저 | fresh WASM 최저 |
+| --- | ---: | ---: | ---: |
+| 과학 시험지 | 4 | 97.11295% | 96.91722% |
+| 11월 재저장본 | 21 | 99.03802% | 99.02457% |
+| 11월 원본 | 21 | 98.78595% | 98.77736% |
+| #7375 사각형 대조군 | 50 | 98.31507% | 98.32714% |
+| #7642 수식 폭 진단 | 3 | 96.16576% | 96.26274% |
+
+- 과학 시험지 4쪽의 새 Native/fresh WASM review·overlay에서 글자 상자 뒤 문단·표와
+  내용 소속을 직접 확인했다. 이 문서 전체의 기존 글리프 차이를 모두 해결했다는 뜻은 아니다.
+  수학 재저장본의 Native 21쪽과 수학 원본·재저장본 WASM 42쪽은 직전 채택 단계와
+  PNG 바이트가 모두 같으며, 이번 source에서 다시 출력한 TSV로 판정했다.
+- 새 locked web no-opt WASM의 root pkg·Studio public·실제 새 브라우저 초기화 응답이
+  같은 JS/WASM을 사용한다. WASM SHA는
+  `7ed26cf1a210c2361290cb198ce58b9840802bb68f1265f362415232a0665ede`다.
+  Docker 최적화 빌드가 아닌 Mac 로컬 대체 경로다.
+- Native Skia 필수 3종은 앞 절의 같은 source 실행으로 완료했다. 현재 순차 driver는
+  전체 nextest 이후 Native/WASM Clippy·workspace build·fmt·manifest·unit tier를 계속한다.
+  모든 범위 게이트가 끝나기 전 source·검사 헤더·HEAD를 바꾸지 않는다.
+- #7642의 삼각형 명령과 인용 작은따옴표는 독립 Print와 실제 표시 글리프가 다르다.
+  3쪽의 90% 수치 통과를 해결 판정으로 사용하지 않으며, #7640 보정·증적 커밋 뒤 같은
+  브랜치의 다음 단계에서 공통 glyph/face/전진 투영을 보정한다. 새 devel #8542의 기능 보존과
+  최종 조판 head의 편람 Native 383쪽도 제출 전 항목으로 남는다.
+
+## 독립 글자 상자 단계의 검증 정리
+
+- Native/WASM Clippy·workspace build·기본 all-target Clippy·fmt·manifest·unit tier가 모두
+  exit 0으로 종료했다. 두 source 고정 driver도 terminal exit 0이다.
+- [정식 증적](../pr/assets/issue_7640/verification-20261106/character-strut/README.md)에
+  전후 review/overlay, 두 backend의 198쪽 TSV 원문, 고정 base 대비 원 raw 대조와 실제
+  초기화 응답을 보존했다. 로그·진단 스크립트는 output에 유지한다.
+- 마지막 검사 헤더와 2쪽 기존 함수 주석은 최신 측정 근거만 갱신했다. 실행한 구현과 검사
+  본문이 같음을 확인하고 생성 suite를 다시 prepare한 뒤 fmt·base 고정 정책 검사를 확인했다.
+  이 단계는 로컬 커밋으로 고정하며, 새 devel 기능 보존과 #7642 보정 뒤 최종 제출을 검토한다.

@@ -197,7 +197,6 @@ fn try_refresh_rows<S: crate::storage::Storage>(
             continue;
         }
         // 실제 텍스트가 있는 줄은 텍스트의 어센트·하강부도 같은 합집합에 포함한다.
-        // 빈 run의 존재만으로 보이지 않는 텍스트 strut를 새로 추가하지 않는다.
         let text_height = line
             .runs
             .iter()
@@ -206,6 +205,29 @@ fn try_refresh_rows<S: crate::storage::Storage>(
             .map(|style| px_to_hwpunit(style.font_size, dpi))
             .max()
             .unwrap_or(0);
+        // 글리프가 없어도 저장 TH·기준선과 원본 글자 크기가 같은 줄 상자는
+        // 수식과 별도로 점유를 소유한다. 빈 run의 존재만으로 상자를 만들거나
+        // 과거 수식 높이를 복원하지 않고, 온전한 저장 줄의 글자 소유를 확인한다.
+        let stored_text_strut_height = para
+            .line_segs
+            .get(line_index)
+            .filter(|source| {
+                !para.stored_text_partition_is_dirty()
+                    && line_count == para.line_segs.len()
+                    && source.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                        == 0
+                    && source.text_height > 0
+                    && source.baseline_distance
+                        == (f64::from(source.text_height) * 0.85).round() as i32
+                    && para
+                        .char_shape_id_at(line.char_start)
+                        .and_then(|id| styles.char_styles.get(id as usize))
+                        .is_some_and(|style| {
+                            px_to_hwpunit(style.font_size, dpi) == source.text_height
+                        })
+            })
+            .map_or(0, |source| source.text_height);
+        let text_height = text_height.max(stored_text_strut_height);
         let text_ascent = (f64::from(text_height) * 0.85).round() as i32;
         let text_descent = text_height - text_ascent;
         if !has_equation && !has_form && text_height == 0 {

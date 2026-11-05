@@ -1,15 +1,15 @@
 //! 검사 유형: 관계형(소유·순서·원본 프레임·비겹침), 고정형(독립 Print 21쪽 쪽수).
-//! 주석 갱신: 2026-11-06 02:08:21 KST.
-//! 직전 파일 변경: 2026-11-06 01:18:55 KST, e9c789b7ab (Native 단계 증적).
-//! 2026-11-06 canonical raw 2px, 96DPI, compat2022, Native 직접 PNG 전쪽 측정.
+//! 주석 갱신: 2026-11-06 03:10:59 KST.
+//! 직전 파일 변경: 2026-11-06 02:12:42 KST, 55756c223c (전쪽 WASM 증적).
+//! 55756c223c + 독립 글자 상자 보정: canonical raw 2px, 96DPI, compat2022, Native 직접 PNG.
 //! 재저장본 21/21쪽 Native 최저 99.03802%; 11쪽 99.66679%, 17쪽 99.14958%,
 //! 18쪽 99.03802%, 19쪽 99.47824%, 20쪽 99.73017%.
-//! 같은 구현의 fresh WASM 재저장본 21/21쪽 최저 99.02457%(18쪽), 원본 최저 98.77736%.
+//! 같은 새 source의 fresh WASM 재저장본 21/21쪽 최저 99.02457%(18쪽), 원본 최저 98.77736%.
 //! 원본 21/21쪽 Native 최저 98.78595%; PR7600 input-09 Print로 따로 대조했다.
 //! 최초 작성 시 재저장본 7쪽 미달·11쪽 53.60031%, 17쪽 94.69512%, 18쪽 85.61347%였다.
 //! 실물 절대 px 좌표는 고정하지 않으며 현재 저장 프레임의 정수 단위 보존을 비교한다.
 //! 근거: mydocs/plans/task_m100_7640_plan.md 및 같은 입력의 독립 한컴 2020 Print.
-//! 단계 증적: mydocs/pr/assets/issue_7640/verification-20261106/current-frame-advance/.
+//! 단계 증적: mydocs/pr/assets/issue_7640/verification-20261106/character-strut/README.md.
 
 use rhwp::model::control::Control;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};

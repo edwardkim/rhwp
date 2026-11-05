@@ -1,0 +1,383 @@
+{
+  "issue": 7640,
+  "source": {
+    "parent_head": "55756c223c76a7c824c8b0b4217c337bd3389a27",
+    "source_diff_sha256": "3763725e9710209e9b4ae923e6960ebfbd01f65f797412e5684fcc24fbc5273d",
+    "runtime_files": {
+      "src/renderer/composer/equation_line_metrics.rs": "1b0fd893ecda1edf4ef1705ad12be47158efae2e5e75addcb2268eaffc2c7716"
+    },
+    "base": "ece9c3383bb2c73e0f055459ede727a9d3101ac6",
+    "native_binary_sha256": "71e410aaf662a1b0365cdf88f6a5c259ac80f051fd7f287ee630df47b7ad596f"
+  },
+  "status": "현재 보정의 범위 게이트 통과. 이슈 전체·PR·후속 큐 완료를 뜻하지 않는다.",
+  "before": {
+    "focused_run": 6,
+    "passed": 4,
+    "failed": 2,
+    "log": "output/open-issues-oldest-20261105/post-rebase-ece9/issue7640-final-e9c789b7/exam-science-failure/before-strut-focus.log"
+  },
+  "after": {
+    "minimal_focused_passed": 6,
+    "normal_focused_passed": 6,
+    "native_focused_passed": 45,
+    "native_lib_passed": 4039,
+    "native_lib_ignored": 12,
+    "native_png_passed": 2,
+    "native_pdf_passed": 22,
+    "full_nextest_summary": "Summary [ 511.841s] 12642 tests run: 12642 passed (1 slow), 45 skipped"
+  },
+  "gates": [
+    {
+      "name": "native-focused",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_023",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_026",
+        "-E",
+        "test(/(^|::)(issue_7445_stored_multicolumn_flow|issue_7640_resaved_endnote_frame|equation_completed_document_boundaries|equation_flow_metrics_cache|equation_render_cache_contract|issue_7445_participating_equation_frame|issue_7642_oct_endnote_relations|skia_native_glyph_replay)::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 220.66
+    },
+    {
+      "name": "native-lib",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "exit_code": 0,
+      "seconds": 228.654
+    },
+    {
+      "name": "native-png",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 18.486
+    },
+    {
+      "name": "native-pdf",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 3.351
+    },
+    {
+      "name": "fresh-wasm-build",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit_code": 0,
+      "seconds": 330.52
+    },
+    {
+      "name": "actual-init-responses",
+      "command": [
+        "node",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/issue7640-character-strut-20261106/observe-init.mjs"
+      ],
+      "exit_code": 0,
+      "seconds": 4.095
+    },
+    {
+      "name": "full-nextest",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 1215.586
+    },
+    {
+      "name": "native-all-target-clippy",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--features",
+        "native-skia",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 87.536
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 22.914
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "exit_code": 0,
+      "seconds": 59.142
+    },
+    {
+      "name": "default-all-target-clippy",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 62.122
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 12.55
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "ece9c3383bb2c73e0f055459ede727a9d3101ac6"
+      ],
+      "exit_code": 0,
+      "seconds": 2.263
+    },
+    {
+      "name": "unit-tiers",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "ece9c3383bb2c73e0f055459ede727a9d3101ac6"
+      ],
+      "exit_code": 0,
+      "seconds": 15.466
+    }
+  ],
+  "visual": [
+    {
+      "case": "science",
+      "backend": "native",
+      "pages": 4,
+      "minimum_raw": 97.11295,
+      "declines": []
+    },
+    {
+      "case": "nov-resaved",
+      "backend": "native",
+      "pages": 21,
+      "minimum_raw": 99.03802,
+      "declines": []
+    },
+    {
+      "case": "nov-original",
+      "backend": "native",
+      "pages": 21,
+      "minimum_raw": 98.78595,
+      "declines": []
+    },
+    {
+      "case": "rectangles",
+      "backend": "native",
+      "pages": 50,
+      "minimum_raw": 98.31507,
+      "declines": []
+    },
+    {
+      "case": "prime-width",
+      "backend": "native",
+      "pages": 3,
+      "minimum_raw": 96.16576,
+      "declines": []
+    },
+    {
+      "case": "science",
+      "backend": "wasm",
+      "pages": 4,
+      "minimum_raw": 96.91722,
+      "declines": []
+    },
+    {
+      "case": "nov-resaved",
+      "backend": "wasm",
+      "pages": 21,
+      "minimum_raw": 99.02457,
+      "declines": []
+    },
+    {
+      "case": "nov-original",
+      "backend": "wasm",
+      "pages": 21,
+      "minimum_raw": 98.77736,
+      "declines": []
+    },
+    {
+      "case": "rectangles",
+      "backend": "wasm",
+      "pages": 50,
+      "minimum_raw": 98.32714,
+      "declines": []
+    },
+    {
+      "case": "prime-width",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum_raw": 96.26274,
+      "declines": []
+    }
+  ],
+  "inputs": {
+    "samples/exam_science.hwp": "22d29786a80d68a9b2ad9294c2dab4915e0eced941e790e37390b14312b8b6a8",
+    "pdf/issue7642-exam-print/exam-07-exam_science-hwp-print-2020.pdf": "1c828fef29d7761d8ef46c8da50cc59936a95128920453ca5cc0d6440ac82d14",
+    "tests/fixtures/pr7600-equation-font-frame/nov-original-resaved-2020.hwp": "1392d5dab6350d232f39a06aa813f1797aec399e41a9e632ffd93e421916f72b",
+    "pdf/pr7600-equation-font-frame-diagnostic/nov-original-resaved-print-2020.pdf": "9c737bf4a8700c5e31d0eb05bba16ea8e6bad4a3bfed7c3bf88334053abcbd79",
+    "samples/3-11월_실전_통합_2022.hwp": "bc8bccbb954c337d813d1af96f4e3047242124c2f2939163e282634eb721accd",
+    "mydocs/pr/assets/pr_7600_control_print_20261006/input-09-3-11월_실전_통합_2022-2020.pdf": "b5dc3580c0c3716963c9686ec62fd779cedfea97f50d8f49eb98a2ec8fae369a",
+    "samples/issue7333/aaaaaa.hwp": "ab88150db2eb4652c945e6773ed40f61806782b6ca85694eb5f8c8ec390f96c5",
+    "pdf/issue7333/aaaaaa-2020.pdf": "fbc0ff34b909e8824e775872ff47ac7d6c904d2cb74504fbe9e7a8411b2c597b",
+    "tests/fixtures/equation-font-metrics/equation-prime-width-diagnostic-2020.hwp": "03f38b458201832b4bab3cb2c040b6bb2640e125740c78277ed8be276afc1c44",
+    "pdf/equation-font-metrics/equation-prime-width-diagnostic-print-2020.pdf": "12057cf4571d018ea32db8546189712a2dce933fdbf3f4a7eaea92243b08d0d0"
+  },
+  "direct_review": "Science 4쪽의 원본 글자 상자·후속 문단·표 점유를 Native/fresh WASM review/overlay에서 확인했다. #7642의 별도 삼각형·인용 기호 차이는 아직 미해결이다.",
+  "pending": [
+    "새 devel #8542 기능 보존",
+    "최종 조판 head의 편람 Native 383쪽",
+    "#7642 및 오래된 이슈 큐",
+    "새 원격 PR 승인"
+  ],
+  "comment_only_updates": "실행 뒤 헤더·측정 주석만 갱신, 검사 본문 동등·runtime hash 동일. suite --prepare 뒤 fmt·base 고정 manifest/unit tier 확인."
+}
