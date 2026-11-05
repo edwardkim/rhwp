@@ -1405,7 +1405,7 @@ fn native_thin_page_tile_metadata_cap_evicts_even_below_the_byte_budget() {
     // 75 HWPUNIT per CSS pixel at 96 dpi. A one-pixel-wide blank page makes
     // 65 distinct grid tiles tiny, so entry count rather than bytes must evict.
     let height = (MAX_TILE_CACHE_ENTRIES as u32 + 1) * SkiaTilePlan::TILE_SIZE as u32 + 1;
-    document.sections[0].page_def = rhwp::model::PageDef {
+    document.sections[0].section_def.page_def = rhwp::model::page::PageDef {
         width: 75,
         height: height * 75,
         ..Default::default()
