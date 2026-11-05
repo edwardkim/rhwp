@@ -200,16 +200,39 @@ impl super::LayoutEngine {
         } else {
             // 엇갈린 병합 칸 사슬에서 선언(예: 282HU)이 이미 정한 앞 행보다 작으면
             // 그 제약은 아무 행도 정하지 못하고, 남은 행은 고르게 나뉜다. 한/글은 칸의
-            // 내용 높이로 사슬을 이어 푼다. 선언만으로 풀리는 표는 종전 결과를 유지한다.
+            // 내용 높이로 사슬을 이어 푼다. 선언만으로 풀리는 표는 내용을 더 받아도 표가
+            // 커지지 않을 때 종전 결과를 유지한다. 낡은 선언이 앞 행을 덜 잡으면 그 부족분이 뒤
+            // 제약의 초과분으로 다음 행에 들어간 뒤 내용이 앞 행을 또 키워 같은 몫을 두 번 쓴다
+            // (근로기준법 보고서 13쪽 표: 행 2~3 칸 선언 4680, 내용 4882 — 한/글 행 합 4085).
             let mut declared_rows = initial_rows.to_vec();
-            if crate::renderer::height_measurer::solve_rowspan_row_heights(
+            let declared_solved = crate::renderer::height_measurer::solve_rowspan_row_heights(
                 &span_constraints(&|_| false),
                 &mut declared_rows,
-            ) || !crate::renderer::height_measurer::solve_rowspan_row_heights(
+            );
+            if !crate::renderer::height_measurer::solve_rowspan_row_heights(
                 &span_constraints(&is_horizontal),
                 &mut heights,
             ) {
                 return None;
+            }
+            if declared_solved {
+                for &(index, height) in requirements {
+                    let cell = &table.cells[index];
+                    let row = usize::from(cell.row);
+                    let end = row + usize::from(cell.row_span);
+                    if end > declared_rows.len() {
+                        continue;
+                    }
+                    let combined = declared_rows[row..end].iter().sum::<f64>()
+                        + super::hwpunit_to_px(1, dpi)
+                            * table.inner_cell_spacing_hu(usize::from(cell.row_span)) as f64;
+                    if height > combined {
+                        declared_rows[end - 1] += height - combined;
+                    }
+                }
+                if heights.iter().sum::<f64>() + 0.5 >= declared_rows.iter().sum::<f64>() {
+                    return None;
+                }
             }
         }
         for (row, &shrink) in declared_shrink_hu.iter().enumerate().take(heights.len()) {
