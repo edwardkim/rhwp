@@ -1,0 +1,26 @@
+{
+  "head": "fc378076f23aa60838a2871a7532d09830384216",
+  "actual_initialization_js_response_sha256": "52569210313ddbe62cc99c6746e56dcc987a72dfba6a1a3c3ac6046efa9cd436",
+  "vite_inline_sourcesContent_sha256": "c6aa4f994a7db2ffc367bad20bd322c61a6c886c98d8e331d8e46126eaf6fe44",
+  "locked_pkg_js_sha256": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+  "single_vite_transformation": {
+    "from": "new URL(\"/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm\", '' + import.meta.url)",
+    "to": "new URL('rhwp_bg.wasm', import.meta.url)",
+    "occurrences": 1
+  },
+  "exact_original_source_after_undoing_vite_wasm_url_rewrite": true,
+  "response_count": 5,
+  "statuses": [
+    200,
+    304
+  ],
+  "scope": "실제 Studio 초기화 JS 응답이다. Vite가 wasm URL을 한 번 치환하고 sourcemap을 붙이므로 raw응답과 locked원본hash를 구분한다. 별도fetch가아님.",
+  "source_map_sources": [
+    "rhwp.js"
+  ],
+  "successful_owned_port_processes": [
+    34099,
+    30173
+  ],
+  "successful_initialization_response_count": 12
+}

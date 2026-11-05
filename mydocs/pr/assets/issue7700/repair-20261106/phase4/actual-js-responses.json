@@ -1,0 +1,178 @@
+{
+  "head": "fc378076f23aa60838a2871a7532d09830384216",
+  "successful_owned_port_processes": [
+    {
+      "process_id": 34099,
+      "original_receipt_sha256": "75f7efee49a4d92bbf23f179adb1c27bbad1535249e9b515658f438b7d8daca5",
+      "actual_responses": [
+        {
+          "url": "http://127.0.0.1:7802/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+          "status": 200,
+          "file": "rhwp.js",
+          "bytes": 3003764,
+          "sha256": "52569210313ddbe62cc99c6746e56dcc987a72dfba6a1a3c3ac6046efa9cd436",
+          "expected_original_source": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+          "sourceMapContentHashes": [
+            "c6aa4f994a7db2ffc367bad20bd322c61a6c886c98d8e331d8e46126eaf6fe44"
+          ],
+          "matched": false,
+          "comparison": "Vite transformed body hash 기록; inline source-map sourcesContent 원문 hash를 locked build JS와 대조"
+        },
+        {
+          "url": "http://127.0.0.1:7802/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+          "status": 304,
+          "file": "rhwp.js",
+          "bytes": 3003764,
+          "sha256": "52569210313ddbe62cc99c6746e56dcc987a72dfba6a1a3c3ac6046efa9cd436",
+          "expected_original_source": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+          "sourceMapContentHashes": [
+            "c6aa4f994a7db2ffc367bad20bd322c61a6c886c98d8e331d8e46126eaf6fe44"
+          ],
+          "matched": false,
+          "comparison": "Vite transformed body hash 기록; inline source-map sourcesContent 원문 hash를 locked build JS와 대조"
+        },
+        {
+          "url": "http://127.0.0.1:7802/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+          "status": 304,
+          "file": "rhwp.js",
+          "bytes": 3003764,
+          "sha256": "52569210313ddbe62cc99c6746e56dcc987a72dfba6a1a3c3ac6046efa9cd436",
+          "expected_original_source": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+          "sourceMapContentHashes": [
+            "c6aa4f994a7db2ffc367bad20bd322c61a6c886c98d8e331d8e46126eaf6fe44"
+          ],
+          "matched": false,
+          "comparison": "Vite transformed body hash 기록; inline source-map sourcesContent 원문 hash를 locked build JS와 대조"
+        },
+        {
+          "url": "http://127.0.0.1:7802/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+          "status": 304,
+          "file": "rhwp.js",
+          "bytes": 3003764,
+          "sha256": "52569210313ddbe62cc99c6746e56dcc987a72dfba6a1a3c3ac6046efa9cd436",
+          "expected_original_source": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+          "sourceMapContentHashes": [
+            "c6aa4f994a7db2ffc367bad20bd322c61a6c886c98d8e331d8e46126eaf6fe44"
+          ],
+          "matched": false,
+          "comparison": "Vite transformed body hash 기록; inline source-map sourcesContent 원문 hash를 locked build JS와 대조"
+        },
+        {
+          "url": "http://127.0.0.1:7802/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+          "status": 304,
+          "file": "rhwp.js",
+          "bytes": 3003764,
+          "sha256": "52569210313ddbe62cc99c6746e56dcc987a72dfba6a1a3c3ac6046efa9cd436",
+          "expected_original_source": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+          "sourceMapContentHashes": [
+            "c6aa4f994a7db2ffc367bad20bd322c61a6c886c98d8e331d8e46126eaf6fe44"
+          ],
+          "matched": false,
+          "comparison": "Vite transformed body hash 기록; inline source-map sourcesContent 원문 hash를 locked build JS와 대조"
+        },
+        {
+          "url": "http://127.0.0.1:7802/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+          "status": 304,
+          "file": "rhwp.js",
+          "bytes": 3003764,
+          "sha256": "52569210313ddbe62cc99c6746e56dcc987a72dfba6a1a3c3ac6046efa9cd436",
+          "expected_original_source": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+          "sourceMapContentHashes": [
+            "c6aa4f994a7db2ffc367bad20bd322c61a6c886c98d8e331d8e46126eaf6fe44"
+          ],
+          "matched": false,
+          "comparison": "Vite transformed body hash 기록; inline source-map sourcesContent 원문 hash를 locked build JS와 대조"
+        }
+      ],
+      "resolved_original_locked_js_sha256": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+      "semantic_source_match": true
+    },
+    {
+      "process_id": 30173,
+      "original_receipt_sha256": "aaabf92d9c193df0c997925b345a55b553b3828dbfd22372f391e33420f007a6",
+      "actual_responses": [
+        {
+          "url": "http://127.0.0.1:7801/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+          "status": 200,
+          "file": "rhwp.js",
+          "bytes": 3003764,
+          "sha256": "52569210313ddbe62cc99c6746e56dcc987a72dfba6a1a3c3ac6046efa9cd436",
+          "expected_original_source": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+          "sourceMapContentHashes": [
+            "c6aa4f994a7db2ffc367bad20bd322c61a6c886c98d8e331d8e46126eaf6fe44"
+          ],
+          "matched": false,
+          "comparison": "Vite transformed body hash 기록; inline source-map sourcesContent 원문 hash를 locked build JS와 대조"
+        },
+        {
+          "url": "http://127.0.0.1:7801/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+          "status": 304,
+          "file": "rhwp.js",
+          "bytes": 3003764,
+          "sha256": "52569210313ddbe62cc99c6746e56dcc987a72dfba6a1a3c3ac6046efa9cd436",
+          "expected_original_source": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+          "sourceMapContentHashes": [
+            "c6aa4f994a7db2ffc367bad20bd322c61a6c886c98d8e331d8e46126eaf6fe44"
+          ],
+          "matched": false,
+          "comparison": "Vite transformed body hash 기록; inline source-map sourcesContent 원문 hash를 locked build JS와 대조"
+        },
+        {
+          "url": "http://127.0.0.1:7801/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+          "status": 304,
+          "file": "rhwp.js",
+          "bytes": 3003764,
+          "sha256": "52569210313ddbe62cc99c6746e56dcc987a72dfba6a1a3c3ac6046efa9cd436",
+          "expected_original_source": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+          "sourceMapContentHashes": [
+            "c6aa4f994a7db2ffc367bad20bd322c61a6c886c98d8e331d8e46126eaf6fe44"
+          ],
+          "matched": false,
+          "comparison": "Vite transformed body hash 기록; inline source-map sourcesContent 원문 hash를 locked build JS와 대조"
+        },
+        {
+          "url": "http://127.0.0.1:7801/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+          "status": 304,
+          "file": "rhwp.js",
+          "bytes": 3003764,
+          "sha256": "52569210313ddbe62cc99c6746e56dcc987a72dfba6a1a3c3ac6046efa9cd436",
+          "expected_original_source": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+          "sourceMapContentHashes": [
+            "c6aa4f994a7db2ffc367bad20bd322c61a6c886c98d8e331d8e46126eaf6fe44"
+          ],
+          "matched": false,
+          "comparison": "Vite transformed body hash 기록; inline source-map sourcesContent 원문 hash를 locked build JS와 대조"
+        },
+        {
+          "url": "http://127.0.0.1:7801/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+          "status": 304,
+          "file": "rhwp.js",
+          "bytes": 3003764,
+          "sha256": "52569210313ddbe62cc99c6746e56dcc987a72dfba6a1a3c3ac6046efa9cd436",
+          "expected_original_source": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+          "sourceMapContentHashes": [
+            "c6aa4f994a7db2ffc367bad20bd322c61a6c886c98d8e331d8e46126eaf6fe44"
+          ],
+          "matched": false,
+          "comparison": "Vite transformed body hash 기록; inline source-map sourcesContent 원문 hash를 locked build JS와 대조"
+        },
+        {
+          "url": "http://127.0.0.1:7801/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+          "status": 304,
+          "file": "rhwp.js",
+          "bytes": 3003764,
+          "sha256": "52569210313ddbe62cc99c6746e56dcc987a72dfba6a1a3c3ac6046efa9cd436",
+          "expected_original_source": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+          "sourceMapContentHashes": [
+            "c6aa4f994a7db2ffc367bad20bd322c61a6c886c98d8e331d8e46126eaf6fe44"
+          ],
+          "matched": false,
+          "comparison": "Vite transformed body hash 기록; inline source-map sourcesContent 원문 hash를 locked build JS와 대조"
+        }
+      ],
+      "resolved_original_locked_js_sha256": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+      "semantic_source_match": true
+    }
+  ],
+  "note": "성공한 원본 Canvas2D 6건과 지원 대조군 6건의 초기화 응답만 포함. 원본과 Vite 변환 body의 hash를 구분하고 검증된 단일 URL 치환으로 source 대응을 판정한다. 최초 포트 혼동 및 중단 run은 제외했다."
+}

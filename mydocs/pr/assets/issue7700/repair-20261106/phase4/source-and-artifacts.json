@@ -1,0 +1,60 @@
+{
+  "head": "fc378076f23aa60838a2871a7532d09830384216",
+  "base": "170b886f167b705b6e630c5b34bb638d92fae0a9",
+  "runtime_source_files": 2110,
+  "runtime_source_map_sha256": "a7f228b1a0a6b9b77b28b9905f6aaf7a657c3f9b28a98f33a2c439f81349fc48",
+  "native": {
+    "head": "fc378076f23aa60838a2871a7532d09830384216",
+    "source_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "binary": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/rhwp-rowspan-joint-v6-native",
+    "binary_sha256": "d9275016f9dea149b259ef6b1d137e0c42498f2bde99c2a9783bf86b733456c5",
+    "library": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/librhwp-rowspan-joint-v6.rlib",
+    "library_sha256": "d6abe37d70565727be7aa7fb1bbcb5a7df1742a0a4f95bf57c2309c212287d7b",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "--message-format=json-render-diagnostics"
+    ]
+  },
+  "wasm": {
+    "head": "fc378076f23aa60838a2871a7532d09830384216",
+    "source_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts": {
+      "rhwp.js": {
+        "sha256": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+        "bytes": 536865,
+        "studio_public_sha256": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b"
+      },
+      "rhwp_bg.wasm": {
+        "sha256": "ae2910884dc30e01343f862c497c68dd428b28a5d76bbce1f96ff9268402aac4",
+        "bytes": 30705623,
+        "studio_public_sha256": "ae2910884dc30e01343f862c497c68dd428b28a5d76bbce1f96ff9268402aac4"
+      },
+      "rhwp.d.ts": {
+        "sha256": "8160a419b532814c4ba8006ab487d47ed54c41553b11282eab77a8e0f8744798",
+        "bytes": 214580
+      },
+      "rhwp_bg.wasm.d.ts": {
+        "sha256": "2845d0d99bedba40ceb18663c1052b9f245a1fbbc07b0f9aa29a1428c200ae97",
+        "bytes": 75003
+      },
+      "package.json": {
+        "sha256": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+        "bytes": 429
+      }
+    },
+    "pkg": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-pkg",
+    "profile": "현재 Mac locked web/no-opt 로컬 대체 빌드",
+    "docker_optimized": false
+  },
+  "native_producer_sha256": "5021de47754873ced2d195bb5ec9ff32db407211dbdf6204d197fb7a7db0fb9f",
+  "wasm_producer_sha256": "1ce450a6beb8f0b21603da3b9517fd58246bb4c28a42feeaaf2144c5bf913f2a",
+  "scope": "fc378는 v5의 Native 전용 임시 진단15줄을 제거한 것. 실제 Native/fresh WASM 각212쪽 PNG를 새로 산출해 v5와 전부byte동일함을 확인. 이전 전체 회귀 실패를 재사용해 통과라고 쓰지 않음."
+}

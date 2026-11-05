@@ -176,7 +176,7 @@ Native99.36627/WASM99.36595%, 76쪽은99.57115/99.57141%다. 고정base WASM
 74쪽의 같은 셀 인접 줄은 현재 전쪽 시각98.41/99.44%대이며, 이 관측을 다른 문서나
 새 회귀의 면제 근거로 사용하지 않는다. 관련 증거는 phase3의 복원 JSON에 기록한다.
 
-## 4단계 진행: 전체 회귀에서 발견한 진단 경로 보정
+## 4단계: 전체 회귀에서 발견한 진단 경로 보정 — 당시 기록
 
 복원 상태 `9db6040468`의 집중60PASS, Native Skia 필수4039+2+22PASS와
 Clippy4종·workspace build·fmt·manifest·unit-tier를 확인했다. 전체 nextest는
@@ -190,3 +190,38 @@ Clippy4종·workspace build·fmt·manifest·unit-tier를 확인했다. 전체 ne
 새 source의 보호 문서 집중·Native Skia 필수3종·전체nextest/필수게이트를 다시 확인한다.
 WASM·그림의 의미는 변경하지 않았지만 새 빌드의 실제 artifact와 출력 대응도 확인한다.
 현재 단계는 보정·재검증 중이며 이슈 완료나 PR 적격으로 판정하지 않는다.
+
+
+## 4단계 완료: 새 code head의 전체 재검증
+
+진단 제거 커밋 `fc378076f23aa60838a2871a7532d09830384216`에서 최소 글꼴
+Native 집중 64PASS와 Native Skia lib 4039PASS/12ignore·PNG 2PASS·직접 PDF 22PASS를
+각각 완료했다. 전체 nextest는 12,655PASS / 0FAIL / 45skip, 검사 663.571초다.
+앞선 보호 문서 진단 실패도 실제 PASS이며, 검사·guard를 완화하거나 지우지 않았다.
+Clippy 4종·workspace build·fmt·manifest·unit tier도 모두 exit 0이다.
+
+Native와 새 locked web/no-opt WASM에서 각 8조건 212쪽의 PNG·TSV를 다시 산출했다.
+원본 103쪽 최저 94.75432%/94.75587%, 전체 미달 0·고정 devel 대비 0.1%p 초과 하락 0이다.
+일반 셀 14,166개와 컨트롤 보유 5셀의 텍스트 소속을 양쪽에서 대조해 누락·중복 0을
+확인했다. 각 212쪽의 실제 PNG가 앞선 v5와 전부 byte 동일하므로 기존 직접 판독도
+연결하되, 19·30·51·76쪽의 새 review/overlay와 실제 SVG·Studio 출력도 확인했다.
+
+실제 Studio 원본 19·30·76쪽 Canvas2D screen/print 6건을 확인했다. 원본 전체는
+CanvasKit preflight의 50,000 작업 한도 때문에 24쪽 처리 뒤 준비가 끝나지 않는다.
+고정 devel과 후보의 네 preflight 보고서가 정확히 같고 한도·guard를 그대로 유지했다.
+지원 표 대조군은 실제 CanvasKit compat/default screen/print 4건에서 software surface와
+직접 replay·Typeface 준비를 확인했다. parity 4PASS는 report-only이며 auto-readiness
+gate의 통과나 원본 103쪽 CanvasKit 직접 출력으로 바꾸어 보고하지 않는다.
+
+초기 baseline 도구가 사용 중인 7700을 빈 포트로 오인한 실행은 제외했다. 임시 driver에서
+포트 선택만 dual-stack 7801번부터 확인해 별도 서버를 띄웠고 기존 사용자 서버는 보존했다.
+성공한 두 소유 포트 실행의 실제 초기화 JS/WASM 12응답을 빌드와 연결했다. Vite JS는
+WASM URL 한 번 치환과 inline source-map 때문에 raw hash가 원본과 다르므로 이를
+분리하고 치환을 되돌린 원문이 locked JS와 정확히 같음을 확인했다.
+
+정식 증적은 [phase4](../pr/assets/issue7700/repair-20261106/phase4/README.md)에
+정리했다. 51쪽의 기존 병합 띠 높이 차이는 남고 최저값도 100%가 아니지만, 원문 내용·
+쪽 소속과 전쪽 90%·devel 대비 유지 조건은 충족한다. 새 px 핀 대상에 넣지 않았다.
+현재는 로컬 보정·검증 완료이며 PR·통합·이슈 종료는 미완료다. 최종 제출 head의 편람
+gate와 새 PR 승인은 별도다. 다음 오래된 이슈 #7727은 읽기 전용 사전 조사만 했고
+이 단계 증적 커밋 뒤 실제 보정 순서로 이어간다.

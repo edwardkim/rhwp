@@ -1,0 +1,64 @@
+{
+  "scope": "컨트롤 보유5셀의 원문 텍스트 소속·누락·중복만 대조. 컨트롤 동작/시각 검사를 대신하지 않음. 원문은 v5와 SHA동일, 실제 v6 render_tree 전103쪽을 새로 읽음.",
+  "backend": "wasm",
+  "head": "fc378076f23aa60838a2871a7532d09830384216",
+  "rows": [
+    {
+      "table": 67,
+      "row": 28,
+      "col": 8,
+      "expected_text": "○",
+      "actual_text": "○",
+      "pages": [
+        19
+      ],
+      "pass": true
+    },
+    {
+      "table": 70,
+      "row": 1,
+      "col": 14,
+      "expected_text": "○",
+      "actual_text": "○",
+      "pages": [
+        28
+      ],
+      "pass": true
+    },
+    {
+      "table": 70,
+      "row": 2,
+      "col": 12,
+      "expected_text": "○",
+      "actual_text": "○",
+      "pages": [
+        28
+      ],
+      "pass": true
+    },
+    {
+      "table": 70,
+      "row": 5,
+      "col": 12,
+      "expected_text": "○",
+      "actual_text": "○",
+      "pages": [
+        28
+      ],
+      "pass": true
+    },
+    {
+      "table": 162,
+      "row": 0,
+      "col": 0,
+      "expected_text": "7.상담과공통(경제민원상담과,사회민원상담과)※센터내상담관의상담안내업무시적용된다.",
+      "actual_text": "7.상담과공통(경제민원상담과,사회민원상담과)※센터내상담관의상담안내업무시적용된다.",
+      "pages": [
+        92
+      ],
+      "pass": true
+    }
+  ],
+  "passed": 5,
+  "failed": 0
+}
