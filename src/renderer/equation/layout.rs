@@ -661,6 +661,11 @@ impl EqLayout {
                 return value;
             }
         }
+        if self.hancom_math_face && !self.legacy_math_face && !self.legacy_hft_metrics {
+            if let Some(result) = source_font_symbol::layout_command(text, fs, self.dpi) {
+                return result;
+            }
+        }
         // 독립 Print에서 그리스 기호는 라틴 rm/it/bold와 별도의 face 계약이다.
         if self.hancom_math_face {
             if let Some(result) = source_greek_symbol::command(text, fs, self.dpi) {

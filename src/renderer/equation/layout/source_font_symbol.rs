@@ -4,6 +4,31 @@
 
 use super::{LayoutBox, LayoutKind};
 
+/// 현대 한컴 수학 명령의 표시 기호를 실제 대체 face와 함께 전달한다.
+/// literal △와 Delta 변수는 이 명령 경로에 투영하지 않는다.
+pub(super) fn layout_command(text: &str, fs: f64, dpi: f64) -> Option<LayoutBox> {
+    if text != "△" {
+        return None;
+    }
+    let em = super::source_roman_advance::em_advance(fs, dpi).unwrap_or(fs);
+    Some(LayoutBox {
+        font_size: fs,
+        x: 0.0,
+        y: 0.0,
+        // 독립 여섯 크기의 Print와 Haansoft Batang Delta의 1024/1024
+        // 전진이다. 현재 표시 glyph의 자연 폭으로 뒤 ABC를 앞당기지 않는다.
+        width: super::source_font_text::logical_advance(1024, em, dpi),
+        height: fs,
+        baseline: fs * 0.8,
+        kind: LayoutKind::FontGlyph {
+            text: "∆".to_string(),
+            font_family: "Haansoft Batang, 한컴바탕, Batang, 바탕, serif",
+            paint: None,
+            outline: None,
+        },
+    })
+}
+
 /// 한컴 Print의 수학 전진폭과 자동 간격. 정체 ASCII 글꼴의 폭과 구분한다.
 pub(super) fn operator_metrics(text: &str, fs: f64, dpi: f64) -> Option<(f64, f64)> {
     let (advance, padding) = match text {

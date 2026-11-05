@@ -16,13 +16,17 @@ pub struct GlyphRun {
 
 #[derive(Clone, Copy)]
 pub(super) enum Role {
-    Variable { italic: bool },
+    Variable {
+        italic: bool,
+    },
     Number,
     Operator,
     Greek,
     BigOperator,
     SmallOperator,
     LegacyLiteral,
+    /// 현대 HYhwpEQ의 인용 문자. 인용 밖 미분 prime과 구분한다.
+    QuotedLiteral,
 }
 
 pub(super) fn is_operator(text: &str) -> bool {
@@ -111,6 +115,9 @@ fn glyph(ch: char, role: Role) -> Option<(char, u16)> {
         // 독립 정상 저장본의 SMALLPROD는 두 수식 face의 Unicode U+220F다.
         // 큰 연산자용 PUA와 구분하며 본문 크기의 한 em 전진을 소비한다.
         Role::SmallOperator if ch == '∏' => (0x220f, 1024),
+        // 독립 6/7/9/10/12/18pt Print의 인용 작은따옴표는 ASCII/prime이
+        // 아닌 이 PUA다. 설치 공통 HYhwpEQ의 hmtx도 163/1024다.
+        Role::QuotedLiteral if ch == '\'' => (0xe050, 163),
         // A legacy equation's literal triangle and one-dot leader occupy
         // full symbol slots in Hancom Print. The equation font has no U+2024
         // cmap entry; its mathematical dot is U+22C5, with that same advance.
