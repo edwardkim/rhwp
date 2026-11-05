@@ -553,4 +553,3 @@
 | PR 8547 gangseo_exempt_certificates.hwp 4쪽 native overlay | [PNG](<pr_8547/closing-frame-c183a1ac61/native-p004-overlay.png>) · `330f5dee77e5dbcddfa9e2074cb077dfed1f37f86fe02229a2bdb0ba011bc4bb` |
 | PR 8547 gangseo_exempt_certificates.hwp 4쪽 wasm review | [PNG](<pr_8547/closing-frame-c183a1ac61/wasm-p004-review.png>) · `826b7614769bab88607dceafccb2f03ad854664ae36455fc7564a9a96bce4c83` |
 | PR 8547 gangseo_exempt_certificates.hwp 4쪽 wasm overlay | [PNG](<pr_8547/closing-frame-c183a1ac61/wasm-p004-overlay.png>) · `643b16307615122f241971551558645cb37e7c913c0cabfd7a21647a8d47fec6` |
-
