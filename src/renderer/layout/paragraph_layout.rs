@@ -2987,6 +2987,28 @@ fn stored_full_width_line_box(para: &Paragraph) -> Option<(i32, i32)> {
 }
 
 impl LayoutEngine {
+    /// [#8653] TAC 표만 담은 문단의 한 저장 줄을 소유한 다른 표(저장 밴드 = 그 표의 바깥
+    /// 상자)의 본체 높이와 위 바깥여백(px). 소유 판정은 단일 저장 줄에서만 성립한다
+    /// (`tac_band_covers_height`).
+    fn tac_line_owner_frame(
+        &self,
+        para: &Paragraph,
+        inline_tables: &[(usize, &crate::model::table::Table)],
+        ctrl_idx: usize,
+    ) -> Option<(f64, f64)> {
+        let line = super::control_line_seg_index(para, ctrl_idx)?;
+        inline_tables.iter().find_map(|(owner_ci, owner)| {
+            (*owner_ci != ctrl_idx
+                && super::control_line_seg_index(para, *owner_ci) == Some(line)
+                && Self::tac_stored_band_is_outer_box(para, owner)).then(|| {
+                (
+                    hwpunit_to_px(owner.common.height as i32, self.dpi),
+                    hwpunit_to_px(owner.outer_margin_top as i32, self.dpi),
+                )
+            })
+        })
+    }
+
     /// [#5729] 저장 줄 밴드가 정확히 `om_top + 선언높이 + om_bottom` 인 TAC 표는
     /// 한글이 표 상단을 **줄 상단 + om_top** 에 앉힌다 (156505870 4표 실측:
     /// 밴드 5195=283+4629+283 등 전부 일치). 종전 baseline-하단 정렬은 측정
@@ -3804,20 +3826,6 @@ impl LayoutEngine {
 
         // 4. 각 요소의 폭 계산
         // 4a. 표 폭 계산
-        // [#7150] 같은 저장 줄의 다른 표가 줄 띠를 소유하면 이 표는 그 표와 기준선을 공유한다.
-        // 소유 표 하단이 `기준선 + 0.15×소유 높이` 이므로 표 위끝은
-        // `줄 위 + 소유 om_top + 0.85×(소유 높이 − 표 높이)` 다 (36383665 1쪽 결재표).
-        let shared_band_table_top = |ctrl_idx: usize, table_h: f64, line_top: f64| -> Option<f64> {
-            let line = super::control_line_seg_index(para, ctrl_idx)?;
-            let (_, owner) = inline_tables.iter().find(|(owner_idx, owner)| {
-                *owner_idx != ctrl_idx
-                    && super::control_line_seg_index(para, *owner_idx) == Some(line)
-                    && Self::tac_stored_band_is_outer_box(para, owner)
-            })?;
-            let owner_h = hwpunit_to_px(owner.common.height as i32, self.dpi);
-            let owner_om_top = hwpunit_to_px(owner.outer_margin_top as i32, self.dpi);
-            Some((line_top + owner_om_top + (owner_h - table_h) * 0.85).max(line_top))
-        };
         let table_widths: Vec<f64> = inline_tables
             .iter()
             .map(|(_, t)| {
@@ -4540,9 +4548,26 @@ impl LayoutEngine {
                 }
                 let (om_left, om_right) = table_om_px[table_idx];
                 let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
+                // [#8653] 한 저장 줄에 TAC 표가 둘 이상이고 그중 하나가 줄을 소유하면(저장
+                // 밴드 = 그 표의 바깥 상자), 나머지 표는 소유자의 기준선에 85% 로 앉는다 —
+                // 글줄 흐름 경로(`#7150`)와 같은 공통 결과다. 종전 아래 식은 동반 표의 본체
+                // 하단을 `기준선 + om_bottom` 에 붙여 결재문서 오른쪽 위 결재 상자가 한컴보다
+                // 6.9px 위에 놓였다(36355589: 종전 80.8 · 한컴 87.7 · 공통 식 87.7).
+                let line_owner = (!table_wrapped)
+                    .then(|| self.tac_line_owner_frame(para, &inline_tables, *ctrl_idx))
+                    .flatten();
                 let tbl_y = self
                     .tac_table_stored_outer_band_top(para, tbl, tbl_h, current_y)
-                    .or_else(|| shared_band_table_top(*ctrl_idx, tbl_h, current_y))
+                    .or_else(|| {
+                        line_owner.map(|(owner_h, owner_om_top)| {
+                            super::stored_tac_frame::companion_table_top(
+                                current_y,
+                                owner_h,
+                                owner_om_top,
+                                tbl_h,
+                            )
+                        })
+                    })
                     .unwrap_or_else(|| {
                         let raw = current_y + baseline_dist + om_bottom - tbl_h;
                         if raw < current_y {
@@ -4652,9 +4677,20 @@ impl LayoutEngine {
                 .map(|m| m.total_height)
                 .unwrap_or_else(|| hwpunit_to_px(tbl.common.height as i32, self.dpi));
             let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
+            // [#8653] 위 중간 표와 같은 줄 소유자 기준선 규칙.
             let tbl_y = self
                 .tac_table_stored_outer_band_top(para, tbl, tbl_h, current_y)
-                .or_else(|| shared_band_table_top(*ctrl_idx, tbl_h, current_y))
+                .or_else(|| {
+                    self.tac_line_owner_frame(para, &inline_tables, *ctrl_idx)
+                        .map(|(owner_h, owner_om_top)| {
+                            super::stored_tac_frame::companion_table_top(
+                                current_y,
+                                owner_h,
+                                owner_om_top,
+                                tbl_h,
+                            )
+                        })
+                })
                 .unwrap_or_else(|| (current_y + baseline_dist + om_bottom - tbl_h).max(current_y));
 
             let table_bottom = self.layout_table(
@@ -10412,7 +10448,12 @@ impl LayoutEngine {
                                     // 저장 기준선을 쓰던 종전 식은 소유자의 om_top 을
                                     // 잃어 줄 전체가 `0.85×(om_top+om_bottom) − om_top`
                                     // 만큼 내려앉았다 — issue2470 1쪽 결재표 1.31px.
-                                    (y + owner_om_top + (owner_h - table_h) * 0.85).max(y)
+                                    super::stored_tac_frame::companion_table_top(
+                                        y,
+                                        owner_h,
+                                        owner_om_top,
+                                        table_h,
+                                    )
                                 } else {
                                     // [#7049] 글자처럼 취급되는 표는 글자처럼 기준선에
                                     // 앉는다 — 높이의 85% 가 기준선 위, 15% 가 아래다.
