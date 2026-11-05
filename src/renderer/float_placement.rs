@@ -7639,6 +7639,20 @@ pub(crate) fn nested_table_is_overlay(table: &Table) -> bool {
         )
 }
 
+/// [#8648] 칸 안의 글 앞/뒤 표 가운데 쪽·종이 기준으로 놓이는 표다. 글 앞/뒤 배치는 글줄을
+/// 밀지 않으므로 칸의 흐름 높이에 쌓이지 않고, 세로 위치도 칸이 아니라 쪽에서 정해지므로
+/// 칸 내용의 시각 하단도 늘리지 않는다. 결재문서 발신명의 상자 안의 쪽 기준 빈 직인
+/// 칸(7226HU)이 같은 줄의 글자처럼 취급 표(7593HU) 아래로 쌓여 상자가 선언 9513HU 보다
+/// 커지고, 쪽 아래 정렬이 상자를 그만큼 위로 올렸다.
+pub(crate) fn nested_table_is_page_overlay(table: &Table) -> bool {
+    !table.common.treat_as_char
+        && matches!(
+            table.common.text_wrap,
+            TextWrap::BehindText | TextWrap::InFrontOfText
+        )
+        && table.common.vert_rel_to != VertRelTo::Para
+}
+
 fn stored_empty_flow_lines(para: &Paragraph) -> Option<&[crate::model::paragraph::LineSeg]> {
     use crate::model::paragraph::LineSeg;
     if para_has_non_whitespace_text(para)
@@ -7796,6 +7810,8 @@ pub(crate) fn nested_group_occupied_height(
             let bottom = nested_overlay_outer_frame(table, -stored_line_lead, heights[ci], dpi)
                 .map_or(heights[ci], |frame| frame.end);
             overlay_height = overlay_height.max(bottom);
+        } else if nested_table_is_page_overlay(table) {
+            continue;
         } else if group.side_by_side {
             flow_height = flow_height.max(heights[ci]);
         } else {
@@ -7868,7 +7884,11 @@ pub(crate) fn nested_table_groups_with_storage<S: crate::storage::Storage>(
                     .controls
                     .iter()
                     .filter_map(|&ci| match &para.controls[ci] {
-                        Control::Table(t) if !nested_table_is_overlay(t) => Some(t.as_ref()),
+                        Control::Table(t)
+                            if !nested_table_is_overlay(t) && !nested_table_is_page_overlay(t) =>
+                        {
+                            Some(t.as_ref())
+                        }
                         _ => None,
                     }),
             )?;
