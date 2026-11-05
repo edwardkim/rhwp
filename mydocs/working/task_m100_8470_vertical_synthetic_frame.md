@@ -164,3 +164,10 @@ Native/WASM 각각 두 문제 쪽·실물 10/11쪽·정상 대조 1쪽의 review
 복구는 약 64초에 끝났다. [전쪽 TSV·명령·SHA와 복구 근거](../pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/handbook-validation.md)에
 결과를 보존했다. 전체 Rust nextest·Skia 묶음은 실패 단계 뒤에서 이어 실행 중이며
 최종 통과로 표시하지 않는다.
+
+## 2026-11-05 최종 통합 검증과 회귀 측정 주석 보완
+
+최신 source `ba2ebfd34a4ebf402bce8e002254b672a09ef764`의 전체 최소 글꼴 nextest 12,583 PASS·Skia lib 4,040 PASS·CI Native 21개·doctest 8 PASS를 포함한 필수 실행 41개가 모두 exit 0으로 종료됐다.
+`tests/cases/issue_8470_vertical_cell_content_axis.rs`의 개발 중 측정 주석을 실제 Native/fresh WASM 두 입력 전 5쪽 100.00%와 직접 판독 결과로 갱신했다. 검사·helper 본문의 SHA를 대조해 실행 코드가 같음을 확인했다.
+독립 rustfmt와 unit-tier·manifest 정책을 다시 확인했다. 주석 바이트 수에 따라 갱신한 파생 harness의 source module 다중집합은 같으며 생성 파일을 제출하지 않았다. 주석 때문에 전체 회귀나 시각 산출을 반복하지 않는다.
+[실제 실행 41개·출처](../pr/assets/planet6897_20261103/rebase8609/rust-regression-validation.md)와 [실제 Studio 소비 화면](../pr/assets/planet6897_20261103/rebase8609/studio-consumers.md)을 연결한다. 새 base 제품과의 기능 보존 대조 후 최종 판정한다.

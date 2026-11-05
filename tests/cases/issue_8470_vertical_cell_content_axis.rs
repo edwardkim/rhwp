@@ -1,14 +1,18 @@
-//! 관계형: 세로쓰기 칸의 글줄은 칸 높이를 사용하며 모든 글자를 칸 안에 보존한다.
-//! 주석 갱신: 2026-11-05T07:24:27+09:00; 신규 파일이며 직전 변경 커밋은 없다.
-//! 선행 측정: 2026-11-04~05 KST, 제품 `4b149b6cdf` 및 Native `c183a1ac61`.
-//! 96 DPI, 색상 경계 보정 전 2px 내용 실루엣 raw, 기존 한컴 2020 Print.
-//! vertical_fit.hwpx: 전체 5쪽, 전쪽 최저와 대상 5쪽 Native 98.75% / fresh WASM 98.72%.
-//! vertical_oversize.hwpx: 전체 5쪽, 전쪽 최저와 대상 5쪽 Native 98.94% / fresh WASM 98.92%.
-//! 입력 `samples/issue8470/`, 독립 PDF `pdf/issue8470/`의 동명 `-2020.pdf`.
-//! TSV·review·overlay·입력/PDF 해시는 `mydocs/pr/pr_8475_review.md`에 연결한다.
-//! 직접 판독에서 병합 칸의 마지막 글자 소실을 확인했다. 이 개발 중 검사는 수정 전 RED를
-//! 확인하려는 것이며, 보정 후 fresh WASM·Native 판독 완료나 최종 승인을 뜻하지 않는다.
-//! 화면 좌표·글꼴 프로그램·특정 글리프 폭을 고정하지 않는다.
+//! 관계형: 세로쓰기 칸의 글자 보존·한 세로줄·셀 내부 포함·내용 순서와 합성 줄 소유를 검사한다.
+//! 주석 갱신: 2026-11-05T12:06:08+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 2026-11-05T09:48:14+09:00, commit `4a0af7e86731466fa5202d806c3adf23b7d9c8e0`. 측정 시각과 구분한다.
+//! 실제 측정: 2026-11-05 KST, source `ba2ebfd34a4ebf402bce8e002254b672a09ef764`.
+//! 96 DPI·Print profile·색상 경계 보정 전 2px 내용 실루엣 raw, 기존 한컴 2020 Print.
+//! vertical_fit.hwpx: 전체 5쪽, Native/fresh WASM 각각 전쪽 최저 100.00%, 대상 5쪽도 각각 100.00%.
+//! vertical_oversize.hwpx: 전체 5쪽, Native/fresh WASM 각각 전쪽 최저 100.00%, 대상 5쪽도 각각 100.00%.
+//! 원본 `samples/issue8470/`, 독립 PDF `pdf/issue8470/`의 동명 `-2020.pdf`.
+//! 정식 TSV·입력/PDF·제품 SHA와 같은 쪽의 review·별도 overlay는
+//! `mydocs/pr/assets/planet6897_20261103/rebase8609/vertical-cell-claims.md`에 연결한다.
+//! 같은 두 쪽의 Native/fresh WASM과 실제 Studio Canvas2D/CanvasKit 화면에서 다섯 글자를 직접 확인했다.
+//! 같은 assertion의 수정 전 2 FAIL → 수정 후 2 PASS와 정상 대조 5 PASS는
+//! `mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-focused-37e5bba300.md`에 보존했다.
+//! 전체 최소 글꼴 nextest 12,583 PASS·Native Skia lib 4,040 PASS 및 CI Native 21개 모두 exit 0.
+//! 설치 글꼴·특정 glyph 폭·독립 절대 px 좌표를 가정하지 않는다. raw 100.00%는 RGB 동일을 뜻하지 않는다.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
