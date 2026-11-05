@@ -170,7 +170,24 @@ impl TypesetEngine {
                     cut_row_h[r]
                 };
                 let h = row_query.required_height(base, consumed, cs_before);
-                if r == cursor_row || consumed + cs_before + h <= avail_for_rows {
+                let required = consumed + cs_before + h;
+                // 블록 스캔과 같은 물리 상자를 행별로 더해도 합산 순서의 끝자리 오차가
+                // 생긴다. HU/px 여유를 더하지 않고 누적 연산 규모의 f64 오차만 구분한다.
+                let roundoff = f64::EPSILON
+                    * (required.abs() + avail_for_rows.abs()).max(1.0)
+                    * (r - cursor_row + 3) as f64;
+                let fits = required <= avail_for_rows
+                    || (required.is_finite()
+                        && avail_for_rows.is_finite()
+                        && required - avail_for_rows <= roundoff);
+                if fits && required > avail_for_rows && std::env::var_os("RHWP_DIAG_SCAN").is_some()
+                {
+                    eprintln!(
+                        "DIAG_SCAN ROW_SUM_ROUNDOFF r={r} required={required:.17} available={avail_for_rows:.17} difference={:.17} roundoff={roundoff:.17}",
+                        required - avail_for_rows,
+                    );
+                }
+                if r == cursor_row || fits {
                     consumed += cs_before + h;
                     r += 1;
                     end_row = r;

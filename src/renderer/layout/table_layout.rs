@@ -5967,7 +5967,7 @@ impl LayoutEngine {
             }
         }
 
-        if let Some(heights) = Self::resolve_reflow_span_requirements(
+        if let Some(heights) = Self::resolve_span_content_requirements(
             table,
             &span_content_requirements,
             &initial_span_rows,

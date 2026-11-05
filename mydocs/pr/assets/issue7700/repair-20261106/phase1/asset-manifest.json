@@ -1,0 +1,26 @@
+[
+  {
+    "file": "issue7700-joint-public-measure-comparison.json",
+    "sha256": "7567eebf3e15e9bb4701e9052b997d6d32db544c6eb757274d11f71d736d6558"
+  },
+  {
+    "file": "phase1-validation.json",
+    "sha256": "4e3226c6a0b6586c37b50383e2639e54d8bbcfdd7dd1b233ed9843cccc0be98d"
+  },
+  {
+    "file": "native-p019-review.png",
+    "sha256": "80b1424ca11b85e5e6399e9475a31fa5343b4c7e6206aa6cdf26e11f60e0ff72"
+  },
+  {
+    "file": "native-focus11.tsv",
+    "sha256": "d7b8cc1e1883ad29e2650e43cbddb9c66b34696fcbde618b3900ec5df1e1299e"
+  },
+  {
+    "file": "issue7700-whole-base-before-comparison.json",
+    "sha256": "66ca380f869c595a7e312c0d00b85e0c586d5226e66d364c88b4d97a7318eeb2"
+  },
+  {
+    "file": "native-p019-overlay.png",
+    "sha256": "42ffed18bee665314ee78b893eba14b8611bd2c361b1716d5b5e530277c2f9b4"
+  }
+]

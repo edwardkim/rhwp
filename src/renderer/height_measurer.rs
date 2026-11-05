@@ -5358,7 +5358,7 @@ let body_height=match nested_body_heights
         }
 
         if let Some(heights) =
-            crate::renderer::layout::LayoutEngine::resolve_reflow_span_requirements(
+            crate::renderer::layout::LayoutEngine::resolve_span_content_requirements(
                 table,
                 &span_content_requirements,
                 &initial_span_rows,
