@@ -77,7 +77,7 @@ fn slots(p: &Paragraph) -> Vec<(&'static str, usize)> {
 }
 
 fn variants(make: impl Fn() -> HwpDocument) -> Vec<(&'static str, HwpDocument)> {
-    let mut doc = make();
+    let doc = make();
     let hwp = doc.export_hwp_native().unwrap();
     let hwpx = doc.export_hwpx_native().unwrap();
     vec![
