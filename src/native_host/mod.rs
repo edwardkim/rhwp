@@ -307,7 +307,7 @@ impl NativeDocumentSession {
         Self::check_scale(scale)?;
         #[cfg(feature = "native-skia")]
         {
-            self.render_tiled_region_uncached(page, region, scale)
+            self.render_tiled_region_cached(page, region, scale)
         }
         #[cfg(not(feature = "native-skia"))]
         {
