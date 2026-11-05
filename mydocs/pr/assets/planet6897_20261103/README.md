@@ -1,19 +1,20 @@
 # planet6897 원 PR 39개 통합 검토 증거
 
 원 PR 39개를 누적 적용하고 메인터너 보정·검증·개별 리뷰와 PR 본문을 준비하는 로컬 작업이다.
-최종 PR 생성 전에 작업지시자의 승인을 기다린다. 원격 push·PR 생성·review·comment·close·merge는 수행하지 않았다.
+작업지시자는 준비 완료 후 PR 생성·CI 모니터링을 승인했다. 제출 전 필수 검증을 완료했으며 최종 감사를 고정하면 진행한다. 이 기록 고정 시점에는 원격 push·PR 생성·review·comment·close·merge를 수행하지 않았다.
 
 ## 현재 제품과 진행 상태
 
 | 항목 | 실제 상태 |
 | --- | --- |
 | 통합 브랜치 | `review/integration-20261103-planet6897-open` |
-| 최신 검증 기준 base | `f529dc92d4d172bf32390d7749743a45d9e41bfc` |
+| 현재 PR base | `ed057276c1e0e07e743218d95641e015b46b6715` |
+| 실제 기능 대조 base | `f529dc92d4d172bf32390d7749743a45d9e41bfc`; 현재 base와 제품·테스트·fixture·도구 내용이 같음 |
 | 리베이스 결과 제품 계열 | `dda217dba06e33eb0749a24872a60e99e9e63e8a` |
 | 검증 시작 source | `ba2ebfd34a4ebf402bce8e002254b672a09ef764`; 이후 문서 커밋과 제품 소스를 구분 |
 | 리베이스 | 168개 패치 전부 range-diff `=`, 충돌 0건 |
-| 개별 검토 | 38개 조건부 수용, PR #8475 보정 후 통합 검증 대기; 최종 승인 0개 |
-| 최신 source 필수 검증 | 필수 41개 모두 exit 0. 전체 nextest 12,583 PASS·Skia lib 4,040 PASS·CI Native 21개·doctest 완료. 새 base 보존 대조 진행 중 |
+| 개별 검토 | 39개 메인터너 보정 후 수용 가능. 전쪽 대조·필수 검증 완료, 최종 제출 감사 고정 중 |
+| 최신 source 필수 검증 | 필수 41개 모두 exit 0. 전체 nextest 12,583 PASS·Skia lib 4,040 PASS·CI Native 21개·doctest 완료. 새 base Native/fresh WASM 보존 대조 완료 |
 | 출력 보존 검증 | 기존 80입력 전쪽 결과는 원 출처로 재사용. 실제 변경 소비 경로를 집중 대조 |
 
 [원 PR head와 현재 적용 SHA 39개](integration-commits.md)를 기록했다. 새 외부 PR은 추가로 체리픽하지 않는다.
@@ -24,7 +25,7 @@
 
 ## 최신 전체 회귀·Skia 라이브러리 완료
 
-[실제 최종 결과와 명령](rebase8609/rust-regression-validation.md)을 보존했다. 최소 글꼴 환경의 전체 nextest는 12,583 PASS·45 SKIP, Native Skia 라이브러리는 4,040 PASS·12 IGNORE이며 각각 exit 0이다. CI Native 21개와 doctest까지 필수 실행 41개를 모두 마쳤다. 새 base 실제 제품의 보존 대조는 진행 중이다.
+[실제 최종 결과와 명령](rebase8609/rust-regression-validation.md)을 보존했다. 최소 글꼴 환경의 전체 nextest는 12,583 PASS·45 SKIP, Native Skia 라이브러리는 4,040 PASS·12 IGNORE이며 각각 exit 0이다. CI Native 21개와 doctest까지 필수 실행 41개를 모두 마쳤다. 새 base 실제 제품의 Native/fresh WASM 보존 대조도 완료했다.
 
 ## 최신 Native 영향 경계 완료
 
@@ -32,14 +33,14 @@
 90% 미만·누락·쪽수·해시 오류 0건이며 직전 후보 대비 0.1%p 초과 하락은 0쪽이다.
 [fit 5쪽의 실제 review·별도 overlay](rebase8609/native-vertical-fit/README.md)와
 [초과 높이·기존 외곽선·각주 번호 차이의 직접 판독](rebase8609/native-details.md)을 보존했다.
-미세 차이를 점수 통과로 해결됐다고 표시하지 않는다. fresh WASM과 새 base 자체 비교·전체 공통 검증은 진행 중이다.
+미세 차이를 점수 통과로 해결됐다고 표시하지 않는다. fresh WASM·새 base 자체 비교·전체 공통 검증도 별도 기록에서 완료했다.
 
 ## 최신 fresh WASM 영향 경계 완료
 
 [최신 fresh WASM 10입력·43쪽](rebase8609/wasm-own-validation.md)은 최저 raw 96.96022%,
 90% 미만·누락·쪽수·해시 오류 0건이며 직전 후보 대비 정밀 raw 0.1%p 초과 하락은 0쪽이다.
 [PR #8475의 두 5쪽에서 양쪽 review·별도 overlay를 직접 대조](rebase8609/vertical-cell-claims.md)해
-글자 보존을 확인했다. [기존 외곽선·각주 차이의 WASM 판독](rebase8609/wasm-details.md)도 기록했다. 새 base 자체 대조·전체 Rust 등 통합 공통 검증은 계속 진행한다.
+글자 보존을 확인했다. [기존 외곽선·각주 차이의 WASM 판독](rebase8609/wasm-details.md)도 기록했다. 새 base 자체 대조·전체 Rust 등 통합 공통 검증도 완료했다.
 
 ## 실제 Studio의 세로쓰기 소비 확인
 
@@ -49,8 +50,7 @@
 
 [최종 제품의 필수 편람 Native 383쪽](rebase8609/handbook-native-validation.md)은 passed·실제 exit 0이다.
 최저 표시 raw 99.96%, 기준 대비 표시값 하락·누락·웹폰트 fallback 0건이다. 실행 TSV는 공식 기준과
-바이트가 같으며 원시 로그·제품·입력/PDF SHA와 실행 시간을 기록했다. 전체 Rust·fresh WASM·
-새 base 자체 대조의 완료로 확대하지 않는다.
+바이트가 같으며 원시 로그·제품·입력/PDF SHA와 실행 시간을 기록했다. 전체 Rust·fresh WASM·새 base 자체 대조는 아래 별도 완료 기록으로 확인한다.
 
 ## 직전 완료 제품의 전쪽·회귀 증거
 
@@ -126,3 +126,10 @@
 [실제 결과·중간 출처 해시](intermediate-evidence-summary.md)와 [이전 단계 이력](history-before-rebase8609.md)을 연결한다.
 기능 입력인 `yeongwol-font-environment.json`, 원본·독립 PDF·전쪽 TSV·대표 PNG는 유지한다.
 기존 완료 증거의 출처·범위를 확대하거나 최신 검증의 통과로 승격하지 않는다.
+
+## 새 base 기능의 실제 보존 대조 완료
+
+[Native](rebase8609/native-base-preservation.md)와 [fresh WASM](rebase8609/wasm-base-preservation.md)의 14입력·41쪽은 양쪽 모두 raw 하락 0쪽·미달/누락/쪽수 차이 0건이다.
+[문서-only base 갱신의 내용 동일성](latest-rebase.md)을 확인했고 추가 전체 회귀·전쪽 재측정을 반복하지 않았다. 각 경로의 39쪽 PNG가 base와 바이트 단위로 같고, 나머지 2쪽도 raw가 같으며 같은 차이 영역을 직접 확인했다.
+
+[39쪽의 바이트 동일성과 나머지 2쪽의 직접 확대 판독](rebase8609/base-preservation-direct-reading.md)을 함께 보존했다.

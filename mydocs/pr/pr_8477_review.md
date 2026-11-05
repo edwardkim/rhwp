@@ -5,7 +5,7 @@
 **메인터너 보정 후 수용 가능**
 
 완료한 실측과 남은 통합 공통 검증을 구분합니다. 원 PR의 직접 승인·닫기와 통합 PR 생성은 수행하지 않았습니다.
-최종 수용은 WASM의 당시 base 대비 전쪽 대조와 전체 증적 감사를 완료한 뒤 판정합니다. PR 생성은 작업지시자 승인 대기입니다.
+WASM의 당시 base 대비 전쪽 대조와 최신 필수 검증은 완료했으며 아래에 실제 증거를 연결합니다. 준비 완료 후 PR 생성·CI 모니터링은 작업지시자가 승인했습니다.
 
 ## 이전 완료 제품과 재사용 증거의 출처
 
@@ -13,11 +13,11 @@
 | --- | --- |
 | 원 PR | [PR #8477](https://github.com/edwardkim/rhwp/pull/8477) |
 | 원 head | `d53da96d75daf912d3e53d9137eadc7770732bbf` |
-| 현재 통합 적용 커밋 | `ebd7d546945f3360b9f6dccab5685916f13f9f38, 09783605dfec6d053c0aee4bf4e085be960716cd, 5e7ed8002bceebf42e9f9afb6173951e49064d66, 097789909b2309192a31cbfaa1d42ab242075bcd` |
+| 현재 통합 적용 커밋 | `ede099476e5c4787fecdefad9e437f6f44d19cca, 4b890c7abf57714e826855ed00929d7478018d9d, 3dec4ed06d2b427f666d43b6c85b69efdef82cce, fdb7667a85797061b433a82e28fd87c02c45ec4c` |
 | 이전 완료 제품 / 당시 base | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` / `22947f6a90c998e95fa51238d5b907a0ebd37162` |
 | 전쪽 Native 측정 producer / 당시 base | `4b149b6cdfc514b9858ed644be2cf8120c731cd4` / `7fdd5441ff1e77c083818e920a48089f294de35e` |
 | fresh WASM 실제 빌드 | `7bb9e66fd006109ca9f7ee4c4d3f752c82e60fae` (위 제품 코드와 동등한 구현) |
-| reviewer | `jangster77` 요청; 2026-11-04T17:44:08.556Z 고정한 원 head·Open·non-Draft 확인 |
+| reviewer | `jangster77` 요청. `2026-11-05 03:16:02 UTC` 원격 재조회에서 원 head 불변·Open·non-Draft 확인 |
 
 기존 전쪽 TSV/PNG는 실제 측정 producer의 결과로 재사용합니다. 최신 소스의 재출력으로 표시하지 않습니다.
 이전 a7 제품의 최소 글꼴 전체 Rust 12,561개 통과·Native Skia·Rust lint 및 fresh WASM 실제 실행과
@@ -115,7 +115,7 @@ PDF 래스터는 pypdfium2 5.13.0 / PDFium 153.0.7999.0의 `pdfium_smooth_rgb_ex
 
 ## 통합 전 남은 조건
 
-현재 통합의 전체 Rust·Skia 3종·lint, 필수 편람 Native 383쪽 gate, 새 devel 대비 0.1%p 초과 하락 금지, PR #8389·#8397의 원 TSV 표시값 무하락과 각 원 PR의 대응 증적 갱신을 완료해야 합니다. GitHub CI·원격 게시·통합 승인 조건은 별도이며 PR 생성은 승인 대기합니다.
+현재 통합의 필수 실행 41개·편람 Native 383쪽 gate·PR #8389·#8397 원 TSV 표시값 무하락은 완료했습니다. 새 base Native/fresh WASM 대조도 모두 통과했습니다. GitHub CI·원격 게시·통합 승인 조건은 별도이며 준비 완료 후 승인된 PR 생성·CI 모니터링을 진행합니다.
 
 ## Merge 후 contributor PR comment 계획
 
@@ -138,28 +138,42 @@ PDF 래스터는 pypdfium2 5.13.0 / PDFium 153.0.7999.0의 `pdfium_smooth_rgb_ex
 
 </details>
 
-## 최신 리베이스 이후 통합 검증 상태
+## 최신 통합 검증 상태
 
-최신 base는 `f529dc92d4d172bf32390d7749743a45d9e41bfc`, 검증 시작 source는
-`ba2ebfd34a4ebf402bce8e002254b672a09ef764`다. 원 PR 39개와 메인터너 보정을 담은
-168개 커밋을 충돌 0건으로 리베이스했고 range-diff 전 행이 `=`로 대응했다.
-[원 head와 현재 적용 SHA](assets/planet6897_20261103/integration-commits.md)를 구분한다.
+현재 base는 `ed057276c1e0e07e743218d95641e015b46b6715`입니다. 이 갱신은 후속 문서 14개뿐이고,
+183개 패치가 충돌 0건·range-diff 모두 `=`로 리베이스됐습니다. 제품·테스트·fixture·검증 도구의 내용은
+리베이스 전과 같으므로 완료 증거를 재사용합니다. 실제 측정 source는
+`ba2ebfd34a4ebf402bce8e002254b672a09ef764`이며 문서 commit을 새 렌더 제품으로 표시하지 않습니다.
+[현재 적용 SHA 39개](assets/planet6897_20261103/integration-commits.md)를 확인합니다.
 
-최신 source의 최소 글꼴 Rust·Native Skia·lint·최적화 WASM 및 영향 경계 검증은 진행 중이다.
-완료 판정이나 최종 승인으로 표시하지 않는다. 검증 중 소스 해시를 고정하고 문서 갱신과 구분한다.
-충돌 없는 리베이스 뒤 기존 전쪽 비교를 반복하지 않는 작업지시자의 범위를 따른다.
-새 base 기능은 같은 시스템 글꼴 환경의 실제 base/candidate 출력과 영향 경계로 대조한다.
-새 base 대비 허용 하락은 0.1%p이며, 보호 PR #8389·#8397은 원 TSV의 소수 둘째 자리
-표시값 하락을 허용하지 않는다. 기존 TSV·PNG의 producer는 원래 출처대로 유지한다.
+- [최소 글꼴 환경의 필수 실행 41개](assets/planet6897_20261103/rebase8609/rust-regression-validation.md)는 모두 exit 0입니다.
+  전체 nextest 12,583 PASS·45 SKIP, Native Skia lib 4,040 PASS·12 IGNORE,
+  CI Native 모듈 21개와 doctest 8 PASS·3 IGNORE를 포함합니다.
+- [최신 Native 영향 10입력·43쪽](assets/planet6897_20261103/rebase8609/native-own-validation.md)과
+  [fresh WASM 같은 43쪽](assets/planet6897_20261103/rebase8609/wasm-own-validation.md)은 전쪽 90% 이상,
+  직전 후보 대비 정밀 raw 0.1%p 초과 하락·누락·쪽수 불일치 0건입니다.
+- [최신 필수 편람 Native 383쪽](assets/planet6897_20261103/rebase8609/handbook-native-validation.md)은
+  최저 표시 raw 99.96%, 기준 표시값 하락·fallback 0건·exit 0입니다.
+- [최신 실제 API·브라우저](assets/planet6897_20261103/rebase8609/runtime-validation.md)는 실제
+  271 assertion·17 Worker·12쪽 렌더/저장과 가져오기·편집 산출물 대조를 완료했습니다.
+- 기존 c183의 [Native 80입력·406쪽](assets/planet6897_20261103/current-c183a1ac61/native-validation.md)과
+  [fresh WASM 전406쪽](assets/planet6897_20261103/current-c183a1ac61/wasm-validation.md)은 양쪽 90% 이상입니다.
+  충돌 없는 리베이스 뒤 전쪽 측정을 반복하지 않는 지시에 따라 원래 producer를 명시해 재사용합니다.
+- 보호 PR #8389·#8397의 [c183 Native](assets/planet6897_20261103/current-c183a1ac61/pr8389_8397/native-validation.md)와
+  [c183 fresh WASM](assets/planet6897_20261103/current-c183a1ac61/pr8389_8397/wasm-validation.md)은
+  각 17문서·1,770쪽·원 TSV 2,153행에서 표시값 하락·누락 0행입니다.
 
-직전 c183 제품에서는 [최소 글꼴 Rust 12,563 PASS와 필수 40개 실행](assets/planet6897_20261103/rust-validation-c183a1ac61.md),
-[Native 80입력·406쪽](assets/planet6897_20261103/current-c183a1ac61/native-validation.md),
-[fresh WASM 80입력·406쪽](assets/planet6897_20261103/current-c183a1ac61/wasm-validation.md),
-[실제 브라우저/API 실행](assets/planet6897_20261103/runtime-validation-c183a1ac61.md)을 완료했다.
-양쪽 전쪽 최저는 각각 92.45232%·92.87288%다. 이 결과를 최신 리베이스 제품의 재출력으로
-취급하지 않는다. 보호 범위 Native는 17문서·1,770쪽·원 TSV 2,153행의 하락·누락 0행이며,
-같은 c183 WASM 보호 범위의 남은 집계를 진행 중이다. [공식 증거 목록](assets/planet6897_20261103/README.md)과
-[재실행 명령·입력·Print PDF·조판 세대·글꼴 계약](assets/planet6897_20261103/visual-reproduction.md)을 연결한다.
+원 PR별 주장에 대응하는 입력·쪽의 대표 review/overlay는 아래 원래 출처를 유지합니다.
+최신 영향 입력의 그림은 최신 source로 별도 표시하며, 다른 문서의 대표 그림으로 대체하지 않습니다.
+[직접 판독 원장](assets/planet6897_20261103/direct-reading-current.md)과
+[입력/PDF·compat·글꼴·명령](assets/planet6897_20261103/visual-reproduction.md)을 연결합니다.
+회귀 측정 주석 갱신은 실제 assertion·helper 본문과 구분했고 주석만 바뀐 전체 검사는 반복하지 않았습니다.
 
-원 PR별 주장 쪽의 직접 판독·회귀 주석·최종 본문 감사를 마친 뒤 수용 판정을 확정한다.
-통합 PR 생성·push·원격 review·comment·close는 아직 수행하지 않았다. PR 생성 전 승인을 기다린다.
+[새 base Native 대조](assets/planet6897_20261103/rebase8609/native-base-preservation.md)와
+[fresh WASM 대조](assets/planet6897_20261103/rebase8609/wasm-base-preservation.md)는 각각 14입력·41쪽을 완료했습니다.
+양쪽 모두 raw 하락 자체가 0쪽이며 90% 미만·누락·쪽수 차이·제품 해시 오류 0건입니다.
+문서-only 리베이스의 [내용 동일성](assets/planet6897_20261103/latest-rebase.md)을 확인해 완료 결과를 재사용했습니다.
+추가 전체 회귀는 필요하지 않습니다. 제출 전 필수 검증은 완료했고 통합 PR 생성 후 정확한 head의 CI를 모니터링합니다.
+원 PR 39개는 원격 재조회에서 head 불변·Open·non-Draft·reviewer 요청을 확인했습니다.
+본인 계정의 우선 처리할 열린 PR은 0건입니다. 이 문서 고정 시점에는 원격 push·PR 생성·review·comment·close·merge를 수행하지 않았습니다.
+작업지시자는 준비 완료 후 PR 생성·CI 모니터링을 승인했습니다. 최종 본문·링크·증적 감사를 고정한 뒤 제출합니다.
