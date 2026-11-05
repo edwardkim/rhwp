@@ -15275,12 +15275,32 @@ impl LayoutEngine {
                                     segs[host_text_line_count].vertical_pos - segs[0].vertical_pos,
                                     self.dpi,
                                 );
-                                let flowed: f64 = segs[..host_text_line_count]
-                                    .iter()
-                                    .map(|seg| {
-                                        hwpunit_to_px(seg.line_height + seg.line_spacing, self.dpi)
-                                    })
-                                    .sum();
+                                // 흐른 양은 앞 PartialParagraph 가 실제로 그린 줄 전진이다. 저장
+                                // `line_height` 는 줄 밖 개체(글앞 표 등)의 높이를 담을 수 있어
+                                // 그린 줄 높이와 다르다(09142 pi=4: lh 25325, 글자 높이 1100).
+                                let drawn_lines = composed
+                                    .get(para_index)
+                                    .and_then(|comp| comp.lines.get(..host_text_line_count));
+                                let flowed: f64 = match drawn_lines {
+                                    Some(lines) => lines
+                                        .iter()
+                                        .map(|line| {
+                                            hwpunit_to_px(
+                                                line.line_height + line.line_spacing,
+                                                self.dpi,
+                                            )
+                                        })
+                                        .sum(),
+                                    None => segs[..host_text_line_count]
+                                        .iter()
+                                        .map(|seg| {
+                                            hwpunit_to_px(
+                                                seg.line_height + seg.line_spacing,
+                                                self.dpi,
+                                            )
+                                        })
+                                        .sum(),
+                                };
                                 let correction = stored - flowed;
                                 // 저장 사다리와 흐름이 줄 하나 넘게 갈리면 다른 축이다.
                                 let one_line = hwpunit_to_px(segs[0].line_height, self.dpi);
