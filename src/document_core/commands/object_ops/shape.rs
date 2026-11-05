@@ -2425,7 +2425,7 @@ impl DocumentCore {
     ) -> crate::model::footnote::NumberFormat {
         crate::model::footnote::FootnoteShape::number_format_from_name(value, fallback)
     }
-    fn footnote_shape_number_format_name(
+    pub(crate) fn footnote_shape_number_format_name(
         format: crate::model::footnote::NumberFormat,
     ) -> &'static str {
         use crate::model::footnote::NumberFormat;
@@ -2488,9 +2488,10 @@ impl DocumentCore {
             }
         }
     }
-    pub(crate) fn renumber_paragraph_endnotes_with_shape(
+    /// 문단들의 미주 번호 모양·장식 문자를 구역의 미주 모양과 맞춘다.
+    /// 번호는 `refresh_endnote_numbers`가 매긴다.
+    pub(crate) fn sync_paragraph_endnotes_with_shape(
         paragraphs: &mut [crate::model::paragraph::Paragraph],
-        next_number: &mut u16,
         number_format_code: u8,
         prefix_char: char,
         suffix_char: char,
@@ -2499,20 +2500,17 @@ impl DocumentCore {
             for ctrl in &mut para.controls {
                 match ctrl {
                     Control::Endnote(endnote) => {
-                        endnote.number = *next_number;
                         Self::sync_endnote_control_with_shape(
                             endnote,
                             number_format_code,
                             prefix_char,
                             suffix_char,
                         );
-                        *next_number = next_number.saturating_add(1);
                     }
                     Control::Table(table) => {
                         for cell in &mut table.cells {
-                            Self::renumber_paragraph_endnotes_with_shape(
+                            Self::sync_paragraph_endnotes_with_shape(
                                 &mut cell.paragraphs,
-                                next_number,
                                 number_format_code,
                                 prefix_char,
                                 suffix_char,
@@ -2523,9 +2521,8 @@ impl DocumentCore {
                         if let Some(text_box) =
                             shape.drawing_mut().and_then(|d| d.text_box.as_mut())
                         {
-                            Self::renumber_paragraph_endnotes_with_shape(
+                            Self::sync_paragraph_endnotes_with_shape(
                                 &mut text_box.paragraphs,
-                                next_number,
                                 number_format_code,
                                 prefix_char,
                                 suffix_char,
@@ -2537,8 +2534,89 @@ impl DocumentCore {
             }
         }
     }
+    /// 문단들의 미주에 문서 순서대로 `counter` 다음 번호를 매긴다. 미주 번호의 "새 번호로
+    /// 시작"은 다음 미주 번호를 그 값으로 정한다. 번호가 바뀐 미주가 있으면 true.
+    fn number_paragraph_endnotes(paragraphs: &mut [Paragraph], counter: &mut u16) -> bool {
+        use crate::model::control::AutoNumberType;
+
+        let mut changed = false;
+        for para in paragraphs {
+            for ctrl in &mut para.controls {
+                match ctrl {
+                    Control::NewNumber(new_number)
+                        if new_number.number_type == AutoNumberType::Endnote =>
+                    {
+                        *counter = new_number.number.saturating_sub(1);
+                    }
+                    Control::Endnote(endnote) => {
+                        *counter = counter.saturating_add(1);
+                        if endnote.number == *counter {
+                            continue;
+                        }
+                        endnote.number = *counter;
+                        for note_para in &mut endnote.paragraphs {
+                            for note_ctrl in &mut note_para.controls {
+                                if let Control::AutoNumber(auto_num) = note_ctrl {
+                                    if auto_num.number_type == AutoNumberType::Endnote {
+                                        auto_num.number = *counter;
+                                        auto_num.assigned_number = *counter;
+                                    }
+                                }
+                            }
+                        }
+                        changed = true;
+                    }
+                    Control::Table(table) => {
+                        for cell in &mut table.cells {
+                            changed |=
+                                Self::number_paragraph_endnotes(&mut cell.paragraphs, counter);
+                        }
+                    }
+                    Control::Shape(shape) => {
+                        if let Some(text_box) =
+                            shape.drawing_mut().and_then(|d| d.text_box.as_mut())
+                        {
+                            changed |=
+                                Self::number_paragraph_endnotes(&mut text_box.paragraphs, counter);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+        changed
+    }
+    /// 문서의 미주 번호를 구역마다 미주 모양의 번호 매기기대로 다시 매긴다. 한/글처럼 "앞 구역에
+    /// 이어서"는 앞 구역의 번호를 잇고, "현재 구역부터 새로 시작"은 미주가 없는 구역이라도 그
+    /// 구역의 시작 번호에서 다시 센다. 번호가 바뀐 구역은 다시 조판한다. `edited` 구역은 호출자가
+    /// 이어서 다시 조판하므로 건너뛴다.
+    pub(crate) fn refresh_endnote_numbers(&mut self, edited: usize) {
+        use crate::model::footnote::{FootnoteNumbering, FootnotePlacement};
+
+        let mut counter = self.document.doc_properties.endnote_start_num.max(1) - 1;
+        let mut document_end_changed = false;
+        for index in 0..self.document.sections.len() {
+            let section = &mut self.document.sections[index];
+            let shape = &section.section_def.endnote_shape;
+            if shape.numbering != FootnoteNumbering::Continue {
+                counter = shape.start_number.max(1) - 1;
+            }
+            let document_end = matches!(shape.placement, FootnotePlacement::EachColumn);
+            if Self::number_paragraph_endnotes(&mut section.paragraphs, &mut counter) {
+                section.raw_stream = None;
+                document_end_changed |= document_end;
+                if index != edited {
+                    self.recompose_section(index);
+                }
+            }
+        }
+        if document_end_changed {
+            // 문서 끝 미주는 마지막 구역이 모아 그린다.
+            self.mark_section_dirty(self.document.sections.len() - 1);
+        }
+    }
     /// HWP 직렬화가 읽는 문단 control stream의 구역 정의를 section 메타와 맞춘다.
-    fn sync_section_def_controls_from_section(&mut self, section_idx: usize) {
+    pub(crate) fn sync_section_def_controls_from_section(&mut self, section_idx: usize) {
         let Some(section) = self.document.sections.get_mut(section_idx) else {
             return;
         };
@@ -2640,6 +2718,9 @@ impl DocumentCore {
             }
             if let Some(v) = crate::document_core::helpers::json_u16(props_json, "startNumber") {
                 shape.start_number = v.max(1);
+                // 한/글은 시작 번호를 "현재 구역부터 새로 시작"에서만 쓴다. 번호 매기기 없이 시작
+                // 번호만 주면 그 선택으로 본다(아래 numbering이 있으면 그것을 따른다).
+                shape.numbering = crate::model::footnote::FootnoteNumbering::RestartSection;
             }
             if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorLength") {
                 shape.separator_length = i32::from(v.max(0));
@@ -2693,14 +2774,11 @@ impl DocumentCore {
                 shape.separator_line_width = 0;
             }
             shape.attr = Self::encode_footnote_shape_attr(shape);
-            let start_number = shape.start_number.max(1);
             let number_format_code = Self::footnote_shape_number_format_code(shape.number_format);
             let prefix_char = shape.prefix_char;
             let suffix_char = shape.suffix_char;
-            let mut next_number = start_number;
-            Self::renumber_paragraph_endnotes_with_shape(
+            Self::sync_paragraph_endnotes_with_shape(
                 &mut section.paragraphs,
-                &mut next_number,
                 number_format_code,
                 prefix_char,
                 suffix_char,
@@ -2708,6 +2786,7 @@ impl DocumentCore {
             section.raw_stream = None;
         }
         self.sync_section_def_controls_from_section(section_idx);
+        self.refresh_endnote_numbers(section_idx);
 
         self.recompose_section(section_idx);
         self.paginate_if_needed();

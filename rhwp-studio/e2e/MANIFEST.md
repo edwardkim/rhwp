@@ -207,3 +207,5 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 
 | `ruler-resize-support.mjs` | 유틸 | active | 시험지 실행을 제외한 ruler 상태 조회 보조 함수 | — | — | 회귀 실행 진입점 없음 |
 | `supplementary-private-glyph-replay.test.mjs` | 상시 | active | #8389 보충 사설 문자 공급 글꼴의 실제 glyph replay | tests/fixtures/fonts/RHWPHostFixture-Regular.ttf | 수동 | 기존 c417310cab 도입 파일의 목록 누락 보완, 검사 내용 변경 없음 |
+
+| `char-outline-canvaskit.test.mjs` | 상시 | active | #8369 투명한 글자 외곽선·공통 점선 실제 CanvasKit 소비 | tests/fixtures/char_outline_types/outline.hwp | 수동 | software surface, 번들 Noto 효과 대조 |

@@ -4,7 +4,7 @@ use super::super::helpers::{
     build_tab_def_from_json, json_has_border_keys, json_has_tab_keys, parse_json_i16_array,
     parse_para_shape_mods,
 };
-use super::formatting::restore_para_meta;
+use super::formatting::{para_shape_mods_affect_text_flow, restore_para_meta};
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
@@ -13,12 +13,10 @@ use crate::model::paragraph::{ParaMeta, Paragraph};
 use crate::renderer::composer::{reflow_line_segs, restamp_indentation, ParagraphBox};
 
 impl DocumentCore {
-    /// 구역의 각주와 미주 번호를 문서 순서대로 다시 매긴다. 한컴처럼 두 종류는 번호를 따로
-    /// 매기고, 미주는 미주 넣기·미주 모양 적용과 같이 구역의 미주 시작 번호에서 시작한다.
+    /// 구역의 각주 번호를 문서 순서대로 1부터 다시 매긴다.
     fn renumber_footnotes_in_section(&mut self, section_idx: usize) {
         let section = &mut self.document.sections[section_idx];
         let mut footnote_number = 1u16;
-        let mut endnote_number = section.section_def.endnote_shape.start_number.max(1);
         for para in &mut section.paragraphs {
             for ctrl in &mut para.controls {
                 match ctrl {
@@ -26,24 +24,13 @@ impl DocumentCore {
                         footnote.number = footnote_number;
                         footnote_number = footnote_number.saturating_add(1);
                     }
-                    Control::Endnote(endnote) => {
-                        endnote.number = endnote_number;
-                        endnote_number = endnote_number.saturating_add(1);
-                    }
                     Control::Table(table) => {
                         for cell in &mut table.cells {
                             for cell_para in &mut cell.paragraphs {
                                 for cell_ctrl in &mut cell_para.controls {
-                                    match cell_ctrl {
-                                        Control::Footnote(footnote) => {
-                                            footnote.number = footnote_number;
-                                            footnote_number = footnote_number.saturating_add(1);
-                                        }
-                                        Control::Endnote(endnote) => {
-                                            endnote.number = endnote_number;
-                                            endnote_number = endnote_number.saturating_add(1);
-                                        }
-                                        _ => {}
+                                    if let Control::Footnote(footnote) = cell_ctrl {
+                                        footnote.number = footnote_number;
+                                        footnote_number = footnote_number.saturating_add(1);
                                     }
                                 }
                             }
@@ -55,16 +42,9 @@ impl DocumentCore {
                         {
                             for text_para in &mut text_box.paragraphs {
                                 for text_ctrl in &mut text_para.controls {
-                                    match text_ctrl {
-                                        Control::Footnote(footnote) => {
-                                            footnote.number = footnote_number;
-                                            footnote_number = footnote_number.saturating_add(1);
-                                        }
-                                        Control::Endnote(endnote) => {
-                                            endnote.number = endnote_number;
-                                            endnote_number = endnote_number.saturating_add(1);
-                                        }
-                                        _ => {}
+                                    if let Control::Footnote(footnote) = text_ctrl {
+                                        footnote.number = footnote_number;
+                                        footnote_number = footnote_number.saturating_add(1);
                                     }
                                 }
                             }
@@ -219,9 +199,13 @@ impl DocumentCore {
         }
 
         self.renumber_footnotes_in_section(section_idx);
+        // 미주 번호는 구역마다 미주 모양의 번호 매기기를 따른다(뒤 구역까지).
+        self.refresh_endnote_numbers(section_idx);
         self.mark_section_dirty(section_idx);
         self.recompose_section(section_idx);
         self.paginate_if_needed();
+        // 각주 번호는 구역의 각주 모양(시작 번호·이어 세기·쪽마다 새로 시작)을 따른다.
+        self.refresh_footnote_numbers(section_idx);
         self.invalidate_page_tree_cache();
 
         self.event_log.push(DocumentEvent::FootnoteDeleted {
@@ -446,12 +430,7 @@ impl DocumentCore {
             restamp_indentation(&mut fn_para.line_segs, old_indent, new_indent);
         }
 
-        if mods.line_spacing.is_some()
-            || mods.line_spacing_type.is_some()
-            || mods.margin_left.is_some()
-            || mods.margin_right.is_some()
-            || mods.indent.is_some()
-        {
+        if para_shape_mods_affect_text_flow(&mods) {
             self.reflow_footnote_paragraph(section_idx, para_idx, control_idx, fn_para_idx);
         }
 

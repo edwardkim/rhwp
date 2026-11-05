@@ -1,0 +1,320 @@
+[
+  {
+    "key": "manifest-prepare",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--prepare"
+    ],
+    "exit": 0,
+    "seconds": 1.45
+  },
+  {
+    "key": "manifest-check",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "6e1de406209ba9a58032f6ca6de45b18aa687d1c"
+    ],
+    "exit": 0,
+    "seconds": 0.79
+  },
+  {
+    "key": "unit-tiers-check",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "node",
+      "scripts/rust-unit-test-tiers.mjs",
+      "--check",
+      "--base-ref",
+      "6e1de406209ba9a58032f6ca6de45b18aa687d1c"
+    ],
+    "exit": 0,
+    "seconds": 10.64
+  },
+  {
+    "key": "release-build",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--release",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "exit": 0,
+    "seconds": 1042.4
+  },
+  {
+    "key": "release-lib-build",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "cargo",
+      "test",
+      "--no-run",
+      "--locked",
+      "--release",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--lib"
+    ],
+    "exit": 0,
+    "seconds": 1003.82
+  },
+  {
+    "key": "release-lib-runtime",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "python3",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/minfont/run.py",
+      "cargo",
+      "test",
+      "--locked",
+      "--release",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--lib",
+      "--",
+      "--test-threads",
+      "8"
+    ],
+    "exit": 0,
+    "seconds": 16.12
+  },
+  {
+    "key": "nextest-build",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--no-run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--tests"
+    ],
+    "exit": 0,
+    "seconds": 663.68
+  },
+  {
+    "key": "nextest-runtime",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "python3",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/minfont/run.py",
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--tests",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exit": 0,
+    "seconds": 642.33
+  },
+  {
+    "key": "native-lib-build",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "cargo",
+      "test",
+      "--no-run",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--lib"
+    ],
+    "exit": 0,
+    "seconds": 300.59
+  },
+  {
+    "key": "native-lib-runtime",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "python3",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/minfont/run.py",
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--lib",
+      "--",
+      "--test-threads",
+      "8"
+    ],
+    "exit": 0,
+    "seconds": 18.47
+  },
+  {
+    "key": "issue_2225_missing_picture_placeholder",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "python3",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/minfont/run.py",
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_2225_missing_picture_placeholder",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "exit": 0,
+    "seconds": 258.58
+  },
+  {
+    "key": "render_p37_direct_pdf_export",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "python3",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/minfont/run.py",
+      "node",
+      "scripts/run-rust-test.mjs",
+      "render_p37_direct_pdf_export",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "exit": 0,
+    "seconds": 15.83
+  },
+  {
+    "key": "fmt",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 25.33
+  },
+  {
+    "key": "diff-check",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.41
+  },
+  {
+    "key": "clippy-root",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 81.67
+  },
+  {
+    "key": "clippy-wasm32",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 75.24
+  },
+  {
+    "key": "workspace-build",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "exit": 0,
+    "seconds": 110.03
+  },
+  {
+    "key": "clippy-workspace-all-targets",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 106.99
+  },
+  {
+    "key": "doc-test",
+    "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+    "command": [
+      "python3",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/minfont/run.py",
+      "cargo",
+      "test",
+      "--locked",
+      "--doc",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "exit": 0,
+    "seconds": 159.44
+  }
+]

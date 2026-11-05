@@ -1,0 +1,16 @@
+{
+  "built": {
+    "rhwp.js": "8ad202184fcb970d908e338761e36863a1f7508806bd426be491bd3cc069a769",
+    "rhwp_bg.wasm": "848fc0c8cdaebbcda9c490e6799ad983af6c17c61eb9209ce9efc39e7d54217c"
+  },
+  "artifacts": [
+    {
+      "url": "http://127.0.0.1:7746/@fs/home/edward/mygithub/rhwp-worktrees/review-next10-current-base-compat/pkg/rhwp.js",
+      "status": 200,
+      "sha256": "3c3fd06567f417d8027b62fa4b59eccfa13bfe0e35717526afa78deb9baf5a26",
+      "servedSourceSha256": "3c3fd06567f417d8027b62fa4b59eccfa13bfe0e35717526afa78deb9baf5a26",
+      "bytes": 2997720
+    }
+  ],
+  "wasmBuildManifest": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/merge8630-wasm-manifest.json"
+}

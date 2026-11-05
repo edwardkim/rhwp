@@ -1,0 +1,1543 @@
+{
+  "fonttools_version": "4.62.1",
+  "native_custom_byte_limit": 67108864,
+  "font_files_are_not_redistributed": true,
+  "profiles": {
+    "borders": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "outline": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "equal-height": {
+      "requested_families": [
+        "HY신명조,함초롬바탕",
+        "HY헤드라인M",
+        "Palatino Linotype",
+        "맑은 고딕",
+        "바탕,한컴바탕",
+        "한컴바탕",
+        "함초롬바탕",
+        "휴먼명조"
+      ],
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/HCRBatang.ttf",
+          "bytes": 494216,
+          "sha256": "5c6b0f3007e6ae85f26d4b09a692782a5abb06c0895edd55256115cc5e772a52",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+            "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/HaansoftBatang.ttf",
+          "bytes": 921880,
+          "sha256": "cea00cfd2a69439c5aa51c94c95b7d989f62529b3e1006f610d2b07c24cb675d",
+          "families": [
+            "Haansoft Batang",
+            "한컴바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+            "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/Batang.ttf",
+          "bytes": 405704,
+          "sha256": "f512081e9e859f5fbbda93fe81f617ddde0832851384f45d09c54d9d11bca353",
+          "families": [
+            "Batang",
+            "바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/mnt/c/Windows/Fonts/batang.ttc",
+            "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2MJSM.TTF",
+          "bytes": 5410040,
+          "sha256": "f78f538885b29f956cf84286e430898462d11430604625857ad587c0ea73925b",
+          "families": [
+            "HYSinMyeongJo-Medium",
+            "HY신명조"
+          ]
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/H2HDRM.TTF",
+          "bytes": 911040,
+          "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5",
+          "families": [
+            "HYHeadLine M",
+            "HY헤드라인M"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/pala.ttf",
+          "bytes": 472284,
+          "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "families": [
+            "Palatino Linotype"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/malgun.ttf",
+          "bytes": 13459196,
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "families": [
+            "Malgun Gothic",
+            "맑은 고딕"
+          ]
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HMKMM.TTF",
+          "bytes": 1820732,
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "families": [
+            "휴먼명조"
+          ]
+        }
+      ],
+      "total_bytes": 23895092
+    },
+    "equal-width": {
+      "requested_families": [
+        "HY신명조,함초롬바탕",
+        "HY헤드라인M",
+        "Palatino Linotype",
+        "맑은 고딕",
+        "바탕,한컴바탕",
+        "한컴바탕",
+        "함초롬바탕",
+        "휴먼명조"
+      ],
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/HCRBatang.ttf",
+          "bytes": 494216,
+          "sha256": "5c6b0f3007e6ae85f26d4b09a692782a5abb06c0895edd55256115cc5e772a52",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+            "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/HaansoftBatang.ttf",
+          "bytes": 921880,
+          "sha256": "cea00cfd2a69439c5aa51c94c95b7d989f62529b3e1006f610d2b07c24cb675d",
+          "families": [
+            "Haansoft Batang",
+            "한컴바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+            "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/Batang.ttf",
+          "bytes": 405704,
+          "sha256": "f512081e9e859f5fbbda93fe81f617ddde0832851384f45d09c54d9d11bca353",
+          "families": [
+            "Batang",
+            "바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/mnt/c/Windows/Fonts/batang.ttc",
+            "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2MJSM.TTF",
+          "bytes": 5410040,
+          "sha256": "f78f538885b29f956cf84286e430898462d11430604625857ad587c0ea73925b",
+          "families": [
+            "HYSinMyeongJo-Medium",
+            "HY신명조"
+          ]
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/H2HDRM.TTF",
+          "bytes": 911040,
+          "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5",
+          "families": [
+            "HYHeadLine M",
+            "HY헤드라인M"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/pala.ttf",
+          "bytes": 472284,
+          "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "families": [
+            "Palatino Linotype"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/malgun.ttf",
+          "bytes": 13459196,
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "families": [
+            "Malgun Gothic",
+            "맑은 고딕"
+          ]
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HMKMM.TTF",
+          "bytes": 1820732,
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "families": [
+            "휴먼명조"
+          ]
+        }
+      ],
+      "total_bytes": 23895092
+    },
+    "uneven-height": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "uneven-width": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "footnote-shape": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "drop-cap": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "endnote-restart5": {
+      "requested_families": [
+        "함초롬돋움",
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HANDotum.ttf",
+          "bytes": 22249768,
+          "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+          "families": [
+            "HCR Dotum",
+            "함초롬돋움"
+          ]
+        }
+      ],
+      "total_bytes": 50662564
+    },
+    "endnote-continue": {
+      "requested_families": [
+        "함초롬돋움",
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HANDotum.ttf",
+          "bytes": 22249768,
+          "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+          "families": [
+            "HCR Dotum",
+            "함초롬돋움"
+          ]
+        }
+      ],
+      "total_bytes": 50662564
+    },
+    "endnote-new20": {
+      "requested_families": [
+        "함초롬돋움",
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HANDotum.ttf",
+          "bytes": 22249768,
+          "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+          "families": [
+            "HCR Dotum",
+            "함초롬돋움"
+          ]
+        }
+      ],
+      "total_bytes": 50662564
+    },
+    "paragraph-heads": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "table-formula-easy": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "table-formula-hancom-result": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "table-formula-stale": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "table-formula-cycles": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "endnote-continued-hwp": {
+      "requested_families": [
+        "함초롬돋움",
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HANDotum.ttf",
+          "bytes": 22249768,
+          "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+          "families": [
+            "HCR Dotum",
+            "함초롬돋움"
+          ]
+        }
+      ],
+      "total_bytes": 50662564
+    },
+    "endnote-continued-hwpx": {
+      "requested_families": [
+        "함초롬돋움",
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HANDotum.ttf",
+          "bytes": 22249768,
+          "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+          "families": [
+            "HCR Dotum",
+            "함초롬돋움"
+          ]
+        }
+      ],
+      "total_bytes": 50662564
+    },
+    "endnote-deleted-hwpx": {
+      "requested_families": [
+        "함초롬돋움",
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HANDotum.ttf",
+          "bytes": 22249768,
+          "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+          "families": [
+            "HCR Dotum",
+            "함초롬돋움"
+          ]
+        }
+      ],
+      "total_bytes": 50662564
+    },
+    "endnote-inserted-hwpx": {
+      "requested_families": [
+        "함초롬돋움",
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/HANDotum.ttf",
+          "bytes": 22249768,
+          "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+          "families": [
+            "HCR Dotum",
+            "함초롬돋움"
+          ]
+        }
+      ],
+      "total_bytes": 50662564
+    },
+    "equal-height-edited-hwp": {
+      "requested_families": [
+        "HY신명조",
+        "HY헤드라인M",
+        "Palatino Linotype",
+        "맑은 고딕",
+        "바탕",
+        "한컴바탕",
+        "함초롬바탕",
+        "휴먼명조"
+      ],
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/HCRBatang.ttf",
+          "bytes": 494216,
+          "sha256": "5c6b0f3007e6ae85f26d4b09a692782a5abb06c0895edd55256115cc5e772a52",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+            "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/HaansoftBatang.ttf",
+          "bytes": 921880,
+          "sha256": "cea00cfd2a69439c5aa51c94c95b7d989f62529b3e1006f610d2b07c24cb675d",
+          "families": [
+            "Haansoft Batang",
+            "한컴바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+            "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/Batang.ttf",
+          "bytes": 405704,
+          "sha256": "f512081e9e859f5fbbda93fe81f617ddde0832851384f45d09c54d9d11bca353",
+          "families": [
+            "Batang",
+            "바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/mnt/c/Windows/Fonts/batang.ttc",
+            "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2MJSM.TTF",
+          "bytes": 5410040,
+          "sha256": "f78f538885b29f956cf84286e430898462d11430604625857ad587c0ea73925b",
+          "families": [
+            "HYSinMyeongJo-Medium",
+            "HY신명조"
+          ]
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/H2HDRM.TTF",
+          "bytes": 911040,
+          "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5",
+          "families": [
+            "HYHeadLine M",
+            "HY헤드라인M"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/pala.ttf",
+          "bytes": 472284,
+          "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "families": [
+            "Palatino Linotype"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/malgun.ttf",
+          "bytes": 13459196,
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "families": [
+            "Malgun Gothic",
+            "맑은 고딕"
+          ]
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HMKMM.TTF",
+          "bytes": 1820732,
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "families": [
+            "휴먼명조"
+          ]
+        }
+      ],
+      "total_bytes": 23895092
+    },
+    "equal-height-edited-hwpx": {
+      "requested_families": [
+        "HY신명조",
+        "HY헤드라인M",
+        "Palatino Linotype",
+        "맑은 고딕",
+        "바탕",
+        "한컴바탕",
+        "함초롬바탕",
+        "휴먼명조"
+      ],
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/HCRBatang.ttf",
+          "bytes": 494216,
+          "sha256": "5c6b0f3007e6ae85f26d4b09a692782a5abb06c0895edd55256115cc5e772a52",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+            "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/HaansoftBatang.ttf",
+          "bytes": 921880,
+          "sha256": "cea00cfd2a69439c5aa51c94c95b7d989f62529b3e1006f610d2b07c24cb675d",
+          "families": [
+            "Haansoft Batang",
+            "한컴바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+            "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/Batang.ttf",
+          "bytes": 405704,
+          "sha256": "f512081e9e859f5fbbda93fe81f617ddde0832851384f45d09c54d9d11bca353",
+          "families": [
+            "Batang",
+            "바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/mnt/c/Windows/Fonts/batang.ttc",
+            "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2MJSM.TTF",
+          "bytes": 5410040,
+          "sha256": "f78f538885b29f956cf84286e430898462d11430604625857ad587c0ea73925b",
+          "families": [
+            "HYSinMyeongJo-Medium",
+            "HY신명조"
+          ]
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/H2HDRM.TTF",
+          "bytes": 911040,
+          "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5",
+          "families": [
+            "HYHeadLine M",
+            "HY헤드라인M"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/pala.ttf",
+          "bytes": 472284,
+          "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "families": [
+            "Palatino Linotype"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/malgun.ttf",
+          "bytes": 13459196,
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "families": [
+            "Malgun Gothic",
+            "맑은 고딕"
+          ]
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HMKMM.TTF",
+          "bytes": 1820732,
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "families": [
+            "휴먼명조"
+          ]
+        }
+      ],
+      "total_bytes": 23895092
+    },
+    "equal-width-edited-hwp": {
+      "requested_families": [
+        "HY신명조",
+        "HY헤드라인M",
+        "Palatino Linotype",
+        "맑은 고딕",
+        "바탕",
+        "한컴바탕",
+        "함초롬바탕",
+        "휴먼명조"
+      ],
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/HCRBatang.ttf",
+          "bytes": 494216,
+          "sha256": "5c6b0f3007e6ae85f26d4b09a692782a5abb06c0895edd55256115cc5e772a52",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+            "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/HaansoftBatang.ttf",
+          "bytes": 921880,
+          "sha256": "cea00cfd2a69439c5aa51c94c95b7d989f62529b3e1006f610d2b07c24cb675d",
+          "families": [
+            "Haansoft Batang",
+            "한컴바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+            "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/Batang.ttf",
+          "bytes": 405704,
+          "sha256": "f512081e9e859f5fbbda93fe81f617ddde0832851384f45d09c54d9d11bca353",
+          "families": [
+            "Batang",
+            "바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/mnt/c/Windows/Fonts/batang.ttc",
+            "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2MJSM.TTF",
+          "bytes": 5410040,
+          "sha256": "f78f538885b29f956cf84286e430898462d11430604625857ad587c0ea73925b",
+          "families": [
+            "HYSinMyeongJo-Medium",
+            "HY신명조"
+          ]
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/H2HDRM.TTF",
+          "bytes": 911040,
+          "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5",
+          "families": [
+            "HYHeadLine M",
+            "HY헤드라인M"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/pala.ttf",
+          "bytes": 472284,
+          "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "families": [
+            "Palatino Linotype"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/malgun.ttf",
+          "bytes": 13459196,
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "families": [
+            "Malgun Gothic",
+            "맑은 고딕"
+          ]
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HMKMM.TTF",
+          "bytes": 1820732,
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "families": [
+            "휴먼명조"
+          ]
+        }
+      ],
+      "total_bytes": 23895092
+    },
+    "equal-width-edited-hwpx": {
+      "requested_families": [
+        "HY신명조",
+        "HY헤드라인M",
+        "Palatino Linotype",
+        "맑은 고딕",
+        "바탕",
+        "한컴바탕",
+        "함초롬바탕",
+        "휴먼명조"
+      ],
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/HCRBatang.ttf",
+          "bytes": 494216,
+          "sha256": "5c6b0f3007e6ae85f26d4b09a692782a5abb06c0895edd55256115cc5e772a52",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+            "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/HaansoftBatang.ttf",
+          "bytes": 921880,
+          "sha256": "cea00cfd2a69439c5aa51c94c95b7d989f62529b3e1006f610d2b07c24cb675d",
+          "families": [
+            "Haansoft Batang",
+            "한컴바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+            "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/Batang.ttf",
+          "bytes": 405704,
+          "sha256": "f512081e9e859f5fbbda93fe81f617ddde0832851384f45d09c54d9d11bca353",
+          "families": [
+            "Batang",
+            "바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/mnt/c/Windows/Fonts/batang.ttc",
+            "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2MJSM.TTF",
+          "bytes": 5410040,
+          "sha256": "f78f538885b29f956cf84286e430898462d11430604625857ad587c0ea73925b",
+          "families": [
+            "HYSinMyeongJo-Medium",
+            "HY신명조"
+          ]
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/H2HDRM.TTF",
+          "bytes": 911040,
+          "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5",
+          "families": [
+            "HYHeadLine M",
+            "HY헤드라인M"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/pala.ttf",
+          "bytes": 472284,
+          "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "families": [
+            "Palatino Linotype"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/malgun.ttf",
+          "bytes": 13459196,
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "families": [
+            "Malgun Gothic",
+            "맑은 고딕"
+          ]
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HMKMM.TTF",
+          "bytes": 1820732,
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "families": [
+            "휴먼명조"
+          ]
+        }
+      ],
+      "total_bytes": 23895092
+    },
+    "footnote-shape-applied-hwp": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "footnote-shape-applied-hwpx": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "outline-id2-hwp": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "outline-id2-hwpx": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "paragraph-head-edited-hwp": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "paragraph-head-edited-hwpx": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "paragraph-head-off-hwpx": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "table-formula-easy-edited-hwpx": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "table-formula-recalculated-hwp": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "table-formula-recalculated-hwpx": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "uneven-height-edited-hwp": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "uneven-height-edited-hwpx": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "uneven-width-edited-hwp": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "uneven-width-edited-hwpx": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "footnote-shape-corrected-hwpx": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "pdf-text-paint": {
+      "requested_families": [
+        "Noto Sans KR"
+      ],
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261105-semanticist21-next10/ttfs/opensource/NotoSansKR-Regular.ttf",
+          "bytes": 2519996,
+          "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+          "families": [
+            "Noto Sans KR"
+          ]
+        }
+      ],
+      "total_bytes": 2519996
+    },
+    "pdf-image-patterns": {
+      "requested_families": [],
+      "files": [],
+      "total_bytes": 0
+    },
+    "borders-windows": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "equalize-original": {
+      "requested_families": [
+        "HY신명조",
+        "HY헤드라인M",
+        "Palatino Linotype",
+        "맑은 고딕",
+        "바탕",
+        "한컴바탕",
+        "함초롬바탕",
+        "휴먼명조"
+      ],
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/HCRBatang.ttf",
+          "bytes": 494216,
+          "sha256": "5c6b0f3007e6ae85f26d4b09a692782a5abb06c0895edd55256115cc5e772a52",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+            "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/HaansoftBatang.ttf",
+          "bytes": 921880,
+          "sha256": "cea00cfd2a69439c5aa51c94c95b7d989f62529b3e1006f610d2b07c24cb675d",
+          "families": [
+            "Haansoft Batang",
+            "한컴바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+            "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/Batang.ttf",
+          "bytes": 405704,
+          "sha256": "f512081e9e859f5fbbda93fe81f617ddde0832851384f45d09c54d9d11bca353",
+          "families": [
+            "Batang",
+            "바탕"
+          ],
+          "kind": "local-only unicode subset",
+          "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+          "unicode_union_count": 390,
+          "original": {
+            "path": "/mnt/c/Windows/Fonts/batang.ttc",
+            "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            "face_index": 0
+          }
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/H2MJSM.TTF",
+          "bytes": 5410040,
+          "sha256": "f78f538885b29f956cf84286e430898462d11430604625857ad587c0ea73925b",
+          "families": [
+            "HYSinMyeongJo-Medium",
+            "HY신명조"
+          ]
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/H2HDRM.TTF",
+          "bytes": 911040,
+          "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5",
+          "families": [
+            "HYHeadLine M",
+            "HY헤드라인M"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/pala.ttf",
+          "bytes": 472284,
+          "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "families": [
+            "Palatino Linotype"
+          ]
+        },
+        {
+          "path": "/mnt/c/Windows/Fonts/malgun.ttf",
+          "bytes": 13459196,
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "families": [
+            "Malgun Gothic",
+            "맑은 고딕"
+          ]
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HMKMM.TTF",
+          "bytes": 1820732,
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "families": [
+            "휴먼명조"
+          ]
+        }
+      ],
+      "total_bytes": 23895092
+    },
+    "uneven-height-original": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "uneven-width-original": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    },
+    "footnote-shape-configured-hwpx": {
+      "requested_families": [
+        "함초롬바탕"
+      ],
+      "files": [
+        {
+          "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+          "bytes": 28412796,
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "families": [
+            "HCR Batang",
+            "함초롬바탕"
+          ]
+        }
+      ],
+      "total_bytes": 28412796
+    }
+  },
+  "subset_validation": [
+    {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/HCRBatang.ttf",
+      "bytes": 494216,
+      "sha256": "5c6b0f3007e6ae85f26d4b09a692782a5abb06c0895edd55256115cc5e772a52",
+      "families": [
+        "HCR Batang",
+        "함초롬바탕"
+      ],
+      "kind": "local-only unicode subset",
+      "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+      "unicode_union_count": 390,
+      "original": {
+        "path": "/mnt/c/Windows/Fonts/HANBatang.ttf",
+        "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+        "face_index": 0
+      }
+    },
+    {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/HaansoftBatang.ttf",
+      "bytes": 921880,
+      "sha256": "cea00cfd2a69439c5aa51c94c95b7d989f62529b3e1006f610d2b07c24cb675d",
+      "families": [
+        "Haansoft Batang",
+        "한컴바탕"
+      ],
+      "kind": "local-only unicode subset",
+      "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+      "unicode_union_count": 390,
+      "original": {
+        "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+        "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+        "face_index": 0
+      }
+    },
+    {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/qualified-fonts/Batang.ttf",
+      "bytes": 405704,
+      "sha256": "f512081e9e859f5fbbda93fe81f617ddde0832851384f45d09c54d9d11bca353",
+      "families": [
+        "Batang",
+        "바탕"
+      ],
+      "kind": "local-only unicode subset",
+      "verified_unchanged_outlines_and_hmtx_codepoints": 390,
+      "unicode_union_count": 390,
+      "original": {
+        "path": "/mnt/c/Windows/Fonts/batang.ttc",
+        "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+        "face_index": 0
+      }
+    }
+  ]
+}

@@ -4963,7 +4963,7 @@ impl LayoutEngine {
 
         // 단별 콘텐츠 레이아웃
         let mut paper_images: Vec<RenderNode> = Vec::new();
-        self.build_columns(
+        let body_content_bottom = self.build_columns(
             tree.frame_mut(),
             &mut body_node,
             &mut paper_images,
@@ -5136,6 +5136,7 @@ impl LayoutEngine {
             styles,
             layout,
             bin_data_content,
+            body_content_bottom,
         );
 
         // 꼬리말 + 쪽 번호 (감추기 설정 시 건너뜀)
@@ -5934,7 +5935,16 @@ impl LayoutEngine {
                 mp_node.layer = Some(RenderLayerInfo::new(None, 0, 0).for_master_page());
                 // 바탕쪽 문단 렌더링: 컨트롤(표/도형/그림)은 compute_object_position으로 배치,
                 // 텍스트 문단은 layout_paragraph로 배치
-                let mut mp_y_offset = paper_area.y;
+                // Master-page plain paragraphs belong to the declared text frame,
+                // whose origin is the page's body margin (as for master column
+                // separators). Paper-relative objects retain paper_area below.
+                let text_area = LayoutRect {
+                    x: body_area.x,
+                    y: body_area.y,
+                    width: hwpunit_to_px(mp.text_width as i32, self.dpi),
+                    height: hwpunit_to_px(mp.text_height as i32, self.dpi),
+                };
+                let mut mp_y_offset = text_area.y;
                 for (pi, para) in mp.paragraphs.iter().enumerate() {
                     let has_controls = !para.controls.is_empty();
                     if has_controls {
@@ -6117,7 +6127,7 @@ impl LayoutEngine {
                         // LINE_SEG vpos로 문단 시작 y 결정 (빈 문단 건너뜀 보상)
                         if let Some(first_ls) = para.line_segs.first() {
                             let vpos_y =
-                                paper_area.y + hwpunit_to_px(first_ls.vertical_pos, self.dpi);
+                                text_area.y + hwpunit_to_px(first_ls.vertical_pos, self.dpi);
                             if vpos_y > mp_y_offset {
                                 mp_y_offset = vpos_y;
                             }
@@ -6128,7 +6138,7 @@ impl LayoutEngine {
                             para,
                             Some(&comp),
                             styles,
-                            &paper_area,
+                            &text_area,
                             mp_y_offset,
                             0,
                             usize::MAX - pi,
@@ -6140,7 +6150,7 @@ impl LayoutEngine {
                         // 빈 문단: LINE_SEG vpos로 y 위치 갱신
                         if let Some(first_ls) = para.line_segs.first() {
                             let vpos_y =
-                                paper_area.y + hwpunit_to_px(first_ls.vertical_pos, self.dpi);
+                                text_area.y + hwpunit_to_px(first_ls.vertical_pos, self.dpi);
                             let lh = hwpunit_to_px(first_ls.line_height, self.dpi);
                             let ls = hwpunit_to_px(first_ls.line_spacing, self.dpi);
                             mp_y_offset = (vpos_y + lh + ls).max(mp_y_offset);
@@ -6512,6 +6522,7 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         layout: &PageLayoutInfo,
         bin_data_content: &[BinDataContent],
+        body_content_bottom: f64,
     ) {
         let mut footnote_layout = layout.clone();
         if !page_content.footnotes.is_empty() {
@@ -6523,6 +6534,9 @@ impl LayoutEngine {
                 layout.body_area.width,
             );
             footnote_layout.update_footnote_area(fn_height);
+            if footnote_shape.print_inline_after_text {
+                footnote_layout.footnote_area.y = body_content_bottom;
+            }
         }
 
         if !page_content.footnotes.is_empty() {
@@ -6746,7 +6760,8 @@ impl LayoutEngine {
         layout: &PageLayoutInfo,
         outline_numbering_id: u16,
         wrap_around_paras: &[super::pagination::WrapAroundPara],
-    ) {
+    ) -> f64 {
+        let mut body_flow_bottom = layout.body_area.y;
         let mut prev_zone_y_end: f64 = 0.0;
         let mut current_zone_start_y: f64 = 0.0;
         let mut last_zone_y_offset: f64 = -1.0;
@@ -7043,6 +7058,9 @@ impl LayoutEngine {
                     self.dpi,
                 ));
             // 수용 판정과 같은 저장 내용 하단일 때만 새 텍스트 영역과 겹치는 뒤 여백을 제외한다.
+            if body_content_bottom.is_finite() {
+                body_flow_bottom = body_flow_bottom.max(body_content_bottom);
+            }
             let closing_content_bottom = (blank_band_tail.is_none() && apply_trailing_ls_subtract)
                 .then(|| {
                     let PageItem::FullParagraph { para_index } = col_content.items.last()? else {
@@ -7180,6 +7198,7 @@ impl LayoutEngine {
                 prev_zone_sep_y_end,
             );
         }
+        body_flow_bottom
     }
 
     /// [Task #866 v2 Stage 3] 단일 zone 의 단 구분선을 emit.
@@ -7764,13 +7783,19 @@ impl LayoutEngine {
                 } else {
                     // 이어받는 외곽선은 필요한 면만 그린다. 채우기는 아래 문단별 paint가 소유한다.
                     let mut push_border_line =
-                        |border: &BorderLine, x1: f64, y1: f64, x2: f64, y2: f64| {
+                        |border: &BorderLine,
+                         far_side: bool,
+                         x1: f64,
+                         y1: f64,
+                         x2: f64,
+                         y2: f64| {
                             if !super::layout::border_rendering::text_border_is_drawn(border) {
                                 return;
                             }
-                            let nodes = super::layout::border_rendering::create_border_line_nodes(
-                                tree, border, x1, y1, x2, y2,
-                            );
+                            let nodes =
+                                super::layout::border_rendering::create_box_border_line_nodes(
+                                    tree, border, far_side, x1, y1, x2, y2,
+                                );
                             for node in nodes {
                                 border_nodes.push(node);
                             }
@@ -7780,13 +7805,13 @@ impl LayoutEngine {
                     let y_top = rect_y;
                     let y_bot = rect_y + rect_h;
                     if let Some(borders) = borders {
-                        push_border_line(&borders[0], x_left, y_top, x_left, y_bot);
-                        push_border_line(&borders[1], x_right, y_top, x_right, y_bot);
+                        push_border_line(&borders[0], false, x_left, y_top, x_left, y_bot);
+                        push_border_line(&borders[1], true, x_right, y_top, x_right, y_bot);
                         if !skip_top {
-                            push_border_line(&borders[2], x_left, y_top, x_right, y_top);
+                            push_border_line(&borders[2], false, x_left, y_top, x_right, y_top);
                         }
                         if !skip_bottom {
-                            push_border_line(&borders[3], x_left, y_bot, x_right, y_bot);
+                            push_border_line(&borders[3], true, x_left, y_bot, x_right, y_bot);
                         }
                     }
                 }
@@ -12812,25 +12837,22 @@ impl LayoutEngine {
         );
         let center_y = y_offset + geometry.center_offset;
         if geometry.width > 0.0 && super::note_separator::has_ink(color) {
-            let (dash, line_type) = super::line_style::hwp_line_type(line_type);
             let sep_length = note_separator_length_px(separator_length, col_area.width, self.dpi);
-            let line_id = tree.next_id();
-            let sep_line = LineNode::new(
-                col_area.x,
-                center_y,
-                col_area.x + sep_length,
-                center_y,
-                LineStyle {
-                    color,
-                    width: geometry.width,
-                    dash,
-                    line_type,
-                    ..Default::default()
-                },
-            );
-            let sep_bbox = sep_line.ink_bbox();
-            let line_node = RenderNode::new(line_id, RenderNodeType::Line(sep_line), sep_bbox);
-            col_node.children.push(line_node);
+            let border = crate::model::style::BorderLine {
+                line_type: border_rendering::border_line_type_from_code(line_type),
+                width: line_width_raw,
+                color,
+            };
+            col_node
+                .children
+                .extend(border_rendering::create_border_line_nodes(
+                    tree,
+                    &border,
+                    col_area.x,
+                    center_y,
+                    col_area.x + sep_length,
+                    center_y,
+                ));
         }
         y_offset + geometry.advance
     }

@@ -1,0 +1,40 @@
+{
+  "time": "2026-11-05T08:22:10.006604+00:00",
+  "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+  "status": "all_required_local_gates_passed",
+  "rust_steps": 19,
+  "release_lib": {
+    "passed": 3983,
+    "ignored": 12
+  },
+  "nextest": {
+    "run": 12629,
+    "passed": 12629,
+    "skipped": 45,
+    "summary": "     Summary [ 641.154s] 12629 tests run: 12629 passed (3 slow), 45 skipped"
+  },
+  "native_official": {
+    "passed": 4064,
+    "ignored": 12
+  },
+  "native_parts": {
+    "native-lib-runtime": {
+      "passed": 4040,
+      "ignored": 12
+    },
+    "issue_2225_missing_picture_placeholder": {
+      "passed": 2,
+      "ignored": 0,
+      "filtered_or_skipped": 289
+    },
+    "render_p37_direct_pdf_export": {
+      "passed": 22,
+      "ignored": 0,
+      "filtered_or_skipped": 264
+    }
+  },
+  "prior_failed_wmf_case": [
+    "        PASS [   2.524s] ( 9084/12629) rhwp::regression_suite_017 issue_6612_pdf_keeps_sub_svg_images::issue_6612_sample14_wmf_pictures_reach_pdf"
+  ],
+  "documentation_only_after_source": true
+}

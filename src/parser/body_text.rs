@@ -368,6 +368,18 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
                 };
                 let ctrl_data = ctrl_data_record.map(|r| r.data.clone());
 
+                // 첫 글자 장식 방식은 그리기 개체 CTRL_DATA의 파라미터 셋에 있다(HWPX dropcapstyle).
+                if let Some(style) = ctrl_data
+                    .as_deref()
+                    .and_then(crate::model::shape::DropCapStyle::from_hwp5_ctrl_data)
+                {
+                    match &mut control {
+                        Control::Shape(shape) => shape.common_mut().drop_cap_style = style,
+                        Control::Picture(picture) => picture.common.drop_cap_style = style,
+                        _ => {}
+                    }
+                }
+
                 // CTRL_DATA에서 필드 이름 추출 → Field.ctrl_data_name에 설정
                 if let Control::Field(ref mut field) = control {
                     if let Some(ref cd) = ctrl_data {

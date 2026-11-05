@@ -116,7 +116,10 @@ where
             ("textWrap", text_wrap),
             ("textFlow", text_flow),
             ("lock", lock),
-            ("dropcapstyle", "None"),
+            (
+                "dropcapstyle",
+                super::shape::drop_cap_style_str(table.common.drop_cap_style),
+            ),
             ("pageBreak", page_break),
             ("repeatHeader", repeat_header),
             ("rowCnt", &row_cnt),

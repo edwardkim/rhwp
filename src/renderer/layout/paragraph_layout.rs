@@ -14,7 +14,7 @@ use super::super::{
     format_number, hwpunit_to_px, px_to_hwpunit, AutoNumberCounter, NumberFormat as NumFmt,
     ShapeStyle, TabStop, TextStyle,
 };
-use super::border_rendering::{create_border_line_nodes, text_border_is_drawn};
+use super::border_rendering::{create_box_border_line_nodes, text_border_is_drawn};
 use super::terminal_tracking::terminal_tracking_for_alignment;
 use super::text_measurement::{
     compute_char_positions, estimate_text_width, estimate_text_width_exact,
@@ -7911,6 +7911,9 @@ impl LayoutEngine {
                             )
                         });
                     let num_width = marker_text_width(num_text, &num_style);
+                    // Paragraph numbering precedes the first inline reference.
+                    // The reference advances body text, not the paragraph head.
+                    let marker_x = x - endnote_marker_x_advance + geometry.marker_dx_px;
                     let num_id = tree.next_id();
                     let num_node = if let Some(image) = picture_bullet::image(
                         styles,
@@ -7923,12 +7926,7 @@ impl LayoutEngine {
                         RenderNode::new(
                             num_id,
                             RenderNodeType::Image(image),
-                            BoundingBox::new(
-                                x + geometry.marker_dx_px,
-                                y,
-                                num_style.font_size,
-                                num_style.font_size,
-                            ),
+                            BoundingBox::new(marker_x, y, num_style.font_size, num_style.font_size),
                         )
                     } else {
                         RenderNode::new(
@@ -7953,12 +7951,7 @@ impl LayoutEngine {
                                 layout_positions: None,
                                 display_text: None,
                             }),
-                            BoundingBox::new(
-                                x + geometry.marker_dx_px,
-                                text_y,
-                                num_width,
-                                line_height,
-                            ),
+                            BoundingBox::new(marker_x, text_y, num_width, line_height),
                         )
                     };
                     line_node.children.push(num_node);
@@ -9812,8 +9805,16 @@ impl LayoutEngine {
                             if !text_border_is_drawn(&bs.borders[bi]) {
                                 continue;
                             }
-                            let nodes =
-                                create_border_line_nodes(tree, &bs.borders[bi], lx1, ly1, lx2, ly2);
+                            let far_side = matches!(bi, 1 | 3);
+                            let nodes = create_box_border_line_nodes(
+                                tree,
+                                &bs.borders[bi],
+                                far_side,
+                                lx1,
+                                ly1,
+                                lx2,
+                                ly2,
+                            );
                             for n in nodes {
                                 line_node.children.push(n);
                             }

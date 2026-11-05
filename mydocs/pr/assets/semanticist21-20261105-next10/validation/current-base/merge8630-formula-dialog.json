@@ -1,0 +1,57 @@
+{
+  "setup": {
+    "pageCount": 1,
+    "context": {
+      "hasDocument": true,
+      "hasSelection": false,
+      "hasCopiedFormat": false,
+      "inTable": true,
+      "inCellSelectionMode": false,
+      "hasMultiCellSelection": false,
+      "hasTableTransposeClipboard": false,
+      "inTableObjectSelection": false,
+      "inPictureObjectSelection": false,
+      "inField": false,
+      "isEditable": true,
+      "editMode": "normal",
+      "isFormMode": false,
+      "canEditFormField": false,
+      "canUndo": false,
+      "canRedo": false,
+      "zoom": 1,
+      "showControlCodes": false,
+      "showParagraphMarks": false,
+      "isDirty": false,
+      "sourceFormat": "hwpx"
+    },
+    "before": "10"
+  },
+  "results": [
+    {
+      "step": "real table:formula dispatcher LOG(100)",
+      "value": "2",
+      "labels": [
+        [
+          "LN",
+          "LN - 자연로그"
+        ],
+        [
+          "LOG",
+          "LOG - 상용로그"
+        ]
+      ]
+    },
+    {
+      "step": "undo redo through real app dispatcher",
+      "pass": true
+    },
+    {
+      "step": "LN(EXP(1)) actual dialog commit",
+      "value": "1"
+    },
+    {
+      "step": "invalid LN leaves cell unchanged and cancellation closes modal",
+      "error": "⚠ 계산식 실행 실패: 렌더링 오류: 계산식 오류: 계산 결과가 유한한 숫자가 아닙니다"
+    }
+  ]
+}

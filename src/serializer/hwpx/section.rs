@@ -295,20 +295,7 @@ fn page_starts_on_str(page_num_type: u8) -> &'static str {
 
 /// [#1984] noteLine `type` u8 → HWPX 문자열 (parser noteLine type 역매핑).
 fn note_line_type_str(t: u8) -> &'static str {
-    match t {
-        0 => "NONE",
-        2 => "DASH",
-        3 => "DOT",
-        4 => "DASH_DOT",
-        5 => "DASH_DOT_DOT",
-        6 => "LONG_DASH",
-        7 => "CIRCLE",
-        8 => "DOUBLE_SLIM",
-        9 => "SLIM_THICK",
-        10 => "THICK_SLIM",
-        11 => "SLIM_THICK_SLIM",
-        _ => "SOLID",
-    }
+    super::header::border_line_type_str(super::header::border_line_type_from_code(t))
 }
 
 /// [#1984] separator_color(0xBBGGRR LE) → "#RRGGBB" (parser noteLine color 역매핑).
@@ -4720,7 +4707,7 @@ where
         storage,
         format_args!(
             concat!(
-                r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="{tf}" lock="{lock}" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}"{extra}>"#,
+                r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="{tf}" lock="{lock}" dropcapstyle="{dcs}" href="" groupLevel="{gl}" instid="{iid}"{extra}>"#,
                 "{block}",
                 "{geometry}",
                 r#"<hp:sz width="{w}" height="{h}" widthRelTo="{wrt}" heightRelTo="{hrt}" protect="{prot}"/>"#,
@@ -4736,6 +4723,7 @@ where
             nt = super::shape::numbering_type_str(c.numbering_type),
             // [#2840] lock(개체 잠금) — IR 보존 값 방출 (종전 "0" 하드코딩).
             lock = if c.locked { "1" } else { "0" },
+            dcs = super::shape::drop_cap_style_str(c.drop_cap_style),
             gl = group_level,
             iid = instid,
             tw = text_wrap_to_hwpx(c.text_wrap),
@@ -5152,6 +5140,7 @@ where
 
     // [#2840] 개체 잠금(lock) — 종전 하드코딩 "0" 제거, IR(common.locked) 값을 방출.
     let lock = if c.locked { "1" } else { "0" };
+    let drop_cap = super::shape::drop_cap_style_str(c.drop_cap_style);
 
     // [#2778] 크기 기준(widthRelTo/heightRelTo) — 종전 "ABSOLUTE" 리터럴은 파서
     // (parse_object_layout_child:3023)가 IR 에 적재한 단/열/쪽 상대 기준을 저장에서만
@@ -5166,7 +5155,7 @@ where
     xml_value(
         storage,
         format_args!(
-            r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="{lock}" dropcapstyle="None" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="{width_rel_to}" height="{height}" heightRelTo="{height_rel_to}"{size_protect}/><hp:pos treatAsChar="{treat}" affectLSpacing="{affect_line_spacing}" flowWithText="{flow_with_text}" allowOverlap="{allow_overlap}" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
+            r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="{lock}" dropcapstyle="{drop_cap}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="{width_rel_to}" height="{height}" heightRelTo="{height_rel_to}"{size_protect}/><hp:pos treatAsChar="{treat}" affectLSpacing="{affect_line_spacing}" flowWithText="{flow_with_text}" allowOverlap="{allow_overlap}" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
             text_wrap_to_hwpx(c.text_wrap),
             text_flow_to_hwpx(c.text_flow),
             vert_rel_to_hwpx(c.vert_rel_to),

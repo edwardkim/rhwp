@@ -203,6 +203,14 @@ fn footnote_composed_with_number(
     }
     let mut numbered = composed.clone();
     let line = numbered.lines.first_mut()?;
+    let number_marker = para.controls.iter().find_map(|control| match control {
+        Control::AutoNumber(auto)
+            if auto.number_type == crate::model::control::AutoNumberType::Footnote =>
+        {
+            auto.superscript.then_some(auto.assigned_number)
+        }
+        _ => None,
+    });
     let positions = para.control_text_positions();
     let placeholder = para
         .controls
@@ -235,16 +243,19 @@ fn footnote_composed_with_number(
                 let mut before = run.clone();
                 before.text = chars[..local].iter().collect();
                 before.display_text = None;
+                before.footnote_marker = None;
                 pieces.push(before);
             }
             let mut number = run.clone();
             number.text = " ".to_string();
             number.display_text = Some(number_text.trim_end().to_string());
+            number.footnote_marker = number_marker;
             pieces.push(number);
             if local + 1 < chars.len() {
                 let mut after = run;
                 after.text = chars[local + 1..].iter().collect();
                 after.display_text = None;
+                after.footnote_marker = None;
                 pieces.push(after);
             }
             for (offset, piece) in pieces.into_iter().enumerate() {
@@ -256,7 +267,7 @@ fn footnote_composed_with_number(
             number.text = number_text.to_string();
             number.char_style_id = base_cs_id;
             number.display_text = None;
-            number.footnote_marker = None;
+            number.footnote_marker = number_marker;
             number.char_overlap = None;
             number.inserted_control_text = true;
             line.runs.insert(0, number);
@@ -1568,22 +1579,23 @@ impl LayoutEngine {
             let line_width = border_width_to_px(shape.separator_line_width).max(0.5);
 
             if crate::renderer::note_separator::has_ink(shape.separator_color) {
-                let sep_id = tree.next_id();
-                let sep_line = LineNode::new(
-                    fn_area.x,
-                    y,
-                    fn_area.x + sep_length,
-                    y,
-                    LineStyle {
-                        color: shape.separator_color,
-                        width: line_width,
-                        dash: StrokeDash::Solid,
-                        ..Default::default()
-                    },
-                );
-                let sep_bbox = sep_line.ink_bbox();
-                let sep_node = RenderNode::new(sep_id, RenderNodeType::Line(sep_line), sep_bbox);
-                fn_node.children.push(sep_node);
+                let border = crate::model::style::BorderLine {
+                    line_type: super::border_rendering::border_line_type_from_code(
+                        shape.separator_line_type,
+                    ),
+                    width: shape.separator_line_width,
+                    color: shape.separator_color,
+                };
+                fn_node
+                    .children
+                    .extend(super::border_rendering::create_border_line_nodes(
+                        tree,
+                        &border,
+                        fn_area.x,
+                        y,
+                        fn_area.x + sep_length,
+                        y,
+                    ));
             }
             y += line_width;
 

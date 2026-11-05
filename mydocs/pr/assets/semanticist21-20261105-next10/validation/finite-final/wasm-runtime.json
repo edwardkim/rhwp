@@ -1,0 +1,95 @@
+[
+  {
+    "key": "wasm-api",
+    "exit": 0,
+    "seconds": 1.16,
+    "command": [
+      "node",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/wasm-api-probe-finite.mjs"
+    ]
+  },
+  {
+    "key": "formula-dialog",
+    "exit": 0,
+    "seconds": 5.68,
+    "command": [
+      "node",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/formula-dialog-finite.mjs",
+      "--mode=headless"
+    ]
+  },
+  {
+    "key": "typescript",
+    "exit": 0,
+    "seconds": 1.37,
+    "command": [
+      "npx",
+      "tsc",
+      "--noEmit"
+    ]
+  },
+  {
+    "key": "studio-tests",
+    "exit": 0,
+    "seconds": 20.49,
+    "command": [
+      "npm",
+      "--prefix",
+      "rhwp-studio",
+      "test"
+    ]
+  },
+  {
+    "key": "outline-canvaskit",
+    "exit": 0,
+    "seconds": 4.51,
+    "command": [
+      "node",
+      "e2e/char-outline-canvaskit.test.mjs",
+      "--mode=headless"
+    ]
+  },
+  {
+    "key": "canvaskit-common-path",
+    "exit": 0,
+    "seconds": 5.03,
+    "command": [
+      "node",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/canvaskit-common-path-finite.mjs",
+      "--mode=headless"
+    ]
+  },
+  {
+    "key": "actual-studio",
+    "exit": 0,
+    "seconds": 13.66,
+    "command": [
+      "node",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/actual-studio-finite.mjs",
+      "--mode=headless"
+    ]
+  },
+  {
+    "key": "bindings-contract",
+    "exit": 0,
+    "seconds": 0.13,
+    "command": [
+      "node",
+      "--test",
+      "scripts/frontend-wasm-bindings.test.mjs",
+      "scripts/frontend-editor-embed.test.mjs"
+    ]
+  },
+  {
+    "key": "studio-build",
+    "exit": 0,
+    "seconds": 5.3,
+    "command": [
+      "npm",
+      "--prefix",
+      "rhwp-studio",
+      "run",
+      "build"
+    ]
+  }
+]

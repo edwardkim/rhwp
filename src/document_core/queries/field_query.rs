@@ -2337,7 +2337,7 @@ impl DocumentCore {
         find_field_ctrl_idx_in_para(para, char_offset)
     }
 
-    fn next_click_here_field_id(&self) -> u32 {
+    pub(crate) fn next_click_here_field_id(&self) -> u32 {
         let mut max_id = 0u32;
         for section in &self.document.sections {
             for para in &section.paragraphs {
@@ -2465,28 +2465,6 @@ fn insert_click_here_field_in_para(
     name: &str,
     editable: bool,
 ) -> Result<usize, HwpError> {
-    let text_len = para.text.chars().count();
-    let start = char_offset.min(text_len);
-    let gaps = raw_slot_gaps(para)?;
-    // 새 BEGIN·END는 시작 글자 바로 앞, 그 갭의 끝에 놓인다. 거기까지의 슬롯에서
-    // 거기까지 끝난 누름틀의 END를 빼면 앞에 남는 컨트롤 수다.
-    let insert_pos = gaps[start].1;
-    let insert_idx = gaps[..=start]
-        .iter()
-        .map(|&(gap_start, gap_end)| ((gap_end - gap_start) / 8) as usize)
-        .sum::<usize>()
-        - para
-            .field_ranges
-            .iter()
-            .filter(|range| range.end_char_idx <= start)
-            .count();
-
-    for range in &mut para.field_ranges {
-        if range.control_idx >= insert_idx {
-            range.control_idx += 1;
-        }
-    }
-
     let field = Field {
         field_type: FieldType::ClickHere,
         // [#1434] 이름은 ctrl_data_name(CTRL_DATA 0x57)으로 별도 저장하므로 command 에
@@ -2511,6 +2489,37 @@ fn insert_click_here_field_in_para(
         guide_residue: None,
         hyperlink_format: None,
     };
+
+    insert_field_in_para(para, char_offset, field).map(|(start, _)| start)
+}
+
+/// 문단의 글자 자리에 빈 필드를 넣고 (시작 글자, 필드 컨트롤 번호)를 돌려준다.
+pub(crate) fn insert_field_in_para(
+    para: &mut Paragraph,
+    char_offset: usize,
+    field: Field,
+) -> Result<(usize, usize), HwpError> {
+    let text_len = para.text.chars().count();
+    let start = char_offset.min(text_len);
+    let gaps = raw_slot_gaps(para)?;
+    // 새 BEGIN·END는 시작 글자 바로 앞, 그 갭의 끝에 놓인다. 거기까지의 슬롯에서
+    // 거기까지 끝난 누름틀의 END를 빼면 앞에 남는 컨트롤 수다.
+    let insert_pos = gaps[start].1;
+    let insert_idx = gaps[..=start]
+        .iter()
+        .map(|&(gap_start, gap_end)| ((gap_end - gap_start) / 8) as usize)
+        .sum::<usize>()
+        - para
+            .field_ranges
+            .iter()
+            .filter(|range| range.end_char_idx <= start)
+            .count();
+
+    for range in &mut para.field_ranges {
+        if range.control_idx >= insert_idx {
+            range.control_idx += 1;
+        }
+    }
 
     para.controls.insert(insert_idx, Control::Field(field));
     if para.ctrl_data_records.len() < insert_idx {
@@ -2541,7 +2550,7 @@ fn insert_click_here_field_in_para(
     para.char_count = gaps[text_len].1 + 16 + 1;
     para.invalidate_layout_inputs();
 
-    Ok(start)
+    Ok((start, insert_idx))
 }
 
 /// 문단에서 커서 위치의 ClickHere 필드 컨트롤 인덱스를 반환한다.
@@ -2579,6 +2588,14 @@ fn find_field_ctrl_idx_in_para(para: &Paragraph, char_offset: usize) -> Option<u
 fn remove_field_in_para(para: &mut Paragraph, char_offset: usize) -> Result<usize, HwpError> {
     let control_idx = find_field_ctrl_idx_in_para(para, char_offset)
         .ok_or_else(|| HwpError::InvalidField("커서 위치에 누름틀 필드 없음".into()))?;
+    remove_field_control_in_para(para, control_idx)
+}
+
+/// 문단의 필드 컨트롤 하나를 BEGIN·END 슬롯과 내용 글자째 지운다.
+pub(crate) fn remove_field_control_in_para(
+    para: &mut Paragraph,
+    control_idx: usize,
+) -> Result<usize, HwpError> {
     let gaps = raw_slot_gaps(para)?;
     let range_idx = para
         .field_ranges

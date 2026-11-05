@@ -3,7 +3,7 @@
 use super::StrokeDash;
 
 mod border;
-pub(crate) use border::border_dash;
+pub(crate) use border::{border_circle, border_dash};
 
 // 독립 한컴 Print의 pen 해상도. HWPUNIT에서 반올림한 뒤 출력 좌표로 변환한다.
 const HANCOM_PRINT_PEN_DPI: f64 = 600.0;
@@ -20,6 +20,25 @@ pub(crate) fn shape_pen_width_to_px(width_hu: i32, line_type: u8) -> f64 {
     let fill_hu = (f64::from(width_hu.max(0)) / quantum_hu).round().max(1.0) * quantum_hu;
     let outline_hu = if line_type > 1 { quantum_hu } else { 0.0 };
     (fill_hu + outline_hu) * STYLE_DPI / 7200.0
+}
+
+/// 글자 외곽선(1 실선, 2 점선, 3 굵은 실선, 4 파선, 5 일점쇄선, 6 이점쇄선)의 획 굵기와
+/// 반복 구간(px). 0이면 외곽선이 없다.
+///
+/// 한/글 Mac 12.30 Print PDF는 글자 크기와 관계없이 1/600 inch pen으로 윤곽만 긋고
+/// (굵은 실선만 2칸), 반복 구간도 같은 격자 칸 수다. 끝과 꺾임은 둥글고 안은 채우지 않는다.
+pub(crate) fn char_outline_stroke(outline_type: u8) -> Option<(f64, Vec<f64>)> {
+    let (width, intervals): (f64, &[f64]) = match outline_type {
+        0 => return None,
+        2 => (1.0, &[3.0, 3.0]),
+        3 => (2.0, &[]),
+        4 => (1.0, &[14.0, 6.0]),
+        5 => (1.0, &[10.0, 6.0, 3.0, 6.0]),
+        6 => (1.0, &[11.0, 3.0, 3.0, 3.0, 3.0, 3.0]),
+        _ => (1.0, &[]),
+    };
+    let unit = STYLE_DPI / HANCOM_PRINT_PEN_DPI;
+    Some((width * unit, intervals.iter().map(|v| v * unit).collect()))
 }
 
 impl StrokeDash {

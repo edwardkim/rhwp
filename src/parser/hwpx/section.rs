@@ -1455,24 +1455,9 @@ fn parse_note_pr_children(
                                     }
                                 }
                                 b"type" => {
-                                    if let Ok(s) =
-                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
-                                    {
-                                        shape.separator_line_type = match s {
-                                            "SOLID" => 1,
-                                            "DASH" => 2,
-                                            "DOT" => 3,
-                                            "DASH_DOT" => 4,
-                                            "DASH_DOT_DOT" => 5,
-                                            "LONG_DASH" => 6,
-                                            "CIRCLE" => 7,
-                                            "DOUBLE_SLIM" => 8,
-                                            "SLIM_THICK" => 9,
-                                            "THICK_SLIM" => 10,
-                                            "SLIM_THICK_SLIM" => 11,
-                                            "NONE" => 0,
-                                            _ => 1, // default SOLID
-                                        };
+                                    if std::str::from_utf8(attr.value.as_ref().as_bytes()).is_ok() {
+                                        shape.separator_line_type =
+                                            super::header::parse_border_line_type_code(&attr);
                                     }
                                 }
                                 b"width" => {
@@ -3828,6 +3813,15 @@ fn parse_object_element_attrs(
             // [#2840] 개체 잠금(lock) — 종전 미파싱으로 <hp:equation> 직렬화 시
             // 항상 "0"으로 되돌아가 원본의 잠금 상태가 유실됐다.
             b"lock" => common.locked = attr_str(&attr) == "1",
+            // 문단 첫 글자 장식 글상자의 장식 방식. 그림(위)과 같이 도형·표·수식도 읽는다.
+            b"dropcapstyle" => {
+                common.drop_cap_style = match attr_str(&attr).as_str() {
+                    "DoubleLine" => crate::model::shape::DropCapStyle::DoubleLine,
+                    "TripleLine" => crate::model::shape::DropCapStyle::TripleLine,
+                    "Margin" => crate::model::shape::DropCapStyle::Margin,
+                    _ => crate::model::shape::DropCapStyle::None,
+                };
+            }
             _ => {}
         }
     }

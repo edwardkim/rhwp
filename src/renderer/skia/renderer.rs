@@ -1848,6 +1848,7 @@ impl SkiaLayerRenderer {
                                     canvas,
                                     !matches!(op, PaintOp::GlyphOutline { .. }) || antialias,
                                     cache_context.policy.image_sampling().options(),
+                                    cache_context.raster_target,
                                 );
                             }
                         }

@@ -1,3 +1,9 @@
+// 검사 유형: 관계형·고정형(합성 replay 계약값); 실물 페이지의 절대 px 핀은 추가하지 않는다.
+// 주석 갱신: 2026-11-05T19:53:05+09:00. 직전 파일 변경: 3ddf77af61b10a9ace10224588ad68841e79b2f1, 2026-11-01T14:26:00+09:00.
+// 시각 측정: 2026-11-05, 96 DPI·2px raw. outline.hwp 전1쪽 Native/fresh WASM 각각 100.00%.
+// PDF 명시 TextPaint 대조군 전7쪽도 양쪽 최저 100.00%; 누락·쪽수 차이 없음. producer d53115fabc92bd392044d9b906c599baddb4368d.
+// 근거: mydocs/pr/assets/semanticist21-20261105-next10/validation/post8622/{summary.json,direct-reading.md}.
+// 원 계약 #3638/c7be19d7d07은 backend replay 검사다. #8369의 독립 Print는 내부 채움 없이 1/600 inch pen을 사용한다.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -909,6 +915,11 @@ function runExecutableTextReplay(op, {
     setAntiAlias(value) {
       events.push({ type: 'paint.antiAlias', value });
     },
+    getStrokeWidth() { return width ?? 0; },
+    getStrokeCap() { return this.strokeCap ?? 'butt'; },
+    setStrokeCap(cap) { this.strokeCap = cap; },
+    setStrokeJoin(join) { this.strokeJoin = join; },
+    setPathEffect() { events.push({ type: 'paint.pathEffect' }); },
     delete() {
       events.push({ type: 'paint.delete', kind, color, width });
     },
@@ -979,6 +990,14 @@ function runExecutableTextReplay(op, {
   const symbolTypeface = symbolGlyphIds ? { face: 'symbol' } : null;
   const renderer = new CanvasKitLayerRendererRuntime({
     Font: FakeFont,
+    StrokeCap: { Round: 'round' },
+    StrokeJoin: { Round: 'round' },
+    PathEffect: {
+      MakeDash(intervals, phase) {
+        events.push({ type: 'pathEffect.create', intervals: [...intervals], phase });
+        return { delete() { events.push({ type: 'pathEffect.delete' }); } };
+      },
+    },
     ParagraphStyle: FakeParagraphStyle,
     ParagraphBuilder: {
       Make(style, fontManager) {
@@ -2547,6 +2566,7 @@ const textEffectReplay = runExecutableTextReplay({
     shadowOffsetX: 2,
     shadowOffsetY: 3,
     outlineType: 1,
+    outlineStroke: { width: 96 / 600, intervals: [] },
     color: '#112233',
   },
 });
@@ -2600,11 +2620,39 @@ assert.deepEqual(
     .map(({ x, y, paint }) => ({ x, y, paint })),
   [
     { x: 2, y: 38, paint: { kind: 'fill', color: '#445566', width: null } },
-    { x: 0, y: 35, paint: { kind: 'fill', color: '#ffffff', width: null } },
-    { x: 0, y: 35, paint: { kind: 'stroke', color: '#112233', width: 0.8 } },
+    { x: 0, y: 35, paint: { kind: 'stroke', color: '#112233', width: 96 / 600 } },
   ],
-  'shadow and outline should replay as positioned fill/stroke passes',
+  'shadow retains its position while the resolved outline strokes a transparent interior',
 );
+assert.equal(textEffectReplay.unsupportedOps.size, 0);
+
+const resolvedDash = { width: 96 / 600, intervals: [3 * 96 / 600, 3 * 96 / 600] };
+const dashedOutlineReplay = runExecutableTextReplay({
+  type: 'textRun', bbox: { x: 0, y: 20, width: 30, height: 20 },
+  text: 'AB', baseline: 15, positions: [0, 12, 24],
+  style: { fontSize: 20, outlineType: 2, outlineStroke: resolvedDash },
+});
+assert.equal(dashedOutlineReplay.error, null);
+assert.equal(dashedOutlineReplay.unsupportedOps.size, 0);
+assert.deepEqual(
+  dashedOutlineReplay.events.find(event => event.type === 'pathEffect.create')?.intervals,
+  resolvedDash.intervals,
+  'the consumer must use the producer physical intervals without font-size scaling',
+);
+assert.equal(dashedOutlineReplay.events.filter(event => event.type === 'canvas.drawGlyphs').length, 1);
+assert.equal(dashedOutlineReplay.events.filter(event => event.type === 'pathEffect.delete').length, 1);
+assert.equal(dashedOutlineReplay.events.some(event => event.type === 'paint.create' && event.color === '#ffffff'), false);
+
+for (const outlineStroke of [undefined, { width: 0, intervals: [] }]) {
+  const unresolvedOutlineReplay = runExecutableTextReplay({
+    type: 'textRun', bbox: { x: 0, y: 20, width: 30, height: 20 },
+    text: 'AB', baseline: 15, positions: [0, 12, 24],
+    style: { fontSize: 20, outlineType: 1, outlineStroke },
+  });
+  assert.equal(unresolvedOutlineReplay.error, null);
+  assert.equal(unresolvedOutlineReplay.unsupportedOps.has('textOutline:missingResolvedStroke'), true);
+  assert.equal(unresolvedOutlineReplay.events.some(event => event.type === 'canvas.drawGlyphs'), false);
+}
 
 for (const [effect, expectedPasses] of [
   ['emboss', [
