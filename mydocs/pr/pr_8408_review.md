@@ -116,3 +116,10 @@ src/parser/pdf/editable.rs의 reflow에서 관측 줄 사이의 간격을 저장
 
 원 PR별 주장 쪽의 직접 판독·회귀 주석·최종 본문 감사를 마친 뒤 수용 판정을 확정한다.
 통합 PR 생성·push·원격 review·comment·close는 아직 수행하지 않았다. PR 생성 전 승인을 기다린다.
+
+## 검증 입력 대조표 정정
+
+2026-11-05 KST 최종 바이트 대조에서 `editable-plain.hwpx`의 입력 대조표가 초기 저장본을 가리키던 1행을 정정했습니다.
+실제 Native/fresh WASM c183 측정 manifest와 현재 Git 파일은 모두 **420,631바이트**,
+SHA-256 `5a13ddd9b7fe2a51c95009e34c8e0a27337d35f145c637a3193025e9c455b1c6`으로 같습니다.
+[입력 대조표](assets/planet6897_20261103/input-integrity.tsv)만 갱신했으며 입력·독립 PDF·측정 TSV는 바꾸지 않았습니다.
