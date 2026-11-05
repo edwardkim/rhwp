@@ -1,0 +1,38 @@
+{
+  "README.md": {
+    "bytes": 1861,
+    "sha256": "4ef50a01f6e300879145e3ab64081d318e39477cbe4b0ff48a33c5029e417578"
+  },
+  "after-native-all21-silhouette.tsv": {
+    "bytes": 505,
+    "sha256": "20d2634df1ed21591709159249bf9f228b1257597b65dd137e62a501d11d6bd1"
+  },
+  "after-native-p008-overlay.png": {
+    "bytes": 176380,
+    "sha256": "ad1b3efec366617e5ac312b41a323c20ec50816eccd4e13adf33bffcd28f8895"
+  },
+  "after-native-p008-raw.png": {
+    "bytes": 182723,
+    "sha256": "ac4a4ba94edf3e13eb039f161b9c08c4b946f1cb5cf2a5139111c8c831c3391c"
+  },
+  "after-native-p008-review.png": {
+    "bytes": 527285,
+    "sha256": "f1d570336849149895c9f536c9fb80b99ccf0dfe5613c94fe58135a12b36b2b4"
+  },
+  "before-native-p008-overlay.png": {
+    "bytes": 180502,
+    "sha256": "cfe5fc283cb8a0c76fbce466d1e9304bbfedf6db88c21698a11aab8adb568ba0"
+  },
+  "before-native-p008-raw.png": {
+    "bytes": 199114,
+    "sha256": "94d2832fa3177647647e8d31192f2407ddd0f81bac5a664d11c03353d73e7b85"
+  },
+  "before-native-p008-review.png": {
+    "bytes": 558162,
+    "sha256": "1ce33ebcc0656ad6874ac1af62e95e79d978792b9eb52f35020e61b9c3358f2d"
+  },
+  "validation.json": {
+    "bytes": 2526,
+    "sha256": "724c4de10f97f956c64b0551d81e28491942b91009eec8ed7f33121de2d51dd8"
+  }
+}

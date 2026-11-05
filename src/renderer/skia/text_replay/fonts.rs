@@ -4,7 +4,9 @@ use super::super::font_lookup::{
 };
 use super::super::synthetic_typeface::{unemboldened_typeface, unobliqued_typeface};
 use crate::renderer::{internal_font_family_members, TextStyle};
-use skia_safe::{font, Canvas, Font, FontMgr, Paint, Typeface};
+use skia_safe::{
+    font, font_arguments::VariationPosition, Canvas, Font, FontArguments, FontMgr, Paint, Typeface,
+};
 use std::{cell::RefCell, collections::HashMap};
 
 pub(in crate::renderer::skia) fn compatibility_glyph(font: &Font, text: &str) -> Option<char> {
@@ -20,6 +22,74 @@ pub(in crate::renderer::skia) fn compatibility_glyph(font: &Font, text: &str) ->
 thread_local! {
     static OUTLINE_REPLAY_FACES: RefCell<HashMap<u32, bool>> = RefCell::new(HashMap::new());
     static OWN_HEAVY_FACES: RefCell<HashMap<(u32, String), bool>> = RefCell::new(HashMap::new());
+    static SYSTEM_PROGRAM_FACES: RefCell<SystemProgramFaces> = RefCell::new(SystemProgramFaces::default());
+}
+
+#[derive(Default)]
+struct SystemProgramFaces {
+    faces: HashMap<u32, Option<Typeface>>,
+    bytes: usize,
+}
+
+/// 시스템 face의 조회 메트릭과 실제 paint가 같은 프로그램을 소비하게 한다.
+/// 등록된 같은 이름의 여러 버전에서 OS face의 cmap과 그리기 프로그램이 어긋나도
+/// 선택한 face가 제공하는 바이트를 다시 열면 같은 glyph 번호·윤곽을 함께 소유한다.
+fn system_program_face(font_mgr: &FontMgr, original: &Typeface) -> Option<Typeface> {
+    const MAX_FACES: usize = 256;
+    const MAX_SOURCE_BYTES: usize = 32 * 1024 * 1024;
+    const MAX_RETAINED_BYTES: usize = 64 * 1024 * 1024;
+    let id = original.unique_id();
+    if let Some(found) = SYSTEM_PROGRAM_FACES.with(|cache| cache.borrow().faces.get(&id).cloned()) {
+        return found;
+    }
+    let prepared = (|| {
+        let (bytes, index) = original.to_font_bytes()?;
+        if bytes.len() > MAX_SOURCE_BYTES {
+            return None;
+        }
+        let index = u32::try_from(index).ok()?;
+        let mut face = super::super::font_catalog::typeface_from_data(font_mgr, &bytes, index)?;
+        let coordinates = original.variation_design_position().unwrap_or_default();
+        if !coordinates.is_empty() {
+            let mut arguments =
+                FontArguments::new().set_variation_design_position(VariationPosition {
+                    coordinates: &coordinates,
+                });
+            // nonzero TTC face를 독립 SFNT로 복구한 경우의 실제 index도 보존한다.
+            let physical_index = face
+                .to_existing_font_data()
+                .and_then(|(_, index)| usize::try_from(index).ok())
+                .unwrap_or(usize::try_from(index).ok()?);
+            arguments.set_collection_index(physical_index);
+            face = face.clone_with_arguments(&arguments)?;
+        }
+        Some((face, bytes.len()))
+    })();
+    let retained = prepared.as_ref().map_or(0, |(_, bytes)| *bytes);
+    let face = prepared.map(|(face, _)| face);
+    SYSTEM_PROGRAM_FACES.with(|cache| {
+        let mut cache = cache.borrow_mut();
+        if cache.faces.len() >= MAX_FACES
+            || cache.bytes.saturating_add(retained) > MAX_RETAINED_BYTES
+        {
+            cache.faces.clear();
+            cache.bytes = 0;
+        }
+        cache.bytes += retained;
+        cache.faces.insert(id, face.clone());
+    });
+    face
+}
+
+fn candidate_typeface(candidate: &TypefaceCandidate, font_mgr: &FontMgr) -> Typeface {
+    // 명시 공급·번들 프로그램은 그 소유를 유지한다. OS 조회로 얻은 face만
+    // 실제 프로그램에 묶고, 준비할 수 없는 face의 기존 fallback은 보존한다.
+    if matches!(candidate.source, "system" | "legacy") {
+        if let Some(face) = system_program_face(font_mgr, &candidate.typeface) {
+            return face;
+        }
+    }
+    candidate.typeface.clone()
 }
 
 fn owns_intrinsic_heavy_face(typeface: &Typeface, style: &TextStyle) -> bool {
@@ -69,7 +139,7 @@ pub(super) fn for_text(
     {
         return select_typeface_for_character(chain, ch).map(|candidate| {
             finish(
-                candidate.typeface.clone(),
+                candidate_typeface(candidate, font_mgr),
                 size,
                 style,
                 font_mgr,
@@ -79,7 +149,7 @@ pub(super) fn for_text(
     }
     if let Some(candidate) = chain.first() {
         Some(finish(
-            candidate.typeface.clone(),
+            candidate_typeface(candidate, font_mgr),
             size,
             style,
             font_mgr,
