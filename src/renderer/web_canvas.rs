@@ -139,8 +139,11 @@ fn decode_image_to_canvas(data: &[u8]) -> Option<HtmlCanvasElement> {
     if super::image_resolver::png_sampling::print_jpeg_transfer(data) {
         return print_jpeg::decode(data);
     }
-    let dynimg = image::load_from_memory(data).ok()?;
-    let rgba = dynimg.to_rgba8();
+    // 레이어 트리의 회색 JPEG 판정이 같은 바이트를 막 디코드했으면 그 픽셀을 쓴다.
+    let rgba = match super::image_resolver::take_decoded(data) {
+        Some(rgba) => rgba,
+        None => image::load_from_memory(data).ok()?.to_rgba8(),
+    };
     let (iw, ih) = (rgba.width(), rgba.height());
     if iw == 0 || ih == 0 {
         return None;
@@ -3053,7 +3056,7 @@ impl Renderer for WebCanvasRenderer {
                 // 2.0px 은 큰 글꼴에서 디센더 관통). 선 모양 내부 기하는 캔버스 경로
                 // 현행 유지 — 오프셋만 SVG/Skia 와 같은 계약을 쓴다.
                 if let Some(top) =
-                    crate::renderer::text_decoration::top_underline_geometry(style, font_size)
+                    crate::renderer::text_decoration::underline_geometry(style, font_size)
                 {
                     self.draw_top_underline_canvas(x, y, x + text_width, &ul_color, &top, left);
                 } else {

@@ -4397,7 +4397,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
     // 저장 기록이 끄는 것은 문단 들여쓰기뿐이다. 마커의 첫/후속 줄 차이는 유지한다.
     let (marker_hang_px, indent_px) = list_marker_breaker_box(para, styles, indent_px);
     let marker_font_size = list_marker_metrics::include_marker(para, styles, true, 0.0);
-    let tab_fill = TabFill::for_paragraph(
+    let mut tab_fill = TabFill::for_paragraph(
         para_style,
         indent_px,
         crate::renderer::hwpunit_to_px(
@@ -4405,6 +4405,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
             dpi,
         ),
     );
+    tab_fill.default_width_px = styles.default_tab_width(tab_fill.default_width_px);
     let english_break_unit = para_style
         .map(|style| style.english_break_unit)
         .unwrap_or(0);

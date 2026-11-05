@@ -337,7 +337,7 @@ pub(crate) fn measure_composed_text_range_width_with_storage<S: crate::storage::
         let tab_width = styles
             .para_styles
             .get(composed.para_style_id as usize)
-            .map(|s| s.default_tab_width)
+            .map(|s| styles.default_tab_width(s.default_tab_width))
             .unwrap_or(0.0);
         let mut width = 0.0;
 
@@ -3912,7 +3912,7 @@ impl LayoutEngine {
                         let tab_width = styles
                             .para_styles
                             .get(composed_paras[pi].para_style_id as usize)
-                            .map(|s| s.default_tab_width)
+                            .map(|s| styles.default_tab_width(s.default_tab_width))
                             .unwrap_or(0.0);
                         first_line
                             .runs
@@ -4063,7 +4063,7 @@ impl LayoutEngine {
                 let tab_width = styles
                     .para_styles
                     .get(comp.para_style_id as usize)
-                    .map(|s| s.default_tab_width)
+                    .map(|s| styles.default_tab_width(s.default_tab_width))
                     .unwrap_or(0.0);
                 let mut start_x = Vec::with_capacity(comp.lines.len());
                 let mut line_y = Vec::with_capacity(comp.lines.len());

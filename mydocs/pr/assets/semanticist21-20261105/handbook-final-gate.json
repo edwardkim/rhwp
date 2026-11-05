@@ -1,0 +1,70 @@
+{
+  "status": "passed",
+  "baseline": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/handbook-hwpx-native.tsv",
+  "baseline_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+  "metric": "silhouette_raw_match_percent",
+  "backend": "native-skia",
+  "precision": "0.01 percentage points",
+  "pages": 383,
+  "regressions": [],
+  "webfont_fallback": [
+    {
+      "family": "KoPubBatang",
+      "style": "Light",
+      "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Light.ttf",
+      "source_sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+      "native_path": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261105-semanticist21/output/pr-review/handbook-8153-webfont-cache/b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f/KoPubBatang-Light.ttf",
+      "native_sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f"
+    },
+    {
+      "family": "KoPubBatang",
+      "style": "Medium",
+      "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Medium.ttf",
+      "source_sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+      "native_path": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261105-semanticist21/output/pr-review/handbook-8153-webfont-cache/7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4/KoPubBatang-Medium.ttf",
+      "native_sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4"
+    },
+    {
+      "family": "KoPubBatang",
+      "style": "Bold",
+      "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Bold.ttf",
+      "source_sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+      "native_path": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261105-semanticist21/output/pr-review/handbook-8153-webfont-cache/94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b/KoPubBatang-Bold.ttf",
+      "native_sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b"
+    },
+    {
+      "family": "KoPubDotum",
+      "style": "Light",
+      "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Light.ttf",
+      "source_sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+      "native_path": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261105-semanticist21/output/pr-review/handbook-8153-webfont-cache/018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d/KoPubDotum-Light.ttf",
+      "native_sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+    },
+    {
+      "family": "KoPubDotum",
+      "style": "Medium",
+      "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Medium.ttf",
+      "source_sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+      "native_path": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261105-semanticist21/output/pr-review/handbook-8153-webfont-cache/d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7/KoPubDotum-Medium.ttf",
+      "native_sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7"
+    },
+    {
+      "family": "KoPubDotum",
+      "style": "Bold",
+      "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Bold.ttf",
+      "source_sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+      "native_path": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261105-semanticist21/output/pr-review/handbook-8153-webfont-cache/967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275/KoPubDotum-Bold.ttf",
+      "native_sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275"
+    },
+    {
+      "family": "HCR Batang",
+      "style": "Regular",
+      "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+      "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+      "native_path": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261105-semanticist21/output/pr-review/handbook-8153-webfont-cache/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/HANBatang.woff.ttf",
+      "native_sha256": "6b6c502bf46c1e698405730f928ecc6e3996882822031ce9c748f06d96b64c5f"
+    }
+  ],
+  "manifest": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-handbook-reference-fonts/required-handbook-8153-native/silhouette_manifest.json",
+  "elapsed_seconds": 388.604
+}

@@ -461,6 +461,10 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
                 }))?
                 .into()
         },
+        section_tab_width_bits: {
+            storage.bytes(2 * std::mem::size_of::<usize>() + std::mem::size_of::<u64>())?;
+            Default::default()
+        },
         resolved_dpi: Some(dpi),
         isolated_jamo_font: None,
         page_number_char_style_id,
@@ -1682,7 +1686,8 @@ fn try_resolve_single_para_style<A: storage::Storage>(
         _ => hwpunit_to_px(ps.line_spacing, dpi) / 2.0,
     };
 
-    // 기본 탭 간격: HWP 기본값 80pt (8000 HWPUNIT)
+    // 기본 탭 간격: 한/글 기본값 40pt(4000 HWPUNIT). 문서의 구역 정의 값은
+    // 구역 composition·측정·배치의 section_tab_scope가 함께 소비한다.
     let default_tab_width = hwpunit_to_px(4000, dpi);
 
     // 커스텀 탭 정지 해소: TabDef.tabs[] → px 변환

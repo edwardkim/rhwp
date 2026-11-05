@@ -1,0 +1,43 @@
+{
+  "time": "2026-11-04T22:32:36.147372+00:00",
+  "reviewed_head": "da0074f41ee01d7fa79e6bd4ffd5cadf7c69665d",
+  "runtime": "d75809517f9185277248dd6be995e89792563222",
+  "all_ten_original_heads_ancestors": true,
+  "runtime_source_diff": [
+    "src/renderer/height_measurer.rs"
+  ],
+  "blocking_source_findings": [],
+  "reviewed_contracts": [
+    "HWPX header image identifiers use manifest resolution; existing HWP bullet/error/Storage behavior preserved",
+    "Decoded image handoff is scoped to canvas draw; u128 comparison and negative production control prevent header overflow",
+    "Existing shared equation flow/paint caches retained; duplicate candidate cache removed",
+    "Common rowspan solver result supplies both measurement and actual placement; successor content and continuation checks retained",
+    "Section-scoped tab context, restoration and cache namespace preserve other sections; actual WASM edit/reopen validated",
+    "Shared decoration geometry, numbering traversal, page numbering and cell border source contracts match independent Print"
+  ],
+  "evidence": [
+    "final-validation-summary.json",
+    "contribution-ancestry.json",
+    "functional-final-visual-results.json",
+    "performance-control-review.md",
+    "maintainer-approval.json",
+    "ci-security-followup.md",
+    "security-local-validation.json",
+    "security-source-equivalence.json"
+  ],
+  "ci_status": "Exact code-head Full CI and all checks passed",
+  "visual_producer": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "diagnostic_only_patch": "security-source-equivalence.json",
+  "local_revalidation": "security-local-validation.json",
+  "before_after_native_svg_pages_byte_identical": 24,
+  "independent_ghas_codeql": "success",
+  "independent_codeql_evidence": "security-codeql-after.json",
+  "codeql_results_before_after": [
+    126,
+    122
+  ],
+  "ci_evidence": "github-ci-code-head.json",
+  "integration_verdict": "승인",
+  "original_pr_verdict": "메인터너 보정 후 수용 가능",
+  "recorded_at": "2026-11-05T00:22:46.138722+00:00"
+}

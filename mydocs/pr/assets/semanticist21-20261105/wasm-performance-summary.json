@@ -1,0 +1,102 @@
+[
+  {
+    "key": "jpeg-sandbox",
+    "counts": [
+      [
+        "base",
+        17
+      ],
+      [
+        "base",
+        17
+      ],
+      [
+        "base",
+        17
+      ],
+      [
+        "candidate",
+        17
+      ],
+      [
+        "candidate",
+        17
+      ],
+      [
+        "candidate",
+        17
+      ]
+    ],
+    "outputs_equal": true,
+    "openMs": {
+      "base": 323.30000001192093,
+      "candidate": 333.2999999523163,
+      "change_percent": 3.093102363138467
+    },
+    "firstMs": {
+      "base": 1772.800000011921,
+      "candidate": 1118.5999999642372,
+      "change_percent": -36.902075814715964
+    },
+    "warmMs": {
+      "base": 34.5,
+      "candidate": 35.10000002384186,
+      "change_percent": 1.7391305038894522
+    },
+    "allMs": {
+      "base": 953.3999999761581,
+      "candidate": 846.1999999880791,
+      "change_percent": -11.24396895225087
+    },
+    "memoryBytes": {
+      "base": 443482112,
+      "candidate": 315555840,
+      "change_percent": -28.845869661593028
+    }
+  },
+  {
+    "key": "equation-flow",
+    "counts": [
+      [
+        "base",
+        22
+      ],
+      [
+        "base",
+        22
+      ],
+      [
+        "base",
+        22
+      ],
+      [
+        "candidate",
+        22
+      ],
+      [
+        "candidate",
+        22
+      ],
+      [
+        "candidate",
+        22
+      ]
+    ],
+    "outputs_equal": true,
+    "openMs": {
+      "base": 2481.5,
+      "candidate": 2386.699999988079,
+      "change_percent": -3.8202699984654864
+    },
+    "editMs": {
+      "base": 1732.3999999761581,
+      "candidate": 1725.300000011921,
+      "change_percent": -0.40983606351505664
+    },
+    "memoryBytes": {
+      "base": 274792448,
+      "candidate": 275513344,
+      "change_percent": 0.26234199856904894
+    }
+  }
+]

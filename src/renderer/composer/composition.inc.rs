@@ -28,6 +28,10 @@ pub(crate) fn try_compose_section_with_horizontal_shaping<S: crate::storage::Sto
     styles: &ResolvedStyleSet,
     storage: &S,
 ) -> Result<Vec<ComposedParagraph>, S::Error> {
+    let _tabs = styles.section_tab_scope(
+        section.section_def.default_tab_spacing,
+        styles.resolved_dpi.unwrap_or(crate::renderer::DEFAULT_DPI),
+    );
     let mut paragraphs = storage.vec(section.paragraphs.len())?;
     for paragraph in &section.paragraphs {
         paragraphs.push(try_compose_paragraph_with_horizontal_shaping(

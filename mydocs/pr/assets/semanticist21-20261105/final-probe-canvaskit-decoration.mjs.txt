@@ -1,0 +1,39 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {dirname,join} from 'node:path';
+import {pathToFileURL} from 'node:url';
+const root='/home/edward/mygithub/rhwp';
+const wt='/home/edward/mygithub/rhwp-worktrees/review-integration-20261105-semanticist21';
+const out=join(root,'output/pr-review/semanticist21-20261105');
+const require=createRequire(join(wt,'rhwp-studio/package.json'));
+const {createServer}=require('vite');
+const CanvasKitInit=require('canvaskit-wasm');
+const kitDir=dirname(require.resolve('canvaskit-wasm'));
+const kit=await CanvasKitInit({locateFile:name=>join(kitDir,name)});
+const vite=await createServer({root:join(wt,'rhwp-studio'),appType:'custom',logLevel:'silent',server:{middlewareMode:true}});
+try {
+ const {CanvasKitLayerRenderer}=await vite.ssrLoadModule('/src/view/canvaskit-renderer.ts');
+ const module=await import(pathToFileURL(join(out,'final-pkg/rhwp.js')));
+ await module.default({module_or_path:readFileSync(join(out,'final-pkg/rhwp_bg.wasm'))});
+ const fixture=JSON.parse(readFileSync(join(out,'visual-cases.json'))).find(c=>c.key==='decoration-top-probe-shape-3');
+ const doc=new module.HwpDocument(readFileSync(fixture.hwp));doc.setHangul2024Compat(true);doc.selectCanvasMetrics(false);
+ const tree=JSON.parse(doc.getPageLayerTreeWithProfile(0,'print'));
+ const renderer=Object.assign(Object.create(CanvasKitLayerRenderer.prototype),{canvasKit:kit,unsupportedOps:new Set(),currentDeviceStrokeFloor:1,recordingStrokeDeviceMatrix:null,currentReplayFeatureCounts:{dashedStrokes:0}});
+ const surface=kit.MakeSurface(Math.ceil(tree.pageWidth),Math.ceil(tree.pageHeight));
+ if(!surface)throw Error('CanvasKit software surface unavailable');
+ try {
+  const canvas=surface.getCanvas();canvas.clear(kit.WHITE);let count=0,bottom=0;
+  const visit=node=>{
+   if(node.kind==='group'){for(const child of node.children)visit(child);}
+   else if(node.kind==='clipRect'){visit(node.child);}
+   else for(const op of node.ops||[])if(op.type==='textDecoration'){
+    renderer.renderTextDecoration(canvas,op);count++;if(op.decoration?.underline==='bottom' && op.decoration?.topUnderline)bottom++;
+   }
+  };
+  visit(tree.root);surface.flush();
+  const image=surface.makeImageSnapshot();try{writeFileSync(join(out,'final-canvaskit-decoration.png'),Buffer.from(image.encodeToBytes()));}finally{image.delete();}
+  const result={source:'2f44d7d0ab19c743089ae309a8ca64eee57efae2',consumer:'CanvasKitLayerRenderer.renderTextDecoration with actual WASM layer ops and CanvasKit 0.42 software surface',count,bottom,unsupported:[...renderer.unsupportedOps],width:tree.pageWidth,height:tree.pageHeight};
+  writeFileSync(join(out,'final-canvaskit-decoration.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));
+  if(count!==32||bottom!==16||renderer.unsupportedOps.size)throw Error('decoration consumer coverage mismatch');
+ } finally {surface.delete();doc.free();}
+} finally {await vite.close();}

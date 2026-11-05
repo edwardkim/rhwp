@@ -3520,6 +3520,8 @@ impl DocumentCore {
         json: &str,
     ) -> Result<String, HwpError> {
         self.apply_section_def_json(section_idx, json)?;
+        // 구역 기본 탭은 composition/측정/배치가 현재 SectionDef에서 읽는다.
+        // 공통 문단·글꼴 스타일을 다시 해소할 필요가 없다.
         let page_count = self.recompose_and_paginate();
         Ok(format!("{{\"ok\":true,\"pageCount\":{}}}", page_count))
     }
@@ -4672,6 +4674,12 @@ impl DocumentCore {
     /// 단일 문단만 재조판한다.
     pub(crate) fn recompose_paragraph(&mut self, section_idx: usize, para_idx: usize) {
         self.invalidate_page_tree_cache();
+        let _tabs = self.styles.section_tab_scope(
+            self.document.sections[section_idx]
+                .section_def
+                .default_tab_spacing,
+            self.dpi,
+        );
         let para = &self.document.sections[section_idx].paragraphs[para_idx];
         self.composed[section_idx][para_idx] =
             compose_paragraph_with_horizontal_shaping(para, &self.styles);
@@ -4682,6 +4690,12 @@ impl DocumentCore {
     /// composed 벡터에 새 문단 항목을 삽입한다 (문단 분할/붙여넣기 후).
     pub(crate) fn insert_composed_paragraph(&mut self, section_idx: usize, para_idx: usize) {
         self.invalidate_page_tree_cache();
+        let _tabs = self.styles.section_tab_scope(
+            self.document.sections[section_idx]
+                .section_def
+                .default_tab_spacing,
+            self.dpi,
+        );
         let para = &self.document.sections[section_idx].paragraphs[para_idx];
         let composed = compose_paragraph_with_horizontal_shaping(para, &self.styles);
         self.composed[section_idx].insert(para_idx, composed);
@@ -5532,6 +5546,9 @@ impl DocumentCore {
         let mut issue2424_typeset_elapsed = std::time::Duration::ZERO;
         let mut issue2424_postprocess_elapsed = std::time::Duration::ZERO;
         for (idx, section) in self.document.sections.iter().enumerate() {
+            let _tabs = self
+                .styles
+                .section_tab_scope(section.section_def.default_tab_spacing, self.dpi);
             if !self.dirty_sections[idx] {
                 // dirty가 아닌 구역에서도 carry를 업데이트
                 if let Some(pages) = self.pagination.get(idx) {
@@ -5870,23 +5887,35 @@ impl DocumentCore {
                 }
             }
 
-            // 구역 간 쪽번호 연속: NewNumber(Page) 컨트롤이 없으면 이전 구역에서 이어짐
-            if idx > 0 && carry_last_page_number > 0 {
+            // 구역 시작 쪽 번호: 구역 정의의 시작 번호(한/글 [구역 설정]-[시작 쪽 번호]-사용자,
+            // `page_num > 0`)가 있으면 구역 첫 쪽을 그 번호로 매긴다. 없으면 NewNumber(Page)
+            // 컨트롤이 없을 때 이전 구역에서 이어짐.
+            let start_page_num = u32::from(section.section_def.page_num);
+            let page_number_offset = if start_page_num > 0 {
+                start_page_num - 1
+            } else if idx > 0 {
                 use crate::model::control::{AutoNumberType, Control};
                 let has_new_number = section.paragraphs.iter().any(|p|
                     p.controls.iter().any(|c| matches!(c, Control::NewNumber(nn) if nn.number_type == AutoNumberType::Page))
                 );
-                if !has_new_number {
-                    // [Issue #6206] 표 셀 안 `newNum` 은 위 최상위 스캔(`has_new_number`)에
-                    // 걸리지 않는다. 그런 구역에도 carry 를 더하되, 재시작이 발화한 쪽부터는
-                    // 멈춘다 — `새 번호로 시작` 값은 절대값이라 carry 를 얹으면 안 된다.
-                    // (재시작 앞 쪽들은 종전대로 앞 구역에서 이어져야 한다.)
-                    for page in &mut result.pages {
-                        if page.page_number_restarted {
-                            break;
-                        }
-                        page.page_number += carry_last_page_number;
+                if has_new_number {
+                    0
+                } else {
+                    carry_last_page_number
+                }
+            } else {
+                0
+            };
+            if page_number_offset > 0 {
+                // [Issue #6206] 표 셀 안 `newNum` 은 위 최상위 스캔(`has_new_number`)에
+                // 걸리지 않는다. 그런 구역에도 carry 를 더하되, 재시작이 발화한 쪽부터는
+                // 멈춘다 — `새 번호로 시작` 값은 절대값이라 carry 를 얹으면 안 된다.
+                // (재시작 앞 쪽들은 종전대로 앞 구역에서 이어져야 한다.)
+                for page in &mut result.pages {
+                    if page.page_number_restarted {
+                        break;
                     }
+                    page.page_number += page_number_offset;
                 }
             }
 
@@ -8324,6 +8353,15 @@ impl DocumentCore {
         // (이전 구역 + 현재 구역의 이전 페이지 모두 포함하여 구역 간 번호 연속 지원)
         self.layout_engine.reset_numbering_state();
         let sec_idx = page_content.section_index;
+        let _tabs = self.styles.section_tab_scope(
+            self.document
+                .sections
+                .get(sec_idx)
+                .map_or(0, |section| section.section_def.default_tab_spacing),
+            self.dpi,
+        );
+        self.layout_engine
+            .set_section_tab_key(self.styles.section_tab_key());
         self.layout_engine.set_section_column_spacing_hu(
             self.document
                 .sections

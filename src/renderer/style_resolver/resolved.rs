@@ -543,6 +543,9 @@ impl Default for ResolvedBorderStyle {
 /// 해소된 스타일 세트 (DocInfo에서 변환)
 #[derive(Debug, Default, Clone)]
 pub struct ResolvedStyleSet {
+    /// 문단 모양과 독립적인 현재 구역의 기본 탭 폭. 내부 composition/측정/배치
+    /// 범위에서만 설정하며 문서의 공유 문단 모양을 변경하지 않는다.
+    pub(crate) section_tab_width_bits: std::sync::Arc<std::sync::atomic::AtomicU64>,
     /// 원본 HWP3 또는 그 HWPX 변환의 글꼴 꾸밈 출처.
     pub(crate) source_hwp3_native: bool,
     /// 문서 지정 대체가 있어도 현재 선택은 자기 메트릭을 가진 원본 TTF인 슬롯.
@@ -605,6 +608,33 @@ pub struct ResolvedStyleSet {
 }
 
 impl ResolvedStyleSet {
+    pub(crate) fn section_tab_scope(&self, spacing: u32, dpi: f64) -> SectionTabScope {
+        // HWPX tabStop 8000 = tabStopVal 4000 = 40pt. 정의가 없는 0은
+        // 기존 기본값 4000 HWPUNIT을 사용한다. u32 전 범위를 f64로 정확히 읽는다.
+        let width = f64::from(if spacing == 0 { 8000 } else { spacing }) * dpi / 14400.0;
+        let previous = self
+            .section_tab_width_bits
+            .swap(width.to_bits(), std::sync::atomic::Ordering::Relaxed);
+        SectionTabScope {
+            bits: std::sync::Arc::clone(&self.section_tab_width_bits),
+            previous,
+        }
+    }
+
+    pub(crate) fn default_tab_width(&self, fallback: f64) -> f64 {
+        let bits = self.section_tab_key();
+        if bits == 0 {
+            fallback
+        } else {
+            f64::from_bits(bits)
+        }
+    }
+
+    pub(crate) fn section_tab_key(&self) -> u64 {
+        self.section_tab_width_bits
+            .load(std::sync::atomic::Ordering::Relaxed)
+    }
+
     pub(crate) fn allows_native_otf_metrics(&self, char_style_id: u32, lang: usize) -> bool {
         !self.display_only_otf_slots.contains(&(char_style_id, lang))
     }
@@ -652,12 +682,26 @@ impl ResolvedStyleSet {
     }
 }
 
+/// 문서 내부의 중첩 호출과 오류 반환에서도 원래 구역 context를 복구한다.
+/// 외부에 setter를 노출하지 않으며 서로 다른 문서의 styles는 owner를 공유하지 않는다.
+pub(crate) struct SectionTabScope {
+    bits: std::sync::Arc<std::sync::atomic::AtomicU64>,
+    previous: u64,
+}
+
+impl Drop for SectionTabScope {
+    fn drop(&mut self) {
+        self.bits
+            .store(self.previous, std::sync::atomic::Ordering::Relaxed);
+    }
+}
+
 crate::storage::clone_fields!(ResolvedCharStyle, {text_paint, font_family, font_families, font_families_metric_trusted, font_families_glyph_fallback_advance_explicit, font_families_hft_hangul, font_families_source_hft, font_families_source_ttf, font_families_verified_hft_bold_tracking, font_families_hft_print_frame, font_families_preserve_glyph_ink, font_families_hft_fullwidth_dot, ascii_punct_latin_slot, explicit_latin_slot, font_families_metric_face, font_families_original_glyph_metric_face, font_space_em, font_size, font_sizes, font_positions, bold, italic, text_color, underline, underline_color, strike_color, strikethrough, letter_spacing, letter_spacings, ratio, ratios, border_fill_id, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, kerning, shade_color});
 
 crate::storage::clone_fields!(ResolvedParaStyle, {alignment, vertical_alignment, line_spacing, line_spacing_type, margin_left, margin_right, indent, spacing_before, spacing_after, head_type, para_level, numbering_id, border_fill_id, border_spacing, border_connect, border_ignore_margin, default_tab_width, tab_stops, auto_tab_left, auto_tab_right, condense_min_space, english_break_unit, korean_break_unit, widow_orphan, keep_with_next, keep_lines, page_break_before});
 
 crate::storage::clone_fields!(ResolvedBorderStyle, {borders, fill_color, pattern, gradient, image_fill, diagonal_attr, diagonal, center_line});
 
-crate::storage::clone_fields!(ResolvedStyleSet, {script_metrics, source_hwp3_native, source_program_projection_slots, native_pua_fonts, display_only_otf_slots, char_overlap_size_bounds, source_char_shapes, resolved_dpi, isolated_jamo_font, page_number_char_style_id, page_number_font_is_hft, supplemental_metrics, char_styles, para_styles, border_styles, numberings, bullets, hwp3_variant, hft_ascii_halfwidth, kerning_measurement_context, horizontal_shaping_context});
+crate::storage::clone_fields!(ResolvedStyleSet, {section_tab_width_bits, script_metrics, source_hwp3_native, source_program_projection_slots, native_pua_fonts, display_only_otf_slots, char_overlap_size_bounds, source_char_shapes, resolved_dpi, isolated_jamo_font, page_number_char_style_id, page_number_font_is_hft, supplemental_metrics, char_styles, para_styles, border_styles, numberings, bullets, hwp3_variant, hft_ascii_halfwidth, kerning_measurement_context, horizontal_shaping_context});
 
 crate::storage::clone_fields!(ResolvedImageFill, {bin_data_id, fill_mode, brightness, contrast, effect});

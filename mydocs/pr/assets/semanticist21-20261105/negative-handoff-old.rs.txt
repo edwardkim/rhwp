@@ -1,0 +1,92 @@
+use std::cell::RefCell;
+#[path="/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/negative-image-header.rs"]
+mod image_header;
+use image_header::canvaskit_encoded_image_header;
+#[cfg(any(target_arch = "wasm32", test))]
+thread_local! {
+    /// `None` 이면 캔버스 그리기 밖이라 맡기지 않는다. `Some(None)` 은 그리기 중이지만 빈 자리.
+    static DECODED_HANDOFF: RefCell<Option<Option<(u64, image::RgbaImage)>>> =
+        const { RefCell::new(None) };
+}
+
+#[cfg(any(target_arch = "wasm32", test))]
+fn handoff_key(bytes: &[u8]) -> u64 {
+    use std::hash::{Hash, Hasher};
+    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    bytes.hash(&mut hasher);
+    hasher.finish()
+}
+
+/// 캔버스 한 쪽을 그리는 동안만 회색 판정의 픽셀을 맡기고, 끝나면 남은 픽셀을 버린다.
+#[cfg(any(target_arch = "wasm32", test))]
+pub(crate) fn with_decoded_handoff<R>(draw: impl FnOnce() -> R) -> R {
+    DECODED_HANDOFF.with(|handoff| *handoff.borrow_mut() = Some(None));
+    let drawn = draw();
+    DECODED_HANDOFF.with(|handoff| *handoff.borrow_mut() = None);
+    drawn
+}
+
+/// `bytes` 를 디코드하기 전에 부른다. 맡긴 픽셀 옆에서 풀기에 크면 맡긴 픽셀을 버린다.
+#[allow(unused_variables)]
+fn make_room_for_decode(bytes: &[u8]) {
+    #[cfg(any(target_arch = "wasm32", test))]
+    DECODED_HANDOFF.with(|handoff| {
+        if let Some(slot) = handoff.borrow_mut().as_mut() {
+            if !slot
+                .as_ref()
+                .is_some_and(|(_, held)| fits_beside(held, bytes))
+            {
+                *slot = None;
+            }
+        }
+    });
+}
+
+#[cfg(any(target_arch = "wasm32", test))]
+fn fits_beside(held: &image::RgbaImage, bytes: &[u8]) -> bool {
+    canvaskit_encoded_image_header(bytes).is_some_and(|header| {
+        u64::from(header.width) * u64::from(header.height) * 4 * 4 <= held.as_raw().len() as u64
+    })
+}
+
+/// `bytes` 를 `image::load_from_memory(bytes)?.to_rgba8()` 로 디코드한 것과 같은 픽셀을 맡긴다.
+/// 캔버스는 형식을 추측해 디코드하므로 추측이 `format` 과 다르면 맡기지 않는다.
+#[allow(unused_variables)]
+fn hand_off_decoded(bytes: &[u8], format: image::ImageFormat, pixels: image::RgbaImage) {
+    #[cfg(any(target_arch = "wasm32", test))]
+    DECODED_HANDOFF.with(|handoff| {
+        if let Some(slot) = handoff.borrow_mut().as_mut() {
+            // 들고 있는 그림이 남아 있으면 이 그림은 그 옆에서 푼 작은 그림이다.
+            if slot.is_none() && image::guess_format(bytes).ok() == Some(format) {
+                *slot = Some((handoff_key(bytes), pixels));
+            }
+        }
+    });
+}
+
+/// 회색 판정이 맡긴 `bytes` 의 디코드 픽셀을 꺼낸다. 다른 바이트면 그 디코드에 자리를 낸다.
+#[cfg(any(target_arch = "wasm32", test))]
+pub(crate) fn take_decoded(bytes: &[u8]) -> Option<image::RgbaImage> {
+    let taken = DECODED_HANDOFF.with(|handoff| {
+        let mut handoff = handoff.borrow_mut();
+        let slot = handoff.as_mut()?;
+        if slot.as_ref()?.0 != handoff_key(bytes) {
+            return None;
+        }
+        slot.take().map(|(_, pixels)| pixels)
+    });
+    if taken.is_none() {
+        make_room_for_decode(bytes);
+    }
+    taken
+}
+
+
+#[test]
+fn evicts_huge_header_before_next_decode(){
+ let held=image::RgbaImage::new(64,64);let mut small=std::io::Cursor::new(Vec::new());
+ image::DynamicImage::ImageRgba8(held.clone()).write_to(&mut small,image::ImageFormat::Png).unwrap();let small=small.into_inner();
+ let mut huge=small[..33].to_vec();huge[16..20].copy_from_slice(&(1u32<<31).to_be_bytes());huge[20..24].copy_from_slice(&(1u32<<31).to_be_bytes());
+ let header=canvaskit_encoded_image_header(&huge).unwrap();assert_eq!((header.width,header.height),(1<<31,1<<31));
+ with_decoded_handoff(||{hand_off_decoded(&small,image::ImageFormat::Png,held);assert!(take_decoded(&huge).is_none());assert!(take_decoded(&small).is_none(),"oversized next source must evict held pixels");});
+}

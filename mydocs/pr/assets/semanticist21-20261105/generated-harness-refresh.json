@@ -1,0 +1,17 @@
+{
+  "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "cause": "Module documentation comments changed file-size weights used by deterministic auto sharding. This reassigns derived ignored harness modules; source files/assertions and test policy are unchanged.",
+  "sources": 2018,
+  "suites": 28,
+  "exceptions": 20,
+  "comment_only_sources": [
+    "tests/cases/equation_flow_metrics_cache.rs",
+    "tests/cases/renderer_public_contracts.rs"
+  ],
+  "all_2018_test_source_bodies_match_successful_full_run": true,
+  "generated_files_staged": false,
+  "followup": "Validate current derived harnesses with all-target compilation/Clippy and manifest checks; reuse successful full runtime cases whose source bodies are unchanged.",
+  "source_path_set_sha256": "891fc2a79cb51dba07ea8a108f2b66c615ef64c8ce6e4ef84a1f2596e5385601",
+  "all_sources_exist_in_runtime_commit": true,
+  "documentation_timestamp_update_did_not_change_source_byte_sizes": true
+}

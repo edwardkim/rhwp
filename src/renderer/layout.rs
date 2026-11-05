@@ -3703,6 +3703,7 @@ pub struct LayoutEngine {
     /// cell width. This lives for the layout session and is cleared at the same
     /// source/style invalidation boundary as the other pointer-keyed caches.
     single_line_overflow_cache: super::composer::SingleLineOverflowCache,
+    section_tab_key: std::cell::Cell<u64>,
     /// Issue #2214 test-only: cache miss가 실제 table-wide scan으로 이어진 횟수.
     #[cfg(test)]
     table_nested_text_flag_scan_count: std::cell::Cell<usize>,
@@ -3877,6 +3878,7 @@ impl LayoutEngine {
             table_row_index_cache: Default::default(),
             cursor_probe_block_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
             single_line_overflow_cache: Default::default(),
+            section_tab_key: Default::default(),
             #[cfg(test)]
             table_nested_text_flag_scan_count: std::cell::Cell::new(0),
         }
@@ -4148,6 +4150,12 @@ impl LayoutEngine {
         overlay: std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
     ) {
         *self.render_normalization.borrow_mut() = overlay;
+    }
+
+    pub(crate) fn set_section_tab_key(&self, key: u64) {
+        if self.section_tab_key.replace(key) != key {
+            self.clear_layout_caches();
+        }
     }
 
     pub(crate) fn set_section_column_spacing_hu(&self, spacing: i32) {
@@ -5082,6 +5090,17 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> ComposedParagraph {
         let mut comp = crate::renderer::composer::compose_paragraph_in_context(para, styles);
+        // 번호·개요 문단은 본문처럼 번호를 그린다. 번호는 문서 순서로 미리 정해 두었다.
+        // 글머리표는 한/글 인쇄본으로 확인하지 못해 그리지 않는 종전 동작을 둔다.
+        let numbered_head = styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .is_some_and(|style| matches!(style.head_type, HeadType::Number | HeadType::Outline));
+        if numbered_head {
+            if let Some(numbered) = self.apply_paragraph_numbering(Some(&comp), para, styles, 0) {
+                comp = numbered;
+            }
+        }
         self.substitute_hf_field_markers(&mut comp, page_number);
         if para.controls.iter().any(|ctrl| {
             matches!(ctrl, Control::AutoNumber(an)
@@ -7554,7 +7573,7 @@ impl LayoutEngine {
                     // 이어받는 외곽선은 필요한 면만 그린다. 채우기는 아래 문단별 paint가 소유한다.
                     let mut push_border_line =
                         |border: &BorderLine, x1: f64, y1: f64, x2: f64, y2: f64| {
-                            if !para_border_is_visible(border) {
+                            if !super::layout::border_rendering::text_border_is_drawn(border) {
                                 return;
                             }
                             let nodes = super::layout::border_rendering::create_border_line_nodes(
@@ -17235,7 +17254,8 @@ impl LayoutEngine {
             None => return x_base,
         };
         let para_style = styles.para_styles.get(comp.para_style_id as usize);
-        let tab_width = para_style.map(|s| s.default_tab_width).unwrap_or(48.0);
+        let tab_width =
+            styles.default_tab_width(para_style.map(|s| s.default_tab_width).unwrap_or(48.0));
         let tab_stops = para_style.map(|s| s.tab_stops.clone()).unwrap_or_default();
         let auto_tab_right = para_style.map(|s| s.auto_tab_right).unwrap_or(false);
         let available_width = col_area.width - margin_left;
