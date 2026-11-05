@@ -29,3 +29,5 @@
 [개별 검토와 원 기여/보정 구분](../../semanticist21_20261105_next10_review.md), [실행 결과·전쪽 TSV·직접 판독·입력/Print/글꼴 해시](validation.md)를 연결합니다. 제출 시 링크는 제출 후보 SHA로 고정합니다.
 
 FORMULA는 명시적 재계산 API 범위이며 기존 계산식 대화창의 일반 값 쓰기와 구분합니다. 첫 글자 장식은 메타데이터 저장 보존 범위입니다. 새 생성 UI·타이핑 자동 재계산·장식 자동 재배치를 구현한 것으로 설명하지 않습니다. 원 contributor fork branch는 변경하지 않았습니다.
+
+현재 base `a95d1d5afad1bfd61998794fa78fb0db100d690a`와의 실제 병합 트리도 별도 검증했습니다. 원 코드 head는 유지했으며 Native/최적화 WASM의 이번 124쪽씩은 PNG 248개가 기존 후보와 같고, 새 글상자 편집의 3·4쪽은 양쪽 100%입니다. 집중 Rust 18건·실제 클릭/입력/Esc·API·Studio 2,721건이 성공했습니다. [검증한 source와 범위](current-base-compatibility.md)를 구분합니다.

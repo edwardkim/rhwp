@@ -1,6 +1,6 @@
 # semanticist21 다음 10건 통합 검토 — 2026-11-05
 
-**현재 판정: 머지 보류 — 코드 head의 필수 로컬 검증 완료, 전진한 현재 base와의 호환 확인 중.** 원격 push·통합 PR 생성·최신 head CI·self-review·merge·후속 처리는 별도 승인 전이다.
+**최종 판정: 메인터너 보정 후 수용 가능 — 10건의 필수 로컬 검증과 현재-base 실제 호환 확인 완료.** 원격 push·통합 PR 생성·최신 head CI·self-review·merge·후속 처리는 별도 승인 전이다.
 
 선정·원 head·reviewer 지정과 승인 범위는 [수행 계획](semanticist21_20261105_next10_review_plan.md)에 있다. 원 PR 10개를 merge 조상으로 보존했고 원 fork branch를 변경하지 않았다. 현재 원격 push·통합 PR 생성·merge는 수행하지 않았다.
 
@@ -32,7 +32,7 @@
 
 ## 최종 확인에서의 base 전진
 
-전체 검증 후 fetch에서 현재 upstream/devel `a95d1d5afad1bfd61998794fa78fb0db100d690a`를 확인했다. #8630의 묶음 글상자 편집 주소·클릭/Esc 복귀와 CI 디스크 관측, #8633·#8634의 후속 기록이 추가됐다. `git merge-tree --write-tree`는 충돌 없이 `a9a48f3bf44a26595d30a2e7e7e216ccd9b53af2`를 만들었다. 검증한 코드 head를 임의 갱신하지 않고 현재-base 병합 트리의 실제 호환을 별도로 확인한다. 이 점검 전에는 원격 처리 준비 완료로 표시하지 않는다.
+전체 검증 후 fetch에서 현재 upstream/devel `a95d1d5afad1bfd61998794fa78fb0db100d690a`를 확인했다. #8630의 묶음 글상자 편집 주소·클릭/Esc 복귀와 CI 디스크 관측, #8633·#8634의 후속 기록이 추가됐다. `git merge-tree --write-tree`는 충돌 없이 `a9a48f3bf44a26595d30a2e7e7e216ccd9b53af2`를 만들었다. 검증한 코드 head를 임의 갱신하지 않고 [현재-base 병합 트리의 실제 호환](assets/semanticist21-20261105-next10/current-base-compatibility.md)을 별도로 완료했다. Native·최적화 WASM으로 이번 124쪽씩을 다시 출력했고 248 PNG가 이전 후보와 모두 같다. 새 편집 경로의 3·4쪽은 양쪽 100%이며, 집중 Rust 18건·실제 글상자 편집과 이번 API·Studio 2,721건도 성공했다. 전체 19단계와 기존 530쪽을 새 probe에서 재실행했다고 표시하지 않는다.
 
 ## 원 기여와 메인테이너 보정의 구분
 

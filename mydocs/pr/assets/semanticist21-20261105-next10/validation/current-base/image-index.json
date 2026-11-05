@@ -1,0 +1,24 @@
+[
+  {
+    "page": 3,
+    "path": "mydocs/pr/assets/semanticist21-20261105-next10/images/current-base/book-p003-review.png",
+    "crop_96dpi": [
+      100,
+      110,
+      735,
+      990
+    ],
+    "sha256": "1c7a0b2df9825b565274244ded15883b85e240cbf7c5f0f170eaac8fc13a54c8"
+  },
+  {
+    "page": 4,
+    "path": "mydocs/pr/assets/semanticist21-20261105-next10/images/current-base/book-p004-review.png",
+    "crop_96dpi": [
+      100,
+      110,
+      735,
+      990
+    ],
+    "sha256": "4ee69daed3e445e474f199b689b2ff566e96e488d139f70a0e8daa9fc08fb37a"
+  }
+]

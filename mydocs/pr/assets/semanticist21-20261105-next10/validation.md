@@ -75,3 +75,8 @@
 처음 사용한 큰 글꼴 팩과 system-only Native 결과는 최종 증거에서 제외하고 올바른 문서별 구성을 실제 재출력했다. 공용 Cargo target에서 base 산출물이 잘못 재사용된 두 짧은 빌드도 무효로 분류했다. source 내용은 바꾸지 않고 소유 worktree의 root source mtime을 갱신해 실제 컴파일한 뒤 source·binary/API·SHA를 다시 확인했다. 마지막 대화창 하네스의 기본 host 접속 실패는 headless를 명시한 실행으로 바로잡았으며 제품 코드는 바꾸지 않았다. 이후 실제 앱의 오류 표시와 셀 불변 검사를 모두 통과했다.
 
 원격 push·PR 생성·merge·공개 댓글은 수행하지 않았다. [원격 처리안](remote-action-plan.md)과 [PR 본문](pr-body.md)으로 다음 원격 단계 승인을 확인한다.
+
+
+## 마지막 base 전진의 별도 호환 확인
+
+원 code head 584c9503ba는 유지했다. 현재 devel a95d1d5afa와의 실제 병합 probe 06bf0855b4에서 [별도 기능·출력 확인](current-base-compatibility.md)을 완료했다. 이 프로그램의 Native/fresh WASM은 이번 124쪽씩과 새 경로 3·4쪽을 실제 재출력했고, 전쪽은 기존 후보와 동일하며 영향 쪽은 양쪽 100%다. 집중 Rust 18건, 실제 그룹 글상자 입력/선택/Esc·계산식·이번 API와 Studio 2,721건도 통과했다. 고정 code head의 전체 19단계와 새 병합 probe의 검증을 합산하거나 같은 producer라고 표시하지 않는다.

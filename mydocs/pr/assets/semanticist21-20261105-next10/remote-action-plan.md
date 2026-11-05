@@ -24,3 +24,5 @@
 ## 원 PR별 댓글 초안
 
 각 초안은 아직 게시하지 않았다. `<MERGE_PR_NUMBER>`·`<MERGE_SHA>`·`<CI_RUN_ID>`은 승인된 실제 통합 뒤의 확정값으로 바꾼다. 이미지 형식·해시와 입력/쪽 대응이 없으면 게시를 보류한다. 각 초안의 경로는 `comments/pr-<원 번호>.md`다.
+
+최종 현재-base 확인: a95d1d5afa와의 [실제 병합 호환](current-base-compatibility.md)을 완료했다. strict=false 정책 아래 검증한 code head를 유지하며, push/merge 직전의 계산 tree가 실제 검증한 제품 subtree와 같은지 다시 확인한다. CI/workflow 변경은 이번 PR의 고유 diff에 없다.

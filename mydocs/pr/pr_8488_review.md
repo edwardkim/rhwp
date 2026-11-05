@@ -58,3 +58,5 @@ Frontend의 fresh WASM archive 생성이 `No space left on device`로 종료됐�
 아직 게시하지 않았다. 원 PR별로 이 문서와 [후속 초안](assets/semanticist21-20261105-next10/comments/pr-8488.md)을 확인한 뒤 원 기여의 성과를 먼저 인정하고 메인테이너 보정의 이유·실제 검증 결과를 한국어 존댓말로 적는다.
 
 이미지는 `assets/semanticist21-20261105-next10/images/post8622/footnote-review.png`의 **footnote_shape/restart-page.hwp 2쪽**에 대응하는 그림을 사용한다. merge SHA 확정 후 `https://raw.githubusercontent.com/edwardkim/rhwp/<MERGE_SHA>/mydocs/pr/assets/semanticist21-20261105-next10/images/post8622/footnote-review.png`로 고정하고, 실제 devel 포함·HTTP image 형식·해시를 확인한 뒤 게시한다. 임시 output이나 다른 PR의 대표 이미지로 대체하지 않는다. 게시 후 API 본문과 실제 화면을 확인한다. 통합 PR merge·원 PR 완료 반영·댓글·후속 기록·동기화·정리는 별도 원격 승인 뒤 수행한다.
+
+현재 base a95d1d5afa와의 [실제 병합 호환](assets/semanticist21-20261105-next10/current-base-compatibility.md)도 완료했다. 원 검증 code head를 재작성하지 않았고, 이번 전 124쪽씩의 실제 재출력·이번 API·새 글상자 편집 경로를 함께 확인했다.

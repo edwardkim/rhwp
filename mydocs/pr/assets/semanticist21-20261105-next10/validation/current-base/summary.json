@@ -1,0 +1,916 @@
+{
+  "candidate": "74d37978091007eae783134d530e689064404fd1",
+  "base": "a95d1d5afad1bfd61998794fa78fb0db100d690a",
+  "merge_tree": "1469367a0ad7ba14a63d2a4627ab50ee25df6e57",
+  "probe_commit": "06bf0855b49d6a448b70987016489a65e546aff3",
+  "worktree": "/home/edward/mygithub/rhwp-worktrees/review-next10-current-base-compat",
+  "candidate_src_tree": "e66b2bf4d66655b52e6f2db925ff058dbb181941",
+  "probe_src_tree": "0b4c9740b505f8b5dff4b791f454a01885837206",
+  "rows": [
+    {
+      "key": "borders",
+      "input": "tests/fixtures/border_line_types/borders.hwp",
+      "reference": "pdf/border_line_types/borders-hancom-mac-12.30.pdf",
+      "pages": 1,
+      "input_sha256": "49566c073210994953b02a0d1e178636ba038c3e7e432f436266f9762407052f",
+      "reference_sha256": "110ef964ad956d961093dadbf725d93c62492ac1feee78f24daae5fb407a02bf",
+      "native_minimum": "97.79",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "97.73",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "outline",
+      "input": "tests/fixtures/char_outline_types/outline.hwp",
+      "reference": "pdf/char_outline_types/outline-hancom-mac-12.30.pdf",
+      "pages": 1,
+      "input_sha256": "e6317596e9eb1f7c5182e8c7aa821a3c036f00a2b9829b02956d988af4d4fb85",
+      "reference_sha256": "9917eb42efb7dfb0ffd34f009f10cb9d1044c089613228229d0fc1471af57006",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "equal-height",
+      "input": "tests/fixtures/rowspan_staggered_heights/equal-height-partial-block.hwp",
+      "reference": "pdf/rowspan_staggered_heights/equal-height-partial-block-hancom-mac-12.30.pdf",
+      "pages": 7,
+      "input_sha256": "a0b4e465ba880cd0be611f84a3db69fa38b64b31cfc9a807f9a2fc86a998228d",
+      "reference_sha256": "a4c213bb53b86411340b432e8d347c5a6386807ceb606f001c043288bb115755",
+      "native_minimum": "99.56",
+      "native_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "wasm_minimum": "99.57",
+      "wasm_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "key": "equal-width",
+      "input": "tests/fixtures/table_equal_cell_sizes/equal-width-partial-block.hwp",
+      "reference": "pdf/table_equal_cell_sizes/equal-width-partial-block-hancom-mac-12.30.pdf",
+      "pages": 7,
+      "input_sha256": "efbdec7676c70fcd5334860b870a441bbc949fe39f2595487b99f422be4fa341",
+      "reference_sha256": "8988f4748bdea72a997f632bba5ca5b5025a6291ac2eb762c22ef15af04d4c01",
+      "native_minimum": "99.55",
+      "native_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "wasm_minimum": "99.57",
+      "wasm_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "key": "uneven-height",
+      "input": "tests/fixtures/table_equal_cell_sizes/uneven-height-hancom.hwp",
+      "reference": "pdf/table_equal_cell_sizes/uneven-height-hancom-mac-12.30.pdf",
+      "pages": 1,
+      "input_sha256": "dd3606bb1786c0c64e870dcd0bc47a82f6a3328bb25d28d1b1096961382a5342",
+      "reference_sha256": "6d36a414ee573158df39ea8996954009c99534d3b85b06b2325ceb5dd73966ee",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "uneven-width",
+      "input": "tests/fixtures/table_equal_cell_sizes/uneven-width-hancom.hwp",
+      "reference": "pdf/table_equal_cell_sizes/uneven-width-hancom-mac-12.30.pdf",
+      "pages": 1,
+      "input_sha256": "09b190de71f57fce92921d56c1e8731f4bc769911cb59bbd8f2b59dac3d5c3b1",
+      "reference_sha256": "b866117e35154fa4ff3c5f4915dab9e3121533bea02dd743f15ff9d5ccfe4321",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "footnote-shape",
+      "input": "tests/fixtures/footnote_shape/restart-page.hwp",
+      "reference": "pdf/footnote_shape/restart-page-hancom-mac-12.30.pdf",
+      "pages": 2,
+      "input_sha256": "e6483160868d2f38b9deddfad47f5e2a5a233f0dccc2965c3e3bd8bd2d7bc67d",
+      "reference_sha256": "4c7d8f92a66975d862b1a709758b1d149ece2d14ae72351a0adae79c2e93760b",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1,
+        2
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "key": "drop-cap",
+      "input": "tests/fixtures/drop_cap/double-line.hwp",
+      "reference": "pdf/drop_cap/double-line-hancom-mac-12.30.pdf",
+      "pages": 1,
+      "input_sha256": "44455394b5ffe21518352d148616c81f97dc0cbc52a0a938b2bb4def19a08a08",
+      "reference_sha256": "c8681d0aaf3fd16c53519fc5de521482fc3f40cf4c53d7e9fc38b32f4391767d",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "endnote-restart5",
+      "input": "tests/fixtures/endnote_numbering/restart-5.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/endnote-restart5-2020.pdf",
+      "pages": 4,
+      "input_sha256": "e88a8288407f7401cad44b7d403646e11cc2a6e4667b8c05e79b6a8cde20c3b9",
+      "reference_sha256": "3624a60d1926c7fc8e674856b050b3aa8beaaa1face0b008567746743936b3cf",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "key": "endnote-continue",
+      "input": "tests/fixtures/endnote_numbering/continue.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/endnote-continue-2020.pdf",
+      "pages": 4,
+      "input_sha256": "467ae3882535aaddc4a4ced4c05ad0f154f27d8cb4bc6addb0cf69c9af76a2d8",
+      "reference_sha256": "2db2fb60d386267efcf357df85824416b788ee14ee444ac3f2935e2b24f5518b",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "key": "endnote-new20",
+      "input": "tests/fixtures/endnote_numbering/new-number-20.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/endnote-new20-2020.pdf",
+      "pages": 4,
+      "input_sha256": "437ef87552f9c637d4f328ec7bb665deac3bd0ebd544be621d1473804fd4a0c4",
+      "reference_sha256": "5d586112655432b70407a8f8633d5ec9958ad9b1681ed164bcb0e0c726ac31f3",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "key": "paragraph-heads",
+      "input": "tests/fixtures/paragraph_head/hancom-heads.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/paragraph-heads-2020.pdf",
+      "pages": 1,
+      "input_sha256": "d73699eb4e0b536496d6d2d6d3e0e0f9f68816e38cb8891457c61c239baff808",
+      "reference_sha256": "d2f391d16174ee582bc80f45c04fa5966a984819cc58d0a8234fc945f64cf012",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "table-formula-easy",
+      "input": "tests/fixtures/table_formula/easy.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/table-formula-easy-2020.pdf",
+      "pages": 1,
+      "input_sha256": "b46636826c13cc09045a0097dd079580914244ddd8db4ce66f507a770583aed0",
+      "reference_sha256": "d46e01eebbf388dabd4346ad6513ab62fd3db5a2c24c3609eb75cc5b68bb5533",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "table-formula-hancom-result",
+      "input": "tests/fixtures/table_formula/hancom.hwp",
+      "reference": "pdf/semanticist21-20261105-next10/table-formula-hancom-result-2020.pdf",
+      "pages": 1,
+      "input_sha256": "d8ac4dd6db6d4c73714c2c7519898f1398552bb840325f9782f59e10a94db903",
+      "reference_sha256": "f6b36077ebbfe982544a151bb49592707b8f589cc31db863e2acf0f9bb1111d4",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "table-formula-stale",
+      "input": "tests/fixtures/table_formula/stale.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/table-formula-stale-2020.pdf",
+      "pages": 1,
+      "input_sha256": "e11b4ee37a4ab016cbd7056e725ccf89e2a3448e68ba92da18c39c4442ad8177",
+      "reference_sha256": "a767229bca103363f79e0e0f8d80110401df0f98d868a2cd59f6b278780f796e",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "table-formula-cycles",
+      "input": "tests/fixtures/table_formula/cycles.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/table-formula-cycles-2020.pdf",
+      "pages": 1,
+      "input_sha256": "737c454944b3551d9cddcb759b2337093dd1d879eac525d7a218fa3e75704e65",
+      "reference_sha256": "a87e4ded81122fd791696765ae2f19c7e7726877780a9d9f6050432b1e75d951",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "endnote-continued-hwp",
+      "input": "tests/fixtures/semanticist21_next10_review/endnote-continued.hwp",
+      "reference": "pdf/semanticist21-20261105-next10/endnote-continued-hwp-2020.pdf",
+      "pages": 4,
+      "input_sha256": "89b61448d7ddef3af0d77d6f7b84a9c5700080ecc5d5dbc3cadf770112ef4f7d",
+      "reference_sha256": "0d78ed977fa36f44128a2b1a591a2b7ca67820b6b92e2d75f437f610c0b51079",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "key": "endnote-continued-hwpx",
+      "input": "tests/fixtures/semanticist21_next10_review/endnote-continued.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/endnote-continued-hwpx-2020.pdf",
+      "pages": 4,
+      "input_sha256": "efb8a8b396001862bac488342c699d24aaec230d0cb6b0ac18346c8e4ecdaac9",
+      "reference_sha256": "bd65a1e5509780be6407412a6651da3d0a1b24056ed806f59eefa89468c8e0de",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "key": "endnote-deleted-hwpx",
+      "input": "tests/fixtures/semanticist21_next10_review/endnote-deleted.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/endnote-deleted-hwpx-2020.pdf",
+      "pages": 4,
+      "input_sha256": "1e4628c195fb13b6bbf8e203ef5032ae389f07e7bacd85e70faf046079bd0748",
+      "reference_sha256": "62d9d98c36199331b5b0bf3252d1a33a6ad3fe6b48dfe72035bc3f49b56897bd",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "key": "endnote-inserted-hwpx",
+      "input": "tests/fixtures/semanticist21_next10_review/endnote-inserted.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/endnote-inserted-hwpx-2020.pdf",
+      "pages": 4,
+      "input_sha256": "e9dc2dd384df631dbcd01735041e8eba77011d0bb211053db0e4549ee260554e",
+      "reference_sha256": "6bc9965ad99d34feb495611a0d2f92173d27bd21217616000893b85df22cb035",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "key": "equal-height-edited-hwp",
+      "input": "tests/fixtures/semanticist21_next10_review/equal-height-edited.hwp",
+      "reference": "pdf/semanticist21-20261105-next10/equal-height-edited-hwp-2020.pdf",
+      "pages": 7,
+      "input_sha256": "7fa333d0c716dff9570386bc6bfaf4160c06dcfaa99608b1251c5b8f0000605e",
+      "reference_sha256": "c12877e4938327dc539ead1df58ab46bd2c7ae210ba25865174c18d71a6a3675",
+      "native_minimum": "99.12",
+      "native_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "wasm_minimum": "99.72",
+      "wasm_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "key": "equal-height-edited-hwpx",
+      "input": "tests/fixtures/semanticist21_next10_review/equal-height-edited.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/equal-height-edited-hwpx-2020.pdf",
+      "pages": 7,
+      "input_sha256": "ac37e38d7f5b380cfc7183231b1d614d82519bd253ec31089f4a3549b9e8304b",
+      "reference_sha256": "cb233225593dd3d85848d01e70f8e7234a2e7963860bcd28d3604b3a272dad1f",
+      "native_minimum": "99.12",
+      "native_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "wasm_minimum": "99.72",
+      "wasm_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "key": "equal-width-edited-hwp",
+      "input": "tests/fixtures/semanticist21_next10_review/equal-width-edited.hwp",
+      "reference": "pdf/semanticist21-20261105-next10/equal-width-edited-hwp-2020.pdf",
+      "pages": 7,
+      "input_sha256": "064a7d51dccaddf1c3136679bfcf40b0f51a71b031ffad5397e953b9d5e92c05",
+      "reference_sha256": "e50ccf8ce05db966b10ed3063062995bd4a79e33f0ff0b6b314e7a2d4ad18458",
+      "native_minimum": "99.12",
+      "native_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "wasm_minimum": "99.72",
+      "wasm_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "key": "equal-width-edited-hwpx",
+      "input": "tests/fixtures/semanticist21_next10_review/equal-width-edited.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/equal-width-edited-hwpx-2020.pdf",
+      "pages": 7,
+      "input_sha256": "f697cee620b06e271da8b57ba469465f62f346352254924da17fc3e4d53db893",
+      "reference_sha256": "35bd25a2d14e2bbd149097437dac9b0cfd08f51ca32a01002be5c1f7ceb3f769",
+      "native_minimum": "99.12",
+      "native_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "wasm_minimum": "99.72",
+      "wasm_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "key": "footnote-shape-applied-hwp",
+      "input": "tests/fixtures/semanticist21_next10_review/footnote-shape-applied.hwp",
+      "reference": "pdf/semanticist21-20261105-next10/footnote-shape-applied-hwp-2020.pdf",
+      "pages": 2,
+      "input_sha256": "c176bd86461e51faed330cdb71bc19c3374fbbdfbd35d806c1604a35ae9b83ea",
+      "reference_sha256": "b9f21d92481a124d7320b8726b1867a09928e8670f8063967f83466217eba509",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1,
+        2
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "key": "footnote-shape-applied-hwpx",
+      "input": "tests/fixtures/semanticist21_next10_review/footnote-shape-applied.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/footnote-shape-applied-hwpx-2020.pdf",
+      "pages": 2,
+      "input_sha256": "f9ba9b3ce981e49507a6b307d36f7f2d1592b398ddd365dc889240a05060b705",
+      "reference_sha256": "9de9b556c95fa949cb91c3a86a098b5febc8a4aca9ff9b951c30481040281d51",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1,
+        2
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "key": "outline-id2-hwp",
+      "input": "tests/fixtures/semanticist21_next10_review/outline-id2.hwp",
+      "reference": "pdf/semanticist21-20261105-next10/outline-id2-hwp-2020.pdf",
+      "pages": 1,
+      "input_sha256": "d0ee102c8e0734b3b3094b1e48590d517b64d5aa934262e4388978f770276919",
+      "reference_sha256": "286f1d304c5fa9ed48220123224dbfd9f30f4b85316f1b3add4da3b89d61ee4a",
+      "native_minimum": "96.49",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "97.10",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "outline-id2-hwpx",
+      "input": "tests/fixtures/semanticist21_next10_review/outline-id2.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/outline-id2-hwpx-2020.pdf",
+      "pages": 1,
+      "input_sha256": "b3cd3c7fb63c68a8b3e7a0978566886bf9b51e0a736cfd1b0c88cc00404a1ead",
+      "reference_sha256": "72dd310b8d5f40a6e2bd88aaf2bebb36c06a04a9cc323b0001392000c8ae554d",
+      "native_minimum": "96.49",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "97.10",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "paragraph-head-edited-hwp",
+      "input": "tests/fixtures/semanticist21_next10_review/paragraph-head-edited.hwp",
+      "reference": "pdf/semanticist21-20261105-next10/paragraph-head-edited-hwp-2020.pdf",
+      "pages": 1,
+      "input_sha256": "2728d6263b06ffbc0e714d7d1e120cc8b09605e9c7660d45c0b20cc51b59ae0b",
+      "reference_sha256": "73a8218740c074d520475a5430c0b657f16b452b0a14c6fb340971aa519eaede",
+      "native_minimum": "99.71",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "99.69",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "paragraph-head-edited-hwpx",
+      "input": "tests/fixtures/semanticist21_next10_review/paragraph-head-edited.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/paragraph-head-edited-hwpx-2020.pdf",
+      "pages": 1,
+      "input_sha256": "6af6c35a61063be766838a6a1b174ecfc4f233b08b70b4434d94f15e051b7198",
+      "reference_sha256": "5cf97a8ac4441e631424379d42bc34b543beec6418fe70ac383c95e6c6b17701",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "paragraph-head-off-hwpx",
+      "input": "tests/fixtures/semanticist21_next10_review/paragraph-head-off.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/paragraph-head-off-hwpx-2020.pdf",
+      "pages": 1,
+      "input_sha256": "e1375eb9b97a38ccf9f76c4c6cd99cfc463db35e0ad7baffba4d52e97623adb0",
+      "reference_sha256": "985ddea8e1345aeb1e7a87908534f47144efd08257e5a44ac4823fa61b04723f",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "table-formula-easy-edited-hwpx",
+      "input": "tests/fixtures/semanticist21_next10_review/table-formula-easy-edited.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/table-formula-easy-edited-hwpx-2020.pdf",
+      "pages": 1,
+      "input_sha256": "646db28aeb61d828dcc66a7eea54fcb256a2e336e696793208d276db8250eb72",
+      "reference_sha256": "c6df311a25761442ede5cb8db67295850adf35b0eca9217c23eaaa97a41b5ec5",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "table-formula-recalculated-hwp",
+      "input": "tests/fixtures/semanticist21_next10_review/table-formula-recalculated.hwp",
+      "reference": "pdf/semanticist21-20261105-next10/table-formula-recalculated-hwp-2020.pdf",
+      "pages": 1,
+      "input_sha256": "410ae0f30937a83449a4c8e813b19029c8fd84000aa9c14b8dbb0b3f88b7fe59",
+      "reference_sha256": "749976d98cc9d0dc9bfe86da6585fbd838b8a7306a95a466f48e29d4bf7676d7",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "table-formula-recalculated-hwpx",
+      "input": "tests/fixtures/semanticist21_next10_review/table-formula-recalculated.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/table-formula-recalculated-hwpx-2020.pdf",
+      "pages": 1,
+      "input_sha256": "9ced780bb37467cfaa7137c866c437f6ad710a45c3879caf69e84e102221cc41",
+      "reference_sha256": "12c9c727279a552d2c82ca6c017c94ae1acbffabe416c2352d70b733497dfc37",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "uneven-height-edited-hwp",
+      "input": "tests/fixtures/semanticist21_next10_review/uneven-height-edited.hwp",
+      "reference": "pdf/semanticist21-20261105-next10/uneven-height-edited-hwp-2020.pdf",
+      "pages": 1,
+      "input_sha256": "edeb687bdddd19021a3fd8e446a0b225b5c3c917fc9154329610254085527fe9",
+      "reference_sha256": "79c3458295a4cb2622322632ac26e25d2bd0a539888d720e7785d86cdb7bc89b",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "uneven-height-edited-hwpx",
+      "input": "tests/fixtures/semanticist21_next10_review/uneven-height-edited.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/uneven-height-edited-hwpx-2020.pdf",
+      "pages": 1,
+      "input_sha256": "5c6416c2f4a1514e5aa32999603f2cdfcbab9466f1f30eb815546c9c56055b43",
+      "reference_sha256": "8954bb2f9ffa710a298594d321df3e98db91ffdf63fba7e5eb99a251bebc8dc3",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "uneven-width-edited-hwp",
+      "input": "tests/fixtures/semanticist21_next10_review/uneven-width-edited.hwp",
+      "reference": "pdf/semanticist21-20261105-next10/uneven-width-edited-hwp-2020.pdf",
+      "pages": 1,
+      "input_sha256": "23c0c4941e0f6d21f3cbba4122be6ac9df2ad422c348a4154f1758e2a6797f03",
+      "reference_sha256": "838ee6da65a8dfb196e6653e198306ab2cf468af5f065cf445ac9c07a583c20a",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "uneven-width-edited-hwpx",
+      "input": "tests/fixtures/semanticist21_next10_review/uneven-width-edited.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/uneven-width-edited-hwpx-2020.pdf",
+      "pages": 1,
+      "input_sha256": "6c39965155be3b1dc987dc8454c0e9093d9322390d99613b68aae742946478fd",
+      "reference_sha256": "3f66399bc0d9881115d5c4e7c0c18acf4bd5c0c5e5a02d5732b5d8779ce82698",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "footnote-shape-corrected-hwpx",
+      "input": "tests/fixtures/semanticist21_next10_review/footnote-shape-corrected.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/footnote-shape-corrected-hwpx-2020.pdf",
+      "pages": 2,
+      "input_sha256": "feb37b65b8ef714bbfbc45940403551f4e5681d0ab0aed3b8380ecb71cc76673",
+      "reference_sha256": "10666be5c2f124ea9a5f42cc64b8854b222e96e3313eb532a07f440e5ea88050",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1,
+        2
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "key": "pdf-text-paint",
+      "input": "pdf/issue8403/text-stroke.pdf",
+      "reference": "pdf/issue8403/text-stroke.pdf",
+      "pages": 7,
+      "input_sha256": "034386aced59c69c9901ac4b747e24ff3c1d1b9a3cd5f86e44e930aedc252e84",
+      "reference_sha256": "034386aced59c69c9901ac4b747e24ff3c1d1b9a3cd5f86e44e930aedc252e84",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "key": "pdf-image-patterns",
+      "input": "pdf/issue8403/image-patterns.pdf",
+      "reference": "pdf/issue8403/image-patterns.pdf",
+      "pages": 5,
+      "input_sha256": "f121e0f0ca222f397ea80d5b16dba45b1e2d768cc339e1e495ade9e3f512869f",
+      "reference_sha256": "f121e0f0ca222f397ea80d5b16dba45b1e2d768cc339e1e495ade9e3f512869f",
+      "native_minimum": "99.87",
+      "native_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "wasm_minimum": "99.87",
+      "wasm_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "key": "borders-windows",
+      "input": "tests/fixtures/border_line_types/borders.hwp",
+      "reference": "pdf/semanticist21-20261105-next10/borders-windows-2020.pdf",
+      "pages": 1,
+      "input_sha256": "49566c073210994953b02a0d1e178636ba038c3e7e432f436266f9762407052f",
+      "reference_sha256": "faaee897ccaf741c84bef1a32d4db575fd0334dabd51c97f572040118cafa732",
+      "native_minimum": "98.04",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "97.98",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "equalize-original",
+      "input": "tests/fixtures/table_equal_cell_sizes/original.hwp",
+      "reference": "pdf/semanticist21-20261105-next10/equalize-original-2020.pdf",
+      "pages": 7,
+      "input_sha256": "e3ee5a9615b329e7cd5817e09e905b9973538d3eeceaf5a2f1338f4218766a31",
+      "reference_sha256": "2443783fe29d72e60643731aa071e1c86def2eca21026f5c6df2d03eea32b4b5",
+      "native_minimum": "99.12",
+      "native_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "wasm_minimum": "99.72",
+      "wasm_unchanged_png_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "key": "uneven-height-original",
+      "input": "tests/fixtures/table_equal_cell_sizes/uneven-height.hwp",
+      "reference": "pdf/semanticist21-20261105-next10/uneven-height-original-2020.pdf",
+      "pages": 1,
+      "input_sha256": "003f6a7f48cc87e60b7d1b023330ebaf958f6ae94fc0c9a3fadc7fc727277b4d",
+      "reference_sha256": "2edd6f096081683f1c6412d5381f25578a9f70c3edef07327393b95eb35a3038",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "uneven-width-original",
+      "input": "tests/fixtures/table_equal_cell_sizes/uneven-width.hwp",
+      "reference": "pdf/semanticist21-20261105-next10/uneven-width-original-2020.pdf",
+      "pages": 1,
+      "input_sha256": "3b480c147060bf93582bcf1e3fa2a1af71f22ee4632207dc9db8996b345e697f",
+      "reference_sha256": "64e16d4ff2ffea5a43b8547e9463b0a73f16cf8e7edc11925be06b3adcfaa72c",
+      "native_minimum": "100.00",
+      "native_unchanged_png_pages": [
+        1
+      ],
+      "wasm_minimum": "100.00",
+      "wasm_unchanged_png_pages": [
+        1
+      ]
+    },
+    {
+      "key": "footnote-shape-configured-hwpx",
+      "input": "tests/fixtures/semanticist21_next10_review/footnote-shape-configured.hwpx",
+      "reference": "pdf/semanticist21-20261105-next10/footnote-shape-configured-hwpx-2020.pdf",
+      "pages": 2,
+      "input_sha256": "7444fb2a0a42f907c67b29f858347fe754f8f866b5413c5770357df008840796",
+      "reference_sha256": "b6bbe9db15978c484cce138b13b89e1bc4cd18b73cdfa1bf867ef39997c0863a",
+      "native_minimum": "99.92",
+      "native_unchanged_png_pages": [
+        1,
+        2
+      ],
+      "wasm_minimum": "99.92",
+      "wasm_unchanged_png_pages": [
+        1,
+        2
+      ]
+    }
+  ],
+  "pages_per_backend": 124,
+  "native_minimum": "96.49",
+  "wasm_minimum": "97.10",
+  "all_248_pngs_unchanged": true,
+  "focused": {
+    "passed": 18,
+    "filtered_or_skipped": 921,
+    "exit": 0
+  },
+  "runtime_steps": 10,
+  "all_export_page_counts_verified": true,
+  "all_actual_input_and_reference_sha256_verified": true,
+  "book_full_page_count": 383
+}

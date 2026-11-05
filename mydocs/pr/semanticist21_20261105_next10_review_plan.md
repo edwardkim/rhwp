@@ -1,6 +1,6 @@
 # semanticist21 미지정 리뷰어 PR 10건 누적 검토 계획 — 2026-11-05 두 번째 묶음
 
-## 최신 진행 상태 — 고정 head의 로컬 검증 완료·현재 base 호환 확인
+## 최신 진행 상태 — 고정 head의 로컬 검증·현재 base 호환 완료
 
 원 head 10개를 merge 조상으로 보존했고 최신 base `6e1de406209ba9a58032f6ca6de45b18aa687d1c`를 통합했다. 최종 제품 source는 `584c9503baa651c62d0403dad9cb77c5cb9ffde6`다. 필수 로컬 검증 19단계를 완료했고 전체 nextest 12,629 PASS·45 SKIP, Native 공식 3종 4,064 PASS·12 IGNORE, release lib 3,983 PASS·12 IGNORE, 모든 lint·workspace build·doc test·Studio 2,720건이 통과했다.
 
@@ -8,7 +8,7 @@
 
 [최종 검토](semanticist21_20261105_next10_review.md), [실제 실행·TSV·확대 판독](assets/semanticist21-20261105-next10/validation.md), [PR 본문](assets/semanticist21-20261105-next10/pr-body.md), [원격 처리와 댓글 초안](assets/semanticist21-20261105-next10/remote-action-plan.md)을 준비했다. 현재 승인은 로컬 보정·필수 검증이며 원격 push·새 PR·merge·공개 댓글은 수행하지 않았다.
 
-최종 fetch에서 현재 base가 `a95d1d5afad1bfd61998794fa78fb0db100d690a`로 전진했다. #8630의 실제 편집·소비 경로를 조사하고 충돌 없는 현재-base 병합 트리를 별도로 확인한다. 검증한 source 584c9503ba를 반복 merge/rebase하지 않으며, 그 전체 실행을 새 병합 트리의 실행으로 바꾸어 표시하지 않는다.
+최종 fetch에서 현재 base가 `a95d1d5afad1bfd61998794fa78fb0db100d690a`로 전진했다. #8630의 실제 편집·소비 경로를 조사하고 [충돌 없는 현재-base 병합 트리의 실제 실행](assets/semanticist21-20261105-next10/current-base-compatibility.md)을 완료했다. 이번 124쪽씩의 PNG 248개 동일, 새 경로 3·4쪽 양쪽 100%, Rust 집중 18건·실제 브라우저·Studio 2,721건이 통과했다. 검증한 source 584c9503ba를 반복 merge/rebase하지 않으며, 그 전체 실행을 새 병합 트리의 실행으로 바꾸어 표시하지 않는다.
 
 아래 접수와 누적 보정 기록의 미완료 표시는 각 중간 시점의 상태다. 최신 완료 여부는 이 절과 최종 검증 문서에서 확인한다.
 

@@ -63,3 +63,5 @@ Archive C의 실패는 `issue_6612_sample14_wmf_pictures_reach_pdf`의 기대 21
 추가 원 자료: [기여자가 제공한 함수 결과 PDF 1쪽](assets/semanticist21-20261105-next10/images/post8622/functions-original-hancom.png). 이 PDF에는 원 HWP/HWPX가 없으므로 실제 평가·저장 fixture와 같은 입력의 pixel 비교라고 표시하지 않는다. 독립 숫자 의미와 실제 API/저장/대화창을 나누어 검증한다.
 
 실제 Studio 대조: [LOG 입력](assets/semanticist21-20261105-next10/images/post8622/formula-dialog-log-finite.png), [정의역 오류의 정상 안내](assets/semanticist21-20261105-next10/images/post8622/formula-dialog-invalid-finite.png), [실행 값·undo/redo·취소](assets/semanticist21-20261105-next10/validation/finite-final/formula-dialog-finite.json). 원 PR 후속 댓글에는 원 함수 결과 PDF와 이 실제 대화창을 구분해 연결한다.
+
+현재 base a95d1d5afa와의 [실제 병합 호환](assets/semanticist21-20261105-next10/current-base-compatibility.md)도 완료했다. 원 검증 code head를 재작성하지 않았고, 이번 전 124쪽씩의 실제 재출력·이번 API·새 글상자 편집 경로를 함께 확인했다.
