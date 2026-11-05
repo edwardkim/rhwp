@@ -1,0 +1,30 @@
+{
+  "productSource": "a314d7a24d3234305abff43149f575853db31105",
+  "wasmSha256": "3166eeefa19ba7e6ffd63dc236b78232cc496a9361f6991f18896249c28a82ee",
+  "status": "passed",
+  "observations": [
+    {
+      "operation": "invalid-index",
+      "index": -1,
+      "id": -1,
+      "styleListUnchanged": true,
+      "textPreserved": true
+    },
+    {
+      "operation": "invalid-index",
+      "index": 23,
+      "id": -1,
+      "styleListUnchanged": true,
+      "textPreserved": true
+    },
+    {
+      "operation": "append-without-index",
+      "id": 22
+    },
+    {
+      "operation": "insert-middle",
+      "id": 1,
+      "stylesAdded": 2
+    }
+  ]
+}

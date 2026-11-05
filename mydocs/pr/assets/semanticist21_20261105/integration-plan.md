@@ -326,3 +326,12 @@ R2 전체 nextest는 새 제품 보정이 필요해 컴파일 중 종료 코드 
 이 결과는 해당 측정과 집중 검사에 한정한다. 전쪽 fresh WASM, PR #8389·#8397의 원 표시 기준, 최종 전체 Rust·Native Skia·lint·편람 필수 gate는 계속 검증 중이다. 모든 개별 PR의 최종 수용 판정은 이 필수 검증 뒤 갱신한다.
 
 보호 문서 중 영월의 기존 실행 계약은 `planet6897_20261103/original_supplier/README.md`와 `yeongwol-font-environment.json`에 명시돼 있다. 초기 보호 계획에서 누락했던 승인된 `바탕→Haansoft Batang`, `새굴림→Malgun Gothic`과 원본 메트릭 보존 설정을 같은 전체 시스템 글꼴 위에 다시 공급한다. 새로운 대체 설정으로 점수를 맞추는 것이 아니라 기존 원 PR 측정 조건을 복원하며, 실제 재측정 전에는 하락 해소로 판정하지 않는다.
+
+
+### 스타일 생성 API 반환 계약과 UI 보정
+
+전체 Node 2,721건에서 2,720 PASS, `style-undo-routing`의 이전 생성 계약 검사 1 FAIL을 확인했다. PR #3400과 issue #3438 보정 `51801e44e1`은 당시 음수 실패가 없던 API를 근거로 했다. PR #8526의 실제 삽입 API는 잘못된 index를 -1로 거절하므로 기존 push/지역 변수/음수 경로 부재 가정은 현재 계약에 맞지 않는다.
+
+UI도 이 실제 실패값을 성공으로 처리하지 않도록 모양 적용 전에 false를 반환한다. 기존 생성·삽입·거절의 Rust 실제 API 검사는 유지하고, Node에서 실제 onConfirm 소비 경계의 실패와 정상 0/3 ID를 실행했다. 보정 전 2 FAIL / 보정 후 관련 14 PASS, 실제 최적화 WASM의 -1 반환·무변 문서·정상 삽입도 확인했다. [정식 분석·실행 근거](style-return-contract/README.md)에 연결한다. TypeScript·production build는 통과했고 실제 browser 검증은 계속한다.
+
+이 단계는 TypeScript UI·Node 검사·기존 최적화 package 동기화 변경이다. 진행 중인 전체 Rust의 코드·회귀 본문과 측정 제품 source A314를 바꾸지 않았으며 기존 Native/fresh 측정을 새 제품으로 재라벨하지 않는다.

@@ -1,0 +1,58 @@
+(node:1867201) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 스타일 삭제는 snapshot 으로 기록된다 (9.195782ms)
+✔ 스타일 다이얼로그는 모달 중 도달 불가한 history-jumped 를 구독하지 않는다 (0.913798ms)
+✖ 스타일 생성·수정은 모양 적용까지 한 스냅샷으로 원자화되고 실제 실패 신호만 처리한다 (1.765975ms)
+✔ 기존 스타일 갱신 API는 없는 ID에 false를 반환한다 (8.420958ms)
+✖ 스타일 생성 실패는 실제 확인 경로에서 모양 적용·성공 알림을 생략한다 (24.332896ms)
+✔ 0을 포함한 성공 스타일 ID는 모양 적용과 성공 후속 처리를 유지한다 (9.498089ms)
+✔ 스타일 다이얼로그 생성 지점이 services 를 넘긴다 (0.755225ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 5
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 585.133591
+
+✖ failing tests:
+
+test at rhwp-studio/tests/style-undo-routing.test.ts:56:1
+✖ 스타일 생성·수정은 모양 적용까지 한 스냅샷으로 원자화되고 실제 실패 신호만 처리한다 (1.765975ms)
+  AssertionError [ERR_ASSERTION]: 실제 생성 실패는 모양 적용 전에 중단
+      at TestContext.<anonymous> (file:///home/tsjang/rhwp/rhwp-studio/tests/style-undo-routing.test.ts:77:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: "const apply = (wasm: WasmBridge): boolean => {\n      if (this.addMode) {\n        const baseParaShapeId = this.baseInfo.paraProps?.paraShapeId;\n        const baseCharShapeId = this.baseInfo.charProps?.charShapeId;\n        const newId = wasm.createStyle(JSON.stringify({\n          name, englishName, type: styleType, nextStyleId,\n          ...(typeof baseParaShapeId === 'number' ? { baseParaShapeId } : {}),\n          ...(typeof baseCharShapeId === 'number' ? { baseCharShapeId } : {}),\n        }));\n        if (this.charModsJson !== '{}' || this.paraModsJson !== '{}') {\n          if (!wasm.updateStyleShapes(newId, this.charModsJson, this.paraModsJson)) {\n            throw new Error('[StyleEditDialog] 생성한 스타일의 모양 적용 실패');\n          }\n        }\n        return true;\n      } else {\n        if (!wasm.updateStyle(this.styleInfo.id, JSON.stringify({\n          name, englishName, nextStyleId,\n        }))) {\n          // style ID가 이미 사라진 경우에는 실제 뮤테이션이 없으므로 snapshot도 남기지 않는다.\n          return false;\n        }\n        if (this.charModsJson !== '{}' || this.paraModsJson !== '{}') {\n          if (!wasm.updateStyleShapes(this.styleInfo.id, this.charModsJson, this.paraModsJson)) {\n            throw new Error('[StyleEditDialog] 스타일 모양 적용 실패');\n          }\n        }\n        return true;\n      }",
+    expected: /if \(newId < 0\) return false;/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at rhwp-studio/tests/style-undo-routing.test.ts:132:1
+✖ 스타일 생성 실패는 실제 확인 경로에서 모양 적용·성공 알림을 생략한다 (24.332896ms)
+  AssertionError [ERR_ASSERTION]: routed=false, formatting=false
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/tsjang/rhwp/rhwp-studio/tests/style-undo-routing.test.ts:136:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

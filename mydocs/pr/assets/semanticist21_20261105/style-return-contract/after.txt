@@ -1,0 +1,24 @@
+(node:1867501) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 스타일 삭제는 snapshot 으로 기록된다 (3.024734ms)
+✔ 스타일 다이얼로그는 모달 중 도달 불가한 history-jumped 를 구독하지 않는다 (1.30217ms)
+✔ 스타일 생성·수정은 모양 적용까지 한 스냅샷으로 원자화되고 실제 실패 신호만 처리한다 (4.473572ms)
+✔ 기존 스타일 갱신 API는 없는 ID에 false를 반환한다 (19.570476ms)
+✔ 스타일 생성 실패는 실제 확인 경로에서 모양 적용·성공 알림을 생략한다 (49.262574ms)
+✔ 0을 포함한 성공 스타일 ID는 모양 적용과 성공 후속 처리를 유지한다 (10.095278ms)
+✔ 스타일 다이얼로그 생성 지점이 services 를 넘긴다 (0.93792ms)
+✔ SnapshotCommand 는 operation 이 null 을 반환하면 스냅샷을 버리고 noOp 를 세운다 (8.568421ms)
+✔ CommandHistory.execute 는 isNoOp 명령을 스택에 넣지 않고 redo 도 보존한다 (0.749674ms)
+✔ executeOperation 의 snapshot 분기는 무변경이면 커서 이동·리프레시를 건너뛴다 (6.6002ms)
+✔ 경계 z순서는 Rust 응답의 빈 moves 로 무변경을 보고한다 (4.135551ms)
+✔ 레이아웃 setter 의 {ok:false} 는 도달 불가 — 없는 신호를 검사하지 않는다 (31.057159ms)
+✔ 미주 모양은 값이 안 바뀌면 뮤테이션도 기록도 하지 않는다 (1.052733ms)
+✔ 선택 해제가 뒤따르는 개체 조작은 스냅샷 리프레시를 넘긴다(중복 repaint 방지) (7.931555ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 611.842012
