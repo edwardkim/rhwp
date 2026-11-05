@@ -24,7 +24,7 @@
 ## 아직 남은 통합 완료 조건
 
 - 이 source의 최종 전체 Rust·Native Skia·CI integration 묶음은 실행 중이다. 기존 c183 전체 통과를 이 소스의 통과로 쓰지 않는다.
-- 이 source의 필수 Native 편람 383쪽 게이트는 실행 중이다.
+- [이 source의 필수 Native 편람 383쪽 게이트](handbook-validation.md)는 통과했다. 최저 99.96%, 기준 하락·fallback 0건이다.
 - ROOT c183의 기존 PR #8389·#8397 보호 범위 fresh WASM 대조도 진행 중이다. Native는 원 TSV 2,153행 표시값 하락 0행이다.
 - ROOT의 고정 측정 종료 뒤 이 보정을 통합 브랜치에 적용하고 source 동일성·최신 base·개별 리뷰·PR 본문을 최종 확인해야 한다.
 - 이 기록은 승인·PR 생성·원격 push·comment·close·merge를 뜻하지 않는다.

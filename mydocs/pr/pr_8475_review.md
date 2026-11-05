@@ -51,6 +51,16 @@ overlay를 모두 직접 확인했습니다. 필수 전체 Rust 묶음과 통합
 확인은 아직 완료 전입니다.
 아래 이전 producer의 TSV·PNG는 보정 전 증거로 유지합니다.
 
+## 필수 편람·환경 복구 결과
+
+[보정 소스의 Native 편람 383쪽 게이트](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/handbook-validation.md)는
+최저 99.96%, 기준 표시값 하락 0쪽·fallback 0건·exit 0으로 완료했습니다. 첫 실행의
+ENOSPC는 성공으로 집계하지 않았으며 동일 제품·완료 구간을 검증해 재사용한 복구 결과입니다.
+
+같은 코드에서 doctest의 동시 링크만 1개로 제한한 재검증은 8 PASS·3 IGNORE·exit 0입니다.
+Rust lint와 workspace 빌드도 완료했습니다. 전체 nextest·Skia·CI 통합 모듈은 이어 실행 중이며,
+통합 브랜치 적용과 최신 base 확인까지 끝나기 전에는 최종 수용 판정을 바꾸지 않습니다.
+
 ## 접수 정보
 
 | 항목 | 값 |

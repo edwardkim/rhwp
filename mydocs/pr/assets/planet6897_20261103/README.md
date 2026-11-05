@@ -200,3 +200,11 @@ PR #8475의 별도 보정 소스 `37e5bba300`을 실제 컴파일한 Native 제�
 보정 source 37e5bba300의 Native/WASM 대표 판독은 두 문제 쪽·실물 10/11쪽·정상 대조
 1쪽씩을 모두 완료했다. 실제 관측은 [판독 목록](direct-reading-current.md)에 구분했다.
 필수 전체 Rust·통합 적용·최신 base의 남은 확인을 완료하기 전에는 최종 승인으로 바꾸지 않는다.
+
+## 세로쓰기 보정의 필수 편람·doctest 복구 완료 — 2026-11-05
+
+[보정 source 37e5bba300의 필수 편람 383쪽 게이트](pr_8475/vertical-axis-37e5bba300/handbook-validation.md)는
+최저 99.96%, 기준 하락·fallback 0건으로 통과했다. ENOSPC로 실패한 첫 집계는 성공으로
+계산하지 않았으며 같은 완료 구간의 canonical resume으로 결과를 복구했다. 같은 코드의
+doctest도 동시 링크만 제한해 8 PASS·3 IGNORE·exit 0으로 완료했다. lint·workspace
+빌드는 통과했고 전체 Rust·Skia·CI 통합 묶음은 실패 단계 뒤에서 이어 실행 중이다.

@@ -150,3 +150,17 @@ Native/WASM 각각 두 문제 쪽·실물 10/11쪽·정상 대조 1쪽의 review
 [전쪽·직접 판독·완료 조건](../pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/README.md)에
 결과를 연결했다. 보정 source의 전체 Rust·필수 편람 및 ROOT의 기존 PR 보호 WASM은
 아직 진행 중이며 최종 수용·통합 적용·PR 제출 완료로 표시하지 않는다.
+
+## 공간 부족 복구와 필수 편람 완료 — 2026-11-05
+
+첫 필수 편람 실행은 전체 구간 측정 뒤 ENOSPC로 집계·보고서 저장에 실패했다. doctest의
+동시 링크도 Bus error로 실패했으며 둘 다 통과로 기록하지 않았다. 실행 중인 Cargo·Rust가
+없는 것을 확인한 뒤 이 검토 소유 증분 캐시 4개만 정리해 약 7.3GB를 확보했다.
+같은 코드의 doctest를 동시 링크 1개로 재실행해 8 PASS·3 IGNORE·exit 0을 확인했다.
+기대값·컴파일 옵션·Cargo 8잡·글꼴 환경을 바꾸지 않았다.
+
+동일 제품·입력·PDF·글꼴의 완료 구간을 canonical resume으로 재사용하고 실제 편람
+게이트 집계를 다시 실행해 383쪽·최저 99.96%·기준 하락 0쪽·fallback 0건을 확인했다.
+복구는 약 64초에 끝났다. [전쪽 TSV·명령·SHA와 복구 근거](../pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/handbook-validation.md)에
+결과를 보존했다. 전체 Rust nextest·Skia 묶음은 실패 단계 뒤에서 이어 실행 중이며
+최종 통과로 표시하지 않는다.
