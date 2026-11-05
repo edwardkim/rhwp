@@ -175,3 +175,18 @@ Native99.36627/WASM99.36595%, 76쪽은99.57115/99.57141%다. 고정base WASM
 재측정했다. 활성 원장은1/1로 복원해 기존 허용을 늘리지 않았다. 54쪽의2.4px 표 상자와
 74쪽의 같은 셀 인접 줄은 현재 전쪽 시각98.41/99.44%대이며, 이 관측을 다른 문서나
 새 회귀의 면제 근거로 사용하지 않는다. 관련 증거는 phase3의 복원 JSON에 기록한다.
+
+## 4단계 진행: 전체 회귀에서 발견한 진단 경로 보정
+
+복원 상태 `9db6040468`의 집중60PASS, Native Skia 필수4039+2+22PASS와
+Clippy4종·workspace build·fmt·manifest·unit-tier를 확인했다. 전체 nextest는
+12,654PASS / 1FAIL / 45skip, 검사482.106초로 끝났다. 실패는 기존
+`hwpx_password_fixture::protected_document_layout_diagnostics_do_not_write_coordinates_to_stderr`다.
+보호 문서에 `RHWP_DIAG_ROWH`를 켰을 때 이번 원인 계측용 measured/fragment 진단이
+좌표를 stderr로 쓰는 것을 올바르게 검출했다. 검사 오류나 기존 미달로 분류하지 않는다.
+
+추가했던 Native 전용 진단 두 블록(15줄)만 제거한다. 병합 행·빈 호스트·물리 내용
+하한의 보정 로직과 보호 문서 검사는 유지한다. 수정 전 전체 실패를 보존하고,
+새 source의 보호 문서 집중·Native Skia 필수3종·전체nextest/필수게이트를 다시 확인한다.
+WASM·그림의 의미는 변경하지 않았지만 새 빌드의 실제 artifact와 출력 대응도 확인한다.
+현재 단계는 보정·재검증 중이며 이슈 완료나 PR 적격으로 판정하지 않는다.

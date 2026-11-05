@@ -5704,13 +5704,6 @@ impl LayoutEngine {
             if let Some(frame) = &stored_opening_frame {
                 frame.apply_to(&mut rh, self.dpi);
             }
-            #[cfg(not(target_arch = "wasm32"))]
-            if std::env::var_os("RHWP_DIAG_ROWH").is_some() {
-                eprintln!(
-                    "DIAG_ROWH measured id={} rows={} source={:?} resolved={rh:?}",
-                    table.common.instance_id, row_count, mt.row_heights,
-                );
-            }
             return rh;
         }
 
