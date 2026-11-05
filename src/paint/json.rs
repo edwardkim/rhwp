@@ -1969,9 +1969,7 @@ fn write_paint_text_style(buf: &mut String, style: &PaintTextStyle) {
 // Native·SVG·Canvas2D가 쓰는 같은 pen 결과를 CanvasKit에도 전달한다.
 // 소비자가 종류 번호에서 다시 굵기·반복 구간을 추측하지 않는다.
 fn write_char_outline_stroke(buf: &mut String, outline_type: u8) {
-    let Some((width, intervals)) =
-        crate::renderer::char_outline_stroke(outline_type)
-    else {
+    let Some((width, intervals)) = crate::renderer::char_outline_stroke(outline_type) else {
         return;
     };
     let _ = write!(
