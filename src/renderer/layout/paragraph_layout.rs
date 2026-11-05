@@ -7904,6 +7904,9 @@ impl LayoutEngine {
                             )
                         });
                     let num_width = marker_text_width(num_text, &num_style);
+                    // Paragraph numbering precedes the first inline reference.
+                    // The reference advances body text, not the paragraph head.
+                    let marker_x = x - endnote_marker_x_advance + geometry.marker_dx_px;
                     let num_id = tree.next_id();
                     let num_node = if let Some(image) = picture_bullet::image(
                         styles,
@@ -7916,12 +7919,7 @@ impl LayoutEngine {
                         RenderNode::new(
                             num_id,
                             RenderNodeType::Image(image),
-                            BoundingBox::new(
-                                x + geometry.marker_dx_px,
-                                y,
-                                num_style.font_size,
-                                num_style.font_size,
-                            ),
+                            BoundingBox::new(marker_x, y, num_style.font_size, num_style.font_size),
                         )
                     } else {
                         RenderNode::new(
@@ -7946,12 +7944,7 @@ impl LayoutEngine {
                                 layout_positions: None,
                                 display_text: None,
                             }),
-                            BoundingBox::new(
-                                x + geometry.marker_dx_px,
-                                text_y,
-                                num_width,
-                                line_height,
-                            ),
+                            BoundingBox::new(marker_x, text_y, num_width, line_height),
                         )
                     };
                     line_node.children.push(num_node);

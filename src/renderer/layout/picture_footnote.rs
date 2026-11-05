@@ -203,6 +203,14 @@ fn footnote_composed_with_number(
     }
     let mut numbered = composed.clone();
     let line = numbered.lines.first_mut()?;
+    let number_marker = para.controls.iter().find_map(|control| match control {
+        Control::AutoNumber(auto)
+            if auto.number_type == crate::model::control::AutoNumberType::Footnote =>
+        {
+            auto.superscript.then_some(auto.assigned_number)
+        }
+        _ => None,
+    });
     let positions = para.control_text_positions();
     let placeholder = para
         .controls
@@ -235,16 +243,19 @@ fn footnote_composed_with_number(
                 let mut before = run.clone();
                 before.text = chars[..local].iter().collect();
                 before.display_text = None;
+                before.footnote_marker = None;
                 pieces.push(before);
             }
             let mut number = run.clone();
             number.text = " ".to_string();
             number.display_text = Some(number_text.trim_end().to_string());
+            number.footnote_marker = number_marker;
             pieces.push(number);
             if local + 1 < chars.len() {
                 let mut after = run;
                 after.text = chars[local + 1..].iter().collect();
                 after.display_text = None;
+                after.footnote_marker = None;
                 pieces.push(after);
             }
             for (offset, piece) in pieces.into_iter().enumerate() {
@@ -256,7 +267,7 @@ fn footnote_composed_with_number(
             number.text = number_text.to_string();
             number.char_style_id = base_cs_id;
             number.display_text = None;
-            number.footnote_marker = None;
+            number.footnote_marker = number_marker;
             number.char_overlap = None;
             number.inserted_control_text = true;
             line.runs.insert(0, number);
