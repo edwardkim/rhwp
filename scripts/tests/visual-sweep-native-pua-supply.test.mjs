@@ -1,3 +1,13 @@
+// 관계형: TTF/HFT 요청의 실제 프로그램 소유·공급 순서와 공유 예산을 구분한다.
+// 주석 갱신: 2026-11-05T11:07:01+09:00 (Asia/Seoul). 직전 파일 변경: 93f3043ff764d8cb11c67a4870d99bf9bf1d2b00 2026-11-05T09:47:35+09:00.
+// 실행 근거: 2026-11-05 11:04 KST, 공개 기본 글꼴 5개 격리에서 11 PASS·0 FAIL·0 SKIP.
+// 입력은 이 파일의 합성 family·프로그램 표식 바이트다. 실물 쪽·절대 px·golden은 사용하지 않는다.
+// 원본 HWP/HWPX·독립 Print·Native/fresh WASM raw는 이 합성 계약의 직접 입력이 아니므로 비대상이다.
+// 공급 모듈의 실제 조판 소비는 별도 전쪽 측정으로 구분한다: c183 Native/fresh WASM 각 80입력·406쪽,
+// 최저 raw 92.45232% / 92.87288%, 96 DPI·Print·색상 경계 보정 전 2px 실루엣.
+// 근거: mydocs/pr/assets/planet6897_20261103/current-c183a1ac61/{native,wasm}-validation.md.
+// 아래 선행 주석과 실행 코드는 보존했다. 새로 덧붙인 첫머리는 검사 동작을 바꾸지 않는다.
+
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {prepareNativePuaFonts, prepareHftOtfFonts} from '../visual-sweep-font-registration.mjs';
