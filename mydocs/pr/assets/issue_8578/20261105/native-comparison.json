@@ -1,12 +1,10 @@
 {
-  "head": "67c7814f6e2bc02cc6f69365f1c24f581a6826ca",
-  "base": "e96b500e3ea259c821f05440f0388355916a9e9b",
-  "head_program_producer": "e12096b9da2e7f00c03c5c175f76d198df284e56",
-  "base_program_producer": "22947f6a90c998e95fa51238d5b907a0ebd37162",
+  "head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+  "base": "6e1de406209ba9a58032f6ca6de45b18aa687d1c",
   "pages": 383,
   "minimum_raw": 99.96,
   "below90": [],
   "tsv_row_differences": [],
   "changed_png_pages": [],
-  "mode": "fresh post-rebase Native export"
+  "mode": "fresh Native gate at latest base and candidate"
 }

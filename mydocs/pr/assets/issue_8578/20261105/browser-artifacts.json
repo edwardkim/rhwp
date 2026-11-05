@@ -1,16 +1,16 @@
 {
   "built": {
     "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
-    "rhwp_bg.wasm": "a54403d36e2c54472e9daa0491e90c61359ade7dab0d8e154020d14a1404b149"
+    "rhwp_bg.wasm": "d98be3e9a846e33ebc43a792070afe47b0ad742774c17652fdc56abaaaa48cde"
   },
   "artifacts": [
     {
-      "url": "http://127.0.0.1:7731/@fs/Users/tsjang/rhwp-8578-group-text-editing/pkg/rhwp.js",
+      "url": "http://127.0.0.1:7731/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
       "status": 200,
-      "sha256": "57663aef6be9c806a7b02eb690b222af4293273d50befdd907db4ff5439d5b4d",
-      "servedSourceSha256": "57663aef6be9c806a7b02eb690b222af4293273d50befdd907db4ff5439d5b4d",
-      "bytes": 2956009
+      "sha256": "58f80d95f069efd487914e0a33ba6af3dfc61b04ac821bd86f7e98728b8f13e8",
+      "servedSourceSha256": "58f80d95f069efd487914e0a33ba6af3dfc61b04ac821bd86f7e98728b8f13e8",
+      "bytes": 2955901
     }
   ],
-  "wasmBuildManifest": "/Users/tsjang/rhwp/output/issue8578/final-v3/final-wasm-manifest.json"
+  "wasmBuildManifest": "/Users/tsjang/rhwp/output/issue8578/rebase-6e1de406/final-wasm-manifest.json"
 }

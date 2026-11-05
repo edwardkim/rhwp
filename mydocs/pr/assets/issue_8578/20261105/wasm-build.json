@@ -1,6 +1,6 @@
 {
   "success": true,
-  "source_sha": "e12096b9da2e7f00c03c5c175f76d198df284e56",
+  "source_sha": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
   "profile": "Mac locked wrapper web no-opt local alternative; not Docker optimized",
   "artifacts": {
     "rhwp.js": {
@@ -8,8 +8,10 @@
       "bytes": 528282
     },
     "rhwp_bg.wasm": {
-      "sha256": "a54403d36e2c54472e9daa0491e90c61359ade7dab0d8e154020d14a1404b149",
-      "bytes": 30463210
+      "sha256": "d98be3e9a846e33ebc43a792070afe47b0ad742774c17652fdc56abaaaa48cde",
+      "bytes": 30570073
     }
-  }
+  },
+  "cache_repair": "source bytes unchanged; touched own src/lib.rs mtime to force rebuild; actual group child1 API passed",
+  "actual_api_evidence": "/Users/tsjang/rhwp/output/issue8578/rebase-6e1de406/fresh-wasm-owner-api.json"
 }

@@ -1,48 +1,18 @@
 {
-  "time": "2026-11-05T03:42:36.465724+09:00",
-  "old_base": "22947f6a90c998e95fa51238d5b907a0ebd37162",
-  "new_base": "e96b500e3ea259c821f05440f0388355916a9e9b",
-  "old_head": "e12096b9da2e7f00c03c5c175f76d198df284e56",
-  "new_head": "67c7814f6e2bc02cc6f69365f1c24f581a6826ca",
-  "backup_ref": "refs/heads/backup/8578-before-e96b500-20261105",
-  "upstream_pr": 8603,
-  "changed_from_old_head": [
-    "mydocs/pr/archives/pr_8203_review.md",
-    "mydocs/pr/archives/pr_8285_review.md",
-    "mydocs/pr/archives/pr_8289_review.md"
-  ],
-  "source_and_test_blobs_identical_except_three_review_documents": true,
-  "source_subtrees": {
-    "src": {
-      "before": "fd76ee9fa583a02bf5aef13db7044a49ad131f3c",
-      "after": "fd76ee9fa583a02bf5aef13db7044a49ad131f3c"
-    },
-    "tests": {
-      "before": "56641066d7dcc46723802398463a4433e2aee391",
-      "after": "56641066d7dcc46723802398463a4433e2aee391"
-    },
-    "rhwp-studio": {
-      "before": "8dce0aec48baea2b762bfd0ff6512b0eb9ea6e70",
-      "after": "8dce0aec48baea2b762bfd0ff6512b0eb9ea6e70"
-    },
-    "scripts": {
-      "before": "cd9f59043690473e9e3575aba7a91fe5a2921ea8",
-      "after": "cd9f59043690473e9e3575aba7a91fe5a2921ea8"
-    },
-    "crates": {
-      "before": "d9c7fcf02fe3d791fa1d33396385a1e372ddefab",
-      "after": "d9c7fcf02fe3d791fa1d33396385a1e372ddefab"
-    },
-    "vendor": {
-      "before": "ba27f5cfbb36efffaa7fc8dc780c6cd14a809c35",
-      "after": "ba27f5cfbb36efffaa7fc8dc780c6cd14a809c35"
-    }
+  "compiled_code_head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+  "base": "6e1de406209ba9a58032f6ca6de45b18aa687d1c",
+  "old_head": "68e25f60326c91a1f20c44ccea98253322de7314",
+  "old_base": "e96b500e3ea259c821f05440f0388355916a9e9b",
+  "new_upstream_contains_code": true,
+  "validation_reexecuted": true,
+  "work_root": "/Users/tsjang/rhwp",
+  "source_trees": {
+    "src": "eb66ad0f6c1a871d75b24bf2282c73d6fbb14181",
+    "tests": "0438232fa703b1352367e244b63b1f6a2e45d3f4",
+    "rhwp-studio": "9ff71a9b197b05e10abe9bed3214c7a4f4f6ebcf",
+    "scripts": "f1adb4b78f80e26c1ddfe80a5c54dd06997f65c4",
+    "crates": "d9c7fcf02fe3d791fa1d33396385a1e372ddefab",
+    "vendor": "ba27f5cfbb36efffaa7fc8dc780c6cd14a809c35"
   },
-  "upstream_review_records_preserved": {
-    "mydocs/pr/archives/pr_8203_review.md": true,
-    "mydocs/pr/archives/pr_8285_review.md": true,
-    "mydocs/pr/archives/pr_8289_review.md": true
-  },
-  "artifact_producer_head": "e12096b9da2e7f00c03c5c175f76d198df284e56",
-  "note": "원 프로그램과 전체 회귀의 producer는 old_head다. 문서 전용 리베이스 후 실제 집중·브라우저 실행과 새 전쪽 PNG-pair TSV를 별도로 점검한다."
+  "note": "이후 제출 증적·보고서 commit은 source/test tree를 바꾸지 않는다. 실제 producer는 이 head다. 새 devel과 이전 source가 동일하다고 주장하지 않는다."
 }

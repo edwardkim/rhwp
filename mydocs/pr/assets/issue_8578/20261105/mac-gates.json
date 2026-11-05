@@ -1,7 +1,47 @@
 {
-  "head": "e12096b9da2e7f00c03c5c175f76d198df284e56",
-  "base": "22947f6a90c998e95fa51238d5b907a0ebd37162",
+  "head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+  "base": "6e1de406209ba9a58032f6ca6de45b18aa687d1c",
   "steps": [
+    {
+      "step": "base-prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exitCode": 0,
+      "seconds": 2.655
+    },
+    {
+      "step": "base-native-cli",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--bin",
+        "rhwp"
+      ],
+      "exitCode": 0,
+      "seconds": 175.502
+    },
+    {
+      "step": "base-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exitCode": 0,
+      "seconds": 377.904
+    },
     {
       "step": "prepare",
       "command": [
@@ -10,7 +50,7 @@
         "--prepare"
       ],
       "exitCode": 0,
-      "seconds": 1.045
+      "seconds": 4.609
     },
     {
       "step": "focused",
@@ -20,7 +60,7 @@
         "--skia"
       ],
       "exitCode": 0,
-      "seconds": 30.967
+      "seconds": 193.292
     },
     {
       "step": "native-cli",
@@ -37,7 +77,7 @@
         "rhwp"
       ],
       "exitCode": 0,
-      "seconds": 160.254
+      "seconds": 168.958
     },
     {
       "step": "wasm",
@@ -50,7 +90,9 @@
         "--no-opt"
       ],
       "exitCode": 0,
-      "seconds": 416.995
+      "seconds": 4.812,
+      "artifact_validity": "invalid cached base artifact; not submission evidence",
+      "superseded_by": "fresh-candidate-wasm and actual-program-owner-api"
     },
     {
       "step": "fmt",
@@ -62,7 +104,7 @@
         "--check"
       ],
       "exitCode": 0,
-      "seconds": 16.067
+      "seconds": 14.452
     },
     {
       "step": "native-clippy",
@@ -75,7 +117,7 @@
         "warnings"
       ],
       "exitCode": 0,
-      "seconds": 26.091
+      "seconds": 45.824
     },
     {
       "step": "wasm-clippy",
@@ -93,7 +135,7 @@
         "warnings"
       ],
       "exitCode": 0,
-      "seconds": 23.423
+      "seconds": 42.572
     },
     {
       "step": "workspace-build",
@@ -104,7 +146,7 @@
         "--workspace"
       ],
       "exitCode": 0,
-      "seconds": 27.685
+      "seconds": 62.381
     },
     {
       "step": "all-target-clippy",
@@ -119,7 +161,7 @@
         "warnings"
       ],
       "exitCode": 0,
-      "seconds": 41.701
+      "seconds": 60.412
     },
     {
       "step": "manifest",
@@ -128,10 +170,10 @@
         "scripts/rust-test-suite-manifest.mjs",
         "--check",
         "--base-ref",
-        "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        "6e1de406209ba9a58032f6ca6de45b18aa687d1c"
       ],
       "exitCode": 0,
-      "seconds": 1.39
+      "seconds": 2.141
     },
     {
       "step": "unit-tiers",
@@ -140,10 +182,10 @@
         "scripts/rust-unit-test-tiers.mjs",
         "--check",
         "--base-ref",
-        "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        "6e1de406209ba9a58032f6ca6de45b18aa687d1c"
       ],
       "exitCode": 0,
-      "seconds": 17.157
+      "seconds": 24.844
     },
     {
       "step": "e2e-manifest",
@@ -152,7 +194,7 @@
         "scripts/check_e2e_manifest.py"
       ],
       "exitCode": 0,
-      "seconds": 0.144
+      "seconds": 0.154
     },
     {
       "step": "typecheck",
@@ -162,10 +204,52 @@
         "--noEmit"
       ],
       "exitCode": 0,
-      "seconds": 2.625
+      "seconds": 2.501
     }
   ],
   "running": null,
-  "native_sha256": "cd08b2188caf6017be6dfc9c8003f8c89c9f0fe69f48b6f4c1bd6fc741a78598",
-  "success": true
+  "base_native_sha256": "9e59e6c48fe1740f2f6e3acd986ee8b305bf9ea11f43899d2e6883463bf5ad66",
+  "base_wasm_sha256": "717ab3019521fcb245590ac9d14a906eba59b4c5ce4ac32fea7b27a1cbfbe105",
+  "native_sha256": "14a96dc997c1c3da23b8e263c2ba7754afdba5c175f159320f4ef6f5d42904a8",
+  "success": true,
+  "wasm_revalidation": {
+    "head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+    "reason": "cached top-level wasm still represented base",
+    "running": null,
+    "steps": [
+      {
+        "step": "fresh-candidate-wasm",
+        "command": [
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "cwd": "/Users/tsjang/rhwp",
+        "exit_code": 0,
+        "seconds": 299.148
+      },
+      {
+        "step": "actual-program-owner-api",
+        "exit_code": 0
+      }
+    ],
+    "source_sha256": "02049d37656973486cfee45609728847ef415c9836bac1afdf29d6e4c222d737",
+    "mtime_before": 1793695787442829000,
+    "mtime_after": 1793857544743405000,
+    "success": true,
+    "artifacts": {
+      "rhwp.js": {
+        "sha256": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "bytes": 528282
+      },
+      "rhwp_bg.wasm": {
+        "sha256": "d98be3e9a846e33ebc43a792070afe47b0ad742774c17652fdc56abaaaa48cde",
+        "bytes": 30570073
+      }
+    }
+  },
+  "effective_validation": "all non-WASM steps passed; WASM replaced by forced own-source rebuild and actual owner API PASS"
 }

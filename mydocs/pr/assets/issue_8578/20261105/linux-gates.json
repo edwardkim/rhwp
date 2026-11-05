@@ -1,5 +1,5 @@
 {
-  "head": "e12096b9da2e7f00c03c5c175f76d198df284e56",
+  "head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
   "steps": [
     {
       "step": "prepare",
@@ -9,16 +9,16 @@
         "--prepare"
       ],
       "exitCode": 0,
-      "seconds": 3.971
+      "seconds": 3.615
     },
     {
       "step": "focused",
       "command": [
         "node",
-        "/home/tsjang/rhwp/output/issue8578-20261105/focused-packet.mjs"
+        "/home/tsjang/rhwp/output/issue8578-rebase6e1-20261105/focused-packet.mjs"
       ],
       "exitCode": 0,
-      "seconds": 88.698
+      "seconds": 540.554
     },
     {
       "step": "full-nextest",
@@ -35,7 +35,7 @@
         "--no-fail-fast"
       ],
       "exitCode": 0,
-      "seconds": 1835.595
+      "seconds": 1664.148
     },
     {
       "step": "skia-lib",
@@ -53,7 +53,7 @@
         "8"
       ],
       "exitCode": 0,
-      "seconds": 583.741
+      "seconds": 582.119
     },
     {
       "step": "skia-png",
@@ -70,7 +70,7 @@
         "8"
       ],
       "exitCode": 0,
-      "seconds": 486.919
+      "seconds": 493.273
     },
     {
       "step": "skia-pdf",
@@ -87,7 +87,7 @@
         "8"
       ],
       "exitCode": 0,
-      "seconds": 31.285
+      "seconds": 28.906
     },
     {
       "step": "manifest",
@@ -96,10 +96,10 @@
         "scripts/rust-test-suite-manifest.mjs",
         "--check",
         "--base-ref",
-        "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        "6e1de406209ba9a58032f6ca6de45b18aa687d1c"
       ],
       "exitCode": 0,
-      "seconds": 2.362
+      "seconds": 2.441
     },
     {
       "step": "unit-tiers",
@@ -108,10 +108,10 @@
         "scripts/rust-unit-test-tiers.mjs",
         "--check",
         "--base-ref",
-        "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        "6e1de406209ba9a58032f6ca6de45b18aa687d1c"
       ],
       "exitCode": 0,
-      "seconds": 40.371
+      "seconds": 41.56
     }
   ],
   "running": null,
