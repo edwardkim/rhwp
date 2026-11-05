@@ -317,7 +317,9 @@ fn frame_with_style(value: &LayoutBox, fs: f64, dpi: f64, roman: bool) -> Option
             let base_line_height = super::font_frame_metrics::line_at_dpi(fs, dpi)?.0;
             let body_line_height = frame_with_style(body, fs, dpi, roman)
                 .map_or(base_line_height, |(height, _)| height);
-            let height = accent_height + body_line_height - base_line_height;
+            // 본체와 일반 줄이 같으면 증분은 정확히 0이다. 먼저 더한 뒤 빼면
+            // 같은 프레임에서도 한 ULP가 사라져 HWPUNIT 절삭 때 1HU를 잃는다.
+            let height = accent_height + (body_line_height - base_line_height);
             return Some((height, height * accent_baseline / accent_height));
         }
         _ => {}

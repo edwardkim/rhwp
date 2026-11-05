@@ -1,9 +1,11 @@
 //! 검사 유형: 관계형. 독립 한컴 Print가 같은 원본·재저장본의 수식 단 소속을 검사한다.
 //! 작성 시 Native 전 21쪽 중 7쪽 미달·11쪽 53.60031%. 보정 후보의 11쪽은 99.66679%다.
 //! 추가한 저장 예약 소유 검사의 17쪽 Native 작성 기준은 94.69512%다.
+//! 현재 장식 프레임 검사의 19쪽 Native 작성 기준은 95.41891%다.
+//! 장식 검사는 절대 화면 좌표가 아니라 현재 저장 프레임의 단위 보존과 실제 단 소속을 비교한다.
 //! 작성 기준에서 전쪽 90% 조건을 충족하지 못해 절대 px 핀을 두지 않았다.
 //! 이 단계의 fresh WASM은 미실행이며 최신 전쪽 판정은 계획서와 단계 증적을 따른다.
-//! 주석 갱신: 2026-11-05 23:52:29 KST.
+//! 주석 갱신: 2026-11-06 00:13:00 KST.
 //! 근거: mydocs/plans/task_m100_7640_plan.md 및 같은 입력의 한컴 2020 Print 11쪽.
 //! 수식 프레임의 저장 캐시 차이로 앞 단에 들어갈 마지막 수식이 다음 단으로 밀리면 실패한다.
 
@@ -193,4 +195,94 @@ fn next_fraction_owns_reserved_height_after_the_short_equation_row() {
         reserved_rows(input, true).0 > resaved.0,
         "뒤 개체가 큰 높이를 소유하지 않으면 저장 캐시 숫자만으로 예약 높이를 앞줄에서 제거하지 않는다"
     );
+}
+
+#[test]
+fn current_bar_frames_preserve_their_source_height_unit() {
+    let input = "tests/fixtures/pr7600-equation-font-frame/nov-original-resaved-2020.hwp";
+    let mut document = DocumentCore::from_bytes(&std::fs::read(input).unwrap()).unwrap();
+    document.set_hangul2024_compat(false);
+    let Control::Endnote(note) = &document.document().sections[0].paragraphs[404].controls[0]
+    else {
+        panic!("타원 문제 미주의 원본 소유");
+    };
+    let expected: Vec<_> = [1, 2]
+        .into_iter()
+        .flat_map(|paragraph| {
+            note.paragraphs[paragraph]
+                .controls
+                .iter()
+                .enumerate()
+                .filter_map(move |(control, value)| match value {
+                    Control::Equation(equation) if equation.script.contains("bar") => {
+                        Some((paragraph, control, equation.common.height))
+                    }
+                    _ => None,
+                })
+        })
+        .collect();
+    assert_eq!(expected.len(), 5, "프라임 유무를 포함한 실제 윗줄 수식");
+    let page = document.build_page_render_tree(18).unwrap();
+    let mut all = Vec::new();
+    walk(&page.root, &mut all);
+    for (paragraph, control, source_height) in expected {
+        let nodes: Vec<_> = all
+            .iter()
+            .filter(|node| {
+                matches!(&node.node_type, RenderNodeType::Equation(equation)
+                if equation.control_index == Some(control)
+                    && equation.note_ref.as_ref().is_some_and(|source|
+                        source.kind == "endnote" && source.section_index == 0
+                            && source.para_index == 404 && source.control_index == 0
+                            && source.note_para_index == paragraph))
+            })
+            .collect();
+        assert_eq!(nodes.len(), 1, "현재 장식 수식은 누락·중복 없이 표시된다");
+        assert_eq!(
+            nodes[0].bbox.height,
+            rhwp::renderer::hwpunit_to_px(source_height as i32, 96.0),
+            "현재 논리 프레임과 같은 저장 높이에서 상쇄 연산으로 정수 단위를 잃지 않는다: {paragraph}:{control}"
+        );
+    }
+}
+
+#[test]
+fn ellipse_tail_integral_keeps_its_print_column_after_resave() {
+    for input in [
+        "samples/3-11월_실전_통합_2022.hwp",
+        "tests/fixtures/pr7600-equation-font-frame/nov-original-resaved-2020.hwp",
+    ] {
+        let mut document = DocumentCore::from_bytes(&std::fs::read(input).unwrap()).unwrap();
+        document.set_hangul2024_compat(false);
+        let page = document.build_page_render_tree(18).unwrap();
+        fn collect(node: &RenderNode, column: Option<u16>, out: &mut Vec<u16>) {
+            let column = match node.node_type {
+                RenderNodeType::Column(index) => Some(index),
+                _ => column,
+            };
+            if let RenderNodeType::Equation(equation) = &node.node_type {
+                if equation.control_index == Some(0)
+                    && equation.note_ref.as_ref().is_some_and(|source| {
+                        source.kind == "endnote"
+                            && source.section_index == 0
+                            && source.para_index == 404
+                            && source.control_index == 0
+                            && source.note_para_index == 6
+                    })
+                {
+                    out.push(column.expect("실제 미주 단 소속"));
+                }
+            }
+            for child in &node.children {
+                collect(child, column, out);
+            }
+        }
+        let mut columns = Vec::new();
+        collect(&page.root, None, &mut columns);
+        assert_eq!(
+            columns,
+            [1],
+            "독립 Print 19쪽 오른쪽 단의 마지막 적분식이 다음 쪽으로 밀리지 않는다: {input}"
+        );
+    }
 }
