@@ -54,7 +54,7 @@ fn cell(hf: usize, para: usize, cell: usize, cell_para: usize) -> Path {
 /// 머리말 첫 문단에 1×2 표를 만들고 칸에 `hp`·`hq`를 넣는다.
 fn doc_with_header_table() -> (HwpDocument, usize, usize) {
     let (mut doc, host, hf) = doc_with_header();
-    doc.create_table_in_cell_by_path_native(0, host, &[(hf, 0, 0)], 0, 1, 2, None, None)
+    doc.create_table_in_cell_by_path_native(0, host, &[(hf, 0, 0)], 0, 1, 2, None, None, true)
         .unwrap();
     doc.insert_text_in_cell_by_path(0, host, &cell(hf, 0, 0, 0), 0, "hp")
         .unwrap();
@@ -76,7 +76,7 @@ fn create_table_in_header_paragraph_matches_hancom() {
     assert_eq!(text_width, 42_520, "한/글 새 문서와 같은 머리말 글 영역 폭");
 
     let json = doc
-        .create_table_in_cell_by_path_native(0, host, &[(hf, 0, 0)], 0, 1, 2, None, None)
+        .create_table_in_cell_by_path_native(0, host, &[(hf, 0, 0)], 0, 1, 2, None, None, true)
         .unwrap();
     let v: serde_json::Value = serde_json::from_str(&json).unwrap();
     assert_eq!(

@@ -237,7 +237,7 @@ fn outline_numbering(levels: &[OutlineLevel]) -> crate::model::style::Numbering 
     use crate::model::style::{Numbering, NumberingHead};
     let mut n = Numbering {
         start_number: 1,
-        level_start_numbers: [1; 7],
+        level_start_numbers: [1; crate::model::style::NUMBERING_LEVELS],
         ..Default::default()
     };
     for (i, (default_text, default_format)) in OUTLINE_DEFAULTS.iter().enumerate() {
