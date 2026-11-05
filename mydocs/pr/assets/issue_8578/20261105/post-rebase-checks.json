@@ -1,0 +1,173 @@
+{
+  "head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+  "base": "6e1de406209ba9a58032f6ca6de45b18aa687d1c",
+  "focused_native": {
+    "seconds": 9.726,
+    "run": 18,
+    "passed": 18,
+    "log_sha256": "3e104f53a6cd5066165ef05c57b1c8e02ca0921688f55370146398973da024ec"
+  },
+  "focused_linux": {
+    "seconds": 38.937,
+    "run": 18,
+    "passed": 18,
+    "log_sha256": "a0bae6f3f26963afdafc222c6a87df3bd83a18431d3cf055a6eba16f428a346a"
+  },
+  "browser": {
+    "head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+    "exit_code": 0,
+    "backend": "canvas2d",
+    "editing_owner_warnings": 0,
+    "pages_opened": 383,
+    "scenario": "p3 typing/selection/delete/Enter/undo/redo;p4 typing;Group selection/Esc/original body typing"
+  },
+  "issue_focus": {
+    "head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+    "scope": "issue8578 handbook only; changed editing paths p3/p4",
+    "steps": [
+      {
+        "step": "candidate-handbook-native",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--handbook-gate",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/issue8578/rebase-6e1de406/candidate-native",
+          "--page-workers",
+          "8",
+          "--out",
+          "/Users/tsjang/rhwp/output/issue8578/rebase-6e1de406/candidate-handbook-native"
+        ],
+        "exit_code": 0,
+        "seconds": 227.584
+      },
+      {
+        "step": "focus-base-native",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "samples/2025 행정업무운영 편람(최종).hwpx",
+          "--pdf",
+          "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+          "--key",
+          "handbook-p3-p4",
+          "--pages",
+          "3,4",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/issue8578/rebase-6e1de406/base-native",
+          "--compat",
+          "2024",
+          "--dpi",
+          "96",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--page-workers",
+          "8",
+          "--out",
+          "/Users/tsjang/rhwp/output/issue8578/rebase-6e1de406/focus-base-native"
+        ],
+        "exit_code": 0,
+        "seconds": 16.041
+      },
+      {
+        "step": "focus-base-wasm",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "samples/2025 행정업무운영 편람(최종).hwpx",
+          "--pdf",
+          "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+          "--key",
+          "handbook-p3-p4",
+          "--pages",
+          "3,4",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/issue8578/rebase-6e1de406/base-native",
+          "--compat",
+          "2024",
+          "--dpi",
+          "96",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--page-workers",
+          "8",
+          "--out",
+          "/Users/tsjang/rhwp/output/issue8578/rebase-6e1de406/focus-base-wasm",
+          "--wasm-pkg",
+          "/Users/tsjang/rhwp/output/issue8578/rebase-6e1de406/base-pkg"
+        ],
+        "exit_code": 0,
+        "seconds": 38.961
+      },
+      {
+        "step": "focus-candidate-native",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "samples/2025 행정업무운영 편람(최종).hwpx",
+          "--pdf",
+          "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+          "--key",
+          "handbook-p3-p4",
+          "--pages",
+          "3,4",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/issue8578/rebase-6e1de406/candidate-native",
+          "--compat",
+          "2024",
+          "--dpi",
+          "96",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--page-workers",
+          "8",
+          "--out",
+          "/Users/tsjang/rhwp/output/issue8578/rebase-6e1de406/focus-candidate-native"
+        ],
+        "exit_code": 0,
+        "seconds": 19.714
+      },
+      {
+        "step": "focus-candidate-wasm",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "samples/2025 행정업무운영 편람(최종).hwpx",
+          "--pdf",
+          "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+          "--key",
+          "handbook-p3-p4",
+          "--pages",
+          "3,4",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/issue8578/rebase-6e1de406/candidate-native",
+          "--compat",
+          "2024",
+          "--dpi",
+          "96",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--page-workers",
+          "8",
+          "--out",
+          "/Users/tsjang/rhwp/output/issue8578/rebase-6e1de406/focus-candidate-wasm",
+          "--wasm-pkg",
+          "/Users/tsjang/rhwp/pkg"
+        ],
+        "exit_code": 0,
+        "seconds": 35.58
+      }
+    ],
+    "running": null,
+    "success": true
+  },
+  "success": true
+}

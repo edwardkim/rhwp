@@ -1,0 +1,18 @@
+{
+  "compiled_code_head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+  "base": "6e1de406209ba9a58032f6ca6de45b18aa687d1c",
+  "old_head": "68e25f60326c91a1f20c44ccea98253322de7314",
+  "old_base": "e96b500e3ea259c821f05440f0388355916a9e9b",
+  "new_upstream_contains_code": true,
+  "validation_reexecuted": true,
+  "work_root": "/Users/tsjang/rhwp",
+  "source_trees": {
+    "src": "eb66ad0f6c1a871d75b24bf2282c73d6fbb14181",
+    "tests": "0438232fa703b1352367e244b63b1f6a2e45d3f4",
+    "rhwp-studio": "9ff71a9b197b05e10abe9bed3214c7a4f4f6ebcf",
+    "scripts": "f1adb4b78f80e26c1ddfe80a5c54dd06997f65c4",
+    "crates": "d9c7fcf02fe3d791fa1d33396385a1e372ddefab",
+    "vendor": "ba27f5cfbb36efffaa7fc8dc780c6cd14a809c35"
+  },
+  "note": "이후 제출 증적·보고서 commit은 source/test tree를 바꾸지 않는다. 실제 producer는 이 head다. 새 devel과 이전 source가 동일하다고 주장하지 않는다."
+}

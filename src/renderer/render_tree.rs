@@ -230,6 +230,9 @@ pub struct RenderNode {
     /// Public source provenance, separate from header/footer layout cache keys.
     #[serde(skip)]
     pub header_footer_source: Option<(usize, HeaderFooterImageRef)>,
+    /// 실제 글상자가 있는 도형의 편집 소유 주소. 장식 도형의 외곽은 글상자 클릭 영역이 아니다.
+    #[serde(skip)]
+    pub(crate) textbox_source: Option<(usize, CellContext)>,
 }
 
 #[derive(Debug, Default, Clone, Copy, Serialize)]
@@ -261,6 +264,7 @@ impl RenderNode {
             print_clip_bbox: None,
             control_code: ControlCode::Automatic,
             header_footer_source: None,
+            textbox_source: None,
             paint_clip: None,
         }
     }

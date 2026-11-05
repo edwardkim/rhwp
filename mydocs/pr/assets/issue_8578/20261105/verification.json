@@ -1,0 +1,144 @@
+{
+  "validated_code_head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+  "artifact_producer_head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+  "policy_base": "6e1de406209ba9a58032f6ca6de45b18aa687d1c",
+  "scope": "#8578 handbook p3/p4 click/edit/Esc; static print geometry unchanged; unrelated HWP visual sweeps cancelled and excluded",
+  "full_nextest": {
+    "seconds": 936.659,
+    "run": 12591,
+    "passed": 12591,
+    "log_sha256": "7137e8eddcb699afc79d9edf930090ac5d7f3e62cbd8ecc35459977f979463d1",
+    "head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+    "host": "ubuntu-ted3",
+    "exit_code": 0,
+    "tests_run": 12591,
+    "failed": 0,
+    "skipped": 45,
+    "slow": 7,
+    "build_and_test_seconds": 1664.148,
+    "test_threads": 8,
+    "build_jobs": 8
+  },
+  "skia_libraries": [
+    {
+      "passed": 3858,
+      "failed": 0,
+      "ignored": 12,
+      "seconds": 43.24
+    },
+    {
+      "passed": 15,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 0.02
+    },
+    {
+      "passed": 165,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 0.02
+    },
+    {
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 0.0
+    }
+  ],
+  "skia_png": {
+    "seconds": 4.115,
+    "run": 2,
+    "passed": 2,
+    "log_sha256": "c20630c1ab9074279978f67f1d75055a218595227e4fed75250f43ab79bdfddd"
+  },
+  "skia_pdf": {
+    "seconds": 2.779,
+    "run": 22,
+    "passed": 22,
+    "log_sha256": "27bc08d079ed17f33e2c8a7bdfe85070248265f46b8eb1701dcba3aa9b339afa"
+  },
+  "focused_linux": {
+    "seconds": 38.937,
+    "run": 18,
+    "passed": 18,
+    "log_sha256": "a0bae6f3f26963afdafc222c6a87df3bd83a18431d3cf055a6eba16f428a346a"
+  },
+  "focused_native": {
+    "seconds": 9.726,
+    "run": 18,
+    "passed": 18,
+    "log_sha256": "3e104f53a6cd5066165ef05c57b1c8e02ca0921688f55370146398973da024ec"
+  },
+  "studio_unit": {
+    "tests": 2723,
+    "passed": 2721,
+    "failed": 0,
+    "skipped": 2
+  },
+  "browser": {
+    "head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+    "exit_code": 0,
+    "backend": "canvas2d",
+    "editing_owner_warnings": 0,
+    "pages_opened": 383,
+    "scenario": "p3 typing/selection/delete/Enter/undo/redo;p4 typing;Group selection/Esc/original body typing"
+  },
+  "user_functional_confirmation": {
+    "reported": true,
+    "date": "2026-11-05",
+    "note": "사용자가 정상 동작을 검증했다고 확인했다. 사용자 환경의 program hash는 별도로 단정하지 않는다."
+  },
+  "visual": {
+    "native_full": {
+      "head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+      "base": "6e1de406209ba9a58032f6ca6de45b18aa687d1c",
+      "pages": 383,
+      "minimum_raw": 99.96,
+      "below90": [],
+      "tsv_row_differences": [],
+      "changed_png_pages": [],
+      "mode": "fresh Native gate at latest base and candidate"
+    },
+    "affected_pages": {
+      "native": {
+        "head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+        "base": "6e1de406209ba9a58032f6ca6de45b18aa687d1c",
+        "pages": [
+          3,
+          4
+        ],
+        "minimum_raw": 100.0,
+        "below90": [],
+        "tsv_row_differences": [],
+        "changed_png_pages": [],
+        "scope": "issue8578 changed editing paths only; not a full WASM sweep"
+      },
+      "wasm": {
+        "head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+        "base": "6e1de406209ba9a58032f6ca6de45b18aa687d1c",
+        "pages": [
+          3,
+          4
+        ],
+        "minimum_raw": 100.0,
+        "below90": [],
+        "tsv_row_differences": [],
+        "changed_png_pages": [],
+        "scope": "issue8578 changed editing paths only; not a full WASM sweep"
+      }
+    },
+    "candidate_wasm_scope": [
+      3,
+      4
+    ],
+    "candidate_full_wasm_383_claimed": false
+  },
+  "minimum_font_programs": 64,
+  "notes": [
+    "기존 문서의 조판 수치·분할·인쇄 좌표·paint 규칙은 변경하지 않는다. 편집 소유 주소와 해당 글상자의 원본 폭 선택을 일치시킨다.",
+    "다른 HWP 전쪽 시각 재검사는 사용자 범위 확인 후 중단했고 제출 판정·증적에서 제외했다.",
+    "Native는 필수 편람 383쪽 gate와 3·4쪽, fresh WASM은 변경 편집 경로 3·4쪽을 검증했다. 이전 후보의 전383쪽 WASM 결과를 새 후보 결과로 재인용하지 않는다.",
+    "공유 target의 기준 WASM 잔존을 실제 API에서 발견했다. 초기 후보 artifact는 무효로 분리하고 현재 source bytes 불변 상태에서 자신의 lib.rs mtime만 갱신해 다시 컴파일했다. 새 프로그램의 실제 API·초기화 응답·브라우저를 확인했다.",
+    "Mac WASM은 locked wrapper web/no-opt 로컬 대체 빌드이며 Docker 최적화 통과가 아니다."
+  ]
+}

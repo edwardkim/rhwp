@@ -1027,7 +1027,7 @@ fn host_line_item_follows_table(
 pub struct CellPathEntry {
     /// 문단 내 컨트롤 인덱스 (표)
     pub control_index: usize,
-    /// 표 내 셀 인덱스
+    /// 표의 셀 번호. 도형이면 독립 글상자는 0, 묶음은 원본 깊이 우선 글상자 번호다.
     pub cell_index: usize,
     /// 셀 내 문단 인덱스
     pub cell_para_index: usize,
@@ -11759,6 +11759,7 @@ impl LayoutEngine {
                                 tree,
                                 col_node,
                                 para,
+                                &para.text,
                                 comp,
                                 styles,
                                 col_area,

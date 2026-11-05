@@ -563,6 +563,54 @@ impl ShapeObject {
         }
     }
 
+    /// 편집 셀 주소의 글상자 번호. 독립 도형은 0, 묶음은 원본 자식 순서의 깊이 우선 글상자 번호다.
+    /// 장식 도형과 중간 묶음은 번호를 소비하지 않는다. 저장 모델을 풀거나 복제하지 않는다.
+    pub fn textbox_shape_count(&self) -> usize {
+        match self {
+            Self::Group(group) => group.children.iter().map(Self::textbox_shape_count).sum(),
+            _ => usize::from(
+                self.drawing()
+                    .is_some_and(|drawing| drawing.text_box.is_some()),
+            ),
+        }
+    }
+
+    pub fn textbox_shape_at(&self, mut index: usize) -> Option<&Self> {
+        if let Self::Group(group) = self {
+            for child in &group.children {
+                let count = child.textbox_shape_count();
+                if index < count {
+                    return child.textbox_shape_at(index);
+                }
+                index -= count;
+            }
+            None
+        } else {
+            (index == 0 && self.textbox_shape_count() == 1).then_some(self)
+        }
+    }
+
+    pub fn textbox_shape_at_mut(&mut self, mut index: usize) -> Option<&mut Self> {
+        if let Self::Group(group) = self {
+            for child in &mut group.children {
+                let count = child.textbox_shape_count();
+                if index < count {
+                    return child.textbox_shape_at_mut(index);
+                }
+                index -= count;
+            }
+            None
+        } else if index == 0
+            && self
+                .drawing()
+                .is_some_and(|drawing| drawing.text_box.is_some())
+        {
+            Some(self)
+        } else {
+            None
+        }
+    }
+
     /// Z-order 값 반환
     pub fn z_order(&self) -> i32 {
         self.common().z_order

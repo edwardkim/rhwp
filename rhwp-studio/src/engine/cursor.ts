@@ -2118,6 +2118,41 @@ export class CursorState {
     this.updateRect();
   }
 
+  /** Esc는 선택 개체의 원래 편집 컨테이너로 복귀한다. 삭제·붙여넣기의 인접 문단 착지와 구분한다. */
+  returnToSelectedObjectOwner(): void {
+    const ref = this.selectedPictureRef;
+    if (!ref) return;
+    // 머리말·각주 모드는 이미 해당 컨테이너의 커서를 보존하고 있다.
+    if (!ref.headerFooter && !ref.noteRef) {
+      const path = ref.cellPath?.map(entry => ({ ...entry }));
+      if (path?.length) {
+        const last = path[path.length - 1];
+        this.position = {
+          sectionIndex: ref.sec,
+          paragraphIndex: last.cellParaIndex,
+          charOffset: 0,
+          parentParaIndex: ref.ppi,
+          controlIndex: path[0].controlIndex,
+          cellIndex: last.cellIndex,
+          cellParaIndex: last.cellParaIndex,
+          cellPath: path,
+          isTextBox: this.position.isTextBox,
+        };
+      } else if (ref.cellIdx !== undefined && ref.outerTableControlIdx !== undefined) {
+        this.position = {
+          sectionIndex: ref.sec, paragraphIndex: ref.cellParaIdx ?? 0, charOffset: 0,
+          parentParaIndex: ref.ppi, controlIndex: ref.outerTableControlIdx,
+          cellIndex: ref.cellIdx, cellParaIndex: ref.cellParaIdx ?? 0,
+        };
+      } else {
+        this.position = { sectionIndex: ref.sec, paragraphIndex: ref.ppi, charOffset: 0 };
+      }
+    }
+    this.clearSelection();
+    this.exitPictureObjectSelection();
+    this.updateRect();
+  }
+
   // ─── 머리말/꼬리말 편집 모드 API ────────────────────────────
 
   /** 머리말/꼬리말 편집 모드인지 반환 */

@@ -6737,7 +6737,7 @@ impl DocumentCore {
                 }
             }
             Control::Shape(shape) => {
-                let valid = super::super::helpers::get_textbox_from_shape(shape)
+                let valid = super::super::helpers::get_textbox_at(shape, cell_idx)
                     .is_some_and(|textbox| cell_para_idx < textbox.paragraphs.len());
                 if !valid {
                     return Err(HwpError::RenderError(format!(
@@ -6746,6 +6746,7 @@ impl DocumentCore {
                 }
                 RenderPathEntry::ShapeTextBox {
                     control_index: control_idx,
+                    textbox_index: cell_idx,
                     paragraph_index: cell_para_idx,
                 }
             }
@@ -9676,6 +9677,7 @@ mod tests {
             entry,
             RenderPathEntry::ShapeTextBox {
                 control_index: 1,
+                textbox_index: 0,
                 paragraph_index: 0
             }
         )));

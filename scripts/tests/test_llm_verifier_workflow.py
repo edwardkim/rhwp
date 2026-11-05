@@ -110,11 +110,18 @@ class LlmVerifierWorkflowTests(unittest.TestCase):
                     self.assertFalse(any("verdict_protocol/Cargo.toml" in arg for arg in selected))
 
     def test_product_clippy_and_archive_package_selection_are_preserved(self) -> None:
-        self.assertIn("run: cargo clippy -- -D warnings", step_body(self.ci, "Clippy"))
-        self.assertIn(
-            "cargo clippy -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings",
-            step_body(self.ci, "Clippy (WASM32)"),
-        )
+        # 한 줄·여러 줄 YAML 표기와 관찰용 로그에 관계없이 실제 Cargo 인자를 확인한다.
+        for name, command in [
+            ("Clippy", "cargo clippy -- -D warnings"),
+            (
+                "Clippy (WASM32)",
+                "cargo clippy -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings",
+            ),
+        ]:
+            with self.subTest(step=name):
+                self.assertEqual(
+                    cargo_commands(step_body(self.ci, name)), [shlex.split(command)]
+                )
         archive = (REPO_ROOT / ".github/workflows/build-nextest-archives.yml").read_text(encoding="utf-8")
         commands = cargo_commands(archive)
         nextest = [command for command in commands if command[:2] == ["cargo", "nextest"]]

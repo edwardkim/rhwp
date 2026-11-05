@@ -31,6 +31,42 @@ use super::utils::{
 };
 use super::LayoutEngine;
 use super::{CellContext, CellPathEntry};
+
+/// 묶음의 자식별 글상자 번호를 모든 편집 소비 지점에 같은 원문 순서로 전달한다.
+/// 좌표·clip·paint는 변경하지 않는다. 중첩 묶음에서 이미 구분한 자식 번호에는 바깥 오프셋만 더한다.
+fn offset_group_textbox_sources(node: &mut RenderNode, depth: usize, offset: usize) {
+    fn adjust(ctx: &mut CellContext, depth: usize, offset: usize) {
+        if let Some(entry) = ctx.path.get_mut(depth) {
+            entry.cell_index += offset;
+        }
+    }
+    if let Some((_, ctx)) = &mut node.textbox_source {
+        adjust(ctx, depth, offset);
+    }
+    let context = match &mut node.node_type {
+        RenderNodeType::TextRun(run) => run.cell_context.as_mut(),
+        RenderNodeType::Table(table) => table.cell_context.as_mut(),
+        RenderNodeType::Image(image) => image.cell_context.as_mut(),
+        RenderNodeType::RawSvg(svg) => svg.cell_context.as_mut(),
+        RenderNodeType::Placeholder(placeholder) => placeholder.cell_context.as_mut(),
+        _ => None,
+    };
+    if let Some(ctx) = context {
+        adjust(ctx, depth, offset);
+    }
+    if let RenderNodeType::Image(image) = &mut node.node_type {
+        if let Some(ctx) = &image.cell_context {
+            (
+                image.cell_index,
+                image.cell_para_index,
+                image.outer_table_control_index,
+            ) = ctx.last_image_indices();
+        }
+    }
+    for child in &mut node.children {
+        offset_group_textbox_sources(child, depth, offset);
+    }
+}
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
@@ -1171,6 +1207,41 @@ impl LayoutEngine {
                 para_index,
                 styles,
             );
+        }
+
+        // 묶음 자식의 글줄은 셀 주소를 소유하며 바깥의 빈 본문 문단을 대신하지 않는다.
+        // 조판이 생략한 host 줄의 캐럿은 확정된 본문 흐름 원점에 남긴다. 개체 bbox나 자식
+        // 글상자 좌표로 추측하지 않고 기존 숨은 문단 표시기를 재사용하며 전진·인쇄는 바꾸지 않는다.
+        if matches!(shape, ShapeObject::Group(_))
+            && !common.treat_as_char
+            && para.text.trim().is_empty()
+            // 머리말·꼬리말·각주의 전용 편집 주소를 본문 주소로 만들지 않는다.
+            && matches!(parent.node_type, RenderNodeType::Column(_) | RenderNodeType::Body { .. })
+        {
+            fn has_body_caret(node: &RenderNode, section: usize, para: usize) -> bool {
+                matches!(&node.node_type, RenderNodeType::TextRun(run)
+                    if run.section_index == Some(section) && run.para_index == Some(para)
+                    && run.cell_context.is_none() && run.char_start.is_some())
+                    || node
+                        .children
+                        .iter()
+                        .any(|child| has_body_caret(child, section, para))
+            }
+            if !has_body_caret(parent, section_index, para_index) {
+                let composed = compose_paragraph(para);
+                self.layout_hidden_paragraph_marker(
+                    tree,
+                    parent,
+                    para,
+                    "",
+                    &composed,
+                    styles,
+                    col_area,
+                    para_y,
+                    section_index,
+                    para_index,
+                );
+            }
         }
 
         // 캡션 렌더링
@@ -2386,7 +2457,9 @@ impl LayoutEngine {
                     }),
                     BoundingBox::new(base_x, base_y, w, h),
                 );
-                for (_ci, child) in group.children.iter().enumerate() {
+                let mut textbox_offset = 0;
+                for child in &group.children {
+                    let first_child = group_node.children.len();
                     let sa = child.shape_attr();
                     let has_rotation = sa.render_b.abs() > 1e-6 || sa.render_c.abs() > 1e-6;
 
@@ -2440,6 +2513,16 @@ impl LayoutEngine {
                             Some(group_origin),
                         );
                     }
+                    if textbox_offset > 0 {
+                        for rendered in &mut group_node.children[first_child..] {
+                            offset_group_textbox_sources(
+                                rendered,
+                                parent_cell_path.len(),
+                                textbox_offset,
+                            );
+                        }
+                    }
+                    textbox_offset += child.textbox_shape_count();
                 }
                 parent.children.push(group_node);
             }
@@ -3191,6 +3274,22 @@ impl LayoutEngine {
             Some(tb) => tb,
             None => return,
         };
+
+        let mut textbox_path = parent_cell_path.to_vec();
+        textbox_path.push(CellPathEntry {
+            control_index,
+            cell_index: 0,
+            cell_para_index: 0,
+            text_direction: 0,
+        });
+        shape_node.textbox_source = Some((
+            section_index,
+            CellContext {
+                parent_para_index: para_index,
+                path: textbox_path,
+                in_textbox: true,
+            },
+        ));
 
         let margin_left = hwpunit_to_px(text_box.margin_left as i32, self.dpi);
         let margin_right = hwpunit_to_px(text_box.margin_right as i32, self.dpi);

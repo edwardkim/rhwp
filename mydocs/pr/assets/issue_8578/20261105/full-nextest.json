@@ -1,0 +1,16 @@
+{
+  "seconds": 936.659,
+  "run": 12591,
+  "passed": 12591,
+  "log_sha256": "7137e8eddcb699afc79d9edf930090ac5d7f3e62cbd8ecc35459977f979463d1",
+  "head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+  "host": "ubuntu-ted3",
+  "exit_code": 0,
+  "tests_run": 12591,
+  "failed": 0,
+  "skipped": 45,
+  "slow": 7,
+  "build_and_test_seconds": 1664.148,
+  "test_threads": 8,
+  "build_jobs": 8
+}

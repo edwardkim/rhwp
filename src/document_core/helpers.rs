@@ -158,7 +158,26 @@ pub(crate) fn get_textbox_from_shape(
     drawing.text_box.as_ref()
 }
 
-/// ShapeObject에서 TextBox 가변 참조를 추출하는 헬퍼
+/// 셀 편집 주소로 지정한 글상자를 찾는다. 묶음도 원본 자식 순서의 글상자 번호로 구분한다.
+pub(crate) fn get_textbox_at(
+    shape: &crate::model::shape::ShapeObject,
+    index: usize,
+) -> Option<&crate::model::shape::TextBox> {
+    shape.textbox_shape_at(index)?.drawing()?.text_box.as_ref()
+}
+
+pub(crate) fn get_textbox_at_mut(
+    shape: &mut crate::model::shape::ShapeObject,
+    index: usize,
+) -> Option<&mut crate::model::shape::TextBox> {
+    shape
+        .textbox_shape_at_mut(index)?
+        .drawing_mut()?
+        .text_box
+        .as_mut()
+}
+
+/// 독립 ShapeObject의 TextBox 가변 참조를 추출한다.
 pub(crate) fn get_textbox_from_shape_mut(
     shape: &mut crate::model::shape::ShapeObject,
 ) -> Option<&mut crate::model::shape::TextBox> {

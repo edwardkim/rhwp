@@ -479,8 +479,8 @@ impl DocumentCore {
                         .ok_or_else(|| invalid("셀 인덱스 초과"))?
                         .paragraphs
                 }
-                Some(Control::Shape(shape)) if cell_idx == 0 => {
-                    &super::get_textbox_from_shape(shape)
+                Some(Control::Shape(shape)) => {
+                    &super::helpers::get_textbox_at(shape, cell_idx)
                         .ok_or_else(|| invalid("글상자가 없는 도형"))?
                         .paragraphs
                 }

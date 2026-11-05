@@ -10,6 +10,7 @@ impl LayoutEngine {
         tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,
         para: &Paragraph,
+        marker_text: &str,
         composed: &ComposedParagraph,
         styles: &ResolvedStyleSet,
         col_area: &LayoutRect,
@@ -54,8 +55,9 @@ impl LayoutEngine {
         line.children.push(RenderNode::new(
             tree.next_id(),
             RenderNodeType::TextRun(TextRunNode {
-                // 공백도 원본 문자 오프셋을 보존하되 인쇄 흐름에는 참여하지 않는다.
-                text: para.text.clone(),
+                // 흡수한 문단은 원문 공백 오프셋을 보존한다. 묶음의 시작 캐럿만 필요한
+                // 경우에는 빈 문자열을 받아 원문에 없는 표시 내용을 생산하지 않는다.
+                text: marker_text.to_owned(),
                 style,
                 char_shape_id,
                 para_shape_id: Some(composed.para_style_id),

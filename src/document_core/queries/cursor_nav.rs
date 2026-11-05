@@ -699,24 +699,8 @@ impl DocumentCore {
                     })?;
                 }
                 Control::Shape(shape) => {
-                    // 글상자 (Shape with text_box) 의 안 paragraphs 로 traverse
-                    use crate::model::shape::ShapeObject;
-                    let inner_paras = match shape.as_ref() {
-                        ShapeObject::Rectangle(r) => {
-                            r.drawing.text_box.as_ref().map(|tb| &tb.paragraphs)
-                        }
-                        ShapeObject::Ellipse(e) => {
-                            e.drawing.text_box.as_ref().map(|tb| &tb.paragraphs)
-                        }
-                        ShapeObject::Polygon(p) => {
-                            p.drawing.text_box.as_ref().map(|tb| &tb.paragraphs)
-                        }
-                        ShapeObject::Arc(a) => a.drawing.text_box.as_ref().map(|tb| &tb.paragraphs),
-                        ShapeObject::Curve(c) => {
-                            c.drawing.text_box.as_ref().map(|tb| &tb.paragraphs)
-                        }
-                        _ => None,
-                    };
+                    let inner_paras = super::super::helpers::get_textbox_at(shape, cell_idx)
+                        .map(|textbox| &textbox.paragraphs);
                     let inner = inner_paras.ok_or_else(|| {
                         HwpError::RenderError(format!(
                             "경로[{}]: controls[{}] Shape 에 텍스트박스가 없습니다",
@@ -829,18 +813,13 @@ impl DocumentCore {
                     })?
                 }
                 Some(Control::Shape(shape)) => {
-                    if cell_idx != 0 {
-                        return Err(HwpError::RenderError(format!(
-                            "경로[{}]: 글상자의 cell_index는 0이어야 합니다 ({})",
-                            i, cell_idx
-                        )));
-                    }
-                    let text_box = get_textbox_from_shape(shape).ok_or_else(|| {
-                        HwpError::RenderError(format!(
-                            "경로[{}]: controls[{}]가 텍스트 글상자가 아닙니다",
-                            i, ctrl_idx
-                        ))
-                    })?;
+                    let text_box = super::super::helpers::get_textbox_at(shape, cell_idx)
+                        .ok_or_else(|| {
+                            HwpError::RenderError(format!(
+                                "경로[{}]: controls[{}]가 텍스트 글상자가 아닙니다",
+                                i, ctrl_idx
+                            ))
+                        })?;
                     text_box.paragraphs.get(cell_para_idx).ok_or_else(|| {
                         HwpError::RenderError(format!(
                             "경로[{}]: 글상자문단 {} 범위 초과 (총 {}개)",
@@ -946,9 +925,10 @@ impl DocumentCore {
                     })?
                 }
                 Some(Control::Shape(shape)) => {
-                    let text_box = get_textbox_from_shape(shape).ok_or_else(|| {
-                        HwpError::RenderError(format!("경로[{}]: 글상자가 아닙니다", i))
-                    })?;
+                    let text_box = super::super::helpers::get_textbox_at(shape, cell_idx)
+                        .ok_or_else(|| {
+                            HwpError::RenderError(format!("경로[{}]: 글상자가 아닙니다", i))
+                        })?;
                     text_box.paragraphs.get(cell_para_idx).ok_or_else(|| {
                         HwpError::RenderError(format!(
                             "경로[{}]: 글상자문단 {} 범위 초과",
@@ -997,7 +977,7 @@ impl DocumentCore {
                 Ok(cell.paragraphs.len())
             }
             Some(Control::Shape(shape)) => {
-                let text_box = get_textbox_from_shape(shape)
+                let text_box = super::super::helpers::get_textbox_at(shape, last.1)
                     .ok_or_else(|| HwpError::RenderError("글상자가 아닙니다".to_string()))?;
                 Ok(text_box.paragraphs.len())
             }
@@ -1510,7 +1490,7 @@ impl DocumentCore {
 
         // 글상자인 경우: 문단 간 이동만, 셀 이동 없이 경계에서 본문 탈출
         if let Some(Control::Shape(shape)) = table_para.controls.get(ci) {
-            if let Some(text_box) = get_textbox_from_shape(shape) {
+            if let Some(text_box) = super::super::helpers::get_textbox_at(shape, cei) {
                 // 오버플로우 타겟: 소스의 오버플로우 문단 수 사용
                 // 오버플로우 소스: 렌더 문단 수(overflow_start)만 사용
                 let effective_para_count = self
@@ -1520,7 +1500,7 @@ impl DocumentCore {
 
                 if delta > 0 && cpi + 1 < effective_para_count {
                     let next_cpi = cpi + 1;
-                    let cell_ctx = Some((ppi, ci, 0, next_cpi));
+                    let cell_ctx = Some((ppi, ci, cei, next_cpi));
                     let next_para = self.resolve_paragraph(sec, next_cpi, cell_ctx)?;
                     let range = Self::get_line_char_range(next_para, 0);
                     let offset = self
@@ -1530,7 +1510,7 @@ impl DocumentCore {
                 }
                 if delta < 0 && cpi > 0 {
                     let prev_cpi = cpi - 1;
-                    let cell_ctx = Some((ppi, ci, 0, prev_cpi));
+                    let cell_ctx = Some((ppi, ci, cei, prev_cpi));
                     let prev_para = self.resolve_paragraph(sec, prev_cpi, cell_ctx)?;
                     let last_line = if prev_para.line_segs.is_empty() {
                         0

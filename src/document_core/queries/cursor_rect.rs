@@ -1656,6 +1656,7 @@ impl DocumentCore {
             section_index: usize,
             parent_para_index: usize,
             control_index: usize,
+            context: CellContext,
             x: f64,
             y: f64,
             w: f64,
@@ -1801,30 +1802,13 @@ impl DocumentCore {
             // 노드가 layout_textbox_content 로 자식에 텍스트를 가진 경우. 외곽 도형 노드의
             // section/para/control 메타 + bbox 가 모두 채워져 있으므로 그대로 사용.
             // (글상자 안 빈 영역 클릭 시 첫 paragraph 진입에 사용)
-            let textbox_meta: Option<(usize, usize, usize)> = match &node.node_type {
-                RenderNodeType::Rectangle(r) => {
-                    match (r.section_index, r.para_index, r.control_index) {
-                        (Some(si), Some(pi), Some(ci)) => Some((si, pi, ci)),
-                        _ => None,
-                    }
-                }
-                RenderNodeType::Ellipse(e) => {
-                    match (e.section_index, e.para_index, e.control_index) {
-                        (Some(si), Some(pi), Some(ci)) => Some((si, pi, ci)),
-                        _ => None,
-                    }
-                }
-                RenderNodeType::Path(p) => match (p.section_index, p.para_index, p.control_index) {
-                    (Some(si), Some(pi), Some(ci)) => Some((si, pi, ci)),
-                    _ => None,
-                },
-                _ => None,
-            };
-            if let Some((si, pi, ci)) = textbox_meta {
+            if let Some((si, context)) = &node.textbox_source {
+                let outer = context.path.first().expect("글상자의 소유 경로");
                 textbox_bboxes.push(TextBoxBboxInfo {
-                    section_index: si,
-                    parent_para_index: pi,
-                    control_index: ci,
+                    section_index: *si,
+                    parent_para_index: context.parent_para_index,
+                    control_index: outer.control_index,
+                    context: context.clone(),
                     x: node.bbox.x,
                     y: node.bbox.y,
                     w: node.bbox.width,
@@ -2037,21 +2021,18 @@ impl DocumentCore {
             // cell_index=0 (글상자 외곽 자체), cellParaIndex=0 (글상자 첫 paragraph)
             // 캐럿: 글상자 좌상단 + 약간 안쪽 패딩.
             let caret_h = (tb.h - 4.0).max(12.0).min(20.0);
-            format!(
-                "{{\"sectionIndex\":{},\"paragraphIndex\":0,\"charOffset\":0,\
-                 \"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":0,\"cellParaIndex\":0,\
-                 \"cellPath\":[{{\"controlIndex\":{},\"cellIndex\":0,\"cellParaIndex\":0}}],\
-                 \"isTextBox\":true,\
-                 \"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
-                tb.section_index,
-                tb.parent_para_index,
-                tb.control_index,
-                tb.control_index,
-                page_num,
-                tb.x + 2.0,
-                tb.y + 2.0,
-                caret_h
-            )
+            let first = tb.context.path.first().expect("글상자 소유 경로");
+            serde_json::json!({
+                "sectionIndex":tb.section_index,"paragraphIndex":0,"charOffset":0,
+                "parentParaIndex":tb.parent_para_index,"controlIndex":tb.control_index,
+                "cellIndex":first.cell_index,"cellParaIndex":0,"isTextBox":true,
+                "cellPath":tb.context.path.iter().map(|entry| serde_json::json!({
+                    "controlIndex":entry.control_index,"cellIndex":entry.cell_index,
+                    "cellParaIndex":entry.cell_para_index,
+                })).collect::<Vec<_>>(),
+                "cursorRect":{"pageIndex":page_num,"x":tb.x+2.0,"y":tb.y+2.0,"height":caret_h},
+            })
+            .to_string()
         }
 
         fn text_run_hit_allowed_by_textbox_bbox(
@@ -2073,6 +2054,19 @@ impl DocumentCore {
                 tb.section_index == run.section_index
                     && tb.parent_para_index == ctx.parent_para_index
                     && tb.control_index == outer.control_index
+                    && tb.context.path.len() <= ctx.path.len()
+                    && tb
+                        .context
+                        .path
+                        .iter()
+                        .zip(&ctx.path)
+                        .enumerate()
+                        .all(|(i, (a, b))| {
+                            a.control_index == b.control_index
+                                && a.cell_index == b.cell_index
+                                && (i + 1 == tb.context.path.len()
+                                    || a.cell_para_index == b.cell_para_index)
+                        })
                     && x >= tb.x
                     && x <= tb.x + tb.w
                     && y >= tb.y
@@ -2306,19 +2300,21 @@ impl DocumentCore {
                     run.is_textbox = false;
                     continue;
                 };
-                if outer.cell_index == 0 {
-                    let is_shape = self
-                        .document
-                        .sections
-                        .get(run.section_index)
-                        .and_then(|s| s.paragraphs.get(ctx.parent_para_index))
-                        .and_then(|p| p.controls.get(outer.control_index))
-                        .map(|c| matches!(c, Control::Shape(_)))
-                        .unwrap_or(false);
-                    run.is_textbox = is_shape;
-                } else {
-                    run.is_textbox = false;
-                }
+                // isTextBox는 바깥 편집 소유자가 글상자인지를 나타낸다. 안 표의 셀은
+                // ctx.in_textbox=false여도 글상자 소유 경로를 유지한다 (#919).
+                run.is_textbox = self
+                    .document
+                    .sections
+                    .get(run.section_index)
+                    .and_then(|s| s.paragraphs.get(ctx.parent_para_index))
+                    .and_then(|p| p.controls.get(outer.control_index))
+                    .and_then(|control| match control {
+                        Control::Shape(shape) => {
+                            super::super::helpers::get_textbox_at(shape, outer.cell_index)
+                        }
+                        _ => None,
+                    })
+                    .is_some();
             } else {
                 run.is_textbox = false;
             }
