@@ -30,6 +30,13 @@
 [초과 높이·기존 외곽선·각주 번호 차이의 직접 판독](rebase8609/native-details.md)을 보존했다.
 미세 차이를 점수 통과로 해결됐다고 표시하지 않는다. fresh WASM과 새 base 자체 비교·전체 공통 검증은 진행 중이다.
 
+## 최신 Native 필수 편람 완료
+
+[최종 제품의 필수 편람 Native 383쪽](rebase8609/handbook-native-validation.md)은 passed·실제 exit 0이다.
+최저 표시 raw 99.96%, 기준 대비 표시값 하락·누락·웹폰트 fallback 0건이다. 실행 TSV는 공식 기준과
+바이트가 같으며 원시 로그·제품·입력/PDF SHA와 실행 시간을 기록했다. 전체 Rust·fresh WASM·
+새 base 자체 대조의 완료로 확대하지 않는다.
+
 ## 직전 완료 제품의 전쪽·회귀 증거
 
 다음은 `c183a1ac61c2aa4188989fd93032cae68d3538c1`의 실제 결과다.
