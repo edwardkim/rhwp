@@ -1,9 +1,11 @@
 // 관계형: 표 셀 번호 도형의 실제 선택·이동·삭제와 Undo의 소유·표시 경계 복원을 검사한다.
-// 주석 갱신: 2026-11-05 18:00 KST. 원본 control 주소를 쓰며 실물 px 기대값은 고정하지 않는다.
+// 주석 갱신: 2026-11-05 18:52 KST. 원본 control 주소를 쓰며 실물 px 기대값은 고정하지 않는다.
+// 원본 27쪽 Native/fresh WASM 99.99897%/99.99691%, 28쪽 99.99893%/99.99678%(96dpi·compat2022).
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { runTest } from './helpers.mjs';
+import { createHash } from 'node:crypto';
+import { loadApp, runTest } from './helpers.mjs';
 
 const output = new URL('../../output/e2e/issue7375/', import.meta.url);
 mkdirSync(output, { recursive: true });
@@ -40,6 +42,23 @@ async function undo(page, modifier) {
 }
 
 runTest('#7375 27·28쪽 번호 도형의 독립 선택·드래그·삭제·Undo', async ({ page }) => {
+  const initializationJs = [];
+  const responseTasks = [];
+  page.on('response', response => {
+    if (new URL(response.url()).pathname.endsWith('/rhwp.js')) {
+      responseTasks.push((async () => {
+        const body = await response.buffer();
+        initializationJs.push({ url: response.url(), status: response.status(),
+          sha256: createHash('sha256').update(body).digest('hex'),
+          hasCellShapeDelete: body.includes(Buffer.from('deleteCellShapeControlByPath')) });
+      })());
+    }
+  });
+  await loadApp(page);
+  await Promise.all(responseTasks);
+  assert.ok(initializationJs.length > 0);
+  assert.ok(initializationJs.every(response => response.status === 200 && response.hasCellShapeDelete),
+    '초기화 응답의 실제 JS가 셀 도형 삭제 바인딩을 제공한다');
   const errors = [];
   page.on('console', m => {
     if (/셀 문단.*실패|getSelectionRects 실패|커맨드 실행 실패/.test(m.text())) errors.push(m.text());
@@ -130,5 +149,6 @@ runTest('#7375 27·28쪽 번호 도형의 독립 선택·드래그·삭제·Undo
   }
   assert.deepEqual(errors, [], '선택·드래그 중 잘못된 셀 참조나 명령 실패가 없다');
   assert.equal(await page.evaluate(() => window.__wasm.pageCount), 50);
-  writeFileSync(new URL('browser-selection-result.json', output), JSON.stringify({ results, errors }, null, 2) + '\n');
-});
+  const backend = await page.evaluate(() => window.__canvasView.getRenderBackend());
+  writeFileSync(new URL('browser-selection-result.json', output), JSON.stringify({ initializationJs, backend, results, errors }, null, 2) + '\n');
+}, { skipLoadApp: true });

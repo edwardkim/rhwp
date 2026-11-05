@@ -1,0 +1,9 @@
+{
+  "source_sha": "c72f967575c49b068b9217830670abddc3785712",
+  "sha256": "f27165b44a06a66ee050572970850452bf491cd6e310026669fdaa20133a8826",
+  "bytes": 73062272,
+  "features": [
+    "native-skia"
+  ],
+  "build_log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/native-build.log"
+}

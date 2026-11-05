@@ -1,5 +1,5 @@
 // 관계형: 독립 도형과 그림의 소유 경로를 비교한다. 실물 px 좌표를 고정하지 않는다.
-// 주석 갱신: 2026-11-05 17:34 KST.
+// 주석 갱신: 2026-11-05 18:52 KST. 합성 주소의 API 계약으로 Native/fresh WASM 시각 수치는 비대상이다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { isNestedCellDescendantOfControl } from '../src/engine/picture-hit-policy.ts';

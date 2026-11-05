@@ -1,0 +1,184 @@
+{
+  "initializationJs": [
+    {
+      "url": "http://127.0.0.1:7735/@fs/Users/tsjang/rhwp/pkg/rhwp.js?t=1793870981384",
+      "status": 200,
+      "sha256": "48f0f93e1d7e245e5c5da27f604e52b1e1eec9a1da11e92ba476beb7986fbb8a",
+      "hasCellShapeDelete": true
+    }
+  ],
+  "backend": "canvas2d",
+  "results": [
+    {
+      "page": 27,
+      "selected": {
+        "ref": {
+          "sec": 0,
+          "ppi": 383,
+          "ci": 0,
+          "type": "shape",
+          "cellIdx": 0,
+          "cellParaIdx": 0,
+          "outerTableControlIdx": 0,
+          "cellPath": [
+            {
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            }
+          ],
+          "pageIndex": 26
+        },
+        "object": true,
+        "operations": 0
+      },
+      "before": {
+        "horzOffset": 13348,
+        "vertOffset": 4294966021
+      },
+      "moves": [
+        {
+          "modifier": "Control",
+          "moved": {
+            "horzOffset": 15148,
+            "vertOffset": 4294966996
+          },
+          "restored": {
+            "horzOffset": 13348,
+            "vertOffset": 4294966021
+          },
+          "box": {
+            "pageIndex": 26,
+            "x": 260.4,
+            "y": 350.8,
+            "w": 26.7,
+            "h": 25
+          },
+          "restoredBox": {
+            "pageIndex": 26,
+            "x": 260.4,
+            "y": 350.8,
+            "w": 26.7,
+            "h": 25
+          }
+        },
+        {
+          "modifier": "Meta",
+          "moved": {
+            "horzOffset": 15148,
+            "vertOffset": 4294966996
+          },
+          "restored": {
+            "horzOffset": 13348,
+            "vertOffset": 4294966021
+          },
+          "box": {
+            "pageIndex": 26,
+            "x": 260.4,
+            "y": 350.8,
+            "w": 26.7,
+            "h": 25
+          },
+          "restoredBox": {
+            "pageIndex": 26,
+            "x": 260.4,
+            "y": 350.8,
+            "w": 26.7,
+            "h": 25
+          }
+        }
+      ],
+      "deletion": {
+        "before": 4,
+        "after": 3,
+        "restored": true
+      }
+    },
+    {
+      "page": 28,
+      "selected": {
+        "ref": {
+          "sec": 0,
+          "ppi": 392,
+          "ci": 0,
+          "type": "shape",
+          "cellIdx": 0,
+          "cellParaIdx": 0,
+          "outerTableControlIdx": 0,
+          "cellPath": [
+            {
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            }
+          ],
+          "pageIndex": 27
+        },
+        "object": true,
+        "operations": 0
+      },
+      "before": {
+        "horzOffset": 18276,
+        "vertOffset": 0
+      },
+      "moves": [
+        {
+          "modifier": "Control",
+          "moved": {
+            "horzOffset": 20076,
+            "vertOffset": 1350
+          },
+          "restored": {
+            "horzOffset": 18276,
+            "vertOffset": 0
+          },
+          "box": {
+            "pageIndex": 27,
+            "x": 326.1,
+            "y": 286.8,
+            "w": 26.7,
+            "h": 25
+          },
+          "restoredBox": {
+            "pageIndex": 27,
+            "x": 326.1,
+            "y": 286.8,
+            "w": 26.7,
+            "h": 25
+          }
+        },
+        {
+          "modifier": "Meta",
+          "moved": {
+            "horzOffset": 20076,
+            "vertOffset": 1350
+          },
+          "restored": {
+            "horzOffset": 18276,
+            "vertOffset": 0
+          },
+          "box": {
+            "pageIndex": 27,
+            "x": 326.1,
+            "y": 286.8,
+            "w": 26.7,
+            "h": 25
+          },
+          "restoredBox": {
+            "pageIndex": 27,
+            "x": 326.1,
+            "y": 286.8,
+            "w": 26.7,
+            "h": 25
+          }
+        }
+      ],
+      "deletion": {
+        "before": 4,
+        "after": 3,
+        "restored": true
+      }
+    }
+  ],
+  "errors": []
+}

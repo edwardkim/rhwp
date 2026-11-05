@@ -1,5 +1,5 @@
 // 관계형: 클립보드 완료·취소와 객체 소유 주소를 검사하며 실물 px 좌표는 고정하지 않는다.
-// 주석 갱신: 2026-11-05 18:01 KST. #7375 셀 번호 도형의 잘라내기 주소 대조를 추가했다.
+// 주석 갱신: 2026-11-05 18:52 KST. 합성 API 계약이며 Native/fresh WASM 시각 수치는 비대상이다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';

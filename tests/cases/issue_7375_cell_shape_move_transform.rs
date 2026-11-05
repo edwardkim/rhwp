@@ -1,11 +1,13 @@
 //! 관계형: 번호 도형을 이동·복원할 때 원본 행렬과 표시 경계의 가역성을 검사한다.
-//! 주석 갱신: 2026-11-05 17:49 KST.
+//! 주석 갱신: 2026-11-05 18:52 KST.
 //! 입력: issue7333/aaaaaa.hwp, 독립 한컴 2020 Print의 27·28쪽 번호 도형.
-//! Native 집중 Visual Sweep의 27쪽은 100%다. fresh WASM 일치율은 이 검사 작성 시 미측정이며,
-//! 실물 px 기대값을 고정하지 않고 같은 객체의 변경 전후 관계·원본 데이터 보존을 검사한다.
+//! 원본 27쪽 Native/fresh WASM 99.99897%/99.99691%, 28쪽 99.99893%/99.99678%.
+//! 같은 PDF·96dpi·compat2022의 정본 Visual Sweep 결과다. 실물 px 기대값을 고정하지 않고
+//! 같은 객체의 변경 전후 관계·원본 데이터 보존과 사양의 곡률 백분율을 검사한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::model::control::Control;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::DocumentCore;
 use serde_json::{json, Value};
 
@@ -150,4 +152,55 @@ fn restoring_shape_offsets_does_not_reinstate_stale_source_after_another_edit() 
         "다른 편집이 남은 구역에 원본 raw를 재사용하지 않는다"
     );
     assert!(core.document().layout_profile().session_edited());
+}
+
+#[test]
+fn corner_percentages_survive_both_formats_and_drive_the_same_rectangle_geometry() {
+    fn radius(node: &RenderNode) -> Option<(f64, f64)> {
+        if let RenderNodeType::Rectangle(rect) = &node.node_type {
+            if rect.section_index == Some(0)
+                && rect.para_index == Some(383)
+                && rect.control_index == Some(0)
+                && rect.cell_index == Some(0)
+            {
+                return Some((rect.corner_radius, node.bbox.width.min(node.bbox.height)));
+            }
+        }
+        node.children.iter().find_map(radius)
+    }
+    // HWP5 표 94: 직각 0·둥근 모양 20·반원 50. 37은 명시 곡률 보존 대조군이다.
+    for rate in [0, 20, 37, 50] {
+        let mut core = load();
+        core.set_cell_shape_properties_by_path_native(
+            0,
+            383,
+            PATH,
+            0,
+            &json!({"roundRate":rate}).to_string(),
+        )
+        .unwrap();
+        let tree = core.build_page_render_tree(26).unwrap();
+        let (actual, shorter_side) = radius(&tree.root).expect("원본 번호 사각형");
+        assert_eq!(
+            actual,
+            shorter_side * (f64::from(rate) / 100.0),
+            "공통 RectangleNode는 곡률 백분율을 한 번만 적용한다"
+        );
+        for bytes in [
+            core.export_hwp_native().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ] {
+            let restored = DocumentCore::from_bytes(&bytes).unwrap();
+            let props: Value = serde_json::from_str(
+                &restored
+                    .get_cell_shape_properties_by_path_native(0, 383, PATH, 0)
+                    .unwrap(),
+            )
+            .unwrap();
+            assert_eq!(
+                props["roundRate"], rate,
+                "HWP/HWPX 저장·재열기 모두 같은 곡률을 보존한다"
+            );
+        }
+    }
 }

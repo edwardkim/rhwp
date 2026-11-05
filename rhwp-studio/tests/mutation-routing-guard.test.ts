@@ -1,3 +1,5 @@
+// 관계형: 공개 뮤테이터와 Undo 기록 경로의 배선을 대조한다. 실물 px 고정 검사가 아니다.
+// 주석 갱신: 2026-11-05 18:52 KST. API·배선 계약이며 Native/fresh WASM 시각 수치는 비대상이다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
