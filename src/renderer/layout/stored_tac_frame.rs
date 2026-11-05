@@ -41,3 +41,19 @@ pub(super) fn owned_body_height(
         .into_iter()
         .find(|height| (line_height - (height + top + bottom)).abs() <= tolerance)
 }
+
+/// 한 저장 줄을 소유한 TAC 표(줄 높이 = 위 바깥여백 + 본체 + 아래 바깥여백)와 같은 줄에 놓인
+/// 다른 TAC 표의 위끝.
+///
+/// 소유자가 `줄 위끝 + owner_om_top` 에 앉으면 그 본체 높이의 85% 지점이 공유 기준선이다
+/// (글자처럼 취급 개체는 높이의 85% 가 기준선 위). 동반 표는 같은 기준선에 자기 높이의 85% 를
+/// 올려 `줄 위끝 + owner_om_top + 0.85 × (owner_h − table_h)` 에 앉는다. 자기 바깥여백은 더하지
+/// 않는다(#7049·#7150 실측). 글줄 흐름 경로와 TAC 표만 담은 문단 경로가 이 하나를 함께 쓴다.
+pub(super) fn companion_table_top(
+    line_top: f64,
+    owner_h: f64,
+    owner_om_top: f64,
+    table_h: f64,
+) -> f64 {
+    (line_top + owner_om_top + (owner_h - table_h) * 0.85).max(line_top)
+}
