@@ -1099,11 +1099,6 @@ fn assign_master_pages_for_section(
         .filter(|(_, m)| !m.is_extension)
         .map(|(i, _)| i)
         .collect();
-    let single_base_mp = if base_mp_indices.len() == 1 {
-        base_mp_indices.first().copied()
-    } else {
-        None
-    };
     let mp_both = base_mp_indices
         .iter()
         .copied()
@@ -1132,6 +1127,8 @@ fn assign_master_pages_for_section(
             continue;
         }
 
+        // 한컴 12.30은 쪽 홀짝에 맞는 바탕쪽(없으면 양 쪽, 없으면 앞 구역에서 이어 온 것)만 그린다.
+        // 짝수 쪽 바탕쪽 하나만 둔 구역의 홀수 쪽에는 바탕쪽이 없다(한컴 인쇄로 확인).
         let selected = if page.page_number % 2 == 1 {
             mp_odd
                 .or(mp_both)
@@ -1140,12 +1137,6 @@ fn assign_master_pages_for_section(
                     master_page_index: mi,
                 })
                 .or_else(|| carry_master_odd.clone())
-                .or_else(|| {
-                    single_base_mp.map(|mi| MasterPageRef {
-                        section_index,
-                        master_page_index: mi,
-                    })
-                })
         } else {
             mp_even
                 .or(mp_both)
@@ -1154,12 +1145,6 @@ fn assign_master_pages_for_section(
                     master_page_index: mi,
                 })
                 .or_else(|| carry_master_even.clone())
-                .or_else(|| {
-                    single_base_mp.map(|mi| MasterPageRef {
-                        section_index,
-                        master_page_index: mi,
-                    })
-                })
         };
         page.active_master_page = selected;
 
@@ -10448,7 +10433,11 @@ mod tests {
     }
 
     #[test]
-    fn single_base_master_page_applies_when_matching_parity_is_absent() {
+    /// 종전 기대(`single_base_master_page_applies_when_matching_parity_is_absent`)는 바탕쪽이 하나뿐이면
+    /// 홀짝이 맞지 않는 쪽에도 그렸다. 한컴 12.30은 앞 구역에 바탕쪽이 없고 이 구역에 홀수 쪽 바탕쪽만
+    /// 있는 문서를 인쇄하면 짝수 쪽(구역 첫 쪽 2쪽·4쪽)에 바탕쪽을 그리지 않고 홀수 쪽에만 그린다.
+    /// 짝수 쪽 바탕쪽 하나만 둔 한 구역 문서도 홀수 쪽에는 그리지 않는다.
+    fn single_parity_master_page_does_not_fill_the_other_parity() {
         use crate::model::document::{Document, Section, SectionDef};
         use crate::model::header_footer::{HeaderFooterApply, MasterPage};
         use crate::model::page::PageDef;
@@ -10481,14 +10470,19 @@ mod tests {
             page_def: page_def.clone(),
             ..Default::default()
         }));
-        document.sections.push(a4_section(SectionDef {
+        let mut section = a4_section(SectionDef {
             page_def,
             master_pages: vec![MasterPage {
                 apply_to: HeaderFooterApply::Odd,
                 ..Default::default()
             }],
             ..Default::default()
-        }));
+        });
+        section.paragraphs.push(Paragraph {
+            column_type: crate::model::paragraph::ColumnBreakType::Page,
+            ..Default::default()
+        });
+        document.sections.push(section);
 
         let mut core = DocumentCore::new_empty();
         core.set_document(document);
@@ -10500,11 +10494,22 @@ mod tests {
             .and_then(|result| result.pages.first())
             .expect("section 1 first page");
         assert_eq!(page.page_number, 2);
-        let active = page
-            .active_master_page
-            .as_ref()
-            .expect("single base master should apply to carried even page");
-        assert_eq!(active.master_page_index, 0);
+        assert!(
+            page.active_master_page.is_none(),
+            "홀수 쪽 바탕쪽은 짝수 쪽에 그리지 않는다"
+        );
+        let odd = core
+            .pagination
+            .get(1)
+            .and_then(|result| result.pages.get(1))
+            .expect("section 1 second page");
+        assert_eq!(odd.page_number, 3);
+        assert_eq!(
+            odd.active_master_page
+                .as_ref()
+                .map(|active| (active.section_index, active.master_page_index)),
+            Some((1, 0))
+        );
     }
 
     #[test]
