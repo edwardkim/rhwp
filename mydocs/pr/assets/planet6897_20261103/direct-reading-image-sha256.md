@@ -1,6 +1,6 @@
 # 직접 판독한 대표 이미지의 SHA-256
 
-[실제 판독 기록](direct-reading-current.md)의 166개 관측에서 사용한 중복 제외 332개 이미지다. 해시 일치만으로 시각 통과를 선언하지 않는다.
+[실제 판독 기록](direct-reading-current.md)의 170개 관측에서 사용한 중복 제외 340개 이미지다. 해시 일치만으로 시각 통과를 선언하지 않는다.
 
 | 최종 이미지 | SHA-256 |
 | --- | --- |
@@ -328,6 +328,14 @@
 | [p005-review.png](<rebase8609/native-details/vertical-oversize/p005-review.png>) | `4519e3ee940d0170fd074753ad2edc56e97b7da739e13c3361975709fd2bc1fc` |
 | [p005-overlay.png](<rebase8609/native-vertical-fit/p005-overlay.png>) | `c1774cf136f0f03ae9326432db157e0332646abc22a48847d8eb200ade792714` |
 | [p005-review.png](<rebase8609/native-vertical-fit/p005-review.png>) | `67c2486b1c390e431a13ae586615a2fbfd197ebfadad554121181f5dd66c2ac0` |
+| [fit-canvas2d-p005-overlay.png](<rebase8609/studio-consumers/fit-canvas2d-p005-overlay.png>) | `698b60222cb4dc42604e31d6f800ee37e9e5a166897b3e7fd6b793f46661b0d2` |
+| [fit-canvas2d-p005-review.png](<rebase8609/studio-consumers/fit-canvas2d-p005-review.png>) | `5cce1645c44d15e468e8d884e52ca394b31f0e5f47133ab01c8037bc1e8bb642` |
+| [fit-canvaskit-default-p005-overlay.png](<rebase8609/studio-consumers/fit-canvaskit-default-p005-overlay.png>) | `e624d876f1d0f3c5120f7eaf8bd9f44c70c8a628b401f9f0b9aaf30a05cf246f` |
+| [fit-canvaskit-default-p005-review.png](<rebase8609/studio-consumers/fit-canvaskit-default-p005-review.png>) | `6f24edb421fc1306f8608fe6022b3498eb4b23377567c163fa05419a1789beca` |
+| [oversize-canvas2d-p005-overlay.png](<rebase8609/studio-consumers/oversize-canvas2d-p005-overlay.png>) | `010b32874c47871c0b24417a093f3df2ab976120b2cc328c3ed7d28bf7ea0662` |
+| [oversize-canvas2d-p005-review.png](<rebase8609/studio-consumers/oversize-canvas2d-p005-review.png>) | `fd31d8c567001e3b04583826056c54c25250dc74e33b88314604a14430f5d6a4` |
+| [oversize-canvaskit-default-p005-overlay.png](<rebase8609/studio-consumers/oversize-canvaskit-default-p005-overlay.png>) | `24c0ec29334b0412d104025d1acaa2df4683c146afc88249d8d0e8b6b4a2bb24` |
+| [oversize-canvaskit-default-p005-review.png](<rebase8609/studio-consumers/oversize-canvaskit-default-p005-review.png>) | `fed83200cb13a0ec8376bf377bcd439b57e780655d0e277632de1c8ff4e72c6d` |
 | [p004-overlay.png](<rebase8609/wasm-details/decoration-frame/p004-overlay.png>) | `7741043f78a1688c5c7c3e21c4e87e47a860298f4ab5d82bdedb99d1917ca2f8` |
 | [p004-review.png](<rebase8609/wasm-details/decoration-frame/p004-review.png>) | `cca1d2f659fca0e4f5e0e1e5d86fa67e9f8e61c8cac64b4007a15cb4787e0699` |
 | [p001-overlay.png](<rebase8609/wasm-details/footnote-order/p001-overlay.png>) | `407cb0d729129360949b2c5f335130e79ece8709d401837fea6bd0cc9eee2770` |

@@ -41,6 +41,10 @@
 [PR #8475의 두 5쪽에서 양쪽 review·별도 overlay를 직접 대조](rebase8609/vertical-cell-claims.md)해
 글자 보존을 확인했다. [기존 외곽선·각주 차이의 WASM 판독](rebase8609/wasm-details.md)도 기록했다. 새 base 자체 대조·전체 Rust 등 통합 공통 검증은 계속 진행한다.
 
+## 실제 Studio의 세로쓰기 소비 확인
+
+[같은 두 원본 5쪽의 Canvas2D·CanvasKit 화면](rebase8609/studio-consumers.md)을 독립 PDF와 대조했다. screen/print 12개 캡처에서 실제 backend 불일치·fallback 0건, exit 0이다. 직접 확인한 print 4개 영역의 raw는 99.99761~100%이며 글자 보존을 확인했다. 엄격 RGB parity의 진단 차이는 그대로 기록했다.
+
 ## 최신 Native 필수 편람 완료
 
 [최종 제품의 필수 편람 Native 383쪽](rebase8609/handbook-native-validation.md)은 passed·실제 exit 0이다.
@@ -103,7 +107,7 @@
 ## 원본·쪽·대표 그림의 대응
 
 - [입력·PDF SHA-256 148개 대조표](input-integrity.tsv): 기존 공식 입력과 독립 Print를 재사용한다.
-- [직접 판독 166건](direct-reading-current.md)과 [실제 그림 해시](direct-reading-image-sha256.md): 실제로 연 review와 별도 overlay만 집계한다.
+- [직접 판독 170건](direct-reading-current.md)과 [실제 그림 해시](direct-reading-image-sha256.md): 실제로 연 review와 별도 overlay만 집계한다.
 - [재실행 명령과 80개 입력·PDF·compat·글꼴 계약](visual-reproduction.md): 로컬 임시 실행기가 없어도 canonical 명령으로 재산출할 수 있다.
 - [주석 변경의 회귀 함수 보존](test-header-only-audit.md): 주석만 바뀐 검사를 실제 동작 변경과 구분한다.
 

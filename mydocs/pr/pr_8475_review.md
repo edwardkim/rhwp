@@ -169,3 +169,9 @@ model/table.rs의 Table::layout_page_break가 측정·typeset·layout 공통 소
 
 원 PR별 주장 쪽의 직접 판독·회귀 주석·최종 본문 감사를 마친 뒤 수용 판정을 확정한다.
 통합 PR 생성·push·원격 review·comment·close는 아직 수행하지 않았다. PR 생성 전 승인을 기다린다.
+
+## 실제 Studio 출력의 소비 확인
+
+최신 WASM을 실제 Studio의 Canvas2D·CanvasKit compat/default software에 연결한 screen/print 12개 캡처는 실제 backend 불일치·fallback·replay hard failure 0건, exit 0입니다.
+[같은 두 원본의 5쪽 review·별도 overlay와 실제 화면](assets/planet6897_20261103/rebase8609/studio-consumers.md)을 직접 확인했습니다. print 4개 영역의 raw는 99.99761~100%이고 마지막 글자와 셀 내부 포함·행 순서·표 종료를 보존합니다.
+엄격 RGB parity의 보고용 차이는 남아 있으며 점수와 별도로 기록했습니다. 설치 글꼴 바이트는 로컬 host API로만 공급하고 배포하지 않았습니다.
