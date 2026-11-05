@@ -1,5 +1,5 @@
 //! 관계형: 번호 도형을 이동·복원할 때 원본 행렬과 표시 경계의 가역성을 검사한다.
-//! 주석 갱신: 2026-11-05 18:52 KST.
+//! 주석 갱신: 2026-11-05 20:26 KST.
 //! 입력: issue7333/aaaaaa.hwp, 독립 한컴 2020 Print의 27·28쪽 번호 도형.
 //! 원본 27쪽 Native/fresh WASM 99.99897%/99.99691%, 28쪽 99.99893%/99.99678%.
 //! 같은 PDF·96dpi·compat2022의 정본 Visual Sweep 결과다. 실물 px 기대값을 고정하지 않고
@@ -72,6 +72,23 @@ fn move_and_restore(page: u32, para: usize) {
         before_matrix,
         "위치만 바꿀 때 로컬 변환 행렬을 버리지 않는다"
     );
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let saved = DocumentCore::from_bytes(&bytes).unwrap();
+        let properties: Value = serde_json::from_str(
+            &saved
+                .get_cell_shape_properties_by_path_native(0, para, PATH, 0)
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(properties["horzOffset"], moved["horzOffset"]);
+        assert_eq!(
+            properties["vertOffset"], moved["vertOffset"],
+            "이동을 저장·재열기해도 원본 패스스루로 되돌아가지 않는다"
+        );
+    }
     let restore = json!({"horzOffset": before["horzOffset"], "vertOffset": before["vertOffset"]});
     core.set_cell_shape_properties_by_path_native(0, para, PATH, 0, &restore.to_string())
         .unwrap();
@@ -113,6 +130,21 @@ fn deleting_cell_number_preserves_the_outer_table_and_sibling_controls() {
         "번호 도형만 지우고 그림과 형제 도형의 데이터는 그대로 보존한다"
     );
     assert_eq!(core.page_count(), 50);
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let saved = DocumentCore::from_bytes(&bytes).unwrap();
+        let Control::Table(table) = &saved.document().sections[0].paragraphs[383].controls[0]
+        else {
+            panic!("저장·재열기한 문서의 외부 표가 사라졌다");
+        };
+        assert_eq!(
+            table.cells[0].paragraphs[0].controls.len(),
+            3,
+            "삭제한 번호 도형이 원본 패스스루 때문에 저장 결과에 다시 나타나지 않는다"
+        );
+    }
 }
 
 #[test]

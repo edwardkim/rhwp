@@ -1,8 +1,8 @@
 [
   {
     "file": "README.md",
-    "sha256": "528f1cfe538d4549a1de07d0c64a10951bcec97cf0c55451e90fa71e208dce86",
-    "bytes": 3595
+    "sha256": "90f387006051029e0a3bdbc5b8f4ed52dc2cf39587d780a17faba78dc1cc0d62",
+    "bytes": 4286
   },
   {
     "file": "base-native.tsv",
@@ -33,6 +33,11 @@
     "file": "handbook-native-gate.json",
     "sha256": "26a3c821b13841ab51a9eed7dd79c8494b51b3eaf8416c5c6ea4ca62255cd518",
     "bytes": 554
+  },
+  {
+    "file": "macos-font-isolation.json",
+    "sha256": "5389971c15cd34966ab4cbc8cef6440c36ce9ce0417257b1665ee1b3843efe26",
+    "bytes": 4795
   },
   {
     "file": "native-base-comparison.json",

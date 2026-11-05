@@ -38,5 +38,11 @@ Ctrl+Z·Command+Z를 실행했다. 삭제 전후 자식 개수는 4→3→4이�
 구분해 `browser-edit-validation.json`에 기록했다. 실제 Studio backend는 Canvas2D다.
 
 [필수 편람 Native gate](handbook-native-gate.json)는 383쪽 전체와 기존 기준 대비 하락 0쪽을 확인했다.
-전체 회귀·Rust lint·Native Skia 3종의 최소 글꼴 격리 검증은 진행 중이다. 이 증적만으로 PR 전체
+전체 회귀·Rust lint·Native Skia 3종은 현재 Mac에서 직접 최소 글꼴 격리 검증을 진행 중이다.
+프로세스 파일 sandbox로 개인·추가 설치 글꼴과 이전 글꼴 캐시 접근을 차단했다. CoreText의
+이름 캐시는 남지만 개인 글꼴 1,206개 파일에 속한 모든 face가 실제 개인 프로그램 대신
+LastResort를 사용하고, OS 기본 글꼴 294개 파일의 정보는 바뀌지 않았음을 대조했다.
+저장소의 공개 기본 fallback과 명시적 OFL fixture는 별도로 허용했다. 이 증적만으로 PR 전체
 검증 완료나 이슈 통합 완료를 선언하지 않는다. 로그와 임시 driver는 ignored `output/`에 보존한다.
+[Mac 글꼴 격리 사전 검증](macos-font-isolation.json)에 실제 프로필·허용 파일 해시·CoreText
+프로그램 대조와 일반 사용자 프로세스의 글꼴 상태가 바뀌지 않은 대조 결과를 기록했다.
