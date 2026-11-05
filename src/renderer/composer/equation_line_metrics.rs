@@ -216,6 +216,7 @@ fn try_refresh_rows<S: crate::storage::Storage>(
         new_logical_height = new_logical_height.max(text_height);
         new_ascent = new_ascent.max(text_ascent);
         new_descent = new_descent.max(text_descent);
+        let current_simple_row = has_equation && !has_form && all_current_simple_frames;
         // 같은 저장 예약 구간의 뒤 인라인 개체가 큰 높이를 실제 소유해야 한다.
         // 일반 텍스트 줄이나 저장 컷 앞 줄도 뒤 개체의 점유를 중복하지 않는다.
         let following_inline_box_was_reserved = stored_pair.is_some_and(|(source, next)| {
@@ -224,14 +225,17 @@ fn try_refresh_rows<S: crate::storage::Storage>(
                 && line_count == para.line_segs.len()
                 && source.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                 && next.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                && source.text_height == old_logical_height
+                && ((source.text_height == old_logical_height
+                    && (source.baseline_distance - old_ascent).abs() <= 1)
+                    // 개체만 현재 프레임으로 재저장돼도 뒤 개체의 실제 소유와
+                    // 저장 사다리가 이전 예약 구간을 증명하면 같은 줄을 재발행한다.
+                    || (current_simple_row && source.text_height > old_logical_height))
                 && source.line_height > old_logical_height
                 && following_box_height == Some(source.line_height)
-                && (source.baseline_distance - old_ascent).abs() <= 1
                 && source.vertical_pos >= 0
                 && (source
                     .vertical_pos
-                    .checked_add(old_logical_height)
+                    .checked_add(source.text_height)
                     .and_then(|end| end.checked_add(source.line_spacing))
                     == Some(next.vertical_pos)
                     || next.vertical_pos < source.vertical_pos)
@@ -247,9 +251,7 @@ fn try_refresh_rows<S: crate::storage::Storage>(
         // 과거 상자의 높이를 따로 소유하지 않는다. 모든 수식이 같은 현재
         // 프레임 계약을 따르고, 그 밖의 텍스트/개체가 예약 높이를 소유하지
         // 않는 온전한 저장 줄에서만 실제 기준선 합집합을 재발행한다.
-        let stale_current_math_row = has_equation
-            && !has_form
-            && all_current_simple_frames
+        let stale_current_math_row = current_simple_row
             && !para.stored_text_partition_is_dirty()
             && line_count == para.line_segs.len()
             && para.line_segs.get(line_index).is_some_and(|source| {
