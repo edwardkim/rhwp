@@ -13,7 +13,7 @@
 | 검증 시작 source | `ba2ebfd34a4ebf402bce8e002254b672a09ef764`; 이후 문서 커밋과 제품 소스를 구분 |
 | 리베이스 | 168개 패치 전부 range-diff `=`, 충돌 0건 |
 | 개별 검토 | 38개 조건부 수용, PR #8475 보정 후 통합 검증 대기; 최종 승인 0개 |
-| 최신 source 필수 검증 | 최소 글꼴 Rust·Native Skia·lint·최적화 WASM 묶음 실행 중. 완료로 선언하지 않음 |
+| 최신 source 필수 검증 | 전체 nextest 12,583 PASS·Skia lib 4,040 PASS 완료. CI Native 21개·doctest·최종 보존 대조 진행 중 |
 | 출력 보존 검증 | 기존 80입력 전쪽 결과는 원 출처로 재사용. 실제 변경 소비 경로를 집중 대조 |
 
 [원 PR head와 현재 적용 SHA 39개](integration-commits.md)를 기록했다. 새 외부 PR은 추가로 체리픽하지 않는다.
@@ -21,6 +21,10 @@
 상위 PR #8609의 30개 전체 문서를 자동으로 새 범위에 넣지 않고, 영향 소비 경로 14입력·41쪽을
 선정했다. 별도로 현재 보정의 세로쓰기·개요·표 경계와 기존 차이 영역 10입력을 확인한다.
 새 base 대비 0.1%p 초과 하락은 허용하지 않는다.
+
+## 최신 전체 회귀·Skia 라이브러리 완료
+
+[실제 최종 결과와 명령](rebase8609/rust-regression-validation.md)을 보존했다. 최소 글꼴 환경의 전체 nextest는 12,583 PASS·45 SKIP, Native Skia 라이브러리는 4,040 PASS·12 IGNORE이며 각각 exit 0이다. CI Native 21개와 doctest·새 base 보존 대조는 남아 있다.
 
 ## 최신 Native 영향 경계 완료
 
