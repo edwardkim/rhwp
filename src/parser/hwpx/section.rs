@@ -3828,6 +3828,15 @@ fn parse_object_element_attrs(
             // [#2840] 개체 잠금(lock) — 종전 미파싱으로 <hp:equation> 직렬화 시
             // 항상 "0"으로 되돌아가 원본의 잠금 상태가 유실됐다.
             b"lock" => common.locked = attr_str(&attr) == "1",
+            // 문단 첫 글자 장식 글상자의 장식 방식. 그림(위)과 같이 도형·표·수식도 읽는다.
+            b"dropcapstyle" => {
+                common.drop_cap_style = match attr_str(&attr).as_str() {
+                    "DoubleLine" => crate::model::shape::DropCapStyle::DoubleLine,
+                    "TripleLine" => crate::model::shape::DropCapStyle::TripleLine,
+                    "Margin" => crate::model::shape::DropCapStyle::Margin,
+                    _ => crate::model::shape::DropCapStyle::None,
+                };
+            }
             _ => {}
         }
     }

@@ -96,7 +96,7 @@ where
             ("textFlow", tf),
             // [#2840] lock(개체 잠금) — 파서가 읽기 시작했으므로 IR 값을 방출한다.
             ("lock", bool01(c.locked)),
-            ("dropcapstyle", "None"),
+            ("dropcapstyle", drop_cap_style_str(c.drop_cap_style)),
             ("href", ""),
             ("groupLevel", &group_level),
             ("instid", &instid),
@@ -214,7 +214,7 @@ where
         ("textFlow", text_flow_str(c.text_flow)),
         // [#2840] lock(개체 잠금) — IR 보존 값 방출.
         ("lock", bool01(c.locked)),
-        ("dropcapstyle", "None"),
+        ("dropcapstyle", drop_cap_style_str(c.drop_cap_style)),
         ("href", ""),
         ("groupLevel", &group_level),
         ("instid", &instid),
@@ -379,7 +379,7 @@ where
             ("textFlow", tf),
             // [#2840] lock(개체 잠금) — IR 보존 값 방출.
             ("lock", bool01(common.locked)),
-            ("dropcapstyle", "None"),
+            ("dropcapstyle", drop_cap_style_str(common.drop_cap_style)),
             ("href", ""),
             ("groupLevel", &group_level),
             ("instid", &id_str),
@@ -498,7 +498,7 @@ where
             ("textFlow", tf),
             // [#2840] lock(개체 잠금) — IR 보존 값 방출.
             ("lock", bool01(c.locked)),
-            ("dropcapstyle", "None"),
+            ("dropcapstyle", drop_cap_style_str(c.drop_cap_style)),
             ("href", ""),
             ("groupLevel", &group_level),
             ("instid", &instid_str),
@@ -636,7 +636,7 @@ where
             ("textWrap", text_wrap_str(c.text_wrap)),
             ("textFlow", text_flow_str(c.text_flow)),
             ("lock", bool01(c.locked)),
-            ("dropcapstyle", "None"),
+            ("dropcapstyle", drop_cap_style_str(c.drop_cap_style)),
             ("chartIDRef", chart_id_ref),
         ],
         storage,
