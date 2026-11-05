@@ -15,7 +15,7 @@ pub(crate) struct ListMarkerGeometry {
     pub rest_line_px: f64,
     /// 마커 글자의 x — 첫 줄 본문 시작 기준(보통 음수).
     pub marker_dx_px: f64,
-    /// 영역이 있어 마커를 그린다.
+    /// 영역과 표시 문자열이 모두 있어 마커를 그린다.
     pub marker_visible: bool,
 }
 
@@ -190,6 +190,6 @@ pub(super) fn list_marker_geometry_for(
         first_line_px,
         rest_line_px,
         marker_dx_px: align_dx - area_px,
-        marker_visible: area_px > 0.0,
+        marker_visible: area_px > 0.0 && !text.is_empty(),
     }
 }

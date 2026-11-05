@@ -229,7 +229,7 @@ pub enum NumberingMarker {
     Unresolved,
     /// 번호·개요 문단이 아니거나, 그려질 번호가 없다.
     Absent,
-    /// 그려질 번호 문자열과 그 수준의 문단 머리 속성.
+    /// 번호 문자열과 그 수준의 문단 머리 속성. 빈 문자열도 본문 거리를 점유한다.
     Text(String, MarkerHead),
 }
 
@@ -258,7 +258,7 @@ impl NumberingMarker {
     /// 그려질 번호 문자열 — 계산 전이거나 번호가 없으면 `None`.
     pub fn text(&self) -> Option<&str> {
         match self {
-            NumberingMarker::Text(text, _) => Some(text),
+            NumberingMarker::Text(text, _) if !text.is_empty() => Some(text),
             _ => None,
         }
     }

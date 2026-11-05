@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — R5 통합 제품의 최종 검증 진행 중.**
+**머지 보류 — 빈 번호 모양의 본문 거리 보정과 새 후보의 최종 검증이 필요함.**
 
 아래 입력의 Native/fresh WASM·직접 판독과 전체 필수 게이트를 완료한 뒤 최종 수용 판정을 갱신한다. 원격 comment·approve·push·merge·close는 실행하지 않았다.
 
@@ -55,6 +55,14 @@
 ![같은 원본 1쪽 review](assets/semanticist21_20261105/validation-r5/png/pr8527/native/8527-levels-hwp-2022/review_001.png)
 
 ![같은 원본 1쪽 overlay](assets/semanticist21_20261105/validation-r5/png/pr8527/native/8527-levels-hwp-2022/overlay_001.png)
+
+## 확대 판독에서 확인한 추가 결함
+
+R5 원본의 개요 9·10수준은 번호 문자열이 비어 있지만 본문과의 거리 50%를 갖는다.
+현재 출력은 약 6.67 CSSpx 왼쪽으로 당겨져 있다. 전쪽 90% 통과로 완료를 선언하지 않고
+[독립 근거·생산/측정/배치 소비 경로·보정 계획](assets/semanticist21_20261105/empty-numbering-head-analysis.md)에
+따라 공통 머리 기하를 보정한다. 수정 전 관계 검사는 HWP·HWPX 둘 다 실패했다.
+아래 R5 증적은 보정 전 결과이며 새 후보의 완료 증거로 재표기하지 않는다.
 
 ## 회귀와 조판 원칙 준수
 

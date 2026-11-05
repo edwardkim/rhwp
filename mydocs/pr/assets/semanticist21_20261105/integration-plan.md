@@ -397,3 +397,11 @@ R4 실제 Native 빌드(8 jobs)는 19분 30초에 완료했다. 같은 #7344 원
 ### R5 실제 브라우저와 생성 타입 동기화
 
 [현재 UI 검증](validation-r5/ui/README.md)에서 스타일 생성 실패·정상·undo와 새 base의 그룹 자식 클릭·입력·undo/redo·Esc를 실제 최적화 WASM으로 확인했다. 앱 초기화 네트워크에서 받은 바이트의 SHA도 producer와 같다. TypeScript·production build는 exit 0이다. public의 두 생성 타입은 현재 package와 맞췄고, 각 631개 export의 존재·인수 수와 직접 소비 Node 10건을 확인했다. 이전 전체 Node 2,723건과 현재 재검증 범위를 구분해 보존한다.
+
+### R6 보충 보정: 빈 번호의 거리 보존
+
+R5 전체 Rust 통과 뒤 원 PR 주장 영역을 확대 판독해 #8527의 빈 개요 9·10수준이
+원본의 본문 거리 50%를 잃는 것을 확인했다. [원인·독립 Print·수정 전 검출](empty-numbering-head-analysis.md)을
+기록하고 공통 번호 머리 결과와 paint 여부를 분리한다. R5 바이너리·WASM은 불변으로
+기존 측정을 계속하며, 이 결과를 새 제품의 검증으로 바꾸지 않는다. 관련 영역 판독을 묶어
+마친 뒤 보정 후보를 한 번 빌드하고 집중·전체·시각·lint를 새 source에서 검증한다.

@@ -733,14 +733,9 @@ pub(crate) fn numbering_head_text(
 
     let level_idx = (level as usize).min(crate::model::style::NUMBERING_LEVELS - 1);
     let format_str = &numbering.level_formats[level_idx];
-    if format_str.is_empty() {
-        return None;
-    }
-
+    // 빈 번호도 해당 수준의 본문 거리를 점유한다. 문자열 표시와 머리 기하를
+    // 함께 버리면 한컴 저장본의 빈 개요 수준에서 본문이 거리만큼 당겨진다.
     let text = expand_numbering_format(format_str, &counters, numbering, &start_numbers, level_idx);
-    if text.is_empty() {
-        return None;
-    }
     let head = numbering.heads.get(level_idx).copied().unwrap_or_default();
     Some((
         text,
