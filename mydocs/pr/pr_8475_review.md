@@ -8,7 +8,7 @@
 병합 칸 `임용전경력`의 줄 나눔이 독립 Print와 다르고 마지막 글자가 보이지 않았습니다.
 Native/fresh WASM 양쪽에서 확인했으며 98%대 점수만으로 면제하지 않습니다.
 [소유권·합성 줄 경로 분석](../working/task_m100_8470_vertical_synthetic_frame.md)에 따라
-이 주장 칸의 글자 보존까지 보정·재검증한 뒤 최종 판정을 갱신합니다.
+이 주장 칸의 글자 보존은 최신 Native/fresh WASM에서 보정·재검증했습니다. 남은 통합 공통 검증을 마친 뒤 최종 판정을 갱신합니다.
 
 별도 보정 소스 `37e5bba300`에서 [같은 관계 검사의 수정 전후 실행](assets/planet6897_20261103/pr_8475/vertical-axis-focused-37e5bba300.md)을 확인했습니다.
 검출 assertion을 바꾸지 않고 수정 전 2 FAIL에서 수정 후 2 PASS로 바뀌었으며,
@@ -21,16 +21,17 @@ Native/fresh WASM 전쪽·확대 판독과 최종 공통 검증 전까지 보류
 완료된 검증과 남은 공통 검증을 아래에서 구분합니다. 최종 수용 판정과 PR 생성은 아직 대기입니다.
 아래 값은 명시한 코드 SHA의 실측 결과이며 원 PR의 승인이나 닫기를 뜻하지 않습니다.
 
-## 최신 리베이스 Native 확인
+## 최신 리베이스 Native·fresh WASM 확인
 
-최신 제품 source `ba2ebfd34a4ebf402bce8e002254b672a09ef764`에서 두 문제 입력의 전5쪽이
-각각 100.00%이며 마지막 `력`까지 칸 내부 한 세로줄에 보존됐다.
-[fit 5쪽 review·별도 overlay](assets/planet6897_20261103/rebase8609/native-vertical-fit/README.md)와
-[초과 높이 입력 5쪽 직접 판독](assets/planet6897_20261103/rebase8609/native-details.md)을 연결한다.
-정상 저장 줄·실물·개요·표 경계까지 포함한 Native 10입력·43쪽은
-[정밀 raw 대조](assets/planet6897_20261103/rebase8609/native-own-validation.md)에서
-90% 미만·누락·쪽수 차이·직전 후보 대비 0.1%p 초과 하락 0쪽이다.
-fresh WASM·새 base 자체 대조와 전체 공통 검증 전에는 최종 수용으로 바꾸지 않는다.
+최신 제품 source `ba2ebfd34a4ebf402bce8e002254b672a09ef764`에서 두 문제 입력은
+**Native/fresh WASM 각각 전5쪽 100.00%**다. 마지막 `력`까지 칸 내부 한 세로줄에 보존됨을
+[동일 입력·5쪽의 양쪽 review와 별도 overlay](assets/planet6897_20261103/rebase8609/vertical-cell-claims.md)에서
+실제로 확인했다. 문제 글자 소실의 보정 검증은 완료했으며 남은 조건은 통합 공통 검증이다.
+
+정상 저장 줄·실물·개요·표 경계까지 포함한 [Native 10입력·43쪽](assets/planet6897_20261103/rebase8609/native-own-validation.md)과
+[fresh WASM 10입력·43쪽](assets/planet6897_20261103/rebase8609/wasm-own-validation.md)은 모두
+90% 이상이며 직전 후보 대비 정밀 raw 0.1%p 초과 하락 0쪽이다.
+새 base 자체 대조와 전체 공통 검증 전에는 최종 수용으로 바꾸지 않는다.
 
 ## 세로쓰기 글자 보존 보정의 현재 증거
 

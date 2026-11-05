@@ -1,6 +1,6 @@
 # 직접 판독한 대표 이미지의 SHA-256
 
-[실제 판독 기록](direct-reading-current.md)의 158개 관측에서 사용한 중복 제외 316개 이미지다. 파일 대응·관측 범위는 판독 기록을 따른다. 해시 일치만으로 시각 통과를 선언하지 않는다.
+[실제 판독 기록](direct-reading-current.md)의 166개 관측에서 사용한 중복 제외 332개 이미지다. 해시 일치만으로 시각 통과를 선언하지 않는다.
 
 | 최종 이미지 | SHA-256 |
 | --- | --- |
@@ -320,3 +320,19 @@
 | [pr8547-gangseo-p004-p004-native-review.png](<pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-native-review.png>) | `f9c0754d512716a235da5737b18a08b3481dfd8298cc43ca20638ea8c3511cb1` |
 | [pr8547-gangseo-p004-p004-wasm-overlay.png](<pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-wasm-overlay.png>) | `c9c7d2e22e3094c3aed669b9c25c7f3052933f3795d9b73725bc31ef7e9abb9c` |
 | [pr8547-gangseo-p004-p004-wasm-review.png](<pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-wasm-review.png>) | `8cb416ac8e74661bc0f441059eb47b4a56adc17d6fe77927f6198dcc171f61e9` |
+| [p004-overlay.png](<rebase8609/native-details/decoration-frame/p004-overlay.png>) | `ed449e5408808babe244ae9f92d0e00924aa65adab512825a5c843527a7f337f` |
+| [p004-review.png](<rebase8609/native-details/decoration-frame/p004-review.png>) | `ea54985c89b7f71b6917e95a19b926a363b7e22b607d84ba2417271c4545b405` |
+| [p001-overlay.png](<rebase8609/native-details/footnote-order/p001-overlay.png>) | `87e94dff9536d2dcde95a2c2ab11cf7578e12c059ea0ffec263eab124b356942` |
+| [p001-review.png](<rebase8609/native-details/footnote-order/p001-review.png>) | `08d6b29a70539c5130553638d5c4131220bd94b051cb5dbb21f36a5e9bec45d9` |
+| [p005-overlay.png](<rebase8609/native-details/vertical-oversize/p005-overlay.png>) | `100aca7432052eaeb6588393363e2401d1f7c700db74682e8ff4373a80888762` |
+| [p005-review.png](<rebase8609/native-details/vertical-oversize/p005-review.png>) | `4519e3ee940d0170fd074753ad2edc56e97b7da739e13c3361975709fd2bc1fc` |
+| [p005-overlay.png](<rebase8609/native-vertical-fit/p005-overlay.png>) | `c1774cf136f0f03ae9326432db157e0332646abc22a48847d8eb200ade792714` |
+| [p005-review.png](<rebase8609/native-vertical-fit/p005-review.png>) | `67c2486b1c390e431a13ae586615a2fbfd197ebfadad554121181f5dd66c2ac0` |
+| [p004-overlay.png](<rebase8609/wasm-details/decoration-frame/p004-overlay.png>) | `7741043f78a1688c5c7c3e21c4e87e47a860298f4ab5d82bdedb99d1917ca2f8` |
+| [p004-review.png](<rebase8609/wasm-details/decoration-frame/p004-review.png>) | `cca1d2f659fca0e4f5e0e1e5d86fa67e9f8e61c8cac64b4007a15cb4787e0699` |
+| [p001-overlay.png](<rebase8609/wasm-details/footnote-order/p001-overlay.png>) | `407cb0d729129360949b2c5f335130e79ece8709d401837fea6bd0cc9eee2770` |
+| [p001-review.png](<rebase8609/wasm-details/footnote-order/p001-review.png>) | `fb2df1cccff16dec0abfd521a5bef1525ba2b897bc3af43dd81140b498c3d9b1` |
+| [p005-overlay.png](<rebase8609/wasm-details/vertical-fit/p005-overlay.png>) | `7c98c73d86f7b068425976d3b9b20432e70264bc8cb7ede38181708fe41b186a` |
+| [p005-review.png](<rebase8609/wasm-details/vertical-fit/p005-review.png>) | `6ba28827a2f910d585d2c670a880415f9a4b788a784819992b4606f86ce62dde` |
+| [p005-overlay.png](<rebase8609/wasm-details/vertical-oversize/p005-overlay.png>) | `e80dbc19f724fa430623f96ca75078639dfbe8f2f5479ff556a8a14ff6407c48` |
+| [p005-review.png](<rebase8609/wasm-details/vertical-oversize/p005-review.png>) | `e222a22030769a13612e003f960ac2da5085aca54af2c033878dbbadcfd38b2b` |
