@@ -2392,12 +2392,38 @@ fn fill_one_interval(
                     (*inline_width > 0.0)
                         .then(|| (cursor.lw + to_hwp(*inline_width), cursor.line_space_savings)),
                 ) {
+                    let mut cut = cut;
+                    let mut hung_extra = 0usize;
                     let absorbed = cut > *idx;
+                    // [#8639] 넘친 공백이 낱말 바로 뒤의 첫 공백이면 다음 공백 하나도 줄 끝에
+                    // 함께 건다. 한/글 2020·2024 저장 줄(`issue8639/trailing_space_overflow_synthetic`):
+                    // 글자가 상자 안에 겨우 들고 첫 공백부터 넘치면 공백 2 → 1줄, 공백 3 → 셋째
+                    // 공백에서 새 줄, 공백 2 + 글 → 글에서 새 줄. 첫 공백이 상자 안에 들고 둘째가
+                    // 넘치는 #7418 경계(42자 + 공백 2·3)는 넘친 공백 앞이 공백이라 바뀌지 않는다.
+                    let word_attached = absorbed
+                        && *idx > cursor.line_start_idx
+                        && text_chars.get(*idx - 1).is_some_and(|c| !c.is_whitespace());
+                    if word_attached {
+                        if let Some(BreakToken::Space {
+                            idx: next_idx,
+                            max_font_size: next_fs,
+                            ..
+                        }) = tokens.get(ti + 1)
+                        {
+                            if *next_idx == *idx + 1 {
+                                if *next_fs > cursor.line_max_fs {
+                                    cursor.line_max_fs = *next_fs;
+                                }
+                                cut = *next_idx + 1;
+                                hung_extra = 1;
+                            }
+                        }
+                    }
                     // [#7418] 줄 끝에 건 공백이 문단의 마지막 글자면 문단이 여기서 끝난다 —
                     // 종전에는 글자 없는 빈 행을 하나 더 게시했다. 한/글은 넘친 공백 **하나**만
                     // 줄 끝에 걸고 그 뒤 공백은 새 줄로 넘긴다(42자+공백 2 → 1줄, 공백 3 → 2줄;
                     // `trailing_space_synthetic`). 그래서 뒤에 공백이 더 남은 경우는 종전대로 끊는다.
-                    if absorbed && ti + 1 == tokens.len() {
+                    if absorbed && ti + 1 + hung_extra == tokens.len() {
                         cursor.finished = true;
                         cursor.emitted_any = true;
                         cursor.token_index = tokens.len();
@@ -2429,7 +2455,7 @@ fn fill_one_interval(
                     cursor.is_first_line = false;
                     cursor.last_break_token_idx = None;
                     cursor.word_gap_natural_hwp = None;
-                    cursor.token_index += 1;
+                    cursor.token_index += 1 + hung_extra;
                     cursor.emitted_any = true;
                     // The terminal separator was consumed by this row. The
                     // cursor is at paragraph end, not at a new empty line.
