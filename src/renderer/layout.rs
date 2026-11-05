@@ -6628,6 +6628,7 @@ impl LayoutEngine {
                 pnp.prefix_char,
                 pnp.suffix_char,
                 pnp.dash_char,
+                pnp.user_symbol,
             );
             let target_area = match pnp.position {
                 1..=3 | 7 | 9 => &layout.header_area,

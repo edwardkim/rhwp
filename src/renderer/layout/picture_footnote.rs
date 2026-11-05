@@ -6,8 +6,7 @@ use super::super::pagination::{FootnoteFragment, FootnoteRef, FootnoteSource};
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{
-    format_number, hwpunit_to_px, AutoNumberCounter, LineStyle, NumberFormat as NumFmt,
-    PathCommand, StrokeDash, TextStyle,
+    hwpunit_to_px, AutoNumberCounter, LineStyle, PathCommand, StrokeDash, TextStyle,
 };
 use super::border_rendering::border_width_to_px;
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
@@ -158,7 +157,7 @@ fn stored_footnote_number_prefix(para: &Paragraph, number: u16) -> Option<(Strin
         };
         if auto.number_type != crate::model::control::AutoNumberType::Footnote
             || auto.superscript
-            || auto.format > 16
+            || !crate::renderer::note_marker::supported_format(auto.format)
             || positions.get(index) != Some(&index)
             || para.text.chars().nth(index) != Some(' ')
         {
@@ -167,7 +166,11 @@ fn stored_footnote_number_prefix(para: &Paragraph, number: u16) -> Option<(Strin
         if auto.prefix_char != '\0' {
             prefix.push(auto.prefix_char);
         }
-        prefix.push_str(&format_number(number, NumFmt::from_hwp_format(auto.format)));
+        prefix.push_str(&crate::renderer::note_marker::number_text(
+            number,
+            auto.format,
+            auto.user_symbol,
+        ));
         if auto.suffix_char != '\0' {
             prefix.push(auto.suffix_char);
         }
@@ -1647,6 +1650,7 @@ impl LayoutEngine {
                 &shape.number_format,
                 shape.prefix_char,
                 shape.suffix_char,
+                shape.user_char,
             );
             let (fragment_start, fragment_end) = fragment_line_bounds(
                 fn_ref.fragment,
@@ -2397,10 +2401,11 @@ fn format_footnote_number(
     format: &NumberFormat,
     prefix: char,
     suffix: char,
+    user_symbol: char,
 ) -> String {
     // 본문 각주 표시와 같은 번호 모양 코드(표 134)로 그린다.
     let code = FootnoteShape::number_format_attr_code(*format) as u8;
-    let num_str = format_number(number, NumFmt::from_hwp_format(code));
+    let num_str = crate::renderer::note_marker::number_text(number, code, user_symbol);
 
     let prefix_str = if prefix != '\0' {
         prefix.to_string()

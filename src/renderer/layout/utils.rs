@@ -303,9 +303,9 @@ pub(crate) fn format_page_number(
     prefix_char: char,
     suffix_char: char,
     dash_char: char,
+    user_symbol: char,
 ) -> String {
-    let num_fmt = NumFmt::from_hwp_format(format);
-    let formatted = format_number(page_num as u16, num_fmt);
+    let formatted = crate::renderer::note_marker::number_text(page_num as u16, format, user_symbol);
     let prefix = if prefix_char != '\0' {
         prefix_char.to_string()
     } else {
