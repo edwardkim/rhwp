@@ -4157,7 +4157,7 @@ impl DocumentCore {
 }
 
 /// 셀 텍스트에서 숫자를 추출한다 (콤마 제거, 공백 무시).
-fn parse_cell_number(text: &str) -> Option<f64> {
+pub(super) fn parse_cell_number(text: &str) -> Option<f64> {
     let cleaned: String = text
         .chars()
         .filter(|c| !c.is_whitespace() && *c != ',')
