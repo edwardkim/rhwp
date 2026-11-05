@@ -85,7 +85,6 @@ PR 8475 기록에 있다. 기존 PNG의 producer `4b149b6cdf`와 새 측정 제�
 별도 `worktree-vertical-cell-fix`에서 보정 코드를 작성 중이며, 두 폴더의 Cargo는 공유
 `target/pr-review`에서 기존 검증 종료 뒤 순차 실행한다. 큰 자료는 원본 경로에 그대로 두고
 이 작업 소유의 symlink만 사용하며 symlink를 저장소 자원으로 커밋하지 않는다.
-<<<<<<< HEAD
 
 ## 실제 보정과 집중 회귀 결과 — 2026-11-05
 
@@ -165,5 +164,3 @@ Native/WASM 각각 두 문제 쪽·실물 10/11쪽·정상 대조 1쪽의 review
 복구는 약 64초에 끝났다. [전쪽 TSV·명령·SHA와 복구 근거](../pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/handbook-validation.md)에
 결과를 보존했다. 전체 Rust nextest·Skia 묶음은 실패 단계 뒤에서 이어 실행 중이며
 최종 통과로 표시하지 않는다.
-=======
->>>>>>> 37e5bba300 (fix: 세로쓰기 칸의 합성 줄 프레임을 높이 축으로 공유)
