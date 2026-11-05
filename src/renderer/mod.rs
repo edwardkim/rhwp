@@ -103,6 +103,7 @@ pub mod sixel;
 pub(crate) mod stored_frame_boundary;
 pub(crate) mod stored_picture_metrics;
 mod stroke_pattern;
+pub(crate) use stroke_pattern::char_outline_stroke;
 pub(crate) mod table_row_frame;
 pub(crate) mod text_font_coverage;
 pub mod text_font_presentation;
