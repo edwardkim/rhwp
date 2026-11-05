@@ -7952,7 +7952,13 @@ impl LayoutEngine {
                         RenderNode::new(
                             num_id,
                             RenderNodeType::Image(image),
-                            BoundingBox::new(marker_x, y, num_style.font_size, num_style.font_size),
+                            BoundingBox::new(
+                                marker_x,
+                                y + hwpunit_to_px(comp_line.line_height, self.dpi)
+                                    - num_style.font_size,
+                                num_style.font_size,
+                                num_style.font_size,
+                            ),
                         )
                     } else {
                         RenderNode::new(

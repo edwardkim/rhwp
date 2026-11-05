@@ -6088,15 +6088,9 @@ fn parse_ctrl_autonum(
                             // 과거 parse_u8 은 문자열을 0으로만 떨궈 DIGIT 외 형식을 잃었다.
                             // pageNum formatType 과 동일한 문자열→코드 매핑을 사용한다.
                             b"type" => {
-                                an.format = match attr_str(&attr).as_str() {
-                                    // [#6872] 사용자 기호. 종전에는 `_ => 0` 에 걸려
-                                    // DIGIT 으로 떨어졌고, 왕복 저장본의 각주 번호
-                                    // 모양이 사용자 기호에서 숫자로 바뀌었다.
-                                    // 코드는 `NumberFormat::UserChar` 의 서수(18)를
-                                    // 그대로 쓴다 — 표 134 의 0~16 과 겹치지 않는다.
-                                    "USER_CHAR" => 18,
-                                    other => number_type_code(other),
-                                };
+                                // 모델의 순서값이 아니라 HWP의 실제 번호 코드로 통일한다.
+                                // USER_CHAR=0x81이며 본문 참조·접두·왕복 저장이 함께 쓴다.
+                                an.format = number_type_code(&attr_str(&attr));
                             }
                             b"userChar" => {
                                 let s = attr_str(&attr);

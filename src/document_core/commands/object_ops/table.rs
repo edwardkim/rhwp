@@ -1362,7 +1362,9 @@ impl DocumentCore {
                 line_spacing: 600,
                 // 한/글 표준: 자리 차지 표 문단의 줄 폭은 0이다(본문 표 만들기와 같다).
                 segment_width: if treat_as_char { inner_width } else { 0 },
-                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                // 새 표의 앵커는 한컴 파일에서 읽은 저장 사다리가 아니다.
+                // 뒤 합성 문단과 같은 재조판 경로가 표의 점유를 함께 소비한다.
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE | LineSeg::TAG_IMPLEMENTATION_PROPERTY,
                 ..Default::default()
             }],
             para_shape_id: default_para_shape_id,
