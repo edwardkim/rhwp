@@ -1,6 +1,8 @@
 # semanticist21 미지정 PR 17건과 추가 PR #8629 통합 검토 계획
 
-기준 `upstream/devel`: `6e1de406209ba9a58032f6ca6de45b18aa687d1c`.
+최초 기준 `upstream/devel`: `6e1de406209ba9a58032f6ca6de45b18aa687d1c`.
+
+리베이스 후 현재 기준: `a95d1d5afad1bfd61998794fa78fb0db100d690a`.
 
 작업 브랜치: `review/integration-20261105-semanticist21-open`.
 
@@ -65,3 +67,11 @@
 테스트 배치 정책 검사에서는 PR #8616이 제품 소스에 추가한 비공개 helper 테스트 2건이 base 대비 증가로 검출됐다. 이를 기존 `compose_controls_insert.rs`로 이동해 공개 API에서 공백 제외·입력 제한·스타일 비트 설정과 해제를 검사하도록 보정했다. 테스트 목적과 유효한 기대값은 유지한다. 새 구역별 표 생성 API에 맞춰 해당 검사의 중첩 표도 원래 모드인 `treatAsChar=true`를 명시한다. 보정 뒤 unit-tier 검사는 4,099건·296개 모듈로 통과했다.
 
 현재 단계는 테스트 등록과 계약 호환성 보정이며 시각 검증과 최종 판정은 진행 중이다.
+
+## 3단계 최신 devel 리베이스와 겹치는 편집 경로 확인
+
+2026-11-05 작업지시자의 요청으로 `a95d1d5afad1bfd61998794fa78fb0db100d690a`까지 fetch하고 리베이스했다. 이전 head는 `2e5080bc337061618f2c69484b6cc37b5e27333f`, 리베이스 후 code head는 `63f30d02656b8e290a0a15869775de47b4039ea8`이다. 47개 커밋은 `range-diff`에서 모두 동일한 패치로 대응하며 충돌·누락은 없다. 원 PR 18건의 원격 head는 변경하지 않았다.
+
+새 base에는 PR #8630의 묶음 글상자 클릭·Esc 복귀와 CI 디스크 관측, PR #8633·#8634의 병합 후 기록이 포함된다. 묶음 자식의 편집 주소를 공통 indexed helper로 선택하는 경로가 이번 머리말·중첩 셀·덧말 편집과 만나는 지점을 확인했다. 최소 글꼴 환경에서 새 `issue_8578_group_text_editing`과 `header_footer_table_paths`·`compose_controls_insert`·`inserted_style_keeps_references`·`table_in_cell_non_inline`를 함께 실행해 30건 모두 통과했다(27.457초, exit 0). 별도 Studio Esc 검사 1건과 CI workflow 계약 검사 6건도 통과했다. 자동 suite 등록·정합성 검사는 2,079 source·48 integration target으로 통과했다.
+
+이 결과는 관련 편집 주소·입력·저장 계약의 집중 검증이다. 새 code head의 Native/fresh WASM 전쪽 출력과 실제 브라우저 검증을 완료한 것으로 확대하지 않는다. 리베이스 전 실행 파일 `bf5c9076…`의 측정은 제품 코드 `2e5080bc33`의 출처로 유지하며 새 후보의 측정으로 다시 표시하지 않는다.
