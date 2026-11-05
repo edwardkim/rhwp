@@ -10,8 +10,8 @@
 
 - 원 PR: [PR #8526](https://github.com/edwardkim/rhwp/pull/8526), 작성자 `semanticist21`, reviewer `jangster77`.
 - 원 head: `a4ce64e250512153d3db6e27d88bb9448f120ee2`. 2026-11-05 재조회에서 검토 시작 때와 같고 Open·Non-Draft다.
-- 고정 base: `ece9c3383bb2c73e0f055459ede727a9d3101ac6`.
-- 현재 보정 제품: `2de033b4e42be406a01ea0b9053a4531247e147c`(셀 첫 줄 간격 보존). 직전 행 조각 보정 제품은 `a314d7a24d3234305abff43149f575853db31105`다. 아래 완료된 R2 측정 제품은 `dc39658f812d22c961ddd0fbc8e71c7ec7a52e5b`이며 새 후보 측정으로 바꾸어 쓰지 않는다.
+- 고정 base: `170b886f167b705b6e630c5b34bb638d92fae0a9`(PR #8542 포함).
+- 현재 리베이스 제품: `71e5e0ae2a72a6b8f51682d131077bd4df44994f`. 리베이스 전 셀 첫 줄 간격 보정 제품은 `2de033b4e42be406a01ea0b9053a4531247e147c`다. 직전 행 조각 보정 제품은 `a314d7a24d3234305abff43149f575853db31105`다. 아래 완료된 R2 측정 제품은 `dc39658f812d22c961ddd0fbc8e71c7ec7a52e5b`이며 새 후보 측정으로 바꾸어 쓰지 않는다.
 - 통합 브랜치: `review/integration-20261105-semanticist21-open`.
 
 ## 원 주장과 실제 검증 범위
@@ -24,10 +24,10 @@
 
 ## 체리픽과 메인터너 보정
 
-| 원 commit | ECE9 리베이스 후 적용 commit |
+| 원 commit | 170b 리베이스 후 적용 commit |
 | --- | --- |
-| `e1fc9e35fb9a923feb0a138627175f1d11d1ab3f` | `ef2e7f0e4b968d57d092a86fe9b1ef6016859878` |
-| `a4ce64e250512153d3db6e27d88bb9448f120ee2` | `80398d7db157516ceed8437d8a3a1445a3c7a0eb` |
+| `e1fc9e35fb9a923feb0a138627175f1d11d1ab3f` | `0126791f8dbab8269d1515553651632e8641e41f` |
+| `a4ce64e250512153d3db6e27d88bb9448f120ee2` | `b690582a73895f6c0a1a0b713330b367b9154bbe` |
 
 공통 보정의 원인·소비 경로·리베이스 충돌 해소는 [통합 분석](assets/semanticist21_20261105/integration-plan.md)에 기록했다.
 
