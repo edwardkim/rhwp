@@ -1,3 +1,10 @@
+//! 검사 유형: 관계형·고정형(독립 HWPX/XML 속성과 HWP5 번호 모양 코드); 페이지 px 핀 없음.
+//! 주석 갱신: 2026-11-05T22:11:59+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 552f5228d2dbfd6046c838f14241704f1bcb8a05, 2026-10-13T01:25:14+09:00.
+//! 이 모듈의 9건은 메모리에서 작성한 XML의 파싱·직렬화 계약이며 조판·paint를 실행하지 않는다.
+//! 따라서 Native/fresh WASM 페이지 일치율을 이 필드 기대값의 근거로 사용하지 않는다.
+//! 독립 근거: 한글문서파일형식_5.0_revision1.3.md 표 134의 각주/미주 번호 모양 0x81 및 literal_note_hwpx의 USER_CHAR.
+//! 실제 문서 표시 검증은 별도 note-formats HWP/HWPX 19쪽의 Native/fresh WASM 증거와 구분한다.
 //! [#6872] HWPX→HWPX 왕복에서 각주 번호 서식이 무너진다.
 //!
 //! **증상.** `x2x` 왕복만으로 각주 참조 표시가 바뀐다(쪽수·글자수는 그대로).
@@ -291,7 +298,9 @@ fn issue_6872_inline_user_char_parser_and_writer_roundtrip() {
             })
             .expect("literal autoNum must be parsed");
         assert_eq!(auto_num.number_type, AutoNumberType::Footnote);
-        assert_eq!(auto_num.format, 18);
+        // HWP5 번호 모양의 독립 저장값: 0x81은 사용자 지정 문자 반복이다.
+        // NumberFormat enum의 과거 순서값 18을 모델의 raw 코드로 고정하지 않는다.
+        assert_eq!(auto_num.format, 0x81);
         assert_eq!(auto_num.user_symbol, '*');
         bytes = rhwp::serializer::hwpx::serialize_hwpx(&doc).unwrap();
     }

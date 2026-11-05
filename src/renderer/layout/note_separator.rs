@@ -83,7 +83,7 @@ pub(super) fn append(
         parent.children.push(node);
         return;
     }
-    if raw != 6 {
+    if !matches!(raw, 6 | 8..=11) {
         // 일반 선 종류는 새 base와 같은 LineType2 및 공통 Print 패턴을 소비한다.
         let border = BorderLine {
             line_type: super::border_rendering::border_line_type_from_code(raw),
@@ -102,14 +102,19 @@ pub(super) fn append(
             ));
         return;
     }
-    // 각주 긴 선은 독립 Print에서 확인한 쇄선의 긴 구간과 공백만 반복한다.
+    // 복선·삼중선은 각주가 선언한 전체 굵기를 공통 LineRenderType에 전달한다.
+    // BorderFill 프레임용 3/4px 최소 밴드를 각주에 확대 적용하지 않는다.
+    // 독립 Print(폭 index 7): 10쪽 획 0.96/0.48px, 11쪽 획 0.32/0.64/0.32px.
     let (mut dash, line_type) = crate::renderer::line_style::hwp_line_type(raw);
-    if let Some(StrokeDash::Explicit(mut values)) = crate::renderer::stroke_pattern::border_dash(
-        BorderLineType::DashDot,
-        shape.separator_line_width,
-    ) {
-        values[2..].fill(0.0);
-        dash = StrokeDash::Explicit(values);
+    if raw == 6 {
+        // 긴 선은 쇄선의 긴 구간과 공백만 반복한다.
+        if let Some(StrokeDash::Explicit(mut values)) = crate::renderer::stroke_pattern::border_dash(
+            BorderLineType::DashDot,
+            shape.separator_line_width,
+        ) {
+            values[2..].fill(0.0);
+            dash = StrokeDash::Explicit(values);
+        }
     }
     let line = LineNode::new(
         x,
