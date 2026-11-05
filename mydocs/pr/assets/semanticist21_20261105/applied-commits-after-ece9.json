@@ -1,0 +1,359 @@
+[
+  {
+    "pr": 8526,
+    "source_sha": "e1fc9e35fb9a923feb0a138627175f1d11d1ab3f",
+    "applied_sha": "356d2c0a107de4b205de364edf1e075fd97bfa60",
+    "subject": "feat(style): insert a new style at a list position like Hancom",
+    "rebased_applied_sha": "ef2e7f0e4b968d57d092a86fe9b1ef6016859878",
+    "pre_ece9_applied_sha": "b298ec5aa2ff273b4af58a5aec8d357f1800652f"
+  },
+  {
+    "pr": 8526,
+    "source_sha": "a4ce64e250512153d3db6e27d88bb9448f120ee2",
+    "applied_sha": "83d305364f3fe2541a8553d3be13987314bc60ee",
+    "subject": "docs(pr): 스타일 추가하기 자리의 한/글 화면을 남긴다",
+    "rebased_applied_sha": "80398d7db157516ceed8437d8a3a1445a3c7a0eb",
+    "pre_ece9_applied_sha": "e15d254942808631a5a21c0577dedb115de7c0a5"
+  },
+  {
+    "pr": 8527,
+    "source_sha": "1d6c685106306a297cc1fcf2d09b3aaf56732969",
+    "applied_sha": "27367b6729e79cc3547ad172b4a25c28f12066e9",
+    "subject": "feat(number): keep and draw numbering levels 8-10 like Hancom",
+    "rebased_applied_sha": "3db4b1213b5055df886963f6cf67b6dda3318319",
+    "pre_ece9_applied_sha": "ee086e0e133504ee35d93df94cd99ba9bf2921a5"
+  },
+  {
+    "pr": 8527,
+    "source_sha": "7243067034a9cb2d64bb0e6f8938f496461b1c34",
+    "applied_sha": "0d34776e86b1979926c966adf5fd8f5dfc25a2fe",
+    "subject": "docs(pr): 8~10수준 번호의 한/글 화면과 devel·이 변경으로 그린 화면을 남긴다",
+    "rebased_applied_sha": "99f6cc16c17c6232315df2346524283cd88c06c8",
+    "pre_ece9_applied_sha": "da8f69211472a24f1b00597a5ab9588d438eb168"
+  },
+  {
+    "pr": 8528,
+    "source_sha": "b5a228ff54f9307eb7e6c7d8999c5e6f775b0e3e",
+    "applied_sha": "4dec7ce27cc15dacf46ae4da5e4bfcb4e6149fd5",
+    "subject": "feat(number): attach a char shape to a numbering level like Hancom",
+    "rebased_applied_sha": "d376d6fcd1a923fb1fe76bd74290c25faca4f144",
+    "pre_ece9_applied_sha": "d2aaab38ec7c2b11d745d0f168028922dd6dc531"
+  },
+  {
+    "pr": 8528,
+    "source_sha": "06d4928479fe238f9d63948e6d4edaf7e3835fe2",
+    "applied_sha": "d523aa82cbb7d6f3747f78481ca30967bdfdc152",
+    "subject": "docs(pr): 번호 글자 모양의 한/글 화면을 남긴다",
+    "rebased_applied_sha": "6add9f68d9bff732b77195b17e501cde199ae4d1",
+    "pre_ece9_applied_sha": "5d420f9d1a768d9ad280f945abffedaae8b19b00"
+  },
+  {
+    "pr": 8528,
+    "source_sha": "6640ee6cf49a694ed7c97cc6c6836c7f20af691e",
+    "applied_sha": "53b2b8dd5482158ed7f2b4ae8b6d003ea691eabe",
+    "subject": "test(number): draw Hancom's follow-body-size numbers at the paragraph end size",
+    "rebased_applied_sha": "ed11233edd0ff2ee298d5db003b4613c4d387a74",
+    "pre_ece9_applied_sha": "d7e0dc0be0a633bc3c32a29f3c15153febddb5a5"
+  },
+  {
+    "pr": 8528,
+    "source_sha": "6785bddfb1047ea6e3e74b7fc2eec94efd0d7ce6",
+    "applied_sha": "cd4058758020866a9fa5b18d9abd98f103a40a90",
+    "subject": "docs(pr): 본문 글자 크기 따름 번호를 devel과 이 변경으로 그린 화면을 남긴다",
+    "rebased_applied_sha": "3a2b6093dc5116e9a0bcf617f8038bf090bf033a",
+    "pre_ece9_applied_sha": "37a29f72d6c8a960974edc705cabd1b53e7cc01e"
+  },
+  {
+    "pr": 8536,
+    "source_sha": "3c76eabef330286d9c9ec236e808c263a37dccaf",
+    "applied_sha": "4f836e4bb0784ac6536d1b6c519e07106561f61b",
+    "resolution": "PR #8527의 10수준 공통 helper를 유지하고 PR #8536의 번호 모양 5비트를 읽기·쓰기 양쪽 helper에 적용",
+    "rebased_applied_sha": "1caf817d638fe970b9c0953a68793e40a1491001",
+    "pre_ece9_applied_sha": "66ef1ae7e618554493c89de10f5699330a1dae4d"
+  },
+  {
+    "pr": 8536,
+    "source_sha": "0dc6e32b87b0097a9f139f8428b6d17470a31a7f",
+    "applied_sha": "d14955f57b3cc4511f82da44c60da64508994851",
+    "subject": "docs(pr): 번호 모양의 한/글 인쇄와 그리기 비교를 남긴다",
+    "rebased_applied_sha": "9fb66a16331ca540f099e54f05566481f01e8540",
+    "pre_ece9_applied_sha": "79170661d78a205f536b7712ae4c3139af80fb2c"
+  },
+  {
+    "pr": 8537,
+    "source_sha": "2469c0b13ad4acf290d20bb721b93320766d73d4",
+    "applied_sha": "2b002c655d7f3866605653a7461b3511b8124e0c",
+    "subject": "fix(note): 주석 구분선 종류를 한/글처럼 테두리 선 표로 HWPX에 쓰고 읽는다",
+    "rebased_applied_sha": "0bd0a1c889a0bcbf5c62dc0b948382f4a2f73173",
+    "pre_ece9_applied_sha": "cad8ec8a21bf30937e31ad3a97c91a7eabd9ed68"
+  },
+  {
+    "pr": 8537,
+    "source_sha": "6c2369bd25c28456b01e629f66c18c7c60176fc7",
+    "applied_sha": "14ac8c93bf214087c19e69102f4b663fb9a9f2ed",
+    "subject": "docs(pr): 주석 구분선 종류의 한/글 인쇄를 남긴다",
+    "rebased_applied_sha": "e31664535187bba6202c3fd1f7ee6256a4a9a674",
+    "pre_ece9_applied_sha": "f620a656a724a593ba7055009a2a5b06d3467e47"
+  },
+  {
+    "pr": 8538,
+    "source_sha": "8a516f07240e5901561ebaa08849c6bf26d2422c",
+    "applied_sha": "27476409c767e26fdab5df83086d83f6b430cf1b",
+    "subject": "fix(note): 각주 본문 아래·내용 번호 작게·구분선 종류를 그린다",
+    "rebased_applied_sha": "b3bd9daa10c4cf0ef114d5ee092383adc48d79e8",
+    "pre_ece9_applied_sha": "cd6ce189408d7bc18637cf83e059fd37d6483c90"
+  },
+  {
+    "pr": 8538,
+    "source_sha": "39669dd94237454610fb6ca522258836912396a6",
+    "applied_sha": "18d5165eb634858a2401bf3384c86beabdc622f3",
+    "subject": "docs(pr): 각주 모양 그리기의 한/글 인쇄와 비교를 남긴다",
+    "rebased_applied_sha": "7cb31605463efe0f12c41e3fb99ec3722534d948",
+    "pre_ece9_applied_sha": "c21b5f81009373950ac59efe0f78fb435270e970"
+  },
+  {
+    "pr": 8541,
+    "source_sha": "ce799fbbde5eba7bf997705f75c0bc73994f72da",
+    "applied_sha": "6c10c531e2df978debaba78d0cf2b221cd3206ff",
+    "subject": "feat(section): split and merge sections like Hancom",
+    "rebased_applied_sha": "4a64ea1d4becdaef42504630511a04251de4afcd",
+    "pre_ece9_applied_sha": "10cadd14fabfccf007573f4ae83a87866b9df775"
+  },
+  {
+    "pr": 8541,
+    "source_sha": "b8fefa3de9248ecc0aee0aa2c000a83e84be4d5c",
+    "applied_sha": "4951dc771b7eeabd04553be6aa22f8daf826265f",
+    "subject": "docs(pr): 구역 나누기·합치기의 한/글 화면을 남긴다",
+    "rebased_applied_sha": "28782dab9d326b2eb0c5a8a7768bdb97d860796a",
+    "pre_ece9_applied_sha": "fe9c41fcb076f4b78894888764f5204d73ac9109"
+  },
+  {
+    "pr": 8541,
+    "source_sha": "b7cc596d61a5cebb9b17fa0c1fa26ac5d2f4a007",
+    "applied_sha": "c4fbc0a1ff3b5b6da9cc47333f58a1d02b14ebd8",
+    "subject": "docs(pr): 합친 저장본 화면을 최종 commit의 저장본으로 바꾼다",
+    "rebased_applied_sha": "8cc8113ce8ae9006437181383960e34d993a9d89",
+    "pre_ece9_applied_sha": "acff7d7b2d66947f94f6dd9dbb6c18f8b20c23c9"
+  },
+  {
+    "pr": 8549,
+    "source_sha": "560014d4554a6798f8524c00d1e261f89fcdca17",
+    "applied_sha": "e985851e2d1d087b4f2def2c69f33fcaa36a0b2f",
+    "subject": "fix(save): never start a saved line inside a tab or inline object",
+    "rebased_applied_sha": "f92f8469d6a28d21f8610969348af1c8ec7cbeec",
+    "pre_ece9_applied_sha": "7f1f440b6e885b018542944da19ae7fb16789809"
+  },
+  {
+    "pr": 8549,
+    "source_sha": "5ccd6da2adbf628b8a885bf2b2b4fa0e2eb7191b",
+    "applied_sha": "d5054a937e32164b1af329bde96c2ac89836090c",
+    "subject": "docs(pr): 줄 시작이 제어 문자 가운데인 저장본과 고친 저장본의 한/글 화면을 남긴다",
+    "rebased_applied_sha": "c5a830e55c6f7ef255bc882a20f7584f1b8577a9",
+    "pre_ece9_applied_sha": "c7be6efb4f0301444e860aa54ee062be2168ccf2"
+  },
+  {
+    "pr": 8558,
+    "source_sha": "d86a2a607137170ac6df4c3c908940724a6a447c",
+    "applied_sha": "587de506a9b93f8150b89cad86d5e18bcd24523b",
+    "subject": "feat(bullet): create custom and picture bullets like Hancom",
+    "resolution": "번호 수준 글자 모양 API와 사용자 정의 글머리표 API를 독립 메서드로 모두 보존",
+    "rebased_applied_sha": "6882f1c53af5db82b52676718da0c6c033dc551f",
+    "pre_ece9_applied_sha": "d77b197a6fa3e0b9d13fcd9a07653e23f2c696d1"
+  },
+  {
+    "pr": 8558,
+    "source_sha": "6e508084575e95681db5dda2794b314f038aa685",
+    "applied_sha": "1d7d0b599ff5b9a8fad55ece0a29d978b52116f7",
+    "subject": "fix(hwpx): write picture bullet images in the core namespace like Hancom",
+    "rebased_applied_sha": "e27434509160e0388bfef29bc56666c154d2e6bb",
+    "pre_ece9_applied_sha": "7af8701dfbc52fe4d2d5b0796d054ecff4bc2308"
+  },
+  {
+    "pr": 8564,
+    "source_sha": "9cd75cef7f52fe1a9b040a61632d4acc8d5d0212",
+    "applied_sha": "016a45263dba690ae54c894013bd74dcfcbf48c9",
+    "subject": "fix(edit): keep text typed at date and path code boundaries outside the code",
+    "rebased_applied_sha": "923448e9f179f38f0f3eb9b50a26f634d5a45413",
+    "pre_ece9_applied_sha": "de951dbdd697bea89e67baaafdcb70bb038b67fa"
+  },
+  {
+    "pr": 8564,
+    "source_sha": "5477f2cc6c4daf93ea315828650ae94eaf15b1b7",
+    "applied_sha": "7459b9af1db621eaf197e4601c21ed0c6dba420b",
+    "subject": "docs: add Hancom screenshots for the date and path code boundary fix",
+    "rebased_applied_sha": "7d660661029da93505bb9d245ded8b99ffc09935",
+    "pre_ece9_applied_sha": "40418bb34ca3e49e9ddddb9a24af01cefb5b8cf2"
+  },
+  {
+    "pr": 8570,
+    "source_sha": "8a4c8d8477929c89c84aab5ec6189ba7a7191cb6",
+    "applied_sha": "83c2329bf6bf9a307c71d227c514f1f5b8801b4a",
+    "subject": "feat(table): create tables that are not treated as characters in cells",
+    "rebased_applied_sha": "2dc6bc74b45fb28d3c642d06909c56c98d8c1e06",
+    "pre_ece9_applied_sha": "29f9dbbaa632246855ec8336925d5a60b6a43294"
+  },
+  {
+    "pr": 8570,
+    "source_sha": "bd781342ce9ea546cabba540d57b74205c5b5448",
+    "applied_sha": "e45ba9e76f28f91b7e11f04fd9943163b20f87e3",
+    "subject": "docs(pr): add Hancom screens for tables not treated as characters in cells",
+    "rebased_applied_sha": "12bfa0ce71b148cb76f1ecb8d33ec57280f983e3",
+    "pre_ece9_applied_sha": "ffab91504691691765163dcbca89c0ff79f8e4b9"
+  },
+  {
+    "pr": 8571,
+    "source_sha": "5d557479347c6218e4f5d991c1781a5461e751ad",
+    "applied_sha": "56f39d87f525aa919de4f0fc1b99eb655a770e45",
+    "subject": "feat(header-footer): reach header and footer tables through cell paths",
+    "resolution": "PR #8570의 자리 차지 표와 PR #8571의 머리말·꼬리말 경로 계약을 API 설명에 함께 보존",
+    "rebased_applied_sha": "c24e511035f3215abbb13f68e6c83be35297b11a",
+    "pre_ece9_applied_sha": "249f5da815a32fbcf69ed9ab6a990d549620e1cb"
+  },
+  {
+    "pr": 8571,
+    "source_sha": "dfef7b709773f56535ca1da123bb837eaad85700",
+    "applied_sha": "d86249e10be29169a453fa326c6b893237be43c4",
+    "subject": "docs(pr): add Hancom screens for header and footer tables",
+    "rebased_applied_sha": "7838f1322d4a01a62ced917ad03a27d189fa9f36",
+    "pre_ece9_applied_sha": "943d8dcd4b27e8ebfe3694df1a6d8825c34673d2"
+  },
+  {
+    "pr": 8572,
+    "source_sha": "9ded487923f1fa8d6e49e2ef1ef85fff4145d90c",
+    "applied_sha": "d81fed49f1eb934e7a0e5bb94e44c86b5756df7b",
+    "subject": "fix(edit): grow the stored row of an inline table whose cell text grew",
+    "rebased_applied_sha": "6c6c46361080bfe7326905e520087e12ea0fadeb",
+    "pre_ece9_applied_sha": "2e10ef300b295fda0ef0748111faa48daa22b211"
+  },
+  {
+    "pr": 8572,
+    "source_sha": "ee831a3465fd8d58c589031cc084fda95a28be80",
+    "applied_sha": "44f77efad939187941a5faf410d803759beb0156",
+    "subject": "docs: add Hancom and render screenshots for the grown inline table row fix",
+    "rebased_applied_sha": "7e1432ce70fe6a9652152a6c780eb428527836a2",
+    "pre_ece9_applied_sha": "6ff94a6fb92987df3da9d36f0ee0bfca65ab88e6"
+  },
+  {
+    "pr": 8572,
+    "source_sha": "a9cd16ad09ba6a280a1e7a6456342a9741619f15",
+    "applied_sha": "43378142d61adf56d32c83e1e77232a7d095e01d",
+    "subject": "docs: add the devel and fixed saves of the cell edit for the inline table row fix",
+    "rebased_applied_sha": "b01e73e221d9540a2737dafc8baa84a5ad6ae124",
+    "pre_ece9_applied_sha": "a832d7b44ed016285e42d6533789001e3a90be49"
+  },
+  {
+    "pr": 8572,
+    "source_sha": "410c5dba40d0dbdf27a6da6312e5530003a56bb0",
+    "applied_sha": "46395d4bd81154a6ae7754142ac480ab045d698e",
+    "subject": "fix(edit): write the page start of a paragraph a grown inline table pushes over",
+    "resolution": "devel의 표 높이 저장 사본 보정과 PR #8572의 페이지 시작점 저장을 HWP·adapter·HWPX 모든 저장 분기에서 함께 적용",
+    "rebased_applied_sha": "6ccab9ad30dfe2cdc32960026c61d92a58a48ffb",
+    "pre_ece9_applied_sha": "64b6f7f55c959c491e91636effba617c590c6c8d"
+  },
+  {
+    "pr": 8572,
+    "source_sha": "d9750b5604d3f23fd8645ae3f19dfc0cb293a70e",
+    "applied_sha": "34b09be8b598d50316cf7c44c967e0c45e2f8a98",
+    "subject": "docs: update the fixed save and add Hancom's page 1-2 view for the page start fix",
+    "rebased_applied_sha": "25d514236272a0d879a3b8df5cfce6237f3ba987",
+    "pre_ece9_applied_sha": "d2ff49e3b01286a9ad15260285cb8a0455088c8a"
+  },
+  {
+    "pr": 8577,
+    "source_sha": "6a16216a8c44961bff01aa555bed635c93fcbfe5",
+    "applied_sha": "f9b03e964d356060cd0f4a43a3d97f37dc115535",
+    "subject": "fix(render): put top page numbers at the top margin line like Hancom print",
+    "rebased_applied_sha": "fa31c608dd450118f1ea6ef89d5615a3910dcdcd",
+    "pre_ece9_applied_sha": "7b3fde7bd7cbca807ea95d3d457dbc08579a3a3c"
+  },
+  {
+    "pr": 8577,
+    "source_sha": "7af4ed39fbb8c06dec2b202eb29609f11ce4a379",
+    "applied_sha": "e4c38ae68d10f4673ef9d109347dbeace42fc930",
+    "subject": "docs(pr): top page number baseline screenshots",
+    "rebased_applied_sha": "21472c786109f82d81247757d538c7fb163d2ca3",
+    "pre_ece9_applied_sha": "bffa50df0eb7598151c127d80d8c7785053bd819"
+  },
+  {
+    "pr": 8586,
+    "source_sha": "610f0e55c61fbf28a2f301c45163b76b47d8a406",
+    "applied_sha": "cb2c41377c906c9691fabbf951a45a96fbe7e43d",
+    "subject": "feat(page): read and set a section's page number position like Hancom",
+    "rebased_applied_sha": "10018283deeb9d9691ab2ef8a3182590961fa07a",
+    "pre_ece9_applied_sha": "ba433b0322b173b2032898b6f44c47e18b23d6b3"
+  },
+  {
+    "pr": 8602,
+    "source_sha": "cad70bbaa4da6edbfb5348aa0fb91c83f1367241",
+    "applied_sha": "6f4f97e13ceeb5943790e8bef97377b01bdf3720",
+    "subject": "fix(save): 편집으로 빈 문단이 되면 PARA_TEXT를 남기지 않는다",
+    "rebased_applied_sha": "ce18e03b8a9a7e23d996033dbfd9a087f4fc09b1",
+    "pre_ece9_applied_sha": "6db4aba808333fbc948e54511c9074cd97d9fe57"
+  },
+  {
+    "pr": 8602,
+    "source_sha": "338a75a1afd5bbe62843d71784a5c82b89613620",
+    "applied_sha": "7cbce2ad37bd99ed62816b10d8cba5d93da6c080",
+    "subject": "docs(pr): 빈 문단에 PARA_TEXT가 남은 저장본과 고친 저장본의 한/글 화면을 남긴다",
+    "rebased_applied_sha": "03c31d8b09d49d1cdced001f0951ebb6ccca1964",
+    "pre_ece9_applied_sha": "9d4736067a7167704d53085fe355374856417507"
+  },
+  {
+    "pr": 8616,
+    "source_sha": "70b3a3a937930e5752a271ed1d18c8efbf7cde14",
+    "applied_sha": "3510daff0b273cbd56915b8c08d08a05a472e6fb",
+    "subject": "feat(compose): draw ruby, all 14 overlap shapes, and add insert/edit APIs (#8019)",
+    "resolution": "devel의 구역별 탭 폭 상태와 PR #8616의 덧말 스타일 글자 모양 복제 필드를 함께 보존",
+    "rebased_applied_sha": "08a7b672e547ad2c32f3c12173b2410f615c0781",
+    "pre_ece9_applied_sha": "fad8b3322e647ad64ec0c5ad0f05bf1bef19d5ed"
+  },
+  {
+    "pr": 8616,
+    "source_sha": "d0bddfa86f8f17a2dc2acefcd025484d8e7942d4",
+    "applied_sha": "c927141f49e9f7a3cf7ed2cfb8361d783f6ea846",
+    "subject": "fix(compose): keep every char overlap one full-width cell",
+    "rebased_applied_sha": "6f125e3d90b00c5bcb1ca17b27861b0521b9a286",
+    "pre_ece9_applied_sha": "322cae101154b55286c94bf9d4891d82159c5a2d"
+  },
+  {
+    "pr": 8616,
+    "source_sha": "28213394d0df5c1f96d417f46088d8a4dd318350",
+    "applied_sha": "8315090d8a7ee2e3d8e4aae6129f725e46e1aaa6",
+    "subject": "docs: 덧말·글자 겹치기 PR 시각 증적",
+    "rebased_applied_sha": "d8565449bee222a7140311858d2c8c9c86e9706c",
+    "pre_ece9_applied_sha": "73d239d19bcabd3e45de60c20388efcd494b67de"
+  },
+  {
+    "pr": 8616,
+    "source_sha": "c469db2ce8128f016b70a8268fb2cb646457e15c",
+    "applied_sha": "5068c934f8461dc87b6b60e74e38169048c28b88",
+    "subject": "feat(compose): insert and edit ruby and char overlap in cells, text boxes and notes",
+    "rebased_applied_sha": "edc3ead1a1f5bebcfc207d71c1be952d33808091",
+    "pre_ece9_applied_sha": "cfcd17e668b22981a9efde1c0680079b1c097f7a"
+  },
+  {
+    "pr": 8616,
+    "source_sha": "5768ed5323238c5b1e1027eb0e0dcba6c62e26d8",
+    "applied_sha": "5f8e026a0679c3197ca72c1802f5a5006bfb0f1f",
+    "subject": "fix(compose): raise a ruby-only paragraph's line like Hancom",
+    "rebased_applied_sha": "75a989ff98a27a7b71a83e3fe947b0e1132d947d",
+    "pre_ece9_applied_sha": "c9318c58c6885e9f3f0997e62d93c500820fe16b"
+  },
+  {
+    "pr": 8629,
+    "source_sha": "4c3c316ff627b5403f7b7c7b9df4f8cb82b83b84",
+    "applied_sha": "6a92de67ecfd215e04c8d84c42b83dbf340dee38",
+    "subject": "feat(layout): 원고지 정서법 구역의 글을 칸에 맞춰 짠다 (#8628)",
+    "resolution": "문단 분할 시 PR #8572의 저장 흐름 이동 상태와 PR #8629의 원고지 렌더 정규화 상태를 모두 초기화",
+    "rebased_applied_sha": "3a86b4b2c98180286df93830c8d49451ed022c0a",
+    "pre_ece9_applied_sha": "fd89b61c1ce6f65dbc855a16d7ef7a4662c69c8b"
+  },
+  {
+    "pr": 8629,
+    "source_sha": "d38d02f03ffdc5b6461228394c1aa9f72ffff1f0",
+    "applied_sha": "68f5045653212d422f6e994e47efdfbdee6b0f67",
+    "subject": "test(layout): 원고지 회귀에 측정 근거와 시각 증적을 둔다 (#8628)",
+    "rebased_applied_sha": "6bb2738bd4f8632535417e99ba0b972a3002fa7e",
+    "pre_ece9_applied_sha": "f63fdcbf6b1825482031ff5a74f1a69dd283329b"
+  }
+]

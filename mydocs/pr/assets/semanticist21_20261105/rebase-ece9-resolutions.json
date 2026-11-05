@@ -1,0 +1,75 @@
+[
+  {
+    "commit": "cad8ec8a21",
+    "files": [
+      "src/parser/hwpx/header.rs",
+      "src/parser/hwpx/section.rs",
+      "src/serializer/hwpx/header.rs",
+      "src/serializer/hwpx/section.rs"
+    ],
+    "resolution": "새 base의 55a223adb8 공통 LineType2 변환을 유지하고 같은 변환의 중복 구현을 제거. 새 테스트·원본·Print는 체리픽에 유지."
+  },
+  {
+    "commit": "cd6ce18940",
+    "files": [
+      "src/renderer/layout.rs",
+      "src/renderer/layout/picture_footnote.rs"
+    ],
+    "resolution": "새 base가 측정한 body_content_bottom과 공통 border LineType2 선 생성 유지. 충돌하지 않은 각주 내용 번호 작게 구현·새 원본·Print·검사는 보존."
+  },
+  {
+    "commit": "10cadd14fa",
+    "files": [
+      "src/document_core/commands/mod.rs"
+    ],
+    "resolution": "새 base의 table_formula와 현재 section_ops 등록을 모두 보존."
+  },
+  {
+    "commit": "de951dbdd6",
+    "files": [
+      "src/model/paragraph.rs"
+    ],
+    "resolution": "필드 경계 직렬화의 ClickHere·Hyperlink·Formula·Date·Path를 합집합으로 보존. 새 base의 계산식과 현재 날짜·경로 편집 기능을 함께 유지."
+  },
+  {
+    "commit": "fd89b61c1c",
+    "files": [
+      "src/document_core/queries/rendering.rs"
+    ],
+    "resolution": "구역 JSON과 저장 갱신에서 새 base의 outlineNumberingId와 현재 lineGrid·charGrid·wonggojiFormat을 모두 보존."
+  },
+  {
+    "commit": "11fd9c75ce",
+    "files": [
+      "src/renderer/layout.rs"
+    ],
+    "resolution": "새 base의 실제 수용 본문 끝점을 단별 공통 결과로 보존하여 다단 각주 프레임이 소비. 잉크 노드 역산과 clamp를 제거하고 페이지 공통/소유 단/오른쪽 단 정책을 유지.",
+    "related_files": [
+      "src/renderer/layout/footnote_frames.rs"
+    ]
+  },
+  {
+    "commit": "0e09aa84c1",
+    "files": [
+      "src/renderer/layout/picture_footnote.rs"
+    ],
+    "resolution": "일반 각주 선은 새 base의 공통 LineType2와 border 노드를 소비. 기존 독립 각주 Print로 보정한 원형·물결·긴 선 및 입체선 비표시 계약을 각주 경로에 유지. 새 base의 일반 표 테두리 원형·물결 구현은 변경하지 않음. 양쪽 실제 출력 재검증 필요.",
+    "related_files": [
+      "src/renderer/layout/note_separator.rs"
+    ]
+  },
+  {
+    "commit": "809b0b66f5",
+    "files": [
+      "src/document_core/commands/formatting.rs"
+    ],
+    "resolution": "새 base와 동일한 문단 머리 재조판 속성은 중복 없이 유지. 현재 marker_shape_changed 공통 helper와 경로별 캐시 무효화를 추가 보존."
+  },
+  {
+    "commit": "d3e6e8f5c6",
+    "files": [
+      "src/renderer/layout/paragraph_layout.rs"
+    ],
+    "resolution": "그림 글머리표의 x는 새 base의 선행 주석 참조 폭 제외(marker_x)를 유지하고 y는 현재 줄 하단 정렬을 보존. 텍스트 번호·주석 순서와 그림 세로 정렬을 함께 유지."
+  }
+]

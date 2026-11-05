@@ -2,7 +2,7 @@
 
 최초 기준 `upstream/devel`: `6e1de406209ba9a58032f6ca6de45b18aa687d1c`.
 
-리베이스 후 현재 기준: `a95d1d5afad1bfd61998794fa78fb0db100d690a`.
+리베이스 후 현재 기준: `ece9c3383bb2c73e0f055459ede727a9d3101ac6`.
 
 작업 브랜치: `review/integration-20261105-semanticist21-open`.
 
@@ -129,3 +129,50 @@ PR #8571의 머리말 TAC 표는 수동 표 배치 분기에서 공통 글줄 �
 정상 대조군을 함께 검사하자 새 앵커로 저장한 머리말 TAC 표는 HWP/HWPX 모두 10.77%였다. 비인라인 머리말 표는 두 형식 모두 100%다. TAC 표는 약 3.9px 내려갔으며, 공통 옛 inline-table 경로가 재조판 줄의 85% 글자 기준선으로 표 하단을 역산한 것이 원인이다. 기존 저장 밴드의 수용 조건을 완화하거나 새 앵커의 출처를 거짓으로 되돌리지 않는다.
 
 저장 줄이 없는 머리말·꼬리말의 일반 텍스트·TAC 표는 기존 `inline_flow::plan`에 실제 표 측정 높이와 머리말 프레임을 전달한다. 같은 plan의 줄 소속·상자 좌표·점유 끝을 `layout_inline_flow_plan`과 후속 문단 전진이 함께 소비한다. 별도의 기준선 식이나 좌표 clamp를 추가하지 않는다. 저장 줄은 기존 소비 경로를 유지하며, 머리말 전용 필드 치환과 그림·도형 주소는 공통 plan의 지원 범위에 포함하지 않는다. 이 추가 보정의 새 Native/fresh WASM 및 대조군 검증은 아직 완료하지 않았다.
+
+
+### 2026-11-05 최신 devel 리베이스와 충돌 소비 경로 보존
+
+리베이스 전 base는 `a95d1d5afad1bfd61998794fa78fb0db100d690a`, 작업 head는
+`809097923a0d8f10c24eb3d42572b2888954a121`이었다. 새 base
+`ece9c3383bb2c73e0f055459ede727a9d3101ac6`에는 [PR #8640](https://github.com/edwardkim/rhwp/pull/8640)의
+다음 10건 통합과 [PR #8637](https://github.com/edwardkim/rhwp/pull/8637)의 웹폰트 요청 시간 제한이 들어왔다.
+54개 커밋을 모두 재적용했고 코드 head는 `8436742bce8dcdee3f3b0f6c54bf9f6000977b6c`다.
+원 PR 18건의 체리픽 출처 44개가 각각 한 번씩 남아 있음을 커밋 본문의 원 SHA로 확인했다.
+원 PR head와 원격 브랜치는 변경하지 않았다.
+
+충돌한 9개 커밋은 다음 계약을 함께 보존했다.
+
+| 충돌 범위 | 보존한 계약 |
+| --- | --- |
+| HWPX 각주·미주 선 종류 parser/serializer | 새 base의 공통 LineType2 변환을 유지하고 같은 변환의 중복 구현을 제거했다. 원 PR 검사·원본·Print는 유지했다. |
+| 본문 아래 각주와 다단 프레임 | `build_single_column`의 실제 수용 끝점 → `build_columns`의 단별 `BodyFlowBottoms` → 목표 각주 프레임 원점으로 전달한다. 보이는 잉크의 끝을 역산하거나 clamp하지 않는다. 통단·각 단·오른쪽 단의 예약과 원래 각주 인덱스도 유지한다. |
+| 각주 구분선 | 일반 선은 새 base의 공통 border 노드를 소비한다. 기존 독립 각주 Print로 보정한 원형·물결·긴 선과 입체선 비표시는 각주 경로에 유지하며, 새 base의 일반 표 테두리 구현을 덮어쓰지 않는다. 두 범위 실제 출력의 재대조가 필요하다. |
+| 명령 모듈 등록 | 새 base의 `table_formula`와 현재 `section_ops`를 모두 등록했다. |
+| 필드 직렬화 경계 | `ClickHere`·`Hyperlink`·`Formula`·`Date`·`Path`의 경계 밖 텍스트 보존을 합집합으로 유지했다. |
+| 구역 API | 새 base의 `outlineNumberingId`와 현재 `lineGrid`·`charGrid`·`wonggojiFormat` 조회·저장을 모두 유지했다. |
+| 문단 머리 캐시 | 새 base의 머리 속성 재조판 판정과 현재 `marker_shape_changed` 기반 경로별 캐시 무효화를 중복 없이 보존했다. 새 base는 기존 분류 검사도 이미 바로잡았다. |
+| 그림 글머리표 | 가로 원점은 새 base의 선행 주석 참조 폭 제외 결과를, 세로 원점은 현재 줄 하단 정렬 결과를 소비한다. |
+
+리베이스 전 마지막 제품 `809097923a`의 Native 전쪽 결과는 중복 제거 56개 사례·136쪽이며
+최저 raw 91.36%, 미달 0쪽이었다. 그림 글머리표·셀 안 표·머리말 보정의 우선 사례와 머리말
+경계 4건은 모두 100%였다. 최소 글꼴 독립 진단 검사 14건도 통과했다. 이는 **리베이스 전 결과**이며
+새 head의 시각 통과로 옮겨 적지 않는다. 리베이스 요청으로 중단한 해당 head의 fresh WASM 빌드와
+편람 게이트도 완료로 판정하지 않는다.
+
+리베이스 후 전체 적용 이력·`git diff --check`와 충돌 파일의 rustfmt 검사를 통과했다.
+웹폰트 변경은 충돌 없이 적용됐고 이미 실행한 Node 검사 16건이 통과했다.
+작업지시자는 충돌하지 않은 웹폰트 시간 제한 검사를 반복하지 않도록 지정했다.
+후속 검증은 충돌한 공통 Rust 경로와 원 작업의 실제 출력 보존을 중심으로 진행한다.
+코드 head `8436742bce`의 Native `cargo check --locked --profile release-test --target-dir target/pr-review --features native-skia --lib --bin rhwp`는 빌드 잡 8개로 3분 46초에 종료 코드 0을 확인했다. Native/fresh WASM 전쪽·반영 PR 기능 대조, 보호 TSV 및
+최종 전체 회귀·lint는 별도 실제 종료 결과가 필요하며 아직 제출 완료로 판정하지 않는다.
+
+실행 기록은 `output/pr-review/semanticist21-integration-20261105/`의
+`rebase-ece9.log`, `rebase-ece9-resolutions.json`, `rebase-ece9-range-diff.log`,
+`applied-commits-after-ece9.json`, `rebase-ece9-result.json`,
+`rebase-ece9-native-check.log`에 둔다. 최종 수용 근거는 후속 실제 검증을 마친 뒤 정식 증적 경로에 보존한다.
+
+
+리베이스 결과·명령·종료 코드는 [결과 기록](rebase-ece9-result.json), 충돌별 소비 계약은
+[충돌 해소 기록](rebase-ece9-resolutions.json), 원 PR 18건·원본 SHA 44개와 새 적용 SHA의 대응은
+[체리픽 대응표](applied-commits-after-ece9.json)에 보존했다. 웹폰트 구현·테스트 파일은 새 base와 동일하다.

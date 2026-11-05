@@ -1,0 +1,38 @@
+{
+  "branch": "review/integration-20261105-semanticist21-open",
+  "old_base": "a95d1d5afad1bfd61998794fa78fb0db100d690a",
+  "new_base": "ece9c3383bb2c73e0f055459ede727a9d3101ac6",
+  "before_head": "809097923a0d8f10c24eb3d42572b2888954a121",
+  "after_head": "8436742bce8dcdee3f3b0f6c54bf9f6000977b6c",
+  "replayed_commits": 54,
+  "source_pr_count": 18,
+  "preserved_cherry_picks": 44,
+  "conflict_commits": 9,
+  "validation": {
+    "native_check": {
+      "source_sha": "8436742bce8dcdee3f3b0f6c54bf9f6000977b6c",
+      "command": "CARGO_BUILD_JOBS=8 cargo check --locked --profile release-test --target-dir target/pr-review --features native-skia --lib --bin rhwp",
+      "exit_code": 0,
+      "duration": "3m46s"
+    },
+    "conflict_rustfmt": {
+      "exit_code": 0
+    },
+    "diff_check": {
+      "exit_code": 0
+    },
+    "webfont_node": {
+      "passed": 16,
+      "failed": 0,
+      "exit_code": 0,
+      "further_runs": "충돌 없음; 사용자 지시에 따라 생략"
+    },
+    "visual_after_rebase": "미실행: 기존 통과 결과와 구분"
+  },
+  "conflict_files": 11,
+  "range_diff": {
+    "unchanged_commits": 42,
+    "changed_or_context_adjusted_commits": 12
+  },
+  "webfont_user_directive": "충돌이 없으므로 추가 반복 검사 생략; 이미 시작한 Node 16건은 통과"
+}
