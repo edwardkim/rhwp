@@ -153,6 +153,8 @@ export interface NoteEditInfo {
 
 /** 구역 정의 (SectionDef) */
 export interface SectionDef {
+  /** 구역 개요 번호 정의 ID. 생략하면 현재 정의를 유지한다. */
+  outlineNumberingId?: number;
   pageNum: number;
   /** 쪽 번호 종류: 0=이어서, 1=홀수, 2=짝수 (사용자 지정은 pageNum > 0) */
   pageNumType: number;

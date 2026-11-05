@@ -81,10 +81,10 @@ fn outline_numbering_id_is_settable_readable_and_saved() {
 #[test]
 fn missing_outline_numbering_is_rejected_without_change() {
     let mut core = fixture();
-    assert!(core
-        .set_section_def_all_native(r#"{"outlineNumberingId":3,"pageNum":5}"#)
-        .is_err());
-    let json: Value = serde_json::from_str(&core.get_section_def_native(0).unwrap()).unwrap();
-    assert_eq!(json["outlineNumberingId"], 1);
-    assert_eq!(json["pageNum"], 0);
+    let before = core.get_section_def_native(0).unwrap();
+    for id in ["3", "65536", "65537", "-1", "1.5", "\"2\"", "{}"] {
+        let props = format!(r#"{{"outlineNumberingId":{id},"pageNum":5}}"#);
+        assert!(core.set_section_def_all_native(&props).is_err(), "{props}");
+        assert_eq!(core.get_section_def_native(0).unwrap(), before, "{props}");
+    }
 }

@@ -3411,7 +3411,14 @@ impl DocumentCore {
         use super::super::helpers::{json_bool, json_u16, json_u32};
 
         // 개요 번호 모양은 문서의 번호 정의(1부터)를 가리킨다. 0은 정의 없이 개요 수준만 쓴다.
-        let outline_numbering_id = json_u16(json, "outlineNumberingId");
+        #[derive(serde::Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct OutlineNumberingProps {
+            outline_numbering_id: Option<u16>,
+        }
+        let outline_numbering_id = serde_json::from_str::<OutlineNumberingProps>(json)
+            .map_err(|error| HwpError::RenderError(format!("구역 개요 번호 JSON 오류: {error}")))?
+            .outline_numbering_id;
         if let Some(id) = outline_numbering_id {
             if usize::from(id) > self.document.doc_info.numberings.len() {
                 return Err(HwpError::RenderError(format!("개요 번호 정의 {} 없음", id)));
