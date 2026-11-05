@@ -79,6 +79,18 @@ fn fragment_draws_number(fragment: Option<FootnoteFragment>) -> bool {
         .unwrap_or(true)
 }
 
+/// 글줄 경로가 발행한 `(문단 표지, 줄)`의 TextLine 상단.
+fn footnote_text_line_top(node: &RenderNode, para_marker: usize, line: usize) -> Option<f64> {
+    if let RenderNodeType::TextLine(text_line) = &node.node_type {
+        if text_line.para_index == Some(para_marker) && text_line.line_index == Some(line as u32) {
+            return Some(node.bbox.y);
+        }
+    }
+    node.children
+        .iter()
+        .find_map(|child| footnote_text_line_top(child, para_marker, line))
+}
+
 /// [#6034] 저장 LINE_SEG 가 없는 각주 문단은 45자 고정 휴리스틱(compose_lines
 /// 폴백) 대신 **각주 영역 폭**으로 재조판해 compose 한다. 한글 6.x 대 저장본은
 /// 각주 문단에 LINE_SEG 를 저장하지 않는데, 폴백 폭과 실제 영역 폭의 차가 각주
@@ -1215,6 +1227,91 @@ impl LayoutEngine {
         Some(table)
     }
 
+    fn footnote_measure_table(
+        &self,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> crate::renderer::height_measurer::MeasuredTable {
+        crate::renderer::height_measurer::HeightMeasurer::new(self.dpi)
+            .with_hwp3_variant(self.profile.get().hwp3_layout())
+            .with_stored_geometry_policy(self.profile.get().stored_geometry_policy())
+            .with_native_hwp5(self.profile.get().hwp5_stored_pagination_layout())
+            .with_hwpx_stored_layout(self.profile.get().hwpx_stored_layout())
+            .with_session_edited(self.profile.get().session_edited())
+            .with_render_normalization(self.render_normalization_overlay())
+            .measure_table(table, 0, 0, styles)
+    }
+
+    /// 표 하나가 차지하는 글줄에서 표 바깥 상자의 왼쪽 끝(각주 영역 기준).
+    /// 그 줄의 문단 여백·들여쓰기·정렬을 소비하고 바깥 왼쪽 여백 뒤에 표를 둔다.
+    #[allow(clippy::too_many_arguments)]
+    fn footnote_tac_table_line_left(
+        &self,
+        para: &Paragraph,
+        composed: &ComposedParagraph,
+        styles: &ResolvedStyleSet,
+        table: &crate::model::table::Table,
+        measured: &crate::renderer::height_measurer::MeasuredTable,
+        line_index: usize,
+        area_width: f64,
+    ) -> f64 {
+        let style = styles.para_styles.get(composed.para_style_id as usize);
+        let margin_left = style.map_or(0.0, |style| style.margin_left);
+        let right = style.map_or(0.0, |style| style.margin_right);
+        let indent = crate::renderer::equation_tac_flow::paragraph_line_indent_for_source(
+            style.map_or(0.0, |style| style.indent),
+            line_index,
+            Some(para),
+            composed.lines.len(),
+            true,
+            area_width - margin_left - right,
+            self.dpi,
+        );
+        let left = margin_left + indent;
+        let outer_left = hwpunit_to_px(table.outer_margin_left as i32, self.dpi);
+        let outer_right = hwpunit_to_px(table.outer_margin_right as i32, self.dpi);
+        let width = self
+            .resolve_column_widths(table, table.col_count as usize)
+            .iter()
+            .sum::<f64>()
+            + measured.cell_spacing * (table.col_count as usize + 1) as f64;
+        let slack = (area_width - left - right - width - outer_left - outer_right).max(0.0);
+        let aligned = match style.map_or(Alignment::Left, |style| style.alignment) {
+            Alignment::Center | Alignment::Distribute => slack / 2.0,
+            Alignment::Right => slack,
+            _ => 0.0,
+        };
+        left + aligned + outer_left
+    }
+
+    /// 글줄 경로가 그리지 않는 글자처럼 취급 표 — 조성기가 인라인 개체로
+    /// 싣지 않은(줄을 통째로 차지하는) 표와 그 소유 줄. 본문에서는 별도 Table
+    /// 항목이 그리지만 각주 영역에는 그 경로가 없으므로 각주 배치가 그린다.
+    fn footnote_line_owned_tac_tables<'a>(
+        para: &'a Paragraph,
+        composed: &ComposedParagraph,
+    ) -> Vec<(usize, &'a crate::model::table::Table, usize)> {
+        para.controls
+            .iter()
+            .enumerate()
+            .filter_map(|(control_index, control)| {
+                let Control::Table(table) = control else {
+                    return None;
+                };
+                if !table.common.treat_as_char
+                    || composed
+                        .tac_controls
+                        .iter()
+                        .any(|&(_, _, owned)| owned == control_index)
+                {
+                    return None;
+                }
+                let line = crate::renderer::composer::control_slot_line_index(para, control_index)?;
+                Some((control_index, table.as_ref(), line))
+            })
+            .collect()
+    }
+
     fn footnote_block_table_frame<'a>(
         &self,
         para: &'a Paragraph,
@@ -1224,14 +1321,7 @@ impl LayoutEngine {
         area_width: f64,
     ) -> Option<FootnoteBlockTableFrame<'a>> {
         let table = Self::footnote_block_table(para, selected)?;
-        let measurer = crate::renderer::height_measurer::HeightMeasurer::new(self.dpi)
-            .with_hwp3_variant(self.profile.get().hwp3_layout())
-            .with_stored_geometry_policy(self.profile.get().stored_geometry_policy())
-            .with_native_hwp5(self.profile.get().hwp5_stored_pagination_layout())
-            .with_hwpx_stored_layout(self.profile.get().hwpx_stored_layout())
-            .with_session_edited(self.profile.get().session_edited())
-            .with_render_normalization(self.render_normalization_overlay());
-        let measured = measurer.measure_table(table, 0, 0, styles);
+        let measured = self.footnote_measure_table(table, styles);
         // Whole-table paint consumes this same resolved row geometry. The
         // empty host is an anchor, not another text row added below the table.
         let rows = self.resolve_row_heights(
@@ -1261,33 +1351,12 @@ impl LayoutEngine {
             // The line and its table occupy one box. If actual cell demand grows,
             // reserve that demand rather than clipping it into the saved line.
             advance = advance.max(line_height);
-            let style = styles.para_styles.get(composed.para_style_id as usize);
-            let margin_left = style.map_or(0.0, |style| style.margin_left);
-            let right = style.map_or(0.0, |style| style.margin_right);
-            let indent = crate::renderer::equation_tac_flow::paragraph_line_indent_for_source(
-                style.map_or(0.0, |style| style.indent),
-                0,
-                Some(para),
-                composed.lines.len(),
-                true,
-                area_width - margin_left - right,
-                self.dpi,
-            );
-            let left = margin_left + indent;
-            let outer_left = hwpunit_to_px(table.outer_margin_left as i32, self.dpi);
-            let outer_right = hwpunit_to_px(table.outer_margin_right as i32, self.dpi);
-            let width = self
-                .resolve_column_widths(table, table.col_count as usize)
-                .iter()
-                .sum::<f64>()
-                + measured.cell_spacing * (table.col_count as usize + 1) as f64;
-            let slack = (area_width - left - right - width - outer_left - outer_right).max(0.0);
-            let aligned = match style.map_or(Alignment::Left, |style| style.alignment) {
-                Alignment::Center | Alignment::Distribute => slack / 2.0,
-                Alignment::Right => slack,
-                _ => 0.0,
-            };
-            (line_spacing, Some(left + aligned + outer_left))
+            (
+                line_spacing,
+                Some(self.footnote_tac_table_line_left(
+                    para, composed, styles, table, &measured, 0, area_width,
+                )),
+            )
         } else {
             (0.0, None)
         };
@@ -1813,6 +1882,7 @@ impl LayoutEngine {
                     );
                 } else {
                     let composed = numbered.as_ref().unwrap_or(&composed);
+                    let first_new_child = fn_node.children.len();
                     // 각주 줄도 원본 인라인 개체와 문서의 BinData를 소비한다.
                     // 텍스트 줄만 전달하면 높이는 예약하면서 TAC 표·그림을
                     // 출력하지 못한다. 이어받기에도 같은 글줄 소유를 사용한다.
@@ -1840,6 +1910,19 @@ impl LayoutEngine {
                         Some(placement.spacing),
                         None,
                     );
+                    self.layout_footnote_line_owned_tac_tables(
+                        tree,
+                        fn_node,
+                        first_new_child,
+                        para,
+                        composed,
+                        styles,
+                        fn_area,
+                        selected_start..selected_end,
+                        marker_section,
+                        marker_para,
+                        bin_data_content,
+                    );
                     if is_last_selected_line {
                         // fragment의 마지막 줄은 trailing line-spacing을 쓰지 않는다.
                         let trail_ls = composed
@@ -1858,6 +1941,79 @@ impl LayoutEngine {
             if i + 1 < footnotes.len() {
                 y += hwpunit_to_px(shape.between_notes_margin_hu() as i32, self.dpi);
             }
+        }
+    }
+
+    /// 줄을 통째로 차지하는 글자처럼 취급 표(캡션 표 등)를 그 소유 줄에 그린다.
+    /// 높이는 이미 그 줄의 저장 줄 높이로 측정·예약되어 있고, 글줄 경로가 방금
+    /// 발행한 해당 줄의 상단을 원점으로 소비한다. 표 상자는 줄 상단 + 바깥 위
+    /// 여백에서 시작하며(본문 TAC 표의 `tac_table_stored_outer_band_top` 계약),
+    /// 위 캡션은 `layout_table`이 그 상자 안에서 표 본체 앞에 둔다.
+    #[allow(clippy::too_many_arguments)]
+    fn layout_footnote_line_owned_tac_tables(
+        &self,
+        tree: &mut PageLayoutContext,
+        fn_node: &mut RenderNode,
+        first_new_child: usize,
+        para: &Paragraph,
+        composed: &ComposedParagraph,
+        styles: &ResolvedStyleSet,
+        fn_area: &LayoutRect,
+        selected: std::ops::Range<usize>,
+        marker_section: usize,
+        marker_para: usize,
+        bin_data_content: &[BinDataContent],
+    ) {
+        let tables = Self::footnote_line_owned_tac_tables(para, composed);
+        for (control_index, table, line) in tables {
+            if !selected.contains(&line) {
+                continue;
+            }
+            let Some(line_top) = fn_node.children[first_new_child..]
+                .iter()
+                .find_map(|node| footnote_text_line_top(node, marker_para, line))
+            else {
+                continue;
+            };
+            let measured = self.footnote_measure_table(table, styles);
+            let left = self.footnote_tac_table_line_left(
+                para,
+                composed,
+                styles,
+                table,
+                &measured,
+                line,
+                fn_area.width,
+            );
+            let top = line_top + hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
+            let style = styles.para_styles.get(composed.para_style_id as usize);
+            self.layout_table(
+                tree,
+                fn_node,
+                table,
+                marker_section,
+                styles,
+                0,
+                fn_area,
+                top,
+                bin_data_content,
+                Some(&measured),
+                0,
+                Some((marker_para, control_index)),
+                style.map_or(Alignment::Left, |style| style.alignment),
+                None,
+                style.map_or(0.0, |style| style.margin_left),
+                style.map_or(0.0, |style| style.margin_right),
+                None,
+                None,
+                Some(top),
+                None,
+                false,
+                false,
+                0.0,
+                Some((Some(fn_area.x + left), top)),
+                Self::standalone_table_char_border_fill(Some(para), table, styles),
+            );
         }
     }
 
