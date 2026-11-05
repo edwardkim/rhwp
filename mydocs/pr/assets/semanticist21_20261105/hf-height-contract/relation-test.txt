@@ -1,0 +1,14 @@
+/home/tsjang/rhwp/ttfs/opensource/NotoSansKR-Regular.ttf
+/home/tsjang/rhwp/ttfs/opensource/RHWPOldHangul-Regular.otf
+/home/tsjang/rhwp/ttfs/opensource/RHWPPublicBatang-Regular.ttf
+/home/tsjang/rhwp/ttfs/opensource/NotoSansKR-ExtraLight.ttf
+/home/tsjang/rhwp/ttfs/opensource/NotoSansSymbols2-Regular.ttf
+
+running 4 tests
+test inline_table_grows_to_contain_all_content_without_following_stale_object_height ... ok
+test inline_table_keeps_cell_declared_height_when_object_height_is_stale ... ok
+test inline_table_keeps_cell_minimum_when_object_height_is_only_slightly_taller ... ok
+test normal_non_inline_header_tables_keep_their_owner_and_complete_cell_contents ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
