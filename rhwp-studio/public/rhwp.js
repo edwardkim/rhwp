@@ -1693,6 +1693,34 @@ export class HwpDocument {
         }
     }
     /**
+     * 표 셀·글상자 안의 도형 하나를 전체 소유 경로로 삭제한다.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @param {number} inner_control_idx
+     * @returns {string}
+     */
+    deleteCellShapeControlByPath(section_idx, parent_para_idx, cell_path_json, inner_control_idx) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_deleteCellShapeControlByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, inner_control_idx);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
      * [#6771] 표 셀/글상자 내부 **표** 삭제 (by_path).
      *
      * 셀 안 1×1 안내 상자처럼 본문 리스트 밖에 있는 표를 지운다 — `deleteControlAt` 은

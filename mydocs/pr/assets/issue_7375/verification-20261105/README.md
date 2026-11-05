@@ -23,6 +23,9 @@ TSV·PNG 표시는 0.01%p 단위이며 반올림 전 수치는 `visual-validatio
 번호 원의 외곽선·스크린샷 위 소속·강조 상자·후속 본문을 직접 대조했다.
 공통 RectangleNode의 반지름은 원본의 50%에서 짧은 변의 절반이며, 0·20·37·50%의
 HWP/HWPX 저장·재열기와 같은 기하 소비는 실제 Native API 검사로 보호한다.
+[Native SVG·직접 PDF 검증](native-vector-validation.json)에서는 27·28쪽을 각각 독립 호출했다.
+SVG의 반지름은 짧은 변 25.04px의 절반인 12.52px다. 각 1쪽짜리 직접 PDF를 원본의 해당 쪽과
+대조한 raw 값은 99.99754%/99.99745%다. rhwp 생성 PDF를 독립 기준으로 사용하지 않았다.
 
 [실제 브라우저 편집 결과](browser-edit-validation.json)는 27·28쪽 각각 독립 선택·이동·삭제·
 Ctrl+Z·Command+Z를 실행했다. 삭제 전후 자식 개수는 4→3→4이며, Undo 뒤 저장 offset과 실제

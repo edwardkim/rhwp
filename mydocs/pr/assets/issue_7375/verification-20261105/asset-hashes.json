@@ -1,8 +1,8 @@
 [
   {
     "file": "README.md",
-    "sha256": "525fb9cfce7166ab2b757a03f278a5c353a9af64b521f390f173943a23b27805",
-    "bytes": 3257
+    "sha256": "528f1cfe538d4549a1de07d0c64a10951bcec97cf0c55451e90fa71e208dce86",
+    "bytes": 3595
   },
   {
     "file": "base-native.tsv",
@@ -73,6 +73,11 @@
     "file": "native-producer.json",
     "sha256": "a751fd76fc32b3de7ed5b1f04ce6378c3130887520cc6b2c6566e06358b580fa",
     "bytes": 292
+  },
+  {
+    "file": "native-vector-validation.json",
+    "sha256": "9b96c0f89fe50adb8a71a194a87a12e69199d51741839a1b05ede2713eff0698",
+    "bytes": 2529
   },
   {
     "file": "pdf-p027-raw.png",
