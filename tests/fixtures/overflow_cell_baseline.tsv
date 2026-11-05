@@ -5,3 +5,6 @@ issue7500/tac_table_host_spaces.hwp	3
 rowbreak-problem-pages.hwpx	14
 task2097/75544_pii_bunseok.hwpx	2
 issue7216/tall_table_before.hwpx	21
+# #8462 새 시험 고정본 2행 — 용지 밖으로 오프셋된 글상자 안의 글줄(한/글은 그 글상자를 그리지 않는다). 수정 전후 같은 자리이며 이 PR 은 흐름 밂만 바꾼다.
+issue8462/156552561-offpage-textbox.hwpx	1
+issue8462/156633674-offpage-logo.hwpx	1

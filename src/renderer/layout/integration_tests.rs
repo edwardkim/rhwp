@@ -80,11 +80,13 @@ mod tests {
         let composed: Vec<_> = paragraphs.iter().map(compose_paragraph).collect();
 
         let styles = ResolvedStyleSet {
+            section_tab_width_bits: Default::default(),
             source_hwp3_native: false,
             source_program_projection_slots: Default::default(),
             isolated_jamo_font: None,
             script_metrics: Default::default(),
             native_pua_fonts: Default::default(),
+            display_only_otf_slots: Default::default(),
             char_overlap_size_bounds: None,
             source_char_shapes: Default::default(),
             resolved_dpi: None,

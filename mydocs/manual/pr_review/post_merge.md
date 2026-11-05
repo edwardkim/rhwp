@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-26
+last_verified: 2026-11-04
 ---
 
 # Merge 후속 처리
@@ -55,6 +55,30 @@ golden/baseline을 maintainer 운영 기록으로 직접 push하지 않고 전�
 
 direct 반영은 source, test, workflow, golden/baseline, 기존 sample 수정, 신규 LFS 자료를 포함할 수 없다.
 그 범위를 넘으면 후속 PR로 전환한다.
+
+### 7.1.1 CI 변경 PR은 옵션 2로 후속 기록
+
+**옵션 2는 원 코드 PR을 검증·병합한 뒤 review·오늘할일·후속 증적을 별도 기록 PR로 반영하는 경로다.**
+원 PR의 전체 diff에 `.github/workflows/**`(예: `ci.yml`), `.github/actions/**`, CI 실행·재사용 판정
+정책 또는 검사기의 변경이 포함되면 처음부터 이 경로를 적용한다. 이 경우 문서-only trailing commit도
+전체 CI를 다시 실행할 수 있으므로, 원 PR에 후속 기록을 push해 재사용 가능 여부를 시험하지 않는다.
+
+1. 원 PR의 최신 code head에서 필요한 Full CI·required check와 실제 검토를 완료한다. 원 PR 본문의
+   검증·시각 증적과 merge 승인 조건은 유지하며, 옵션 2로 실패·미검증을 우회하지 않는다.
+2. 승인된 원 PR을 해당 head로 merge하고 merge SHA를 확인한다. 후속 기록만을 위해 원 PR의 CI
+   설정을 다시 수정하거나 검증을 재실행하지 않는다.
+3. 최신 `upstream/devel` 위 별도 branch에서 원 PR의 review·오늘할일·후속 증적만 반영한다.
+   원 코드·test·workflow 변경을 다시 포함하지 않는다. 원 PR 번호, 검증한 code SHA·CI 결과와
+   확정된 merge SHA를 기록한다.
+4. 기존 원격 승인 조건에 따라 후속 기록 PR을 생성한다. [PR 전체 review-only 경로](review_only_fast_pass.md#b-pr-전체가-review-only)의
+   실제 preflight·required check와 mergeability를 확인한 뒤 승인된 절차로 병합한다. 문서-only라는
+   이유로 fast-pass나 CI 성공을 미리 단정하지 않는다.
+5. 이 절의 나머지 devel 동기화·issue/comment·정리를 완료한다. 이미 끝난 원 PR의 원격 조치를
+   후속 기록 PR에서 중복 실행하지 않는다.
+
+trusted controller의 재사용 기능이 있더라도 위 조건의 후속 기록은 옵션 2로 처리한다. 그 기능의
+활성화를 기다리거나 full 재실행을 피하려고 CI 정책을 바꾸는 것으로 대신하지 않는다. PR에 CI를
+설명하는 문서만 바뀌고 실행 정의·판정 정책은 바뀌지 않았다면 이 조건에 해당하지 않는다.
 
 ## 7.6 review 문서 archive 이동
 
@@ -177,6 +201,11 @@ close 체크리스트: ① sub-issue close ② 가드 테스트 PR merge ③ 판
 시각 검증을 merge 판단 근거로 썼다면 [Visual Sweep의 GitHub merge comment 정본](../verification/visual_sweep_guide.md#github-merge-comment)을
 direct link로 남기고, merge commit에 포함된 실제 asset을 보이게 포함한다. raw URL은 이미지 표시용 증적이며,
 문서 비교 방법의 정본은 Visual Sweep 가이드다.
+
+첫 comment부터 해당 원 PR이 주장한 각 문서·페이지와 일치하는 review·overlay를 넣는다. 원 PR
+본문·첨부와 이미지의 입력·페이지·출력 경로를 대조하고, 다른 PR의 대표 이미지로 대체하지 않는다.
+게시 전에 merge SHA로 고정한 raw 응답의 이미지 형식·해시를 원본과 비교하고, 게시 후 API 본문과
+화면 표시를 확인한다. 대응 증적이 준비되지 않았으면 먼저 보완하고 comment는 보류한다.
 
 게시 전에 해당 개별 review 문서의 `Merge 후 contributor PR comment 계획`을 읽고, 실제 merge SHA, devel에
 존재하는 asset, 확인한 페이지·후보 수·수치·사람의 결론이 계획과 일치하는지 대조한다. 계획이 없거나 불완전하면

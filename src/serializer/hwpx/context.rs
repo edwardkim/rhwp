@@ -25,7 +25,7 @@ use crate::serializer::SerializeError;
 /// 양방향 ID 풀 — 등록된 ID와 참조된 ID를 추적한다.
 #[derive(Debug, Default)]
 pub struct IdPool<T: Copy + Eq + std::hash::Hash> {
-    registered: HashSet<T>,
+    pub(super) registered: HashSet<T>,
     referenced: HashSet<T>,
     reservation: Option<std::sync::Arc<dyn crate::storage::Reservation>>,
     storage_failure: Option<String>,
@@ -180,6 +180,7 @@ pub struct SerializeContext {
     /// ID 풀과 마찬가지로 한 번의 직렬화 생명주기에만 속하며, 완료 시 바이트와 함께
     /// `SerializedDocument`로 이동한다.
     pub content_loss: ContentLossReport,
+    pub(crate) table_instance_ids: IdPool<u32>,
     pub(crate) table_row_grids: crate::model::table_row_grid::Writer,
 }
 
@@ -204,6 +205,7 @@ impl Default for SerializeContext {
             body_coldef_template_pending: false,
             content_loss: ContentLossReport::new(SerializedFormat::Hwpx),
             table_row_grids: Default::default(),
+            table_instance_ids: Default::default(),
         }
     }
 }
@@ -238,6 +240,7 @@ impl SerializeContext {
         ctx.border_fill_ids.reservation = reservation.clone();
         ctx.tab_pr_ids.reservation = reservation.clone();
         ctx.numbering_ids.reservation = reservation.clone();
+        ctx.table_instance_ids.reservation = reservation.clone();
         ctx.style_ids.reservation = reservation;
 
         // [#8303] HWP3 원본 산출물도 문단 축으로 낸다 — 한컴 2020·2024 가 같은 HWP3 을
@@ -314,6 +317,9 @@ impl SerializeContext {
         // 와 같은 위상의 재귀).
         for sec in &doc.sections {
             register_border_fills_in_paragraphs(&mut ctx, &sec.paragraphs, 0)?;
+            for master in &sec.section_def.master_pages {
+                register_border_fills_in_paragraphs(&mut ctx, &master.paragraphs, 0)?;
+            }
         }
 
         // BinData: bin_data_content의 storage_id → manifest 엔트리 생성.
@@ -522,6 +528,7 @@ impl SerializeContext {
             &self.tab_pr_ids.storage_failure,
             &self.numbering_ids.storage_failure,
             &self.style_ids.storage_failure,
+            &self.table_instance_ids.storage_failure,
         ]
         .into_iter()
         .find_map(Option::as_deref)
@@ -769,6 +776,8 @@ fn register_border_fills_in_control(
 ) -> Result<(), SerializeError> {
     match ctrl {
         Control::Table(tbl) => {
+            ctx.table_instance_ids.register(tbl.common.instance_id);
+            ctx.check_storage()?;
             register_table_border_fills(ctx, tbl)?;
             for cell in &tbl.cells {
                 register_border_fills_in_paragraphs(ctx, &cell.paragraphs, depth + 1)?;

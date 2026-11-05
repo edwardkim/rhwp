@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-18
+last_verified: 2026-11-04
 ---
 
 # Collaborator self-merge 후보
@@ -14,7 +14,8 @@ last_verified: 2026-10-18
 
 - PR 작성자 또는 준비자가 repository collaborator다.
 - PR 번호가 이미 있어 review 문서명을 확정할 수 있다.
-- merge 뒤 별도 문서 commit을 만들지 않기 위해 review 문서를 현재 PR diff에 포함한다.
+- 일반 경로는 review 문서를 현재 PR diff에 포함한다. CI 실행 정의·판정 정책 변경 PR은
+  [옵션 2](post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)로 병합 후 별도 기록 PR에 반영한다.
 - ready 전환, self-review 기록 확정, merge 판단은 작업지시자 승인 뒤에만 한다.
 
 ### 8.1.1 렌더링 회귀의 추가·변경
@@ -82,6 +83,11 @@ mydocs/orders/YYYYMMDD.md                  # 갱신이 필요한 경우
 PR을 만든다. **같은 PR의 정확한 code head에 대한 GitHub Actions CI가 성공한 뒤에만**
 PR review와 오늘할일을 작성·갱신하고 문서-only trailing commit으로 반영한다.
 
+CI workflow·action·CI 실행/재사용 판정 정책을 수정한 PR은 아래 4–6의 동일 PR trailing 경로를
+사용하지 않고 [옵션 2](post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)를 따른다.
+원 PR의 정확한 code head CI·검토·merge 승인을 먼저 완료하고, 병합 뒤 별도 기록 PR을 처리한다.
+기록 추가로 Full CI가 다시 도는지 확인하려고 원 PR에 시험 push하지 않는다.
+
 1. 검증을 마친 후보 commit을 원격 작업 branch에 push한다.
 2. [로컬 사전 검증](local_validation.md) 4.3과 해당 보조 절차를 빠짐없이 완료한 뒤 Open PR을
    생성해 번호 `N`을 받는다. 특별한 목적의 명시적 Draft 지시가 없으면 Draft 생성은 금지한다.
@@ -121,7 +127,8 @@ git push upstream HEAD:task_m100_<issue>
 ## 8.4 merge 전 조건
 
 - 최신 PR head의 GitHub Actions가 통과한다.
-- 필요한 review, review_impl, 오늘할일이 PR diff에 포함된다.
+- 일반 경로는 필요한 review, review_impl, 오늘할일이 PR diff에 포함된다. CI 변경의 옵션 2에서는
+  원 PR 본문의 검증·검토 근거를 확인하고, 문서 반영을 병합 후 별도 기록 PR로 완료한다.
 - draft·mergeable·head SHA·CI 상태는 작성 시점 참고값으로만 기록한다.
 - 작업지시자 승인을 받는다.
 

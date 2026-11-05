@@ -43,3 +43,35 @@ pub(crate) fn border_dash(kind: BorderLineType, width: u8) -> Option<StrokeDash>
         intervals.map(|value| f64::from(value) * 96.0 / 600.0),
     ))
 }
+
+// Circle: 16개 선언 굵기의 독립 Windows 한컴 Print에서 관측한
+// 채움+외곽 지름과 중심 간격. 1/600 inch 단위이며 화면 해상도에 의존하지 않는다.
+// 근거: mydocs/pr/assets/semanticist21-20261105-next10/circle-print-geometry.md.
+const PRINT_CIRCLES: [[u16; 2]; 16] = [
+    [4, 8],
+    [4, 10],
+    [6, 13],
+    [8, 18],
+    [10, 23],
+    [10, 25],
+    [14, 35],
+    [18, 43],
+    [22, 53],
+    [24, 60],
+    [36, 88],
+    [52, 130],
+    [70, 173],
+    [104, 260],
+    [140, 348],
+    [174, 433],
+];
+
+pub(crate) fn border_circle(width: u8) -> (f64, f64) {
+    let &[diameter, pitch] = PRINT_CIRCLES
+        .get(usize::from(width))
+        .unwrap_or(&PRINT_CIRCLES[0]);
+    (
+        f64::from(diameter) * 96.0 / 600.0,
+        f64::from(pitch) * 96.0 / 600.0,
+    )
+}

@@ -7,7 +7,7 @@ use super::{
 };
 
 pub(super) fn owns_fragment_outer_frame(para: &Paragraph, table: &Table) -> bool {
-    if table.page_break != TablePageBreak::RowBreak
+    if table.layout_page_break() != TablePageBreak::RowBreak
         || !is_para_topbottom_float(&table.common)
         || table.common.vert_align != VertAlign::Top
         || table.caption.is_some()

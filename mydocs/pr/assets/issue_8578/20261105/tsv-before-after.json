@@ -1,0 +1,28 @@
+{
+  "head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+  "base": "6e1de406209ba9a58032f6ca6de45b18aa687d1c",
+  "native": {
+    "head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+    "base": "6e1de406209ba9a58032f6ca6de45b18aa687d1c",
+    "pages": 383,
+    "minimum_raw": 99.96,
+    "below90": [],
+    "tsv_row_differences": [],
+    "changed_png_pages": [],
+    "mode": "fresh Native gate at latest base and candidate"
+  },
+  "wasm": {
+    "head": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+    "base": "6e1de406209ba9a58032f6ca6de45b18aa687d1c",
+    "pages": [
+      3,
+      4
+    ],
+    "minimum_raw": 100.0,
+    "below90": [],
+    "tsv_row_differences": [],
+    "changed_png_pages": [],
+    "scope": "issue8578 changed editing paths only; not a full WASM sweep"
+  },
+  "scope": "Native383;fresh WASM affected pages3/4;no unrelated HWP"
+}

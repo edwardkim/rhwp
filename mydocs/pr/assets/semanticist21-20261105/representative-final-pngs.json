@@ -1,0 +1,667 @@
+{
+  "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "dpi": 96,
+  "rows": [
+    {
+      "key": "rowspan_staggered_heights",
+      "page": 2,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/rowspan_staggered_heights-p002-native.png",
+      "sha256": "96efc78821ed93e88cb02081665efb32ac488e2f52c17739d73d77b463b8f9d0"
+    },
+    {
+      "key": "rowspan_staggered_heights",
+      "page": 2,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/rowspan_staggered_heights-p002-reference.png",
+      "sha256": "e0399056642fc4aaffe2940271e9e1bb818b19a0028c2efda6ef06737a4e492f"
+    },
+    {
+      "key": "rowspan_staggered_heights",
+      "page": 2,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/rowspan_staggered_heights-p002-wasm.png",
+      "sha256": "812a0a4cf8d41b03bc2cd3b223eb5ec78bbcfce77de7b8f024134c18f41da34e"
+    },
+    {
+      "key": "rowspan_staggered_heights",
+      "page": 3,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/rowspan_staggered_heights-p003-native.png",
+      "sha256": "2542b80d07e42c96359032361785d7df6008dcb834dd3007ecb22575eaea54e1"
+    },
+    {
+      "key": "rowspan_staggered_heights",
+      "page": 3,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/rowspan_staggered_heights-p003-reference.png",
+      "sha256": "a17b00da8ffbacd00343db0a367a7ac36b5b32317bd0115931766cef9889f125"
+    },
+    {
+      "key": "rowspan_staggered_heights",
+      "page": 3,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/rowspan_staggered_heights-p003-wasm.png",
+      "sha256": "e2f2a2d83b0f40cdcaf0380d65850335aca677d9f9a0566bf06aa258e3a2a6cd"
+    },
+    {
+      "key": "section_start_page_number",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/section_start_page_number-p001-native.png",
+      "sha256": "caea02653baa7fb12ea2fb1711709f59fb745169938b98b186ec6f6a24910dad"
+    },
+    {
+      "key": "section_start_page_number",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/section_start_page_number-p001-reference.png",
+      "sha256": "b09a08bd20b2274e53d32dd3d1e0a933355daae10d4db84f42e052ffe7e6e8aa"
+    },
+    {
+      "key": "section_start_page_number",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/section_start_page_number-p001-wasm.png",
+      "sha256": "3ceab26e9ac89da24ed14b27eda8405169a2466f1c13e2404268484f6685e14b"
+    },
+    {
+      "key": "section_start_page_number",
+      "page": 4,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/section_start_page_number-p004-native.png",
+      "sha256": "508350836e40bb90ee222e1d193612af3a1f430d7b616223714ec5c45f24722e"
+    },
+    {
+      "key": "section_start_page_number",
+      "page": 4,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/section_start_page_number-p004-reference.png",
+      "sha256": "99815601915bc0153ed7cd81d2b09e7b3e96950b053195198c47fa95bd6705df"
+    },
+    {
+      "key": "section_start_page_number",
+      "page": 4,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/section_start_page_number-p004-wasm.png",
+      "sha256": "1226ed12e9908c7ae7fc27a2681434534d19591ae57ef261b942bb745a8fdbdd"
+    },
+    {
+      "key": "section_default_tab_spacing",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/section_default_tab_spacing-p001-native.png",
+      "sha256": "62e84628b047a7e301c894a9a07bfc7703a7879d03521b493f23c0431765c5f2"
+    },
+    {
+      "key": "section_default_tab_spacing",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/section_default_tab_spacing-p001-reference.png",
+      "sha256": "7e1dba85f4953ac1b8b74a51e1db5f20a045936fc4fe761ef60fc30b3f7f9366"
+    },
+    {
+      "key": "section_default_tab_spacing",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/section_default_tab_spacing-p001-wasm.png",
+      "sha256": "9598bae89ec35f97bcd4c5092efbd0fc34562078096f0bc8737bd64897807c23"
+    },
+    {
+      "key": "cell_diagonal_shapes",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/cell_diagonal_shapes-p001-native.png",
+      "sha256": "5647130f56ce895270aa5cd3166c17b31f882828186bab74ca4e33d33a76671c"
+    },
+    {
+      "key": "cell_diagonal_shapes",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/cell_diagonal_shapes-p001-reference.png",
+      "sha256": "0c60fc752420e3823a0c95fd62f881cb89ec5b3855a45c62c441a5386b134652"
+    },
+    {
+      "key": "cell_diagonal_shapes",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/cell_diagonal_shapes-p001-wasm.png",
+      "sha256": "0c407527c34d4c6f54bb0ec783b9b7b3678a8b90d6b43a1f21aad1ced6804709"
+    },
+    {
+      "key": "border_line_types",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/border_line_types-p001-native.png",
+      "sha256": "f411467f9acf06bf9e0b53d9e0965b3e1969e1065f2822c6d3eac943919ffb0e"
+    },
+    {
+      "key": "border_line_types",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/border_line_types-p001-reference.png",
+      "sha256": "5c132cdbee14eeb58d1dc9adee5eba5d10e289d42751807279077a32c597d06b"
+    },
+    {
+      "key": "border_line_types",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/border_line_types-p001-wasm.png",
+      "sha256": "b0d431991619bbc25ca16b5fff11355a952c984c9b6c3c85b4f228d71ba7c035"
+    },
+    {
+      "key": "header_footer_numbering",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/header_footer_numbering-p001-native.png",
+      "sha256": "3863d3d3a6fb9f60747b319350be02e70d46d5729b5adf9bd34d0143eba29d9d"
+    },
+    {
+      "key": "header_footer_numbering",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/header_footer_numbering-p001-reference.png",
+      "sha256": "283a0e43f2a2a2207530fcdaac81aff9f64aaa3a445989a255952733852801d9"
+    },
+    {
+      "key": "header_footer_numbering",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/header_footer_numbering-p001-wasm.png",
+      "sha256": "35519a0bd7e1e1dedd4bb5e52540eac87a0498cb74d9827b1ad49f57be586b7d"
+    },
+    {
+      "key": "decoration-body-emphasis-36pt",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-body-emphasis-36pt-p001-native.png",
+      "sha256": "e693f3093ce5c5d34dbb1eb3e227a931739f331ebede035e50bc80a8b9519e27"
+    },
+    {
+      "key": "decoration-body-emphasis-36pt",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-body-emphasis-36pt-p001-reference.png",
+      "sha256": "7a4f244be602582381482fea5457886b320dcb6f1bddd9be7190f5c4c0151500"
+    },
+    {
+      "key": "decoration-body-emphasis-36pt",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-body-emphasis-36pt-p001-wasm.png",
+      "sha256": "980c028e978e02b6758e3a0acf538a42617c828080c2c628557af0ad0c29adfc"
+    },
+    {
+      "key": "decoration-body-top-36pt",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-body-top-36pt-p001-native.png",
+      "sha256": "c0ecbc09c2b43176d8a9151f7669ac7f82084e4c940d8e0542dfe79c7bb7289b"
+    },
+    {
+      "key": "decoration-body-top-36pt",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-body-top-36pt-p001-reference.png",
+      "sha256": "0b83312e5e70c882e2adeef0a62fe03cee8f159c456fb67526815f6dca383be2"
+    },
+    {
+      "key": "decoration-body-top-36pt",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-body-top-36pt-p001-wasm.png",
+      "sha256": "8ca69c12977fbafad83dfa7fa0e076ce46b4ea49492d38c1b2fbeeb6aac98a7e"
+    },
+    {
+      "key": "decoration-cell-top-10-36pt",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-cell-top-10-36pt-p001-native.png",
+      "sha256": "7e08f1ab1260062d8da3e32d1e129ab98c3e8226691affa8ac9afdf9e70ba030"
+    },
+    {
+      "key": "decoration-cell-top-10-36pt",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-cell-top-10-36pt-p001-reference.png",
+      "sha256": "98f485cb8358c5d698cf024e0dd6f2055f8fe035a56056bc024f5a88bf15e4e0"
+    },
+    {
+      "key": "decoration-cell-top-10-36pt",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-cell-top-10-36pt-p001-wasm.png",
+      "sha256": "32449830e21213900e2c75152c660b1a19a8f70213576be48421628e2ae31349"
+    },
+    {
+      "key": "decoration-emphasis-probe-1",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-1-p001-native.png",
+      "sha256": "2e1281092fc78d801b41412738f3c429144b6032bed51602d709d5088ee7fa2a"
+    },
+    {
+      "key": "decoration-emphasis-probe-1",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-1-p001-reference.png",
+      "sha256": "acc23e2dc31e06540972f817e08935c63a79014f5ced736da96316bd4be7c87a"
+    },
+    {
+      "key": "decoration-emphasis-probe-1",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-1-p001-wasm.png",
+      "sha256": "b62affab31518806585aa4b8d687e459b1d866a6c7d1fa4652c5187477eb86e1"
+    },
+    {
+      "key": "decoration-emphasis-probe-2",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-2-p001-native.png",
+      "sha256": "16c45baf63b4177f5532f206b374b0531d96f8af1e8fee02db552e76ea261276"
+    },
+    {
+      "key": "decoration-emphasis-probe-2",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-2-p001-reference.png",
+      "sha256": "5d55686c09cd20a8c30f03eb0687ff97a960e81e1ba8cfa371eb49c6f4d353e7"
+    },
+    {
+      "key": "decoration-emphasis-probe-2",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-2-p001-wasm.png",
+      "sha256": "50ea7835679252de9d54c593660f445a46a4ed39d993807cf231f584ca84793b"
+    },
+    {
+      "key": "decoration-emphasis-probe-3",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-3-p001-native.png",
+      "sha256": "37c20485b48d8a2f6d1341a2726585ab75a6bfdc27321733a2696401223058cc"
+    },
+    {
+      "key": "decoration-emphasis-probe-3",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-3-p001-reference.png",
+      "sha256": "efb0d9f0a0410c96ff52d289523b2ac47e09bc20d7c618a8888eb9aa28ec52c0"
+    },
+    {
+      "key": "decoration-emphasis-probe-3",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-3-p001-wasm.png",
+      "sha256": "ea5f1698ee81e0a73f3afa2c6423d7c5557eda338e406608a3c00e1316b59b2e"
+    },
+    {
+      "key": "decoration-emphasis-probe-4",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-4-p001-native.png",
+      "sha256": "e0977d0f4a6ac2aeed930360044fd33082a851df2a00ee357b015b2874e8c48a"
+    },
+    {
+      "key": "decoration-emphasis-probe-4",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-4-p001-reference.png",
+      "sha256": "c2801f3a61f01a103b43cca39849431b0c422a2c406213e4a4e80502712f6765"
+    },
+    {
+      "key": "decoration-emphasis-probe-4",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-4-p001-wasm.png",
+      "sha256": "f74adafbea877e50ed0d1ca2664b5ec988f7015c113745ed10be5145c352a77d"
+    },
+    {
+      "key": "decoration-emphasis-probe-5",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-5-p001-native.png",
+      "sha256": "03beaad53d71367709ab1d4810adcc3acf3d428d2654a1613da9cfb1fcd88d21"
+    },
+    {
+      "key": "decoration-emphasis-probe-5",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-5-p001-reference.png",
+      "sha256": "07b4cbfa2496efc3bf3760cfa7ad69bd797201c4500a3743cf20a72569307483"
+    },
+    {
+      "key": "decoration-emphasis-probe-5",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-5-p001-wasm.png",
+      "sha256": "14f2e3b378503149586afc3a6abe6828890cb777ef875e2315c791c007abbcf7"
+    },
+    {
+      "key": "decoration-emphasis-probe-6",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-6-p001-native.png",
+      "sha256": "30f5f8e753371c73d46f30ba361d675c13b33c393579beb07bb849173c7bc0c0"
+    },
+    {
+      "key": "decoration-emphasis-probe-6",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-6-p001-reference.png",
+      "sha256": "b654d7fd0bae1b69a3560bd5dd2f2247e15c46bb668eac53234fbe4d3403cfda"
+    },
+    {
+      "key": "decoration-emphasis-probe-6",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-emphasis-probe-6-p001-wasm.png",
+      "sha256": "cd6d481367aa6f245093e37dcae29352bc5ea16e949b79046fad2cab94df8576"
+    },
+    {
+      "key": "decoration-top-probe-shape-0",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-0-p001-native.png",
+      "sha256": "dd31bccc980c23aa6d2167d8bee54aee22b280255e1ad0a5f620b4f175e21b6e"
+    },
+    {
+      "key": "decoration-top-probe-shape-0",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-0-p001-reference.png",
+      "sha256": "cc753f82c7850da0c0cac974d0d4286164645a10d89e0fb7b5a99c8ddccb95f7"
+    },
+    {
+      "key": "decoration-top-probe-shape-0",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-0-p001-wasm.png",
+      "sha256": "55189088480aeffd2ca608256c5dea97bd3ed9818d5f7288a4618851427a6498"
+    },
+    {
+      "key": "decoration-top-probe-shape-1",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-1-p001-native.png",
+      "sha256": "495cfcf9df86d06324c237bff06961a3f3e643c5f25f57019cb7abd31f3120be"
+    },
+    {
+      "key": "decoration-top-probe-shape-1",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-1-p001-reference.png",
+      "sha256": "0836bbea7496c86e13a598795ad863728c36b222b6bc27a5fa39c7bf08fce685"
+    },
+    {
+      "key": "decoration-top-probe-shape-1",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-1-p001-wasm.png",
+      "sha256": "d9e10ae2999b7f9056ef9c5d3dc7862c6ef30aa080a5cd13aedf6c39d8c1f244"
+    },
+    {
+      "key": "decoration-top-probe-shape-10",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-10-p001-native.png",
+      "sha256": "5d5c1455456d2a6e592a0031c244c6be3090e9507ffe276ad78c5decfd74cbf7"
+    },
+    {
+      "key": "decoration-top-probe-shape-10",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-10-p001-reference.png",
+      "sha256": "e7b105809707fad2808ca36d11991762a106ecbae93e654fcfe81df1a5abc94b"
+    },
+    {
+      "key": "decoration-top-probe-shape-10",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-10-p001-wasm.png",
+      "sha256": "2da0aaeba6283afa84ce9bd8c97dfb4b7162e01654005179be43e41fa179686b"
+    },
+    {
+      "key": "decoration-top-probe-shape-2",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-2-p001-native.png",
+      "sha256": "78e50b2bb276f4123bb15cb7601cdc3892cd29691aee1a09a40a69483303b716"
+    },
+    {
+      "key": "decoration-top-probe-shape-2",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-2-p001-reference.png",
+      "sha256": "ee428b5e3adcb81e8a07ada08a912ace5f5f0669f4c7b3a10b8afa21ceb064a0"
+    },
+    {
+      "key": "decoration-top-probe-shape-2",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-2-p001-wasm.png",
+      "sha256": "e9d0c6cd4bd14d266f03c9b76fb91aafd768a0bfb9d79b7a611aa894e5c02a84"
+    },
+    {
+      "key": "decoration-top-probe-shape-3",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-3-p001-native.png",
+      "sha256": "3457aef2357e53b9f289f5a883680f01df03fd7206232e0bd76611ef8f070acb"
+    },
+    {
+      "key": "decoration-top-probe-shape-3",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-3-p001-reference.png",
+      "sha256": "ace321e55a4fd8d92309e7ad691dfd24d855f32a4ded970fcd0f25371de25f3b"
+    },
+    {
+      "key": "decoration-top-probe-shape-3",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-3-p001-wasm.png",
+      "sha256": "4e3554a92347833adf8555487f5c48cfa07a4a245201b6f3772ae05181799230"
+    },
+    {
+      "key": "decoration-top-probe-shape-4",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-4-p001-native.png",
+      "sha256": "efd95e642a504aca65fa89ff10654e2daa63ff2c800ea58c600b90ba1fbdf9ba"
+    },
+    {
+      "key": "decoration-top-probe-shape-4",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-4-p001-reference.png",
+      "sha256": "3a35b090f4f5fb2a9e22080f1c484cf5ffcf1c5fc4f66eb45f299ce69b85a330"
+    },
+    {
+      "key": "decoration-top-probe-shape-4",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-4-p001-wasm.png",
+      "sha256": "2ecb7fe1712aa93aa30b17b385b29e5024e2cefece8831cf0b5b99ec1328255a"
+    },
+    {
+      "key": "decoration-top-probe-shape-5",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-5-p001-native.png",
+      "sha256": "2f4dea63877832a6b21a16bc4d78843be815ff0d2a0c5276b321f9c1aa77f7d5"
+    },
+    {
+      "key": "decoration-top-probe-shape-5",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-5-p001-reference.png",
+      "sha256": "d9c8a67393b6385a1a486263faf50a13023f3070007563fa9c9501df3cd00a70"
+    },
+    {
+      "key": "decoration-top-probe-shape-5",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-5-p001-wasm.png",
+      "sha256": "e023e9066e15863418b7f2c09f2c584beffa5dd0f06b80f2309932eff2fea505"
+    },
+    {
+      "key": "decoration-top-probe-shape-6",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-6-p001-native.png",
+      "sha256": "7e0ab889a02e6dd19c52a56ac56757260e30548c01dabb8a8fba334464752d3a"
+    },
+    {
+      "key": "decoration-top-probe-shape-6",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-6-p001-reference.png",
+      "sha256": "9c753570a986c4305abb54a1e7f809edf70df04f1aa7acb6de1f19f6a2a4ff26"
+    },
+    {
+      "key": "decoration-top-probe-shape-6",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-6-p001-wasm.png",
+      "sha256": "9c610bff42c79e472efd4f3302197d0e0fa200f24f5fff77f0263387540e3c3a"
+    },
+    {
+      "key": "decoration-top-probe-shape-7",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-7-p001-native.png",
+      "sha256": "2e18d56e4d63ff8b6ee36d166c08201f35775fa8a7693b789290097083a78cc0"
+    },
+    {
+      "key": "decoration-top-probe-shape-7",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-7-p001-reference.png",
+      "sha256": "e02228d8bae3425e04fc1789d2ae274ae4391abee4489be0559c34f006928c23"
+    },
+    {
+      "key": "decoration-top-probe-shape-7",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-7-p001-wasm.png",
+      "sha256": "de15b5f06991581b10700555c31f70cb248b10745b61c1988fdd34a752250e98"
+    },
+    {
+      "key": "decoration-top-probe-shape-8",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-8-p001-native.png",
+      "sha256": "875f69d82f34b86789c5f0771a0459044aaa80356ada7c9e6f7541c3a64fee97"
+    },
+    {
+      "key": "decoration-top-probe-shape-8",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-8-p001-reference.png",
+      "sha256": "ce73c0af6cfbda416add0da1ea3d9ad345d2ade1ecd43b99d88d95d023dfb40d"
+    },
+    {
+      "key": "decoration-top-probe-shape-8",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-8-p001-wasm.png",
+      "sha256": "cd4511437bcc9d99ef6637f0f2a69f6d78163d223ba7cb585a6abe6b2a4b608c"
+    },
+    {
+      "key": "decoration-top-probe-shape-9",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-9-p001-native.png",
+      "sha256": "6f2ffd908fdfdc79924a66a6737c00690a8bedc605b9ff9578c26d0b09625e34"
+    },
+    {
+      "key": "decoration-top-probe-shape-9",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-9-p001-reference.png",
+      "sha256": "c2917012f61b01ef470529c60f2e66061d48bdc0d92c32317f1628f8e66ebbed"
+    },
+    {
+      "key": "decoration-top-probe-shape-9",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/decoration-top-probe-shape-9-p001-wasm.png",
+      "sha256": "cb084fd590be9b0d0c6cac43e65b7d51011ae751cf77d9af5c8588c5c55a1bcb"
+    },
+    {
+      "key": "header-image-refs",
+      "page": 4,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/header-image-refs-p004-native.png",
+      "sha256": "9c7dc995596c2627db159fc433365917a93450f3d78959be1f16c2251173ce85"
+    },
+    {
+      "key": "header-image-refs",
+      "page": 4,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/header-image-refs-p004-reference.png",
+      "sha256": "7522bfb7299b0ff761ade749d4696ec9ebeee63b9d5b54b6b706f3580737f3df"
+    },
+    {
+      "key": "header-image-refs",
+      "page": 4,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/header-image-refs-p004-wasm.png",
+      "sha256": "af6a54d403d6ba063f405165abd8e90b29f32623506b8b191099b785b5f94670"
+    },
+    {
+      "key": "image-bullet-newyear",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/image-bullet-newyear-p001-native.png",
+      "sha256": "81c3f48ca92489a6cc5a8d885e5a1a8a4aacdc1d71fd5c766a85d5b9f5a9b1e6"
+    },
+    {
+      "key": "image-bullet-newyear",
+      "page": 1,
+      "backend": "independent-print",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/image-bullet-newyear-p001-reference.png",
+      "sha256": "244c547c9ff74e2b8d8b53bc25b0f6e459d233cda29d110e8bf1d4e3d0bfff2f"
+    },
+    {
+      "key": "image-bullet-newyear",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/image-bullet-newyear-p001-wasm.png",
+      "sha256": "ea839abddae34e4769a921a9f6453c54b96f13992d7596b42548028986ca5c2a"
+    },
+    {
+      "key": "roundtrip-header-image-refs",
+      "page": 4,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/roundtrip-header-image-refs-p004-native.png",
+      "sha256": "9c7dc995596c2627db159fc433365917a93450f3d78959be1f16c2251173ce85"
+    },
+    {
+      "key": "roundtrip-header-image-refs",
+      "page": 4,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/roundtrip-header-image-refs-p004-wasm.png",
+      "sha256": "af6a54d403d6ba063f405165abd8e90b29f32623506b8b191099b785b5f94670"
+    },
+    {
+      "key": "roundtrip-image-bullet-newyear",
+      "page": 1,
+      "backend": "native",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/roundtrip-image-bullet-newyear-p001-native.png",
+      "sha256": "81c3f48ca92489a6cc5a8d885e5a1a8a4aacdc1d71fd5c766a85d5b9f5a9b1e6"
+    },
+    {
+      "key": "roundtrip-image-bullet-newyear",
+      "page": 1,
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/semanticist21-20261105/validation/review/roundtrip-image-bullet-newyear-p001-wasm.png",
+      "sha256": "ea839abddae34e4769a921a9f6453c54b96f13992d7596b42548028986ca5c2a"
+    }
+  ],
+  "svg_png": "validation/review/decoration-shape3-svg.png",
+  "canvaskit_final_png_exactly_matches_directly_reviewed_pixels": true,
+  "font_binaries_or_embedded_svg_committed": false
+}

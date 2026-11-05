@@ -139,8 +139,11 @@ fn decode_image_to_canvas(data: &[u8]) -> Option<HtmlCanvasElement> {
     if super::image_resolver::png_sampling::print_jpeg_transfer(data) {
         return print_jpeg::decode(data);
     }
-    let dynimg = image::load_from_memory(data).ok()?;
-    let rgba = dynimg.to_rgba8();
+    // 레이어 트리의 회색 JPEG 판정이 같은 바이트를 막 디코드했으면 그 픽셀을 쓴다.
+    let rgba = match super::image_resolver::take_decoded(data) {
+        Some(rgba) => rgba,
+        None => image::load_from_memory(data).ok()?.to_rgba8(),
+    };
     let (iw, ih) = (rgba.width(), rgba.height());
     if iw == 0 || ih == 0 {
         return None;
@@ -448,6 +451,7 @@ pub struct WebCanvasRenderer {
     metric_descriptor_mismatch: std::cell::Cell<bool>,
     hft_outline_fonts: Option<super::hft_outline::HftOutlineFonts>,
     hft_outline_enabled: bool,
+    print_text_geometry: bool,
     high_quality_images: bool,
     render_profile: crate::paint::RenderProfile,
     bitmap_paper_grid: Option<super::bitmap_raster::PrintPaperGrid>,
@@ -484,6 +488,7 @@ impl WebCanvasRenderer {
             metric_descriptor_mismatch: std::cell::Cell::new(false),
             hft_outline_fonts: None,
             hft_outline_enabled: false,
+            print_text_geometry: false,
             high_quality_images: false,
             render_profile: crate::paint::RenderProfile::Screen,
             bitmap_paper_grid: None,
@@ -558,6 +563,7 @@ impl WebCanvasRenderer {
         self.render_profile = crate::paint::RenderProfile::Screen;
         text_geometry::configure(&self.ctx, false);
         self.print_stroke_adjustment = false;
+        self.print_text_geometry = false;
         self.print_device_clip = false;
         self.render_node(&tree.root);
     }
@@ -571,7 +577,8 @@ impl WebCanvasRenderer {
             crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
         );
         self.render_profile = tree.profile;
-        text_geometry::configure(&self.ctx, tree.preserves_raster_text_geometry());
+        self.print_text_geometry = tree.preserves_raster_text_geometry();
+        text_geometry::configure(&self.ctx, self.print_text_geometry);
         self.hft_outline_enabled = matches!(
             tree.profile,
             crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
@@ -3049,7 +3056,7 @@ impl Renderer for WebCanvasRenderer {
                 // 2.0px 은 큰 글꼴에서 디센더 관통). 선 모양 내부 기하는 캔버스 경로
                 // 현행 유지 — 오프셋만 SVG/Skia 와 같은 계약을 쓴다.
                 if let Some(top) =
-                    crate::renderer::text_decoration::top_underline_geometry(style, font_size)
+                    crate::renderer::text_decoration::underline_geometry(style, font_size)
                 {
                     self.draw_top_underline_canvas(x, y, x + text_width, &ul_color, &top, left);
                 } else {
@@ -3260,7 +3267,7 @@ impl Renderer for WebCanvasRenderer {
         // Native Skia와 같은 순서이며, 재생할 수 없는 변환은 기존 경로로 간다.
         if self.high_quality_images && self.ctx.image_smoothing_enabled() {
             if let Some(frame) = super::print_raster::PrintRasterFrame::read(data) {
-                if let Some(canvas) = cached_decoded_image_canvas(data, hash_bytes(data)) {
+                if let Some(canvas) = print_image_sampling::decoded_source(data) {
                     if cubic_reduction::draw_print_frame(&self.ctx, &canvas, frame) {
                         return;
                     }
@@ -3739,18 +3746,32 @@ impl WebCanvasRenderer {
             }
         }
 
-        // 외곽선 (fillText(흰색) + strokeText(글자색))
-        if style.outline_type > 0 {
-            let line_width = (font_size / 25.0).max(0.5);
+        // 외곽선: 채우지 않고 SVG와 같은 굵기·반복 구간으로 윤곽만 긋는다.
+        if let Some((line_width, intervals)) =
+            super::stroke_pattern::char_outline_stroke(style.outline_type)
+        {
+            let pattern = js_sys::Array::new();
+            for value in intervals {
+                pattern.push(&JsValue::from_f64(value));
+            }
+            self.ctx.save();
+            let _ = self.ctx.set_line_dash(&pattern);
+            self.ctx.set_line_cap("round");
+            self.ctx.set_line_join("round");
+            // 장치 한 칸보다 가는 pen은 다른 선과 같이 한 칸으로 올린다. 반복 구간은 그대로다.
+            self.ctx.set_line_width(line_width);
+            self.floor_line_width_to_device();
+            let line_width = self.ctx.line_width();
             render_pass(
                 &self.ctx,
                 0.0,
                 0.0,
-                "#ffffff",
+                "transparent",
                 true,
                 &text_color_css,
                 line_width,
             );
+            self.ctx.restore();
         } else {
             // 일반 텍스트 (그림자 위에 원본)
             render_pass(&self.ctx, 0.0, 0.0, &text_color_css, false, "", 0.0);

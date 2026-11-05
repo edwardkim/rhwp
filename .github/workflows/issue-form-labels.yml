@@ -1,4 +1,4 @@
-name: Label issue form responses
+name: Label issue reports
 
 on:
   issues:
@@ -16,12 +16,12 @@ jobs:
     if: >-
       github.repository == 'edwardkim/rhwp' &&
       !github.event.issue.pull_request &&
-      (github.event.action == 'opened' || github.event.changes.body != null)
+      (github.event.action == 'opened' || github.event.changes.body != null || github.event.changes.title != null)
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
       # Run only trusted workflow code, without checking out issue-controlled content.
-      - name: Add labels for known form responses
+      - name: Add conservative labels for issue reports
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           retries: 3
@@ -29,7 +29,10 @@ jobs:
             const payload = context.payload;
             if (!payload.issue || payload.issue.pull_request ||
                 !['opened', 'edited'].includes(payload.action) ||
-                (payload.action === 'edited' && !payload.changes?.body)) return;
+                (payload.action === 'edited' && !payload.changes?.body && !payload.changes?.title)) {
+              core.info('skip: unsupported-event');
+              return;
+            }
 
             const surfaceLabels = new Map([
               ['Studio', 'rhwp-studio'],
@@ -45,52 +48,156 @@ jobs:
               ['문서 URL 또는 위치', '잘못되거나 부족한 설명', '기대하는 설명'],
             ];
 
-            function selectedLabel(body) {
-              if (typeof body !== 'string') return null;
-              // Issue Forms produce Markdown headings, not trustworthy template IDs.
-              // Accept only a complete known structure, with one exact surface value.
-              const text = body.replace(/\r\n/g, '\n').trim();
-              if (!text.startsWith('### 사용 경로\n')) return null;
+            // These are product surfaces, never the mechanism used to create an issue.
+            const surfaceHints = new Map([
+              ['rhwp-studio', /\b(?:rhwp-studio|Studio)(?![a-z0-9_-])/i],
+              ['cli', /\bCLI(?![a-z0-9_-])/i],
+              ['browser-extension', /브라우저 확장|\bbrowser[ -]extension\b|\brhwp-(?:chrome|firefox)\b/i],
+              ['api', /라이브러리\/API|\bAPI(?![a-z0-9_-])|@rhwp\/(?:core|editor)\b/i],
+              ['mcp', /\bMCP(?![a-z0-9_-])/i],
+            ]);
+            const kindHints = new Map([
+              ['bug', /^(?:bug|버그)$/i],
+              ['enhancement', /^(?:feature|enhancement|기능 요청)$/i],
+              ['documentation', /^(?:docs?|documentation|문서)$/i],
+              ['test', /^(?:test|테스트)$/i],
+            ]);
+            const labelNames = (issue) => (issue.labels ?? []).map((entry) => entry.name ?? entry).sort();
+            const skip = (code, label) => core.info(`skip: ${code}${label ? ': ' + label : ''}`);
+            const matches = (hints, text) => [...hints].filter(([, pattern]) => pattern.test(text)).map(([label]) => label);
+
+            function prose(body) {
+              // Ignore copied reports, attachments and executable examples. Never log input.
+              const lines = (typeof body === 'string' ? body : '').replace(/\r\n?/g, '\n')
+                .replace(/<!--[\s\S]*?(?:-->|$)/g, '').split('\n');
+              let fence = null;
+              return lines.filter((line) => {
+                const marker = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+                if (marker) {
+                  if (!fence) fence = marker[1];
+                  else if (marker[1][0] === fence[0] && marker[1].length >= fence.length && !marker[2].trim()) fence = null;
+                  return false;
+                }
+                return !fence && !/^\s*>|^(?: {4}|\t)/.test(line);
+              }).join('\n').replace(/<[^>]*>/g, '').replace(/https?:\/\/\S+|data:\S+/g, '').trim();
+            }
+
+            function classify(issue) {
+              const text = prose(issue.body);
+              const title = typeof issue.title === 'string' ? issue.title.trim() : '';
+              const existing = labelNames(issue);
+              // Issue Forms are editable Markdown, not authenticated template IDs.
               const headings = [...text.matchAll(/^### ([^\n]+)\n/gm)];
               const names = headings.map((match) => match[1]);
-              if (new Set(names).size !== names.length ||
-                  formSignatures.filter((fields) => fields.every((field) => names.includes(field))).length !== 1) {
-                return null;
+              const signatures = formSignatures.filter((fields) => fields.every((field) => names.includes(field)));
+              const surfaceFields = headings.filter((match) => match[1] === '사용 경로');
+              if (new Set(names).size !== names.length || signatures.length > 1) {
+                skip('ambiguous-form');
+                return [];
               }
-              const value = text.slice(headings[0][0].length, headings[1]?.index).trim();
-              return surfaceLabels.get(value) ?? null;
+              const completeForm = text.startsWith('### 사용 경로\n') && signatures.length === 1;
+              const candidates = [];
+              if (surfaceFields.length) {
+                const field = surfaceFields[0];
+                const end = headings.find((heading) => heading.index > field.index)?.index;
+                const value = text.slice(field.index + field[0].length, end).trim();
+                const exact = surfaceLabels.get(value);
+                const hinted = matches(surfaceHints, value);
+                // Keep exact form behavior. Allow a single leading choice with a description.
+                const described = [...surfaceLabels].find(([choice]) =>
+                  value.startsWith(choice + ' — ') || value.startsWith(choice + ' - ') ||
+                  value.startsWith(choice + '(') || value.startsWith(choice + ' ('));
+                if (completeForm && exact) candidates.push(exact);
+                else if (hinted.length > 1) skip('ambiguous-surface');
+                else if (completeForm && described && hinted.length === 1) candidates.push(described[1]);
+                else skip(completeForm ? 'unknown-form-surface' : 'incomplete-form');
+              } else {
+                // Body evidence is restricted to product-owned paths/packages, not generic API/CLI mentions.
+                const paths = [...text.matchAll(/(?:\brhwp-(?:studio|chrome|firefox)\/[\w./-]+|@rhwp\/(?:core|editor)\b)/g)]
+                  .map((match) => match[0]).join(' ');
+                // Named third-party IDEs are not rhwp Studio. Separate [studio] tags and
+                // rhwp-studio paths remain independent evidence after removing these names.
+                const subject = title.replace(/\bGitHub\s+(?:REST\s+)?API\b/gi, '')
+                  .replace(/\b(?:Visual|Android)\s+Studio(?:\s+Code)?\b/gi, '');
+                const surfaces = matches(surfaceHints, subject + '\n' + paths);
+                if (surfaces.length > 1) skip('ambiguous-surface');
+                else if (!surfaces.length) skip('no-surface-evidence');
+                else candidates.push(surfaces[0]);
+              }
+              // Existing form defaults are owned by the forms; do not broaden their classification.
+              if (!completeForm) {
+                const tags = title.match(/^(?:\[[^\]\n]+\]\s*)+/)?.[0] ?? '';
+                const markers = [...tags.matchAll(/\[([^\]]+)\]/g)].map((match) => match[1]);
+                const prefix = title.match(/^([a-z]+|버그|기능 요청|문서|테스트)\s*:/i)?.[1];
+                if (prefix) markers.push(prefix);
+                const kinds = [...new Set(markers.flatMap((marker) => matches(kindHints, marker)))];
+                // A missing *proposed* API is an enhancement, not a serialization defect (#8021).
+                if (!kinds.length && /^\[API\]/i.test(title) && /API가 (?:없다|없음)/.test(title) &&
+                    /^제안하는 API(?:입니다|\s*[:.])/m.test(text)) kinds.push('enhancement');
+                if (kinds.length > 1) skip('ambiguous-kind');
+                else if (!kinds.length) skip('no-kind-evidence');
+                else if (existing.some((label) => kindHints.has(label) && label !== kinds[0])) {
+                  skip('existing-kind-decision');
+                } else {
+                  candidates.push(kinds[0]);
+                  // Narrow domain evidence in the issue's subject, never incidental body words.
+                  if (['bug', 'enhancement'].includes(kinds[0])) {
+                    if (/글꼴|웹폰트|폰트|\bfonts?\b|\bwebfonts?\b/i.test(title)) candidates.push('font');
+                    if (/렌더링|조판|\brendering\b/i.test(title)) candidates.push('rendering');
+                  }
+                }
+                // For inferred surfaces, any existing surface decision wins. Exact forms retain add-only edits.
+                const index = candidates.findIndex((label) => surfaceHints.has(label));
+                if (index !== -1 && existing.some((label) => surfaceHints.has(label) && label !== candidates[index])) {
+                  candidates.splice(index, 1);
+                  skip('existing-surface-decision');
+                }
+              }
+              return [...new Set(candidates)].filter((label) => {
+                if (!existing.includes(label)) return true;
+                skip('already-present', label);
+                return false;
+              });
             }
 
             const params = { ...context.repo, issue_number: payload.issue.number };
             // Queued/retried events must consume the current body, not the old payload.
             const { data: issue } = await github.rest.issues.get(params);
-            if (issue.pull_request || issue.state !== 'open') return;
-            const label = selectedLabel(issue.body);
-            if (!label || issue.labels.some((entry) => (entry.name ?? entry) === label)) return;
+            if (issue.pull_request || issue.state !== 'open') {
+              skip('not-open-issue');
+              return;
+            }
+            let labels = classify(issue);
+            if (!labels.length) return;
 
             // Add-only policy: no source/provenance inference and no label removals.
             // A removed label stays under maintainer control, even on a later retry/edit.
             const events = await github.paginate(github.rest.issues.listEvents, {
               ...params, per_page: 100,
             });
-            if (events.some((event) => event.event === 'unlabeled' && event.label?.name === label)) {
-              core.info('Previously removed label is left for manual triage.');
-              return;
-            }
+            labels = labels.filter((label) => {
+              if (!events.some((event) => event.event === 'unlabeled' && event.label?.name === label)) return true;
+              skip('previously-removed', label);
+              return false;
+            });
+            if (!labels.length) return;
             const available = await github.paginate(github.rest.issues.listLabelsForRepo, {
               ...context.repo, per_page: 100,
             });
-            if (!available.some((entry) => entry.name === label)) {
-              core.warning(`Configured repository label is missing: ${label}`);
-              return;
-            }
+            labels = labels.filter((label) => {
+              if (available.some((entry) => entry.name === label)) return true;
+              core.warning(`skip: missing-repository-label: ${label}`);
+              return false;
+            });
+            if (!labels.length) return;
 
             // Recheck after pagination: another edit or manual addition may have landed.
             const { data: latest } = await github.rest.issues.get(params);
-            if (latest.state !== 'open' || latest.updated_at !== issue.updated_at ||
-                latest.body !== issue.body ||
-                latest.labels.some((entry) => (entry.name ?? entry) === label)) {
-              core.info('Issue changed during classification; skipping this snapshot.');
+            if (latest.pull_request || latest.state !== 'open' || latest.updated_at !== issue.updated_at ||
+                latest.body !== issue.body || latest.title !== issue.title ||
+                JSON.stringify(labelNames(latest)) !== JSON.stringify(labelNames(issue))) {
+              skip('snapshot-changed');
               return;
             }
-            await github.rest.issues.addLabels({ ...params, labels: [label] });
+            await github.rest.issues.addLabels({ ...params, labels });
+            core.info(`added: ${labels.join(', ')}`);

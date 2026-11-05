@@ -4,6 +4,9 @@ use super::control::{Control, FieldType, CTRL_CHAR_CODE_UNITS};
 use serde::{Deserialize, Serialize};
 
 mod control_source;
+mod marker_head;
+
+pub use marker_head::MarkerHead;
 
 /// 편집 입력의 줄바꿈을 LF로 통일한다. CR은 HWP5에서 문단 종료 코드다.
 pub fn normalize_text_newlines(text: &str) -> std::borrow::Cow<'_, str> {
@@ -214,23 +217,6 @@ pub enum NumberingMarker {
     /// 그려질 번호 문자열과 그 수준의 문단 머리 속성.
     Text(String, MarkerHead),
 }
-
-/// 목록 마커(글머리표·번호)의 문단 머리 속성 — HWP5 표 41·44 의 속성·너비 보정·본문과의 거리.
-///
-/// 줄 나눔과 배치가 마커가 차지하는 영역을 같은 값으로 정하도록 번호 문자열과 함께 둔다.
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct MarkerHead {
-    /// 속성: bit0-1 정렬(0 왼쪽 · 1 가운데 · 2 오른쪽), bit2 인스턴스 폭,
-    /// bit3 자동 내어쓰기, bit4 본문과의 거리 단위(0 글자 크기 비율 · 1 HWPUNIT).
-    pub attr: u32,
-    /// 너비 보정값 (HWPUNIT)
-    pub width_adjust: i16,
-    /// 본문과의 거리 (bit4 에 따라 % 또는 HWPUNIT)
-    pub text_distance: i16,
-    /// 마커 글자 모양 (`u32::MAX` 는 참조 없음 — 문단 첫 글자 모양을 따른다)
-    pub char_shape_id: u32,
-}
-crate::storage::clone_copy!(MarkerHead);
 
 /// 줄 구성에서 선택한 공백 측정 규칙. 저장 형식의 bit나 글꼴 대체 규칙이 아니다.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
@@ -2277,6 +2263,24 @@ impl Paragraph {
             })
             .count();
 
+        // 번호 자리표 공백은 번호의 8유닛에 포함된다. 나눈 자리에서 새 문단으로
+        // 옮긴 자리표만 따로 세지 않는다. 앞 갭 보존과 controls 이동 규칙은 그대로 둔다.
+        let placeholder_end = new_char_offsets.get(1).copied().unwrap_or_else(|| {
+            self.char_count
+                .saturating_sub(1)
+                .saturating_sub(utf16_split)
+        });
+        let moved_number_placeholder = text_chars.get(split_pos) == Some(&' ')
+            && new_char_offsets.first() == Some(&0)
+            && placeholder_end >= CTRL_CHAR_CODE_UNITS
+            && moved_control_idx_map.iter().any(|(&ci, &new_ci)| {
+                text_positions.get(ci) == Some(&split_pos)
+                    && matches!(
+                        new_controls[new_ci],
+                        Control::AutoNumber(_) | Control::NewNumber(_)
+                    )
+            });
+
         // 6. char_count 갱신
         //    양쪽 문단에 남은 controls와 누름틀 끝 표지는 각각 8 code unit을 차지하므로 반영 필요
         let kept_text_code_units: u32 = self.text.chars().map(Self::char_stream_len).sum();
@@ -2284,7 +2288,8 @@ impl Paragraph {
         let ctrl_code_units: u32 = (self.controls.len() + self.field_ranges.len()) as u32 * 8;
         self.char_count = kept_text_code_units + ctrl_code_units + 1; // +1 for paragraph end marker
         let new_char_count =
-            new_text_code_units + (new_controls.len() + new_field_ranges.len()) as u32 * 8 + 1;
+            new_text_code_units + (new_controls.len() + new_field_ranges.len()) as u32 * 8 + 1
+                - u32::from(moved_number_placeholder);
 
         // 7. has_para_text: 빈 문단(텍스트 없고 컨트롤 없음)이면 PARA_TEXT 불필요
         //    HWP 프로그램은 cc=1(빈 문단)에 PARA_TEXT가 있으면 파일 손상으로 판단
@@ -2825,10 +2830,14 @@ impl Paragraph {
                         .then(|| order(Slot::Control(r.control_idx)))
                         .flatten();
                     let end = order(Slot::End(ri));
+                    // 계산식 결과 뒤에 친 글자도 한/글처럼 필드 밖에 둔다.
                     let outside = matches!(
                         self.controls.get(r.control_idx),
                         Some(Control::Field(field))
-                            if matches!(field.field_type, FieldType::ClickHere | FieldType::Hyperlink)
+                            if matches!(
+                                field.field_type,
+                                FieldType::ClickHere | FieldType::Hyperlink | FieldType::Formula
+                            )
                     );
                     match () {
                         _ if begin.is_none() && end.is_none() => None,

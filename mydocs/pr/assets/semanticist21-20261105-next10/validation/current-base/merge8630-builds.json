@@ -1,0 +1,57 @@
+[
+  {
+    "key": "native",
+    "source": "06bf0855b49d6a448b70987016489a65e546aff3",
+    "src_tree": "0b4c9740b505f8b5dff4b791f454a01885837206",
+    "exit": 0,
+    "seconds": 343.5,
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "--lib"
+    ],
+    "sha256": "8dfa7429e758d31c36db311a0732ed32381cbd478e3f527e84d91981f5077a1f"
+  },
+  {
+    "key": "wasm",
+    "source": "06bf0855b49d6a448b70987016489a65e546aff3",
+    "src_tree": "0b4c9740b505f8b5dff4b791f454a01885837206",
+    "exit": 0,
+    "seconds": 805.43,
+    "command": [
+      "bash",
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg"
+    ],
+    "artifacts": {
+      "rhwp.js": {
+        "sha256": "8ad202184fcb970d908e338761e36863a1f7508806bd426be491bd3cc069a769",
+        "bytes": 535713
+      },
+      "rhwp_bg.wasm": {
+        "sha256": "848fc0c8cdaebbcda9c490e6799ad983af6c17c61eb9209ce9efc39e7d54217c",
+        "bytes": 28183812
+      },
+      "rhwp.d.ts": {
+        "sha256": "8c74dbb9dd606b80f8a4948957c8ad74df3dd527bf6d9c1114456ebeab4573a1",
+        "bytes": 214178
+      },
+      "rhwp_bg.wasm.d.ts": {
+        "sha256": "d424848c09293af60cb9cef8deaff02fd97c0b1c2d9f9207e2cac2bcc5ef1810",
+        "bytes": 74844
+      }
+    }
+  }
+]

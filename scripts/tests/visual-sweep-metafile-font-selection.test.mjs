@@ -1,9 +1,25 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {selectMetafileFontFaces, selectSweepPaintFontFaces, selectTextEffectFontFaces} from '../visual-sweep-font-registration.mjs';
+import {collectSweepPaintFontRequests, selectMetafileFontFaces, selectSweepPaintFontFaces, selectTextEffectFontFaces} from '../visual-sweep-font-registration.mjs';
 const font = (weight, style = 'normal', family = 'Face') => ({families: [family], weight, style});
 const request = (weight, italic = false, families = ['Face']) => ({families, weight, italic});
 const pick = (fonts, requests) => [...selectMetafileFontFaces(fonts, requests)].sort();
+test('요청한 쪽의 그림·효과 글꼴만 조회하며 빈 결과를 전 문서 조회로 되돌리지 않는다', () => {
+  const visited = [];
+  const owner = {getPagePaintFontRequests(page) {
+    visited.push(page);
+    return JSON.stringify({metafile: page === 1 ? [{text:'A'}] : [], textEffects: page === 1 ? [{text:'·'}] : []});
+  }, getMetafileFontRequests() {throw Error('전 문서 그림을 적재하면 안 됨');},
+  getTextShadowFontRequests() {throw Error('전 문서 효과를 적재하면 안 됨');}};
+  assert.deepEqual(collectSweepPaintFontRequests(owner,[1]),{metafile:[],effects:[]});
+  assert.deepEqual(collectSweepPaintFontRequests(owner,[2,4]),{metafile:[{text:'A'}],effects:[{text:'·'}]});
+  assert.deepEqual(visited,[0,1,3]);
+  assert.throws(()=>collectSweepPaintFontRequests({getPagePaintFontRequests:()=> '{}'},[1]),/형식/);
+});
+test('페이지 자원 API가 없는 고정 base WASM은 기존 조회 계약을 유지한다', () => {
+  assert.deepEqual(collectSweepPaintFontRequests({getMetafileFontRequests:()=> '[{"text":"old"}]',
+    getTextShadowFontRequests:()=> '[{"text":"·"}]'},[1]),{metafile:[{text:'old'}],effects:[{text:'·'}]});
+});
 test('메타파일과 그림자가 실제 사용하는 글리프를 공급한 뒤 나머지 fallback은 등록하지 않는다', async () => {
   const fonts = ['First', 'Second', 'Unused', 'Shadow'].map(name => font(400, 'normal', name));
   const reads = [];

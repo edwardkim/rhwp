@@ -10,7 +10,7 @@ pub(super) fn owns_constrained_row_frame(
     child: &Table,
 ) -> bool {
     super::reflow_nested_table_has_outer_frame(para, child)
-        && child.page_break == crate::model::table::TablePageBreak::RowBreak
+        && child.layout_page_break() == crate::model::table::TablePageBreak::RowBreak
         && !crate::renderer::float_placement::unrestricted_cell_float(&child.common)
 }
 

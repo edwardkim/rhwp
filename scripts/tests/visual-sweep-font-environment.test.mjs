@@ -1,3 +1,5 @@
+// 관계형: 실제 프로그램 준비·환경 선택·첫 조판의 순서를 검사한다.
+// 합성 호스트 계약이며 특정 실물 페이지의 고정 px나 일치율을 주장하지 않는다.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {createHash, webcrypto} from 'node:crypto';
@@ -42,11 +44,44 @@ test('대체가 없어도 설치된 원본 HFT 프로그램을 선택한다', as
 test('명시 환경은 자동 선택보다 우선한다', async () => {
   const doc = documentFixture();
   const declared = {id: 'explicit', substitutions: {'Missing Original': 'Requested Program'}};
-  const result = await applySweepFontEnvironment(doc, JSON.stringify(declared), async () => {
+  doc.buildFontEnvironmentFromAvailablePrograms = () => {
     throw Error('명시 환경을 자동 환경으로 덮어쓰면 안 된다');
-  });
+  };
+  const result = await applySweepFontEnvironment(doc, JSON.stringify(declared), async () => ({programs: []}));
   assert.deepEqual(result.environment, declared);
   assert.equal(doc.pageCount(), 2);
+});
+
+test('명시한 공급 프로그램도 첫 조판 전에 로드하고 사용자 환경은 그대로 적용한다', async () => {
+  const doc = documentFixture();
+  const declared = {id: 'explicit-programs', substitutions: {'Missing Original': 'Public Program'},
+    documentGlyphFallbacks: [{languageSlot: 0, fontId: 0, source: 'Missing Original', faces: ['Public Symbol']}]};
+  let ready = false;
+  doc.buildFontEnvironmentFromAvailablePrograms = () => { throw Error('사용자 환경을 자동 선택으로 바꾸면 안 된다'); };
+  doc.setFontEnvironment = json => {
+    assert.ok(ready, '실제 프로그램을 준비하지 않으면 Canvas 측정은 설치되지 않은 이름의 시스템 대체 폭을 읽는다');
+    assert.deepEqual(JSON.parse(json), declared);
+  };
+  const result = await applySweepFontEnvironment(doc, JSON.stringify(declared), async plan => {
+    const queries = new Set(plan.requests.flatMap(r => [...r.primary, ...r.substitute]));
+    assert.ok(queries.has('Public Program'), '명시한 주 프로그램의 바이트 준비');
+    assert.ok(queries.has('Public Symbol'), '슬롯별 글리프 대체의 바이트 준비');
+    await Promise.resolve();
+    ready = true;
+    return {programs: [{query: 'Public Program', family: 'Public Program', programId: 'verified-public'}],
+      loaded: [{family: 'Public Program', sha256: 'verified-sha'}]};
+  });
+  assert.deepEqual(result.environment, declared);
+});
+
+test('명시 프로그램 준비가 실패하면 환경 적용과 첫 조판을 진행하지 않는다', async () => {
+  const doc = documentFixture();
+  let applied = false;
+  doc.setFontEnvironment = () => { applied = true; };
+  await assert.rejects(applySweepFontEnvironment(doc,
+    JSON.stringify({id: 'unavailable', substitutions: {'Missing Original': 'Public Program'}}),
+    async () => { throw Error('OTS rejected actual bytes'); }), /OTS rejected actual bytes/);
+  assert.equal(applied, false);
 });
 
 test('준비된 프로그램이 없으면 환경을 만들어내지 않는다', async () => {
@@ -138,6 +173,16 @@ test('실제 프로그램 hash·로드 성공 뒤에만 별칭과 face provenanc
     [['Alias', 'Installed', true], ['Installed', 'Installed', true]]);
   assert.ok(result.programs.every(p => p.programId === `sweep-${face.sha256}`));
   assert.ok(result.loaded.every(p => p.sourceSha256 === face.sourceSha256 && p.faceIndex === 2));
+});
+
+test('PostScript 별칭으로 공급해도 굵기를 합친 typographic family 대신 Native legacy family를 유지한다', async () => {
+  const {host, face} = programFixture();
+  face.families = ['Generic Family', 'Native Weight Family', 'NativeWeightPS'];
+  face.primaryFamily = 'Native Weight Family';
+  const result = await loadSweepFontPrograms({requests: [{primary: ['NativeWeightPS'], substitute: []}]}, [face], host);
+  assert.equal(result.programs[0].query, 'NativeWeightPS');
+  assert.equal(result.programs[0].family, 'Native Weight Family');
+  assert.deepEqual(result.loaded.map(font => font.family), ['NativeWeightPS', 'Native Weight Family']);
 });
 
 test('공급 실패·hash 변경·실제 font 로드 거절은 준비 완료로 기록하지 않는다', async () => {

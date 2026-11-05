@@ -1,0 +1,21 @@
+{
+  "wasmSha256": "8b1db6f82ad0ff39bd79f588a8bc691daeab000def4c9a792523299a506a56c7",
+  "rows": [
+    {
+      "write": false,
+      "raw": "{\"ok\":true,\"result\":NaN,\"formula\":\"=LN(-1)\"}",
+      "validJson": false,
+      "before": "10",
+      "after": "10",
+      "unchanged": true
+    },
+    {
+      "write": true,
+      "raw": "{\"ok\":true,\"result\":NaN,\"formula\":\"=LN(-1)\"}",
+      "validJson": false,
+      "before": "10",
+      "after": "NaN",
+      "unchanged": false
+    }
+  ]
+}

@@ -12,6 +12,8 @@ pub enum ScriptMetricsContract {
     Legacy,
     /// 실제 한컴 2024 저장·Print 18조건과 원본 두 편람의 대조 결과.
     Hangul2024,
+    /// Note auto-number codes share the reference marker's measured metrics.
+    NoteReference,
 }
 crate::storage::clone_copy!(ScriptMetricsContract);
 
@@ -32,6 +34,7 @@ impl ScriptMetricsContract {
             * match self {
                 Self::Legacy => super::SCRIPT_FONT_SCALE,
                 Self::Hangul2024 => 0.64,
+                Self::NoteReference => 0.75,
             }
     }
 
@@ -41,6 +44,8 @@ impl ScriptMetricsContract {
             (Self::Legacy, false, true) => super::SUBSCRIPT_DROP_EM,
             (Self::Hangul2024, true, _) => -0.44,
             (Self::Hangul2024, false, true) => 0.12,
+            (Self::NoteReference, true, _) => -0.21,
+            (Self::NoteReference, false, true) => 0.0,
             (_, false, false) => return 0.0,
         };
         base_size * ratio

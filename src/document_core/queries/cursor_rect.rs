@@ -79,6 +79,7 @@ struct CellCursorHit {
     x: f64,
     y: f64,
     height: f64,
+    at_form_end: bool,
 }
 
 /// 렌더 노드 트리에서 대상 셀의 bbox 를 찾는다 (legacy/fast 공유).
@@ -118,6 +119,8 @@ fn find_table_cell_bounds_in_node(
 /// 렌더 노드 트리에서 (cell_para, offset) 캐럿 TextRun 을 찾는다 (legacy/fast 공유).
 fn find_cursor_in_cell_node(
     node: &crate::renderer::render_tree::RenderNode,
+    paragraph: Option<&crate::model::paragraph::Paragraph>,
+    section: usize,
     parent_para: usize,
     ctrl_idx: usize,
     c_idx: usize,
@@ -126,6 +129,66 @@ fn find_cursor_in_cell_node(
     page_index: u32,
 ) -> Option<CellCursorHit> {
     use crate::renderer::render_tree::RenderNodeType;
+    let paragraph = paragraph.filter(|paragraph| {
+        paragraph
+            .controls
+            .iter()
+            .any(|control| matches!(control, crate::model::control::Control::Form(_)))
+    });
+    let mut end_fallback = None;
+    if let (RenderNodeType::TextLine(_), Some(paragraph)) = (&node.node_type, paragraph) {
+        let owns_cell = node.children.iter().any(|child| {
+            let RenderNodeType::TextRun(run) = &child.node_type else {
+                return false;
+            };
+            run.cell_context.as_ref().is_some_and(|ctx| {
+                ctx.parent_para_index == parent_para
+                    && ctx.path.len() == 1
+                    && ctx.path[0].control_index == ctrl_idx
+                    && ctx.path[0].cell_index == c_idx
+                    && ctx.path[0].cell_para_index == cp_idx
+            })
+        });
+        if owns_cell {
+            let positions = paragraph.logical_control_positions();
+            for child in &node.children {
+                let RenderNodeType::FormObject(form) = &child.node_type else {
+                    continue;
+                };
+                if form.section_index != section
+                    || form.para_index != cp_idx
+                    || form.cell_location.is_none()
+                    || !matches!(paragraph.controls.get(form.control_index),
+                        Some(crate::model::control::Control::Form(source))
+                            if source.common.treat_as_char)
+                {
+                    continue;
+                }
+                let Some(&position) = positions.get(form.control_index) else {
+                    continue;
+                };
+                if offset == position || offset == position + 1 {
+                    // 양식의 원문 글자 수가 0이어도 실제 인라인 칸의 앞·뒤는 서로 다르다.
+                    let hit = CellCursorHit {
+                        page_index,
+                        x: child.bbox.x
+                            + if offset == position {
+                                0.0
+                            } else {
+                                child.bbox.width
+                            },
+                        y: child.bbox.y,
+                        height: child.bbox.height.max(10.0),
+                        at_form_end: offset != position,
+                    };
+                    if !hit.at_form_end {
+                        return Some(hit);
+                    }
+                    end_fallback = Some(hit);
+                }
+            }
+        }
+    }
     if let RenderNodeType::TextRun(ref text_run) = node.node_type {
         let matches_cell = text_run.cell_context.as_ref().map_or(false, |ctx| {
             // path.len()==1 가드가 없으면 중첩 표 *내부* 셀의 run 도
@@ -160,18 +223,27 @@ fn find_cursor_in_cell_node(
                 let font_size = text_run.style.font_size;
                 let ascent = font_size * 0.8;
                 let caret_y = node.bbox.y + text_run.baseline - ascent;
-                return Some(CellCursorHit {
+                let hit = CellCursorHit {
                     page_index,
                     x: node.bbox.x + x_in_run,
                     y: caret_y,
                     height: font_size,
-                });
+                    at_form_end: paragraph.is_some() && offset == char_start + char_count,
+                };
+                // 앞줄의 빈 끝 앵커보다 다음 실제 양식 줄의 leading 경계를 먼저 찾는다.
+                if hit.at_form_end {
+                    end_fallback = Some(hit);
+                } else {
+                    return Some(hit);
+                }
             }
         }
     }
     for child in &node.children {
         if let Some(hit) = find_cursor_in_cell_node(
             child,
+            paragraph,
+            section,
             parent_para,
             ctrl_idx,
             c_idx,
@@ -179,10 +251,14 @@ fn find_cursor_in_cell_node(
             offset,
             page_index,
         ) {
-            return Some(hit);
+            if hit.at_form_end {
+                end_fallback = Some(hit);
+            } else {
+                return Some(hit);
+            }
         }
     }
-    None
+    end_fallback
 }
 
 fn format_cursor_rect_json(
@@ -407,6 +483,16 @@ impl DocumentCore {
             bboxes: &mut std::collections::HashMap<usize, (f64, f64, f64, f64)>,
         ) {
             match &node.node_type {
+                RenderNodeType::FormObject(form)
+                    if form.section_index == sec
+                        && form.para_index == para
+                        && form.cell_location.is_none() =>
+                {
+                    bboxes.insert(
+                        form.control_index,
+                        (node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height),
+                    );
+                }
                 RenderNodeType::Image(image_node) => {
                     if image_node.section_index == Some(sec) && image_node.para_index == Some(para)
                     {
@@ -1570,6 +1656,7 @@ impl DocumentCore {
             section_index: usize,
             parent_para_index: usize,
             control_index: usize,
+            context: CellContext,
             x: f64,
             y: f64,
             w: f64,
@@ -1666,6 +1753,10 @@ impl DocumentCore {
             current_table_meta: Option<(usize, usize, usize)>,
             current_table_ctx: Option<CellContext>,
             current_cell_ctx: Option<CellContext>,
+            // 조상 셀 clip을 겹친 보이는 범위(왼쪽, 오른쪽, 위, 아래). 부모 칸보다 넓은 중첩
+            // 표가 잘린 자리는 한컴처럼 클릭으로 고를 수 없다(Tab으로만 들어간다). 쪽에서 나뉜
+            // 행의 칸도 위아래 clip 밖 줄은 그 쪽에 보이지 않으므로 고르지 않는다.
+            current_clip: Option<(f64, f64, f64, f64)>,
         ) {
             let line_id = if matches!(node.node_type, RenderNodeType::TextLine(_)) {
                 Some(node.id)
@@ -1711,39 +1802,44 @@ impl DocumentCore {
             // 노드가 layout_textbox_content 로 자식에 텍스트를 가진 경우. 외곽 도형 노드의
             // section/para/control 메타 + bbox 가 모두 채워져 있으므로 그대로 사용.
             // (글상자 안 빈 영역 클릭 시 첫 paragraph 진입에 사용)
-            let textbox_meta: Option<(usize, usize, usize)> = match &node.node_type {
-                RenderNodeType::Rectangle(r) => {
-                    match (r.section_index, r.para_index, r.control_index) {
-                        (Some(si), Some(pi), Some(ci)) => Some((si, pi, ci)),
-                        _ => None,
-                    }
-                }
-                RenderNodeType::Ellipse(e) => {
-                    match (e.section_index, e.para_index, e.control_index) {
-                        (Some(si), Some(pi), Some(ci)) => Some((si, pi, ci)),
-                        _ => None,
-                    }
-                }
-                RenderNodeType::Path(p) => match (p.section_index, p.para_index, p.control_index) {
-                    (Some(si), Some(pi), Some(ci)) => Some((si, pi, ci)),
-                    _ => None,
-                },
-                _ => None,
-            };
-            if let Some((si, pi, ci)) = textbox_meta {
+            if let Some((si, context)) = &node.textbox_source {
+                let outer = context.path.first().expect("글상자의 소유 경로");
                 textbox_bboxes.push(TextBoxBboxInfo {
-                    section_index: si,
-                    parent_para_index: pi,
-                    control_index: ci,
+                    section_index: *si,
+                    parent_para_index: context.parent_para_index,
+                    control_index: outer.control_index,
+                    context: context.clone(),
                     x: node.bbox.x,
                     y: node.bbox.y,
                     w: node.bbox.width,
                     h: node.bbox.height,
                 });
             }
+            // 셀 clip은 bbox다. 레이아웃은 직계 자식 칸만 부모 칸에 맞춰 줄이므로 조상 clip을
+            // 모두 겹쳐야 실제로 보이는 범위가 된다.
+            let clip = match &node.node_type {
+                RenderNodeType::TableCell(tc) if tc.clip => {
+                    let b = &node.bbox;
+                    let own = (b.x, b.x + b.width, b.y, b.y + b.height);
+                    Some(current_clip.map_or(own, |(l, r, t, btm)| {
+                        (l.max(own.0), r.min(own.1), t.max(own.2), btm.min(own.3))
+                    }))
+                }
+                _ => current_clip,
+            };
+            let fully_clipped = |b: &crate::renderer::render_tree::BoundingBox| {
+                clip.is_some_and(|(l, r, t, btm)| {
+                    r <= l
+                        || btm <= t
+                        || b.x > r
+                        || b.x + b.width < l
+                        || b.y > btm
+                        || b.y + b.height < t
+                })
+            };
             // TableCell 노드의 bbox 수집
             if let RenderNodeType::TableCell(ref tc) = node.node_type {
-                if let Some(cell_idx) = tc.model_cell_index {
+                if let Some(cell_idx) = tc.model_cell_index.filter(|_| !fully_clipped(&node.bbox)) {
                     let cell_ctx = cell_ctx_for_table_cell(
                         table_ctx.as_ref(),
                         cell_idx as usize,
@@ -1762,10 +1858,12 @@ impl DocumentCore {
                         control_index: ci,
                         cell_index: cell_idx as usize,
                         text_direction: tc.text_direction,
-                        x: node.bbox.x,
-                        y: node.bbox.y,
-                        w: node.bbox.width,
-                        h: node.bbox.height,
+                        x: node.bbox.x.max(clip.map_or(f64::MIN, |c| c.0)),
+                        y: node.bbox.y.max(clip.map_or(f64::MIN, |c| c.2)),
+                        w: (node.bbox.x + node.bbox.width).min(clip.map_or(f64::MAX, |c| c.1))
+                            - node.bbox.x.max(clip.map_or(f64::MIN, |c| c.0)),
+                        h: (node.bbox.y + node.bbox.height).min(clip.map_or(f64::MAX, |c| c.3))
+                            - node.bbox.y.max(clip.map_or(f64::MIN, |c| c.2)),
                         has_meta,
                         cell_context: cell_ctx,
                     });
@@ -1776,7 +1874,8 @@ impl DocumentCore {
                     let cell_context =
                         effective_cell_context(&text_run.cell_context, &current_cell_ctx);
                     // 머리말/꼬리말·각주 마커 TextRun 건너뛰기
-                    if pi >= (usize::MAX - 3000) { /* skip marker runs */
+                    if pi >= (usize::MAX - 3000) || fully_clipped(&node.bbox) {
+                        /* 머리말·각주 마커 런과 셀 clip에 가려진 런은 건너뛴다 */
                     } else if let Some(cs) = text_run.char_start {
                         let ecc = effective_char_count(text_run);
                         let positions = if text_run.char_overlap.is_some() && ecc == 1 {
@@ -1792,7 +1891,13 @@ impl DocumentCore {
                             char_positions: positions,
                             bbox_x: node.bbox.x,
                             bbox_y: node.bbox.y,
-                            bbox_w: node.bbox.width,
+                            // 오른쪽이 잘린 런은 보이는 데까지만 누를 수 있다. 글자 위치는
+                            // 런 왼쪽 기준이라 왼쪽 끝은 그대로 둔다.
+                            // ponytail: 왼쪽 clip은 다루지 않는다. 과폭 중첩 표는 셀 왼쪽
+                            // 여백에서 시작해 오른쪽으로만 넘친다.
+                            bbox_w: clip.map_or(node.bbox.width, |(_, r, _, _)| {
+                                node.bbox.width.min(r - node.bbox.x)
+                            }),
                             bbox_h: node.bbox.height,
                             caret_y: node.bbox.y + text_run.baseline
                                 - text_run.style.font_size * 0.8,
@@ -1835,6 +1940,7 @@ impl DocumentCore {
                     table_meta,
                     table_ctx.clone(),
                     child_cell_ctx.clone(),
+                    clip,
                 );
             }
         }
@@ -1915,21 +2021,18 @@ impl DocumentCore {
             // cell_index=0 (글상자 외곽 자체), cellParaIndex=0 (글상자 첫 paragraph)
             // 캐럿: 글상자 좌상단 + 약간 안쪽 패딩.
             let caret_h = (tb.h - 4.0).max(12.0).min(20.0);
-            format!(
-                "{{\"sectionIndex\":{},\"paragraphIndex\":0,\"charOffset\":0,\
-                 \"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":0,\"cellParaIndex\":0,\
-                 \"cellPath\":[{{\"controlIndex\":{},\"cellIndex\":0,\"cellParaIndex\":0}}],\
-                 \"isTextBox\":true,\
-                 \"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
-                tb.section_index,
-                tb.parent_para_index,
-                tb.control_index,
-                tb.control_index,
-                page_num,
-                tb.x + 2.0,
-                tb.y + 2.0,
-                caret_h
-            )
+            let first = tb.context.path.first().expect("글상자 소유 경로");
+            serde_json::json!({
+                "sectionIndex":tb.section_index,"paragraphIndex":0,"charOffset":0,
+                "parentParaIndex":tb.parent_para_index,"controlIndex":tb.control_index,
+                "cellIndex":first.cell_index,"cellParaIndex":0,"isTextBox":true,
+                "cellPath":tb.context.path.iter().map(|entry| serde_json::json!({
+                    "controlIndex":entry.control_index,"cellIndex":entry.cell_index,
+                    "cellParaIndex":entry.cell_para_index,
+                })).collect::<Vec<_>>(),
+                "cursorRect":{"pageIndex":page_num,"x":tb.x+2.0,"y":tb.y+2.0,"height":caret_h},
+            })
+            .to_string()
         }
 
         fn text_run_hit_allowed_by_textbox_bbox(
@@ -1951,6 +2054,19 @@ impl DocumentCore {
                 tb.section_index == run.section_index
                     && tb.parent_para_index == ctx.parent_para_index
                     && tb.control_index == outer.control_index
+                    && tb.context.path.len() <= ctx.path.len()
+                    && tb
+                        .context
+                        .path
+                        .iter()
+                        .zip(&ctx.path)
+                        .enumerate()
+                        .all(|(i, (a, b))| {
+                            a.control_index == b.control_index
+                                && a.cell_index == b.cell_index
+                                && (i + 1 == tb.context.path.len()
+                                    || a.cell_para_index == b.cell_para_index)
+                        })
                     && x >= tb.x
                     && x <= tb.x + tb.w
                     && y >= tb.y
@@ -2036,6 +2152,33 @@ impl DocumentCore {
             } else {
                 line_id
             };
+            if let RenderNodeType::FormObject(form) = &node.node_type {
+                if form.cell_location.is_none() {
+                    if let Some(para) = core
+                        .document
+                        .sections
+                        .get(form.section_index)
+                        .and_then(|s| s.paragraphs.get(form.para_index))
+                    {
+                        if para
+                            .controls
+                            .get(form.control_index)
+                            .is_some_and(Control::is_treat_as_char_object)
+                        {
+                            hits.push((
+                                form.section_index,
+                                form.para_index,
+                                find_logical_control_positions(para)[form.control_index],
+                                node.bbox.x,
+                                node.bbox.y,
+                                node.bbox.width,
+                                node.bbox.height,
+                                line_id,
+                            ));
+                        }
+                    }
+                }
+            }
             if let RenderNodeType::Image(ref img) = node.node_type {
                 if img.cell_context.is_none() {
                     if let (Some(si), Some(pi), Some(ci)) =
@@ -2111,6 +2254,7 @@ impl DocumentCore {
             None,
             None,
             None,
+            None,
         );
 
         // cell_bboxes의 section_index/parent_para_index/control_index/cellPath를 runs로 보완.
@@ -2156,19 +2300,21 @@ impl DocumentCore {
                     run.is_textbox = false;
                     continue;
                 };
-                if outer.cell_index == 0 {
-                    let is_shape = self
-                        .document
-                        .sections
-                        .get(run.section_index)
-                        .and_then(|s| s.paragraphs.get(ctx.parent_para_index))
-                        .and_then(|p| p.controls.get(outer.control_index))
-                        .map(|c| matches!(c, Control::Shape(_)))
-                        .unwrap_or(false);
-                    run.is_textbox = is_shape;
-                } else {
-                    run.is_textbox = false;
-                }
+                // isTextBox는 바깥 편집 소유자가 글상자인지를 나타낸다. 안 표의 셀은
+                // ctx.in_textbox=false여도 글상자 소유 경로를 유지한다 (#919).
+                run.is_textbox = self
+                    .document
+                    .sections
+                    .get(run.section_index)
+                    .and_then(|s| s.paragraphs.get(ctx.parent_para_index))
+                    .and_then(|p| p.controls.get(outer.control_index))
+                    .and_then(|control| match control {
+                        Control::Shape(shape) => {
+                            super::super::helpers::get_textbox_at(shape, outer.cell_index)
+                        }
+                        _ => None,
+                    })
+                    .is_some();
             } else {
                 run.is_textbox = false;
             }
@@ -2938,6 +3084,14 @@ impl DocumentCore {
                 find_table_cell_bounds_in_node(&tree.root, parent_para_idx, control_idx, cell_idx);
             if let Some(hit) = find_cursor_in_cell_node(
                 &tree.root,
+                self.get_cell_paragraph_ref(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                ),
+                section_idx,
                 parent_para_idx,
                 control_idx,
                 cell_idx,
@@ -3541,6 +3695,14 @@ impl DocumentCore {
             find_table_cell_bounds_in_node(&scratch_col, parent_para_idx, control_idx, cell_idx);
         if let Some(hit) = find_cursor_in_cell_node(
             &scratch_col,
+            self.get_cell_paragraph_ref(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            ),
+            section_idx,
             parent_para_idx,
             control_idx,
             cell_idx,

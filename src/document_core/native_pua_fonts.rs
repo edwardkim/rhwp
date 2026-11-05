@@ -24,9 +24,12 @@ impl DocumentCore {
     /// HFT 표시 프로그램과 폭 표가 없는 원본 TrueType 프로그램을 구분해 요청한다.
     pub fn native_otf_font_requests(&self) -> Vec<NativePuaFontRequest> {
         let mut requests = BTreeMap::new();
-        for style in &self.styles.char_styles {
+        for (style_id, style) in self.styles.char_styles.iter().enumerate() {
             for lang in 0..crate::renderer::style_resolver::LANG_COUNT {
                 let source_ttf = style.source_ttf_for_lang(lang);
+                if !self.styles.allows_native_otf_metrics(style_id as u32, lang) {
+                    continue;
+                }
                 let family = style.font_family_for_lang(lang).to_owned();
                 let primary = family.split(',').next().unwrap_or(&family).trim();
                 let needs_ttf = source_ttf

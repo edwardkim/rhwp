@@ -1,0 +1,39 @@
+{
+  "status": "passed",
+  "productSource": "c031a38a41670f5e4f6ab0268ef46c62ab1445f5",
+  "hostSource": "3ededa625581f4a4a052ef912dc30c0317fec0ed",
+  "comparisonBase": "7d06d5c706f1d89f1662e739abf2b1b25d2a98e4",
+  "documents": 36,
+  "pages": 1201,
+  "identicalPngPages": 1201,
+  "declinesAbovePointOne": 0,
+  "below90": 0,
+  "scope": {
+    "8517": {
+      "documents": 26,
+      "pages": 1123
+    },
+    "8438": {
+      "documents": 10,
+      "pages": 78
+    }
+  },
+  "pureBaseDocuments": 35,
+  "observationalBaseDocuments": 1,
+  "readOnlyQueryControlPngIdentity": true,
+  "minimum": {
+    "key": "pr8438-113424_evaluation_guideline",
+    "page": 3,
+    "base": 91.74074,
+    "candidate": 91.74074,
+    "delta": 0.0,
+    "identicalPng": true,
+    "baseReferenceKind": "pure-base"
+  },
+  "comparisonTsv": "wasm-corpus-base-candidate.tsv",
+  "comparisonTsvSha256": "0fae83b90711fdb7c7188a314272397f73cce04637a9011f07fbeba434d9ecd2",
+  "limits": [
+    "사양서 저장본 1건은 순수 base의 64MiB 상한 실패를 보존하고, 읽기 전용 조회 API만 더한 별도 base producer로 비교했다. 순수 base로 표시하지 않는다.",
+    "이 결과는 문서 36개 범위다. 같은 현재 호스트의 편람 383쪽과 Native 공개 프로그램을 명시한 WASM 383쪽은 별도 실행 중이다."
+  ]
+}

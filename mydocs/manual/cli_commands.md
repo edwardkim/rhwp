@@ -335,10 +335,21 @@ HWP/HWPX → PDF (svg2pdf + pdf-writer).
     `--font-path` 를 붙이는 대신 한 번만 설정하면 된다.
   - 조달 순서: `--font-path` → `RHWP_FONT_PATH` → 시스템 설치 폰트 →
     저장소 번들 `ttfs/opensource`(최후 폴백, 한국어 드롭 방지).
-  - **폰트를 지정하지 않으면 산출물이 달라진다.** 문서가 쓰는 폰트(한컴 바탕/돋움,
-    Windows 폰트 등)가 시스템에 없으면 번들 대체 폰트(Noto Sans/Serif KR)로 떨어져
-    글꼴이 바뀐다. 서버·컨테이너에서 대량 변환할 때는 **필요한 폰트를 설치하고
-    `--font-path` 또는 `RHWP_FONT_PATH` 로 명시**해야 정본과 같은 결과를 얻는다.
+  - 명시적인 `--font-environment`가 없으면 Native `export-png`·`export-svg`·`export-pdf`는
+    설치된 글꼴과 지정 경로를 먼저 확인하고, 없는 글꼴 중 공급 원장에 등록된 공개 웹폰트를
+    사용자 캐시에 준비한다. 원장이 없는 글꼴에 설치된 문서 선언 대체도 없으면 로컬 Noto를
+    우선하고, 그것도 없으면 공개 Noto Sans KR을 공급한다. 일반 대체를 쓴 원본 이름은
+    `nativeFontSupply.genericFallbacks`에 기록한다. 미확보 원본 글꼴과 다운로드 실패는 stderr와
+    JSON의 `nativeFontSupply.unavailable`에 기록하며, 모든 글꼴의 동일 출력을 보장하지 않는다.
+    수동 공급이 필요한 글꼴은 설치하거나 `--font-path`로 지정한다.
+  - 웹폰트 캐시는 `RHWP_WEBFONT_CACHE`로 지정할 수 있다. 미지정이면 `XDG_CACHE_HOME`,
+    `LOCALAPPDATA`, `~/.cache` 순으로 선택한 경로 아래 `rhwp/webfonts`를 사용한다.
+    `RHWP_WEBFONT_OFFLINE=1`은 해시를 확인한 기존 캐시만 사용하며 네트워크 요청을 하지 않는다.
+    JSON `nativeFontSupply.resources`는 공급 URL·원본 SHA-256·Native 변환본 SHA-256·크기를
+    구분한다. 이는 공급 준비 기록이며 개별 글리프의 최종 선택 증거는 아니다.
+  - SVG의 비임베딩·style 출력은 준비한 웹폰트의 `local()` 우선 CSS 참조를 함께 기록한다.
+    외부에서 SVG를 열 때는 해당 호스트의 글꼴이나 CDN 접근이 필요하다. subset·full 임베딩은
+    기존 임베딩 정책을 유지한다. 캐시의 글꼴 파일을 시스템에 설치하거나 출력에 자동 첨부하지 않는다.
 - `--backend <svg|direct>` — PDF backend(기본값: svg). `svg`는 기존 SVG-derived 경로,
   `direct`는 `PageLayerTree → PDF` direct/vector 경로. `direct`는 `native-skia` feature로
   빌드한 native CLI가 필요하며, 해당 feature 없이 빌드된 CLI에서 `--backend direct`를 쓰면
@@ -844,8 +855,8 @@ rhwp 를 **실제 MCP 서버**로 실행한다. 전송은 MCP 표준 stdio(줄 �
 - 의존성 추가 없음 — 프로토콜 표면이 좁아 serde_json 만으로 구현했고, WASM 대상에는
   포함되지 않는다.
 
-### `info <파일> [--json]`
-HWP 파일 정보 표시(버전/구역 수/암호화 등).
+### `info <파일> [--json|--font-plan]`
+HWP/HWPX/HML 파일 정보 표시(버전/구역 수/암호화 등).
 - `--json` (#3237): stdout 에 순수 JSON 하나 —
   `{"schemaVersion":"1.0","source","format":"hwp5|hwpx|hwp3|hml","sizeBytes","version","sections","pageCount","paraCount","fonts","title","lastSavedWith","warnings"}`.
   `version` 은 HML 이면 null. `lastSavedWith`는 HWP5 `HwpSummaryInformation.revisionNumber` 또는
@@ -855,6 +866,17 @@ HWP 파일 정보 표시(버전/구역 수/암호화 등).
   HWP3, 메타데이터 없음·손상은 `lastSavedWith:null`이다. 원 작성 제품의 증명이 아니며,
   재저장·삭제·변조될 수 있다. 스키마 계약은
   `export-text --json` 항목과 동일 규칙.
+- `--font-plan`: 문서에 선언된 글꼴 선택 후보를 stdout에 JSON으로 출력한다.
+  `requests`는 원본 이름(`source`)과 주 글꼴(`primary`), 문서 지정 대체 글꼴
+  (`substitute`) 후보이며, `scopedRequests`는 같은 후보에 언어 슬롯(`languageSlot`)과
+  글꼴 레코드 번호(`fontId`)를 함께 기록한다. `embeddedFamilies`는 문서 내장 글꼴
+  이름, `environmentId`는 명시한 글꼴 환경의 식별자 또는 null이다.
+  후보 목록은 실제 설치·다운로드·렌더링에 선택된 글꼴을 보증하지 않는다.
+  `--json`과 함께 지정하면 `--font-plan` 출력이 우선한다.
+
+```bash
+rhwp info input.hwpx --font-plan | jq '.scopedRequests'
+```
 
 ### `word-count <파일> [--json]` (#4999)
 IR 본문에서 구역·문단·글자·어절·쪽 수를 센다. 새 파서는 없다.
@@ -1862,6 +1884,7 @@ rhwp export-svg output/poc/ingest/sample_minimal.hwpx \
 | `title` |  | 있으면 본문 최상단 가운데 정렬 제목 문단 |
 | `font` |  | 기본 글꼴 이름 (기본값 `함초롬바탕`) |
 | `page_size` |  | `{"width_mm":210,"height_mm":297}` (기본 A4) |
+| `outline_numbering` |  | 개요 번호 모양 — 수준 1 부터 1~7개의 `{"text","num_format"}`. 생략하면 번호 정의 없이 종전과 같다 |
 | `blocks` |  | `heading`(level 1~7) · `paragraph` · `table` 블록의 나열 |
 
 `table` 블록:
@@ -1888,9 +1911,31 @@ rhwp scaffold spec.json -o out.hwpx --json
 ]}
 ```
 
+`outline_numbering` 항목:
+
+| 필드 | 필수 | 설명 |
+| --- | --- | --- |
+| `text` | ✓ | 한/글 문단 번호 형식 문자열. `^1`~`^7` 이 그 수준의 번호가 된다(예: `"^1."`, `"(^5)"`). 자기 수준보다 깊은 `^N` 은 거부 |
+| `num_format` |  | `digit`(기본) · `circled_digit` · `roman_capital` · `roman_small` · `latin_capital` · `latin_small` · `hangul_syllable` |
+
+지정하면 문단 번호 정의 하나를 만들고 구역 개요 번호(`secPr@outlineShapeIDRef`)가 그것을 가리킨다.
+지정하지 않은 뒤쪽 수준은 한/글 새 문서의 개요 기본값(`1.` `가.` `1)` `가)` `(1)` `(가)` `①`)으로 채운다.
+
+```json
+{"version":"1","title":"추진 계획","outline_numbering":[
+  {"text":"^1.","num_format":"roman_capital"},
+  {"text":"^2."},
+  {"text":"^3.","num_format":"hangul_syllable"}],
+ "blocks":[{"type":"heading","level":1,"text":"추진 배경"},
+           {"type":"heading","level":2,"text":"현황"},
+           {"type":"heading","level":3,"text":"세부 내용"}]}
+```
+
+위 명세의 제목은 `I. 추진 배경` · `1. 현황` · `가. 세부 내용` 으로 번호가 붙는다(로마 대문자 글자 모양은 조판기에 따라 `I` 또는 `Ⅰ`).
+
 - `--json` 봉투: `schemaVersion`·`source`·`output`·`format`·`bytes`·`blockCount`·
   `paragraphCount`·`tableCount`.
-- 지원 요소는 왕복 검증을 통과한 것만 노출한다 — 제목, 개요 수준 제목, 본문 문단, 단순 표.
+- 지원 요소는 왕복 검증을 통과한 것만 노출한다 — 제목, 개요 수준 제목, 개요 번호 모양, 본문 문단, 단순 표.
 
 ### `hwpx-roundtrip <파일.hwpx | --batch 폴더> [-o <출력폴더>] [--lineseg-report]`
 HWPX → IR → HWPX roundtrip 검증(**구조 보존 게이트**, #1315 baseline). 재조립 `.rt.hwpx` 와

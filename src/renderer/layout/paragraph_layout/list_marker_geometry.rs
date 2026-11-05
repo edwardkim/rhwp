@@ -115,7 +115,16 @@ pub(super) fn list_marker_geometry_for(
     } else {
         distance_font_size * head.text_distance as f64 / 100.0
     };
-    let area_px = (glyph_px + hu(head.width_adjust) + distance_px).max(0.0);
+    // 기본 개요에서 bit2가 꺼졌으면 형식의 예약 칸을 쓴다. 실제 글리프 폭은
+    // 정렬과 paint에 계속 사용한다. 이 영역을 줄 나눔과 최종 배치가 함께 소비한다.
+    let reference_px = if !bullet && head.attr & (1 << 2) == 0 {
+        head.reference_width_em
+            .map(|em| f64::from(em) * style.font_size * style.ratio)
+            .unwrap_or(glyph_px)
+    } else {
+        glyph_px
+    };
+    let area_px = (reference_px + hu(head.width_adjust) + distance_px).max(0.0);
     let (first_line_px, rest_line_px) = if head.attr & (1 << 3) != 0 {
         // 첫 줄 본문 = max(영역, 들여쓰기⁺), 이어지는 줄 = 첫 줄 − 들여쓰기.
         // 문단 들여쓰기가 준 시작 위에 얹는 양은 두 줄이 같다.

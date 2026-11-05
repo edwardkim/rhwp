@@ -1,0 +1,44 @@
+{
+  "source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "backend": "optimized wasm public HwpDocument in Node",
+  "status": "PASS",
+  "observations": [
+    {
+      "sec": 0,
+      "actual": 106.69999999999999,
+      "expected": 106.69999999999999
+    },
+    {
+      "sec": 1,
+      "actual": 53.29999999999998,
+      "expected": 53.29999999999998
+    },
+    {
+      "sec": 1,
+      "actual": 53.29999999999998,
+      "expected": 53.29999999999998
+    },
+    {
+      "sec": 0,
+      "actual": 106.69999999999999,
+      "expected": 106.69999999999999
+    },
+    {
+      "sec": 0,
+      "actual": 106.69999999999999,
+      "expected": 106.69999999999999
+    },
+    {
+      "sec": 1,
+      "actual": 53.29999999999998,
+      "expected": 53.29999999999998
+    }
+  ],
+  "checks": [
+    "ratio",
+    "alternating cold/warm sections",
+    "incremental edit",
+    "section edit",
+    "HWPX reopen"
+  ]
+}

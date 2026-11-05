@@ -1,4 +1,6 @@
-//! Canvas measurement lifetime and output isolation, using the original #7084 fixtures.
+//! 관계형: Canvas 보충 측정의 세션 수명·글자 소속과 portable 인쇄 격리를 검사한다.
+//! 주석 갱신: 2026-11-04 14:56 KST; 화면 폭을 활성화한 인쇄 진입의 거부·복귀를 보완.
+//! #7084 실물 입력과 합성 공급자 계약이며 절대 px 좌표의 일치율을 주장하지 않는다.
 use rhwp::document_core::{CanvasMetricBatch, CanvasMetricReply};
 use rhwp::paint::layer_tree::{LayerNode, LayerNodeKind};
 use rhwp::paint::paint_op::PaintOp;
@@ -384,6 +386,16 @@ fn canvas_session_switch_rebuilds_positions_and_protects_portable_output() {
         assert!(core.select_canvas_metrics(true).unwrap());
         let active = run(&core);
         assert!(active.style.supplemental_metrics.is_some());
+        assert!(
+            core.build_canvas_page_layer_tree_with_profile(0, RenderProfile::Print)
+                .is_err(),
+            "화면 전용 보충 폭으로 인쇄 쪽을 만들지 않는다: {ext}"
+        );
+        assert!(
+            core.build_canvas_page_layer_tree_with_profile(0, RenderProfile::Screen)
+                .is_ok(),
+            "화면의 실제 보충 측정은 유지한다: {ext}"
+        );
         assert_ne!(
             positions(&active),
             positions(&baseline),
@@ -399,6 +411,9 @@ fn canvas_session_switch_rebuilds_positions_and_protects_portable_output() {
             .unwrap());
         assert!(!core.select_canvas_metrics(true).unwrap());
         assert!(core.select_canvas_metrics(false).unwrap());
+        assert!(core
+            .build_canvas_page_layer_tree_with_profile(0, RenderProfile::Print)
+            .is_ok());
         assert_eq!(positions(&run(&core)), positions(&baseline));
         assert_eq!(core.render_page_svg_native(0).unwrap(), svg);
         assert_eq!(

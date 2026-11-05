@@ -99,7 +99,11 @@ class PostmergeDurationWorkflowTests(unittest.TestCase):
         self.assertIn('branches: [devel]', text)
         self.assertIn("steps.collect.outputs.ready == 'true'", text)
         self.assertIn('"${current_devel_sha}" != "${GITHUB_SHA}"', text)
-        self.assertIn('HEAD:refs/heads/${METRICS_BRANCH}', text)
+        self.assertIn('Publish duration policy with guarded Git Data API', text)
+        self.assertIn('publishNextestDurationData', text)
+        self.assertIn("steps.refresh.outputs.publish_ready == 'true'", text)
+        self.assertNotIn('git push', text)
+        self.assertNotIn('git switch', text)
         self.assertIn('collectPostmergeDurations', text)
         collector = (ROOT / 'scripts/collect-postmerge-duration-data.mjs').read_text()
         for forbidden in ['createWorkflowDispatch', 'reRunWorkflow', 'execFile', 'extractall']:

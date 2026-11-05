@@ -308,8 +308,8 @@ pub(super) fn reflow_block_cell_flow_with_heights_with_storage<S: crate::storage
                                 flow.external_bottom
                                     .map_or(height, |previous| previous.max(height)),
                             );
-                            flow.external_child_splittable |=
-                                table.page_break != crate::model::table::TablePageBreak::None;
+                            flow.external_child_splittable |= table.layout_page_break()
+                                != crate::model::table::TablePageBreak::None;
                         }
                     }
                     block_height += group_height;

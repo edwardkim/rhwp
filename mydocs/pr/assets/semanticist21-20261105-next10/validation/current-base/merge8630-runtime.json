@@ -1,0 +1,115 @@
+[
+  {
+    "key": "wasm-api",
+    "source": "06bf0855b49d6a448b70987016489a65e546aff3",
+    "command": [
+      "node",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/merge8630-wasm-api.mjs"
+    ],
+    "exit": 0,
+    "seconds": 1.88
+  },
+  {
+    "key": "group-textbox-browser",
+    "source": "06bf0855b49d6a448b70987016489a65e546aff3",
+    "command": [
+      "node",
+      "e2e/issue-8578-group-text-editing.test.mjs",
+      "--mode=headless"
+    ],
+    "exit": 0,
+    "seconds": 62.01
+  },
+  {
+    "key": "formula-dialog",
+    "source": "06bf0855b49d6a448b70987016489a65e546aff3",
+    "command": [
+      "node",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/merge8630-formula-dialog.mjs",
+      "--mode=headless"
+    ],
+    "exit": 0,
+    "seconds": 7.31
+  },
+  {
+    "key": "typescript",
+    "source": "06bf0855b49d6a448b70987016489a65e546aff3",
+    "command": [
+      "npx",
+      "tsc",
+      "--noEmit"
+    ],
+    "exit": 0,
+    "seconds": 2.2
+  },
+  {
+    "key": "studio-tests",
+    "source": "06bf0855b49d6a448b70987016489a65e546aff3",
+    "command": [
+      "npm",
+      "--prefix",
+      "rhwp-studio",
+      "test"
+    ],
+    "exit": 0,
+    "seconds": 23.72
+  },
+  {
+    "key": "outline-canvaskit",
+    "source": "06bf0855b49d6a448b70987016489a65e546aff3",
+    "command": [
+      "node",
+      "e2e/char-outline-canvaskit.test.mjs",
+      "--mode=headless"
+    ],
+    "exit": 0,
+    "seconds": 4.87
+  },
+  {
+    "key": "canvaskit-common",
+    "source": "06bf0855b49d6a448b70987016489a65e546aff3",
+    "command": [
+      "node",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/merge8630-canvaskit-common.mjs",
+      "--mode=headless"
+    ],
+    "exit": 0,
+    "seconds": 5.37
+  },
+  {
+    "key": "actual-studio",
+    "source": "06bf0855b49d6a448b70987016489a65e546aff3",
+    "command": [
+      "node",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/merge8630-actual-studio.mjs",
+      "--mode=headless"
+    ],
+    "exit": 0,
+    "seconds": 13.7
+  },
+  {
+    "key": "bindings-contract",
+    "source": "06bf0855b49d6a448b70987016489a65e546aff3",
+    "command": [
+      "node",
+      "--test",
+      "scripts/frontend-wasm-bindings.test.mjs",
+      "scripts/frontend-editor-embed.test.mjs"
+    ],
+    "exit": 0,
+    "seconds": 0.14
+  },
+  {
+    "key": "studio-build",
+    "source": "06bf0855b49d6a448b70987016489a65e546aff3",
+    "command": [
+      "npm",
+      "--prefix",
+      "rhwp-studio",
+      "run",
+      "build"
+    ],
+    "exit": 0,
+    "seconds": 5.46
+  }
+]

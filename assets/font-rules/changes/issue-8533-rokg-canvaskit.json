@@ -1,0 +1,242 @@
+{
+  "changeSetId": "issue-8533.rokg-canvaskit",
+  "decisionPlane": "supply",
+  "evidenceRecords": [],
+  "expectedDelta": {
+    "activeRuleDelta": 2,
+    "projectionId": "canvaskit-sfnt",
+    "unchangedProjectionIds": [
+      "rust-layout-name",
+      "rust-layout-metric",
+      "canvas2d-paint",
+      "canvas2d-webfont"
+    ]
+  },
+  "issue": 8533,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "evidenceIds": [
+        "evidence.issue-8533.rokg-source"
+      ],
+      "expectedSelectionTupleSha256": "d0081c57c5819ceaa47e65dc01608e6131003fbc4dc136eb1d0a2a17b4d86de9",
+      "operationId": "operation.issue-8533.rokg-canvaskit-rokg",
+      "replacementRule": {
+        "conditions": {
+          "profile": "canvaskit-sfnt"
+        },
+        "decisionPlane": "supply",
+        "evidenceIds": [
+          "evidence.issue-8533.rokg-source"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "canvaskit-sfnt",
+          "mode": "direct"
+        },
+        "projectionSequence": 60,
+        "relationType": "supply-source",
+        "ruleId": "rule.issue-8533.rokg-canvaskit-rokg",
+        "sourceBoundaryId": "studio-supply.font-list",
+        "sourceFace": "ROKG",
+        "supply": {
+          "capabilityAgreement": false,
+          "declaredCapability": "unavailable",
+          "fontFamily": "ROKG",
+          "kind": "canvaskit-plan",
+          "offline": {
+            "sources": [],
+            "unavailableFonts": [
+              "ROKG"
+            ]
+          },
+          "online": {
+            "sources": [
+              {
+                "aliases": [
+                  "ROKG",
+                  "ROKG R",
+                  "ROKGR",
+                  "대한민국정부상징체 R"
+                ],
+                "url": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff"
+              }
+            ],
+            "unavailableFonts": []
+          },
+          "runtimePlanStatus": "planned"
+        },
+        "targetFaceOrPolicy": "unavailable: no offline CanvasKit SFNT source for ROKG"
+      },
+      "retiredRuleId": "rule.studio-supply.9226454d982d47a1557d.canvaskit",
+      "retirementReason": "별도 글꼴의 자동 공급을 제거하고 지정한 ROKG 원본 공급으로 교체한다.",
+      "type": "retire-and-replace"
+    },
+    {
+      "evidenceIds": [
+        "evidence.issue-8533.rokg-source"
+      ],
+      "expectedSelectionTupleSha256": "43f28ba88d2eba22bab9ba33506dc6cf4f2e6621f7d58b8f5e7473a8c033acb6",
+      "operationId": "operation.issue-8533.rokg-canvaskit-rokg-r",
+      "replacementRule": {
+        "conditions": {
+          "profile": "canvaskit-sfnt"
+        },
+        "decisionPlane": "supply",
+        "evidenceIds": [
+          "evidence.issue-8533.rokg-source"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "canvaskit-sfnt",
+          "mode": "direct"
+        },
+        "projectionSequence": 61,
+        "relationType": "supply-source",
+        "ruleId": "rule.issue-8533.rokg-canvaskit-rokg-r",
+        "sourceBoundaryId": "studio-supply.font-list",
+        "sourceFace": "ROKG R",
+        "supply": {
+          "capabilityAgreement": false,
+          "declaredCapability": "unavailable",
+          "fontFamily": "ROKG R",
+          "kind": "canvaskit-plan",
+          "offline": {
+            "sources": [],
+            "unavailableFonts": [
+              "ROKG R"
+            ]
+          },
+          "online": {
+            "sources": [
+              {
+                "aliases": [
+                  "ROKG",
+                  "ROKG R",
+                  "ROKGR",
+                  "대한민국정부상징체 R"
+                ],
+                "url": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff"
+              }
+            ],
+            "unavailableFonts": []
+          },
+          "runtimePlanStatus": "planned"
+        },
+        "targetFaceOrPolicy": "unavailable: no offline CanvasKit SFNT source for ROKG"
+      },
+      "retiredRuleId": "rule.studio-supply.521afff37dd1f6357469.canvaskit",
+      "retirementReason": "별도 글꼴의 자동 공급을 제거하고 지정한 ROKG 원본 공급으로 교체한다.",
+      "type": "retire-and-replace"
+    },
+    {
+      "operationId": "operation.issue-8533.rokg-canvaskit-rokgr",
+      "rule": {
+        "conditions": {
+          "profile": "canvaskit-sfnt"
+        },
+        "decisionPlane": "supply",
+        "evidenceIds": [
+          "evidence.issue-8533.rokg-source"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "canvaskit-sfnt",
+          "mode": "direct"
+        },
+        "projectionSequence": 160,
+        "relationType": "supply-source",
+        "ruleId": "rule.issue-8533.rokg-canvaskit-rokgr",
+        "sourceBoundaryId": "studio-supply.font-list",
+        "sourceFace": "ROKGR",
+        "supply": {
+          "capabilityAgreement": false,
+          "declaredCapability": "unavailable",
+          "fontFamily": "ROKGR",
+          "kind": "canvaskit-plan",
+          "offline": {
+            "sources": [],
+            "unavailableFonts": [
+              "ROKGR"
+            ]
+          },
+          "online": {
+            "sources": [
+              {
+                "aliases": [
+                  "ROKG",
+                  "ROKG R",
+                  "ROKGR",
+                  "대한민국정부상징체 R"
+                ],
+                "url": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff"
+              }
+            ],
+            "unavailableFonts": []
+          },
+          "runtimePlanStatus": "planned"
+        },
+        "targetFaceOrPolicy": "unavailable: no offline CanvasKit SFNT source for ROKG"
+      },
+      "type": "add-rule"
+    },
+    {
+      "operationId": "operation.issue-8533.rokg-canvaskit-korean-name",
+      "rule": {
+        "conditions": {
+          "profile": "canvaskit-sfnt"
+        },
+        "decisionPlane": "supply",
+        "evidenceIds": [
+          "evidence.issue-8533.rokg-source"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "canvaskit-sfnt",
+          "mode": "direct"
+        },
+        "projectionSequence": 161,
+        "relationType": "supply-source",
+        "ruleId": "rule.issue-8533.rokg-canvaskit-korean-name",
+        "sourceBoundaryId": "studio-supply.font-list",
+        "sourceFace": "대한민국정부상징체 R",
+        "supply": {
+          "capabilityAgreement": false,
+          "declaredCapability": "unavailable",
+          "fontFamily": "대한민국정부상징체 R",
+          "kind": "canvaskit-plan",
+          "offline": {
+            "sources": [],
+            "unavailableFonts": [
+              "대한민국정부상징체 R"
+            ]
+          },
+          "online": {
+            "sources": [
+              {
+                "aliases": [
+                  "ROKG",
+                  "ROKG R",
+                  "ROKGR",
+                  "대한민국정부상징체 R"
+                ],
+                "url": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff"
+              }
+            ],
+            "unavailableFonts": []
+          },
+          "runtimePlanStatus": "planned"
+        },
+        "targetFaceOrPolicy": "unavailable: no offline CanvasKit SFNT source for ROKG"
+      },
+      "type": "add-rule"
+    }
+  ],
+  "parentRegistrySha256": "306e250e80bf82f7ce9372a49de4ea84b92031c3b3bc440a30b56079095ec59a",
+  "schemaVersion": "2.0",
+  "sequence": 18
+}

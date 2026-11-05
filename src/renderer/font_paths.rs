@@ -30,6 +30,7 @@ pub const FONT_PATH_ENV: &str = "RHWP_FONT_PATH";
 
 /// 저장소 번들 오픈소스 폰트 — 최후 폴백(#2293 한국어 드롭 방지).
 pub const BUNDLED_OPENSOURCE_DIR: &str = "ttfs/opensource";
+pub(crate) const MAX_NATIVE_CUSTOM_FONT_BYTES: u64 = 64 * 1024 * 1024;
 
 /// `RHWP_FONT_PATH` 를 읽어 경로 목록으로 나눈다.
 ///

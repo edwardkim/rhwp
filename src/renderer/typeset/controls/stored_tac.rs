@@ -497,6 +497,10 @@ pub(super) fn prepare_computed(
     // 다음 줄의 시작이 이 줄의 끝과 정확히 이어지면 빈 글줄도
     // 후행 간격 전량 뒤에 놓인다. 글자 유무로 간격을 반감하면
     // 확정 계획 끝에서 역산한 기준축과 이후 본문 원점이 어긋난다.
+    // [#8502] 두 문단 사이의 문단 간격(이 문단 아래 + 다음 문단 위)도 저장 사다리에 들어 있다.
+    // 같은 닫힘 계약의 `composer::stored_tac_successor_delta_hu` 와 같게 등식에 넣는다.
+    let paragraph_spacing_hu =
+        crate::renderer::px_to_hwpunit(fmt.spacing_after + next_spacing_before, dpi);
     let full_trailing_spacing = next_para.is_some_and(|next| {
         next.line_segs.first().is_some_and(|next_seg| {
             next_seg.vertical_pos > seg.vertical_pos
@@ -504,6 +508,7 @@ pub(super) fn prepare_computed(
                     .vertical_pos
                     .saturating_add(seg.line_height)
                     .saturating_add(seg.line_spacing)
+                    .saturating_add(paragraph_spacing_hu)
                     == next_seg.vertical_pos
         })
     });
@@ -559,7 +564,7 @@ pub(super) fn prepare_computed(
 }
 
 /// 각주·미주는 일반 컨트롤 경로에서 예약·등록해야 하므로 통배치 단축을 쓰지 않는다.
-pub(super) fn table_has_notes(table: &crate::model::table::Table) -> bool {
+pub(in crate::renderer::typeset) fn table_has_notes(table: &crate::model::table::Table) -> bool {
     table.cells.iter().any(|cell| {
         cell.paragraphs.iter().any(|para| {
             para.controls.iter().any(|control| match control {

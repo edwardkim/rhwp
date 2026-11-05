@@ -25,7 +25,7 @@ pub(super) fn owns_whole_object(
     is_para_topbottom_float(&input.table.common)
         && !input.table.common.flow_with_text
         && input.ft.table_footnotes.is_empty()
-        && ((input.table.page_break == TablePageBreak::None
+        && ((input.table.layout_page_break() == TablePageBreak::None
             && !independent_child_can_split(input, fresh_height))
             || atomic_external_children_fit_parent_frame(input, frame_budget))
 }
@@ -63,7 +63,7 @@ fn atomic_external_children_fit_parent_frame(
                     if child.common.treat_as_char
                         || child.common.flow_with_text
                         || !is_para_topbottom_float(&child.common)
-                        || child.page_break != TablePageBreak::None
+                        || child.layout_page_break() != TablePageBreak::None
                     {
                         return false;
                     }

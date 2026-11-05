@@ -20,6 +20,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `side-panel.test.mjs` | 상시 | active | AI 도우미 패널 열기·닫기·폭·눈금자·선택문 보존 | 합성 문서 | npm e2e:side-panel | 실제 Studio DOM·키 입력 |
 | `canvaskit-periodic-borders-issue7998.test.mjs` | 상시 | active | #7998 주기 괘선의 CanvasKit dash 소비와 투명 프레임 무출력 | issue7998/periodic-borders/native-dot-widths.hwpx | 수동 | 실제 software CanvasKit·독립 Print 주기 대조 |
 | `continuous-highlighter.test.mjs` | 상시 | active | 연속 형광펜 모드: 블록 없이 색 선택 시 진입·드래그마다 칠·undo 단계·Esc/버튼 재클릭 종료·블록 있으면 즉시 적용 | 새 문서 | npm e2e:continuous-highlighter | dev server 필요 — run-with-vite.mjs 경유 |
+| `web-font-deadline.test.mjs` | 상시 | active | #8614 정상·실패·무응답 초기화와 문서 열기·늦은 완료·후속 편집 | 합성 문서·번들 테스트 글꼴·네트워크 응답 주입 | npm e2e:web-font-deadline | 자체 Vite·Chrome, output 아래 프로필 |
 | `command-error-contract.test.mjs` | 상시 | active | #8104 오류 복구·호스트 전달 계약 | 빈 문서·실패 주입 | 수동 | 내용·선택·history·dirty·후속 편집·MessagePort·세션 교체 |
 | `cell-target-issue8102.test.mjs` | 상시 | active | #8102 생성·클릭·키보드·undo 진입 선택 삭제, 다중 문단·중첩·인접 셀·invalid target | 편집 API 합성 | npm e2e:issue-8102 | fresh WASM·Studio 실제 입력 |
 | `automation-commands.test.mjs` | 상시 | active | studio 자동화 표면 — 커맨드 질의·실행·메뉴 모델·드리프트 가드·다이얼로그 정책·`insert:field` 매개변수 삽입 | — | npm e2e:automation |  |
@@ -108,6 +109,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `issue-4159-terminal-nested-bottom-border-canvas2d.test.mjs` | 상시 | active | #4159 실제 HWP 물리 3쪽 종료 재귀 중첩 표 bottom 선의 Canvas2D clip 포섭 | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-4159 | #4069 17쪽 pagination 계약 포함 |
 | `issue-8125-hairline-canvas2d.test.mjs` | 상시 | active | #8125 장치 한 칸보다 가는 표 괘선을 Canvas2D 가 한 칸 굵기로 그림(Native `subpixel_stroke_hairline` 과 같은 판정) | basic/calendar_year.hwp | npm e2e:issue-8125-canvas2d | run-with-vite.mjs 경유, 수정 전 182곳 미달 |
 | `issue-4252-nested-partial-table-object-selection.test.mjs` | 상시 | active | #4252 재귀 분할 중첩 표의 실제 IR cellPath·bbox 조회·Esc 객체 선택과 브라우저 성능 증적 | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-4252 | 물리 5쪽 외부→래퍼→자식 표 경로와 `output/4252/perf-*.json` |
+| `issue-8578-group-text-editing.test.mjs` | 상시 | active | #8578 묶음 자식 글상자·목차 본문의 실제 클릭, 입력·드래그·undo/redo·Esc 소유 보존 | 2025 행정업무운영 편람(최종).hwpx | 수동 | `run-with-vite.mjs`로 실행; core 관계 검사와 Esc 단위 검사는 기존 자동 suite에서 실행 |
 | `issue-4694-chart-data-edit.test.mjs` | 상시 | active | #4694 차트 데이터 편집 — 메뉴 노출·더블클릭 진입·값 수정 반영·Ctrl+Z 원복·무편집 무흔적 | chart/세로막대형/묶은세로막대형.hwp | 수동 | |
 | `issue-4969-shaping-replay.test.mjs` | 상시 | active | #4969 common GlyphRun의 strict CanvasKit 선택·Source Han exact face·affine advance와 √ratio ink 계약 | RHWPOldHangul-Regular.otf | npm e2e:issue-4969 | software CanvasKit pixel 대조 |
 | `issue-4272-page11-nested-cell-copy.test.mjs` | 상시 | active | #4272 물리 11쪽 자식 표 셀 문단 22의 실제 드래그·Ctrl+C 최내곽 문단 축 검증 | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-4272-page11 | `output/4272/page11-child-cell-copy.{json,png}` |
@@ -206,3 +208,5 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 
 | `ruler-resize-support.mjs` | 유틸 | active | 시험지 실행을 제외한 ruler 상태 조회 보조 함수 | — | — | 회귀 실행 진입점 없음 |
 | `supplementary-private-glyph-replay.test.mjs` | 상시 | active | #8389 보충 사설 문자 공급 글꼴의 실제 glyph replay | tests/fixtures/fonts/RHWPHostFixture-Regular.ttf | 수동 | 기존 c417310cab 도입 파일의 목록 누락 보완, 검사 내용 변경 없음 |
+
+| `char-outline-canvaskit.test.mjs` | 상시 | active | #8369 투명한 글자 외곽선·공통 점선 실제 CanvasKit 소비 | tests/fixtures/char_outline_types/outline.hwp | 수동 | software surface, 번들 Noto 효과 대조 |

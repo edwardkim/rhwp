@@ -717,11 +717,13 @@ fn test_layout_with_composed_styles() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
 
     let styles = ResolvedStyleSet {
+        section_tab_width_bits: Default::default(),
         source_hwp3_native: false,
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
         script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
+        display_only_otf_slots: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: Default::default(),
         resolved_dpi: None,
@@ -877,11 +879,13 @@ fn test_layout_multi_run_x_position() {
 
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     let styles = ResolvedStyleSet {
+        section_tab_width_bits: Default::default(),
         source_hwp3_native: false,
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
         script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
+        display_only_otf_slots: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: Default::default(),
         resolved_dpi: None,
@@ -987,11 +991,13 @@ fn test_resolved_to_text_style() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        section_tab_width_bits: Default::default(),
         source_hwp3_native: false,
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
         script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
+        display_only_otf_slots: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: Default::default(),
         resolved_dpi: None,
@@ -1034,11 +1040,13 @@ fn test_resolved_to_text_style_with_ratio() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        section_tab_width_bits: Default::default(),
         source_hwp3_native: false,
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
         script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
+        display_only_otf_slots: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: Default::default(),
         resolved_dpi: None,
@@ -1318,6 +1326,7 @@ fn test_layout_table_basic() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     // border_fill_id=1은 styles.border_styles[0]을 참조 (1-indexed)
     let styles = ResolvedStyleSet {
+        section_tab_width_bits: Default::default(),
         page_number_char_style_id: None,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
@@ -2073,6 +2082,7 @@ fn test_tac_leading_width_block_table_full_line() {
         frame_geometry: None,
     };
     let styles = ResolvedStyleSet {
+        section_tab_width_bits: Default::default(),
         page_number_char_style_id: None,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
@@ -2172,6 +2182,7 @@ fn test_tac_leading_width_inline_table_partial() {
         frame_geometry: None,
     };
     let styles = ResolvedStyleSet {
+        section_tab_width_bits: Default::default(),
         page_number_char_style_id: None,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
@@ -2982,6 +2993,7 @@ fn page_bg_color_and_image_present(
     };
 
     let styles = ResolvedStyleSet {
+        section_tab_width_bits: Default::default(),
         page_number_char_style_id: None,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,

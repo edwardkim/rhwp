@@ -1,0 +1,6060 @@
+[
+  {
+    "rule": "rust/cleartext-logging",
+    "sink_start_line": 4654,
+    "flows": [
+      [
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 86,
+            "endLine": 169,
+            "startColumn": 31,
+            "startLine": 169
+          },
+          "message": "...::from_bytes_with_password(...)"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 168,
+            "startColumn": 13,
+            "startLine": 168
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 172,
+            "startColumn": 43,
+            "startLine": 172
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 127,
+            "startColumn": 22,
+            "startLine": 127
+          },
+          "message": "...: DocumentCore"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 131,
+            "startColumn": 17,
+            "startLine": 131
+          },
+          "message": "mut core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 135,
+            "startColumn": 60,
+            "startLine": 135
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 135,
+            "startColumn": 55,
+            "startLine": 135
+          },
+          "message": "&mut core"
+        },
+        {
+          "path": "src/renderer/skia/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 67,
+            "endLine": 10,
+            "startColumn": 44,
+            "startLine": 10
+          },
+          "message": "...: ..."
+        },
+        {
+          "path": "src/renderer/skia/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 11,
+            "startColumn": 9,
+            "startLine": 11
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 74,
+            "startColumn": 9,
+            "startLine": 74
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 95,
+            "startColumn": 13,
+            "startLine": 95
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 48,
+            "endLine": 294,
+            "startColumn": 39,
+            "startLine": 294
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 305,
+            "startColumn": 9,
+            "startLine": 305
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 5309,
+            "startColumn": 38,
+            "startLine": 5309
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 5311,
+            "startColumn": 13,
+            "startLine": 5311
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 37,
+            "endLine": 5331,
+            "startColumn": 28,
+            "startLine": 5331
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 19,
+            "endLine": 5332,
+            "startColumn": 15,
+            "startLine": 5332
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5339,
+            "startColumn": 9,
+            "startLine": 5339
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 5350,
+            "startColumn": 9,
+            "startLine": 5350
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5367,
+            "startColumn": 9,
+            "startLine": 5367
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 5404,
+            "startColumn": 9,
+            "startLine": 5404
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 6254,
+            "startColumn": 9,
+            "startLine": 6254
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 155,
+            "endLine": 6427,
+            "startColumn": 147,
+            "startLine": 6427
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/layout/shape_layout.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 469,
+            "startColumn": 5,
+            "startLine": 469
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/layout/shape_layout.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 613,
+            "startColumn": 35,
+            "startLine": 472
+          },
+          "message": "|...| ... : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/storage.rs",
+          "region": {
+            "endColumn": 56,
+            "endLine": 327,
+            "startColumn": 5,
+            "startLine": 327
+          },
+          "message": "...: ... : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/storage.rs",
+          "region": {
+            "endColumn": 26,
+            "endLine": 330,
+            "startColumn": 17,
+            "startLine": 330
+          },
+          "message": "operation : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/renderer/layout/shape_layout.rs",
+          "region": {
+            "endColumn": 20,
+            "endLine": 604,
+            "startColumn": 17,
+            "startLine": 604
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 5660,
+            "startColumn": 5,
+            "startLine": 5660
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 63,
+            "endLine": 5663,
+            "startColumn": 60,
+            "startLine": 5663
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 5672,
+            "startColumn": 5,
+            "startLine": 5672
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5812,
+            "startColumn": 29,
+            "startLine": 5809
+          },
+          "message": "|...| ... : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 71,
+            "endLine": 5810,
+            "startColumn": 68,
+            "startLine": 5810
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 3331,
+            "startColumn": 5,
+            "startLine": 3331
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 12,
+            "endLine": 3336,
+            "startColumn": 9,
+            "startLine": 3336
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 3347,
+            "startColumn": 5,
+            "startLine": 3347
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 85,
+            "endLine": 3379,
+            "startColumn": 82,
+            "startLine": 3379
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 24,
+            "endLine": 1921,
+            "startColumn": 16,
+            "startLine": 1921
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 16,
+            "endLine": 1923,
+            "startColumn": 13,
+            "startLine": 1923
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 10,
+            "endLine": 1937,
+            "startColumn": 9,
+            "startLine": 1922
+          },
+          "message": "Self {...} [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1938,
+            "startColumn": 34,
+            "startLine": 1921
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 86,
+            "endLine": 3379,
+            "startColumn": 28,
+            "startLine": 3379
+          },
+          "message": "...::new(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 1990,
+            "startColumn": 32,
+            "startLine": 1990
+          },
+          "message": "SelfParam [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 1991,
+            "startColumn": 9,
+            "startLine": 1991
+          },
+          "message": "self [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1993,
+            "startColumn": 65,
+            "startLine": 1990
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 43,
+            "endLine": 3380,
+            "startColumn": 28,
+            "startLine": 3379
+          },
+          "message": "... .with_session_edited(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 2960,
+            "startColumn": 9,
+            "startLine": 2960
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 2967,
+            "startColumn": 9,
+            "startLine": 2967
+          },
+          "message": "self [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3756,
+            "startColumn": 9,
+            "startLine": 3756
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 52,
+            "endLine": 3934,
+            "startColumn": 44,
+            "startLine": 3934
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 2840,
+            "startColumn": 36,
+            "startLine": 2840
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 2841,
+            "startColumn": 22,
+            "startLine": 2841
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 2841,
+            "startColumn": 5,
+            "startLine": 2841
+          },
+          "message": "... * ..."
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 2841,
+            "startColumn": 5,
+            "startLine": 2841
+          },
+          "message": "... / ..."
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 2,
+            "endLine": 2842,
+            "startColumn": 53,
+            "startLine": 2840
+          },
+          "message": "{ ... }"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 53,
+            "endLine": 3934,
+            "startColumn": 25,
+            "startLine": 3934
+          },
+          "message": "hwpunit_to_px(...)"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 32,
+            "endLine": 3921,
+            "startColumn": 21,
+            "startLine": 3921
+          },
+          "message": "text_height"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 4229,
+            "startColumn": 29,
+            "startLine": 4229
+          },
+          "message": "text_height"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 23,
+            "endLine": 4231,
+            "startColumn": 35,
+            "startLine": 4220
+          },
+          "message": "... .map_or(...)"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 32,
+            "endLine": 4220,
+            "startColumn": 21,
+            "startLine": 4220
+          },
+          "message": "text_height"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 42,
+            "endLine": 4665,
+            "startColumn": 29,
+            "startLine": 4654
+          },
+          "message": "MacroExpr"
+        }
+      ],
+      [
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 86,
+            "endLine": 169,
+            "startColumn": 31,
+            "startLine": 169
+          },
+          "message": "...::from_bytes_with_password(...)"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 168,
+            "startColumn": 13,
+            "startLine": 168
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 172,
+            "startColumn": 43,
+            "startLine": 172
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 127,
+            "startColumn": 22,
+            "startLine": 127
+          },
+          "message": "...: DocumentCore"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 131,
+            "startColumn": 17,
+            "startLine": 131
+          },
+          "message": "mut core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 135,
+            "startColumn": 60,
+            "startLine": 135
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 135,
+            "startColumn": 55,
+            "startLine": 135
+          },
+          "message": "&mut core [&ref]"
+        },
+        {
+          "path": "src/renderer/skia/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 67,
+            "endLine": 10,
+            "startColumn": 44,
+            "startLine": 10
+          },
+          "message": "...: ... [&ref]"
+        },
+        {
+          "path": "src/renderer/skia/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 11,
+            "startColumn": 9,
+            "startLine": 11
+          },
+          "message": "core [&ref]"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 74,
+            "startColumn": 9,
+            "startLine": 74
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 95,
+            "startColumn": 13,
+            "startLine": 95
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 48,
+            "endLine": 294,
+            "startColumn": 39,
+            "startLine": 294
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 305,
+            "startColumn": 9,
+            "startLine": 305
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 5309,
+            "startColumn": 38,
+            "startLine": 5309
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 5311,
+            "startColumn": 13,
+            "startLine": 5311
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 37,
+            "endLine": 5331,
+            "startColumn": 28,
+            "startLine": 5331
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 19,
+            "endLine": 5332,
+            "startColumn": 15,
+            "startLine": 5332
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5339,
+            "startColumn": 9,
+            "startLine": 5339
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 5351,
+            "startColumn": 9,
+            "startLine": 5351
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/body_page_fields.rs",
+          "region": {
+            "endColumn": 52,
+            "endLine": 131,
+            "startColumn": 43,
+            "startLine": 131
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/body_page_fields.rs",
+          "region": {
+            "endColumn": 33,
+            "endLine": 142,
+            "startColumn": 29,
+            "startLine": 142
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/body_page_fields.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 149,
+            "startColumn": 9,
+            "startLine": 149
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 8243,
+            "startColumn": 35,
+            "startLine": 8243
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 8244,
+            "startColumn": 9,
+            "startLine": 8244
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 8248,
+            "startColumn": 9,
+            "startLine": 8248
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 42,
+            "endLine": 8521,
+            "startColumn": 24,
+            "startLine": 8521
+          },
+          "message": "self.layout_engine"
+        },
+        {
+          "path": "src/renderer/layout.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 4668,
+            "startColumn": 9,
+            "startLine": 4668
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/renderer/layout.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 4730,
+            "startColumn": 13,
+            "startLine": 4730
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/renderer/layout.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 5700,
+            "startColumn": 9,
+            "startLine": 5700
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/renderer/layout.rs",
+          "region": {
+            "endColumn": 41,
+            "endLine": 5860,
+            "startColumn": 37,
+            "startLine": 5860
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3715,
+            "startColumn": 9,
+            "startLine": 3715
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 3748,
+            "startColumn": 9,
+            "startLine": 3748
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3781,
+            "startColumn": 9,
+            "startLine": 3781
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout.rs",
+          "region": {
+            "endColumn": 69,
+            "endLine": 3829,
+            "startColumn": 19,
+            "startLine": 3829
+          },
+          "message": "|...| ... : ... => .. [captured self, &ref]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout.rs",
+          "region": {
+            "endColumn": 26,
+            "endLine": 3829,
+            "startColumn": 22,
+            "startLine": 3829
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 24,
+            "startColumn": 9,
+            "startLine": 24
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 86,
+            "endLine": 36,
+            "startColumn": 78,
+            "startLine": 36
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 24,
+            "endLine": 1921,
+            "startColumn": 16,
+            "startLine": 1921
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 16,
+            "endLine": 1923,
+            "startColumn": 13,
+            "startLine": 1923
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 10,
+            "endLine": 1937,
+            "startColumn": 9,
+            "startLine": 1922
+          },
+          "message": "Self {...} [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1938,
+            "startColumn": 34,
+            "startLine": 1921
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 87,
+            "endLine": 36,
+            "startColumn": 24,
+            "startLine": 36
+          },
+          "message": "...::new(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 1962,
+            "startColumn": 9,
+            "startLine": 1962
+          },
+          "message": "SelfParam [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 1965,
+            "startColumn": 9,
+            "startLine": 1965
+          },
+          "message": "self [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1967,
+            "startColumn": 15,
+            "startLine": 1964
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 75,
+            "endLine": 37,
+            "startColumn": 24,
+            "startLine": 36
+          },
+          "message": "... .with_stored_geometry_policy(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 37,
+            "endLine": 1971,
+            "startColumn": 29,
+            "startLine": 1971
+          },
+          "message": "SelfParam [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 1972,
+            "startColumn": 9,
+            "startLine": 1972
+          },
+          "message": "self [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1974,
+            "startColumn": 62,
+            "startLine": 1971
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 71,
+            "endLine": 38,
+            "startColumn": 24,
+            "startLine": 36
+          },
+          "message": "... .with_native_hwp5(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 1977,
+            "startColumn": 36,
+            "startLine": 1977
+          },
+          "message": "SelfParam [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 1978,
+            "startColumn": 9,
+            "startLine": 1978
+          },
+          "message": "self [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1980,
+            "startColumn": 69,
+            "startLine": 1977
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 67,
+            "endLine": 39,
+            "startColumn": 24,
+            "startLine": 36
+          },
+          "message": "... .with_hwpx_stored_layout(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 1990,
+            "startColumn": 32,
+            "startLine": 1990
+          },
+          "message": "SelfParam [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 1991,
+            "startColumn": 9,
+            "startLine": 1991
+          },
+          "message": "self [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1993,
+            "startColumn": 65,
+            "startLine": 1990
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 59,
+            "endLine": 40,
+            "startColumn": 24,
+            "startLine": 36
+          },
+          "message": "... .with_session_edited(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 2001,
+            "startColumn": 9,
+            "startLine": 2001
+          },
+          "message": "SelfParam [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 2004,
+            "startColumn": 9,
+            "startLine": 2004
+          },
+          "message": "self [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 2006,
+            "startColumn": 15,
+            "startLine": 2003
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 76,
+            "endLine": 41,
+            "startColumn": 24,
+            "startLine": 36
+          },
+          "message": "... .with_render_normalization(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 21,
+            "endLine": 36,
+            "startColumn": 13,
+            "startLine": 36
+          },
+          "message": "measurer [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 32,
+            "endLine": 45,
+            "startColumn": 24,
+            "startLine": 45
+          },
+          "message": "measurer [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 2941,
+            "startColumn": 9,
+            "startLine": 2941
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 19,
+            "endLine": 2947,
+            "startColumn": 15,
+            "startLine": 2947
+          },
+          "message": "self [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 2960,
+            "startColumn": 9,
+            "startLine": 2960
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 2967,
+            "startColumn": 9,
+            "startLine": 2967
+          },
+          "message": "self [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3756,
+            "startColumn": 9,
+            "startLine": 3756
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 2,
+            "endLine": 4881,
+            "startColumn": 33,
+            "startLine": 4869
+          },
+          "message": "|...| ... : ... => .. [captured self, &ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/composer/nested_table_frames.rs",
+          "region": {
+            "endColumn": 67,
+            "endLine": 55,
+            "startColumn": 5,
+            "startLine": 55
+          },
+          "message": "...: ... : ... => .. [captured self, &ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/composer/nested_table_frames.rs",
+          "region": {
+            "endColumn": 41,
+            "endLine": 120,
+            "startColumn": 28,
+            "startLine": 120
+          },
+          "message": "nested_height : ... => .. [captured self, &ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 56,
+            "endLine": 4873,
+            "startColumn": 52,
+            "startLine": 4873
+          },
+          "message": "self [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3756,
+            "startColumn": 9,
+            "startLine": 3756
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 52,
+            "endLine": 3934,
+            "startColumn": 44,
+            "startLine": 3934
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 2840,
+            "startColumn": 36,
+            "startLine": 2840
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 2841,
+            "startColumn": 22,
+            "startLine": 2841
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 2841,
+            "startColumn": 5,
+            "startLine": 2841
+          },
+          "message": "... * ..."
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 2841,
+            "startColumn": 5,
+            "startLine": 2841
+          },
+          "message": "... / ..."
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 2,
+            "endLine": 2842,
+            "startColumn": 53,
+            "startLine": 2840
+          },
+          "message": "{ ... }"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 53,
+            "endLine": 3934,
+            "startColumn": 25,
+            "startLine": 3934
+          },
+          "message": "hwpunit_to_px(...)"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 32,
+            "endLine": 3921,
+            "startColumn": 21,
+            "startLine": 3921
+          },
+          "message": "text_height"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 4229,
+            "startColumn": 29,
+            "startLine": 4229
+          },
+          "message": "text_height"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 23,
+            "endLine": 4231,
+            "startColumn": 35,
+            "startLine": 4220
+          },
+          "message": "... .map_or(...)"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 32,
+            "endLine": 4220,
+            "startColumn": 21,
+            "startLine": 4220
+          },
+          "message": "text_height"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 42,
+            "endLine": 4665,
+            "startColumn": 29,
+            "startLine": 4654
+          },
+          "message": "MacroExpr"
+        }
+      ],
+      [
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 86,
+            "endLine": 169,
+            "startColumn": 31,
+            "startLine": 169
+          },
+          "message": "...::from_bytes_with_password(...)"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 168,
+            "startColumn": 13,
+            "startLine": 168
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 172,
+            "startColumn": 43,
+            "startLine": 172
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 127,
+            "startColumn": 22,
+            "startLine": 127
+          },
+          "message": "...: DocumentCore"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 131,
+            "startColumn": 17,
+            "startLine": 131
+          },
+          "message": "mut core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 135,
+            "startColumn": 60,
+            "startLine": 135
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 135,
+            "startColumn": 55,
+            "startLine": 135
+          },
+          "message": "&mut core [&ref]"
+        },
+        {
+          "path": "src/renderer/skia/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 67,
+            "endLine": 10,
+            "startColumn": 44,
+            "startLine": 10
+          },
+          "message": "...: ... [&ref]"
+        },
+        {
+          "path": "src/renderer/skia/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 11,
+            "startColumn": 9,
+            "startLine": 11
+          },
+          "message": "core [&ref]"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 74,
+            "startColumn": 9,
+            "startLine": 74
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 95,
+            "startColumn": 13,
+            "startLine": 95
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 48,
+            "endLine": 294,
+            "startColumn": 39,
+            "startLine": 294
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 305,
+            "startColumn": 9,
+            "startLine": 305
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 5309,
+            "startColumn": 38,
+            "startLine": 5309
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 5311,
+            "startColumn": 13,
+            "startLine": 5311
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 37,
+            "endLine": 5331,
+            "startColumn": 28,
+            "startLine": 5331
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 19,
+            "endLine": 5332,
+            "startColumn": 15,
+            "startLine": 5332
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5339,
+            "startColumn": 9,
+            "startLine": 5339
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 5350,
+            "startColumn": 9,
+            "startLine": 5350
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5367,
+            "startColumn": 9,
+            "startLine": 5367
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 5404,
+            "startColumn": 9,
+            "startLine": 5404
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 6254,
+            "startColumn": 9,
+            "startLine": 6254
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 29,
+            "endLine": 6402,
+            "startColumn": 21,
+            "startLine": 6402
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/render_normalization/stored_word_tail.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 163,
+            "startColumn": 5,
+            "startLine": 163
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/render_normalization/stored_word_tail.rs",
+          "region": {
+            "endColumn": 12,
+            "endLine": 177,
+            "startColumn": 9,
+            "startLine": 177
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/render_normalization/stored_word_tail.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 214,
+            "startColumn": 5,
+            "startLine": 214
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/render_normalization/stored_word_tail.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 501,
+            "startColumn": 35,
+            "startLine": 217
+          },
+          "message": "|...| ... : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/storage.rs",
+          "region": {
+            "endColumn": 56,
+            "endLine": 327,
+            "startColumn": 5,
+            "startLine": 327
+          },
+          "message": "...: ... : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/storage.rs",
+          "region": {
+            "endColumn": 26,
+            "endLine": 330,
+            "startColumn": 17,
+            "startLine": 330
+          },
+          "message": "operation : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/renderer/render_normalization/stored_word_tail.rs",
+          "region": {
+            "endColumn": 59,
+            "endLine": 458,
+            "startColumn": 56,
+            "startLine": 458
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/stored_word_tail.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 200,
+            "startColumn": 5,
+            "startLine": 200
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/stored_word_tail.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 302,
+            "startColumn": 35,
+            "startLine": 203
+          },
+          "message": "|...| ... : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/storage.rs",
+          "region": {
+            "endColumn": 56,
+            "endLine": 327,
+            "startColumn": 5,
+            "startLine": 327
+          },
+          "message": "...: ... : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/storage.rs",
+          "region": {
+            "endColumn": 26,
+            "endLine": 330,
+            "startColumn": 17,
+            "startLine": 330
+          },
+          "message": "operation : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/renderer/composer/stored_word_tail.rs",
+          "region": {
+            "endColumn": 20,
+            "endLine": 285,
+            "startColumn": 17,
+            "startLine": 285
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 4270,
+            "startColumn": 5,
+            "startLine": 4270
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 12,
+            "endLine": 4277,
+            "startColumn": 9,
+            "startLine": 4277
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 4331,
+            "startColumn": 5,
+            "startLine": 4331
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 67,
+            "endLine": 4361,
+            "startColumn": 64,
+            "startLine": 4361
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking/inline_frame_input.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 20,
+            "startColumn": 5,
+            "startLine": 20
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking/inline_frame_input.rs",
+          "region": {
+            "endColumn": 83,
+            "endLine": 33,
+            "startColumn": 80,
+            "startLine": 33
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 3347,
+            "startColumn": 5,
+            "startLine": 3347
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 84,
+            "endLine": 3353,
+            "startColumn": 81,
+            "startLine": 3353
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/inline_table_frame.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 53,
+            "startColumn": 5,
+            "startLine": 53
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/inline_table_frame.rs",
+          "region": {
+            "endColumn": 28,
+            "endLine": 59,
+            "startColumn": 25,
+            "startLine": 59
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 24,
+            "endLine": 1921,
+            "startColumn": 16,
+            "startLine": 1921
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 16,
+            "endLine": 1923,
+            "startColumn": 13,
+            "startLine": 1923
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 10,
+            "endLine": 1937,
+            "startColumn": 9,
+            "startLine": 1922
+          },
+          "message": "Self {...} [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1938,
+            "startColumn": 34,
+            "startLine": 1921
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/composer/inline_table_frame.rs",
+          "region": {
+            "endColumn": 29,
+            "endLine": 59,
+            "startColumn": 5,
+            "startLine": 59
+          },
+          "message": "...::new(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 1990,
+            "startColumn": 32,
+            "startLine": 1990
+          },
+          "message": "SelfParam [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 1991,
+            "startColumn": 9,
+            "startLine": 1991
+          },
+          "message": "self [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1993,
+            "startColumn": 65,
+            "startLine": 1990
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/composer/inline_table_frame.rs",
+          "region": {
+            "endColumn": 35,
+            "endLine": 60,
+            "startColumn": 5,
+            "startLine": 59
+          },
+          "message": "... .with_session_edited(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 2960,
+            "startColumn": 9,
+            "startLine": 2960
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 2967,
+            "startColumn": 9,
+            "startLine": 2967
+          },
+          "message": "self [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3756,
+            "startColumn": 9,
+            "startLine": 3756
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 29,
+            "endLine": 4436,
+            "startColumn": 25,
+            "startLine": 4436
+          },
+          "message": "self [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 2081,
+            "startColumn": 9,
+            "startLine": 2081
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 50,
+            "endLine": 2090,
+            "startColumn": 18,
+            "startLine": 2090
+          },
+          "message": "|...| ... : ... => .. [captured self, &ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 45,
+            "endLine": 2090,
+            "startColumn": 41,
+            "startLine": 2090
+          },
+          "message": "self [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 49,
+            "endLine": 2090,
+            "startColumn": 41,
+            "startLine": 2090
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 2840,
+            "startColumn": 36,
+            "startLine": 2840
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 2841,
+            "startColumn": 22,
+            "startLine": 2841
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 2841,
+            "startColumn": 5,
+            "startLine": 2841
+          },
+          "message": "... * ..."
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 2841,
+            "startColumn": 5,
+            "startLine": 2841
+          },
+          "message": "... / ..."
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 2,
+            "endLine": 2842,
+            "startColumn": 53,
+            "startLine": 2840
+          },
+          "message": "{ ... }"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 50,
+            "endLine": 2090,
+            "startColumn": 23,
+            "startLine": 2090
+          },
+          "message": "hwpunit_to_px(...)"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 51,
+            "endLine": 2090,
+            "startColumn": 13,
+            "startLine": 2086
+          },
+          "message": "... .map(...) [Some]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 28,
+            "endLine": 2091,
+            "startColumn": 13,
+            "startLine": 2086
+          },
+          "message": "... .unwrap_or(...)"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 33,
+            "endLine": 2085,
+            "startColumn": 13,
+            "startLine": 2085
+          },
+          "message": "saved_picture_extent"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 39,
+            "endLine": 2185,
+            "startColumn": 19,
+            "startLine": 2185
+          },
+          "message": "saved_picture_extent"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 50,
+            "endLine": 2185,
+            "startColumn": 9,
+            "startLine": 2097
+          },
+          "message": "... .fold(...)"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 2186,
+            "startColumn": 14,
+            "startLine": 2084
+          },
+          "message": "{ ... }"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 87,
+            "endLine": 4436,
+            "startColumn": 25,
+            "startLine": 4436
+          },
+          "message": "self.cell_wrap_objects_bottom_height(...)"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 36,
+            "endLine": 4435,
+            "startColumn": 25,
+            "startLine": 4435
+          },
+          "message": "wrap_bottom"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 42,
+            "endLine": 4665,
+            "startColumn": 29,
+            "startLine": 4654
+          },
+          "message": "MacroExpr"
+        }
+      ],
+      [
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 86,
+            "endLine": 169,
+            "startColumn": 31,
+            "startLine": 169
+          },
+          "message": "...::from_bytes_with_password(...)"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 168,
+            "startColumn": 13,
+            "startLine": 168
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 172,
+            "startColumn": 43,
+            "startLine": 172
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 127,
+            "startColumn": 22,
+            "startLine": 127
+          },
+          "message": "...: DocumentCore"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 131,
+            "startColumn": 17,
+            "startLine": 131
+          },
+          "message": "mut core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 135,
+            "startColumn": 60,
+            "startLine": 135
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 135,
+            "startColumn": 55,
+            "startLine": 135
+          },
+          "message": "&mut core"
+        },
+        {
+          "path": "src/renderer/skia/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 67,
+            "endLine": 10,
+            "startColumn": 44,
+            "startLine": 10
+          },
+          "message": "...: ..."
+        },
+        {
+          "path": "src/renderer/skia/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 11,
+            "startColumn": 9,
+            "startLine": 11
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 74,
+            "startColumn": 9,
+            "startLine": 74
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 95,
+            "startColumn": 13,
+            "startLine": 95
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 48,
+            "endLine": 294,
+            "startColumn": 39,
+            "startLine": 294
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 305,
+            "startColumn": 9,
+            "startLine": 305
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 5309,
+            "startColumn": 38,
+            "startLine": 5309
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 5311,
+            "startColumn": 13,
+            "startLine": 5311
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 37,
+            "endLine": 5331,
+            "startColumn": 28,
+            "startLine": 5331
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 19,
+            "endLine": 5332,
+            "startColumn": 15,
+            "startLine": 5332
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5339,
+            "startColumn": 9,
+            "startLine": 5339
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 5351,
+            "startColumn": 9,
+            "startLine": 5351
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/body_page_fields.rs",
+          "region": {
+            "endColumn": 52,
+            "endLine": 131,
+            "startColumn": 43,
+            "startLine": 131
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/body_page_fields.rs",
+          "region": {
+            "endColumn": 33,
+            "endLine": 142,
+            "startColumn": 29,
+            "startLine": 142
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/body_page_fields.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 149,
+            "startColumn": 9,
+            "startLine": 149
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/body_page_fields.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 247,
+            "startColumn": 13,
+            "startLine": 247
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 42,
+            "endLine": 5359,
+            "startColumn": 33,
+            "startLine": 5359
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 19,
+            "endLine": 5360,
+            "startColumn": 15,
+            "startLine": 5360
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5367,
+            "startColumn": 9,
+            "startLine": 5367
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 29,
+            "endLine": 5754,
+            "startColumn": 21,
+            "startLine": 5754
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 3425,
+            "startColumn": 9,
+            "startLine": 3425
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 16,
+            "endLine": 3431,
+            "startColumn": 13,
+            "startLine": 3431
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 10,
+            "endLine": 3439,
+            "startColumn": 9,
+            "startLine": 3430
+          },
+          "message": "Self {...} [TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 3440,
+            "startColumn": 15,
+            "startLine": 3429
+          },
+          "message": "{ ... } [TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5756,
+            "startColumn": 34,
+            "startLine": 5753
+          },
+          "message": "...::new_with_render_normalization(...) [TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 54,
+            "endLine": 3442,
+            "startColumn": 50,
+            "startLine": 3442
+          },
+          "message": "SelfParam [TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 3445,
+            "startColumn": 78,
+            "startLine": 3442
+          },
+          "message": "{ ... } [TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 95,
+            "endLine": 5757,
+            "startColumn": 34,
+            "startLine": 5753
+          },
+          "message": "... .with_section_column_spacing_hu(...) [TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 31,
+            "endLine": 5753,
+            "startColumn": 21,
+            "startLine": 5753
+          },
+          "message": "typesetter [TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 27,
+            "endLine": 5758,
+            "startColumn": 17,
+            "startLine": 5758
+          },
+          "message": "typesetter [TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3814,
+            "startColumn": 9,
+            "startLine": 3814
+          },
+          "message": "SelfParam [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 3832,
+            "startColumn": 9,
+            "startLine": 3832
+          },
+          "message": "self [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/section.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 23,
+            "startColumn": 9,
+            "startLine": 23
+          },
+          "message": "SelfParam [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/section.rs",
+          "region": {
+            "endColumn": 50,
+            "endLine": 377,
+            "startColumn": 46,
+            "startLine": 377
+          },
+          "message": "self [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/section/flow.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 11,
+            "startColumn": 9,
+            "startLine": 11
+          },
+          "message": "SelfParam [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/section/flow.rs",
+          "region": {
+            "endColumn": 33,
+            "endLine": 131,
+            "startColumn": 29,
+            "startLine": 131
+          },
+          "message": "self [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3875,
+            "startColumn": 9,
+            "startLine": 3875
+          },
+          "message": "SelfParam [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 3883,
+            "startColumn": 9,
+            "startLine": 3883
+          },
+          "message": "self [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3918,
+            "startColumn": 9,
+            "startLine": 3918
+          },
+          "message": "SelfParam [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 21,
+            "endLine": 3928,
+            "startColumn": 13,
+            "startLine": 3928
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/context.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 21,
+            "startColumn": 9,
+            "startLine": 21
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/context.rs",
+          "region": {
+            "endColumn": 16,
+            "endLine": 28,
+            "startColumn": 13,
+            "startLine": 28
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/context.rs",
+          "region": {
+            "endColumn": 10,
+            "endLine": 33,
+            "startColumn": 9,
+            "startLine": 27
+          },
+          "message": "Self {...} [ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/context.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 34,
+            "startColumn": 15,
+            "startLine": 26
+          },
+          "message": "{ ... } [ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 10,
+            "endLine": 3933,
+            "startColumn": 23,
+            "startLine": 3927
+          },
+          "message": "...::new(...) [ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 20,
+            "endLine": 3927,
+            "startColumn": 13,
+            "startLine": 3927
+          },
+          "message": "context [ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 21,
+            "endLine": 3935,
+            "startColumn": 14,
+            "startLine": 3935
+          },
+          "message": "context [ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 21,
+            "endLine": 3935,
+            "startColumn": 13,
+            "startLine": 3935
+          },
+          "message": "&context [&ref, ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/format.rs",
+          "region": {
+            "endColumn": 37,
+            "endLine": 24,
+            "startColumn": 5,
+            "startLine": 24
+          },
+          "message": "...: ... [&ref, ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/format.rs",
+          "region": {
+            "endColumn": 12,
+            "endLine": 37,
+            "startColumn": 9,
+            "startLine": 37
+          },
+          "message": "ctx [&ref, ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/format.rs",
+          "region": {
+            "endColumn": 37,
+            "endLine": 331,
+            "startColumn": 5,
+            "startLine": 331
+          },
+          "message": "...: ... [&ref, ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/format.rs",
+          "region": {
+            "endColumn": 28,
+            "endLine": 368,
+            "startColumn": 25,
+            "startLine": 368
+          },
+          "message": "ctx [&ref, ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/context.rs",
+          "region": {
+            "endColumn": 28,
+            "endLine": 41,
+            "startColumn": 23,
+            "startLine": 41
+          },
+          "message": "SelfParam [&ref, ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/context.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 42,
+            "startColumn": 9,
+            "startLine": 42
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/context.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 43,
+            "startColumn": 37,
+            "startLine": 41
+          },
+          "message": "{ ... }"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/format.rs",
+          "region": {
+            "endColumn": 34,
+            "endLine": 368,
+            "startColumn": 25,
+            "startLine": 368
+          },
+          "message": "ctx.dpi()"
+        },
+        {
+          "path": "src/renderer/composer/inline_table_frame.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 94,
+            "startColumn": 5,
+            "startLine": 94
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/inline_table_frame.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 108,
+            "startColumn": 44,
+            "startLine": 108
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 24,
+            "endLine": 1921,
+            "startColumn": 16,
+            "startLine": 1921
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 16,
+            "endLine": 1923,
+            "startColumn": 13,
+            "startLine": 1923
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 10,
+            "endLine": 1937,
+            "startColumn": 9,
+            "startLine": 1922
+          },
+          "message": "Self {...} [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1938,
+            "startColumn": 34,
+            "startLine": 1921
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/composer/inline_table_frame.rs",
+          "region": {
+            "endColumn": 48,
+            "endLine": 108,
+            "startColumn": 24,
+            "startLine": 108
+          },
+          "message": "...::new(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 1990,
+            "startColumn": 32,
+            "startLine": 1990
+          },
+          "message": "SelfParam [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 1991,
+            "startColumn": 9,
+            "startLine": 1991
+          },
+          "message": "self [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1993,
+            "startColumn": 65,
+            "startLine": 1990
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/composer/inline_table_frame.rs",
+          "region": {
+            "endColumn": 39,
+            "endLine": 109,
+            "startColumn": 24,
+            "startLine": 108
+          },
+          "message": "... .with_session_edited(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 2960,
+            "startColumn": 9,
+            "startLine": 2960
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 2967,
+            "startColumn": 9,
+            "startLine": 2967
+          },
+          "message": "self [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3756,
+            "startColumn": 9,
+            "startLine": 3756
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 22,
+            "endLine": 4231,
+            "startColumn": 42,
+            "startLine": 4229
+          },
+          "message": "|...| ... : ... => .. [captured self, &ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 4230,
+            "startColumn": 60,
+            "startLine": 4230
+          },
+          "message": "self [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 68,
+            "endLine": 4230,
+            "startColumn": 60,
+            "startLine": 4230
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 2840,
+            "startColumn": 36,
+            "startLine": 2840
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 2841,
+            "startColumn": 22,
+            "startLine": 2841
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 2841,
+            "startColumn": 5,
+            "startLine": 2841
+          },
+          "message": "... * ..."
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 2841,
+            "startColumn": 5,
+            "startLine": 2841
+          },
+          "message": "... / ..."
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 2,
+            "endLine": 2842,
+            "startColumn": 53,
+            "startLine": 2840
+          },
+          "message": "{ ... }"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 69,
+            "endLine": 4230,
+            "startColumn": 25,
+            "startLine": 4230
+          },
+          "message": "hwpunit_to_px(...)"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 22,
+            "endLine": 4231,
+            "startColumn": 49,
+            "startLine": 4229
+          },
+          "message": "{ ... }"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 23,
+            "endLine": 4231,
+            "startColumn": 35,
+            "startLine": 4220
+          },
+          "message": "... .map_or(...)"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 32,
+            "endLine": 4220,
+            "startColumn": 21,
+            "startLine": 4220
+          },
+          "message": "text_height"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 42,
+            "endLine": 4665,
+            "startColumn": 29,
+            "startLine": 4654
+          },
+          "message": "MacroExpr"
+        }
+      ]
+    ]
+  },
+  {
+    "rule": "rust/cleartext-logging",
+    "sink_start_line": 4925,
+    "flows": [
+      [
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 86,
+            "endLine": 169,
+            "startColumn": 31,
+            "startLine": 169
+          },
+          "message": "...::from_bytes_with_password(...)"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 168,
+            "startColumn": 13,
+            "startLine": 168
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 172,
+            "startColumn": 43,
+            "startLine": 172
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 127,
+            "startColumn": 22,
+            "startLine": 127
+          },
+          "message": "...: DocumentCore"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 131,
+            "startColumn": 17,
+            "startLine": 131
+          },
+          "message": "mut core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 135,
+            "startColumn": 60,
+            "startLine": 135
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 135,
+            "startColumn": 55,
+            "startLine": 135
+          },
+          "message": "&mut core"
+        },
+        {
+          "path": "src/renderer/skia/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 67,
+            "endLine": 10,
+            "startColumn": 44,
+            "startLine": 10
+          },
+          "message": "...: ..."
+        },
+        {
+          "path": "src/renderer/skia/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 11,
+            "startColumn": 9,
+            "startLine": 11
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 74,
+            "startColumn": 9,
+            "startLine": 74
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 95,
+            "startColumn": 13,
+            "startLine": 95
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 48,
+            "endLine": 294,
+            "startColumn": 39,
+            "startLine": 294
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 305,
+            "startColumn": 9,
+            "startLine": 305
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 5309,
+            "startColumn": 38,
+            "startLine": 5309
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 5311,
+            "startColumn": 13,
+            "startLine": 5311
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 37,
+            "endLine": 5331,
+            "startColumn": 28,
+            "startLine": 5331
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 19,
+            "endLine": 5332,
+            "startColumn": 15,
+            "startLine": 5332
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5339,
+            "startColumn": 9,
+            "startLine": 5339
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 5350,
+            "startColumn": 9,
+            "startLine": 5350
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5367,
+            "startColumn": 9,
+            "startLine": 5367
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 5404,
+            "startColumn": 9,
+            "startLine": 5404
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 6254,
+            "startColumn": 9,
+            "startLine": 6254
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 155,
+            "endLine": 6427,
+            "startColumn": 147,
+            "startLine": 6427
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/layout/shape_layout.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 469,
+            "startColumn": 5,
+            "startLine": 469
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/layout/shape_layout.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 613,
+            "startColumn": 35,
+            "startLine": 472
+          },
+          "message": "|...| ... : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/storage.rs",
+          "region": {
+            "endColumn": 56,
+            "endLine": 327,
+            "startColumn": 5,
+            "startLine": 327
+          },
+          "message": "...: ... : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/storage.rs",
+          "region": {
+            "endColumn": 26,
+            "endLine": 330,
+            "startColumn": 17,
+            "startLine": 330
+          },
+          "message": "operation : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/renderer/layout/shape_layout.rs",
+          "region": {
+            "endColumn": 20,
+            "endLine": 604,
+            "startColumn": 17,
+            "startLine": 604
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 5660,
+            "startColumn": 5,
+            "startLine": 5660
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 63,
+            "endLine": 5663,
+            "startColumn": 60,
+            "startLine": 5663
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 5672,
+            "startColumn": 5,
+            "startLine": 5672
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5812,
+            "startColumn": 29,
+            "startLine": 5809
+          },
+          "message": "|...| ... : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 71,
+            "endLine": 5810,
+            "startColumn": 68,
+            "startLine": 5810
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 3331,
+            "startColumn": 5,
+            "startLine": 3331
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 12,
+            "endLine": 3336,
+            "startColumn": 9,
+            "startLine": 3336
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 3347,
+            "startColumn": 5,
+            "startLine": 3347
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 85,
+            "endLine": 3379,
+            "startColumn": 82,
+            "startLine": 3379
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 24,
+            "endLine": 1921,
+            "startColumn": 16,
+            "startLine": 1921
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 16,
+            "endLine": 1923,
+            "startColumn": 13,
+            "startLine": 1923
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 10,
+            "endLine": 1937,
+            "startColumn": 9,
+            "startLine": 1922
+          },
+          "message": "Self {...} [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1938,
+            "startColumn": 34,
+            "startLine": 1921
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 86,
+            "endLine": 3379,
+            "startColumn": 28,
+            "startLine": 3379
+          },
+          "message": "...::new(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 1990,
+            "startColumn": 32,
+            "startLine": 1990
+          },
+          "message": "SelfParam [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 1991,
+            "startColumn": 9,
+            "startLine": 1991
+          },
+          "message": "self [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1993,
+            "startColumn": 65,
+            "startLine": 1990
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 43,
+            "endLine": 3380,
+            "startColumn": 28,
+            "startLine": 3379
+          },
+          "message": "... .with_session_edited(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 2960,
+            "startColumn": 9,
+            "startLine": 2960
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 2967,
+            "startColumn": 9,
+            "startLine": 2967
+          },
+          "message": "self [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3756,
+            "startColumn": 9,
+            "startLine": 3756
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 77,
+            "endLine": 4937,
+            "startColumn": 69,
+            "startLine": 4937
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 2840,
+            "startColumn": 36,
+            "startLine": 2840
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 2841,
+            "startColumn": 22,
+            "startLine": 2841
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 2841,
+            "startColumn": 5,
+            "startLine": 2841
+          },
+          "message": "... * ..."
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 2841,
+            "startColumn": 5,
+            "startLine": 2841
+          },
+          "message": "... / ..."
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 2,
+            "endLine": 2842,
+            "startColumn": 53,
+            "startLine": 2840
+          },
+          "message": "{ ... }"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 78,
+            "endLine": 4937,
+            "startColumn": 37,
+            "startLine": 4937
+          },
+          "message": "hwpunit_to_px(...)"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 56,
+            "endLine": 4951,
+            "startColumn": 37,
+            "startLine": 4925
+          },
+          "message": "MacroExpr"
+        }
+      ],
+      [
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 86,
+            "endLine": 169,
+            "startColumn": 31,
+            "startLine": 169
+          },
+          "message": "...::from_bytes_with_password(...)"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 168,
+            "startColumn": 13,
+            "startLine": 168
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 172,
+            "startColumn": 43,
+            "startLine": 172
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 127,
+            "startColumn": 22,
+            "startLine": 127
+          },
+          "message": "...: DocumentCore"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 131,
+            "startColumn": 17,
+            "startLine": 131
+          },
+          "message": "mut core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 135,
+            "startColumn": 60,
+            "startLine": 135
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 135,
+            "startColumn": 55,
+            "startLine": 135
+          },
+          "message": "&mut core [&ref]"
+        },
+        {
+          "path": "src/renderer/skia/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 67,
+            "endLine": 10,
+            "startColumn": 44,
+            "startLine": 10
+          },
+          "message": "...: ... [&ref]"
+        },
+        {
+          "path": "src/renderer/skia/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 11,
+            "startColumn": 9,
+            "startLine": 11
+          },
+          "message": "core [&ref]"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 74,
+            "startColumn": 9,
+            "startLine": 74
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 95,
+            "startColumn": 13,
+            "startLine": 95
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 48,
+            "endLine": 294,
+            "startColumn": 39,
+            "startLine": 294
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 305,
+            "startColumn": 9,
+            "startLine": 305
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 5309,
+            "startColumn": 38,
+            "startLine": 5309
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 5311,
+            "startColumn": 13,
+            "startLine": 5311
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 37,
+            "endLine": 5331,
+            "startColumn": 28,
+            "startLine": 5331
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 19,
+            "endLine": 5332,
+            "startColumn": 15,
+            "startLine": 5332
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5339,
+            "startColumn": 9,
+            "startLine": 5339
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 5351,
+            "startColumn": 9,
+            "startLine": 5351
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/body_page_fields.rs",
+          "region": {
+            "endColumn": 52,
+            "endLine": 131,
+            "startColumn": 43,
+            "startLine": 131
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/body_page_fields.rs",
+          "region": {
+            "endColumn": 33,
+            "endLine": 142,
+            "startColumn": 29,
+            "startLine": 142
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/body_page_fields.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 149,
+            "startColumn": 9,
+            "startLine": 149
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 8243,
+            "startColumn": 35,
+            "startLine": 8243
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 8244,
+            "startColumn": 9,
+            "startLine": 8244
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 8248,
+            "startColumn": 9,
+            "startLine": 8248
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 42,
+            "endLine": 8521,
+            "startColumn": 24,
+            "startLine": 8521
+          },
+          "message": "self.layout_engine"
+        },
+        {
+          "path": "src/renderer/layout.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 4668,
+            "startColumn": 9,
+            "startLine": 4668
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/renderer/layout.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 4730,
+            "startColumn": 13,
+            "startLine": 4730
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/renderer/layout.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 5700,
+            "startColumn": 9,
+            "startLine": 5700
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/renderer/layout.rs",
+          "region": {
+            "endColumn": 41,
+            "endLine": 5860,
+            "startColumn": 37,
+            "startLine": 5860
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3715,
+            "startColumn": 9,
+            "startLine": 3715
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 3748,
+            "startColumn": 9,
+            "startLine": 3748
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3781,
+            "startColumn": 9,
+            "startLine": 3781
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout.rs",
+          "region": {
+            "endColumn": 69,
+            "endLine": 3829,
+            "startColumn": 19,
+            "startLine": 3829
+          },
+          "message": "|...| ... : ... => .. [captured self, &ref]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout.rs",
+          "region": {
+            "endColumn": 26,
+            "endLine": 3829,
+            "startColumn": 22,
+            "startLine": 3829
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 24,
+            "startColumn": 9,
+            "startLine": 24
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 86,
+            "endLine": 36,
+            "startColumn": 78,
+            "startLine": 36
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 24,
+            "endLine": 1921,
+            "startColumn": 16,
+            "startLine": 1921
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 16,
+            "endLine": 1923,
+            "startColumn": 13,
+            "startLine": 1923
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 10,
+            "endLine": 1937,
+            "startColumn": 9,
+            "startLine": 1922
+          },
+          "message": "Self {...} [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1938,
+            "startColumn": 34,
+            "startLine": 1921
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 87,
+            "endLine": 36,
+            "startColumn": 24,
+            "startLine": 36
+          },
+          "message": "...::new(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 1962,
+            "startColumn": 9,
+            "startLine": 1962
+          },
+          "message": "SelfParam [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 1965,
+            "startColumn": 9,
+            "startLine": 1965
+          },
+          "message": "self [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1967,
+            "startColumn": 15,
+            "startLine": 1964
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 75,
+            "endLine": 37,
+            "startColumn": 24,
+            "startLine": 36
+          },
+          "message": "... .with_stored_geometry_policy(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 37,
+            "endLine": 1971,
+            "startColumn": 29,
+            "startLine": 1971
+          },
+          "message": "SelfParam [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 1972,
+            "startColumn": 9,
+            "startLine": 1972
+          },
+          "message": "self [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1974,
+            "startColumn": 62,
+            "startLine": 1971
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 71,
+            "endLine": 38,
+            "startColumn": 24,
+            "startLine": 36
+          },
+          "message": "... .with_native_hwp5(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 1977,
+            "startColumn": 36,
+            "startLine": 1977
+          },
+          "message": "SelfParam [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 1978,
+            "startColumn": 9,
+            "startLine": 1978
+          },
+          "message": "self [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1980,
+            "startColumn": 69,
+            "startLine": 1977
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 67,
+            "endLine": 39,
+            "startColumn": 24,
+            "startLine": 36
+          },
+          "message": "... .with_hwpx_stored_layout(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 1990,
+            "startColumn": 32,
+            "startLine": 1990
+          },
+          "message": "SelfParam [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 1991,
+            "startColumn": 9,
+            "startLine": 1991
+          },
+          "message": "self [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1993,
+            "startColumn": 65,
+            "startLine": 1990
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 59,
+            "endLine": 40,
+            "startColumn": 24,
+            "startLine": 36
+          },
+          "message": "... .with_session_edited(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 2001,
+            "startColumn": 9,
+            "startLine": 2001
+          },
+          "message": "SelfParam [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 2004,
+            "startColumn": 9,
+            "startLine": 2004
+          },
+          "message": "self [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 2006,
+            "startColumn": 15,
+            "startLine": 2003
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 76,
+            "endLine": 41,
+            "startColumn": 24,
+            "startLine": 36
+          },
+          "message": "... .with_render_normalization(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 21,
+            "endLine": 36,
+            "startColumn": 13,
+            "startLine": 36
+          },
+          "message": "measurer [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/layout/table_layout/reflow_block_frames.rs",
+          "region": {
+            "endColumn": 32,
+            "endLine": 45,
+            "startColumn": 24,
+            "startLine": 45
+          },
+          "message": "measurer [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 2941,
+            "startColumn": 9,
+            "startLine": 2941
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 19,
+            "endLine": 2947,
+            "startColumn": 15,
+            "startLine": 2947
+          },
+          "message": "self [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 2960,
+            "startColumn": 9,
+            "startLine": 2960
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 2967,
+            "startColumn": 9,
+            "startLine": 2967
+          },
+          "message": "self [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3756,
+            "startColumn": 9,
+            "startLine": 3756
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 78,
+            "endLine": 4944,
+            "startColumn": 70,
+            "startLine": 4944
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 2840,
+            "startColumn": 36,
+            "startLine": 2840
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 2841,
+            "startColumn": 22,
+            "startLine": 2841
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 2841,
+            "startColumn": 5,
+            "startLine": 2841
+          },
+          "message": "... * ..."
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 2841,
+            "startColumn": 5,
+            "startLine": 2841
+          },
+          "message": "... / ..."
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 2,
+            "endLine": 2842,
+            "startColumn": 53,
+            "startLine": 2840
+          },
+          "message": "{ ... }"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 79,
+            "endLine": 4944,
+            "startColumn": 37,
+            "startLine": 4944
+          },
+          "message": "hwpunit_to_px(...)"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 56,
+            "endLine": 4951,
+            "startColumn": 37,
+            "startLine": 4925
+          },
+          "message": "MacroExpr"
+        }
+      ],
+      [
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 86,
+            "endLine": 169,
+            "startColumn": 31,
+            "startLine": 169
+          },
+          "message": "...::from_bytes_with_password(...)"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 168,
+            "startColumn": 13,
+            "startLine": 168
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 172,
+            "startColumn": 43,
+            "startLine": 172
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 127,
+            "startColumn": 22,
+            "startLine": 127
+          },
+          "message": "...: DocumentCore"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 131,
+            "startColumn": 17,
+            "startLine": 131
+          },
+          "message": "mut core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 135,
+            "startColumn": 60,
+            "startLine": 135
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 135,
+            "startColumn": 55,
+            "startLine": 135
+          },
+          "message": "&mut core [&ref]"
+        },
+        {
+          "path": "src/renderer/skia/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 67,
+            "endLine": 10,
+            "startColumn": 44,
+            "startLine": 10
+          },
+          "message": "...: ... [&ref]"
+        },
+        {
+          "path": "src/renderer/skia/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 11,
+            "startColumn": 9,
+            "startLine": 11
+          },
+          "message": "core [&ref]"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 74,
+            "startColumn": 9,
+            "startLine": 74
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 95,
+            "startColumn": 13,
+            "startLine": 95
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 48,
+            "endLine": 294,
+            "startColumn": 39,
+            "startLine": 294
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 305,
+            "startColumn": 9,
+            "startLine": 305
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 5309,
+            "startColumn": 38,
+            "startLine": 5309
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 5311,
+            "startColumn": 13,
+            "startLine": 5311
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 37,
+            "endLine": 5331,
+            "startColumn": 28,
+            "startLine": 5331
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 19,
+            "endLine": 5332,
+            "startColumn": 15,
+            "startLine": 5332
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5339,
+            "startColumn": 9,
+            "startLine": 5339
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 5350,
+            "startColumn": 9,
+            "startLine": 5350
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5367,
+            "startColumn": 9,
+            "startLine": 5367
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 5404,
+            "startColumn": 9,
+            "startLine": 5404
+          },
+          "message": "self [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 6254,
+            "startColumn": 9,
+            "startLine": 6254
+          },
+          "message": "SelfParam [&ref]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 29,
+            "endLine": 6402,
+            "startColumn": 21,
+            "startLine": 6402
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/render_normalization/stored_word_tail.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 163,
+            "startColumn": 5,
+            "startLine": 163
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/render_normalization/stored_word_tail.rs",
+          "region": {
+            "endColumn": 12,
+            "endLine": 177,
+            "startColumn": 9,
+            "startLine": 177
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/render_normalization/stored_word_tail.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 214,
+            "startColumn": 5,
+            "startLine": 214
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/render_normalization/stored_word_tail.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 501,
+            "startColumn": 35,
+            "startLine": 217
+          },
+          "message": "|...| ... : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/storage.rs",
+          "region": {
+            "endColumn": 56,
+            "endLine": 327,
+            "startColumn": 5,
+            "startLine": 327
+          },
+          "message": "...: ... : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/storage.rs",
+          "region": {
+            "endColumn": 26,
+            "endLine": 330,
+            "startColumn": 17,
+            "startLine": 330
+          },
+          "message": "operation : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/renderer/render_normalization/stored_word_tail.rs",
+          "region": {
+            "endColumn": 59,
+            "endLine": 458,
+            "startColumn": 56,
+            "startLine": 458
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/stored_word_tail.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 200,
+            "startColumn": 5,
+            "startLine": 200
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/stored_word_tail.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 302,
+            "startColumn": 35,
+            "startLine": 203
+          },
+          "message": "|...| ... : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/storage.rs",
+          "region": {
+            "endColumn": 56,
+            "endLine": 327,
+            "startColumn": 5,
+            "startLine": 327
+          },
+          "message": "...: ... : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/storage.rs",
+          "region": {
+            "endColumn": 26,
+            "endLine": 330,
+            "startColumn": 17,
+            "startLine": 330
+          },
+          "message": "operation : ... => .. [captured dpi]"
+        },
+        {
+          "path": "src/renderer/composer/stored_word_tail.rs",
+          "region": {
+            "endColumn": 20,
+            "endLine": 285,
+            "startColumn": 17,
+            "startLine": 285
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 4270,
+            "startColumn": 5,
+            "startLine": 4270
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 12,
+            "endLine": 4277,
+            "startColumn": 9,
+            "startLine": 4277
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 4331,
+            "startColumn": 5,
+            "startLine": 4331
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 67,
+            "endLine": 4361,
+            "startColumn": 64,
+            "startLine": 4361
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking/inline_frame_input.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 20,
+            "startColumn": 5,
+            "startLine": 20
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking/inline_frame_input.rs",
+          "region": {
+            "endColumn": 83,
+            "endLine": 33,
+            "startColumn": 80,
+            "startLine": 33
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 3347,
+            "startColumn": 5,
+            "startLine": 3347
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/line_breaking.rs",
+          "region": {
+            "endColumn": 84,
+            "endLine": 3353,
+            "startColumn": 81,
+            "startLine": 3353
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/composer/inline_table_frame.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 53,
+            "startColumn": 5,
+            "startLine": 53
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/inline_table_frame.rs",
+          "region": {
+            "endColumn": 28,
+            "endLine": 59,
+            "startColumn": 25,
+            "startLine": 59
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 24,
+            "endLine": 1921,
+            "startColumn": 16,
+            "startLine": 1921
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 16,
+            "endLine": 1923,
+            "startColumn": 13,
+            "startLine": 1923
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 10,
+            "endLine": 1937,
+            "startColumn": 9,
+            "startLine": 1922
+          },
+          "message": "Self {...} [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1938,
+            "startColumn": 34,
+            "startLine": 1921
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/composer/inline_table_frame.rs",
+          "region": {
+            "endColumn": 29,
+            "endLine": 59,
+            "startColumn": 5,
+            "startLine": 59
+          },
+          "message": "...::new(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 1990,
+            "startColumn": 32,
+            "startLine": 1990
+          },
+          "message": "SelfParam [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 1991,
+            "startColumn": 9,
+            "startLine": 1991
+          },
+          "message": "self [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1993,
+            "startColumn": 65,
+            "startLine": 1990
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/composer/inline_table_frame.rs",
+          "region": {
+            "endColumn": 35,
+            "endLine": 60,
+            "startColumn": 5,
+            "startLine": 59
+          },
+          "message": "... .with_session_edited(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 2960,
+            "startColumn": 9,
+            "startLine": 2960
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 2967,
+            "startColumn": 9,
+            "startLine": 2967
+          },
+          "message": "self [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3756,
+            "startColumn": 9,
+            "startLine": 3756
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 49,
+            "endLine": 4947,
+            "startColumn": 41,
+            "startLine": 4947
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 2840,
+            "startColumn": 36,
+            "startLine": 2840
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 2841,
+            "startColumn": 22,
+            "startLine": 2841
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 2841,
+            "startColumn": 5,
+            "startLine": 2841
+          },
+          "message": "... * ..."
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 2841,
+            "startColumn": 5,
+            "startLine": 2841
+          },
+          "message": "... / ..."
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 2,
+            "endLine": 2842,
+            "startColumn": 53,
+            "startLine": 2840
+          },
+          "message": "{ ... }"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 38,
+            "endLine": 4948,
+            "startColumn": 37,
+            "startLine": 4945
+          },
+          "message": "hwpunit_to_px(...)"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 56,
+            "endLine": 4951,
+            "startColumn": 37,
+            "startLine": 4925
+          },
+          "message": "MacroExpr"
+        }
+      ],
+      [
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 86,
+            "endLine": 169,
+            "startColumn": 31,
+            "startLine": 169
+          },
+          "message": "...::from_bytes_with_password(...)"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 168,
+            "startColumn": 13,
+            "startLine": 168
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 172,
+            "startColumn": 43,
+            "startLine": 172
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 127,
+            "startColumn": 22,
+            "startLine": 127
+          },
+          "message": "...: DocumentCore"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 131,
+            "startColumn": 17,
+            "startLine": 131
+          },
+          "message": "mut core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 135,
+            "startColumn": 60,
+            "startLine": 135
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/native_host/mod.rs",
+          "region": {
+            "endColumn": 64,
+            "endLine": 135,
+            "startColumn": 55,
+            "startLine": 135
+          },
+          "message": "&mut core"
+        },
+        {
+          "path": "src/renderer/skia/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 67,
+            "endLine": 10,
+            "startColumn": 44,
+            "startLine": 10
+          },
+          "message": "...: ..."
+        },
+        {
+          "path": "src/renderer/skia/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 11,
+            "startColumn": 9,
+            "startLine": 11
+          },
+          "message": "core"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 74,
+            "startColumn": 9,
+            "startLine": 74
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 95,
+            "startColumn": 13,
+            "startLine": 95
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 48,
+            "endLine": 294,
+            "startColumn": 39,
+            "startLine": 294
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/native_pua_fonts.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 305,
+            "startColumn": 9,
+            "startLine": 305
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 5309,
+            "startColumn": 38,
+            "startLine": 5309
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 5311,
+            "startColumn": 13,
+            "startLine": 5311
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 37,
+            "endLine": 5331,
+            "startColumn": 28,
+            "startLine": 5331
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 19,
+            "endLine": 5332,
+            "startColumn": 15,
+            "startLine": 5332
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5339,
+            "startColumn": 9,
+            "startLine": 5339
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 5351,
+            "startColumn": 9,
+            "startLine": 5351
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/body_page_fields.rs",
+          "region": {
+            "endColumn": 52,
+            "endLine": 131,
+            "startColumn": 43,
+            "startLine": 131
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/body_page_fields.rs",
+          "region": {
+            "endColumn": 33,
+            "endLine": 142,
+            "startColumn": 29,
+            "startLine": 142
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/body_page_fields.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 149,
+            "startColumn": 9,
+            "startLine": 149
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/body_page_fields.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 247,
+            "startColumn": 13,
+            "startLine": 247
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 42,
+            "endLine": 5359,
+            "startColumn": 33,
+            "startLine": 5359
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 19,
+            "endLine": 5360,
+            "startColumn": 15,
+            "startLine": 5360
+          },
+          "message": "self"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5367,
+            "startColumn": 9,
+            "startLine": 5367
+          },
+          "message": "SelfParam"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 29,
+            "endLine": 5754,
+            "startColumn": 21,
+            "startLine": 5754
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 3425,
+            "startColumn": 9,
+            "startLine": 3425
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 16,
+            "endLine": 3431,
+            "startColumn": 13,
+            "startLine": 3431
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 10,
+            "endLine": 3439,
+            "startColumn": 9,
+            "startLine": 3430
+          },
+          "message": "Self {...} [TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 3440,
+            "startColumn": 15,
+            "startLine": 3429
+          },
+          "message": "{ ... } [TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 18,
+            "endLine": 5756,
+            "startColumn": 34,
+            "startLine": 5753
+          },
+          "message": "...::new_with_render_normalization(...) [TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 54,
+            "endLine": 3442,
+            "startColumn": 50,
+            "startLine": 3442
+          },
+          "message": "SelfParam [TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 3445,
+            "startColumn": 78,
+            "startLine": 3442
+          },
+          "message": "{ ... } [TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 95,
+            "endLine": 5757,
+            "startColumn": 34,
+            "startLine": 5753
+          },
+          "message": "... .with_section_column_spacing_hu(...) [TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 31,
+            "endLine": 5753,
+            "startColumn": 21,
+            "startLine": 5753
+          },
+          "message": "typesetter [TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/document_core/queries/rendering.rs",
+          "region": {
+            "endColumn": 27,
+            "endLine": 5758,
+            "startColumn": 17,
+            "startLine": 5758
+          },
+          "message": "typesetter [TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3814,
+            "startColumn": 9,
+            "startLine": 3814
+          },
+          "message": "SelfParam [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 3832,
+            "startColumn": 9,
+            "startLine": 3832
+          },
+          "message": "self [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/section.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 23,
+            "startColumn": 9,
+            "startLine": 23
+          },
+          "message": "SelfParam [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/section.rs",
+          "region": {
+            "endColumn": 50,
+            "endLine": 377,
+            "startColumn": 46,
+            "startLine": 377
+          },
+          "message": "self [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/section/flow.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 11,
+            "startColumn": 9,
+            "startLine": 11
+          },
+          "message": "SelfParam [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/section/flow.rs",
+          "region": {
+            "endColumn": 33,
+            "endLine": 131,
+            "startColumn": 29,
+            "startLine": 131
+          },
+          "message": "self [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3875,
+            "startColumn": 9,
+            "startLine": 3875
+          },
+          "message": "SelfParam [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 3883,
+            "startColumn": 9,
+            "startLine": 3883
+          },
+          "message": "self [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3918,
+            "startColumn": 9,
+            "startLine": 3918
+          },
+          "message": "SelfParam [&ref, TypesetEngine.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 21,
+            "endLine": 3928,
+            "startColumn": 13,
+            "startLine": 3928
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/context.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 21,
+            "startColumn": 9,
+            "startLine": 21
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/context.rs",
+          "region": {
+            "endColumn": 16,
+            "endLine": 28,
+            "startColumn": 13,
+            "startLine": 28
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/context.rs",
+          "region": {
+            "endColumn": 10,
+            "endLine": 33,
+            "startColumn": 9,
+            "startLine": 27
+          },
+          "message": "Self {...} [ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/context.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 34,
+            "startColumn": 15,
+            "startLine": 26
+          },
+          "message": "{ ... } [ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 10,
+            "endLine": 3933,
+            "startColumn": 23,
+            "startLine": 3927
+          },
+          "message": "...::new(...) [ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 20,
+            "endLine": 3927,
+            "startColumn": 13,
+            "startLine": 3927
+          },
+          "message": "context [ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 21,
+            "endLine": 3935,
+            "startColumn": 14,
+            "startLine": 3935
+          },
+          "message": "context [ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset.rs",
+          "region": {
+            "endColumn": 21,
+            "endLine": 3935,
+            "startColumn": 13,
+            "startLine": 3935
+          },
+          "message": "&context [&ref, ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/format.rs",
+          "region": {
+            "endColumn": 37,
+            "endLine": 24,
+            "startColumn": 5,
+            "startLine": 24
+          },
+          "message": "...: ... [&ref, ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/format.rs",
+          "region": {
+            "endColumn": 12,
+            "endLine": 37,
+            "startColumn": 9,
+            "startLine": 37
+          },
+          "message": "ctx [&ref, ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/format.rs",
+          "region": {
+            "endColumn": 37,
+            "endLine": 331,
+            "startColumn": 5,
+            "startLine": 331
+          },
+          "message": "...: ... [&ref, ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/format.rs",
+          "region": {
+            "endColumn": 28,
+            "endLine": 368,
+            "startColumn": 25,
+            "startLine": 368
+          },
+          "message": "ctx [&ref, ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/context.rs",
+          "region": {
+            "endColumn": 28,
+            "endLine": 41,
+            "startColumn": 23,
+            "startLine": 41
+          },
+          "message": "SelfParam [&ref, ParagraphFormatContext.dpi]"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/context.rs",
+          "region": {
+            "endColumn": 17,
+            "endLine": 42,
+            "startColumn": 9,
+            "startLine": 42
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/context.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 43,
+            "startColumn": 37,
+            "startLine": 41
+          },
+          "message": "{ ... }"
+        },
+        {
+          "path": "src/renderer/typeset/paragraph/format.rs",
+          "region": {
+            "endColumn": 34,
+            "endLine": 368,
+            "startColumn": 25,
+            "startLine": 368
+          },
+          "message": "ctx.dpi()"
+        },
+        {
+          "path": "src/renderer/composer/inline_table_frame.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 94,
+            "startColumn": 5,
+            "startLine": 94
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/composer/inline_table_frame.rs",
+          "region": {
+            "endColumn": 47,
+            "endLine": 108,
+            "startColumn": 44,
+            "startLine": 108
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 24,
+            "endLine": 1921,
+            "startColumn": 16,
+            "startLine": 1921
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 16,
+            "endLine": 1923,
+            "startColumn": 13,
+            "startLine": 1923
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 10,
+            "endLine": 1937,
+            "startColumn": 9,
+            "startLine": 1922
+          },
+          "message": "Self {...} [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1938,
+            "startColumn": 34,
+            "startLine": 1921
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/composer/inline_table_frame.rs",
+          "region": {
+            "endColumn": 48,
+            "endLine": 108,
+            "startColumn": 24,
+            "startLine": 108
+          },
+          "message": "...::new(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 40,
+            "endLine": 1990,
+            "startColumn": 32,
+            "startLine": 1990
+          },
+          "message": "SelfParam [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 1991,
+            "startColumn": 9,
+            "startLine": 1991
+          },
+          "message": "self [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 6,
+            "endLine": 1993,
+            "startColumn": 65,
+            "startLine": 1990
+          },
+          "message": "{ ... } [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/composer/inline_table_frame.rs",
+          "region": {
+            "endColumn": 39,
+            "endLine": 109,
+            "startColumn": 24,
+            "startLine": 108
+          },
+          "message": "... .with_session_edited(...) [HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 2960,
+            "startColumn": 9,
+            "startLine": 2960
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 13,
+            "endLine": 2967,
+            "startColumn": 9,
+            "startLine": 2967
+          },
+          "message": "self [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3756,
+            "startColumn": 9,
+            "startLine": 3756
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 2,
+            "endLine": 4881,
+            "startColumn": 33,
+            "startLine": 4869
+          },
+          "message": "|...| ... : ... => .. [captured self, &ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/composer/nested_table_frames.rs",
+          "region": {
+            "endColumn": 67,
+            "endLine": 55,
+            "startColumn": 5,
+            "startLine": 55
+          },
+          "message": "...: ... : ... => .. [captured self, &ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/composer/nested_table_frames.rs",
+          "region": {
+            "endColumn": 41,
+            "endLine": 120,
+            "startColumn": 28,
+            "startLine": 120
+          },
+          "message": "nested_height : ... => .. [captured self, &ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 56,
+            "endLine": 4873,
+            "startColumn": 52,
+            "startLine": 4873
+          },
+          "message": "self [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 14,
+            "endLine": 3756,
+            "startColumn": 9,
+            "startLine": 3756
+          },
+          "message": "SelfParam [&ref, HeightMeasurer.dpi]"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 77,
+            "endLine": 4937,
+            "startColumn": 69,
+            "startLine": 4937
+          },
+          "message": "self.dpi"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 2840,
+            "startColumn": 36,
+            "startLine": 2840
+          },
+          "message": "...: f64"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 2841,
+            "startColumn": 22,
+            "startLine": 2841
+          },
+          "message": "dpi"
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 25,
+            "endLine": 2841,
+            "startColumn": 5,
+            "startLine": 2841
+          },
+          "message": "... * ..."
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 44,
+            "endLine": 2841,
+            "startColumn": 5,
+            "startLine": 2841
+          },
+          "message": "... / ..."
+        },
+        {
+          "path": "src/renderer/mod.rs",
+          "region": {
+            "endColumn": 2,
+            "endLine": 2842,
+            "startColumn": 53,
+            "startLine": 2840
+          },
+          "message": "{ ... }"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 78,
+            "endLine": 4937,
+            "startColumn": 37,
+            "startLine": 4937
+          },
+          "message": "hwpunit_to_px(...)"
+        },
+        {
+          "path": "src/renderer/height_measurer.rs",
+          "region": {
+            "endColumn": 56,
+            "endLine": 4951,
+            "startColumn": 37,
+            "startLine": 4925
+          },
+          "message": "MacroExpr"
+        }
+      ]
+    ]
+  }
+]

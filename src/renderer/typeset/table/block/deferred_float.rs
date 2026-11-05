@@ -38,7 +38,7 @@ pub(super) fn try_defer(st: &mut TypesetState, input: BlockTableInput<'_>, dpi: 
             .is_some()
         });
     if st.col_count != 1
-        || table.page_break != TablePageBreak::None
+        || table.layout_page_break() != TablePageBreak::None
         || !table.common.flow_with_text
         || !is_para_topbottom_float(&table.common)
         || table.common.vert_align != crate::model::shape::VertAlign::Top

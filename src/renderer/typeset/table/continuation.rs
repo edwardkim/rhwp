@@ -176,7 +176,6 @@ pub(in crate::renderer::typeset) struct BlockTableContinuationPreparedState {
     pub(in crate::renderer::typeset) total_footnote_height: f64,
     pub(in crate::renderer::typeset) queue_table_footnotes: bool,
     pub(in crate::renderer::typeset) table_footnotes: Vec<TableCellFootnote>,
-    pub(in crate::renderer::typeset) footnote_margin: f64,
     pub(in crate::renderer::typeset) host_spacing_total: f64,
     pub(in crate::renderer::typeset) host_spacing_before: f64,
     pub(in crate::renderer::typeset) host_spacing_after_only: f64,

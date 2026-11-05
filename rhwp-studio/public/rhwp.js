@@ -1038,6 +1038,14 @@ export class HwpDocument {
         return ret !== 0;
     }
     /**
+     * 실제 내부 클립보드가 글자 모양만 가진 한 문단 조각인지 읽는다.
+     * @returns {boolean}
+     */
+    clipboardIsSingleText() {
+        const ret = wasm.hwpdocument_clipboardIsSingleText(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
      * @param {number} document
      * @param {number} fonts
      * @returns {string}
@@ -1811,8 +1819,6 @@ export class HwpDocument {
         }
     }
     /**
-     * 본문 선택 영역을 삭제한다.
-     *
      * 반환: JSON `{"ok":true,"paraIdx":N,"charOffset":N}`
      * @param {number} section_idx
      * @param {number} start_para_idx
@@ -1927,6 +1933,35 @@ export class HwpDocument {
             return getStringFromWasm0(ptr2, len2);
         } finally {
             wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
+     * 본문 선택 영역을 삭제한다.
+     *
+     * 본문 선택을 개체·각주 칸을 포함한 캐럿 위치로 지운다.
+     * @param {number} section_idx
+     * @param {number} start_para_idx
+     * @param {number} start_logical
+     * @param {number} end_para_idx
+     * @param {number} end_logical
+     * @returns {string}
+     */
+    deleteRangeLogical(section_idx, start_para_idx, start_logical, end_para_idx, end_logical) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_deleteRangeLogical(this.__wbg_ptr, section_idx, start_para_idx, start_logical, end_para_idx, end_logical);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
         }
     }
     /**
@@ -5803,6 +5838,28 @@ export class HwpDocument {
         }
     }
     /**
+     * @param {number} page
+     * @returns {string}
+     */
+    getPagePaintFontRequests(page) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_getPagePaintFontRequests(this.__wbg_ptr, page);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
      * 페이지 렌더 트리를 JSON 문자열로 반환한다.
      * @param {number} page_num
      * @returns {string}
@@ -9208,6 +9265,34 @@ export class HwpDocument {
         }
     }
     /**
+     * 순수 HTML 글을 본문 논리 캐럿의 누름틀 안팎 소속으로 붙인다.
+     * @param {number} section_idx
+     * @param {number} para_idx
+     * @param {number} logical_offset
+     * @param {string} html
+     * @returns {string}
+     */
+    pasteHtmlTextLogical(section_idx, para_idx, logical_offset, html) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(html, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_pasteHtmlTextLogical(this.__wbg_ptr, section_idx, para_idx, logical_offset, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
      * 한글 클립보드 문서모델(hwpjson)을 캐럿 위치에 삽입한다 (본문).
      *
      * 한글은 Ctrl+C 시 클립보드 HTML 끝 주석에 문서 모델 전체를 싣는다. HTML 에는 없는
@@ -9324,6 +9409,31 @@ export class HwpDocument {
             return getStringFromWasm0(ptr2, len2);
         } finally {
             wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
+     * 순수 서식 글 조각을 본문 논리 캐럿의 누름틀 안팎 소속으로 붙인다.
+     * @param {number} section_idx
+     * @param {number} para_idx
+     * @param {number} logical_offset
+     * @returns {string}
+     */
+    pasteInternalTextLogical(section_idx, para_idx, logical_offset) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_pasteInternalTextLogical(this.__wbg_ptr, section_idx, para_idx, logical_offset);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
         }
     }
     /**

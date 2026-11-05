@@ -1,0 +1,246 @@
+{
+  "integration_pr": 8609,
+  "merge_sha": "e9d4a23be4523a97c29ce6f5e407aba6c4cfb26c",
+  "code_ci_head": "da0074f41ee01d7fa79e6bd4ffd5cadf7c69665d",
+  "final_pr_head": "1557f70b03b92f0af88fb0e6f4ef280df4b8683a",
+  "original_prs": [
+    {
+      "number": 8326,
+      "head": "32c2a1e9febb303ac0662021279cf9171b346cb8",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8326"
+    },
+    {
+      "number": 8331,
+      "head": "5b36dbd078acd5add18592511682ce268dd66e82",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8331"
+    },
+    {
+      "number": 8332,
+      "head": "c773e5060c0f186b4bf8281133004f5afe120fa4",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8332"
+    },
+    {
+      "number": 8347,
+      "head": "19aed211d178996cf83aae89388ed91d6ec93bcf",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8347"
+    },
+    {
+      "number": 8349,
+      "head": "ffc0550e8b9c6db8627f9a82cc7f0f3ff39a5415",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8349"
+    },
+    {
+      "number": 8358,
+      "head": "9a709cdcd31300731cefbdbec4a978557f871183",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8358"
+    },
+    {
+      "number": 8359,
+      "head": "2587dd58dac9a8bf312d7cd2f59b37e803d1a387",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8359"
+    },
+    {
+      "number": 8363,
+      "head": "9d6e420da55d4b9d9684c0e9c8f61cdf84ff29ff",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8363"
+    },
+    {
+      "number": 8366,
+      "head": "5993e4d32e08cce8785e79364dd6ac66eab80dfb",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8366"
+    },
+    {
+      "number": 8367,
+      "head": "0f73bc67fcffb6126c745d86685df893ffb5267b",
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "body_unchanged": true,
+      "url": "https://github.com/edwardkim/rhwp/pull/8367"
+    }
+  ],
+  "self_review": {
+    "id": 5778015173,
+    "html_url": "https://github.com/edwardkim/rhwp/pull/8609#pullrequestreview-5778015173",
+    "commit_id": "1557f70b03b92f0af88fb0e6f4ef280df4b8683a",
+    "state": "COMMENTED",
+    "submitted_at": "2026-11-05T00:30:00Z"
+  },
+  "postmerge_automation": {
+    "duration": {
+      "run_id": 41941963866,
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41941963866",
+      "conclusion": "success",
+      "collection": {
+        "ready": true,
+        "reason": "successful-pr-worker-measurements",
+        "pullNumber": 8609,
+        "finalHeadRunId": 41941236661,
+        "finalHeadRunAttempt": 1,
+        "finalHeadSha": "1557f70b03b92f0af88fb0e6f4ef280df4b8683a",
+        "reviewOnlyTail": true,
+        "sourceRunId": 41937077126,
+        "latestRunAttempt": 1,
+        "measurementAttempts": {
+          "b": 1,
+          "c": 1,
+          "d": 1,
+          "e": 1
+        },
+        "testedMergeSha": "04a4c1f0e222628eb2eab748a8d1d82ed8a55704",
+        "sourceHeadSha": "da0074f41ee01d7fa79e6bd4ffd5cadf7c69665d",
+        "artifactIds": [
+          13375776724,
+          13376216331,
+          13374589681,
+          13374774313
+        ]
+      },
+      "publication": {
+        "published": true,
+        "reason": "published",
+        "previousSha": "87699da7ef32fffe1dae581a5b3d32075a002c3d",
+        "commitSha": "8bcf7906f2d923d19e8b65621dbb307ee7c0f117",
+        "blobSha": "cab4d5513748c69aa3cfab9232f970c61bee0b1c",
+        "sourceMergeSha": "e9d4a23be4523a97c29ce6f5e407aba6c4cfb26c"
+      }
+    },
+    "linked_issue_workflow": {
+      "run_id": 41941963864,
+      "conclusion": "success",
+      "closed_issue_ids": []
+    },
+    "verification_ci_started_after_merge": false
+  },
+  "new_issue_closures_by_maintainer": [],
+  "source_fork_branches_deleted": false,
+  "comments_and_cleanup": {
+    "comments_posted": 10,
+    "api_bodies_verified": true,
+    "browser_images_verified": 56,
+    "comments": [
+      {
+        "pr": 8326,
+        "url": "https://github.com/edwardkim/rhwp/pull/8326#issuecomment-6646330645",
+        "body_sha256": "31da8b95c63cda1e6e53eb670767f06a23eb044ccadbfb7651500a9bbfd0a6f8",
+        "displayed_images": 8
+      },
+      {
+        "pr": 8331,
+        "url": "https://github.com/edwardkim/rhwp/pull/8331#issuecomment-6646331115",
+        "body_sha256": "1562ec16c985314856390b3658b237ba1e716051b8caf66fb91156e4c10c2710",
+        "displayed_images": 8
+      },
+      {
+        "pr": 8332,
+        "url": "https://github.com/edwardkim/rhwp/pull/8332#issuecomment-6646331578",
+        "body_sha256": "06bd642801480340da3deae2a8372afc01b3d2e907943b2b34a9c4992bb77908",
+        "displayed_images": 4
+      },
+      {
+        "pr": 8347,
+        "url": "https://github.com/edwardkim/rhwp/pull/8347#issuecomment-6646332079",
+        "body_sha256": "fe08ac4a10eb123153c7ab0be663c88f8f6bc2b713aea6293b7df9801e60ff27",
+        "displayed_images": 8
+      },
+      {
+        "pr": 8349,
+        "url": "https://github.com/edwardkim/rhwp/pull/8349#issuecomment-6646332657",
+        "body_sha256": "4fb4b413c285f10482d8d35b8a69cf34ddaaa662e5f3afd8c51ef91f71709943",
+        "displayed_images": 4
+      },
+      {
+        "pr": 8358,
+        "url": "https://github.com/edwardkim/rhwp/pull/8358#issuecomment-6646333333",
+        "body_sha256": "0b0ca029dd6dcb43cb4ea202daa17504a202821b70158982aa32b95fb1f7337a",
+        "displayed_images": 8
+      },
+      {
+        "pr": 8359,
+        "url": "https://github.com/edwardkim/rhwp/pull/8359#issuecomment-6646333890",
+        "body_sha256": "715c2517e2f4ae69e860fdf3a21aa6d8a54184ee284db2f349d42b5474f150ca",
+        "displayed_images": 4
+      },
+      {
+        "pr": 8363,
+        "url": "https://github.com/edwardkim/rhwp/pull/8363#issuecomment-6646334440",
+        "body_sha256": "bf75016eeb6b72a11402e0267572c399780c63fb357cc4dd47b7f1d4f1c92b04",
+        "displayed_images": 4
+      },
+      {
+        "pr": 8366,
+        "url": "https://github.com/edwardkim/rhwp/pull/8366#issuecomment-6646334969",
+        "body_sha256": "4bd51faad800aaad04a80336900ca1348facf046a271fa1a50c49c5e7772afd3",
+        "displayed_images": 4
+      },
+      {
+        "pr": 8367,
+        "url": "https://github.com/edwardkim/rhwp/pull/8367#issuecomment-6646335495",
+        "body_sha256": "0f87fe348d7c6de1fb266cfac87553f9cb5ad21b5bf2a59d3a246e2c77530f3d",
+        "displayed_images": 4
+      }
+    ],
+    "cleanup_complete": true,
+    "reclaimed_bytes": 26571051008,
+    "free_after_bytes": 219395297280,
+    "local_cleanup_receipt": "mydocs/privacy/pr8609-cleanup.json",
+    "local_completion_receipt": "mydocs/privacy/pr8609-completion.json",
+    "review_worktree_removed": true,
+    "review_local_remote_branches_removed": true,
+    "root_output_absent": true,
+    "review_debug_absent": true,
+    "foreign_worktree_preserved": true,
+    "deployment_wasm_unchanged": true,
+    "other_review_target_profiles_retained": [
+      "doc",
+      "package",
+      "release",
+      "release-test",
+      "tmp",
+      "wasm32-unknown-unknown",
+      "x86_64-unknown-linux-gnu"
+    ]
+  },
+  "related_unresolved_issues_kept_open": [
+    8236
+  ],
+  "related_unprocessed_prs_kept_open": [
+    8368
+  ]
+}

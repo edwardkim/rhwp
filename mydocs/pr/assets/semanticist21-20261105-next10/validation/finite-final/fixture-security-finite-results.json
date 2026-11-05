@@ -1,0 +1,821 @@
+{
+  "status": "passed",
+  "fixture_count": 45,
+  "detectors_per_fixture": 3,
+  "samples_change_count": 0,
+  "samples_env_correction": "fixtures are not samples paths; full-run input invocation rejected before scans; all fixture paths scanned directly via CLI; final full security suite is included in the mandatory full nextest run",
+  "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+  "results": [
+    {
+      "input": "tests/fixtures/char_outline_types/outline.hwp",
+      "sha256": "e6317596e9eb1f7c5182e8c7aa821a3c036f00a2b9829b02956d988af4d4fb85",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/drop_cap/double-line.hwp",
+      "sha256": "44455394b5ffe21518352d148616c81f97dc0cbc52a0a938b2bb4def19a08a08",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/drop_cap/double-line.hwpx",
+      "sha256": "05bdb0097e46fd9c8ffcf925214793f5a143791d2cd38342e5785e9fd2d259b8",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/drop_cap/margin.hwp",
+      "sha256": "5949b6a5bca90c5c84ae5381b37a8b17e1005197921f452839bc52b8c3e74b57",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/drop_cap/triple-line.hwp",
+      "sha256": "8288bfbe5f0f270aba9a9b36ab92dbc4f8bc599df47850f4d75b94f8bb3a6a36",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/endnote_numbering/continue.hwpx",
+      "sha256": "467ae3882535aaddc4a4ced4c05ad0f154f27d8cb4bc6addb0cf69c9af76a2d8",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/endnote_numbering/new-number-20.hwpx",
+      "sha256": "437ef87552f9c637d4f328ec7bb665deac3bd0ebd544be621d1473804fd4a0c4",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/endnote_numbering/restart-5.hwpx",
+      "sha256": "e88a8288407f7401cad44b7d403646e11cc2a6e4667b8c05e79b6a8cde20c3b9",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/footnote_shape/restart-page.hwp",
+      "sha256": "e6483160868d2f38b9deddfad47f5e2a5a233f0dccc2965c3e3bd8bd2d7bc67d",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/paragraph_head/hancom-heads.hwpx",
+      "sha256": "d73699eb4e0b536496d6d2d6d3e0e0f9f68816e38cb8891457c61c239baff808",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/endnote-continued.hwp",
+      "sha256": "89b61448d7ddef3af0d77d6f7b84a9c5700080ecc5d5dbc3cadf770112ef4f7d",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/endnote-continued.hwpx",
+      "sha256": "efb8a8b396001862bac488342c699d24aaec230d0cb6b0ac18346c8e4ecdaac9",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/endnote-deleted.hwpx",
+      "sha256": "1e4628c195fb13b6bbf8e203ef5032ae389f07e7bacd85e70faf046079bd0748",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/endnote-inserted.hwpx",
+      "sha256": "e9dc2dd384df631dbcd01735041e8eba77011d0bb211053db0e4549ee260554e",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/equal-height-edited.hwp",
+      "sha256": "7fa333d0c716dff9570386bc6bfaf4160c06dcfaa99608b1251c5b8f0000605e",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/equal-height-edited.hwpx",
+      "sha256": "ac37e38d7f5b380cfc7183231b1d614d82519bd253ec31089f4a3549b9e8304b",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/equal-width-edited.hwp",
+      "sha256": "064a7d51dccaddf1c3136679bfcf40b0f51a71b031ffad5397e953b9d5e92c05",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/equal-width-edited.hwpx",
+      "sha256": "f697cee620b06e271da8b57ba469465f62f346352254924da17fc3e4d53db893",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/footnote-shape-applied.hwp",
+      "sha256": "c176bd86461e51faed330cdb71bc19c3374fbbdfbd35d806c1604a35ae9b83ea",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/footnote-shape-applied.hwpx",
+      "sha256": "f9ba9b3ce981e49507a6b307d36f7f2d1592b398ddd365dc889240a05060b705",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/outline-id2.hwp",
+      "sha256": "d0ee102c8e0734b3b3094b1e48590d517b64d5aa934262e4388978f770276919",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/outline-id2.hwpx",
+      "sha256": "b3cd3c7fb63c68a8b3e7a0978566886bf9b51e0a736cfd1b0c88cc00404a1ead",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/paragraph-head-edited.hwp",
+      "sha256": "2728d6263b06ffbc0e714d7d1e120cc8b09605e9c7660d45c0b20cc51b59ae0b",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/paragraph-head-edited.hwpx",
+      "sha256": "6af6c35a61063be766838a6a1b174ecfc4f233b08b70b4434d94f15e051b7198",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/paragraph-head-off.hwpx",
+      "sha256": "e1375eb9b97a38ccf9f76c4c6cd99cfc463db35e0ad7baffba4d52e97623adb0",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/table-formula-easy-edited.hwpx",
+      "sha256": "646db28aeb61d828dcc66a7eea54fcb256a2e336e696793208d276db8250eb72",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/table-formula-recalculated.hwp",
+      "sha256": "410ae0f30937a83449a4c8e813b19029c8fd84000aa9c14b8dbb0b3f88b7fe59",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/table-formula-recalculated.hwpx",
+      "sha256": "9ced780bb37467cfaa7137c866c437f6ad710a45c3879caf69e84e102221cc41",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/uneven-height-edited.hwp",
+      "sha256": "edeb687bdddd19021a3fd8e446a0b225b5c3c917fc9154329610254085527fe9",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/uneven-height-edited.hwpx",
+      "sha256": "5c6416c2f4a1514e5aa32999603f2cdfcbab9466f1f30eb815546c9c56055b43",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/uneven-width-edited.hwp",
+      "sha256": "23c0c4941e0f6d21f3cbba4122be6ac9df2ad422c348a4154f1758e2a6797f03",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/uneven-width-edited.hwpx",
+      "sha256": "6c39965155be3b1dc987dc8454c0e9093d9322390d99613b68aae742946478fd",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/table_equal_cell_sizes/equal-width-partial-block.hwp",
+      "sha256": "efbdec7676c70fcd5334860b870a441bbc949fe39f2595487b99f422be4fa341",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/table_equal_cell_sizes/original.hwp",
+      "sha256": "e3ee5a9615b329e7cd5817e09e905b9973538d3eeceaf5a2f1338f4218766a31",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/table_equal_cell_sizes/uneven-height-hancom.hwp",
+      "sha256": "dd3606bb1786c0c64e870dcd0bc47a82f6a3328bb25d28d1b1096961382a5342",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/table_equal_cell_sizes/uneven-height.hwp",
+      "sha256": "003f6a7f48cc87e60b7d1b023330ebaf958f6ae94fc0c9a3fadc7fc727277b4d",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/table_equal_cell_sizes/uneven-width-hancom.hwp",
+      "sha256": "09b190de71f57fce92921d56c1e8731f4bc769911cb59bbd8f2b59dac3d5c3b1",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/table_equal_cell_sizes/uneven-width.hwp",
+      "sha256": "3b480c147060bf93582bcf1e3fa2a1af71f22ee4632207dc9db8996b345e697f",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/table_formula/cycles.hwpx",
+      "sha256": "737c454944b3551d9cddcb759b2337093dd1d879eac525d7a218fa3e75704e65",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/table_formula/easy.hwpx",
+      "sha256": "b46636826c13cc09045a0097dd079580914244ddd8db4ce66f507a770583aed0",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/table_formula/hancom.hwp",
+      "sha256": "d8ac4dd6db6d4c73714c2c7519898f1398552bb840325f9782f59e10a94db903",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/table_formula/stale.hwpx",
+      "sha256": "e11b4ee37a4ab016cbd7056e725ccf89e2a3448e68ba92da18c39c4442ad8177",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/footnote-shape-corrected.hwpx",
+      "sha256": "feb37b65b8ef714bbfbc45940403551f4e5681d0ab0aed3b8380ecb71cc76673",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "pdf/semanticist21-20261105-next10/circle-width-matrix.hwpx",
+      "sha256": "c613abdd0b5894e9a3599cc8503171d2c062863b49c463eb910766fb6987c957",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/semanticist21_next10_review/footnote-shape-configured.hwpx",
+      "sha256": "7444fb2a0a42f907c67b29f858347fe754f8f866b5413c5770357df008840796",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    }
+  ],
+  "seconds": 2.39
+}

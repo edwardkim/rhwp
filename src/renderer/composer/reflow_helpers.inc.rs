@@ -287,6 +287,9 @@ pub(crate) fn recompose_stored_single_line_if_overflowing_cached_with_storage<
         // 재래핑을 생략하면 절단 렌더 회귀. cache는 renderer session이 소유하고
         // source/style mutation과 함께 session cache 전체를 비운다.
         let width_key = (cell_inner_width_px as f32).to_bits();
+        if let Some(cache) = cache {
+            cache.use_section_tab_key(styles.section_tab_key());
+        }
         let over = if let Some(value) = cache.and_then(|cache| cache.get(para, width_key)) {
             value
         } else {

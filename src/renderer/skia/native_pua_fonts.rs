@@ -53,15 +53,21 @@ impl SkiaLayerRenderer {
                         index,
                         &selected.typeface.family_name(),
                     );
-                    names
-                        .iter()
-                        .any(|name| {
-                            request
-                                .family
-                                .split(',')
-                                .any(|family| family.trim() == name)
-                        })
-                        .then_some((bytes, index))
+                    // 원본 TTF의 전진을 구할 때 표시용 대체 face를 원본으로
+                    // 취급하면, 원본에 없는 글리프의 조판 폭까지 바뀐다.
+                    // HFT 표시 프로그램은 기존처럼 전체 후보를 허용한다.
+                    let postscript_name = selected.typeface.post_script_name();
+                    let family_matches = |family: &str| {
+                        let family = family.trim();
+                        names.iter().any(|name| family == name)
+                            || postscript_name.as_deref() == Some(family)
+                    };
+                    let matches = if request.source_ttf {
+                        request.family.split(',').next().is_some_and(family_matches)
+                    } else {
+                        request.family.split(',').any(family_matches)
+                    };
+                    matches.then_some((bytes, index))
                 })
                 .collect()
         })

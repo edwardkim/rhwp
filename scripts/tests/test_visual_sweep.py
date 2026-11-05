@@ -548,6 +548,15 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
             self.assertEqual(args, ['--embed-fonts=full', '--font-path', str(fonts)])
             self.assertEqual(supply['source'], 'macOS_user_fonts')
 
+    def test_inaccessible_macos_user_font_directory_is_not_an_installed_source(self):
+        with (
+            patch.dict(os.environ, {'RHWP_FONT_PATH': ''}),
+            patch.object(SWEEP.platform, 'system', return_value='Darwin'),
+            patch.object(Path, 'home', return_value=Path('/isolated-user')),
+            patch.object(Path, 'is_dir', side_effect=PermissionError('격리된 사용자 글꼴')),
+        ):
+            self.assertEqual(SWEEP.default_sweep_font_paths(), [])
+
     def test_missing_configured_font_directory_fails_before_capture(self):
         with tempfile.TemporaryDirectory() as temp:
             missing = Path(temp) / 'missing-fonts'
@@ -562,9 +571,23 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
                 patch.object(SWEEP, 'ensure_tools'),
                 patch.object(SWEEP, 'ensure_default_rhwp_binary_is_current'),
                 patch.object(SWEEP, 'render_target', return_value={}) as render,
+                patch.object(SWEEP, 'enforce_required_handbook') as handbook,
             ):
                 SWEEP.main()
             self.assertEqual(render.call_args.kwargs['embed_fonts'], 'full')
+            handbook.assert_not_called()
+
+    def test_normal_target_runs_handbook_when_requested(self):
+        with tempfile.TemporaryDirectory() as temp:
+            with (
+                patch.object(sys, 'argv', ['visual_sweep.py', '--file-target', 'fixture', 'a.hwp', 'a.pdf', '--out', temp, '--handbook-gate']),
+                patch.object(SWEEP, 'ensure_tools'),
+                patch.object(SWEEP, 'ensure_default_rhwp_binary_is_current'),
+                patch.object(SWEEP, 'render_target', return_value={}),
+                patch.object(SWEEP, 'enforce_required_handbook') as handbook,
+            ):
+                SWEEP.main()
+            handbook.assert_called_once()
 
     def test_font_failure_invalidates_old_passed_summary_before_raster_or_resume(self):
         with tempfile.TemporaryDirectory() as temp:

@@ -472,6 +472,7 @@ fn parse_hwp_with_cfb(
         .consume(doc_info_data.len())
         .map_err(ParseError::CfbError)?;
     let (mut doc_info, doc_properties) = parse_doc_info_stream(&doc_info_data, encrypted)?;
+    doc_info::apply_v5024_strike_bits(&mut doc_info.char_shapes, &file_header.version);
     if let Ok(bytes) = cfb.read_stream_raw_limited(
         crate::model::native_font_program::HWP_STREAM,
         crate::model::native_font_program::MAX_BYTES,
@@ -955,6 +956,7 @@ fn parse_hwp_with_lenient(
         .consume(doc_info_data.len())
         .map_err(ParseError::CfbError)?;
     let (mut doc_info, doc_properties) = parse_doc_info_stream(&doc_info_data, encrypted)?;
+    doc_info::apply_v5024_strike_bits(&mut doc_info.char_shapes, &file_header.version);
     if let Ok(bytes) = lenient.read_stream_raw_limited(
         crate::model::native_font_program::HWP_STREAM,
         crate::model::native_font_program::MAX_BYTES,

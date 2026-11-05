@@ -35,7 +35,7 @@ impl LayoutEngine {
         fragment_end: (usize, bool),
     ) -> Option<StraddleContinuationDemand> {
         if !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
                 | crate::model::table::TablePageBreak::CellBreak
         ) {

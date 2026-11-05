@@ -1,0 +1,364 @@
+{
+  "observed_at": "2026-11-05T11:34:21.852174+00:00",
+  "pull_request": 8640,
+  "head": "4cf202d2aba44b0cfdd33465b03e37d1826a3fdc",
+  "base": "a95d1d5afad1bfd61998794fa78fb0db100d690a",
+  "tested_merge": "e01add9810f4a38d93d2eb4fb56f7ccba2c3e767",
+  "merge_tree": "2cdd76d28053268c7affdb64007e9bcd0f29bfce",
+  "product_workflows": [
+    {
+      "id": 42015462782,
+      "name": "Adapter inter-diff",
+      "conclusion": "success",
+      "head": "4cf202d2aba44b0cfdd33465b03e37d1826a3fdc",
+      "attempt": 1
+    },
+    {
+      "id": 42015462665,
+      "name": "Proptest roundtrip",
+      "conclusion": "success",
+      "head": "4cf202d2aba44b0cfdd33465b03e37d1826a3fdc",
+      "attempt": 1
+    },
+    {
+      "id": 42015463084,
+      "name": "Render Diff",
+      "conclusion": "success",
+      "head": "4cf202d2aba44b0cfdd33465b03e37d1826a3fdc",
+      "attempt": 1
+    },
+    {
+      "id": 42015462739,
+      "name": "CodeQL",
+      "conclusion": "success",
+      "head": "4cf202d2aba44b0cfdd33465b03e37d1826a3fdc",
+      "attempt": 1
+    },
+    {
+      "id": 42015462699,
+      "name": "CI",
+      "conclusion": "success",
+      "head": "4cf202d2aba44b0cfdd33465b03e37d1826a3fdc",
+      "attempt": 1
+    }
+  ],
+  "default_feature_archives": [
+    {
+      "archive": "A",
+      "run": 3801,
+      "passed": 3801,
+      "skipped": 12,
+      "job": 127210496314,
+      "summary": "2026-11-05T11:16:27.0868389Z      Summary [  24.944s] 3801 tests run: 3801 passed, 12 skipped"
+    },
+    {
+      "archive": "B",
+      "run": 2152,
+      "passed": 2152,
+      "skipped": 15,
+      "job": 127213373701,
+      "summary": "2026-11-05T11:25:01.9605767Z      Summary [ 170.313s] 2152 tests run: 2152 passed (1 slow), 15 skipped"
+    },
+    {
+      "archive": "C",
+      "run": 2089,
+      "passed": 2089,
+      "skipped": 8,
+      "job": 127210766790,
+      "summary": "2026-11-05T11:20:57.7141948Z      Summary [ 183.966s] 2089 tests run: 2089 passed, 8 skipped"
+    },
+    {
+      "archive": "D",
+      "run": 2206,
+      "passed": 2206,
+      "skipped": 6,
+      "job": 127214914663,
+      "summary": "2026-11-05T11:31:20.0623672Z      Summary [ 319.679s] 2206 tests run: 2206 passed, 6 skipped"
+    },
+    {
+      "archive": "E",
+      "run": 2195,
+      "passed": 2195,
+      "skipped": 4,
+      "job": 127212763407,
+      "summary": "2026-11-05T11:23:41.3612769Z      Summary [ 167.941s] 2195 tests run: 2195 passed, 4 skipped"
+    }
+  ],
+  "default_feature_total_passed": 12443,
+  "default_feature_total_skipped": 45,
+  "frontend_unit": {
+    "tests": 2723,
+    "passed": 2721,
+    "skipped": 2,
+    "failed": 0
+  },
+  "native_gate": "success; CI selected library and focused groups, distinct from local official 4,064",
+  "render_build": {
+    "source_sha": "e01add9810f4a38d93d2eb4fb56f7ccba2c3e767",
+    "source_dirty": false,
+    "profile": "release",
+    "build_configuration": {
+      "profile": "release",
+      "build_mode": "standard",
+      "cdylib_only": "0",
+      "crate_types": "rlib+cdylib",
+      "lto_policy": "manifest",
+      "cache_variant": "release-rlib-cdylib-lto-manifest"
+    },
+    "success": true,
+    "wall_seconds": 672.34,
+    "artifacts": {
+      "rhwp.js": {
+        "sha256": "8ad202184fcb970d908e338761e36863a1f7508806bd426be491bd3cc069a769",
+        "bytes": 535713
+      },
+      "rhwp_bg.wasm": {
+        "sha256": "f5f126fde5721ece7c6a48e74b0fae40af6678ab09c84ec7ac541f9c87d2dd6d",
+        "bytes": 26541250
+      }
+    }
+  },
+  "canvas_results": [
+    {
+      "pageIndex": 0,
+      "legacyWidth": 1123,
+      "legacyHeight": 794,
+      "layerWidth": 1123,
+      "layerHeight": 794,
+      "width": 1123,
+      "height": 794,
+      "sameSize": true,
+      "diffPixels": 96,
+      "totalPixels": 891662,
+      "diffRatio": 0.00010766411487761058,
+      "maxChannelDelta": 84,
+      "averageChannelDelta": 0.0017531867456502576,
+      "pass": true,
+      "fixture": "basic/KTX.hwp"
+    },
+    {
+      "pageIndex": 0,
+      "legacyWidth": 794,
+      "legacyHeight": 1123,
+      "layerWidth": 794,
+      "layerHeight": 1123,
+      "width": 794,
+      "height": 1123,
+      "sameSize": true,
+      "diffPixels": 0,
+      "totalPixels": 891662,
+      "diffRatio": 0,
+      "maxChannelDelta": 0,
+      "averageChannelDelta": 0,
+      "pass": true,
+      "fixture": "biz_plan.hwp"
+    },
+    {
+      "pageIndex": 0,
+      "legacyWidth": 794,
+      "legacyHeight": 1123,
+      "layerWidth": 794,
+      "layerHeight": 1123,
+      "width": 794,
+      "height": 1123,
+      "sameSize": true,
+      "diffPixels": 0,
+      "totalPixels": 891662,
+      "diffRatio": 0,
+      "maxChannelDelta": 0,
+      "averageChannelDelta": 0,
+      "pass": true,
+      "fixture": "tac-case-001.hwp"
+    }
+  ],
+  "pdf_direct_results": [
+    {
+      "fixture": "basic/KTX.hwp",
+      "directExpected": false,
+      "directStage": null,
+      "directError": null,
+      "directGateFailed": false,
+      "directComparison": null
+    },
+    {
+      "fixture": "biz_plan.hwp",
+      "directExpected": true,
+      "directStage": "complete",
+      "directError": null,
+      "directGateFailed": false,
+      "directComparison": {
+        "referenceWidth": 595,
+        "referenceHeight": 841,
+        "pdfWidth": 595,
+        "pdfHeight": 841,
+        "width": 595,
+        "height": 841,
+        "sameSize": true,
+        "majorSizeMismatch": false,
+        "sizeNormalization": null,
+        "diffPixels": 3792,
+        "totalPixels": 500395,
+        "diffRatio": 0.007578013369438144,
+        "maxChannelDelta": 255,
+        "averageChannelDelta": 0.9753694581280788
+      }
+    },
+    {
+      "fixture": "tac-case-001.hwp",
+      "directExpected": true,
+      "directStage": "complete",
+      "directError": null,
+      "directGateFailed": false,
+      "directComparison": {
+        "referenceWidth": 595,
+        "referenceHeight": 841,
+        "pdfWidth": 595,
+        "pdfHeight": 841,
+        "width": 595,
+        "height": 841,
+        "sameSize": true,
+        "majorSizeMismatch": false,
+        "sizeNormalization": null,
+        "diffPixels": 1347,
+        "totalPixels": 500395,
+        "diffRatio": 0.0026918734199982016,
+        "maxChannelDelta": 255,
+        "averageChannelDelta": 0.4860160473226151
+      }
+    },
+    {
+      "fixture": "kps-ai.hwp",
+      "directExpected": true,
+      "directStage": "complete",
+      "directError": null,
+      "directGateFailed": false,
+      "directComparison": {
+        "referenceWidth": 595,
+        "referenceHeight": 841,
+        "pdfWidth": 595,
+        "pdfHeight": 841,
+        "width": 595,
+        "height": 841,
+        "sameSize": true,
+        "majorSizeMismatch": false,
+        "sizeNormalization": null,
+        "diffPixels": 9426,
+        "totalPixels": 500395,
+        "diffRatio": 0.018837118676245764,
+        "maxChannelDelta": 255,
+        "averageChannelDelta": 1.8169952404267296
+      }
+    }
+  ],
+  "canvaskit_readiness": {
+    "total": 8,
+    "evaluated": 8,
+    "passed": 8,
+    "failed": 0,
+    "missing": 0
+  },
+  "policy_audit_before_initial_check_retry": 42019684654,
+  "initial_policy_retry": "explicit approval received; requested once after product workflows completed",
+  "local_verification": "Rust full 12,629 / Native official 4,064 belong to frozen product source 584; current-base probe separate; not rerun after unchanged product submission",
+  "final_gate": {
+    "observed_at": "2026-11-05T11:44:35.854353+00:00",
+    "head": "4cf202d2aba44b0cfdd33465b03e37d1826a3fdc",
+    "base": "a95d1d5afad1bfd61998794fa78fb0db100d690a",
+    "merge_tree": "2cdd76d28053268c7affdb64007e9bcd0f29bfce",
+    "github_tested_merge": "e01add9810f4a38d93d2eb4fb56f7ccba2c3e767",
+    "mergeable": true,
+    "mergeable_state": "clean",
+    "check_counts": {
+      "success": 34,
+      "skipped": 6,
+      "neutral": 0
+    },
+    "statuses": [
+      {
+        "context": "CI Impact Policy",
+        "state": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/42019684654"
+      }
+    ],
+    "original_prs": [
+      {
+        "number": 8368,
+        "headRefOid": "7915a7ed9f75f559f3e82aa9a18feb80c0326ce1",
+        "state": "OPEN",
+        "isDraft": false
+      },
+      {
+        "number": 8369,
+        "headRefOid": "3c5accd7b604594585ebc1b1fe96ea155069821e",
+        "state": "OPEN",
+        "isDraft": false
+      },
+      {
+        "number": 8385,
+        "headRefOid": "6a31cb47a088ac13ecbe641900318c9dbc9ff4e3",
+        "state": "OPEN",
+        "isDraft": false
+      },
+      {
+        "number": 8484,
+        "headRefOid": "eff6d08cfc2bf781a934f358250d676a4fc775cd",
+        "state": "OPEN",
+        "isDraft": false
+      },
+      {
+        "number": 8488,
+        "headRefOid": "9fe4a4df5e2271f128be49dc4457e2053ef9f25b",
+        "state": "OPEN",
+        "isDraft": false
+      },
+      {
+        "number": 8490,
+        "headRefOid": "6b86197e31f820c7ba5c098f3bf34d9e50b739e7",
+        "state": "OPEN",
+        "isDraft": false
+      },
+      {
+        "number": 8492,
+        "headRefOid": "c1dc63845879c92506a1da1aaa17ef233b7c68d2",
+        "state": "OPEN",
+        "isDraft": false
+      },
+      {
+        "number": 8494,
+        "headRefOid": "d8f560f7e62c9f70cdf935d10a26b89c7362d014",
+        "state": "OPEN",
+        "isDraft": false
+      },
+      {
+        "number": 8500,
+        "headRefOid": "ddba007430877afdc2bc2c11d6fdcf6676c72801",
+        "state": "OPEN",
+        "isDraft": false
+      },
+      {
+        "number": 8504,
+        "headRefOid": "a7e665eb44f47a50481368722fae71461f15f901",
+        "state": "OPEN",
+        "isDraft": false
+      }
+    ],
+    "self_review": "https://github.com/edwardkim/rhwp/pull/8640#pullrequestreview-5784229538",
+    "merge_method": "merge commit; authorized maintainer --admin; all checks successful before invocation"
+  },
+  "policy_final": {
+    "run": 42019684654,
+    "attempt": 2,
+    "conclusion": "success",
+    "publisher_run": 42015458303,
+    "publisher_attempt": 2,
+    "publisher_conclusion": "success; writes pending by design",
+    "sequencing_error": "publisher rerun after final audit overwrote success; explicitly approved final audit rerun restored success"
+  },
+  "self_review": {
+    "id": 5784229538,
+    "html_url": "https://github.com/edwardkim/rhwp/pull/8640#pullrequestreview-5784229538",
+    "commit_id": "4cf202d2aba44b0cfdd33465b03e37d1826a3fdc",
+    "state": "COMMENTED",
+    "body_sha256": "4f340af585e8e62b83a62048ef157aac6262aa28ab237d35492cca73f0f319d6"
+  }
+}

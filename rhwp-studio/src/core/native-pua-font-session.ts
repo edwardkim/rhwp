@@ -2,6 +2,7 @@ import { getHostFontState, hasHostFontProvider, loadRendererLocalFont,
   resolveRendererLocalFontCandidates, localFontFaceKey, type LocalFontRecord } from './local-fonts.ts';
 import { parseCssFontFamilyList } from './font-substitution.ts';
 import { normalizeFontFaceData } from './sfnt-face.ts';
+import { sourceProgramFamilies } from './canvas-intrinsic-font.mjs';
 
 export interface NativePuaFontDocument {
   getNativePuaFontRequests?(): string;
@@ -24,7 +25,9 @@ function facesForRequest(family: string, request: Request): LocalFontRecord[] {
 }
 
 function otfFaces(request: Request): LocalFontRecord[] {
-  return facesForRequest(request.family, request.source_ttf ? { ...request, bold: false } : request);
+  const records = sourceProgramFamilies(request.family, request.source_ttf).flatMap(family =>
+    facesForRequest(family, request.source_ttf ? { ...request, bold: false } : request));
+  return [...new Map(records.map(record => [localFontFaceKey(record), record])).values()];
 }
 
 /** FontFace의 준비·선택이 확인된 현재 호스트 세대에서만 원 PUA를 허용한다. */

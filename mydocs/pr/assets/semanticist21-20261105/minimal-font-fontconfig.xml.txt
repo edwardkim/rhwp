@@ -1,0 +1,1 @@
+<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd"><fontconfig><dir>/home/edward/mygithub/rhwp/ttfs/opensource</dir><cachedir>/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/minimal-font/cache</cachedir></fontconfig>

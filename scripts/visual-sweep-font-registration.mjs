@@ -1,4 +1,23 @@
-import {installIntrinsicCanvasFont} from '../rhwp-studio/src/core/canvas-intrinsic-font.mjs';
+import {installIntrinsicCanvasFont, sourceProgramFamilies} from '../rhwp-studio/src/core/canvas-intrinsic-font.mjs';
+
+// 페이지별 실제 paint 요구를 우선한다. 빈 쪽에 문서 전체 글꼴을 다시 적재하지 않는다.
+export function collectSweepPaintFontRequests(owner, pages) {
+  if (typeof owner?.getPagePaintFontRequests === 'function') {
+    const metafile = [], effects = [];
+    for (const page of pages) {
+      const requests = JSON.parse(owner.getPagePaintFontRequests(page - 1));
+      if (!Array.isArray(requests.metafile) || !Array.isArray(requests.textEffects)) {
+        throw Error('페이지 paint 글꼴 요청 형식이 올바르지 않습니다.');
+      }
+      metafile.push(...requests.metafile);
+      effects.push(...requests.textEffects);
+    }
+    return {metafile, effects};
+  }
+  // 이전 WASM producer의 비교 실행은 기존 문서 단위 계약을 보존한다.
+  return {metafile: JSON.parse(owner.getMetafileFontRequests?.() ?? '[]'),
+    effects: JSON.parse(owner.getTextShadowFontRequests?.() ?? '[]')};
+}
 
 // fontdb 0.23의 style/weight 우선순위로 실제 요청한 메타파일 face만 고른다.
 export function selectMetafileFontFaces(fonts, requests) {
@@ -134,30 +153,33 @@ export async function prepareHftOtfFonts(owner, fonts, loadBytes) {
   const requests = JSON.parse(owner.getNativeOtfFontRequests());
   const programs = new Map(), loaded = new Map(), proofs = [];
   for (const request of requests) {
-    const selected = selectMetafileFontFaces(fonts, [{families: [request.family],
+    const selectedFaces = selectMetafileFontFaces(fonts, [{families: sourceProgramFamilies(request.family, request.source_ttf),
       weight: request.source_ttf ? 400 : (request.bold ? 700 : 400), italic: request.italic}]);
-    for (const key of selected) {
+    const selected = [], seen = new Set();
+    let selectedBytes = 0;
+    for (const key of selectedFaces) {
       const matches = fonts.filter(record => record.families.some(name =>
         `${name.toLowerCase()}|${record.weight}|${record.style}` === key));
       const cff = matches.filter(record => record.openTypeCff);
       const records = request.source_ttf
         ? matches.filter(record => !record.openTypeCff).slice(0, 1)
         : (cff.length ? cff : matches.slice(0, 1));
-      const selected = [], seen = new Set();
       for (const record of records) {
         if (seen.has(record.sha256)) continue;
         seen.add(record.sha256);
         let bytes = loaded.get(record.sha256);
         if (!bytes) { bytes = await loadBytes(record); loaded.set(record.sha256, bytes); }
-        if (bytes.byteLength < 4) continue;
+        if (bytes.byteLength < 4 || bytes.byteLength > 32 * 1024 * 1024
+            || selectedBytes + bytes.byteLength > 64 * 1024 * 1024) continue;
         const signature = new DataView(bytes).getUint32(0);
         if (request.source_ttf ? ![0x00010000, 0x74727565].includes(signature) : signature !== 0x4f54544f) continue;
         selected.push(new Uint8Array(bytes));
+        selectedBytes += bytes.byteLength;
         proofs.push({family: request.family, bold: request.bold, italic: request.italic, sourceTtf: Boolean(request.source_ttf),
           weight: record.weight, style: record.style, sha256: record.sha256});
       }
-      if (selected.length) programs.set(JSON.stringify([request.family, request.bold, request.italic, Boolean(request.source_ttf)]), selected);
     }
+    if (selected.length) programs.set(JSON.stringify([request.family, request.bold, request.italic, Boolean(request.source_ttf)]), selected);
   }
   owner.prepareNativeOtfFonts(raw => {
     const request = JSON.parse(raw);

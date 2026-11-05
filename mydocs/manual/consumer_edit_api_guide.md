@@ -94,7 +94,10 @@ doc.removeHyperlinkEx(JSON.stringify({ target, fieldId })); // 표시 글자는 
 
 `start`·`end`는 Unicode scalar 기준 반열린 범위이며 JavaScript의 UTF-16 `string.length`와
 다르다. 본문은 빈 `cellPath`, 셀·글상자는 `[controlIndex, cellIndex, cellParaIndex]`의
-배열을 바깥부터 나열한다. `para`는 가장 바깥 본문 문단이고 글상자의 `cellIndex`는 0이다.
+배열을 바깥부터 나열한다. `para`는 가장 바깥 본문 문단이다. 독립 글상자의 `cellIndex`는 0이며,
+묶음 안 글상자는 원본 자식 순서로 깊이 우선 순회한 글상자 번호(0부터)를 쓴다. 글상자가 없는
+장식 도형과 중간 묶음은 번호를 소비하지 않는다. 클릭 결과의 `cellPath`를 조회·변경에 그대로
+사용하며, 묶음을 해제하거나 제목·본문 글상자를 같은 주소로 합치지 않는다.
 본문·중첩 셀·글상자의 단일 문단을 지원하며 캡션·머리말·각주·다단락 필드 등은 지원하지 않는다.
 조회 결과 `links`에는 `fieldId`, `start`, `end`, `text`, `uri`가 담긴다.
 

@@ -39,10 +39,14 @@ pub(super) fn char_shape_mods_affect_text_flow(mods: &crate::model::style::CharS
 ///   (line_breaking.rs:360, 375, 798).
 /// - `line_spacing`/`line_spacing_type`: 원래 게이트 — `reflow_line_segs`가 LineSeg별
 ///   `line_spacing` 값을 다시 계산하므로 유지한다.
+/// - `head_type`/`numbering_id`/`para_level`: 문단 머리(글머리표·번호·개요)는 줄 앞을
+///   차지해 첫 구간의 폭을 바꾸고(#7418), 한/글은 머리가 있는 문단의 첫 줄에
+///   `TAG_PARAGRAPH_HEAD`(bit 21)를 단다. 다시 짜지 않으면 머리를 켜거나 끈 문단이 옛
+///   비트로 저장돼 한/글이 글머리표를 그리지 않거나 남긴다.
 ///
-/// 나머지 필드(alignment, spacing_before/after, head_type, para_level, widow_orphan,
+/// 나머지 필드(alignment, spacing_before/after, widow_orphan,
 /// keep_with_next, keep_lines, page_break_before, font_line_height, single_line,
-/// auto_space_kr_en/num, vertical_align, tab_def_id, numbering_id, border_fill_id,
+/// auto_space_kr_en/num, vertical_align, tab_def_id, border_fill_id,
 /// border_spacing, border_connect, border_ignore_margin)는 `reflow_line_segs`/
 /// `fill_lines`가 읽지 않는다 — 정렬은 이미 배치된 줄 안에서의 렌더링 배분일 뿐이고,
 /// 문단 테두리/배경은 레이아웃 완료 후 장식 사각형으로만 그려지며(layout.rs
@@ -58,6 +62,9 @@ pub(super) fn para_shape_mods_affect_text_flow(mods: &crate::model::style::ParaS
         || mods.indent.is_some()
         || mods.english_break_unit.is_some()
         || mods.korean_break_unit.is_some()
+        || mods.head_type.is_some()
+        || mods.numbering_id.is_some()
+        || mods.para_level.is_some()
 }
 
 // ID 복원도 적용과 같은 흐름 속성 및 문단 간격만 비교한다.
@@ -71,6 +78,9 @@ pub(super) fn cell_para_shape_affects_vpos(
         || before.margin_right != after.margin_right
         || before.indent != after.indent
         || (before.attr1 ^ after.attr1) & (0b111 << 5) != 0 // 영어·한글 줄나눔 단위
+        || before.head_type != after.head_type
+        || before.numbering_id != after.numbering_id
+        || before.para_level != after.para_level
         || before.spacing_before != after.spacing_before
         || before.spacing_after != after.spacing_after
 }
@@ -116,7 +126,108 @@ pub(super) fn restore_para_meta(
     restamp_indentation(&mut para.line_segs, old_indent, new_indent);
 }
 
+// 폭 변경 재조판은 저장 줄의 vpos·tag를 이어받지 않는다. 문단 흐름을 잇는
+// 텍스트 편집 경로와 달리, 새 줄을 조판기가 현재 단 안에 배치하게 한다.
+fn reflow_body_paragraph_in_box(
+    para: &mut crate::model::paragraph::Paragraph,
+    paragraph_box: ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) {
+    para.line_segs.clear();
+    reflow_line_segs(para, paragraph_box, styles, dpi);
+}
+
 impl DocumentCore {
+    /// 단 정의를 직접 바꾼 뒤 그 정의를 따르는 본문 범위 `[start, end)`만 다시 접는다.
+    ///
+    /// 각 문단에 적용되는 단 정의와 직전 페이지네이션의 소속 단 폭을 쓴다. 너비가
+    /// 다른 단으로 옮겨 간 문단은 페이지네이션 후 같은 범위를 다시 호출해 새 폭으로
+    /// 접을 수 있다. 범위 밖의 본문·셀·주석·머리말 저장 줄은 건드리지 않는다.
+    /// 텍스트 편집 이벤트와 캐럿 저장 위치를 만들지 않으며 배치 중에는 쪽 나눔을 미룬다.
+    pub fn reflow_body_paragraph_range_native(
+        &mut self,
+        sec_idx: usize,
+        range: std::ops::Range<usize>,
+    ) -> Result<(), HwpError> {
+        let section = self
+            .document
+            .sections
+            .get(sec_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", sec_idx)))?;
+        if range.start > range.end || range.end > section.paragraphs.len() {
+            return Err(HwpError::RenderError(format!(
+                "본문 문단 범위 {}..{} 범위 초과",
+                range.start, range.end
+            )));
+        }
+        if range.is_empty() {
+            return Ok(());
+        }
+
+        let styles = self.resolve_render_styles();
+        let dpi = self.dpi;
+        // 어느 저장 줄도 비우기 전에 모든 문단 상자를 검사한다. 문단 여백이 단 폭을
+        // 넘는 요청은 기존 저장 줄을 잃거나 범위 일부만 바꾸지 않고 거절한다.
+        let boxes: Vec<_> = range
+            .clone()
+            .map(|para_idx| {
+                let column_def = Self::find_column_def_for_paragraph(&section.paragraphs, para_idx);
+                let layout =
+                    PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, dpi);
+                let col_idx = self
+                    .para_column_map
+                    .get(sec_idx)
+                    .and_then(|columns| columns.get(para_idx))
+                    .copied()
+                    .unwrap_or(0) as usize;
+                let column = layout
+                    .column_areas
+                    .get(col_idx)
+                    .unwrap_or(&layout.column_areas[0]);
+                let para = &section.paragraphs[para_idx];
+                let paragraph_box = ParagraphBox::body_for_style(
+                    column.width,
+                    styles.para_styles.get(para.para_shape_id as usize),
+                    dpi,
+                );
+                if !paragraph_box.is_usable() {
+                    return Err(HwpError::RenderError(format!(
+                        "본문 문단 {}의 여백이 단 너비를 넘습니다",
+                        para_idx
+                    )));
+                }
+                Ok(paragraph_box)
+            })
+            .collect::<Result<_, _>>()?;
+        for (para_idx, paragraph_box) in range.zip(boxes) {
+            reflow_body_paragraph_in_box(
+                &mut self.document.sections[sec_idx].paragraphs[para_idx],
+                paragraph_box,
+                &styles,
+                dpi,
+            );
+        }
+        self.refresh_section_native(sec_idx)
+    }
+
+    /// 저장 줄을 보존하며 직접 수정한 구역의 스타일·조판·렌더 캐시를 갱신한다.
+    /// 단 구분선처럼 줄바꿈 폭이 그대로인 변경에 쓰며 배치 중에는 쪽 나눔을 미룬다.
+    pub fn refresh_section_native(&mut self, sec_idx: usize) -> Result<(), HwpError> {
+        let section = self
+            .document
+            .sections
+            .get_mut(sec_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", sec_idx)))?;
+        section.raw_stream = None;
+        // 기존 rebuild_section과 같은 순서로 파생 상태를 갱신하되 배치는 존중한다.
+        self.rebuild_resolved_styles();
+        self.flush_cell_format_vpos();
+        self.recompose_section(sec_idx);
+        self.paginate_if_needed();
+        Ok(())
+    }
+
     /// [#7490] 문단 모양 `old_id` 와 `new_id` 의 들여쓰기(HWPUNIT).
     pub(crate) fn para_shape_indents(&self, old_id: u16, new_id: u16) -> (i32, i32) {
         let indent = |id: u16| {
@@ -1598,6 +1709,9 @@ impl DocumentCore {
         let para = &mut self.document.sections[sec_idx].paragraphs[para_idx];
         para.para_shape_id = new_id;
         restamp_indentation(&mut para.line_segs, old_indent, new_indent);
+        let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[sec_idx].paragraphs[para_idx],
+        );
 
         // 줄바꿈에 영향을 주는 변경 시 LineSeg 재계산 (compose는 LineSeg 값을 그대로
         // 사용하므로). 줄간격뿐 아니라 여백/들여쓰기/줄나눔 단위도 사용 가능 폭·토큰
@@ -1620,6 +1734,25 @@ impl DocumentCore {
                 ParagraphBox::body_for_style(col_width, para_style, self.dpi),
                 &styles,
                 self.dpi,
+            );
+        }
+
+        // 문단 간격은 줄 나눔을 바꾸지 않지만 이 문단과 뒤 문단의 저장 세로 위치를 옮긴다.
+        // 다시 계산하지 않으면 편집 전 세로 위치로 그려 간격이 보이지 않는다.
+        if para_shape_mods_affect_text_flow(&mods)
+            || mods.spacing_before.is_some()
+            || mods.spacing_after.is_some()
+        {
+            let styles = self.resolve_render_styles();
+            let hwp3_layout = self.document.layout_profile().hwp3_layout();
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[sec_idx].paragraphs,
+                para_idx,
+                None,
+                stored_end_for_reset,
+                &styles,
+                self.dpi,
+                hwp3_layout,
             );
         }
 
@@ -1680,9 +1813,21 @@ impl DocumentCore {
             let old_id = self.document.sections[sec_idx].paragraphs[para_idx].para_shape_id;
             let (old_indent, new_indent) = self.para_shape_indents(old_id, para_shape_id);
             let para = &mut self.document.sections[sec_idx].paragraphs[para_idx];
+            let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(para);
             para.para_shape_id = para_shape_id;
             restamp_indentation(&mut para.line_segs, old_indent, new_indent);
             reflow_line_segs(para, available_box, &styles, self.dpi);
+            // 되돌린 문단 간격도 이 문단과 뒤 문단의 저장 세로 위치에 반영한다.
+            let hwp3_layout = self.document.layout_profile().hwp3_layout();
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[sec_idx].paragraphs,
+                para_idx,
+                None,
+                stored_end_for_reset,
+                &styles,
+                self.dpi,
+                hwp3_layout,
+            );
         }
 
         self.document.sections[sec_idx].raw_stream = None;
@@ -2102,92 +2247,6 @@ impl DocumentCore {
             para.line_segs.clear();
             reflow_line_segs(para, paragraph_box, &styles, dpi);
         }
-    }
-
-    /// 단 정의를 직접 바꾼 뒤 그 정의를 따르는 본문 범위 `[start, end)`만 다시 접는다.
-    ///
-    /// 각 문단에 적용되는 단 정의와 직전 페이지네이션의 소속 단 폭을 쓴다. 너비가
-    /// 다른 단으로 옮겨 간 문단은 페이지네이션 후 같은 범위를 다시 호출해 새 폭으로
-    /// 접을 수 있다. 범위 밖의 본문·셀·주석·머리말 저장 줄은 건드리지 않는다.
-    /// 텍스트 편집 이벤트와 캐럿 저장 위치를 만들지 않으며 배치 중에는 쪽 나눔을 미룬다.
-    pub fn reflow_body_paragraph_range_native(
-        &mut self,
-        sec_idx: usize,
-        range: std::ops::Range<usize>,
-    ) -> Result<(), HwpError> {
-        let section = self
-            .document
-            .sections
-            .get(sec_idx)
-            .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", sec_idx)))?;
-        if range.start > range.end || range.end > section.paragraphs.len() {
-            return Err(HwpError::RenderError(format!(
-                "본문 문단 범위 {}..{} 범위 초과",
-                range.start, range.end
-            )));
-        }
-        if range.is_empty() {
-            return Ok(());
-        }
-
-        let styles = self.resolve_render_styles();
-        let dpi = self.dpi;
-        // 어느 저장 줄도 비우기 전에 모든 문단 상자를 검사한다. 문단 여백이 단 폭을
-        // 넘는 요청은 기존 저장 줄을 잃거나 범위 일부만 바꾸지 않고 거절한다.
-        let boxes: Vec<_> = range
-            .clone()
-            .map(|para_idx| {
-                let column_def = Self::find_column_def_for_paragraph(&section.paragraphs, para_idx);
-                let layout =
-                    PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, dpi);
-                let col_idx = self
-                    .para_column_map
-                    .get(sec_idx)
-                    .and_then(|columns| columns.get(para_idx))
-                    .copied()
-                    .unwrap_or(0) as usize;
-                let column = layout
-                    .column_areas
-                    .get(col_idx)
-                    .unwrap_or(&layout.column_areas[0]);
-                let para = &section.paragraphs[para_idx];
-                let paragraph_box = ParagraphBox::body_for_style(
-                    column.width,
-                    styles.para_styles.get(para.para_shape_id as usize),
-                    dpi,
-                );
-                if !paragraph_box.is_usable() {
-                    return Err(HwpError::RenderError(format!(
-                        "본문 문단 {}의 여백이 단 너비를 넘습니다",
-                        para_idx
-                    )));
-                }
-                Ok(paragraph_box)
-            })
-            .collect::<Result<_, _>>()?;
-        for (para_idx, paragraph_box) in range.zip(boxes) {
-            let para = &mut self.document.sections[sec_idx].paragraphs[para_idx];
-            para.line_segs.clear();
-            reflow_line_segs(para, paragraph_box, &styles, dpi);
-        }
-        self.refresh_section_native(sec_idx)
-    }
-
-    /// 저장 줄을 보존하며 직접 수정한 구역의 스타일·조판·렌더 캐시를 갱신한다.
-    /// 단 구분선처럼 줄바꿈 폭이 그대로인 변경에 쓰며 배치 중에는 쪽 나눔을 미룬다.
-    pub fn refresh_section_native(&mut self, sec_idx: usize) -> Result<(), HwpError> {
-        let section = self
-            .document
-            .sections
-            .get_mut(sec_idx)
-            .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", sec_idx)))?;
-        section.raw_stream = None;
-        // 기존 rebuild_section과 같은 순서로 파생 상태를 갱신하되 배치는 존중한다.
-        self.rebuild_resolved_styles();
-        self.flush_cell_format_vpos();
-        self.recompose_section(sec_idx);
-        self.paginate_if_needed();
-        Ok(())
     }
 
     /// 이 구역의 본문 문단이 접히는 폭 (px) — 단이 나뉘어 있으면 첫 단 폭, 아니면 본문 상자 폭.
@@ -2669,6 +2728,23 @@ mod tests {
         };
         assert!(para_shape_mods_affect_text_flow(&mods));
 
+        // 문단 머리는 줄 앞을 차지하고(#7418) 첫 줄의 bit 21 을 정한다.
+        let mods = ParaShapeMods {
+            head_type: Some(crate::model::style::HeadType::Number),
+            ..Default::default()
+        };
+        assert!(para_shape_mods_affect_text_flow(&mods));
+        let mods = ParaShapeMods {
+            numbering_id: Some(1),
+            ..Default::default()
+        };
+        assert!(para_shape_mods_affect_text_flow(&mods));
+        let mods = ParaShapeMods {
+            para_level: Some(1),
+            ..Default::default()
+        };
+        assert!(para_shape_mods_affect_text_flow(&mods));
+
         // 기존에 이미 게이트하던 줄간격도 계속 포함해야 한다 (회귀 방지).
         let mods = ParaShapeMods {
             line_spacing: Some(150),
@@ -2714,14 +2790,6 @@ mod tests {
             border_spacing: Some([100, 100, 100, 100]),
             border_connect: Some(true),
             border_ignore_margin: Some(true),
-            ..Default::default()
-        };
-        assert!(!para_shape_mods_affect_text_flow(&mods));
-
-        let mods = ParaShapeMods {
-            head_type: Some(crate::model::style::HeadType::Number),
-            para_level: Some(1),
-            numbering_id: Some(1),
             ..Default::default()
         };
         assert!(!para_shape_mods_affect_text_flow(&mods));

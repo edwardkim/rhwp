@@ -202,6 +202,11 @@ impl LayoutEngine {
         {
             return None;
         }
+        // 병합 칸이 키운 끝 행은 쪽에 남은 물리 높이까지 그린다. 남는 빈 띠는 다음 쪽으로 넘기지
+        // 않는다 — 한/글은 이 행을 쪽 바닥에서 닫는다(입법예고문 docs#333 11쪽: 칸 선언 27.3px,
+        // 병합 칸으로 38.6px, 남은 높이 34.0px 를 그린다). 남은 높이가 원본 칸 선언 이하이면
+        // 종전과 같다.
+        let closing = row_heights[row].max(source).min(available);
         let spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
         let mut has_closing_span = false;
         for cell in table.cells.iter().filter(|cell| {
@@ -224,12 +229,12 @@ impl LayoutEngine {
             }
             let physical = row_heights[first..row].iter().sum::<f64>()
                 + spacing * (row - first) as f64
-                + source.min(available);
+                + closing;
             if self.cell_cut_visible_height(cell, table, styles, 0, units.len()) > physical {
                 return None;
             }
             has_closing_span |= cell.row_span > 1;
         }
-        has_closing_span.then_some(source.min(available))
+        has_closing_span.then_some(closing)
     }
 }

@@ -153,6 +153,8 @@ export interface NoteEditInfo {
 
 /** 구역 정의 (SectionDef) */
 export interface SectionDef {
+  /** 구역 개요 번호 정의 ID. 생략하면 현재 정의를 유지한다. */
+  outlineNumberingId?: number;
   pageNum: number;
   /** 쪽 번호 종류: 0=이어서, 1=홀수, 2=짝수 (사용자 지정은 pageNum > 0) */
   pageNumType: number;
@@ -169,9 +171,10 @@ export interface SectionDef {
   hideEmptyLine: boolean;
 }
 
-/** 중첩 표 경로 엔트리 (1레벨 = 단일 표, 2레벨 이상 = 중첩 표) */
+/** 표·글상자 편집 경로 엔트리. 각 레벨은 실제 문단을 소유한 컨테이너 하나를 나타낸다. */
 export interface CellPathEntry {
   controlIndex: number;
+  /** 표의 셀 번호. 독립 글상자는 0, 묶음은 원본 자식 순서의 깊이 우선 글상자 번호. */
   cellIndex: number;
   cellParaIndex: number;
 }
@@ -1185,6 +1188,8 @@ export interface LayerPageBackgroundOp {
 }
 
 export interface LayerTextStyle {
+  /** Rust의 공통 한컴 Print pen 결과. 명시 textPaint에는 적용하지 않는다. */
+  outlineStroke?: { width: number; intervals: number[] };
   textPaint?: {
     width: number;
     paint: { fill: boolean; width_mpt: number; stroke_color: number; fill_alpha: number;
@@ -1634,7 +1639,7 @@ export interface LayerTextDecorationOp {
       browserOffset: number;
       browserAlignEnd?: boolean;
     };
-    /** 실제 글줄 메트릭과 독립 Print로 해소한 기하. 클라이언트에서 크기를 다시 추정하지 않는다. */
+    /** 기존 키를 유지하며 위 밑줄·아래 일점쇄선의 공통 기하를 전달한다. 크기를 다시 추정하지 않는다. */
     topUnderline?: {
       phase?: number;
       strokes: Array<{ offset: number; width: number; dash: number[] }>;

@@ -376,7 +376,8 @@ jobs:
   proptest-roundtrip:
     name: prop roundtrip
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # [#8548] 실측 checkout 약 18분 뒤 property build·실행까지 포함하는 유한 상한이다.
+    timeout-minutes: 45
     needs: preflight
     if: ${{ always() && needs.preflight.result == 'success' && needs.preflight.outputs.fast_pass != 'true' }}
     steps:

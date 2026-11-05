@@ -1,0 +1,27 @@
+{
+  "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "case": {
+    "key": "decoration-top-probe-shape-3",
+    "hwp": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-3.hwp",
+    "pdf": "pdf/raised-decoration-hancom/top-probe-shape-3-hancom-print.pdf",
+    "hwp_sha256": "966c229e3a1e0686bff63bcf5f6699450f168eba0229c98802235bf93371b5d5",
+    "pdf_sha256": "829148d46d65fa7cf524034b87781ccfef61a5950a8bada859c749ab71544951",
+    "compat": 2024
+  },
+  "dpi": 96,
+  "profile": "print",
+  "rasterizer": "svg",
+  "svg_rasterizer": "webfont",
+  "embed_fonts": "full in temporary SVG only",
+  "browser": {
+    "executable": "/home/edward/.cache/puppeteer/chrome/linux-155.0.8059.79/chrome-linux64/chrome",
+    "version": "Google Chrome for Testing 155.0.8059.79"
+  },
+  "tsv": "final-svg.tsv",
+  "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+  "pages": 1,
+  "raw_match": 100.0,
+  "output_png": "validation/review/decoration-shape3-svg.png",
+  "output_png_sha256": "db2d8e35ca027728199f94acedf12d7e64b736ca6b20b553bccdd08e09a4ef26",
+  "font_binaries_or_embedded_svg_committed": false
+}

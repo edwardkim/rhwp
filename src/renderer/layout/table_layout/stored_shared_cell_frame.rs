@@ -19,6 +19,17 @@ fn source_line<'a>(cell: &'a Cell, unit: &CellUnit) -> Option<&'a LineSeg> {
 }
 
 impl LayoutEngine {
+    /// 자동 높이 조회는 이미 확정해 게시한 수용 행 원점을 덮어쓰지 않는다.
+    pub(crate) fn seed_stored_frame_rows(&self, table: &Table, rows: &[f64]) {
+        if !self
+            .stored_frame_row_plans
+            .borrow()
+            .contains_key(&(table as *const Table as usize))
+        {
+            self.remember_stored_frame_rows(table, rows);
+        }
+    }
+
     pub(crate) fn remember_stored_frame_rows(&self, table: &Table, rows: &[f64]) {
         if rows.len() == usize::from(table.row_count)
             && rows

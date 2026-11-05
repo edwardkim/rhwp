@@ -1,0 +1,31 @@
+{
+  "source": "06bf0855b49d6a448b70987016489a65e546aff3",
+  "command": [
+    "python3",
+    "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/minfont/run-compat.py",
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "/home/edward/mygithub/rhwp/target/pr-review",
+    "--features",
+    "native-skia",
+    "--test",
+    "regression_suite_014",
+    "--test",
+    "regression_suite_017",
+    "--test",
+    "regression_suite_021",
+    "-E",
+    "test(/(^|::)(issue_8578_group_text_editing|issue_1892|issue_919_textbox_hit_test)::/)",
+    "--test-threads",
+    "8",
+    "--no-fail-fast"
+  ],
+  "exit": 0,
+  "seconds": 446.04,
+  "scope": "new group textbox 8; original whitespace 5; original textbox hit 5"
+}

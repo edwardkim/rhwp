@@ -134,7 +134,6 @@ impl TypesetEngine {
             };
         if tail_before_break_through_empty {
             st.allow_tail_safety_margin_once();
-            st.allow_tail_footnote_margin_once();
             st.reserve_saved_tail_bounds(paragraph_saved_visible_bounds(para, 0, self.dpi));
         }
 
@@ -397,10 +396,6 @@ impl TypesetEngine {
             } else {
                 // 일반 텍스트 또는 컨트롤 보유: 안전마진 1회 비활성화 (단독 텍스트 페이지 차단)
                 st.allow_tail_safety_margin_once();
-                // [Task #1725] 각주 있는 페이지의 tail 문단: 각주 안전마진(40px 버퍼)도 1회
-                // 비활성화. 한글은 tail 을 본문에 배치하는데 rhwp 각주 예약 버퍼가 tail 을 수 px
-                // 밀어 near-empty 페이지 over-pagination(국제고속선기준 258 vs 242) 을 만든다.
-                st.allow_tail_footnote_margin_once();
                 // [Task #1725 v2] 각주 없이 페이지가 수 px over-fill 되어 tail 이 밀리는 경우도
                 // 한글은 저장 tail의 본문 하단 좌표를 유지한다. 다음 fit에서 실제
                 // 저장 bottom까지의 차이만 허용하도록 bounds를 전달한다.

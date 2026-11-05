@@ -1143,14 +1143,15 @@ pub(crate) fn trim_stored_hwpx_inline_row_trailing_spacing_with_storage<
         // 완결된 HWPX 1×1 CELL 프레임(모델 RowBreak)은 작은 초기 셀 높이를 저장할 수 있다.
         // 저장된 마지막 글자 끝과 안 여백의 합이 바깥 상자를 정확히 닫을 때만
         // 그 상자가 안 여백을 소유한다. 이어지는 셀의 중간 컷과는 다른 계약이다.
-        let single_cell_frame = matches!(table.page_break, TablePageBreak::RowBreak)
+        let single_cell_frame = matches!(table.layout_page_break(), TablePageBreak::RowBreak)
             && table.row_count == 1
             && table.col_count == 1
             && table.cells.len() == 1
             && table.cells[0].vertical_padding_guard_height_hu(table) == table.common.height;
         if !table.common.treat_as_char
             || !(single_cell_frame
-                || (matches!(table.page_break, TablePageBreak::RowBreak) && table.row_count >= 2))
+                || (matches!(table.layout_page_break(), TablePageBreak::RowBreak)
+                    && table.row_count >= 2))
             || measured.row_heights.len() != table.row_count as usize
             || table.common.height == 0
             || table.cells.iter().any(|cell| cell.row_span != 1)
@@ -3994,7 +3995,7 @@ let body_height=match nested_body_heights
                             if stored_square_picture_anchor {
                                 let row_advance = if self.is_native_hwp5
                                     && !table.common.treat_as_char
-                                    && matches!(table.page_break, TablePageBreak::RowBreak)
+                                    && matches!(table.layout_page_break(), TablePageBreak::RowBreak)
                                 {
                                     stored_square_picture_empty_anchor_advance(cell, pidx, styles, self.dpi)
                                         .map_or(0.0, |step| hwpunit_to_px(step, self.dpi))
@@ -4103,7 +4104,7 @@ let body_height=match nested_body_heights
                                 // em 으로 렌더 → synthetic 시 em(max_fs). hwp3 synthetic 선례 확장.
                                 let synthetic_line = p.line_segs.is_empty()
                                     && !p.text.is_empty()
-                                    && matches!(table.page_break, TablePageBreak::CellBreak);
+                                    && matches!(table.layout_page_break(), TablePageBreak::CellBreak);
                                 let line_count = comp.lines.len();
                                 // [#2070 stage10] 저장 LINE_SEG vpos 리셋 줄(원저작
                                 // 분할 흔적)도 전량 계상 — 한글 원본 오라클(개정안{{0}}
@@ -4399,7 +4400,7 @@ let body_height=match nested_body_heights
                     // 일반 표·텍스트 셀·나란히 놓인 단일 그림은 기존 max 규칙을
                     // 유지한다.
                     let stacked_stored_picture_h = if table.common.treat_as_char
-                        && matches!(table.page_break, TablePageBreak::RowBreak)
+                        && matches!(table.layout_page_break(), TablePageBreak::RowBreak)
                         && cell.paragraphs.len() == 1
                         && cell.paragraphs[0].text.trim().is_empty()
                     {
@@ -4509,10 +4510,40 @@ let body_height=match nested_body_heights
                             if crate::renderer::para_has_no_stored_line_segs(pp) {
                                 return hwpunit_to_px(400, self.dpi);
                             }
-                            pp.line_segs
-                                .iter()
-                                .map(|seg| hwpunit_to_px(seg.line_height.max(0), self.dpi))
-                                .sum::<f64>()
+                            // [#8427] 개체가 이 문단 기준(vert=문단)이면 한/글은 개체를 문단
+                            // 앞 간격 **전** 원점에 놓는다(30396 18쪽: 문단 앞 간격 500HU 인
+                            // 빈 셀 문단의 그림이 셀 내용 상단에 놓이고 행은 그림 흐름 높이만
+                            // 차지). 그 간격도 개체 자리에 흡수되므로 줄과 함께 뺀다.
+                            let para_relative_object = pp.controls.iter().any(|c| match c {
+                                Control::Picture(pic) => {
+                                    !pic.common.treat_as_char
+                                        && matches!(
+                                            pic.common.vert_rel_to,
+                                            crate::model::shape::VertRelTo::Para
+                                        )
+                                }
+                                Control::Shape(sh) => {
+                                    !sh.common().treat_as_char
+                                        && matches!(
+                                            sh.common().vert_rel_to,
+                                            crate::model::shape::VertRelTo::Para
+                                        )
+                                }
+                                _ => false,
+                            });
+                            let absorbed_spacing_before = if para_relative_object {
+                                styles
+                                    .para_styles
+                                    .get(pp.para_shape_id as usize)
+                                    .map_or(0.0, |style| style.spacing_before.max(0.0))
+                            } else {
+                                0.0
+                            };
+                            absorbed_spacing_before
+                                + pp.line_segs
+                                    .iter()
+                                    .map(|seg| hwpunit_to_px(seg.line_height.max(0), self.dpi))
+                                    .sum::<f64>()
                         })
                         .sum();
                     let additive = (text_height - empty_para_line_height).max(0.0) + non_inline_h;
@@ -4610,14 +4641,32 @@ let body_height=match nested_body_heights
                             hwpunit_to_px(seg.line_height, self.dpi) + 0.5 >= obj_h
                         })
                     });
-                    let trust_stored = (depth > 0 || table.common.treat_as_char)
-                        && non_inline_h > 0.0
-                        && (ladder_absorbed_objects
-                            || ladder_pushed_following_line
-                            || ladder_line_covers_object)
-                        && stored_extent > 0.0
-                        && stored_extent + 0.5 < additive
-                        && wrap_bottom <= stored_extent + 0.5;
+                    // [#8472] 본문 직속 비-TAC 표도 같다 — 배치가 이미 저장 vpos 를 쓰므로 측정이
+                    // 줄 합 + 개체 높이를 따로 쌓으면 그림 앵커 줄이 두 번 들어간다(종합보고서 32쪽
+                    // 차트 칸: 저장 205.7px, 쌓은 값 224.9px). 다만 그런 표의 칸은 쪽을 넘길 수 있다.
+                    // 사다리가 칸 안에서 되감기면 한/글이 칸을 여러 쪽에 나눠 기록한 것이라 최댓값은
+                    // 칸 높이가 아니다(도덕과 교육과정 시안 138쪽 2×1 표: 그림 617·686px 칸의 사다리가
+                    // 55938→51436 으로 되감김, 최댓값 759px). 그 경우는 종전 합산을 쓴다.
+                    let stored_ladder_single_frame = {
+                        let mut previous = i32::MIN;
+                        cell.paragraphs
+                            .iter()
+                            .flat_map(|pp| pp.line_segs.iter())
+                            .all(|seg| {
+                                let ok = seg.vertical_pos >= previous;
+                                previous = seg.vertical_pos;
+                                ok
+                            })
+                    };
+                    let trust_stored =
+                        (depth > 0 || table.common.treat_as_char || stored_ladder_single_frame)
+                            && non_inline_h > 0.0
+                            && (ladder_absorbed_objects
+                                || ladder_pushed_following_line
+                                || ladder_line_covers_object)
+                            && stored_extent > 0.0
+                            && stored_extent + 0.5 < additive
+                            && wrap_bottom <= stored_extent + 0.5;
                     // [#6135] 반대 방향 — 저장 ladder 가 additive 보다 **큰** 경우.
                     // 순수 텍스트 셀의 첫 줄 `vertical_pos > 0` 은 한글이 그 줄 위에
                     // 자리를 잡아 뒀다는 뜻이고, layout 은 그 vpos 를 그대로 존중해
@@ -4648,23 +4697,6 @@ let body_height=match nested_body_heights
                             })
                         && stored_extent + pad_top + pad_bottom
                             > hwpunit_to_px(cell.height as i32, self.dpi) + 0.5;
-                    // [#6194 진단] 이 갈래의 성분과 게이트를 그대로 찍는다 — 동작 불변.
-                    if std::env::var("RHWP_DIAG_ROWH").is_ok() && depth == 0 {
-                        eprintln!(
-                            "DIAG_TRUST r={} c={} text={:.1} nonInline={:.1} wrapBottom={:.1} additive={:.1} stored={:.1} tac={} absorbed={} pushed={} trust={}",
-                            cell.row,
-                            cell.col,
-                            text_height,
-                            non_inline_h,
-                            wrap_bottom,
-                            additive,
-                            stored_extent,
-                            table.common.treat_as_char,
-                            ladder_absorbed_objects,
-                            ladder_pushed_following_line,
-                            trust_stored,
-                        );
-                    }
                     if trust_stored {
                         stored_extent
                     } else if ladder_exceeds_declared_text_cell {
@@ -4824,136 +4856,6 @@ let body_height=match nested_body_heights
                 } else {
                     required_height
                 };
-                // [#2097 진단] 셀별 선언·측정·여백 분해 — 동작 불변.
-                if std::env::var("RHWP_DIAG_ROWH").is_ok() && depth == 0 {
-                    let all_stored = !cell.paragraphs.is_empty()
-                        && cell
-                            .paragraphs
-                            .iter()
-                            .all(|p| !crate::renderer::para_has_no_stored_line_segs(p));
-                    eprintln!(
-                        "DIAG_ROWH pi={} ci={} depth={} r={} c={} decl={:.1} req={:.1} content={:.1} pad={:.1} stored={} nested={}",
-                        para_index,
-                        control_index,
-                        depth,
-                        cell.row,
-                        cell.col,
-                        cell_h_px,
-                        required_height,
-                        content_height,
-                        total_pad,
-                        all_stored,
-                        has_nested_table_in_cell,
-                    );
-                    // #3931 Stage 1: 저장 LINE_SEG가 선언 셀높이보다 크게 팽창한
-                    // 셀의 줄별 성분을 선택적으로 분해한다. 모든 셀을 무조건 덤프하면
-                    // 대형 문서 로그가 폭발하므로 별도 환경변수와 큰 초과 형상으로
-                    // 한정한다. 진단 전용 재구성이며 측정값에는 관여하지 않는다.
-                    if std::env::var("RHWP_DIAG_ROWH_LINES").is_ok()
-                        && cell_h_px > 0.0
-                        && required_height > cell_h_px + 64.0
-                        && required_height > cell_h_px * 1.5
-                    {
-                        for (cell_para_index, cell_para) in cell.paragraphs.iter().enumerate() {
-                            let mut comp = crate::renderer::composer::compose_paragraph_in_context_with_storage(
-                                cell_para, styles, storage)?;
-                            crate::renderer::composer::recompose_cell_lines_with_nested_tables_with_storage(
-                                &mut comp,
-                                cell_para,
-                                cell_inner_width,
-                                styles,
-                                self.dpi,
-                                self.stored_geometry_policy,
-                                self.is_native_hwp5,
-                                &self.single_line_overflow_cache,
-                                |nested| -> Result<_,S::Error> {
-
-                                    let stretch =
-                                        self.render_normalization.nested_table_width_scale(nested);
-                                    let measured = self.measure_table_impl_with_storage(
-                                        nested,
-                                        0,
-                                        0,
-                                        styles,
-                                        depth + 1,
-                                        stretch, storage)?;
-    Ok(measured.total_height - measured.caption_height)
-}, storage)?;
-                            let para_style =
-                                styles.para_styles.get(cell_para.para_shape_id as usize);
-                            let line_spacing_type = para_style
-                                .map(|style| style.line_spacing_type)
-                                .unwrap_or(crate::model::style::LineSpacingType::Percent);
-                            let line_spacing_value =
-                                para_style.map(|style| style.line_spacing).unwrap_or(160.0);
-                            eprintln!(
-                                "DIAG_ROWH_PARA pi={} ci={} depth={} r={} c={} cp={} lines={} first_vpos={:?} last_end={:?} before={:.2} after={:.2} para_ls={:?}/{:.1}",
-                                para_index,
-                                control_index,
-                                depth,
-                                cell.row,
-                                cell.col,
-                                cell_para_index,
-                                comp.lines.len(),
-                                cell_para.line_segs.first().map(|segment| {
-                                    hwpunit_to_px(segment.vertical_pos, self.dpi)
-                                }),
-                                cell_para.line_segs.last().map(|segment| {
-                                    hwpunit_to_px(
-                                        segment.vertical_pos.saturating_add(segment.line_height),
-                                        self.dpi,
-                                    )
-                                }),
-                                para_style.map(|style| style.spacing_before).unwrap_or(0.0),
-                                para_style.map(|style| style.spacing_after).unwrap_or(0.0),
-                                line_spacing_type,
-                                line_spacing_value,
-                            );
-                            for (line_index, line) in comp.lines.iter().enumerate() {
-                                let max_font_size = line
-                                    .runs
-                                    .iter()
-                                    .map(|run| {
-                                        styles
-                                            .char_styles
-                                            .get(run.char_style_id as usize)
-                                            .map(|style| style.font_size)
-                                            .unwrap_or(0.0)
-                                    })
-                                    .fold(0.0f64, f64::max);
-                                eprintln!(
-                                    "DIAG_ROWH_LINE pi={} ci={} depth={} r={} c={} cp={} li={} stored_vpos={:?} raw_lh={:.2} raw_th={:?} raw_bl={:?} raw_ls={:.2} raw_pitch={:.2} max_fs={:.2} para_ls={:?}/{:.1}",
-                                    para_index,
-                                    control_index,
-                                    depth,
-                                    cell.row,
-                                    cell.col,
-                                    cell_para_index,
-                                    line_index,
-                                    cell_para
-                                        .line_segs
-                                        .get(line_index)
-                                        .map(|segment| hwpunit_to_px(segment.vertical_pos, self.dpi)),
-                                    hwpunit_to_px(line.line_height, self.dpi),
-                                    cell_para.line_segs.get(line_index).map(|segment| {
-                                        hwpunit_to_px(segment.text_height, self.dpi)
-                                    }),
-                                    cell_para.line_segs.get(line_index).map(|segment| {
-                                        hwpunit_to_px(segment.baseline_distance, self.dpi)
-                                    }),
-                                    hwpunit_to_px(line.line_spacing, self.dpi),
-                                    hwpunit_to_px(
-                                        line.line_height.saturating_add(line.line_spacing),
-                                        self.dpi,
-                                    ),
-                                    max_font_size,
-                                    line_spacing_type,
-                                    line_spacing_value,
-                                );
-                            }
-                        }
-                    }
-                }
                 let required_height = coincident_source_height(cell).unwrap_or(required_height);
                 if required_height > content_row_floor[r] {
                     content_row_floor[r] = required_height;
@@ -5206,7 +5108,7 @@ let body_height=match nested_body_heights
                                 // em 으로 렌더 → synthetic 시 em(max_fs). hwp3 synthetic 선례 확장.
                                 let synthetic_line = p.line_segs.is_empty()
                                     && !p.text.is_empty()
-                                    && matches!(table.page_break, TablePageBreak::CellBreak);
+                                    && matches!(table.layout_page_break(), TablePageBreak::CellBreak);
                                 let line_count = comp.lines.len();
                                 // [#2070 stage10] 저장 LINE_SEG vpos 리셋 줄(원저작
                                 // 분할 흔적)도 전량 계상 — 한글 원본 오라클(개정안{{0}}
@@ -5431,14 +5333,6 @@ let body_height=match nested_body_heights
                 )?;
                 let combined: f64 = (r..r + span).map(|i| row_heights[i]).sum::<f64>()
                     + hwpunit_to_px(1, self.dpi) * table.inner_cell_spacing_hu(span) as f64;
-                #[cfg(not(target_arch = "wasm32"))]
-                if std::env::var_os("RHWP_DIAG_ROWH").is_some() && depth == 0 {
-                    eprintln!(
-                        "DIAG_SPANH measure id={} r={r} c={} span={span} declared={:.6} text={text_height:.6} nested={nested_bottom:.6} non_inline={non_inline_h:.6} wrap={wrap_bottom:.6} required={required_height:.6} combined={combined:.6} closed={closed_plain_frame:?}",
-                        table.common.instance_id, cell.col,
-                        hwpunit_to_px(cell.height as i32, self.dpi)
-                    );
-                }
                 if required_height > combined {
                     let deficit = required_height - combined;
                     row_heights[r + span - 1] += deficit;
@@ -5719,7 +5613,7 @@ let body_height=match nested_body_heights
                 if fire && std::env::var("RHWP_DIAG_5757").is_ok() {
                     eprintln!(
                         "DIAG5757 fire rows={row_count} common={common_h:.1} declared={declared_rows_sum:.1} raw={raw_table_height:.1} wrap={:?} pb={:?}",
-                        table.common.text_wrap, table.page_break,
+                        table.common.text_wrap, table.layout_page_break(),
                     );
                 }
                 fire
@@ -5917,7 +5811,7 @@ let body_height=match nested_body_heights
                             // [Issue #1842] 부재 LINE_SEG 셀 → em(max_fs), max_fs*ls% 팽창 방지.
                             let synthetic_line = p.line_segs.is_empty()
                                 && !p.text.is_empty()
-                                && matches!(table.page_break, TablePageBreak::CellBreak);
+                                && matches!(table.layout_page_break(), TablePageBreak::CellBreak);
                             let line_count = comp.lines.len();
                             for (li, line) in comp.lines.iter().enumerate() {
                                 if skip_same_vertpos_composed_fragment(&p.line_segs, line_count, li)
@@ -6185,7 +6079,7 @@ let mut tables=p.controls.iter().filter_map(|c| match c{Control::Table(t)=>Some(
                 .filter(|c| c.row == 0)
                 .any(|c| c.is_header),
             cells: measured_cells,
-            page_break: table.page_break,
+            page_break: table.layout_page_break(),
             row_block_start,
             row_block_end,
         })
@@ -6753,10 +6647,12 @@ pub const BLOCK_UNIT_MAX_ROWS: usize = 3;
 /// 12.07px 로 푼 뒤, 「미술」(행 184~187, 151.36px > 행 합 139.30px)의 부족분 12.06px 가 행 187 에
 /// 다시 더해졌다. 행 191~192 칸(37.09px)의 제약이 49.15px 로 깨졌고, 한/글 정본은 행 191+192 를
 /// 37.1px 로 그린다(글줄 위치 실측, #7685).
+/// 반복 풀이만으로 모든 제약 행을 정했으면 `true` 를 돌려준다. `false` 면 남은 행을
+/// 제약 잔여로 고르게 나눴다.
 pub(crate) fn solve_rowspan_row_heights(
     constraints: &[(usize, usize, f64)],
     row_heights: &mut [f64],
-) {
+) -> bool {
     let add_declared_overflow = |row_heights: &mut [f64], only_known: bool| -> bool {
         let mut changed = false;
         for &(r, span, total_h) in constraints {
@@ -6816,6 +6712,9 @@ pub(crate) fn solve_rowspan_row_heights(
             break;
         }
     }
+    let resolved = constraints
+        .iter()
+        .all(|&(r, span, _)| (r..r + span).all(|i| row_heights[i] != 0.0));
     for &(r, span, total_h) in constraints {
         let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
         let unknown_rows: Vec<usize> = (r..r + span).filter(|&i| row_heights[i] == 0.0).collect();
@@ -6831,6 +6730,7 @@ pub(crate) fn solve_rowspan_row_heights(
     // 가산한다 — 한글 관례 실측(연결맵 244×10 r183: c3 rs=4 선언 217.8px vs 행합 201.3px, 한글 행
     // 괘선 실측 r183 = 39.8+16.5 = 56.3px 정확 일치). 콘텐츠 기반 확장과 별개의 선언 기반 규칙이다.
     add_declared_overflow(row_heights, false);
+    resolved
 }
 
 /// 표의 모든 셀을 검사하여 rowspan 묶음 블록 경계를 산출한다 (Task #398).

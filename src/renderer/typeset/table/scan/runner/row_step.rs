@@ -434,7 +434,13 @@ impl TypesetEngine {
             // 둘째 줄을 다음 쪽 첫머리에 둔다. 기록이 없는 표 15·18 은 쪽 끝 행을 가르지
             // 않는다). 행이 쪽 중간에 오면 기록을 따르지 않는다.
             let rest_after_whole_row = avail_for_rows - consumed - cs_before - row_total;
-            let stored_restart_page_cut = (whole_row_fits
+            // 온전한 행 상자 판정이 반올림 차로 떨어져도, 행의 모든 셀 내용(안 여백 포함)이
+            // 남은 밴드에 들면 아래 행내 분할은 모든 줄을 이 쪽에 둔다 — 행 전체를 둔다는
+            // 같은 결정이다. 그 결정에도 같은 저장 재시작 컷을 적용한다.
+            let whole_row_content_fits = whole_row_fits
+                || layout_engine.row_complete_cut_content_height(table, r, styles)
+                    <= avail_for_rows - consumed - cs_before + 0.5;
+            let stored_restart_page_cut = (whole_row_content_fits
                 && r > cursor_row
                 && row_start_cut.is_empty()
                 && r + 1 < row_count
@@ -1044,15 +1050,28 @@ impl TypesetEngine {
                 // 그린다(한/글 2020: 1613000 188쪽 행 26 «6. 모니터링» 선언 2614HU 34.9px, 남은 29.9px —
                 // 아래 괘선 1040.6 = 닫는 선, 189쪽은 행 27 부터). 남는 선언 몫은 다음 조각이 행 자신의
                 // 칸 선언으로 다시 재고, 1280HU 이하이면 쪽 경계에서 버린다.
+                // [#8464] 수용 판정의 «내용»은 글줄 상자와 칸 안 여백 전체다 — 보이는 글자가 없는
+                // 빈 줄도 줄 상자와 여백을 차지한다(한/글 2020: 새터민 보고서 111쪽 빈 간격 행
+                // 줄 100 + 여백 282HU 가 남은 3.9px 에 안 들어 112쪽 첫머리로 간다). 남은 공간에
+                // 25px 같은 하한은 없다(합성 `samples/issue8464`, 남은 17~20px 에서도 수용).
+                // 이 근거는 자리차지 표의 것이다. 어울림 표는 같은 형상에서 한/글이 행을 넘긴
+                // 사례가 있어(수산업법 시행령 별표 6, 남은 25.2px · 내용 19.8px) 종전 하한을 둔다.
                 let declared_overflow_rest = (avail_for_rows - consumed - cs_before).max(0.0);
+                let page_rest_admits_content_row = matches!(
+                    table.common.text_wrap,
+                    crate::model::shape::TextWrap::TopAndBottom
+                ) || declared_overflow_rest >= MIN_TOP_KEEP_PX;
                 if mt.allows_row_break_split()
+                    && page_rest_admits_content_row
                     && r > cursor_row
                     && !rowspan_touched[r]
                     && row_start_cut.is_empty()
                     && !res.end_cut.is_empty()
-                    && row_total > declared_overflow_rest + 0.5
-                    && res.consumed_height + padding <= declared_overflow_rest + 0.5
-                    && declared_overflow_rest >= MIN_TOP_KEEP_PX
+                    && row_total > declared_overflow_rest
+                    && layout_engine.row_content_fits_page_rest(
+                        res.consumed_height + mt.max_padding_for_row(r),
+                        declared_overflow_rest,
+                    )
                 {
                     if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                         eprintln!(
@@ -1695,12 +1714,19 @@ impl TypesetEngine {
                 // CellUnit cut omits.  Preserve that measured difference; a
                 // document-independent pixel tolerance would otherwise let
                 // unrelated rows consume a physical page tail.
+                // The cut was chosen by `advance_row_cut_for_physical_band`,
+                // which treats HU→px rounding noise up to
+                // `ROW_CUT_CAPACITY_FP_EPSILON_PX` as an exact fit. The same
+                // comparison rule applies here; otherwise a cut that fills the
+                // band exactly is rejected for float noise and loses a line
+                // (#8529).
                 let hwpx_stored_rowbreak_cut = st.profile.hwpx_stored_layout()
                     && !table.common.treat_as_char
                     && mt.allows_row_break_split()
                     && !mixed_nested_owner_guard;
-                let measured_rowbreak_paint_tail =
-                    (split_total - res.consumed_height - padding).max(0.0);
+                let measured_rowbreak_paint_tail = (split_total - res.consumed_height - padding)
+                    .max(0.0)
+                    + crate::renderer::layout::table_layout::ROW_CUT_CAPACITY_FP_EPSILON_PX;
                 let stored_frame_tail_overflow = if uses_source_frame_tail {
                     // `split_total` is the painted row footprint, whereas
                     // the source frame is selected in CellUnit content
@@ -1826,6 +1852,7 @@ impl TypesetEngine {
                             source_first_fragment_overflow_allowance
                         } else if hwpx_stored_rowbreak_cut {
                             (split_total2 - res2.consumed_height - padding).max(0.0)
+                                + crate::renderer::layout::table_layout::ROW_CUT_CAPACITY_FP_EPSILON_PX
                         } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                             0.1
                         } else {
@@ -1995,13 +2022,14 @@ impl TypesetEngine {
         {
             let accepted_height = consumed - consumed_before_row - cs_before;
             let available = (avail_for_rows - consumed_before_row - cs_before).max(0.0);
-            if let Some(declared) = layout_engine.reflow_row_declared_first_frame(
+            if let Some(declared) = layout_engine.row_declared_first_frame(
                 table,
                 scan_start_row,
                 mt.row_heights[scan_start_row],
+                &split_end_cut,
                 styles,
             ) {
-                let frame_height = declared.min(available);
+                let frame_height = declared.height.min(available);
                 if accepted_height > 0.0 && frame_height > accepted_height + 0.5 {
                     consumed += frame_height - accepted_height;
                     end_row_height_override = Some(frame_height);

@@ -28,6 +28,10 @@ pub(crate) fn try_compose_section_with_horizontal_shaping<S: crate::storage::Sto
     styles: &ResolvedStyleSet,
     storage: &S,
 ) -> Result<Vec<ComposedParagraph>, S::Error> {
+    let _tabs = styles.section_tab_scope(
+        section.section_def.default_tab_spacing,
+        styles.resolved_dpi.unwrap_or(crate::renderer::DEFAULT_DPI),
+    );
     let mut paragraphs = storage.vec(section.paragraphs.len())?;
     for paragraph in &section.paragraphs {
         paragraphs.push(try_compose_paragraph_with_horizontal_shaping(
@@ -415,7 +419,7 @@ fn try_compose_paragraph_scoped<S: crate::storage::Storage>(
 
     if let Some(styles) = metric_styles {
         equation_line_metrics::try_refresh_equation_rows(&mut composed, para, styles, storage)?;
-    empty_line_metrics::refresh_with_storage(&mut composed, para, styles, storage)?;
+        empty_line_metrics::refresh_with_storage(&mut composed, para, styles, storage)?;
         inline_picture_metrics::refresh_picture_rows_with_storage(&mut composed, para, styles, storage)?;
     }
 
@@ -517,7 +521,10 @@ pub(crate) fn owned_rowbreak_tac_height(para: &Paragraph, control_index: usize) 
     if table.row_count <= 1 && !is_current_row {
         return None;
     }
-    (i64::from(seg.line_height) >= i64::from(table.common.height)).then_some(seg.line_height)
+    // 현재 재조판 줄은 그리는 표로 줄 높이를 정한다(#8507). 행 합이 선언보다 작으면 줄도
+    // 선언보다 작지만 그 줄이 표 프레임을 소유한다. 저장 줄은 선언 개체를 덮을 때만 소유한다.
+    (is_current_row || i64::from(seg.line_height) >= i64::from(table.common.height))
+        .then_some(seg.line_height)
 }
 
 /// TAC 표를 소유한 줄이 실제 흐름에 남기는 양의 후행 간격.

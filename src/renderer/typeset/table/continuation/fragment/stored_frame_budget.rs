@@ -22,14 +22,25 @@ impl TypesetEngine {
         budget: &FragmentBudget,
         scan: &BlockTableRowScan,
     ) -> Option<(f64, f64)> {
+        // 일반 행은 앞 조각이 전달한 하단 여백을 따른다. 병합 블록도 예산이
+        // 원본 호스트·선언 상자에서 인증한 같은 종료선을 그대로 소비한다.
+        let has_source_bottom = input.start.stored_fragment_body_bottom_inset.is_some()
+            || (scan.split_block_start.is_some() && budget.source_frame_bottom.is_some());
+        if std::env::var_os("RHWP_DIAG_SCAN").is_some() && scan.split_block_start.is_some() {
+            eprintln!(
+                "DIAG_SCAN BLOCK_CLOSING_SOURCE rows={}..{} inset={:?} source={} start_block={} bottom={:?}",
+                input.start.cursor_row, scan.end_row,
+                input.start.stored_fragment_body_bottom_inset, has_source_bottom,
+                input.start.start_cut_is_block, budget.source_frame_bottom,
+            );
+        }
         if !input.start.is_continuation
-            || input.start.stored_fragment_body_bottom_inset.is_none()
+            || !has_source_bottom
             || input.start.start_cut_is_block
             || input.row_cursor_is_nested
             || st.current_height > 0.5
             || st.current_zone_y_offset != 0.0
             || scan.end_row <= input.start.cursor_row
-            || scan.split_block_start.is_some()
             || scan.split_end_limit <= 0.0
             || scan.split_end_cut.is_empty()
             || input.source.table.caption.is_some()
@@ -46,21 +57,38 @@ impl TypesetEngine {
         } else {
             &[]
         };
-        if !engine.row_has_original_plain_text_owners(table, row, &scan.split_end_cut)
-            || !(engine.row_cut_ends_at_original_plain_text_reset(
+        let closes_source_frame = if let Some(block_start) = scan.split_block_start {
+            let (_, block_end, _) = input.source.measured_table.row_block_for(block_start);
+            let start = if block_start == first {
+                input.start.start_cut.as_slice()
+            } else {
+                &[]
+            };
+            engine.row_block_cut_closes_original_text_frame(
                 table,
-                row,
+                (block_start, block_end),
+                scan.end_row,
                 start,
                 &scan.split_end_cut,
                 styles,
-            ) || engine.row_cut_ends_at_saved_zero_origin_frame(
-                table,
-                row,
-                start,
-                &scan.split_end_cut,
-                styles,
-            ))
-        {
+            )
+        } else {
+            engine.row_has_original_plain_text_owners(table, row, &scan.split_end_cut)
+                && (engine.row_cut_ends_at_original_plain_text_reset(
+                    table,
+                    row,
+                    start,
+                    &scan.split_end_cut,
+                    styles,
+                ) || engine.row_cut_ends_at_saved_zero_origin_frame(
+                    table,
+                    row,
+                    start,
+                    &scan.split_end_cut,
+                    styles,
+                ))
+        };
+        if !closes_source_frame {
             return None;
         }
         let top = budget.fragment_placement.map_or(

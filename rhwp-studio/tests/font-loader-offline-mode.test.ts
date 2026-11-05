@@ -6,6 +6,7 @@ const JSDELIVR_HOSTNAME = 'cdn.jsdelivr.net';
 const CSS_URL_PATTERN = /url\((?:"([^"]+)"|'([^']+)'|([^'")]+))\)/g;
 
 function extractFontUrls(source: string): URL[] {
+  if (/^https?:\/\//.test(source)) return [new URL(source)];
   return Array.from(source.matchAll(CSS_URL_PATTERN), match => (
     match[1] ?? match[2] ?? match[3] ?? ''
   ).trim()).flatMap(rawUrl => {
@@ -29,7 +30,13 @@ function usesExternalFontUrl(source: string): boolean {
   ));
 }
 
-test('외부 웹폰트 사용 안 함 옵션은 CDN @font-face와 FontFace.load를 건너뛴다', async () => {
+test('외부 웹폰트 사용 안 함 옵션은 CDN @font-face와 FontFace.load를 건너뛴다', async t => {
+  const sourceFiles = new WeakMap<ArrayBuffer, string>();
+  t.mock.method(globalThis, 'fetch', async (file: string) => {
+    const bytes = new ArrayBuffer(8);
+    sourceFiles.set(bytes, file);
+    return { ok: true, arrayBuffer: async () => bytes } as Response;
+  });
   const styles: Array<{ id: string; textContent: string }> = [];
   const fontFaceRequests: Array<{ family: string; source: string }> = [];
   const previousDocument = (globalThis as typeof globalThis & { document?: unknown }).document;
@@ -62,7 +69,9 @@ test('외부 웹폰트 사용 안 함 옵션은 CDN @font-face와 FontFace.load�
     family: string;
     source: string;
 
-    constructor(family: string, source: string) {
+    constructor(family: string, bytes: ArrayBuffer) {
+      assert.ok(bytes instanceof ArrayBuffer);
+      const source = sourceFiles.get(bytes)!;
       this.family = family;
       this.source = source;
       fontFaceRequests.push({ family, source });
@@ -93,7 +102,8 @@ test('외부 웹폰트 사용 안 함 옵션은 CDN @font-face와 FontFace.load�
     fontFaceRequests.length = 0;
     await loadWebFonts([]);
 
-    assert.equal(usesJsDelivrFontUrl(styles[0].textContent), true);
+    assert.equal(usesJsDelivrFontUrl(styles[0].textContent), false, 'CSS uses fetched blob bytes');
+    assert.ok(styles[0].textContent.includes('blob:'));
     assert.equal(fontFaceRequests.some(request => usesJsDelivrFontUrl(request.source)), true);
   } finally {
     Object.defineProperty(globalThis, 'document', {
@@ -107,7 +117,13 @@ test('외부 웹폰트 사용 안 함 옵션은 CDN @font-face와 FontFace.load�
   }
 });
 
-test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록한다', async () => {
+test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록한다', async t => {
+  const sourceFiles = new WeakMap<ArrayBuffer, string>();
+  t.mock.method(globalThis, 'fetch', async (file: string) => {
+    const bytes = new ArrayBuffer(8);
+    sourceFiles.set(bytes, file);
+    return { ok: true, arrayBuffer: async () => bytes } as Response;
+  });
   const styles: Array<{ id: string; textContent: string }> = [];
   const fontFaceRequests: Array<{ family: string; source: string }> = [];
   const previousDocument = (globalThis as typeof globalThis & { document?: unknown }).document;
@@ -142,7 +158,9 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
     family: string;
     source: string;
 
-    constructor(family: string, source: string) {
+    constructor(family: string, bytes: ArrayBuffer) {
+      assert.ok(bytes instanceof ArrayBuffer);
+      const source = sourceFiles.get(bytes)!;
       this.family = family;
       this.source = source;
       fontFaceRequests.push({ family, source });
@@ -170,6 +188,7 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
       'DejaVu Serif',
       'Roboto',
       '정부상징 부처명_16040911',
+      'ROKG',
       'KoPub돋움체 Medium',
       'KoPubBatangMedium',
       'KoPubWorld돋움체 Medium',
@@ -179,7 +198,9 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
 
     assert.equal(fontFaceRequests.some(request => request.family === 'DejaVu Serif'), false);
     assert.equal(fontFaceRequests.some(request => request.family === 'Roboto'), true);
-    assert.equal(fontFaceRequests.some(request => request.family === '정부상징 부처명_16040911'), true);
+    assert.equal(fontFaceRequests.some(request => request.family === '정부상징 부처명_16040911'), false);
+    assert.equal(fontFaceRequests.some(request => request.family === 'ROKG'
+      && request.source.includes('Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff2')), true);
     assert.equal(fontFaceRequests.some(request => request.family === 'KoPub돋움체 Medium'), true);
     assert.equal(fontFaceRequests.some(request => request.family === 'KoPubBatangMedium'), true);
     assert.equal(fontFaceRequests.some(request => request.family === 'KoPubWorld돋움체 Medium'), true);
@@ -187,7 +208,7 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
     assert.equal(fontFaceRequests.some(request => request.family === '62570체'), true);
     assert.equal(styles[0].textContent.includes('DejaVu Serif'), false);
     assert.equal(styles[0].textContent.includes('Roboto'), true);
-    assert.equal(styles[0].textContent.includes('정부상징 부처명_16040911'), true);
+    assert.equal(styles[0].textContent.includes('정부상징 부처명_16040911'), false);
     assert.equal(styles[0].textContent.includes('KoPub돋움체 Medium'), true);
     assert.equal(styles[0].textContent.includes('KoPubBatangMedium'), true);
     assert.equal(styles[0].textContent.includes('KoPubWorld돋움체 Medium'), true);
@@ -207,15 +228,8 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
     );
     assert.equal(
       fontFaceRequests.some(request => (
-        request.source.includes('korea-government-symbol-font@v1.0.0/fonts/Government_16040911.ttf')
-        && request.source.includes("format('truetype')")
-      )),
-      true,
-    );
-    assert.equal(
-      fontFaceRequests.some(request => (
         request.source.includes('font-kopub@1.0.2/fonts/KoPubDotum-Medium.woff')
-        && request.source.includes("format('woff')")
+        && styles[0].textContent.split('\n').some(line => line.includes('"KoPub돋움체 Medium"') && line.includes('format("woff")'))
       )),
       true,
     );
@@ -228,7 +242,7 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
     assert.equal(
       fontFaceRequests.some(request => (
         request.source.includes('font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Medium.woff2')
-        && request.source.includes("format('woff2')")
+        && styles[0].textContent.split('\n').some(line => line.includes('"KoPubWorld돋움체 Medium"') && line.includes('format("woff2")'))
       )),
       true,
     );

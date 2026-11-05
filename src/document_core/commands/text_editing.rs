@@ -62,6 +62,7 @@ fn boundary_controls_to_delete(
                         | Control::Equation(_)
                         | Control::Footnote(_)
                         | Control::Endnote(_)
+                        | Control::Form(_)
                 ) || para.controls.iter().enumerate().any(|(other, control)| {
                     other != index
                         && Paragraph::is_split_movable_control(control)
@@ -77,6 +78,33 @@ fn boundary_controls_to_delete(
 }
 
 pub(crate) type CellReflowMetrics = (i32, i16, i16);
+
+fn validate_form_boundary_metadata(
+    paragraph: &Paragraph,
+    from: usize,
+    to: usize,
+) -> Result<(), HwpError> {
+    if paragraph.range_tags.is_empty() && paragraph.markpen_marks.is_empty() {
+        return Ok(());
+    }
+    let mut prefix = paragraph.clone();
+    let suffix = prefix.split_at(to);
+    let selected = prefix.split_at(from);
+    let fragments = [&prefix, &selected, &suffix];
+    // 기존 분할기가 경계에 걸친 범위 표지를 버리므로 원문 변경 전에 막는다.
+    if fragments.iter().map(|p| p.range_tags.len()).sum::<usize>() != paragraph.range_tags.len()
+        || fragments
+            .iter()
+            .map(|p| p.effective_markpen_range_tags().len())
+            .sum::<usize>()
+            != paragraph.effective_markpen_range_tags().len()
+    {
+        return Err(HwpError::RenderError(
+            "양식 선택 경계에 걸친 범위 태그나 형광펜은 아직 지원하지 않습니다".into(),
+        ));
+    }
+    Ok(())
+}
 
 /// 복사와 같은 글자 경계에 든 표·그림만 지울 수 있는지 변경 전에 확인한다.
 fn cell_boundary_has_objects(
@@ -1311,11 +1339,14 @@ fn empty_paragraph_after_square_wrap_anchor(anchor: &Paragraph) -> Paragraph {
     para
 }
 
+/// 경계에 친 글자를 필드 밖에 두어야 하는 필드(누름틀·계산식)가 있는 문단인가.
+/// 한/글 12.30은 계산식 결과 3 뒤에 친 9를 필드 밖에 두어, 다시 계산하면 129가 되었다.
 fn has_clickhere_field_range(para: &Paragraph) -> bool {
     para.field_ranges.iter().any(|fr| {
         matches!(
             para.controls.get(fr.control_idx),
-            Some(Control::Field(field)) if field.field_type == FieldType::ClickHere
+            Some(Control::Field(field))
+                if matches!(field.field_type, FieldType::ClickHere | FieldType::Formula)
         )
     })
 }
@@ -2060,6 +2091,34 @@ impl DocumentCore {
         text: &str,
         paginate_immediately: bool,
     ) -> Result<String, HwpError> {
+        self.replace_text_in_cell_field_impl(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            char_offset,
+            delete_count,
+            text,
+            paginate_immediately,
+            None,
+        )
+    }
+
+    /// 셀 글 교체. `field_control`을 주면 넣는 글을 그 필드가 품는다(계산식 결과).
+    pub(crate) fn replace_text_in_cell_field_impl(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        char_offset: usize,
+        delete_count: usize,
+        text: &str,
+        paginate_immediately: bool,
+        field_control: Option<usize>,
+    ) -> Result<String, HwpError> {
         let normalized = normalize_text_newlines(text);
         let text = normalized.as_ref();
         let new_chars_count = text.chars().count();
@@ -2116,8 +2175,18 @@ impl DocumentCore {
             );
         let units_fp_before =
             crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(cell_para);
-        let deleted_count =
-            replace_paragraph_text(cell_para, char_offset, delete_count, text, active, false);
+        let deleted_count = match field_control {
+            Some(control) => cell_para.replace_text_keeping_slots(
+                char_offset,
+                delete_count,
+                text,
+                Some(control),
+                false,
+            ),
+            None => {
+                replace_paragraph_text(cell_para, char_offset, delete_count, text, active, false)
+            }
+        };
         debug_assert_eq!(deleted_count, delete_count);
 
         // 부모 컨트롤 dirty 마킹 (표 또는 글상자)
@@ -2802,18 +2871,13 @@ impl DocumentCore {
                 Ok(&mut cell.paragraphs[cell_para_idx])
             }
             Control::Shape(shape) => {
-                if cell_idx != 0 {
-                    return Err(HwpError::RenderError(format!(
-                        "글상자 셀 인덱스는 0이어야 합니다 (요청: {})",
-                        cell_idx
-                    )));
-                }
-                let tb =
-                    super::super::helpers::get_textbox_from_shape_mut(shape).ok_or_else(|| {
+                let tb = super::super::helpers::get_textbox_at_mut(shape, cell_idx).ok_or_else(
+                    || {
                         HwpError::RenderError(
                             "지정된 Shape 컨트롤에 텍스트 박스가 없습니다".to_string(),
                         )
-                    })?;
+                    },
+                )?;
                 if cell_para_idx >= tb.paragraphs.len() {
                     return Err(HwpError::RenderError(format!(
                         "글상자 문단 인덱스 {} 범위 초과 (총 {}개)",
@@ -3186,7 +3250,7 @@ impl DocumentCore {
                 }
             }
             Some(Control::Shape(shape)) => {
-                if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
+                if let Some(tb) = super::super::helpers::get_textbox_at_mut(shape, cell_idx) {
                     if let Some(cell_para) = tb.paragraphs.get_mut(cell_para_idx) {
                         reflow_line_segs(cell_para, paragraph_box.clone(), &styles, self.dpi);
                     }
@@ -3235,7 +3299,8 @@ impl DocumentCore {
                 &mut cell.paragraphs
             }
             Control::Shape(shape) => {
-                let Some(textbox) = super::super::helpers::get_textbox_from_shape_mut(shape) else {
+                let Some(textbox) = super::super::helpers::get_textbox_at_mut(shape, cell_idx)
+                else {
                     return;
                 };
                 &mut textbox.paragraphs
@@ -3395,9 +3460,18 @@ impl DocumentCore {
                 }
             }
             Control::Shape(shape) => {
-                let tb = super::super::helpers::get_textbox_from_shape(shape)?;
-                let common = shape.common();
-                Some((common.width as i32, tb.margin_left, tb.margin_right))
+                let tb = super::super::helpers::get_textbox_at(shape, cell_idx)?;
+                let owner = shape.textbox_shape_at(cell_idx)?;
+                // 묶음 자식은 독립 개체 common.sz가 없으며 orgSz와 합성 변환이 물리 프레임을 정한다.
+                // layout_group_child와 같은 원본 폭을 쓰고, 바깥 Group의 폭으로 재래핑하지 않는다.
+                let width = if matches!(shape.as_ref(), crate::model::shape::ShapeObject::Group(_))
+                {
+                    let attr = owner.shape_attr();
+                    (attr.original_width as f64 * attr.render_sx.abs()) as i32
+                } else {
+                    owner.common().width as i32
+                };
+                Some((width, tb.margin_left, tb.margin_right))
             }
             Control::Picture(pic) => Some((pic.common.width as i32, 0, 0)),
             _ => None,
@@ -3426,7 +3500,7 @@ impl DocumentCore {
             }
             para = match control {
                 Control::Table(t) => t.cells.get(cell_idx)?.paragraphs.get(cell_para_idx)?,
-                Control::Shape(s) => super::super::helpers::get_textbox_from_shape(s)?
+                Control::Shape(s) => super::super::helpers::get_textbox_at(s, cell_idx)?
                     .paragraphs
                     .get(cell_para_idx)?,
                 Control::Picture(p) => p.caption.as_ref()?.paragraphs.get(cell_para_idx)?,
@@ -3523,6 +3597,7 @@ impl DocumentCore {
             end_offset,
             cell_ctx,
             None,
+            None,
         )
     }
 
@@ -3535,7 +3610,7 @@ impl DocumentCore {
         end_para: usize,
         end_logical: usize,
     ) -> Result<String, HwpError> {
-        if start_para == end_para && start_logical > end_logical {
+        if start_para > end_para || (start_para == end_para && start_logical > end_logical) {
             return Err(HwpError::RenderError(
                 "시작 위치가 끝 위치보다 뒤에 있음".into(),
             ));
@@ -3560,6 +3635,9 @@ impl DocumentCore {
                     "\"paraIdx\":{},\"charOffset\":{}",
                     start_para, start_logical
                 )));
+            }
+            if super::clipboard::has_only_inline_forms(p) {
+                continue;
             }
             {
                 let positions = p.control_text_positions();
@@ -3596,6 +3674,7 @@ impl DocumentCore {
             end.0,
             None,
             Some((start.1, end.1)),
+            Some((start_logical, end_logical)),
         )?;
         Ok(super::super::helpers::json_ok_with(&format!(
             "\"paraIdx\":{},\"charOffset\":{}",
@@ -3611,7 +3690,15 @@ impl DocumentCore {
         end: (usize, bool),
         selected: &[usize],
         logical_boundaries: bool,
+        form_logical_range: Option<(usize, usize)>,
     ) -> Result<(), HwpError> {
+        if let Some((from, to)) = form_logical_range {
+            let paragraph = &mut self.document.sections[section_idx].paragraphs[para_idx];
+            let suffix = paragraph.split_at(to);
+            paragraph.split_at(from);
+            paragraph.merge_from(&suffix);
+            return Ok(());
+        }
         if !logical_boundaries {
             delete_paragraph_boundary(
                 &mut self.document.sections[section_idx].paragraphs[para_idx],
@@ -3654,6 +3741,7 @@ impl DocumentCore {
         end_offset: usize,
         cell_ctx: Option<(usize, usize, usize)>,
         boundaries: Option<(bool, bool)>,
+        form_logical_offsets: Option<(usize, usize)>,
     ) -> Result<String, HwpError> {
         // 인덱스/범위 검증 — section_idx 범위, start/end para 범위, 뒤집힌 오프셋(start > end)
         if section_idx >= self.document.sections.len() {
@@ -3688,6 +3776,29 @@ impl DocumentCore {
         let (start_after, end_after) = boundaries.unwrap_or((false, false));
         let mut first_controls = Vec::new();
         let mut last_controls = Vec::new();
+        let mut first_form_range = None;
+        let mut last_form_range = None;
+        if cell_ctx.is_none() {
+            if let Some((from, to)) = form_logical_offsets {
+                let paragraphs = &self.document.sections[section_idx].paragraphs;
+                if super::clipboard::has_only_inline_forms(&paragraphs[start_para]) {
+                    let end = if start_para == end_para {
+                        to
+                    } else {
+                        logical_paragraph_length(&paragraphs[start_para])
+                    };
+                    validate_form_boundary_metadata(&paragraphs[start_para], from, end)?;
+                    first_form_range = Some((from, end));
+                }
+                if start_para != end_para
+                    && super::clipboard::has_only_inline_forms(&paragraphs[end_para])
+                {
+                    validate_form_boundary_metadata(&paragraphs[end_para], 0, to)?;
+                    last_form_range = Some((0, to));
+                }
+            }
+        }
+
         // 글자 축 API도 지원하지 않는 필드·개체 경계를 바꾸기 전에 거절한다.
         if boundaries.is_none() && cell_ctx.is_none() {
             let paragraphs = &self.document.sections[section_idx].paragraphs;
@@ -3718,12 +3829,14 @@ impl DocumentCore {
             } else {
                 (paragraphs[start_para].text.chars().count(), true)
             };
-            first_controls = boundary_controls_to_delete(
-                &paragraphs[start_para],
-                (start_offset, start_after),
-                first_end,
-            )?;
-            if start_para != end_para {
+            if first_form_range.is_none() {
+                first_controls = boundary_controls_to_delete(
+                    &paragraphs[start_para],
+                    (start_offset, start_after),
+                    first_end,
+                )?;
+            }
+            if start_para != end_para && last_form_range.is_none() {
                 last_controls = boundary_controls_to_delete(
                     &paragraphs[end_para],
                     (0, false),
@@ -3778,7 +3891,10 @@ impl DocumentCore {
             if start_para == end_para {
                 // 같은 문단 내 삭제
                 let count = end_offset - start_offset;
-                if count > 0 || !first_controls.is_empty() {
+                if count > 0
+                    || !first_controls.is_empty()
+                    || first_form_range.is_some_and(|(from, to)| from < to)
+                {
                     self.delete_body_paragraph_range(
                         section_idx,
                         start_para,
@@ -3786,6 +3902,7 @@ impl DocumentCore {
                         (end_offset, end_after),
                         &first_controls,
                         boundaries.is_some(),
+                        first_form_range,
                     )?;
                     // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
                     let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
@@ -3814,6 +3931,7 @@ impl DocumentCore {
                     (end_offset, end_after),
                     &last_controls,
                     boundaries.is_some(),
+                    last_form_range,
                 )?;
                 // 2) 중간 문단 역순 제거 (composed도 동기)
                 for mid_para in (start_para + 1..end_para).rev() {
@@ -3836,6 +3954,7 @@ impl DocumentCore {
                         (para_len, true),
                         &first_controls,
                         boundaries.is_some(),
+                        first_form_range,
                     )?;
                 }
                 // 4) 첫-마지막 문단 병합 (마지막 문단이 이제 start_para+1에 위치)
@@ -3949,12 +4068,9 @@ impl DocumentCore {
                 }
                 table.cells.get(cell_idx)?.paragraphs.get(cell_para_idx)
             }
-            Control::Shape(shape) => {
-                if cell_idx != 0 {
-                    return None;
-                }
-                get_textbox_from_shape(shape)?.paragraphs.get(cell_para_idx)
-            }
+            Control::Shape(shape) => super::super::helpers::get_textbox_at(shape, cell_idx)?
+                .paragraphs
+                .get(cell_para_idx),
             Control::Picture(pic) => pic.caption.as_ref()?.paragraphs.get(cell_para_idx),
             _ => None,
         }
@@ -4987,7 +5103,7 @@ impl DocumentCore {
                 }
             }
             Some(Control::Shape(shape)) => {
-                if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
+                if let Some(tb) = super::super::helpers::get_textbox_at_mut(shape, cell_idx) {
                     tb.paragraphs.insert(new_cell_para_idx, new_para);
                 }
             }
@@ -5118,7 +5234,7 @@ impl DocumentCore {
                 }
             }
             Some(Control::Shape(shape)) => {
-                if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
+                if let Some(tb) = super::super::helpers::get_textbox_at_mut(shape, cell_idx) {
                     let removed = tb.paragraphs.remove(cell_para_idx);
                     removed_meta = removed.capture_meta();
                     merge_point = tb.paragraphs[prev_idx].merge_from(&removed);
@@ -5681,7 +5797,7 @@ impl DocumentCore {
                 Ok(cell.paragraphs.len())
             }
             Some(Control::Shape(shape)) => {
-                let text_box = get_textbox_from_shape(shape)
+                let text_box = super::super::helpers::get_textbox_at(shape, cell_idx)
                     .ok_or_else(|| HwpError::RenderError("도형에 글상자가 없습니다".to_string()))?;
                 Ok(text_box.paragraphs.len())
             }
@@ -6128,13 +6244,7 @@ impl DocumentCore {
                     &mut cell.paragraphs
                 }
                 Some(Control::Shape(shape)) => {
-                    if cell_idx != 0 {
-                        return Err(HwpError::RenderError(format!(
-                            "경로[{}]: 글상자의 cell_index는 0이어야 합니다 ({})",
-                            i, cell_idx
-                        )));
-                    }
-                    let text_box = super::super::helpers::get_textbox_from_shape_mut(shape)
+                    let text_box = super::super::helpers::get_textbox_at_mut(shape, cell_idx)
                         .ok_or_else(|| {
                             HwpError::RenderError(format!(
                                 "경로[{}]: controls[{}]가 텍스트 글상자가 아닙니다",

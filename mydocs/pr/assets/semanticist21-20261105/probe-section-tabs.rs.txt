@@ -1,0 +1,25 @@
+
+use rhwp::document_core::DocumentCore;
+fn x(core: &DocumentCore, section: usize, offset: usize) -> f64 {
+    let text=core.get_cursor_rect_native(section, 1, offset).unwrap();
+    let rest=text.split("\"x\":").nth(1).unwrap();
+    rest.split([',','}']).next().unwrap().parse().unwrap()
+}
+fn main() {
+    let args: Vec<_> = std::env::args().collect();
+    let mut core=DocumentCore::from_bytes(&std::fs::read(&args[1]).unwrap()).unwrap();
+    let mut doc=core.document().clone();
+    doc.sections.push(doc.sections[0].clone());
+    core.set_document(doc);
+    core.set_section_def_native(0, r#"{"defaultTabSpacing":16000}"#).unwrap();
+    core.set_section_def_native(1, r#"{"defaultTabSpacing":8000}"#).unwrap();
+    let saved=rhwp::serializer::hwpx::serialize_hwpx(core.document()).unwrap();
+    std::fs::write(&args[2],saved).unwrap();
+    for section in 0..2 {
+        println!("section={} raw={} actual_tab_delta={:.6}", section,
+          core.document().sections[section].section_def.default_tab_spacing,
+          x(&core,section,2)-x(&core,section,0));
+    }
+    let second=x(&core,1,2)-x(&core,1,0);
+    if (second-40.0*96.0/72.0).abs()>1.0 { std::process::exit(10); }
+}

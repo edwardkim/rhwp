@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-09
+last_verified: 2026-11-04
 ---
 
 # Review-only fast-pass
@@ -114,6 +114,11 @@ PR review와 오늘할일만 추가하는 경우에는 다음 순서를 따른�
 `devel 동기화`를 매번 source branch merge를 수행하라는 상시 지시로 해석하지 않는다.
 
 ### A.1 CI 실행 정책을 바꾼 PR의 trusted 재사용
+
+**후속 기록의 작업 절차는 [옵션 2](post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)를 적용한다.**
+CI workflow·action·실행/재사용 판정 정책 변경 PR에는 review·오늘할일 trailing commit을 추가하지
+않고, 원 PR의 Full CI·검토·승인·병합 뒤 별도 기록 PR로 처리한다. 아래는 기존 trusted controller의
+기술적 수용 계약이며, 같은 PR에 시험 push하거나 Full CI를 생략하라는 운영 지시가 아니다.
 
 이 경로는 devel 대상 same-repository PR 전용이다. main 대상 PR은 Controller를 기다리거나
 해당 status로 검증을 생략하지 않는다. 발행 v6과 CI·CodeQL·Render Diff 소비 계약은 실제 발행

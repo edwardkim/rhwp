@@ -315,7 +315,7 @@ impl LayoutEngine {
                 .borrow()
                 .table_text_reflowed(table)
             || table.common.treat_as_char
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || cell.dirty_flag
             || cell.row_span != 1
             || cell.text_direction != 0
@@ -389,7 +389,7 @@ impl LayoutEngine {
             || child.caption.is_some()
             || child.row_count != 1
             || child.col_count != 1
-            || child.page_break != TablePageBreak::RowBreak
+            || child.layout_page_break() != TablePageBreak::RowBreak
             || self
                 .render_normalization
                 .borrow()

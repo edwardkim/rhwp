@@ -1,0 +1,14 @@
+{
+  "source": "5c540c6c3eb197dc31dce30f576bcd342fbdd58a",
+  "command": [
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--out-dir",
+    "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/candidate-pkg"
+  ],
+  "start": "2026-11-04T16:45:28.939495+00:00",
+  "end": "2026-11-04T16:58:56.841386+00:00",
+  "exit": 0,
+  "native_binary_sha256": "5486a8460b699beb14c5525c12d41c2f2e0d2d9454082004f1a2f9cfc2ce87e3"
+}

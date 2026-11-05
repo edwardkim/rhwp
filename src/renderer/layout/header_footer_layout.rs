@@ -437,9 +437,7 @@ impl LayoutEngine {
                     }
                 }
             }
-            if y_offset >= area.y + area.height {
-                break;
-            }
+            // 한컴은 머리말·꼬리말 틀을 넘친 문단도 본문 위에 겹쳐 그린다. 넘친 문단을 버리지 않는다.
         }
         let local_composed: Vec<_> = hf_paragraphs
             .iter()

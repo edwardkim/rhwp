@@ -934,16 +934,17 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
                     )
                 })
                 .flatten(),
-            native_otf_metrics: (!styles.has_exact_font_source(char_style_id, lang_index))
-                .then(|| {
-                    styles.native_pua_fonts.get_otf_for_source(
-                        cs.font_family_for_lang(lang_index),
-                        cs.bold,
-                        cs.italic,
-                        cs.source_ttf_for_lang(lang_index),
-                    )
-                })
-                .flatten(),
+            native_otf_metrics: (!styles.has_exact_font_source(char_style_id, lang_index)
+                && styles.allows_native_otf_metrics(char_style_id, lang_index))
+            .then(|| {
+                styles.native_pua_fonts.get_otf_for_source(
+                    cs.font_family_for_lang(lang_index),
+                    cs.bold,
+                    cs.italic,
+                    cs.source_ttf_for_lang(lang_index),
+                )
+            })
+            .flatten(),
             bidi_layout: None,
             emphasis_skip_first_cluster: false,
             top_underline_font_size: None,
@@ -1049,16 +1050,17 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
                     storage.bytes(std::mem::size_of::<crate::renderer::LatinSlotMetrics>())?;
                     Ok(Box::new(crate::renderer::LatinSlotMetrics {
                         font_family: storage.string(cs.font_family_for_lang(1))?,
-                        native_otf_metrics: (!styles.has_exact_font_source(char_style_id, 1))
-                            .then(|| {
-                                styles.native_pua_fonts.get_otf_for_source(
-                                    cs.font_family_for_lang(1),
-                                    cs.bold,
-                                    cs.italic,
-                                    cs.source_ttf_for_lang(1),
-                                )
-                            })
-                            .flatten(),
+                        native_otf_metrics: (!styles.has_exact_font_source(char_style_id, 1)
+                            && styles.allows_native_otf_metrics(char_style_id, 1))
+                        .then(|| {
+                            styles.native_pua_fonts.get_otf_for_source(
+                                cs.font_family_for_lang(1),
+                                cs.bold,
+                                cs.italic,
+                                cs.source_ttf_for_lang(1),
+                            )
+                        })
+                        .flatten(),
                         metric_font_family: cs
                             .metric_face_for_lang(1)
                             .map(|face| storage.string(face))
@@ -2170,6 +2172,30 @@ fn char_width_decision_with_hft_tracking<'a>(
             embedded.em_fraction = Some(em);
             embedded.width_source = "sourceContextualMetric";
         }
+        // 표시용 family로 내려가기 전에 원본 결측 기호의 검증된 공급 계약을
+        // 해소한다. 표시 치환이 원본의 독립 Print 전진을 전각 추정으로 바꾸지 않는다.
+        if embedded.width_px.is_none()
+            && latin.is_none()
+            && !style.hft_hangul_face
+            && !style.hft_fullwidth_dot
+        {
+            if let Some(metric) = embedded.metric.and_then(|primary| {
+                font_metrics_data::verified_missing_glyph_supplier(primary.metric, c)
+                    .and_then(|face| font_metrics_data::find_metric_decision(face, false, false))
+            }) {
+                if let Some(width) = metric.metric.get_width(c) {
+                    embedded = EmbeddedWidthDecision {
+                        width_px: Some(quantize_hwp_px(
+                            font_size * f64::from(width) / f64::from(metric.metric.em_size),
+                        )),
+                        em_fraction: Some(f64::from(width) / f64::from(metric.metric.em_size)),
+                        width_source: "metricGlyphFallback",
+                        metric: Some(metric),
+                        character_match: "hit",
+                    };
+                }
+            }
+        }
         // 부분 표의 미수집은 글리프 부재가 아니다. 확인한 원본 폭이 없으면
         // 기존 표시 face의 폭을 보존한다. ASCII 밖의 전각 괄호도 반각으로 줄이지 않는다.
         if (c.is_ascii_graphic() || source_hft_metric)
@@ -2234,6 +2260,18 @@ fn char_width_decision_with_hft_tracking<'a>(
             ) == Some(false);
         let verified_primary_missing = verified_primary_missing
             || verified_named_primary_missing
+            // 실제 선택한 원본 프로그램의 cmap이 결측을 확인하고 호출자가
+            // glyph 대체 공급자를 명시한 경우에도 같은 체인으로 전진을 구한다.
+            // 표시용 OS 폴백이나 프로그램 미준비만으로 원본 결측을 추정하지 않는다.
+            || (latin.is_none()
+                && style.source_font_is_ttf
+                && style.glyph_fallback_advance_explicit
+                // 기존 문장부호의 Print 전진 계약은 glyph 공급과 별개다.
+                && !is_narrow_punctuation(c)
+                && style
+                    .native_otf_metrics
+                    .as_ref()
+                    .is_some_and(|font| !font.has_glyph(c)))
             || (!style.source_font_is_hft
                 && measured_family == display_family
                 && KoPubFamily::from_primary(measured_family).is_some_and(|family| {
@@ -2299,32 +2337,6 @@ fn char_width_decision_with_hft_tracking<'a>(
                     );
                     embedded.width_source = "declaredGlyphFallbackMetric";
                     break;
-                }
-            }
-        }
-        // 원 프로그램에서 결측이며 독립 Print로 확인한 공급 face의 전진을 쓴다.
-        // 돋움체→한컴바탕과 굴림→한컴돋움은 같은 결측 기호라도 공급자가 다르다.
-        // 실제 굴림 글리프 hit와 HFT 치환은 보존하고, 확인된 결측만 대체한다.
-        if embedded.width_px.is_none()
-            && latin.is_none()
-            && !style.hft_hangul_face
-            && !style.hft_fullwidth_dot
-            && metric_family == display_family
-        {
-            if let Some(metric) = embedded.metric.and_then(|primary| {
-                font_metrics_data::verified_missing_glyph_supplier(primary.metric, c)
-                    .and_then(|face| font_metrics_data::find_metric_decision(face, false, false))
-            }) {
-                if let Some(width) = metric.metric.get_width(c) {
-                    embedded = EmbeddedWidthDecision {
-                        width_px: Some(quantize_hwp_px(
-                            font_size * f64::from(width) / f64::from(metric.metric.em_size),
-                        )),
-                        em_fraction: Some(f64::from(width) / f64::from(metric.metric.em_size)),
-                        width_source: "metricGlyphFallback",
-                        metric: Some(metric),
-                        character_match: "hit",
-                    };
                 }
             }
         }

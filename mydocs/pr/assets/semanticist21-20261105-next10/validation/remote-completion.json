@@ -1,0 +1,121 @@
+{
+  "integration_pr": 8640,
+  "head": "4cf202d2aba44b0cfdd33465b03e37d1826a3fdc",
+  "merge_sha": "fd598250b7d8abee39eba1b1c68e604a326faa17",
+  "merged_at": "2026-11-05T11:44:39Z",
+  "original_prs": [
+    {
+      "number": 8368,
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-11-05T11:44:41Z",
+      "merge_commit_sha": "84d4470d50b55216c01a32121dcc613a2d79d87b",
+      "head": "7915a7ed9f75f559f3e82aa9a18feb80c0326ce1",
+      "integrated_in": "fd598250b7d8abee39eba1b1c68e604a326faa17",
+      "url": "https://github.com/edwardkim/rhwp/pull/8368"
+    },
+    {
+      "number": 8369,
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-11-05T11:44:41Z",
+      "merge_commit_sha": "359fb968524d99ab8537431c5a68324d3cdcc108",
+      "head": "3c5accd7b604594585ebc1b1fe96ea155069821e",
+      "integrated_in": "fd598250b7d8abee39eba1b1c68e604a326faa17",
+      "url": "https://github.com/edwardkim/rhwp/pull/8369"
+    },
+    {
+      "number": 8385,
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-11-05T11:44:41Z",
+      "merge_commit_sha": "c8c1c8ff8be173dace98b6bde050a8b9db9a3b2f",
+      "head": "6a31cb47a088ac13ecbe641900318c9dbc9ff4e3",
+      "integrated_in": "fd598250b7d8abee39eba1b1c68e604a326faa17",
+      "url": "https://github.com/edwardkim/rhwp/pull/8385"
+    },
+    {
+      "number": 8484,
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-11-05T11:44:41Z",
+      "merge_commit_sha": "fed0da5f188a68a36198ba3996dd6f52a5f8b6cc",
+      "head": "eff6d08cfc2bf781a934f358250d676a4fc775cd",
+      "integrated_in": "fd598250b7d8abee39eba1b1c68e604a326faa17",
+      "url": "https://github.com/edwardkim/rhwp/pull/8484"
+    },
+    {
+      "number": 8488,
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-11-05T11:44:41Z",
+      "merge_commit_sha": "30bb6d52ca576b131584cf8eb5be2a40a1b68675",
+      "head": "9fe4a4df5e2271f128be49dc4457e2053ef9f25b",
+      "integrated_in": "fd598250b7d8abee39eba1b1c68e604a326faa17",
+      "url": "https://github.com/edwardkim/rhwp/pull/8488"
+    },
+    {
+      "number": 8490,
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-11-05T11:44:41Z",
+      "merge_commit_sha": "0afda1ccea847104cb2c0cb097d12be2dd00f901",
+      "head": "6b86197e31f820c7ba5c098f3bf34d9e50b739e7",
+      "integrated_in": "fd598250b7d8abee39eba1b1c68e604a326faa17",
+      "url": "https://github.com/edwardkim/rhwp/pull/8490"
+    },
+    {
+      "number": 8492,
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-11-05T11:44:41Z",
+      "merge_commit_sha": "82a83fc9ac227e70b76c8abc3de95e598e1c84f4",
+      "head": "c1dc63845879c92506a1da1aaa17ef233b7c68d2",
+      "integrated_in": "fd598250b7d8abee39eba1b1c68e604a326faa17",
+      "url": "https://github.com/edwardkim/rhwp/pull/8492"
+    },
+    {
+      "number": 8494,
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-11-05T11:44:41Z",
+      "merge_commit_sha": "6ce1bcc6c1c62fb083639f5bbebbc8285078352f",
+      "head": "d8f560f7e62c9f70cdf935d10a26b89c7362d014",
+      "integrated_in": "fd598250b7d8abee39eba1b1c68e604a326faa17",
+      "url": "https://github.com/edwardkim/rhwp/pull/8494"
+    },
+    {
+      "number": 8500,
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-11-05T11:44:41Z",
+      "merge_commit_sha": "8828b81448922a704cafc8f8a79023b5d98bb16a",
+      "head": "ddba007430877afdc2bc2c11d6fdcf6676c72801",
+      "integrated_in": "fd598250b7d8abee39eba1b1c68e604a326faa17",
+      "url": "https://github.com/edwardkim/rhwp/pull/8500"
+    },
+    {
+      "number": 8504,
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-11-05T11:44:41Z",
+      "merge_commit_sha": "b290a0b0dd7dc88b8bebd6ad264494750df54ed9",
+      "head": "a7e665eb44f47a50481368722fae71461f15f901",
+      "integrated_in": "fd598250b7d8abee39eba1b1c68e604a326faa17",
+      "url": "https://github.com/edwardkim/rhwp/pull/8504"
+    }
+  ],
+  "closing_issue_references": [],
+  "duration": {
+    "run": 42021437016,
+    "status": "completed",
+    "conclusion": "success",
+    "ready": true,
+    "reason": "successful-pr-worker-measurements",
+    "refreshed_targets": 46,
+    "published": true,
+    "metadata_commit": "cf867821a67966006af25de989aa592b94bbd47c",
+    "source_merge": "fd598250b7d8abee39eba1b1c68e604a326faa17"
+  },
+  "comments": "Approved concrete templates recorded; publish after operating record and devel sync."
+}

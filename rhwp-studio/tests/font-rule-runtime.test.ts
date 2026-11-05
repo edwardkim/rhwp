@@ -15,10 +15,10 @@ test('Studio runtime은 W7 generated projection의 승인 분모를 전부 소�
   assert.equal(FONT_RULE_SUBSTITUTION_TABLES.length, 7);
   assert.equal(FONT_RULE_SUBSTITUTION_TABLES.flat().length, 265);
   assert.equal(FONT_RULE_GOVERNMENT_SUCCESSORS.length, 10);
-  // 공개 Noto Sans Symbols2와 RHWP Public Batang의 공급 자원을 포함한다.
-  assert.equal(FONT_RULE_WEBFONT_ENTRIES.length, 155);
+  // 공개 글꼴과 정부상징 ROKG v2의 별도 공급 이름을 포함한다.
+  assert.equal(FONT_RULE_WEBFONT_ENTRIES.length, 157);
   assert.equal(generatedCanvas2dPaintRuleCount(), 281);
-  assert.equal(generatedCanvasKitRuleCount(), 160);
+  assert.equal(generatedCanvasKitRuleCount(), 162);
   assert.equal(
     FONT_RULE_SUBSTITUTION_TABLES.flat().every(entry => /^rule\./.test(entry[4])),
     true,

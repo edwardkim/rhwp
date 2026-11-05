@@ -36,7 +36,7 @@ impl TypesetEngine {
         let table = input.source.table;
         if !std::ptr::eq(table, input.source.row_geometry_table)
             || !matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             || !input.prepared.source_next_positive_rewind

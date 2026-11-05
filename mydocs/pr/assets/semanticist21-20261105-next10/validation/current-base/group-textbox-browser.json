@@ -1,0 +1,61 @@
+{
+  "first": {
+    "point": {
+      "x": 510.317375,
+      "y": 439.65300000000013
+    },
+    "position": {
+      "sectionIndex": 0,
+      "paragraphIndex": 0,
+      "charOffset": 3,
+      "parentParaIndex": 4,
+      "controlIndex": 0,
+      "cellIndex": 1,
+      "cellParaIndex": 0,
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 1,
+          "cellParaIndex": 0
+        }
+      ],
+      "isTextBox": true,
+      "cursorRect": {
+        "pageIndex": 2,
+        "x": 230.9,
+        "y": 537.6,
+        "height": 14
+      }
+    }
+  },
+  "contents": {
+    "point": {
+      "x": 663.197375,
+      "y": 439.7335000000003
+    },
+    "position": {
+      "sectionIndex": 0,
+      "paragraphIndex": 8,
+      "charOffset": 14,
+      "cursorRect": {
+        "pageIndex": 3,
+        "x": 319.1,
+        "y": 240.7,
+        "height": 17.3
+      }
+    }
+  },
+  "escaped": {
+    "sectionIndex": 0,
+    "paragraphIndex": 4,
+    "charOffset": 0
+  },
+  "errors": [],
+  "environment": {
+    "backend": "canvas2d",
+    "dpr": 1,
+    "pageCount": 383,
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+  },
+  "localFontChoice": "use-webfont-fallback"
+}

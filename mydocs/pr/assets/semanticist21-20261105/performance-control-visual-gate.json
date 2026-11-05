@@ -1,0 +1,60 @@
+[
+  {
+    "key": "jpeg-sandbox",
+    "base": {
+      "pages": 17,
+      "min": 75.47,
+      "below90": [
+        "7",
+        "15"
+      ]
+    },
+    "candidate": {
+      "pages": 17,
+      "min": 75.47,
+      "below90": [
+        "7",
+        "15"
+      ]
+    },
+    "byte_identical_pages": 17,
+    "maintainer_exception_approved": true,
+    "approval_record": "maintainer-approval.json",
+    "approved_scope": "2026-11-05 작업지시자가 #8331·#8332의 변경 전부터 있던 동일 출력 차이에 한정한 수용 예외와 10건의 통합 push·Open PR·해당 head CI·self-review·merge·원 PR 완료/감사 댓글·동기화·정리를 승인했다. 새 회귀·검사 실패·쪽수 차이·누락·90% 미만의 새 렌더링 회귀 추가는 예외 대상이 아니다."
+  },
+  {
+    "key": "equation-flow",
+    "base": {
+      "pages": 22,
+      "min": 42.22,
+      "below90": [
+        "8",
+        "11",
+        "12",
+        "13",
+        "18",
+        "19",
+        "20",
+        "21"
+      ]
+    },
+    "candidate": {
+      "pages": 22,
+      "min": 42.22,
+      "below90": [
+        "8",
+        "11",
+        "12",
+        "13",
+        "18",
+        "19",
+        "20",
+        "21"
+      ]
+    },
+    "byte_identical_pages": 22,
+    "maintainer_exception_approved": true,
+    "approval_record": "maintainer-approval.json",
+    "approved_scope": "2026-11-05 작업지시자가 #8331·#8332의 변경 전부터 있던 동일 출력 차이에 한정한 수용 예외와 10건의 통합 push·Open PR·해당 head CI·self-review·merge·원 PR 완료/감사 댓글·동기화·정리를 승인했다. 새 회귀·검사 실패·쪽수 차이·누락·90% 미만의 새 렌더링 회귀 추가는 예외 대상이 아니다."
+  }
+]

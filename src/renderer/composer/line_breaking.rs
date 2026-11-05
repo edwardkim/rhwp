@@ -3374,14 +3374,19 @@ pub(crate) fn inline_control_occupied_size_hwp_with_storage<S: crate::storage::S
             return Ok(None);
         };
         if let Control::Table(table) = control {
-            // 편집으로 셀 내용이 선언 높이를 넘으면 실제 표 배치도 행 높이를 키운다.
-            // 같은 측정기를 소비하여 작은 선언값으로 본문 줄 높이를 과소 발행하지 않는다.
+            // 줄은 실제로 그리는 표를 담는다. 편집으로 셀 내용이 선언 높이를 넘으면 행이
+            // 자라고, 행 합이 선언보다 작으면 한/글은 그 행 높이로 그리고 다음 줄을 잇는다
+            // (선언 8160HU·행 합 7536HU 결재문서 표, 한/글 2020 Print). 선언값으로 줄을
+            // 발행하면 뒤 내용이 그 차이만큼 내려간다.
             let measured = crate::renderer::height_measurer::HeightMeasurer::new(dpi)
                 .with_session_edited(true)
                 .measure_table_with_storage(table, 0, 0, styles, storage)?;
             // 위/아래 캡션도 인라인 개체가 소유하는 물리 상자다. 표 본체만
             // 발행하면 캡션 글줄에 다음 개체가 놓이고 저장 줄도 그 높이로 굳는다.
-            height = height.max(px_to_hwpunit(measured.total_height, dpi));
+            let measured_hu = (measured.total_height * 7200.0 / dpi).round() as i32;
+            if measured_hu > 0 {
+                height = measured_hu;
+            }
             width = width
                 .saturating_add(i32::from(table.outer_margin_left))
                 .saturating_add(i32::from(table.outer_margin_right));
@@ -3817,6 +3822,18 @@ fn supports_inline_picture_frame_controls(para: &Paragraph) -> bool {
         })
 }
 
+// 양식만 있는 빈 문단도 그림과 같은 원시 인라인 슬롯을 프레임에 넘긴다.
+// 떠 있는 양식이나 다른 개체의 배치 소유권은 기존 경로에 둔다.
+pub(super) fn supports_inline_form_frame_controls(para: &Paragraph) -> bool {
+    para.controls
+        .iter()
+        .any(|control| matches!(control, Control::Form(form) if form.common.treat_as_char))
+        && para.controls.iter().all(|control| match control {
+            Control::Form(form) => form.common.treat_as_char,
+            other => control_is_width_neutral_marker(other),
+        })
+}
+
 /// 본문 뒤 남은 폭에 놓이지 않는 inline control은 별도 physical line을 가진다.
 ///
 /// 종전 cell reflow는 text token만 줄바꿈한 뒤 첫 LineSeg를 표 높이만큼 키웠다.
@@ -4113,6 +4130,31 @@ fn mark_indented_lines(
         first_line_index,
         reflow_indentation_pattern(para_style, stored, line_width_hwp),
     );
+    stamp_paragraph_head(lines, first_line_index, para_style);
+}
+
+/// 새로 조판한 줄에 한글처럼 `TAG_PARAGRAPH_HEAD`(bit 21)를 단다.
+///
+/// 한/글(12.30 Mac)은 문단 머리(글머리표·그림 글머리표·번호·개요)가 있는 문단의 첫 줄에만
+/// 이 비트를 켜고, 둘째 줄 이후와 머리를 끈 문단에서는 끈다(HWP `PARA_LINE_SEG`·HWPX
+/// `flags` 모두). 비트가 꺼진 글머리표 문단은 한/글이 글머리표를 그리지 않는다.
+fn stamp_paragraph_head(
+    lines: &mut [LineSeg],
+    first_line_index: usize,
+    para_style: Option<&ResolvedParaStyle>,
+) {
+    let head = paragraph_has_head(para_style);
+    for (line_index, line) in (first_line_index..).zip(lines.iter_mut()) {
+        if head && line_index == 0 {
+            line.tag |= LineSeg::TAG_PARAGRAPH_HEAD;
+        } else {
+            line.tag &= !LineSeg::TAG_PARAGRAPH_HEAD;
+        }
+    }
+}
+
+fn paragraph_has_head(para_style: Option<&ResolvedParaStyle>) -> bool {
+    para_style.is_some_and(|style| style.head_type != HeadType::None)
 }
 
 /// 재조판이 발행할 줄별 들여쓰기 기록. 개체의 줄 폭 판정도 같은 기록을 소비한다.
@@ -4329,6 +4371,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
         FramePurpose::Body => {
             supports_picture_band_frame_controls(para)
                 || supports_cached_body_frame_controls(para)
+                || supports_inline_form_frame_controls(para)
                 || (para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para))
                 || (para.line_segs.is_empty() && supports_overlay_table_frame_controls(para))
                 || supports_overlay_shape_frame_controls(para)
@@ -4340,7 +4383,9 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
         return Ok(None);
     }
 
-    let projected = if (para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para))
+    let projected = if (para.line_segs.is_empty()
+        && (supports_tac_table_band_frame_controls(para)
+            || supports_inline_form_frame_controls(para)))
         || no_ls_inline_picture_host_fill(para)
     {
         inline_frame_input::project_with_storage(para, styles, dpi, storage)?
@@ -4382,7 +4427,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
     // 저장 기록이 끄는 것은 문단 들여쓰기뿐이다. 마커의 첫/후속 줄 차이는 유지한다.
     let (marker_hang_px, indent_px) = list_marker_breaker_box(para, styles, indent_px);
     let marker_font_size = list_marker_metrics::include_marker(para, styles, true, 0.0);
-    let tab_fill = TabFill::for_paragraph(
+    let mut tab_fill = TabFill::for_paragraph(
         para_style,
         indent_px,
         crate::renderer::hwpunit_to_px(
@@ -4390,6 +4435,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
             dpi,
         ),
     );
+    tab_fill.default_width_px = styles.default_tab_width(tab_fill.default_width_px);
     let english_break_unit = para_style
         .map(|style| style.english_break_unit)
         .unwrap_or(0);
@@ -4863,11 +4909,17 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                 } else {
                     indentation_pattern.1
                 };
+                let head = start_char == 0
+                    && frame.row_count() == first_row
+                    && paragraph_has_head(para_style);
                 for (index, segment) in segments.iter_mut().enumerate() {
                     if indented && index == 0 {
                         segment.source_tag |= LineSeg::TAG_INDENTATION;
                     } else {
                         segment.source_tag &= !LineSeg::TAG_INDENTATION;
+                    }
+                    if head && index == 0 {
+                        segment.source_tag |= LineSeg::TAG_PARAGRAPH_HEAD;
                     }
                 }
                 if frame
@@ -5048,6 +5100,7 @@ pub(crate) fn resolve_stored_line_segs_in_frame_with_storage<S: crate::storage::
             if !supports_picture_band_frame_controls(para)
                 && !tac_table_host_fill
                 && !no_ls_inline_picture_host_fill(para)
+                && !(para.line_segs.is_empty() && supports_inline_form_frame_controls(para))
             {
                 if !supports_cached_body_frame_controls(para)
                     || (!stale && !para.line_segs.is_empty())
@@ -5699,7 +5752,10 @@ fn try_reflow_line_segs_impl<S: Storage>(
     let (marker_hang_px, indent_px) = list_marker_breaker_box(para, styles, indent_px);
     let available_width_px = (paragraph_box.width_px(dpi) - marker_hang_px).max(1.0);
 
-    if !split_stale_cell_reflow && supports_inline_picture_frame_controls(para) {
+    if !split_stale_cell_reflow
+        && (supports_inline_picture_frame_controls(para)
+            || supports_inline_form_frame_controls(para))
+    {
         // An edit invalidates the old text/control partition together. Project
         // invisible control slots before filling, rather than measuring text
         // alone and attaching an end-of-paragraph picture during paint. The
@@ -5788,22 +5844,33 @@ fn try_reflow_line_segs_impl<S: Storage>(
                 })
                 .filter_map(|(start, ctrl)| {
                     inline_control_occupied_size_hwp(ctrl, styles, dpi)
-                        .map(|occupied| (start, occupied))
+                        .map(|occupied| (start, Some(occupied)))
+                        .or_else(|| matches!(ctrl, Control::Field(_)).then_some((start, None)))
                 }),
         )?;
-        if !inline_sizes.is_empty() {
+        if inline_sizes.iter().any(|(_, occupied)| occupied.is_some()) {
             let max_line_width = seg_width_hwp.max(1);
             let mut line_specs: Vec<(u32, i32, i32)> = Vec::new();
             let mut line_start = 0u32;
             let mut line_width = 0i32;
             let mut line_height = 0i32;
+            // [#8507] 필드 시작(누름틀 등)은 폭이 없어도 줄의 내용이다. 한/글 2020 은 그 뒤
+            // 글자처럼 취급 개체가 남은 폭에 들지 않으면 개체를 다음 줄로 넘기고 필드 줄을
+            // 글자 높이의 빈 줄로 남긴다(합성 field_over19: 표 바깥 폭이 줄보다 19HU 넓으면
+            // 표가 160%·10pt 빈 줄 1600HU 만큼 아래). 줄 맨 앞 개체는 넘쳐도 그 줄에 둔다.
+            let mut line_has_field = false;
 
-            for (utf16_start, (ctrl_width, ctrl_height)) in inline_sizes.iter().copied() {
-                if line_width > 0 && line_width + ctrl_width > max_line_width {
+            for (utf16_start, occupied) in inline_sizes.iter().copied() {
+                let Some((ctrl_width, ctrl_height)) = occupied else {
+                    line_has_field = true;
+                    continue;
+                };
+                if (line_width > 0 || line_has_field) && line_width + ctrl_width > max_line_width {
                     storage.push(&mut line_specs, (line_start, line_width, line_height))?;
                     line_start = utf16_start;
                     line_width = 0;
                     line_height = 0;
+                    line_has_field = false;
                 }
                 line_width += ctrl_width;
                 line_height = line_height.max(ctrl_height);
@@ -6361,6 +6428,14 @@ fn try_reflow_line_segs_impl<S: Storage>(
 ///   스타일에서 재유도한다. gap 없는 abutment 는 문단 간격을 압축해 near-top
 ///   리셋(#1086/#1921)의 `prev_vpos_end > 60000` 임계를 무너뜨렸다
 ///   (SO-SUEOP.hwpx 46→44).
+///   단, 편집 문단(`start_para`)에서 이어진 변조 구간 **바로 뒤의 원본 문단**은
+///   저장 gap 이 살아 있다 — 그 문단의 저장 first 와 편집 전 저장 end
+///   (`start_stored_end`)의 차가 스타일 gap 보다 크고 그 문단이 문단 기준 자리차지
+///   개체(비-TAC, 위아래 배치 표·그림·도형)를 소유하면, 초과분은 그 개체가 첫 글줄을
+///   민 점유 높이다. 그런 개체가 없는 문단의 초과분(TAC 호스트 th 관례, 편집 합성 줄
+///   따위)은 점유가 아니므로 종전대로 버린다. 글자 편집은 이 점유를 바꾸지
+///   않으므로 초과분을 보존해 잇는다(#8440 — 버리면 다음 표가 앞 표와 겹친다).
+///   초과분이 없거나 음수면 종전대로 스타일 gap 만 쓴다.
 /// - **미변조 연속 경계**: 직전 문단의 delta 를 그대로 캐리해 저장(또는 로드 합성
 ///   #927) 문단 간격을 정확히 보존한다. 스타일 gap 재유도는 저장 gap 과의
 ///   오차(px 왕복 절삭 ±1HU, 스타일-저장 불일치)를 밴드 전체에 누적시키고 로드
@@ -6457,9 +6532,29 @@ pub(crate) fn recalculate_section_vpos(
     // 직전 문단이 이번 편집의 변조 대상이었는가 + 직전 문단에 적용된 delta.
     let mut prev_modified = false;
     let mut prev_delta: i32 = 0;
+    // 직전 줄 보유 문단과 현재 문단 사이에 저장 줄이 없는 문단이 있었는가.
+    let mut skipped_unlined = false;
+    // start_para 에서 이어지는 변조 구간 안인가 — 구간 뒤 첫 원본 문단에서 false 가 된다.
+    let mut in_start_run = true;
+    // 저장 first 가 앞 문단 end + 스타일 gap 을 넘는 정당한 출처: 그 문단이 소유한
+    // 문단 기준 자리차지 개체(비-TAC, 위아래)가 첫 글줄을 개체 아래로 민 경우다.
+    // 다른 문단의 초과분(TAC 호스트 th 관례, 편집 합성 줄 따위)은 점유가 아니다.
+    let hosts_para_topbottom_object = |p: &Paragraph| {
+        p.controls.iter().any(|control| {
+            let common = match control {
+                Control::Table(table) => &table.common,
+                Control::Picture(picture) => &picture.common,
+                Control::Shape(shape) => shape.common(),
+                Control::Equation(equation) => &equation.common,
+                _ => return false,
+            };
+            crate::renderer::float_placement::is_para_topbottom_float(common)
+        })
+    };
 
     for pi in start_para..paragraphs.len() {
         if paragraphs[pi].line_segs.is_empty() {
+            skipped_unlined = true;
             continue;
         }
 
@@ -6489,12 +6584,39 @@ pub(crate) fn recalculate_section_vpos(
         let delta = if is_reset {
             // 단/쪽 리셋 경계 — 저장 좌표 유지.
             0
+        } else if skipped_unlined && !para_modified {
+            // 저장 줄 없는 문단의 높이는 조판이 그때 정하고, 그 자리는 이 문단의 저장
+            // 좌표에만 남아 있다. 앞 문단 end 의 이동만 옮겨 그 간격을 지킨다.
+            let stored_prev_end = if prev_idx == Some(start_para) && !is_ignored(start_para) {
+                start_stored_end.or(orig_prev_end)
+            } else {
+                orig_prev_end
+            };
+            stored_prev_end.map_or(0, |end| next_vpos - end)
         } else if para_modified || prev_modified {
             // 변조 인접 경계 — 이동 후 흐름에 스타일 여백 gap 으로 다시 잇는다.
             let gap = prev_idx
                 .map(|pp| boundary_gap(&paragraphs[pp], &paragraphs[pi]))
                 .unwrap_or(0);
-            next_vpos.saturating_add(gap) - current_start
+            // [#8440] 변조 구간 바로 뒤 원본 문단: 편집 전 저장 경계에서 스타일 gap 을
+            // 넘는 점유(자리차지 개체 높이)를 보존한다.
+            let occupied = match start_stored_end {
+                Some(stored_end)
+                    if !para_modified
+                        && in_start_run
+                        && is_original_lineseg
+                        && !is_ignored(start_para)
+                        && hosts_para_topbottom_object(&paragraphs[pi]) =>
+                {
+                    let stored_gap = boundary_gap(&paragraphs[start_para], &paragraphs[pi]);
+                    current_start
+                        .saturating_sub(stored_end)
+                        .saturating_sub(stored_gap)
+                        .max(0)
+                }
+                _ => 0,
+            };
+            next_vpos.saturating_add(gap).saturating_add(occupied) - current_start
         } else {
             // 미변조 연속 경계 — 직전 delta 캐리로 기존 간격을 정확히 보존.
             prev_delta
@@ -6520,6 +6642,10 @@ pub(crate) fn recalculate_section_vpos(
         prev_modified = para_modified;
         prev_delta = delta;
         prev_idx = Some(pi);
+        skipped_unlined = false;
+        if !para_modified {
+            in_start_run = false;
+        }
     }
 }
 

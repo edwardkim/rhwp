@@ -168,6 +168,45 @@ pub enum DropCapStyle {
     Margin,
 }
 
+impl DropCapStyle {
+    /// 한/글 12.30(Mac)이 첫 글자 장식 글상자에 싣는 HWP5 CTRL_DATA 앞 20바이트.
+    ///
+    /// 파라미터 셋 539(0x021b) 안 목록 12291(0x3003)의 부호 없는 정수 28673(0x7001)이
+    /// 장식 방식이다(2줄 1·3줄 2·여백 3). HWPX `hp:parameterset name="539"`와 같은 값이다.
+    const HWP5_CTRL_DATA_PREFIX: [u8; 20] = [
+        0x1b, 0x02, 0x01, 0x00, 0x00, 0x00, 0x03, 0x30, 0x00, 0x80, 0x03, 0x30, 0x01, 0x00, 0x00,
+        0x00, 0x01, 0x70, 0x09, 0x00,
+    ];
+
+    /// HWP5 CTRL_DATA가 첫 글자 장식 파라미터 셋이면 그 방식을 돌려준다.
+    pub fn from_hwp5_ctrl_data(data: &[u8]) -> Option<Self> {
+        let (prefix, value) = data.split_at_checked(Self::HWP5_CTRL_DATA_PREFIX.len())?;
+        if prefix != Self::HWP5_CTRL_DATA_PREFIX {
+            return None;
+        }
+        match u32::from_le_bytes(value.try_into().ok()?) {
+            1 => Some(Self::DoubleLine),
+            2 => Some(Self::TripleLine),
+            3 => Some(Self::Margin),
+            _ => None,
+        }
+    }
+
+    /// 장식 방식을 HWP5 CTRL_DATA로 만든다. 장식이 없으면 한/글처럼 싣지 않는다.
+    pub fn hwp5_ctrl_data(self) -> Option<[u8; 24]> {
+        let value: u32 = match self {
+            Self::None => return None,
+            Self::DoubleLine => 1,
+            Self::TripleLine => 2,
+            Self::Margin => 3,
+        };
+        let mut data = [0; 24];
+        data[..20].copy_from_slice(&Self::HWP5_CTRL_DATA_PREFIX);
+        data[20..].copy_from_slice(&value.to_le_bytes());
+        Some(data)
+    }
+}
+
 /// 세로 위치 기준
 #[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum VertRelTo {
@@ -560,6 +599,54 @@ impl ShapeObject {
             ShapeObject::Chart(c) => Some(&mut c.drawing),
             ShapeObject::Ole(o) => Some(&mut o.drawing),
             ShapeObject::Group(_) | ShapeObject::Picture(_) => None,
+        }
+    }
+
+    /// 편집 셀 주소의 글상자 번호. 독립 도형은 0, 묶음은 원본 자식 순서의 깊이 우선 글상자 번호다.
+    /// 장식 도형과 중간 묶음은 번호를 소비하지 않는다. 저장 모델을 풀거나 복제하지 않는다.
+    pub fn textbox_shape_count(&self) -> usize {
+        match self {
+            Self::Group(group) => group.children.iter().map(Self::textbox_shape_count).sum(),
+            _ => usize::from(
+                self.drawing()
+                    .is_some_and(|drawing| drawing.text_box.is_some()),
+            ),
+        }
+    }
+
+    pub fn textbox_shape_at(&self, mut index: usize) -> Option<&Self> {
+        if let Self::Group(group) = self {
+            for child in &group.children {
+                let count = child.textbox_shape_count();
+                if index < count {
+                    return child.textbox_shape_at(index);
+                }
+                index -= count;
+            }
+            None
+        } else {
+            (index == 0 && self.textbox_shape_count() == 1).then_some(self)
+        }
+    }
+
+    pub fn textbox_shape_at_mut(&mut self, mut index: usize) -> Option<&mut Self> {
+        if let Self::Group(group) = self {
+            for child in &mut group.children {
+                let count = child.textbox_shape_count();
+                if index < count {
+                    return child.textbox_shape_at_mut(index);
+                }
+                index -= count;
+            }
+            None
+        } else if index == 0
+            && self
+                .drawing()
+                .is_some_and(|drawing| drawing.text_box.is_some())
+        {
+            Some(self)
+        } else {
+            None
         }
     }
 

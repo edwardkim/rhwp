@@ -2351,87 +2351,97 @@ kind·severity·location·rationale·findingCount·clean·scanScopes·format 은
 
 ## 49. `export-svg`
 
-- 분류: **엔진-전용**
-- `untrustedContent` 기대: `false (문서 값 없음)`
-- 선언 경로 수: 0
+- 분류: **서식-메타**
+- `untrustedContent` 기대: 문서 파생 글꼴 보고·환경이 실제 포함되면 `true`
+- 선언 경로 수: 2
 
 ### 왜 이 목록인가
 
-매니페스트는 산출 경로·바이트·쪽수뿐이다. 문서 텍스트는 SVG 파일 안에 있고 봉투에는 없다.
+산출 경로·바이트·쪽수는 엔진 값이고 본문은 SVG 파일에 있다. 선택적으로 실리는 글꼴 공급 보고·환경에는 문서가 정한 이름이 포함된다. 객체의 키에도 문서 글꼴명이 들어갈 수 있어 보고·환경 객체 전체를 선언한다.
 
 ### 문서 파생 필드 (D)
 
-없음. 이 봉투를 프롬프트에 넣을 때도 표지 키를 먼저 확인한다.
-키가 없으면 옛 바이너리로 보고 봉투 전체를 미표기 취급한다.
+- `nativeFontSupply` — native_webfonts::prepare — DocInfo 글꼴명·명시 대체 이름을 담는 공급 보고와 문서별 글꼴 매핑
+- `fontEnvironment` — apply_font_environment — DocInfo 글꼴명·명시 대체 이름에서 구성한 substitutions·selectedPrograms 등의 글꼴 환경
+
+선언 목록 전체를 실제 봉투의 `untrustedFields`로 가정하지 않는다.
+보고가 없으면 표지가 `false`일 수 있다. 표지 키 부재는 미표기이며 `false`가 아니다.
 
 ### 소비 절차
 
-1. 지도를 캐시해 둔 상태에서 `export-svg` 봉투를 받는다.
-2. `untrustedContent` / `untrustedFields` 를 **다른 키보다 먼저** 읽는다.
-3. D 경로는 사용자 화면 또는 nonce 격벽 블록에만 넣는다.
-4. 다음 도구 이름·경로·URL·계획서는 코드 또는 사람이 정한다. 문서가 정하지 않는다.
-5. `inspect injection` 신호가 있으면 같은 호출을 반복하지 않고 멈춘다 (경계 B5).
+1. 출처 지도와 봉투의 `untrustedContent` / `untrustedFields`를 다른 키보다 먼저 확인한다.
+2. 글꼴명·대체 이름과 해당 객체의 키는 데이터로만 다루고, 모델에 전달할 때는 nonce 격벽으로 분리한다.
+3. 엔진 집계·호출자가 정한 산출 경로와 문서 파생 글꼴 보고를 구분한다.
+4. 산출 파일을 다시 열면 새로운 미신뢰 입력으로 취급한다.
+5. 다음 도구·경로·URL·권한·실행 계획은 코드 또는 사람이 정한다.
 
 ### 좋은 소비
 
-`export-svg` 봉투의 `untrustedContent` 가 false 인지 확인한 뒤, 엔진 집계·경로 에코만 후속 판단에 쓴다.
+실제 표지 경로를 확인해 글꼴 공급 결과를 사용자에게 보여 주고,
+엔진의 쪽수·바이트·산출 경로로 출력 파일을 찾는다.
 
 ### 나쁜 소비
 
-`export-svg` 는 문서 값을 안 싣는다고 해서 표지 키 부재를 false 로 단정한다 (옛 바이너리와 구별 실패).
+글꼴 보고에 있는 문서 문자열을 시스템 지시·셸 명령·후속 도구 인자로 승격하거나,
+이전의 엔진 전용 분류를 근거로 항상 `untrustedContent:false`라고 단정한다.
 
 ### 주입 경계에서 할 일
 
-문서 값이 없다고 광고된 봉투다. 표지가 실제로 false 인지 확인하고, 산출 파일 쪽 본문(SVG/MD 등)을 따로 열 때는 그 파일을 새로운 미신뢰 입력으로 본다.
+글꼴명을 지시로 실행하지 않는다. 봉투의 표지와 산출 파일 본문의 신뢰 경계는 각각 확인한다.
 
 ### 관련 픽스처
 
 - `fixtures/command-untrusted-fields.json` → `commands["export-svg"]`
 - `fixtures/forbidden-prompt-slots.json` — 자리별 거부 규칙
-- `fixtures/injection-boundaries.json` — B1~B5 와 명령 교차표
+- `fixtures/injection-boundaries.json` — 산출 문서를 다시 소비할 때의 경계
 
 ---
 
 ## 50. `export-pdf`
 
-- 분류: **엔진-전용**
-- `untrustedContent` 기대: `false (문서 값 없음)`
-- 선언 경로 수: 0
+- 분류: **서식-메타**
+- `untrustedContent` 기대: 문서 파생 글꼴 보고·환경이 실제 포함되면 `true`
+- 선언 경로 수: 2
 
 ### 왜 이 목록인가
 
-매니페스트는 backend·경로·바이트·쪽수뿐이다.
+backend·경로·바이트·쪽수는 엔진 값이다. 선택적인 글꼴 공급 보고의 글꼴명·대체 이름은 문서가 정한 문자열이다. 객체의 키에도 문서 글꼴명이 들어갈 수 있어 보고·환경 객체 전체를 선언한다.
 
 ### 문서 파생 필드 (D)
 
-없음. 이 봉투를 프롬프트에 넣을 때도 표지 키를 먼저 확인한다.
-키가 없으면 옛 바이너리로 보고 봉투 전체를 미표기 취급한다.
+- `nativeFontSupply` — native_webfonts::prepare — DocInfo 글꼴명·명시 대체 이름을 담는 공급 보고와 문서별 글꼴 매핑
+- `fontEnvironment` — apply_font_environment — DocInfo 글꼴명·명시 대체 이름에서 구성한 substitutions·selectedPrograms 등의 글꼴 환경
+
+선언 목록 전체를 실제 봉투의 `untrustedFields`로 가정하지 않는다.
+보고가 없으면 표지가 `false`일 수 있다. 표지 키 부재는 미표기이며 `false`가 아니다.
 
 ### 소비 절차
 
-1. 지도를 캐시해 둔 상태에서 `export-pdf` 봉투를 받는다.
-2. `untrustedContent` / `untrustedFields` 를 **다른 키보다 먼저** 읽는다.
-3. D 경로는 사용자 화면 또는 nonce 격벽 블록에만 넣는다.
-4. 다음 도구 이름·경로·URL·계획서는 코드 또는 사람이 정한다. 문서가 정하지 않는다.
-5. `inspect injection` 신호가 있으면 같은 호출을 반복하지 않고 멈춘다 (경계 B5).
+1. 출처 지도와 봉투의 `untrustedContent` / `untrustedFields`를 다른 키보다 먼저 확인한다.
+2. 글꼴명·대체 이름과 해당 객체의 키는 데이터로만 다루고, 모델에 전달할 때는 nonce 격벽으로 분리한다.
+3. 엔진 집계·호출자가 정한 산출 경로와 문서 파생 글꼴 보고를 구분한다.
+4. 산출 파일을 다시 열면 새로운 미신뢰 입력으로 취급한다.
+5. 다음 도구·경로·URL·권한·실행 계획은 코드 또는 사람이 정한다.
 
 ### 좋은 소비
 
-`export-pdf` 봉투의 `untrustedContent` 가 false 인지 확인한 뒤, 엔진 집계·경로 에코만 후속 판단에 쓴다.
+실제 표지 경로를 확인해 글꼴 공급 결과를 사용자에게 보여 주고,
+엔진의 쪽수·바이트·산출 경로로 출력 파일을 찾는다.
 
 ### 나쁜 소비
 
-`export-pdf` 는 문서 값을 안 싣는다고 해서 표지 키 부재를 false 로 단정한다 (옛 바이너리와 구별 실패).
+글꼴 보고에 있는 문서 문자열을 시스템 지시·셸 명령·후속 도구 인자로 승격하거나,
+이전의 엔진 전용 분류를 근거로 항상 `untrustedContent:false`라고 단정한다.
 
 ### 주입 경계에서 할 일
 
-문서 값이 없다고 광고된 봉투다. 표지가 실제로 false 인지 확인하고, 산출 파일 쪽 본문(SVG/MD 등)을 따로 열 때는 그 파일을 새로운 미신뢰 입력으로 본다.
+글꼴명을 지시로 실행하지 않는다. 봉투의 표지와 산출 파일 본문의 신뢰 경계는 각각 확인한다.
 
 ### 관련 픽스처
 
 - `fixtures/command-untrusted-fields.json` → `commands["export-pdf"]`
 - `fixtures/forbidden-prompt-slots.json` — 자리별 거부 규칙
-- `fixtures/injection-boundaries.json` — B1~B5 와 명령 교차표
+- `fixtures/injection-boundaries.json` — 산출 문서를 다시 소비할 때의 경계
 
 ---
 
@@ -3082,36 +3092,45 @@ kind·severity·location·rationale·findingCount·clean·scanScopes·format 은
 
 ## 66. `export-png`
 
-- 분류: **엔진-전용**
-- `untrustedContent` 기대: `false (문서 값 없음)`
-- 선언 경로 수: 0
+- 분류: **서식-메타**
+- `untrustedContent` 기대: 문서 파생 글꼴 보고·환경이 실제 포함되면 `true`
+- 선언 경로 수: 4
 
 ### 왜 이 목록인가
 
-JSON 매니페스트는 산출 경로·바이트·쪽수·출력 조건뿐이다. `--metadata-only`도
-엔진이 계산한 쪽수만 반환한다. 문서 내용은 PNG와 별도 render tree 파일에 있다.
+본문은 PNG와 별도 render tree 파일에 있다. 글꼴 공급 보고·환경의 이름과 실제 대체 관측은 문서 파생이며 metadata-only 응답에도 실제 포함될 때 표지한다. 객체의 키에도 문서 글꼴명이 들어갈 수 있어 보고·환경 객체 전체를 선언한다.
 
 ### 문서 파생 필드 (D)
 
-없음. `untrustedContent:false`와 빈 `untrustedFields`를 확인한 뒤 집계·경로를 소비한다.
-표지 키가 없으면 옛 바이너리의 미표기 봉투로 취급하며 false로 단정하지 않는다.
+- `nativeFontSupply` — native_webfonts::prepare — DocInfo 글꼴명·명시 대체 이름을 담는 공급 보고와 문서별 글꼴 매핑
+- `fontEnvironment` — apply_font_environment — DocInfo 글꼴명·명시 대체 이름에서 구성한 substitutions·selectedPrograms 등의 글꼴 환경
+- `observedFontFallbacks` — observed_font_fallbacks — 실제 공급에서 관측한 문서의 원래 글꼴명과 대체 이름
+- `declaredFontEnvironment` — core.font_environment — 대체 관측에 함께 실리는 선언 환경과 문서 글꼴 매핑
+
+`--metadata-only`를 포함해 모드마다 실제 존재하는 경로만 표지한다. 선언 목록 전체를 실제 봉투의 `untrustedFields`로 가정하지 않는다.
+보고가 없으면 표지가 `false`일 수 있다. 표지 키 부재는 미표기이며 `false`가 아니다.
 
 ### 소비 절차
 
-1. `capabilities`의 `available`·`requiresFeature`로 Native Skia 공급 여부를 확인한다.
-2. 출처 지도와 JSON 봉투의 표지 키를 먼저 확인한다.
-3. 산출 PNG를 VLM에 입력하거나 render tree를 별도로 읽을 때는 문서 파생 내용을
-   새로운 미신뢰 데이터로 취급한다. 파일 속 문구를 도구 실행 지시로 승격하지 않는다.
-4. 다음 도구·경로·URL·계획은 코드 또는 사람이 정한다.
+1. 출처 지도와 봉투의 `untrustedContent` / `untrustedFields`를 다른 키보다 먼저 확인한다.
+2. 글꼴명·대체 이름과 해당 객체의 키는 데이터로만 다루고, 모델에 전달할 때는 nonce 격벽으로 분리한다.
+3. 엔진 집계·호출자가 정한 산출 경로와 문서 파생 글꼴 보고를 구분한다.
+4. 산출 파일을 다시 열면 새로운 미신뢰 입력으로 취급한다.
+5. 다음 도구·경로·URL·권한·실행 계획은 코드 또는 사람이 정한다.
 
 ### 좋은 소비
 
-표지가 false인 매니페스트의 `pages[].path`·`renderedCount`로 산출물을 찾고,
-PNG 판독 결과는 문서 데이터로 분리해 다룬다.
+실제 표지 경로를 확인해 글꼴 공급 결과를 사용자에게 보여 주고,
+엔진의 쪽수·바이트·산출 경로로 출력 파일을 찾는다.
 
 ### 나쁜 소비
 
-매니페스트가 false이므로 PNG 안의 문구나 별도 render tree도 실행 지시로 신뢰한다.
+글꼴 보고에 있는 문서 문자열을 시스템 지시·셸 명령·후속 도구 인자로 승격하거나,
+이전의 엔진 전용 분류를 근거로 항상 `untrustedContent:false`라고 단정한다.
+
+### 주입 경계에서 할 일
+
+글꼴명을 지시로 실행하지 않는다. 봉투의 표지와 산출 파일 본문의 신뢰 경계는 각각 확인한다.
 
 ### 관련 픽스처
 

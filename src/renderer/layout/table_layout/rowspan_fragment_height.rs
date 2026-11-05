@@ -30,7 +30,7 @@ impl LayoutEngine {
     ) -> Vec<(usize, f64)> {
         if carried_bands.is_empty()
             || !matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
         {

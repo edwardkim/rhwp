@@ -515,6 +515,9 @@ samples/issue7482/tac-two-rows.hwpx	1	1
 samples/issue7482/tac-word-after-pair.hwpx	1	1
 samples/issue7482/tac-after-plain-paragraphs.hwpx	2	2
 
+# PR #8585: 동일 공개 입력의 독립 WebHWP Print PDF 전 1쪽(pdf/issue7524/).
+samples/issue7524/textbox_tac_picture_rows.hwp	1	1
+
 # PR #7337: samples/pr7337/nested_tac_table_wrap-2020.pdf; 전 6쪽 Native/fresh WASM 비교 통과.
 samples/nested_tac_table_wrap.hwp	6	6
 
@@ -549,3 +552,29 @@ tests/fixtures/issue1470_authored_caption_numbering/tables-caption-left.hwpx	1	1
 tests/fixtures/issue1470_authored_caption_numbering/tables-caption-left.hwp	1	1
 samples/issue4599/1790387_policy_progress.hwpx	64	64
 samples/issue8141/1342000_math_textbook_field_review.hwp	49	49
+
+# semanticist21 10 PR: samples 밖의 공식 fixture를 명시 등록.
+# 독립 Print의 입력/PDF SHA와 engine/1-up 출처: pdf/semanticist21-20261103/print-provenance.json.
+# Native/fresh WASM 전쪽 >=90%와 내용/편집 관계는 각 원 PR 검사·전쪽 TSV로 함께 보호한다.
+tests/fixtures/hancom_rotated/rotated.hwp	1	1
+tests/fixtures/hancom_rotated/rotated.hwpx	1	1
+tests/fixtures/hancom_table_grow/grow3-after.hwpx	1	1
+tests/fixtures/hancom_table_grow/grow3-before.hwpx	1	1
+tests/fixtures/header_overflow/header-overflow.hwp	1	1
+tests/fixtures/header_overflow/header-overflow.hwpx	1	1
+tests/fixtures/nested_wide_clip/nested-wide-hancom.hwpx	1	1
+tests/fixtures/semanticist21-20261103/forms-before.hwpx	1	1
+tests/fixtures/semanticist21-20261103/forms-edited.hwpx	1	1
+tests/fixtures/semanticist21-20261103/grow-nested-unchanged.hwpx	1	1
+tests/fixtures/semanticist21-20261103/grow-nested.hwpx	1	1
+tests/fixtures/semanticist21-20261103/no-lineseg-empty.hwpx	1	1
+tests/fixtures/semanticist21-20261103/no-lineseg-text.hwpx	1	1
+tests/fixtures/semanticist21-20261103/no-lineseg-wrap.hwpx	1	1
+tests/fixtures/semanticist21-20261103/polygon-270.hwpx	1	1
+tests/fixtures/semanticist21-20261103/polygon-90.hwpx	1	1
+tests/fixtures/semanticist21-20261103/polygon-hflip.hwpx	1	1
+tests/fixtures/semanticist21-20261103/polygon-resize.hwpx	1	1
+tests/fixtures/semanticist21-20261103/polygon-vflip.hwpx	1	1
+tests/fixtures/semanticist21-20261103/spacing-after.hwpx	1	1
+tests/fixtures/semanticist21-20261103/spacing-before.hwpx	1	1
+tests/fixtures/semanticist21-20261103/spacing.hwpx	1	1

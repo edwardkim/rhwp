@@ -18,7 +18,9 @@ use super::super::pagination::PageItem;
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, px_to_hwpunit, PathCommand, ShapeStyle, TextStyle};
-use super::paragraph_layout::trailing_space_width_after_last_inline_object;
+use super::paragraph_layout::{
+    center_alignment_excludes_trailing_space, trailing_space_width_after_last_inline_object,
+};
 use super::text_measurement::{
     estimate_text_width, is_cjk_char, is_vertical_rotate_char, resolved_to_text_style,
     vertical_substitute_char,
@@ -29,6 +31,42 @@ use super::utils::{
 };
 use super::LayoutEngine;
 use super::{CellContext, CellPathEntry};
+
+/// 묶음의 자식별 글상자 번호를 모든 편집 소비 지점에 같은 원문 순서로 전달한다.
+/// 좌표·clip·paint는 변경하지 않는다. 중첩 묶음에서 이미 구분한 자식 번호에는 바깥 오프셋만 더한다.
+fn offset_group_textbox_sources(node: &mut RenderNode, depth: usize, offset: usize) {
+    fn adjust(ctx: &mut CellContext, depth: usize, offset: usize) {
+        if let Some(entry) = ctx.path.get_mut(depth) {
+            entry.cell_index += offset;
+        }
+    }
+    if let Some((_, ctx)) = &mut node.textbox_source {
+        adjust(ctx, depth, offset);
+    }
+    let context = match &mut node.node_type {
+        RenderNodeType::TextRun(run) => run.cell_context.as_mut(),
+        RenderNodeType::Table(table) => table.cell_context.as_mut(),
+        RenderNodeType::Image(image) => image.cell_context.as_mut(),
+        RenderNodeType::RawSvg(svg) => svg.cell_context.as_mut(),
+        RenderNodeType::Placeholder(placeholder) => placeholder.cell_context.as_mut(),
+        _ => None,
+    };
+    if let Some(ctx) = context {
+        adjust(ctx, depth, offset);
+    }
+    if let RenderNodeType::Image(image) = &mut node.node_type {
+        if let Some(ctx) = &image.cell_context {
+            (
+                image.cell_index,
+                image.cell_para_index,
+                image.outer_table_control_index,
+            ) = ctx.last_image_indices();
+        }
+    }
+    for child in &mut node.children {
+        offset_group_textbox_sources(child, depth, offset);
+    }
+}
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
@@ -335,7 +373,7 @@ pub(crate) fn measure_composed_text_range_width_with_storage<S: crate::storage::
         let tab_width = styles
             .para_styles
             .get(composed.para_style_id as usize)
-            .map(|s| s.default_tab_width)
+            .map(|s| styles.default_tab_width(s.default_tab_width))
             .unwrap_or(0.0);
         let mut width = 0.0;
 
@@ -1169,6 +1207,41 @@ impl LayoutEngine {
                 para_index,
                 styles,
             );
+        }
+
+        // 묶음 자식의 글줄은 셀 주소를 소유하며 바깥의 빈 본문 문단을 대신하지 않는다.
+        // 조판이 생략한 host 줄의 캐럿은 확정된 본문 흐름 원점에 남긴다. 개체 bbox나 자식
+        // 글상자 좌표로 추측하지 않고 기존 숨은 문단 표시기를 재사용하며 전진·인쇄는 바꾸지 않는다.
+        if matches!(shape, ShapeObject::Group(_))
+            && !common.treat_as_char
+            && para.text.trim().is_empty()
+            // 머리말·꼬리말·각주의 전용 편집 주소를 본문 주소로 만들지 않는다.
+            && matches!(parent.node_type, RenderNodeType::Column(_) | RenderNodeType::Body { .. })
+        {
+            fn has_body_caret(node: &RenderNode, section: usize, para: usize) -> bool {
+                matches!(&node.node_type, RenderNodeType::TextRun(run)
+                    if run.section_index == Some(section) && run.para_index == Some(para)
+                    && run.cell_context.is_none() && run.char_start.is_some())
+                    || node
+                        .children
+                        .iter()
+                        .any(|child| has_body_caret(child, section, para))
+            }
+            if !has_body_caret(parent, section_index, para_index) {
+                let composed = compose_paragraph(para);
+                self.layout_hidden_paragraph_marker(
+                    tree,
+                    parent,
+                    para,
+                    "",
+                    &composed,
+                    styles,
+                    col_area,
+                    para_y,
+                    section_index,
+                    para_index,
+                );
+            }
         }
 
         // 캡션 렌더링
@@ -2233,6 +2306,7 @@ impl LayoutEngine {
                         commands.push(PathCommand::ClosePath);
                     }
                 }
+                // 변환된 꼭짓점과 hit-test 상자는 같은 최종 경계를 소비한다.
                 let (paint_x, paint_y, paint_w, paint_h) =
                     if source_affine && !poly.points.is_empty() {
                         (
@@ -2383,7 +2457,9 @@ impl LayoutEngine {
                     }),
                     BoundingBox::new(base_x, base_y, w, h),
                 );
-                for (_ci, child) in group.children.iter().enumerate() {
+                let mut textbox_offset = 0;
+                for child in &group.children {
+                    let first_child = group_node.children.len();
                     let sa = child.shape_attr();
                     let has_rotation = sa.render_b.abs() > 1e-6 || sa.render_c.abs() > 1e-6;
 
@@ -2437,6 +2513,16 @@ impl LayoutEngine {
                             Some(group_origin),
                         );
                     }
+                    if textbox_offset > 0 {
+                        for rendered in &mut group_node.children[first_child..] {
+                            offset_group_textbox_sources(
+                                rendered,
+                                parent_cell_path.len(),
+                                textbox_offset,
+                            );
+                        }
+                    }
+                    textbox_offset += child.textbox_shape_count();
                 }
                 parent.children.push(group_node);
             }
@@ -3189,6 +3275,22 @@ impl LayoutEngine {
             None => return,
         };
 
+        let mut textbox_path = parent_cell_path.to_vec();
+        textbox_path.push(CellPathEntry {
+            control_index,
+            cell_index: 0,
+            cell_para_index: 0,
+            text_direction: 0,
+        });
+        shape_node.textbox_source = Some((
+            section_index,
+            CellContext {
+                parent_para_index: para_index,
+                path: textbox_path,
+                in_textbox: true,
+            },
+        ));
+
         let margin_left = hwpunit_to_px(text_box.margin_left as i32, self.dpi);
         let margin_right = hwpunit_to_px(text_box.margin_right as i32, self.dpi);
         let margin_top = hwpunit_to_px(text_box.margin_top as i32, self.dpi);
@@ -3844,7 +3946,7 @@ impl LayoutEngine {
                 })
                 .unwrap_or(0);
             // 개체가 놓인 줄의 y — 저장 사다리의 그 줄 `vertical_pos` 를 따른다.
-            let inline_obj_y = if inline_line_idx > 0 {
+            let mut inline_obj_y = if inline_line_idx > 0 {
                 para.line_segs
                     .get(inline_line_idx)
                     .map(|seg| {
@@ -3909,7 +4011,7 @@ impl LayoutEngine {
                         let tab_width = styles
                             .para_styles
                             .get(composed_paras[pi].para_style_id as usize)
-                            .map(|s| s.default_tab_width)
+                            .map(|s| styles.default_tab_width(s.default_tab_width))
                             .unwrap_or(0.0);
                         first_line
                             .runs
@@ -3997,7 +4099,162 @@ impl LayoutEngine {
                 .map(|line| line.char_start)
                 .unwrap_or(0);
 
+            // 개체가 여러 줄에 나뉘면 개체마다 **자기 줄**의 정렬 시작·글자 전진 원점·y 를 쓴다.
+            // 위 기준 줄 하나(#6465)로 모두 재면 줄바꿈된 개체가 첫 줄 오른쪽으로 이어 붙어
+            // 글상자 밖으로 나간다. 줄 y 는 저장 사다리가 있으면 그 줄의 vpos, 없으면 조판한
+            // 줄 높이·줄 간격의 누적이다(본문 글줄이 쓰는 것과 같은 값).
+            let tac_line_plan = composed_paras.get(pi).and_then(|comp| {
+                let tac_width = |ctrl: &Control| -> Option<(f64, f64)> {
+                    match ctrl {
+                        Control::Shape(shape) if shape.as_ref().common().treat_as_char => {
+                            let c = shape.as_ref().common();
+                            Some((
+                                hwpunit_to_px(c.width as i32, self.dpi),
+                                hwpunit_to_px(c.height as i32, self.dpi),
+                            ))
+                        }
+                        Control::Picture(pic) if pic.common.treat_as_char => Some((
+                            hwpunit_to_px(pic.common.width as i32, self.dpi),
+                            hwpunit_to_px(pic.common.height as i32, self.dpi),
+                        )),
+                        Control::Equation(eq) => Some((
+                            hwpunit_to_px(
+                                crate::renderer::equation::flow_width_hwp(eq) as i32,
+                                self.dpi,
+                            ),
+                            hwpunit_to_px(
+                                crate::renderer::equation::flow_height_hwp(eq) as i32,
+                                self.dpi,
+                            ),
+                        )),
+                        Control::Table(table) if table.common.treat_as_char => Some((
+                            hwpunit_to_px(table.flow_width_hu() as i32, self.dpi)
+                                + hwpunit_to_px(table.outer_margin_left as i32, self.dpi)
+                                + hwpunit_to_px(table.outer_margin_right as i32, self.dpi),
+                            0.0,
+                        )),
+                        _ => None,
+                    }
+                };
+                let line_of = |pos: usize| {
+                    comp.lines
+                        .iter()
+                        .enumerate()
+                        .rev()
+                        .find(|(_, line)| line.char_start <= pos)
+                        .map(|(idx, _)| idx)
+                        .unwrap_or(0)
+                };
+                let ctrl_line: Vec<Option<usize>> = para
+                    .controls
+                    .iter()
+                    .enumerate()
+                    .map(|(ci, ctrl)| {
+                        tac_width(ctrl)?;
+                        Some(line_of(control_text_positions.get(ci).copied()?))
+                    })
+                    .collect();
+                let lines_used: std::collections::BTreeSet<usize> =
+                    ctrl_line.iter().flatten().copied().collect();
+                if lines_used.len() < 2 {
+                    return None;
+                }
+                let tab_width = styles
+                    .para_styles
+                    .get(comp.para_style_id as usize)
+                    .map(|s| styles.default_tab_width(s.default_tab_width))
+                    .unwrap_or(0.0);
+                let mut start_x = Vec::with_capacity(comp.lines.len());
+                let mut line_y = Vec::with_capacity(comp.lines.len());
+                let mut line_h = Vec::with_capacity(comp.lines.len());
+                let mut cursor_y = para_start_y;
+                for (li, line) in comp.lines.iter().enumerate() {
+                    let (mut w, mut h) = (0.0f64, 0.0f64);
+                    for (ci, ctrl) in para.controls.iter().enumerate() {
+                        if ctrl_line[ci] == Some(li) {
+                            if let Some((cw, ch)) = tac_width(ctrl) {
+                                w += cw;
+                                h = h.max(ch);
+                            }
+                        }
+                    }
+                    let text_w: f64 = line
+                        .runs
+                        .iter()
+                        .map(|run| {
+                            let mut ts = run.text_style(styles);
+                            ts.default_tab_width = tab_width;
+                            estimate_text_width(&run.text, &ts)
+                        })
+                        .sum();
+                    // 본문과 같은 소유 줄·말미 공백 계약을 쓴다. 마지막 개체 앞의
+                    // 공백은 개체 사이 내용이므로 가운데·오른쪽 정렬 폭에 남긴다.
+                    let last_inline_object_pos = ctrl_line
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, owner)| **owner == Some(li))
+                        .filter_map(|(ci, _)| control_text_positions.get(ci).copied())
+                        .max();
+                    let center_excludes_trailing_ws = center_alignment_excludes_trailing_space(
+                        para_alignment,
+                        line,
+                        last_inline_object_pos,
+                        li + 1 == comp.lines.len(),
+                        !crate::renderer::para_has_no_stored_line_segs(para),
+                    );
+                    let trailing_ws_width =
+                        if para_alignment == Alignment::Right || center_excludes_trailing_ws {
+                            trailing_space_width_after_last_inline_object(
+                                line,
+                                last_inline_object_pos,
+                                styles,
+                                center_excludes_trailing_ws,
+                                estimate_text_width,
+                            )
+                        } else {
+                            0.0
+                        };
+                    let total = w + text_w - trailing_ws_width;
+                    start_x.push(match para_alignment {
+                        Alignment::Center | Alignment::Distribute => {
+                            inner_area.x + (inner_area.width - total).max(0.0) / 2.0
+                        }
+                        Alignment::Right => inner_area.x + (inner_area.width - total).max(0.0),
+                        _ => inner_area.x,
+                    });
+                    let y = para
+                        .line_segs
+                        .get(li)
+                        .map(|seg| {
+                            inner_area.y
+                                + vert_offset
+                                + textbox_vpos_px(
+                                    seg.vertical_pos,
+                                    textbox_vpos_origin_hu,
+                                    self.dpi,
+                                )
+                        })
+                        .unwrap_or(cursor_y);
+                    line_y.push(y);
+                    line_h.push(h);
+                    cursor_y = y + hwpunit_to_px(line.line_height + line.line_spacing, self.dpi);
+                }
+                Some((ctrl_line, start_x, line_y, line_h))
+            });
+            let mut plan_line: Option<usize> = None;
+
             for (ctrl_idx_in_para, ctrl) in para.controls.iter().enumerate() {
+                if let Some((ctrl_line, start_x, line_y, line_h)) = tac_line_plan.as_ref() {
+                    if let Some(line) = ctrl_line.get(ctrl_idx_in_para).copied().flatten() {
+                        if plan_line != Some(line) {
+                            plan_line = Some(line);
+                            inline_x = start_x[line];
+                            text_cursor = composed_paras[pi].lines[line].char_start;
+                            inline_obj_y = line_y[line];
+                            max_inline_height = line_h[line];
+                        }
+                    }
+                }
                 let ctrl_text_pos = control_text_positions
                     .get(ctrl_idx_in_para)
                     .copied()

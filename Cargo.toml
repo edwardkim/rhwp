@@ -26,6 +26,7 @@ include = [
     "/assets/fonts/LatinModernMath-VariableOutline-subset.otf",
     "/assets/fonts/MANIFEST-RHWP-LMM-VariableOutline.txt",
     "/assets/fonts/licenses/**",
+    "/assets/font-rules/font_rule_registry_v2.json",
     "/data/font-metrics/nimbus-roman/**",
     "/mydocs/manual/agent_knowledge_map.md",
     "/mydocs/manual/agent_troubleshooting_guide.md",
@@ -387,6 +388,8 @@ read-fonts = "0.46"
 skera = "0.9"
 skia-safe = { version = "0.156.0", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
 icy_sixel = { version = "=0.7.0", optional = true }
+ureq = "3.3.0"
+wuff = "0.2.9"
 
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

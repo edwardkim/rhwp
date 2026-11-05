@@ -150,7 +150,7 @@ def cached_font_faces(vs, directory: Path, source: Path, digest: str):
     metadata = directory / f'{digest}.json'
     try:
         value = json.loads(metadata.read_text(encoding='utf-8'))
-        if value.get('sourceSha256') != digest or value.get('schemaVersion') != 2:
+        if value.get('sourceSha256') != digest or value.get('schemaVersion') != 3:
             return None
         faces = value.get('faces')
         count = value.get('faceCount')
@@ -170,6 +170,11 @@ def cached_font_faces(vs, directory: Path, source: Path, digest: str):
                     or type(entry.get('weight')) is not int or not 1 <= entry['weight'] <= 1000
                     or entry.get('style') not in {'normal', 'italic'}
                     or not valid_font_repairs(entry.get('repairs'))):
+                return None
+            aliases = entry.get('postScriptNames')
+            if (not isinstance(aliases, list)
+                    or any(not isinstance(name, str) or not name or name not in names for name in aliases)
+                    or entry.get('primaryFamily') not in names):
                 return None
             kind = entry.get('cacheKind')
             if kind == 'source':
@@ -261,6 +266,12 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
                         names, name_errors = font_family_names(font)
                     except ValueError as error:
                         raise SystemExit(f'공급 글꼴의 유효한 family 이름이 없습니다: {source} face={index}: {error}') from error
+                    identity, alias_errors = font_program_identity(font)
+                    name_errors += alias_errors
+                    names = list(dict.fromkeys([*names, *identity['postScriptNames']]))
+                    if not names:
+                        raise SystemExit(f'공급 글꼴의 유효한 family·PostScript 이름이 없습니다: {source} face={index}')
+                    primary_family = identity['primaryFamily'] or names[0]
                     name_warnings = [{'nameID': item['nameID'],
                                       'platformID': item['platformID'],
                                       'platEncID': item['encodingID'],
@@ -307,6 +318,8 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
                     face = {'path': str(path.resolve()), 'source': str(source.resolve()),
                                     'sourceSha256': digest, 'sha256': vs.sha256_file(path),
                                     'faceIndex': index, 'families': names, 'weight': weight,
+                                    'primaryFamily': primary_family,
+                                    'postScriptNames': identity['postScriptNames'],
                                     'nameDecodeWarnings': name_warnings,
                                     'style': 'italic' if italic else 'normal',
                                     'nameRecordErrors': name_errors,
@@ -315,7 +328,7 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
                     cached_records.append({**face, 'cacheKind': 'derived' if collection or repaired_cmap is not None or excluded_tables or misaligned_sfnt or repaired_maxp is not None or repaired_post is not None or web_font else 'source'})
                 resource_dir.mkdir(parents=True, exist_ok=True)
                 vs.write_json_atomic(resource_dir / f'{digest}.json',
-                                     {'schemaVersion': 2, 'sourceSha256': digest,
+                                     {'schemaVersion': 3, 'sourceSha256': digest,
                                       'faceCount': len(cached_records), 'faces': cached_records})
             finally:
                 if collection:
@@ -350,6 +363,34 @@ def font_family_names(font) -> tuple[list[str], list[dict]]:
     if errors and not names:
         raise ValueError('공급 face의 family 이름을 해독할 수 없습니다: ' + str(errors))
     return sorted(names), errors
+
+
+def font_program_identity(font) -> tuple[dict, list[dict]]:
+    """같은 SFNT의 legacy family와 PostScript 별칭을 읽는다. 임의 이름을 만들지 않는다."""
+    families, aliases, errors = [], set(), []
+    for entry in font['name'].names:
+        if entry.nameID not in {1, 6}:
+            continue
+        try:
+            value = entry.toUnicode()
+        except (UnicodeError, LookupError) as error:
+            # family 해독 오류는 위의 공통 경로가 이미 기록했다.
+            if entry.nameID == 6:
+                errors.append({'nameID': entry.nameID, 'platformID': entry.platformID,
+                               'encodingID': entry.platEncID, 'languageID': entry.langID,
+                               'rawSha256': hashlib.sha256(entry.string).hexdigest(),
+                               'reason': str(error)})
+            continue
+        if not value:
+            continue
+        if entry.nameID == 6:
+            aliases.add(value)
+        else:
+            families.append(((entry.langID not in {0, 0x409}, entry.platformID not in {0, 3}, value), value))
+    # typographic family(ID16)가 여러 굵기를 한 이름으로 합치더라도 Native가
+    # 조회한 legacy family(ID1)의 프로그램·스타일 소속을 그대로 유지한다.
+    primary = min(families)[1] if families else None
+    return {'primaryFamily': primary, 'postScriptNames': sorted(aliases)}, errors
 
 
 def write_font_face(font, path: Path, repaired_cmap: bytes | None, excluded_tables=(), *, repaired_maxp=None, repaired_post=None) -> None:

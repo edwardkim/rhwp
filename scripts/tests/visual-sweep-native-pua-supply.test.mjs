@@ -1,6 +1,39 @@
+// 관계형: TTF/HFT 요청의 실제 프로그램 소유·공급 순서와 공유 예산을 구분한다.
+// 주석 갱신: 2026-11-05T11:07:01+09:00 (Asia/Seoul). 직전 파일 변경: 93f3043ff764d8cb11c67a4870d99bf9bf1d2b00 2026-11-05T09:47:35+09:00.
+// 실행 근거: 2026-11-05 11:04 KST, 공개 기본 글꼴 5개 격리에서 11 PASS·0 FAIL·0 SKIP.
+// 입력은 이 파일의 합성 family·프로그램 표식 바이트다. 실물 쪽·절대 px·golden은 사용하지 않는다.
+// 원본 HWP/HWPX·독립 Print·Native/fresh WASM raw는 이 합성 계약의 직접 입력이 아니므로 비대상이다.
+// 공급 모듈의 실제 조판 소비는 별도 전쪽 측정으로 구분한다: c183 Native/fresh WASM 각 80입력·406쪽,
+// 최저 raw 92.45232% / 92.87288%, 96 DPI·Print·색상 경계 보정 전 2px 실루엣.
+// 근거: mydocs/pr/assets/planet6897_20261103/current-c183a1ac61/{native,wasm}-validation.md.
+// 아래 선행 주석과 실행 코드는 보존했다. 새로 덧붙인 첫머리는 검사 동작을 바꾸지 않는다.
+
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {prepareNativePuaFonts, prepareHftOtfFonts} from '../visual-sweep-font-registration.mjs';
+
+// 관계형: 선언 체인의 실제 프로그램 공급과 TTF 원본·대체의 소유를 구분한다.
+// 주석 갱신: 2026-11-04 15:12 KST. 합성 공급자 바이트이며 실물 좌표 핀이 아니다.
+test('콤마 선언 체인에서도 원본 TTF와 HFT의 실제 프로그램을 준비한다', async () => {
+  const requests = [
+    {family: 'Original, Display', bold: false, italic: false, source_ttf: true},
+    {family: 'Missing, Display', bold: false, italic: false, source_ttf: true},
+    {family: 'Missing, Legacy', bold: false, italic: false},
+  ];
+  const fonts = [
+    {families: ['Original'], weight: 400, style: 'normal', sha256: 'original', signature: [0,1,0,0]},
+    {families: ['Display'], weight: 400, style: 'normal', sha256: 'display', signature: [0,1,0,0]},
+    {families: ['Legacy'], weight: 400, style: 'normal', sha256: 'legacy', openTypeCff: true, signature: [79,84,84,79]},
+  ];
+  const received = [];
+  const owner = {getNativeOtfFontRequests: () => JSON.stringify(requests),
+    prepareNativeOtfFonts(provider) {for (const request of requests) received.push(provider(JSON.stringify(request)));}};
+  const proofs = await prepareHftOtfFonts(owner, fonts, async font => Uint8Array.from(font.signature).buffer);
+  assert.ok(received[0] instanceof Uint8Array, '체인 전체를 단일 family 이름으로 조회하지 않는다');
+  assert.equal(received[1], null, '다른 표시 프로그램을 원본 TTF로 등록하지 않는다');
+  assert.deepEqual([...received[2]], [79,84,84,79]);
+  assert.deepEqual(proofs.map(p => p.sha256), ['original','legacy']);
+});
 
 test('같은 이름의 HFT와 원본 TrueType 요청은 프로그램을 섞지 않는다', async () => {
   const requests = [
@@ -56,6 +89,34 @@ test('같은 family의 분할 CFF는 표시 후보 순서로 모두 전달한다
   assert.ok(Array.isArray(received));
   assert.deepEqual(received.map(bytes => bytes[4]), [0, 1]);
   assert.deepEqual(proofs.map(proof => proof.sha256), ['first', 'second']);
+});
+test('같은 family의 CFF 합계가 WASM 한도를 넘으면 공급 가능한 앞 face만 전달한다', async () => {
+  const request = {family: 'Large split', bold: false, italic: false};
+  let received;
+  const owner = {getNativeOtfFontRequests: () => JSON.stringify([request]),
+    prepareNativeOtfFonts(provider) { received = provider(JSON.stringify(request)); }};
+  const fonts = ['first', 'second', 'third'].map(sha256 => ({families: ['Large split'],
+    weight: 400, style: 'normal', sha256, openTypeCff: true}));
+  const bytes = new ArrayBuffer(24 * 1024 * 1024);
+  new DataView(bytes).setUint32(0, 0x4f54544f);
+  const proofs = await prepareHftOtfFonts(owner, fonts, async () => bytes);
+  assert.equal(received.length, 2);
+  assert.deepEqual(proofs.map(proof => proof.sha256), ['first', 'second']);
+});
+test('한 요청의 여러 family도 하나의 WASM 공급 예산을 공유한다', async () => {
+  const request = {family: 'First, Second', bold: false, italic: false};
+  let received;
+  const owner = {getNativeOtfFontRequests: () => JSON.stringify([request]),
+    prepareNativeOtfFonts(provider) { received = provider(JSON.stringify(request)); }};
+  const fonts = ['First', 'Second'].flatMap(family => [0, 1].map(index => ({
+    families: [family], weight: 400, style: 'normal',
+    sha256: `${family}-${index}`, openTypeCff: true,
+  })));
+  const bytes = new ArrayBuffer(24 * 1024 * 1024);
+  new DataView(bytes).setUint32(0, 0x4f54544f);
+  const proofs = await prepareHftOtfFonts(owner, fonts, async () => bytes);
+  assert.equal(received.length, 2, 'family가 바뀌어도 같은 요청의 예산을 초기화하지 않는다');
+  assert.deepEqual(proofs.map(proof => proof.sha256), ['First-0', 'First-1']);
 });
 test('실제 적재한 face 순서로 PUA 공급을 판단하고 지원하지 않은 주 face 뒤의 fallback을 사용한다',async()=>{
  const oldDoc=globalThis.document,oldFont=globalThis.FontFace;

@@ -524,11 +524,54 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
     if st.has_spilled_page_tail_float(para_idx, ctrl_idx) {
         return Ok(());
     }
-    let flow = shape_flow::prepare(ctrl, para, ctrl_idx, dpi);
+    let mut flow = shape_flow::prepare(ctrl, para, ctrl_idx, dpi);
+    // [#8458] 자기 줄이 이미 글줄 항목으로 이 쪽에 놓였으면 그 줄 높이는 소비됐다.
+    // 글자처럼 취급한 개체는 그 줄 안에 있으므로 줄 높이를 다시 판정·누적하지 않는다
+    // (156759019 pi=29 줄1: 공백 글자 + TAC 로고, 글줄 53.1px 를 두 번 세어 로고만 다음 쪽).
+    if flow.tac_separate_line_h.is_some()
+        && shape_flow::own_line_already_placed(para_idx, para, ctrl_idx, &st.current_items)
+    {
+        flow.tac_separate_line_h = None;
+    }
+    // [#8462] 문단 위끝에서 용지 밖에 놓인 비-TAC 개체는 이 쪽 본문 흐름을 밀지 않는다.
+    let offpage_top = (matches!(ctrl, Control::Shape(_)) && flow.non_tac_pushdown_h.is_some())
+        .then(|| shape_flow::para_offset_top_px(ctrl, dpi))
+        .flatten()
+        .filter(|top| para_start_height + top >= st.available_height());
+    // [#8491] 자기 저장 줄들 아래에서 시작하는 개체는 자기 줄을 밀지 않고
+    // 개체 띠를 뒤 문단의 배제 영역으로 남긴다.
+    let below_own_lines = if offpage_top.is_none() {
+        flow.non_tac_pushdown_h
+            .and_then(|height| {
+                shape_flow::below_own_lines_top_px(ctrl, para, dpi).map(|top| (top, height))
+            })
+            .map(|(top, height)| (para_start_height + top, height))
+    } else {
+        None
+    };
+    if offpage_top.is_some() || below_own_lines.is_some() {
+        flow.non_tac_pushdown_h = None;
+    }
     if st.defer_table_host_ole_to_next_column(para_idx, ctrl_idx, ctrl, dpi) {
         return Ok(());
     }
-    while flow.needs_advance(st.table_host_shape_page(), || st.available_height()) {
+    // [#8446] 앵커 줄이 저장 사다리에서 다음 쪽으로 되감긴(vpos 리셋) 비-TAC 자리차지 개체는
+    // 그 줄을 따라 넘기지 않고 떠나는 쪽의 흐름 말미에 남긴다. 줄 머리 리셋의 #6146 과 같은
+    // 규칙을 문단 중간 줄 리셋에 적용한다(156571452 로고: 한컴 1쪽 y 1030.7, 본문 아래끝 1028.1).
+    // 개체 아래끝이 용지 안에 남을 때만이다. 같은 줄의 뒤 내용은 리셋대로 다음 쪽에 놓인다.
+    let spills_to_leaving_page = flow.non_tac_pushdown_h.is_some_and(|extra| {
+        shape_flow::anchor_line_rewinds_to_next_page(para, ctrl_idx)
+            && shape_flow::page_still_holds_lines_before_anchor(
+                para_idx,
+                para,
+                ctrl_idx,
+                &st.current_items,
+            )
+            && st.layout.body_area.y + st.current_height + extra <= st.layout.page_height + 0.5
+    });
+    while !spills_to_leaving_page
+        && flow.needs_advance(st.table_host_shape_page(), || st.available_height())
+    {
         // 단 기준 개체가 다음 단에 들어가면 개체만 이월한다. 뒤 본문은 남은
         // 현재 단을 채우며, 저장 줄의 단 경계에서 예약 개체 뒤로 이어진다.
         let common = match ctrl {
@@ -545,9 +588,54 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
         }
         st.advance_column_or_new_page_with_storage(storage)?;
     }
-    let accepted_frame = flow.accepted_shape_frame(ctrl, st.current_height);
+    // [#8435] 앞 TAC 줄 뒤 줄을 밀어낸 개체의 원점은 저장 사다리의 앵커 줄 자리다.
+    // TAC 줄의 흐름 전진은 마지막 줄 간격을 쓸 수 있어 그 자리와 다를 수 있다.
+    let pushed_anchor_origin = match ctrl {
+        Control::Shape(shape) => {
+            let common = shape.common();
+            crate::renderer::layout::stored_pushed_anchor_line_offset_hu(
+                para,
+                common,
+                i64::from(common.margin.top) + i64::from(common.margin.bottom),
+                ctrl_idx,
+            )
+            .filter(|_| crate::renderer::layout::has_line_taking_tac_sibling_before(para, ctrl_idx))
+            .map(|hu| para_start_height + crate::renderer::hwpunit_to_px(hu, dpi))
+        }
+        _ => None,
+    };
+    let accepted_frame = if let Some(top) = offpage_top {
+        Some(shape_flow::offpage_shape_frame(
+            para_start_height,
+            top,
+            st.current_height,
+        ))
+    } else if let Some((top, _)) = below_own_lines {
+        Some(shape_flow::below_own_lines_frame(
+            para_start_height,
+            top,
+            st.current_height,
+        ))
+    } else {
+        match pushed_anchor_origin {
+            Some(origin) => flow.pushed_anchor_shape_frame(ctrl, origin, dpi),
+            None => flow.accepted_shape_frame(ctrl, st.current_height),
+        }
+    };
     st.commit_table_host_shape_with_storage(para_idx, ctrl_idx, flow, accepted_frame, storage)?;
+    if let Some((top, height)) = below_own_lines {
+        st.add_visible_float_exclusion(super::VisibleFloatExclusion {
+            para_index: para_idx,
+            top,
+            bottom: top + height,
+        });
+    }
     st.register_side_wrap_picture(para_idx, ctrl_idx, para, Some(para_start_height), styles);
+    if spills_to_leaving_page {
+        // 개체만 남기고 그 줄은 저장 리셋대로 다음 쪽에서 시작한다. 줄에 다른 내용이 없어도
+        // 쪽은 열린다(156569782: 한컴 2쪽은 빈 줄 하나뿐인 쪽).
+        st.advance_column_or_new_page_with_storage(storage)?;
+    }
 
     Ok(())
 }

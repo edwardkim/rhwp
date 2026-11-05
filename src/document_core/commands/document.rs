@@ -1,5 +1,7 @@
 //! 문서 생성/로딩/저장/설정 관련 native 메서드
 
+mod cell_line_frame;
+mod grown_table_heights;
 mod hft_outline_fonts;
 mod initial_fields;
 mod metafile_fonts;
@@ -884,21 +886,20 @@ impl DocumentCore {
                 for ctrl in &mut para.controls {
                     if let Control::Table(ref mut table) = ctrl {
                         let is_rowbreak_table = matches!(
-                            table.page_break,
+                            table.layout_page_break(),
                             crate::model::table::TablePageBreak::RowBreak
                         );
                         let owner_widths = table.paragraph_frame_owner_widths();
                         let table_padding = table.padding;
                         for (cell, owner_width) in table.cells.iter_mut().zip(owner_widths) {
-                            let cell_w_px = crate::renderer::hwpunit_to_px(owner_width, dpi);
-                            let frame_padding = cell.paragraph_frame_padding(&table_padding);
-                            let pad_left =
-                                crate::renderer::hwpunit_to_px(frame_padding.left as i32, dpi);
-                            let pad_right =
-                                crate::renderer::hwpunit_to_px(frame_padding.right as i32, dpi);
-                            let cell_inner_width = crate::renderer::composer::cell_inner_text_width(
-                                cell_w_px, pad_left, pad_right, dpi,
-                            );
+                            let Some(cell_inner_width) = cell_line_frame::inline_extent_px(
+                                cell,
+                                owner_width,
+                                &table_padding,
+                                dpi,
+                            ) else {
+                                continue;
+                            };
                             // [#2195/#2146] 사선(대각선) 셀의 빈 문단은 코너 라벨의
                             // 짝 — 한글은 흐름 배치하지 않으므로 합성 제외 (21761835
                             // r0 라벨 셀 선언 52.4px 유지, 합성 시 +2.4 팽창).
@@ -1943,13 +1944,11 @@ impl DocumentCore {
                         .is_some_and(crate::renderer::layout::border_style_has_diagonal)
             };
             for (cell, owner_width) in table.cells.iter_mut().zip(owner_widths) {
-                let padding = cell.paragraph_frame_padding(&table_padding);
-                let inner_width = crate::renderer::composer::cell_inner_text_width(
-                    crate::renderer::hwpunit_to_px(owner_width, dpi),
-                    crate::renderer::hwpunit_to_px(padding.left as i32, dpi),
-                    crate::renderer::hwpunit_to_px(padding.right as i32, dpi),
-                    dpi,
-                );
+                let Some(inner_width) =
+                    cell_line_frame::inline_extent_px(cell, owner_width, &table_padding, dpi)
+                else {
+                    continue;
+                };
                 let diagonal = bf_has_diagonal(cell.border_fill_id)
                     || table.zones.iter().any(|zone| {
                         zone.start_row <= cell.row
@@ -2294,15 +2293,14 @@ impl DocumentCore {
                         let owner_widths = table.paragraph_frame_owner_widths();
                         let table_padding = table.padding;
                         for (cell, owner_width) in table.cells.iter_mut().zip(owner_widths) {
-                            let cell_w_px = crate::renderer::hwpunit_to_px(owner_width, dpi);
-                            let frame_padding = cell.paragraph_frame_padding(&table_padding);
-                            let pad_left =
-                                crate::renderer::hwpunit_to_px(frame_padding.left as i32, dpi);
-                            let pad_right =
-                                crate::renderer::hwpunit_to_px(frame_padding.right as i32, dpi);
-                            let cell_inner_width = crate::renderer::composer::cell_inner_text_width(
-                                cell_w_px, pad_left, pad_right, dpi,
-                            );
+                            let Some(cell_inner_width) = cell_line_frame::inline_extent_px(
+                                cell,
+                                owner_width,
+                                &table_padding,
+                                dpi,
+                            ) else {
+                                continue;
+                            };
                             for cell_para in &mut cell.paragraphs {
                                 if Self::needs_reflow_broadly(cell_para) {
                                     // 셀 내용 상자 — 위와 같은 이유로 미스냅.
@@ -2417,11 +2415,14 @@ impl DocumentCore {
         // [#7114] 어댑터 없는 경로도 같은 저장 프레임을 낸다 — 두 진입점이 다른 조판을
         // 저장하면 «저장본을 다시 열면 배치가 달라진다» 가 경로마다 갈린다.
         // 재래핑된 표가 없으면 복제 없이 live IR 을 그대로 쓴다.
-        if self.render_normalization.text_reflowed_tables.is_empty() {
+        let grown_tables = self.grown_table_heights();
+        let grows_tables = grown_tables.iter().any(Option::is_some);
+        if !grows_tables && self.render_normalization.text_reflowed_tables.is_empty() {
             return crate::serializer::serialize_document(&self.document)
                 .map_err(|e| HwpError::RenderError(e.to_string()));
         }
         let mut snapshot = self.document.clone();
+        grown_table_heights::apply_grown_table_heights(&mut snapshot, &grown_tables);
         self.writeback_reflowed_table_frames(&mut snapshot);
         crate::serializer::serialize_document(&snapshot)
             .map_err(|e| HwpError::RenderError(e.to_string()))
@@ -2799,7 +2800,9 @@ impl DocumentCore {
     ) -> Result<HwpExportSnapshot, S::Error> {
         use crate::document_core::converters::hwpx_to_hwp::try_convert_if_hwpx_source;
 
+        let grown_tables = self.grown_table_heights_with_storage(storage)?;
         let mut snapshot = storage.clone_document(&self.document)?;
+        grown_table_heights::apply_grown_table_heights(&mut snapshot, &grown_tables);
         self.writeback_reflowed_table_frames_with_storage(&mut snapshot, storage)?;
         let _report = try_convert_if_hwpx_source(&mut snapshot, self.source_format, storage)?;
         super::header_footer_ops::lower_header_footer_field_markers(
@@ -2970,6 +2973,8 @@ impl DocumentCore {
         let lower_markers = |doc: &mut Document| {
             super::header_footer_ops::lower_header_footer_field_markers(doc, &self.file_name, true)
         };
+        let grown_tables = self.grown_table_heights();
+        let grows_tables = grown_tables.iter().any(Option::is_some);
         // [#8302] rhwp 가 HWPX 에서 만든 HWP(`/RhwpHwpxOrigin`, `hwpx_lineage`)는 HWP5 계보가
         // 아니다. 그 IR 은 HWPX 저장 계약(줄 축·저장 줄 유무)을 그대로 지니므로 HWP5-origin
         // 마커를 붙이지 않고 HWPX 출처와 같은 경로로 내보낸다. 마커를 붙이면 다시 연 HWPX 가
@@ -2978,6 +2983,7 @@ impl DocumentCore {
             && !self.document.provenance.hwpx_lineage
         {
             let mut doc = self.document.clone();
+            grown_table_heights::apply_grown_table_heights(&mut doc, &grown_tables);
             if let Some((_, value)) = doc
                 .hwpx_aux_entries
                 .iter_mut()
@@ -3005,6 +3011,7 @@ impl DocumentCore {
             || super::header_footer_ops::has_header_footer_field_markers(&self.document)
         {
             let mut doc = self.document.clone();
+            grown_table_heights::apply_grown_table_heights(&mut doc, &grown_tables);
             if let Some((_, value)) = doc
                 .hwpx_aux_entries
                 .iter_mut()
@@ -3016,6 +3023,10 @@ impl DocumentCore {
                 Self::push_hwp3_origin_marker(&mut doc);
             }
             lower_markers(&mut doc);
+            serialize(&doc)
+        } else if grows_tables {
+            let mut doc = self.document.clone();
+            grown_table_heights::apply_grown_table_heights(&mut doc, &grown_tables);
             serialize(&doc)
         } else {
             serialize(&self.document)

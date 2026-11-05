@@ -2412,9 +2412,7 @@ export class CanvasKitLayerRenderer {
           for (const [x, y] of textShadowOffsets(style)) draw(shadowPaint, x, y);
         }
         if ((style.outlineType ?? 0) > 0) {
-          const stroke = this.makeStrokePaint(style.color ?? '#000000', Math.max(size / 25, 0.5));
-          effects.push(stroke); stroke.setStrokeJoin(this.canvasKit.StrokeJoin.Round);
-          draw(effectPaint('#ffffff')); draw(stroke);
+          this.withCharOutlineStroke(canvas, style, draw);
         } else draw(paint);
       }
       this.currentReplayFeatureCounts.glyphRuns += 1;
@@ -3711,14 +3709,7 @@ export class CanvasKitLayerRenderer {
             }
             drawPass(stroke);
           } else if (outlineType > 0) {
-            const outlineFillPaint = this.makeFillPaint('#ffffff');
-            effectPaints.push(outlineFillPaint);
-            const outlineStrokePaint = this.makeStrokePaint(
-              style.color ?? '#000000',
-              Math.max(fontSize / 25, 0.5),
-            );
-            effectPaints.push(outlineStrokePaint);
-            drawPass(outlineFillPaint, 0, 0, outlineStrokePaint);
+            this.withCharOutlineStroke(canvas, style, drawPass);
           } else {
             drawPass(paint);
           }
@@ -4233,7 +4224,7 @@ export class CanvasKitLayerRenderer {
     const draw = (originX: number, originY: number) => {
       const baselineY = originY + decoration.baseline;
       if (decoration.kind === 'underline') {
-        if (decoration.underline === 'top' && decoration.topUnderline) {
+        if ((decoration.underline === 'top' || decoration.underline === 'bottom') && decoration.topUnderline) {
           if (textWidth <= 0) return;
           const geometry = decoration.topUnderline;
           const phase = geometry.phase ?? 0;
@@ -6150,6 +6141,28 @@ export class CanvasKitLayerRenderer {
       imageRef,
       reason,
     });
+  }
+
+  private withCharOutlineStroke(
+    canvas: SkCanvas,
+    style: NonNullable<LayerTextRunOp['style']>,
+    draw: (paint: SkPaint) => void,
+  ): void {
+    const stroke = style.outlineStroke;
+    if (!stroke || !Number.isFinite(stroke.width) || stroke.width <= 0) {
+      // 이전 producer는 기존 fallback 경로로 보내며 미지원 재생을 성공으로 세지 않는다.
+      this.unsupportedOps.add('textOutline:missingResolvedStroke');
+      return;
+    }
+    const paint = this.makeStrokePaint(style.color ?? '#000000', this.deviceStrokeWidth(canvas, stroke.width));
+    paint.setStrokeCap(this.canvasKit.StrokeCap.Round);
+    paint.setStrokeJoin(this.canvasKit.StrokeJoin.Round);
+    try {
+      this.drawStrokeWithDash(undefined, paint, () => draw(paint),
+        stroke.intervals.length > 0 ? stroke.intervals : undefined);
+    } finally {
+      paint.delete();
+    }
   }
 
   private makeFillPaint(color: string, opacity = 1): SkPaint {

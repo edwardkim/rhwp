@@ -72,7 +72,7 @@ where
     // Keep the editable IR grid; HWPX rows must each contain a cell origin.
     let projected = ctx
         .table_row_grids
-        .table_with_storage(table, storage)
+        .table_with_reserved_ids_and_storage(table, &ctx.table_instance_ids.registered, storage)
         .map_err(SerializeError::UnsupportedInput)?;
     let table = projected.as_ref();
     // borderFillIDRef 참조 등록 (assert_all_refs_resolved 검증 대상)
@@ -116,7 +116,10 @@ where
             ("textWrap", text_wrap),
             ("textFlow", text_flow),
             ("lock", lock),
-            ("dropcapstyle", "None"),
+            (
+                "dropcapstyle",
+                super::shape::drop_cap_style_str(table.common.drop_cap_style),
+            ),
             ("pageBreak", page_break),
             ("repeatHeader", repeat_header),
             ("rowCnt", &row_cnt),

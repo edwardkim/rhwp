@@ -66,6 +66,8 @@ pub(crate) mod legacy_font_advances;
 pub(crate) mod line_style;
 mod measured_glyph_supplier;
 pub(crate) mod metafile_geometry;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod native_webfonts;
 pub(crate) mod note_marker;
 pub(crate) mod note_separator;
 pub(crate) mod object_alignment;
@@ -101,6 +103,7 @@ pub mod sixel;
 pub(crate) mod stored_frame_boundary;
 pub(crate) mod stored_picture_metrics;
 mod stroke_pattern;
+pub(crate) use stroke_pattern::char_outline_stroke;
 pub(crate) mod table_row_frame;
 pub(crate) mod text_font_coverage;
 pub mod text_font_presentation;
@@ -359,7 +362,7 @@ pub struct TextStyle {
     /// 실제 글줄의 최대 글꼴 크기. 위 밑줄은 비장식 글자도 포함한 이 크기를 따른다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub top_underline_font_size: Option<f64>,
-    /// 같은 원본 글자 모양 구간의 위 밑줄에서 이미 소비한 가로 길이.
+    /// 같은 원본 글자 모양 구간의 위 밑줄·아래 일점쇄선에서 이미 소비한 가로 길이.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub top_underline_phase: Option<f64>,
     /// Session-only glyph metrics; never part of document/style serialization.
@@ -793,6 +796,29 @@ pub(crate) fn canvas_cluster_fit(
     ink_width: Option<f64>,
     pin_ascii_advance: bool,
 ) -> Option<(f64, f64)> {
+    // 원본 TTF에 없는 작은 수학 기호는 대체 face로 그리되 원본의 반각
+    // 칸을 사용한다. 음수 자간은 윤곽을 누르지 않지만, 전각 대체 face의
+    // 양쪽 빈 공간은 반각 칸 중앙에 맞춰야 독립 Print와 같은 원점이 된다.
+    if style.source_font_is_ttf
+        && style.letter_spacing < 0.0
+        && matches!(cluster, "\u{2218}" | "\u{2219}")
+        && style
+            .native_otf_metrics
+            .as_ref()
+            .is_some_and(|font| cluster.chars().next().is_some_and(|ch| !font.has_glyph(ch)))
+    {
+        let advance =
+            style.glyph_fit_advance(layout_cluster_advance)? * style.script_advance_scale();
+        if advance > 0.0
+            && visual_width > advance + 0.25
+            // Skia 경계의 반올림 오차는 아래 상자 초과 판정과 같은 0.25px을 허용한다.
+            && ink_width.is_some_and(|ink| {
+                ink.is_finite() && ink > 0.0 && ink <= advance * 1.1 + 0.25
+            })
+        {
+            return Some((1.0, (advance - visual_width) / 2.0));
+        }
+    }
     // 호출자가 선택한 프로그램은 전진과 잉크 폭을 구분한다. 원본 HFT 선언이나
     // 폭 표의 신뢰만으로 일반 대체 face의 기존 맞춤까지 차단하지 않는다.
     if !style.fixed_glyph_advances && style.preserve_glyph_ink {
@@ -2044,6 +2070,16 @@ pub(crate) fn cell_paragraph_spacing_before(
 #[inline]
 pub(crate) fn para_has_no_stored_line_segs(p: &crate::model::paragraph::Paragraph) -> bool {
     p.line_segs.is_empty() || p.line_segs.iter().all(|s| s.tag & 0x8000_0000 != 0)
+}
+
+/// [#8507] 글자 없는 host(텍스트 스트림이 비어 있는 문단)의 개체 줄을 rhwp 가 여러 줄로 재조판했는지.
+///
+/// 줄 재조판은 필드 시작 뒤 줄 폭에 들지 않는 글자처럼 취급 개체를 다음 줄로 넘기고 필드
+/// 줄을 빈 줄로 남긴다(한/글 2020 합성 field_over19). 이 줄들은 저장 사다리가 아니라 한 번
+/// 정한 줄 구성이라, 조판과 배치가 개체를 자기 줄(`control_line_seg_index`)에 두고 앞 줄을
+/// 문단 높이에 센다. 저장 줄은 각자의 저장 계약을 따른다.
+pub(crate) fn para_has_composed_object_rows(p: &crate::model::paragraph::Paragraph) -> bool {
+    p.text.is_empty() && p.line_segs.len() >= 2 && para_has_no_stored_line_segs(p)
 }
 
 /// 본문 글자가 없는 표 host 문단에서 표 줄(`table_line`) 뒤의 저장 줄들이 차지하는 높이(HU).
@@ -4291,65 +4327,13 @@ pub(crate) fn topbottom_float_displaced_below_following_flow(
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_render_backend_from_str() {
-        assert_eq!(
-            RenderBackend::from_str("canvas"),
-            Some(RenderBackend::Canvas)
-        );
-        assert_eq!(RenderBackend::from_str("svg"), Some(RenderBackend::Svg));
-        assert_eq!(RenderBackend::from_str("html"), Some(RenderBackend::Html));
-        assert_eq!(RenderBackend::from_str("unknown"), None);
-    }
-
-    #[test]
-    fn test_hwpunit_to_px() {
-        // 1인치 = 7200 HWPUNIT, 96 DPI → 96px
-        let px = hwpunit_to_px(7200, 96.0);
-        assert!((px - 96.0).abs() < 0.01);
-    }
-
-    #[test]
-    fn test_script_draw_metrics_matches_shared_contract() {
-        // [#2771] SVG/Canvas/HTML/Skia/paint JSON 이 공유하는 첨자 계약:
-        // 글꼴 0.7 배 + baseline 위 0.3em / 아래 0.15em.
-        let base = TextStyle {
-            font_size: 20.0,
-            ..Default::default()
-        };
-
-        let sup = TextStyle {
-            superscript: true,
-            ..base.clone()
-        };
-        let (sup_size, sup_y) = sup.script_draw_metrics(20.0, 100.0);
-        assert!(
-            (sup_size - 14.0).abs() < 1e-9,
-            "위첨자 글꼴은 0.7 배여야 함: {sup_size}"
-        );
-        assert!(
-            (sup_y - 94.0).abs() < 1e-9,
-            "위첨자 baseline 은 0.3em 위여야 함: {sup_y}"
-        );
-
-        let sub = TextStyle {
-            subscript: true,
-            ..base.clone()
-        };
-        let (sub_size, sub_y) = sub.script_draw_metrics(20.0, 100.0);
-        assert!(
-            (sub_size - 14.0).abs() < 1e-9,
-            "아래첨자 글꼴은 0.7 배여야 함: {sub_size}"
-        );
-        assert!(
-            (sub_y - 103.0).abs() < 1e-9,
-            "아래첨자 baseline 은 0.15em 아래여야 함: {sub_y}"
-        );
-
-        // 비첨자는 인자를 그대로 돌려준다.
-        assert_eq!(base.script_draw_metrics(20.0, 100.0), (20.0, 100.0));
-    }
+    use crate::paint::ResolvedImageKind;
+    use crate::renderer::image_resolver::{
+        bmp_bytes_to_png_bytes, grayscale_jpeg_bytes_to_png_bytes, resolve_image_payload,
+    };
+    use crate::renderer::render_tree::ImageNode;
+    use image::{DynamicImage, ImageFormat, Rgb, RgbImage};
+    use std::io::Cursor;
 
     #[test]
     fn positive_distribution_spacing_is_not_part_of_glyph_fit_advance() {
@@ -4381,6 +4365,64 @@ mod tests {
             None
         );
         assert_eq!(canvas_cluster_fit(&style, "a", 7.5, 15.0, None, true), None);
+
+        let mut fonts = native_pua_fonts::NativePuaFonts::default();
+        fonts
+            .register_otf_for_source(
+                "source",
+                false,
+                false,
+                true,
+                include_bytes!("../../tests/fixtures/fonts/RHWPEquationLatinOnly.ttf"),
+                0,
+            )
+            .unwrap();
+        let style = TextStyle {
+            source_font_is_ttf: true,
+            letter_spacing: -0.4,
+            native_otf_metrics: fonts.get_otf_for_source("source", false, false, true),
+            ..Default::default()
+        };
+        assert_eq!(
+            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(3.0), false),
+            Some((1.0, -3.0))
+        );
+        assert_eq!(
+            canvas_cluster_fit(&style, "∘", 6.0, 12.0, Some(3.0), false),
+            Some((1.0, -3.0))
+        );
+        assert_eq!(
+            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(6.4), false),
+            Some((1.0, -3.0))
+        );
+        assert_eq!(
+            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(6.8), false),
+            Some((1.0, -3.0))
+        );
+        assert_eq!(
+            canvas_cluster_fit(&style, "A", 6.0, 12.0, Some(3.0), false),
+            None
+        );
+        assert_eq!(
+            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(9.0), false),
+            None
+        );
+
+        let declared = TextStyle {
+            font_family: "휴먼명조,Haansoft Batang".into(),
+            glyph_fallback_advance_explicit: true,
+            source_font_is_ttf: true,
+            ..Default::default()
+        };
+        assert_eq!(
+            measured_glyph_supplier::family(&declared, "․"),
+            Some("Haansoft Batang")
+        );
+        let other = TextStyle {
+            font_family: "휴먼명조,Noto Serif".into(),
+            ..declared
+        };
+        assert_eq!(measured_glyph_supplier::family(&other, "․"), None);
     }
 
     #[test]
@@ -4672,12 +4714,6 @@ mod tests {
     }
 
     #[test]
-    fn test_px_to_hwpunit() {
-        let hu = px_to_hwpunit(96.0, 96.0);
-        assert_eq!(hu, 7200);
-    }
-
-    #[test]
     fn test_source_line_metrics_reflow_when_text_height_is_implausible() {
         let max_fs = hwpunit_to_px(1000, 96.0);
         let raw_h = hwpunit_to_px(68800, 96.0);
@@ -4748,16 +4784,6 @@ mod tests {
             Control::ColumnDef(Default::default()),
         ]));
         assert!(!controls_mark_section_start(&[]));
-    }
-
-    #[test]
-    fn test_a4_page_size_px() {
-        // A4: 210mm × 297mm = 59528 × 84188 HWPUNIT
-        let w = hwpunit_to_px(59528, 96.0);
-        let h = hwpunit_to_px(84188, 96.0);
-        // A4 @ 96DPI ≈ 793.7 × 1122.5 px
-        assert!((w - 793.7).abs() < 1.0);
-        assert!((h - 1122.5).abs() < 1.0);
     }
 
     /// [Task #1745] 텍스트 혼합 anchor: 표 geometry 로 wrap 띠 도출
@@ -5136,6 +5162,107 @@ mod tests {
         assert_eq!(format_number(2, NumberFormat::HangulGaNaDa), "나");
         assert_eq!(format_number(1, NumberFormat::HangulNumber), "일");
         assert_eq!(format_number(12, NumberFormat::HangulNumber), "십이");
+    }
+
+    fn jpeg_from_pixels(width: u32, height: u32, pixels: impl Fn(u32, u32) -> [u8; 3]) -> Vec<u8> {
+        let mut img = RgbImage::new(width, height);
+        for y in 0..height {
+            for x in 0..width {
+                img.put_pixel(x, y, Rgb(pixels(x, y)));
+            }
+        }
+
+        let mut out = Vec::new();
+        DynamicImage::ImageRgb8(img)
+            .write_to(&mut Cursor::new(&mut out), ImageFormat::Jpeg)
+            .expect("encode jpeg");
+        out
+    }
+
+    /// 메모가 다른 그림의 결과를 흘리지 않는다.
+    #[test]
+    fn different_images_keep_their_own_results() {
+        let gray = jpeg_from_pixels(2, 2, |x, y| {
+            let g = 120 + (x + y) as u8;
+            [g, g, g]
+        });
+        let color = jpeg_from_pixels(2, 2, |x, y| {
+            if (x + y) % 2 == 0 {
+                [210, 48, 48]
+            } else {
+                [48, 110, 210]
+            }
+        });
+
+        assert!(grayscale_jpeg_bytes_to_png_bytes(&gray).is_some());
+        assert!(grayscale_jpeg_bytes_to_png_bytes(&color).is_none());
+        // 순서를 바꿔도 각자의 결과가 나온다 (둘 다 메모에 들어간 뒤).
+        assert!(grayscale_jpeg_bytes_to_png_bytes(&color).is_none());
+        assert!(grayscale_jpeg_bytes_to_png_bytes(&gray).is_some());
+    }
+
+    #[test]
+    fn grayscale_jpeg_is_normalized_to_png() {
+        let jpeg = jpeg_from_pixels(2, 2, |x, y| {
+            let g = 180 + (x + y) as u8;
+            [g, g, g]
+        });
+
+        let png = grayscale_jpeg_bytes_to_png_bytes(&jpeg).expect("gray jpeg should normalize");
+        assert!(png.starts_with(b"\x89PNG\r\n\x1a\n"));
+    }
+
+    #[test]
+    fn color_jpeg_keeps_jpeg_path() {
+        let jpeg = jpeg_from_pixels(2, 2, |x, y| {
+            if (x + y) % 2 == 0 {
+                [220, 64, 64]
+            } else {
+                [64, 120, 220]
+            }
+        });
+
+        assert!(grayscale_jpeg_bytes_to_png_bytes(&jpeg).is_none());
+    }
+
+    #[test]
+    fn tiff_image_payload_is_normalized_to_png() {
+        let mut img = RgbImage::new(2, 2);
+        for y in 0..2 {
+            for x in 0..2 {
+                img.put_pixel(x, y, Rgb([32 + x as u8, 96 + y as u8, 160]));
+            }
+        }
+        let mut tiff = Vec::new();
+        DynamicImage::ImageRgb8(img)
+            .write_to(&mut Cursor::new(&mut tiff), ImageFormat::Tiff)
+            .expect("encode tiff");
+
+        let image = ImageNode::new(1, Some(tiff));
+        let resolved = resolve_image_payload(&image).expect("tiff should resolve");
+
+        assert_eq!(resolved.mime, "image/png");
+        assert_eq!(resolved.kind, ResolvedImageKind::FormatConverted);
+        assert!(resolved.data.starts_with(b"\x89PNG\r\n\x1a\n"));
+        assert!(!resolved.suppress_effects);
+    }
+
+    #[test]
+    fn oversized_compact_bmp_is_rejected_before_layer_conversion() {
+        let mut bmp = vec![0u8; 58];
+        bmp[..2].copy_from_slice(b"BM");
+        bmp[2..6].copy_from_slice(&58u32.to_le_bytes());
+        bmp[10..14].copy_from_slice(&54u32.to_le_bytes());
+        bmp[14..18].copy_from_slice(&40u32.to_le_bytes());
+        bmp[18..22].copy_from_slice(&8193i32.to_le_bytes());
+        bmp[22..26].copy_from_slice(&8193i32.to_le_bytes());
+        bmp[26..28].copy_from_slice(&1u16.to_le_bytes());
+        bmp[28..30].copy_from_slice(&8u16.to_le_bytes());
+        bmp[30..34].copy_from_slice(&1u32.to_le_bytes());
+        bmp[54..58].copy_from_slice(&[0, 1, 0, 1]);
+
+        assert!(bmp_bytes_to_png_bytes(&bmp).is_none());
+        assert!(resolve_image_payload(&ImageNode::new(1, Some(bmp))).is_none());
     }
 }
 

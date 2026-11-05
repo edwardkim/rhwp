@@ -214,6 +214,10 @@ pub(crate) fn verified_missing_glyph_supplier(
         // 근린생활시설 표의 독립 Print는 HBATANG의 0.173em 글리프로 출력하며,
         // HBATANG.TTF의 hmtx 178/1024도 같은 자연 전진을 확인한다.
         ("DotumChe", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
+        // [#8419] batang.ttc(SHA 51d9a8d4…c9d8)의 Batang cmap에도 U+2024가 없다.
+        // 10645 운영지침의 독립 한컴2022 Print는 바탕 사이의 `․`만 Haansoft Batang
+        // CID 글꼴로 출력한다. U+2027과 다른 weight/style은 확인하지 않아 바꾸지 않는다.
+        ("Batang", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
         // 법원 서식 Print의 Haansoft Dotum CID 3과 HDOTUM hmtx의 대응.
         ("Gulim", 1024, false, false, '\u{2024}' | '\u{2027}') => Some("Haansoft Dotum"),
         // 기호 슬롯을 HY신명조 TTF로 지정한 독립2020 Print의 두 점은

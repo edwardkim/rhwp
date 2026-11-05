@@ -1,0 +1,124 @@
+{
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 48.34812,
+      "silhouette_raw_unmatched_pixels": 125152,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 242299,
+      "tolerant_content_match_percent": 48.34812
+    }
+  ],
+  "gate": {
+    "status": "re_review_required",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 1,
+        "silhouette_raw_match_percent": 48.34812
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "page_count_mismatch": false
+  },
+  "provenance": {
+    "hwp": {
+      "path": "output/pr-review/pr8585/input/samples/issue7524/textbox_tac_picture_rows.hwp",
+      "sha256": "ffc0a66e92b10ec2ea10167bca2a2721c68a4207aed4acf5b381ab5e7ca18d36"
+    },
+    "pdf": {
+      "path": "output/pr-review/pr8585/input/pdf/issue7524/textbox_tac_picture_rows-webhwp-print.pdf",
+      "sha256": "212f1c608c99a1a427aa5302046d8479afb0a16fecc19c2fcf62afb7212653a5"
+    },
+    "git_head": "7fdd5441ff1e77c083818e920a48089f294de35e",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "output/pr-review/pr8585/base-native/rhwp",
+      "path": "output/pr-review/pr8585/base-native/rhwp",
+      "sha256": "df6f6457c0aa6e3d7ec37dd4f80bd28f4e563c1a06e986d963e34582683f61ee"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+    "layout_generation": "2022",
+    "font_environment": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8585/font-environment.json",
+      "sha256": "9fe9fe3e9f2e0071612b27149a067e9fc53bbbbcf75fa6e4817f9070c1b0eb48"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8585/base-wasm/rhwp.js",
+          "sha256": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8585/base-wasm/rhwp_bg.wasm",
+          "sha256": "762720bd71e50094cf143846f37f1ef1d4bfb0c9b70dd15c5cbd9a52cc4a3353"
+        }
+      ],
+      "exporter_sha256": "2d4cc3fbbdf4b4f528aa683649434221a783300e821fe68aaa2ae1e1b63220ee",
+      "font_registration_sha256": "57f7fc00f9eb1024795441bbb2a9ff55e441c3d3e41d1c891e44a6886f6c4366",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/gulim.ttc",
+          "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hamchod-r.ttf",
+          "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+        }
+      ]
+    }
+  }
+}

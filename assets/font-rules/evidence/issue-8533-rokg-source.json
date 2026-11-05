@@ -1,0 +1,9 @@
+{
+  "family": "ROKG R",
+  "postScriptName": "ROKGR",
+  "scope": "별도 글꼴의 기존 자동 공급을 제거하며 문서 원본 글꼴 이름은 변경하지 않는다. 글꼴 파일은 포함하지 않는다.",
+  "sha256Woff": "9f80490bd7215f8c1110d59ce847707f6f081fc5daf432b31781ad96b4b7e955",
+  "sha256Woff2": "2c79a998f6b730afe2e311b6098055e9b6b29c1f2ba75f2871fd5dd8f4787426",
+  "sourceWoff": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff",
+  "sourceWoff2": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff2"
+}

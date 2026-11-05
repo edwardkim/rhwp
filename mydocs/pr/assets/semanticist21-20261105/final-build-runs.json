@@ -1,0 +1,38 @@
+[
+  {
+    "kind": "native",
+    "source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp"
+    ],
+    "minimum_font_build": true,
+    "start": "2026-11-04T17:41:57.579411+00:00",
+    "end": "2026-11-04T17:46:59.625728+00:00",
+    "exit": 0,
+    "sha256": "2373fd67374f248207cee3eb52042304acb70b3822ed7e9d06da5635464e22ab"
+  },
+  {
+    "kind": "wasm",
+    "source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-pkg"
+    ],
+    "minimum_font_build": false,
+    "start": "2026-11-04T17:46:59.874672+00:00",
+    "end": "2026-11-04T17:58:58.539752+00:00",
+    "exit": 0,
+    "wasm_sha256": "9260dddc5fb1166befe6ae41d24d5c5072288b5f34306a8027f1d570025bd019"
+  }
+]

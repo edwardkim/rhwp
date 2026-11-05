@@ -1,0 +1,9 @@
+{
+  "candidate": "74d37978091007eae783134d530e689064404fd1",
+  "base": "a95d1d5afad1bfd61998794fa78fb0db100d690a",
+  "merge_tree": "1469367a0ad7ba14a63d2a4627ab50ee25df6e57",
+  "probe_commit": "06bf0855b49d6a448b70987016489a65e546aff3",
+  "worktree": "/home/edward/mygithub/rhwp-worktrees/review-next10-current-base-compat",
+  "candidate_src_tree": "e66b2bf4d66655b52e6f2db925ff058dbb181941",
+  "probe_src_tree": "0b4c9740b505f8b5dff4b791f454a01885837206"
+}

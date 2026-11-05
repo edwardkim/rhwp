@@ -1,0 +1,22 @@
+{
+  "source_runtime": "5c540c6c3eb197dc31dce30f576bcd342fbdd58a",
+  "test_command": [
+    "npm",
+    "test"
+  ],
+  "tests": 2722,
+  "passed": 2720,
+  "failed": 0,
+  "skipped": 2,
+  "build_command": [
+    "npm",
+    "run",
+    "build"
+  ],
+  "build_exit": 0,
+  "typescript_build": true,
+  "actual_canvaskit_decoration_surface_ops": 32,
+  "bottom_geometry_ops": 16,
+  "unsupported_ops": 0,
+  "scope": "runtime unchanged in Studio since these commands; final Rust setter correction revalidation pending"
+}

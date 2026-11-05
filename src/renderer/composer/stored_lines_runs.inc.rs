@@ -775,11 +775,13 @@ pub(crate) fn composed_tac_line_assignment_with_storage<S: crate::storage::Stora
     // 보이는 글자 없이 제어 슬롯만 완전히 보존된 문단도 서로 다른 저장 줄이
     // 같은 논리 문자 위치를 갖는다. 완전한 원시 슬롯을 증명할 수 있을 때만
     // 해당 슬롯으로 소유 줄을 구한다.
-    let empty_control_stream = !computed_rows
-        && para.text.is_empty()
+    let empty_control_stream = para.text.is_empty()
         && para.char_offsets.is_empty()
-        && !para.stored_text_partition_is_dirty()
-        && !para.cell_format_vpos_dirty
+        && if computed_rows {
+            para.line_segs.windows(2).all(|rows| rows[0].text_start < rows[1].text_start)
+        } else {
+            !para.stored_text_partition_is_dirty() && !para.cell_format_vpos_dirty
+        }
         && !comp.tac_controls.is_empty()
         && comp
             .tac_controls

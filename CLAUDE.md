@@ -45,6 +45,10 @@
 
 ## PR 제출 전 검증과 Draft 제한
 
+CI workflow·action·CI 실행/재사용 판정 정책 변경 PR의 후속 기록은 **옵션 2**로 처리한다.
+원 PR의 Full CI·검토·승인·병합 뒤 review·오늘할일을 별도 기록 PR로 반영하며, 원 PR에 문서-only
+trailing commit을 추가해 전체 CI를 반복하지 않는다. [정본 절차](mydocs/manual/pr_review/post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)를 따른다.
+
 새 PR 준비·생성 전에는 본인 계정의 열린 PR을 조회한다. **이미 리뷰어가 지정된 PR은 우선
 처리 대상에서 제외**하고 임의로 갱신하지 않는다. 나머지 기존 PR의 lint를 포함한 모든
 CI 실패·오류부터 해결한다.
@@ -58,6 +62,10 @@ PR CI나 Draft로 우회하지 않는다. Draft는 특별한 조기 논의·WIP 
 승인한 경우만 허용하고 목적·미완료 항목·완료 계획을 본문에 적는다. 번호 확보·CI 대기는 사유가 아니다.
 Docker는 필수 설치 조건이 아니며 [환경별 fresh WASM 경로](mydocs/manual/pr_review/local_validation.md#환경에-따른-fresh-wasm-검증)의
 Docker 또는 호스트 빌드를 선택해 동일한 필수 검증을 완료한다.
+
+조판에 영향을 주는 변경이 포함된 PR은 제출 전 최종 head에서 행정업무운영 편람 HWPX Native
+383쪽 `--handbook-gate`를 실행해 통과한다. 일반 Visual Sweep에서는 자동 실행하지 않으며,
+실행과 판정은 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따른다.
 
 ## 리뷰어 지정 후 추가 커밋 제한
 
@@ -287,6 +295,9 @@ SHA-256·이전/보존 경로·활성 유지/제거 목록·복원 조건을 기
   reviewer가 실제 결과를 열어 볼 수 있게 대표 review·overlay PNG를 PR 본문에 Markdown 이미지로
   표시한다. 경로·임시 output·review 문서 링크만으로 대신하지 않고, PR head repository와 정확한
   head SHA로 고정한 raw URL을 사용한다. code head가 바뀌면 캡처와 본문 URL도 갱신한다.
+  원 PR의 시각 review·comment는 첫 게시부터 그 PR이 주장한 문서·페이지별 review·overlay 이미지를
+  정확한 commit SHA의 raw URL로 표시한다. 게시 전 입력·페이지·이미지 응답·해시를 대조하고 게시 후
+  본문과 표시를 재확인한다. 증적이 없으면 준비할 때까지 게시를 보류한다. [comment 정본](mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 따른다.
   코드 변경 뒤에는 영향 페이지를 다시 캡처하며, CI 녹색·자동 픽셀 점수만으로 대체하지 않는다.
   `scripts/visual_sweep.py`의 색상 경계 보정 전2px 내용 실루엣 일치율이 대표 review PNG 중 하나라도
   90% 미만이거나 측정 불가이면 새 PR을 만들지 않고 이미 열린 PR은 승인·통합하지 않는다. 기여자가 자기 branch에서

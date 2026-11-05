@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-18
+last_verified: 2026-11-04
 ---
 
 # Collaborator 매개 외부 PR 처리
@@ -20,6 +20,10 @@ last_verified: 2026-10-18
 
 maintainer_can_modify가 false이면 이 경로를 쓰지 않는다. maintainer 일반 경로 또는 작업지시자가 승인한
 별도 PR 경로로 전환한다.
+
+원 PR에 CI workflow·action·CI 실행/재사용 판정 정책 변경이 포함된 경우에도
+[옵션 2](post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)로 전환한다.
+원 PR의 최신 Full CI와 실제 검토·승인 뒤 병합하고, 후속 기록만 별도 PR로 반영한다.
 
 ### 9.1.1 기본 작업공간: `devel` 기반 체리픽 통합 검토
 
@@ -140,6 +144,9 @@ mydocs/orders/YYYYMMDD.md                  # 갱신이 필요한 경우
 
 오늘할일이 필요하면 merge 후 별도 PR로 늦게 만들지 않는다. review 문서와 함께 contributor PR head에
 포함하고, 뒤에 추가한 review-only commit은 9.3.2의 fast-pass 조건으로 판정한다.
+
+단, 위의 CI 변경 PR은 옵션 2 예외다. 원 PR에 기록을 추가해 Full CI를 반복하지 않고,
+병합 완료 뒤 별도 후속 기록 PR에 review와 오늘할일을 함께 반영한다.
 
 local CI 검증이 완료된 경우 review 문서와 오늘할일은 실행 결과를 과거형으로 기록한다. 아직 실행하지
 않은 GitHub Actions·작업지시자 승인·merge만 미래 조건으로 남기며, 완료 검증을 "실행할 예정"으로

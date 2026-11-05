@@ -1,0 +1,46 @@
+{
+  "duration": {
+    "run_id": 41941963866,
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/41941963866",
+    "conclusion": "success",
+    "collection": {
+      "ready": true,
+      "reason": "successful-pr-worker-measurements",
+      "pullNumber": 8609,
+      "finalHeadRunId": 41941236661,
+      "finalHeadRunAttempt": 1,
+      "finalHeadSha": "1557f70b03b92f0af88fb0e6f4ef280df4b8683a",
+      "reviewOnlyTail": true,
+      "sourceRunId": 41937077126,
+      "latestRunAttempt": 1,
+      "measurementAttempts": {
+        "b": 1,
+        "c": 1,
+        "d": 1,
+        "e": 1
+      },
+      "testedMergeSha": "04a4c1f0e222628eb2eab748a8d1d82ed8a55704",
+      "sourceHeadSha": "da0074f41ee01d7fa79e6bd4ffd5cadf7c69665d",
+      "artifactIds": [
+        13375776724,
+        13376216331,
+        13374589681,
+        13374774313
+      ]
+    },
+    "publication": {
+      "published": true,
+      "reason": "published",
+      "previousSha": "87699da7ef32fffe1dae581a5b3d32075a002c3d",
+      "commitSha": "8bcf7906f2d923d19e8b65621dbb307ee7c0f117",
+      "blobSha": "cab4d5513748c69aa3cfab9232f970c61bee0b1c",
+      "sourceMergeSha": "e9d4a23be4523a97c29ce6f5e407aba6c4cfb26c"
+    }
+  },
+  "linked_issue_workflow": {
+    "run_id": 41941963864,
+    "conclusion": "success",
+    "closed_issue_ids": []
+  },
+  "verification_ci_started_after_merge": false
+}

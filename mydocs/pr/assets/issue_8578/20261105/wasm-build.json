@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "source_sha": "2c0432cc0646cf2ad0b277b50e4c685ab7092a80",
+  "profile": "Mac locked wrapper web no-opt local alternative; not Docker optimized",
+  "artifacts": {
+    "rhwp.js": {
+      "sha256": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+      "bytes": 528282
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "d98be3e9a846e33ebc43a792070afe47b0ad742774c17652fdc56abaaaa48cde",
+      "bytes": 30570073
+    }
+  },
+  "cache_repair": "source bytes unchanged; touched own src/lib.rs mtime to force rebuild; actual group child1 API passed",
+  "actual_api_evidence": "/Users/tsjang/rhwp/output/issue8578/rebase-6e1de406/fresh-wasm-owner-api.json"
+}

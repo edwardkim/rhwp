@@ -1,0 +1,1462 @@
+{
+  "base": "22947f6a90c998e95fa51238d5b907a0ebd37162",
+  "documents": [
+    {
+      "key": "rowspan_staggered_heights",
+      "compat": 2022,
+      "prs": [
+        8347
+      ],
+      "hwp_sha256": "a0b4e465ba880cd0be611f84a3db69fa38b64b31cfc9a807f9a2fc86a998228d",
+      "pdf_sha256": "a4c213bb53b86411340b432e8d347c5a6386807ceb606f001c043288bb115755",
+      "hwp": "tests/fixtures/rowspan_staggered_heights/equal-height-partial-block.hwp",
+      "pdf": "pdf/rowspan_staggered_heights/equal-height-partial-block-hancom-mac-12.30.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/rowspan_staggered_heights.tsv",
+          "sha256": "3b94760dfccccc2d9149643c4f40c63d7b451de551478a2b15c8f3e2a5c7d962",
+          "pages": 7,
+          "min": 41.81,
+          "below90": [
+            "2",
+            "3"
+          ],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/rowspan_staggered_heights.tsv",
+          "sha256": "7009667681de6afa6d3dcd48ab697379c3f7202fa7e5fe562017f923ed598c0a",
+          "pages": 7,
+          "min": 41.72,
+          "below90": [
+            "2",
+            "3"
+          ],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/rowspan_staggered_heights.tsv",
+          "sha256": "009f05b029ba0a82e3bdcea6af23be9cc89767dc6109878071c384222dd99120",
+          "pages": 7,
+          "min": 99.32,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/rowspan_staggered_heights.tsv",
+          "sha256": "46b381116916052e678e5ea1cfe131486a3834277e79af00e2053d9553c7d8af",
+          "pages": 7,
+          "min": 99.98,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "section_start_page_number",
+      "compat": 2022,
+      "prs": [
+        8358
+      ],
+      "hwp_sha256": "905fc3d65af8c4a8fbb7b3fbb4262ce9384adfd7ac94da6a56f77c4abd1a61cc",
+      "pdf_sha256": "e56546018aa8ce374b378641ea90393734244c0c48f25c73baaaa7d7a868edbc",
+      "hwp": "tests/fixtures/section_start_page_number/start-number-10.hwp",
+      "pdf": "pdf/section_start_page_number/start-number-10-hancom-mac-12.30.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/section_start_page_number.tsv",
+          "sha256": "2a29b9474b4957052350c37a0b533ae7abea07d6a897f600939c73ae4d682dd0",
+          "pages": 4,
+          "min": 84.62,
+          "below90": [
+            "3"
+          ],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/section_start_page_number.tsv",
+          "sha256": "38570b1e21e1a0dcc82567db89d59d3ab84f4fcfbfd8be28787f202569fc0614",
+          "pages": 4,
+          "min": 87.5,
+          "below90": [
+            "2",
+            "3"
+          ],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/section_start_page_number.tsv",
+          "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+          "pages": 4,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/section_start_page_number.tsv",
+          "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+          "pages": 4,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "section_default_tab_spacing",
+      "compat": 2022,
+      "prs": [
+        8359
+      ],
+      "hwp_sha256": "d93a381f2b55796700a569f4e344742ee57e573a0daa431252e7c89473a8d2c4",
+      "pdf_sha256": "f9ff800e595fafbed408b6c79c2291ad61b67de8a5f599bb7f9e6c3fc7fa1236",
+      "hwp": "tests/fixtures/section_default_tab_spacing/tab-spacing-16000.hwp",
+      "pdf": "pdf/section_default_tab_spacing/tab-spacing-16000-hancom-mac-12.30.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/section_default_tab_spacing.tsv",
+          "sha256": "3048f3b3a32eb3763da28bcec7ef12ef6d8b68862d788e018f9ef8d09a5f4bfc",
+          "pages": 1,
+          "min": 90.72,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/section_default_tab_spacing.tsv",
+          "sha256": "343297c96ca33aa95079ac1151ce7259a2ac8ff8c5b249e8d427a599362009b7",
+          "pages": 1,
+          "min": 90.84,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/section_default_tab_spacing.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/section_default_tab_spacing.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "cell_diagonal_shapes",
+      "compat": 2022,
+      "prs": [
+        8363
+      ],
+      "hwp_sha256": "cbe355d679ca96ee7d68306393fdce54342a73e3b75707a827c5dcab78be813e",
+      "pdf_sha256": "a51db66c28e12a97f71de2f17dbc7e7acaed894ac1b25bb8743272cfb9185a98",
+      "hwp": "tests/fixtures/cell_diagonal_shapes/diagonal-shape-codes.hwp",
+      "pdf": "pdf/cell_diagonal_shapes/diagonal-shape-codes-hancom-mac-12.30.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/cell_diagonal_shapes.tsv",
+          "sha256": "0e6a0f3bafe6b1558a86f9093663727e2879731e5d4f52d3440d0af035b421fb",
+          "pages": 1,
+          "min": 97.57,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/cell_diagonal_shapes.tsv",
+          "sha256": "7bd5e7560bb5d1e9d9409a6b2434a603c154164f5e23bc6cca821c851fa2b4dc",
+          "pages": 1,
+          "min": 97.55,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/cell_diagonal_shapes.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/cell_diagonal_shapes.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "border_line_types",
+      "compat": 2022,
+      "prs": [
+        8366
+      ],
+      "hwp_sha256": "49566c073210994953b02a0d1e178636ba038c3e7e432f436266f9762407052f",
+      "pdf_sha256": "110ef964ad956d961093dadbf725d93c62492ac1feee78f24daae5fb407a02bf",
+      "hwp": "tests/fixtures/border_line_types/borders.hwp",
+      "pdf": "pdf/border_line_types/borders-hancom-mac-12.30.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/border_line_types.tsv",
+          "sha256": "5826d392fbb3a3bd2c0d539eb2b9c776002532b2840f2698506bcbcdf35d352c",
+          "pages": 1,
+          "min": 71.47,
+          "below90": [
+            "1"
+          ],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/border_line_types.tsv",
+          "sha256": "fafe5a309b0e12632e9d631631d5ac90dad15f96c5d75162e3b578e4d79495a1",
+          "pages": 1,
+          "min": 72.29,
+          "below90": [
+            "1"
+          ],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/border_line_types.tsv",
+          "sha256": "49f46b005c2afbcfa5597172ea4c1c479972dc3e19173b4fb4d969536661582e",
+          "pages": 1,
+          "min": 95.61,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/border_line_types.tsv",
+          "sha256": "f2bae3396fefb40dbfeb51a24df42666040d8c7c7f296a7ee52fa08f06578015",
+          "pages": 1,
+          "min": 96.79,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "header_footer_numbering",
+      "compat": 2022,
+      "prs": [
+        8367
+      ],
+      "hwp_sha256": "88f02207f746bf1888d965afd32ca1123e04e3d6e12becb877bbf50e1a79816b",
+      "pdf_sha256": "2a6af0c084cc364cbd8ad87217a8079acef3c96b9c73eb9fe624a112991127b9",
+      "hwp": "tests/fixtures/header_footer_numbering/header-numbering.hwp",
+      "pdf": "pdf/header_footer_numbering/header-numbering-hancom-mac-12.30.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/header_footer_numbering.tsv",
+          "sha256": "1e387f6a5533ccab705322915d3bfdfcd657c44cd7580557a3dc8f2293221199",
+          "pages": 1,
+          "min": 86.38,
+          "below90": [
+            "1"
+          ],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/header_footer_numbering.tsv",
+          "sha256": "a338f314d03f9ea03acadf16540660b515852b472acb58b9a65cf97eebee9ed5",
+          "pages": 1,
+          "min": 86.29,
+          "below90": [
+            "1"
+          ],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/header_footer_numbering.tsv",
+          "sha256": "4423297af9175ec79655b30e186328b8c04334a9a620497b344307307a2bb983",
+          "pages": 1,
+          "min": 94.92,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/header_footer_numbering.tsv",
+          "sha256": "8c665b341392d15e48d6c1b07ad1ce5007e394a9be27355960b5033eb4a72319",
+          "pages": 1,
+          "min": 94.81,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-body-emphasis-36pt",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "a386956956b17c7b288ae2f637450fd7ffec248cb4f5960c20717fa8e76eeb85",
+      "pdf_sha256": "01dd10caa0d00464799e0643f5bcbc76c5b609eec22e533d72e7b189616b3ea0",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/body-emphasis-36pt.hwp",
+      "pdf": "pdf/raised-decoration-hancom/body-emphasis-36pt-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-body-emphasis-36pt.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-body-emphasis-36pt.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-body-emphasis-36pt.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-body-emphasis-36pt.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-body-top-36pt",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "2964eacbf6143a7ef9767225f9b334e7d8372786d598f9b9de77c7c84cc5b248",
+      "pdf_sha256": "418f121161d31be875783fd62795f291e5add074ec9ce5d88ff3cf6e274785ec",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/body-top-36pt.hwp",
+      "pdf": "pdf/raised-decoration-hancom/body-top-36pt-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-body-top-36pt.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-body-top-36pt.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-body-top-36pt.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-body-top-36pt.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-cell-top-10-36pt",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "c5e77e2d42a30b5b06c5d351f9be051d4f24624d8af174d7e780bb156431448e",
+      "pdf_sha256": "9c6292c9db84a3d26e65a8bdb1de357dfb65ba193d5b61add9e082e1422a7a9b",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/cell-top-10-36pt.hwp",
+      "pdf": "pdf/raised-decoration-hancom/cell-top-10-36pt-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-cell-top-10-36pt.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-cell-top-10-36pt.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-cell-top-10-36pt.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-cell-top-10-36pt.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-emphasis-probe-1",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "99685bf70ae34c540cc2c225d3b0086f34754143bcaf0edf8b98e9f43eeb5378",
+      "pdf_sha256": "4b93ceb6e431f7da5d9c268ab2ae718bf3cfe95cdc0e3aed55c42bf45d90981f",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-1.hwp",
+      "pdf": "pdf/raised-decoration-hancom/emphasis-probe-1-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-emphasis-probe-1.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-emphasis-probe-1.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-emphasis-probe-1.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-emphasis-probe-1.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-emphasis-probe-2",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "725958e63073d9faf3d3c60d72eced19d489e869007a4a18e982e249ed2383dc",
+      "pdf_sha256": "891ac87e371ec84b8808a15c6e5e12a1e454c3882081c4926229972e75654f1e",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-2.hwp",
+      "pdf": "pdf/raised-decoration-hancom/emphasis-probe-2-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-emphasis-probe-2.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-emphasis-probe-2.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-emphasis-probe-2.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-emphasis-probe-2.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-emphasis-probe-3",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "682ac2c7e45c45c608b392f9956835098537b5fbb3e19a5a5fafe2edfa757690",
+      "pdf_sha256": "394a638937221705249edd457855007d81508419dd48939b2e187ed60feff8a1",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-3.hwp",
+      "pdf": "pdf/raised-decoration-hancom/emphasis-probe-3-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-emphasis-probe-3.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-emphasis-probe-3.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-emphasis-probe-3.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-emphasis-probe-3.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-emphasis-probe-4",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "00e8a986d8c2a3349c629343a47fa81d5b869ac019b71cd9cb81d8e74ea0aa6d",
+      "pdf_sha256": "9bee2226c21834489066662f8070436723afe1276d133b7d8d9c5dc30838408d",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-4.hwp",
+      "pdf": "pdf/raised-decoration-hancom/emphasis-probe-4-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-emphasis-probe-4.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-emphasis-probe-4.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-emphasis-probe-4.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-emphasis-probe-4.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-emphasis-probe-5",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "43329ca0ab4ea7e09fbbaa43805a130f07958c802dd399b53d78bcf09a4ae1c1",
+      "pdf_sha256": "f03f1e88763792b1073535b5abcdfc773079daefb4a79824281891f8af882b0a",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-5.hwp",
+      "pdf": "pdf/raised-decoration-hancom/emphasis-probe-5-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-emphasis-probe-5.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-emphasis-probe-5.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-emphasis-probe-5.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-emphasis-probe-5.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-emphasis-probe-6",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "de70385adaac4ec5aefe3eed25dd9f6fc914be799844698748cd79914c4d6be4",
+      "pdf_sha256": "a9377ed2cfdfa0901ef3b18054fd3662fb9d8d59e17940a3790f06163b1ad159",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-6.hwp",
+      "pdf": "pdf/raised-decoration-hancom/emphasis-probe-6-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-emphasis-probe-6.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-emphasis-probe-6.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-emphasis-probe-6.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-emphasis-probe-6.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-top-probe-shape-0",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "63b12b22e5057f636d86440de2f11d3476ae7c2ef1de0ec58a8bd796152ca7a5",
+      "pdf_sha256": "d069300bbf7da2899e63023bae5354abc94b6edefb1be92c34ae74d18c2b0a94",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-0.hwp",
+      "pdf": "pdf/raised-decoration-hancom/top-probe-shape-0-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-top-probe-shape-0.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-top-probe-shape-0.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-top-probe-shape-0.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-top-probe-shape-0.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-top-probe-shape-1",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "b55cec7fb6974a2ee2592baf681e8be6b33ff6162809d373a3e3fde0934eb5c3",
+      "pdf_sha256": "18f80bad905b6108c09916ed6ca197e5370d751c09a464cd6c3bad1c64822b30",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-1.hwp",
+      "pdf": "pdf/raised-decoration-hancom/top-probe-shape-1-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-top-probe-shape-1.tsv",
+          "sha256": "d7da3df20a66da1fb62329e64358ee82484dd3609028840d18a75bb48d3153f5",
+          "pages": 1,
+          "min": 98.83,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-top-probe-shape-1.tsv",
+          "sha256": "38d445ccf1f476aedf3d1f8d4f67add429dd6606159685315c796e11ceafeced",
+          "pages": 1,
+          "min": 98.84,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-top-probe-shape-1.tsv",
+          "sha256": "d7da3df20a66da1fb62329e64358ee82484dd3609028840d18a75bb48d3153f5",
+          "pages": 1,
+          "min": 98.83,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-top-probe-shape-1.tsv",
+          "sha256": "38d445ccf1f476aedf3d1f8d4f67add429dd6606159685315c796e11ceafeced",
+          "pages": 1,
+          "min": 98.84,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-top-probe-shape-10",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "7de89153c2a9dc90acf8eae2767f0cd9fde6445fef63c42a655efb764a88d06c",
+      "pdf_sha256": "4652346c5db07fab1564a90138ae69b03c3e12af0c3153d2f4054ec9ebadfa85",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-10.hwp",
+      "pdf": "pdf/raised-decoration-hancom/top-probe-shape-10-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-top-probe-shape-10.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-top-probe-shape-10.tsv",
+          "sha256": "62de0ad4dae75a3b307509daa08460448271cf2e2e8d49d02255f40c9532e73c",
+          "pages": 1,
+          "min": 92.52,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-top-probe-shape-10.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-top-probe-shape-10.tsv",
+          "sha256": "62de0ad4dae75a3b307509daa08460448271cf2e2e8d49d02255f40c9532e73c",
+          "pages": 1,
+          "min": 92.52,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-top-probe-shape-2",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "b9c4583a8325367624d8ebd8818dc2ad9efc6d278feee5e35fc751ad94021223",
+      "pdf_sha256": "0742ea0f7e9164f0b59e02648de8855db048214f629d1303eda0d989f4407e5d",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-2.hwp",
+      "pdf": "pdf/raised-decoration-hancom/top-probe-shape-2-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-top-probe-shape-2.tsv",
+          "sha256": "b15743790b4f70ce014f980d01a55d1d4d6beea19dfcf3580bf63bf8df4989bb",
+          "pages": 1,
+          "min": 99.06,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-top-probe-shape-2.tsv",
+          "sha256": "b5a7740a332eb09b0c48ae4329902b84fa32a13f1d45b870af637ae5e7347ade",
+          "pages": 1,
+          "min": 99.07,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-top-probe-shape-2.tsv",
+          "sha256": "b15743790b4f70ce014f980d01a55d1d4d6beea19dfcf3580bf63bf8df4989bb",
+          "pages": 1,
+          "min": 99.06,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-top-probe-shape-2.tsv",
+          "sha256": "b5a7740a332eb09b0c48ae4329902b84fa32a13f1d45b870af637ae5e7347ade",
+          "pages": 1,
+          "min": 99.07,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-top-probe-shape-3",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "966c229e3a1e0686bff63bcf5f6699450f168eba0229c98802235bf93371b5d5",
+      "pdf_sha256": "829148d46d65fa7cf524034b87781ccfef61a5950a8bada859c749ab71544951",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-3.hwp",
+      "pdf": "pdf/raised-decoration-hancom/top-probe-shape-3-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-top-probe-shape-3.tsv",
+          "sha256": "188c6f8c8e4cce2e063c07a5c38b567334f998ac810d743da2bfb7d99033b555",
+          "pages": 1,
+          "min": 99.46,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-top-probe-shape-3.tsv",
+          "sha256": "98718d31113a0c0da82612cb7554aeefd5df01696a09a557d60f34aae1f2e5fe",
+          "pages": 1,
+          "min": 99.47,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-top-probe-shape-3.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-top-probe-shape-3.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-top-probe-shape-4",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "d29b4ef3d8f5210258e20a45639115bd7d82c66bc45a13e1189010bfb654d7ef",
+      "pdf_sha256": "1fac76ad1f2dcd2076882850c77006eff15a12fa907e4259e10c4ed19611bb41",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-4.hwp",
+      "pdf": "pdf/raised-decoration-hancom/top-probe-shape-4-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-top-probe-shape-4.tsv",
+          "sha256": "a071a98df42a5c130283023d15bedbe07564f648f60ec1e0b51be658b246b220",
+          "pages": 1,
+          "min": 99.5,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-top-probe-shape-4.tsv",
+          "sha256": "4302931dc6e7989e633b0434b41bb364e118fce079afe31e4aa3bd46d8b798e1",
+          "pages": 1,
+          "min": 99.51,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-top-probe-shape-4.tsv",
+          "sha256": "a071a98df42a5c130283023d15bedbe07564f648f60ec1e0b51be658b246b220",
+          "pages": 1,
+          "min": 99.5,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-top-probe-shape-4.tsv",
+          "sha256": "4302931dc6e7989e633b0434b41bb364e118fce079afe31e4aa3bd46d8b798e1",
+          "pages": 1,
+          "min": 99.51,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-top-probe-shape-5",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "deade69da52406b917d05a766744df63c49dcd187e783963d64afbfdc926325e",
+      "pdf_sha256": "f9a1d4e0f2071730269f1f9360ee31d5c13b3d79591761b398581a7c5029da25",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-5.hwp",
+      "pdf": "pdf/raised-decoration-hancom/top-probe-shape-5-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-top-probe-shape-5.tsv",
+          "sha256": "87a9caaa6efad0a79d45599b544359dd28b63a86206cd5ebcba2bda5dfb23a3c",
+          "pages": 1,
+          "min": 99.64,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-top-probe-shape-5.tsv",
+          "sha256": "87a9caaa6efad0a79d45599b544359dd28b63a86206cd5ebcba2bda5dfb23a3c",
+          "pages": 1,
+          "min": 99.64,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-top-probe-shape-5.tsv",
+          "sha256": "87a9caaa6efad0a79d45599b544359dd28b63a86206cd5ebcba2bda5dfb23a3c",
+          "pages": 1,
+          "min": 99.64,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-top-probe-shape-5.tsv",
+          "sha256": "87a9caaa6efad0a79d45599b544359dd28b63a86206cd5ebcba2bda5dfb23a3c",
+          "pages": 1,
+          "min": 99.64,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-top-probe-shape-6",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "647f25a29d8650a939dbd78534c393570cef915ab3df219311f82c5b6f00750c",
+      "pdf_sha256": "6da0f1e55cb39cf7c334adba69b43e67dc9d8f6167c10b56f5d7b4788718a460",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-6.hwp",
+      "pdf": "pdf/raised-decoration-hancom/top-probe-shape-6-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-top-probe-shape-6.tsv",
+          "sha256": "11a431ec43ecfb6b0da1f009a4ac027d06231984fd17ca4ab098f7443fd4f8f7",
+          "pages": 1,
+          "min": 99.52,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-top-probe-shape-6.tsv",
+          "sha256": "4302931dc6e7989e633b0434b41bb364e118fce079afe31e4aa3bd46d8b798e1",
+          "pages": 1,
+          "min": 99.51,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-top-probe-shape-6.tsv",
+          "sha256": "11a431ec43ecfb6b0da1f009a4ac027d06231984fd17ca4ab098f7443fd4f8f7",
+          "pages": 1,
+          "min": 99.52,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-top-probe-shape-6.tsv",
+          "sha256": "4302931dc6e7989e633b0434b41bb364e118fce079afe31e4aa3bd46d8b798e1",
+          "pages": 1,
+          "min": 99.51,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-top-probe-shape-7",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "95dadeb501d80d158d4514c6990a9d17a25b5841e328cb42ba022f735883e27b",
+      "pdf_sha256": "97a966259c1da9034c4967aae9e0abe79339b76034a96570c67c2440c1122a0e",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-7.hwp",
+      "pdf": "pdf/raised-decoration-hancom/top-probe-shape-7-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-top-probe-shape-7.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-top-probe-shape-7.tsv",
+          "sha256": "b07a4c82b4fa67d174cd253cdb1b18013278c45dbd05197946020f12bf6d551d",
+          "pages": 1,
+          "min": 98.33,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-top-probe-shape-7.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-top-probe-shape-7.tsv",
+          "sha256": "b07a4c82b4fa67d174cd253cdb1b18013278c45dbd05197946020f12bf6d551d",
+          "pages": 1,
+          "min": 98.33,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-top-probe-shape-8",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "1dfcb9ca9d581800a1618b2a389321151a1aa96cc0ea46fe24358c96b5fbd544",
+      "pdf_sha256": "095dc7fea0d5ab769d37d8c9d6fb528299cbecfeac7127f710479fbb5a69f2bc",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-8.hwp",
+      "pdf": "pdf/raised-decoration-hancom/top-probe-shape-8-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-top-probe-shape-8.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-top-probe-shape-8.tsv",
+          "sha256": "dd3ba1e3f2eb0c19e8f42e1e80091424d230fd509d7fc0eccddcb56b05e89b56",
+          "pages": 1,
+          "min": 90.63,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-top-probe-shape-8.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-top-probe-shape-8.tsv",
+          "sha256": "dd3ba1e3f2eb0c19e8f42e1e80091424d230fd509d7fc0eccddcb56b05e89b56",
+          "pages": 1,
+          "min": 90.63,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "decoration-top-probe-shape-9",
+      "compat": 2024,
+      "prs": [
+        8349
+      ],
+      "hwp_sha256": "12dbe1066237eec3b9cf33d539c0ed7bf70729602196509b5730f904005c6051",
+      "pdf_sha256": "80096764f575e3e2292cee06c7c3595be72a00d08cffd47843569ef3367d6c22",
+      "hwp": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-9.hwp",
+      "pdf": "pdf/raised-decoration-hancom/top-probe-shape-9-hancom-print.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/decoration-top-probe-shape-9.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/decoration-top-probe-shape-9.tsv",
+          "sha256": "ee0626c47e96c3addbb5e977c7469f703c9884e04046dd85d053552ac40ca92a",
+          "pages": 1,
+          "min": 93.33,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/decoration-top-probe-shape-9.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "pages": 1,
+          "min": 100.0,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/decoration-top-probe-shape-9.tsv",
+          "sha256": "ee0626c47e96c3addbb5e977c7469f703c9884e04046dd85d053552ac40ca92a",
+          "pages": 1,
+          "min": 93.33,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "header-image-refs",
+      "compat": 2022,
+      "prs": [
+        8326
+      ],
+      "hwp_sha256": "a05d313f34852e07305d8bf16223303d9cc00c3d9bdc0b5258f96dfcb347a43d",
+      "pdf_sha256": "61c28f0265bde456dea299a6793e00cd731fabe78cb1e258bb9ca5397d233495",
+      "hwp": "samples/issue6929/148776468_search_ad_terms_press_release.hwp",
+      "pdf": "pdf/issue6929/148776468_search_ad_terms_press_release-hwp-2020.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/header-image-refs.tsv",
+          "sha256": "a1e92a85c195edd9f910b6b60ebe90b01c81c7e146ba56ca80e28756ffc927b6",
+          "pages": 17,
+          "min": 99.62,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/header-image-refs.tsv",
+          "sha256": "8a7b795cdd78099fa965fa778b56a4868e22a92788b868ce73beb54f321ec9e2",
+          "pages": 17,
+          "min": 99.62,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/header-image-refs.tsv",
+          "sha256": "a1e92a85c195edd9f910b6b60ebe90b01c81c7e146ba56ca80e28756ffc927b6",
+          "pages": 17,
+          "min": 99.62,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/header-image-refs.tsv",
+          "sha256": "8a7b795cdd78099fa965fa778b56a4868e22a92788b868ce73beb54f321ec9e2",
+          "pages": 17,
+          "min": 99.62,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "image-bullet-newyear",
+      "compat": 2022,
+      "prs": [
+        8326
+      ],
+      "hwp_sha256": "1be2736df6b21687f5c1627bac307cc689171928f6ceb0a235af0bc727eb6372",
+      "pdf_sha256": "44b4e5f7517c86034b800ed307fcbf09dcf7242d342fd5e14ddfca9d22537ec0",
+      "hwp": "samples/basic/NewYear_s_Day.hwp",
+      "pdf": "pdf/basic/NewYear_s_Day-hwp-2020.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/native/image-bullet-newyear.tsv",
+          "sha256": "c8624c3126896d9920db2bd629f6ab534ad563bd26af4d00aa5ef9fef29ea788",
+          "pages": 3,
+          "min": 98.43,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/base/wasm/image-bullet-newyear.tsv",
+          "sha256": "52b6dfd7825d4dc431dd2dcfb12591243376244e9e78e1b9c868ce7176117448",
+          "pages": 3,
+          "min": 98.43,
+          "below90": [],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/native/image-bullet-newyear.tsv",
+          "sha256": "c8624c3126896d9920db2bd629f6ab534ad563bd26af4d00aa5ef9fef29ea788",
+          "pages": 3,
+          "min": 98.43,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/validation/candidate/wasm/image-bullet-newyear.tsv",
+          "sha256": "52b6dfd7825d4dc431dd2dcfb12591243376244e9e78e1b9c868ce7176117448",
+          "pages": 3,
+          "min": 98.43,
+          "below90": [],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "visual-font-programs-final.json"
+    },
+    {
+      "key": "jpeg-sandbox",
+      "compat": 2022,
+      "prs": [
+        8331
+      ],
+      "hwp_sha256": "af198ad2dff0c1ad0458d7147ca8fcf42b45b0d2e5ceb2e10353debc8250a5b9",
+      "pdf_sha256": "54139a4760f911f57861f33920f5755e07eee85c1cf2cfedfd6c272e25a5c3e9",
+      "hwp": "mydocs/pr/assets/issue_8236/regulatory_sandbox/156492236-regulatory-sandbox-full.hwpx",
+      "pdf": "mydocs/pr/assets/issue_8236/regulatory_sandbox/reference-full-2020.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/base-native-jpeg-sandbox.tsv",
+          "sha256": "296b89f8bd44c2591ce443040a2767815ed95e73b497f6d2012fbb2e4ebe851f",
+          "pages": 17,
+          "min": 75.22,
+          "below90": [
+            "7",
+            "15"
+          ],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/base-wasm-jpeg-sandbox.tsv",
+          "sha256": "67e4c9aaa67dab2db8fd08a8b32461ec32f78ad0e81799649156f3fcd751a5c7",
+          "pages": 17,
+          "min": 75.47,
+          "below90": [
+            "7",
+            "15"
+          ],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/candidate-native-jpeg-sandbox.tsv",
+          "sha256": "296b89f8bd44c2591ce443040a2767815ed95e73b497f6d2012fbb2e4ebe851f",
+          "pages": 17,
+          "min": 75.22,
+          "below90": [
+            "7",
+            "15"
+          ],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/candidate-wasm-jpeg-sandbox.tsv",
+          "sha256": "67e4c9aaa67dab2db8fd08a8b32461ec32f78ad0e81799649156f3fcd751a5c7",
+          "pages": 17,
+          "min": 75.47,
+          "below90": [
+            "7",
+            "15"
+          ],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "performance-fonts-complete.json"
+    },
+    {
+      "key": "equation-flow",
+      "compat": 2024,
+      "prs": [
+        8332
+      ],
+      "hwp_sha256": "1253106b8b01ee8f305598047a4c0e62bd6f60e042bebe477cf99c43fe6f0b94",
+      "pdf_sha256": "676ff523287067a69c860341d6528a2ab4e4b36953cc83f87be55ac90f79c20d",
+      "hwp": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwpx",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2-hwpx-2024.pdf",
+      "runs": {
+        "base-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/base-native-equation-flow.tsv",
+          "sha256": "2e8c53c02cbde4e3741642cda3c34266809870ea3feafe686e26f79c025db609",
+          "pages": 22,
+          "min": 42.22,
+          "below90": [
+            "8",
+            "11",
+            "12",
+            "13",
+            "18",
+            "19",
+            "20",
+            "21"
+          ],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "base-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/base-wasm-equation-flow.tsv",
+          "sha256": "19e919199895ec178943ef9a241bdef4ce1df0244bf94150326ffa30f4e39da6",
+          "pages": 22,
+          "min": 42.2,
+          "below90": [
+            "8",
+            "11",
+            "12",
+            "13",
+            "18",
+            "19",
+            "20",
+            "21"
+          ],
+          "runtime_source": "22947f6a90c998e95fa51238d5b907a0ebd37162"
+        },
+        "candidate-native": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/candidate-native-equation-flow.tsv",
+          "sha256": "2e8c53c02cbde4e3741642cda3c34266809870ea3feafe686e26f79c025db609",
+          "pages": 22,
+          "min": 42.22,
+          "below90": [
+            "8",
+            "11",
+            "12",
+            "13",
+            "18",
+            "19",
+            "20",
+            "21"
+          ],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        },
+        "candidate-wasm": {
+          "tsv": "mydocs/pr/assets/semanticist21-20261105/candidate-wasm-equation-flow.tsv",
+          "sha256": "19e919199895ec178943ef9a241bdef4ce1df0244bf94150326ffa30f4e39da6",
+          "pages": 22,
+          "min": 42.2,
+          "below90": [
+            "8",
+            "11",
+            "12",
+            "13",
+            "18",
+            "19",
+            "20",
+            "21"
+          ],
+          "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+        }
+      },
+      "font_program_profile": "performance-fonts-complete.json"
+    }
+  ],
+  "status": "Final runtime sweeps complete; functional documents passed; two performance-control fidelity decisions pending",
+  "final_runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "final_functional_results": "mydocs/pr/assets/semanticist21-20261105/functional-final-visual-results.json",
+  "final_performance_results": "mydocs/pr/assets/semanticist21-20261105/performance-font-complete-results.json",
+  "final_handbook_gate": "mydocs/pr/assets/semanticist21-20261105/handbook-final-gate.json",
+  "preliminary_runtime_source": "5c540c6c3eb197dc31dce30f576bcd342fbdd58a",
+  "note": "All per-document runs reference final raw TSV bytes. Preliminary 10-font performance measurements are preserved separately. Full gate/API/PNG hashes and roundtrip runs are in the linked final result manifests. No existing-difference exception has been applied.",
+  "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "maintainer_approval": "maintainer-approval.json",
+  "performance_exception": "2026-11-05 작업지시자가 #8331·#8332의 변경 전부터 있던 동일 출력 차이에 한정한 수용 예외와 10건의 통합 push·Open PR·해당 head CI·self-review·merge·원 PR 완료/감사 댓글·동기화·정리를 승인했다. 새 회귀·검사 실패·쪽수 차이·누락·90% 미만의 새 렌더링 회귀 추가는 예외 대상이 아니다."
+}

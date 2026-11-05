@@ -33,7 +33,7 @@ pub(crate) fn underline_multi_lines(shape: u8) -> Option<&'static [(f64, f64)]> 
     }
 }
 
-/// 위 밑줄의 독립 Print 계약. 좌표는 기준선에 대한 오프셋이며 길이 단위는 레이아웃 px다.
+/// 밑줄의 독립 Print 계약. 좌표는 기준선에 대한 오프셋이며 길이 단위는 레이아웃 px다.
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct DecorationStroke {
@@ -139,6 +139,36 @@ pub(crate) fn top_underline_geometry(
     })
 }
 
+/// 아래 일점쇄선도 같은 출력 기하를 소비한다. 위 밑줄의 기존 계약은 그대로 유지한다.
+pub(crate) fn underline_geometry(
+    style: &super::TextStyle,
+    font_size: f64,
+) -> Option<TopUnderlineGeometry> {
+    use crate::model::style::UnderlineType;
+    if style.underline != UnderlineType::Bottom || style.underline_shape != 3 {
+        return top_underline_geometry(style, font_size);
+    }
+    if !(font_size * 2.0).is_finite() || font_size <= 0.0 {
+        return None;
+    }
+    // 9~48pt Print에서 점은 600dpi 한 칸, 간격은 두 칸 격자에 맞는다.
+    let scale = font_size / 35.0;
+    let dot = (scale * 2.0 / 0.16).round().max(1.0) * 0.16;
+    let gap = (scale * 6.0 / 0.32).round().max(1.0) * 0.32;
+    Some(TopUnderlineGeometry {
+        phase: style
+            .top_underline_phase
+            .filter(|phase| phase.is_finite())
+            .unwrap_or(0.0),
+        strokes: vec![DecorationStroke {
+            offset: font_size * UNDERLINE_BASELINE_RATIO,
+            width: font_size * 0.04,
+            dash: vec![scale * 20.0, gap, dot, gap],
+        }],
+        dots: None,
+    })
+}
+
 /// 언어별 렌더링 런 경계는 원본 글자 모양 구간의 펜 경계가 아니다.
 /// 글꼴·크기·색을 실제로 바꾼 원본 구간과 비장식 간격에서는 위상을 다시 시작한다.
 pub(crate) fn resolve_page_phases(root: &mut super::render_tree::RenderNode) {
@@ -151,7 +181,7 @@ pub(crate) fn resolve_page_phases(root: &mut super::render_tree::RenderNode) {
     if !matches!(root.node_type, RenderNodeType::TextLine(_)) {
         return;
     }
-    type Key = (u32, u8, u32);
+    type Key = (u32, u8, u32, bool);
     struct Group {
         key: Key,
         baseline: f64,
@@ -168,7 +198,8 @@ pub(crate) fn resolve_page_phases(root: &mut super::render_tree::RenderNode) {
         };
         let TextRunNode { style, .. } = run;
         let Some(id) = run.char_shape_id.filter(|_| {
-            style.underline == UnderlineType::Top
+            (style.underline == UnderlineType::Top
+                || (style.underline == UnderlineType::Bottom && style.underline_shape == 3))
                 && run.rotation == 0.0
                 && !run.is_vertical
                 && run.char_overlap.is_none()
@@ -199,7 +230,12 @@ pub(crate) fn resolve_page_phases(root: &mut super::render_tree::RenderNode) {
             active = false;
             continue;
         }
-        let key = (id, style.underline_shape, style.underline_color);
+        let key = (
+            id,
+            style.underline_shape,
+            style.underline_color,
+            style.underline == UnderlineType::Top,
+        );
         if active
             && groups.last().is_some_and(|g| {
                 g.key == key && (g.baseline - baseline).abs() < 1e-6 && (g.end - start).abs() < 1e-6

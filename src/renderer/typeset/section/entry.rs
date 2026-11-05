@@ -324,6 +324,12 @@ impl TypesetEngine {
             && !st.current_items.is_empty()
         {
             st.force_new_page_with_storage(storage)?;
+            // [#8471] 앞 문단의 넘긴 표가 이 쪽을 차지했으면 쪽 나누기는 그다음 쪽에서 시작한다.
+            if (force_page_break || para_style_break)
+                && st.page_start_owns_deferred_table_before(para_idx)
+            {
+                st.force_new_page_with_storage(storage)?;
+            }
             // [Task #702] 쪽나누기 + 새 ColumnDef = 새 페이지에서 col 정의 적용.
             // 단 수·종류가 같아도 단 너비·방향·구분선이 바뀐 정의는 새 쪽부터 그 배치를 쓴다.
             let new_page_columns = new_col_def_opt.as_ref().and_then(|cd| {

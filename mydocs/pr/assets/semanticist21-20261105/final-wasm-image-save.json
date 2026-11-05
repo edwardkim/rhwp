@@ -1,0 +1,36 @@
+{
+  "source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "rows": [
+    {
+      "key": "header-image-refs",
+      "inputSha256": "a05d313f34852e07305d8bf16223303d9cc00c3d9bdc0b5258f96dfcb347a43d",
+      "outputSha256": "5e1dcc865f147e7fe60b74bcbddbe48b5fc1055d8c371c2c2305823a6374d48a",
+      "reexportSha256": "aabe90607c7184796f451504c5c96016e23d506e57fc6c43394e8d0e309551fc",
+      "nativeExportSha256": "5e1dcc865f147e7fe60b74bcbddbe48b5fc1055d8c371c2c2305823a6374d48a",
+      "nativeByteIdentical": true,
+      "reopened": true
+    },
+    {
+      "key": "image-bullet-newyear",
+      "inputSha256": "1be2736df6b21687f5c1627bac307cc689171928f6ceb0a235af0bc727eb6372",
+      "outputSha256": "8e13dc6fdd47d018add40ac8dd0ad70bdbe68bf13a2fb5b3fe3498b347a26475",
+      "reexportSha256": "a335f7701125fd7b2fdf267131ba5fee14fb2f1f6d7c924fc9b17c275a8c97f0",
+      "nativeExportSha256": "8e13dc6fdd47d018add40ac8dd0ad70bdbe68bf13a2fb5b3fe3498b347a26475",
+      "nativeByteIdentical": true,
+      "reopened": true
+    }
+  ],
+  "reference_preservation": [
+    {
+      "key": "header-image-refs",
+      "resolved_image_reference_count": 10,
+      "export_reopen_reexport_resolved_reference_hashes_identical": true
+    },
+    {
+      "key": "image-bullet-newyear",
+      "resolved_image_reference_count": 2,
+      "export_reopen_reexport_resolved_reference_hashes_identical": true
+    }
+  ],
+  "input_commit_note": "First export bytes are exactly identical to the Native-exported HWPX inputs already committed and fully visually verified on both backends; reexport IDs may canonicalize but resolved reference bytes stay equal."
+}

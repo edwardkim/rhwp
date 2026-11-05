@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "source_sha": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+  "profile": "release wasm-opt codegen-units=16",
+  "artifacts": {
+    "rhwp.js": {
+      "sha256": "8ad202184fcb970d908e338761e36863a1f7508806bd426be491bd3cc069a769",
+      "bytes": 535713
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "11012c56c9463f4eca27426ab118a2c73a54d90418597315f3df7c0211d2b78d",
+      "bytes": 28151832
+    },
+    "rhwp.d.ts": {
+      "sha256": "ea8c93dc6fb17bc1c8bb4574d415ceb42d37024bdb4dd16333e47270e59e4949",
+      "bytes": 214178
+    },
+    "rhwp_bg.wasm.d.ts": {
+      "sha256": "a29c1a887873a1d4c0fce6e27c46b9e3c4d6b0d971745f8a4c5fa99d357ebb33",
+      "bytes": 74844
+    }
+  }
+}
