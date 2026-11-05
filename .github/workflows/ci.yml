@@ -1011,11 +1011,19 @@ jobs:
       contents: read
 
     steps:
+      # 관찰 전용 로그다. 검사 명령과 실패 종료 코드는 그대로 유지한다.
+      - name: Disk space before checkout
+        run: df -h || true
+
       # PR base와 HEAD의 3-way diff 정책은 공통 조상이 필요하다. shallow checkout에서는
       # base SHA만 별도 fetch해도 merge-base가 없어 정책 검사가 fail-closed 된다.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+
+      - name: Disk space after checkout
+        if: ${{ always() }}
+        run: df -h || true
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
@@ -1024,22 +1032,38 @@ jobs:
           components: clippy, rustfmt
           targets: wasm32-unknown-unknown
 
+      - name: Disk space after Rust toolchain installation
+        if: ${{ always() }}
+        run: df -h || true
+
       - name: Rust build cache
         uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2.9.3 이후 workspace root key 보정
         with:
           shared-key: lint
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
+      - name: Disk space after Rust build cache restore
+        if: ${{ always() }}
+        run: df -h || true
+
       # `Cargo.toml`의 integration target은 파생 harness를 가리킨다. 깨끗한
       # checkout에서도 fmt/clippy가 target을 해석하기 전에 먼저 준비한다.
       - name: Prepare derived Rust test suites
-        run: node scripts/rust-test-suite-manifest.mjs --prepare
+        run: |
+          df -h || true
+          trap 'df -h || true' EXIT
+          node scripts/rust-test-suite-manifest.mjs --prepare
 
       - name: Format check
-        run: cargo fmt --all -- --check
+        run: |
+          df -h || true
+          trap 'df -h || true' EXIT
+          cargo fmt --all -- --check
 
       - name: Validate Visual Sweep PNG contracts
         run: |
+          df -h || true
+          trap 'df -h || true' EXIT
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y poppler-utils
           rhwp_visual_contract_env="${RUNNER_TEMP}/rhwp-visual-sweep-contracts"
@@ -1049,6 +1073,8 @@ jobs:
 
       - name: Validate CI impact classifier
         run: |
+          df -h || true
+          trap 'df -h || true' EXIT
           node --test scripts/tests/ci-impact-classifier.test.cjs
           node --test scripts/tests/ci-impact-policy.test.cjs
           node --test scripts/tests/ci-impact-controller-contract.test.cjs
@@ -1067,6 +1093,8 @@ jobs:
           RHWP_TEST_POLICY_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || '' }}
           RHWP_REPOSITORY: ${{ github.repository }}
         run: |
+          df -h || true
+          trap 'df -h || true' EXIT
           policy_base_ref="$RHWP_TEST_POLICY_BASE_SHA"
 
           # main이 현행 test-policy 도입 전 release라면 canonical devel -> main
@@ -1108,6 +1136,8 @@ jobs:
 
       - name: Test internal Rust crates
         run: |
+          df -h || true
+          trap 'df -h || true' EXIT
           cargo test --workspace \
             --exclude rhwp \
             --exclude rhwp-subsecond \
@@ -1121,6 +1151,8 @@ jobs:
       # criteria_decomp는 위 workspace test가 담당하고, repeat_eval·tool_version_gate는 standalone manifest다.
       - name: Validate LLM verifier tool contracts
         run: |
+          df -h || true
+          trap 'df -h || true' EXIT
           export PYTHONPATH=tools/llm_verifier
           python3 -m unittest discover -s tools/llm_verifier/third_party_replay/tests -p 'test_*.py'
           python3 -m unittest discover -s tools/llm_verifier/shadow_agree/tests -p 'test_*.py'
@@ -1131,19 +1163,30 @@ jobs:
           cargo test --manifest-path tools/llm_verifier/tool_version_gate/Cargo.toml
 
       - name: Validate Visual Sweep PNG server
-        run: node --test scripts/tests/visual-sweep-png-server.test.mjs
+        run: |
+          df -h || true
+          trap 'df -h || true' EXIT
+          node --test scripts/tests/visual-sweep-png-server.test.mjs
 
       - name: Validate Render Diff trigger policy
-        run: python3 -m unittest scripts/tests/test_render_diff_workflow.py scripts/tests/test_verify_release_wasm.py
+        run: |
+          df -h || true
+          trap 'df -h || true' EXIT
+          python3 -m unittest scripts/tests/test_render_diff_workflow.py scripts/tests/test_verify_release_wasm.py
 
       - name: Validate canvaskit-parity batch map
-        run: python3 -m unittest scripts/tests/test_canvaskit_parity_batches.py
+        run: |
+          df -h || true
+          trap 'df -h || true' EXIT
+          python3 -m unittest scripts/tests/test_canvaskit_parity_batches.py
 
       # [#4080] workflow 계약 테스트는 추가해 놓고 배선을 잊으면 한 번도 돌지 않는다.
       # 아래 목록은 test_workflow_contract_wiring.py 가 강제한다 — 새 계약 테스트를
       # 추가하면 그 테스트가 실패하므로 여기 한 줄을 같이 넣어야 한다.
       - name: Validate workflow contracts
         run: |
+          df -h || true
+          trap 'df -h || true' EXIT
           python3 -m unittest scripts/tests/test_crates_io_source_preflight.py scripts/tests/test_crates_io_publish_preflight.py
           node --test scripts/tests/issue-form-labels.test.mjs
           node --test scripts/tests/verify-trusted-postmerge-ci-reuse.test.mjs
@@ -1171,33 +1214,54 @@ jobs:
       # [#4715] 채택 척추 — 에이전트 작업 표준(AWS)이 전 표면에서 정합한지.
       # 바이너리 불요(커밋 문서만) — 표면이 늘어도 표준 링크가 끊기지 않게 한다.
       - name: Validate adoption spine contract
-        run: python3 -m unittest scripts/tests/test_adoption_spine.py
+        run: |
+          df -h || true
+          trap 'df -h || true' EXIT
+          python3 -m unittest scripts/tests/test_adoption_spine.py
 
       # [#4718] 계획 템플릿 형식 계약 — 자가검증 계획 시작점이 스키마를 지키는지.
       - name: Validate planner templates
-        run: python3 -m unittest scripts/tests/test_planner_templates.py
+        run: |
+          df -h || true
+          trap 'df -h || true' EXIT
+          python3 -m unittest scripts/tests/test_planner_templates.py
 
       # [#4720] 에이전트 노동 운영체제 — 부서가 실재 pack/트랙/과제에 매핑되고
       # 자동 배치기가 유효한 배정을 내는지. 바이너리 불요.
       - name: Validate agent org contract
-        run: python3 -m unittest scripts/tests/test_agent_org.py
+        run: |
+          df -h || true
+          trap 'df -h || true' EXIT
+          python3 -m unittest scripts/tests/test_agent_org.py
 
       # [#4726] 에이전트 프레임 메타 가드 — 등재된 모든 하위체계가 가드를 가지고
       # 머지분은 실재하는지. 틀 밖 확장을 막는 상위 불변식. 바이너리 불요.
       - name: Validate agent frame contract
-        run: python3 -m unittest scripts/tests/test_agent_frame.py
+        run: |
+          df -h || true
+          trap 'df -h || true' EXIT
+          python3 -m unittest scripts/tests/test_agent_frame.py
 
       # [#4728] 외부 현실 채점 계약 — 코어 견인과 메타-시스템 외부 채택을
       # 섞지 않고, self-graded 상태를 정직하게 보고하는지. 바이너리 불요.
       - name: Validate external reality check contract
-        run: python3 -m unittest scripts/tests/test_reality_check.py
+        run: |
+          df -h || true
+          trap 'df -h || true' EXIT
+          python3 -m unittest scripts/tests/test_reality_check.py
 
       - name: Clippy
-        run: cargo clippy -- -D warnings
+        run: |
+          df -h || true
+          trap 'df -h || true' EXIT
+          cargo clippy -- -D warnings
 
       # [#4630] wasm32 전용 cfg 경로의 lint 부채는 네이티브 Clippy로 보이지 않는다.
       - name: Clippy (WASM32)
-        run: cargo clippy -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings
+        run: |
+          df -h || true
+          trap 'df -h || true' EXIT
+          cargo clippy -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings
 
       # [#3664] Native FFI 크레이트가 워크스페이스 밖이라 어느 CI job 도 건드리지
       # 않는 사이 코어 API 변경을 못 따라가 이미 컴파일이 깨져 있었다(C#·Swift 래퍼
@@ -1210,7 +1274,10 @@ jobs:
       # [#8391] verdict_protocol만 자동 CI에서 제외한다. 소스와 수동 실행은 유지한다.
       - name: Check workspace members (FFI bindings, tools)
         run: |
+          df -h || true
+          trap 'df -h || true' EXIT
           cargo build --workspace --exclude llm-verifier-verdict-protocol
+          df -h || true
           cargo clippy --workspace --exclude llm-verifier-verdict-protocol --all-targets -- -D warnings
 
       # [로드맵 R12] 에이전트 표면 선검사 — 실패 경로 전수(전 명령 "없는 파일" 호출
@@ -1221,10 +1288,16 @@ jobs:
       # PR 목록 조회, 경고 전용)는 이 저장소의 병렬 세션 운영 규약용이라 CI 실행과는
       # 무관하므로 --no-network 로 끈다(tools/agent_preflight.py 참고).
       - name: Agent preflight (failure-path sweep + undeclared-command detection)
-        run: python3 tools/agent_preflight.py --repo . --bin target/debug/rhwp --no-network
+        run: |
+          df -h || true
+          trap 'df -h || true' EXIT
+          python3 tools/agent_preflight.py --repo . --bin target/debug/rhwp --no-network
 
       - name: Check WASM target
-        run: cargo check --target wasm32-unknown-unknown --lib
+        run: |
+          df -h || true
+          trap 'df -h || true' EXIT
+          cargo check --target wasm32-unknown-unknown --lib
 
   native-skia-tests:
     name: Native Skia tests
