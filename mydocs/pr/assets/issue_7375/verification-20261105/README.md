@@ -1,5 +1,10 @@
 # #7375 곡률·번호 도형 편집 검증 증적
 
+현재 `ece9c3383b` 리베이스 뒤 결과는 [새 프로그램 검증](rebased-ece9/README.md)을 따른다.
+아래 base `a95d1d5afa`·source `c72f967575`의 실행은 리베이스 전 이력이다. 초기 파일 접근
+차단만의 Mac 글꼴 결과도 이력으로 보존하며, 새 최소 글꼴 수용 근거는 개인 Font Registry
+미노출·실제 한국어 표시까지 확인한 새 결과와 구분한다.
+
 입력은 `samples/issue7333/aaaaaa.hwp`, 독립 기준은 `pdf/issue7333/aaaaaa-2020.pdf`다.
 원본 SHA는 [검증 수치](visual-validation.json)에 고정했다. 기준 PDF를 rhwp 출력으로 대체하지 않았다.
 

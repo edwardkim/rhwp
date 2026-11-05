@@ -1,0 +1,27 @@
+{
+  "files": {
+    "README.md": "c37a173b06c6d75adecc9d628eddb3e3dc21c22dddc9c8a18f9232768d28e690",
+    "browser-edit-validation.json": "c9489329bdc0c0bff1c8f0fbf1eac8711fa978690d9e123505154c36cfc14684",
+    "handbook-native-gate.json": "a796303dea2014747628ed5b8e636f1961100e3fed8e2b951862d2bb7b76b6b4",
+    "handbook-native.tsv": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "macos-font-isolation.json": "5709cd7ed2594206bd9ea683808099b9fbba16398d7bac90c2f6db291546dc60",
+    "minimal-font-studio-p027.png": "6587d906749804b335cd6ac22315add458f3638a4b82414ee9f5166083a86f0f",
+    "minimal-font-studio-p028.png": "5d7a119964b980b2a09764437437dc00f767f037751585e13d3c3d81ad81f58b",
+    "native-p027-overlay.png": "3a05bb9d2b4593a86f946876cac3362379b650f6649ce9ef051046bba47607b1",
+    "native-p027-raw.png": "a831ff8d718bf298f04e546fc8fa786cd5e678b58dc6a87cb8b039b4db10ec88",
+    "native-p027-review.png": "0dffce40d6d57f536377fe5d2a83393b0bb764123e88d34a4108efec48491626",
+    "native-p028-overlay.png": "c892b8ef3f52213a22f889de22df228a408379db7cedd8c4e507bc082328ff2d",
+    "native-p028-raw.png": "95406d9f0beb57e06b9afdaf942fcc25d6f5f79990169fdebe48b088d69d1c39",
+    "native-p028-review.png": "eb4c7b524c3ff175a36c70bc1e7d3bb3ad76b372c1466afb3c2d2db4998a0693",
+    "native.tsv": "363390f0ef544bbde7e8465ddda8cf8fa85adeafc29e38c93a38ccdcec4ec15d",
+    "pre-post-rebase.json": "4e815b73e03b985191163795356d778babaa3938b3d417489d4df7b0a774fdb0",
+    "validation.json": "9eeb666b31a739e665533fd41eb9c8ff3cf4dd8eb61a0fa25c3c946f84daa0ea",
+    "wasm-p027-overlay.png": "b0c6f7346a8f02e977641124bc5ed45ff0a46cf99b92b9f5a718abcfc69951c0",
+    "wasm-p027-raw.png": "073b7eff37af19a5c0099a7d364d1d23d1c59416c0957d84330762303f3d6c32",
+    "wasm-p027-review.png": "45faa7ab4e0e82380ab0c73ce53ace97fe4d92b33cb8ad07d5d7ba36ecd77d50",
+    "wasm-p028-overlay.png": "49baba280c170228cafc21eeffdd8916f43d2b60cca98f837b3943af92da5da9",
+    "wasm-p028-raw.png": "02193b85c40e61194e5f8f9afef25f39a98507d4b6f722e298e1189e79b8809f",
+    "wasm-p028-review.png": "6b98a95fb8e4813291078ae43660775d77178b81b51ae4b47111bbc527d198fc",
+    "wasm.tsv": "9629baea6ce93e0841d22028a5920c97b43dbf08fe8fe0d5d94c5722b216eb66"
+  }
+}

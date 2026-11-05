@@ -1,0 +1,379 @@
+{
+  "status": "issue7375_own_checks_passed_inherited_base_comparison_pending",
+  "base_sha": "ece9c3383bb2c73e0f055459ede727a9d3101ac6",
+  "branch": "task/7375-rectangle-corners",
+  "recorded_head": "ca79c839d7ac8b93537bf0cddcbdc3b5e87673d8",
+  "compiled_source": "a7f4dd73109ce451d6738a1df2054515a7a22202",
+  "rust_test_source": "32ea8469a6fb5c5085c6335455792daeb40a4709",
+  "native_producer": {
+    "source_sha": "a7f4dd73109ce451d6738a1df2054515a7a22202",
+    "sha256": "e99ec028866cf99f399c58c31bd2cc0039e7b85deff1b979ff6caf7f689a426d",
+    "bytes": 72963648,
+    "features": [
+      "native-skia"
+    ],
+    "build_log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/native-build.log"
+  },
+  "wasm_producer": {
+    "success": true,
+    "source_sha": "a7f4dd73109ce451d6738a1df2054515a7a22202",
+    "profile": "mac-locked-web-no-opt-local-alternative",
+    "artifacts": {
+      "rhwp.js": {
+        "sha256": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+        "bytes": 536865
+      },
+      "rhwp_bg.wasm": {
+        "sha256": "9c7b6e0afc236af0e54fff8d8f33735e7221399399b63c5a1d333895316901e4",
+        "bytes": 30701237
+      }
+    },
+    "docker_optimized": false
+  },
+  "gates": [
+    {
+      "name": "prepare",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "start_utc": "2026-11-05T12:15:49.957536+00:00",
+      "pid": 91214,
+      "exit_code": 0,
+      "seconds": 3.216
+    },
+    {
+      "name": "focused",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7375_cell_shape_move_transform",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "start_utc": "2026-11-05T12:15:53.180893+00:00",
+      "pid": 91688,
+      "exit_code": 0,
+      "seconds": 213.987
+    },
+    {
+      "name": "passthrough-guard",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2724_passthrough_invalidation_guard",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "start_utc": "2026-11-05T12:19:27.176262+00:00",
+      "pid": 7031,
+      "exit_code": 0,
+      "seconds": 13.618
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "start_utc": "2026-11-05T12:19:40.804318+00:00",
+      "pid": 7941,
+      "exit_code": 0,
+      "seconds": 16.391
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "start_utc": "2026-11-05T12:19:57.204405+00:00",
+      "pid": 9347,
+      "exit_code": 0,
+      "seconds": 38.948
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "start_utc": "2026-11-05T12:20:36.160623+00:00",
+      "pid": 12126,
+      "exit_code": 0,
+      "seconds": 36.896
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "start_utc": "2026-11-05T12:21:13.063729+00:00",
+      "pid": 14604,
+      "exit_code": 0,
+      "seconds": 56.496
+    },
+    {
+      "name": "all-target-clippy",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "start_utc": "2026-11-05T12:22:09.569380+00:00",
+      "pid": 18964,
+      "exit_code": 0,
+      "seconds": 56.574
+    },
+    {
+      "name": "full-nextest",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "start_utc": "2026-11-05T12:23:06.151704+00:00",
+      "pid": 22926,
+      "exit_code": 0,
+      "seconds": 1241.091
+    },
+    {
+      "name": "native-skia-lib",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "start_utc": "2026-11-05T12:43:47.259871+00:00",
+      "pid": 27500,
+      "exit_code": 0,
+      "seconds": 218.93
+    },
+    {
+      "name": "native-skia-png",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "start_utc": "2026-11-05T12:47:26.195706+00:00",
+      "pid": 42985,
+      "exit_code": 0,
+      "seconds": 215.371
+    },
+    {
+      "name": "native-skia-pdf",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "start_utc": "2026-11-05T12:51:01.574933+00:00",
+      "pid": 58247,
+      "exit_code": 0,
+      "seconds": 16.321
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "ece9c3383bb2c73e0f055459ede727a9d3101ac6"
+      ],
+      "start_utc": "2026-11-05T12:51:17.902508+00:00",
+      "pid": 59556,
+      "exit_code": 0,
+      "seconds": 0.961
+    }
+  ],
+  "full_nextest": {
+    "passed": 12634,
+    "failed": 0,
+    "skipped": 45,
+    "runtime_seconds": 505.525
+  },
+  "native_skia_lib": {
+    "root_passed": 3857,
+    "workspace_other_passed": 182,
+    "ignored": 12
+  },
+  "native_png_tests": 2,
+  "native_pdf_tests": 22,
+  "studio": {
+    "source_sha": "32ea8469a6fb5c5085c6335455792daeb40a4709",
+    "steps": [
+      {
+        "name": "studio-test",
+        "command": [
+          "npm",
+          "test"
+        ],
+        "exit_code": 0,
+        "seconds": 69.166
+      },
+      {
+        "name": "studio-build",
+        "command": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "exit_code": 0,
+        "seconds": 30.523
+      }
+    ],
+    "success": true
+  },
+  "visual": [
+    {
+      "backend": "native",
+      "pages": 50,
+      "minimum": 98.31507,
+      "identical_png_pages": 50,
+      "drops_over_0_1pp": [],
+      "before_producer": "c72f967575c49b068b9217830670abddc3785712",
+      "after_build_producer": "a7f4dd73109ce451d6738a1df2054515a7a22202",
+      "tsv": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/native-whole-tsv/silhouette.tsv"
+    },
+    {
+      "backend": "wasm",
+      "pages": 50,
+      "minimum": 98.32714,
+      "identical_png_pages": 50,
+      "drops_over_0_1pp": [],
+      "before_producer": "c72f967575c49b068b9217830670abddc3785712",
+      "after_build_producer": "a7f4dd73109ce451d6738a1df2054515a7a22202",
+      "tsv": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/wasm-whole-tsv/silhouette.tsv"
+    }
+  ],
+  "handbook": {
+    "pages": 383,
+    "status": "passed",
+    "regressions": []
+  },
+  "same_branch_sequence": [
+    7375,
+    7640,
+    7642,
+    7700
+  ],
+  "remaining": "새 devel #8640·#8637의 실제 base/후보 비교를 별도 target에서 진행한다. 다음 #7640은 7쪽 미달이 재현돼 같은 브랜치에서 보정한다. PR·이슈 종료는 수행하지 않았다.",
+  "compiled_to_recorded_product_equivalence": {
+    "paths": [
+      "src",
+      "crates",
+      "tests",
+      "rhwp-studio/src",
+      "rhwp-studio/e2e",
+      "scripts",
+      "assets",
+      "ttfs",
+      "Cargo.toml",
+      "Cargo.lock"
+    ],
+    "different_files": []
+  }
+}

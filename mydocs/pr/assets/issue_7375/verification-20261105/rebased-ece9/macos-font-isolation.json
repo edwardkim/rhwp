@@ -1,0 +1,43 @@
+{
+  "source_sha": "32ea8469a6fb5c5085c6335455792daeb40a4709",
+  "inventory": {
+    "baseline_os_font_files_preserved": 294,
+    "os_file_hash_changes": 0,
+    "visible_os_font_files": 237,
+    "private_font_file_reads_denied": 1206,
+    "visible_private_font_files": [],
+    "coretext_postscript_names": 528,
+    "coretext_private_names": [],
+    "registry_isolation": "com.apple.fonts / com.apple.fonts.atsbridge lookup denied for this process"
+  },
+  "browser": {
+    "host": "현재 Mac / macOS arm64",
+    "source_sha": "32ea8469a6fb5c5085c6335455792daeb40a4709",
+    "steps": [
+      {
+        "name": "number-shape-selection-issue7375.test.mjs",
+        "exit_code": 0,
+        "seconds": 6.983
+      },
+      {
+        "name": "issue-7333-line-selection.test.mjs",
+        "exit_code": 0,
+        "seconds": 4.869
+      }
+    ],
+    "success": true,
+    "font_profile": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+    "local_font_access": "disabled",
+    "vite_pid": 59648
+  },
+  "direct_review": {
+    "readable_korean_ui_and_body": true,
+    "pages": [
+      27,
+      28
+    ],
+    "finding": "번호 도형·그림·표·본문과 한국어 UI를 직접 판독했다. 파일 접근만 차단해 tofu가 생겼던 초기 실행을 최종 수용 근거로 사용하지 않는다."
+  },
+  "profile": "(version 1)\n(allow default)\n(deny file-read* file-write*\n (subpath \"/Users/tsjang/Library/Fonts\")\n (subpath \"/Library/Fonts\")\n (subpath \"/Network/Library/Fonts\")\n (subpath \"/Users/tsjang/.fonts\")\n (subpath \"/Users/tsjang/.local/share/fonts\")\n (subpath \"/usr/local/share/fonts\")\n (subpath \"/opt/homebrew/share/fonts\")\n (subpath \"/Users/tsjang/rhwp/ttfs\")\n (subpath \"/Users/tsjang/.cache/rhwp\")\n (subpath \"/Users/tsjang/rhwp/output/pr-review/native-webfont-cache\")\n (subpath \"/System/Volumes/Data/Users/tsjang/Library/Fonts\")\n (subpath \"/System/Volumes/Data/Library/Fonts\")\n (subpath \"/System/Volumes/Data/Users/tsjang/.fonts\")\n (subpath \"/System/Volumes/Data/Users/tsjang/.local/share/fonts\")\n (subpath \"/System/Volumes/Data/opt/homebrew/share/fonts\")\n (subpath \"/System/Volumes/Data/Users/tsjang/rhwp/ttfs\")\n (subpath \"/System/Volumes/Data/Users/tsjang/.cache/rhwp\")\n (subpath \"/System/Volumes/Data/Users/tsjang/rhwp/output/pr-review/native-webfont-cache\")\n)\n(allow file-read*\n (subpath \"/Users/tsjang/rhwp/ttfs/opensource\")\n (literal \"/Users/tsjang/rhwp/ttfs/redistributable/happiness-sans/HappinessSansVF.ttf\")\n)\n\n(deny mach-lookup (global-name \"com.apple.fonts\") (global-name \"com.apple.fonts.atsbridge\"))\n",
+  "scope": "개인 글꼴 등록·파일은 수정하지 않았으며 검증 프로세스만 격리했다. 실제 기본 표시와 편집 계약을 검증했고 한컴 원 글꼴의 시각 일치율 검증과 구분한다."
+}
