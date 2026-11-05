@@ -783,6 +783,8 @@ impl DocumentCore {
                 })
                 .collect();
 
+            // 원고지 구역: 저장 줄이 없어 새로 짠 글 문단은 칸 수로 다시 나눈다.
+            let cell_grid = section.section_def.cell_grid();
             let mut body_line_seg_changed = false;
             // [Issue #1920] vpos 재계산(아래) 시 저장 vpos 의 새 쪽 시작 신호를 보존하기
             // 위해, 이번 패스에서 LINE_SEG 가 합성(reflow)된 문단 — 저장 vpos 신뢰 불가 —
@@ -804,7 +806,18 @@ impl DocumentCore {
                 // 본문 합성 lineseg 는 흐름 소비를 문단당 ~2.7px 팽창시켜 sijang
                 // 밀도 핀 -5쪽(302 vs 307, #2070v2)만 남기는 잉여 축으로 판정.
                 // 본문 NO_LS 텍스트 문단의 실폭 래핑은 composer recompose 가 담당한다.
-                if Self::needs_line_seg_reflow_in_scope(para, include_empty, section_sized) {
+                // 원고지 구역의 글 문단은 저장 줄이 없으면(HWP5 계보 HWPX는 줄 없이 저장한다) 칸으로 짓는다.
+                let unlined_grid_paragraph = cell_grid.is_some()
+                    && (para.line_segs.is_empty()
+                        || (para.line_segs.len() == 1
+                            && para.line_segs[0].is_missing_lineseg_placeholder()))
+                    && crate::renderer::cell_grid::shape_takes_grid(
+                        para,
+                        &source_doc_info.para_shapes,
+                    );
+                if unlined_grid_paragraph
+                    || Self::needs_line_seg_reflow_in_scope(para, include_empty, section_sized)
+                {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     // 본문: 열 상자를 그대로 넘긴다 — 렌더가 깎는 상자와 같아야 한다.
                     // 개체 여백은 공통으로 계상하고, 저장 구역의 간격 호환은 전용 진입점에 둔다.
@@ -822,6 +835,24 @@ impl DocumentCore {
                             styles,
                             dpi,
                         );
+                    }
+                    if let (Some(grid), Some(style)) = (cell_grid, para_style) {
+                        if crate::renderer::cell_grid::paragraph_takes_grid(
+                            para,
+                            &source_doc_info.para_shapes,
+                        ) {
+                            crate::renderer::cell_grid::rebreak_paragraph(
+                                para,
+                                grid,
+                                crate::renderer::px_to_hwpunit(
+                                    col_width - style.margin_left - style.margin_right,
+                                    dpi,
+                                ),
+                                crate::renderer::px_to_hwpunit(style.indent, dpi),
+                                styles,
+                                dpi,
+                            );
+                        }
                     }
                     body_line_seg_changed = true;
                     reflowed_paras.insert(pi);
@@ -985,6 +1016,14 @@ impl DocumentCore {
                         }
                     }
                 }
+            }
+
+            if let (Some(grid), true) = (cell_grid, body_line_seg_changed) {
+                crate::renderer::cell_grid::fit_section_spacing(
+                    &mut section.paragraphs,
+                    &source_doc_info.para_shapes,
+                    grid,
+                );
             }
 
             // HWPX: LINE_SEG를 실제로 합성/보정한 경우에만 문단 간 vpos를 재계산한다.

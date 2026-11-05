@@ -8387,6 +8387,26 @@ impl LayoutEngine {
                             })
                     })
                 });
+            // 원고지 구역: 글자를 칸에 놓는다. 첫 줄은 들여쓰기만큼 칸을 비운다.
+            if let Some(grid) = para.and_then(|p| p.layout_cell_grid) {
+                let cell_px = crate::renderer::hwpunit_to_px(grid.cell, self.dpi);
+                let first_cells = if line_idx == 0 && indent > 0.0 && cell_px > 0.0 {
+                    (indent / cell_px - 1e-6).ceil().max(0.0) as usize
+                } else {
+                    0
+                };
+                // 줄 상자 x는 첫 줄 들여쓰기를 담고 있어 단 왼쪽과 문단 왼쪽 여백에서 센다.
+                let origin = col_area.x + margin_left;
+                crate::renderer::cell_grid::place_line_runs(
+                    &mut line_node,
+                    grid,
+                    origin,
+                    col_area.width - margin_left - margin_right,
+                    first_cells,
+                    self.dpi,
+                    &mut || tree.next_id(),
+                );
+            }
             let fill_anchor = (line_node.id, line_node.bbox.y);
             if !unused_frame_lane {
                 col_node.children.push(line_node);

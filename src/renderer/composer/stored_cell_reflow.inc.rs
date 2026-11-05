@@ -78,6 +78,11 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band_with_storag
         if para.layout_float_band && !para.stored_text_partition_is_dirty() {
             return Ok(None);
         }
+        // 원고지 칸 조판 문단(렌더 정규화본)의 줄은 칸 수로 나눈 것이라 글자 본래 폭의 프레임에서
+        // 다시 짜지 않는다. 저장 줄 없이 만든 문단(분할·저장 줄 없는 HWPX)도 그 줄이 권위다.
+        if para.layout_cell_grid.is_some() {
+            return Ok(None);
+        }
         // loader가 만든 합성 줄은 원본 저장 캐시가 아니다. 독립 개체가 없는
         // 본문은 현재 프레임에서 다시 구성하며 원본 IR은 보존한다.
         let fresh_body = if !para.line_segs.is_empty()

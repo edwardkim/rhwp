@@ -207,6 +207,7 @@ impl DocumentCore {
                 &styles,
                 dpi,
             );
+            self.fit_cell_grid(sec_idx, para_idx, &styles);
         }
         self.refresh_section_native(sec_idx)
     }
@@ -1196,6 +1197,7 @@ impl DocumentCore {
                 &styles,
                 self.dpi,
             );
+            self.fit_cell_grid(sec_idx, para_idx, &styles);
             let hwp3 = self.document.layout_profile().hwp3_layout();
             recalculate_section_vpos(
                 &mut self.document.sections[sec_idx].paragraphs,
@@ -1272,6 +1274,7 @@ impl DocumentCore {
             para.apply_char_shape_range(start_offset, end_offset, char_shape_id);
             reflow_line_segs(para, available_box, &styles, self.dpi);
         }
+        self.fit_cell_grid(sec_idx, para_idx, &styles);
         let hwp3 = self.document.layout_profile().hwp3_layout();
         recalculate_section_vpos(
             &mut self.document.sections[sec_idx].paragraphs,
@@ -1735,6 +1738,7 @@ impl DocumentCore {
                 &styles,
                 self.dpi,
             );
+            self.fit_cell_grid(sec_idx, para_idx, &styles);
         }
 
         // 문단 간격은 줄 나눔을 바꾸지 않지만 이 문단과 뒤 문단의 저장 세로 위치를 옮긴다.
@@ -1809,7 +1813,7 @@ impl DocumentCore {
             ParagraphBox::body_for_style(col_width, para_style, self.dpi)
         };
 
-        {
+        let stored_end_for_reset = {
             let old_id = self.document.sections[sec_idx].paragraphs[para_idx].para_shape_id;
             let (old_indent, new_indent) = self.para_shape_indents(old_id, para_shape_id);
             let para = &mut self.document.sections[sec_idx].paragraphs[para_idx];
@@ -1817,18 +1821,20 @@ impl DocumentCore {
             para.para_shape_id = para_shape_id;
             restamp_indentation(&mut para.line_segs, old_indent, new_indent);
             reflow_line_segs(para, available_box, &styles, self.dpi);
-            // 되돌린 문단 간격도 이 문단과 뒤 문단의 저장 세로 위치에 반영한다.
-            let hwp3_layout = self.document.layout_profile().hwp3_layout();
-            crate::renderer::composer::recalculate_section_vpos(
-                &mut self.document.sections[sec_idx].paragraphs,
-                para_idx,
-                None,
-                stored_end_for_reset,
-                &styles,
-                self.dpi,
-                hwp3_layout,
-            );
-        }
+            stored_end_for_reset
+        };
+        self.fit_cell_grid(sec_idx, para_idx, &styles);
+        // 되돌린 문단 간격도 이 문단과 뒤 문단의 저장 세로 위치에 반영한다.
+        let hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[sec_idx].paragraphs,
+            para_idx,
+            None,
+            stored_end_for_reset,
+            &styles,
+            self.dpi,
+            hwp3_layout,
+        );
 
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section(sec_idx);
@@ -2209,6 +2215,7 @@ impl DocumentCore {
             para.line_segs.clear();
             reflow_line_segs(para, paragraph_box, &styles, self.dpi);
         }
+        self.fit_cell_grid(sec_idx, para_idx, &styles);
     }
 
     /// 구역의 본문 문단 전부를 현재 용지/단 기준으로 다시 접는다 — 쪽 설정이 바뀌어 본문
@@ -2246,6 +2253,9 @@ impl DocumentCore {
             );
             para.line_segs.clear();
             reflow_line_segs(para, paragraph_box, &styles, dpi);
+        }
+        for para_idx in 0..self.document.sections[sec_idx].paragraphs.len() {
+            self.fit_cell_grid(sec_idx, para_idx, &styles);
         }
     }
 

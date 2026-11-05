@@ -17,6 +17,7 @@ pub(crate) mod blank_band;
 pub mod canvas;
 pub mod canvas_text_font;
 pub mod canvaskit_policy;
+pub(crate) mod cell_grid;
 pub(crate) mod cell_paragraph_spacing;
 pub mod char_overlap;
 pub mod composer;

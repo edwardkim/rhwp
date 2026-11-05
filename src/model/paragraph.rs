@@ -26,6 +26,13 @@ pub struct CharShapeRun {
     pub char_shape_id: u32,
 }
 
+/// 원고지 칸 격자(HWPUNIT). 구역 정의의 줄 격자가 한 줄 높이, 글자 격자가 한 칸 폭이다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+pub struct CellGrid {
+    pub line: i32,
+    pub cell: i32,
+}
+
 /// 문단 (HWPTAG_PARA_HEADER + 하위 레코드)
 #[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Paragraph {
@@ -130,6 +137,10 @@ pub struct Paragraph {
     /// 문자 분할의 유효성과 별개이며 원본 파일이나 IR로 직렬화하지 않는다.
     #[serde(skip_serializing)]
     pub layout_rebased_body_axis: bool,
+    /// 원고지 구역의 칸 격자. 렌더 정규화본에만 두고 파일·IR로 직렬화하지 않는다.
+    /// 있으면 문단 배치가 글자를 칸에 놓는다.
+    #[serde(skip_serializing)]
+    pub layout_cell_grid: Option<CellGrid>,
     /// 영역 태그 정보
     pub range_tags: Vec<RangeTag>,
     /// 필드 텍스트 범위 (0x03~0x04 사이 텍스트 인덱스 + 컨트롤 인덱스)
@@ -2379,6 +2390,7 @@ impl Paragraph {
             layout_rebased_body_axis: false,
             // 갈라진 문단은 앞 문단의 새 저장 줄에 이어 계산된다.
             stored_flow_shifted: false,
+            layout_cell_grid: None,
             // 새로 계산된 줄은 `char_offsets` 와 같은 HWP5 축에서 나오므로 보정이 없다 (#5961).
             hwpx_axis_shift: 0,
             range_tags: new_range_tags,
