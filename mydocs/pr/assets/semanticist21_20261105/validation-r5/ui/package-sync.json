@@ -1,0 +1,51 @@
+{
+  "product_source": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+  "optimization": "wasm-pack managed wasm-opt",
+  "files": [
+    {
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-wasm-pkg/rhwp.js",
+      "target": "/home/tsjang/rhwp/pkg/rhwp.js",
+      "sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+    },
+    {
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-wasm-pkg/rhwp_bg.wasm",
+      "target": "/home/tsjang/rhwp/pkg/rhwp_bg.wasm",
+      "sha256": "1d64c3307cf85a5fde220d501cc32c5ff45ded2b3c048b059b769c21f6e46bb9"
+    },
+    {
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-wasm-pkg/rhwp.d.ts",
+      "target": "/home/tsjang/rhwp/pkg/rhwp.d.ts",
+      "sha256": "aa0ac091c0b3814d83f7ac1baa057432b0c89ae64165d79232020d89e6304605"
+    },
+    {
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-wasm-pkg/rhwp_bg.wasm.d.ts",
+      "target": "/home/tsjang/rhwp/pkg/rhwp_bg.wasm.d.ts",
+      "sha256": "88a02df0b753bb42ff0219b725e7190fcd228766c512f5957827871544c54770"
+    },
+    {
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-wasm-pkg/package.json",
+      "target": "/home/tsjang/rhwp/pkg/package.json",
+      "sha256": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19"
+    },
+    {
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-wasm-pkg/rhwp.js",
+      "target": "/home/tsjang/rhwp/rhwp-studio/public/rhwp.js",
+      "sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+    },
+    {
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-wasm-pkg/rhwp_bg.wasm",
+      "target": "/home/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm",
+      "sha256": "1d64c3307cf85a5fde220d501cc32c5ff45ded2b3c048b059b769c21f6e46bb9"
+    },
+    {
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-wasm-pkg/rhwp.d.ts",
+      "target": "/home/tsjang/rhwp/rhwp-studio/public/rhwp.d.ts",
+      "sha256": "aa0ac091c0b3814d83f7ac1baa057432b0c89ae64165d79232020d89e6304605"
+    },
+    {
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-wasm-pkg/rhwp_bg.wasm.d.ts",
+      "target": "/home/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm.d.ts",
+      "sha256": "88a02df0b753bb42ff0219b725e7190fcd228766c512f5957827871544c54770"
+    }
+  ]
+}

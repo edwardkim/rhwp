@@ -1,0 +1,34 @@
+{
+  "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+  "key": "8586-hancom-page-number-sections-hwpx-2022",
+  "backend": "native",
+  "pages": [
+    1,
+    2
+  ],
+  "method": "같은 실측 PNG를 현재 Visual Sweep의 compare/overlay/review 함수에 공급",
+  "input_sha256": "79b8a99e5da76863402a9f2500cb24d50bec8db79186a4ec50fd2eb588ebd430",
+  "pdf_sha256": "0451615391b214b1d08d3b1f6292275279aeabb18561e4f3f2ea35b5ea125f92",
+  "original_tsv": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/8586-hancom-page-number-sections-hwpx-2022/8586-hancom-page-number-sections-hwpx-2022/silhouette.tsv",
+  "sweep_script_sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa",
+  "reused_inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/8586-hancom-page-number-sections-hwpx-2022/8586-hancom-page-number-sections-hwpx-2022/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "ec34ef1c5cd11c40aacd313c2dcf2a6db4bf2f23784102feda5591e439b36689",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/8586-hancom-page-number-sections-hwpx-2022/8586-hancom-page-number-sections-hwpx-2022/pdf_png/pdf-001.png",
+      "pdf_sha256": "de82b79855105e36c57cd85e2111e293de5a77e823137e2ba3e64da12769fb1a"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/8586-hancom-page-number-sections-hwpx-2022/8586-hancom-page-number-sections-hwpx-2022/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "cc49e0fcc23c47ed23db215c553c7e14452b46e250c049b88a9f712fdf72c699",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/8586-hancom-page-number-sections-hwpx-2022/8586-hancom-page-number-sections-hwpx-2022/pdf_png/pdf-002.png",
+      "pdf_sha256": "f1be12ca7ab9c665a8ed7988bef2a4c982206694fb8d271cb6f501cd91e73d16"
+    }
+  ],
+  "generated": [
+    "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8586-hancom-page-number-sections-hwpx-2022/review/review_001.png",
+    "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8586-hancom-page-number-sections-hwpx-2022/review/review_002.png"
+  ]
+}

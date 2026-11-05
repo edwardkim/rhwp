@@ -385,3 +385,15 @@ R4 실제 Native 빌드(8 jobs)는 19분 30초에 완료했다. 같은 #7344 원
 제품 source `71e5e0ae2a72a6b8f51682d131077bd4df44994f`의 최적화 fresh WASM 공개 API 12그룹을 실행해 모두 통과했다. 같은 Native rlib의 실제 API 생성기 5개에서 출력한 HWP/HWPX 20개도 R4와 SHA가 모두 같다. 따라서 같은 바이트의 입력에 대한 기존 독립 Print PDF를 재사용하며, 문서를 다시 인쇄하지 않았다. API·저장 계약 통과와 전쪽 시각 통과는 별도로 판정한다.
 
 최종 시각 비교 계획 128개 항목의 원본·PDF 256행을 SHA로 대응했다. 기존 정식 파일을 우선 재사용했고, 실제 API 작업 뒤 생성된 구역 분할·합침, 셀 입력, 문자·그림 글머리표 자료 18개는 output에만 있던 것을 정식 경로로 보존했다. 이전 제어 입력과 다른 바이트는 덮어쓰지 않고 별도 이름을 썼다. [입력 대응 원장](validation-r5/inputs.json)의 상태는 아직 시각 검증 진행 중이며, 실제 final TSV·확대 판독·전체 Rust·lint 게이트가 끝나기 전에는 PR 준비 완료가 아니다.
+
+### R5 Native 전쪽 완료와 개별 PR 증적 현재화
+
+제품 `71e5e0ae2a72a6b8f51682d131077bd4df44994f`의 Native 128개 검증 입력·301쪽이 모두 90% 이상이다. 정밀 최저값은 91.81401%이며, 독립 Print와 전체 쪽수가 일치하고 미달·산출 오류가 없다. [R5 원장](validation-r5/README.md)에 원본 TSV 128개와 실제 페이지별 정밀값을 보존했다. fresh WASM은 현재 완료된 21개 입력·59쪽만 구분해 기록하며 나머지를 통과로 표시하지 않는다.
+
+개별 PR 18건의 표와 대표 이미지를 R5로 갱신했다. 원 PR이 주장한 입력·페이지를 골라 같은 실측 PNG에서 review·overlay를 합성했고, API·원문 레코드 계약과 이미지의 입증 범위를 구분했다. 이미지가 있다고 직접 판독을 완료한 것으로 쓰지 않는다. 활성 참조가 없어진 본 작업 소유의 untracked R2 PNG·TSV·JSON은 output에 보관했으며 원본 HWP/HWPX·PDF는 이동하지 않았다.
+
+대상 19개 Markdown의 내부 상대 링크가 모두 유효하고 diff 공백 검사도 통과했다. 원 PR 18건의 head·reviewer와 실제 upstream/devel을 다시 확인했으며 변경이 없다. 새 base의 Native·최적화 WASM producer도 고정했고 최소 글꼴 전체 Rust의 바이너리 컴파일을 시작했다. 직전 R3의 5건 실패와 집중 184건 통과를 최종 전체 통과로 바꾸어 쓰지 않는다.
+
+### R5 실제 브라우저와 생성 타입 동기화
+
+[현재 UI 검증](validation-r5/ui/README.md)에서 스타일 생성 실패·정상·undo와 새 base의 그룹 자식 클릭·입력·undo/redo·Esc를 실제 최적화 WASM으로 확인했다. 앱 초기화 네트워크에서 받은 바이트의 SHA도 producer와 같다. TypeScript·production build는 exit 0이다. public의 두 생성 타입은 현재 package와 맞췄고, 각 631개 export의 존재·인수 수와 직접 소비 Node 10건을 확인했다. 이전 전체 Node 2,723건과 현재 재검증 범위를 구분해 보존한다.

@@ -1,0 +1,25 @@
+{
+  "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+  "key": "8616-hancom-mac-dutmal-hwpx-2022",
+  "backend": "native",
+  "pages": [
+    1
+  ],
+  "method": "같은 실측 PNG를 현재 Visual Sweep의 compare/overlay/review 함수에 공급",
+  "input_sha256": "64fcc6780e5a5bd0b53456b3fc6f067a3608d19c7ba03f1eb6d324987b95b509",
+  "pdf_sha256": "d0e0e31cfa7a8e0708f7f9a6c34c91e0423990d43dd9793cd4ed08d97ea1bc8e",
+  "original_tsv": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/8616-hancom-mac-dutmal-hwpx-2022/8616-hancom-mac-dutmal-hwpx-2022/silhouette.tsv",
+  "sweep_script_sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa",
+  "reused_inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/8616-hancom-mac-dutmal-hwpx-2022/8616-hancom-mac-dutmal-hwpx-2022/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "6df670361550603e00ad5511df443ba89ab52ee0ce9f41910e044c600ff5e14e",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/8616-hancom-mac-dutmal-hwpx-2022/8616-hancom-mac-dutmal-hwpx-2022/pdf_png/pdf-001.png",
+      "pdf_sha256": "fd7457705262b713c26c6c9719d390c02838d3c8607e6667308e997abac6c514"
+    }
+  ],
+  "generated": [
+    "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8616-hancom-mac-dutmal-hwpx-2022/review/review_001.png"
+  ]
+}

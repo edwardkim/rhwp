@@ -1,0 +1,20 @@
+{
+  "state": "passed",
+  "discovered": 12780,
+  "eligible": 12735,
+  "passed": 12735,
+  "ignored": 45,
+  "binaries": 55,
+  "missing": [],
+  "unexpected": [],
+  "duplicates": 0,
+  "test_head": "66d5ecd612dffcae6d13723dc2f6f86508ef4181",
+  "product_source": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+  "minimum_font_files": [
+    "/home/tsjang/rhwp/ttfs/opensource/NotoSansKR-Regular.ttf",
+    "/home/tsjang/rhwp/ttfs/opensource/RHWPOldHangul-Regular.otf",
+    "/home/tsjang/rhwp/ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+    "/home/tsjang/rhwp/ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+    "/home/tsjang/rhwp/ttfs/opensource/NotoSansSymbols2-Regular.ttf"
+  ]
+}

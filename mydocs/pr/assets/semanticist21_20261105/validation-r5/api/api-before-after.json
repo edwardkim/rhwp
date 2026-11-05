@@ -1,0 +1,92 @@
+{
+  "base": "170b886f167b705b6e630c5b34bb638d92fae0a9",
+  "current": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+  "base_probe_exit": 1,
+  "rows": [
+    {
+      "pr": 8528,
+      "base_state": "failed",
+      "base_error": "TypeError: doc.setNumberingCharShape is not a function",
+      "current_state": "passed",
+      "detects_original_difference": true
+    },
+    {
+      "pr": 8616,
+      "base_state": "failed",
+      "base_error": "TypeError: doc.insertRuby is not a function",
+      "current_state": "passed",
+      "detects_original_difference": true
+    },
+    {
+      "pr": 8571,
+      "base_state": "failed",
+      "base_error": "칸 안 표는 글자처럼 취급만 지원한다 (treatAsChar:false 는 받지 않는다)",
+      "current_state": "passed",
+      "detects_original_difference": true
+    },
+    {
+      "pr": 8570,
+      "base_state": "failed",
+      "base_error": "칸 안 표는 글자처럼 취급만 지원한다 (treatAsChar:false 는 받지 않는다)",
+      "current_state": "passed",
+      "detects_original_difference": true
+    },
+    {
+      "pr": 8629,
+      "base_state": "failed",
+      "base_error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- true\n",
+      "current_state": "passed",
+      "detects_original_difference": true
+    },
+    {
+      "pr": 8586,
+      "base_state": "failed",
+      "base_error": "TypeError: doc.getPageNumberPosition is not a function",
+      "current_state": "passed",
+      "detects_original_difference": true
+    },
+    {
+      "pr": 8564,
+      "base_state": "failed",
+      "base_error": "AssertionError [ERR_ASSERTION]: 코드 경계의 입력은 코드 밖에 남음\n+ actual - expected\n\n  [\n+   '앞2026년 11월 4일뒤',\n+   '앞date-codes.hwpx뒤'\n-   '2026년 11월 4일',\n-   'date-codes.hwpx'\n  ]\n",
+      "current_state": "passed",
+      "detects_original_difference": true
+    },
+    {
+      "pr": 8541,
+      "base_state": "failed",
+      "base_error": "TypeError: doc.splitSection is not a function",
+      "current_state": "passed",
+      "detects_original_difference": true
+    },
+    {
+      "pr": 8602,
+      "base_state": "passed",
+      "base_error": null,
+      "current_state": "passed",
+      "detects_original_difference": false
+    },
+    {
+      "pr": 8558,
+      "base_state": "failed",
+      "base_error": "TypeError: doc.createBullet is not a function",
+      "current_state": "passed",
+      "detects_original_difference": true
+    },
+    {
+      "pr": 8526,
+      "base_state": "failed",
+      "base_error": "AssertionError [ERR_ASSERTION]: 선택한 스타일 뒤에 삽입\n\n22 !== 1\n",
+      "current_state": "passed",
+      "detects_original_difference": true
+    },
+    {
+      "pr": 8572,
+      "base_state": "failed",
+      "base_error": "AssertionError [ERR_ASSERTION]: 독립 편집 Print의 7쪽과 일치\n\n6 !== 7\n",
+      "current_state": "passed",
+      "detects_original_difference": true
+    }
+  ],
+  "scope": "실제 API 전후 비교 진단. 수정 전에도 통과하는 항목을 원래 결함의 검출 증거로 인정하지 않는다."
+}

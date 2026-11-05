@@ -1,0 +1,61 @@
+{
+  "product_source": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+  "state": "boundary_claim_verified_dynamic_context_difference_disclosed",
+  "records": [
+    {
+      "role": "before",
+      "input_sha256": "9a2edc8583033f54037722111827ffffb2496047b9c9a168086f61f029d09a7b",
+      "pdf_sha256": "3ffbc8328d91a0a3121efaf324e63cb7cd2e9dcf3b9b4a4c78b40d380239db17",
+      "job_id": "6dae1c8f-31d2-45fa-a7b7-c60f6542bcab",
+      "print_metadata": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "input_preprocess": "scripts_disabled",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "pdf_page_count": 1
+      },
+      "script_streams": [
+        {
+          "stream": "Scripts/DefaultJScript",
+          "sha256": "1b4833c1d5a47fcf6cc76e769cf6b12b27401152387d99dfd313469881bcf590",
+          "decoded_hex": "00000000000000000000000000000000ffffffff"
+        },
+        {
+          "stream": "Scripts/JScriptVersion",
+          "sha256": "1322438fbe7c693f50ae634db95d80567379557dea3a970e75d06e63a0e16b55",
+          "decoded_hex": "0100000000000000"
+        }
+      ],
+      "pdf_text": "A2026년 11월 5일B\nhwp-no-scripts-d204acf256124ffb8f98514b62d8afca.hwpC\n\f"
+    },
+    {
+      "role": "after",
+      "input_sha256": "122d77da16b50d15906833806871f5046541d89c4a2a00fe7d4941cc569227a4",
+      "pdf_sha256": "a25f0c071774fcdd6b4f7d04772d3fb76220c88eb57404450555ae487e312608",
+      "job_id": "59c95a85-eeed-4b30-a29e-e8b3404b0069",
+      "print_metadata": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "input_preprocess": "scripts_disabled",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "pdf_page_count": 1
+      },
+      "script_streams": [
+        {
+          "stream": "Scripts/DefaultJScript",
+          "sha256": "1b4833c1d5a47fcf6cc76e769cf6b12b27401152387d99dfd313469881bcf590",
+          "decoded_hex": "00000000000000000000000000000000ffffffff"
+        },
+        {
+          "stream": "Scripts/JScriptVersion",
+          "sha256": "1322438fbe7c693f50ae634db95d80567379557dea3a970e75d06e63a0e16b55",
+          "decoded_hex": "0100000000000000"
+        }
+      ],
+      "pdf_text": "A앞2026년 11월 5일뒤B\n앞hwp-no-scripts-e0feaa250b3149189f3bc20c220c8b5f.hwp뒤C\n\f"
+    }
+  ],
+  "reading": "PDF는 한컴 2020 MCP의 실제 Print다. 서버 영수증의 input_preprocess=scripts_disabled를 확인했다. 두 입력의 Scripts는 동일한 빈 기본 스텁이며 실행 코드는 없다. 파일명 코드가 Print 시 서버 임시 이름 rhwp-no-scripts-*.hwp로 재평가되어 저장 캐시 .result.*.partial.hwp와 다르다. 날짜·파일명 앞의 앞과 뒤의 뒤, 후속 C가 모두 보존된다. 이 문자열 차이를 엔진의 위치 오차로 주장하거나 그림을 지워 점수를 올리지 않는다. 필드 경계의 정확성은 같은 원본 공개 API 전후 검사에서 base FAIL→후보 PASS로 입증한다. 원본 HWpx·한컴 저장 보충 HWP·각 Print를 구분하며 원본의 모든 표시가 동일하다고 주장하지 않는다."
+}

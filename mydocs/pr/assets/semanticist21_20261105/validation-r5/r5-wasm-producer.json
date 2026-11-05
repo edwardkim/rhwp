@@ -1,0 +1,8 @@
+{
+  "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+  "package": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-wasm-pkg",
+  "wasm_sha256": "1d64c3307cf85a5fde220d501cc32c5ff45ded2b3c048b059b769c21f6e46bb9",
+  "glue_sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+  "optimization": "wasm-pack managed wasm-opt",
+  "exit_code": 0
+}

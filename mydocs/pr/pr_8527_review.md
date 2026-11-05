@@ -2,16 +2,16 @@
 
 ## 최종 판정
 
-**머지 보류 — 셀 첫 줄 간격 보정 제품의 전쪽 Native/fresh WASM·전체 회귀·보호 문서 최종 검증 진행 중.**
+**머지 보류 — R5 통합 제품의 최종 검증 진행 중.**
 
-원 PR head와 메인터너 보정 제품을 구분한다. 원격 comment·approve·push·merge·close는 실행하지 않았다. 검증 완료 뒤 판정과 증적을 갱신한다.
+아래 입력의 Native/fresh WASM·직접 판독과 전체 필수 게이트를 완료한 뒤 최종 수용 판정을 갱신한다. 원격 comment·approve·push·merge·close는 실행하지 않았다.
 
 ## 접수 정보
 
 - 원 PR: [PR #8527](https://github.com/edwardkim/rhwp/pull/8527), 작성자 `semanticist21`, reviewer `jangster77`.
-- 원 head: `7243067034a9cb2d64bb0e6f8938f496461b1c34`. 2026-11-05 재조회에서 검토 시작 때와 같고 Open·Non-Draft다.
+- 원 head: `7243067034a9cb2d64bb0e6f8938f496461b1c34`. 2026-11-06 재조회에서 검토 시작 때와 같고 Open·Non-Draft다.
 - 고정 base: `170b886f167b705b6e630c5b34bb638d92fae0a9`(PR #8542 포함).
-- 현재 리베이스 제품: `71e5e0ae2a72a6b8f51682d131077bd4df44994f`. 리베이스 전 셀 첫 줄 간격 보정 제품은 `2de033b4e42be406a01ea0b9053a4531247e147c`다. 직전 행 조각 보정 제품은 `a314d7a24d3234305abff43149f575853db31105`다. 아래 완료된 R2 측정 제품은 `dc39658f812d22c961ddd0fbc8e71c7ec7a52e5b`이며 새 후보 측정으로 바꾸어 쓰지 않는다.
+- 현재 제품 source: `71e5e0ae2a72a6b8f51682d131077bd4df44994f`. 아래 표는 R5 실제 측정이며, 리베이스 전 R2/R3/R4 결과는 통합 분석과 기존 증적에서 구분한다.
 - 통합 브랜치: `review/integration-20261105-semanticist21-open`.
 
 ## 원 주장과 실제 검증 범위
@@ -33,32 +33,38 @@
 
 ## 검증 입력과 전쪽 결과
 
-아래 Native·fresh WASM은 R2 제품 측정이다. 수용 판정은 최종 보정 후보 검증까지 완료한 뒤 내린다.
+아래는 제품 `71e5e0ae2a72a6b8f51682d131077bd4df44994f`의 실제 R5 측정이다. Native·fresh WASM을 구분하고 아직 끝나지 않은 행은 진행 중으로 표시한다. 최종 수용은 전체 필수 검증 뒤 판정한다.
 
-| 입력·용도 | 쪽수 | Native 최저 raw·TSV | fresh WASM 최저 raw·TSV | 독립 Print PDF |
+| 같은 원본·용도 | 전체 쪽수 | Native 최저 raw·TSV | fresh WASM 최저 raw·TSV | 독립 Print PDF |
 | --- | ---: | --- | --- | --- |
-| [levels.hwp](../../tests/fixtures/numbering_levels/levels.hwp) — HWP 8~10수준 번호와 빈 서식 | 1 | [95.17%](assets/semanticist21_20261105/validation-r2/native/8527-levels-hwp-2022.tsv) | 측정 진행 중 또는 실행 오류 재측정 필요 | [levels-hwp-2020.pdf](../../pdf/semanticist21-20261105/pr8527/levels-hwp-2020.pdf) |
-| [levels.hwpx](../../tests/fixtures/numbering_levels/levels.hwpx) — HWPX 8~10수준 번호와 빈 서식 | 1 | [95.17%](assets/semanticist21_20261105/validation-r2/native/8527-levels-hwpx-2022.tsv) | 측정 진행 중 또는 실행 오류 재측정 필요 | [levels-hwpx-2020.pdf](../../pdf/semanticist21-20261105/pr8527/levels-hwpx-2020.pdf) |
-| [scaffold_outline_a.hwpx](assets/scaffold_outline_numbering/scaffold_outline_a.hwpx) — 10수준 확장 후 기존 개요 번호 정상 대조군 | 1 | [100.00%](assets/semanticist21_20261105/validation-r2/native/control-scaffold-a.tsv) | 측정 진행 중 또는 실행 오류 재측정 필요 | [scaffold_outline_a-2024.pdf](../../pdf/issue8540/scaffold_outline_a-2024.pdf) |
-| [scaffold_outline_b.hwpx](assets/scaffold_outline_numbering/scaffold_outline_b.hwpx) — 10수준 확장 후 기존 개요 번호 정상 대조군 | 1 | [100.00%](assets/semanticist21_20261105/validation-r2/native/control-scaffold-b.tsv) | 측정 진행 중 또는 실행 오류 재측정 필요 | [scaffold_outline_b-2024.pdf](../../pdf/issue8540/scaffold_outline_b-2024.pdf) |
+| [levels.hwp](../../tests/fixtures/numbering_levels/levels.hwp) — HWP 8~10수준 번호와 빈 서식 | 1 | [95.16596%](assets/semanticist21_20261105/validation-r5/tsv/8527-levels-hwp-2022-native.tsv) | 진행 중 | [PDF](../../pdf/semanticist21-20261105/pr8527/levels-hwp-2020.pdf) |
+| [levels.hwpx](../../tests/fixtures/numbering_levels/levels.hwpx) — HWPX 8~10수준 번호와 빈 서식 | 1 | [95.16596%](assets/semanticist21_20261105/validation-r5/tsv/8527-levels-hwpx-2022-native.tsv) | 진행 중 | [PDF](../../pdf/semanticist21-20261105/pr8527/levels-hwpx-2020.pdf) |
+| [scaffold_outline_a.hwpx](../../mydocs/pr/assets/scaffold_outline_numbering/scaffold_outline_a.hwpx) — 10수준 확장 후 기존 개요 번호 정상 대조군 | 1 | [100.0%](assets/semanticist21_20261105/validation-r5/tsv/control-scaffold-a-native.tsv) | 진행 중 | [PDF](../../pdf/issue8540/scaffold_outline_a-2024.pdf) |
+| [scaffold_outline_b.hwpx](../../mydocs/pr/assets/scaffold_outline_numbering/scaffold_outline_b.hwpx) — 10수준 확장 후 기존 개요 번호 정상 대조군 | 1 | [100.0%](assets/semanticist21_20261105/validation-r5/tsv/control-scaffold-b-native.tsv) | 진행 중 | [PDF](../../pdf/issue8540/scaffold_outline_b-2024.pdf) |
 
-입력의 실행 경로·정식 보존 경로·SHA-256·크기·역할은 [입력 대응표](assets/semanticist21_20261105/validation-inputs.json)에 있다. 새 정식 보존 파일은 최종 제출 전에 실제 commit 포함과 실행 바이트 동일성을 확인한다.
+[원본·PDF SHA와 보존 경로](assets/semanticist21_20261105/validation-r5/inputs.json), [페이지별 정밀 raw·쪽수·producer](assets/semanticist21_20261105/validation-r5/measurements.json)를 연결한다. 실제 실행 파일과 커밋 파일의 동일성을 확인했으며, 다른 문서의 높은 수치로 미달 쪽을 상쇄하지 않는다.
 
 ## 주장에 대응하는 페이지 증적
 
-아래 PNG는 같은 R2 측정에서 나온 원본 PNG를 합성했다. 점수와 직접 확대 판독을 구분하며, 최종 후보에서 달라진 영역은 새 증적으로 교체한다.
+다음 이미지는 같은 R5 측정의 실제 PNG로 현재 Visual Sweep 함수를 실행해 만들었다. 원본과 PDF를 다시 출력하지 않았고, 해당 입력·쪽의 raw가 TSV와 같은지 확인했다. 직접 판독 완료 여부와 전체 통과 판정은 별도로 기록한다.
 
-- `8527-levels-hwpx-2022` 1쪽: [review](assets/semanticist21_20261105/validation-r2/png/8527-levels-hwpx-2022/review_001.png) · [overlay](assets/semanticist21_20261105/validation-r2/png/8527-levels-hwpx-2022/overlay_001.png).
+### native · 8527-levels-hwp-2022 · 1쪽
+
+원 PR의 8~10수준 문단 번호 표시
+
+![같은 원본 1쪽 review](assets/semanticist21_20261105/validation-r5/png/pr8527/native/8527-levels-hwp-2022/review_001.png)
+
+![같은 원본 1쪽 overlay](assets/semanticist21_20261105/validation-r5/png/pr8527/native/8527-levels-hwp-2022/overlay_001.png)
 
 ## 회귀와 조판 원칙 준수
 
 - [tests/cases/numbering_levels_eight_to_ten.rs](../../tests/cases/numbering_levels_eight_to_ten.rs)
 
-- R2 제품의 최소 글꼴 집중 검사는 35모듈·169건 PASS이며 새 각주 관계 검사 두 건도 PASS다. 전체 nextest 통과와 구분한다.
-- R2 전체 nextest는 행 조각 제품 보정이 필요해 컴파일 중 종료 코드 130으로 중단했으며 최종 후보에서 다시 실행한다.
-- 새 base PR #8640의 실제 46상태·124쪽을 포함한 R2 Native 104사례·262쪽은 모두 90% 이상이다. 최저 91.36%, 새 base 대비 2%p 초과 하락 0쪽, 리베이스 전 136쪽 표시값 하락 0쪽이다.
-- 현재 진행 중인 fresh WASM·기존 PR #8389/#8397 보호 문서·편람 필수 gate·Rust lint·Native Skia·필요한 브라우저 검증을 완료한 뒤 최종 수용 여부를 갱신한다. 웹폰트 시간 제한 검사는 사용자 지시에 따라 충돌이 없으므로 반복하지 않는다.
-- 원본 단위·참조 보존 계약과 실물 배치 좌표 고정을 구분한다. 새 회귀·기존 좌표 핀은 실제 Native/fresh WASM·확대 판독 조건에 맞춰 점검하고 첫머리 근거를 갱신한다.
+- [최소 글꼴 집중 회귀](assets/semanticist21_20261105/validation-r5/focused-regression.txt)는 184건 PASS다. 전체 Rust 회귀 완료로 대신하지 않는다.
+- R5 Native 전체는 128개 입력·301쪽, 최저 91.81%다. [전체 Rust 목록 대조](assets/semanticist21_20261105/validation-r5/full-rust-inventory-audit.json)에서 최소 글꼴 5개·55개 binary·12,735건 PASS·45건 ignored를 확인했고 누락·중복은 없다. [실제 브라우저·생성 타입 검증](assets/semanticist21_20261105/validation-r5/ui/README.md)도 완료했다. fresh WASM·새 base 대비 비교·보호 PR #8389/#8397·편람 게이트·lint·Native Skia의 최종 결과는 계속 통합한다.
+- 원본 단위·참조 보존과 실물 배치의 절대 좌표 고정을 구분한다. 완료 페이지의 Native/fresh WASM 양쪽 raw 98% 이상과 독립 PDF 확대 판독을 확인한 핀만 유지하며, 회귀 첫머리를 실제 측정 근거로 갱신한다.
+- 리베이스 전 R2/R3의 성공 기록과 현재 R5를 구분한다. source·측정 조건이 같은 완전한 증거만 재사용하고 현재 제품의 실패를 과거 통과로 덮지 않는다.
+- 웹폰트 시간 제한·오프라인 검사는 관련 충돌이 없으므로 작업지시자 지시에 따라 반복하지 않는다.
 
 ## Merge 후 처리 계획
 

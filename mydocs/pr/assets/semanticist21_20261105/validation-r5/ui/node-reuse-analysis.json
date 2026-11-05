@@ -1,0 +1,59 @@
+{
+  "current_base": "170b886f167b705b6e630c5b34bb638d92fae0a9",
+  "source_reference": "refs/codex/rebase/semanticist21-20261106-pre-170b",
+  "source_trees": [
+    {
+      "path": "rhwp-studio",
+      "before_tree": "76b9eb2882e9727e8dab62a949ce8a37ec8909e4",
+      "current_tree": "76b9eb2882e9727e8dab62a949ce8a37ec8909e4",
+      "same": true
+    },
+    {
+      "path": "npm/editor",
+      "before_tree": "21efe3c3b932b6dbbd31e0d0bb88da1cf90ff1d1",
+      "current_tree": "21efe3c3b932b6dbbd31e0d0bb88da1cf90ff1d1",
+      "same": true
+    },
+    {
+      "path": "rhwp-shared",
+      "before_tree": "4fc1ecaeb88d288f0efb788d7308ef3a5a0679a0",
+      "current_tree": "4fc1ecaeb88d288f0efb788d7308ef3a5a0679a0",
+      "same": true
+    },
+    {
+      "path": "scripts",
+      "before_tree": "d86579a3f4a6e7f5cfd2c490b1845c6658f86a74",
+      "current_tree": "d86579a3f4a6e7f5cfd2c490b1845c6658f86a74",
+      "same": true
+    }
+  ],
+  "prior_log": "output/pr-review/semanticist21-integration-20261105/r4-studio-node.log",
+  "prior_exit_code": 0,
+  "prior_summary": [
+    "ℹ tests 2723",
+    "ℹ suites 0",
+    "ℹ pass 2723",
+    "ℹ fail 0",
+    "ℹ cancelled 0",
+    "ℹ skipped 0",
+    "ℹ todo 0",
+    "ℹ duration_ms 134568.924131"
+  ],
+  "actual_current_browser": "별도 R5 검증 진행 예정",
+  "reused_command": "output/pr-review/semanticist21-integration-20261105/r3-studio-node-command.json",
+  "frontend_test_sources_unchanged": true,
+  "comparison_stage": "R5 최종 package/public 동기화 전 tracked source tree 대조",
+  "generated_type_changes_after_comparison": [
+    "rhwp-studio/public/rhwp.d.ts",
+    "rhwp-studio/public/rhwp_bg.wasm.d.ts"
+  ],
+  "current_rechecks": {
+    "public_types_actual_wasm_exports": 631,
+    "direct_type_consumer_node_tests": 10,
+    "typescript_and_production_build": "exit 0",
+    "actual_browser_cases": [
+      "style rejection/success/undo",
+      "base PR8630 group child input/undo/redo/Esc"
+    ]
+  }
+}

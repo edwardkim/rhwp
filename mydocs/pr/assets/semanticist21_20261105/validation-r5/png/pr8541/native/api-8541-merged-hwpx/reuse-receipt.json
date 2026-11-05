@@ -1,0 +1,25 @@
+{
+  "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+  "key": "api-8541-merged-hwpx",
+  "backend": "native",
+  "pages": [
+    1
+  ],
+  "method": "같은 실측 PNG를 현재 Visual Sweep의 compare/overlay/review 함수에 공급",
+  "input_sha256": "a015ff435ed39f80608cdb786490db237e76da1e35e433afdb9ee9ab2862a06d",
+  "pdf_sha256": "49c00170c2996de4c371e3f9381268e7f81a10895848e47b8b12a906137d97e2",
+  "original_tsv": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/api-8541-merged-hwpx/api-8541-merged-hwpx/silhouette.tsv",
+  "sweep_script_sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa",
+  "reused_inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/api-8541-merged-hwpx/api-8541-merged-hwpx/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "1a6e3e50b6676b20ce1fc0a7bdb3f95025adec11f18a68d2ea112e6020df3332",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/api-8541-merged-hwpx/api-8541-merged-hwpx/pdf_png/pdf-001.png",
+      "pdf_sha256": "9cd17a175795ff5a7528dd0890d840fd573e4a001e9435451f9b22e52822cd2b"
+    }
+  ],
+  "generated": [
+    "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/api-8541-merged-hwpx/review/review_001.png"
+  ]
+}

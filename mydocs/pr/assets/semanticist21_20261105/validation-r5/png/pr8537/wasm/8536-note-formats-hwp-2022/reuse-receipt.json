@@ -1,0 +1,52 @@
+{
+  "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+  "key": "8536-note-formats-hwp-2022",
+  "backend": "wasm",
+  "pages": [
+    2,
+    3,
+    12,
+    14
+  ],
+  "method": "같은 실측 PNG를 현재 Visual Sweep의 compare/overlay/review 함수에 공급",
+  "input_sha256": "c0150356a4f44e15a8100549f0f1e15172f0f95836a6988392703f7e4febdb77",
+  "pdf_sha256": "433cf379642dbbca3de6a2e299ef36d096c2505f96a9424d6f5d8de37d11b892",
+  "original_tsv": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/wasm/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/silhouette.tsv",
+  "sweep_script_sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa",
+  "reused_inputs": [
+    {
+      "page": 2,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/wasm/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "c6fa95c94d57e273e09e80dc04d60687606133bee3434c416fb5f18d5ac85307",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/wasm/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/pdf_png/pdf-002.png",
+      "pdf_sha256": "19e2d12f01315796f3ef80efb4c0b9ca7aa88ad1ff54163a289723c5a7494dcf"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/wasm/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "9468b7ad70f58558c9d47cd3f441567d337e8442a2d825cee0f873576ad71fc8",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/wasm/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/pdf_png/pdf-003.png",
+      "pdf_sha256": "d85b897dbd32c81f175ec4cabc021f56509505d653e3e3e1d737795d1794c843"
+    },
+    {
+      "page": 12,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/wasm/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/rhwp_png/rhwp_012.png",
+      "rhwp_sha256": "09c5e00638263af70bb2c74c8fa0109d8707cc4593955802eefffb005c9b0f7b",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/wasm/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/pdf_png/pdf-012.png",
+      "pdf_sha256": "cbe948b36818cb5ad289a7b01659367586521dde0d792eea49ebffa6847226b4"
+    },
+    {
+      "page": 14,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/wasm/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/rhwp_png/rhwp_014.png",
+      "rhwp_sha256": "a2c176b1bf612196b05c94de8f6b9dca0097e2a1182af712cedf119ed5435090",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/wasm/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/pdf_png/pdf-014.png",
+      "pdf_sha256": "f90c9f723560237e3d9213c5cc5a3833348ad47f12ce2248a0b9357da417665b"
+    }
+  ],
+  "generated": [
+    "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-direct-review/wasm/8536-note-formats-hwp-2022/review/review_002.png",
+    "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-direct-review/wasm/8536-note-formats-hwp-2022/review/review_003.png",
+    "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-direct-review/wasm/8536-note-formats-hwp-2022/review/review_012.png",
+    "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-direct-review/wasm/8536-note-formats-hwp-2022/review/review_014.png"
+  ]
+}

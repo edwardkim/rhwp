@@ -1,0 +1,25 @@
+{
+  "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+  "key": "api-8570-non-inline-cell-table-hwpx",
+  "backend": "wasm",
+  "pages": [
+    1
+  ],
+  "method": "같은 실측 PNG를 현재 Visual Sweep의 compare/overlay/review 함수에 공급",
+  "input_sha256": "7cb18664b9a752375cd8531a065195abb94adf404415fec9c4dffe654b7c8870",
+  "pdf_sha256": "df330f5d985b897a7ed69e5fe6aa79e53779ff4864fcc0b7faca775d70d911f3",
+  "original_tsv": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/wasm/api-8570-non-inline-cell-table-hwpx/api-8570-non-inline-cell-table-hwpx/silhouette.tsv",
+  "sweep_script_sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa",
+  "reused_inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/wasm/api-8570-non-inline-cell-table-hwpx/api-8570-non-inline-cell-table-hwpx/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "261a218947aca02f983a098f41ab4f362d8ed148f76c990922592640926da368",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/wasm/api-8570-non-inline-cell-table-hwpx/api-8570-non-inline-cell-table-hwpx/pdf_png/pdf-001.png",
+      "pdf_sha256": "e0847c7a299f98ccc691e4d6814b6a729cc24911a3c1325919424e86fda7d47f"
+    }
+  ],
+  "generated": [
+    "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-direct-review/wasm/api-8570-non-inline-cell-table-hwpx/review/review_001.png"
+  ]
+}

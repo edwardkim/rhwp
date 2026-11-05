@@ -1,0 +1,34 @@
+{
+  "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+  "key": "api-8541-split-hwpx",
+  "backend": "native",
+  "pages": [
+    1,
+    2
+  ],
+  "method": "같은 실측 PNG를 현재 Visual Sweep의 compare/overlay/review 함수에 공급",
+  "input_sha256": "04f6270e56e8751dbb8d071e96248fab7048ab32ad866829d97d4bdbfa7761fc",
+  "pdf_sha256": "7d86dbea75027af420f6f1b8c2d60589fc277b054fef872517f1ef2843ac60cb",
+  "original_tsv": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/api-8541-split-hwpx/api-8541-split-hwpx/silhouette.tsv",
+  "sweep_script_sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa",
+  "reused_inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/api-8541-split-hwpx/api-8541-split-hwpx/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "6083f71301fa03ff546745bebffa86bfea0eb79b159c3dfdb4c264394085de19",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/api-8541-split-hwpx/api-8541-split-hwpx/pdf_png/pdf-001.png",
+      "pdf_sha256": "61ac0e7215c61e009633232178b54fe77b9da49b9b9747072c163cc7ac4af585"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/api-8541-split-hwpx/api-8541-split-hwpx/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "6d850350ecccb7f664237a617e7208922f8b60957d3a2eca3043d1ee85ca68ac",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/api-8541-split-hwpx/api-8541-split-hwpx/pdf_png/pdf-002.png",
+      "pdf_sha256": "e970925f500a00e50ec7fd453925aa5498cdd30895bbd874309c402d2169c1d4"
+    }
+  ],
+  "generated": [
+    "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/api-8541-split-hwpx/review/review_001.png",
+    "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/api-8541-split-hwpx/review/review_002.png"
+  ]
+}

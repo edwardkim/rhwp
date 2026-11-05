@@ -1,0 +1,34 @@
+{
+  "source_sha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+  "key": "8538-shape-hwp-2022",
+  "backend": "native",
+  "pages": [
+    4,
+    5
+  ],
+  "method": "같은 실측 PNG를 현재 Visual Sweep의 compare/overlay/review 함수에 공급",
+  "input_sha256": "2ebcb057709da85d59f5f5eb29a997763e19324ab47eef3fbf30c6792d27bb91",
+  "pdf_sha256": "2dd3906646849b23b50e57ab55659e9cc223bc776d754dba968a144a4ce08aae",
+  "original_tsv": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/8538-shape-hwp-2022/8538-shape-hwp-2022/silhouette.tsv",
+  "sweep_script_sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa",
+  "reused_inputs": [
+    {
+      "page": 4,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/8538-shape-hwp-2022/8538-shape-hwp-2022/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "4fad7e158468207f7b4f6f03648205243d668ab25e84430c11244747dce3af0f",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/8538-shape-hwp-2022/8538-shape-hwp-2022/pdf_png/pdf-004.png",
+      "pdf_sha256": "a80deb67d274c727bfaa5f025b6a98b0a69963cf59ede30c0a1a4ae721083ea0"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/8538-shape-hwp-2022/8538-shape-hwp-2022/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "c9a72663f7e9ada7cda8208fc151c774d902e2b08d03d099add209a349134070",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-candidate/native/8538-shape-hwp-2022/8538-shape-hwp-2022/pdf_png/pdf-005.png",
+      "pdf_sha256": "376b7245566cb4cc86cfe0764bbeea507ea154907cdc80b9ceb3f9a7b6130910"
+    }
+  ],
+  "generated": [
+    "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8538-shape-hwp-2022/review/review_004.png",
+    "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-direct-review/native/8538-shape-hwp-2022/review/review_005.png"
+  ]
+}
