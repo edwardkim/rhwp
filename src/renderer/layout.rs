@@ -328,16 +328,9 @@ fn note_separator_length_px(raw: i32, available_width: f64, dpi: f64) -> f64 {
     resolved.clamp(0.0, available_width)
 }
 
-/// 현재 FootnoteArea는 다단 각주도 body 전체 폭으로 합쳐 그린다.
-///
-/// 고정 길이(-1/-2)와 양수 HWPUNIT은 그 구조와 무관하게 해석할 수 있지만,
-/// 상대 길이(-3/-4)는 실제 소유 단의 폭/시작점을 알아야 한다. 다단 placement를
-/// 함께 고치기 전까지 상대 sentinel은 기존 1/3 폭을 보존해 범위를 넓히지 않는다.
+/// 각주 프레임이 소유 단 또는 통합 본문의 실제 폭을 전달한다.
 fn footnote_separator_length_px(raw: i32, area_width: f64, dpi: f64) -> f64 {
-    match raw {
-        -3 | -4 => area_width.max(0.0) / 3.0,
-        _ => note_separator_length_px(raw, area_width, dpi),
-    }
+    note_separator_length_px(raw, area_width, dpi)
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -3910,6 +3903,7 @@ mod header_footer_layout;
 mod hidden_paragraph_marker;
 mod nested_table_origin;
 mod note_reference;
+mod note_separator;
 mod paragraph_border;
 mod paragraph_layout;
 mod picture_border;

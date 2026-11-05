@@ -5,9 +5,7 @@ use super::super::page_layout::LayoutRect;
 use super::super::pagination::{FootnoteFragment, FootnoteRef, FootnoteSource};
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
-use super::super::{
-    hwpunit_to_px, AutoNumberCounter, LineStyle, PathCommand, StrokeDash, TextStyle,
-};
+use super::super::{hwpunit_to_px, AutoNumberCounter, PathCommand, StrokeDash, TextStyle};
 use super::border_rendering::border_width_to_px;
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::{
@@ -1615,25 +1613,9 @@ impl LayoutEngine {
                 footnote_separator_length_px(shape.separator_length, fn_area.width, self.dpi);
             let line_width = border_width_to_px(shape.separator_line_width).max(0.5);
 
-            if crate::renderer::note_separator::has_ink(shape.separator_color) {
-                let border = crate::model::style::BorderLine {
-                    line_type: super::border_rendering::border_line_type_from_code(
-                        shape.separator_line_type,
-                    ),
-                    width: shape.separator_line_width,
-                    color: shape.separator_color,
-                };
-                fn_node
-                    .children
-                    .extend(super::border_rendering::create_border_line_nodes(
-                        tree,
-                        &border,
-                        fn_area.x,
-                        y,
-                        fn_area.x + sep_length,
-                        y,
-                    ));
-            }
+            super::note_separator::append(
+                tree, fn_node, shape, fn_area.x, y, sep_length, line_width,
+            );
             y += line_width;
 
             // (3) 구분선 아래 여백
