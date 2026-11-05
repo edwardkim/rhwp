@@ -271,6 +271,8 @@ function deleteSelectedObject(wasm: WasmBridge, ref: PictureDeleteRef): void {
     }
   } else if (ref.type === 'equation') {
     wasm.deleteEquationControl(ref.sec, ref.ppi, ref.ci);
+  } else if (ref.cellPath && ref.cellPath.length > 0) {
+    wasm.deleteCellShapeControlByPath(ref.sec, ref.ppi, ref.cellPath, ref.ci);
   } else {
     wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
   }

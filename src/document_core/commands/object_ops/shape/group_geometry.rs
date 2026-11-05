@@ -32,7 +32,7 @@ pub(super) fn refresh_top_level_frame(shape: &mut ShapeObject) {
     sa.rotation_center.y = (bh / 2) as i32;
 }
 
-/// 실제 변환 변경에서만 저장 캐시를 비우며, 무변경 속성 되먹임은 원본 행렬을 보존한다.
+/// 크기·회전·대칭 변경에서만 캐시를 비우며, 위치 이동은 원본 로컬 행렬을 보존한다.
 pub(super) fn finish_top_level_edit(
     shape: &mut ShapeObject,
     before: (u32, u32, u32, u32, u32, u32, i16, bool, bool),
@@ -48,9 +48,13 @@ pub(super) fn finish_top_level_edit(
     if matches!(shape, ShapeObject::Polygon(_)) {
         return;
     }
-    if super::super::common::shape_transform_fingerprint(shape.common(), shape.shape_attr())
-        != before
-    {
+    let after =
+        super::super::common::shape_transform_fingerprint(shape.common(), shape.shape_attr());
+    // common offset은 문단/셀의 앵커 이동이다. 로컬 행렬의 이동·배율까지 지우면
+    // 도형이 다른 위치로 뛰고, offset만 되돌리는 Undo로 원래 기하를 복원할 수 없다.
+    let geometry =
+        |f: (u32, u32, u32, u32, u32, u32, i16, bool, bool)| (f.0, f.1, f.4, f.5, f.6, f.7, f.8);
+    if geometry(after) != geometry(before) {
         let sa = shape.shape_attr_mut();
         sa.raw_rendering.clear();
         sa.render_tx = 0.0;

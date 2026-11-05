@@ -302,6 +302,26 @@ impl DocumentCore {
         changed
     }
 
+    /// 개체 편집도 원본 모델·스타일·저장 프레임이 모두 복원됐을 때만 로드 캐시를 돌린다.
+    /// offset만 복원한 뒤 구역을 영구적인 편집 상태로 남기면, 관계없는 표의 저장 높이까지
+    /// 다시 해석되어 Undo 전후 표시 위치가 달라질 수 있다.
+    pub(crate) fn finish_loaded_source_cache_after_object_edit(&mut self, section: usize) {
+        let restored = self
+            .render_normalization
+            .loaded_frames
+            .as_ref()
+            .is_some_and(|frames| frames.matches(&self.document, section));
+        if let Some(source) = self
+            .render_normalization
+            .loaded_frames
+            .as_mut()
+            .and_then(|frames| frames.sections.get_mut(section))
+        {
+            source.restore_pending = restored;
+        }
+        self.finish_loaded_source_cache_after_cell_edit(section, true);
+    }
+
     /// 기존 무효화 지점에서 원본 raw 캐시를 복사하지 않고 이동해 보존한다.
     /// 모델·DocInfo·저장 guard 복원을 입증한 같은 명령만 원래 봉인과 대조해 되돌린다.
     pub(crate) fn finish_loaded_source_cache_after_cell_edit(

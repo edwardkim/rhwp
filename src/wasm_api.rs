@@ -4753,6 +4753,24 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 표 셀·글상자 안의 도형 하나를 전체 소유 경로로 삭제한다.
+    #[wasm_bindgen(js_name = deleteCellShapeControlByPath)]
+    pub fn delete_cell_shape_control_by_path(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        cell_path_json: &str,
+        inner_control_idx: usize,
+    ) -> Result<String, JsValue> {
+        self.delete_cell_shape_control_by_path_native(
+            section_idx,
+            parent_para_idx,
+            cell_path_json,
+            inner_control_idx,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// [#6771] 표 셀/글상자 내부 **표** 삭제 (by_path).
     ///
     /// 셀 안 1×1 안내 상자처럼 본문 리스트 밖에 있는 표를 지운다 — `deleteControlAt` 은

@@ -2735,6 +2735,19 @@ export class WasmBridge {
     );
   }
 
+  /** 표 셀·글상자 안의 도형을 전체 소유 경로로 삭제한다. */
+  deleteCellShapeControlByPath(
+    sec: number,
+    parentPara: number,
+    cellPath: CellPathLike,
+    innerControlIdx: number,
+  ): { ok: boolean } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).deleteCellShapeControlByPath(
+      sec, parentPara, JSON.stringify(cellPath), innerControlIdx,
+    ));
+  }
+
   createShapeControl(params: Record<string, unknown>): { ok: boolean; paraIdx: number; controlIdx: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.createShapeControl(JSON.stringify(params)));

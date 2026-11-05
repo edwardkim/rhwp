@@ -47,6 +47,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `issue-7442-nested-table-pointer.test.mjs` | 상시 | active | #7442 F5 선택 후 드래그·일반 hover/resize·Undo·블록 선택·외곽선 클릭 | basic/issue1994_behindtext_table_20200830.hwp | 수동 | fresh WASM 필수 |
 | `issue-6806-zero-shape-resize-undo.test.mjs` | 상시 | active | #6806 저장 높이 0 도형의 실제 WASM 리사이즈·Studio undo/redo | issue6023/30269_reform_recommendation.hwp | 수동 | 기존 누락 항목 등록 |
 | `issue-7333-line-selection.test.mjs` | 상시 | active | #7333 넓은 도형 위 화살표 실클릭 선택과 z-order·undo 무변경 검사 | issue7333/aaaaaa.hwp | npm e2e:issue-7333-line |  |
+| `number-shape-selection-issue7375.test.mjs` | 상시 | active | #7375 표 셀 번호 도형의 독립 선택·셀 경로·이동·삭제·Ctrl+Z/Command+Z | issue7333/aaaaaa.hwp | 수동 | `run-with-vite.mjs`로 실행; 공통 소유 경로 관계 검사는 기존 unit glob에서 실행 |
 | `probe-flow-input-latency-issue3794.mjs` | 진단 | active | #3794 flow 입력 budget·scheduler·restart 지연 측정 | issue1949_giant_cell_nested_tables_perf.hwp/.hwpx | 수동 | 시간 수치는 비-CI 진단 |
 | `probe-host-font-visual-issue7403.mjs` | 진단 | active | #7403 실제 HCRBatang host face의 CanvasKit/Canvas2D 출력과 해제 후 원복 시각 증거 | re-01-hangul-only-hancom.hwp | 수동 | RHWP_HOST_FONT_PATH로 검증한 글꼴 공급, run-with-vite.mjs 경유 |
 | `chart-data-structure-issue6053.test.mjs` | 상시 | active | #6053 차트 행·열·라벨 구조 편집 UI — 우클릭 행 추가·저장본 반영·Ctrl+Z 원복·무편집 무흔적·ESC 는 메뉴만 닫음·종류별 사전 판정(원형 안내/주식형 캔들 양끝 비활성) | chart/세로막대형/묶은세로막대형.hwp, chart/원형/2차원원형.hwp, chart/기타/시가고가저가종가.hwp | npm e2e:issue-6053 | dev server 필요 — run-with-vite.mjs 경유 |

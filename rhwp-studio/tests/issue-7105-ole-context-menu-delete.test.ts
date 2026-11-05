@@ -22,10 +22,11 @@ const pictureSrc = readFileSync(join(rootDir, 'src/engine/input-handler-picture.
 const inputSrc = readFileSync(join(rootDir, 'src/engine/input-handler.ts'), 'utf8');
 const mouseSrc = readFileSync(join(rootDir, 'src/engine/input-handler-mouse.ts'), 'utf8');
 
-/** `if (<조건>) { … wasm.deleteShapeControl(` 의 조건식에서 `ref.type === '<종류>'` 들을 뽑는다. */
+/** 본문·셀 분기를 포함한 도형 삭제 종류를 읽는다. 실제 셀 삭제 동작은 #7375 E2E로 검사한다. */
 function shapeDeleteTypes(block: string, label: string): string[] {
-  const m = block.match(/if\s*\(([^{]*?)\)\s*\{\s*(?:this\.)?wasm\.deleteShapeControl\(/);
+  const m = block.match(/if\s*\(([^{}]*?ref\.type[^{}]*?)\)\s*\{/);
   assert.ok(m, `${label}: 도형 삭제 분기를 찾아야 한다`);
+  assert.match(block, /wasm\.deleteShapeControl\(/, `${label}: 본문 도형 삭제 경로 유지`);
   return [...m[1].matchAll(/ref\.type\s*===\s*'(\w+)'/g)].map((t) => t[1]).sort();
 }
 
