@@ -55,6 +55,23 @@ fn ruby_flow_size(
     })
 }
 
+/// 글자 없이 덧말만 든 문단의 줄 메트릭 `(높이, 기준선)`. 글자 흐름(`flow_inline_controls`)은
+/// 글이 있는 문단만 다루므로, 빈 문단 줄도 글자 있는 줄처럼 가장 큰 덧말 높이를 따른다.
+pub(super) fn empty_text_ruby_row(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+) -> Option<(i32, i32)> {
+    para.controls
+        .iter()
+        .zip(para.control_utf16_positions())
+        .filter_map(|(control, utf16_position)| match control {
+            Control::Ruby(ruby) => ruby_flow_size(para, ruby, utf16_position, styles)
+                .map(|(_, height, baseline)| (height, baseline)),
+            _ => None,
+        })
+        .max()
+}
+
 pub(crate) fn flow_inline_controls_with_storage<S: crate::storage::Storage>(
     para: &Paragraph,
     styles: &ResolvedStyleSet,

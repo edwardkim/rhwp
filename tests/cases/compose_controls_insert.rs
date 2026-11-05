@@ -383,3 +383,72 @@ fn compose_controls_work_in_cells_text_boxes_and_notes() {
         assert!(text.contains(expected), "{expected}: {text}");
     }
 }
+
+#[test]
+fn ruby_only_paragraph_raises_its_line_in_the_body_cells_and_notes() {
+    // 한컴 12.30: 셀 글 전체를 덧말로 바꿔도 줄이 덧말 높이만큼 커진다.
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document_native().unwrap();
+    doc.split_paragraph_native(0, 0, 0, None).unwrap();
+    let table = doc.create_table_native(0, 1, 0, 2, 1).unwrap();
+    let (tp, tc) = (number(&table, "paraIdx"), number(&table, "controlIdx"));
+    let cell = [(tc, 0, 0)];
+    let footnote = doc.insert_footnote_native(0, 0, 0).unwrap();
+    let (fp, fc) = (
+        number(&footnote, "paraIdx"),
+        number(&footnote, "controlIdx"),
+    );
+    let top = r#"{"mainText":"cell","rubyText":"top"}"#;
+    let below = r#"{"mainText":"cell","rubyText":"top","below":true}"#;
+    doc.insert_ruby_at(ComposeHost::Body { sec: 0, para: 2 }, 0, top)
+        .unwrap();
+    doc.insert_ruby_at(
+        ComposeHost::Cell {
+            sec: 0,
+            parent_para: tp,
+            path: &cell,
+        },
+        0,
+        top,
+    )
+    .unwrap();
+    // 각주 첫 문단은 번호 뒤에 넣는다.
+    let note = ComposeHost::Note {
+        sec: 0,
+        para: fp,
+        control: fc,
+        note_para: 0,
+    };
+    let note_text = doc.document().sections[0].paragraphs[fp].controls[fc].clone();
+    let Control::Footnote(note_model) = note_text else {
+        panic!("각주 없음");
+    };
+    let note_offset = note_model.paragraphs[0].text.chars().count();
+    doc.insert_ruby_at(note, note_offset, below).unwrap();
+    let rows = |core: &DocumentCore| {
+        let section = &core.document().sections[0];
+        let body = section.paragraphs[2].line_segs[0].clone();
+        let Control::Table(table) = &section.paragraphs[tp].controls[tc] else {
+            panic!("표 없음");
+        };
+        let cell = table.cells[0].paragraphs[0].line_segs[0].clone();
+        let Control::Footnote(note) = &section.paragraphs[fp].controls[fc] else {
+            panic!("각주 없음");
+        };
+        let note = note.paragraphs[0].line_segs[0].clone();
+        [body, cell, note].map(|line| (line.line_height, line.baseline_distance, line.line_spacing))
+    };
+    // 각주 문단은 각주 모양의 줄 간격(130%)을 쓴다.
+    let expected = [(1500, 1350, 900), (1500, 1350, 900), (1408, 850, 424)];
+    assert_eq!(rows(&doc), expected);
+    for (format, bytes) in [
+        ("HWP", doc.export_hwp_with_adapter_snapshot().unwrap()),
+        ("HWPX", doc.export_hwpx_native().unwrap()),
+    ] {
+        let reopened = HwpDocument::from_bytes(&bytes).unwrap();
+        // HWPX는 글자 없는 본문 문단의 줄을 쓰지 않아 열 때 다시 짠다. 셀 행 높이로 본다.
+        if format == "HWP" {
+            assert_eq!(rows(&reopened), expected, "{format}");
+        }
+    }
+}
