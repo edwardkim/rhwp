@@ -127,3 +127,40 @@ WASM 생성 시점의 HEAD는 `9a54d8ac280645dc83bd984dd612ef4a999ae824`이고,
 remote push, PR 생성, CI, merge, 이슈 close, release는 아직 수행하지 않았다.
 기존 #8104 문서 3개의 미커밋 표현 변경은 별도로 보존하고 이번 코드 커밋에 포함하지 않는다.
 정식 배포 포함 여부는 이후 release tag와 resolved commit에서 별도로 확인한다.
+
+
+## 최신 devel 반영과 제출 검증 — 2026-11-05
+
+기존 base `e96b500e3ea259c821f05440f0388355916a9e9b`에서
+`a95d1d5afad1bfd61998794fa78fb0db100d690a`로 충돌 없이 rebase했다.
+검증한 코드 head는 `bd64bf13c069898b998db6e7199589914115696f`이며, 이후 변경은 이 검증 기록뿐이다.
+기존 #8104 문서 세 개의 미커밋 변경은 보존했다.
+
+- 최신 소스의 locked release WASM + wasm-opt 빌드: PASS, 5분 31초.
+- TypeScript, 전체 npm 검사 **2,737 PASS / 실패·건너뜀 0**, production 빌드,
+  E2E manifest **186/186**: PASS.
+- 실제 Chrome의 폰트 수명 7개 시나리오: PASS. 외부 요청 무응답 시 초기화 5,543ms,
+  문서 열기 5,312.8ms이며 후속 입력·Undo까지 완료했다.
+- 최신 base의 원본 로더는 같은 무응답 조건에서 30초 후에도 state=null로 초기화 실패했다.
+  정상 응답의 base/후보 Canvas·배치 해시와 측정값은 동일했다.
+- 새 WASM SHA-256: `6967c416ed06dc9f226f135a23d550f59e8122911a9c6ab5361630492666a3ef`.
+  동일 패키지를 base/후보 브라우저에 공급하고 실제 응답 해시를 확인했다.
+
+리베이스 기능 보존 범위: #8630의 묶음 글상자 클릭·입력·Undo·Esc 복귀는
+기존 `issue-8578-group-text-editing.test.mjs`의 실제 편람 383쪽 Canvas2D 여정으로
+최신 base와 후보를 대조했다. 두 실행의 소유 위치·내용·오류 목록·쪽수 결과가 동일했다.
+공용 실행기의 잔여 Node 핸들 때문에 검증 전용 래퍼에서 `runTest` 완료를 명시적으로
+기다리도록 했으며 assertion과 제품 코드는 바꾸지 않았다.
+
+#8609·#8622 통합의 Rust 편집·저장·조판과 Native/CanvasKit paint 변경은 이 PR에서
+수정하지 않는다. 이 PR의 `loadFontResource`는 DOM FontFace/CSS 공급만 소비하며,
+CanvasKit의 `resolveCanvasKitFontPlan`과 Native 공급 경로는 이를 호출하지 않는다.
+새 devel의 CanvasKit 아래 일점쇄선 분기도 이 바이트 로더를 소비하지 않는다.
+문서 분류 자동화 #8618 및 후속 기록 #8633·#8634는 Studio 런타임과 무관하다.
+전체 회귀와 최신 WASM 브라우저 실행을 위 증거로 기록하며, 해당 통합 PR들의 독립 PDF
+시각 검증을 이번 작업에서 다시 수행했다고 주장하지 않는다.
+
+추가 증거: `output/pr-review/web-font-deadline/rebased/`의 `wasm-build.log`,
+`typecheck.log`, `npm-test.log`, `build.log`, `browser.log`, `base-success.log`,
+`base-pending.log`, `group-base-final.log`, `group-candidate-final.log`.
+2026-11-05 사용자가 push와 Open PR 제출을 승인했다. 제출 직전 본인 열린 PR은 없었다.

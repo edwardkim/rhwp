@@ -82,3 +82,6 @@ document `readyState=interactive`, load 미발생, `document.fonts.ready` 미완
   URL 요청을 계속 남긴 채 metrics 대기만 건너뛰는 보정은 하지 않는다.
 - 정식 E2E는 실제 네트워크 취소, 공개 MessagePort loadFile, 후속 편집/Undo 및 늦은 완료 전후의
   공급·측정·배치·Canvas 보존을 검사한다. 합성 입력의 수명 계약과 한컴 조판 일치는 구분한다.
+
+최신 제출 기준은 `a95d1d5afad1bfd61998794fa78fb0db100d690a`이며, 리베이스 후 검증은
+[최종 보고서](../report/task_m100_8614_report.md)의 최신 devel 반영 절에 기록한다.
