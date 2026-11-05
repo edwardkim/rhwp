@@ -1,0 +1,49 @@
+{
+  "historical_report": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/rebase-ece9-r1-pre-rebase-native-comparison.json",
+  "candidate": "dc39658f812d22c961ddd0fbc8e71c7ec7a52e5b",
+  "metric": "silhouette_raw_match_percent",
+  "rows": [
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 10,
+      "pre_rebase": "100.00",
+      "broken_r1": "97.31",
+      "after_r2": "100.00",
+      "delta_from_pre_rebase_pp": "0.00",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/rebase-ece9-r2-candidate-native/native/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/silhouette.tsv",
+      "source_sha": "dc39658f812d22c961ddd0fbc8e71c7ec7a52e5b"
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 11,
+      "pre_rebase": "100.00",
+      "broken_r1": "96.53",
+      "after_r2": "100.00",
+      "delta_from_pre_rebase_pp": "0.00",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/rebase-ece9-r2-candidate-native/native/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/silhouette.tsv",
+      "source_sha": "dc39658f812d22c961ddd0fbc8e71c7ec7a52e5b"
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 10,
+      "pre_rebase": "100.00",
+      "broken_r1": "97.31",
+      "after_r2": "100.00",
+      "delta_from_pre_rebase_pp": "0.00",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/rebase-ece9-r2-candidate-native/native/8536-note-formats-hwpx-2022/8536-note-formats-hwpx-2022/silhouette.tsv",
+      "source_sha": "dc39658f812d22c961ddd0fbc8e71c7ec7a52e5b"
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 11,
+      "pre_rebase": "100.00",
+      "broken_r1": "96.53",
+      "after_r2": "100.00",
+      "delta_from_pre_rebase_pp": "0.00",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/rebase-ece9-r2-candidate-native/native/8536-note-formats-hwpx-2022/8536-note-formats-hwpx-2022/silhouette.tsv",
+      "source_sha": "dc39658f812d22c961ddd0fbc8e71c7ec7a52e5b"
+    }
+  ],
+  "remaining_declines": [],
+  "scope": "지적한 네 쪽 우선; 전 136쪽 대조는 별도 완료 확인 필요"
+}

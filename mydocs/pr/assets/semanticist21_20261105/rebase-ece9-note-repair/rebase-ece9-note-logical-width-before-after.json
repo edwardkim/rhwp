@@ -1,0 +1,428 @@
+[
+  {
+    "revision": "r1",
+    "format": "hwp",
+    "page": 8,
+    "logical_line_count": 2,
+    "expected_logical_line_count": 1,
+    "pass": false,
+    "render_tree": "output/pr-review/semanticist21-integration-20261105/rebase-ece9-r1-candidate-native/native/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/render_tree/render_tree_008.json",
+    "render_tree_sha256": "9ca4d053dffb6df221812f69a1b1062c152551e64a8938e6239bd1ee2fff55af",
+    "lines": [
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 955.1,
+          "w": 189.0,
+          "h": 0.5
+        }
+      },
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 956.5,
+          "w": 189.0,
+          "h": 0.5
+        }
+      }
+    ]
+  },
+  {
+    "revision": "r1",
+    "format": "hwp",
+    "page": 9,
+    "logical_line_count": 2,
+    "expected_logical_line_count": 1,
+    "pass": false,
+    "render_tree": "output/pr-review/semanticist21-integration-20261105/rebase-ece9-r1-candidate-native/native/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/render_tree/render_tree_009.json",
+    "render_tree_sha256": "043a9c167cc307032fb528053a1dcffb92ecd54638d807a863b58b00d996da0e",
+    "lines": [
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 954.9,
+          "w": 189.0,
+          "h": 0.6
+        }
+      },
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 956.7,
+          "w": 189.0,
+          "h": 1.2
+        }
+      }
+    ]
+  },
+  {
+    "revision": "r1",
+    "format": "hwp",
+    "page": 10,
+    "logical_line_count": 2,
+    "expected_logical_line_count": 1,
+    "pass": false,
+    "render_tree": "output/pr-review/semanticist21-integration-20261105/rebase-ece9-r1-candidate-native/native/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/render_tree/render_tree_010.json",
+    "render_tree_sha256": "5364a0dafe896e709736afdff149248d9fe8deb0a9c4dc5d63180f6a54bc3b61",
+    "lines": [
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 954.3,
+          "w": 189.0,
+          "h": 1.2
+        }
+      },
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 956.7,
+          "w": 189.0,
+          "h": 0.6
+        }
+      }
+    ]
+  },
+  {
+    "revision": "r1",
+    "format": "hwp",
+    "page": 11,
+    "logical_line_count": 3,
+    "expected_logical_line_count": 1,
+    "pass": false,
+    "render_tree": "output/pr-review/semanticist21-integration-20261105/rebase-ece9-r1-candidate-native/native/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/render_tree/render_tree_011.json",
+    "render_tree_sha256": "ac0a54d1c8631a257513f94dc96572513c91a64af441a9f967eed98d86750082",
+    "lines": [
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 954.1,
+          "w": 189.0,
+          "h": 0.6
+        }
+      },
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 955.5,
+          "w": 189.0,
+          "h": 1.2
+        }
+      },
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 957.5,
+          "w": 189.0,
+          "h": 0.6
+        }
+      }
+    ]
+  },
+  {
+    "revision": "r1",
+    "format": "hwpx",
+    "page": 8,
+    "logical_line_count": 2,
+    "expected_logical_line_count": 1,
+    "pass": false,
+    "render_tree": "output/pr-review/semanticist21-integration-20261105/rebase-ece9-r1-candidate-native/native/8536-note-formats-hwpx-2022/8536-note-formats-hwpx-2022/render_tree/render_tree_008.json",
+    "render_tree_sha256": "9ca4d053dffb6df221812f69a1b1062c152551e64a8938e6239bd1ee2fff55af",
+    "lines": [
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 955.1,
+          "w": 189.0,
+          "h": 0.5
+        }
+      },
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 956.5,
+          "w": 189.0,
+          "h": 0.5
+        }
+      }
+    ]
+  },
+  {
+    "revision": "r1",
+    "format": "hwpx",
+    "page": 9,
+    "logical_line_count": 2,
+    "expected_logical_line_count": 1,
+    "pass": false,
+    "render_tree": "output/pr-review/semanticist21-integration-20261105/rebase-ece9-r1-candidate-native/native/8536-note-formats-hwpx-2022/8536-note-formats-hwpx-2022/render_tree/render_tree_009.json",
+    "render_tree_sha256": "043a9c167cc307032fb528053a1dcffb92ecd54638d807a863b58b00d996da0e",
+    "lines": [
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 954.9,
+          "w": 189.0,
+          "h": 0.6
+        }
+      },
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 956.7,
+          "w": 189.0,
+          "h": 1.2
+        }
+      }
+    ]
+  },
+  {
+    "revision": "r1",
+    "format": "hwpx",
+    "page": 10,
+    "logical_line_count": 2,
+    "expected_logical_line_count": 1,
+    "pass": false,
+    "render_tree": "output/pr-review/semanticist21-integration-20261105/rebase-ece9-r1-candidate-native/native/8536-note-formats-hwpx-2022/8536-note-formats-hwpx-2022/render_tree/render_tree_010.json",
+    "render_tree_sha256": "5364a0dafe896e709736afdff149248d9fe8deb0a9c4dc5d63180f6a54bc3b61",
+    "lines": [
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 954.3,
+          "w": 189.0,
+          "h": 1.2
+        }
+      },
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 956.7,
+          "w": 189.0,
+          "h": 0.6
+        }
+      }
+    ]
+  },
+  {
+    "revision": "r1",
+    "format": "hwpx",
+    "page": 11,
+    "logical_line_count": 3,
+    "expected_logical_line_count": 1,
+    "pass": false,
+    "render_tree": "output/pr-review/semanticist21-integration-20261105/rebase-ece9-r1-candidate-native/native/8536-note-formats-hwpx-2022/8536-note-formats-hwpx-2022/render_tree/render_tree_011.json",
+    "render_tree_sha256": "ac0a54d1c8631a257513f94dc96572513c91a64af441a9f967eed98d86750082",
+    "lines": [
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 954.1,
+          "w": 189.0,
+          "h": 0.6
+        }
+      },
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 955.5,
+          "w": 189.0,
+          "h": 1.2
+        }
+      },
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 957.5,
+          "w": 189.0,
+          "h": 0.6
+        }
+      }
+    ]
+  },
+  {
+    "revision": "r2",
+    "format": "hwp",
+    "page": 8,
+    "logical_line_count": 1,
+    "expected_logical_line_count": 1,
+    "pass": true,
+    "render_tree": "output/pr-review/semanticist21-integration-20261105/rebase-ece9-r2-candidate-native/native/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/render_tree/render_tree_008.json",
+    "render_tree_sha256": "51d8c0b99e94e34ee48a64e62e44ce7c22a5f62208d35d192f6c5c11b1493290",
+    "lines": [
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 955.1,
+          "w": 189.0,
+          "h": 1.9
+        }
+      }
+    ]
+  },
+  {
+    "revision": "r2",
+    "format": "hwp",
+    "page": 9,
+    "logical_line_count": 1,
+    "expected_logical_line_count": 1,
+    "pass": true,
+    "render_tree": "output/pr-review/semanticist21-integration-20261105/rebase-ece9-r2-candidate-native/native/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/render_tree/render_tree_009.json",
+    "render_tree_sha256": "1788286493e3af73e80549856f448dda74c218fd6e7cc8b9368edcbb67ade77e",
+    "lines": [
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 955.1,
+          "w": 189.0,
+          "h": 1.9
+        }
+      }
+    ]
+  },
+  {
+    "revision": "r2",
+    "format": "hwp",
+    "page": 10,
+    "logical_line_count": 1,
+    "expected_logical_line_count": 1,
+    "pass": true,
+    "render_tree": "output/pr-review/semanticist21-integration-20261105/rebase-ece9-r2-candidate-native/native/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/render_tree/render_tree_010.json",
+    "render_tree_sha256": "fd8a44edba7d02c2a7e10f2cc2951e8d7e731384b0806fa3b94b6d4b6fd31bdf",
+    "lines": [
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 955.1,
+          "w": 189.0,
+          "h": 1.9
+        }
+      }
+    ]
+  },
+  {
+    "revision": "r2",
+    "format": "hwp",
+    "page": 11,
+    "logical_line_count": 1,
+    "expected_logical_line_count": 1,
+    "pass": true,
+    "render_tree": "output/pr-review/semanticist21-integration-20261105/rebase-ece9-r2-candidate-native/native/8536-note-formats-hwp-2022/8536-note-formats-hwp-2022/render_tree/render_tree_011.json",
+    "render_tree_sha256": "ecd9c5b099e950a5b2c62f8af8c7449e1f10f180cdd4703685246794de345ded",
+    "lines": [
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 955.1,
+          "w": 189.0,
+          "h": 1.9
+        }
+      }
+    ]
+  },
+  {
+    "revision": "r2",
+    "format": "hwpx",
+    "page": 8,
+    "logical_line_count": 1,
+    "expected_logical_line_count": 1,
+    "pass": true,
+    "render_tree": "output/pr-review/semanticist21-integration-20261105/rebase-ece9-r2-candidate-native/native/8536-note-formats-hwpx-2022/8536-note-formats-hwpx-2022/render_tree/render_tree_008.json",
+    "render_tree_sha256": "51d8c0b99e94e34ee48a64e62e44ce7c22a5f62208d35d192f6c5c11b1493290",
+    "lines": [
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 955.1,
+          "w": 189.0,
+          "h": 1.9
+        }
+      }
+    ]
+  },
+  {
+    "revision": "r2",
+    "format": "hwpx",
+    "page": 9,
+    "logical_line_count": 1,
+    "expected_logical_line_count": 1,
+    "pass": true,
+    "render_tree": "output/pr-review/semanticist21-integration-20261105/rebase-ece9-r2-candidate-native/native/8536-note-formats-hwpx-2022/8536-note-formats-hwpx-2022/render_tree/render_tree_009.json",
+    "render_tree_sha256": "1788286493e3af73e80549856f448dda74c218fd6e7cc8b9368edcbb67ade77e",
+    "lines": [
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 955.1,
+          "w": 189.0,
+          "h": 1.9
+        }
+      }
+    ]
+  },
+  {
+    "revision": "r2",
+    "format": "hwpx",
+    "page": 10,
+    "logical_line_count": 1,
+    "expected_logical_line_count": 1,
+    "pass": true,
+    "render_tree": "output/pr-review/semanticist21-integration-20261105/rebase-ece9-r2-candidate-native/native/8536-note-formats-hwpx-2022/8536-note-formats-hwpx-2022/render_tree/render_tree_010.json",
+    "render_tree_sha256": "fd8a44edba7d02c2a7e10f2cc2951e8d7e731384b0806fa3b94b6d4b6fd31bdf",
+    "lines": [
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 955.1,
+          "w": 189.0,
+          "h": 1.9
+        }
+      }
+    ]
+  },
+  {
+    "revision": "r2",
+    "format": "hwpx",
+    "page": 11,
+    "logical_line_count": 1,
+    "expected_logical_line_count": 1,
+    "pass": true,
+    "render_tree": "output/pr-review/semanticist21-integration-20261105/rebase-ece9-r2-candidate-native/native/8536-note-formats-hwpx-2022/8536-note-formats-hwpx-2022/render_tree/render_tree_011.json",
+    "render_tree_sha256": "ecd9c5b099e950a5b2c62f8af8c7449e1f10f180cdd4703685246794de345ded",
+    "lines": [
+      {
+        "type": "Line",
+        "bbox": {
+          "x": 113.4,
+          "y": 955.1,
+          "w": 189.0,
+          "h": 1.9
+        }
+      }
+    ]
+  }
+]

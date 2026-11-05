@@ -1,0 +1,36 @@
+{
+  "old_source": "809097923a0d8f10c24eb3d42572b2888954a121",
+  "candidate": "f19812d89d2e1429e3e1ea78d3b60be25f2c02e4",
+  "compared_pages": 136,
+  "missing": [],
+  "changes": [
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 10,
+      "before": "100.00",
+      "after": "97.31",
+      "delta_pp": "-2.69"
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 11,
+      "before": "100.00",
+      "after": "96.53",
+      "delta_pp": "-3.47"
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 10,
+      "before": "100.00",
+      "after": "97.31",
+      "delta_pp": "-2.69"
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 11,
+      "before": "100.00",
+      "after": "96.53",
+      "delta_pp": "-3.47"
+    }
+  ]
+}
