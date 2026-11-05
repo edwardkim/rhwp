@@ -83,7 +83,7 @@ NUMBER를 사용하고 `useInstWidth=1`인 정의를 참조한다. 입력 XML의
 13개 입력·Print 조합의 Native 73쪽은 최저 95.97856%이며 이전 표시값 하락이 0쪽이다.
 수준 1~7 탐침은 두 Print 기준 Native/fresh WASM 모두 100.00%이고, 원 실물 9쪽은
 최저 Native 99.99%·WASM 99.94%, 7쪽은 100.00%·99.99%를 유지했다. 이 세 영역의
-양쪽 review·overlay를 직접 판독하고 [정식 증거](../pr/pr_8433_review.md)에 연결했다.
+양쪽 review·overlay를 직접 판독하고 [정식 증거](../pr/archives/pr_8433_review.md)에 연결했다.
 실제 NUMBER 대조군도 원본 XML의 사용 관계를 확인했고 보정 전·후 양쪽 2쪽 모두
 100.00%다. 글머리표 대조군은 별도 43개 BULLET 문단으로 한정해 기록한다.
 
