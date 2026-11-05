@@ -7337,7 +7337,8 @@ pub(crate) fn stored_block_cell_flow_with_storage<S: crate::storage::Storage>(
         // 반환하지 않으면 fallback이 호스트 아래에 같은 표 높이를 다시 더한다.
         return Ok(stored_closed_cell_frame::closed_before_host_flow(
             paragraphs, styles, &heights, dpi,
-        ));
+        )
+        .or_else(|| stored_closed_cell_frame::closed_after_host_flow(paragraphs, &heights, dpi)));
     }
     let mut result = StoredBlockCellFlow {
         paragraph_origins: storage.vec(paragraphs.len())?,

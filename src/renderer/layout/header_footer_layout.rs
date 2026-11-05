@@ -137,7 +137,30 @@ impl LayoutEngine {
                 .controls
                 .iter()
                 .any(|c| matches!(c, Control::Picture(_)));
-            if has_table {
+            if has_table
+                && para.controls.iter().all(|control| {
+                    !matches!(control, Control::Table(table) if !table.common.treat_as_char)
+                })
+            {
+                // 글줄에 참여하는 표는 본문·각주와 같은 줄 배치 결과를 소비한다.
+                // 표만 따로 배치하면 바깥여백과 같은 줄의 앞뒤 글을 잃는다.
+                let comp = self.compose_header_footer_paragraph(para, page_number, styles);
+                y_offset = self
+                    .layout_inline_table_paragraph(
+                        tree,
+                        area_node,
+                        para,
+                        Some(&comp),
+                        styles,
+                        area,
+                        y_offset,
+                        outer_section_index.unwrap_or(0),
+                        i,
+                        bin_data_content,
+                        &[],
+                    )
+                    .flow_bottom;
+            } else if has_table {
                 for (ci, ctrl) in para.controls.iter().enumerate() {
                     if let Control::Table(t) = ctrl {
                         let alignment = styles
@@ -170,8 +193,11 @@ impl LayoutEngine {
                         };
                         let table_y = y_offset + line_anchor_offset;
                         let table_area = table_area.unwrap_or(area);
-                        let frame_origin =
-                            self.header_footer_table_frame_origin(t.as_ref(), &frame);
+                        let frame_origin = self.header_footer_table_frame_origin(
+                            t.as_ref(),
+                            &frame,
+                            paragraph_origin_y,
+                        );
                         y_offset = self.layout_table(
                             tree,
                             area_node,
@@ -503,7 +529,23 @@ impl LayoutEngine {
         &self,
         table: &crate::model::table::Table,
         frame: &LayoutRect,
+        paragraph_y: f64,
     ) -> Option<(Option<f64>, f64)> {
+        if !table.common.treat_as_char
+            && table.common.vert_rel_to == VertRelTo::Para
+            && table.common.vert_align == VertAlign::Top
+            && table.common.text_wrap == TextWrap::TopAndBottom
+            && table.common.flow_with_text
+        {
+            // 본문 수용 계획이 없는 머리말·꼬리말도 문단 원점에서 바깥 상자를 연다.
+            // 가로 여백은 compute_table_x_position이 소비하므로 다시 더하지 않는다.
+            let lead =
+                crate::renderer::float_placement::topbottom_flow_vertical_offset_hu(&table.common);
+            return Some((
+                None,
+                paragraph_y + hwpunit_to_px(lead + i32::from(table.outer_margin_top), self.dpi),
+            ));
+        }
         if table.common.treat_as_char
             || !matches!(table.common.vert_rel_to, VertRelTo::Paper | VertRelTo::Page)
         {

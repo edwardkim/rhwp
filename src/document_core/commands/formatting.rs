@@ -44,6 +44,9 @@ pub(super) fn char_shape_mods_affect_text_flow(mods: &crate::model::style::CharS
 ///   `TAG_PARAGRAPH_HEAD`(bit 21)를 단다. 다시 짜지 않으면 머리를 켜거나 끈 문단이 옛
 ///   비트로 저장돼 한/글이 글머리표를 그리지 않거나 남긴다.
 ///
+/// 번호·글머리표의 종류·수준·정의 ID도 공통 목록 영역을 바꾼다.
+/// 저장된 기존 줄 캐시로 내보내면 한컴이 마커 없는 배치를 재사용하므로 무효화한다.
+///
 /// 나머지 필드(alignment, spacing_before/after, widow_orphan,
 /// keep_with_next, keep_lines, page_break_before, font_line_height, single_line,
 /// auto_space_kr_en/num, vertical_align, tab_def_id, border_fill_id,
@@ -63,8 +66,18 @@ pub(super) fn para_shape_mods_affect_text_flow(mods: &crate::model::style::ParaS
         || mods.english_break_unit.is_some()
         || mods.korean_break_unit.is_some()
         || mods.head_type.is_some()
-        || mods.numbering_id.is_some()
         || mods.para_level.is_some()
+        || mods.numbering_id.is_some()
+}
+
+/// 문단 머리의 기하가 달라지면 외부 소비자의 이전 줄 배치를 재사용하지 않는다.
+pub(super) fn marker_shape_changed(
+    before: &crate::model::style::ParaShape,
+    after: &crate::model::style::ParaShape,
+) -> bool {
+    before.head_type != after.head_type
+        || before.para_level != after.para_level
+        || before.numbering_id != after.numbering_id
 }
 
 // ID 복원도 적용과 같은 흐름 속성 및 문단 간격만 비교한다.
@@ -72,15 +85,13 @@ pub(super) fn cell_para_shape_affects_vpos(
     before: &crate::model::style::ParaShape,
     after: &crate::model::style::ParaShape,
 ) -> bool {
-    before.line_spacing != after.line_spacing
+    marker_shape_changed(before, after)
+        || before.line_spacing != after.line_spacing
         || before.line_spacing_type != after.line_spacing_type
         || before.margin_left != after.margin_left
         || before.margin_right != after.margin_right
         || before.indent != after.indent
         || (before.attr1 ^ after.attr1) & (0b111 << 5) != 0 // 영어·한글 줄나눔 단위
-        || before.head_type != after.head_type
-        || before.numbering_id != after.numbering_id
-        || before.para_level != after.para_level
         || before.spacing_before != after.spacing_before
         || before.spacing_after != after.spacing_after
 }
@@ -1708,6 +1719,10 @@ impl DocumentCore {
 
         let base_id = self.document.sections[sec_idx].paragraphs[para_idx].para_shape_id;
         let new_id = self.document.find_or_create_para_shape(base_id, &mods);
+        let marker_changed = marker_shape_changed(
+            &self.document.doc_info.para_shapes[base_id as usize],
+            &self.document.doc_info.para_shapes[new_id as usize],
+        );
         let (old_indent, new_indent) = self.para_shape_indents(base_id, new_id);
         let para = &mut self.document.sections[sec_idx].paragraphs[para_idx];
         para.para_shape_id = new_id;
@@ -1760,6 +1775,9 @@ impl DocumentCore {
             );
         }
 
+        if marker_changed {
+            self.document.sections[sec_idx].paragraphs[para_idx].invalidate_layout_inputs();
+        }
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section(sec_idx);
         self.event_log.push(DocumentEvent::ParaFormatChanged {
@@ -1797,6 +1815,11 @@ impl DocumentCore {
             )));
         }
 
+        let old_id = self.document.sections[sec_idx].paragraphs[para_idx].para_shape_id;
+        let marker_changed = marker_shape_changed(
+            &self.document.doc_info.para_shapes[old_id as usize],
+            &self.document.doc_info.para_shapes[para_shape_id as usize],
+        );
         let styles = self.resolve_render_styles();
         let available_box = {
             let section = &self.document.sections[sec_idx];
@@ -1836,6 +1859,9 @@ impl DocumentCore {
             hwp3_layout,
         );
 
+        if marker_changed {
+            self.document.sections[sec_idx].paragraphs[para_idx].invalidate_layout_inputs();
+        }
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section(sec_idx);
         self.event_log.push(DocumentEvent::ParaFormatChanged {
@@ -1894,6 +1920,7 @@ impl DocumentCore {
         }
 
         let affects_vpos;
+        let marker_changed;
         {
             let para = self
                 .get_cell_paragraph_ref(
@@ -1917,6 +1944,10 @@ impl DocumentCore {
                         &self.document.doc_info.para_shapes[new_id as usize],
                     )
                 });
+            marker_changed = marker_shape_changed(
+                &self.document.doc_info.para_shapes[base_id as usize],
+                &self.document.doc_info.para_shapes[new_id as usize],
+            );
             let (old_indent, new_indent) = self.para_shape_indents(base_id, new_id);
             self.restamp_cell_format_origin(
                 (
@@ -1962,6 +1993,16 @@ impl DocumentCore {
         }
 
         // [#6639] 배치 중에는 셀별로 모으고, 스타일 갱신 뒤 조각마다 한 번 재배치한다.
+        if marker_changed {
+            self.get_cell_paragraph_mut(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )?
+            .invalidate_layout_inputs();
+        }
         self.pending_cell_format_vpos |= affects_vpos;
 
         // 표 dirty 마킹 — measure_section_incremental이 셀 높이를 재계산하도록
@@ -2015,6 +2056,10 @@ impl DocumentCore {
                     &self.document.doc_info.para_shapes[para_shape_id as usize],
                 )
             });
+        let marker_changed = marker_shape_changed(
+            &self.document.doc_info.para_shapes[old_id as usize],
+            &self.document.doc_info.para_shapes[para_shape_id as usize],
+        );
         let (old_indent, new_indent) = self.para_shape_indents(old_id, para_shape_id);
         self.restamp_cell_format_origin(
             (
@@ -2047,6 +2092,16 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         );
+        if marker_changed {
+            self.get_cell_paragraph_mut(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )?
+            .invalidate_layout_inputs();
+        }
         self.pending_cell_format_vpos |= affects_vpos;
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
         self.document.sections[sec_idx].raw_stream = None;
