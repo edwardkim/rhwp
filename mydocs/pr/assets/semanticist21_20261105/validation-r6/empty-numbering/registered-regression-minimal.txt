@@ -1,0 +1,17 @@
+/home/tsjang/rhwp/ttfs/opensource/NotoSansKR-Regular.ttf
+/home/tsjang/rhwp/ttfs/opensource/RHWPOldHangul-Regular.otf
+/home/tsjang/rhwp/ttfs/opensource/RHWPPublicBatang-Regular.ttf
+/home/tsjang/rhwp/ttfs/opensource/NotoSansKR-ExtraLight.ttf
+/home/tsjang/rhwp/ttfs/opensource/NotoSansSymbols2-Regular.ttf
+
+running 8 tests
+test numbering::hwpx_empty_heads_keep_distance ... ok
+test numbering::hancom_numbering_records_are_rewritten_byte_for_byte ... ok
+test numbering::hwp_zero_distance_control ... ok
+test numbering::hwp_empty_heads_keep_distance ... ok
+test numbering::empty_outline_body_origins_match_independent_print_page_one ... ok
+test numbering::hwpx_zero_distance_control ... ok
+test numbering::outline_navigation_lists_level_eight_on_its_own_level ... ok
+test numbering::hancom_levels_eight_to_ten_keep_their_level_and_number_after_saving ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s

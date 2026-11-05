@@ -1,0 +1,19 @@
+{
+  "source_sha": "1da15804ebb5d6fc8f63b7ccb8410018bd42c29d",
+  "binary": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/rhwp-r6-native",
+  "sha256": "e52882bc5acda6cec799e1cf784861bfda514a867f55daf3b5e1f720b35109e1",
+  "rlib": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/fixture-generator/librhwp-r6.rlib",
+  "rlib_sha256": "d43fcc8e99d7dc2dc900b55a9475ccdbe8136a86159b97d06bfb41459f4b86a9",
+  "build_log": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r6-native-build.log",
+  "exit_code": 0,
+  "product_source_sha": "86709ac16711820e61baa3b87e2c4ddaac23573e",
+  "build_git_head": "1da15804ebb5d6fc8f63b7ccb8410018bd42c29d",
+  "same_product_paths": [
+    "src",
+    "Cargo.toml",
+    "Cargo.lock",
+    "build.rs",
+    "crates"
+  ],
+  "same_product_tree_confirmed": true
+}

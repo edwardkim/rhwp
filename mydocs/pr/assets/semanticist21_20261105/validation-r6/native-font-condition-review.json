@@ -1,0 +1,79 @@
+{
+  "product_source": "86709ac16711820e61baa3b87e2c4ddaac23573e",
+  "state": "manual_condition_review_passed",
+  "scope": "R6의 아래 8개 지문에만 적용. 다른 글꼴·다른 파일 공급을 면제하지 않는다.",
+  "rows": [
+    {
+      "key": "inherited8640-equal-height",
+      "field": "font_supply",
+      "base_record_sha256": "0bbfeaf095db446362fa051783921f1a2c79b6511d5f1639e455148364532298",
+      "candidate_record_sha256": "ea241f662675a6a0913b5858c68c574a3d848c4ee70f71265fa73b62cfb7e3a1",
+      "state": "accepted_same_source_font",
+      "basis": "동일 WOFF SHA·변환 코드. 현재 실제 SFNT의 19개 원시 테이블은 head 체크섬·시각만 정규화하면 같은 WOFF를 독립 판독한 저장 테이블 해시와 모두 같다. 과거 개별 SFNT 바이트를 직접 판독한 증거로 주장하지 않는다. 이 목록의 정확한 provenance 지문만 수용한다.",
+      "proof": "r6-font-table-comparison.json"
+    },
+    {
+      "key": "inherited8640-equal-width",
+      "field": "font_supply",
+      "base_record_sha256": "cb603bbcb4026745d13e64722822737bb211c4399816883264098c7d063d1344",
+      "candidate_record_sha256": "26b35eb73732234587f3fc63afb2b98bee535153df16490b2f1e6cfdf73cf066",
+      "state": "accepted_same_source_font",
+      "basis": "동일 WOFF SHA·변환 코드. 현재 실제 SFNT의 19개 원시 테이블은 head 체크섬·시각만 정규화하면 같은 WOFF를 독립 판독한 저장 테이블 해시와 모두 같다. 과거 개별 SFNT 바이트를 직접 판독한 증거로 주장하지 않는다. 이 목록의 정확한 provenance 지문만 수용한다.",
+      "proof": "r6-font-table-comparison.json"
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwp",
+      "field": "font_supply",
+      "base_record_sha256": "0618e6fc25c9cbee4db1ce8ef4c61387ce6c37190e132e9f260e0b6fa4288342",
+      "candidate_record_sha256": "079c5db7071c40ccddf72ceeaef5d7c0ed211b06e962be284e5151b63eb00e86",
+      "state": "accepted_same_source_font",
+      "basis": "동일 WOFF SHA·변환 코드. 현재 실제 SFNT의 19개 원시 테이블은 head 체크섬·시각만 정규화하면 같은 WOFF를 독립 판독한 저장 테이블 해시와 모두 같다. 과거 개별 SFNT 바이트를 직접 판독한 증거로 주장하지 않는다. 이 목록의 정확한 provenance 지문만 수용한다.",
+      "proof": "r6-font-table-comparison.json"
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwpx",
+      "field": "font_supply",
+      "base_record_sha256": "d756fd123a50ec64b426bc431c927efcf0fd7f5a7670b0578c09c1d700037ea6",
+      "candidate_record_sha256": "6ec67729aa20d6c93f6cd175c993d82fc9bbd8fdafb4153c891051f83feddc77",
+      "state": "accepted_same_source_font",
+      "basis": "동일 WOFF SHA·변환 코드. 현재 실제 SFNT의 19개 원시 테이블은 head 체크섬·시각만 정규화하면 같은 WOFF를 독립 판독한 저장 테이블 해시와 모두 같다. 과거 개별 SFNT 바이트를 직접 판독한 증거로 주장하지 않는다. 이 목록의 정확한 provenance 지문만 수용한다.",
+      "proof": "r6-font-table-comparison.json"
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwp",
+      "field": "font_supply",
+      "base_record_sha256": "f0b1d5a92aa7396084f2bae8c5d938e9f72f58a68bc292aaad612ab2160ab1bd",
+      "candidate_record_sha256": "a72e8e34f3bc8cc41f37f417ef9821bbd5a2d1a4da3465dc192501d0f321f11e",
+      "state": "accepted_same_source_font",
+      "basis": "동일 WOFF SHA·변환 코드. 현재 실제 SFNT의 19개 원시 테이블은 head 체크섬·시각만 정규화하면 같은 WOFF를 독립 판독한 저장 테이블 해시와 모두 같다. 과거 개별 SFNT 바이트를 직접 판독한 증거로 주장하지 않는다. 이 목록의 정확한 provenance 지문만 수용한다.",
+      "proof": "r6-font-table-comparison.json"
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwpx",
+      "field": "font_supply",
+      "base_record_sha256": "2bb315b16563dcd5f373c1e2eebdbc191812f082aa4d037863f4a82ab650c8ed",
+      "candidate_record_sha256": "4a340db13d3082cc11a1d9d058ca6c1edb1a7503c25b1061f36834174caff4d1",
+      "state": "accepted_same_source_font",
+      "basis": "동일 WOFF SHA·변환 코드. 현재 실제 SFNT의 19개 원시 테이블은 head 체크섬·시각만 정규화하면 같은 WOFF를 독립 판독한 저장 테이블 해시와 모두 같다. 과거 개별 SFNT 바이트를 직접 판독한 증거로 주장하지 않는다. 이 목록의 정확한 provenance 지문만 수용한다.",
+      "proof": "r6-font-table-comparison.json"
+    },
+    {
+      "key": "inherited8640-equalize-original",
+      "field": "font_supply",
+      "base_record_sha256": "870c0cdb02a773e96652e470a3030bac2a862a027cbe09afbea501825f67bd63",
+      "candidate_record_sha256": "7899bb382bf4abddb567833ec3596c6a0ee250055904aa77b7a8cbb18aebb120",
+      "state": "accepted_same_source_font",
+      "basis": "동일 WOFF SHA·변환 코드. 현재 실제 SFNT의 19개 원시 테이블은 head 체크섬·시각만 정규화하면 같은 WOFF를 독립 판독한 저장 테이블 해시와 모두 같다. 과거 개별 SFNT 바이트를 직접 판독한 증거로 주장하지 않는다. 이 목록의 정확한 provenance 지문만 수용한다.",
+      "proof": "r6-font-table-comparison.json"
+    },
+    {
+      "key": "inherited8542-nhis-dependent-requirements",
+      "field": "font_supply",
+      "base_record_sha256": "6d941849a6ec3216765701cf9ed0999a90ae03a72417c117385e8e589dbeb314",
+      "candidate_record_sha256": "b1aac0dbc700a80e33dabeacb166255bd18011d0dd74dd7435ecebc2a22d4d96",
+      "state": "accepted_same_source_font",
+      "basis": "동일 WOFF SHA·변환 코드. 현재 실제 SFNT의 19개 원시 테이블은 head 체크섬·시각만 정규화하면 같은 WOFF를 독립 판독한 저장 테이블 해시와 모두 같다. 과거 개별 SFNT 바이트를 직접 판독한 증거로 주장하지 않는다. 이 목록의 정확한 provenance 지문만 수용한다.",
+      "proof": "r6-font-table-comparison.json"
+    }
+  ]
+}

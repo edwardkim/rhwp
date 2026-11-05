@@ -1,0 +1,9 @@
+{
+  "state": "browser_and_typescript_production_build_passed",
+  "product_source": "86709ac16711820e61baa3b87e2c4ddaac23573e",
+  "command": [
+    "npm",
+    "run",
+    "build"
+  ]
+}

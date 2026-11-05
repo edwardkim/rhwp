@@ -1,0 +1,16 @@
+{
+  "source_sha": "86709ac16711820e61baa3b87e2c4ddaac23573e",
+  "build_git_head": "1da15804ebb5d6fc8f63b7ccb8410018bd42c29d",
+  "product_paths": [
+    "src",
+    "Cargo.toml",
+    "Cargo.lock",
+    "build.rs",
+    "crates"
+  ],
+  "package": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r6-wasm-pkg",
+  "wasm_sha256": "4755dbfeda5bba99d72191a54e90342ae381ec17f0dd840926bbf1fdd75d1f30",
+  "glue_sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+  "optimization": "wasm-pack managed wasm-opt",
+  "exit_code": 0
+}

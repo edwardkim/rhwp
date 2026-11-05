@@ -2985,8 +2985,6 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
-    readonly prepareBitmapRaster: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => any;
-    readonly printPicturePenWidth: (a: number, b: number, c: number, d: number) => [number, number];
     readonly version: () => [number, number];
     readonly init_panic_hook: () => void;
     readonly fontSymbolUnicodeRange: (a: number, b: number, c: number) => [number, number];
@@ -2999,6 +2997,8 @@ export interface InitOutput {
     readonly rasterizePrintMetafile: (a: number, b: number, c: number, d: number, e: any) => [number, number];
     readonly resamplePrintBitmapRgba: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number];
     readonly resamplePrintFrameRgba: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number];
+    readonly prepareBitmapRaster: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => any;
+    readonly printPicturePenWidth: (a: number, b: number, c: number, d: number) => [number, number];
     readonly __wbg_documentexport_free: (a: number, b: number) => void;
     readonly __wbg_hwpdocument_free: (a: number, b: number) => void;
     readonly __wbg_hwpviewer_free: (a: number, b: number) => void;

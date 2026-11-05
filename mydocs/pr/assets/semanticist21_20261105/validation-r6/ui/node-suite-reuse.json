@@ -1,0 +1,36 @@
+{
+  "product_source": "86709ac16711820e61baa3b87e2c4ddaac23573e",
+  "frontend_source_reference": "refs/codex/rebase/semanticist21-20261106-pre-170b",
+  "changed_since_full_node": [
+    "rhwp-studio/public/rhwp.d.ts",
+    "rhwp-studio/public/rhwp_bg.wasm.d.ts"
+  ],
+  "working_type_declaration_checks": [
+    {
+      "path": "rhwp-studio/public/rhwp.d.ts",
+      "difference": "동일 선언 행의 순서만 다름",
+      "same_declarations": true,
+      "actual_sha256": "3b13b78ffee6847681d4d9a8ba4acd5359d9c22dbec1eafdcb4c8541f2a5340c"
+    },
+    {
+      "path": "rhwp-studio/public/rhwp_bg.wasm.d.ts",
+      "difference": "동일 선언 행의 순서만 다름",
+      "same_declarations": true,
+      "actual_sha256": "fb02e9d0706c033df6dbce1699d2ae065f9f50bbeff128d966be3ebef9a294c5"
+    }
+  ],
+  "same_r5_and_r6_glue_sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+  "prior_full_node_log": "output/pr-review/semanticist21-integration-20261105/r4-studio-node.log",
+  "prior_full_node_sha256": "0c2e9eb2cf0f3f95f29b8b462bff7cf95b53cae7f9a973d75de701bd90da2ff1",
+  "prior_summary": [
+    "ℹ tests 2723",
+    "ℹ suites 0",
+    "ℹ pass 2723",
+    "ℹ fail 0",
+    "ℹ cancelled 0",
+    "ℹ skipped 0",
+    "ℹ todo 0",
+    "ℹ duration_ms 134568.924131"
+  ],
+  "reuse_scope": "전체 Node 2723건의 테스트·실행 소스는 그대로다. 변경된 public 타입은 앞선R5 실제631개 export/ABI·10개 소비 검사로 확인했고 R6은 선언순서만 달라 actual ABI/소비·실제API·브라우저를 다시 확인한다. 예전 전체실행을 R6 새 실행으로 표기하지 않는다."
+}

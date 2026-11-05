@@ -1,0 +1,3357 @@
+{
+  "base_sha": "170b886f167b705b6e630c5b34bb638d92fae0a9",
+  "candidate_product_source": "86709ac16711820e61baa3b87e2c4ddaac23573e",
+  "backend": "native",
+  "expected_cases": 128,
+  "missing": [],
+  "conditions_to_review": [
+    {
+      "key": "inherited8640-equal-height",
+      "field": "font_supply",
+      "base": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+            "sha256": "e39a9d81554bd144fde18ba6d8d3e4a3dcce9d7a3088989f0bdb0e5193ba33d6"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+            "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+          }
+        ]
+      },
+      "candidate": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+            "sha256": "b9c3749f03163c0daea71fd7d033cbd1d4f9195b5b9c7d159ec50bcb5fbd6b8b"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+            "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+          }
+        ]
+      }
+    },
+    {
+      "key": "inherited8640-equal-width",
+      "field": "font_supply",
+      "base": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+            "sha256": "780d3c2fb802b6a214d1fb0524aa975d1aaf98b06f8592a9c45cf2d24986c9b8"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+            "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+          }
+        ]
+      },
+      "candidate": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+            "sha256": "2a7c284d8e91770746079bbbf188a61fb042cfbcf38423f983d26aa0c2f7e4fb"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+            "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+          }
+        ]
+      }
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwp",
+      "field": "font_supply",
+      "base": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+            "sha256": "efa67096988fe2b4811f6015270839995ff1550254dba34175299f5b640728ad"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+            "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+          }
+        ]
+      },
+      "candidate": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+            "sha256": "b3ce06d2152af809e685c546719ab9541ad40ce9d7d35451b5e5ecdc57032e7a"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+            "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+          }
+        ]
+      }
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwpx",
+      "field": "font_supply",
+      "base": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+            "sha256": "471698b64b98c6c4eec14b3c3c44eeceab1bd65edca79086e32ef7eb7d42a2f4"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+            "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+          }
+        ]
+      },
+      "candidate": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+            "sha256": "d82d4ac50685c3e724618233f289143eac51c85246a527bbfecfec5183b1ce63"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+            "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+          }
+        ]
+      }
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwp",
+      "field": "font_supply",
+      "base": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+            "sha256": "c7d48799561d227ac302ee73e76fb909a1ba9123dece44b400eaa0516cfd1ed3"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+            "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+          }
+        ]
+      },
+      "candidate": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+            "sha256": "0cef557fc1de1630c69458b48eaf1d7b912461ddc216e964974b717aea06a013"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+            "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+          }
+        ]
+      }
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwpx",
+      "field": "font_supply",
+      "base": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+            "sha256": "4119a46292363c3f6a87e630e444f90325e0ec102a2cdc5c8fdd68c556355618"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+            "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+          }
+        ]
+      },
+      "candidate": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+            "sha256": "b909ac8fab63494225a6c0ade2b292e38435156fed13fc74fed9ee44d08ed153"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+            "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+          }
+        ]
+      }
+    },
+    {
+      "key": "inherited8640-equalize-original",
+      "field": "font_supply",
+      "base": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+            "sha256": "ac71e924785f008dd341c11e7518a44405422439677a45e1fa1a1f157255f336"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+            "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+          }
+        ]
+      },
+      "candidate": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+            "sha256": "c4d936f2e1a25b0887b22a74a78b81b397c1e1a81908852b0fc42ea713960b76"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+            "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+          }
+        ]
+      }
+    },
+    {
+      "key": "inherited8542-nhis-dependent-requirements",
+      "field": "font_supply",
+      "base": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+            "sha256": "de61739d1973ecac0e25e6cfb7bb0b674b502e5b5930efb2d6060ec1f29350df"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+            "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+          }
+        ]
+      },
+      "candidate": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+            "sha256": "718de5dc1854878ece69148fe84351e8c5550eb0a9263669ff8fc03cb2126d08"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+            "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+          }
+        ]
+      }
+    }
+  ],
+  "rows": [
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 3,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 4,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 5,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 6,
+      "base_raw": "99.15254",
+      "candidate_raw": "100.0",
+      "drop_pp": "-0.84746",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 7,
+      "base_raw": "99.4832",
+      "candidate_raw": "100.0",
+      "drop_pp": "-0.5168",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 8,
+      "base_raw": "99.78264",
+      "candidate_raw": "100.0",
+      "drop_pp": "-0.21736",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 9,
+      "base_raw": "99.08322",
+      "candidate_raw": "100.0",
+      "drop_pp": "-0.91678",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 10,
+      "base_raw": "89.09112",
+      "candidate_raw": "100.0",
+      "drop_pp": "-10.90888",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 11,
+      "base_raw": "88.16559",
+      "candidate_raw": "100.0",
+      "drop_pp": "-11.83441",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 12,
+      "base_raw": "90.57971",
+      "candidate_raw": "99.98307",
+      "drop_pp": "-9.40336",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 13,
+      "base_raw": "92.10445",
+      "candidate_raw": "100.0",
+      "drop_pp": "-7.89555",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 14,
+      "base_raw": "82.39334",
+      "candidate_raw": "100.0",
+      "drop_pp": "-17.60666",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 15,
+      "base_raw": "85.39191",
+      "candidate_raw": "100.0",
+      "drop_pp": "-14.60809",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 16,
+      "base_raw": "82.28207",
+      "candidate_raw": "100.0",
+      "drop_pp": "-17.71793",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 17,
+      "base_raw": "84.09058",
+      "candidate_raw": "100.0",
+      "drop_pp": "-15.90942",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 18,
+      "base_raw": "98.02198",
+      "candidate_raw": "100.0",
+      "drop_pp": "-1.97802",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwp-2022",
+      "page": 19,
+      "base_raw": "84.00225",
+      "candidate_raw": "100.0",
+      "drop_pp": "-15.99775",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 3,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 4,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 5,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 6,
+      "base_raw": "99.15254",
+      "candidate_raw": "100.0",
+      "drop_pp": "-0.84746",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 7,
+      "base_raw": "88.28751",
+      "candidate_raw": "100.0",
+      "drop_pp": "-11.71249",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 8,
+      "base_raw": "89.94044",
+      "candidate_raw": "100.0",
+      "drop_pp": "-10.05956",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 9,
+      "base_raw": "90.29452",
+      "candidate_raw": "100.0",
+      "drop_pp": "-9.70548",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 10,
+      "base_raw": "89.09112",
+      "candidate_raw": "100.0",
+      "drop_pp": "-10.90888",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 11,
+      "base_raw": "88.16559",
+      "candidate_raw": "100.0",
+      "drop_pp": "-11.83441",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 12,
+      "base_raw": "90.57971",
+      "candidate_raw": "99.98307",
+      "drop_pp": "-9.40336",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 13,
+      "base_raw": "90.11899",
+      "candidate_raw": "100.0",
+      "drop_pp": "-9.88101",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 14,
+      "base_raw": "80.55668",
+      "candidate_raw": "100.0",
+      "drop_pp": "-19.44332",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 15,
+      "base_raw": "85.39191",
+      "candidate_raw": "100.0",
+      "drop_pp": "-14.60809",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 16,
+      "base_raw": "82.28207",
+      "candidate_raw": "100.0",
+      "drop_pp": "-17.71793",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 17,
+      "base_raw": "84.09058",
+      "candidate_raw": "100.0",
+      "drop_pp": "-15.90942",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 18,
+      "base_raw": "98.02198",
+      "candidate_raw": "100.0",
+      "drop_pp": "-1.97802",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-note-formats-hwpx-2022",
+      "page": 19,
+      "base_raw": "84.00225",
+      "candidate_raw": "100.0",
+      "drop_pp": "-15.99775",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8571-header-table-hwp",
+      "page": 1,
+      "base_raw": "8.47914",
+      "candidate_raw": "100.0",
+      "drop_pp": "-91.52086",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8571-header-table-hwpx",
+      "page": 1,
+      "base_raw": "8.47914",
+      "candidate_raw": "100.0",
+      "drop_pp": "-91.52086",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8571-non-inline-header-table-hwp",
+      "page": 1,
+      "base_raw": "26.85163",
+      "candidate_raw": "100.0",
+      "drop_pp": "-73.14837",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8571-non-inline-header-table-hwpx",
+      "page": 1,
+      "base_raw": "26.85163",
+      "candidate_raw": "100.0",
+      "drop_pp": "-73.14837",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8558-character-bullet-hwp",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8558-character-bullet-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8558-picture-bullet-hwp",
+      "page": 1,
+      "base_raw": "67.30361",
+      "candidate_raw": "100.0",
+      "drop_pp": "-32.69639",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8558-picture-bullet-hwpx",
+      "page": 1,
+      "base_raw": "67.30361",
+      "candidate_raw": "100.0",
+      "drop_pp": "-32.69639",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8570-non-inline-cell-table-hwp",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8570-non-inline-cell-table-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "header-tac-explicit-break",
+      "page": 1,
+      "base_raw": "29.08847",
+      "candidate_raw": "100.0",
+      "drop_pp": "-70.91153",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "header-tac-mixed-text",
+      "page": 1,
+      "base_raw": "20.30376",
+      "candidate_raw": "100.0",
+      "drop_pp": "-79.69624",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "header-tac-pair-fit",
+      "page": 1,
+      "base_raw": "17.2845",
+      "candidate_raw": "100.0",
+      "drop_pp": "-82.7155",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "header-tac-pair-wrap",
+      "page": 1,
+      "base_raw": "22.89855",
+      "candidate_raw": "100.0",
+      "drop_pp": "-77.10145",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "rebase-empty-nested-hwp",
+      "page": 1,
+      "base_raw": "81.47606",
+      "candidate_raw": "100.0",
+      "drop_pp": "-18.52394",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "rebase-empty-nested-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-borders",
+      "page": 1,
+      "base_raw": "97.78663",
+      "candidate_raw": "97.78663",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-outline",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height",
+      "page": 1,
+      "base_raw": "99.91673",
+      "candidate_raw": "99.91673",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height",
+      "page": 2,
+      "base_raw": "99.60162",
+      "candidate_raw": "99.60162",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height",
+      "page": 3,
+      "base_raw": "99.94624",
+      "candidate_raw": "99.94624",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height",
+      "page": 4,
+      "base_raw": "99.9334",
+      "candidate_raw": "99.9334",
+      "drop_pp": "0.0000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height",
+      "page": 5,
+      "base_raw": "99.91367",
+      "candidate_raw": "99.91367",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height",
+      "page": 6,
+      "base_raw": "99.9189",
+      "candidate_raw": "99.9189",
+      "drop_pp": "0.0000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height",
+      "page": 7,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width",
+      "page": 1,
+      "base_raw": "99.91673",
+      "candidate_raw": "99.91673",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width",
+      "page": 2,
+      "base_raw": "99.59852",
+      "candidate_raw": "99.59852",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width",
+      "page": 3,
+      "base_raw": "99.94624",
+      "candidate_raw": "99.94624",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width",
+      "page": 4,
+      "base_raw": "99.9334",
+      "candidate_raw": "99.9334",
+      "drop_pp": "0.0000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width",
+      "page": 5,
+      "base_raw": "99.91367",
+      "candidate_raw": "99.91367",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width",
+      "page": 6,
+      "base_raw": "99.9189",
+      "candidate_raw": "99.9189",
+      "drop_pp": "0.0000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width",
+      "page": 7,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-uneven-height",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-uneven-width",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-footnote-shape",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-footnote-shape",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-drop-cap",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-restart5",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-restart5",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-restart5",
+      "page": 3,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-restart5",
+      "page": 4,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-continue",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-continue",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-continue",
+      "page": 3,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-continue",
+      "page": 4,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-new20",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-new20",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-new20",
+      "page": 3,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-new20",
+      "page": 4,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-paragraph-heads",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-table-formula-easy",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-table-formula-hancom-result",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-table-formula-stale",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-table-formula-cycles",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-continued-hwp",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-continued-hwp",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-continued-hwp",
+      "page": 3,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-continued-hwp",
+      "page": 4,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-continued-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-continued-hwpx",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-continued-hwpx",
+      "page": 3,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-continued-hwpx",
+      "page": 4,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-deleted-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-deleted-hwpx",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-deleted-hwpx",
+      "page": 3,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-deleted-hwpx",
+      "page": 4,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-inserted-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-inserted-hwpx",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-inserted-hwpx",
+      "page": 3,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-endnote-inserted-hwpx",
+      "page": 4,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwp",
+      "page": 1,
+      "base_raw": "99.09353",
+      "candidate_raw": "99.09353",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwp",
+      "page": 2,
+      "base_raw": "99.65553",
+      "candidate_raw": "99.65553",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwp",
+      "page": 3,
+      "base_raw": "99.87126",
+      "candidate_raw": "99.87126",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwp",
+      "page": 4,
+      "base_raw": "99.84616",
+      "candidate_raw": "99.84616",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwp",
+      "page": 5,
+      "base_raw": "99.70383",
+      "candidate_raw": "99.70383",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwp",
+      "page": 6,
+      "base_raw": "99.85023",
+      "candidate_raw": "99.85023",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwp",
+      "page": 7,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwpx",
+      "page": 1,
+      "base_raw": "99.09353",
+      "candidate_raw": "99.09353",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwpx",
+      "page": 2,
+      "base_raw": "99.65553",
+      "candidate_raw": "99.65553",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwpx",
+      "page": 3,
+      "base_raw": "99.87126",
+      "candidate_raw": "99.87126",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwpx",
+      "page": 4,
+      "base_raw": "99.84616",
+      "candidate_raw": "99.84616",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwpx",
+      "page": 5,
+      "base_raw": "99.70383",
+      "candidate_raw": "99.70383",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwpx",
+      "page": 6,
+      "base_raw": "99.85023",
+      "candidate_raw": "99.85023",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwpx",
+      "page": 7,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwp",
+      "page": 1,
+      "base_raw": "99.09353",
+      "candidate_raw": "99.09353",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwp",
+      "page": 2,
+      "base_raw": "99.65491",
+      "candidate_raw": "99.65491",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwp",
+      "page": 3,
+      "base_raw": "99.87126",
+      "candidate_raw": "99.87126",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwp",
+      "page": 4,
+      "base_raw": "99.84616",
+      "candidate_raw": "99.84616",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwp",
+      "page": 5,
+      "base_raw": "99.70383",
+      "candidate_raw": "99.70383",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwp",
+      "page": 6,
+      "base_raw": "99.85023",
+      "candidate_raw": "99.85023",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwp",
+      "page": 7,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwpx",
+      "page": 1,
+      "base_raw": "99.09353",
+      "candidate_raw": "99.09353",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwpx",
+      "page": 2,
+      "base_raw": "99.65491",
+      "candidate_raw": "99.65491",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwpx",
+      "page": 3,
+      "base_raw": "99.87126",
+      "candidate_raw": "99.87126",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwpx",
+      "page": 4,
+      "base_raw": "99.84616",
+      "candidate_raw": "99.84616",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwpx",
+      "page": 5,
+      "base_raw": "99.70383",
+      "candidate_raw": "99.70383",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwpx",
+      "page": 6,
+      "base_raw": "99.85023",
+      "candidate_raw": "99.85023",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwpx",
+      "page": 7,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-footnote-shape-applied-hwp",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-footnote-shape-applied-hwp",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-footnote-shape-applied-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-footnote-shape-applied-hwpx",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-outline-id2-hwp",
+      "page": 1,
+      "base_raw": "96.49123",
+      "candidate_raw": "96.49123",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-outline-id2-hwpx",
+      "page": 1,
+      "base_raw": "96.49123",
+      "candidate_raw": "96.49123",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-paragraph-head-edited-hwp",
+      "page": 1,
+      "base_raw": "99.71287",
+      "candidate_raw": "99.71287",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-paragraph-head-edited-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-paragraph-head-off-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-table-formula-easy-edited-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-table-formula-recalculated-hwp",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-table-formula-recalculated-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-uneven-height-edited-hwp",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-uneven-height-edited-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-uneven-width-edited-hwp",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-uneven-width-edited-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-footnote-shape-corrected-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-footnote-shape-corrected-hwpx",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-pdf-text-paint",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-pdf-text-paint",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-pdf-text-paint",
+      "page": 3,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-pdf-text-paint",
+      "page": 4,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-pdf-text-paint",
+      "page": 5,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-pdf-text-paint",
+      "page": 6,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-pdf-text-paint",
+      "page": 7,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-pdf-image-patterns",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-pdf-image-patterns",
+      "page": 2,
+      "base_raw": "99.87421",
+      "candidate_raw": "99.87421",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-pdf-image-patterns",
+      "page": 3,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-pdf-image-patterns",
+      "page": 4,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-pdf-image-patterns",
+      "page": 5,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-borders-windows",
+      "page": 1,
+      "base_raw": "98.03878",
+      "candidate_raw": "98.03878",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equalize-original",
+      "page": 1,
+      "base_raw": "99.09353",
+      "candidate_raw": "99.09353",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equalize-original",
+      "page": 2,
+      "base_raw": "99.65469",
+      "candidate_raw": "99.65469",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equalize-original",
+      "page": 3,
+      "base_raw": "99.87126",
+      "candidate_raw": "99.87126",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equalize-original",
+      "page": 4,
+      "base_raw": "99.84616",
+      "candidate_raw": "99.84616",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equalize-original",
+      "page": 5,
+      "base_raw": "99.70383",
+      "candidate_raw": "99.70383",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equalize-original",
+      "page": 6,
+      "base_raw": "99.85023",
+      "candidate_raw": "99.85023",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-equalize-original",
+      "page": 7,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-uneven-height-original",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-uneven-width-original",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-footnote-shape-configured-hwpx",
+      "page": 1,
+      "base_raw": "99.92019",
+      "candidate_raw": "99.92019",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8640-footnote-shape-configured-hwpx",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8527-levels-hwp-2022",
+      "page": 1,
+      "base_raw": "80.48346",
+      "candidate_raw": "100.0",
+      "drop_pp": "-19.51654",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8527-levels-hwpx-2022",
+      "page": 1,
+      "base_raw": "62.39009",
+      "candidate_raw": "100.0",
+      "drop_pp": "-37.60991",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8528-follow-two-sizes-hwp-2022",
+      "page": 1,
+      "base_raw": "49.55752",
+      "candidate_raw": "100.0",
+      "drop_pp": "-50.44248",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8528-follow-end-20pt-hwp-2022",
+      "page": 1,
+      "base_raw": "36.9515",
+      "candidate_raw": "100.0",
+      "drop_pp": "-63.0485",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8528-follow-two-sizes-hwpx-2022",
+      "page": 1,
+      "base_raw": "49.55752",
+      "candidate_raw": "100.0",
+      "drop_pp": "-50.44248",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-numbering-hwp-2022",
+      "page": 1,
+      "base_raw": "94.54525",
+      "candidate_raw": "100.0",
+      "drop_pp": "-5.45475",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-numbering-hwp-2022",
+      "page": 2,
+      "base_raw": "96.83908",
+      "candidate_raw": "100.0",
+      "drop_pp": "-3.16092",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-numbering-hwp-2022",
+      "page": 3,
+      "base_raw": "96.1555",
+      "candidate_raw": "100.0",
+      "drop_pp": "-3.8445",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-numbering-hwp-2022",
+      "page": 4,
+      "base_raw": "99.80572",
+      "candidate_raw": "100.0",
+      "drop_pp": "-0.19428",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-numbering-hwp-2022",
+      "page": 5,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-numbering-hwp-2022",
+      "page": 6,
+      "base_raw": "98.82406",
+      "candidate_raw": "100.0",
+      "drop_pp": "-1.17594",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-numbering-hwpx-2022",
+      "page": 1,
+      "base_raw": "94.54525",
+      "candidate_raw": "100.0",
+      "drop_pp": "-5.45475",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-numbering-hwpx-2022",
+      "page": 2,
+      "base_raw": "96.83908",
+      "candidate_raw": "100.0",
+      "drop_pp": "-3.16092",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-numbering-hwpx-2022",
+      "page": 3,
+      "base_raw": "96.1555",
+      "candidate_raw": "100.0",
+      "drop_pp": "-3.8445",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-numbering-hwpx-2022",
+      "page": 4,
+      "base_raw": "99.80572",
+      "candidate_raw": "100.0",
+      "drop_pp": "-0.19428",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-numbering-hwpx-2022",
+      "page": 5,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-numbering-hwpx-2022",
+      "page": 6,
+      "base_raw": "98.82406",
+      "candidate_raw": "100.0",
+      "drop_pp": "-1.17594",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-numbering-wrap-hwp-2022",
+      "page": 1,
+      "base_raw": "93.08664",
+      "candidate_raw": "100.0",
+      "drop_pp": "-6.91336",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8536-numbering-wrap-hwp-2022",
+      "page": 2,
+      "base_raw": "99.42336",
+      "candidate_raw": "100.0",
+      "drop_pp": "-0.57664",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8538-shape-hwp-2022",
+      "page": 1,
+      "base_raw": "76.29271",
+      "candidate_raw": "94.38327",
+      "drop_pp": "-18.09056",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8538-shape-hwp-2022",
+      "page": 2,
+      "base_raw": "99.5493",
+      "candidate_raw": "99.5493",
+      "drop_pp": "0.0000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8538-shape-hwp-2022",
+      "page": 3,
+      "base_raw": "63.48031",
+      "candidate_raw": "92.35136",
+      "drop_pp": "-28.87105",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8538-shape-hwp-2022",
+      "page": 4,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8538-shape-hwp-2022",
+      "page": 5,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8538-shape-hwp-2022",
+      "page": 6,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8538-shape-hwp-2022",
+      "page": 7,
+      "base_raw": "83.47517",
+      "candidate_raw": "98.47386",
+      "drop_pp": "-14.99869",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8538-shape-hwpx-2022",
+      "page": 1,
+      "base_raw": "76.25912",
+      "candidate_raw": "94.35574",
+      "drop_pp": "-18.09662",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8538-shape-hwpx-2022",
+      "page": 2,
+      "base_raw": "99.57639",
+      "candidate_raw": "99.57639",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8538-shape-hwpx-2022",
+      "page": 3,
+      "base_raw": "63.48031",
+      "candidate_raw": "92.35136",
+      "drop_pp": "-28.87105",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8538-shape-hwpx-2022",
+      "page": 4,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8538-shape-hwpx-2022",
+      "page": 5,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8538-shape-hwpx-2022",
+      "page": 6,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8538-shape-hwpx-2022",
+      "page": 7,
+      "base_raw": "83.47517",
+      "candidate_raw": "98.47386",
+      "drop_pp": "-14.99869",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8541-hancom-two-sections-hwp-2022",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8541-hancom-two-sections-hwp-2022",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8541-hancom-two-sections-hwpx-2022",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8541-hancom-two-sections-hwpx-2022",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8549-rhwp-after-hwp-2022",
+      "page": 1,
+      "base_raw": "92.8027",
+      "candidate_raw": "99.91686",
+      "drop_pp": "-7.11416",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8572-fix-typed-hwp-2022",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8572-fix-typed-hwp-2022",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8572-fix-typed-hwp-2022",
+      "page": 3,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8572-fix-typed-hwp-2022",
+      "page": 4,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8572-fix-typed-hwp-2022",
+      "page": 5,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8572-fix-typed-hwp-2022",
+      "page": 6,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8572-fix-typed-hwp-2022",
+      "page": 7,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8577-hancom-page-number-top-hwpx-2022",
+      "page": 1,
+      "base_raw": "76.72131",
+      "candidate_raw": "100.0",
+      "drop_pp": "-23.27869",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8577-hancom-page-number-top-hwpx-2022",
+      "page": 2,
+      "base_raw": "70.90395",
+      "candidate_raw": "100.0",
+      "drop_pp": "-29.09605",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8586-hancom-page-number-mid-hwpx-2022",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8586-hancom-page-number-mid-hwpx-2022",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8586-hancom-page-number-mid-hwpx-2022",
+      "page": 3,
+      "base_raw": "71.79487",
+      "candidate_raw": "100.0",
+      "drop_pp": "-28.20513",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8586-hancom-page-number-mid-hwpx-2022",
+      "page": 4,
+      "base_raw": "69.08078",
+      "candidate_raw": "100.0",
+      "drop_pp": "-30.91922",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8586-hancom-page-number-mid-hwpx-2022",
+      "page": 5,
+      "base_raw": "69.12568",
+      "candidate_raw": "100.0",
+      "drop_pp": "-30.87432",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8586-hancom-page-number-mid-hwpx-2022",
+      "page": 6,
+      "base_raw": "71.90083",
+      "candidate_raw": "100.0",
+      "drop_pp": "-28.09917",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8586-hancom-page-number-sections-hwpx-2022",
+      "page": 1,
+      "base_raw": "76.54723",
+      "candidate_raw": "100.0",
+      "drop_pp": "-23.45277",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8586-hancom-page-number-sections-hwpx-2022",
+      "page": 2,
+      "base_raw": "71.10482",
+      "candidate_raw": "100.0",
+      "drop_pp": "-28.89518",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8586-hancom-page-number-sections-hwpx-2022",
+      "page": 3,
+      "base_raw": "70.58824",
+      "candidate_raw": "100.0",
+      "drop_pp": "-29.41176",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8586-hancom-page-number-sections-hwpx-2022",
+      "page": 4,
+      "base_raw": "68.69806",
+      "candidate_raw": "100.0",
+      "drop_pp": "-31.30194",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8586-hancom-page-number-sections-hwpx-2022",
+      "page": 5,
+      "base_raw": "0.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "-100.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8586-hancom-page-number-sections-hwpx-2022",
+      "page": 6,
+      "base_raw": "70.67039",
+      "candidate_raw": "100.0",
+      "drop_pp": "-29.32961",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8586-hancom-page-number-sections-hwpx-2022",
+      "page": 7,
+      "base_raw": "74.7851",
+      "candidate_raw": "100.0",
+      "drop_pp": "-25.2149",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8602-rhwp-after-hwp-2022",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8616-hancom-mac-shapes-hwp-2022",
+      "page": 1,
+      "base_raw": "80.9682",
+      "candidate_raw": "99.2128",
+      "drop_pp": "-18.2446",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8616-hancom-mac-shapes-hwpx-2022",
+      "page": 1,
+      "base_raw": "81.19216",
+      "candidate_raw": "100.0",
+      "drop_pp": "-18.80784",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8616-hancom-mac-dutmal-hwp-2022",
+      "page": 1,
+      "base_raw": "49.10495",
+      "candidate_raw": "100.0",
+      "drop_pp": "-50.89505",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8616-hancom-mac-dutmal-hwpx-2022",
+      "page": 1,
+      "base_raw": "38.85568",
+      "candidate_raw": "100.0",
+      "drop_pp": "-61.14432",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8629-hancom-mac-200-b5-hwp-2022",
+      "page": 1,
+      "base_raw": "77.86497",
+      "candidate_raw": "100.0",
+      "drop_pp": "-22.13503",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8616-hancom-mac-shapes-hwp-2024",
+      "page": 1,
+      "base_raw": "82.38558",
+      "candidate_raw": "99.27308",
+      "drop_pp": "-16.88750",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8616-hancom-mac-shapes-hwpx-2024",
+      "page": 1,
+      "base_raw": "80.93619",
+      "candidate_raw": "100.0",
+      "drop_pp": "-19.06381",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8616-hancom-mac-dutmal-hwp-2024",
+      "page": 1,
+      "base_raw": "51.8731",
+      "candidate_raw": "100.0",
+      "drop_pp": "-48.1269",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8629-hancom-mac-200-b5-hwp-2024",
+      "page": 1,
+      "base_raw": "77.49975",
+      "candidate_raw": "100.0",
+      "drop_pp": "-22.50025",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8564-.result.9d14e579-4810-4dc8-b9db-a0cf0bb4bd23.partial-hwp-2022",
+      "page": 1,
+      "base_raw": "91.81401",
+      "candidate_raw": "91.81401",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8526-inserted-style-hwp",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8526-inserted-style-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8549-moved-inline-picture-hwp",
+      "page": 1,
+      "base_raw": "92.8027",
+      "candidate_raw": "99.91686",
+      "drop_pp": "-7.11416",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8549-moved-inline-picture-hwpx",
+      "page": 1,
+      "base_raw": "99.91678",
+      "candidate_raw": "99.91678",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8549-moved-terminal-tab-hwp",
+      "page": 1,
+      "base_raw": "91.36136",
+      "candidate_raw": "99.92003",
+      "drop_pp": "-8.55867",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8549-moved-terminal-tab-hwpx",
+      "page": 1,
+      "base_raw": "99.91994",
+      "candidate_raw": "99.91994",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8602-empty-deleted-hwp",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8602-empty-deleted-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8564-context-after",
+      "page": 1,
+      "base_raw": "92.01038",
+      "candidate_raw": "92.01038",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "control-scaffold-a",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "control-scaffold-b",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8616-opengov-ruby",
+      "page": 1,
+      "base_raw": "98.30024",
+      "candidate_raw": "100.0",
+      "drop_pp": "-1.69976",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8616-opengov-ruby",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8541-split-hwp",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8541-split-hwp",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8541-split-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8541-split-hwpx",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8541-merged-hwp",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8541-merged-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8571-height-contract-header-stale",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8571-height-contract-header-near",
+      "page": 1,
+      "base_raw": "61.38566",
+      "candidate_raw": "100.0",
+      "drop_pp": "-38.61434",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8571-height-contract-header-grown",
+      "page": 1,
+      "base_raw": "51.2599",
+      "candidate_raw": "100.0",
+      "drop_pp": "-48.7401",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8571-height-contract-footer-stale",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8571-height-contract-footer-near-complete",
+      "page": 1,
+      "base_raw": "61.49758",
+      "candidate_raw": "100.0",
+      "drop_pp": "-38.50242",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8571-height-contract-footer-grown",
+      "page": 1,
+      "base_raw": "55.75758",
+      "candidate_raw": "100.0",
+      "drop_pp": "-44.24242",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8572-cell-typed-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8572-cell-typed-hwpx",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8572-cell-typed-hwpx",
+      "page": 3,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8572-cell-typed-hwpx",
+      "page": 4,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8572-cell-typed-hwpx",
+      "page": 5,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8572-cell-typed-hwpx",
+      "page": 6,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8572-cell-typed-hwpx",
+      "page": 7,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8572-original-footnote-hwp",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8572-original-footnote-hwp",
+      "page": 2,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8572-original-footnote-hwp",
+      "page": 3,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8572-original-footnote-hwp",
+      "page": 4,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8572-original-footnote-hwp",
+      "page": 5,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8572-original-footnote-hwp",
+      "page": 6,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8616-existing-caret-false-hwp",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8616-existing-caret-false-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8616-existing-caret-true-hwp",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "8616-existing-caret-true-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "issue7344-first-cell-no-ls-before",
+      "page": 1,
+      "base_raw": "98.99357",
+      "candidate_raw": "100.0",
+      "drop_pp": "-1.00643",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8558-actual-r3-character-bullet-hwp",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8558-actual-r3-character-bullet-hwpx",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8558-actual-r3-picture-bullet-hwp",
+      "page": 1,
+      "base_raw": "67.30361",
+      "candidate_raw": "100.0",
+      "drop_pp": "-32.69639",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "api-8558-actual-r3-picture-bullet-hwpx",
+      "page": 1,
+      "base_raw": "67.30361",
+      "candidate_raw": "100.0",
+      "drop_pp": "-32.69639",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "issue7344-stored-fields-tabs",
+      "page": 1,
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "drop_pp": "0.0",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "issue7344-broken-cell-ladder",
+      "page": 1,
+      "base_raw": "99.86918",
+      "candidate_raw": "99.86918",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8542-nhis-dependent-requirements",
+      "page": 1,
+      "base_raw": "99.58262",
+      "candidate_raw": "99.58262",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8542-nhis-dependent-requirements",
+      "page": 2,
+      "base_raw": "99.57722",
+      "candidate_raw": "99.57722",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    },
+    {
+      "key": "inherited8542-nhis-dependent-requirements",
+      "page": 3,
+      "base_raw": "99.54448",
+      "candidate_raw": "99.54448",
+      "drop_pp": "0.00000",
+      "over_2pp": false,
+      "below90": false,
+      "display_drop": false
+    }
+  ],
+  "errors": [],
+  "compared_pages": 301,
+  "over_2pp": [],
+  "below90": [],
+  "condition_reviews": [
+    {
+      "key": "inherited8640-equal-height",
+      "field": "font_supply",
+      "base_record_sha256": "0bbfeaf095db446362fa051783921f1a2c79b6511d5f1639e455148364532298",
+      "candidate_record_sha256": "ea241f662675a6a0913b5858c68c574a3d848c4ee70f71265fa73b62cfb7e3a1",
+      "state": "accepted_same_source_font",
+      "basis": "동일 WOFF SHA·변환 코드. 현재 실제 SFNT의 19개 원시 테이블은 head 체크섬·시각만 정규화하면 같은 WOFF를 독립 판독한 저장 테이블 해시와 모두 같다. 과거 개별 SFNT 바이트를 직접 판독한 증거로 주장하지 않는다. 이 목록의 정확한 provenance 지문만 수용한다.",
+      "proof": "r6-font-table-comparison.json"
+    },
+    {
+      "key": "inherited8640-equal-width",
+      "field": "font_supply",
+      "base_record_sha256": "cb603bbcb4026745d13e64722822737bb211c4399816883264098c7d063d1344",
+      "candidate_record_sha256": "26b35eb73732234587f3fc63afb2b98bee535153df16490b2f1e6cfdf73cf066",
+      "state": "accepted_same_source_font",
+      "basis": "동일 WOFF SHA·변환 코드. 현재 실제 SFNT의 19개 원시 테이블은 head 체크섬·시각만 정규화하면 같은 WOFF를 독립 판독한 저장 테이블 해시와 모두 같다. 과거 개별 SFNT 바이트를 직접 판독한 증거로 주장하지 않는다. 이 목록의 정확한 provenance 지문만 수용한다.",
+      "proof": "r6-font-table-comparison.json"
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwp",
+      "field": "font_supply",
+      "base_record_sha256": "0618e6fc25c9cbee4db1ce8ef4c61387ce6c37190e132e9f260e0b6fa4288342",
+      "candidate_record_sha256": "079c5db7071c40ccddf72ceeaef5d7c0ed211b06e962be284e5151b63eb00e86",
+      "state": "accepted_same_source_font",
+      "basis": "동일 WOFF SHA·변환 코드. 현재 실제 SFNT의 19개 원시 테이블은 head 체크섬·시각만 정규화하면 같은 WOFF를 독립 판독한 저장 테이블 해시와 모두 같다. 과거 개별 SFNT 바이트를 직접 판독한 증거로 주장하지 않는다. 이 목록의 정확한 provenance 지문만 수용한다.",
+      "proof": "r6-font-table-comparison.json"
+    },
+    {
+      "key": "inherited8640-equal-height-edited-hwpx",
+      "field": "font_supply",
+      "base_record_sha256": "d756fd123a50ec64b426bc431c927efcf0fd7f5a7670b0578c09c1d700037ea6",
+      "candidate_record_sha256": "6ec67729aa20d6c93f6cd175c993d82fc9bbd8fdafb4153c891051f83feddc77",
+      "state": "accepted_same_source_font",
+      "basis": "동일 WOFF SHA·변환 코드. 현재 실제 SFNT의 19개 원시 테이블은 head 체크섬·시각만 정규화하면 같은 WOFF를 독립 판독한 저장 테이블 해시와 모두 같다. 과거 개별 SFNT 바이트를 직접 판독한 증거로 주장하지 않는다. 이 목록의 정확한 provenance 지문만 수용한다.",
+      "proof": "r6-font-table-comparison.json"
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwp",
+      "field": "font_supply",
+      "base_record_sha256": "f0b1d5a92aa7396084f2bae8c5d938e9f72f58a68bc292aaad612ab2160ab1bd",
+      "candidate_record_sha256": "a72e8e34f3bc8cc41f37f417ef9821bbd5a2d1a4da3465dc192501d0f321f11e",
+      "state": "accepted_same_source_font",
+      "basis": "동일 WOFF SHA·변환 코드. 현재 실제 SFNT의 19개 원시 테이블은 head 체크섬·시각만 정규화하면 같은 WOFF를 독립 판독한 저장 테이블 해시와 모두 같다. 과거 개별 SFNT 바이트를 직접 판독한 증거로 주장하지 않는다. 이 목록의 정확한 provenance 지문만 수용한다.",
+      "proof": "r6-font-table-comparison.json"
+    },
+    {
+      "key": "inherited8640-equal-width-edited-hwpx",
+      "field": "font_supply",
+      "base_record_sha256": "2bb315b16563dcd5f373c1e2eebdbc191812f082aa4d037863f4a82ab650c8ed",
+      "candidate_record_sha256": "4a340db13d3082cc11a1d9d058ca6c1edb1a7503c25b1061f36834174caff4d1",
+      "state": "accepted_same_source_font",
+      "basis": "동일 WOFF SHA·변환 코드. 현재 실제 SFNT의 19개 원시 테이블은 head 체크섬·시각만 정규화하면 같은 WOFF를 독립 판독한 저장 테이블 해시와 모두 같다. 과거 개별 SFNT 바이트를 직접 판독한 증거로 주장하지 않는다. 이 목록의 정확한 provenance 지문만 수용한다.",
+      "proof": "r6-font-table-comparison.json"
+    },
+    {
+      "key": "inherited8640-equalize-original",
+      "field": "font_supply",
+      "base_record_sha256": "870c0cdb02a773e96652e470a3030bac2a862a027cbe09afbea501825f67bd63",
+      "candidate_record_sha256": "7899bb382bf4abddb567833ec3596c6a0ee250055904aa77b7a8cbb18aebb120",
+      "state": "accepted_same_source_font",
+      "basis": "동일 WOFF SHA·변환 코드. 현재 실제 SFNT의 19개 원시 테이블은 head 체크섬·시각만 정규화하면 같은 WOFF를 독립 판독한 저장 테이블 해시와 모두 같다. 과거 개별 SFNT 바이트를 직접 판독한 증거로 주장하지 않는다. 이 목록의 정확한 provenance 지문만 수용한다.",
+      "proof": "r6-font-table-comparison.json"
+    },
+    {
+      "key": "inherited8542-nhis-dependent-requirements",
+      "field": "font_supply",
+      "base_record_sha256": "6d941849a6ec3216765701cf9ed0999a90ae03a72417c117385e8e589dbeb314",
+      "candidate_record_sha256": "b1aac0dbc700a80e33dabeacb166255bd18011d0dd74dd7435ecebc2a22d4d96",
+      "state": "accepted_same_source_font",
+      "basis": "동일 WOFF SHA·변환 코드. 현재 실제 SFNT의 19개 원시 테이블은 head 체크섬·시각만 정규화하면 같은 WOFF를 독립 판독한 저장 테이블 해시와 모두 같다. 과거 개별 SFNT 바이트를 직접 판독한 증거로 주장하지 않는다. 이 목록의 정확한 provenance 지문만 수용한다.",
+      "proof": "r6-font-table-comparison.json"
+    }
+  ],
+  "unresolved_conditions": [],
+  "state": "numeric_passed_direct_reading_separate"
+}

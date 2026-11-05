@@ -1,0 +1,18 @@
+✔ 암호 저장 dialog는 확인 입력, 최소 길이, 닫기 시 DOM 초기화를 제공한다 (1.578474ms)
+✔ 다른 이름·HWP·HWPX 저장은 공통 대화상자에서 암호 설정을 선택한다 (6.213777ms)
+✔ 저장 대화상자는 HWP/HWPX에서만 암호 설정 action을 반환한다 (2.046468ms)
+✔ Studio는 암호 문자열을 보관하지 않고 보호 저장 여부만 기억한다 (0.428895ms)
+✔ 보호 상태 변경은 fallback download가 성공한 뒤에만 commit한다 (0.293672ms)
+✔ 다른 이름 저장은 새 문서명 상태와 최근 문서를 함께 갱신한다 (12.52336ms)
+✔ 보호된 문서의 Save As 기본 확인은 평문 exporter를 고르지 않는다 (0.773269ms)
+✔ 평문 사본은 명시적 보호 해제 동작에서만 만든다 (1.293059ms)
+✔ Save As 암호 입력 취소는 persist 전에 보호 상태를 바꾸지 않는다 (0.454187ms)
+✔ Studio public WASM 배포물도 암호 저장 binding을 제공한다 (0.586181ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 406.49144

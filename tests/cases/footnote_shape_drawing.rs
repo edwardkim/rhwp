@@ -1,3 +1,20 @@
+//! 관계형 및 고정형 회귀: 각주 번호 크기 비율·선 종류와 독립 Print 4·5·6쪽의 구분선·번호 끝 좌표. 기존 오차는 0.5 CSSpx다.
+//! 주석 갱신: 2026-11-06T08:04:31+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 7cbcdee652a6b2cf181e42774f0f1d2bd1841341, 작성 2026-11-03T04:00:32+09:00, 커밋 2026-11-06T03:15:15+09:00.
+//! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
+//! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
+//! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
+//! shape.hwp (8538-shape-hwp-2022): 전 7쪽, Native 최저 92.35136%, fresh WASM 최저 92.4024%.
+//! 고정 4쪽: Native 100.0%, fresh WASM 100.0%; 같은 영역의 독립 Print 확대 판독 완료.
+//! 고정 5쪽: Native 100.0%, fresh WASM 100.0%; 같은 영역의 독립 Print 확대 판독 완료.
+//! 고정 6쪽: Native 100.0%, fresh WASM 100.0%; 같은 영역의 독립 Print 확대 판독 완료.
+//! shape.hwpx (8538-shape-hwpx-2022): 전 7쪽, Native 최저 92.35136%, fresh WASM 최저 92.4024%.
+//! 고정 4쪽: Native 100.0%, fresh WASM 100.0%; 같은 영역의 독립 Print 확대 판독 완료.
+//! 고정 5쪽: Native 100.0%, fresh WASM 100.0%; 같은 영역의 독립 Print 확대 판독 완료.
+//! 고정 6쪽: Native 100.0%, fresh WASM 100.0%; 같은 영역의 독립 Print 확대 판독 완료.
+//! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.json.
+//! 원본 형식 계약:
 //! 각주 모양의 그리기: 각주 세로 위치(본문 아래), 각주 내용 번호 속성(작게), 구분선 종류.
 //!
 //! 시험 문서는 한/글 12.30(Mac)이 연 뒤 HWP·HWPX로 저장한 7구역 문서다(구역마다 한 쪽).

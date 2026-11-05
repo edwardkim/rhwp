@@ -1,3 +1,14 @@
+//! 관계형 회귀: 날짜·경로 필드 경계 입력의 소속·필드 값·왕복 내용 보존. 실물 절대 배치 핀은 없다.
+//! 주석 갱신: 2026-11-06T08:04:31+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 07b7178a9984e69698f5433b8ac53894aa563700, 작성 2026-11-04T08:34:10+09:00, 커밋 2026-11-06T03:15:26+09:00.
+//! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
+//! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
+//! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
+//! date-path-context-before.hwp (8564-.result.9d14e579-4810-4dc8-b9db-a0cf0bb4bd23.partial-hwp-2022): 전 1쪽, Native 최저 91.81401%, fresh WASM 최저 91.17272%.
+//! date-path-context-edited.hwp (api-8564-context-after): 전 1쪽, Native 최저 92.01038%, fresh WASM 최저 92.28612%.
+//! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.json.
+//! 원본 형식 계약:
 //! 날짜·파일 경로 코드 경계에서 친 글자는 코드 밖에 둔다.
 //!
 //! 한/글(12.30 Mac)은 날짜 코드(`%dte`)와 파일 경로 코드(`%pat`)의 글을 문서를 열 때와

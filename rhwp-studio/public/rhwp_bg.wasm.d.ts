@@ -1,8 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
-export const prepareBitmapRaster: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => any;
-export const printPicturePenWidth: (a: number, b: number, c: number, d: number) => [number, number];
 export const version: () => [number, number];
 export const init_panic_hook: () => void;
 export const fontSymbolUnicodeRange: (a: number, b: number, c: number) => [number, number];
@@ -15,6 +13,8 @@ export const rasterizePrintMaskedImage: (a: number, b: number, c: number, d: num
 export const rasterizePrintMetafile: (a: number, b: number, c: number, d: number, e: any) => [number, number];
 export const resamplePrintBitmapRgba: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number];
 export const resamplePrintFrameRgba: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number];
+export const prepareBitmapRaster: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => any;
+export const printPicturePenWidth: (a: number, b: number, c: number, d: number) => [number, number];
 export const __wbg_documentexport_free: (a: number, b: number) => void;
 export const __wbg_hwpdocument_free: (a: number, b: number) => void;
 export const __wbg_hwpviewer_free: (a: number, b: number) => void;

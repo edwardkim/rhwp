@@ -1,0 +1,7 @@
+  ➜  Local:   http://127.0.0.1:7790/
+=== E2E: #8578 묶음 글상자 클릭·편집·Esc 소유 보존 ===
+
+  [browser] headless Chrome 실행
+  [wasm-artifact] matched 4755dbfeda5bba99d72191a54e90342ae381ec17f0dd840926bbf1fdd75d1f30
+
+📋 HTML 보고서: ../output/e2e/issue-8578-group-text-editing-report.html

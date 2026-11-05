@@ -1,0 +1,16 @@
+{
+  "native": {
+    "cases": 128,
+    "pages": 301,
+    "minimum": "91.81401",
+    "minimum_key": "8564-.result.9d14e579-4810-4dc8-b9db-a0cf0bb4bd23.partial-hwp-2022",
+    "minimum_page": 1
+  },
+  "wasm": {
+    "cases": 128,
+    "pages": 301,
+    "minimum": "91.17272",
+    "minimum_key": "8564-.result.9d14e579-4810-4dc8-b9db-a0cf0bb4bd23.partial-hwp-2022",
+    "minimum_page": 1
+  }
+}

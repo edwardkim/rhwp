@@ -1,3 +1,14 @@
+//! 관계형 및 고정형 회귀: 구역·쪽 번호 컨트롤 소속과 위치 열거값·삽입·제거 계약. 고정 속성값을 화면 좌표로 해석하지 않는다.
+//! 주석 갱신: 2026-11-06T08:04:31+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 3bb7d0a1231d1bed45c18ed6171a6063920f959a, 작성 2026-11-04T13:39:17+09:00, 커밋 2026-11-06T03:15:41+09:00.
+//! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
+//! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
+//! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
+//! hancom-page-number-mid.hwpx (8586-hancom-page-number-mid-hwpx-2022): 전 6쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! hancom-page-number-sections.hwpx (8586-hancom-page-number-sections-hwpx-2022): 전 7쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.json.
+//! 원본 형식 계약:
 //! 쪽 번호 매기기(`pgnp`) 읽기·쓰기 API (#7635).
 //!
 //! 한/글(12.30 Mac) 쪽 > 쪽 번호 매기기는 캐럿 자리와 상관없이 현재 구역의 쪽 번호 위치를

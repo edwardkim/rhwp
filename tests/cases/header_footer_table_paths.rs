@@ -1,3 +1,26 @@
+//! 관계형 회귀: 머리말·꼬리말 셀 경로의 편집·원본 속성·내용 보존. 원본 HWPUNIT 폭 계약은 절대 배치 핀이 아니다.
+//! 주석 갱신: 2026-11-06T08:04:31+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 68b3b1bf7618f371b212fc564069ae9687fb94c2, 작성 2026-11-05T15:52:37+09:00, 커밋 2026-11-06T03:17:08+09:00.
+//! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
+//! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
+//! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
+//! header-table.hwp (api-8571-header-table-hwp): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! header-table.hwpx (api-8571-header-table-hwpx): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! non-inline-header-table.hwp (api-8571-non-inline-header-table-hwp): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! non-inline-header-table.hwpx (api-8571-non-inline-header-table-hwpx): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! header-tac-explicit-break.hwpx (header-tac-explicit-break): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! header-tac-mixed-text.hwpx (header-tac-mixed-text): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! header-tac-pair-fit.hwpx (header-tac-pair-fit): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! header-tac-pair-wrap.hwpx (header-tac-pair-wrap): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! header-stale.hwpx (api-8571-height-contract-header-stale): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! header-near.hwpx (api-8571-height-contract-header-near): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! header-grown.hwpx (api-8571-height-contract-header-grown): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! footer-stale.hwpx (api-8571-height-contract-footer-stale): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! footer-near-complete.hwpx (api-8571-height-contract-footer-near-complete): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! footer-grown.hwpx (api-8571-height-contract-footer-grown): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.json.
+//! 원본 형식 계약:
 //! 관계형 및 고정형 회귀: 셀 경로의 머리말·꼬리말 뿌리로 머리말·꼬리말 문단에 표를 만들고,
 //! 그 셀을 고치고, 머리말 문단에 붙이고, 표를 지운다.
 //! 주석 갱신: 2026-11-03T13:40:00+09:00 (Asia/Seoul). 절대 px 위치를 고정하지 않는다.

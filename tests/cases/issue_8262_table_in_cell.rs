@@ -1,3 +1,14 @@
+//! 관계형 회귀: 셀 안 중첩 표의 포함·문단 순서·속성·HWPUNIT 폭. 절대 배치 좌표를 고정하지 않는다.
+//! 주석 갱신: 2026-11-06T08:04:31+09:00 (Asia/Seoul).
+//! 직전 파일 변경: bdfda460059c23a232f72217d42be79e6200f30d, 작성 2026-11-03T13:12:44+09:00, 커밋 2026-11-06T03:15:28+09:00.
+//! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
+//! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
+//! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
+//! nested-empty-current.hwp (rebase-empty-nested-hwp): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! nested-empty-current.hwpx (rebase-empty-nested-hwpx): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.json.
+//! 원본 형식 계약:
 //! 관계형 및 고정형 회귀: [#8262] 표 칸 안 표의 포함·문단 순서와 원본 속성·HWPUNIT 폭.
 //! 주석 갱신: 2026-11-01T17:04:07+09:00 (Asia/Seoul). 절대 px 위치를 고정하지 않는다.
 //! 직전 파일 변경: 6135bc2135b8366839f02bbada3df5fe33b13963, 2026-11-01T15:58:43+09:00.

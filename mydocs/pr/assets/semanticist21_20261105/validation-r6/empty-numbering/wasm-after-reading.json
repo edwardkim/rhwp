@@ -1,0 +1,21 @@
+{
+  "source_sha": "86709ac16711820e61baa3b87e2c4ddaac23573e",
+  "backend": "wasm",
+  "pages": [
+    1
+  ],
+  "read_at": "2026-11-06T07:26:28+09:00",
+  "source_wasm_sha256": "4755dbfeda5bba99d72191a54e90342ae381ec17f0dd840926bbf1fdd75d1f30",
+  "observations": "실제 review·overlay에서 개요9·10수준 본문 시작·상위 개요 마커·아래 번호1/8/9/10수준의 순서·간격을 같은 독립 Print와 대조했다. Native에서 보정한 빈 머리의 본문 거리가 WASM에서도 맞는다. HWPX actual RHWP/PDF PNG 쌍은 HWP와 각각 같아 동일 판독을 재사용한다.",
+  "crosscheck": {
+    "source": "86709ac16711820e61baa3b87e2c4ddaac23573e",
+    "canonical_and_direct_rhwp_png_equal": true,
+    "canonical_and_direct_pdf_png_equal": true,
+    "hwp_and_hwpx_rhwp_png_equal": true,
+    "hwp_and_hwpx_pdf_png_equal": true,
+    "canonical_raw": 100.0,
+    "direct_raw": 100.0,
+    "hwpx_raw": 100.0
+  },
+  "review_receipt": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r6-direct-review/wasm/8527-levels-hwp-2022/reuse-receipt.json"
+}

@@ -1,3 +1,15 @@
+//! 관계형 회귀: 빈 문단의 PARA_TEXT 생략·줄 레코드·컨트롤 삭제와 저장 재열기 계약. 화면 좌표를 고정하지 않는다.
+//! 주석 갱신: 2026-11-06T08:04:31+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 228e426fd19b342b8c525beeca18c27152e0caa7, 작성 2026-11-04T23:22:07+09:00, 커밋 2026-11-06T03:15:43+09:00.
+//! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
+//! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
+//! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
+//! rhwp-after.hwp (8602-rhwp-after-hwp-2022): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! rhwp-after.hwp (api-8602-empty-deleted-hwp): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! empty-deleted.hwpx (api-8602-empty-deleted-hwpx): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.json.
+//! 원본 형식 계약:
 //! 관계형: 편집으로 글·컨트롤이 모두 빠진 문단은 HWP 저장에서 한/글이 쓰는 빈 문단과 같다 —
 //! PARA_HEADER char_count 1, PARA_TEXT 없음. char_count 가 1 보다 큰 문단만 PARA_TEXT 를 갖는다.
 //! 개체를 지운 문단은 0에서 시작하는 저장 줄을 하나 이상 남긴다.

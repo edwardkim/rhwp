@@ -1,3 +1,15 @@
+//! 관계형 회귀: 번호 글자 모양과 본문 글자 크기의 추종·서식·저장 참조 관계. 입력 단위의 크기 환산은 절대 배치 핀이 아니다.
+//! 주석 갱신: 2026-11-06T08:04:31+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 063a10ed2dc85df628ddee8610c54f4a9dd9400a, 작성 2026-11-03T14:34:13+09:00, 커밋 2026-11-06T03:15:08+09:00.
+//! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
+//! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
+//! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
+//! follow-two-sizes.hwp (8528-follow-two-sizes-hwp-2022): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! follow-end-20pt.hwp (8528-follow-end-20pt-hwp-2022): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! follow-two-sizes.hwpx (8528-follow-two-sizes-hwpx-2022): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.json.
+//! 원본 형식 계약:
 //! 문단 번호 사용자 정의 모양의 글자 모양 지정·본문 글자 크기 따름(한/글 12.30 Mac).
 //!
 //! 한/글은 '본문 글자 크기 따름' 번호 글자 모양의 기준 크기를 0으로 저장하고, 번호를 문단 끝(문단

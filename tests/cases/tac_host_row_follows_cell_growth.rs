@@ -1,3 +1,15 @@
+//! 관계형 회귀: 셀 내용 증가 전후 표 윗변·뒤 표·다음 쪽 내용과 저장 재열기의 일관성. 비교 문서 간 관계를 검사한다.
+//! 주석 갱신: 2026-11-06T08:04:31+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 7bb8fa38baf14b5d7420a1aad925bfd87b2d18dc, 작성 2026-11-04T15:49:55+09:00, 커밋 2026-11-06T03:15:37+09:00.
+//! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
+//! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
+//! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
+//! footnote-01.hwp (8572-original-footnote-hwp): 전 6쪽, Native 최저 100.0%, fresh WASM 최저 99.99572%.
+//! fix-typed.hwp (8572-fix-typed-hwp-2022): 전 7쪽, Native 최저 100.0%, fresh WASM 최저 99.99572%.
+//! actual-api-cell-typed.hwpx (api-8572-cell-typed-hwpx): 전 7쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.json.
+//! 원본 형식 계약:
 //! 관계형: 칸 글이 늘어난 글자처럼 취급 표는 제자리에서 아래로 자라고, 뒤 표는 그만큼 내려가며, 저장·다시 열기 뒤에도 같다.
 //! 주석 갱신: 2026-11-04 16:10 KST(+09:00).
 //! 측정: 2026-11-04 한/글 12.30(Mac)에서 `samples/footnote-01.hwp` 제목 표 둘째 문단 앞에 "표안한글"을 넣었다.
