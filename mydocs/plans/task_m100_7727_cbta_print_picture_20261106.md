@@ -99,3 +99,13 @@ Hwp 2020 `11.0.0.9136`, `pdf_print_method=0`, `hancom2020_pdf_driver_one_up`을
 현재 renderer는 수정하지 않았다. 다음 단계는 원본의 실제 float/되감김 소속과 기존
 회귀의 181쪽·1122.5px 상수가 현재 다른 쪽/용지를 가리키는지 검토하고, 기존 결함의
 검출 의미를 보존해 검사를 보강·복원하는 것이다. 원본·두 PDF·원래 미달 수치는 유지한다.
+
+
+## 최신 테스트 head의 Native Skia 필수 검사
+
+로컬 커밋 `98e5afbb7a`에서 최소 글꼴·jobs8·threads8·Cargo 순차 조건으로
+지침의 Native Skia 3종을 모두 별도 실행했다. 라이브러리 4,039PASS/0FAIL/12ignore,
+PNG2PASS, 직접 PDF22PASS다. Native feature 전체 target Clippy와 fmt도 통과했다.
+정식 영수증은 `mydocs/pr/assets/issue7727/verification-20261106/native-required.json`이다.
+기본 nextest 결과로 Native 검사를 대체하지 않았다. 새 검사 포함 전체 회귀와 나머지
+최종 게이트·기존 corpus 원장 재활성화 검토는 완료로 표시하지 않는다.

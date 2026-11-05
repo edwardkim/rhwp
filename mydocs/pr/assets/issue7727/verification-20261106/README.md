@@ -75,5 +75,8 @@ PDFium·2px raw이며 전쪽을 다시 산출했습니다. 새 raw 하락은 0�
 이 결과는 대상 선택의 BEFORE 1FAIL → AFTER 4PASS이며 새 renderer 보정이 아닙니다.
 
 기존 corpus 이관 목록의 전수 재활성화는 이 네 검사의 실행과 구분합니다.
-최신 테스트 head의 전체 회귀·Native Skia 3종·lint, 최종 제출 head 편람 gate,
-다음 오래된 이슈 작업은 아직 완료로 표시하지 않습니다.
+커밋 `98e5afbb7a`에서 [Native Skia 필수 3종](native-required.json)을 Mac 최소 글꼴 환경으로
+순차 실행했습니다. 라이브러리 4,039PASS/0FAIL/12ignore, PNG 2PASS, 직접 PDF 22PASS이며
+Native feature 전체 target Clippy와 fmt도 통과했습니다. 기본 전체 nextest로 이 세 검사를
+대신하지 않았습니다. 새 검사 포함 전체 nextest·나머지 범위별 lint 묶음·최종 제출 head 편람
+gate·다음 오래된 이슈 작업은 아직 완료로 표시하지 않습니다.
