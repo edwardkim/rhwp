@@ -22,11 +22,11 @@ Native/fresh WASM 모두 완료했고 최저 95.98%·96.12%, 이전 표시값 �
 누락 4쪽의 복원은 수치 비교와 구분합니다. 최신 devel 전체를 새로 출력한 결과로 표시하지 않습니다.
 [최신 제품의 전체 최소 글꼴 Rust 회귀](full-nextest-c183a1ac61.json)는
 12,563/12,563 PASS·45 skipped·exit 0으로 완료했습니다.
-[Rust·Native 집중 검사 40개 묶음](rust-validation-c183a1ac61.json)은 모두 exit 0이며,
+[Rust·Native 집중 검사 40개 묶음](rust-validation-c183a1ac61.md)은 모두 exit 0이며,
 Native Skia 라이브러리 4,040 PASS·12 ignored와 CI integration 21개 모듈을 포함합니다.
 [별도 필수 편람 Native 383쪽 게이트](current-c183a1ac61/handbook-audit.json)도
 최저 99.96%, 기존 기준 표시값 하락 0쪽으로 통과했습니다. fresh WASM 80개 입력의
-전쪽 비교는 최신 제품에서 진행 중입니다.
+[전쪽 80입력·406쪽 감사](current-c183a1ac61/wasm-validation.md)는 완료됐으며 최저 92.87288%, 90% 미만·누락·쪽수·해시 오류 0건입니다.
 [PR #8389·#8397의 Native 보호 범위](current-c183a1ac61/pr8389_8397/native-audit.json)는
 17문서·1,770쪽과 원 TSV 2,153행을 모두 대조해 표시값 하락·누락 0행입니다.
 `issue7905` 6쪽도 전쪽 98% 이상이며 최저 98.86%입니다.
@@ -35,7 +35,7 @@ Native Skia 라이브러리 4,040 PASS·12 ignored와 CI integration 21개 모�
 아래 직전 완료 결과를 새 보정 제품의 전체 통과로 표시하지 않습니다. PR 생성·원격 작업은
 수행하지 않았으며 최종 준비 후 작업지시자 승인을 기다립니다.
 
-직접 판독 원장은 현재 144건입니다. 실제로 연 review·별도 overlay만 기록하며, 한 PR의
+직접 판독 원장은 현재 [155건](direct-reading-current.md)입니다. 실제로 연 review·별도 overlay만 기록하며, 한 PR의
 전체 검증 완료 건수와 혼동하지 않습니다. 기존 producer `4b149b6cdf`의 PNG 재사용은
 최신 제품의 재출력과 구분합니다. PR #8475의 세로쓰기 병합 칸에서 마지막 글자가 보이지 않는
 차이와 PR #8512의 상자 선 표현, PR #8535의 각주 번호 위치 차이를 확인해 기록했습니다.
@@ -47,7 +47,8 @@ PR #8475는 별도 보정 대상으로 유지합니다. 새 관계 검사 2개�
 worktree에서 검증 중이며, 위 `c183a1ac61`의 통과 결과로 대신하지 않습니다.
 [기본 옵션의 집중 검사](pr_8475/vertical-axis-focused-37e5bba300.md)는 같은 검출 함수의
 수정 전 2 FAIL·수정 후 2 PASS와 기존 대조 5 PASS를 확인했습니다. 보정 후 실제
-Native/fresh WASM 전쪽·확대 판독과 최종 공통 검증은 아직 완료 전입니다.
+Native/fresh WASM 전쪽은 각각 6입력·29쪽을 완료했습니다. 두 문제 쪽의 직접 판독도
+마쳤으며, 실물·정상 대조의 WASM 판독과 최종 공통 검증은 아직 완료 전입니다.
 
 ## 추가 보정 전의 완료된 공통 검증 — a7e5ce7112
 
@@ -188,3 +189,10 @@ PR #8475의 별도 보정 소스 `37e5bba300`을 실제 컴파일한 Native 제�
 이 보정은 아직 통합 브랜치의 제품 코드에 적용하지 않았으며 fresh WASM과 해당 소스의
 최종 필수 검증은 진행 중이다. 기존 `c183a1ac61` 전체 검증을 새 보정 소스의 통과로
 표시하지 않는다.
+
+## 세로쓰기 보정 fresh WASM 전쪽 추가 — 2026-11-05
+
+[보정 source 37e5bba300의 fresh WASM 전쪽 TSV](pr_8475/vertical-axis-37e5bba300/wasm/README.md)를
+확보했다. 두 축약 입력의 각 5쪽은 모두 100.00%이며, 대조군을 포함한 29쪽은 모두 90%
+이상이다. 두 문제 쪽만 개선됐고 나머지 27쪽은 이전 c183 WASM PNG와 바이트가 같다.
+주장 쪽 fresh WASM review/overlay의 판독과 해당 source의 전체 Rust 검증은 아직 진행 중이다.

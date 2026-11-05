@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-11-05T00:00:37.682092+00:00",
+  "recorded_at": "2026-11-05T00:17:13.738059+00:00",
   "records": [
     {
       "pr": 8422,
@@ -3719,9 +3719,59 @@
       },
       "observation": "A=46의 경계 대조 입력이다. 채움 01–20 뒤 긴 본문이 048까지 이어지고 047의 각주 표지는 남는다. Print와 RHWP 모두 이 쪽에는 각주 분리선과 각주 본문이 없으며, 앞 A=40 입력과 각주 수용 경계가 달라지는 것을 확인했다. 이 1쪽 그림만으로 다음 쪽의 각주 내용 보존까지 입증하지 않는다.",
       "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8475,
+      "input": "samples/issue8470/vertical_fit.hwpx",
+      "pdf": "pdf/issue8470/vertical_fit-2020.pdf",
+      "page": 5,
+      "backend": "wasm",
+      "measurement_code_label": "vertical-axis-37e5bba300",
+      "producer_commit": "37e5bba3007614d9304c3dbf863503a8c7340405",
+      "observed_at_utc": "2026-11-05T00:15:12.615685+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/wasm/case-00-p005-review.png",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/wasm/vertical-axis-0/review/review_005.png",
+          "sha256": "1264709834dfb5f4ff4b6ab815853e67e6966bd40c41a63ed6b37a0aaf1c2986"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/wasm/case-00-p005-overlay.png",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/wasm/vertical-axis-0/overlay/overlay_005.png",
+          "sha256": "cc80d82d7ede755863e0604899cf98da28e29c0dbfa37f7c5353de71d6773773"
+        }
+      },
+      "observation": "V6의 행 1–30과 표의 닫는 외곽을 확인했다. 임용전경력 다섯 글자가 한 세로줄로 셀 안에 표시되고 마지막 력이 복원됐다. 인접 행을 가리거나 쪽을 넘어 분리되지 않는다. Native와 같은 내용 보존·소속 관계를 독립 Print와 직접 대조했다.",
+      "status": "fresh WASM 해당 쪽 판독 완료; 나머지 영향 쪽 판독 및 필수 전체 검증 대기"
+    },
+    {
+      "pr": 8475,
+      "input": "samples/issue8470/vertical_oversize.hwpx",
+      "pdf": "pdf/issue8470/vertical_oversize-2020.pdf",
+      "page": 5,
+      "backend": "wasm",
+      "measurement_code_label": "vertical-axis-37e5bba300",
+      "producer_commit": "37e5bba3007614d9304c3dbf863503a8c7340405",
+      "observed_at_utc": "2026-11-05T00:17:13.738059+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/wasm/case-01-p005-review.png",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/wasm/vertical-axis-1/review/review_005.png",
+          "sha256": "d82e03e13aeb6f5f173fd0a577687a90701b39f51e104d031084bb8edabec987"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/wasm/case-01-p005-overlay.png",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/wasm/vertical-axis-1/overlay/overlay_005.png",
+          "sha256": "ad7e4ca2867ccc5313486dfa8af5cb9f2fa2bef3ae489820dbeb01943db9fbb3"
+        }
+      },
+      "observation": "V3 표의 행 1–36과 하단 세 행의 병합 칸을 확인했다. 임용전경력 다섯 글자가 한 세로줄로 셀 안에 모두 보이며, 마지막 력이 셀 밖으로 나가거나 잘리지 않는다. 앞뒤 행의 내용·순서·표 종료와 한 페이지 소속이 독립 Print 및 Native와 대응한다.",
+      "status": "해당 쪽 직접 판독 완료; 통합 최종 검증 대기"
     }
   ],
-  "record_count": 153,
+  "record_count": 155,
   "final_approval": false,
   "note": "직접 본 PNG의 해시와 관측만 기록한다. 기록되지 않은 쪽이나 최종 공통 검증의 완료를 주장하지 않는다."
 }
