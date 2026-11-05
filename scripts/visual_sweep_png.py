@@ -172,6 +172,10 @@ def cached_font_faces(vs, directory: Path, source: Path, digest: str):
                     or not valid_font_repairs(entry.get('repairs'))):
                 return None
             aliases = entry.get('postScriptNames')
+            if isinstance(aliases, list) and any(
+                    name.strip() != name for name in names if name not in aliases):
+                # family 이름을 정규화하기 전에 만든 캐시다(#8612).
+                return None
             if (not isinstance(aliases, list)
                     or any(not isinstance(name, str) or not name or name not in names for name in aliases)
                     or entry.get('primaryFamily') not in names):
@@ -358,6 +362,9 @@ def font_family_names(font) -> tuple[list[str], list[dict]]:
                            'rawSha256': hashlib.sha256(entry.string).hexdigest(),
                            'reason': str(error)})
         else:
+            # Native 카탈로그(`TypefaceCatalog::insert_face`)는 family 이름의 앞뒤 공백을
+            # 지우고 조회한다. 같은 이름으로 공급해야 WASM 글꼴 환경이 거부하지 않는다(#8612).
+            value = value.strip()
             if value:
                 names.add(value)
     if errors and not names:
@@ -381,6 +388,10 @@ def font_program_identity(font) -> tuple[dict, list[dict]]:
                                'rawSha256': hashlib.sha256(entry.string).hexdigest(),
                                'reason': str(error)})
             continue
+        if entry.nameID == 1:
+            # 위 font_family_names 와 같은 Native family 정규화(#8612). PostScript 이름은
+            # Native 도 정확히 일치할 때만 찾으므로 바꾸지 않는다.
+            value = value.strip()
         if not value:
             continue
         if entry.nameID == 6:
