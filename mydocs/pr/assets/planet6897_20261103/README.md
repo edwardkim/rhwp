@@ -70,6 +70,13 @@
 완전 일치로 바꾸어 적지 않았다. 보정 source의 [필수 편람 383쪽](pr_8475/vertical-axis-37e5bba300/handbook-validation.md)도 통과했다.
 최신 통합 source의 필수 검증과 영향 대조를 끝내기 전에는 최종 수용으로 바꾸지 않는다.
 
+## 최신 fresh WASM 실제 실행 완료
+
+[최적화 제품의 실제 API·브라우저 검사](rebase8609/runtime-validation.md)는 세 실행 모두 exit 0이다.
+브라우저 271 assertion·17 Worker·12쪽 렌더/저장, 공개 API 계약 2개, 가져오기·편집 산출물 4종의
+기존 Native 생성 입력과 바이트 일치를 확인했다. 이번에 Native importer까지 새로 실행했다고
+표시하지 않는다. 최신 전쪽 시각·새 base 대조·전체 Rust의 완료와는 별개의 증거다.
+
 ## 새 base의 CanvasKit 소비 계약
 
 [제어문자·밑줄·장식선의 합성 계약 21개](rebase8609-backend-contract.md)는 모두 통과했다.
