@@ -62,6 +62,11 @@
 완전 일치로 바꾸어 적지 않았다. 보정 source의 [필수 편람 383쪽](pr_8475/vertical-axis-37e5bba300/handbook-validation.md)도 통과했다.
 최신 통합 source의 필수 검증과 영향 대조를 끝내기 전에는 최종 수용으로 바꾸지 않는다.
 
+## 새 base의 CanvasKit 소비 계약
+
+[제어문자·밑줄·장식선의 합성 계약 21개](rebase8609-backend-contract.md)는 모두 통과했다.
+실제 모듈 메서드의 결과이며 한컴 문서의 화면 캡처나 전쪽 시각 통과를 대신하지 않는다.
+
 ## 원본·쪽·대표 그림의 대응
 
 - [입력·PDF SHA-256 148개 대조표](input-integrity.tsv): 기존 공식 입력과 독립 Print를 재사용한다.
