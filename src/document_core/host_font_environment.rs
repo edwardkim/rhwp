@@ -52,8 +52,12 @@ impl DocumentCore {
                 else {
                     continue;
                 };
+                // 환경 이름 계약(`FontEnvironment::valid_name`)을 어기는 원본 이름은
+                // 관측 치환의 원본 키가 될 수 없다. `document_requests` 와 같이
+                // 요청에서 제외해 문서 전체의 환경 검증 실패로 번지지 않게 한다(#8597).
                 if font.is_embedded
                     || font.alt_type != 1
+                    || !FontEnvironment::valid_name(&font.name)
                     || self
                         .font_environment
                         .as_ref()
