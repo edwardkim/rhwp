@@ -1049,6 +1049,183 @@ pub(crate) fn stored_tac_line_successor_advance(
         .then(|| hwpunit_to_px(advance, dpi) + after)
 }
 
+/// 칸 문단의 '겹침 허용 안 함' 어울림 그림을 쌓은 결과.
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct CellNoOverlapSquareStack {
+    /// (control 번호, 원래 자리에서 아래로 내린 거리 px). 내리지 않은 그림은 없다.
+    pub shifts: Vec<(usize, f64)>,
+    /// 문단 원점부터 쌓인 그림 중 가장 아래 그림의 시각 바닥 px.
+    pub bottom: f64,
+    /// 쌓기에 든 그림의 control 번호.
+    pub members: Vec<usize>,
+}
+
+/// 쌓기에 든 그림을 실제 배치 자리에서 차례로 놓는다. 뒤 그림 상자(바깥 여백 포함)가
+/// 이미 놓인 그림 상자와 겹치면 그 아래로 내리고 다시 확인한다. 오프셋만으로 자리가
+/// 정해진 그림이면 `cell_no_overlap_square_stack` 의 이동량과 같고, 배치 경로가 문단
+/// 흐름으로 그림을 이미 내려 놓았으면 더 내리지 않는다.
+#[derive(Debug, Default)]
+pub(crate) struct NoOverlapSquarePlacer {
+    /// (x0, x1, y0, y1) px. 바깥 여백 포함.
+    placed: Vec<(f64, f64, f64, f64)>,
+}
+
+impl NoOverlapSquarePlacer {
+    /// `x`, `y` 는 바깥 여백을 더하기 전 상자 원점이다. 내린 `y` 를 돌려준다.
+    pub(crate) fn place(
+        &mut self,
+        stack: Option<&CellNoOverlapSquareStack>,
+        control_idx: usize,
+        common: &CommonObjAttr,
+        x: f64,
+        y: f64,
+        dpi: f64,
+    ) -> f64 {
+        if !stack.is_some_and(|stack| stack.members.contains(&control_idx)) {
+            return y;
+        }
+        const EPS: f64 = 0.01;
+        let px = |hu: i64| hwpunit_to_px(hu as i32, dpi);
+        let outer_w = px(i64::from(signed_hwpunit(common.width))
+            + i64::from(common.margin.left)
+            + i64::from(common.margin.right));
+        let outer_h = px(i64::from(signed_hwpunit(common.height))
+            + i64::from(common.margin.top)
+            + i64::from(common.margin.bottom));
+        let (x0, x1) = (x, x + outer_w);
+        let mut y0 = y;
+        while let Some(lower) = self
+            .placed
+            .iter()
+            .filter(|&&(px0, px1, py0, py1)| {
+                x0 < px1 - EPS && px0 < x1 - EPS && y0 < py1 - EPS && py0 < y0 + outer_h - EPS
+            })
+            .map(|&(_, _, _, py1)| py1)
+            .reduce(f64::max)
+        {
+            y0 = lower;
+        }
+        self.placed.push((x0, x1, y0, y0 + outer_h));
+        y0
+    }
+}
+
+/// 칸 문단 `para_idx` 의 쌓기 결과. 쌓기는 그림 자리를 오프셋만으로 정하는
+/// 형상의 계약이라, 호스트 문단에 보이는 글자가 있으면 기존 경로에 남긴다(None).
+/// 그 문단의 그림은 글줄 흐름을 따라 놓이고(좁은 칸에서는 이미 차례로 아래에
+/// 놓인다), 높이 측정도 글줄과 그림 흐름으로 한다. 쌓기를 더하면 같은 이동을
+/// 두 번 하거나 행을 이중으로 키운다.
+pub(crate) fn cell_paragraph_no_overlap_square_stack(
+    paragraphs: &[Paragraph],
+    para_idx: usize,
+    dpi: f64,
+) -> Option<CellNoOverlapSquareStack> {
+    let host = paragraphs.get(para_idx)?;
+    if !host.text.trim().is_empty() {
+        return None;
+    }
+    cell_no_overlap_square_stack(&host.controls, dpi)
+}
+
+/// 칸 한 문단의 어울림(Square) 그림이 '겹침 허용 안 함'이면 한컴은 뒤 그림을
+/// 앞 그림과 겹치지 않게 그 아래로 내려 놓는다(그림 높이 간격으로 쌓이고,
+/// 모자라면 칸이 늘어난다). 그림 배치·칸 세로 정렬·칸 높이 측정이 이 한 결과를
+/// 같이 써야 쌓인 범위가 장부마다 갈리지 않는다.
+///
+/// 범위는 좁게 둔다: 글자처럼 취급 아님 + Square + 겹침 허용 안 함 그림만 쌓고,
+/// 그 그림이 문단 기준 위쪽 정렬·문단/단 기준 왼쪽 정렬(오프셋만으로 자리가
+/// 정해지는 형상)이 아니면 기존 경로에 남긴다(None). 실제로 내려간 그림이
+/// 없어도 None 이다. 음수 세로 오프셋은 문단 원점 위로 나가지 않는다(배치가
+/// 칸 안으로 묶는 것과 같다). 상자는 바깥 여백을 포함한다.
+pub(crate) fn cell_no_overlap_square_stack(
+    controls: &[Control],
+    dpi: f64,
+) -> Option<CellNoOverlapSquareStack> {
+    struct StackBox {
+        control_idx: usize,
+        x0: i64,
+        x1: i64,
+        y: i64,
+        outer_h: i64,
+        visual_h: i64,
+    }
+    let mut boxes: Vec<StackBox> = Vec::new();
+    let mut horz_rel_to = None;
+    for (control_idx, control) in controls.iter().enumerate() {
+        let Control::Picture(picture) = control else {
+            continue;
+        };
+        let common = &picture.common;
+        if common.treat_as_char
+            || common.allow_overlap
+            || !matches!(common.text_wrap, TextWrap::Square)
+        {
+            continue;
+        }
+        if !matches!(common.vert_rel_to, VertRelTo::Para)
+            || !matches!(common.vert_align, VertAlign::Top)
+            || !matches!(common.horz_rel_to, HorzRelTo::Para | HorzRelTo::Column)
+            || !matches!(common.horz_align, HorzAlign::Left)
+            || *horz_rel_to.get_or_insert(common.horz_rel_to) != common.horz_rel_to
+        {
+            return None;
+        }
+        let x0 = i64::from(signed_hwpunit(common.horizontal_offset));
+        let outer_w = i64::from(signed_hwpunit(common.width))
+            + i64::from(common.margin.left)
+            + i64::from(common.margin.right);
+        let visual_h = i64::from(signed_hwpunit(common.height));
+        let outer_h = visual_h + i64::from(common.margin.top) + i64::from(common.margin.bottom);
+        if outer_w <= 0 || visual_h <= 0 {
+            return None;
+        }
+        boxes.push(StackBox {
+            control_idx,
+            x0,
+            x1: x0 + outer_w,
+            y: i64::from(signed_hwpunit(common.vertical_offset).max(0)),
+            outer_h,
+            visual_h: visual_h + i64::from(common.margin.top),
+        });
+    }
+    if boxes.len() < 2 {
+        return None;
+    }
+    let mut shifts = Vec::new();
+    let mut bottom = 0i64;
+    for index in 0..boxes.len() {
+        let (placed, rest) = boxes.split_at_mut(index);
+        let current = &mut rest[0];
+        let original_y = current.y;
+        // 앞 그림과 겹치면 그 그림 아래로 내리고, 내린 자리에서 다시 확인한다.
+        while let Some(lower) = placed
+            .iter()
+            .filter(|prev| {
+                current.x0 < prev.x1
+                    && prev.x0 < current.x1
+                    && current.y < prev.y + prev.outer_h
+                    && prev.y < current.y + current.outer_h
+            })
+            .map(|prev| prev.y + prev.outer_h)
+            .max()
+        {
+            current.y = lower;
+        }
+        if current.y > original_y {
+            shifts.push((
+                current.control_idx,
+                hwpunit_to_px((current.y - original_y) as i32, dpi),
+            ));
+        }
+        bottom = bottom.max(current.y + current.visual_h);
+    }
+    (!shifts.is_empty()).then(|| CellNoOverlapSquareStack {
+        members: boxes.iter().map(|b| b.control_idx).collect(),
+        shifts,
+        bottom: hwpunit_to_px(bottom as i32, dpi),
+    })
+}
+
 /// A single whitespace host line and its parallel flow pictures share an
 /// origin, but the line and the picture band have separate fragment owners.
 /// Explicit newlines, visible text, inline objects and distinct bands keep

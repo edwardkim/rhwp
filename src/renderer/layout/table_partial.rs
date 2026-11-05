@@ -1953,8 +1953,35 @@ impl LayoutEngine {
             let empty_owners = cut_units
                 .filter(|_| empty_paragraphs.iter().any(|&empty| empty))
                 .map(|(su, eu)| self.cell_cut_empty_paragraph_owners(cell, table, styles, su, eu));
+            // 글자 없이 비글자처럼 취급 개체만 든 빈 문단은 빈 줄을 소유하지 않아도 이
+            // 조각에 그 개체 유닛이 있으면 이 조각이 문단을 소유한다. 빈 줄 소유만 보면
+            // 개체가 어느 조각에서도 그려지지 않고(행이 쪽을 넘어 나뉘거나 여러 행을
+            // 차지하는 칸), 소유하지 않은 채 그리면 칸 내용 높이·정렬에서 빠진다.
+            let control_owned_empty_paragraph = |pi: usize| {
+                empty_paragraphs[pi]
+                    && !empty_owners.as_ref().is_none_or(|owners| owners[pi])
+                    && cut_units.is_some_and(|(su, eu)| {
+                        self.cell_cut_contains_non_inline_control_units(
+                            cell, table, styles, su, eu, pi,
+                        )
+                    })
+            };
             let owns_empty_paragraph = |pi: usize| {
-                empty_paragraphs[pi] && empty_owners.as_ref().is_none_or(|owners| owners[pi])
+                empty_paragraphs[pi]
+                    && (empty_owners.as_ref().is_none_or(|owners| owners[pi])
+                        || control_owned_empty_paragraph(pi))
+            };
+            // 개체로 소유한 빈 문단의 정렬 높이는 빈 줄과 개체 띠 중 큰 쪽이다.
+            // 개체는 문단 원점에 오프셋으로 놓이고 빈 줄과 같은 띠를 차지한다.
+            let control_owned_empty_paragraph_height = |pi: usize, lines_h: f64| {
+                if control_owned_empty_paragraph(pi) {
+                    lines_h.max(self.calc_cell_wrap_objects_bottom_height(
+                        std::slice::from_ref(&cell.paragraphs[pi]),
+                        styles,
+                    ))
+                } else {
+                    lines_h
+                }
             };
             // 셀 내 텍스트 높이 (분할 행이면 줄 범위 내만 계산)
             // spacing_before: 셀 첫 문단 제외, spacing_after: 셀 마지막 문단 제외
@@ -2028,15 +2055,18 @@ impl LayoutEngine {
                     let is_last_para = last_visible_line.is_some_and(|(last_pi, _)| pi == last_pi);
                     if empty_paragraphs[pi] {
                         if owns_empty_paragraph(pi) {
-                            total += self.calc_para_lines_height(
-                                &comp.lines,
-                                para,
-                                false,
-                                false,
+                            total += control_owned_empty_paragraph_height(
                                 pi,
-                                split_para_count,
-                                para_style,
-                                styles,
+                                self.calc_para_lines_height(
+                                    &comp.lines,
+                                    para,
+                                    false,
+                                    false,
+                                    pi,
+                                    split_para_count,
+                                    para_style,
+                                    styles,
+                                ),
                             );
                         }
                         continue;
@@ -2372,15 +2402,18 @@ impl LayoutEngine {
                             last_visible_line.is_some_and(|(last_pi, _)| pi == last_pi);
                         if empty_paragraphs[pi] {
                             if owns_empty_paragraph(pi) {
-                                total += self.calc_para_lines_height(
-                                    &comp.lines,
-                                    para,
-                                    false,
-                                    false,
+                                total += control_owned_empty_paragraph_height(
                                     pi,
-                                    para_count,
-                                    para_style,
-                                    styles,
+                                    self.calc_para_lines_height(
+                                        &comp.lines,
+                                        para,
+                                        false,
+                                        false,
+                                        pi,
+                                        para_count,
+                                        para_style,
+                                        styles,
+                                    ),
                                 );
                             }
                             continue;
@@ -2792,9 +2825,20 @@ impl LayoutEngine {
             let reflow_block_flow = self.reflow_block_cell_flow_in_cell(cell, table, styles);
             for cp_idx in loop_start..loop_end_excl {
                 let para = &cell.paragraphs[cp_idx];
+                let no_overlap_square_stack =
+                    crate::renderer::float_placement::cell_paragraph_no_overlap_square_stack(
+                        &cell.paragraphs,
+                        cp_idx,
+                        self.dpi,
+                    );
+                let mut no_overlap_placer =
+                    crate::renderer::float_placement::NoOverlapSquarePlacer::default();
                 if empty_paragraphs[cp_idx] && !owns_empty_paragraph(cp_idx) {
                     continue;
                 }
+                // 개체로 소유한 빈 문단의 그림은 조각 흐름 커서 대신 문단 원점과 제
+                // 오프셋에 놓는다 — 흐름 커서는 가로 자리가 다른 그림도 차례로 아래에 쌓는다.
+                let control_owned_empty = control_owned_empty_paragraph(cp_idx);
                 if collapse_stored_wrap_spacers
                     && stored_nested_table_empty_wrap_spacer(cell, cp_idx)
                 {
@@ -3490,6 +3534,7 @@ impl LayoutEngine {
                                     });
                                 let fragment_owned_square_flow =
                                     self.profile.get().hwp5_stored_pagination_layout()
+                                        && !control_owned_empty
                                         && cut_units.is_some()
                                         && visible_non_inline_control
                                         && pic.common.flow_with_text
@@ -3784,6 +3829,8 @@ impl LayoutEngine {
                                                 })
                                                 .unwrap_or(para_y_before_compose)
                                         }
+                                    } else if control_owned_empty {
+                                        para_y_before_compose
                                     } else if let Some(top) = para_first_line_top.filter(|_| {
                                         // 원본 HWP5 조각 소유 Square 흐름은 아래에서 오프셋 없이
                                         // 흐름 커서를 쓰는 별도 계약이라 그대로 둔다.
@@ -4044,6 +4091,17 @@ impl LayoutEngine {
                                                 + frame.picture_y(cp_idx, ctrl_idx, self.dpi)
                                         })
                                         .unwrap_or(pic_y);
+                                    // 겹침 허용 안 함인 어울림 그림은 이 조각에 먼저 놓인 같은 문단
+                                    // 그림과 겹치면 그 아래로 내린다. 이 경로는 문단 흐름으로 그림을
+                                    // 이미 내려 놓기도 하므로 오프셋 이동량 대신 실제 자리로 판정한다.
+                                    let pic_y = no_overlap_placer.place(
+                                        no_overlap_square_stack.as_ref(),
+                                        ctrl_idx,
+                                        &pic.common,
+                                        pic_x,
+                                        pic_y,
+                                        self.dpi,
+                                    );
                                     let pic_area = LayoutRect {
                                         x: pic_x,
                                         y: pic_y,
