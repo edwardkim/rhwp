@@ -5,7 +5,7 @@
 두 경로의 실제 review·별도 overlay에서 직접 확인했다. 2px raw 통과와 모든 획의 완전 일치를 구분한다.
 
 [Native 10입력·43쪽](native-own-validation.md)과 [fresh WASM 10입력·43쪽](wasm-own-validation.md)은
-모두 90% 이상이며 직전 후보 대비 정밀 raw 0.1%p 초과 하락 0쪽이다. 새 base 자체 대조·전체 Rust는 진행 중이다.
+모두 90% 이상이며 직전 후보 대비 정밀 raw 0.1%p 초과 하락 0쪽이다. 새 base 자체 대조·전체 Rust도 완료했다. [최종 code head CI](../code-head-ci-completion.md)까지 확인했다.
 
 ## vertical_fit.hwpx · 독립 PDF 5쪽 ↔ rhwp 5쪽
 

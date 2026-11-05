@@ -55,7 +55,7 @@
 | [condense_numbered_synthetic.hwpx](<../../../../samples/issue7418/condense_numbered_synthetic.hwpx>) | [condense_numbered_synthetic-2024.pdf](<../../../../pdf/issue7418/condense_numbered_synthetic-2024.pdf>) | 2 | 100.0% |
 
 위 보정의 공식 전쪽 TSV는 c183 Native/WASM 검증 목록에서 같은 입력으로 찾을 수 있다.
-수정 전후 그림과 핵심 관계는 [PR #8433 리뷰](../../pr_8433_review.md), [PR #8547 리뷰](../../pr_8547_review.md)의 해당 입력·쪽에 연결한다.
+수정 전후 그림과 핵심 관계는 [PR #8433 리뷰](../../archives/pr_8433_review.md), [PR #8547 리뷰](../../archives/pr_8547_review.md)의 해당 입력·쪽에 연결한다.
 반례 분석의 원시 항목·측정 중간값은 아래 해시의 원본을 로컬 output에 보존하며 공식 전체 통과의 근거로 단독 사용하지 않는다.
 
 ## 중간 산출물 식별표
