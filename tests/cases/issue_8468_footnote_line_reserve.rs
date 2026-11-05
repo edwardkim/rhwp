@@ -1,5 +1,5 @@
 //! 관계형·고정형(쪽수·독립 내용 및 계약 기대값): PR #8486의 정식 회귀.
-//! 주석 갱신: 2026-11-05T16:10:00+09:00; 직전 파일 변경: 2026-11-05T13:03:00+09:00 (`486cdbe6a0bf058b917d0260bf434b989c949b03`).
+//! 주석 갱신: 2026-11-05T20:40:00+09:00; 직전 파일 변경: 2026-11-05T16:57:51+09:00 (`d188a6bea337263efcbbd3e2718158965be85456`).
 //! 현재 통합 측정 근거 시작
 //! 측정일 2026-11-04, 제품 코드 `4b149b6cdfc514b9858ed644be2cf8120c731cd4` · `4b149b6cdf`.
 //! 실제 전쪽 측정 producer를 기록한다. 이후 충돌 없는 리베이스의 집중 검증은 개별 리뷰에서 구분한다.
@@ -35,15 +35,19 @@
 //! - line_reserve A46(2쪽, 대조군): Native·WASM 각 100.00/100.00%.
 //! - 수정 전(base de2295d430) Native: P4G 9쪽(6쪽 4.05%), A30 2쪽 43.37%, A40 2쪽 59.27%.
 //!
-//! 앞 조각 각주 비용 후속 측정(2026-11-05, head `0bd320297a`·base `6e1de40620`, 96 DPI
-//! `visual_sweep.py --silhouette-only --compat 2022`, `RHWP_FONT_PATH=ttfs/hwp:ttfs/windows`):
+//! 앞 조각 각주 비용 후속 측정(2026-11-05, 제품 코드 head `d188a6bea3`·base `6e1de40620`, 96 DPI
+//! `visual_sweep.py --silhouette-only --compat 2022`, `RHWP_FONT_PATH=ttfs/hwp:ttfs/windows`,
+//! Native Skia / fresh WASM Canvas, `silhouette_raw_match_percent`):
 //! - line_reserve A10 T20(전체 2쪽 = PDF 2쪽): head Native 99.99/100.00%, fresh WASM 100.00/100.00%.
 //!   수정 전 base Native 40.89/64.36%(앞부분만 들어간 각주가 쪽 나머지를 막아 뒤 줄이 2쪽으로 밀림).
-//! - A30·A40·A46·P4G: base 와 head 의 Native TSV 가 같다(최저 99.97/99.98/99.99/96.63%).
-//!   head fresh WASM 최저 99.99/100.00/100.00/99.81%.
+//! - line_reserve A30 R4 B4(전체 2쪽 = PDF 2쪽, 각주 안 위아래 배치 표): head Native 99.96/100.00%,
+//!   fresh WASM 99.99/100.00%. base 도 같은 값이다. 앞 조각을 줄 합으로 재던 중간 커밋은 1쪽에
+//!   0..18줄을 두어 뒤 본문이 각주 위에 겹쳤다(회귀 검사로만 고정, 시각 측정 없음).
+//! - A30·A40·A46(각 2쪽): head Native 최저 99.97/99.98/99.99%, fresh WASM 99.99/100.00/100.00%.
+//!   P4G(8쪽): head Native 최저 96.63%(1쪽), fresh WASM 99.81%(7쪽).
 //!
 //! 근거: mydocs/pr/assets/issue_8468/{head,base}/{native,wasm}/*_silhouette.tsv,
-//! 후속 측정은 같은 경로의 `followup/`.
+//! 후속 측정은 `mydocs/pr/assets/issue_8468/followup/{head,base}/{native,wasm}/` 와 `followup/png/`.
 //!
 //! 본문 각주는 그 참조 줄 뒤의 본문 줄보다 먼저 쪽 아래를 차지한다(#8468).
 //!
