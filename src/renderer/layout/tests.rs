@@ -115,9 +115,9 @@ fn note_separator_length_resolves_schema_sentinels_and_absolute_hwpunit() {
     assert!((note_separator_length_px(72_000, width, dpi) - width).abs() < 1e-9);
     assert_eq!(note_separator_length_px(0, width, dpi), 0.0);
 
-    // FootnoteArea가 실제 단 폭/시작점을 갖기 전에는 상대 sentinel을 넓히지 않는다.
+    // 실제 각주 프레임이 넘긴 폭에서 1/3·전체 너비 sentinel을 해석한다.
     assert!((footnote_separator_length_px(-3, width, dpi) - 200.0).abs() < 1e-9);
-    assert!((footnote_separator_length_px(-4, width, dpi) - 200.0).abs() < 1e-9);
+    assert!((footnote_separator_length_px(-4, width, dpi) - width).abs() < 1e-9);
 }
 
 #[test]
