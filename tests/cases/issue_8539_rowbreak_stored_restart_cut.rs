@@ -1,4 +1,15 @@
-//! [#8539] 쪽을 넘는 RowBreak 표 칸은 저장 재시작이 아니라 남은 공간까지 줄을 싣는다.
+//! 관계형·고정형 회귀 — [#8539] 저장 줄의 쪽·칸 소속과 독립 PDF의 전체 3쪽을 확인한다.
+//! 주석 갱신: 2026-11-05T22:34:19+09:00.
+//! 직전 파일 변경: 2026-11-03T21:23:59+09:00, `1543ae62fe07137da39bbaa88aa82884cc084bf2`.
+//! 2026-11-05 실측: PDFium 96dpi, 색상 경계 보정 전 2px raw 실루엣
+//! (`threshold_boundary_color_support_v1`), 같은 HWP·독립 Hwp 2020 PDF의 전 3쪽.
+//! 1쪽 Native 100.00000% / fresh WASM Canvas 100.00000%,
+//! 2쪽 Native 100.00000% / fresh WASM Canvas 100.00000%,
+//! 3쪽 Native 100.00000% / fresh WASM Canvas 99.99607%; 전쪽 최저도 각각 100.00000% / 99.99607%.
+//! 근거: `mydocs/pr/assets/pr8542/visual-validation.md`의 전쪽 TSV·입력/빌드/글꼴 출처와 직접 판독.
+//! 관계형은 줄의 소유·순서·보존·행의 비겹침, 고정형은 독립 PDF의 전체 쪽수다. 절대 px 핀은 없다.
+//!
+//! 쪽을 넘는 RowBreak 표 칸은 저장 재시작이 아니라 남은 공간까지 줄을 싣는다.
 //!
 //! 입력 `samples/issue8539/nhis-dependent-requirements.hwp`(HWP 5.0.3.4, 18행×3열 RowBreak 표)는
 //! 셀 줄에 vpos 0 재시작을 저장했다. 9행은 가운데·오른쪽 칸 셋째 줄, 16행은 왼쪽 칸 `p[4]` 첫 줄과
