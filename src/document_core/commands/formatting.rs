@@ -1730,6 +1730,11 @@ impl DocumentCore {
         let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
             &self.document.sections[sec_idx].paragraphs[para_idx],
         );
+        // 이전 머리 배치는 새 줄을 생산하기 전에 무효화한다.
+        // 재조판 후의 bit 21·줄 분할은 유효한 저장 결과로 남긴다.
+        if marker_changed {
+            self.document.sections[sec_idx].paragraphs[para_idx].invalidate_layout_inputs();
+        }
 
         // 줄바꿈에 영향을 주는 변경 시 LineSeg 재계산 (compose는 LineSeg 값을 그대로
         // 사용하므로). 줄간격뿐 아니라 여백/들여쓰기/줄나눔 단위도 사용 가능 폭·토큰
@@ -1775,9 +1780,6 @@ impl DocumentCore {
             );
         }
 
-        if marker_changed {
-            self.document.sections[sec_idx].paragraphs[para_idx].invalidate_layout_inputs();
-        }
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section(sec_idx);
         self.event_log.push(DocumentEvent::ParaFormatChanged {
@@ -1843,6 +1845,9 @@ impl DocumentCore {
             let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(para);
             para.para_shape_id = para_shape_id;
             restamp_indentation(&mut para.line_segs, old_indent, new_indent);
+            if marker_changed {
+                para.invalidate_layout_inputs();
+            }
             reflow_line_segs(para, available_box, &styles, self.dpi);
             stored_end_for_reset
         };
@@ -1859,9 +1864,6 @@ impl DocumentCore {
             hwp3_layout,
         );
 
-        if marker_changed {
-            self.document.sections[sec_idx].paragraphs[para_idx].invalidate_layout_inputs();
-        }
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section(sec_idx);
         self.event_log.push(DocumentEvent::ParaFormatChanged {
@@ -1971,6 +1973,9 @@ impl DocumentCore {
             cell_para.para_shape_id = new_id;
             restamp_indentation(&mut cell_para.line_segs, old_indent, new_indent);
             cell_para.cell_format_vpos_dirty |= affects_vpos;
+            if marker_changed {
+                cell_para.invalidate_layout_inputs();
+            }
         }
 
         // 줄바꿈에 영향을 주는 변경 시 셀 내 문단 LineSeg 재계산.
@@ -1993,16 +1998,6 @@ impl DocumentCore {
         }
 
         // [#6639] 배치 중에는 셀별로 모으고, 스타일 갱신 뒤 조각마다 한 번 재배치한다.
-        if marker_changed {
-            self.get_cell_paragraph_mut(
-                sec_idx,
-                parent_para_idx,
-                control_idx,
-                cell_idx,
-                cell_para_idx,
-            )?
-            .invalidate_layout_inputs();
-        }
         self.pending_cell_format_vpos |= affects_vpos;
 
         // 표 dirty 마킹 — measure_section_incremental이 셀 높이를 재계산하도록
@@ -2083,6 +2078,9 @@ impl DocumentCore {
             cell_para.para_shape_id = para_shape_id;
             restamp_indentation(&mut cell_para.line_segs, old_indent, new_indent);
             cell_para.cell_format_vpos_dirty |= affects_vpos;
+            if marker_changed {
+                cell_para.invalidate_layout_inputs();
+            }
         }
 
         self.reflow_cell_paragraph(
@@ -2092,16 +2090,6 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         );
-        if marker_changed {
-            self.get_cell_paragraph_mut(
-                sec_idx,
-                parent_para_idx,
-                control_idx,
-                cell_idx,
-                cell_para_idx,
-            )?
-            .invalidate_layout_inputs();
-        }
         self.pending_cell_format_vpos |= affects_vpos;
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
         self.document.sections[sec_idx].raw_stream = None;

@@ -140,6 +140,9 @@ impl DocumentCore {
         let paragraph = self.get_cell_paragraph_mut_by_path(section, parent, path)?;
         paragraph.para_shape_id = shape_id;
         restamp_indentation(&mut paragraph.line_segs, old_indent, new_indent);
+        if marker_changed {
+            paragraph.invalidate_layout_inputs();
+        }
         if header_footer {
             self.reflow_cell_paragraph_by_path(section, parent, path, inner_para);
         } else {
@@ -148,10 +151,6 @@ impl DocumentCore {
                 self.reflow_cell_paragraph_by_path(section, parent, path, inner_para);
             }
             self.pending_cell_format_vpos |= affects_vpos;
-        }
-        if marker_changed {
-            self.get_cell_paragraph_mut_by_path(section, parent, path)?
-                .invalidate_layout_inputs();
         }
         self.mark_cell_control_dirty(section, parent, outer_control);
         self.document.sections[section].raw_stream = None;

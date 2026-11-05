@@ -295,8 +295,20 @@ fn shrink_footnote_number(nodes: &mut [RenderNode], number: &str) {
             return;
         };
         let base = run.style.font_size;
-        run.style.font_size = FootnoteMarkerNode::font_size(base);
-        run.baseline = FootnoteMarkerNode::reference_baseline(base, run.baseline);
+        let (size, baseline) =
+            crate::renderer::script_metrics::ScriptMetricsContract::NoteReference.draw_metrics(
+                base,
+                run.baseline,
+                true,
+                false,
+                run.style.font_position,
+            );
+        run.style.font_size = size;
+        run.baseline = baseline;
+        // 실제 크기·기준선으로 소비했으므로 paint가 첨자를 다시 축소하지 않는다.
+        run.style.superscript = false;
+        run.style.subscript = false;
+        run.style.font_position = None;
         run.layout_positions = None;
         let width = estimate_text_width(run.display_or_text(), &run.style);
         let dx = node.bbox.width - width;

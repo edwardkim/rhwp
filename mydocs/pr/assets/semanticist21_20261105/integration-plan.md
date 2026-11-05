@@ -176,3 +176,39 @@ PR #8571의 머리말 TAC 표는 수동 표 배치 분기에서 공통 글줄 �
 리베이스 결과·명령·종료 코드는 [결과 기록](rebase-ece9-result.json), 충돌별 소비 계약은
 [충돌 해소 기록](rebase-ece9-resolutions.json), 원 PR 18건·원본 SHA 44개와 새 적용 SHA의 대응은
 [체리픽 대응표](applied-commits-after-ece9.json)에 보존했다. 웹폰트 구현·테스트 파일은 새 base와 동일하다.
+
+
+### 리베이스 후 실제 실패 네 건과 공통 소비 순서 보정
+
+코드 head `4159101a89`(직전 코드 `8436742bce`)의 실제 Native 빌드는 9분 37초에 성공했다.
+기존 정식 모듈 34개를 이 제품 라이브러리에 연결한 최소 글꼴 진단은 160건 중 156 PASS·4 FAIL이다.
+정식 전체 nextest와 구분하며, 실패를 남긴 상태로 통합 완료를 선언하지 않는다.
+임시 하네스가 `cfb` 연결 인자를 빠뜨린 첫 컴파일 오류는 하네스만 보완했고 원 오류도 보존했다.
+
+- PR #8500의 저장 플래그 검사 두 건: 새 base의 `reflow_line_segs`는 첫 줄의 bit 21과 유효한
+  줄 분할을 생산했다. 현재 메인터너 보정의 `invalidate_layout_inputs`가 그 **뒤**에서 dirty를
+  다시 세워 HWP 저장기가 `PARA_LINE_SEG`를 생략했다. 본문·셀·경로별 모양 적용과 ID 복원에서
+  무효화를 새 줄 생산 **앞**으로 옮긴다. 새 분할의 생산·`replace_line_segs` 유효성 확정·저장
+  순서를 유지하며, 플래그 검사와 머리 해제·저장 왕복 기대값은 변경하지 않는다.
+- 각주 작은 번호 검사: 리베이스 전 `d3e6e8f5c6`의 보존 rlib로 **같은 최소 글꼴 환경·같은 기존
+  검사**를 실행하면 PASS다. 새 base의 `ComposedTextRun::text_style`는 `NoteReference`를 설정했고,
+  현재 후처리는 이미 작아질 번호에 font_size 축소를 적용한 채 superscript 플래그도 남겼다.
+  측정·paint가 다시 축소했다. 공통 `ScriptMetricsContract::NoteReference.draw_metrics`로 실제
+  크기·기준선을 한 번 확정한 후 소비한 첨자·글자 위치 플래그를 지워 이중 적용을 없앤다.
+  기존 x 좌표를 낮춰 맞추지 않는다. 원 해결과 새 보정은 PR #8536, 새 base `dd05074171`의
+  번호 투영 및 현재 `shrink_footnote_number` 소비 경로를 대조했다.
+- PR #8262 / PR #8300의 빈 셀 TAC 표 검사: 원 해결 `5747f049c5`와 메인터너 보정
+  `1999500716`의 원본·독립 Print·관계 검사를 추적했다. 현재 새 앵커는 합성 줄임을 올바르게
+  표시하지만, `ComposedParagraph::control_line_indices`는 별도 frame_geometry가 없으면 저장
+  줄에서만 소속을 찾았다. 조합기는 이미 `InlineControl { control_index: 0, line_index: 0 }`를
+  발행했는데 이 결과를 버려 바깥 위 여백 소유를 놓쳤다. 부모 셀 y 153.1에 안 여백 1.88만
+  적용해 자식을 155.0에 두고, 원본의 표 위 여백 283HU(약 3.77px)가 빠졌다.
+  합성·저장 줄 없음 경로는 조합기가 발행한 실제 InlineControl 소속을 소비하게 한다.
+  저장 캐시의 수용 조건은 완화하지 않고, 프레임이 소속을 확정한 경로와 유효한 저장 경로도
+  유지한다. 원본 단위의 포함·여백 관계 검사는 변경하지 않는다.
+
+새 API 생성 입력의 HWP/HWPX는 `output/.../rebase-ece9-failed-fixtures/`에 보존했고, 새 저장본 자체의
+독립 MCP 2020 Print 두 개도 `reference-corrections/pr8262/`에 확보했다. 엔진 2020·PrintMethod 0·
+입력/결과 SHA 영수증을 함께 보존하며 기존 공식 Print를 교체하지 않았다.
+위 보정은 구현 후 재빌드·실제 재실행 전이다. 네 실패와 원 작업·새 base 양쪽의 시각 검증을
+완료하기 전에는 PASS나 제출 완료로 판정하지 않는다.
