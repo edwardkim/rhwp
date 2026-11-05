@@ -1166,7 +1166,11 @@ fn load_bin_data_content_lenient(
         let is_storage = match bd.data_type {
             BinDataType::Embedding => false,
             BinDataType::Storage => true,
-            BinDataType::Link => continue,
+            BinDataType::Link => {
+                // 연결 레코드도 순번 자리를 지켜야 뒤 그림이 제 항목을 가리킨다.
+                contents.push(crate::model::bin_data::hwp5_link_slot());
+                continue;
+            }
         };
 
         let ext = if is_storage {
@@ -2111,7 +2115,11 @@ fn load_bin_data_content(
         let is_storage = match bd.data_type {
             BinDataType::Embedding => false,
             BinDataType::Storage => true,
-            BinDataType::Link => continue,
+            BinDataType::Link => {
+                // 연결 레코드도 순번 자리를 지켜야 뒤 그림이 제 항목을 가리킨다.
+                contents.push(crate::model::bin_data::hwp5_link_slot());
+                continue;
+            }
         };
 
         // 스토리지 이름 생성: BIN0001.jpg (이미지) / BIN0001.OLE (OLE)
