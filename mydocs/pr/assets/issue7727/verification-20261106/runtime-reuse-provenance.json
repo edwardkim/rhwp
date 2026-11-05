@@ -8,7 +8,8 @@
   "original_native_producer_sha256": "5021de47754873ced2d195bb5ec9ff32db407211dbdf6204d197fb7a7db0fb9f",
   "wasm_build": "Mac locked --target web --out-dir pkg --no-opt 로컬 대체 빌드; Docker 최적화 아님",
   "test_source_sha256": {
-    "tests/cases/issue_6764_para_float_band_starts_at_anchor.rs": "b6f780f5b2d1afd315f657e8e12e8bde5443d8d6778e3c4d442379c4af58ed8c",
+    "tests/cases/issue_6764_para_float_band_starts_at_anchor.rs": "1381d6c6594d8ad8c13687af2e413bde390c8dfdc9b34fe6b475c412e7ab3aee",
     "tests/cases/issue_6855_float_band_page_fill_rewind.rs": "d78549ed196410756178ccb52d142cf0d28e965a172cb5a418b2ed6a887cae93"
-  }
+  },
+  "latest_test_run": "corpus-after-native.json"
 }

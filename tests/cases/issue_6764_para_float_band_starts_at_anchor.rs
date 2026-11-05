@@ -1,5 +1,5 @@
 //! 관계형·고정형: #7727 CBTA 원문의 표 소유·내용 보존과 독립 Print 쪽수·±2px 경계.
-//! 주석 갱신: 2026-11-06T08:16:20+09:00; 직전 파일 커밋: 2026-09-05T20:44:19+09:00 (902a208b51).
+//! 주석 갱신: 2026-11-06T08:29:51+09:00; 직전 파일 커밋: 2026-09-05T20:44:19+09:00 (902a208b51).
 //! 2026-11-06 측정: canonical 96DPI·compat2022·PDFium·2px raw, 원본 전204쪽.
 //! 전쪽 최저 Native 92.05232% / fresh WASM 92.16419%(11쪽), 90% 미만·쪽 누락 0.
 //! px 대상 186쪽 N/W 99.93606/99.93833%, 187쪽 99.93137/99.93362%.
@@ -17,6 +17,13 @@ use std::path::Path;
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+
+mod deferred_scope {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/deferred_visual_regression_scope.rs"
+    ));
+}
 
 const SAMPLE: &str = "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp";
 
@@ -69,6 +76,24 @@ fn assert_on_paper(node: &RenderNode, paper: &RenderNode) {
 
 #[test]
 fn para_float_band_keeps_the_next_table_fragment_on_paper() {
+    for input in [
+        SAMPLE,
+        "mydocs/pr/assets/issue7445/1613000-202200037-air-traffic-controller-cbta.hwp",
+    ] {
+        for axis in [
+            "body",
+            "off_canvas",
+            "oracle",
+            "overflow_cell",
+            "render_page",
+            "text_overlap",
+        ] {
+            assert!(
+                !deferred_scope::is_deferred(Path::new(input), axis),
+                "전쪽 수용한 CBTA 원문은 기존 {axis} 코퍼스에서도 검사해야 한다: {input}"
+            );
+        }
+    }
     let core = open_sample();
     assert_eq!(core.page_count(), 204, "독립 한컴2020 Print의 전체 쪽수");
     let pages: Vec<_> = (0..core.page_count())

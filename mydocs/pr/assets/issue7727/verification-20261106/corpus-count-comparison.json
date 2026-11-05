@@ -1,0 +1,35 @@
+{
+  "base": "170b886f167b705b6e630c5b34bb638d92fae0a9",
+  "code_head": "fc378076f23aa60838a2871a7532d09830384216",
+  "probe_source_sha256": "52aa97f1e087c4fbd42e6cc4dcf238e3cbb840fabd5bd41690fa4bcb02bb2371",
+  "minimum_font_profile": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+  "body_count_method": "기존 body_overflow_baseline의 AnomalyOptions 2px, over_bottom > 2.0를 그대로 사용한다.",
+  "results": [
+    {
+      "version": "base",
+      "exit_code": 0,
+      "binary_sha256": "a154c0182c98e00b8e2df2dbaef6da20076f9c245d00e71ee0d44239223cc1fb",
+      "result": {
+        "pages": 204,
+        "body": 0,
+        "off_canvas": 0,
+        "text_overlap": 0,
+        "overflow_cell": 0,
+        "body_pages": []
+      }
+    },
+    {
+      "version": "candidate",
+      "exit_code": 0,
+      "binary_sha256": "4309a55f041fea93dd8aa4ce542b74aed2af4bb3aaab4cafbbf97fd69da9b50e",
+      "result": {
+        "pages": 204,
+        "body": 0,
+        "off_canvas": 0,
+        "text_overlap": 0,
+        "overflow_cell": 0,
+        "body_pages": []
+      }
+    }
+  ]
+}

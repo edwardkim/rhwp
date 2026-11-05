@@ -1,3 +1,8 @@
+//! 고정형: 기존 글자 겹침 원장 상한. #7727은 전쪽 수용한 CBTA 입력의 검사 범위만 복원한다.
+//! 주석 갱신: 2026-11-06T08:29:51+09:00; 직전 파일 커밋: 2026-10-27T12:59:15+09:00 (a85d6121f83b).
+//! 복원 입력 2026-11-06 측정: 96DPI·compat2022·PDFium·2px raw 전204쪽,
+//! 최저 Native 92.05232% / fresh WASM 92.16419%; 나머지 입력·원장 상한은 변경하지 않는다.
+//! 근거: mydocs/pr/assets/issue7727/verification-20261106/README.md.
 //! [#6315] 글자 겹침(text-overlap) 원장 게이트 — samples 전수 렌더 래칫.
 //!
 //! `layout_anomaly` 의 text-overlap 판정(#5372)은 이미 있고 정확하다. 문제는 그
@@ -287,7 +292,6 @@ const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&str] = &[
     "issue6776/78494-virtual-convergence-industry-decree.hwpx",
     "한글문서파일형식_5.0_revision1.3.hwp",
     "rowbreak-problem-pages.hwpx",
-    "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
     "issue6795/1341000-201100013-cyber-university-application.hwp",
     "task2319/20544835_jinan_apt_form.hwp",
 ];

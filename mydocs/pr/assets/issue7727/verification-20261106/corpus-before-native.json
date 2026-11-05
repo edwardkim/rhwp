@@ -1,0 +1,51 @@
+{
+  "pid": 35971,
+  "command": [
+    "/usr/bin/sandbox-exec",
+    "-f",
+    "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--features",
+    "native-skia",
+    "--test",
+    "regression_suite_006",
+    "--test",
+    "regression_suite_003",
+    "-E",
+    "test(/(^|::)(issue_6764_para_float_band_starts_at_anchor|issue_6855_float_band_page_fill_rewind)::/)",
+    "--test-threads",
+    "8",
+    "--no-fail-fast"
+  ],
+  "head": "7a3b520ea5728687100e47da1e5b8e9f148b17d8",
+  "source_files": {
+    "tests/cases/issue_6764_para_float_band_starts_at_anchor.rs": "cea7042ee4d980b64fa2907de0d64c1eca8b29dc48aa68752102977835972d12",
+    "tests/cases/issue_6855_float_band_page_fill_rewind.rs": "d78549ed196410756178ccb52d142cf0d28e965a172cb5a418b2ed6a887cae93"
+  },
+  "plans": [
+    {
+      "caseName": "issue_6764_para_float_band_starts_at_anchor",
+      "target": "regression_suite_006",
+      "grouped": true
+    },
+    {
+      "caseName": "issue_6855_float_band_page_fill_rewind",
+      "target": "regression_suite_003",
+      "grouped": true
+    }
+  ],
+  "status": "failed",
+  "child_pid": 36025,
+  "exit_code": 100,
+  "seconds": 16.807,
+  "summaries": [
+    "        FAIL [   0.016s] (1/4) rhwp::regression_suite_006 issue_6764_para_float_band_starts_at_anchor::para_float_band_keeps_the_next_table_fragment_on_paper",
+    "     Summary [   0.565s] 4 tests run: 3 passed, 1 failed, 601 skipped",
+    "        FAIL [   0.016s] (1/4) rhwp::regression_suite_006 issue_6764_para_float_band_starts_at_anchor::para_float_band_keeps_the_next_table_fragment_on_paper"
+  ]
+}

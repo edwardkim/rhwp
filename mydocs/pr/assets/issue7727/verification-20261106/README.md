@@ -74,9 +74,22 @@ PDFium·2px raw이며 전쪽을 다시 산출했습니다. 새 raw 하락은 0�
 [AFTER 최소 글꼴 Native](native-focused.json)는 4PASS/0FAIL입니다.
 이 결과는 대상 선택의 BEFORE 1FAIL → AFTER 4PASS이며 새 renderer 보정이 아닙니다.
 
-기존 corpus 이관 목록의 전수 재활성화는 이 네 검사의 실행과 구분합니다.
+기존 corpus 이관 목록의 재활성화는 아래 복원 단계에서 별도로 확인했습니다.
 커밋 `98e5afbb7a`에서 [Native Skia 필수 3종](native-required.json)을 Mac 최소 글꼴 환경으로
 순차 실행했습니다. 라이브러리 4,039PASS/0FAIL/12ignore, PNG 2PASS, 직접 PDF 22PASS이며
 Native feature 전체 target Clippy와 fmt도 통과했습니다. 기본 전체 nextest로 이 세 검사를
 대신하지 않았습니다. 새 검사 포함 전체 nextest·나머지 범위별 lint 묶음·최종 제출 head 편람
 gate·다음 오래된 이슈 작업은 아직 완료로 표시하지 않습니다.
+
+
+## 기존 코퍼스 검사 복원
+
+[기존 원장과 같은 계산](corpus-count-comparison.json)에서 고정 devel/후보 모두 전 204쪽의
+본문 하단 넘침·용지 밖·글자 겹침·셀 줄 넘침이 각 0임을 확인했습니다.
+[복원 범위](corpus-restoration.json)의 원본 두 경로를 공통 6개 축의 제외 TSV에서 해제하고,
+본문/글자 겹침의 개별 제외 목록도 해제했습니다. 본문·글자 겹침·용지 밖 원장은
+이 입력에만 0을 명시합니다. 다른 문서의 행·문턱·예외·입력은 유지합니다.
+
+Native 실행에서 복원 전 제외를 검출한 [3PASS/1FAIL](corpus-before-native.json) →
+복원 후 [4PASS/0FAIL](corpus-after-native.json)을 확인했습니다. 등록된 검사 수는 4건으로 같습니다.
+본문과 그림 배치는 바뀌지 않으며, 새 전체 회귀에서 복원한 코퍼스 수집 경로도 실행합니다.

@@ -109,3 +109,12 @@ PNG2PASS, 직접 PDF22PASS다. Native feature 전체 target Clippy와 fmt도 통
 정식 영수증은 `mydocs/pr/assets/issue7727/verification-20261106/native-required.json`이다.
 기본 nextest 결과로 Native 검사를 대체하지 않았다. 새 검사 포함 전체 회귀와 나머지
 최종 게이트·기존 corpus 원장 재활성화 검토는 완료로 표시하지 않는다.
+
+
+## CBTA 코퍼스 재활성화
+
+기존 원장과 같은 계산식·Mac 최소 글꼴에서 고정 devel과 후보 전 204쪽의 본문 하단 넘침,
+용지 밖, 글자 겹침, 셀 줄 넘침은 각각 0이다. 기준을 올리지 않고 원본 두 경로의 공통
+6개 축 제외와 body/text 개별 제외를 해제했다. 해당 세 원장에 0을 명시하고 다른 입력은 유지했다.
+제외 재도입을 차단하는 원문 소유 검사는 Native 복원 전 3PASS/1FAIL → 복원 후 4PASS/0FAIL이다.
+이 단계를 커밋한 뒤 새 테스트 head의 전체 nextest와 범위별 게이트를 순차 실행한다.
