@@ -601,7 +601,16 @@ impl DocumentCore {
         // 리플로우 + 페이지네이션
         self.recompose_section(section_idx);
         self.paginate_if_needed();
+        // 새 각주와 뒤 각주의 번호·모양을 구역의 각주 모양대로 맞춘다(한/글처럼 모양을 따른다).
+        self.refresh_footnote_numbers(section_idx);
         self.invalidate_page_tree_cache();
+        let footnote_number = match self.document.sections[section_idx].paragraphs[para_idx]
+            .controls
+            .get(insert_idx)
+        {
+            Some(Control::Footnote(note)) => note.number,
+            _ => footnote_number,
+        };
 
         self.event_log.push(DocumentEvent::PictureInserted {
             section: section_idx,
