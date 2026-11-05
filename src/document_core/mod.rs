@@ -247,6 +247,8 @@ pub struct DocumentCore {
     pub(crate) show_control_codes: bool,
     /// 투명선 표시 여부
     pub(crate) show_transparent_borders: bool,
+    /// 편집 화면의 바탕쪽을 흐리게 그릴지(한컴: 편집 화면에서는 본문보다 흐리게, 인쇄는 본래 모양)
+    pub(crate) dim_master_pages: bool,
     /// 잘림 보기 (body/셀 클리핑 활성화 여부)
     pub(crate) clip_enabled: bool,
     /// 디버그 오버레이 표시 여부 (문단/표 경계 + pi/ci 라벨)
@@ -605,6 +607,7 @@ impl DocumentCore {
             annotate_metric_font: false,
             show_control_codes: false,
             show_transparent_borders: false,
+            dim_master_pages: false,
             clip_enabled: true,
             debug_overlay: false,
             respect_vpos_reset: false,

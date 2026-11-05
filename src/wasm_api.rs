@@ -1151,6 +1151,19 @@ impl HwpDocument {
         self.invalidate_page_tree_cache();
     }
 
+    /// 편집 화면의 바탕쪽을 흐리게 그릴지 반환한다.
+    #[wasm_bindgen(js_name = getDimMasterPages)]
+    pub fn get_dim_master_pages(&self) -> bool {
+        self.dim_master_pages
+    }
+
+    /// 편집 화면(`renderPageToCanvas`)에서 바탕쪽을 흐리게 그릴지 설정한다. 한컴은 편집 화면의
+    /// 바탕쪽을 본문보다 흐리게 보이고 미리 보기·인쇄에서는 본래 모양으로 그린다.
+    #[wasm_bindgen(js_name = setDimMasterPages)]
+    pub fn set_dim_master_pages(&mut self, enabled: bool) {
+        self.dim_master_pages = enabled;
+    }
+
     #[wasm_bindgen(js_name = setClipEnabled)]
     pub fn set_clip_enabled(&mut self, enabled: bool) {
         self.clip_enabled = enabled;
@@ -1254,6 +1267,7 @@ impl HwpDocument {
             renderer.set_hft_outline_fonts(&self.hft_outline_fonts);
             renderer.show_paragraph_marks = self.show_paragraph_marks;
             renderer.show_control_codes = self.show_control_codes;
+            renderer.dim_master_pages = self.dim_master_pages;
             renderer.set_scale(scale);
             renderer.render_page(&tree).map_err(JsValue::from)?;
             Ok(())
