@@ -87,7 +87,31 @@ subissue보다 먼저 종료하지 않는다.
   새 Native 출력의 나머지 정상 대조군 PNG는 이전 producer와 해시 대응도 기록했다.
   점수는 새 전쪽 TSV로 산출했으며 이전 TSV를 새 결과로 재인용하지 않았다.
 
-현재 남은 검증은 후보 fresh WASM 전102쪽의 나머지 범위와 raw 하락 대조·확대 판독,
-실제 초기화 응답 hash, 새 검사 포함 전체 nextest·필수 lint/build·정책 검사다.
-최종 제출 head의 편람 gate와 원격 통합도 미완료다. 현재 로컬 보정 커밋은 이슈 종료나
-PR 준비 완료를 의미하지 않는다. 실행 JSON·로그·중간 확대 그림은 ignored output에 보존한다.
+후보 fresh WASM 전102쪽과 Native 전102쪽의 비교를 완료했다. 양쪽 모두 90% 이상,
+쪽수 일치·누락0·0.1%p 초과 하락0이다. fresh WASM의 가장 큰 raw 하락은 과학 시험지의
+0.00205%p다. 실제 root pkg·Studio public·새 브라우저 초기화 응답의 JS/WASM hash도
+동일함을 확인했다. 대표 review/overlay 판독과 독립 원점·글리프 소유 확인을 완료했다.
+
+## 파생 검사 helper 중복 로딩 보정과 최종 로컬 게이트
+
+첫 전체 nextest는 12,649 PASS였으나 이어진 Native feature all-target Clippy에서
+`duplicate_mod`를 검출했다. #8153 기호 검사 두 개가 재배정된 같은 harness에서
+동일 helper를 각각 `mod`로 읽은 것이 원인이다. 런타임이나 assertion을 바꾸지 않고,
+파생 manifest 생성기가 소비 harness의 루트에 helper를 한 번 공급하도록 보정했다.
+검사가 같은 suite 또는 서로 다른 suite에 배정되는 경우와 무관한 suite를 Node로 검증했다.
+CI workflow·suite policy·helper 구현·두 검사의 assertion 본문은 변경하지 않았다.
+
+- manifest·Cargo 격리 Node 검사 26 PASS, Native 집중 검사 11 PASS.
+- Native feature all-target·default·WASM·workspace all-target Clippy와 workspace build,
+  fmt·manifest·unit tier 검사 모두 exit 0.
+- 보정된 상태에서 다시 수행한 최소 글꼴 전체 nextest는 **12,649 PASS / 0 FAIL / 45 skip**,
+  테스트 실행 422.229초다. 컴파일 포함 명령은 889.113초이며 둘을 구분한다.
+- 실행 전후 source·검사·스크립트 6,415개 hash와 HEAD 불변을 확인했다.
+  `glyph-final-v2-gates-state.json` 및 `glyph-final-v2-full-nextest-result.json`이 실행 정본이다.
+- 위에서 완료한 Native Skia 필수 3종은 같은 런타임 source의 4,039+2+22 PASS다.
+  이후 차이는 검사·주석과 helper 로딩뿐이며, 새 Native 집중 검사와 Clippy도 통과했다.
+  이 대응을 정식 producer 증거에 추가하고 과거 실패 로그도 보존한다.
+
+이 단계의 최종 TSV·대표 이미지·검증 기록을 별도 증적 커밋으로 정리한다. 최종 제출 head의
+편람 gate와 원격 통합은 미완료다. 로컬 단계 완료를 이슈 종료나 PR 준비 완료로 표현하지 않는다.
+실행 JSON·로그·중간 확대 그림은 ignored output에 보존한다.
