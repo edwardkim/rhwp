@@ -6130,21 +6130,37 @@ impl TypesetEngine {
         });
         // 표 줄 뒤에 컨트롤만 남은 저장 줄(쪽 번호 감추기 등)은 post-text 로 나가지 않지만
         // 한/글은 그 줄 상자를 쌓는다. 표 줄 간격과 그 줄들을 여기서 더하고, 마지막 줄
-        // 간격은 아래 terminal 복원이 더한다.
-        let control_only_tail_px = (is_tac
+        // 간격은 아래 terminal 복원이 더한다. 표 줄 간격 뒤 그 줄이 쪽에 들어가지 않으면
+        // 한/글은 다음 쪽 맨 위에 줄을 놓는다(저장 vpos 재시작) — 그 줄을 다음 쪽 항목으로 낸다.
+        let control_only_tail = (is_tac
             && !has_post_text
             && !has_following_tac_table
             && tac_table_count == 1
             && total_lines == para.line_segs.len()
             && self.tac_table_line_index(para, table, fmt) == Some(0))
-        .then(|| crate::renderer::tac_host_control_only_tail_hu(para, 0))
-        .flatten()
-        .zip(para.line_segs.first().zip(para.line_segs.last()))
-        .map(|(tail, (first, last))| {
-            hwpunit_to_px(first.line_spacing + tail - last.line_spacing, self.dpi)
-        });
-        if let Some(advance) = control_only_tail_px {
-            st.advance_flow_by(advance);
+        .then(|| crate::renderer::tac_host_control_only_tail(para, 0))
+        .flatten();
+        if let Some(tail) = control_only_tail {
+            st.advance_flow_by(hwpunit_to_px(para.line_segs[0].line_spacing, self.dpi));
+            let first_tail_height = hwpunit_to_px(tail.lines[0].line_height, self.dpi);
+            if st.current_height + first_tail_height > st.available_height() + 0.5
+                && !st.current_items.is_empty()
+            {
+                st.advance_column_or_new_page();
+                st.record_host_text_fragment(para_idx, 1..total_lines, para, fmt, self.dpi);
+                st.append_item(PageItem::PartialParagraph {
+                    para_index: para_idx,
+                    start_line: 1,
+                    end_line: total_lines,
+                });
+            }
+            let tail_hu: i32 = tail
+                .lines
+                .iter()
+                .map(|line| line.line_height + line.line_spacing)
+                .sum::<i32>()
+                - tail.lines.last().map_or(0, |line| line.line_spacing);
+            st.advance_flow_by(hwpunit_to_px(tail_hu, self.dpi));
         }
         let stored_tail = (is_last_placed
             && table.common.treat_as_char
