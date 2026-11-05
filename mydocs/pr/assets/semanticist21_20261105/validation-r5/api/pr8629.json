@@ -1,0 +1,49 @@
+{
+  "pr": 8629,
+  "sourceSha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+  "wasmSha256": "1d64c3307cf85a5fde220d501cc32c5ff45ded2b3c048b059b769c21f6e46bb9",
+  "runtime": "통합 후보 fresh WASM의 공개 API",
+  "observations": {
+    "section": {
+      "pageNum": 0,
+      "pageNumType": 0,
+      "pictureNum": 0,
+      "tableNum": 0,
+      "equationNum": 0,
+      "columnSpacing": 1134,
+      "defaultTabSpacing": 8000,
+      "hideHeader": false,
+      "hideFooter": false,
+      "hideMasterPage": false,
+      "hideBorder": false,
+      "hideFill": false,
+      "hideEmptyLine": false,
+      "outlineNumberingId": 1,
+      "lineGrid": 3968,
+      "charGrid": 2863,
+      "wonggojiFormat": true
+    },
+    "reappliedSection": {
+      "pageNum": 0,
+      "pageNumType": 0,
+      "pictureNum": 0,
+      "tableNum": 0,
+      "equationNum": 0,
+      "columnSpacing": 1134,
+      "defaultTabSpacing": 8000,
+      "hideHeader": false,
+      "hideFooter": false,
+      "hideMasterPage": false,
+      "hideBorder": false,
+      "hideFill": false,
+      "hideEmptyLine": false,
+      "outlineNumberingId": 1,
+      "lineGrid": 3968,
+      "charGrid": 2863,
+      "wonggojiFormat": true
+    },
+    "manuscript-roundtrip_hwp": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-wasm-api-probe/pr8629/manuscript-roundtrip.hwp",
+    "manuscript-roundtrip_hwpx": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-wasm-api-probe/pr8629/manuscript-roundtrip.hwpx"
+  },
+  "status": "passed"
+}

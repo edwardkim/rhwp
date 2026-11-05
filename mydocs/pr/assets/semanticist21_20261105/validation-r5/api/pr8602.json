@@ -1,0 +1,14 @@
+{
+  "pr": 8602,
+  "sourceSha": "71e5e0ae2a72a6b8f51682d131077bd4df44994f",
+  "wasmSha256": "1d64c3307cf85a5fde220d501cc32c5ff45ded2b3c048b059b769c21f6e46bb9",
+  "runtime": "통합 후보 fresh WASM의 공개 API",
+  "observations": {
+    "deleted": {
+      "ok": true
+    },
+    "empty-deleted_hwp": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-wasm-api-probe/pr8602/empty-deleted.hwp",
+    "empty-deleted_hwpx": "/home/tsjang/rhwp/output/pr-review/semanticist21-integration-20261105/r5-wasm-api-probe/pr8602/empty-deleted.hwpx"
+  },
+  "status": "passed"
+}
