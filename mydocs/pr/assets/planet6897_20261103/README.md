@@ -35,7 +35,7 @@ Native Skia 라이브러리 4,040 PASS·12 ignored와 CI integration 21개 모�
 아래 직전 완료 결과를 새 보정 제품의 전체 통과로 표시하지 않습니다. PR 생성·원격 작업은
 수행하지 않았으며 최종 준비 후 작업지시자 승인을 기다립니다.
 
-직접 판독 원장은 현재 [155건](direct-reading-current.md)입니다. 실제로 연 review·별도 overlay만 기록하며, 한 PR의
+직접 판독 원장은 현재 [158건](direct-reading-current.md)입니다. 실제로 연 review·별도 overlay만 기록하며, 한 PR의
 전체 검증 완료 건수와 혼동하지 않습니다. 기존 producer `4b149b6cdf`의 PNG 재사용은
 최신 제품의 재출력과 구분합니다. PR #8475의 세로쓰기 병합 칸에서 마지막 글자가 보이지 않는
 차이와 PR #8512의 상자 선 표현, PR #8535의 각주 번호 위치 차이를 확인해 기록했습니다.
@@ -196,3 +196,7 @@ PR #8475의 별도 보정 소스 `37e5bba300`을 실제 컴파일한 Native 제�
 확보했다. 두 축약 입력의 각 5쪽은 모두 100.00%이며, 대조군을 포함한 29쪽은 모두 90%
 이상이다. 두 문제 쪽만 개선됐고 나머지 27쪽은 이전 c183 WASM PNG와 바이트가 같다.
 주장 쪽 fresh WASM review/overlay의 판독과 해당 source의 전체 Rust 검증은 아직 진행 중이다.
+
+보정 source 37e5bba300의 Native/WASM 대표 판독은 두 문제 쪽·실물 10/11쪽·정상 대조
+1쪽씩을 모두 완료했다. 실제 관측은 [판독 목록](direct-reading-current.md)에 구분했다.
+필수 전체 Rust·통합 적용·최신 base의 남은 확인을 완료하기 전에는 최종 승인으로 바꾸지 않는다.

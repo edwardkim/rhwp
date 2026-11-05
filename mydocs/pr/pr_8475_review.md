@@ -46,8 +46,9 @@ Print와 차이가 남습니다. 해당 페이지 PNG가 직전 후보와 동일
 [같은 보정 소스의 fresh WASM 전쪽 TSV](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/wasm/README.md)도
 6입력·29쪽을 완료했습니다. 두 문제 입력의 각 5쪽은 모두 100.00%이며, Native와 마찬가지로
 두 문제 쪽만 바뀌고 나머지 27쪽의 PNG는 해당 경로의 직전 후보와 같습니다.
-두 문제 쪽의 WASM review와 별도 overlay도 직접 확인했습니다. 실물·정상 대조의
-WASM 판독, 필수 전체 Rust 묶음과 통합 브랜치 적용은 아직 완료 전입니다.
+두 문제 쪽·실물 10/11쪽·저장 줄 정상 대조 1쪽의 Native/WASM review와 별도
+overlay를 모두 직접 확인했습니다. 필수 전체 Rust 묶음과 통합 브랜치 적용·최신 base
+확인은 아직 완료 전입니다.
 아래 이전 producer의 TSV·PNG는 보정 전 증거로 유지합니다.
 
 ## 접수 정보

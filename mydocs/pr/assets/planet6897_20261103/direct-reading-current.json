@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-11-05T00:17:13.738059+00:00",
+  "recorded_at": "2026-11-05T00:21:57.128235+00:00",
   "records": [
     {
       "pr": 8422,
@@ -3769,9 +3769,84 @@
       },
       "observation": "V3 표의 행 1–36과 하단 세 행의 병합 칸을 확인했다. 임용전경력 다섯 글자가 한 세로줄로 셀 안에 모두 보이며, 마지막 력이 셀 밖으로 나가거나 잘리지 않는다. 앞뒤 행의 내용·순서·표 종료와 한 페이지 소속이 독립 Print 및 Native와 대응한다.",
       "status": "해당 쪽 직접 판독 완료; 통합 최종 검증 대기"
+    },
+    {
+      "pr": 8475,
+      "input": "samples/issue8470/42565_입법예고문.hwp",
+      "pdf": "pdf/issue8470/42565_입법예고문-2020.pdf",
+      "page": 10,
+      "backend": "wasm",
+      "measurement_code_label": "vertical-axis-37e5bba300",
+      "producer_commit": "37e5bba3007614d9304c3dbf863503a8c7340405",
+      "observed_at_utc": "2026-11-05T00:21:01.629460+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/wasm/case-02-p010-review.png",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/wasm/vertical-axis-2/review/review_010.png",
+          "sha256": "b1fd48e465c0fbe699883a06b0c639b38630a1d0157eb12a460922c3e4b2cde4"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/wasm/case-02-p010-overlay.png",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/wasm/vertical-axis-2/overlay/overlay_010.png",
+          "sha256": "d18df301325e207a6af7aa16d74827cd5ca7e7820ab26a639c17533c70e09f09"
+        }
+      },
+      "observation": "입법예고문 실물 10쪽의 사진·인적 사항·병역·가족·임용전 경력 표가 한 페이지에 남고, 병합 칸과 마지막 외곽을 보존한다. 유효한 저장 줄의 가족관계·파란 임용전경력 글자 간격에는 Print와 기존 차이가 남는다. 이 쪽은 c183 WASM PNG와 바이트가 동일하므로 합성 줄 누락 보정을 기존 저장 줄 차이까지 해결했다고 표현하지 않는다.",
+      "status": "해당 쪽 직접 판독 완료; 통합 최종 검증 대기"
+    },
+    {
+      "pr": 8475,
+      "input": "samples/issue8470/42565_입법예고문.hwp",
+      "pdf": "pdf/issue8470/42565_입법예고문-2020.pdf",
+      "page": 11,
+      "backend": "wasm",
+      "measurement_code_label": "vertical-axis-37e5bba300",
+      "producer_commit": "37e5bba3007614d9304c3dbf863503a8c7340405",
+      "observed_at_utc": "2026-11-05T00:21:01.742054+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/wasm/case-02-p011-review.png",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/wasm/vertical-axis-2/review/review_011.png",
+          "sha256": "c3a5bf3b024748132c4e2674e32b0bbd8a5138677f70f247684705b6be13f128"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/wasm/case-02-p011-overlay.png",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/wasm/vertical-axis-2/overlay/overlay_011.png",
+          "sha256": "1b78845b09d5f9c23e0dcfb43eb0d9601387f59212df5cc123fcb7fd769d757b"
+        }
+      },
+      "observation": "실물 11쪽의 임면 사항·임용자격 시험·훈련·외국어·국외출장·포상·징계 표에서 병합 칸의 소속과 행 순서 및 마지막 외곽을 확인했다. 누락·중복·표 종료 뒤 잘림을 관찰하지 않았으며 이전 c183 출력과 PNG 바이트가 동일하다.",
+      "status": "해당 쪽 직접 판독 완료; 통합 최종 검증 대기"
+    },
+    {
+      "pr": 8475,
+      "input": "samples/issue6029/3200477_icao_procedure.hwpx",
+      "pdf": "pdf/issue6029-3200477_icao_procedure-2024.pdf",
+      "page": 1,
+      "backend": "wasm",
+      "measurement_code_label": "vertical-axis-37e5bba300",
+      "producer_commit": "37e5bba3007614d9304c3dbf863503a8c7340405",
+      "observed_at_utc": "2026-11-05T00:21:57.128235+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/wasm/case-05-p001-review.png",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/wasm/vertical-axis-5/review/review_001.png",
+          "sha256": "6c181ad90d48caf7c6d840c979c2f87b55988dbe500ad21dbe1e31a1c86a3cc4"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/wasm/case-05-p001-overlay.png",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/wasm/vertical-axis-5/overlay/overlay_001.png",
+          "sha256": "6483013f485cdf4b90ec94e542e0943bc39b8d32c425064474c9c92f3d1fa67a"
+        }
+      },
+      "observation": "저장 세로줄 정상 대조군의 담당·세부 업무·기한 상자와 세로 라벨 소속을 확인했다. Print의 연결 화살표가 WASM에서는 사각 대체 기호로 보이고 세로 글자 간격·제목 굵기에 기존 차이가 남는다. c183 WASM PNG와 바이트가 같아 이번 합성 줄 보정의 후퇴로 분류하지 않으며 원본 전체의 완전 일치를 주장하지 않는다.",
+      "status": "해당 쪽 직접 판독 완료; 통합 최종 검증 대기"
     }
   ],
-  "record_count": 155,
+  "record_count": 158,
   "final_approval": false,
   "note": "직접 본 PNG의 해시와 관측만 기록한다. 기록되지 않은 쪽이나 최종 공통 검증의 완료를 주장하지 않는다."
 }
