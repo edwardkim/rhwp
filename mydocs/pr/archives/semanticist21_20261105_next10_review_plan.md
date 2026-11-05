@@ -1,14 +1,18 @@
 # semanticist21 미지정 리뷰어 PR 10건 누적 검토 계획 — 2026-11-05 두 번째 묶음
 
+## 완료 상태
+
+원격 처리 승인을 받아 [통합 PR #8640](https://github.com/edwardkim/rhwp/pull/8640)을 병합했고 원 PR 10건도 자동 MERGED로 반영됐다. [최종 기록](pr_8640_review.md)에 실제 head·CI·merge SHA를 기록했다. 아래는 접수·진행 당시의 단계별 기록이며 당시 미완료 표기를 현재 상태로 읽지 않는다.
+
 ## 최신 진행 상태 — 고정 head의 로컬 검증·현재 base 호환 완료
 
 원 head 10개를 merge 조상으로 보존했고 최신 base `6e1de406209ba9a58032f6ca6de45b18aa687d1c`를 통합했다. 최종 제품 source는 `584c9503baa651c62d0403dad9cb77c5cb9ffde6`다. 필수 로컬 검증 19단계를 완료했고 전체 nextest 12,629 PASS·45 SKIP, Native 공식 3종 4,064 PASS·12 IGNORE, release lib 3,983 PASS·12 IGNORE, 모든 lint·workspace build·doc test·Studio 2,720건이 통과했다.
 
 시각 producer `d53115fabc92bd392044d9b906c599baddb4368d`의 이번 10건 124쪽과 새 base 보존 406쪽은 Native/fresh WASM 양쪽에서 전부 90% 이상이다. 직접 확대 판독과 canonical Native 편람 383쪽도 완료했다. 이후 계산 API의 비유한 결과만 보정한 최종 source의 7쪽은 양쪽 모두 100%·이전 PNG와 같다. producer를 구분해 보존했다.
 
-[최종 검토](semanticist21_20261105_next10_review.md), [실제 실행·TSV·확대 판독](assets/semanticist21-20261105-next10/validation.md), [PR 본문](assets/semanticist21-20261105-next10/pr-body.md), [원격 처리와 댓글 초안](assets/semanticist21-20261105-next10/remote-action-plan.md)을 준비했다. 현재 승인은 로컬 보정·필수 검증이며 원격 push·새 PR·merge·공개 댓글은 수행하지 않았다.
+[최종 검토](semanticist21_20261105_next10_review.md), [실제 실행·TSV·확대 판독](../assets/semanticist21-20261105-next10/validation.md), [PR 본문](../assets/semanticist21-20261105-next10/pr-body.md), [원격 처리와 댓글 초안](../assets/semanticist21-20261105-next10/remote-action-plan.md)을 준비했다. 현재 승인은 로컬 보정·필수 검증이며 원격 push·새 PR·merge·공개 댓글은 수행하지 않았다.
 
-최종 fetch에서 현재 base가 `a95d1d5afad1bfd61998794fa78fb0db100d690a`로 전진했다. #8630의 실제 편집·소비 경로를 조사하고 [충돌 없는 현재-base 병합 트리의 실제 실행](assets/semanticist21-20261105-next10/current-base-compatibility.md)을 완료했다. 이번 124쪽씩의 PNG 248개 동일, 새 경로 3·4쪽 양쪽 100%, Rust 집중 18건·실제 브라우저·Studio 2,721건이 통과했다. 검증한 source 584c9503ba를 반복 merge/rebase하지 않으며, 그 전체 실행을 새 병합 트리의 실행으로 바꾸어 표시하지 않는다.
+최종 fetch에서 현재 base가 `a95d1d5afad1bfd61998794fa78fb0db100d690a`로 전진했다. #8630의 실제 편집·소비 경로를 조사하고 [충돌 없는 현재-base 병합 트리의 실제 실행](../assets/semanticist21-20261105-next10/current-base-compatibility.md)을 완료했다. 이번 124쪽씩의 PNG 248개 동일, 새 경로 3·4쪽 양쪽 100%, Rust 집중 18건·실제 브라우저·Studio 2,721건이 통과했다. 검증한 source 584c9503ba를 반복 merge/rebase하지 않으며, 그 전체 실행을 새 병합 트리의 실행으로 바꾸어 표시하지 않는다.
 
 아래 접수와 누적 보정 기록의 미완료 표시는 각 중간 시점의 상태다. 최신 완료 여부는 이 절과 최종 검증 문서에서 확인한다.
 
@@ -78,7 +82,7 @@
 6. 실제 SVG·Canvas2D·Native Skia 및 관련 CanvasKit 소비 경로를 확인한다. Native/fresh WASM의 해당 원본 전체 쪽수·소유·순서·누락·중복·저장 재열기와 대표 경계/미세 간격의 직접 확대 판독을 함께 완료한다. 회귀 추가/변경은 독립 측정의 선행 조건을 충족한 뒤 수행한다.
 7. 최종 후보에서 최소 글꼴 환경의 집중·전체 nextest, fmt·Native/WASM32/workspace Clippy·workspace build, manifest/unit-tier, 필수 Native 묶음, Studio와 관련 API/E2E·package 검증, 신규 입력 보안·래칫, Native 편람 383쪽 gate를 변경 범위에 맞게 완료한다. 이미 같은 exact code head에서 성공한 검사의 정본 재사용 조건이 성립할 때만 재사용 이유를 명시한다.
 8. 각 원 PR review의 판정과 수용 조건을 확정하고 최종 대표 PNG·전체 TSV·입력/PDF를 정식 경로에 보존한다. 중간 JSON·raw raster·실행 로그는 커밋하지 않는다. 원격 처리가 필요하면 그 시점의 concrete diff·검증 결과·PR 본문·댓글 초안으로 승인 범위를 확인한다.
-9. 이후 승인된 merge·후속 처리는 개정된 [post_merge.md](../manual/pr_review/post_merge.md)를 따른다. CI 정의·판정 정책을 실제 변경하게 되면 옵션 2로 기록을 분리하며, 코드 PR에서 시험 trailing push를 하지 않는다. 원 PR마다 일치하는 review/overlay·수치와 게시 전 이미지 hash/응답·게시 후 API/화면 확인을 수행한다. 종료 시 전용 branch/worktree·root output 전체·검토 debug를 정리하고 다른 작업과 배포 WASM을 보존한다.
+9. 이후 승인된 merge·후속 처리는 개정된 [post_merge.md](../../manual/pr_review/post_merge.md)를 따른다. CI 정의·판정 정책을 실제 변경하게 되면 옵션 2로 기록을 분리하며, 코드 PR에서 시험 trailing push를 하지 않는다. 원 PR마다 일치하는 review/overlay·수치와 게시 전 이미지 hash/응답·게시 후 API/화면 확인을 수행한다. 종료 시 전용 branch/worktree·root output 전체·검토 debug를 정리하고 다른 작업과 배포 WASM을 보존한다.
 
 ## 실제 완료·미완료 구분
 

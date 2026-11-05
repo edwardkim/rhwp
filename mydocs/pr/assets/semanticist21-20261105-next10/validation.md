@@ -1,8 +1,8 @@
 # 다음 10건의 누적 검증 기록
 
-**최종 소스의 필수 로컬 검증을 완료했다. 원격 push·PR 생성·merge는 별도 승인 전이다.**
+**로컬 검증과 최종 head CI·self-review를 확인한 뒤 통합 PR #8640을 병합했다.**
 
-대상은 #8368·#8369·#8385·#8484·#8488·#8490·#8492·#8494·#8500·#8504다. 원 head 10개를 merge 조상으로 보존했으며 contributor branch에 push하지 않았다. 현재 승인 범위는 로컬 보정과 필수 검증이다.
+대상은 #8368·#8369·#8385·#8484·#8488·#8490·#8492·#8494·#8500·#8504다. 원 head 10개를 merge 조상으로 보존했으며 contributor branch에 push하지 않았다. 원격 처리 승인을 받아 원 PR 10건의 자동 MERGED까지 확인했다.
 
 ## 완료해 보존한 이전 source
 
@@ -74,7 +74,7 @@
 
 처음 사용한 큰 글꼴 팩과 system-only Native 결과는 최종 증거에서 제외하고 올바른 문서별 구성을 실제 재출력했다. 공용 Cargo target에서 base 산출물이 잘못 재사용된 두 짧은 빌드도 무효로 분류했다. source 내용은 바꾸지 않고 소유 worktree의 root source mtime을 갱신해 실제 컴파일한 뒤 source·binary/API·SHA를 다시 확인했다. 마지막 대화창 하네스의 기본 host 접속 실패는 headless를 명시한 실행으로 바로잡았으며 제품 코드는 바꾸지 않았다. 이후 실제 앱의 오류 표시와 셀 불변 검사를 모두 통과했다.
 
-원격 push·PR 생성·merge·공개 댓글은 수행하지 않았다. [원격 처리안](remote-action-plan.md)과 [PR 본문](pr-body.md)으로 다음 원격 단계 승인을 확인한다.
+원격 검증과 merge의 실제 결과는 [최종 기록](../../archives/pr_8640_review.md)에 확정했다. [원격 처리안](remote-action-plan.md)과 [PR 본문](pr-body.md)으로 다음 원격 단계 승인을 확인한다.
 
 
 ## 마지막 base 전진의 별도 호환 확인
