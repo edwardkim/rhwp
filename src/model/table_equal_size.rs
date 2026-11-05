@@ -147,8 +147,11 @@ impl Table {
         for line in &mut per_line {
             line.sort_unstable();
             let n = line.len() as i64;
+            if n == 0 {
+                return Err("셀 블록 크기가 올바르지 않습니다".to_string());
+            }
             let size = (extent + n / 2) / n;
-            if n == 0 || size <= 0 || size > i64::from(u32::MAX) {
+            if size <= 0 || size > i64::from(u32::MAX) {
                 return Err("셀 블록 크기가 올바르지 않습니다".to_string());
             }
             sizes.push(size);

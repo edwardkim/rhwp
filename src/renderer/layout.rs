@@ -5742,7 +5742,16 @@ impl LayoutEngine {
                 mp_node.layer = Some(RenderLayerInfo::new(None, 0, 0).for_master_page());
                 // 바탕쪽 문단 렌더링: 컨트롤(표/도형/그림)은 compute_object_position으로 배치,
                 // 텍스트 문단은 layout_paragraph로 배치
-                let mut mp_y_offset = paper_area.y;
+                // Master-page plain paragraphs belong to the declared text frame,
+                // whose origin is the page's body margin (as for master column
+                // separators). Paper-relative objects retain paper_area below.
+                let text_area = LayoutRect {
+                    x: body_area.x,
+                    y: body_area.y,
+                    width: hwpunit_to_px(mp.text_width as i32, self.dpi),
+                    height: hwpunit_to_px(mp.text_height as i32, self.dpi),
+                };
+                let mut mp_y_offset = text_area.y;
                 for (pi, para) in mp.paragraphs.iter().enumerate() {
                     let has_controls = !para.controls.is_empty();
                     if has_controls {
@@ -5925,7 +5934,7 @@ impl LayoutEngine {
                         // LINE_SEG vpos로 문단 시작 y 결정 (빈 문단 건너뜀 보상)
                         if let Some(first_ls) = para.line_segs.first() {
                             let vpos_y =
-                                paper_area.y + hwpunit_to_px(first_ls.vertical_pos, self.dpi);
+                                text_area.y + hwpunit_to_px(first_ls.vertical_pos, self.dpi);
                             if vpos_y > mp_y_offset {
                                 mp_y_offset = vpos_y;
                             }
@@ -5936,7 +5945,7 @@ impl LayoutEngine {
                             para,
                             Some(&comp),
                             styles,
-                            &paper_area,
+                            &text_area,
                             mp_y_offset,
                             0,
                             usize::MAX - pi,
@@ -5948,7 +5957,7 @@ impl LayoutEngine {
                         // 빈 문단: LINE_SEG vpos로 y 위치 갱신
                         if let Some(first_ls) = para.line_segs.first() {
                             let vpos_y =
-                                paper_area.y + hwpunit_to_px(first_ls.vertical_pos, self.dpi);
+                                text_area.y + hwpunit_to_px(first_ls.vertical_pos, self.dpi);
                             let lh = hwpunit_to_px(first_ls.line_height, self.dpi);
                             let ls = hwpunit_to_px(first_ls.line_spacing, self.dpi);
                             mp_y_offset = (vpos_y + lh + ls).max(mp_y_offset);
