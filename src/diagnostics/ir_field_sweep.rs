@@ -670,6 +670,7 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         hwp3_saved_space_corrections: _,
         layout_object_projection: _,
         layout_float_band: _,
+        layout_cell_grid: _,
         layout_field_values: _,
         numbering_marker: _,
     } = a;

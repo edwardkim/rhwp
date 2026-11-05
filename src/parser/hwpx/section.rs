@@ -493,6 +493,7 @@ fn parse_grid(e: &quick_xml::events::BytesStart, sec_def: &mut SectionDef) {
         match attr.key.as_ref().as_bytes() {
             b"lineGrid" => sec_def.line_grid = parse_i32(&attr) as i16,
             b"charGrid" => sec_def.char_grid = parse_i32(&attr) as i16,
+            b"wonggojiFormat" => sec_def.set_wonggoji_format(parse_i32(&attr) != 0),
             _ => {}
         }
     }

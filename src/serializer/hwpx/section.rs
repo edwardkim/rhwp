@@ -257,8 +257,10 @@ where
         &xml_value(
             storage,
             format_args!(
-                r#"<hp:grid lineGrid="{}" charGrid="{}" wonggojiFormat="0"/>"#,
-                sd.line_grid, sd.char_grid
+                r#"<hp:grid lineGrid="{}" charGrid="{}" wonggojiFormat="{}"/>"#,
+                sd.line_grid,
+                sd.char_grid,
+                u8::from(sd.wonggoji_format())
             ),
         )?,
         1,
@@ -6680,6 +6682,14 @@ mod tests {
         assert!(
             xml.contains(r#"<hp:grid lineGrid="1200" charGrid="900" wonggojiFormat="0"/>"#),
             "구역 그리드가 IR 값이어야 함: {xml:.600}"
+        );
+        // 원고지 정서법(HWP5 flags bit 22)도 HWPX 속성으로 나간다.
+        let mut wonggoji = doc.sections[0].clone();
+        wonggoji.section_def.set_wonggoji_format(true);
+        let xml = String::from_utf8(write_section(&wonggoji, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(
+            xml.contains(r#"<hp:grid lineGrid="1200" charGrid="900" wonggojiFormat="1"/>"#),
+            "원고지 정서법이 IR 값이어야 함: {xml:.600}"
         );
         assert!(
             xml.contains(

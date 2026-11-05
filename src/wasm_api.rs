@@ -1571,6 +1571,9 @@ impl HwpDocument {
     }
 
     /// 구역 정의(SectionDef)를 변경하고 재페이지네이션한다.
+    ///
+    /// 원고지 키: `lineGrid`·`charGrid`(줄·글자 격자, HWPUNIT, 0은 끔), `wonggojiFormat`(원고지 정서법).
+    /// 셋이 모두 켜진 구역은 글 문단을 칸에 맞춰 다시 짠다.
     #[wasm_bindgen(js_name = setSectionDef)]
     pub fn set_section_def(&mut self, section_idx: u32, json: &str) -> Result<String, JsValue> {
         self.set_section_def_native(section_idx as usize, json)

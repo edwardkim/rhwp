@@ -3396,12 +3396,14 @@ impl DocumentCore {
             "{{\"pageNum\":{},\"pageNumType\":{},\"pictureNum\":{},\"tableNum\":{},\"equationNum\":{},\
             \"columnSpacing\":{},\"defaultTabSpacing\":{},\
             \"hideHeader\":{},\"hideFooter\":{},\"hideMasterPage\":{},\
-            \"hideBorder\":{},\"hideFill\":{},\"hideEmptyLine\":{}}}",
+            \"hideBorder\":{},\"hideFill\":{},\"hideEmptyLine\":{},\
+            \"lineGrid\":{},\"charGrid\":{},\"wonggojiFormat\":{}}}",
             sd.page_num, sd.page_num_type,
             sd.picture_num, sd.table_num, sd.equation_num,
             sd.column_spacing, sd.default_tab_spacing,
             sd.hide_header, sd.hide_footer, sd.hide_master_page,
             sd.hide_border, sd.hide_fill, sd.hide_empty_line,
+            sd.line_grid, sd.char_grid, sd.wonggoji_format(),
         ))
     }
 
@@ -3455,6 +3457,16 @@ impl DocumentCore {
         if let Some(v) = json_bool(json, "hideEmptyLine") {
             sd.hide_empty_line = v;
         }
+        // 원고지: 줄 격자·글자 격자(HWPUNIT, 0은 끔)와 원고지 정서법(flags bit 22).
+        if let Some(v) = json_u16(json, "lineGrid") {
+            sd.line_grid = v as i16;
+        }
+        if let Some(v) = json_u16(json, "charGrid") {
+            sd.char_grid = v as i16;
+        }
+        if let Some(v) = json_bool(json, "wonggojiFormat") {
+            sd.set_wonggoji_format(v);
+        }
 
         // flags 비트플래그 재구성 (파서와 동일한 비트 위치)
         let flags = &mut sd.flags;
@@ -3493,6 +3505,8 @@ impl DocumentCore {
                     s.hide_border = updated_sd.hide_border;
                     s.hide_fill = updated_sd.hide_fill;
                     s.hide_empty_line = updated_sd.hide_empty_line;
+                    s.line_grid = updated_sd.line_grid;
+                    s.char_grid = updated_sd.char_grid;
                     s.flags = updated_sd.flags;
                     break;
                 }
@@ -3519,18 +3533,59 @@ impl DocumentCore {
         section_idx: usize,
         json: &str,
     ) -> Result<String, HwpError> {
+        let grid_before = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|section| section.section_def.cell_grid());
         self.apply_section_def_json(section_idx, json)?;
         // 구역 기본 탭은 composition/측정/배치가 현재 SectionDef에서 읽는다.
         // 공통 문단·글꼴 스타일을 다시 해소할 필요가 없다.
+        self.refit_cell_grid(section_idx, grid_before);
         let page_count = self.recompose_and_paginate();
         Ok(format!("{{\"ok\":true,\"pageCount\":{}}}", page_count))
+    }
+
+    /// 원고지 격자가 바뀐 구역의 문단 줄을 새 칸 수로 다시 나누고 문단 세로 위치를 처음부터 잇는다.
+    fn refit_cell_grid(
+        &mut self,
+        section_idx: usize,
+        grid_before: Option<crate::model::paragraph::CellGrid>,
+    ) {
+        if self.document.sections[section_idx].section_def.cell_grid() == grid_before {
+            return;
+        }
+        let count = self.document.sections[section_idx].paragraphs.len();
+        for para_idx in 0..count {
+            self.reflow_paragraph(section_idx, para_idx);
+        }
+        let hwp3_layout = self.document.layout_profile().hwp3_layout();
+        // 모든 문단을 새로 짰으므로 옛 세로 위치의 쪽 첫 줄 신호는 없다.
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            0,
+            Some(0..count),
+            None,
+            &self.styles,
+            self.dpi,
+            hwp3_layout,
+        );
     }
 
     /// 모든 구역의 SectionDef를 일괄 변경하고 재페이지네이션 (네이티브 에러 타입)
     pub fn set_section_def_all_native(&mut self, json: &str) -> Result<String, HwpError> {
         let count = self.document.sections.len();
+        let grids_before: Vec<_> = self
+            .document
+            .sections
+            .iter()
+            .map(|section| section.section_def.cell_grid())
+            .collect();
         for idx in 0..count {
             self.apply_section_def_json(idx, json)?;
+        }
+        for (idx, grid_before) in grids_before.into_iter().enumerate() {
+            self.refit_cell_grid(idx, grid_before);
         }
         let page_count = self.recompose_and_paginate();
         Ok(format!("{{\"ok\":true,\"pageCount\":{}}}", page_count))
@@ -6279,6 +6334,8 @@ impl DocumentCore {
                 continue;
             }
             let section = &self.document.sections[idx];
+            // 원고지 구역은 글 문단을 칸 격자로 짠다(렌더 사본에서만).
+            let cell_grid = section.section_def.cell_grid();
             let cached_frames =
                 crate::renderer::render_normalization::cached_frame_owner::normalize_with_storage(
                     &section.paragraphs,
@@ -6447,6 +6504,7 @@ impl DocumentCore {
                 && inline_frames.is_empty()
                 && !paragraph_geometry_changed
                 && text_metrics.is_none()
+                && cell_grid.is_none()
             {
                 storage.push(&mut out, None)?;
                 continue;
@@ -6514,6 +6572,13 @@ impl DocumentCore {
             for &index in &widthless {
                 discard_widthless_rows_for_render(&mut np[index]);
             }
+            let grid_rows = cell_grid.map_or_else(Vec::new, |grid| {
+                crate::renderer::cell_grid::project_section_rows(
+                    &mut np,
+                    &self.document.doc_info.para_shapes,
+                    grid,
+                )
+            });
             if has_cell_stack {
                 for p in np.iter_mut() {
                     reclassify_cell_floating_stacks(p, min_height_hu);
@@ -6529,6 +6594,7 @@ impl DocumentCore {
                     || widthless.binary_search(&i).is_ok()
                     || frame_changes.binary_search(&i).is_ok()
                     || text_metric_changes.binary_search(&i).is_ok()
+                    || grid_rows.binary_search(&i).is_ok()
                     || paragraph_geometry_changed
                 {
                     let mut c =
