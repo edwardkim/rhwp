@@ -2092,19 +2092,51 @@ pub(crate) fn para_has_composed_object_rows(p: &crate::model::paragraph::Paragra
 ///
 /// 쪽 번호 감추기 같은 컨트롤만 남은 줄도 한/글은 줄 상자(높이+간격)를 쌓는다.
 /// 본문 줄이 없어 post-text 로 나가지 않으므로 조판과 그리기가 이 값을 함께 더한다.
-/// 한/글이 계산한 저장 줄이 끊김 없이 이어질 때만 값을 돌려준다.
+/// 한/글이 계산한 저장 줄이 같은 쪽에서 끊김 없이 이어질 때만 값을 돌려준다.
 pub(crate) fn tac_host_control_only_tail_hu(
     p: &crate::model::paragraph::Paragraph,
     table_line: usize,
 ) -> Option<i32> {
+    tac_host_control_only_tail(p, table_line)
+        .filter(|tail| tail.same_frame)
+        .map(|tail| {
+            tail.lines
+                .iter()
+                .map(|s| s.line_height + s.line_spacing)
+                .sum()
+        })
+}
+
+/// 표 줄 뒤 컨트롤 전용 저장 줄들.
+pub(crate) struct TacHostControlOnlyTail<'a> {
+    /// 표 줄 다음 줄부터 문단 끝까지의 저장 줄.
+    pub lines: &'a [crate::model::paragraph::LineSeg],
+    /// 모든 줄이 앞 줄의 `vpos + 줄 높이 + 줄간격` 에서 이어진다(같은 저장 쪽).
+    pub same_frame: bool,
+}
+
+/// 본문 글자가 없는 표 host 문단의 표 줄 뒤 컨트롤 전용 저장 줄들.
+///
+/// 한/글은 이 줄도 보통 줄처럼 `앞 줄 vpos + 줄 높이 + 줄간격` 에 놓고, 그 자리가 쪽에
+/// 들어가지 않으면 다음 쪽 맨 위에서 다시 시작한다(저장 vpos 가 앞 줄보다 작아진다).
+/// 각 줄은 앞 줄에서 끊김 없이 잇거나 저장 쪽 재시작이어야 한다.
+pub(crate) fn tac_host_control_only_tail(
+    p: &crate::model::paragraph::Paragraph,
+    table_line: usize,
+) -> Option<TacHostControlOnlyTail<'_>> {
     use crate::model::{control::Control, paragraph::LineSeg};
     let tail = p
         .line_segs
         .get(table_line + 1..)
         .filter(|t| !t.is_empty())?;
-    let contiguous = p.line_segs[table_line..]
-        .windows(2)
-        .all(|w| w[1].vertical_pos == w[0].vertical_pos + w[0].line_height + w[0].line_spacing);
+    let steps = p.line_segs[table_line..].windows(2);
+    let continues = |w: &[LineSeg]| {
+        w[1].vertical_pos == w[0].vertical_pos + w[0].line_height + w[0].line_spacing
+    };
+    let same_frame = steps.clone().all(continues);
+    let stored_flow = steps
+        .clone()
+        .all(|w| continues(w) || w[1].vertical_pos < w[0].vertical_pos);
     // 표 말고 다른 개체가 있으면 뒤 줄은 그 개체의 줄이다(개체 배치가 높이를 쌓는다).
     let only_one_object = p
         .controls
@@ -2121,13 +2153,16 @@ pub(crate) fn tac_host_control_only_tail_hu(
         })
         .count()
         == 1;
-    (contiguous
+    (stored_flow
         && only_one_object
         && p.text.is_empty()
         && p.line_segs
             .iter()
             .all(|s| s.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0))
-    .then(|| tail.iter().map(|s| s.line_height + s.line_spacing).sum())
+    .then_some(TacHostControlOnlyTail {
+        lines: tail,
+        same_frame,
+    })
 }
 
 /// These controls do not replace the empty host paragraph's own text line.
