@@ -1,10 +1,14 @@
 # semanticist21 미지정 리뷰어 PR 10건 누적 검토 계획 — 2026-11-05 두 번째 묶음
 
-## 최신 진행 상태 — PR #8622 반영 준비
+## 최신 진행 상태 — 고정 head의 로컬 검증 완료·현재 base 호환 확인
 
-원 head 10개를 merge 조상으로 보존해 통합했고 메인테이너 보정을 제품 source `6337fe4d10`에 기록했다. 글꼴 공급 한도를 바로잡은 후보 Native/fresh WASM은 각각 전 124쪽을 재출력했다. 이 결과와 전체 회귀의 완료 요약을 고정한 뒤 새 devel을 반영한다.
+원 head 10개를 merge 조상으로 보존했고 최신 base `6e1de406209ba9a58032f6ca6de45b18aa687d1c`를 통합했다. 최종 제품 source는 `584c9503baa651c62d0403dad9cb77c5cb9ffde6`다. 필수 로컬 검증 19단계를 완료했고 전체 nextest 12,629 PASS·45 SKIP, Native 공식 3종 4,064 PASS·12 IGNORE, release lib 3,983 PASS·12 IGNORE, 모든 lint·workspace build·doc test·Studio 2,720건이 통과했다.
 
-원격 재확인에서 추가된 #8622는 공통 조판·편집 경로를 바꾸므로 현재 후보의 최종 수용을 확정하지 않는다. [최신 base 기능 보존 계획](assets/semanticist21-20261105-next10/rebase8622-plan.md)과 [이전 source의 검증 기록](assets/semanticist21-20261105-next10/pre8622-validation.md)을 구분한다. 현재 승인 범위의 로컬 작업을 계속하며 원격 push·새 PR·merge는 수행하지 않았다.
+시각 producer `d53115fabc92bd392044d9b906c599baddb4368d`의 이번 10건 124쪽과 새 base 보존 406쪽은 Native/fresh WASM 양쪽에서 전부 90% 이상이다. 직접 확대 판독과 canonical Native 편람 383쪽도 완료했다. 이후 계산 API의 비유한 결과만 보정한 최종 source의 7쪽은 양쪽 모두 100%·이전 PNG와 같다. producer를 구분해 보존했다.
+
+[최종 검토](semanticist21_20261105_next10_review.md), [실제 실행·TSV·확대 판독](assets/semanticist21-20261105-next10/validation.md), [PR 본문](assets/semanticist21-20261105-next10/pr-body.md), [원격 처리와 댓글 초안](assets/semanticist21-20261105-next10/remote-action-plan.md)을 준비했다. 현재 승인은 로컬 보정·필수 검증이며 원격 push·새 PR·merge·공개 댓글은 수행하지 않았다.
+
+최종 fetch에서 현재 base가 `a95d1d5afad1bfd61998794fa78fb0db100d690a`로 전진했다. #8630의 실제 편집·소비 경로를 조사하고 충돌 없는 현재-base 병합 트리를 별도로 확인한다. 검증한 source 584c9503ba를 반복 merge/rebase하지 않으며, 그 전체 실행을 새 병합 트리의 실행으로 바꾸어 표시하지 않는다.
 
 아래 접수와 누적 보정 기록의 미완료 표시는 각 중간 시점의 상태다. 최신 완료 여부는 이 절과 최종 검증 문서에서 확인한다.
 

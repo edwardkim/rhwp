@@ -1,5 +1,6 @@
 // 관계형: 실제 CanvasKit의 투명한 외곽선과 공통 획/점선 소비를 검사한다.
-// 2026-11-05 KST. 독립 Print 선행 측정: 원본 1쪽 Native raw 99.20%, fresh WASM raw 100%, 96 DPI.
+// 주석 갱신: 2026-11-05T16:08:50+09:00; 직전 파일 변경: 0e365e1611d3159acc1bd35ef8467a190819c2c9 2026-11-05T13:08:21+09:00.
+// 측정일 2026-11-05 KST(source d53115fabc): 독립 Print 원본 전 1쪽, Native/fresh WASM 최저 각각 100.00%, 96 DPI·2px raw.
 // 전쪽 TSV/확대 판독은 mydocs/pr/assets/semanticist21-20261105-next10/validation.md에 연결한다.
 // 이 검사는 번들 Noto 대체 face를 사용한 효과 소비 검사이며 Print 글꼴 일치 검사를 대체하지 않는다.
 import assert from 'node:assert/strict';

@@ -1,0 +1,56 @@
+{
+  "wasmSha256": "11012c56c9463f4eca27426ab118a2c73a54d90418597315f3df7c0211d2b78d",
+  "formulaHancomValues": 37,
+  "tests": [
+    {
+      "key": "cell regrid height width and both save formats",
+      "pass": true,
+      "ms": 445.774717
+    },
+    {
+      "key": "LOG LN decimal ROUND degree functions actual WASM evaluator",
+      "pass": true,
+      "ms": 6.075801999999953
+    },
+    {
+      "key": "formula stale cell edit explicit recalc LN ROUND fields and roundtrips",
+      "pass": true,
+      "ms": 46.86469899999997
+    },
+    {
+      "key": "formula creation dependent recalc self rejection removal preserves visible result",
+      "pass": true,
+      "ms": 11.960778000000005
+    },
+    {
+      "key": "footnote apply restart page invalid atomic and saved shape",
+      "pass": true,
+      "ms": 15.597842000000014
+    },
+    {
+      "key": "outline ID rendering invalid overflow and saved definition",
+      "pass": true,
+      "ms": 71.30404999999996
+    },
+    {
+      "key": "drop cap property both serializers actual existing shape",
+      "pass": true,
+      "ms": 11.11761100000001
+    },
+    {
+      "key": "section endnote continue insert and both saves real labels",
+      "pass": true,
+      "ms": 46.52543200000002
+    },
+    {
+      "key": "paragraph head edited body and both save formats",
+      "pass": true,
+      "ms": 56.362348999999995
+    },
+    {
+      "key": "non-finite result domain errors both write modes leave whole model unchanged",
+      "pass": true,
+      "ms": 8.236647999999946
+    }
+  ]
+}

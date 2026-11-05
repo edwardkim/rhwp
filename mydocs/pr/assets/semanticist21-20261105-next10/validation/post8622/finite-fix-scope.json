@@ -1,0 +1,20 @@
+{
+  "visual_producer": "d53115fabc92bd392044d9b906c599baddb4368d",
+  "calculation_source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+  "changed_paths": [
+    "src/document_core/table_calc/evaluator.rs",
+    "tests/cases/table_formula_hancom_functions.rs"
+  ],
+  "identical_subtrees": {
+    "src/renderer": "82eb38651a288737e71cc194ab57539e2f5dc7e2",
+    "src/render_backend": "0cc84871d7ad997a50731aeb9af5109d5c0635e2",
+    "src/paint": "84d93f62271dbbfcb81f33448c66b86befb40bba",
+    "src/model": "be4a71f94bacb002261bd58c093cc066d469f335",
+    "src/parser": "965b7140b3f4955c37bfb21c4ae0f8b938ef498e",
+    "src/serializer": "28e6a0121ce656e08b588165c932d219cf992753",
+    "rhwp-studio/src": "eade51126ac3e9913b2249781cabc1255d8b6db9",
+    "tests/fixtures": "991e31e40a3a9a7f3b71dc755765c1dfe1e1235e",
+    "pdf": "db77ccdf9c750b7c072214f9715494add99550e5"
+  },
+  "behavior": "일반 계산 API의 최종 결과가 비유한일 때만 정상 오류로 반환한다. 저장 FORMULA의 기존 동일 검사는 공통화했다."
+}

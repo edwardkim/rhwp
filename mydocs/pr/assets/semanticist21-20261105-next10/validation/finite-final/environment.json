@@ -1,0 +1,31 @@
+{
+  "time": "2026-11-05T07:38:09.642230+00:00",
+  "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+  "wasm_optimization": "wasm-pack managed wasm-opt (enabled)",
+  "tools": {
+    "rustc": {
+      "exit": 0,
+      "version": "rustc 1.93.1 (01f6ddf75 2026-02-11)\nbinary: rustc\ncommit-hash: 01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf\ncommit-date: 2026-02-11\nhost: x86_64-unknown-linux-gnu\nrelease: 1.93.1\nLLVM version: 21.1.8"
+    },
+    "cargo": {
+      "exit": 0,
+      "version": "cargo 1.93.1 (083ac5135 2025-12-15)"
+    },
+    "node": {
+      "exit": 0,
+      "version": "v24.15.0"
+    },
+    "wasm_pack": {
+      "exit": 0,
+      "version": "wasm-pack 0.15.0"
+    },
+    "chrome": {
+      "exit": 0,
+      "version": "Chromium 152.0.7946.0"
+    },
+    "nextest": {
+      "exit": 0,
+      "version": "cargo-nextest 0.9.137 (75ddba7e9 2026-05-26)\nrelease: 0.9.137\ncommit-hash: 75ddba7e911b44c5c0700dac0415d824403de9bd\ncommit-date: 2026-05-26\nhost: x86_64-unknown-linux-gnu"
+    }
+  }
+}

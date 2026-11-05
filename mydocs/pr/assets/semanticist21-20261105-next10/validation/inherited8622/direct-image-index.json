@@ -1,0 +1,59 @@
+[
+  {
+    "key": "inherited-8508-36316493-approval-body-06c2ded9",
+    "page": 4,
+    "crop": [
+      78,
+      97,
+      754,
+      346
+    ],
+    "image": "mydocs/pr/assets/semanticist21-20261105-next10/images/post8622/inherited-8508-p4.png",
+    "metrics": {
+      "base_native_minimum": "99.87",
+      "candidate_native_minimum": "99.87",
+      "native_max_drop_pp": "0",
+      "base_wasm_minimum": "99.72",
+      "candidate_wasm_minimum": "99.72",
+      "wasm_max_drop_pp": "0"
+    }
+  },
+  {
+    "key": "inherited-8512-156500952-k-startup-league-046d03c4",
+    "page": 4,
+    "crop": [
+      73,
+      480,
+      747,
+      684
+    ],
+    "image": "mydocs/pr/assets/semanticist21-20261105-next10/images/post8622/inherited-8512-p4.png",
+    "metrics": {
+      "base_native_minimum": "99.25",
+      "candidate_native_minimum": "99.25",
+      "native_max_drop_pp": "0",
+      "base_wasm_minimum": "99.34",
+      "candidate_wasm_minimum": "99.34",
+      "wasm_max_drop_pp": "0"
+    }
+  },
+  {
+    "key": "inherited-8512-156500952-k-startup-league-046d03c4",
+    "page": 5,
+    "crop": [
+      72,
+      92,
+      134,
+      228
+    ],
+    "image": "mydocs/pr/assets/semanticist21-20261105-next10/images/post8622/inherited-8512-p5.png",
+    "metrics": {
+      "base_native_minimum": "99.25",
+      "candidate_native_minimum": "99.25",
+      "native_max_drop_pp": "0",
+      "base_wasm_minimum": "99.34",
+      "candidate_wasm_minimum": "99.34",
+      "wasm_max_drop_pp": "0"
+    }
+  }
+]

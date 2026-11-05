@@ -1,0 +1,162 @@
+[
+  {
+    "key": "borders",
+    "file": "tests/fixtures/border_line_types/borders.hwp",
+    "pageIndex": 0,
+    "backend": "canvas2d",
+    "pageCount": 1,
+    "fonts": [
+      "함초롬돋움",
+      "함초롬바탕"
+    ],
+    "zoom": 1,
+    "dpr": 1,
+    "canvas": {
+      "width": 794,
+      "height": 1123,
+      "rect": {
+        "x": 313.15625,
+        "y": 150,
+        "width": 793.6875,
+        "height": 1122.5
+      }
+    },
+    "activePages": [
+      0
+    ]
+  },
+  {
+    "key": "outline",
+    "file": "tests/fixtures/char_outline_types/outline.hwp",
+    "pageIndex": 0,
+    "backend": "canvas2d",
+    "pageCount": 1,
+    "fonts": [
+      "함초롬돋움",
+      "함초롬바탕"
+    ],
+    "zoom": 1,
+    "dpr": 1,
+    "canvas": {
+      "width": 794,
+      "height": 1123,
+      "rect": {
+        "x": 313.15625,
+        "y": 150,
+        "width": 793.6875,
+        "height": 1122.5
+      }
+    },
+    "activePages": [
+      0
+    ]
+  },
+  {
+    "key": "footnotes",
+    "file": "tests/fixtures/footnote_shape/restart-page.hwp",
+    "pageIndex": 1,
+    "backend": "canvas2d",
+    "pageCount": 2,
+    "fonts": [
+      "함초롬돋움",
+      "함초롬바탕"
+    ],
+    "zoom": 1,
+    "dpr": 1,
+    "canvas": {
+      "width": 794,
+      "height": 1123,
+      "rect": {
+        "x": 313.15625,
+        "y": 345.5,
+        "width": 793.6875,
+        "height": 1122.5
+      }
+    },
+    "activePages": [
+      0,
+      1
+    ]
+  },
+  {
+    "key": "saved-footnotes",
+    "file": "tests/fixtures/semanticist21_next10_review/footnote-shape-corrected.hwpx",
+    "pageIndex": 1,
+    "backend": "canvas2d",
+    "pageCount": 2,
+    "fonts": [
+      "함초롬돋움",
+      "함초롬바탕"
+    ],
+    "zoom": 1,
+    "dpr": 1,
+    "canvas": {
+      "width": 794,
+      "height": 1123,
+      "rect": {
+        "x": 313.15625,
+        "y": 345.5,
+        "width": 793.6875,
+        "height": 1122.5
+      }
+    },
+    "activePages": [
+      0,
+      1
+    ]
+  },
+  {
+    "key": "master",
+    "file": "tests/fixtures/endnote_numbering/restart-5.hwpx",
+    "pageIndex": 0,
+    "backend": "canvas2d",
+    "pageCount": 4,
+    "fonts": [
+      "함초롬돋움",
+      "함초롬바탕"
+    ],
+    "zoom": 1,
+    "dpr": 1,
+    "canvas": {
+      "width": 794,
+      "height": 1123,
+      "rect": {
+        "x": 313.15625,
+        "y": 140,
+        "width": 793.6875,
+        "height": 1122.5
+      }
+    },
+    "activePages": [
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "key": "formula",
+    "file": "tests/fixtures/semanticist21_next10_review/table-formula-recalculated.hwpx",
+    "pageIndex": 0,
+    "backend": "canvas2d",
+    "pageCount": 1,
+    "fonts": [
+      "함초롬돋움",
+      "함초롬바탕"
+    ],
+    "zoom": 1,
+    "dpr": 1,
+    "canvas": {
+      "width": 794,
+      "height": 1123,
+      "rect": {
+        "x": 313.15625,
+        "y": 150,
+        "width": 793.6875,
+        "height": 1122.5
+      }
+    },
+    "activePages": [
+      0
+    ]
+  }
+]

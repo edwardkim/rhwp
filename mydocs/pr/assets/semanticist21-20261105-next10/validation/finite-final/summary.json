@@ -1,0 +1,158 @@
+{
+  "source": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+  "prior_visual_producer": "d53115fabc92bd392044d9b906c599baddb4368d",
+  "cases": 7,
+  "pages_per_backend": 7,
+  "native_minimum": "100.00",
+  "wasm_minimum": "100.00",
+  "all_pngs_byte_identical_to_prior": true,
+  "rows": [
+    {
+      "key": "table-formula-easy",
+      "group": "original",
+      "input": "tests/fixtures/table_formula/easy.hwpx",
+      "input_sha256": "b46636826c13cc09045a0097dd079580914244ddd8db4ce66f507a770583aed0",
+      "reference": "pdf/semanticist21-20261105-next10/table-formula-easy-2020.pdf",
+      "reference_sha256": "d46e01eebbf388dabd4346ad6513ab62fd3db5a2c24c3609eb75cc5b68bb5533",
+      "pages": 1,
+      "base_native_minimum": "100.00",
+      "base_wasm_minimum": "100.00",
+      "candidate_native_minimum": "100.00",
+      "candidate_wasm_minimum": "100.00",
+      "native_max_drop_pp": "0",
+      "wasm_max_drop_pp": "0",
+      "native_unchanged_vs_visual_producer": [
+        1
+      ],
+      "wasm_unchanged_vs_visual_producer": [
+        1
+      ]
+    },
+    {
+      "key": "table-formula-hancom-result",
+      "group": "original",
+      "input": "tests/fixtures/table_formula/hancom.hwp",
+      "input_sha256": "d8ac4dd6db6d4c73714c2c7519898f1398552bb840325f9782f59e10a94db903",
+      "reference": "pdf/semanticist21-20261105-next10/table-formula-hancom-result-2020.pdf",
+      "reference_sha256": "f6b36077ebbfe982544a151bb49592707b8f589cc31db863e2acf0f9bb1111d4",
+      "pages": 1,
+      "base_native_minimum": "100.00",
+      "base_wasm_minimum": "100.00",
+      "candidate_native_minimum": "100.00",
+      "candidate_wasm_minimum": "100.00",
+      "native_max_drop_pp": "0",
+      "wasm_max_drop_pp": "0",
+      "native_unchanged_vs_visual_producer": [
+        1
+      ],
+      "wasm_unchanged_vs_visual_producer": [
+        1
+      ]
+    },
+    {
+      "key": "table-formula-stale",
+      "group": "original",
+      "input": "tests/fixtures/table_formula/stale.hwpx",
+      "input_sha256": "e11b4ee37a4ab016cbd7056e725ccf89e2a3448e68ba92da18c39c4442ad8177",
+      "reference": "pdf/semanticist21-20261105-next10/table-formula-stale-2020.pdf",
+      "reference_sha256": "a767229bca103363f79e0e0f8d80110401df0f98d868a2cd59f6b278780f796e",
+      "pages": 1,
+      "base_native_minimum": "100.00",
+      "base_wasm_minimum": "100.00",
+      "candidate_native_minimum": "100.00",
+      "candidate_wasm_minimum": "100.00",
+      "native_max_drop_pp": "0",
+      "wasm_max_drop_pp": "0",
+      "native_unchanged_vs_visual_producer": [
+        1
+      ],
+      "wasm_unchanged_vs_visual_producer": [
+        1
+      ]
+    },
+    {
+      "key": "table-formula-cycles",
+      "group": "original",
+      "input": "tests/fixtures/table_formula/cycles.hwpx",
+      "input_sha256": "737c454944b3551d9cddcb759b2337093dd1d879eac525d7a218fa3e75704e65",
+      "reference": "pdf/semanticist21-20261105-next10/table-formula-cycles-2020.pdf",
+      "reference_sha256": "a87e4ded81122fd791696765ae2f19c7e7726877780a9d9f6050432b1e75d951",
+      "pages": 1,
+      "base_native_minimum": "100.00",
+      "base_wasm_minimum": "100.00",
+      "candidate_native_minimum": "100.00",
+      "candidate_wasm_minimum": "100.00",
+      "native_max_drop_pp": "0",
+      "wasm_max_drop_pp": "0",
+      "native_unchanged_vs_visual_producer": [
+        1
+      ],
+      "wasm_unchanged_vs_visual_producer": [
+        1
+      ]
+    },
+    {
+      "key": "table-formula-easy-edited-hwpx",
+      "group": "edited",
+      "input": "tests/fixtures/semanticist21_next10_review/table-formula-easy-edited.hwpx",
+      "input_sha256": "646db28aeb61d828dcc66a7eea54fcb256a2e336e696793208d276db8250eb72",
+      "reference": "pdf/semanticist21-20261105-next10/table-formula-easy-edited-hwpx-2020.pdf",
+      "reference_sha256": "c6df311a25761442ede5cb8db67295850adf35b0eca9217c23eaaa97a41b5ec5",
+      "pages": 1,
+      "base_native_minimum": "100.00",
+      "base_wasm_minimum": "100.00",
+      "candidate_native_minimum": "100.00",
+      "candidate_wasm_minimum": "100.00",
+      "native_max_drop_pp": "0",
+      "wasm_max_drop_pp": "0",
+      "native_unchanged_vs_visual_producer": [
+        1
+      ],
+      "wasm_unchanged_vs_visual_producer": [
+        1
+      ]
+    },
+    {
+      "key": "table-formula-recalculated-hwp",
+      "group": "edited",
+      "input": "tests/fixtures/semanticist21_next10_review/table-formula-recalculated.hwp",
+      "input_sha256": "410ae0f30937a83449a4c8e813b19029c8fd84000aa9c14b8dbb0b3f88b7fe59",
+      "reference": "pdf/semanticist21-20261105-next10/table-formula-recalculated-hwp-2020.pdf",
+      "reference_sha256": "749976d98cc9d0dc9bfe86da6585fbd838b8a7306a95a466f48e29d4bf7676d7",
+      "pages": 1,
+      "base_native_minimum": "100.00",
+      "base_wasm_minimum": "100.00",
+      "candidate_native_minimum": "100.00",
+      "candidate_wasm_minimum": "100.00",
+      "native_max_drop_pp": "0",
+      "wasm_max_drop_pp": "0",
+      "native_unchanged_vs_visual_producer": [
+        1
+      ],
+      "wasm_unchanged_vs_visual_producer": [
+        1
+      ]
+    },
+    {
+      "key": "table-formula-recalculated-hwpx",
+      "group": "edited",
+      "input": "tests/fixtures/semanticist21_next10_review/table-formula-recalculated.hwpx",
+      "input_sha256": "9ced780bb37467cfaa7137c866c437f6ad710a45c3879caf69e84e102221cc41",
+      "reference": "pdf/semanticist21-20261105-next10/table-formula-recalculated-hwpx-2020.pdf",
+      "reference_sha256": "12c9c727279a552d2c82ca6c017c94ae1acbffabe416c2352d70b733497dfc37",
+      "pages": 1,
+      "base_native_minimum": "100.00",
+      "base_wasm_minimum": "100.00",
+      "candidate_native_minimum": "100.00",
+      "candidate_wasm_minimum": "100.00",
+      "native_max_drop_pp": "0",
+      "wasm_max_drop_pp": "0",
+      "native_unchanged_vs_visual_producer": [
+        1
+      ],
+      "wasm_unchanged_vs_visual_producer": [
+        1
+      ]
+    }
+  ]
+}
