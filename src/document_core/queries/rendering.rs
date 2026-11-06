@@ -872,6 +872,14 @@ fn section_has_unplaced_stored_rows(paragraphs: &[Paragraph]) -> bool {
     paragraphs.iter().all(|para| unplaced(para, &mut found)) && found
 }
 
+/// 같은 저장 프레임에서 이어지는 다음 문단의 첫 저장 줄 위치. 단·쪽 나눔이면 없다.
+fn next_frame_vpos(paragraphs: &[Paragraph], index: usize) -> Option<i32> {
+    let next = paragraphs.get(index.checked_add(1)?)?;
+    matches!(next.column_type, ColumnBreakType::None)
+        .then(|| next.line_segs.first().map(|line| line.vertical_pos))
+        .flatten()
+}
+
 fn discard_widthless_rows_for_render(para: &mut Paragraph) {
     if !para.line_segs.is_empty()
         && para.line_segs.iter().all(|seg| {
@@ -6460,7 +6468,21 @@ impl DocumentCore {
                     }
                 }
             }
+            // 자기 자리차지 표 띠에 걸친 저장 줄은 한컴이 띠 끝으로 내리고 같은 저장
+            // 프레임의 뒤 사다리를 함께 민다. 측정·배치가 같은 사다리를 소비하도록
+            // 렌더 사본의 저장 위치를 그 결과로 바꾼다.
+            let band_crossing = (profile.hwp5_stored_pagination_layout()
+                || profile.hwpx_stored_layout())
+                && !profile.session_edited()
+                && source_paragraphs.iter().enumerate().any(|(index, paragraph)| {
+                    crate::renderer::render_normalization::stored_band_crossing_line::band_crossing_line_shift(
+                        paragraph,
+                        next_frame_vpos(source_paragraphs, index),
+                    )
+                    .is_some()
+                });
             if matches.is_empty()
+                && !band_crossing
                 && !has_cell_stack
                 && widthless.is_empty()
                 && inline_frames.is_empty()
@@ -6529,6 +6551,46 @@ impl DocumentCore {
                         storage.push(&mut frame_changes, index)?;
                     }
                 }
+            }
+            if band_crossing {
+                // 원점 이동만 하므로 문자 축과 원본 태그는 보존한다(위 이동과 같은 계약).
+                // 쪽·단 리셋이나 단 나눔에서 저장 프레임이 끝나면 미는 양도 끝난다.
+                let mut shift_hu = 0i32;
+                let mut previous_source_end = None;
+                for (index, paragraph) in np.iter_mut().enumerate() {
+                    let source = &source_paragraphs[index];
+                    if !matches!(source.column_type, ColumnBreakType::None)
+                        || source.line_segs.first().is_some_and(|line| {
+                            previous_source_end.is_some_and(|end| line.vertical_pos < end)
+                        })
+                    {
+                        shift_hu = 0;
+                    }
+                    previous_source_end = source.line_segs.last().map(|line| line.vertical_pos);
+                    // 판정은 원본 사다리로 한다. 앞 문단을 민 양은 이 문단과 다음 문단에 같게 더해진다.
+                    let crossing = crate::renderer::render_normalization::stored_band_crossing_line::band_crossing_line_shift(
+                        source,
+                        next_frame_vpos(source_paragraphs, index),
+                    );
+                    if shift_hu == 0 && crossing.is_none() {
+                        continue;
+                    }
+                    let (first_shifted, line_shift, frame_shift) =
+                        crossing.map_or((0, 0, 0), |c| (c.first_line, c.line_shift, c.frame_shift));
+                    for (line_index, line) in paragraph.line_segs.iter_mut().enumerate() {
+                        let shift = if line_index >= first_shifted {
+                            shift_hu.saturating_add(line_shift)
+                        } else {
+                            shift_hu
+                        };
+                        line.vertical_pos = line.vertical_pos.saturating_add(shift);
+                    }
+                    shift_hu = shift_hu.saturating_add(frame_shift);
+                    paragraph.source_line_seg_vertical_pos = None;
+                    storage.push(&mut frame_changes, index)?;
+                }
+                frame_changes.sort_unstable();
+                frame_changes.dedup();
             }
             for &index in &widthless {
                 discard_widthless_rows_for_render(&mut np[index]);

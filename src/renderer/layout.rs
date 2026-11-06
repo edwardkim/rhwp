@@ -1312,7 +1312,7 @@ pub(crate) fn stored_host_lines_precede_float(
 ///
 /// 제어 문자 위치를 못 구하면 `None` 을 돌려 호출부가 첫 줄로 되돌아가게 한다 — 호스트가
 /// 한 줄이면 어느 쪽이든 같은 값이라 종전 계약(#5584 · #1686)은 그대로다.
-fn stored_float_anchor_line_top(
+pub(crate) fn stored_float_anchor_line_top(
     para: &Paragraph,
     control_index: usize,
     stored: &[&crate::model::paragraph::LineSeg],
