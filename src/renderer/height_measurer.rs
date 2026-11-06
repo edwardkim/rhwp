@@ -3759,9 +3759,11 @@ let body_height=match nested_body_heights
                                 };
                                 crate::renderer::float_placement::stored_host_exclusion_bottom(
                                     p,
+                                    &paragraphs[pidx + 1..],
                                     nested,
                                     ci,
                                     para_top - spacing_before,
+                                    para_top,
                                     heights[ci] - margins - lead,
                                     self.dpi,
                                 )
