@@ -1,8 +1,8 @@
 //! 관계형.
-//! 주석 갱신: 2026-11-07T00:44:43+09:00.
+//! 주석 갱신: 2026-11-07T03:36:59+09:00.
 //! 입력은 공개 HWP5 문서의 글꼴 레코드만 바꾼 합성 문서와 저장소 fixture 글꼴이라 이 검사 자체의
 //! 시각 측정은 해당하지 않는다. 같은 결함의 실물 문서 측정은 다음과 같다.
-//! 2026-11-07 측정 raw(96dpi, visual_sweep silhouette_raw_match_percent, 한컴 2020 Print PDF,
+//! 2026-11-07 측정 raw(source 75555763c4, 96dpi, visual_sweep silhouette_raw_match_percent, 한컴 2020 Print PDF,
 //! 서울한강체·서울남산체 공급): sign_board_register_card.hwp 1쪽 Native 100.00 / fresh WASM 100.00,
 //! 전 1쪽 최저 100.00 / 100.00(수정 전 90.30 / 90.84), PDF와 쪽수 일치.
 //! 근거: mydocs/pr/assets/issue_8661/README.md.
