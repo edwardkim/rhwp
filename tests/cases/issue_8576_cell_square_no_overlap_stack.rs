@@ -1,3 +1,20 @@
+//! 관계형·고정형 회귀: 그림/칸의 포함·겹침·정렬·후속 본문과 독립 Print 쪽수.
+//! 주석 갱신: 2026-11-06T18:23:51+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 78b0c6fab987aa53071005045d5f2e74e2f18ecc,
+//! 2026-11-06T10:23:43+09:00 (Git commit 시각; 아래 실측 시각과 구분).
+//! 실측: 2026-11-06 18:22 KST, 96dpi, 색상 경계 보정 전 2px raw 실루엣.
+//! 작은 그림/큰 그림/CENTER/선언 높이 경계/겹침 허용/가로 비충돌은 각 1쪽,
+//! split-row HWP와 남은 공간 경계 HWPX는 각각 2쪽이다.
+//! 원본별 Native/fresh optimized WASM의 모든 해당 쪽은 각각 100.00%이며,
+//! 8입력 전체 10쪽의 두 경로 최저값도 각각 100.00%다. 원문/PDF 쪽수 일치와
+//! 괘선·그림 묶음·분할 전후 글줄·END의 동일 영역 직접 판독을 완료했다.
+//! 근거: mydocs/pr/assets/pr8658/final/corrected-native/primary/*.tsv 및
+//! mydocs/pr/assets/pr8658/final/corrected-wasm/primary/*.tsv, 같은 key의 compare/
+//! overlay/review PNG, mydocs/pr/assets/pr8658/correction-consumers.md.
+//! 기준: pdf/issue8576/*-2024.pdf 및 split-row-picture-only-para-2020.pdf.
+//! 기대값은 원본 그림/안 여백과 독립 Print의 소유·순서·포함·겹침 관계다.
+//! 절대 px 좌표·SVG 해시를 핀하지 않는다. 쪽수는 내용 보존과 함께 검사한다.
+//!
 //! [#8576] 칸 한 문단의 '겹침 허용 안 함' 어울림 그림은 서로 겹치지 않게 아래로 쌓인다.
 //!
 //! 표 칸의 글자 없는 문단에 글자처럼 취급하지 않는 Square 그림 6장이 모두 같은 자리
@@ -120,6 +137,7 @@ fn small_pictures_stack_without_overlap() {
     let core = core(SMALL);
     let (_, pictures) = first_page_cell_and_pictures(&core);
     assert_stacked(&pictures);
+    assert_end_after_table(&core);
 }
 
 /// 60×30mm 6장: 쌓인 범위가 선언 칸보다 커서 칸이 늘어난다.
@@ -156,6 +174,7 @@ fn large_pictures_stack_and_grow_cell() {
         1,
         "기준 인쇄본처럼 표와 뒤 문단이 한 쪽에 있다"
     );
+    assert_end_after_table(&core);
 }
 
 /// 모든 쪽의 (칸 상자, 그 칸 안 그림들) 을 모은다. 그림 없는 칸은 뺀다.
@@ -202,6 +221,20 @@ fn all_pages_cells_with_pictures(core: &DocumentCore) -> Vec<(u32, Rect, Vec<Rec
 fn split_row_picture_only_paragraph_draws_pictures_side_by_side_inside_cell() {
     let core = core(SPLIT_ROW);
     assert_eq!(core.page_count(), 2, "기준 인쇄본처럼 행이 2쪽으로 나뉜다");
+    let mut lines = Vec::new();
+    for page in 0..core.page_count() {
+        text_lines(&core.build_page_render_tree(page).unwrap().root, &mut lines);
+    }
+    let expected: Vec<String> = (1..=6)
+        .map(|n| format!("ROW {n}"))
+        .chain((1..=40).map(|n| format!("LINE {n}")))
+        .chain(std::iter::once("END".to_owned()))
+        .collect();
+    assert_eq!(
+        lines, expected,
+        "전체 행/글줄/뒤 문단의 순서·누락·중복 보존"
+    );
+    assert_end_after_table(&core);
     let cells = all_pages_cells_with_pictures(&core);
     let total: usize = cells.iter().map(|(_, _, pictures)| pictures.len()).sum();
     assert_eq!(
@@ -234,4 +267,151 @@ fn split_row_picture_only_paragraph_draws_pictures_side_by_side_inside_cell() {
         right.x >= left.x + left.w - TOL_PX,
         "가로 오프셋대로 나란히 놓여 겹치지 않는다: {left:?} / {right:?}"
     );
+}
+
+fn text_lines(node: &RenderNode, out: &mut Vec<String>) {
+    fn line_text(node: &RenderNode, text: &mut String) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            text.push_str(&run.text);
+        }
+        for child in &node.children {
+            line_text(child, text);
+        }
+    }
+    if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+        let mut text = String::new();
+        line_text(node, &mut text);
+        if !text.trim().is_empty() {
+            out.push(text.trim().to_owned());
+        }
+        return;
+    }
+    for child in &node.children {
+        text_lines(child, out);
+    }
+}
+
+fn assert_end_after_table(core: &DocumentCore) {
+    fn walk(node: &RenderNode, tables: &mut Vec<f64>, end: &mut Vec<f64>) {
+        match &node.node_type {
+            RenderNodeType::Table(_) => tables.push(node.bbox.y + node.bbox.height),
+            RenderNodeType::TextRun(run) if run.text.trim() == "END" => end.push(node.bbox.y),
+            _ => {}
+        }
+        for child in &node.children {
+            walk(child, tables, end);
+        }
+    }
+    let tree = core
+        .build_page_render_tree(core.page_count() - 1)
+        .expect("마지막 쪽");
+    let (mut tables, mut end) = (Vec::new(), Vec::new());
+    walk(&tree.root, &mut tables, &mut end);
+    assert_eq!(end.len(), 1, "뒤 문단 END가 마지막 쪽에 한 번 있다");
+    let table_bottom = tables.into_iter().reduce(f64::max).expect("마지막 표 조각");
+    assert!(
+        end[0] + TOL_PX >= table_bottom,
+        "END는 마지막 괘선 아래에 있다"
+    );
+}
+
+#[test]
+fn exact_declared_height_preserves_picture_occupancy_and_padding() {
+    use rhwp::model::control::Control;
+    let core = core("tests/fixtures/pr8658/cell-square-six-pictures-exact-fit.hwpx");
+    let (cell, pictures) = first_page_cell_and_pictures(&core);
+    assert_stacked(&pictures);
+    let table = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .flat_map(|p| &p.controls)
+        .find_map(|c| {
+            if let Control::Table(t) = c {
+                Some(t)
+            } else {
+                None
+            }
+        })
+        .expect("원본 표");
+    let padding = table.cells[0].effective_padding(&table.padding);
+    let top = f64::from(padding.top) / 75.0;
+    let bottom = f64::from(padding.bottom) / 75.0;
+    let first = pictures.first().unwrap();
+    let last = pictures.last().unwrap();
+    assert!(first.y + TOL_PX >= cell.y + top, "위 안 여백 보존");
+    assert!(
+        last.y + last.h + bottom <= cell.y + cell.h + TOL_PX,
+        "실제 그림 점유와 아래 안 여백이 칸 안에 있다: {cell:?}, {last:?}"
+    );
+    assert!(
+        cell.h > f64::from(table.cells[0].height) / 75.0 + TOL_PX,
+        "그림 높이 합과 같은 선언은 여백을 없애는 상한이 아니다"
+    );
+    assert_eq!(core.page_count(), 1, "독립 Print의 전체 쪽수와 같다");
+    assert_end_after_table(&core);
+}
+
+#[test]
+fn centered_stack_uses_one_content_band() {
+    let core = core("tests/fixtures/pr8658/cell-square-six-pictures-center.hwpx");
+    let (cell, pictures) = first_page_cell_and_pictures(&core);
+    assert_stacked(&pictures);
+    let top = pictures.first().unwrap().y - cell.y;
+    let last = pictures.last().unwrap();
+    let bottom = cell.y + cell.h - last.y - last.h;
+    assert!(
+        (top - bottom).abs() <= TOL_PX,
+        "묶음 전체의 위아래 여유가 같다"
+    );
+    assert_end_after_table(&core);
+}
+
+#[test]
+fn overlap_permission_keeps_coincident_picture_origins() {
+    let core = core("tests/fixtures/pr8658/cell-square-six-pictures-overlap-allowed.hwpx");
+    let (_, pictures) = first_page_cell_and_pictures(&core);
+    assert_eq!(pictures.len(), 6);
+    for pair in pictures.windows(2) {
+        assert!((pair[0].x - pair[1].x).abs() <= TOL_PX);
+        assert!((pair[0].y - pair[1].y).abs() <= TOL_PX);
+    }
+    assert_end_after_table(&core);
+}
+
+#[test]
+fn horizontally_disjoint_pictures_keep_their_shared_top() {
+    let core = core("tests/fixtures/pr8658/cell-square-six-pictures-side-by-side.hwpx");
+    let (_, pictures) = first_page_cell_and_pictures(&core);
+    assert_eq!(pictures.len(), 3);
+    for pair in pictures.windows(2) {
+        assert!(!overlaps(pair[0], pair[1]));
+        assert!((pair[0].y - pair[1].y).abs() <= TOL_PX);
+        assert!(pair[1].x >= pair[0].x + pair[0].w - TOL_PX);
+    }
+    assert_end_after_table(&core);
+}
+
+#[test]
+fn grown_stack_moves_with_its_cell_when_only_declared_height_fits() {
+    let core = core("tests/fixtures/pr8658/cell-square-stack-after-leading-lines.hwpx");
+    assert_eq!(
+        core.page_count(),
+        2,
+        "독립 Print는 앞 문단과 성장한 표를 서로 다른 쪽에 둔다"
+    );
+    let cells = all_pages_cells_with_pictures(&core);
+    assert_eq!(cells.len(), 1, "그림 묶음의 칸 소유가 한 번이다");
+    let (page, cell, pictures) = &cells[0];
+    assert_eq!(*page, 1, "늘어난 칸이 들어가는 다음 쪽이 그림을 소유한다");
+    assert_stacked(pictures);
+    let last = pictures.last().unwrap();
+    assert!(last.y + last.h <= cell.y + cell.h + TOL_PX);
+    let mut first = Vec::new();
+    text_lines(&core.build_page_render_tree(0).unwrap().root, &mut first);
+    assert_eq!(
+        first,
+        ["BEFORE"],
+        "앞 문단을 보존하고 그림·뒤 문단을 앞 쪽에 중복하지 않는다"
+    );
+    assert_end_after_table(&core);
 }
