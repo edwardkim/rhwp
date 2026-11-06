@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import re
 import subprocess
+import tempfile
 import textwrap
 import unittest
 from pathlib import Path
@@ -768,19 +769,89 @@ class CiImpactWorkflowTests(unittest.TestCase):
             native_skia.count("node scripts/rust-test-suite-manifest.mjs --prepare"),
         )
 
-    def test_native_skia_disk_cleanup_runs_only_below_the_archive_threshold(self) -> None:
-        native_skia = self._job("native-skia-tests")
-        cleanup = self._step(
-            "Free disk space (remove unused pre-installed toolchains)", native_skia
-        )
+    def test_lint_and_native_skia_disk_cleanup_use_the_archive_threshold(self) -> None:
         threshold = "if (( available_gb < 30 )); then"
         removal = "sudo rm -rf /usr/local/lib/android /usr/share/dotnet"
 
-        self.assertIn("df -BG --output=avail /", cleanup)
-        self.assertIn(threshold, cleanup)
-        self.assertEqual(1, cleanup.count(removal))
-        self.assertLess(cleanup.index(threshold), cleanup.index(removal))
-        self.assertIn("Skip cleanup: ${available_gb}GB available", cleanup)
+        for name in ("lint", "native-skia-tests"):
+            with self.subTest(job=name):
+                job = self._job(name)
+                cleanup_name = "Free disk space (remove unused pre-installed toolchains)"
+                self.assertIn(f"- name: {cleanup_name}", job)
+                cleanup = self._step(cleanup_name, job)
+                self.assertIn("df -BG --output=avail /", cleanup)
+                self.assertIn(threshold, cleanup)
+                self.assertEqual(1, cleanup.count(removal))
+                self.assertLess(cleanup.index(threshold), cleanup.index(removal))
+                self.assertIn("Skip cleanup: ${available_gb}GB available", cleanup)
+                self.assertLess(job.index("uses: actions/checkout@"), job.index(cleanup_name))
+                self.assertLess(
+                    job.index(cleanup_name), job.index("- name: Install Rust toolchain")
+                )
+                self.assertLess(job.index(cleanup_name), job.index("- name: Rust build cache"))
+
+    def test_lint_disk_cleanup_shell_preserves_sdks_and_bounds_removal(self) -> None:
+        lint = self._job("lint")
+        self.assertIn("- name: Free disk space (remove unused pre-installed toolchains)", lint)
+        cleanup = self._step("Free disk space (remove unused pre-installed toolchains)", lint)
+        script = textwrap.dedent(cleanup.split("        run: |\n", maxsplit=1)[1])
+        cases = ((4, True), (29, True), (30, True), (88, True), (4, False))
+        for available_gb, sdks_present in cases:
+            with self.subTest(available_gb=available_gb, sdks_present=sdks_present):
+                # Use temporary SDK paths and record sudo calls without executing them.
+                # No host SDK or privileged command is touched by this shell probe.
+                with tempfile.TemporaryDirectory(prefix="rhwp-lint-disk-") as directory:
+                    root = Path(directory)
+                    android, dotnet = root / "android", root / "dotnet"
+                    if sdks_present:
+                        android.mkdir()
+                        dotnet.mkdir()
+                    trace = root / "sudo-calls"
+                    local_script = script.replace("/usr/local/lib/android", str(android))
+                    local_script = local_script.replace("/usr/share/dotnet", str(dotnet))
+                    harness = r'''
+                        df() {
+                          case "$*" in
+                            '-BG --output=avail /') printf 'Avail\n%sG\n' "$RHWP_AVAILABLE_GB" ;;
+                            '-h /'|'-B1 --output=source,size,used,avail,pcent,target /') printf 'mock df\n' ;;
+                            *) return 97 ;;
+                          esac
+                        }
+                        sudo() {
+                          printf '%s\n' "$*" >> "$RHWP_SUDO_TRACE"
+                          case "$1 $2" in
+                            'du -sh'|'rm -rf') return 0 ;;
+                            *) return 98 ;;
+                          esac
+                        }
+                    '''
+                    result = subprocess.run(
+                        ["bash", "--noprofile", "--norc", "-c",
+                         textwrap.dedent(harness) + local_script],
+                        env={
+                            **os.environ,
+                            "BASH_ENV": "/dev/null",
+                            "RHWP_AVAILABLE_GB": str(available_gb),
+                            "RHWP_SUDO_TRACE": str(trace),
+                        },
+                        capture_output=True,
+                        text=True,
+                        timeout=5,
+                    )
+                    self.assertEqual(0, result.returncode, result.stderr)
+                    calls = trace.read_text().splitlines() if trace.exists() else []
+                    if available_gb < 30:
+                        expected = [f"du -sh {android}", f"du -sh {dotnet}"] if sdks_present else []
+                        self.assertEqual(expected + [f"rm -rf {android} {dotnet}"], calls)
+                        if not sdks_present:
+                            self.assertIn(f"{android}: absent", result.stdout)
+                            self.assertIn(f"{dotnet}: absent", result.stdout)
+                    else:
+                        self.assertEqual([], calls)
+                        self.assertIn(f"Skip cleanup: {available_gb}GB available", result.stdout)
+                    self.assertIn("Disk space after cleanup:", result.stdout)
+                    self.assertEqual(sdks_present, android.is_dir())
+                    self.assertEqual(sdks_present, dotnet.is_dir())
 
     def test_native_skia_apt_timeout_skips_only_the_unavailable_runtime_lane(self) -> None:
         native_skia = self._job("native-skia-tests")
