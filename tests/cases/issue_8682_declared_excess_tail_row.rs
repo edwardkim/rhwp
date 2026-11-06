@@ -1,4 +1,10 @@
-//! @@HEADER@@
+//! 검사 유형: 관계형·고정형.
+//! 주석 갱신: 2026-11-06T16:21:00+09:00.
+//! 2026-11-06 Visual Sweep: 96dpi·PDFium·색상 경계 보정 전 2px raw 실루엣, MCP engine 2020 Print PDF와 대조.
+//! rental_approval_form: 전 1쪽 Native 100.00% / fresh WASM 99.91%; 전쪽 최저 100.00% / 99.91%.
+//! artifact_loan_form: 전 1쪽 Native 96.91% / fresh WASM 100.00%; 전쪽 최저 96.91% / 100.00%.
+//! ai_procurement_appendix: 3쪽 Native 97.29% / fresh WASM 97.41%; 전 4쪽 최저 97.29% / 97.41%.
+//! 근거: mydocs/pr/assets/issue_8682/README.md.
 //!
 //! 행 선언(cellSz) 합이 표 선언(`hp:sz`)을 넘는 비-TAC 표에서 한/글은 앞 행을 저장값대로 두고
 //! 마지막 행의 빈 공간에서만 초과분을 거둔다. 전 행을 비례 축소하면 행 경계가 아래로 갈수록
