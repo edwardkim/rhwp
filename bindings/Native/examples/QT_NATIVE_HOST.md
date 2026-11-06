@@ -149,6 +149,13 @@ state handoff는 [QPainter](https://doc.qt.io/qt-6/qpainter.html#beginNativePain
   사용한다. Char boundary는 Qt grapheme finder, Paragraph boundary는 구조적 문단 경계를 사용한다.
   실제 조판 line·word·sentence 경계는 미지원으로 반환한다. PySide6 6.10.2의 기본 boundary method를
   Python에서 base-call할 때 생기는 out-parameter 바인딩 오류를 unsafe 포인터로 우회하지 않는다.
+- Qt는 위젯 생성 도중 서로 다른 `QMetaObject`마다 접근성 interface를 캐시에 등록할 수 있다.
+  adapter는 실제 metaobject별로 다른 interface를 만들고 같은 metaobject의 조회만 재사용한다.
+  provider는 weak reference로 연결하며, Qt 캐시가 위젯 파괴 시 interface를 각각 한 번 해제한다.
+  factory 반환을 별도로 `registerAccessibleInterface`로 중복 등록하거나 UI 객체를 전역 보관하지 않는다.
+  실제 GL 검사에는 접근성 텍스트 조회, 세 번의 위젯 파괴·재생성, cache ID 무효화와 Python UI wrapper
+  회수를 포함한다. 구현 근거는 [Qt 6.10.2 접근성 캐시](https://github.com/qt/qtbase/blob/v6.10.2/src/gui/accessible/qaccessiblecache.cpp)와
+  [PySide 6.10.2 factory glue](https://github.com/pyside/pyside-setup/blob/v6.10.2/sources/pyside6/PySide6/glue/qtgui.cpp)다.
 - 이 검사는 실제 Qt 접근성 interface/event API 연결의 근거다. 실물 OS의 accessibility bridge와
   screen reader qualification은 별도이며, offscreen 검사만으로 완료했다고 주장하지 않는다.
 

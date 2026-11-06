@@ -263,16 +263,18 @@ class AccessibilityState:
 
 _qt_document_type = None
 _qt_factory = None
+_qt_interface_for = None
 _qt_bindings = weakref.WeakKeyDictionary()
 
 
 def ensure_qt_accessibility_factory():
-    global _qt_document_type, _qt_factory
+    global _qt_document_type, _qt_factory, _qt_interface_for
     if _qt_factory is not None:
         return
     from PySide6.QtCore import QRect, QTextBoundaryFinder
     from PySide6.QtGui import QAccessible, QAccessibleTextInterface
     from PySide6.QtWidgets import QAccessibleWidget
+    from shiboken6 import getCppPointer
 
     class AccessibleDocument(QAccessibleWidget, QAccessibleTextInterface):
         def __init__(self, widget, binding):
@@ -428,20 +430,32 @@ def ensure_qt_accessibility_factory():
         def scrollToSubstring(self, _start, _end): pass
 
     _qt_document_type = AccessibleDocument
+    def interface_for(widget, binding=None):
+        # Qt may query one QObject during construction under several distinct
+        # QMetaObjects. Its cache owns/deletes each corresponding interface;
+        # returning the same pointer for two metaobjects registers it twice.
+        # Keep one wrapper per actual metaobject, not per factory class-name
+        # argument (which can also be a superclass fallback).
+        interfaces = getattr(widget, "_rhwp_accessibility_interfaces", None)
+        if interfaces is None:
+            interfaces = widget._rhwp_accessibility_interfaces = {}
+        key = getCppPointer(widget.metaObject())[0]
+        interface = interfaces.get(key)
+        if interface is None:
+            interface = interfaces[key] = _qt_document_type(widget, binding)
+        elif binding is not None:
+            interface.binding = weakref.ref(binding)
+        widget._rhwp_accessibility_interface = interface
+        return interface
+
+    _qt_interface_for = interface_for
     def factory(_name, widget):
         reference = _qt_bindings.get(widget)
         binding = reference() if reference is not None else None
-        if binding is not None:
-            return binding.interface
-        # A platform bridge may ask about the widget during construction,
-        # before its provider is bound. Keep that cached native interface and
-        # attach its provider afterward rather than losing to the default one.
-        if getattr(widget, "_rhwp_accessibility_document", False):
-            interface = getattr(widget, "_rhwp_accessibility_interface", None)
-            if interface is None:
-                interface = _qt_document_type(widget, None)
-                widget._rhwp_accessibility_interface = interface
-            return interface
+        # A platform bridge may ask during construction before binding. Attach
+        # the provider later, preserving each metaobject's cached interface.
+        if binding is not None or getattr(widget, "_rhwp_accessibility_document", False):
+            return interface_for(widget, binding)
         return None
     _qt_factory = factory
     QAccessible.installFactory(_qt_factory)
@@ -454,11 +468,9 @@ class QtAccessibilityBinding:
         self.state = state
         self.map_rectangle = (weakref.WeakMethod(map_rectangle) if getattr(map_rectangle, "__self__", None) is not None
                               else lambda: map_rectangle)
-        self.interface = getattr(widget, "_rhwp_accessibility_interface", None)
-        if self.interface is None:
-            self.interface = _qt_document_type(widget, self)
-            widget._rhwp_accessibility_interface = self.interface
-        self.interface.binding = weakref.ref(self)
+        self.interface = _qt_interface_for(widget, self)
+        for interface in widget._rhwp_accessibility_interfaces.values():
+            interface.binding = weakref.ref(self)
         _qt_bindings[widget] = weakref.ref(self)
         reference = weakref.ref(self)
         state.changed = lambda kind, previous: reference().notify(kind, previous) if reference() is not None else None

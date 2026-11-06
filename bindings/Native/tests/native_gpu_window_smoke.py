@@ -2,6 +2,7 @@
 """Snapshot controller/Qt fallback checks; --library adds actual xcb GL flow."""
 import argparse
 from copy import deepcopy
+import gc
 import io
 import json
 import os
@@ -10,6 +11,7 @@ import sys
 import time
 from types import SimpleNamespace
 import unittest
+import weakref
 import zipfile
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -319,6 +321,32 @@ class QtFallbackTests(unittest.TestCase):
         self.assertEqual(window.renderer, "gl")
         self.assertIn("GL renderer failed", window.errors[-1])
 
+    def test_accessible_canvas_destruction_releases_cache_ids_and_ui_wrappers(self):
+        from PySide6.QtCore import QEvent
+        from PySide6.QtGui import QAccessible
+        from shiboken6 import isValid
+        from native_window_smoke import IdleWorker
+        from qt_native_host import NativeWindow
+        for _ in range(3):
+            window = NativeWindow(None, worker=IdleWorker())
+            interface = QAccessible.queryAccessibleInterface(window.canvas)
+            self.assertEqual(interface.role(), QAccessible.Role.Document)
+            self.assertIsNotNone(interface.textInterface())
+            cached = tuple(window.canvas._rhwp_accessibility_interfaces.values())
+            identities = [QAccessible.uniqueId(item) for item in cached]
+            window_ref, canvas_ref = weakref.ref(window), weakref.ref(window.canvas)
+            window.shutdown_worker()
+            pump(self.app, lambda: window.finished)
+            window.deleteLater()
+            self.app.sendPostedEvents(None, QEvent.Type.DeferredDelete.value)
+            self.app.processEvents()
+            self.assertTrue(all(not isValid(item) for item in cached))
+            self.assertTrue(all(QAccessible.accessibleInterface(identity) is None for identity in identities))
+            del window
+            gc.collect()
+            self.assertIsNone(window_ref(), "accessible interfaces retained the deleted UI")
+            self.assertIsNone(canvas_ref(), "accessible interfaces retained the deleted canvas")
+
 
 def pump(app, condition, timeout=30):
     deadline = time.monotonic() + timeout
@@ -392,6 +420,45 @@ def actual_strict_failure_smoke(app, window, document):
     assert window.canvas.presenter.info()["wholeFrameReadbacks"] == 0
 
 
+def actual_accessibility_lifecycle_smoke(app, library):
+    from PySide6.QtCore import QEvent
+    from PySide6.QtGui import QAccessible
+    from shiboken6 import getCppPointer, isValid
+    from qt_native_host import NativeWindow
+    counts = []
+    for _ in range(3):
+        window = NativeWindow(library, renderer="gl")
+        window.show()
+        try:
+            pump(app, lambda: window.gpu.last_frame is not None or bool(window.errors))
+            assert not window.errors, window.errors
+            interface = QAccessible.queryAccessibleInterface(window.canvas)
+            assert interface.role() == QAccessible.Role.Document
+            text = interface.textInterface()
+            assert text is not None
+            window.command("pasteText", text="가😀")
+            pump(app, lambda: text.text(0, -1) == "가😀" or bool(window.errors))
+            assert not window.errors and text.characterCount() == 3, window.errors
+            cached = tuple(window.canvas._rhwp_accessibility_interfaces.values())
+            pointers = [getCppPointer(item)[0] for item in cached]
+            assert len(pointers) == len(set(pointers)), "construction metaobjects shared one interface"
+            counts.append(len(cached))
+            identities = [QAccessible.uniqueId(item) for item in cached]
+            window_ref, canvas_ref = weakref.ref(window), weakref.ref(window.canvas)
+        finally:
+            window.shutdown_worker()
+            pump(app, lambda: window.finished)
+            window.deleteLater()
+            app.sendPostedEvents(None, QEvent.Type.DeferredDelete.value)
+            app.processEvents()
+        assert all(not isValid(item) for item in cached)
+        assert all(QAccessible.accessibleInterface(identity) is None for identity in identities)
+        del text, interface, window
+        gc.collect()
+        assert window_ref() is None and canvas_ref() is None, "Qt accessibility retained a deleted UI"
+    return counts
+
+
 def actual_smoke(library, diagnostic_readback=False, document=None):
     from PySide6.QtWidgets import QApplication
     from qt_native_host import NativeWindow
@@ -439,6 +506,13 @@ def actual_smoke(library, diagnostic_readback=False, document=None):
         window.shutdown_worker()
         pump(app, lambda: window.finished)
         assert not window.gpu.snapshots
+        from PySide6.QtCore import QEvent
+        window.deleteLater()
+        app.sendPostedEvents(None, QEvent.Type.DeferredDelete.value)
+        app.processEvents()
+    counts = actual_accessibility_lifecycle_smoke(app, library)
+    print(json.dumps({"qtAccessibleLifecycle": "PASS", "gpuDestroyRecreateRounds": 3,
+        "interfacesPerConstruction": counts, "uiWrappersReclaimed": True}))
 
 
 def main():
