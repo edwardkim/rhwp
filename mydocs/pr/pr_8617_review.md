@@ -23,7 +23,7 @@ fix(visual-sweep): 글꼴 catalog family 이름의 앞뒤 공백을 Native 와 �
 ## 회귀·입력 확인
 
 
-통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 검증 뒤 제품·테스트 코드는 변경하지 않았다. 검증 원본·Print 기준의 추가와 문서 기록을 구분한다.
+통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 이는 최초 통합 source의 결과다. 이후 메인터너 보정으로 제품·테스트 코드가 바뀌었으므로 보정 후 head의 회귀 통과로 재사용하지 않는다. 새 보정본의 검증 결과와 원본·Print 추가를 구분한다.
 
 Native Skia 공식 3종(라이브러리 4,040건 및 통합 24건)과 이번 PR의 추가 5개 모듈 14건이 모두 통과했다. 라이브러리의 기존 ignored는 12건이며, focused 실행에서 제외된 다른 테스트를 실패나 ignored로 합산하지 않는다. 전쪽 Native/fresh WASM·쪽수·확대 판독·lint는 별도 완료 조건이며, 회귀 통과로 대신하지 않는다.
 
@@ -40,3 +40,26 @@ Native Skia 공식 3종(라이브러리 4,040건 및 통합 24건)과 이번 PR�
 - 실행 로그·중간 JSON은 ignored output에만 보존했다. 이 결과를 `interview.hwp`의 실제 Native/fresh WASM 2쪽 시각 검증이나 최종 승인으로 확대하지 않는다.
 
 PNG 공급·catalogue 검사 `scripts.tests.test_visual_sweep_png`는 40건 통과했다. 앞서 기록한 base 2건 assertion 실패 → 후보 2건 통과의 음성 대조와 별개로 전체 모듈을 실행했다. 실제 interview fresh WASM 검증은 남아 있다.
+
+## 실제 interview Native/fresh WASM 검증
+
+R11 source `048f44da99d83e186f3a9e139563d20545c8bdb4`에서 같은 interview 원본·독립
+Print를 전2쪽 측정했다. Native/fresh WASM 모두 쪽수가 2쪽이고 raw는 각각
+1쪽 **96.01%**, 2쪽 **99.99%**다. catalog 공백 때문에 WASM 글꼴 공급이 중단되던
+경로가 실제 입력에서도 끝까지 완료됐다. 측정법은 96 DPI·보정 전 2px 내용 실루엣이다.
+
+주장 페이지인 1쪽의 제목 `면접과 취업`, `10가지 계명과 10가지 원칙!` 및 본문의 좌우
+1~10 항목을 review·overlay로 직접 판독했다. 제목·본문 글꼴이 공급되고 항목의 줄 구성과
+순서가 보존된다. 큰 그림의 경계 필터링과 제목 그림자에는 Print 대비 잔차가 보여
+실루엣 수치를 픽셀 완전 동일로 기록하지 않는다. catalog 정규화의 음성 대조 2건·
+전체 모듈 40건 통과와 이 실제 문서의 완료 측정을 구분한다.
+
+[Native 전쪽 TSV](assets/planet6897_20261106/pr8617/r11/interview/native.tsv) ·
+[fresh WASM 전쪽 TSV](assets/planet6897_20261106/pr8617/r11/interview/wasm.tsv) ·
+[원본·PDF·producer SHA](assets/planet6897_20261106/pr8617/r11/interview/provenance.json).
+Native [review](assets/planet6897_20261106/pr8617/r11/interview/native-review-001.png)·
+[overlay](assets/planet6897_20261106/pr8617/r11/interview/native-overlay-001.png),
+fresh WASM [review](assets/planet6897_20261106/pr8617/r11/interview/wasm-review-001.png)·
+[overlay](assets/planet6897_20261106/pr8617/r11/interview/wasm-overlay-001.png).
+
+R11 결과를 후속 수정의 최종 head 통과로 대신하지 않는다.
