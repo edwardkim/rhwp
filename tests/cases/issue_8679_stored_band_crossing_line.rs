@@ -1,34 +1,24 @@
-//! [#8679] 관계형·고정형 회귀 — 문단 기준 자리차지(글 위아래) 표의 띠 위끝에 걸친 저장 호스트
-//! 줄은 띠 끝으로 내려가고, 같은 저장 프레임의 다음 문단은 그 줄 뒤에서 시작한다.
+//! 관계형·고정형 회귀 — 유효한 저장 표 띠·후속 줄 관계와 독립 Print 쪽수를 보존한다.
+//! 주석 갱신: 2026-11-06T23:58:40+09:00; 직전 파일 커밋: 2026-11-06T22:51:33+09:00,
+//! `636ff407ac0070ff01388de8d260946bb63c834f`(Git committer 시각, 측정 시각과 별개).
 //!
-//! 주석 갱신: 2026-11-06 (KST) — 측정값은 아래 표
+//! 입력: `samples/issue8679/stored_band_crossing_line.hwpx`(서울시 결재문서 36385506).
+//! 최초 커밋·다운로드 원본·현재 fixture 모두 저장 줄 4723, 후속 문단 5203이다.
+//! 이전 주석의 2200/4723은 이 입력의 저장값이 아니므로 교차 줄 정규화의 검출 근거로 쓰지 않는다.
+//! 제목 표 띠 끝에 놓인 줄과 그 높이·줄 간격 뒤의 후속 문단을 다시 밀지 않는 대조 검사다.
 //!
-//! - 입력: `samples/issue8679/stored_band_crossing_line.hwpx` — 서울시 결재문서 원본
-//!   (36385506, 결재 시스템 저장 HWPX, 2쪽) 그대로. 문단 1 의 저장 줄 0(vpos 440, 높이 1100)
-//!   뒤에 제목 표(1×1, 문단 기준 세로 오프셋 2001, 높이 2282, 띠 2441..4723)가 있고, 저장
-//!   줄 1(vpos 2200, 높이 300, 줄 간격 180)이 띠 위끝에 걸친다. 문단 2 는 4723 에 저장돼 있다.
-//! - 독립 기준 1: 같은 입력을 한/글 2022 로 다시 저장하면 줄 1 이 4723(띠 끝), 문단 2 가
-//!   5203(= 4723 + 300 + 180)이 된다.
-//! - 독립 기준 2: 같은 입력의 한/글 2022 Print PDF
-//!   `pdf/issue8679_stored_band_crossing_line-2020.pdf`(2쪽). 96dpi 래스터의 머리 표 잉크 띠가
-//!   146..191px 로, 수정 전 rhwp(139..185)보다 6.4px(480HU) 아래다.
-//! - 수정 전 rhwp(devel 170b886f16): 저장 줄 1 을 띠와 겹친 자리에 두고 문단 2 를 저장값
-//!   4723 에 둬서 머리 표 이하 본문 전체가 6.4px 위.
-//!
-//! 측정(2026-11-06, `scripts/visual_sweep.py --silhouette-only --dpi 96`, 판정값
-//! `silhouette_raw_match_percent` = 색상 경계 보정 전 2px 이웃 내용 실루엣):
-//!
-//! | 입력 | 전체 쪽수(한컴=rhwp) | 쪽 | Native | fresh WASM | 수정 전 Native |
-//! |---|---|---|---|---|---|
-//! | stored_band_crossing_line | 2 | 1 | 99.98 | 100.00 | 56.86 |
-//! | stored_band_crossing_line | 2 | 2 | 100.00 | 100.00 | 100.00 |
-//!
-//! 두 경로 전쪽 최저: Native 99.98, fresh WASM 100.00.
-//!
-//! 증거: `mydocs/pr/assets/issue_8679/{native,native_base,wasm}/*_silhouette.tsv`,
-//! `review/*.png`. 검사는 저장 줄과 띠의 원본 관계(전제), 제목 표 아래 끝과 다음 문단 표 위끝
-//! 사이가 걸친 줄의 높이·줄 간격과 다음 표 위 바깥여백의 합인 관계(관계형), 독립 PDF 전체
-//! 쪽수(고정형)다. 절대 px 좌표는 고정하지 않는다.
+//! 2026-11-06 측정: 제품 `9470fb026a8cd3b3d9594db55298b6f6c347bfda`,
+//! `scripts/visual_sweep.py --silhouette-only --dpi 96`, Print 프로필·compat 2022.
+//! raw는 색상 경계 보정 전 2px 이웃 실루엣이다. Native Skia/fresh WASM Canvas
+//! 전 2쪽의 1·2쪽 모두 각각 100.00%, 각 경로 전쪽 최저 100.00%, 미대응 내용 픽셀 0.
+//! 독립 PDF `pdf/issue8679_stored_band_crossing_line-2020.pdf`는 실제 Hwp 2022 Print 2쪽이다.
+//! 두 경로의 review/overlay에서 표 순서·간격과 2쪽 행·내용 보존을 직접 판독했다.
+//! 2026-11-07 R11 공통 보정 후에도 양쪽 1·2쪽 PNG 바이트가 동일함을 확인했다.
+//! 해당 제품 해시와 최소 글꼴 검사 결과는 아래 증거의 r11-provenance.json을 따른다.
+//! 근거: `mydocs/pr/assets/planet6897_20261106/stored-band-contract-analysis.md`,
+//! `stored-band-contract/{native,wasm}.tsv`와 같은 폴더의 PNG·provenance.
+//! 검사는 원본 저장 줄·표 간격·순서의 관계형과 독립 PDF 전체 쪽수의 고정형을 함께 사용한다.
+//! 절대 화면 px 좌표를 고정하지 않으며 시스템 글꼴 설치 여부에 의존하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -66,13 +56,13 @@ fn first_table(core: &DocumentCore, para: usize) -> (usize, &Table) {
 }
 
 #[test]
-fn stored_line_crossing_own_topbottom_band_moves_below_it() {
+fn valid_stored_band_and_successor_spacing_are_preserved() {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
     let core = DocumentCore::from_bytes(&bytes).unwrap_or_else(|e| panic!("parse: {e:?}"));
     assert_eq!(core.page_count(), 2, "한컴 Print PDF 2쪽");
 
-    // 전제: 원본 저장 줄 1 이 제목 표 띠의 위끝에 걸친다(띠는 줄 0 기준 세로 오프셋).
+    // 원본의 유효한 관계: 줄 1은 제목 표 띠 끝, 후속 문단은 그 줄의 전진 뒤다.
     let host = &core.document().sections[0].paragraphs[1];
     let (title_ci, title) = first_table(&core, 1);
     assert!(
@@ -91,16 +81,18 @@ fn stored_line_crossing_own_topbottom_band_moves_below_it() {
         i64::from(line0.vertical_pos + line0.line_height) <= band_top,
         "줄 0 은 띠 위에서 끝난다"
     );
-    assert!(
-        i64::from(line1.vertical_pos) < band_top
-            && i64::from(line1.vertical_pos + line1.line_height) > band_top,
-        "줄 1 이 띠 위끝 {band_top} 에 걸친다"
+    assert_eq!(
+        i64::from(line1.vertical_pos),
+        band_bottom,
+        "이미 유효한 저장 줄 1은 제목 표 띠 끝에 있다"
     );
     let next = &core.document().sections[0].paragraphs[2];
     assert_eq!(
         i64::from(next.line_segs[0].vertical_pos),
-        band_bottom,
-        "원본은 다음 문단을 띠 끝에 저장한다"
+        i64::from(line1.vertical_pos)
+            + i64::from(line1.line_height)
+            + i64::from(line1.line_spacing),
+        "원본의 다음 문단은 저장 줄 1의 높이·줄 간격 뒤에 있다"
     );
 
     let tree = core
@@ -110,14 +102,14 @@ fn stored_line_crossing_own_topbottom_band_moves_below_it() {
     let (next_ci, next_table) = first_table(&core, 2);
     let next_box = find_table(&tree.root, 2, next_ci).expect("다음 문단 표를 그린다");
 
-    // 걸친 줄은 띠 끝에서 시작하고, 다음 문단은 그 줄의 높이와 줄 간격 뒤에서 시작한다.
+    // 저장된 줄과 후속 문단의 전진 관계를 실제 두 표의 간격에서도 보존한다.
     let expected_gap = px(i64::from(title.outer_margin_bottom))
         + px(i64::from(line1.line_height) + i64::from(line1.line_spacing))
         + px(i64::from(next_table.outer_margin_top));
     let gap = next_box.y - (title_box.y + title_box.height);
     assert!(
         (gap - expected_gap).abs() <= 0.5,
-        "제목 표 아래 끝→다음 표 위끝 {gap:.2} = 아래 바깥여백 + 걸친 줄 높이·줄 간격 + 위 바깥여백 {expected_gap:.2}"
+        "제목 표 아래 끝→다음 표 위끝 {gap:.2} = 아래 바깥여백 + 저장 줄 높이·줄 간격 + 위 바깥여백 {expected_gap:.2}"
     );
     assert!(
         next_box.y > title_box.y + title_box.height,
