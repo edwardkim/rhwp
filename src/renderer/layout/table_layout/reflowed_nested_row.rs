@@ -12,6 +12,20 @@ pub(super) struct NestedRowFlowEdges {
 }
 
 impl LayoutEngine {
+    /// 실제 재귀 글줄 컷 또는 저장 글줄이 없는 호스트의 재조판 행만 재귀 프레임을 연다.
+    /// 저장 호스트의 원자 행은 기존 행 조각 경로가 첫 물리 프레임과 문단 범위를 소유한다.
+    pub(super) fn nested_row_run_uses_recursive_frame(
+        host: &crate::model::paragraph::Paragraph,
+        units: &[CellUnit],
+    ) -> bool {
+        units
+            .iter()
+            .any(|unit| unit.nested_table_fragment.is_some())
+            || (crate::renderer::para_has_no_stored_line_segs(host)
+                && !units.is_empty()
+                && units.iter().all(|unit| unit.nested_row.is_some()))
+    }
+
     /// 원자 행 사이의 이어받기도 새 자식 표의 바깥 위 프레임을 연다.
     /// 부모 예약과 실제 자식 원점에서 같은 원본 여백을 한 번 소비한다.
     pub(in crate::renderer::layout) fn nested_row_continuation_outer_top(

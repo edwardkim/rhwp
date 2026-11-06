@@ -26646,8 +26646,14 @@ impl LayoutEngine {
             .iter()
             .rposition(|unit| unit.para_idx == para_idx && unit.nested_row.is_some())?
             + 1;
-        // 원자 행도 nested_row에 정확한 자식 커서를 갖는다. 내부 글줄 컷의
-        // 존재 여부로 같은 행 커서를 스칼라 배치 경로로 되돌리지 않는다.
+        // 저장 호스트의 원자 행은 기존 첫 프레임/문단 범위를 보존한다.
+        // 저장 줄 없는 재조판 호스트의 행과 실제 내부 컷은 같은 재귀 원장을 쓴다.
+        if !Self::nested_row_run_uses_recursive_frame(
+            cell.paragraphs.get(para_idx)?,
+            &units[run_start..run_end],
+        ) {
+            return None;
+        }
         let mut visible_height = 0.0;
         let mut flow_height = 0.0;
         for unit in units.iter().take(hi).skip(lo) {
@@ -26981,12 +26987,8 @@ impl LayoutEngine {
     ) -> Option<f64> {
         let pi = units[run_start].para_idx;
         let para = cell.paragraphs.get(pi)?;
-        let has_row_cuts = units[run_start..run_end]
-            .iter()
-            .any(|unit| unit.nested_table_fragment.is_some())
-            || units[run_start..run_end]
-                .iter()
-                .all(|unit| unit.nested_row.is_some());
+        let has_row_cuts =
+            Self::nested_row_run_uses_recursive_frame(para, &units[run_start..run_end]);
         let child = para.controls.iter().find_map(|control| match control {
             Control::Table(child) => Some(child.as_ref()),
             _ => None,
