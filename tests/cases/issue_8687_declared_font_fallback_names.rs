@@ -171,3 +171,55 @@ fn only_invalid_lists_leave_the_explicit_environment_unchanged() {
     assert_eq!(core.resolved_font_environment(), Some(&environment));
     assert_eq!(core.export_hwp_native().unwrap(), original);
 }
+
+fn hangul_font_chain(core: &DocumentCore) -> Vec<serde_json::Value> {
+    let trace: serde_json::Value = serde_json::from_str(
+        &core
+            .get_font_decision_trace_native(0, r#"{"maxCharacters":16}"#)
+            .unwrap(),
+    )
+    .unwrap();
+    trace["records"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|record| record["source"]["character"] == "가")
+        .unwrap()["layoutName"]["cssFamilyChain"]
+        .as_array()
+        .unwrap()
+        .clone()
+}
+
+#[test]
+fn source_font_record_is_not_split_ahead_of_its_declared_substitute() {
+    let source = r"산돌고딕 L\,한컴돋움";
+    let mut core = core_with_fonts(source, "함초롬돋움", true);
+    core.insert_text_native(0, 0, 0, "가").unwrap();
+    assert_eq!(
+        hangul_font_chain(&core),
+        [serde_json::json!("함초롬돋움")],
+        "원본 이름 내부의 쉼표로 다른 face를 선언된 대체보다 먼저 선택하지 않는다"
+    );
+    assert_eq!(core.document().doc_info.font_faces[0][0].name, source);
+    assert_eq!(
+        core.document().doc_info.font_faces[0][0]
+            .subst_font
+            .as_ref()
+            .unwrap()
+            .face,
+        "함초롬돋움"
+    );
+}
+
+#[test]
+fn single_source_face_keeps_precedence_over_its_declared_substitute() {
+    let mut core = core_with_fonts(VALID_SOURCE, "함초롬돋움", true);
+    core.insert_text_native(0, 0, 0, "가").unwrap();
+    assert_eq!(
+        hangul_font_chain(&core),
+        [
+            serde_json::json!(VALID_SOURCE),
+            serde_json::json!("함초롬돋움")
+        ]
+    );
+}

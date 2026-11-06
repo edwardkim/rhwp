@@ -88,3 +88,44 @@ BOX 높이·기준선 차이가 보이며 이 수정이 만든 차이로 분류�
 완료된 fresh WASM이나 기준 증거로 사용하지 않는다. 이름 검사를 공통 생산자에
 먼저 적용했고, 수정 후 집중 회귀와 같은 Native 빌드의 실제 PNG 확인을 우선한다.
 추가 기준 빌드를 위해 구현을 지연하지 않는다.
+
+## 실제 사용 중인 목록 이름의 추가 보정
+
+첫 수정 `86aaa4f4ffbc1d9cff84efd187f3130424c0844e`에서 최초 4개 API 검사는
+모두 통과했고 원래 재현 입력의 screen PNG도 1쪽 생성됐다.
+그 입력은 본문이 정상 5번 글꼴을 사용한다. 다른 글자 모양에 있는 목록 이름도
+환경 관측 오류를 일으킨다는 점은 확인하지만 실제 본문 폴백의 증거는 아니다.
+
+본문의 5번 글꼴도 `산돌고딕 L\,한컴돋움`과 별도 TTF `함초롬돋움`으로 바꾼
+`font_list_name_used_fallback.hwpx`를 추가로 진단했다. 같은 한컴 2024 Print는
+HCRDotum을 사용했지만 첫 수정 Native raw는 `88.76426%`로 미달이다.
+원본의 단일 글꼴 레코드가 내부 쉼표 체인으로 다시 해석돼 `한컴돋움`이
+명시된 `함초롬돋움`보다 먼저 paint 후보가 되는 경로를 확인했다.
+
+새 API 검사로 첫 수정의 실제 compiled library를 사용해 RED를 확인했다.
+전체 기준 제품을 다시 빌드하지 않고, 집중 검사만 rustc로 링크했다.
+실제 왼쪽은 `["산돌고딕 L\\,한컴돋움", "함초롬돋움"]`, 기대는
+`["함초롬돋움"]`이며 원본 레코드 보존과 정상 단일 face 우선 대조군도 검사한다.
+
+공통 `try_lookup_font_name_decision`에서 미해소된 쉼표 포함 TTF 원본과 같은
+레코드의 유효한 비내장 단일 TTF 대체를 해소한다. 측정과 paint가 그 하나의
+`normalized_face/css_family_chain` 결과를 소비한다. 정상 단일 face·이미 해소된
+별칭·HFT·내장 프로그램은 기존 선택을 유지한다.
+새 규칙은 짧은 `style_resolver/document_font_chain.rs`에 두고 기존 대형 진입점에는
+모듈과 호출만 연결한다. 원본 FontFace·LineSeg·수치별 보정은 추가하지 않는다.
+
+`FontFace/substFont → try_lookup_font_name_decision → char style의 언어별 face·메트릭 →
+TextStyle.font_family → Native declared_family_candidates / Canvas·SVG 표시 체인`
+순서로 공통 결과의 실제 소비를 확인한다. 불완전한 첫 수정의 WASM 빌드는 중단했고
+완료 증거로 재사용하지 않는다.
+
+공통 해석부 보정 후 API 검사 6건이 모두 통과했다. Native 96 DPI Print의
+원래 재현·실제 본문 폴백 입력은 각각 raw `91.21255%`이며 두 PNG의 SHA-256이
+`b53e6849a4de6a5bc729414cfdd517c4a6f042f3f85cc8701e11b19ba8c867ea`로 같다.
+정상 대조군은 기준과 같은 `91.10204%`다. 세 입력 모두 원본·PDF가 각각 1쪽이다.
+이는 부분 체인 `한컴돋움` 대신 선언된 `함초롬돋움`과 같은 출력이 나온 실행 근거다.
+
+작업지시자가 완성 후 PR 준비를 요청했다. 위 실제 수정과 집중 확인에 이어,
+`local_validation.md` 4.3의 전체 회귀·Rust lint 묶음·Native Skia 3종·최적화 fresh WASM,
+전체 페이지 시각 증적·독립 Print 확대 판독·편람 Native gate를 완료한 뒤 준비 완료로 보고한다.
+원격 push·PR 생성은 아직 승인된 범위에 포함하지 않는다.
