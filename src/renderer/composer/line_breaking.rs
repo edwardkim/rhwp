@@ -314,7 +314,11 @@ fn can_break_after_text_token(ch: char, korean_break_unit: u8) -> bool {
     if is_hangul(ch) || ch.is_ascii_digit() {
         korean_break_unit == 1
     } else {
-        is_cjk_ideograph(ch) || matches!(ch, '\u{2024}' | '\u{2027}')
+        // CJK 호환 단위도 한자로 된 낱글자처럼 줄 끝 후보를 소유한다.
+        // Unicode Line_Break의 3300..33FF는 모두 ID다. 독립 한컴 Print의
+        // `0.5㎥|/kg`에서 단위 뒤 후보를 잃고 앞 공백까지 되감지 않는다.
+        // 원문 슬롯·전진폭과 후행 문자의 기존 금칙 판정은 바꾸지 않는다.
+        is_cjk_ideograph(ch) || matches!(ch, '\u{3300}'..='\u{33FF}' | '\u{2024}' | '\u{2027}')
     }
 }
 
