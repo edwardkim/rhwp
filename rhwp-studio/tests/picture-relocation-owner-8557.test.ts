@@ -5,16 +5,18 @@ import assert from 'node:assert/strict';
 import { createServer } from 'vite';
 import { fileURLToPath } from 'node:url';
 
-async function withHandler(run: (finish: Function) => void, staleOwner = false) {
+async function withHandler(run: (finish: Function) => void, mutant: 'owner' | 'preview' | null = null) {
   let substitutions = 0;
   const vite = await createServer({
     root: fileURLToPath(new URL('..', import.meta.url)),
     appType: 'custom', logLevel: 'silent', server: { middlewareMode: true },
-    plugins: staleOwner ? [{
+    plugins: mutant ? [{
       name: 'negative-stale-picture-owner', enforce: 'pre',
       transform(code: string, id: string) {
         if (id.includes('/input-handler-picture.ts')) {
-          const changed = code.replace(/cellPath\s*:\s*r\.cellPath/g, 'cellPath: hit.cellPath');
+          const changed = mutant === 'owner'
+            ? code.replace(/cellPath\s*:\s*r\.cellPath/g, 'cellPath: hit.cellPath')
+            : code.replace('x: state.dropX - state.grabOffsetX', 'x: find(ref, state.pageIndex).x');
           if (changed !== code) substitutions++;
           return changed;
         }
@@ -23,9 +25,9 @@ async function withHandler(run: (finish: Function) => void, staleOwner = false) 
   });
   try {
     const { finishPictureMoveDrag } = await vite.ssrLoadModule(
-      '/src/engine/input-handler-picture.ts' + (staleOwner ? '?stale-owner-negative' : ''),
+      '/src/engine/input-handler-picture.ts' + (mutant ? '?negative-' + mutant : ''),
     );
-    if (staleOwner) assert.ok(substitutions > 0, '음성 대조의 잘못된 소비 경로가 실제 주입됨');
+    if (mutant) assert.ok(substitutions > 0, '음성 대조의 잘못된 소비 경로가 실제 주입됨');
     run(finishPictureMoveDrag);
   } finally { await vite.close(); }
 }
@@ -48,17 +50,22 @@ function exercise(finish: Function, nested = false) {
     hitTest() { return { sectionIndex: 0, parentParaIndex: 4, charOffset: 0, cellPath: stale }; },
     getPictureProperties() { return props; },
     setPictureProperties() {},
-    relocateFloatingPicture() { return { ok: true, sec: 0, paraIdx: 4, controlIdx: 0, cellPath: actual }; },
+    relocateFloatingPicture(...args: unknown[]) {
+      assert.deepEqual(args.slice(-2), [0, 0], '새 컨테이너의 원점을 기준으로 위치를 구한다');
+      props.horzOffset = 0; props.vertOffset = 0;
+      return { ok: true, sec: 0, paraIdx: 4, controlIdx: 0, cellPath: actual };
+    },
     getCellPicturePropertiesByPath(_sec: number, _para: number, path: unknown) {
       assert.deepEqual(path, actual, '속성 조회도 실제 소유 경로'); return props;
     },
-    setCellPicturePropertiesByPath(_sec: number, _para: number, path: unknown) { cellWrites.push(path); },
+    setCellPicturePropertiesByPath(_sec: number, _para: number, path: unknown, _ctrl: number, props: unknown) { cellWrites.push({ path, props }); },
   };
   const context = {
     wasm, dragRafId: 0, isPictureMoveDragging: true,
     pictureMoveState: {
       ref: { sec: 0, ppi: 4, ci: 0, type: 'image' },
       pageIndex: 0, dropPage: 1, dropX: 200, dropY: 200,
+      grabOffsetX: 10, grabOffsetY: 15,
       totalDeltaH: 100, totalDeltaV: 200,
       origHorzOffset: 10, origVertOffset: 20,
     },
@@ -75,7 +82,7 @@ function exercise(finish: Function, nested = false) {
   };
   finish.call(context);
   assert.deepEqual(selected, actual, '선택은 재번호 뒤 실제 도착 소유 경로');
-  assert.deepEqual(cellWrites, [actual], '위치 보정도 같은 소유 경로');
+  assert.deepEqual(cellWrites, [{ path: actual, props: { horzOffset: -2250, vertOffset: -4125 } }], '위치 보정은 실제 소유 경로와 처음 잡은 점을 소비한다');
   assert.deepEqual(snapshots, ['relocatePicture']);
   assert.equal(context.pictureMoveState, null);
   assert.equal(context.isPictureMoveDragging, false);
@@ -86,5 +93,9 @@ test('다른 쪽 그림 이동은 재번호된 칸 경로로 위치와 선택을
 });
 
 test('이전 hit-test 경로를 재사용하는 최소 잘못된 구현을 실제 동작 검사가 검출한다', async () => {
-  await withHandler(finish => assert.throws(() => exercise(finish), /선택은 재번호 뒤/), true);
+  await withHandler(finish => assert.throws(() => exercise(finish), /선택은 재번호 뒤/), 'owner');
+});
+
+test('칸 제한을 받은 미리보기 좌표를 도착 위치로 쓰는 잘못된 구현을 검출한다', async () => {
+  await withHandler(finish => assert.throws(() => exercise(finish), /위치 보정은 실제 소유 경로/), 'preview');
 });

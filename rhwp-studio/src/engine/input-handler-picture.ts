@@ -1163,14 +1163,11 @@ function relocatePictureToDropPage(this: any, state: any): boolean {
   if (!sc) return false;
   const find = (r: PictureObjectRef, page: number) => this.wasm.getPageControlLayout(page).controls
     .find((ctrl: any) => matchesControlRef(ctrl, r, 'image'));
-  const lay = find(ref, state.pageIndex);
-  if (!lay) return false;
-  const zoom = this.viewportManager.getZoom();
-  const vs = this.virtualScroll;
-  // 끌어 놓은 그림의 왼쪽 위를 놓은 쪽의 좌표로 바꾼다.
+  // 셀의 위치 제한이나 본문 회피로 미리보기 배치가 포인터를 따라오지 않을 수 있다.
+  // 처음 잡은 점을 보존해 놓은 쪽의 좌표를 결정한다. 현재 그림의 배치로 추측하지 않는다.
   const target = {
-    x: lay.x + (vs.getPageLeftResolved(state.pageIndex, sc.clientWidth) - vs.getPageLeftResolved(state.dropPage, sc.clientWidth)) / zoom,
-    y: lay.y + (vs.getPageOffset(state.pageIndex) - vs.getPageOffset(state.dropPage)) / zoom,
+    x: state.dropX - state.grabOffsetX,
+    y: state.dropY - state.grabOffsetY,
   };
   const hit = this.wasm.hitTest(state.dropPage, state.dropX, state.dropY);
   if (!hit || hit.sectionIndex === undefined) return false;
@@ -1183,9 +1180,10 @@ function relocatePictureToDropPage(this: any, state: any): boolean {
   let moved: PictureObjectRef | null = null;
   try {
     this.executeOperation({ kind: 'snapshot', operationType: 'relocatePicture', operation: (wasm: any) => {
+      // 원래 컨테이너의 오프셋을 넘기지 않고 도착 컨테이너 원점의 배치부터 구한다.
       const r = wasm.relocateFloatingPicture(ref.sec, ref.ppi, pathJson(ref.cellPath), ref.ci,
         hit.sectionIndex, inCell ? hit.parentParaIndex : hit.paragraphIndex, hit.charOffset,
-        inCell ? pathJson(hit.cellPath) : '[]', state.origHorzOffset, state.origVertOffset);
+        inCell ? pathJson(hit.cellPath) : '[]', 0, 0);
       // 원본 그림을 빼면 hit-test 당시의 표 번호가 바뀔 수 있다.
       // Native가 반환한 실제 소유 경로를 위치 보정과 선택에서 함께 쓴다.
       moved = { sec: r.sec, ppi: r.paraIdx, ci: r.controlIdx, type: 'image', ...(r.cellPath.length ? { cellPath: r.cellPath } : {}) };
