@@ -832,3 +832,102 @@ fn native_preparation_reports_bound_count_and_unicode_identifiers_on_public_repl
         uncached.diagnostics.native_glyph_rejections
     );
 }
+
+#[test]
+fn native_picture_diagnostics_do_not_retain_a_previous_siblings_report_cap() {
+    use rhwp::renderer::layer_renderer::RasterRenderOptions;
+
+    let mut first = glyph_tree(TTF, 0, 'A');
+    first.resources.font_resources_mut().blobs[0]
+        .digest
+        .as_mut()
+        .unwrap()
+        .value = "wrong".into();
+    let mut second = first.root.clone();
+    let LayerNodeKind::Leaf { ops: second_ops } = &mut second.kind else {
+        unreachable!()
+    };
+    let PaintOp::TextRun {
+        source: Some(source),
+        ..
+    } = &mut second_ops[0]
+    else {
+        unreachable!()
+    };
+    source.id = TextSourceId(1);
+    let PaintOp::GlyphRun { run, .. } = &mut second_ops[1] else {
+        unreachable!()
+    };
+    run.source.id = TextSourceId(1);
+    run.variant.equivalence_group = "text-1".into();
+    run.variant.anchor_op_id = Some("text-1".into());
+    let candidate = ops_mut(&mut first).pop().unwrap();
+    for index in 0..256 {
+        let mut candidate = candidate.clone();
+        let PaintOp::GlyphRun { run, .. } = &mut candidate else {
+            unreachable!()
+        };
+        run.variant.variant_id = format!("prefix-{index}");
+        ops_mut(&mut first).push(candidate);
+    }
+    let bounds = first.root.bounds;
+    let mut tree = PageLayerTree::new(
+        first.page_width,
+        first.page_height,
+        LayerNode::group(
+            bounds,
+            None,
+            vec![
+                first.root,
+                LayerNode::group(
+                    bounds,
+                    None,
+                    vec![second],
+                    CacheHint::StaticSubtree,
+                    GroupKind::Generic,
+                ),
+            ],
+            CacheHint::None,
+            GroupKind::Generic,
+        ),
+    );
+    tree.resources = first.resources;
+    let renderer = SkiaLayerRenderer::new();
+    let initial = renderer
+        .render_raster_with_options(&tree, RasterRenderOptions::default())
+        .unwrap();
+    assert_eq!(initial.diagnostics.native_glyph_rejections.len(), 256);
+    assert_eq!(initial.diagnostics.native_glyph_rejections_dropped, 1);
+
+    // Keep the same fallback/source count and the identical cached group, but
+    // remove the earlier sibling's rejected alternatives. Its diagnostics must
+    // not remain charged against the unchanged group's next replay.
+    let LayerNodeKind::Group { children, .. } = &mut tree.root.kind else {
+        unreachable!()
+    };
+    let LayerNodeKind::Leaf { ops } = &mut children[0].kind else {
+        unreachable!()
+    };
+    ops.retain(|op| matches!(op, PaintOp::TextRun { .. }));
+    let expected = SkiaLayerRenderer::new()
+        .with_cache_limits(0, 0)
+        .render_raster_with_options(&tree, RasterRenderOptions::default())
+        .unwrap();
+    assert_eq!(expected.diagnostics.native_glyph_rejections.len(), 1);
+    assert_eq!(expected.diagnostics.native_glyph_rejections_dropped, 0);
+    for _ in 0..2 {
+        let actual = renderer
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .unwrap();
+        assert_eq!(
+            actual.diagnostics.native_glyph_rejections,
+            expected.diagnostics.native_glyph_rejections
+        );
+        assert_eq!(actual.diagnostics.native_glyph_rejections_dropped, 0);
+        assert_same_pixels(
+            image::load_from_memory(&actual.bytes).unwrap().to_rgba8(),
+            image::load_from_memory(&expected.bytes).unwrap().to_rgba8(),
+        );
+    }
+    assert!(renderer.cache_stats().pictures.hits > 0);
+}

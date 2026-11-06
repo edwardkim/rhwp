@@ -1394,24 +1394,33 @@ impl SkiaLayerRenderer {
                         )
                     };
                     canvas.draw_picture(&picture, Some(&inverse_matrix), None);
-                    let bytes = picture
-                        .approximate_bytes_used()
-                        .saturating_add(cache_context.retained_resource_estimate)
-                        .saturating_add(inline_resource_estimate(node, fallback_raster_scale))
-                        .saturating_add(debug_size(&selection_updates).unwrap_or(usize::MAX))
-                        .saturating_add(debug_size(&native_glyph_rejections).unwrap_or(usize::MAX));
-                    self.picture_cache.borrow_mut().insert(
-                        key,
-                        CachedPicture {
-                            picture,
-                            inverse_matrix,
-                            next_text_source_id: *next_text_source_id,
-                            selection_updates,
-                            native_glyph_rejections,
-                            native_glyph_rejections_dropped,
-                        },
-                        bytes,
-                    );
+                    // A saturated page-level report can hide this subtree's
+                    // first rejections if an earlier sibling already used some
+                    // of the allowance. Such a snapshot depends on the preceding
+                    // siblings, which are deliberately absent from this key.
+                    // Replay it again rather than retain incomplete diagnostics.
+                    if rejection_start == 0 || native_glyph_rejections_dropped == 0 {
+                        let bytes = picture
+                            .approximate_bytes_used()
+                            .saturating_add(cache_context.retained_resource_estimate)
+                            .saturating_add(inline_resource_estimate(node, fallback_raster_scale))
+                            .saturating_add(debug_size(&selection_updates).unwrap_or(usize::MAX))
+                            .saturating_add(
+                                debug_size(&native_glyph_rejections).unwrap_or(usize::MAX),
+                            );
+                        self.picture_cache.borrow_mut().insert(
+                            key,
+                            CachedPicture {
+                                picture,
+                                inverse_matrix,
+                                next_text_source_id: *next_text_source_id,
+                                selection_updates,
+                                native_glyph_rejections,
+                                native_glyph_rejections_dropped,
+                            },
+                            bytes,
+                        );
+                    }
                 } else {
                     render_children(canvas, next_text_source_id)?;
                 }

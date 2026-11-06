@@ -23,6 +23,9 @@ last_verified: 2026-11-06
 
 정적 picture에는 같은 bounded report와 dropped count를 함께 저장하고 retained-byte
 추정에 포함한다. picture hit, glyph cache hit, cache 비활성 경로의 선택·거절 원인이 일치한다.
+앞 sibling이 이미 report 상한을 사용해 subtree의 보고서가 잘렸다면 해당 picture를 보존하지
+않는다. 그러한 불완전한 진단은 캐시 키 밖의 앞 sibling 상태에 의존하므로, 다음 재생에서 앞
+sibling의 대안이 바뀌었을 때 현재 subtree의 보고서를 숨기거나 잘못 누적할 수 있기 때문이다.
 기존 자동 수집 Native suite에 실제 fallback pixels와 cold/warm/cache-off proof 회귀를 추가했고,
 기존 renderer unit regression은 공개된 준비 API로 entry/byte budget을 확인한다.
 Unicode 식별자·report 상한은 public Native renderer의 cold/warm/cache-off case에서 확인한다.
