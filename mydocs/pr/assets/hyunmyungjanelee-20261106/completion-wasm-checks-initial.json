@@ -1,0 +1,27 @@
+[
+  {
+    "name": "main",
+    "exit": 0,
+    "seconds": 80.03
+  },
+  {
+    "name": "preservation",
+    "exit": 0,
+    "seconds": 220.05
+  },
+  {
+    "name": "svg",
+    "exit": 0,
+    "seconds": 40.03
+  },
+  {
+    "name": "api",
+    "exit": 0,
+    "seconds": 0.71
+  },
+  {
+    "name": "roundtrip",
+    "exit": 2,
+    "seconds": 0.04
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "input": "samples/issue8593/picture_soft_edge.hwp",
+  "input_sha256": "fb71457b094a0b534fe8ea2092ecc3a642bc1e5ea0ffe99c2915e426b6c629f4",
+  "job_id": "8706c364-540d-4cc8-bc52-60b4b6a3aa62",
+  "engine": "2020",
+  "hancom_version": "11.0.0.9136",
+  "pdf_print_method": 0,
+  "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+  "pdf_sha256": "dd26aebb46d3bfb52e03828dc8a56a94a9047ade8322b3de8aeb1bf053782b45",
+  "bytes": 275960
+}

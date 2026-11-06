@@ -1,0 +1,2446 @@
+[
+  {
+    "key": "textbox_floating_table_offset__hwp",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/textbox_floating_table_offset__hwp/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/textbox_floating_table_offset__hwp/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "1d2e8b404d5f68d83fb1b710d6511f472cd99e000ca6d03b6af4b1659d4717d0",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/textbox_floating_table_offset__hwp/pdf_png/pdf-001.png",
+        "pdf_sha256": "2a2a351973f342e6db52df3a2b248b712e078f8c05f4962174e40dc2d26aae5e"
+      }
+    ],
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 4198,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "provenance": {
+      "hwp": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/textbox_floating_table_offset.hwp",
+        "sha256": "462863df1dc78b051b1caf077167775a76515dc78f76fa59c76f5d4c5026eedd"
+      },
+      "pdf": {
+        "path": "pdf/issue8513/textbox_floating_table_offset-2020.pdf",
+        "sha256": "92157894ff185371aad34d06b48f279a0eeee8d4ec903aa80941294dbbe9c923"
+      },
+      "git_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2022",
+      "font_environment": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/font-environment.json",
+        "sha256": "cd11ec9ab8137534f046d1c0219daaa6d1b5b23d623bcce075f54338f640a082"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/arial.ttf",
+            "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/gulim.ttc",
+            "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchob-r.ttf",
+            "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchod-r.ttf",
+            "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+          }
+        ]
+      }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/textbox_floating_table_offset__hwp/silhouette-checkpoint.json"
+  },
+  {
+    "key": "textbox_floating_table_offset__hwpx",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/textbox_floating_table_offset__hwpx/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/textbox_floating_table_offset__hwpx/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "1d2e8b404d5f68d83fb1b710d6511f472cd99e000ca6d03b6af4b1659d4717d0",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/textbox_floating_table_offset__hwpx/pdf_png/pdf-001.png",
+        "pdf_sha256": "2a2a351973f342e6db52df3a2b248b712e078f8c05f4962174e40dc2d26aae5e"
+      }
+    ],
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 4198,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "provenance": {
+      "hwp": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/textbox_floating_table_offset.hwpx",
+        "sha256": "145d5712602a99e922705523eb2144a68c0969325cf2a020deed57638c1120f9"
+      },
+      "pdf": {
+        "path": "pdf/issue8513/textbox_floating_table_offset-2020.pdf",
+        "sha256": "92157894ff185371aad34d06b48f279a0eeee8d4ec903aa80941294dbbe9c923"
+      },
+      "git_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2022",
+      "font_environment": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/font-environment.json",
+        "sha256": "cd11ec9ab8137534f046d1c0219daaa6d1b5b23d623bcce075f54338f640a082"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/arial.ttf",
+            "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/gulim.ttc",
+            "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchob-r.ttf",
+            "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchod-r.ttf",
+            "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+          }
+        ]
+      }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/textbox_floating_table_offset__hwpx/silhouette-checkpoint.json"
+  },
+  {
+    "key": "partial_table_control_only_para__hwp",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1,
+      2
+    ],
+    "completed_pages": [
+      1,
+      2
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_control_only_para__hwp/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_control_only_para__hwp/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "034f5432bcdf713e589f877941e738fba92fded5619f1d31b733de203a761396",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_control_only_para__hwp/pdf_png/pdf-001.png",
+        "pdf_sha256": "29808ebe269a0687d110321fc621db8ed121cf1f8a58ba0a5e347d9374b59a13"
+      },
+      {
+        "page": 2,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_control_only_para__hwp/rhwp_png/rhwp_002.png",
+        "rhwp_sha256": "7751121fb3c2d21857edc74983e78971179a312eea139c5b542f4a0720a36008",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_control_only_para__hwp/pdf_png/pdf-002.png",
+        "pdf_sha256": "fa031a1f0e380d2489c4e2d4bb124e116a6334609fe8b6c52368e6b08f4ccd99"
+      }
+    ],
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 28008,
+        "tolerant_content_match_percent": 100.0
+      },
+      {
+        "page": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 12779,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "provenance": {
+      "hwp": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/partial_table_control_only_para.hwp",
+        "sha256": "cfbc049a13db8a8df7e529486fe58dce985339f22802d30165ffa8ad2b857508"
+      },
+      "pdf": {
+        "path": "pdf/issue8579/partial_table_control_only_para-2020.pdf",
+        "sha256": "3fe4a9c5496864ffafc76d97ae1f99027b8c8d91275090d082c79447996866ab"
+      },
+      "git_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2022",
+      "font_environment": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/font-environment.json",
+        "sha256": "cd11ec9ab8137534f046d1c0219daaa6d1b5b23d623bcce075f54338f640a082"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/arial.ttf",
+            "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/gulim.ttc",
+            "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchob-r.ttf",
+            "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchod-r.ttf",
+            "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+          }
+        ]
+      }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_control_only_para__hwp/silhouette-checkpoint.json"
+  },
+  {
+    "key": "partial_table_control_only_para__hwpx",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1,
+      2
+    ],
+    "completed_pages": [
+      1,
+      2
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_control_only_para__hwpx/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_control_only_para__hwpx/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "034f5432bcdf713e589f877941e738fba92fded5619f1d31b733de203a761396",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_control_only_para__hwpx/pdf_png/pdf-001.png",
+        "pdf_sha256": "29808ebe269a0687d110321fc621db8ed121cf1f8a58ba0a5e347d9374b59a13"
+      },
+      {
+        "page": 2,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_control_only_para__hwpx/rhwp_png/rhwp_002.png",
+        "rhwp_sha256": "7751121fb3c2d21857edc74983e78971179a312eea139c5b542f4a0720a36008",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_control_only_para__hwpx/pdf_png/pdf-002.png",
+        "pdf_sha256": "fa031a1f0e380d2489c4e2d4bb124e116a6334609fe8b6c52368e6b08f4ccd99"
+      }
+    ],
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 28008,
+        "tolerant_content_match_percent": 100.0
+      },
+      {
+        "page": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 12779,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "provenance": {
+      "hwp": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/partial_table_control_only_para.hwpx",
+        "sha256": "28be550d6e9af47169a3e794cbd01b7b80c8d16ee3a58a605a4e300e9bad0a7a"
+      },
+      "pdf": {
+        "path": "pdf/issue8579/partial_table_control_only_para-2020.pdf",
+        "sha256": "3fe4a9c5496864ffafc76d97ae1f99027b8c8d91275090d082c79447996866ab"
+      },
+      "git_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2022",
+      "font_environment": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/font-environment.json",
+        "sha256": "cd11ec9ab8137534f046d1c0219daaa6d1b5b23d623bcce075f54338f640a082"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/arial.ttf",
+            "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/gulim.ttc",
+            "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchob-r.ttf",
+            "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchod-r.ttf",
+            "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+          }
+        ]
+      }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_control_only_para__hwpx/silhouette-checkpoint.json"
+  },
+  {
+    "key": "bindata_link_shift__hwp",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/bindata_link_shift__hwp/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/bindata_link_shift__hwp/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "08c789213059496d41f32a8d6683e9842eee42497f6b8ced898f84caca0736f7",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/bindata_link_shift__hwp/pdf_png/pdf-001.png",
+        "pdf_sha256": "06cc06844b97cef453d163fea6b0c804d340d15692d392df92ac260e1de23ae1"
+      }
+    ],
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.98529,
+        "silhouette_raw_unmatched_pixels": 7,
+        "silhouette_boundary_reconciled_pixels": 7,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 47571,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "provenance": {
+      "hwp": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/bindata_link_shift.hwp",
+        "sha256": "8ff620a1304a7c2331cb93ef9a964666bf680b7ba1ec0584d398ffedead0a5d2"
+      },
+      "pdf": {
+        "path": "pdf/issue8594/bindata_link_shift-2020.pdf",
+        "sha256": "663ab919c9440b6397d16931cf69b29c32c34e740aebd932634886e440a23ca3"
+      },
+      "git_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2022",
+      "font_environment": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/font-environment.json",
+        "sha256": "cd11ec9ab8137534f046d1c0219daaa6d1b5b23d623bcce075f54338f640a082"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/arial.ttf",
+            "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/gulim.ttc",
+            "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchob-r.ttf",
+            "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchod-r.ttf",
+            "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+          }
+        ]
+      }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/bindata_link_shift__hwp/silhouette-checkpoint.json"
+  },
+  {
+    "key": "bindata_link_shift__hwpx",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/bindata_link_shift__hwpx/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/bindata_link_shift__hwpx/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "08c789213059496d41f32a8d6683e9842eee42497f6b8ced898f84caca0736f7",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/bindata_link_shift__hwpx/pdf_png/pdf-001.png",
+        "pdf_sha256": "06cc06844b97cef453d163fea6b0c804d340d15692d392df92ac260e1de23ae1"
+      }
+    ],
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.98529,
+        "silhouette_raw_unmatched_pixels": 7,
+        "silhouette_boundary_reconciled_pixels": 7,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 47571,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "provenance": {
+      "hwp": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/bindata_link_shift.hwpx",
+        "sha256": "7141a2b01a079f9b5585ec7f3ddceb8987e0c7d0e8c0f2f867a84ccdb3689769"
+      },
+      "pdf": {
+        "path": "pdf/issue8594/bindata_link_shift-2020.pdf",
+        "sha256": "663ab919c9440b6397d16931cf69b29c32c34e740aebd932634886e440a23ca3"
+      },
+      "git_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2022",
+      "font_environment": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/font-environment.json",
+        "sha256": "cd11ec9ab8137534f046d1c0219daaa6d1b5b23d623bcce075f54338f640a082"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/arial.ttf",
+            "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/gulim.ttc",
+            "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchob-r.ttf",
+            "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchod-r.ttf",
+            "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+          }
+        ]
+      }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/bindata_link_shift__hwpx/silhouette-checkpoint.json"
+  },
+  {
+    "key": "picture_soft_edge__hwp",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/picture_soft_edge__hwp/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/picture_soft_edge__hwp/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "08c789213059496d41f32a8d6683e9842eee42497f6b8ced898f84caca0736f7",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/picture_soft_edge__hwp/pdf_png/pdf-001.png",
+        "pdf_sha256": "944380488b9178bf227e4363e126ec24e5efc89a0689232e583ae09f27a9e4d1"
+      }
+    ],
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.91617,
+        "silhouette_raw_unmatched_pixels": 40,
+        "silhouette_boundary_reconciled_pixels": 9,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 47713,
+        "tolerant_content_match_percent": 99.93503
+      }
+    ],
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "provenance": {
+      "hwp": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/picture_soft_edge.hwp",
+        "sha256": "7e560d608b576a5c75295cce136fca44c9acb10ac79da92949d3f0ff7bc5f82d"
+      },
+      "pdf": {
+        "path": "pdf/issue8593/picture_soft_edge-2020.pdf",
+        "sha256": "dd26aebb46d3bfb52e03828dc8a56a94a9047ade8322b3de8aeb1bf053782b45"
+      },
+      "git_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2022",
+      "font_environment": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/font-environment.json",
+        "sha256": "cd11ec9ab8137534f046d1c0219daaa6d1b5b23d623bcce075f54338f640a082"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/arial.ttf",
+            "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/gulim.ttc",
+            "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchob-r.ttf",
+            "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchod-r.ttf",
+            "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+          }
+        ]
+      }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/picture_soft_edge__hwp/silhouette-checkpoint.json"
+  },
+  {
+    "key": "picture_soft_edge__hwpx",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/picture_soft_edge__hwpx/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/picture_soft_edge__hwpx/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "08c789213059496d41f32a8d6683e9842eee42497f6b8ced898f84caca0736f7",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/picture_soft_edge__hwpx/pdf_png/pdf-001.png",
+        "pdf_sha256": "944380488b9178bf227e4363e126ec24e5efc89a0689232e583ae09f27a9e4d1"
+      }
+    ],
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.91617,
+        "silhouette_raw_unmatched_pixels": 40,
+        "silhouette_boundary_reconciled_pixels": 9,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 47713,
+        "tolerant_content_match_percent": 99.93503
+      }
+    ],
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "provenance": {
+      "hwp": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/picture_soft_edge.hwpx",
+        "sha256": "bb3b0acde9f9e2cc6c560a3501ffdcd82c1da8157ccdf774382c1db30512a014"
+      },
+      "pdf": {
+        "path": "pdf/issue8593/picture_soft_edge-2020.pdf",
+        "sha256": "dd26aebb46d3bfb52e03828dc8a56a94a9047ade8322b3de8aeb1bf053782b45"
+      },
+      "git_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2022",
+      "font_environment": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/font-environment.json",
+        "sha256": "cd11ec9ab8137534f046d1c0219daaa6d1b5b23d623bcce075f54338f640a082"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/arial.ttf",
+            "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/gulim.ttc",
+            "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchob-r.ttf",
+            "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchod-r.ttf",
+            "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+          }
+        ]
+      }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/picture_soft_edge__hwpx/silhouette-checkpoint.json"
+  },
+  {
+    "key": "textbox_floating_table_following_control__hwp",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/textbox_floating_table_following_control__hwp/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/textbox_floating_table_following_control__hwp/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "e816a1ce88f10874835a0ab80f56b47cece46d140ae5133207371428c48a9214",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/textbox_floating_table_following_control__hwp/pdf_png/pdf-001.png",
+        "pdf_sha256": "599e76a2a0bd1caa26fdccc91d87272684b25a93193d5353818316a84b123e6e"
+      }
+    ],
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 5300,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "provenance": {
+      "hwp": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/textbox_floating_table_following_control.hwp",
+        "sha256": "b4e86a566d1d8c5221f571280a2308dd57ccb57db8e046472b2a8cbd85d25190"
+      },
+      "pdf": {
+        "path": "pdf/issue8513/textbox_floating_table_following_control-2020.pdf",
+        "sha256": "55afab8d0ba1233cff6a39cebe0cdea9d99ee5a7fdcbf8b28d6b2648a29e9bce"
+      },
+      "git_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2022",
+      "font_environment": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/font-environment.json",
+        "sha256": "cd11ec9ab8137534f046d1c0219daaa6d1b5b23d623bcce075f54338f640a082"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/arial.ttf",
+            "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/gulim.ttc",
+            "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchob-r.ttf",
+            "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchod-r.ttf",
+            "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+          }
+        ]
+      }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/textbox_floating_table_following_control__hwp/silhouette-checkpoint.json"
+  },
+  {
+    "key": "textbox_floating_table_following_control__hwpx",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/textbox_floating_table_following_control__hwpx/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/textbox_floating_table_following_control__hwpx/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "e816a1ce88f10874835a0ab80f56b47cece46d140ae5133207371428c48a9214",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/textbox_floating_table_following_control__hwpx/pdf_png/pdf-001.png",
+        "pdf_sha256": "599e76a2a0bd1caa26fdccc91d87272684b25a93193d5353818316a84b123e6e"
+      }
+    ],
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 5300,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "provenance": {
+      "hwp": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/textbox_floating_table_following_control.hwpx",
+        "sha256": "c31377d6cff3eb0a3f3c6ad53a2e69f1f36f7c7d3d8450d371b105d0b401c983"
+      },
+      "pdf": {
+        "path": "pdf/issue8513/textbox_floating_table_following_control-2020.pdf",
+        "sha256": "55afab8d0ba1233cff6a39cebe0cdea9d99ee5a7fdcbf8b28d6b2648a29e9bce"
+      },
+      "git_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2022",
+      "font_environment": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/font-environment.json",
+        "sha256": "cd11ec9ab8137534f046d1c0219daaa6d1b5b23d623bcce075f54338f640a082"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/arial.ttf",
+            "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/gulim.ttc",
+            "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchob-r.ttf",
+            "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchod-r.ttf",
+            "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+          }
+        ]
+      }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/textbox_floating_table_following_control__hwpx/silhouette-checkpoint.json"
+  },
+  {
+    "key": "partial_table_following_text__hwp",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1,
+      2
+    ],
+    "completed_pages": [
+      1,
+      2
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_following_text__hwp/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_following_text__hwp/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "41fdb818295256ef39f8f263079392d3844c7c21209f364161369a7909ad5549",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_following_text__hwp/pdf_png/pdf-001.png",
+        "pdf_sha256": "2e4ba331bb646c9159fa640925916652c6aa73eff8a8033ffd1e3b72e11fc421"
+      },
+      {
+        "page": 2,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_following_text__hwp/rhwp_png/rhwp_002.png",
+        "rhwp_sha256": "7751121fb3c2d21857edc74983e78971179a312eea139c5b542f4a0720a36008",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_following_text__hwp/pdf_png/pdf-002.png",
+        "pdf_sha256": "fa031a1f0e380d2489c4e2d4bb124e116a6334609fe8b6c52368e6b08f4ccd99"
+      }
+    ],
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 95.27771,
+        "silhouette_raw_unmatched_pixels": 1385,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 29329,
+        "tolerant_content_match_percent": 95.27771
+      },
+      {
+        "page": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 12779,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "provenance": {
+      "hwp": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/partial_table_following_text.hwp",
+        "sha256": "6041b38222b4821b5cdb8222026464437aa9422d21c64c1516ce94615970f5ab"
+      },
+      "pdf": {
+        "path": "pdf/issue8579/partial_table_following_text-2020.pdf",
+        "sha256": "5ef2c2a803e1154daf331b8c658c2e49b8b4f4e67a12b91eba567fd0e583c383"
+      },
+      "git_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2022",
+      "font_environment": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/font-environment.json",
+        "sha256": "cd11ec9ab8137534f046d1c0219daaa6d1b5b23d623bcce075f54338f640a082"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/arial.ttf",
+            "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/gulim.ttc",
+            "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchob-r.ttf",
+            "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchod-r.ttf",
+            "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+          }
+        ]
+      }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_following_text__hwp/silhouette-checkpoint.json"
+  },
+  {
+    "key": "partial_table_following_text__hwpx",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1,
+      2
+    ],
+    "completed_pages": [
+      1,
+      2
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_following_text__hwpx/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_following_text__hwpx/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "41fdb818295256ef39f8f263079392d3844c7c21209f364161369a7909ad5549",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_following_text__hwpx/pdf_png/pdf-001.png",
+        "pdf_sha256": "2e4ba331bb646c9159fa640925916652c6aa73eff8a8033ffd1e3b72e11fc421"
+      },
+      {
+        "page": 2,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_following_text__hwpx/rhwp_png/rhwp_002.png",
+        "rhwp_sha256": "7751121fb3c2d21857edc74983e78971179a312eea139c5b542f4a0720a36008",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_following_text__hwpx/pdf_png/pdf-002.png",
+        "pdf_sha256": "fa031a1f0e380d2489c4e2d4bb124e116a6334609fe8b6c52368e6b08f4ccd99"
+      }
+    ],
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 95.27771,
+        "silhouette_raw_unmatched_pixels": 1385,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 29329,
+        "tolerant_content_match_percent": 95.27771
+      },
+      {
+        "page": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 12779,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "provenance": {
+      "hwp": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/partial_table_following_text.hwpx",
+        "sha256": "dec45356400b8c8cb554b06a365a781582f7f848d8d47b5a18fc4fc803a6fd77"
+      },
+      "pdf": {
+        "path": "pdf/issue8579/partial_table_following_text-2020.pdf",
+        "sha256": "5ef2c2a803e1154daf331b8c658c2e49b8b4f4e67a12b91eba567fd0e583c383"
+      },
+      "git_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2022",
+      "font_environment": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/font-environment.json",
+        "sha256": "cd11ec9ab8137534f046d1c0219daaa6d1b5b23d623bcce075f54338f640a082"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/arial.ttf",
+            "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/gulim.ttc",
+            "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchob-r.ttf",
+            "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchod-r.ttf",
+            "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+          }
+        ]
+      }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2022/partial_table_following_text__hwpx/silhouette-checkpoint.json"
+  },
+  {
+    "key": "short_row_grid_r21__hwp",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2024/short_row_grid_r21__hwp/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2024/short_row_grid_r21__hwp/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "9f617c113ca28e32f450e623dfd2889204d3e67fd5b13500bbf046ab8dc37352",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2024/short_row_grid_r21__hwp/pdf_png/pdf-001.png",
+        "pdf_sha256": "ad7b562037f1ade270792c6a8d34c3124ee598e39dc7fd69496efa2652d85cb8"
+      }
+    ],
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.9903,
+        "silhouette_raw_unmatched_pixels": 4,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 41254,
+        "tolerant_content_match_percent": 99.9903
+      }
+    ],
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "provenance": {
+      "hwp": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/short_row_grid_r21.hwp",
+        "sha256": "05354a3e1fdcec01f175ad0450b95e3fcb3c35fe930223c7afca7dd0b7ea9710"
+      },
+      "pdf": {
+        "path": "pdf/issue8584/short_row_grid_r21-2024.pdf",
+        "sha256": "3278cc0724d15dea4053be64bd58235cb833b4034eb1efd60cc5c8bafbaebb04"
+      },
+      "git_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2024",
+      "font_environment": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/font-environment.json",
+        "sha256": "cd11ec9ab8137534f046d1c0219daaa6d1b5b23d623bcce075f54338f640a082"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/arial.ttf",
+            "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/gulim.ttc",
+            "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchob-r.ttf",
+            "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchod-r.ttf",
+            "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+          }
+        ]
+      }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2024/short_row_grid_r21__hwp/silhouette-checkpoint.json"
+  },
+  {
+    "key": "short_row_grid_r21__hwpx",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2024/short_row_grid_r21__hwpx/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2024/short_row_grid_r21__hwpx/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "9f617c113ca28e32f450e623dfd2889204d3e67fd5b13500bbf046ab8dc37352",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2024/short_row_grid_r21__hwpx/pdf_png/pdf-001.png",
+        "pdf_sha256": "ad7b562037f1ade270792c6a8d34c3124ee598e39dc7fd69496efa2652d85cb8"
+      }
+    ],
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.9903,
+        "silhouette_raw_unmatched_pixels": 4,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 41254,
+        "tolerant_content_match_percent": 99.9903
+      }
+    ],
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "provenance": {
+      "hwp": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/short_row_grid_r21.hwpx",
+        "sha256": "238225185dbb5f98a85ddae8d6a4119b236c356a5c89935f76ee17c88f98cad0"
+      },
+      "pdf": {
+        "path": "pdf/issue8584/short_row_grid_r21-2024.pdf",
+        "sha256": "3278cc0724d15dea4053be64bd58235cb833b4034eb1efd60cc5c8bafbaebb04"
+      },
+      "git_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2024",
+      "font_environment": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/font-environment.json",
+        "sha256": "cd11ec9ab8137534f046d1c0219daaa6d1b5b23d623bcce075f54338f640a082"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/arial.ttf",
+            "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/gulim.ttc",
+            "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchob-r.ttf",
+            "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchod-r.ttf",
+            "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+          }
+        ]
+      }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2024/short_row_grid_r21__hwpx/silhouette-checkpoint.json"
+  },
+  {
+    "key": "short_row_grid_r4__hwp",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2024/short_row_grid_r4__hwp/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2024/short_row_grid_r4__hwp/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "d0905d2e792ec8fd9efa01020fb959a9f782dec71f669d194658a536007b3227",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2024/short_row_grid_r4__hwp/pdf_png/pdf-001.png",
+        "pdf_sha256": "3ff28108c8205ffe9ba46a977c877e76e29a5cc51984c1d2109db5068d8ac6f0"
+      }
+    ],
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.99207,
+        "silhouette_raw_unmatched_pixels": 1,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 12618,
+        "tolerant_content_match_percent": 99.99207
+      }
+    ],
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "provenance": {
+      "hwp": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/short_row_grid_r4.hwp",
+        "sha256": "c568f3dc81a75c53a20c00b1d6c57625f1c6d7929b9506efab3bf4687f1af295"
+      },
+      "pdf": {
+        "path": "pdf/issue8584/short_row_grid_r4-2024.pdf",
+        "sha256": "7c6d186aa60cac58bd34aa22dff15a0e9cf18b69634bf8b7738d66537fc9a142"
+      },
+      "git_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2024",
+      "font_environment": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/font-environment.json",
+        "sha256": "cd11ec9ab8137534f046d1c0219daaa6d1b5b23d623bcce075f54338f640a082"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/arial.ttf",
+            "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/gulim.ttc",
+            "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchob-r.ttf",
+            "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchod-r.ttf",
+            "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+          }
+        ]
+      }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2024/short_row_grid_r4__hwp/silhouette-checkpoint.json"
+  },
+  {
+    "key": "short_row_grid_r4__hwpx",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2024/short_row_grid_r4__hwpx/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2024/short_row_grid_r4__hwpx/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "d0905d2e792ec8fd9efa01020fb959a9f782dec71f669d194658a536007b3227",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2024/short_row_grid_r4__hwpx/pdf_png/pdf-001.png",
+        "pdf_sha256": "3ff28108c8205ffe9ba46a977c877e76e29a5cc51984c1d2109db5068d8ac6f0"
+      }
+    ],
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.99207,
+        "silhouette_raw_unmatched_pixels": 1,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 12618,
+        "tolerant_content_match_percent": 99.99207
+      }
+    ],
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "provenance": {
+      "hwp": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/short_row_grid_r4.hwpx",
+        "sha256": "f398cbb07504036660ae3372be46d4bfc792d990f82851eebdc354e0b91e5a68"
+      },
+      "pdf": {
+        "path": "pdf/issue8584/short_row_grid_r4-2024.pdf",
+        "sha256": "7c6d186aa60cac58bd34aa22dff15a0e9cf18b69634bf8b7738d66537fc9a142"
+      },
+      "git_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2024",
+      "font_environment": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/font-environment.json",
+        "sha256": "cd11ec9ab8137534f046d1c0219daaa6d1b5b23d623bcce075f54338f640a082"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/arial.ttf",
+            "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/gulim.ttc",
+            "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchob-r.ttf",
+            "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+          },
+          {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/fonts/hamchod-r.ttf",
+            "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+          }
+        ]
+      }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-native-2024/short_row_grid_r4__hwpx/silhouette-checkpoint.json"
+  }
+]

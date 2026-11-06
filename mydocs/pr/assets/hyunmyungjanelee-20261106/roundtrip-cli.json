@@ -1,0 +1,362 @@
+[
+  {
+    "key": "textbox_floating_table_offset",
+    "format": "hwp",
+    "exit": 0,
+    "seconds": 0.013,
+    "result": {
+      "bytes": 6656,
+      "format": "hwp5",
+      "output": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/roundtrip-inputs/textbox_floating_table_offset.hwp",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8513/textbox_floating_table_offset.hwpx",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": null,
+      "verifyPages": {
+        "after": 1,
+        "before": 1,
+        "identical": true
+      },
+      "wasDistribution": false
+    }
+  },
+  {
+    "key": "textbox_floating_table_offset",
+    "format": "hwpx",
+    "exit": 0,
+    "seconds": 0.026,
+    "result": {
+      "bytes": 8037,
+      "format": "hwpx",
+      "output": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/roundtrip-inputs/textbox_floating_table_offset.hwpx",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8513/textbox_floating_table_offset.hwpx",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": null,
+      "verifyPages": {
+        "after": 1,
+        "before": 1,
+        "identical": true
+      }
+    }
+  },
+  {
+    "key": "partial_table_control_only_para",
+    "format": "hwp",
+    "exit": 0,
+    "seconds": 0.026,
+    "result": {
+      "bytes": 15360,
+      "format": "hwp5",
+      "output": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/roundtrip-inputs/partial_table_control_only_para.hwp",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8579/partial_table_control_only_para.hwp",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": null,
+      "verifyPages": {
+        "after": 2,
+        "before": 2,
+        "identical": true
+      },
+      "wasDistribution": false
+    }
+  },
+  {
+    "key": "partial_table_control_only_para",
+    "format": "hwpx",
+    "exit": 0,
+    "seconds": 0.025,
+    "result": {
+      "bytes": 12355,
+      "format": "hwpx",
+      "output": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/roundtrip-inputs/partial_table_control_only_para.hwpx",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8579/partial_table_control_only_para.hwp",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": null,
+      "verifyPages": {
+        "after": 2,
+        "before": 2,
+        "identical": true
+      }
+    }
+  },
+  {
+    "key": "short_row_grid_r21",
+    "format": "hwp",
+    "exit": 0,
+    "seconds": 0.035,
+    "result": {
+      "bytes": 15360,
+      "format": "hwp5",
+      "output": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/roundtrip-inputs/short_row_grid_r21.hwp",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8584/short_row_grid_r21.hwpx",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": null,
+      "verifyPages": {
+        "after": 1,
+        "before": 1,
+        "identical": true
+      },
+      "wasDistribution": false
+    }
+  },
+  {
+    "key": "short_row_grid_r21",
+    "format": "hwpx",
+    "exit": 0,
+    "seconds": 0.039,
+    "result": {
+      "bytes": 11644,
+      "format": "hwpx",
+      "output": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/roundtrip-inputs/short_row_grid_r21.hwpx",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8584/short_row_grid_r21.hwpx",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": null,
+      "verifyPages": {
+        "after": 1,
+        "before": 1,
+        "identical": true
+      }
+    }
+  },
+  {
+    "key": "short_row_grid_r4",
+    "format": "hwp",
+    "exit": 0,
+    "seconds": 0.02,
+    "result": {
+      "bytes": 14848,
+      "format": "hwp5",
+      "output": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/roundtrip-inputs/short_row_grid_r4.hwp",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8584/short_row_grid_r4.hwpx",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": null,
+      "verifyPages": {
+        "after": 1,
+        "before": 1,
+        "identical": true
+      },
+      "wasDistribution": false
+    }
+  },
+  {
+    "key": "short_row_grid_r4",
+    "format": "hwpx",
+    "exit": 0,
+    "seconds": 0.025,
+    "result": {
+      "bytes": 10720,
+      "format": "hwpx",
+      "output": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/roundtrip-inputs/short_row_grid_r4.hwpx",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8584/short_row_grid_r4.hwpx",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": null,
+      "verifyPages": {
+        "after": 1,
+        "before": 1,
+        "identical": true
+      }
+    }
+  },
+  {
+    "key": "bindata_link_shift",
+    "format": "hwp",
+    "exit": 0,
+    "seconds": 0.02,
+    "result": {
+      "bytes": 343040,
+      "format": "hwp5",
+      "output": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/roundtrip-inputs/bindata_link_shift.hwp",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8594/bindata_link_shift.hwp",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": null,
+      "verifyPages": {
+        "after": 1,
+        "before": 1,
+        "identical": true
+      },
+      "wasDistribution": false
+    }
+  },
+  {
+    "key": "bindata_link_shift",
+    "format": "hwpx",
+    "exit": 0,
+    "seconds": 0.035,
+    "result": {
+      "bytes": 280827,
+      "format": "hwpx",
+      "output": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/roundtrip-inputs/bindata_link_shift.hwpx",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8594/bindata_link_shift.hwp",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": null,
+      "verifyPages": {
+        "after": 1,
+        "before": 1,
+        "identical": true
+      }
+    }
+  },
+  {
+    "key": "picture_soft_edge",
+    "format": "hwp",
+    "exit": 0,
+    "seconds": 0.014,
+    "result": {
+      "bytes": 343040,
+      "format": "hwp5",
+      "output": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/roundtrip-inputs/picture_soft_edge.hwp",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8593/picture_soft_edge.hwp",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": null,
+      "verifyPages": {
+        "after": 1,
+        "before": 1,
+        "identical": true
+      },
+      "wasDistribution": false
+    }
+  },
+  {
+    "key": "picture_soft_edge",
+    "format": "hwpx",
+    "exit": 0,
+    "seconds": 0.03,
+    "result": {
+      "bytes": 280803,
+      "format": "hwpx",
+      "output": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/roundtrip-inputs/picture_soft_edge.hwpx",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8593/picture_soft_edge.hwp",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": null,
+      "verifyPages": {
+        "after": 1,
+        "before": 1,
+        "identical": true
+      }
+    }
+  },
+  {
+    "key": "textbox_floating_table_following_control",
+    "format": "hwp",
+    "exit": 0,
+    "seconds": 0.016,
+    "result": {
+      "bytes": 7168,
+      "format": "hwp5",
+      "output": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/roundtrip-inputs/textbox_floating_table_following_control.hwp",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8513/textbox_floating_table_following_control.hwpx",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": null,
+      "verifyPages": {
+        "after": 1,
+        "before": 1,
+        "identical": true
+      },
+      "wasDistribution": false
+    }
+  },
+  {
+    "key": "textbox_floating_table_following_control",
+    "format": "hwpx",
+    "exit": 0,
+    "seconds": 0.015,
+    "result": {
+      "bytes": 8080,
+      "format": "hwpx",
+      "output": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/roundtrip-inputs/textbox_floating_table_following_control.hwpx",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8513/textbox_floating_table_following_control.hwpx",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": null,
+      "verifyPages": {
+        "after": 1,
+        "before": 1,
+        "identical": true
+      }
+    }
+  },
+  {
+    "key": "partial_table_following_text",
+    "format": "hwp",
+    "exit": 0,
+    "seconds": 0.024,
+    "result": {
+      "bytes": 10240,
+      "format": "hwp5",
+      "output": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/roundtrip-inputs/partial_table_following_text.hwp",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8579/partial_table_following_text.hwpx",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": null,
+      "verifyPages": {
+        "after": 2,
+        "before": 2,
+        "identical": true
+      },
+      "wasDistribution": false
+    }
+  },
+  {
+    "key": "partial_table_following_text",
+    "format": "hwpx",
+    "exit": 0,
+    "seconds": 0.028,
+    "result": {
+      "bytes": 12441,
+      "format": "hwpx",
+      "output": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/roundtrip-inputs/partial_table_following_text.hwpx",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8579/partial_table_following_text.hwpx",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": null,
+      "verifyPages": {
+        "after": 2,
+        "before": 2,
+        "identical": true
+      }
+    }
+  }
+]

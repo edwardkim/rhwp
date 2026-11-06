@@ -1,0 +1,421 @@
+{
+  "pr": 8526,
+  "sourceSha": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+  "wasmSha256": "251c54c1194265e74e7a76863c5645da74330e12044b7f877e9c2fe14405a98f",
+  "runtime": "지정한 제품 SHA의 실제 WASM 공개 API",
+  "observations": {
+    "before": [
+      {
+        "id": 0,
+        "name": "바탕글",
+        "englishName": "Normal",
+        "type": 0,
+        "nextStyleId": 0,
+        "paraShapeId": 0,
+        "charShapeId": 0
+      },
+      {
+        "id": 1,
+        "name": "본문",
+        "englishName": "Body",
+        "type": 0,
+        "nextStyleId": 1,
+        "paraShapeId": 1,
+        "charShapeId": 0
+      },
+      {
+        "id": 2,
+        "name": "개요 1",
+        "englishName": "Outline 1",
+        "type": 0,
+        "nextStyleId": 2,
+        "paraShapeId": 2,
+        "charShapeId": 0
+      },
+      {
+        "id": 3,
+        "name": "개요 2",
+        "englishName": "Outline 2",
+        "type": 0,
+        "nextStyleId": 3,
+        "paraShapeId": 3,
+        "charShapeId": 0
+      },
+      {
+        "id": 4,
+        "name": "개요 3",
+        "englishName": "Outline 3",
+        "type": 0,
+        "nextStyleId": 4,
+        "paraShapeId": 4,
+        "charShapeId": 0
+      },
+      {
+        "id": 5,
+        "name": "개요 4",
+        "englishName": "Outline 4",
+        "type": 0,
+        "nextStyleId": 5,
+        "paraShapeId": 5,
+        "charShapeId": 0
+      },
+      {
+        "id": 6,
+        "name": "개요 5",
+        "englishName": "Outline 5",
+        "type": 0,
+        "nextStyleId": 6,
+        "paraShapeId": 6,
+        "charShapeId": 0
+      },
+      {
+        "id": 7,
+        "name": "개요 6",
+        "englishName": "Outline 6",
+        "type": 0,
+        "nextStyleId": 7,
+        "paraShapeId": 7,
+        "charShapeId": 0
+      },
+      {
+        "id": 8,
+        "name": "개요 7",
+        "englishName": "Outline 7",
+        "type": 0,
+        "nextStyleId": 8,
+        "paraShapeId": 8,
+        "charShapeId": 0
+      },
+      {
+        "id": 9,
+        "name": "개요 8",
+        "englishName": "Outline 8",
+        "type": 0,
+        "nextStyleId": 9,
+        "paraShapeId": 18,
+        "charShapeId": 0
+      },
+      {
+        "id": 10,
+        "name": "개요 9",
+        "englishName": "Outline 9",
+        "type": 0,
+        "nextStyleId": 10,
+        "paraShapeId": 16,
+        "charShapeId": 0
+      },
+      {
+        "id": 11,
+        "name": "개요 10",
+        "englishName": "Outline 10",
+        "type": 0,
+        "nextStyleId": 11,
+        "paraShapeId": 17,
+        "charShapeId": 0
+      },
+      {
+        "id": 12,
+        "name": "쪽 번호",
+        "englishName": "Page Number",
+        "type": 1,
+        "nextStyleId": 0,
+        "paraShapeId": 0,
+        "charShapeId": 1
+      },
+      {
+        "id": 13,
+        "name": "머리말",
+        "englishName": "Header",
+        "type": 0,
+        "nextStyleId": 13,
+        "paraShapeId": 9,
+        "charShapeId": 2
+      },
+      {
+        "id": 14,
+        "name": "각주",
+        "englishName": "Footnote",
+        "type": 0,
+        "nextStyleId": 14,
+        "paraShapeId": 10,
+        "charShapeId": 3
+      },
+      {
+        "id": 15,
+        "name": "미주",
+        "englishName": "Endnote",
+        "type": 0,
+        "nextStyleId": 15,
+        "paraShapeId": 10,
+        "charShapeId": 3
+      },
+      {
+        "id": 16,
+        "name": "메모",
+        "englishName": "Memo",
+        "type": 0,
+        "nextStyleId": 16,
+        "paraShapeId": 11,
+        "charShapeId": 4
+      },
+      {
+        "id": 17,
+        "name": "차례 제목",
+        "englishName": "TOC Heading",
+        "type": 0,
+        "nextStyleId": 17,
+        "paraShapeId": 12,
+        "charShapeId": 5
+      },
+      {
+        "id": 18,
+        "name": "차례 1",
+        "englishName": "TOC 1",
+        "type": 0,
+        "nextStyleId": 18,
+        "paraShapeId": 13,
+        "charShapeId": 6
+      },
+      {
+        "id": 19,
+        "name": "차례 2",
+        "englishName": "TOC 2",
+        "type": 0,
+        "nextStyleId": 19,
+        "paraShapeId": 14,
+        "charShapeId": 6
+      },
+      {
+        "id": 20,
+        "name": "차례 3",
+        "englishName": "TOC 3",
+        "type": 0,
+        "nextStyleId": 20,
+        "paraShapeId": 15,
+        "charShapeId": 6
+      },
+      {
+        "id": 21,
+        "name": "캡션",
+        "englishName": "Caption",
+        "type": 0,
+        "nextStyleId": 21,
+        "paraShapeId": 19,
+        "charShapeId": 0
+      }
+    ],
+    "index": 1,
+    "after": [
+      {
+        "id": 0,
+        "name": "바탕글",
+        "englishName": "Normal",
+        "type": 0,
+        "nextStyleId": 0,
+        "paraShapeId": 0,
+        "charShapeId": 0
+      },
+      {
+        "id": 1,
+        "name": "끼운 스타일",
+        "englishName": "",
+        "type": 0,
+        "nextStyleId": 1,
+        "paraShapeId": 0,
+        "charShapeId": 0
+      },
+      {
+        "id": 2,
+        "name": "본문",
+        "englishName": "Body",
+        "type": 0,
+        "nextStyleId": 2,
+        "paraShapeId": 1,
+        "charShapeId": 0
+      },
+      {
+        "id": 3,
+        "name": "개요 1",
+        "englishName": "Outline 1",
+        "type": 0,
+        "nextStyleId": 3,
+        "paraShapeId": 2,
+        "charShapeId": 0
+      },
+      {
+        "id": 4,
+        "name": "개요 2",
+        "englishName": "Outline 2",
+        "type": 0,
+        "nextStyleId": 4,
+        "paraShapeId": 3,
+        "charShapeId": 0
+      },
+      {
+        "id": 5,
+        "name": "개요 3",
+        "englishName": "Outline 3",
+        "type": 0,
+        "nextStyleId": 5,
+        "paraShapeId": 4,
+        "charShapeId": 0
+      },
+      {
+        "id": 6,
+        "name": "개요 4",
+        "englishName": "Outline 4",
+        "type": 0,
+        "nextStyleId": 6,
+        "paraShapeId": 5,
+        "charShapeId": 0
+      },
+      {
+        "id": 7,
+        "name": "개요 5",
+        "englishName": "Outline 5",
+        "type": 0,
+        "nextStyleId": 7,
+        "paraShapeId": 6,
+        "charShapeId": 0
+      },
+      {
+        "id": 8,
+        "name": "개요 6",
+        "englishName": "Outline 6",
+        "type": 0,
+        "nextStyleId": 8,
+        "paraShapeId": 7,
+        "charShapeId": 0
+      },
+      {
+        "id": 9,
+        "name": "개요 7",
+        "englishName": "Outline 7",
+        "type": 0,
+        "nextStyleId": 9,
+        "paraShapeId": 8,
+        "charShapeId": 0
+      },
+      {
+        "id": 10,
+        "name": "개요 8",
+        "englishName": "Outline 8",
+        "type": 0,
+        "nextStyleId": 10,
+        "paraShapeId": 18,
+        "charShapeId": 0
+      },
+      {
+        "id": 11,
+        "name": "개요 9",
+        "englishName": "Outline 9",
+        "type": 0,
+        "nextStyleId": 11,
+        "paraShapeId": 16,
+        "charShapeId": 0
+      },
+      {
+        "id": 12,
+        "name": "개요 10",
+        "englishName": "Outline 10",
+        "type": 0,
+        "nextStyleId": 12,
+        "paraShapeId": 17,
+        "charShapeId": 0
+      },
+      {
+        "id": 13,
+        "name": "쪽 번호",
+        "englishName": "Page Number",
+        "type": 1,
+        "nextStyleId": 0,
+        "paraShapeId": 0,
+        "charShapeId": 1
+      },
+      {
+        "id": 14,
+        "name": "머리말",
+        "englishName": "Header",
+        "type": 0,
+        "nextStyleId": 14,
+        "paraShapeId": 9,
+        "charShapeId": 2
+      },
+      {
+        "id": 15,
+        "name": "각주",
+        "englishName": "Footnote",
+        "type": 0,
+        "nextStyleId": 15,
+        "paraShapeId": 10,
+        "charShapeId": 3
+      },
+      {
+        "id": 16,
+        "name": "미주",
+        "englishName": "Endnote",
+        "type": 0,
+        "nextStyleId": 16,
+        "paraShapeId": 10,
+        "charShapeId": 3
+      },
+      {
+        "id": 17,
+        "name": "메모",
+        "englishName": "Memo",
+        "type": 0,
+        "nextStyleId": 17,
+        "paraShapeId": 11,
+        "charShapeId": 4
+      },
+      {
+        "id": 18,
+        "name": "차례 제목",
+        "englishName": "TOC Heading",
+        "type": 0,
+        "nextStyleId": 18,
+        "paraShapeId": 12,
+        "charShapeId": 5
+      },
+      {
+        "id": 19,
+        "name": "차례 1",
+        "englishName": "TOC 1",
+        "type": 0,
+        "nextStyleId": 19,
+        "paraShapeId": 13,
+        "charShapeId": 6
+      },
+      {
+        "id": 20,
+        "name": "차례 2",
+        "englishName": "TOC 2",
+        "type": 0,
+        "nextStyleId": 20,
+        "paraShapeId": 14,
+        "charShapeId": 6
+      },
+      {
+        "id": 21,
+        "name": "차례 3",
+        "englishName": "TOC 3",
+        "type": 0,
+        "nextStyleId": 21,
+        "paraShapeId": 15,
+        "charShapeId": 6
+      },
+      {
+        "id": 22,
+        "name": "캡션",
+        "englishName": "Caption",
+        "type": 0,
+        "nextStyleId": 22,
+        "paraShapeId": 19,
+        "charShapeId": 0
+      }
+    ],
+    "api-result_hwp": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-8659-api/pr8526/api-result.hwp",
+    "api-result_hwpx": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-8659-api/pr8526/api-result.hwpx"
+  },
+  "status": "passed"
+}

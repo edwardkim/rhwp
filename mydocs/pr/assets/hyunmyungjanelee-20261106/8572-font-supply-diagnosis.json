@@ -1,0 +1,38 @@
+{
+  "input": "8572-fix-typed-hwp-2022",
+  "pdf_page_7_embedded_font": "INPILL+HCRDotum, CID TrueType, embedded subset",
+  "initial_wasm_page_7_raw": 83.33333,
+  "initial_loaded_programs": [
+    "나눔고딕",
+    "NanumGothic"
+  ],
+  "required_generated_footer_family": "함초롬돋움",
+  "correction": "Supply the actual HCRDotum plus original body programs explicitly to Native base/candidate and fresh WASM; no source, expectation or threshold change",
+  "font_programs": [
+    {
+      "file": "hamchod-r.ttf",
+      "path": "/home/edward/mygithub/ttfs/hamchod-r.ttf",
+      "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+    },
+    {
+      "file": "hamchob-r.ttf",
+      "path": "/home/edward/mygithub/ttfs/hamchob-r.ttf",
+      "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+    },
+    {
+      "file": "NanumGothic.ttf",
+      "path": "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+      "sha256": "48a28e97b34fc8e5b157657633670cd1b7de126cfc414da65ce9c3d5bc8be733"
+    },
+    {
+      "file": "NanumGothicBold.ttf",
+      "path": "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf",
+      "sha256": "454eb3f503f377782a99eb84fc4bb7dde22a0f075d41b47427737f2985053bc9"
+    }
+  ],
+  "pages": 7,
+  "final_wasm_page_7_raw": 100.0,
+  "final_wasm_minimum": 99.91017,
+  "native_base_candidate_png_pairs_identical": 7,
+  "initial_results_preserved": true
+}

@@ -1,0 +1,7 @@
+{
+  "head": "b68f673f238d32eba523d01e300e4afe3c9b5e7f",
+  "src_tree": "732c21aa6aecfbc6e091fa3f4bebd5a13b3cdb9b",
+  "all_product_source_files_match_frozen_native_and_optimized_wasm": true,
+  "root_lib_mtime_refreshed_after_negative_worktree_build": true,
+  "source_changed": false
+}

@@ -271,6 +271,60 @@ pub fn alpha_byte_to_transparency_percent(alpha: u8) -> u8 {
     ((alpha as f64 * 100.0) / 255.0).round().clamp(0.0, 100.0) as u8
 }
 
+/// HWP5 SHAPE_COMPONENT_PICTURE 꼬리(`raw_picture_extra`) 안 필드 위치.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct PictureExtraLayout {
+    /// 원본 그림 크기(dimwidth u32, dimheight u32)의 시작 위치.
+    pub dim_offset: Option<usize>,
+    /// 그림 투명도(alpha byte) 위치.
+    pub alpha_offset: Option<usize>,
+}
+
+/// 그림 효과 플래그 중 부드러운 가장자리(표 108·111). 뒤에 반경 f32 하나가 온다.
+const PICTURE_EFFECT_SOFT_EDGE: u32 = 0x4;
+
+/// 그림 꼬리의 구조를 판정한다.
+///
+/// 꼬리는 [테두리 투명도 u8][인스턴스 id u32][그림 효과 정보][dimwidth u32]
+/// [dimheight u32][투명도 u8, 생략 가능] 이다(표 107). 그림 효과 정보는 [효과 플래그
+/// u32][효과별 정보] 이고(표 108), 효과가 없으면 플래그 0 뿐이라 꼬리가 17/18 바이트로
+/// 고정된다. 부드러운 가장자리(플래그 4)는 반경 f32 4바이트를 더 둔다(표 111). 고정
+/// 위치 9..17 로 읽으면 반경이 dimwidth 로 읽혀 자르기 영역이 원본의 극히 일부가 된다.
+///
+/// 효과별 정보 길이를 아는 경우(부드러운 가장자리만)에, 그 길이가 꼬리 길이와 정확히
+/// 맞을 때만 건너뛴다. 그림자·네온·반사처럼 색상 정보가 가변인 효과나 길이가 맞지 않는
+/// 꼬리는 종전 해석을 그대로 쓴다.
+pub(crate) fn picture_extra_layout(extra: &[u8]) -> PictureExtraLayout {
+    const EFFECTS_OFFSET: usize = 5;
+    const FIXED_DIM_OFFSET: usize = EFFECTS_OFFSET + 4;
+    let legacy = PictureExtraLayout {
+        dim_offset: (extra.len() >= FIXED_DIM_OFFSET + 8).then_some(FIXED_DIM_OFFSET),
+        alpha_offset: (extra.len() >= FIXED_DIM_OFFSET + 9).then(|| extra.len() - 1),
+    };
+    let Some(flags) = extra
+        .get(EFFECTS_OFFSET..FIXED_DIM_OFFSET)
+        .map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+    else {
+        return legacy;
+    };
+    let effects_len = match flags {
+        PICTURE_EFFECT_SOFT_EDGE => 4,
+        _ => return legacy,
+    };
+    let dim_offset = FIXED_DIM_OFFSET + effects_len;
+    match extra.len().checked_sub(dim_offset) {
+        Some(8) => PictureExtraLayout {
+            dim_offset: Some(dim_offset),
+            alpha_offset: None,
+        },
+        Some(9) => PictureExtraLayout {
+            dim_offset: Some(dim_offset),
+            alpha_offset: Some(dim_offset + 8),
+        },
+        _ => legacy,
+    }
+}
+
 /// 이미지 효과
 #[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum ImageEffect {

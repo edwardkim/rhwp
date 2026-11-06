@@ -1,0 +1,15 @@
+{
+  "job_id": "5f5724ab-142d-409a-a4c1-b8cadc90639a",
+  "status": "succeeded",
+  "engine": "2020",
+  "input": "samples/issue8513/textbox_floating_table_offset.hwpx",
+  "input_sha256": "fb714bedfc3adaf2a36106d21f956aadf9538dcfcd9478a2c488a97cb013b0a6",
+  "result": {
+    "engine": "2020",
+    "hancom_version": "11.0.0.9136",
+    "bytes": 10600,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+  },
+  "pdf_sha256": "92157894ff185371aad34d06b48f279a0eeee8d4ec903aa80941294dbbe9c923"
+}

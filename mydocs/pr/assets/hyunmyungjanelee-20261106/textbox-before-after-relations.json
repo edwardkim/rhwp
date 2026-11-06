@@ -1,0 +1,48 @@
+[
+  {
+    "output": "original",
+    "floating_table": {
+      "x": 498.9,
+      "y": 147.4,
+      "w": 151.2,
+      "h": 75.6
+    },
+    "following_table": {
+      "x": 120.9,
+      "y": 223.0,
+      "w": 151.2,
+      "h": 75.6
+    },
+    "body": {
+      "x": 113.4,
+      "y": 245.7,
+      "w": 36.8,
+      "h": 13.3
+    },
+    "following_top_before_floating_bottom": false,
+    "body_after_following_bottom": false
+  },
+  {
+    "output": "corrected",
+    "floating_table": {
+      "x": 498.9,
+      "y": 147.4,
+      "w": 151.2,
+      "h": 75.6
+    },
+    "following_table": {
+      "x": 120.9,
+      "y": 161.1,
+      "w": 151.2,
+      "h": 75.6
+    },
+    "body": {
+      "x": 113.4,
+      "y": 245.7,
+      "w": 36.8,
+      "h": 13.3
+    },
+    "following_top_before_floating_bottom": true,
+    "body_after_following_bottom": true
+  }
+]

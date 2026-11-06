@@ -1,0 +1,28 @@
+{
+  "pr": 8570,
+  "sourceSha": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+  "wasmSha256": "251c54c1194265e74e7a76863c5645da74330e12044b7f877e9c2fe14405a98f",
+  "runtime": "지정한 제품 SHA의 실제 WASM 공개 API",
+  "observations": {
+    "creation": {
+      "ok": true,
+      "cellParaIdx": 0,
+      "controlIdx": 0,
+      "cellPath": [
+        {
+          "controlIndex": 2,
+          "cellIndex": 0,
+          "cellParaIndex": 0
+        },
+        {
+          "controlIndex": 0,
+          "cellIndex": 0,
+          "cellParaIndex": 0
+        }
+      ]
+    },
+    "non-inline-cell-table_hwp": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-8659-api/pr8570/non-inline-cell-table.hwp",
+    "non-inline-cell-table_hwpx": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-8659-api/pr8570/non-inline-cell-table.hwpx"
+  },
+  "status": "passed"
+}

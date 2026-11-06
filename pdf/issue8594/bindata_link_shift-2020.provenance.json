@@ -1,0 +1,15 @@
+{
+  "job_id": "3547811a-3eca-45b1-891c-d53d036f72f1",
+  "status": "succeeded",
+  "engine": "2020",
+  "input": "samples/issue8594/bindata_link_shift.hwp",
+  "input_sha256": "04f067517a604e75fd3a6b75130226af4fd7c65a27dab5859bdba87cb50856ff",
+  "result": {
+    "engine": "2020",
+    "hancom_version": "11.0.0.9136",
+    "bytes": 222545,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+  },
+  "pdf_sha256": "663ab919c9440b6397d16931cf69b29c32c34e740aebd932634886e440a23ca3"
+}

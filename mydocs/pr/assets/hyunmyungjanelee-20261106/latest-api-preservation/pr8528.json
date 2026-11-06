@@ -1,0 +1,116 @@
+{
+  "pr": 8528,
+  "sourceSha": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+  "wasmSha256": "251c54c1194265e74e7a76863c5645da74330e12044b7f877e9c2fe14405a98f",
+  "runtime": "지정한 제품 SHA의 실제 WASM 공개 API",
+  "observations": {
+    "charShape": 9,
+    "layout": {
+      "runs": [
+        {
+          "text": "1.",
+          "x": 113.4,
+          "y": 132.3,
+          "w": 23.2,
+          "h": 26.7,
+          "charX": [
+            0,
+            14.7,
+            23.2
+          ],
+          "fontFamily": "함초롬바탕",
+          "fontSize": 26.7,
+          "bold": false,
+          "italic": true,
+          "ratio": 1,
+          "letterSpacing": 0,
+          "underline": false,
+          "strikethrough": false,
+          "textColor": "#000000",
+          "paraShapeId": 22
+        },
+        {
+          "text": "가 문단",
+          "x": 136.6,
+          "y": 132.3,
+          "w": 90.9,
+          "h": 26.7,
+          "charX": [
+            0,
+            25.9,
+            39.2,
+            65.1,
+            90.9
+          ],
+          "fontFamily": "함초롬바탕",
+          "fontSize": 26.7,
+          "bold": false,
+          "italic": false,
+          "ratio": 1,
+          "letterSpacing": 0,
+          "underline": false,
+          "strikethrough": false,
+          "textColor": "#000000",
+          "charShapeId": 7,
+          "paraShapeId": 22,
+          "secIdx": 0,
+          "paraIdx": 0,
+          "charStart": 0
+        },
+        {
+          "text": "2.",
+          "x": 113.4,
+          "y": 174.9,
+          "w": 11.6,
+          "h": 13.3,
+          "charX": [
+            0,
+            7.4,
+            11.6
+          ],
+          "fontFamily": "함초롬바탕",
+          "fontSize": 13.3,
+          "bold": false,
+          "italic": true,
+          "ratio": 1,
+          "letterSpacing": 0,
+          "underline": false,
+          "strikethrough": false,
+          "textColor": "#000000",
+          "paraShapeId": 22
+        },
+        {
+          "text": "나 문단",
+          "x": 125,
+          "y": 174.9,
+          "w": 45.5,
+          "h": 13.3,
+          "charX": [
+            0,
+            13,
+            19.6,
+            32.6,
+            45.5
+          ],
+          "fontFamily": "함초롬바탕",
+          "fontSize": 13.3,
+          "bold": false,
+          "italic": false,
+          "ratio": 1,
+          "letterSpacing": 0,
+          "underline": false,
+          "strikethrough": false,
+          "textColor": "#000000",
+          "charShapeId": 0,
+          "paraShapeId": 22,
+          "secIdx": 0,
+          "paraIdx": 1,
+          "charStart": 0
+        }
+      ]
+    },
+    "follow-body-size_hwp": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-8659-api/pr8528/follow-body-size.hwp",
+    "follow-body-size_hwpx": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-8659-api/pr8528/follow-body-size.hwpx"
+  },
+  "status": "passed"
+}

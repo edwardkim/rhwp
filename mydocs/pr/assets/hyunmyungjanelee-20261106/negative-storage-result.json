@@ -1,0 +1,14 @@
+[
+  {
+    "cap": null,
+    "exit": 0,
+    "stdout": "accepted pages=1 decoded=3000653\n",
+    "stderr": ""
+  },
+  {
+    "cap": "3065060",
+    "exit": 0,
+    "stdout": "accepted pages=1 decoded=3000653\n",
+    "stderr": ""
+  }
+]

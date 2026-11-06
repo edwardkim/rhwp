@@ -17,7 +17,9 @@ use super::super::page_layout::LayoutRect;
 use super::super::pagination::PageItem;
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
-use super::super::{hwpunit_to_px, px_to_hwpunit, PathCommand, ShapeStyle, TextStyle};
+use super::super::{
+    hwpunit_to_px, px_to_hwpunit, PathCommand, ShapeStyle, TextStyle, HWPUNIT_PER_INCH,
+};
 use super::paragraph_layout::{
     center_alignment_excludes_trailing_space, trailing_space_width_after_last_inline_object,
 };
@@ -71,7 +73,7 @@ use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{Caption, CommonObjAttr, DrawingObjAttr, ShapeObject, TextBox};
-use crate::model::shape::{HorzAlign, HorzRelTo, VertAlign, VertRelTo};
+use crate::model::shape::{HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
 use crate::model::style::{Alignment, FillType};
 
 /// 묶음 자식의 AABB에서 부호 있는 점 좌표 원점과 배율을 복원한다.
@@ -155,6 +157,33 @@ fn textbox_vpos_px(vertical_pos: i32, origin_hu: Option<i32>, dpi: f64) -> f64 {
 /// #1681 편람 글상자에 도입된 경험적 보정을 텍스트가 있는 글상자에만 유지한다.
 /// 글상자 포함 여부와 비인쇄 여부는 별개이며 이 조건은 포맷의 일반 비인쇄 규칙이 아니다.
 /// #6852: 일반 도형의 흰색 채우기를 마스크로 추정하면 명시된 실선까지 소실된다.
+/// 글상자 안 글앞으로/글뒤로 표의 (가로, 세로) 오프셋(px). 오프셋에 표 바깥 여백(왼쪽·위)을 더한다.
+/// 가로 단·문단 기준 왼쪽 정렬, 세로 문단 기준만 다룬다. 그 밖의 배치는 None 이며 기존처럼 문단 정렬로 놓는다.
+fn textbox_floating_table_offset_px(
+    common: &CommonObjAttr,
+    outer_margin_left: i16,
+    outer_margin_top: i16,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    let floating = matches!(
+        common.text_wrap,
+        TextWrap::InFrontOfText | TextWrap::BehindText
+    );
+    let horz = matches!(common.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
+        && common.horz_align == HorzAlign::Left;
+    let vert = common.vert_rel_to == VertRelTo::Para && common.vert_align == VertAlign::Top;
+    (!common.treat_as_char && floating && horz && vert).then(|| {
+        (
+            // 부호 있는 저장 오프셋과 여백은 합계가 i32 범위를 넘을 수 있다.
+            // f64는 이 정수 범위를 정확히 표현하므로 좌표를 자르거나 감싸지 않는다.
+            (common.horizontal_offset as i32 as f64 + f64::from(outer_margin_left)) * dpi
+                / HWPUNIT_PER_INCH,
+            (common.vertical_offset as i32 as f64 + f64::from(outer_margin_top)) * dpi
+                / HWPUNIT_PER_INCH,
+        )
+    })
+}
+
 fn should_suppress_group_textbox_construction_stroke(drawing: &DrawingObjAttr) -> bool {
     let Some(text_box) = drawing.text_box.as_ref() else {
         return false;
@@ -3791,6 +3820,7 @@ impl LayoutEngine {
 
         let flow_first_child = textbox_node.children.len();
         let flow_first_border_range = self.para_border_ranges.borrow().len();
+        let mut paragraph_origins = Vec::with_capacity(composed_paras.len());
         let mut para_y = inner_area.y + vert_offset;
         for (tb_para_idx, composed) in composed_paras.iter().enumerate() {
             // vpos 기반 수직 위치: 원본 HWP 파일에서는 vertical_pos가 누적 절대값,
@@ -3803,6 +3833,7 @@ impl LayoutEngine {
                     + textbox_vpos_px(first_ls.vertical_pos, textbox_vpos_origin_hu, self.dpi);
                 para_y = vpos_y.max(para_y);
             }
+            paragraph_origins.push(para_y);
             // [#6651] 글자처럼 개체 폭 합을 첫 줄 글자 오프셋(`first_line_x_offset`)으로
             // 넘기지 않는다. 그 오프셋은 "개체를 문단 시작에 놓고 글자를 뒤에" 두던 옛
             // 모델의 것이고, 지금은 `layout_composed_paragraph` 의 `run_tacs` 분기가 개체의
@@ -3862,6 +3893,9 @@ impl LayoutEngine {
                 _ => free_space,
             };
             if vert_offset > 0.0 {
+                for origin in &mut paragraph_origins {
+                    *origin += vert_offset;
+                }
                 for node in &mut textbox_node.children[flow_first_child..] {
                     Self::translate_subtree_y(node, vert_offset);
                 }
@@ -3901,18 +3935,9 @@ impl LayoutEngine {
 
         let mut inline_y = inner_area.y + vert_offset; // 텍스트 영역 시작 위치
         for (pi, para) in textbox_paragraphs[..para_count].iter().enumerate() {
-            // 이 문단에 해당하는 composed 문단의 시작 y 위치 계산
-            let para_start_y = if pi < composed_paras.len() {
-                if let Some(first_seg) = para.line_segs.first() {
-                    inner_area.y
-                        + vert_offset
-                        + textbox_vpos_px(first_seg.vertical_pos, textbox_vpos_origin_hu, self.dpi)
-                } else {
-                    inline_y
-                }
-            } else {
-                inline_y
-            };
+            // 글과 개체가 같은 실제 문단 배치 결과를 소비한다. 떠 있는 개체의
+            // paint 끝을 다음 문단 원점으로 사용하면 글 흐름과 소유가 갈라진다.
+            let para_start_y = paragraph_origins[pi];
 
             // 문단 정렬 조회
             let para_alignment = if pi < composed_paras.len() {
@@ -4550,6 +4575,31 @@ impl LayoutEngine {
                             .get(para.para_shape_id as usize)
                             .map(|ps| ps.alignment)
                             .unwrap_or(Alignment::Left);
+                        // 글상자 안에서 글앞으로/글뒤로 떠 있는 표는 자기 가로·세로 오프셋 자리에 놓는다.
+                        // 글상자 안의 단·문단 기준은 글상자 글 영역이다.
+                        let floating_offset = textbox_floating_table_offset_px(
+                            &table.common,
+                            table.outer_margin_left,
+                            table.outer_margin_top,
+                            self.dpi,
+                        );
+                        let table_ctx = CellContext {
+                            in_textbox: true,
+                            parent_para_index: para_index,
+                            path: table_enclosing_path.clone(),
+                        };
+                        let inline_origin = table
+                            .common
+                            .treat_as_char
+                            .then(|| {
+                                tree.get_inline_shape_position(
+                                    section_index,
+                                    pi,
+                                    ctrl_idx_in_para,
+                                    Some(&table_ctx),
+                                )
+                            })
+                            .flatten();
                         let table_inline_x = if table.common.treat_as_char {
                             advance_to_control(&mut inline_x);
                             let x =
@@ -4557,17 +4607,24 @@ impl LayoutEngine {
                             inline_x += hwpunit_to_px(table.flow_width_hu() as i32, self.dpi)
                                 + hwpunit_to_px(table.outer_margin_left as i32, self.dpi)
                                 + hwpunit_to_px(table.outer_margin_right as i32, self.dpi);
-                            Some(x)
+                            Some(inline_origin.map_or(x, |(x, _)| x))
                         } else {
-                            None
+                            floating_offset.map(|(dx, _)| inner_area.x + dx)
                         };
-                        inline_y = self.layout_embedded_table(
+                        let dy = floating_offset.map_or(0.0, |(_, dy)| dy);
+                        let fallback_y = if table.common.treat_as_char {
+                            inline_obj_y + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
+                        } else {
+                            para_start_y + dy
+                        };
+                        let table_y = inline_origin.map_or(fallback_y, |(_, y)| y);
+                        let table_bottom = self.layout_embedded_table(
                             tree,
                             &mut textbox_node,
                             table,
                             styles,
                             &inner_area,
-                            para_start_y,
+                            table_y,
                             Some((
                                 section_index,
                                 para_index,
@@ -4578,6 +4635,14 @@ impl LayoutEngine {
                             host_align,
                             table_inline_x,
                         );
+                        if table.common.treat_as_char
+                            || !matches!(
+                                table.common.text_wrap,
+                                TextWrap::InFrontOfText | TextWrap::BehindText
+                            )
+                        {
+                            inline_y = table_bottom;
+                        }
                     }
                     _ => {}
                 }

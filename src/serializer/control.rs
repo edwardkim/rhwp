@@ -1643,9 +1643,17 @@ fn write_picture_extra<W: std::io::Write>(
 ) -> std::io::Result<()> {
     let extra = &pic.raw_picture_extra;
     let transparency = pic.image_attr.transparency_alpha_byte();
-    if extra.len() >= 18 {
-        w.write_bytes(&extra[..extra.len() - 1])?;
+    let layout = crate::model::image::picture_extra_layout(extra);
+    if let Some(alpha_offset) = layout.alpha_offset {
+        w.write_bytes(&extra[..alpha_offset])?;
         w.write_u8(transparency)?;
+        w.write_bytes(&extra[alpha_offset + 1..])?;
+    } else if extra.len() > 18 {
+        // 그림 효과 정보가 있고 투명도 바이트가 생략된 꼬리: 원본 크기 뒤에 붙인다.
+        w.write_bytes(extra)?;
+        if transparency > 0 {
+            w.write_u8(transparency)?;
+        }
     } else {
         w.write_bytes(extra)?;
         if transparency > 0 {

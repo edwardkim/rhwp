@@ -1,0 +1,40 @@
+{
+  "page": 1,
+  "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/bindata_link_shift/rhwp_png/rhwp_001.png",
+  "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/bindata_link_shift/pdf_png/pdf-001.png",
+  "overlay_png": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/native/bindata_link_shift/overlay_001.png",
+  "width": 794,
+  "height": 1122,
+  "pixel_diff_threshold": 16,
+  "overlay_color_legend": {
+    "rhwp_only": "blue",
+    "pdf_only": "red",
+    "both_different": "orange",
+    "matching": "gray"
+  },
+  "total_pixels": 890868,
+  "diff_pixels": 10456,
+  "diff_ratio": 0.01173687,
+  "pixel_match_percent": 98.82631,
+  "ink_union_pixels": 47571,
+  "ink_diff_pixels": 10279,
+  "ink_diff_ratio": 0.21607702,
+  "ink_match_percent": 78.3923,
+  "visual_accuracy_proxy_percent": 78.3923,
+  "tolerant_content_match_radius_px": 2,
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "silhouette_raw_match_percent": 99.98529,
+  "silhouette_raw_unmatched_pixels": 7,
+  "silhouette_boundary_reconciled_pixels": 7,
+  "silhouette_color_tolerance": 32,
+  "silhouette_content_union_pixels": 47571,
+  "tolerant_content_match_percent": 100.0,
+  "mean_abs_channel_delta": 0.955,
+  "max_channel_delta": 236,
+  "diff_bbox": [
+    56,
+    131,
+    691,
+    425
+  ]
+}

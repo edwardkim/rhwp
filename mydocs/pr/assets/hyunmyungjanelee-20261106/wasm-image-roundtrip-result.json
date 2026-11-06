@@ -1,0 +1,161 @@
+{
+  "wasmSha256": "251c54c1194265e74e7a76863c5645da74330e12044b7f877e9c2fe14405a98f",
+  "records": [
+    {
+      "issue": 8594,
+      "format": "hwp",
+      "inputSha256": "04f067517a604e75fd3a6b75130226af4fd7c65a27dab5859bdba87cb50856ff",
+      "outputSha256": "8ff620a1304a7c2331cb93ef9a964666bf680b7ba1ec0584d398ffedead0a5d2",
+      "pictures": [
+        {
+          "mime": "image/jpeg",
+          "dataSha256": "214d287355d97f7d8708455922c237de228680d771a7d8760d524da9a12b0b72",
+          "originalSizeHu": [
+            49380,
+            45840
+          ],
+          "crop": {
+            "left": 0,
+            "top": 0,
+            "right": 49380,
+            "bottom": 45840
+          },
+          "opacity": 1
+        },
+        {
+          "mime": "image/jpeg",
+          "dataSha256": "e803d0ebeaae66c88eb3424c24aaa888a9516adffb4b75ec134779ae6a9055f4",
+          "originalSizeHu": [
+            80340,
+            42060
+          ],
+          "crop": {
+            "left": 0,
+            "top": 0,
+            "right": 80340,
+            "bottom": 42060
+          },
+          "opacity": 1
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "issue": 8594,
+      "format": "hwpx",
+      "inputSha256": "04f067517a604e75fd3a6b75130226af4fd7c65a27dab5859bdba87cb50856ff",
+      "outputSha256": "7141a2b01a079f9b5585ec7f3ddceb8987e0c7d0e8c0f2f867a84ccdb3689769",
+      "pictures": [
+        {
+          "mime": "image/jpeg",
+          "dataSha256": "214d287355d97f7d8708455922c237de228680d771a7d8760d524da9a12b0b72",
+          "originalSizeHu": [
+            49380,
+            45840
+          ],
+          "crop": {
+            "left": 0,
+            "top": 0,
+            "right": 49380,
+            "bottom": 45840
+          },
+          "opacity": 1
+        },
+        {
+          "mime": "image/jpeg",
+          "dataSha256": "e803d0ebeaae66c88eb3424c24aaa888a9516adffb4b75ec134779ae6a9055f4",
+          "originalSizeHu": [
+            80340,
+            42060
+          ],
+          "crop": {
+            "left": 0,
+            "top": 0,
+            "right": 80340,
+            "bottom": 42060
+          },
+          "opacity": 1
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "issue": 8593,
+      "format": "hwp",
+      "inputSha256": "fb71457b094a0b534fe8ea2092ecc3a642bc1e5ea0ffe99c2915e426b6c629f4",
+      "outputSha256": "7e560d608b576a5c75295cce136fca44c9acb10ac79da92949d3f0ff7bc5f82d",
+      "pictures": [
+        {
+          "mime": "image/jpeg",
+          "dataSha256": "214d287355d97f7d8708455922c237de228680d771a7d8760d524da9a12b0b72",
+          "originalSizeHu": [
+            49380,
+            45840
+          ],
+          "crop": {
+            "left": 0,
+            "top": 0,
+            "right": 49380,
+            "bottom": 45840
+          },
+          "opacity": 1
+        },
+        {
+          "mime": "image/jpeg",
+          "dataSha256": "e803d0ebeaae66c88eb3424c24aaa888a9516adffb4b75ec134779ae6a9055f4",
+          "originalSizeHu": [
+            80340,
+            42060
+          ],
+          "crop": {
+            "left": 0,
+            "top": 0,
+            "right": 80340,
+            "bottom": 42060
+          },
+          "opacity": 1
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "issue": 8593,
+      "format": "hwpx",
+      "inputSha256": "fb71457b094a0b534fe8ea2092ecc3a642bc1e5ea0ffe99c2915e426b6c629f4",
+      "outputSha256": "bb3b0acde9f9e2cc6c560a3501ffdcd82c1da8157ccdf774382c1db30512a014",
+      "pictures": [
+        {
+          "mime": "image/jpeg",
+          "dataSha256": "214d287355d97f7d8708455922c237de228680d771a7d8760d524da9a12b0b72",
+          "originalSizeHu": [
+            49380,
+            45840
+          ],
+          "crop": {
+            "left": 0,
+            "top": 0,
+            "right": 49380,
+            "bottom": 45840
+          },
+          "opacity": 1
+        },
+        {
+          "mime": "image/jpeg",
+          "dataSha256": "e803d0ebeaae66c88eb3424c24aaa888a9516adffb4b75ec134779ae6a9055f4",
+          "originalSizeHu": [
+            80340,
+            42060
+          ],
+          "crop": {
+            "left": 0,
+            "top": 0,
+            "right": 80340,
+            "bottom": 42060
+          },
+          "opacity": 1
+        }
+      ],
+      "result": "PASS"
+    }
+  ]
+}

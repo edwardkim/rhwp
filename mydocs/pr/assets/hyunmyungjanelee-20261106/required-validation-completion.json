@@ -1,0 +1,267 @@
+{
+  "base": "5716a226b562b7300193dd0b573ded9cd71ac890",
+  "security_inputs": [
+    "samples/issue8513/textbox_floating_table_following_control.hwpx",
+    "samples/issue8513/textbox_floating_table_offset.hwpx",
+    "samples/issue8579/partial_table_control_only_para.hwp",
+    "samples/issue8579/partial_table_following_text.hwpx",
+    "samples/issue8584/short_row_grid_r21.hwpx",
+    "samples/issue8584/short_row_grid_r4.hwpx",
+    "samples/issue8593/picture_soft_edge.hwp",
+    "samples/issue8594/bindata_link_shift.hwp"
+  ],
+  "results": [
+    {
+      "name": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "minimal_fonts": false,
+      "started_utc": "2026-11-06T04:03:35.390098+00:00",
+      "seconds": 1.62,
+      "exit": 0
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "minimal_fonts": true,
+      "started_utc": "2026-11-06T04:03:37.010410+00:00",
+      "seconds": 27.24,
+      "exit": 0
+    },
+    {
+      "name": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "minimal_fonts": true,
+      "started_utc": "2026-11-06T04:04:04.247489+00:00",
+      "seconds": 88.66,
+      "exit": 0
+    },
+    {
+      "name": "clippy-wasm32",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "minimal_fonts": true,
+      "started_utc": "2026-11-06T04:05:32.904618+00:00",
+      "seconds": 87.64,
+      "exit": 0
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "minimal_fonts": true,
+      "started_utc": "2026-11-06T04:07:00.530585+00:00",
+      "seconds": 113.31,
+      "exit": 0
+    },
+    {
+      "name": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "minimal_fonts": true,
+      "started_utc": "2026-11-06T04:08:53.828972+00:00",
+      "seconds": 118.05,
+      "exit": 0
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "5716a226b562b7300193dd0b573ded9cd71ac890"
+      ],
+      "minimal_fonts": false,
+      "started_utc": "2026-11-06T04:10:51.869189+00:00",
+      "seconds": 0.87,
+      "exit": 0
+    },
+    {
+      "name": "manifest-contract",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/rust-test-suite-manifest.test.mjs"
+      ],
+      "minimal_fonts": false,
+      "started_utc": "2026-11-06T04:10:52.736205+00:00",
+      "seconds": 4.68,
+      "exit": 0
+    },
+    {
+      "name": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--no-fail-fast",
+        "--test-threads",
+        "8",
+        "-E",
+        "test(/issue_8513_|issue_8579_|issue_8584_|issue_8593_|issue_8594_|issue_7524_textbox|issue_8122_|issue_8167_|bin_data_id_index_mapping|external_image/)"
+      ],
+      "minimal_fonts": true,
+      "started_utc": "2026-11-06T04:10:57.414831+00:00",
+      "seconds": 741.75,
+      "exit": 0
+    },
+    {
+      "name": "all-regression",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--no-fail-fast",
+        "--test-threads",
+        "8"
+      ],
+      "minimal_fonts": true,
+      "started_utc": "2026-11-06T04:23:19.091960+00:00",
+      "seconds": 588.69,
+      "exit": 0
+    },
+    {
+      "name": "native-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads=8"
+      ],
+      "minimal_fonts": true,
+      "started_utc": "2026-11-06T04:33:07.692060+00:00",
+      "seconds": 336.24,
+      "exit": 0
+    },
+    {
+      "name": "native-placeholder",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "minimal_fonts": true,
+      "started_utc": "2026-11-06T04:38:43.892981+00:00",
+      "seconds": 288.24,
+      "exit": 0
+    },
+    {
+      "name": "native-direct-pdf",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "minimal_fonts": true,
+      "started_utc": "2026-11-06T04:43:32.116538+00:00",
+      "seconds": 14.67,
+      "exit": 0
+    },
+    {
+      "name": "sample-security",
+      "execution": "covered_by_successful_all_regression",
+      "source_command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--no-fail-fast",
+        "--test-threads",
+        "8"
+      ],
+      "source_run_started_utc": "2026-11-06T04:23:19.091960+00:00",
+      "security_inputs": [
+        "samples/issue8513/textbox_floating_table_following_control.hwpx",
+        "samples/issue8513/textbox_floating_table_offset.hwpx",
+        "samples/issue8579/partial_table_control_only_para.hwp",
+        "samples/issue8579/partial_table_following_text.hwpx",
+        "samples/issue8584/short_row_grid_r21.hwpx",
+        "samples/issue8584/short_row_grid_r4.hwpx",
+        "samples/issue8593/picture_soft_edge.hwp",
+        "samples/issue8594/bindata_link_shift.hwp"
+      ],
+      "passed_test_lines": [
+        "        PASS [   0.012s] (11656/12752) rhwp::regression_suite_025 security_corpus_regression::positive_corpus_hidden_text_vector_is_caught",
+        "        PASS [   0.052s] (11657/12752) rhwp::regression_suite_025 security_corpus_regression::new_sample_documents_are_clean_across_all_three_detectors",
+        "        PASS [   0.091s] (11658/12752) rhwp::regression_suite_025 security_corpus_regression::all_three_envelopes_share_a_consistent_clean_and_array_contract",
+        "        PASS [   0.042s] (11659/12752) rhwp::regression_suite_025 security_corpus_regression::positive_corpus_injection_vector_is_caught",
+        "        PASS [   0.055s] (11665/12752) rhwp::regression_suite_025 security_corpus_regression::positive_corpus_unicode_vector_is_caught",
+        "        PASS [   1.325s] (11794/12752) rhwp::regression_suite_025 security_corpus_regression::allowlisted_documents_still_actually_trigger_detection"
+      ],
+      "outcome": "passed",
+      "duplicate_execution_cancelled": true,
+      "raw_duplicate_exit": 143
+    }
+  ]
+}

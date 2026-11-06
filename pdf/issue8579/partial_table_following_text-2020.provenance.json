@@ -1,0 +1,16 @@
+{
+  "job_id": "c3aab490-7906-4260-bcf8-7ea7c8409673",
+  "status": "succeeded",
+  "engine": "2020",
+  "result": {
+    "engine": "2020",
+    "hancom_version": "11.0.0.9136",
+    "bytes": 38730,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+  },
+  "input": "samples/issue8579/partial_table_following_text.hwpx",
+  "input_sha256": "393646e7cd3efbfaf00f40fe20e3126a2414c08d64291e59f69c0ea6bcbe5fc6",
+  "pdf_sha256": "5ef2c2a803e1154daf331b8c658c2e49b8b4f4e67a12b91eba567fd0e583c383",
+  "purpose": "maintainer public boundary control"
+}

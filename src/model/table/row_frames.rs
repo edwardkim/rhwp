@@ -92,6 +92,20 @@ impl Table {
                 result[row] = Some(frames);
             }
         }
+        // 행마다 칸 경계가 엇갈리는 표는 하한 해 경계가 모든 행의 칸 끝점이다.
+        // 짧은 행을 자기 선언 폭으로 닫으면 다른 행이 고정한 경계보다 앞에 끝난다.
+        if let Some(solved) = self.contradictory_column_boundaries_hu_with_storage(storage)? {
+            for frames in result.iter_mut().flatten() {
+                for frame in frames.iter_mut() {
+                    let cell = &self.cells[frame.cell_index];
+                    let start = usize::from(cell.col);
+                    let end = start + usize::from(cell.col_span);
+                    frame.start_hu = solved[start] + spacing;
+                    frame.width_hu = solved[end] - solved[start] - spacing;
+                }
+            }
+            return Ok(result);
+        }
         let mut boundaries = storage.filled(cols + 1, None)?;
         let mut conflicting = storage.filled(cols + 1, false)?;
         let mut observe = |col: usize, position: i64| {

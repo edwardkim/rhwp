@@ -1,0 +1,22 @@
+[
+  {
+    "path": "src/model/table.rs",
+    "same_as_negative_control_product": true,
+    "sha256": "c2e76cf5b056ca615509bc44c4d6df2e9053306123c6bddca5f9ab72b2a191e8"
+  },
+  {
+    "path": "src/model/table/contradictory_grid.rs",
+    "same_as_negative_control_product": true,
+    "sha256": "aec7364c00fbeed30941bb39954edaebac6019100a6029c7954480793a3c0cb1"
+  },
+  {
+    "path": "src/model/table/row_frames.rs",
+    "same_as_negative_control_product": true,
+    "sha256": "cf8944824a6ef617106585c510d40912b59859e51203d341d487e913fade3089"
+  },
+  {
+    "path": "src/document_core/pdf_import_session.rs",
+    "same_as_negative_control_product": true,
+    "sha256": "ff15911e9a8745aa78bd9c05af30f083de5d7b535f5ada6e8092df9bf2edd4ad"
+  }
+]

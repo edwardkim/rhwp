@@ -1,0 +1,38 @@
+{
+  "name": "sample-security",
+  "execution": "covered_by_successful_all_regression",
+  "source_command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--tests",
+    "--no-fail-fast",
+    "--test-threads",
+    "8"
+  ],
+  "source_run_started_utc": "2026-11-06T04:23:19.091960+00:00",
+  "security_inputs": [
+    "samples/issue8513/textbox_floating_table_following_control.hwpx",
+    "samples/issue8513/textbox_floating_table_offset.hwpx",
+    "samples/issue8579/partial_table_control_only_para.hwp",
+    "samples/issue8579/partial_table_following_text.hwpx",
+    "samples/issue8584/short_row_grid_r21.hwpx",
+    "samples/issue8584/short_row_grid_r4.hwpx",
+    "samples/issue8593/picture_soft_edge.hwp",
+    "samples/issue8594/bindata_link_shift.hwp"
+  ],
+  "passed_test_lines": [
+    "        PASS [   0.012s] (11656/12752) rhwp::regression_suite_025 security_corpus_regression::positive_corpus_hidden_text_vector_is_caught",
+    "        PASS [   0.052s] (11657/12752) rhwp::regression_suite_025 security_corpus_regression::new_sample_documents_are_clean_across_all_three_detectors",
+    "        PASS [   0.091s] (11658/12752) rhwp::regression_suite_025 security_corpus_regression::all_three_envelopes_share_a_consistent_clean_and_array_contract",
+    "        PASS [   0.042s] (11659/12752) rhwp::regression_suite_025 security_corpus_regression::positive_corpus_injection_vector_is_caught",
+    "        PASS [   0.055s] (11665/12752) rhwp::regression_suite_025 security_corpus_regression::positive_corpus_unicode_vector_is_caught",
+    "        PASS [   1.325s] (11794/12752) rhwp::regression_suite_025 security_corpus_regression::allowlisted_documents_still_actually_trigger_detection"
+  ],
+  "outcome": "passed",
+  "duplicate_execution_cancelled": true,
+  "raw_duplicate_exit": 143
+}

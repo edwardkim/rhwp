@@ -1,0 +1,104 @@
+{
+  "reason": "Remote devel advanced to 5716a226 with PR #8659 product changes; stop old-base required gates before latest-base integration",
+  "runner_pids": [
+    16595
+  ],
+  "terminated_own_descendants": [
+    16595,
+    31918,
+    31919,
+    31920,
+    31953,
+    33151,
+    33152
+  ],
+  "completed_results": {
+    "base": "170b886f167b705b6e630c5b34bb638d92fae0a9",
+    "security_inputs": [
+      "samples/issue8513/textbox_floating_table_following_control.hwpx",
+      "samples/issue8513/textbox_floating_table_offset.hwpx",
+      "samples/issue8579/partial_table_control_only_para.hwp",
+      "samples/issue8579/partial_table_following_text.hwpx",
+      "samples/issue8584/short_row_grid_r21.hwpx",
+      "samples/issue8584/short_row_grid_r4.hwpx",
+      "samples/issue8593/picture_soft_edge.hwp",
+      "samples/issue8594/bindata_link_shift.hwp"
+    ],
+    "results": [
+      {
+        "name": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "minimal_fonts": false,
+        "started_utc": "2026-11-06T02:59:12.108387+00:00",
+        "seconds": 30.0,
+        "exit": 0
+      },
+      {
+        "name": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "minimal_fonts": true,
+        "started_utc": "2026-11-06T02:59:42.109324+00:00",
+        "seconds": 30.0,
+        "exit": 0
+      },
+      {
+        "name": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "minimal_fonts": true,
+        "started_utc": "2026-11-06T03:00:12.111042+00:00",
+        "seconds": 150.0,
+        "exit": 0
+      },
+      {
+        "name": "clippy-wasm32",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "minimal_fonts": true,
+        "started_utc": "2026-11-06T03:02:42.107532+00:00",
+        "seconds": 120.0,
+        "exit": 0
+      },
+      {
+        "name": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace"
+        ],
+        "minimal_fonts": true,
+        "started_utc": "2026-11-06T03:04:42.101869+00:00",
+        "seconds": 210.0,
+        "exit": 0
+      }
+    ]
+  }
+}

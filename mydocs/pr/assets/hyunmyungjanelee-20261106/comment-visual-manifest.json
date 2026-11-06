@@ -1,0 +1,142 @@
+[
+  {
+    "mode": "native",
+    "key": "textbox_floating_table_offset",
+    "page": 1,
+    "review": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/native/textbox_floating_table_offset/review_001.png",
+    "overlay": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/native/textbox_floating_table_offset/overlay_001.png",
+    "review_sha256": "62508402193d96d7e7dde0771fcd089a7c4296efc96b5acab213e1e350bb80d1",
+    "overlay_sha256": "efd4c1e0b90922e0ec33ebd219d9862a6e579ce479cf630ff540841ecab283aa",
+    "raw": 100.0
+  },
+  {
+    "mode": "native",
+    "key": "partial_table_control_only_para",
+    "page": 1,
+    "review": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/native/partial_table_control_only_para/review_001.png",
+    "overlay": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/native/partial_table_control_only_para/overlay_001.png",
+    "review_sha256": "454f8237e5ad5afd3aab301f538a5ae97d15616dd49ff6247d5f13bf9d4d9245",
+    "overlay_sha256": "59433bc7a276ef9c63fbd45785c375d0a51332d59eed13a0651ec6c0b569306c",
+    "raw": 100.0
+  },
+  {
+    "mode": "native",
+    "key": "partial_table_control_only_para",
+    "page": 2,
+    "review": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/native/partial_table_control_only_para/review_002.png",
+    "overlay": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/native/partial_table_control_only_para/overlay_002.png",
+    "review_sha256": "0dcbf48aeffc364e97a276eb56877d58295ebef0f7dd0dc7b47f2b0c56c00ea2",
+    "overlay_sha256": "f4aea988ad3eb5f3e5256c466fa99fb5a3d837f95394bcfe0297b147ce0252cf",
+    "raw": 100.0
+  },
+  {
+    "mode": "native",
+    "key": "bindata_link_shift",
+    "page": 1,
+    "review": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/native/bindata_link_shift/review_001.png",
+    "overlay": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/native/bindata_link_shift/overlay_001.png",
+    "review_sha256": "8971a0be4585785a1bd263042be36485242ea9f504c3bb08883800acb2aeb3d8",
+    "overlay_sha256": "e5767e98276f638e8fc459c3e73b254b945cfaccd192bd28d736341d819bcde8",
+    "raw": 99.98529
+  },
+  {
+    "mode": "native",
+    "key": "picture_soft_edge",
+    "page": 1,
+    "review": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/native/picture_soft_edge/review_001.png",
+    "overlay": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/native/picture_soft_edge/overlay_001.png",
+    "review_sha256": "9b0808a3013b1680e2d0f90edc660708001c32351f8e825ac24f51659597b749",
+    "overlay_sha256": "1b02e6d487371482a1d8b641a12c0133e5cd406cc077dd48961f5179bd323b2d",
+    "raw": 99.91617
+  },
+  {
+    "mode": "native",
+    "key": "short_row_grid_r21",
+    "page": 1,
+    "review": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/native/short_row_grid_r21/review_001.png",
+    "overlay": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/native/short_row_grid_r21/overlay_001.png",
+    "review_sha256": "4026a97a5148ed81e9adfe2e29a326ffd69745c0eec075458cbdebae4089c0dc",
+    "overlay_sha256": "41f0bf18454213525e7cb0f8a83fada59f866f08f6f428cdb5bb94b1fb7da0e4",
+    "raw": 99.9903
+  },
+  {
+    "mode": "native",
+    "key": "short_row_grid_r4",
+    "page": 1,
+    "review": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/native/short_row_grid_r4/review_001.png",
+    "overlay": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/native/short_row_grid_r4/overlay_001.png",
+    "review_sha256": "2390d57456a6b215c9cc1bc97321d05a6fce3aa6a368574c0124adff27207a79",
+    "overlay_sha256": "4e20780193a47d04d1e225138631f230f6ae031aa0a5a0b8c57bb96b828f278d",
+    "raw": 99.99207
+  },
+  {
+    "mode": "wasm",
+    "key": "textbox_floating_table_offset",
+    "page": 1,
+    "review": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/wasm/textbox_floating_table_offset/review_001.png",
+    "overlay": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/wasm/textbox_floating_table_offset/overlay_001.png",
+    "review_sha256": "def249d66903b39b0752af0097bfb06b72653cb74ef710242f5252c45728cb25",
+    "overlay_sha256": "2e459d80ba9268ab291c9101f36f5f4b3bb30903b597acbeef1f3a28cc28dde7",
+    "raw": 100.0
+  },
+  {
+    "mode": "wasm",
+    "key": "partial_table_control_only_para",
+    "page": 1,
+    "review": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/wasm/partial_table_control_only_para/review_001.png",
+    "overlay": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/wasm/partial_table_control_only_para/overlay_001.png",
+    "review_sha256": "162a80fd381cae909383abb07785512177dc4d72ca612b12146ebd773e325b2f",
+    "overlay_sha256": "becaf690818db4665cc61d5f187a70b032799c1b02c799205921d0e5bc5db754",
+    "raw": 100.0
+  },
+  {
+    "mode": "wasm",
+    "key": "partial_table_control_only_para",
+    "page": 2,
+    "review": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/wasm/partial_table_control_only_para/review_002.png",
+    "overlay": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/wasm/partial_table_control_only_para/overlay_002.png",
+    "review_sha256": "2d35cd3a671b8b145513f1f45f1be09c55bbb337bc6512c717b2ae784d92b529",
+    "overlay_sha256": "d13cd5ca93c3fa4203f4043e88488c0e89808887882323a57435cac62a81c04d",
+    "raw": 100.0
+  },
+  {
+    "mode": "wasm",
+    "key": "bindata_link_shift",
+    "page": 1,
+    "review": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/wasm/bindata_link_shift/review_001.png",
+    "overlay": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/wasm/bindata_link_shift/overlay_001.png",
+    "review_sha256": "330c12efc0b3d3d0086503cc80efc8491d90443086710f84747701a132f9fe3d",
+    "overlay_sha256": "38ed0c9d722aae6fcd17ef9595bd3f09262024da350e1cc44a082146ca4b3afa",
+    "raw": 99.98529
+  },
+  {
+    "mode": "wasm",
+    "key": "picture_soft_edge",
+    "page": 1,
+    "review": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/wasm/picture_soft_edge/review_001.png",
+    "overlay": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/wasm/picture_soft_edge/overlay_001.png",
+    "review_sha256": "5c651917e773a3dd8b8e29b38366f356c776750cc7445304379d70f168873fd1",
+    "overlay_sha256": "c6721ae81ce1ba2271d640028ea3034ba99c9f87f349a3c6fb67315721a7973e",
+    "raw": 99.91621
+  },
+  {
+    "mode": "wasm",
+    "key": "short_row_grid_r21",
+    "page": 1,
+    "review": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/wasm/short_row_grid_r21/review_001.png",
+    "overlay": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/wasm/short_row_grid_r21/overlay_001.png",
+    "review_sha256": "a75188287d91aaa0e9a64af6de2cf3d1a63a6f4483b10d6a84bd1fcb7d074cd3",
+    "overlay_sha256": "1f029af08a33e41afa3e8186a2fd7de375789a0dfc575be2b3a0a9a0e548d4c1",
+    "raw": 100.0
+  },
+  {
+    "mode": "wasm",
+    "key": "short_row_grid_r4",
+    "page": 1,
+    "review": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/wasm/short_row_grid_r4/review_001.png",
+    "overlay": "mydocs/pr/assets/hyunmyungjanelee-20261106/comment-visual/wasm/short_row_grid_r4/overlay_001.png",
+    "review_sha256": "c42d460a38d645b0e8d2333cb3759e4b3649fa85cb2646e4865da7902038a00b",
+    "overlay_sha256": "2af9e001bfef764fd66dc6f4f7ce6f0a035f625a24a702774d8b98b158b6294b",
+    "raw": 100.0
+  }
+]

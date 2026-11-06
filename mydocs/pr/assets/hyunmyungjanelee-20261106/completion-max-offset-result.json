@@ -1,0 +1,17 @@
+{
+  "kind": "signed source-unit arithmetic diagnostic, not a Hancom visual golden",
+  "before": {
+    "x": -28632994.4,
+    "y": 147.4,
+    "w": 151.2,
+    "h": 75.6
+  },
+  "after": {
+    "x": 28633236.2,
+    "y": 147.4,
+    "w": 151.2,
+    "h": 75.6
+  },
+  "input_sha256": "374818cb5c59820eb43cc61cf7ef5a3afa4142aafd19d2b71d1cc8b388ea7380",
+  "head": "99a1085a9cfb63aafdfcf7274740694d52bdeed9"
+}

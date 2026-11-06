@@ -186,9 +186,15 @@ pub fn check_package(hwpx_bytes: &[u8], doc: &Document) -> PackageCheckReport {
     // 7. BinData 수·확장자 보존 (IR 기준)
     // [#3546] OOXML 차트(extension="ooxml_chart", HWPX 파서가 60000+N 으로 주입)는
     // BinData 가 아니라 Chart/chartN.xml 원형 경로로 방출된다 — 기대값을 분리한다.
+    // HWP5 연결 레코드 자리 항목은 ZIP 엔트리가 없으므로 기대값에서 뺀다.
     let (ir_chart, ir_bin): (Vec<_>, Vec<_>) = doc
         .bin_data_content
         .iter()
+        .enumerate()
+        .filter(|(i, b)| {
+            !crate::model::bin_data::is_hwp5_link_slot(b, doc.doc_info.bin_data_list.get(*i))
+        })
+        .map(|(_, b)| b)
         .partition(|b| b.extension == "ooxml_chart");
     let zip_bin: Vec<&String> = names.iter().filter(|n| n.starts_with("BinData/")).collect();
     if zip_bin.len() != ir_bin.len() {

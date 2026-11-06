@@ -1,0 +1,8 @@
+{
+  "old_base": "170b886f167b705b6e630c5b34bb638d92fae0a9",
+  "new_base": "5716a226b562b7300193dd0b573ded9cd71ac890",
+  "integration_pr": 8659,
+  "merge_tree_conflict": false,
+  "old_validation_is_historical": true,
+  "reason": "18 PR product integration on devel; latest-base product and function preservation must be verified before submission"
+}

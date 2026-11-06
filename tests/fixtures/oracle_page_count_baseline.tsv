@@ -580,3 +580,14 @@ tests/fixtures/semanticist21-20261103/spacing-before.hwpx	1	1
 tests/fixtures/semanticist21-20261103/spacing.hwpx	1	1
 # PR #8542: 같은 공개 HWP에 대응하는 samples/issue8539/nhis-dependent-requirements-2020.pdf, 전쪽 Native/Canvas 검증 완료.
 samples/issue8539/nhis-dependent-requirements.hwp	3	3
+
+# hyunmyungJaneLee 5 PR: 동일 입력의 Desktop 2020/2024 1-up Print, 전쪽 Native/fresh WASM 측정.
+# SHA·인쇄 출처: mydocs/pr/assets/hyunmyungjanelee-20261106/input-reference-pairs.json
+samples/issue8513/textbox_floating_table_following_control.hwpx	1	1
+samples/issue8513/textbox_floating_table_offset.hwpx	1	1
+samples/issue8579/partial_table_control_only_para.hwp	2	2
+samples/issue8579/partial_table_following_text.hwpx	2	2
+samples/issue8584/short_row_grid_r21.hwpx	1	1
+samples/issue8584/short_row_grid_r4.hwpx	1	1
+samples/issue8593/picture_soft_edge.hwp	1	1
+samples/issue8594/bindata_link_shift.hwp	1	1
