@@ -1,5 +1,5 @@
 //! 관계형·고정형: re-03-latin-only-hancom의 PDF API와 합성 PaintOp의 이미지 픽셀·화살촉 vector/거부 계약.
-//! 주석 갱신: 2026-10-30T23:23:28+09:00; 직전 파일 커밋: 2026-10-26T20:05:35+09:00 (19f332edc9258467cb991f4196c53119f357aeb8).
+//! 주석 갱신: 2026-11-06T12:40:48+09:00; 직전 파일 커밋: 2026-10-30T23:30:13+09:00 (f3a57f2e6b7d6c59172cd76b5a597ae9c1439ff7).
 //! 실물 페이지의 조판 좌표를 고정하는 검사가 아니므로 이 assertion의 raw 시각 측정값은 비해당이다.
 //! 합성 알고리즘 계약과 별도의 Native/fresh WASM 실물 검증을 구분한다.
 //! 근거: mydocs/pr/assets/seo_rii_20261030/README.md.
@@ -1202,5 +1202,288 @@ mod connector_arrow_regressions {
             assert!(error.contains("unsupported arrow tangent"), "{error}");
             assert!(error.contains("use the svg backend"));
         }
+    }
+}
+
+// P80: static admission is a bounded diagnostic API, independent of canvas/font
+// preparation. Synthetic invalid fields establish the public reason/location
+// contract without a system-font or real-document layout dependency.
+mod direct_pdf_preflight_contract {
+    use rhwp::paint::{
+        CacheHint, ClipKind, GroupKind, LayerNode, PageLayerTree, PaintOp, RenderProfile,
+    };
+    use rhwp::renderer::pdf::{
+        layer_trees_to_pdf, preflight_direct_pdf, DirectPdfExportOptions, DirectPdfPreflightLimit,
+        DirectPdfPreflightLimits, DirectPdfPreflightLocation, DirectPdfPreflightReason as Reason,
+    };
+    use rhwp::renderer::render_tree::{BoundingBox, ImageNode, RectangleNode};
+    use rhwp::renderer::{GradientFillInfo, PatternFillInfo, ShadowStyle, ShapeStyle};
+
+    fn bounds() -> BoundingBox {
+        BoundingBox::new(0.0, 0.0, 96.0, 64.0)
+    }
+
+    fn rectangle(opacity: f64) -> PaintOp {
+        PaintOp::rectangle(
+            BoundingBox::new(8.0, 8.0, 80.0, 32.0),
+            RectangleNode::new(
+                0.0,
+                ShapeStyle {
+                    opacity,
+                    ..Default::default()
+                },
+                None,
+            ),
+        )
+    }
+
+    fn page(root: LayerNode) -> PageLayerTree {
+        PageLayerTree::with_profile(96.0, 64.0, root, RenderProfile::Print)
+    }
+
+    fn leaf(ops: Vec<PaintOp>) -> LayerNode {
+        LayerNode::leaf(bounds(), None, ops)
+    }
+
+    #[test]
+    fn preflight_collects_independent_failures_on_one_op_and_preserves_export_first_error() {
+        let mut op = rectangle(2.0);
+        let PaintOp::Rectangle { rect, .. } = &mut op else {
+            unreachable!()
+        };
+        rect.transform.rotation = f64::NAN;
+        rect.corner_radius = -1.0;
+        rect.gradient = Some(Box::new(GradientFillInfo {
+            gradient_type: 3,
+            angle: 0,
+            center_x: 50,
+            center_y: 50,
+            colors: vec![0xff],
+            positions: vec![-0.1, 1.0],
+        }));
+        rect.style.pattern = Some(PatternFillInfo {
+            pattern_type: 1,
+            tile_size: 8.0,
+            pattern_color: 0,
+            background_color: 0xffffff,
+        });
+        rect.style.shadow = Some(ShadowStyle {
+            shadow_type: 1,
+            color: 0,
+            offset_x: 1.0,
+            offset_y: 1.0,
+            alpha: 128,
+        });
+        rect.style.stroke_width = -1.0;
+        let pages = [page(leaf(vec![op]))];
+        let report = preflight_direct_pdf(
+            &pages,
+            &DirectPdfExportOptions::default(),
+            DirectPdfPreflightLimits::default(),
+        );
+        let reasons: Vec<_> = report.issues.iter().map(|issue| issue.reason).collect();
+        assert_eq!(
+            reasons,
+            [
+                Reason::InvalidRotation,
+                Reason::InvalidCornerRadius,
+                Reason::UnsupportedGradientType,
+                Reason::GradientColorCountOutOfRange,
+                Reason::InvalidGradientStops,
+                Reason::UnsupportedPatternFill,
+                Reason::UnsupportedShapeShadow,
+                Reason::InvalidOpacity,
+                Reason::InvalidStrokeWidth,
+            ]
+        );
+        assert!(!report.truncated);
+        assert!(!report.is_admitted());
+        assert!(report.issues.iter().all(|issue| issue.location
+            == DirectPdfPreflightLocation {
+                page_index: Some(0),
+                node_index: Some(0),
+                op_index: Some(0),
+                operation: Some("rectangle"),
+            }));
+        assert_eq!(
+            layer_trees_to_pdf(&pages).unwrap_err(),
+            report.issues[0].message
+        );
+        assert_eq!(
+            report.issues[0].message,
+            "direct PDF page 1 has invalid rectangle rotation"
+        );
+    }
+
+    #[test]
+    fn preflight_orders_layers_clips_ops_and_pages_without_merging_distinct_locations() {
+        let clip = LayerNode::clip_rect(
+            BoundingBox::new(f64::NAN, 0.0, 96.0, 64.0),
+            None,
+            BoundingBox::new(0.0, 0.0, -1.0, 16.0),
+            leaf(vec![rectangle(2.0)]),
+            ClipKind::Generic,
+        );
+        let root = LayerNode::group(
+            bounds(),
+            None,
+            vec![clip, leaf(vec![rectangle(2.0)])],
+            CacheHint::None,
+            GroupKind::Generic,
+        );
+        let mut first = page(root);
+        first.page_width = 0.0;
+        first.page_height = 20_000.0;
+        let pages = [first, page(leaf(vec![rectangle(2.0)]))];
+        let options = DirectPdfExportOptions::default();
+        let report = preflight_direct_pdf(&pages, &options, DirectPdfPreflightLimits::default());
+        assert_eq!(
+            report,
+            preflight_direct_pdf(&pages, &options, DirectPdfPreflightLimits::default())
+        );
+        let actual: Vec<_> = report
+            .issues
+            .iter()
+            .map(|issue| {
+                (
+                    issue.reason,
+                    issue.location.page_index,
+                    issue.location.node_index,
+                    issue.location.op_index,
+                )
+            })
+            .collect();
+        assert_eq!(
+            actual,
+            [
+                (Reason::InvalidLayerBounds, Some(0), Some(1), None),
+                (Reason::InvalidClipBounds, Some(0), Some(1), None),
+                (Reason::InvalidOpacity, Some(0), Some(2), Some(0)),
+                (Reason::InvalidOpacity, Some(0), Some(3), Some(1)),
+                (Reason::InvalidPageWidth, Some(0), None, None),
+                (Reason::PageHeightTooLarge, Some(0), None, None),
+                (Reason::InvalidOpacity, Some(1), Some(0), Some(0)),
+            ]
+        );
+        assert_eq!(
+            layer_trees_to_pdf(&pages).unwrap_err(),
+            report.issues[0].message
+        );
+    }
+
+    #[test]
+    fn preflight_marks_only_omitted_issues_as_truncated_and_clamps_limits() {
+        let pages = [page(leaf(vec![
+            rectangle(2.0),
+            rectangle(2.0),
+            rectangle(2.0),
+        ]))];
+        let options = DirectPdfExportOptions::default();
+        let limits = DirectPdfPreflightLimits {
+            max_issues: 2,
+            max_work_items: 100,
+        };
+        let report = preflight_direct_pdf(&pages, &options, limits);
+        assert_eq!(report.issues.len(), 2);
+        assert_eq!(report.limit_reached, Some(DirectPdfPreflightLimit::Issues));
+        assert!(report.truncated);
+        assert!(!report.is_admitted());
+        let exact = preflight_direct_pdf(
+            &[page(leaf(vec![rectangle(2.0), rectangle(2.0)]))],
+            &options,
+            limits,
+        );
+        assert_eq!(exact.issues.len(), 2);
+        assert!(!exact.truncated);
+        assert_eq!(exact.limit_reached, None);
+        let clamped = preflight_direct_pdf(
+            &pages,
+            &options,
+            DirectPdfPreflightLimits {
+                max_issues: 0,
+                max_work_items: usize::MAX,
+            },
+        );
+        assert_eq!(clamped.limits.max_issues, 1);
+        assert_eq!(clamped.limits.max_work_items, 1_000_000);
+        assert_eq!(clamped.issues.len(), 1);
+        assert!(clamped.truncated);
+        let high = preflight_direct_pdf(
+            &[],
+            &options,
+            DirectPdfPreflightLimits {
+                max_issues: usize::MAX,
+                max_work_items: 0,
+            },
+        );
+        assert_eq!(high.limits.max_issues, 4096);
+        assert_eq!(high.limits.max_work_items, 1);
+    }
+
+    #[test]
+    fn preflight_work_limit_never_admits_an_uninspected_valid_or_invalid_tail() {
+        let options = DirectPdfExportOptions::default();
+        let limits = DirectPdfPreflightLimits {
+            max_issues: 16,
+            max_work_items: 3,
+        };
+        for tail_opacity in [1.0, 2.0] {
+            let pages = [page(leaf(vec![rectangle(1.0), rectangle(tail_opacity)]))];
+            let report = preflight_direct_pdf(&pages, &options, limits);
+            assert!(report.issues.is_empty());
+            assert_eq!(report.work_items_checked, 3); // page + layer + first op
+            assert_eq!(
+                report.limit_reached,
+                Some(DirectPdfPreflightLimit::WorkItems)
+            );
+            assert!(!report.is_admitted());
+            let complete = preflight_direct_pdf(
+                &pages,
+                &options,
+                DirectPdfPreflightLimits {
+                    max_work_items: 4,
+                    ..limits
+                },
+            );
+            assert!(!complete.truncated);
+            assert_eq!(complete.is_admitted(), tail_opacity == 1.0);
+        }
+    }
+
+    #[test]
+    fn preflight_collects_document_and_option_errors_without_a_page_location() {
+        let mut options = DirectPdfExportOptions::default();
+        options.raster_dpi = f32::NAN;
+        let report = preflight_direct_pdf(&[], &options, DirectPdfPreflightLimits::default());
+        assert_eq!(
+            report
+                .issues
+                .iter()
+                .map(|issue| issue.reason)
+                .collect::<Vec<_>>(),
+            [Reason::EmptyDocument, Reason::InvalidRasterDpi]
+        );
+        assert!(report
+            .issues
+            .iter()
+            .all(|issue| issue.location == DirectPdfPreflightLocation::default()));
+        assert!(!report.is_admitted());
+    }
+
+    #[test]
+    fn preflight_static_success_does_not_mask_a_strict_image_decode_failure() {
+        // A recognized PNG signature has no decodable image. Static inspection
+        // must not allocate a decoded image or claim successful resource replay.
+        let image = ImageNode::new(1, Some(b"\x89PNG\r\n\x1a\n".to_vec()));
+        let pages = [page(leaf(vec![PaintOp::image(bounds(), image, None)]))];
+        let report = preflight_direct_pdf(
+            &pages,
+            &DirectPdfExportOptions::default(),
+            DirectPdfPreflightLimits::default(),
+        );
+        assert!(report.is_admitted());
+        let error = layer_trees_to_pdf(&pages)
+            .expect_err("export still decodes the resource and fails closed");
+        assert!(error.contains("cannot decode image payload"), "{error}");
     }
 }
