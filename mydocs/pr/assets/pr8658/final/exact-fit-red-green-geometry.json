@@ -1,0 +1,20 @@
+[
+  {
+    "mode": "before",
+    "source_code": "759f35f2fbccc2682356dc22cb31b1068b57e178",
+    "picture_bottom_with_source_padding": 706.78,
+    "cell_bottom": 703.0,
+    "tolerance_px": 0.5,
+    "pass": false,
+    "assertion": "all picture bottoms + source bottom padding remain inside cell"
+  },
+  {
+    "mode": "after",
+    "source_code": "19de2f3b54",
+    "picture_bottom_with_source_padding": 706.78,
+    "cell_bottom": 706.7,
+    "tolerance_px": 0.5,
+    "pass": true,
+    "assertion": "all picture bottoms + source bottom padding remain inside cell"
+  }
+]

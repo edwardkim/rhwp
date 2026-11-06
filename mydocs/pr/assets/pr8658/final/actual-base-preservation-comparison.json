@@ -1,0 +1,816 @@
+{
+  "native": {
+    "identical": [
+      {
+        "key": "inherited-8683-textbox_floating_table_offset",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "2fd6dfabf62a5fc15d9bbce1c34811af6e81d19c39aca3cf5a86ecca88f11d56",
+        "base_sha256": "2fd6dfabf62a5fc15d9bbce1c34811af6e81d19c39aca3cf5a86ecca88f11d56"
+      },
+      {
+        "key": "inherited-8683-partial_table_control_only_para",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "c7226cbbe81870a796c8f154bd222a1e9d175acb1be86f2395b97edde948bfb2",
+        "base_sha256": "c7226cbbe81870a796c8f154bd222a1e9d175acb1be86f2395b97edde948bfb2"
+      },
+      {
+        "key": "inherited-8683-partial_table_control_only_para",
+        "page": "rhwp_002.png",
+        "candidate_sha256": "412f9d4d751e5cc3e4c8447500ab7eafa2de22dbb2d20f14e36da6b560705776",
+        "base_sha256": "412f9d4d751e5cc3e4c8447500ab7eafa2de22dbb2d20f14e36da6b560705776"
+      },
+      {
+        "key": "inherited-8683-short_row_grid_r21",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "1f5d99284509ef405478936ea63609c111ed530cf63a741ba7262b7eaee00740",
+        "base_sha256": "1f5d99284509ef405478936ea63609c111ed530cf63a741ba7262b7eaee00740"
+      },
+      {
+        "key": "inherited-8683-short_row_grid_r4",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "407728a79136de9ea67daa0f8bee717264fabc329e4c1a28f54ff8349fda55fc",
+        "base_sha256": "407728a79136de9ea67daa0f8bee717264fabc329e4c1a28f54ff8349fda55fc"
+      },
+      {
+        "key": "inherited-8683-bindata_link_shift",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "08c789213059496d41f32a8d6683e9842eee42497f6b8ced898f84caca0736f7",
+        "base_sha256": "08c789213059496d41f32a8d6683e9842eee42497f6b8ced898f84caca0736f7"
+      },
+      {
+        "key": "inherited-8683-picture_soft_edge",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "08c789213059496d41f32a8d6683e9842eee42497f6b8ced898f84caca0736f7",
+        "base_sha256": "08c789213059496d41f32a8d6683e9842eee42497f6b8ced898f84caca0736f7"
+      },
+      {
+        "key": "inherited-8683-textbox_floating_table_following_control",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "519d60972c6e9b6cce01c7193ef1aebb015cf5ce396ea33a31a12a558d1d04c6",
+        "base_sha256": "519d60972c6e9b6cce01c7193ef1aebb015cf5ce396ea33a31a12a558d1d04c6"
+      },
+      {
+        "key": "inherited-8683-partial_table_following_text",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "5376744d7ce908c99c2f6da292ec49d5b6e0085371521a7608562b11dbdcd190",
+        "base_sha256": "5376744d7ce908c99c2f6da292ec49d5b6e0085371521a7608562b11dbdcd190"
+      },
+      {
+        "key": "inherited-8683-partial_table_following_text",
+        "page": "rhwp_002.png",
+        "candidate_sha256": "412f9d4d751e5cc3e4c8447500ab7eafa2de22dbb2d20f14e36da6b560705776",
+        "base_sha256": "412f9d4d751e5cc3e4c8447500ab7eafa2de22dbb2d20f14e36da6b560705776"
+      },
+      {
+        "key": "inherited-8683-textbox_tac_picture_rows",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "ae29f585d32482a405ab9d2698738fc023ec98cbd994570890c6a94b377b364b",
+        "base_sha256": "ae29f585d32482a405ab9d2698738fc023ec98cbd994570890c6a94b377b364b"
+      },
+      {
+        "key": "inherited-8683-textbox_valign_no_lineseg",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "52ec9527adf11a3d5bd380de5be28f15ec1888b0ca6563fafb22b1ffcd83bcb1",
+        "base_sha256": "52ec9527adf11a3d5bd380de5be28f15ec1888b0ca6563fafb22b1ffcd83bcb1"
+      },
+      {
+        "key": "inherited-8659-api-8526-inserted-style-hwp",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "23e50f2f61e2c623a632c1810b16bcbf771cde38bbbcf48e5a08435e39965a77",
+        "base_sha256": "23e50f2f61e2c623a632c1810b16bcbf771cde38bbbcf48e5a08435e39965a77"
+      },
+      {
+        "key": "inherited-8659-8527-levels-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "89f2892f2624c8eef9dee01ec06fd0027379b8e9f3cbbd330cac18f8d8731491",
+        "base_sha256": "89f2892f2624c8eef9dee01ec06fd0027379b8e9f3cbbd330cac18f8d8731491"
+      },
+      {
+        "key": "inherited-8659-8528-follow-end-20pt-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "ad3d72a66947020bbdb974fce2e39e8102d82d28b2e062c0c0db24a044992a8a",
+        "base_sha256": "ad3d72a66947020bbdb974fce2e39e8102d82d28b2e062c0c0db24a044992a8a"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "860fbdd236c30cf87ef2540753250deb7de1ff863c981a60ba37024e028f497d",
+        "base_sha256": "860fbdd236c30cf87ef2540753250deb7de1ff863c981a60ba37024e028f497d"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_002.png",
+        "candidate_sha256": "b9f96ba656d116220bd6565adfc41ea0b8080f35d5d623d7eba5d3ec3e723a9d",
+        "base_sha256": "b9f96ba656d116220bd6565adfc41ea0b8080f35d5d623d7eba5d3ec3e723a9d"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_003.png",
+        "candidate_sha256": "cefcaffd34814a5dcde114695e0fcefae71199138adf1f74e0ab8602632ee7cf",
+        "base_sha256": "cefcaffd34814a5dcde114695e0fcefae71199138adf1f74e0ab8602632ee7cf"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_004.png",
+        "candidate_sha256": "2fa8685f87f87783197b54f3af8c9a4081630f18f87a6a112cfd1a239735de4b",
+        "base_sha256": "2fa8685f87f87783197b54f3af8c9a4081630f18f87a6a112cfd1a239735de4b"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_005.png",
+        "candidate_sha256": "d17266776a11514860f8ecde64be7112d63ae8a5f505a4c3c050e59cf638ece6",
+        "base_sha256": "d17266776a11514860f8ecde64be7112d63ae8a5f505a4c3c050e59cf638ece6"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_006.png",
+        "candidate_sha256": "4e8846f7a02a8daebff0e20c37bd87ca1af50b570b440bbb4ee5b756e5715749",
+        "base_sha256": "4e8846f7a02a8daebff0e20c37bd87ca1af50b570b440bbb4ee5b756e5715749"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_007.png",
+        "candidate_sha256": "539ef24c5d98141588f0ef705a1e42c05f7962e37962c11d6dc145dbc841e5ec",
+        "base_sha256": "539ef24c5d98141588f0ef705a1e42c05f7962e37962c11d6dc145dbc841e5ec"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_008.png",
+        "candidate_sha256": "bba257f977ed4273137b8f999bf6657290719517db2708dd60debbaab03f2377",
+        "base_sha256": "bba257f977ed4273137b8f999bf6657290719517db2708dd60debbaab03f2377"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_009.png",
+        "candidate_sha256": "4d9fa1a7cf22b22b757a29d44d13fd07bf950ef07776e261c29d850ba38f7dd3",
+        "base_sha256": "4d9fa1a7cf22b22b757a29d44d13fd07bf950ef07776e261c29d850ba38f7dd3"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_010.png",
+        "candidate_sha256": "393444b16e354e1fa8c2389463fafd2db2b7071c19d1e96173f1fe4854b4cf91",
+        "base_sha256": "393444b16e354e1fa8c2389463fafd2db2b7071c19d1e96173f1fe4854b4cf91"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_011.png",
+        "candidate_sha256": "65994d1e19fd668e1b667327806fa36d76da693f5db6659ec4ff9f39917c0b66",
+        "base_sha256": "65994d1e19fd668e1b667327806fa36d76da693f5db6659ec4ff9f39917c0b66"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_012.png",
+        "candidate_sha256": "6ddc897f5ae6a98f3dd139a3b7cac13a435acf5d5f81306d6fe537c34d4cb307",
+        "base_sha256": "6ddc897f5ae6a98f3dd139a3b7cac13a435acf5d5f81306d6fe537c34d4cb307"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_013.png",
+        "candidate_sha256": "063b270c357dcaed317a27df26a281706b5f7e2d7ce614f7f1835af11ea6a9db",
+        "base_sha256": "063b270c357dcaed317a27df26a281706b5f7e2d7ce614f7f1835af11ea6a9db"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_014.png",
+        "candidate_sha256": "d4317d44de04b3b4bfd9a2dea6c71018cae8ccfc761a770ffe403e26ae43d455",
+        "base_sha256": "d4317d44de04b3b4bfd9a2dea6c71018cae8ccfc761a770ffe403e26ae43d455"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_015.png",
+        "candidate_sha256": "4516baa0c9e2100f4d00db0f8186703b316b8f512c59af0060a21514f2e2b8c0",
+        "base_sha256": "4516baa0c9e2100f4d00db0f8186703b316b8f512c59af0060a21514f2e2b8c0"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_016.png",
+        "candidate_sha256": "2dfdb4d9ebd3c8d64447e4538b24a7a5c2dfa44067da94c9288f19962d82cca4",
+        "base_sha256": "2dfdb4d9ebd3c8d64447e4538b24a7a5c2dfa44067da94c9288f19962d82cca4"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_017.png",
+        "candidate_sha256": "2205510fdcd52d274aee985dc0930d5921f850f5b0d33430c9fb00edcc6e326a",
+        "base_sha256": "2205510fdcd52d274aee985dc0930d5921f850f5b0d33430c9fb00edcc6e326a"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_018.png",
+        "candidate_sha256": "a2abe9ff49e2a17fd09245b35dcb6f8b95c3f8f9c3fe6bc1ca5792b16fec2674",
+        "base_sha256": "a2abe9ff49e2a17fd09245b35dcb6f8b95c3f8f9c3fe6bc1ca5792b16fec2674"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_019.png",
+        "candidate_sha256": "1795159674c8eb79f82c2316b26125d652873262f5db6a6c3116e436a2b3b235",
+        "base_sha256": "1795159674c8eb79f82c2316b26125d652873262f5db6a6c3116e436a2b3b235"
+      },
+      {
+        "key": "inherited-8659-8538-shape-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "152ee3289150e53dfb19f7bab1c14e90f3e86f98773d55387f5de8afcbc293d8",
+        "base_sha256": "152ee3289150e53dfb19f7bab1c14e90f3e86f98773d55387f5de8afcbc293d8"
+      },
+      {
+        "key": "inherited-8659-8538-shape-hwp-2022",
+        "page": "rhwp_002.png",
+        "candidate_sha256": "609f57daf32ba92098c72bd789a530c272e0670a0da693f66837a2d22f8fe914",
+        "base_sha256": "609f57daf32ba92098c72bd789a530c272e0670a0da693f66837a2d22f8fe914"
+      },
+      {
+        "key": "inherited-8659-8538-shape-hwp-2022",
+        "page": "rhwp_003.png",
+        "candidate_sha256": "57440a7fdba83cf94479776462aa34367ec68e233924e1b58f62fbc8eb2b2045",
+        "base_sha256": "57440a7fdba83cf94479776462aa34367ec68e233924e1b58f62fbc8eb2b2045"
+      },
+      {
+        "key": "inherited-8659-8538-shape-hwp-2022",
+        "page": "rhwp_004.png",
+        "candidate_sha256": "b39e087b1f8815d97205965adbc6f23569a734807d7466d97ec7b8c95fed8bc5",
+        "base_sha256": "b39e087b1f8815d97205965adbc6f23569a734807d7466d97ec7b8c95fed8bc5"
+      },
+      {
+        "key": "inherited-8659-8538-shape-hwp-2022",
+        "page": "rhwp_005.png",
+        "candidate_sha256": "beee10693a535f68e7d24184c7b9904c83f92cade0cb25abbfdc203c62b2eb6c",
+        "base_sha256": "beee10693a535f68e7d24184c7b9904c83f92cade0cb25abbfdc203c62b2eb6c"
+      },
+      {
+        "key": "inherited-8659-8538-shape-hwp-2022",
+        "page": "rhwp_006.png",
+        "candidate_sha256": "45bcc04940951435025f30b65f2b50a63be1ac2c00ce4be86be65310c18c4f53",
+        "base_sha256": "45bcc04940951435025f30b65f2b50a63be1ac2c00ce4be86be65310c18c4f53"
+      },
+      {
+        "key": "inherited-8659-8538-shape-hwp-2022",
+        "page": "rhwp_007.png",
+        "candidate_sha256": "0d030e266cc31d17e1451c56ddebf28d07ecc43c7a905dbf024dba05b284b38c",
+        "base_sha256": "0d030e266cc31d17e1451c56ddebf28d07ecc43c7a905dbf024dba05b284b38c"
+      },
+      {
+        "key": "inherited-8659-8541-hancom-two-sections-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "0184f6c0e3a8284c1e6a725a13417a76fb28e60cd458ae9ee71f50ccacb70b79",
+        "base_sha256": "0184f6c0e3a8284c1e6a725a13417a76fb28e60cd458ae9ee71f50ccacb70b79"
+      },
+      {
+        "key": "inherited-8659-8541-hancom-two-sections-hwp-2022",
+        "page": "rhwp_002.png",
+        "candidate_sha256": "f497bbe09fc9cef1e7226aaab1b6e80bd7d212a2962f49be02e87c056dd5a34b",
+        "base_sha256": "f497bbe09fc9cef1e7226aaab1b6e80bd7d212a2962f49be02e87c056dd5a34b"
+      },
+      {
+        "key": "inherited-8659-8549-rhwp-after-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "e6327d7aade0c70b8e2ac036c43a7e5a9cd339e26998db44fdfa3c6412c3d18b",
+        "base_sha256": "e6327d7aade0c70b8e2ac036c43a7e5a9cd339e26998db44fdfa3c6412c3d18b"
+      },
+      {
+        "key": "inherited-8659-api-8558-actual-r3-character-bullet-hwp",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "37c10825647d5979521ab329abe3a6f50638e01549edebfdc455a902b244f50b",
+        "base_sha256": "37c10825647d5979521ab329abe3a6f50638e01549edebfdc455a902b244f50b"
+      },
+      {
+        "key": "inherited-8659-8564-.result.9d14e579-4810-4dc8-b9db-a0cf0bb4bd23.partial-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "5bf9ca9173bd19ba27197ae92edb17d9dead24b7ff8155dba827d902e8798eb5",
+        "base_sha256": "5bf9ca9173bd19ba27197ae92edb17d9dead24b7ff8155dba827d902e8798eb5"
+      },
+      {
+        "key": "inherited-8659-api-8570-non-inline-cell-table-hwp",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "f081983d0bb41dcde26904de238675df45301846ffd5b0a6e66296a3bb9abc76",
+        "base_sha256": "f081983d0bb41dcde26904de238675df45301846ffd5b0a6e66296a3bb9abc76"
+      },
+      {
+        "key": "inherited-8659-api-8571-header-table-hwp",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "c4d84758823ca4e3dea910e3550fd4c378813193d2caad27ce8b1892d9098299",
+        "base_sha256": "c4d84758823ca4e3dea910e3550fd4c378813193d2caad27ce8b1892d9098299"
+      },
+      {
+        "key": "inherited-8659-8572-fix-typed-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "0b3d4d7d67e9526b150ddc5c488759358c70b2a13d89e4e0184431d68e1686a1",
+        "base_sha256": "0b3d4d7d67e9526b150ddc5c488759358c70b2a13d89e4e0184431d68e1686a1"
+      },
+      {
+        "key": "inherited-8659-8572-fix-typed-hwp-2022",
+        "page": "rhwp_002.png",
+        "candidate_sha256": "3d4c4b265177e464c4189736c2c186b52726ea76ecf59bbd3ad3b385efa5162d",
+        "base_sha256": "3d4c4b265177e464c4189736c2c186b52726ea76ecf59bbd3ad3b385efa5162d"
+      },
+      {
+        "key": "inherited-8659-8572-fix-typed-hwp-2022",
+        "page": "rhwp_003.png",
+        "candidate_sha256": "5399320bf579ff8609dc57a97de8c16197ccb32418490947f27068bb7e7647a6",
+        "base_sha256": "5399320bf579ff8609dc57a97de8c16197ccb32418490947f27068bb7e7647a6"
+      },
+      {
+        "key": "inherited-8659-8572-fix-typed-hwp-2022",
+        "page": "rhwp_004.png",
+        "candidate_sha256": "c60d513e9b6dc7933328358914d93406d2008507c5a6be63cb5248c29b930552",
+        "base_sha256": "c60d513e9b6dc7933328358914d93406d2008507c5a6be63cb5248c29b930552"
+      },
+      {
+        "key": "inherited-8659-8572-fix-typed-hwp-2022",
+        "page": "rhwp_005.png",
+        "candidate_sha256": "50f82a3a7ee4a9031139fb4eb6d67d01657083602ca810c4b259de795cdcf1cc",
+        "base_sha256": "50f82a3a7ee4a9031139fb4eb6d67d01657083602ca810c4b259de795cdcf1cc"
+      },
+      {
+        "key": "inherited-8659-8572-fix-typed-hwp-2022",
+        "page": "rhwp_006.png",
+        "candidate_sha256": "dc8e60401af410a6ceae017a4ef89f527e2a70495471714dbfe2644a254f0d75",
+        "base_sha256": "dc8e60401af410a6ceae017a4ef89f527e2a70495471714dbfe2644a254f0d75"
+      },
+      {
+        "key": "inherited-8659-8572-fix-typed-hwp-2022",
+        "page": "rhwp_007.png",
+        "candidate_sha256": "5e652738679c92a3be0c76bd4a079eb8e284f7253f1ccb47aa86c277eeab8d7f",
+        "base_sha256": "5e652738679c92a3be0c76bd4a079eb8e284f7253f1ccb47aa86c277eeab8d7f"
+      },
+      {
+        "key": "inherited-8659-8577-hancom-page-number-top-hwpx-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "9aef75ac51b0fc45df83e36da284cd08bb9e97395c66258348affa2abce506fa",
+        "base_sha256": "9aef75ac51b0fc45df83e36da284cd08bb9e97395c66258348affa2abce506fa"
+      },
+      {
+        "key": "inherited-8659-8577-hancom-page-number-top-hwpx-2022",
+        "page": "rhwp_002.png",
+        "candidate_sha256": "b8ea8559aca95037af04b59887ca67fb733b7e6c15391e1fbc678d65b1f87125",
+        "base_sha256": "b8ea8559aca95037af04b59887ca67fb733b7e6c15391e1fbc678d65b1f87125"
+      },
+      {
+        "key": "inherited-8659-8586-hancom-page-number-mid-hwpx-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "c19b05bf9a68e5c9b4c765a0c885424c635bbc946b24fe1393a9ba45a1f20d92",
+        "base_sha256": "c19b05bf9a68e5c9b4c765a0c885424c635bbc946b24fe1393a9ba45a1f20d92"
+      },
+      {
+        "key": "inherited-8659-8586-hancom-page-number-mid-hwpx-2022",
+        "page": "rhwp_002.png",
+        "candidate_sha256": "2198405f9becd9d2ae397b7ca66ec4624e141acc3ee050116cd537acaae8a2b4",
+        "base_sha256": "2198405f9becd9d2ae397b7ca66ec4624e141acc3ee050116cd537acaae8a2b4"
+      },
+      {
+        "key": "inherited-8659-8586-hancom-page-number-mid-hwpx-2022",
+        "page": "rhwp_003.png",
+        "candidate_sha256": "b13d4b640b60d2f7de1679d628fbe43a1512f71fd0f72eaea9e550b17937b885",
+        "base_sha256": "b13d4b640b60d2f7de1679d628fbe43a1512f71fd0f72eaea9e550b17937b885"
+      },
+      {
+        "key": "inherited-8659-8586-hancom-page-number-mid-hwpx-2022",
+        "page": "rhwp_004.png",
+        "candidate_sha256": "09214149dda7619b70a197912ad991fe08f6175edef1a76a2648b239d603470d",
+        "base_sha256": "09214149dda7619b70a197912ad991fe08f6175edef1a76a2648b239d603470d"
+      },
+      {
+        "key": "inherited-8659-8586-hancom-page-number-mid-hwpx-2022",
+        "page": "rhwp_005.png",
+        "candidate_sha256": "90ac7ed9bcfab07020443eb1be21318a98845965a06c7438a77472bdc9467577",
+        "base_sha256": "90ac7ed9bcfab07020443eb1be21318a98845965a06c7438a77472bdc9467577"
+      },
+      {
+        "key": "inherited-8659-8586-hancom-page-number-mid-hwpx-2022",
+        "page": "rhwp_006.png",
+        "candidate_sha256": "114d90bdaad4283094f513ddebc29495e21790afdc4b26933de49634db895908",
+        "base_sha256": "114d90bdaad4283094f513ddebc29495e21790afdc4b26933de49634db895908"
+      },
+      {
+        "key": "inherited-8659-8602-rhwp-after-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "e3824ac9a8058c8c8a655f923538753527ae43a4437da3e7fa90bc63bac066aa",
+        "base_sha256": "e3824ac9a8058c8c8a655f923538753527ae43a4437da3e7fa90bc63bac066aa"
+      },
+      {
+        "key": "inherited-8659-8616-existing-caret-false-hwp",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "3634dfa2e69fba4299c8f9cd942d7ae9ac441996b8cc38823f9214560371fe82",
+        "base_sha256": "3634dfa2e69fba4299c8f9cd942d7ae9ac441996b8cc38823f9214560371fe82"
+      },
+      {
+        "key": "inherited-8659-8629-hancom-mac-200-b5-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "9f05970f96c20fcf8bffc9bc030173f9a00987d70705c1314c0b6e9555b7776e",
+        "base_sha256": "9f05970f96c20fcf8bffc9bc030173f9a00987d70705c1314c0b6e9555b7776e"
+      },
+      {
+        "key": "inherited-8659-8616-hancom-mac-dutmal-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "eac9eabb9e14e197062564f3a5475cd01c6f64d8fcca72989fe39f05edeb8873",
+        "base_sha256": "eac9eabb9e14e197062564f3a5475cd01c6f64d8fcca72989fe39f05edeb8873"
+      }
+    ],
+    "different": []
+  },
+  "wasm": {
+    "identical": [
+      {
+        "key": "inherited-8683-textbox_floating_table_offset",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "1308cf9faaa276e1bc96468f89629c7a73892d8a0e103537d8bf9d69b23592ab",
+        "base_sha256": "1308cf9faaa276e1bc96468f89629c7a73892d8a0e103537d8bf9d69b23592ab"
+      },
+      {
+        "key": "inherited-8683-partial_table_control_only_para",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "c5d7e04e48afedb42e6e12d312eaff3f28c34da2c121c062c4d95368f9af71d1",
+        "base_sha256": "c5d7e04e48afedb42e6e12d312eaff3f28c34da2c121c062c4d95368f9af71d1"
+      },
+      {
+        "key": "inherited-8683-partial_table_control_only_para",
+        "page": "rhwp_002.png",
+        "candidate_sha256": "ff38c82084bf1b407a2d63a5a6991cf81fa7b86464260b89e6a73ab04447c052",
+        "base_sha256": "ff38c82084bf1b407a2d63a5a6991cf81fa7b86464260b89e6a73ab04447c052"
+      },
+      {
+        "key": "inherited-8683-short_row_grid_r21",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "a9421cd4df54b88a0cc072008cf356c1ebd2d8a4e853d21db240765fd3daccda",
+        "base_sha256": "a9421cd4df54b88a0cc072008cf356c1ebd2d8a4e853d21db240765fd3daccda"
+      },
+      {
+        "key": "inherited-8683-short_row_grid_r4",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "7b0cc43b14617b2a152b774e261d74148d93bea33646c2374635041353be761a",
+        "base_sha256": "7b0cc43b14617b2a152b774e261d74148d93bea33646c2374635041353be761a"
+      },
+      {
+        "key": "inherited-8683-bindata_link_shift",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "afb7580aa64a7711d0182fc42330ab73d6b8a04dee2056cdf30a221f9efd87be",
+        "base_sha256": "afb7580aa64a7711d0182fc42330ab73d6b8a04dee2056cdf30a221f9efd87be"
+      },
+      {
+        "key": "inherited-8683-picture_soft_edge",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "afb7580aa64a7711d0182fc42330ab73d6b8a04dee2056cdf30a221f9efd87be",
+        "base_sha256": "afb7580aa64a7711d0182fc42330ab73d6b8a04dee2056cdf30a221f9efd87be"
+      },
+      {
+        "key": "inherited-8683-textbox_floating_table_following_control",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "3673b0f794d2cf5a0895cba385b61628a16fd106f338edc78f7909d681d7fc77",
+        "base_sha256": "3673b0f794d2cf5a0895cba385b61628a16fd106f338edc78f7909d681d7fc77"
+      },
+      {
+        "key": "inherited-8683-partial_table_following_text",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "0a1fe7ed33996ad6f0745b5ec972e492e0df0e06498906330dcf495d26e577ee",
+        "base_sha256": "0a1fe7ed33996ad6f0745b5ec972e492e0df0e06498906330dcf495d26e577ee"
+      },
+      {
+        "key": "inherited-8683-partial_table_following_text",
+        "page": "rhwp_002.png",
+        "candidate_sha256": "ff38c82084bf1b407a2d63a5a6991cf81fa7b86464260b89e6a73ab04447c052",
+        "base_sha256": "ff38c82084bf1b407a2d63a5a6991cf81fa7b86464260b89e6a73ab04447c052"
+      },
+      {
+        "key": "inherited-8683-textbox_tac_picture_rows",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "e3e747c98b9a19e315984ce1930ec690f573b97a4ca757b4cc460b5f25a78dba",
+        "base_sha256": "e3e747c98b9a19e315984ce1930ec690f573b97a4ca757b4cc460b5f25a78dba"
+      },
+      {
+        "key": "inherited-8683-textbox_valign_no_lineseg",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "c41d088ddb2c8762f49f0d587e035b878d020070fc7aff82d3219b5aad55f535",
+        "base_sha256": "c41d088ddb2c8762f49f0d587e035b878d020070fc7aff82d3219b5aad55f535"
+      },
+      {
+        "key": "inherited-8659-api-8526-inserted-style-hwp",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "aadee513026d4bfcb031e984e729c1d05bc7deef3d8b55246929da53c7ebd349",
+        "base_sha256": "aadee513026d4bfcb031e984e729c1d05bc7deef3d8b55246929da53c7ebd349"
+      },
+      {
+        "key": "inherited-8659-8527-levels-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "c6677c6667d585bb60d7e64e0218c7cd43a1d21cae30546ed6841bcae1a908e5",
+        "base_sha256": "c6677c6667d585bb60d7e64e0218c7cd43a1d21cae30546ed6841bcae1a908e5"
+      },
+      {
+        "key": "inherited-8659-8528-follow-end-20pt-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "8d56b8ceb3283d547f9b7570381a89be75a16b743f537663698e27e7ea8e73d7",
+        "base_sha256": "8d56b8ceb3283d547f9b7570381a89be75a16b743f537663698e27e7ea8e73d7"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "b236e572fee5ae6237e496fbdb43cf30430c57fd2aa9ca191648b2b88b54a6ec",
+        "base_sha256": "b236e572fee5ae6237e496fbdb43cf30430c57fd2aa9ca191648b2b88b54a6ec"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_002.png",
+        "candidate_sha256": "dbdc7c1b20ac58845d73b902500ba26cdbce286836b306c1651183ea9e5a5eb9",
+        "base_sha256": "dbdc7c1b20ac58845d73b902500ba26cdbce286836b306c1651183ea9e5a5eb9"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_003.png",
+        "candidate_sha256": "cd3c0fb94865ea77b989d5095088f403032f373f19600454eed1afec1583341d",
+        "base_sha256": "cd3c0fb94865ea77b989d5095088f403032f373f19600454eed1afec1583341d"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_004.png",
+        "candidate_sha256": "07ab2b33b8814c4d61754aae49ce0dfdf8292882f59bc6cd07421bc3d78f205b",
+        "base_sha256": "07ab2b33b8814c4d61754aae49ce0dfdf8292882f59bc6cd07421bc3d78f205b"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_005.png",
+        "candidate_sha256": "7c5d32e09576839feed1053d58a3ba1dd3995b9d3d6fb7df9b4cad2bfd1f385a",
+        "base_sha256": "7c5d32e09576839feed1053d58a3ba1dd3995b9d3d6fb7df9b4cad2bfd1f385a"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_006.png",
+        "candidate_sha256": "0ad5b4041793d701c559c4f3f69aea2d40c318aa535e9bd9a768c8a89bcf8bf8",
+        "base_sha256": "0ad5b4041793d701c559c4f3f69aea2d40c318aa535e9bd9a768c8a89bcf8bf8"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_007.png",
+        "candidate_sha256": "fcd973bb5572f76aa15a9ce2a6c32ec5c81cd3470398809171551604b5742adf",
+        "base_sha256": "fcd973bb5572f76aa15a9ce2a6c32ec5c81cd3470398809171551604b5742adf"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_008.png",
+        "candidate_sha256": "4f71a867918a8cd3d73dc36e0cb8d03ca7ea286cce01517882ff24e20ad67f3d",
+        "base_sha256": "4f71a867918a8cd3d73dc36e0cb8d03ca7ea286cce01517882ff24e20ad67f3d"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_009.png",
+        "candidate_sha256": "8ba9a17a185a07c8ae28a091c542bbaca2ac0d2e168d639137799880b50c1613",
+        "base_sha256": "8ba9a17a185a07c8ae28a091c542bbaca2ac0d2e168d639137799880b50c1613"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_010.png",
+        "candidate_sha256": "589e1bb4b92229a82a1f05279ca6b2264ea18f96a2090317657ca97b5a7bac55",
+        "base_sha256": "589e1bb4b92229a82a1f05279ca6b2264ea18f96a2090317657ca97b5a7bac55"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_011.png",
+        "candidate_sha256": "da7f3504d13917fee593adec63f6721cc90a7ff9f4744116198ff6bbdeebb030",
+        "base_sha256": "da7f3504d13917fee593adec63f6721cc90a7ff9f4744116198ff6bbdeebb030"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_012.png",
+        "candidate_sha256": "b44fe1b5cda6546641805cfa97c5afe71b6230e50a9fc7f93ff3e86d2b8eaf4c",
+        "base_sha256": "b44fe1b5cda6546641805cfa97c5afe71b6230e50a9fc7f93ff3e86d2b8eaf4c"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_013.png",
+        "candidate_sha256": "8606b2bee187cc5012ad2c3f373a33d6f5bf02355bfa53a864b0a7660bd07c8e",
+        "base_sha256": "8606b2bee187cc5012ad2c3f373a33d6f5bf02355bfa53a864b0a7660bd07c8e"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_014.png",
+        "candidate_sha256": "c942b614eeea608d57c9fbaffa966f11ff9fc3b1d923323ba1798f836caa1ca3",
+        "base_sha256": "c942b614eeea608d57c9fbaffa966f11ff9fc3b1d923323ba1798f836caa1ca3"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_015.png",
+        "candidate_sha256": "4f857a4a09925128878cc624892b8dc755cdfe878f2d9d1bf2f1c5186944a14b",
+        "base_sha256": "4f857a4a09925128878cc624892b8dc755cdfe878f2d9d1bf2f1c5186944a14b"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_016.png",
+        "candidate_sha256": "7926b131c510a2fde8dd8baab0d2a009d1562249b800552b931fd03632d9fbcc",
+        "base_sha256": "7926b131c510a2fde8dd8baab0d2a009d1562249b800552b931fd03632d9fbcc"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_017.png",
+        "candidate_sha256": "366cab6ff9bac053044a10503c15caf545eda324f7a1a1ec0ea6089be6c7f522",
+        "base_sha256": "366cab6ff9bac053044a10503c15caf545eda324f7a1a1ec0ea6089be6c7f522"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_018.png",
+        "candidate_sha256": "0540da080bcb5dabe1cfda89a21848d717c515873eaac889f440f70552a545ff",
+        "base_sha256": "0540da080bcb5dabe1cfda89a21848d717c515873eaac889f440f70552a545ff"
+      },
+      {
+        "key": "inherited-8659-8536-note-formats-hwp-2022",
+        "page": "rhwp_019.png",
+        "candidate_sha256": "22a7e6b8673a4ed72b56241950de5d8fda753868326a2b44eff95650921db5d4",
+        "base_sha256": "22a7e6b8673a4ed72b56241950de5d8fda753868326a2b44eff95650921db5d4"
+      },
+      {
+        "key": "inherited-8659-8538-shape-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "21ae3bf57204f6333146bde007d3c1360c034f812b4c2c3fefa36a4693c73ed4",
+        "base_sha256": "21ae3bf57204f6333146bde007d3c1360c034f812b4c2c3fefa36a4693c73ed4"
+      },
+      {
+        "key": "inherited-8659-8538-shape-hwp-2022",
+        "page": "rhwp_002.png",
+        "candidate_sha256": "d0bd17c056ff31c8077357759026123383abc647f389d4a2926aeb68297933f6",
+        "base_sha256": "d0bd17c056ff31c8077357759026123383abc647f389d4a2926aeb68297933f6"
+      },
+      {
+        "key": "inherited-8659-8538-shape-hwp-2022",
+        "page": "rhwp_003.png",
+        "candidate_sha256": "87bbe61a072d86d2f4ca8c65278dd387ac48044fad05e83333fe4e92767f0ede",
+        "base_sha256": "87bbe61a072d86d2f4ca8c65278dd387ac48044fad05e83333fe4e92767f0ede"
+      },
+      {
+        "key": "inherited-8659-8538-shape-hwp-2022",
+        "page": "rhwp_004.png",
+        "candidate_sha256": "22462bccf6eb78b357aeb8356d7eb1171b3741d0bd8c391d4064ec53b5c8bb52",
+        "base_sha256": "22462bccf6eb78b357aeb8356d7eb1171b3741d0bd8c391d4064ec53b5c8bb52"
+      },
+      {
+        "key": "inherited-8659-8538-shape-hwp-2022",
+        "page": "rhwp_005.png",
+        "candidate_sha256": "57e4d23a0b2a2603a6c368bb086dd086f44823ef87dc93126755b0777b4e8ff8",
+        "base_sha256": "57e4d23a0b2a2603a6c368bb086dd086f44823ef87dc93126755b0777b4e8ff8"
+      },
+      {
+        "key": "inherited-8659-8538-shape-hwp-2022",
+        "page": "rhwp_006.png",
+        "candidate_sha256": "ae4c6ec2156335c20c75f7a6761eb63ff755d94fa0e43de339b9d770838d7357",
+        "base_sha256": "ae4c6ec2156335c20c75f7a6761eb63ff755d94fa0e43de339b9d770838d7357"
+      },
+      {
+        "key": "inherited-8659-8538-shape-hwp-2022",
+        "page": "rhwp_007.png",
+        "candidate_sha256": "34dd6981f2f3c57ba308a395ebfe52955b6a158f88fc5664edce735ae4fb5e45",
+        "base_sha256": "34dd6981f2f3c57ba308a395ebfe52955b6a158f88fc5664edce735ae4fb5e45"
+      },
+      {
+        "key": "inherited-8659-8541-hancom-two-sections-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "56c2f2ba17827425e8b54fbd323616d923fa9a14c14fdd9bdda1a001346d93ee",
+        "base_sha256": "56c2f2ba17827425e8b54fbd323616d923fa9a14c14fdd9bdda1a001346d93ee"
+      },
+      {
+        "key": "inherited-8659-8541-hancom-two-sections-hwp-2022",
+        "page": "rhwp_002.png",
+        "candidate_sha256": "d9d872f2f870bde537ec9e9a57404df7355a460e5a2c0add484df3893a253acc",
+        "base_sha256": "d9d872f2f870bde537ec9e9a57404df7355a460e5a2c0add484df3893a253acc"
+      },
+      {
+        "key": "inherited-8659-8549-rhwp-after-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "f439deeebb2c138d4b4c9b42e871e0abaa2f8bf4adfc788a69416761e2d808f7",
+        "base_sha256": "f439deeebb2c138d4b4c9b42e871e0abaa2f8bf4adfc788a69416761e2d808f7"
+      },
+      {
+        "key": "inherited-8659-api-8558-actual-r3-character-bullet-hwp",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "da2c1e5d1470e7e01041c20cba74736d62141c74255830b02d51fb6ecbb59aa7",
+        "base_sha256": "da2c1e5d1470e7e01041c20cba74736d62141c74255830b02d51fb6ecbb59aa7"
+      },
+      {
+        "key": "inherited-8659-8564-.result.9d14e579-4810-4dc8-b9db-a0cf0bb4bd23.partial-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "ba8098a33cf851074467729179643f7307715851954be63dc81293412b914941",
+        "base_sha256": "ba8098a33cf851074467729179643f7307715851954be63dc81293412b914941"
+      },
+      {
+        "key": "inherited-8659-api-8570-non-inline-cell-table-hwp",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "059514362568d93989483902d4f78edda3da95e6b9795f6aff40a2a310f37ce5",
+        "base_sha256": "059514362568d93989483902d4f78edda3da95e6b9795f6aff40a2a310f37ce5"
+      },
+      {
+        "key": "inherited-8659-api-8571-header-table-hwp",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "aba259f8447725a63ff3e21dbd0d631ad124ed4917f0653b0e86429ae689b413",
+        "base_sha256": "aba259f8447725a63ff3e21dbd0d631ad124ed4917f0653b0e86429ae689b413"
+      },
+      {
+        "key": "inherited-8659-8572-fix-typed-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "de274fcd3f9e5b510b572cb6f219e16599302a718b82f68f7ad72dbbf4408e06",
+        "base_sha256": "de274fcd3f9e5b510b572cb6f219e16599302a718b82f68f7ad72dbbf4408e06"
+      },
+      {
+        "key": "inherited-8659-8572-fix-typed-hwp-2022",
+        "page": "rhwp_002.png",
+        "candidate_sha256": "563762de344946157adba98efc878c32cb740378fa10597afdbfcf6b082c4251",
+        "base_sha256": "563762de344946157adba98efc878c32cb740378fa10597afdbfcf6b082c4251"
+      },
+      {
+        "key": "inherited-8659-8572-fix-typed-hwp-2022",
+        "page": "rhwp_003.png",
+        "candidate_sha256": "090764d9885423672d2dde707554fc22f4bfd6777308d9a2d4aab14d3219409f",
+        "base_sha256": "090764d9885423672d2dde707554fc22f4bfd6777308d9a2d4aab14d3219409f"
+      },
+      {
+        "key": "inherited-8659-8572-fix-typed-hwp-2022",
+        "page": "rhwp_004.png",
+        "candidate_sha256": "959f6d0bb62b0fd400d92c45e32e4ddc0c5ad73839d3a765e27ac1cf08f3f961",
+        "base_sha256": "959f6d0bb62b0fd400d92c45e32e4ddc0c5ad73839d3a765e27ac1cf08f3f961"
+      },
+      {
+        "key": "inherited-8659-8572-fix-typed-hwp-2022",
+        "page": "rhwp_005.png",
+        "candidate_sha256": "e84ab52d8e7676d2a1fa42978c630da8ca9b66acb667d43bbf50182321a08a06",
+        "base_sha256": "e84ab52d8e7676d2a1fa42978c630da8ca9b66acb667d43bbf50182321a08a06"
+      },
+      {
+        "key": "inherited-8659-8572-fix-typed-hwp-2022",
+        "page": "rhwp_006.png",
+        "candidate_sha256": "00f0c676bcc441a7421fe3baee1859a3e072b62f4003c4e7e27a371d7b311b2d",
+        "base_sha256": "00f0c676bcc441a7421fe3baee1859a3e072b62f4003c4e7e27a371d7b311b2d"
+      },
+      {
+        "key": "inherited-8659-8572-fix-typed-hwp-2022",
+        "page": "rhwp_007.png",
+        "candidate_sha256": "7abbebc3a717de888a46157b3c5fcdd671f2b9a8fddc30a091715f0d26b16d2a",
+        "base_sha256": "7abbebc3a717de888a46157b3c5fcdd671f2b9a8fddc30a091715f0d26b16d2a"
+      },
+      {
+        "key": "inherited-8659-8577-hancom-page-number-top-hwpx-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "3622c10360f8c82e0b78cc5180e2681424bc545ac648c76cef98634f5819d9cc",
+        "base_sha256": "3622c10360f8c82e0b78cc5180e2681424bc545ac648c76cef98634f5819d9cc"
+      },
+      {
+        "key": "inherited-8659-8577-hancom-page-number-top-hwpx-2022",
+        "page": "rhwp_002.png",
+        "candidate_sha256": "1ed31b61bae3b67cc741fd13c08e2a2b346da376b8117690fa486c967c82ba99",
+        "base_sha256": "1ed31b61bae3b67cc741fd13c08e2a2b346da376b8117690fa486c967c82ba99"
+      },
+      {
+        "key": "inherited-8659-8586-hancom-page-number-mid-hwpx-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "a784bd3bfd638aaf0f383dffdd0fa3cc2c5f1147575288ebe1c61fce076c6e51",
+        "base_sha256": "a784bd3bfd638aaf0f383dffdd0fa3cc2c5f1147575288ebe1c61fce076c6e51"
+      },
+      {
+        "key": "inherited-8659-8586-hancom-page-number-mid-hwpx-2022",
+        "page": "rhwp_002.png",
+        "candidate_sha256": "3aaee230ac4c4962e04e14d823aa8e0ef9079e436f9a68f81ac6ddaa376665d9",
+        "base_sha256": "3aaee230ac4c4962e04e14d823aa8e0ef9079e436f9a68f81ac6ddaa376665d9"
+      },
+      {
+        "key": "inherited-8659-8586-hancom-page-number-mid-hwpx-2022",
+        "page": "rhwp_003.png",
+        "candidate_sha256": "8025651f76614cef249d71955a8a3af2340f2dd9f6d985c8894168a17a0654ce",
+        "base_sha256": "8025651f76614cef249d71955a8a3af2340f2dd9f6d985c8894168a17a0654ce"
+      },
+      {
+        "key": "inherited-8659-8586-hancom-page-number-mid-hwpx-2022",
+        "page": "rhwp_004.png",
+        "candidate_sha256": "61cf003eea0809b579b51f72595f82c2804da4871ea0c462929b51c1de8d45b5",
+        "base_sha256": "61cf003eea0809b579b51f72595f82c2804da4871ea0c462929b51c1de8d45b5"
+      },
+      {
+        "key": "inherited-8659-8586-hancom-page-number-mid-hwpx-2022",
+        "page": "rhwp_005.png",
+        "candidate_sha256": "9445c34106e4e293c5de3d00814eb054a8969f28be871e2bc326e8f9b683b1c8",
+        "base_sha256": "9445c34106e4e293c5de3d00814eb054a8969f28be871e2bc326e8f9b683b1c8"
+      },
+      {
+        "key": "inherited-8659-8586-hancom-page-number-mid-hwpx-2022",
+        "page": "rhwp_006.png",
+        "candidate_sha256": "0b2d7a8adb98396f872679c4a5c3d22a8c04a36ed7dfb6210faef66ccc01b3e9",
+        "base_sha256": "0b2d7a8adb98396f872679c4a5c3d22a8c04a36ed7dfb6210faef66ccc01b3e9"
+      },
+      {
+        "key": "inherited-8659-8602-rhwp-after-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "d576cadf830c4b269f6b693ce97f48c10664af19bf65e21347e65daf43583804",
+        "base_sha256": "d576cadf830c4b269f6b693ce97f48c10664af19bf65e21347e65daf43583804"
+      },
+      {
+        "key": "inherited-8659-8616-existing-caret-false-hwp",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "667b57799a709115c5b2edee2a5545c20d6993e93e06c85fa44f6fdb15439103",
+        "base_sha256": "667b57799a709115c5b2edee2a5545c20d6993e93e06c85fa44f6fdb15439103"
+      },
+      {
+        "key": "inherited-8659-8629-hancom-mac-200-b5-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "c4824bb9641a05a9601e382efd6a263ab73538caf16ef59dd9966cd1edee9384",
+        "base_sha256": "c4824bb9641a05a9601e382efd6a263ab73538caf16ef59dd9966cd1edee9384"
+      },
+      {
+        "key": "inherited-8659-8616-hancom-mac-dutmal-hwp-2022",
+        "page": "rhwp_001.png",
+        "candidate_sha256": "d1cd937e31d5df523e197e67241ba5c52d70db1a7c8cc8df6afabacbe657ddb9",
+        "base_sha256": "d1cd937e31d5df523e197e67241ba5c52d70db1a7c8cc8df6afabacbe657ddb9"
+      }
+    ],
+    "different": []
+  }
+}

@@ -1,0 +1,381 @@
+{
+  "page": 1,
+  "flags": [],
+  "rhwp_frame": [
+    117,
+    135,
+    589,
+    1096
+  ],
+  "pdf_frame": [
+    117,
+    136,
+    589,
+    1096
+  ],
+  "rhwp_outside_frame_pixels": 0,
+  "pdf_outside_frame_pixels": 0,
+  "rhwp_outside_frame_max_y": null,
+  "pdf_outside_frame_max_y": null,
+  "rhwp_outside_frame_extent_px": null,
+  "pdf_outside_frame_extent_px": null,
+  "frame_is_interior_decoration": true,
+  "frame_overflow_tolerated_bleed": false,
+  "paper_size_footer_frame_bleed": false,
+  "rhwp_outside_frame_bleed_px": 0,
+  "pdf_outside_frame_bleed_px": 0,
+  "content_bottom_delta_px": 1.0,
+  "red_marker_drift": {
+    "rhwp_count": 0,
+    "pdf_count": 0,
+    "paired": 0,
+    "max_abs_delta_px": null,
+    "mean_abs_delta_px": null
+  },
+  "line_band_drift": {
+    "rhwp_count": 7,
+    "pdf_count": 7,
+    "paired": 7,
+    "max_abs_delta_px": 1.0,
+    "p90_abs_delta_px": 0.5,
+    "mean_abs_delta_px": 0.2
+  },
+  "column_line_band_drift": [
+    {
+      "column": 0,
+      "rhwp_frame": [
+        117,
+        135,
+        351,
+        1096
+      ],
+      "pdf_frame": [
+        117,
+        136,
+        351,
+        1096
+      ],
+      "drift": {
+        "rhwp_count": 7,
+        "pdf_count": 7,
+        "paired": 7,
+        "max_abs_delta_px": 1.0,
+        "p90_abs_delta_px": 0.5,
+        "mean_abs_delta_px": 0.2
+      },
+      "rhwp_first_band": {
+        "y0": 149,
+        "y1": 171,
+        "x0": 132,
+        "x1": 215,
+        "pixels": 245,
+        "cy": 160.0
+      },
+      "rhwp_last_band": {
+        "y0": 773,
+        "y1": 782,
+        "x0": 119,
+        "x1": 140,
+        "pixels": 89,
+        "cy": 777.5
+      },
+      "pdf_first_band": {
+        "y0": 149,
+        "y1": 171,
+        "x0": 132,
+        "x1": 215,
+        "pixels": 245,
+        "cy": 160.0
+      },
+      "pdf_last_band": {
+        "y0": 772,
+        "y1": 781,
+        "x0": 119,
+        "x1": 140,
+        "pixels": 118,
+        "cy": 776.5
+      }
+    },
+    {
+      "column": 1,
+      "rhwp_frame": [
+        355,
+        135,
+        589,
+        1096
+      ],
+      "pdf_frame": [
+        355,
+        136,
+        589,
+        1096
+      ],
+      "drift": {
+        "rhwp_count": 1,
+        "pdf_count": 1,
+        "paired": 1,
+        "max_abs_delta_px": 0.5,
+        "p90_abs_delta_px": 0.5,
+        "mean_abs_delta_px": 0.5
+      },
+      "rhwp_first_band": {
+        "y0": 758,
+        "y1": 758,
+        "x0": 357,
+        "x1": 587,
+        "pixels": 231,
+        "cy": 758.0
+      },
+      "rhwp_last_band": {
+        "y0": 758,
+        "y1": 758,
+        "x0": 357,
+        "x1": 587,
+        "pixels": 231,
+        "cy": 758.0
+      },
+      "pdf_first_band": {
+        "y0": 758,
+        "y1": 759,
+        "x0": 357,
+        "x1": 587,
+        "pixels": 462,
+        "cy": 758.5
+      },
+      "pdf_last_band": {
+        "y0": 758,
+        "y1": 759,
+        "x0": 357,
+        "x1": 587,
+        "pixels": 462,
+        "cy": 758.5
+      }
+    }
+  ],
+  "column_line_band_drift_candidates": [],
+  "column_text_flow_masked_line_band_drift": [
+    {
+      "column": 0,
+      "rhwp_frame": [
+        111,
+        130,
+        395,
+        1011
+      ],
+      "pdf_frame": [
+        111,
+        130,
+        395,
+        1011
+      ],
+      "drift": {
+        "rhwp_count": 1,
+        "pdf_count": 1,
+        "paired": 1,
+        "max_abs_delta_px": 1.0,
+        "p90_abs_delta_px": 1.0,
+        "mean_abs_delta_px": 1.0
+      },
+      "rhwp_first_band": {
+        "y0": 773,
+        "y1": 782,
+        "x0": 114,
+        "x1": 140,
+        "pixels": 117,
+        "cy": 777.5
+      },
+      "rhwp_last_band": {
+        "y0": 773,
+        "y1": 782,
+        "x0": 114,
+        "x1": 140,
+        "pixels": 117,
+        "cy": 777.5
+      },
+      "pdf_first_band": {
+        "y0": 772,
+        "y1": 781,
+        "x0": 114,
+        "x1": 140,
+        "pixels": 150,
+        "cy": 776.5
+      },
+      "pdf_last_band": {
+        "y0": 772,
+        "y1": 781,
+        "x0": 114,
+        "x1": 140,
+        "pixels": 150,
+        "cy": 776.5
+      }
+    },
+    {
+      "column": 1,
+      "rhwp_frame": [
+        399,
+        130,
+        683,
+        1011
+      ],
+      "pdf_frame": [
+        399,
+        130,
+        683,
+        1011
+      ],
+      "drift": {
+        "rhwp_count": 0,
+        "pdf_count": 0,
+        "paired": 0,
+        "max_abs_delta_px": null,
+        "mean_abs_delta_px": null
+      },
+      "rhwp_first_band": null,
+      "rhwp_last_band": null,
+      "pdf_first_band": null,
+      "pdf_last_band": null
+    }
+  ],
+  "column_text_flow_table_masks": {
+    "rhwp": [
+      [
+        115,
+        133,
+        592,
+        762
+      ]
+    ],
+    "pdf": [
+      [
+        115,
+        133,
+        592,
+        762
+      ]
+    ]
+  },
+  "column_text_flow_body_frames": {
+    "rhwp": [
+      111,
+      130,
+      683,
+      1011
+    ],
+    "pdf": [
+      111,
+      130,
+      683,
+      1011
+    ]
+  },
+  "column_text_flow_reflowing_float_present": true,
+  "column_text_flow_collapse_candidates": [],
+  "large_ink_region_drift": {
+    "rhwp_count": 0,
+    "pdf_count": 1,
+    "paired": 0,
+    "max_abs_delta_px": null,
+    "mean_abs_delta_px": null,
+    "rhwp_regions": [],
+    "pdf_regions": [
+      {
+        "x0": 117.0,
+        "y0": 744.0,
+        "x1": 589.0,
+        "y1": 792.0,
+        "w": 472.0,
+        "h": 48.0,
+        "cy": 768.0,
+        "tiles": 33.0
+      }
+    ]
+  },
+  "endnote_shape_ui": {
+    "separator_visible": false,
+    "separator_above_mm": null,
+    "between_notes_mm": null,
+    "separator_below_mm": null,
+    "separator_length_mm": null
+  },
+  "endnote_separator_gap": {
+    "expected_separator": false,
+    "separator_below_mm": null,
+    "separator_above_mm": null,
+    "between_notes_mm": null,
+    "separator_length_px": null,
+    "rhwp": {
+      "expected_separator": false,
+      "candidate_count": 0,
+      "selected": null,
+      "gap_px": null,
+      "first_content_y": null,
+      "first_marker_y": null,
+      "candidates": []
+    },
+    "pdf": {
+      "expected_separator": false,
+      "candidate_count": 0,
+      "selected": null,
+      "gap_px": null,
+      "first_content_y": null,
+      "first_marker_y": null,
+      "candidates": []
+    },
+    "gap_delta_px": null
+  },
+  "endnote_no_separator_content_start": {
+    "rhwp": {
+      "frame_bottom_y": 1096,
+      "content_band_count": 7,
+      "marker_count": 0,
+      "first_lower_content_y": 758.0,
+      "first_lower_marker_y": null,
+      "content_start_y": 758.0,
+      "bottom_content_y": 782.0,
+      "frame_width_px": 472
+    },
+    "pdf": {
+      "frame_bottom_y": 1096,
+      "content_band_count": 7,
+      "marker_count": 0,
+      "first_lower_content_y": 758.0,
+      "first_lower_marker_y": null,
+      "content_start_y": 758.0,
+      "bottom_content_y": 781.0,
+      "frame_width_px": 472
+    }
+  },
+  "between_notes_marker_gap": {
+    "expected_between_notes_mm": null,
+    "expected_between_notes_px": null,
+    "rhwp_marker_count": 0,
+    "pdf_marker_count": 0,
+    "paired_gap_count": 0,
+    "max_abs_delta_px": null,
+    "mean_abs_delta_px": null,
+    "rhwp_marker_y": [],
+    "pdf_marker_y": [],
+    "rhwp_marker_y_by_column": [
+      []
+    ],
+    "pdf_marker_y_by_column": [
+      []
+    ],
+    "rhwp_gaps_px": [],
+    "pdf_gaps_px": [],
+    "pairs": []
+  },
+  "svg": null,
+  "render_tree_json": "/home/edward/mygithub/rhwp/output/pr-review/pr8658/visual-corrected-native/primary-overlap/render_tree/render_tree_001.json",
+  "equation_text_overlap_candidates": [],
+  "square_wrap_text_overlap_candidates": [],
+  "deferred_square_picture_top_drift_candidates": [],
+  "right_table_left_strip_text_deficit_candidates": [],
+  "question_title_text_overlap_candidates": [],
+  "line_order_overlap_candidates": [],
+  "render_tree_frame_tail_overflow_candidates": [],
+  "render_tree_frame_tail_overflow_suppressed_candidates": [],
+  "question_marker_drift_candidates": [],
+  "legacy_glyph_visual_candidates": [],
+  "annotated": null
+}
