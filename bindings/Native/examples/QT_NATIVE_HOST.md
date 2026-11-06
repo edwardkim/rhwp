@@ -1,6 +1,6 @@
 # Qt native 창 예제
 
-`qt_native_host.py`는 PySide6 QWidget에서 native Skia 픽셀을 표시하는 작은 참조 앱이다.
+`qt_native_host.py`는 PySide6 창에서 native Skia 문서를 표시하는 작은 참조 앱이다.
 WASM·DOM·브라우저를 사용하지 않는다. Rust worker가 문서 core를 소유하며 GUI는
 `QTimer`로 완료를 받는다. 입력은 최대 64개 action FIFO이고 문서 요청은 한 번에 하나만 보낸다.
 뷰가 바뀌거나 action이 접수되면 실행 중 tiled render에 취소를 요청한다. P77의 타일 경계 취소를
@@ -14,6 +14,10 @@ python3 -m venv .venv-qt
 ```
 
 `--input sample.hwpx`로 기존 문서를 열 수 있다. 입력 파일을 자동 수정하거나 저장하지 않는다.
+`--renderer cpu`가 기본이며 기존 tiled RGBA 화면을 사용한다. `--renderer auto`는 사용 가능한
+Native GL 빌드와 Qt context가 있으면 QOpenGLWidget FBO에 직접 그리고, GPU 미지원·context 생성 실패·
+device 오류일 때 CPU로 전환한다. `--renderer gl`은 GL을 명시적으로 요구하며 실패를 표시한다.
+`offscreen`/`minimal` Qt platform은 GL 창을 지원하지 않으므로 auto는 CPU, gl은 시작 오류다.
 `--output new.hwpx`는 다른 이름으로 저장 대화상자의 기본 경로다. HWP/HWPX 저장을 지원하고,
 일반 저장은 문서를 열 때 읽은 원본 bytes의 stamp를 사용하여 외부 변경을 확인한다. 파일 읽기와
 원자적 파일 교체·flush는 I/O executor에서 수행한다. 심볼릭 링크와 일반 파일이 아닌 경로는 거절한다.
@@ -63,7 +67,38 @@ stamp를 얻은 뒤 교체 승인을 받고, 게시 직전에 같은 stamp인지
   FIFO 슬롯을 유지하므로 편집 순서를 바꾸지 않는다. 취소·superseded skip은 오류로 표시하지 않는다.
   stale 문서·revision·font·view 결과는 CPU로 복사하지 않고 native buffer를 바로 해제한다.
 - 확대율·DPR이 바뀐 화면에는 해당 scale의 타일이 필요하다. 보유된 같은 scale의 타일은 재사용하며,
-  이 경로는 CPU RGBA 출력이다. GPU surface 공유·GPU 직접 표시는 후속 host 작업이다.
+  이 경로는 CPU RGBA 출력이다.
+
+## GL 화면과 소유권
+
+- `qt_gpu_view.py`는 P89 worker의 `exportRenderSnapshot`으로 얻은 불변 snapshot ID와 P90
+  `native_gl.NativeGlPresenter`를 연결한다. `paintGL`은 문서 core·조판·RGBA buffer를 호출하지 않는다.
+  worker가 새 revision/font를 반영하면 이전 snapshot을 해제하고 다시 export한다. 화면 이동·zoom·DPR·
+  resize·FBO/context 교체는 별도 view/device generation을 올리며 같은 source snapshot을 재사용한다.
+- NativeView의 visible page·pageRect·zoom·DPR을 사용해 물리 픽셀 위치와 scale을 정한다. 가시 페이지
+  snapshot이 모두 준비된 뒤 한 frame을 replay한다. 최대 16쪽의 snapshot만 보유하며 화면 밖 페이지·
+  문서 교체·종료·CPU 전환 및 늦은 completion의 snapshot을 `snapshotRelease`로 해제한다.
+  export도 기존 FIFO와 한 개의 worker 요청 슬롯을 사용한다.
+- Qt가 소유한 current OpenGL 3.3 context와 RGBA8·samples=0·stencil=0/8 FBO를 잠깐 빌린다.
+  Qt는 swap/present를 담당한다. Native replay 전후 `QPainter.beginNativePainting/endNativePainting`을
+  사용하며 Skia의 GL state reset 뒤 Qt로 제어를 돌려 캐럿·선택·IME overlay를 그린다.
+  CPU와 GL은 QObject 기반이 없는 `CanvasInputMixin`을 공유한다. 접근성 adapter는 공통
+  `rhwp_native_canvas` marker와 `window` 인터페이스를 사용할 수 있다.
+- context의 `aboutToBeDestroyed`와 창 종료에서 makeCurrent 후 presenter를 release한다. current가
+  되지 않으면 GL을 호출하지 않는 abandon을 사용한다. callback 객체와 Qt context는 native handle의
+  수명 동안 wrapper에 보유한다. context 재생성은 새 device generation을 사용한다.
+- GPU frame은 strict replay를 scratch surface에서 마친 뒤 Qt FBO에 게시한다. 문서 이미지 decode·
+  font/text 계약·한도 오류는 진단하고 현재 FBO의 마지막 성공 화면을 유지한다. 이 오류를 CPU의
+  placeholder 경로로 바꾸지 않는다. Qt `PartialUpdate`로 같은 FBO의 내용을 보존하지만, resize나
+  context 소실로 폐기된 FBO의 픽셀까지 복원한다고 주장하지 않는다. stale frame은 최신 source/view를
+  기다리는 경로이며 device 오류와 구분한다.
+- 정상 GL 경로에는 whole-frame CPU readback이 없다. Native `wholeFrameReadbacks` 계측으로 확인한다.
+  테스트의 선택적 `grabFramebuffer`는 검증용 readback이며 이 계측의 범위 밖이다. GL_VENDOR/RENDERER/
+  VERSION을 함께 보고하고 llvmpipe 등은 software로 표시한다. 그 외 드라이버도 하드웨어 실행이라고
+  자동 확정하지 않는다. 이 예제는 외부 texture export나 Flutter texture registration을 구현하지 않는다.
+
+context 정리와 FBO 수명은 [QOpenGLWidget](https://doc.qt.io/qt-6/qopenglwidget.html),
+state handoff는 [QPainter](https://doc.qt.io/qt-6/qpainter.html#beginNativePainting) 계약을 따른다.
 
 ## 표시와 입력 범위
 
@@ -95,10 +130,22 @@ stamp를 얻은 뒤 교체 승인을 받고, 게시 직전에 같은 stamp인지
 ```bash
 python3 -B bindings/Native/tests/native_viewport_tiles_contract.py
 QT_QPA_PLATFORM=offscreen .venv-qt/bin/python -B bindings/Native/tests/native_window_smoke.py
+QT_QPA_PLATFORM=offscreen .venv-qt/bin/python -B bindings/Native/tests/native_gpu_window_smoke.py
 QT_QPA_PLATFORM=offscreen .venv-qt/bin/python -B bindings/Native/tests/native_window_smoke.py \
   --library /absolute/path/to/librhwp_native_ffi.so \
   --screenshot /new/path/qt-window.png
 ```
+
+GL 실제 검사는 Native GL 기능을 포함한 라이브러리와 xcb/X 서버가 필요하다. headless 환경에서는
+별도로 실행한 Xvfb의 display를 지정한다. 아래 명령은 synthetic controller 검사 뒤 실제 GL 창에서
+snapshot 재사용·zoom·resize·편집과 readback 계측을 검사한다. `--diagnostic-readback`은 선택 사항이다.
+
+```bash
+DISPLAY=:99 QT_QPA_PLATFORM=xcb .venv-qt/bin/python -B \
+  bindings/Native/tests/native_gpu_window_smoke.py --library /absolute/path/to/lib-with-native-gl.so
+```
+
+offscreen synthetic 검사의 성공만으로 실제 GPU·드라이버·물리 장치 성공을 주장하지 않는다.
 
 첫 명령은 Qt 없이 실행하는 격자·분수 끝점·계획 상한·LRU 바이트/수명 계약 검사다.
 Qt 명령은 UTF-16 경계, QImage 소유권, IME replacement 거절, 큐 상한의 adapter 검사다.

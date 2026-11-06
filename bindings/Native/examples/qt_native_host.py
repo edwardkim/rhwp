@@ -59,7 +59,11 @@ class CachedTile:
     origin_y: int
 
 
-class Canvas(QWidget):
+class CanvasInputMixin:
+    """Shared input/IME and overlays; contains no QObject base or renderer."""
+
+    rhwp_native_canvas = True
+
     def __init__(self, window):
         super().__init__(window)
         self.window = window
@@ -67,27 +71,7 @@ class Canvas(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_InputMethodEnabled)
         self.setMinimumSize(200, 150)
 
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.fillRect(self.rect(), QColor("#55575a"))
-        page_rects = {}
-        for page in self.window.view.get("visible", []):
-            bounds = page["pageRect"]
-            page_rects[page["page"]] = bounds
-            painter.fillRect(QRectF(bounds["x"], bounds["y"], bounds["width"], bounds["height"]), Qt.GlobalColor.white)
-        for tile in self.window.visible_tiles:
-            frame = self.window.tile_images.get(tile.key(self.window.tile_identity))
-            bounds = page_rects.get(tile.page)
-            if frame is not None and bounds is not None:
-                painter.save()
-                factor = self.window.state["config"]["zoom"] / tile.scale
-                origin = QPointF(bounds["x"] + frame.origin_x * factor, bounds["y"] + frame.origin_y * factor)
-                painter.setClipRect(QRectF(bounds["x"], bounds["y"], bounds["width"], bounds["height"]),
-                                    Qt.ClipOperation.IntersectClip)
-                painter.setClipRect(QRectF(bounds["x"] + tile.x * factor, bounds["y"] + tile.y * factor,
-                    tile.width * factor, tile.height * factor), Qt.ClipOperation.IntersectClip)
-                painter.drawImage(origin, frame.image)
-                painter.restore()
+    def paint_overlays(self, painter):
         if self.window.view and self.window.pages and not self.window.loading_pages:
             painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(QColor(50, 120, 230, 75))
@@ -101,8 +85,6 @@ class Canvas(QWidget):
                 area = self.window.page_rect(rect["page"], rect["bounds"])
                 painter.setPen(QPen(self.window.preedit_color, 1, Qt.PenStyle.DotLine))
                 painter.drawLine(area.bottomLeft(), area.bottomRight())
-        painter.end()
-        self.window.paint_count += 1
 
     def resizeEvent(self, event):
         self.window.rebuild_view()
@@ -186,13 +168,49 @@ class Canvas(QWidget):
         super().focusOutEvent(event)
 
 
+class Canvas(CanvasInputMixin, QWidget):
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.fillRect(self.rect(), QColor("#55575a"))
+        page_rects = {}
+        for page in self.window.view.get("visible", []):
+            bounds = page["pageRect"]
+            page_rects[page["page"]] = bounds
+            painter.fillRect(QRectF(bounds["x"], bounds["y"], bounds["width"], bounds["height"]), Qt.GlobalColor.white)
+        for tile in self.window.visible_tiles:
+            frame = self.window.tile_images.get(tile.key(self.window.tile_identity))
+            bounds = page_rects.get(tile.page)
+            if frame is not None and bounds is not None:
+                painter.save()
+                factor = self.window.state["config"]["zoom"] / tile.scale
+                origin = QPointF(bounds["x"] + frame.origin_x * factor, bounds["y"] + frame.origin_y * factor)
+                painter.setClipRect(QRectF(bounds["x"], bounds["y"], bounds["width"], bounds["height"]),
+                                    Qt.ClipOperation.IntersectClip)
+                painter.setClipRect(QRectF(bounds["x"] + tile.x * factor, bounds["y"] + tile.y * factor,
+                    tile.width * factor, tile.height * factor), Qt.ClipOperation.IntersectClip)
+                painter.drawImage(origin, frame.image)
+                painter.restore()
+        self.paint_overlays(painter)
+        painter.end()
+        self.window.paint_count += 1
+
+
 class NativeWindow(QMainWindow):
     MAX_ACTIONS = 64
     MAX_PAGES = 512
 
-    def __init__(self, library, input_path=None, output_path=None, worker=None):
+    def __init__(self, library, input_path=None, output_path=None, worker=None, renderer="cpu"):
         super().__init__()
+        if renderer not in ("cpu", "auto", "gl"):
+            raise ValueError("renderer must be cpu, auto or gl")
         self.worker = worker or NativeWorker(library)
+        self.renderer_requested = renderer
+        self.renderer = "cpu"
+        self.renderer_error = None
+        self.gpu = None
+        self.gpu_failure_timer = QTimer(self)
+        self.gpu_failure_timer.setSingleShot(True)
+        self.gpu_failure_timer.timeout.connect(self.apply_gpu_failure)
         self.output_path = Path(output_path) if output_path else None
         self.info, self.context, self.view = {}, {}, {}
         self.pages, self.frames, self.rects, self.preedit_rects = [], {}, [], []
@@ -238,10 +256,26 @@ class NativeWindow(QMainWindow):
                                  "zoom": 1, "deviceScale": 1, "pageGap": 18},
                       "scroll": {"x": 0, "y": 0}}
         self.canvas = Canvas(self)
+        if renderer != "cpu":
+            try:
+                from qt_gpu_view import create_gpu_canvas
+                gpu_canvas = create_gpu_canvas(self, CanvasInputMixin)
+                self.canvas.deleteLater()
+                self.canvas = gpu_canvas
+                self.renderer = "gl"
+            except Exception as error:
+                self.renderer_error = str(error)
+                if renderer == "gl":
+                    self.io.shutdown(wait=False)
+                    if worker is None:
+                        self.worker.close()
+                        self.worker.wait_closed()
+                    raise RuntimeError(f"GL renderer unavailable: {error}") from error
         self.vertical = QScrollBar(Qt.Orientation.Vertical)
         self.horizontal = QScrollBar(Qt.Orientation.Horizontal)
         central = QWidget()
         layout = QGridLayout(central)
+        self.canvas_layout = layout
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.canvas, 0, 0)
         layout.addWidget(self.vertical, 0, 1)
@@ -274,6 +308,36 @@ class NativeWindow(QMainWindow):
             self.open_path(input_path)
         else:
             self.enqueue([lambda _: {"op": "new", "replace": None}], self.opened)
+        if self.renderer_error:
+            self.statusBar().showMessage(f"GL → CPU: {self.renderer_error}")
+
+    def gpu_failed(self, error):
+        """Defer widget replacement until paintGL/aboutToBeDestroyed returns."""
+        self.renderer_error = str(error)
+        self.gpu_failure_timer.start(0)
+
+    def apply_gpu_failure(self):
+        if self.closing or self.renderer != "gl":
+            return
+        if self.renderer_requested == "gl":
+            self.canvas.dispose_gpu()
+            self.fail(f"GL renderer failed: {self.renderer_error}")
+            return
+        previous = self.canvas
+        focused = previous.hasFocus()
+        previous.dispose_gpu()
+        self.gpu = None
+        self.canvas = Canvas(self)
+        self.canvas_layout.replaceWidget(previous, self.canvas)
+        previous.hide()
+        previous.deleteLater()
+        self.renderer = "cpu"
+        self.reset_tiles()
+        self.rebuild_view()
+        self.canvas.show()
+        if focused:
+            self.canvas.setFocus()
+        self.fail(f"GL → CPU: {self.renderer_error}")
 
     def target(self):
         return {"documentId": self.info["documentId"], "revision": self.info["revision"]}
@@ -342,6 +406,8 @@ class NativeWindow(QMainWindow):
                 if self.pending is None or result["requestId"] != self.pending[0]:
                     if "buffer" in result:
                         self.release_frame(result)
+                    if "snapshot" in result:
+                        self.worker.host.presentation_request(op="snapshotRelease", snapshot=result["snapshot"])
                     self.fail("예상하지 못한 worker completion")
                     continue
                 callback = self.pending[1]
@@ -632,6 +698,8 @@ class NativeWindow(QMainWindow):
 
     def reset_tiles(self):
         self.cancel_render()
+        if self.gpu is not None:
+            self.gpu.sync_source()
         self.tile_identity = self.current_tile_identity()
         self.tile_images.clear()
         self.visible_tiles = ()
@@ -644,6 +712,12 @@ class NativeWindow(QMainWindow):
     def sync_visible_tiles(self):
         if self.tile_identity != self.current_tile_identity():
             self.reset_tiles()
+        if self.gpu is not None:
+            self.visible_tiles = ()
+            self.frames.clear()
+            self.gpu.sync_source()
+            self.update_raster_status()
+            return
         if not self.pages or self.loading_pages:
             self.visible_tiles = ()
             self.frames.clear()
@@ -664,6 +738,9 @@ class NativeWindow(QMainWindow):
 
     def update_raster_status(self):
         if hasattr(self, "raster_status"):
+            if self.gpu is not None:
+                self.raster_status.setText(f"GL · snapshot {len(self.gpu.snapshots)}개")
+                return
             native = self.raster_cache_stats.get("retainedBytes", 0)
             self.raster_status.setText(f"타일 {len(self.tile_images)}개 · 화면 {self.tile_images.retained_bytes // 1024} KiB"
                                       f" · Native {native // 1024} KiB")
@@ -692,6 +769,9 @@ class NativeWindow(QMainWindow):
 
     def render_next(self):
         if self.closing or not self.info or not self.view or not self.pages or self.loading_pages:
+            return
+        if self.gpu is not None:
+            self.gpu.render_next()
             return
         tile = next((item for item in self.visible_tiles if item.key(self.tile_identity) not in self.tile_images
                      and item.key(self.tile_identity) not in self.tile_failures), None)
@@ -1196,6 +1276,9 @@ class NativeWindow(QMainWindow):
 
     def shutdown_worker(self):
         self.closing = True
+        self.gpu_failure_timer.stop()
+        if self.gpu is not None:
+            self.canvas.dispose_gpu()
         self.actions.clear()
         self.worker.close()
         self.statusBar().showMessage("진행 중인 native 작업의 종료를 기다립니다.")
@@ -1218,9 +1301,10 @@ def main():
     parser.add_argument("--library", required=True)
     parser.add_argument("--input", type=Path)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--renderer", choices=("cpu", "auto", "gl"), default="cpu")
     args = parser.parse_args()
     app = QApplication(sys.argv[:1])
-    window = NativeWindow(args.library, args.input, args.output)
+    window = NativeWindow(args.library, args.input, args.output, renderer=args.renderer)
     window.show()
     return app.exec()
 
