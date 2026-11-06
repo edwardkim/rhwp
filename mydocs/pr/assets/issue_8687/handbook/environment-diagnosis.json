@@ -1,0 +1,135 @@
+{
+  "fontComparison": [
+    {
+      "family": "KoPubBatang",
+      "style": "Light",
+      "installedMatchedNames": "KoPubBatang,KoPub바탕체,KoPubBatang Light,KoPub바탕체 Light",
+      "installedPath": "/usr/local/share/fonts/hwp-convert-mcp-kopub/KoPub Batang Light.ttf",
+      "installedSha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+      "pinnedPublicSourceSha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+      "sameSourceBytes": true
+    },
+    {
+      "family": "KoPubBatang",
+      "style": "Medium",
+      "installedMatchedNames": "KoPubBatang,KoPub바탕체,KoPubBatang Medium,KoPub바탕체 Medium",
+      "installedPath": "/usr/local/share/fonts/hwp-convert-mcp-kopub/KoPub Batang Medium.ttf",
+      "installedSha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+      "pinnedPublicSourceSha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+      "sameSourceBytes": true
+    },
+    {
+      "family": "KoPubBatang",
+      "style": "Bold",
+      "installedMatchedNames": "KoPubBatang,KoPub바탕체,KoPubBatang Bold,KoPub바탕체 Bold",
+      "installedPath": "/usr/local/share/fonts/hwp-convert-mcp-kopub/KoPub Batang Bold.ttf",
+      "installedSha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+      "pinnedPublicSourceSha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+      "sameSourceBytes": true
+    },
+    {
+      "family": "KoPubDotum",
+      "style": "Light",
+      "installedMatchedNames": "KoPubDotum,KoPub돋움체,KoPubDotum Light,KoPub돋움체 Light",
+      "installedPath": "/usr/local/share/fonts/hwp-convert-mcp-kopub/KoPub Dotum Light.ttf",
+      "installedSha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+      "pinnedPublicSourceSha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+      "sameSourceBytes": true
+    },
+    {
+      "family": "KoPubDotum",
+      "style": "Medium",
+      "installedMatchedNames": "KoPubDotum,KoPub돋움체,KoPubDotum Medium,KoPub돋움체 Medium",
+      "installedPath": "/usr/local/share/fonts/hwp-convert-mcp-kopub/KoPub Dotum Medium.ttf",
+      "installedSha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+      "pinnedPublicSourceSha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+      "sameSourceBytes": true
+    },
+    {
+      "family": "KoPubDotum",
+      "style": "Bold",
+      "installedMatchedNames": "KoPubDotum,KoPub돋움체,KoPubDotum Bold,KoPub돋움체 Bold",
+      "installedPath": "/usr/local/share/fonts/hwp-convert-mcp-kopub/KoPub Dotum Bold.ttf",
+      "installedSha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+      "pinnedPublicSourceSha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+      "sameSourceBytes": true
+    },
+    {
+      "family": "HCR Batang",
+      "style": "Regular",
+      "installedMatchedNames": "HCR Batang,함초롬바탕",
+      "installedPath": "/usr/local/share/fonts/hwp-convert-mcp-survey/8664669bd2d6-HANBatang.ttf",
+      "installedSha256": "8664669bd2d6a4fe8b7538706d2bb2a1004c074aa02dca59051e515e731294f5",
+      "pinnedPublicSourceSha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+      "sameSourceBytes": false
+    }
+  ],
+  "firstAmbientRun": {
+    "status": "failed; not accepted",
+    "candidateP145": {
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.95409,
+      "silhouette_raw_unmatched_pixels": 70,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 152474,
+      "tolerant_content_match_percent": 99.95409
+    },
+    "baseP145": {
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.95409,
+      "silhouette_raw_unmatched_pixels": 70,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 152474,
+      "tolerant_content_match_percent": 99.95409
+    }
+  },
+  "automaticPublicP145": {
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "silhouette_raw_match_percent": 99.99738,
+    "silhouette_raw_unmatched_pixels": 4,
+    "silhouette_boundary_reconciled_pixels": 0,
+    "silhouette_color_tolerance": 32,
+    "silhouette_content_union_pixels": 152416,
+    "tolerant_content_match_percent": 99.99738
+  },
+  "explicitPublicP145": {
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "silhouette_raw_match_percent": 99.99869,
+    "silhouette_raw_unmatched_pixels": 2,
+    "silhouette_boundary_reconciled_pixels": 0,
+    "silhouette_color_tolerance": 32,
+    "silhouette_content_union_pixels": 152218,
+    "tolerant_content_match_percent": 99.99869
+  },
+  "governmentText": {
+    "sourceFace": "정부상징 부처명_16040911",
+    "installedPath": "/usr/local/share/fonts/hwp-convert-mcp-government-symbol/정부상징 부처명_16040911.ttf",
+    "installedSha256": "9ff914274d89c97abe3c22934c1f5f049d5c82de3cf0a3bc6053ac139b8a111a",
+    "restoredInstalledTextCropMatchesAmbient": true
+  },
+  "pageNumber": {
+    "requestedFamily": "Haansoft Batang",
+    "installedPath": "/usr/local/share/fonts/hancom-office-2020/All/HBATANG.TTF",
+    "installedSha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+    "specificSelectedProgramNotProven": true
+  },
+  "baselineChanged": false,
+  "explicitFullRuns": "interrupted diagnostic, never a completed gate; final runs use no explicit font paths",
+  "governmentFontRemoval": {
+    "requestedByUser": true,
+    "completedAt": "2026-11-06T20:16:59.885874+09:00",
+    "hosts": [
+      "ubuntu-ted",
+      "ubuntu-ted2",
+      "ubuntu-ted3"
+    ],
+    "installedPath": "/usr/local/share/fonts/hwp-convert-mcp-government-symbol/정부상징 부처명_16040911.ttf",
+    "removedFileSha256": "9ff914274d89c97abe3c22934c1f5f049d5c82de3cf0a3bc6053ac139b8a111a",
+    "verification": "sudo/user Fontconfig directory caches refreshed, file absent and fc-list contains no 16040911 on all hosts",
+    "diagnosticCopyRemoved": "output/pr-review/issue8687/p145-isolated-extra/정부상징 부처명_16040911.ttf",
+    "currentExecutionHost": "ubuntu-ted3",
+    "effectOnIsolatedValidation": "none; the font was already excluded from the minimal font namespace"
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "nativeBinarySha256": "3904f2cb984e678ef9b3771d8b545a593633d0d913c80ad7c74d6c46b250f3b6",
+  "wasmJsSha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+  "wasmSha256": "15f62bf019f0f1ae845dd2f9e58893246c0a2127e8f65fa3094286351050e455",
+  "fontPrograms": [
+    {
+      "family": "함초롬돋움",
+      "registeredFamily": "함초롬돋움",
+      "sourceSha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+      "sha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+      "textProgramSha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "함초롬돋움",
+      "registeredFamily": "함초롬돋움",
+      "sourceSha256": "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+      "sha256": "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+      "textProgramSha256": "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+      "faceIndex": 0,
+      "weight": 700,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "함초롬돋움",
+      "registeredFamily": "__rhwp_ttf__함초롬돋움",
+      "sourceSha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+      "sha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "함초롬돋움",
+      "registeredFamily": "__rhwp_ttf__함초롬돋움",
+      "sourceSha256": "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+      "sha256": "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+      "faceIndex": 0,
+      "weight": 700,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    }
+  ],
+  "studioHostProgram": {
+    "source": "/opt/hnc/hoffice11/Shared/TTF/Install/HANDotum.ttf",
+    "sha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898"
+  },
+  "nativeBuildIdentity": {
+    "buildCheckoutHead": "86aaa4f4ffbc1d9cff84efd187f3130424c0844e",
+    "builtBeforeRecordingFinalProductCommit": true,
+    "productSourceEquivalentTo": "e4aefbcce7bf3db783ec39f3223e79b53082fbc1",
+    "basis": "final Native build used the completed second fix before its commit; subsequent product source bytes were unchanged and match the recorded product commit",
+    "productFileAudit": [
+      {
+        "path": "src/document_core/host_font_environment.rs",
+        "gitBlob": "405cc20d447e3944a0d7232b6d8d75c64bfd6b3f",
+        "sha256": "bd8fbc3a1101aac89e12208a96b410e9663c7bd8f96fd5c8029007b57d489c54"
+      },
+      {
+        "path": "src/renderer/font_environment.rs",
+        "gitBlob": "70f00d614b3855a2be1496659e9c31dcbdbf3a82",
+        "sha256": "8ba0a47befd683ae59843f5c69083960bb85124c1e83713763c070a0bfddefc0"
+      },
+      {
+        "path": "src/renderer/style_resolver.rs",
+        "gitBlob": "3ad998059d8fa3841284699026b372437482188c",
+        "sha256": "fcb63fa6e6cf5a7538cf07876a86475d3f9cf30d36d0920ec936dea4241d1fbe"
+      },
+      {
+        "path": "src/renderer/style_resolver/document_font_chain.rs",
+        "gitBlob": "405b4d9f0e6f1a42594122f20922563ee05e24cc",
+        "sha256": "aafe9e84dd8af6e0a910427d3c43c1c9c4b6fc709bcd3815a550d919d5bbd8d7"
+      }
+    ]
+  }
+}

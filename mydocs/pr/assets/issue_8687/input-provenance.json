@@ -1,0 +1,63 @@
+{
+  "sourceBase": "08963f6825956984d38b0d9392f44777db7107ab",
+  "inputs": [
+    {
+      "label": "control",
+      "source": "samples/header-footer-paper-frame.hwpx",
+      "sourceSha256": "8589147dc4a70140d9ccd0c83b899932432541c9db9e714cc59cfdd4c16c67b6",
+      "sourceBytes": 15531,
+      "pdf": "pdf/pblsketch_review_20261030/header-footer-paper-frame-2024.pdf",
+      "pdfSha256": "6eef9e9a4f0b5345468c3be6c29ed4998613f981dea96cc2225cc0930795ddfc",
+      "pdfBytes": 10393,
+      "changedZipEntries": [],
+      "independentPrint": {
+        "engine": "Hancom Office 2024",
+        "version": "see pr_8165 provenance",
+        "jobId": null,
+        "printMethod": 0,
+        "pdfOutputMode": "frame_print_to_pdf_ex_one_up",
+        "pages": 1
+      }
+    },
+    {
+      "label": "repro",
+      "source": "pdf/issue8687/font_list_name_fallback.hwpx",
+      "sourceSha256": "b84f9c8815b9093135a1e3e630dd8b55aac62916275edac0dc0e8fc61520120e",
+      "sourceBytes": 15547,
+      "pdf": "pdf/issue8687/font_list_name_fallback-2024.pdf",
+      "pdfSha256": "38656e23c496930d4b80405eb71c044ffd8056a930eae82549bd7e2af8723d96",
+      "pdfBytes": 12546,
+      "changedZipEntries": [
+        "Contents/header.xml"
+      ],
+      "independentPrint": {
+        "engine": "Hancom Office 2024",
+        "version": "13.0.0.3901",
+        "jobId": "62fcb88a-a642-4462-b593-ec03a329c7ab",
+        "printMethod": 0,
+        "pdfOutputMode": "frame_print_to_pdf_ex_one_up",
+        "pages": 1
+      }
+    },
+    {
+      "label": "used",
+      "source": "pdf/issue8687/font_list_name_used_fallback.hwpx",
+      "sourceSha256": "cafee169b69eec6dc8595d5f98e5f03ca724ddf169c333b022b3a8874ed7c930",
+      "sourceBytes": 15561,
+      "pdf": "pdf/issue8687/font_list_name_used_fallback-2024.pdf",
+      "pdfSha256": "79f03ae09ae889f7f39443b00b8991c991d100087c31c1d16bbd4c00e73df4f8",
+      "pdfBytes": 12546,
+      "changedZipEntries": [
+        "Contents/header.xml"
+      ],
+      "independentPrint": {
+        "engine": "Hancom Office 2024",
+        "version": "13.0.0.3901",
+        "jobId": "c56f2b6d-5cb0-4ac8-bb7b-f85b4f8d3f7b",
+        "printMethod": 0,
+        "pdfOutputMode": "frame_print_to_pdf_ex_one_up",
+        "pages": 1
+      }
+    }
+  ]
+}

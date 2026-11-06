@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+exec bwrap --ro-bind /usr /usr --symlink usr/bin /bin --symlink usr/lib /lib --symlink usr/lib64 /lib64 \
+  --ro-bind /etc /etc --ro-bind /run/systemd/resolve /run/systemd/resolve --proc /proc --dev /dev --ro-bind /sys /sys --bind /tmp /tmp \
+  --dir /home/tsjang --bind /home/tsjang/rhwp /home/tsjang/rhwp \
+  --bind /home/tsjang/.cargo /home/tsjang/.cargo --ro-bind /home/tsjang/.rustup /home/tsjang/.rustup \
+  --tmpfs /usr/share/fonts --tmpfs /usr/local/share/fonts \
+  --setenv HOME /home/tsjang --unsetenv XDG_DATA_HOME --unsetenv RHWP_FONT_PATH \
+  --setenv FONTCONFIG_FILE /home/tsjang/rhwp/mydocs/pr/assets/issue_8687/minimal-font-fontconfig.xml \
+  --chdir /home/tsjang/rhwp "$@"
