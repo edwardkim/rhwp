@@ -2441,6 +2441,28 @@ impl TypesetEngine {
         } else {
             available
         };
+        // 저장 호스트가 표 뒤에 있는 상자는 현재 pen에서 같은 상대 프레임을 쓴다.
+        // 앞 문단·표 외곽·호스트 줄·다음 줄이 모두 닫히고 통째 수용될 때만 발행한다.
+        let resolved_host_placement = resolved_host_placement.or_else(|| {
+            (legacy_whole_fits
+                && unconstrained_host_placement.is_none()
+                && !ft.strict_following_plain_text_fit
+                && !st.profile.session_edited()
+                && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout()))
+            .then(|| {
+                crate::renderer::float_placement::ParagraphFloatPlacement::from_stored_tail_host(
+                    paragraphs_all.get(para_idx.checked_sub(1)?)?,
+                    para,
+                    paragraphs_all.get(para_idx + 1)?,
+                    table,
+                    placement_para_start_height,
+                    ft.effective_height,
+                    self.dpi,
+                )
+            })
+            .flatten()
+            .filter(|placement| placement.occupied_bottom <= whole_frame_budget)
+        });
         // [#7620] 쪽 경계 나눔은 분할을 허용할 뿐이다. 빈 개체 앵커 표가 기존 whole-fit 판정으로
         // 통째 들어가면 저장 원점에서 세운 상자를 조판·배치가 공유한다(바깥 여백 위·아래 포함).
         // 상자는 문단 윗변에서 시작하고 문단 아래 간격을 포함하지 않는다(글줄 경로와 같은
