@@ -30,3 +30,8 @@
 ## Merge 후 contributor PR comment 계획
 
 원격 승인·실제 merge·운영 기록·최종 devel 동기화 뒤에만 게시한다. 첫 기여에 대한 감사와 환영, 원 기여와 메인테이너 보정의 구분, 실제 CI/Native/fresh WASM 전쪽·CDP 검증, 각 원 주장 입력/쪽의 review·overlay를 실제 merge SHA에 고정해 준비한다. 현재는 게시 전이며 실제 결과·이미지가 준비된 뒤 계획을 구체화한다. 원 fork branch는 삭제하지 않는다.
+
+
+## 누적 통합 상태
+
+[공통 검토·보정 계획](kang_t_20261106_review_plan.md#누적-통합에서-확인한-보정-방침--승인-대기)을 따른다. #8566·#8595는 clean merge, #8632 누적 적용은 mutation registry와 WASM API의 두 기능 추가 위치가 겹쳐 승인 대기다. 현재 코드는 앞선 두 원 기여의 통합 상태이며 #8632 source는 fetch ref에 보존했다. 최종 동작·시각 검증은 아직 진행 전이다.

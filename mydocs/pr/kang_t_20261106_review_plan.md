@@ -15,3 +15,19 @@
 7. PR별 판정·증적·첫 기여 환영 댓글 초안을 완료한다. 수용 가능한 원격 후보가 구체화되면 push·PR·CI·merge·댓글·종료 정리의 별도 승인을 요청한다.
 
 기여자 제공 CI/코퍼스 집계와 메인테이너의 실제 실행은 구분한다. 원 제공 Mac Print는 유효한 인쇄 자료로 재사용하며 버전 표기만으로 재변환하지 않는다. Linux에서 편람 gate를 직접 확인한다. 현재 원격 작업은 reviewer 지정만 수행했고 기타 원격 변경은 승인 전이다.
+
+
+## 누적 통합에서 확인한 보정 방침 — 승인 대기
+
+#8566과 #8595는 최신 devel에 clean merge했다. #8632는 개별 merge-tree에서는 충돌이 없었지만, #8595와 누적하면 다음 두 파일에서 같은 삽입 위치를 사용한다. 원본 코드를 임의로 선택하거나 한 기능을 삭제하지 않고 두 기능을 함께 보존한다.
+
+| 충돌 파일 | 승인받을 보정 | 유지할 계약 |
+| --- | --- | --- |
+| `rhwp-studio/src/core/mutation-method-registry.ts` | `insertPictureInCell`과 `relocateFloatingPicture` 둘 다 MUTATING_METHODS에 등록 | 기존 그림/표 편집의 mutation route·캐시 무효화·Undo/Redo |
+| `src/wasm_api.rs` | 같은 위치에 추가한 두 WASM method를 각각 완전한 함수로 보존 | 각 Native API·parse_cell_path·인수·오류 전파와 기존 `insertPicture` |
+
+원 head 세 개와 실제 source commit은 재작성하지 않는다. 충돌한 임시 merge는 보정 승인 전에 abort해 앞선 clean 통합과 문서만 유지했다. 충돌 원문·해시와 두 API를 함께 유지하는 patch는 ignored `output/pr-review/kang-t-20261106/proposed-conflict-resolution.patch` 및 JSON에 준비했다. 아직 보정 patch를 적용하지 않았다.
+
+보정 뒤에는 문단 세로 정렬점·행 나눔의 줄/개체 점유·현재 devel의 겹침 방지/분할 그림을 함께 확인한다. 신규 API의 Storage 자원 한도·경로 오류·실패 원자성·컨트롤 스트림 좌표와 공개 WASM 선언도 대조한다. 실제 출력에서 추가 문제가 드러나면 이 세 원 PR의 동일 계약 안에서 원인을 보정하고 재검증한다. 필수 검증 범위를 축소하거나 기존 올바른 검사를 완화하지 않는다.
+
+기여자 제공 Mac Print 원본 전 13쪽의 Linux Native/fresh optimized WASM base/후보 비교와 직접 확대 판독, Windows Chrome CDP 19222의 실제 다른 쪽 drag·같은 쪽 이동·본문/칸 이동·Undo/Redo·저장 재열기, 집중/전체/Native/Studio/lint/편람 gate를 한 단위로 마친다. 원격 push·새 PR·공개 댓글·workflow 재실행·merge는 이번 로컬 보정 승인 범위와 구분한다.
