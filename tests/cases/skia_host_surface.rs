@@ -10,6 +10,7 @@ use rhwp::renderer::render_tree::{BoundingBox, ImageNode, RectangleNode};
 use rhwp::renderer::skia::{SkiaLayerRenderer, SkiaSurfaceRenderOptions};
 use rhwp::renderer::ShapeStyle;
 use skia_safe::{surfaces, AlphaType, Color, ColorType, ImageInfo, Matrix, Surface};
+use std::io::{Cursor, Read};
 
 fn rect(bounds: BoundingBox, color: u32) -> PaintOp {
     PaintOp::rectangle(
@@ -377,6 +378,121 @@ fn host_surface_resource_error_restores_nested_state_but_retains_partial_paint()
     renderer
         .render_to_surface_strict(&mut target, &tree(vec![]), Default::default())
         .unwrap();
+}
+
+fn authored_png() -> Vec<u8> {
+    let mut document = zip::ZipArchive::new(Cursor::new(include_bytes!(
+        "../fixtures/pr8061_cell_picture_layer/bordered-page-picture.hwpx"
+    )))
+    .unwrap();
+    let mut png = Vec::new();
+    document
+        .by_name("BinData/image1.png")
+        .unwrap()
+        .read_to_end(&mut png)
+        .unwrap();
+    png
+}
+
+#[test]
+fn host_surface_rejects_lazy_image_decode_even_after_a_cpu_cache_hit() {
+    let mut png = authored_png();
+    let offset = png.windows(4).position(|bytes| bytes == b"IDAT").unwrap();
+    let size = u32::from_be_bytes(png[offset - 4..offset].try_into().unwrap()) as usize;
+    png[offset + 4] ^= 0xff;
+    let end = offset + 4 + size;
+    let crc = crc32fast::hash(&png[offset..end]);
+    png[end..end + 4].copy_from_slice(&crc.to_be_bytes());
+    assert!(skia_safe::Image::from_encoded(skia_safe::Data::new_copy(&png)).is_some());
+    assert!(image::load_from_memory_with_format(&png, image::ImageFormat::Png).is_err());
+
+    let invalid = tree(vec![
+        rect(BoundingBox::new(2.0, 2.0, 4.0, 4.0), 0x0000ff),
+        PaintOp::image(
+            BoundingBox::new(10.0, 2.0, 4.0, 4.0),
+            ImageNode::new(71, Some(png)),
+            None,
+        ),
+    ]);
+    let renderer = SkiaLayerRenderer::new();
+    // Non-strict CPU replay retains its existing best-effort/placeholder policy.
+    renderer
+        .render_pixels_with_options(&invalid, RasterRenderOptions::default())
+        .unwrap();
+    let mut target = surface();
+    target.canvas().save();
+    target.canvas().translate((3.0, 4.0));
+    let before = (
+        target.canvas().save_count(),
+        target.canvas().local_to_device(),
+        target.canvas().device_clip_bounds(),
+    );
+    for _ in 0..2 {
+        let error = renderer
+            .render_to_surface_strict(&mut target, &invalid, Default::default())
+            .unwrap_err();
+        assert!(error.to_string().contains("image decode failed"), "{error}");
+        assert_eq!(
+            before,
+            (
+                target.canvas().save_count(),
+                target.canvas().local_to_device(),
+                target.canvas().device_clip_bounds(),
+            )
+        );
+    }
+    // Borrowed replay permits earlier paints; the GL presenter provides atomic
+    // publication by replaying strictly into its own unpublished scratch FBO.
+    assert_eq!(pixel(&mut target, 6, 7), [255, 0, 0, 255]);
+    assert_eq!(pixel(&mut target, 14, 7), [255, 0, 255, 255]);
+    let valid = tree(vec![PaintOp::image(
+        BoundingBox::new(10.0, 2.0, 4.0, 4.0),
+        ImageNode::new(71, Some(authored_png())),
+        None,
+    )]);
+    renderer
+        .render_to_surface_strict(&mut target, &valid, Default::default())
+        .unwrap();
+}
+
+#[test]
+fn host_surface_bounds_encoded_image_dimensions_and_pixels_before_full_decode() {
+    for (width, height) in [(8193_u32, 1_u32), (8192, 4097)] {
+        let mut png = authored_png();
+        png[16..20].copy_from_slice(&width.to_be_bytes());
+        png[20..24].copy_from_slice(&height.to_be_bytes());
+        let crc = crc32fast::hash(&png[12..29]);
+        png[29..33].copy_from_slice(&crc.to_be_bytes());
+        let invalid = tree(vec![PaintOp::image(
+            BoundingBox::new(2.0, 2.0, 4.0, 4.0),
+            ImageNode::new(72, Some(png)),
+            None,
+        )]);
+        let error = SkiaLayerRenderer::new()
+            .render_to_surface_strict(&mut surface(), &invalid, Default::default())
+            .unwrap_err();
+        assert!(error.to_string().contains("image decode failed"), "{error}");
+    }
+}
+
+#[test]
+fn host_surface_strict_decode_preserves_skia_webp_support_and_valid_cache_hits() {
+    // Lossless 2x2 opaque-red WebP. The image crate's WebP feature is disabled;
+    // the strict resource policy must retain the formats supported by Skia.
+    let webp = b"RIFF\x1c\0\0\0WEBPVP8L\x0f\0\0\0\x2f\x01\x40\0\0\x07\x10\xfd\x8f\xfe\x07\x22\xa2\xff\x01\0";
+    let valid = tree(vec![PaintOp::image(
+        BoundingBox::new(2.0, 2.0, 4.0, 4.0),
+        ImageNode::new(73, Some(webp.to_vec())),
+        None,
+    )]);
+    let renderer = SkiaLayerRenderer::new();
+    for _ in 0..2 {
+        let mut target = surface();
+        renderer
+            .render_to_surface_strict(&mut target, &valid, Default::default())
+            .unwrap();
+        assert_eq!(pixel(&mut target, 3, 3), [255, 0, 0, 255]);
+    }
 }
 
 #[test]

@@ -12,8 +12,10 @@ import hashlib
 import io
 import json
 from pathlib import Path
+import struct
 import sys
 import zipfile
+import zlib
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "examples"))
 from native_gl import NativeGlPresenter
@@ -57,7 +59,24 @@ def corrupt_image(document):
         for entry in source.infolist():
             data = source.read(entry.filename)
             if entry.filename.lower().startswith("bindata/") and entry.filename.lower().endswith(".png"):
-                data = b"not an encoded image"
+                # Keep the valid PNG header so layout emits an actual image,
+                # rather than the normal MissingPicture semantic placeholder.
+                assert data.startswith(b"\x89PNG\r\n\x1a\n")
+                data = bytearray(data)
+                offset = data.index(b"IDAT")
+                size = struct.unpack(">I", data[offset - 4:offset])[0]
+                assert size > 0 and offset + size + 8 <= len(data)
+                data[offset + 4] ^= 0xff  # Invalid zlib compression method.
+                # A valid chunk CRC makes this a full-decode failure, rather
+                # than merely a container/header integrity rejection.
+                end = offset + size + 4
+                data[end:end + 4] = struct.pack(">I", zlib.crc32(data[offset:end]))
+                try:
+                    zlib.decompress(data[offset + 4:end])
+                except zlib.error:
+                    pass
+                else:
+                    raise AssertionError("corrupt PNG must fail actual pixel decoding")
                 changed += 1
             target.writestr(entry, data)
     assert changed, "contract fixture must contain a PNG resource"

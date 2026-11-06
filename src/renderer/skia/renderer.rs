@@ -1315,6 +1315,7 @@ impl SkiaLayerRenderer {
                 cache_context
                     .policy
                     .image_sampling()
+                    .with_strict_resources(strict_resource_failures)
                     .with_paper_grid(cache_context.bitmap_paper_grid)
                     .with_print_page((print_area && cache_context.raster_target).then_some((
                         cache_context.page_extent.0,
