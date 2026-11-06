@@ -42,3 +42,4 @@ pub use renderer::{
 
 pub use surface::SkiaSurfaceRenderOptions;
 pub use tiled_region::SkiaTilePlan;
+pub(crate) use tiled_region::{PreparedSkiaTile, SkiaTileBounds};
