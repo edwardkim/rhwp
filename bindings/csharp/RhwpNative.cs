@@ -83,6 +83,14 @@ public static class RhwpNative
     [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr rhwp_presentation_lease_data(ulong lease, out UIntPtr length);
 
+    // GL callbacks and context belong to the creating OS thread. Their native
+    // addresses stay live through explicit presenter release/abandon.
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_gl_presenter_create(ulong contextId, ulong deviceGeneration, IntPtr getProcAddress, IntPtr isCurrent, IntPtr userData, byte[] config, UIntPtr configLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_gl_presenter_request(ulong presenter, byte[] request, UIntPtr requestLength);
+
     public static string SessionClose(ulong handle) => TakeResultString(rhwp_session_close(handle));
 
     public static string SessionBufferCopy(ulong buffer, byte[] destination)
