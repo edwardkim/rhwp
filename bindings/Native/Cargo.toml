@@ -11,6 +11,7 @@ crate-type = ["cdylib", "staticlib"]
 [features]
 default = []
 native-skia = ["rhwp_core/native-skia"]
+native-skia-gl = ["native-skia", "rhwp_core/native-skia-gl"]
 
 [dependencies]
 rhwp_core = { package = "rhwp", path = "../.." }

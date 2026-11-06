@@ -51,6 +51,29 @@ char *rhwp_presentation_request(const uint8_t *request, size_t request_len);
  * Invalid/released lease: NULL and length=0. NULL byte_length: NULL. CPU lease
  * return does not establish GPU sampling completion or allow GPU target reuse. */
 const uint8_t *rhwp_presentation_lease_data(uint64_t lease, size_t *byte_length);
+/* Opt-in Linux GL/Ganesh host-FBO adapter. GPU presenter handles belong to the
+ * creating OS thread and are not P89 cross-thread presentation handles.
+ * Loader is called only during creation, with the matching context current.
+ * is_current is called before render/release and must return exactly 1 only
+ * for that current context identity. Callbacks must not unwind/reenter this ABI.
+ * Host keeps callback function pointers, user_data, and GL procedures alive
+ * through release/abandon. Drop/abandon never calls is_current or GL.
+ * Empty config uses bounded defaults. Every JSON string uses rhwp_string_free.
+ * CPU-only/non-Linux builds return featureDisabled without calling callbacks. */
+typedef const void *(*RhwpGlGetProcAddress)(void *user_data, const char *name);
+typedef int32_t (*RhwpGlIsCurrent)(void *user_data, uint64_t context_id);
+char *rhwp_gl_presenter_create(uint64_t context_id, uint64_t device_generation,
+    RhwpGlGetProcAddress get_proc_address, RhwpGlIsCurrent is_current,
+    void *user_data, const uint8_t *config, size_t config_len);
+/* info/render/release/abandon JSON. Host owns current-context creation, target
+ * validity/format/origin/size, GL state restoration, swap, and window present.
+ * All pages replay strictly to GPU scratch before one host-FBO draw/submit.
+ * Late resource errors preserve the previous host pixels; a GPU/device failure
+ * after publication begins cannot roll those pixels back. No whole-frame CPU
+ * readback, external texture export, or cross-context fence is provided.
+ * release requires the matching current context and generation. Context loss
+ * uses abandon; TLS owner teardown also abandons before native objects drop. */
+char *rhwp_gl_presenter_request(uint64_t presenter, const uint8_t *request, size_t request_len);
 void rhwp_string_free(char *value);
 
 #ifdef __cplusplus

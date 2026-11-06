@@ -350,6 +350,35 @@ struct Snapshot {
     _allocation: Allocation,
 }
 
+/// Pins the registry's snapshot reservation through an independent replay.
+/// This never owns a session or renderer. Page input identity is independent
+/// of the view/device stamp, which must be checked again before publication.
+pub struct NativePresentationSnapshotBorrow {
+    entry: Arc<Snapshot>,
+}
+
+impl NativePresentationSnapshotBorrow {
+    pub fn snapshot(&self) -> &NativeRenderSnapshot {
+        &self.entry.input
+    }
+
+    pub fn source(&self) -> NativePresentationId {
+        self.entry.source.id
+    }
+
+    pub fn validate_current(&self, stamp: NativePresentationStamp) -> Result<(), NativeHostError> {
+        stamp.validate()?;
+        if stamp.document_id != self.entry.document_id
+            || stamp.revision != self.entry.input.revision()
+            || stamp.font_generation != self.entry.input.font_generation()
+            || !self.entry.source.current(stamp)?
+        {
+            return Err(invalid("stale presentation render stamp"));
+        }
+        Ok(())
+    }
+}
+
 struct Frame {
     bytes: Box<[u8]>,
     id: NativePresentationId,
@@ -527,6 +556,24 @@ impl NativePresentationRegistry {
             .remove(&snapshot)
             .ok_or_else(|| invalid("unknown presentation snapshot"))?;
         Ok(())
+    }
+
+    pub fn borrow_snapshot(
+        &self,
+        snapshot: NativePresentationId,
+        stamp: NativePresentationStamp,
+    ) -> Result<NativePresentationSnapshotBorrow, NativeHostError> {
+        let records = lock(&self.records)?;
+        let borrowed = NativePresentationSnapshotBorrow {
+            entry: Arc::clone(
+                records
+                    .snapshots
+                    .get(&snapshot)
+                    .ok_or_else(|| invalid("unknown presentation snapshot"))?,
+            ),
+        };
+        borrowed.validate_current(stamp)?;
+        Ok(borrowed)
     }
 
     pub fn render_cpu(

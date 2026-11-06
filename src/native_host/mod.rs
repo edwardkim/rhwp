@@ -8,6 +8,8 @@ pub mod clipboard;
 pub mod commands;
 pub mod editor;
 pub mod fonts;
+#[cfg(all(feature = "native-skia-gl", target_os = "linux"))]
+pub mod gpu_gl;
 pub mod presentation;
 #[cfg(feature = "native-skia")]
 pub mod region_cache;

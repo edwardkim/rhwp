@@ -370,6 +370,8 @@ pdf-jpeg2000 = ["pdf-import", "pdf_oxide/jpeg2000"]
 # Cargo feature는 합쳐지므로 다른 의존성이 이 feature를 켜면 다시 포함된다.
 wasm-api = []
 native-skia = ["dep:skia-safe", "dep:icy_sixel"]
+# Host-owned Linux GL context/FBO adapter. Default and native-skia stay CPU-only.
+native-skia-gl = ["native-skia", "skia-safe/gl"]
 subsecond-dev = ["dep:subsecond"]
 # 릴리즈 CLI 설치에서 제외하는 저장소 개발 도구.
 dev-tools = []
