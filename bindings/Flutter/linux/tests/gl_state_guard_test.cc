@@ -7,6 +7,70 @@
 namespace {
 void check(bool condition) { if (!condition) throw std::runtime_error("GL handoff state was not restored"); }
 GLint integer(GLenum name) { GLint value; glGetIntegerv(name, &value); return value; }
+
+void deleted_owned_names_are_not_restored() {
+  GLuint textures[2], framebuffers[2];
+  glGenTextures(2, textures);
+  glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_2D, textures[0]);
+  glActiveTexture(GL_TEXTURE4);
+  glBindTexture(GL_TEXTURE_2D, textures[1]);
+  glActiveTexture(GL_TEXTURE3);
+  glGenFramebuffers(2, framebuffers);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffers[0]);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffers[1]);
+  check(glGetError() == GL_NO_ERROR);
+  {
+    rhwp_flutter::GlStateGuard outer;
+    {
+      rhwp_flutter::GlStateGuard inner;
+      // The plugin's close/resize path deletes these confirmed owned names.
+      glDeleteTextures(1, &textures[0]);
+      check(!glIsTexture(textures[0]));
+      rhwp_flutter::GlStateGuard::forget_deleted_texture(textures[0]);
+      check(integer(GL_DRAW_FRAMEBUFFER_BINDING) == GLint(framebuffers[0]));
+      glDeleteFramebuffers(1, &framebuffers[0]);
+      check(!glIsFramebuffer(framebuffers[0]));
+      rhwp_flutter::GlStateGuard::forget_deleted_framebuffer(framebuffers[0]);
+      // Even later allocations must not make the saved deleted name live again.
+      GLuint replacement;
+      glGenTextures(1, &replacement);
+      glBindTexture(GL_TEXTURE_2D, replacement);
+      glDeleteTextures(1, &replacement);
+      rhwp_flutter::GlStateGuard::forget_deleted_texture(replacement);
+    }
+    check(integer(GL_DRAW_FRAMEBUFFER_BINDING) == 0);
+    check(integer(GL_READ_FRAMEBUFFER_BINDING) == GLint(framebuffers[1]));
+    check(integer(GL_TEXTURE_BINDING_2D) == 0);
+    check(glGetError() == GL_NO_ERROR);
+  }
+  // Both nested snapshots forget only their deleted object/namespace. Live
+  // caller texture units, read FBO, active unit, and other state survive.
+  check(integer(GL_ACTIVE_TEXTURE) == GL_TEXTURE3);
+  check(integer(GL_TEXTURE_BINDING_2D) == 0);
+  glActiveTexture(GL_TEXTURE4);
+  check(integer(GL_TEXTURE_BINDING_2D) == GLint(textures[1]));
+  check(integer(GL_DRAW_FRAMEBUFFER_BINDING) == 0);
+  check(integer(GL_READ_FRAMEBUFFER_BINDING) == GLint(framebuffers[1]));
+  check(glGetError() == GL_NO_ERROR);
+  GLuint retired_read;
+  glGenFramebuffers(1, &retired_read);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffers[1]);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, retired_read);
+  {
+    rhwp_flutter::GlStateGuard guard;
+    glDeleteFramebuffers(1, &retired_read);
+    check(!glIsFramebuffer(retired_read));
+    rhwp_flutter::GlStateGuard::forget_deleted_framebuffer(retired_read);
+  }
+  check(integer(GL_READ_FRAMEBUFFER_BINDING) == 0);
+  check(integer(GL_DRAW_FRAMEBUFFER_BINDING) == GLint(framebuffers[1]));
+  check(integer(GL_TEXTURE_BINDING_2D) == GLint(textures[1]));
+  check(glGetError() == GL_NO_ERROR);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glDeleteFramebuffers(1, &framebuffers[1]);
+  glDeleteTextures(1, &textures[1]);
+}
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -69,6 +133,8 @@ int main(int argc, char** argv) {
     check(integer(GL_BLEND_DST_RGB) == GL_DST_COLOR && integer(GL_BLEND_DST_ALPHA) == GL_ONE_MINUS_DST_ALPHA);
     check(integer(GL_STENCIL_WRITEMASK) == 0x3c && integer(GL_STENCIL_BACK_WRITEMASK) == 0x5a);
     check(integer(GL_UNPACK_ROW_LENGTH) == 17 && integer(GL_PACK_ALIGNMENT) == 8);
+    check(glGetError() == GL_NO_ERROR);
+    deleted_owned_names_are_not_restored();
     check(glGetError() == GL_NO_ERROR);
     std::cout << "GL state handoff passed: " << glGetString(GL_RENDERER) << '\n';
     glBindFramebuffer(GL_FRAMEBUFFER, 0); glBindVertexArray(0);

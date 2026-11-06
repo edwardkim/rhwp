@@ -320,8 +320,14 @@ class LinuxContext final : public Context {
   }
   void destroy(Target& target) noexcept override {
     if (same_current()) {
-      if (target.fbo) glDeleteFramebuffers(1, &target.fbo);
-      if (target.texture) glDeleteTextures(1, &target.texture);
+      if (target.fbo) {
+        glDeleteFramebuffers(1, &target.fbo);
+        if (!glIsFramebuffer(target.fbo)) GlStateGuard::forget_deleted_framebuffer(target.fbo);
+      }
+      if (target.texture) {
+        glDeleteTextures(1, &target.texture);
+        if (!glIsTexture(target.texture)) GlStateGuard::forget_deleted_texture(target.texture);
+      }
     }
     target = {};
   }

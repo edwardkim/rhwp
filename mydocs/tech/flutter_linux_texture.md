@@ -47,6 +47,13 @@ full Flutter compositor or native document replay qualification. Capturing all
 texture-unit bindings has a bounded CPU cost that still needs application
 profiling. It makes no claim about unsupported GL extensions or other backends.
 
+종료·resize에서 plugin 소유 texture/FBO를 실제로 삭제했다면 `GlStateGuard`의 해당 이름도
+제외한다. 삭제된 이름을 다시 bind하면 `GL_INVALID_OPERATION`이 발생하거나 나중에 재사용된
+이름에 잘못된 객체를 바인딩할 수 있다. 현재 callback context의 활성 guard에 있는 동일
+texture 이름과 draw/read FBO 이름만 0으로 바꾸며 다른 live 객체·namespace·caller 상태는
+보존한다. 실제 GDK GL 회귀는 중첩 guard에서 texture/draw FBO 삭제 후 error가 없고 다른
+texture unit·read FBO가 그대로 유지되는지 검사한다.
+
 ## Method channel
 
 Channel: `rhwp_native/texture_linux`, standard method codec. Integer fields use
@@ -178,6 +185,19 @@ driver resources. Normal matching-current release/delete returns its credit.
 Public FlTextureGL offers no completion fence or share-group-destruction proof
 that would safely relax this policy. These cases need application lifecycle
 qualification, rather than a claim of complete GPU resource recovery.
+
+Flutter 3.47.9 revision `c197ca5199e9ee5661e865596c9c07294dfab51c`의
+[GL texture 경로](https://github.com/flutter/flutter/blob/c197ca5199e9ee5661e865596c9c07294dfab51c/engine/src/flutter/shell/platform/embedder/embedder_external_texture_gl.cc)는
+`MarkNewFrameAvailable`에서 이전 `last_image_`를 비운 뒤에만 새 populate를 호출한다.
+그 callback이 실패하면 같은 Paint에서 이전 cached image를 다시 그리지 않는다. 따라서 현재
+Ganesh/current-GL 명령 순서와 이 경로를 대조한 검증을 macOS의 이전-image 유지 동작과 혼동하지
+않는다. 이 사실이 다른 context, 임의의 consumer, offscreen/TLS abandon의 완료를 증명하지는 않는다.
+
+부모 Dart는 document/revision/font/view/device 변경이나 오류에서 `renderedStamp`와 현재 입력을
+대조하고 이전 문서의 Texture를 숨겨야 한다. 새 frame 알림 전에는 엔진이 기존 이미지를 그대로
+쓸 수 있고, adapter도 replay 실패 시 last-good front를 반환할 수 있다. Texture를 숨겨 populate가
+더 이상 오지 않으면 위의 bounded pending-retire 경로를 사용하며 UI에서 cleanup 완료를 기다리면
+안 된다. last-good 화면을 현재 source가 검증된 새 frame으로 간주하지 않는다.
 
 ## Parent/P102 integration
 

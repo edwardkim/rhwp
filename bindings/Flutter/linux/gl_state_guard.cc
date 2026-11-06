@@ -18,6 +18,24 @@ constexpr GLenum kTextureBindings[] = {GL_TEXTURE_BINDING_1D, GL_TEXTURE_BINDING
     GL_TEXTURE_BINDING_2D_MULTISAMPLE, GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY};
 }  // namespace
 
+thread_local GlStateGuard* GlStateGuard::active_guard_ = nullptr;
+
+void GlStateGuard::forget_deleted_texture(GLuint name) noexcept {
+  if (!name) return;
+  for (auto* guard = active_guard_; guard; guard = guard->previous_)
+    for (auto& unit : guard->units_)
+      for (auto& texture : unit.textures)
+        if (GLuint(texture) == name) texture = 0;
+}
+
+void GlStateGuard::forget_deleted_framebuffer(GLuint name) noexcept {
+  if (!name) return;
+  for (auto* guard = active_guard_; guard; guard = guard->previous_) {
+    if (GLuint(guard->draw_fbo_) == name) guard->draw_fbo_ = 0;
+    if (GLuint(guard->read_fbo_) == name) guard->read_fbo_ = 0;
+  }
+}
+
 GlStateGuard::GlStateGuard() {
   GLint count;
   glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &count);
@@ -98,6 +116,10 @@ GlStateGuard::GlStateGuard() {
                       &value.fail, &value.depth_fail, &value.pass};
     for (size_t field = 0; field < 7; ++field) glGetIntegerv(params[face][field], fields[field]);
   }
+  // Register only after construction succeeds; nested guards have the same
+  // current callback context and must also forget names deleted inside them.
+  previous_ = active_guard_;
+  active_guard_ = this;
 }
 
 GlStateGuard::~GlStateGuard() {
@@ -164,5 +186,6 @@ GlStateGuard::~GlStateGuard() {
     glStencilMaskSeparate(which, GLuint(value.write_mask));
     glStencilOpSeparate(which, GLenum(value.fail), GLenum(value.depth_fail), GLenum(value.pass));
   }
+  active_guard_ = previous_;
 }
 }  // namespace rhwp_flutter

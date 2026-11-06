@@ -16,7 +16,14 @@ class GlStateGuard {
   ~GlStateGuard();
   GlStateGuard(const GlStateGuard&) = delete;
   GlStateGuard& operator=(const GlStateGuard&) = delete;
+  // After confirmed deletion of a plugin-owned name in this same current
+  // callback context, do not restore that stale name (which may be reused).
+  // Other live names, object namespaces, and caller state remain untouched.
+  static void forget_deleted_texture(GLuint name) noexcept;
+  static void forget_deleted_framebuffer(GLuint name) noexcept;
  private:
+  static thread_local GlStateGuard* active_guard_;
+  GlStateGuard* previous_ = nullptr;
   GLint draw_fbo_, read_fbo_, renderbuffer_, program_, vao_, array_, element_;
   GLint copy_read_, copy_write_, pack_buffer_, unpack_buffer_, active_;
   GLint uniform_buffer_, indirect_buffer_ = 0, transform_buffer_;
