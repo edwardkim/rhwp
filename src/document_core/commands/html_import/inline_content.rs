@@ -490,6 +490,15 @@ impl DocumentCore {
         if faces.is_empty() {
             return None;
         }
+        // 모든 슬롯이 등록 가능한지 먼저 확인한다. 뒤 슬롯의 상한 오류로
+        // 앞 슬롯에만 새 글꼴이 남는 부분 변경을 만들지 않는다.
+        if faces.iter().take(7).any(|slot| {
+            slot.iter()
+                .position(|font| font.name.to_lowercase() == name_lower)
+                .map_or(slot.len() >= 256, |index| u16::try_from(index).is_err())
+        }) {
+            return None;
+        }
         let slot_count = faces.len().min(7);
         let mut ids = [0u16; 7];
         for (lang_idx, slot) in faces.iter_mut().take(7).enumerate() {

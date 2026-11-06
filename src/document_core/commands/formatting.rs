@@ -1401,6 +1401,17 @@ impl DocumentCore {
         end_offset: usize,
         props_json: &str,
     ) -> Result<String, HwpError> {
+        // 실패한 주소는 글꼴·테두리를 등록하기 전에 거부한다.
+        let base_ids = self
+            .get_cell_paragraph_ref(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )
+            .ok_or_else(|| HwpError::RenderError("셀 문단을 찾을 수 없음".to_string()))?
+            .char_shape_ids_in_range(start_offset, end_offset);
         let mut mods = parse_char_shape_mods(props_json);
         self.resolve_font_name_mods(&mut mods)?;
         if json_has_border_keys(props_json) {
@@ -1410,16 +1421,6 @@ impl DocumentCore {
 
         // 선택 안의 원본 모양 각각에 속성을 병합한다.
         {
-            let para = self
-                .get_cell_paragraph_ref(
-                    sec_idx,
-                    parent_para_idx,
-                    control_idx,
-                    cell_idx,
-                    cell_para_idx,
-                )
-                .ok_or_else(|| HwpError::RenderError("셀 문단을 찾을 수 없음".to_string()))?;
-            let base_ids = para.char_shape_ids_in_range(start_offset, end_offset);
             let ids = self.document.modified_char_shape_ids(base_ids, &mods);
 
             // 셀 문단에 범위 적용
@@ -1515,16 +1516,16 @@ impl DocumentCore {
             );
         }
 
+        let base_ids = {
+            let para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
+            para.char_shape_ids_in_range(start_offset, end_offset)
+        };
         let mut mods = parse_char_shape_mods(props_json);
         self.resolve_font_name_mods(&mut mods)?;
         if json_has_border_keys(props_json) {
             let bf_id = self.create_border_fill_from_json(props_json);
             mods.border_fill_id = Some(bf_id);
         }
-        let base_ids = {
-            let para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
-            para.char_shape_ids_in_range(start_offset, end_offset)
-        };
         let ids = self.document.modified_char_shape_ids(base_ids, &mods);
         {
             let para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
