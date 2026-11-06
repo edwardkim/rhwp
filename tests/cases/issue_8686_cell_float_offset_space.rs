@@ -2,7 +2,7 @@
 //! 않는다. 세로 오프셋 위 공간에 저장된 뒤 문단은 그 자리에 놓이고, 칸 첫 문단의 저장 앞
 //! 여백도 중첩 표가 있는 칸에서 흐름에 들어간다.
 //!
-//! 주석 갱신: 2026-11-06 (KST) — 측정값은 아래 표
+//! 주석 갱신: 2026-11-07 01:15 (KST) — 측정값은 아래 표
 //!
 //! - 입력: `samples/issue8686/cell_float_offset_space.hwp` — 속초시 장사시설 사용신청서
 //!   (공개 조례 서식, 한/글 2018 저장 HWP, 1쪽) 그대로. 큰 표 마지막 칸(r=12, 12문단, 세로
@@ -17,14 +17,17 @@
 //!   아래에 그렸다. 중첩 표가 있는 칸이라 첫 문단 앞 여백(8px)을 흐름에서 빼, 칸 글 전체가
 //!   8px 위였다.
 //!
-//! 측정(2026-11-06, `scripts/visual_sweep.py --silhouette-only --dpi 96`, 판정값
+//! 측정(2026-11-07, 코드 head bd9431524e, `scripts/visual_sweep.py --silhouette-only --dpi 96`, 판정값
 //! `silhouette_raw_match_percent` = 색상 경계 보정 전 2px 이웃 내용 실루엣):
 //!
 //! | 입력 | 전체 쪽수(한컴=rhwp) | 쪽 | Native | fresh WASM | 수정 전 Native |
 //! |---|---|---|---|---|---|
-//! | cell_float_offset_space | 1 | 1 | 99.95 | (측정 예정) | 78.32 |
+//! | cell_float_offset_space | 1 | 1 | 99.95 | 99.97 | 78.32 |
 //!
-//! 증거: `mydocs/pr/assets/issue_8686/`. 검사는 저장 사다리가 뒤 문단을 표 띠 위 공간에 둔다는
+//! 두 경로 전쪽 최저: Native 99.95, fresh WASM 99.97.
+//!
+//! 증거: `mydocs/pr/assets/issue_8686/{native,native_base,wasm}/*_silhouette.tsv`,
+//! `review/*.png`. 검사는 저장 사다리가 뒤 문단을 표 띠 위 공간에 둔다는
 //! 원본 관계(전제), 그린 뒤 문단 줄이 표 위끝보다 위이고 앞 줄과의 간격이 저장 줄 간격인 관계
 //! (관계형), 독립 PDF 전체 쪽수(고정형)다. 절대 px 좌표는 고정하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
