@@ -134,6 +134,26 @@ pub struct NativeGlyphRunReplayProof {
     pub reasons: Vec<NativeGlyphRunReplayProofReason>,
 }
 
+/// The reason a strict alternative was abandoned during Native resource preparation.
+/// Contract and exact-face failures retain the same public proof returned by preflight.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NativeGlyphPreparationFailure {
+    GlyphRunRejected(NativeGlyphRunReplayProof),
+    PreparationBudgetExceeded,
+    UnsupportedOutlinePayload,
+    VariantPartsIncomplete,
+}
+
+/// A bounded observation of one rejected Native text alternative.
+/// Identifiers are UTF-8 prefixes of at most 256 bytes; they are not cache keys.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NativeGlyphReplayRejectReport {
+    pub equivalence_group: String,
+    pub variant_id: String,
+    pub variant_kind: TextVariantKind,
+    pub failure: NativeGlyphPreparationFailure,
+}
+
 fn native_skia_can_replay_glyph_run(run: &LayerGlyphRunPaint, resources: &ResourceArena) -> bool {
     native_skia_glyph_run_replay_proof(run, resources).typeface_constructible
 }
@@ -400,6 +420,8 @@ struct CachedPicture {
     inverse_matrix: Matrix,
     next_text_source_id: u32,
     selection_updates: Vec<TextVariantSelectionReport>,
+    native_glyph_rejections: Vec<NativeGlyphReplayRejectReport>,
+    native_glyph_rejections_dropped: usize,
 }
 
 struct PageReplayOutput {
@@ -1043,27 +1065,29 @@ impl SkiaLayerRenderer {
         resources: &ResourceArena,
         scale: f32,
         context: &ReplayCacheContext<'_>,
-    ) -> Option<Rc<PreparedGlyph>> {
+    ) -> Result<Rc<PreparedGlyph>, NativeGlyphPreparationFailure> {
         let key = context.seed.and_then(|seed| debug_key(&(seed, op)));
         let cached = key.and_then(|key| self.glyph_cache.borrow_mut().get(key));
         if let Some(prepared) = cached {
-            return Some(prepared);
+            return Ok(prepared);
         }
         let prepared = Rc::new(match op {
             PaintOp::GlyphRun { run, .. } => {
-                prepare_native_glyph_run(run, resources, &self.font_mgr).1?
+                let (proof, prepared) = prepare_native_glyph_run(run, resources, &self.font_mgr);
+                prepared.ok_or(NativeGlyphPreparationFailure::GlyphRunRejected(proof))?
             }
             PaintOp::GlyphOutline { outline, bbox, .. } => {
-                prepare_glyph_outline(outline, *bbox, resources, scale)?
+                prepare_glyph_outline(outline, *bbox, resources, scale)
+                    .ok_or(NativeGlyphPreparationFailure::UnsupportedOutlinePayload)?
             }
-            _ => return None,
+            _ => return Err(NativeGlyphPreparationFailure::UnsupportedOutlinePayload),
         });
         if let Some(key) = key {
             self.glyph_cache
                 .borrow_mut()
                 .insert(key, prepared.clone(), prepared.byte_cost);
         }
-        Some(prepared)
+        Ok(prepared)
     }
 
     fn render_node(
@@ -1313,6 +1337,16 @@ impl SkiaLayerRenderer {
                             .borrow_mut()
                             .apply_selection(report);
                     }
+                    {
+                        let mut diagnostics = cache_context.diagnostics.borrow_mut();
+                        for report in cached.native_glyph_rejections {
+                            diagnostics.apply_native_rejection(report);
+                        }
+                        diagnostics.output.native_glyph_rejections_dropped = diagnostics
+                            .output
+                            .native_glyph_rejections_dropped
+                            .saturating_add(cached.native_glyph_rejections_dropped);
+                    }
                     canvas.draw_picture(&cached.picture, Some(&cached.inverse_matrix), None);
                     *next_text_source_id = cached.next_text_source_id;
                     return Ok(());
@@ -1323,7 +1357,14 @@ impl SkiaLayerRenderer {
                     (bounds.is_finite() && !bounds.is_empty()).then_some((key, inverse, bounds))
                 });
                 if let Some((key, inverse_matrix, bounds)) = recording {
-                    let update_start = cache_context.diagnostics.borrow().selection_updates.len();
+                    let (update_start, rejection_start, dropped_start) = {
+                        let diagnostics = cache_context.diagnostics.borrow();
+                        (
+                            diagnostics.selection_updates.len(),
+                            diagnostics.output.native_glyph_rejections.len(),
+                            diagnostics.output.native_glyph_rejections_dropped,
+                        )
+                    };
                     let mut recorder = PictureRecorder::new();
                     let recording_canvas = recorder.begin_recording(bounds, true);
                     // Preserve device-scale-dependent SVG rasterization while
@@ -1333,20 +1374,32 @@ impl SkiaLayerRenderer {
                     let picture = recorder.finish_recording_as_picture(None).ok_or_else(|| {
                         HwpError::RenderError("Skia static picture recording failed".into())
                     })?;
-                    let selection_updates = {
+                    let (
+                        selection_updates,
+                        native_glyph_rejections,
+                        native_glyph_rejections_dropped,
+                    ) = {
                         let mut diagnostics = cache_context.diagnostics.borrow_mut();
                         diagnostics.output.static_picture_cache_recordings = diagnostics
                             .output
                             .static_picture_cache_recordings
                             .saturating_add(1);
-                        diagnostics.selection_updates[update_start..].to_vec()
+                        (
+                            diagnostics.selection_updates[update_start..].to_vec(),
+                            diagnostics.output.native_glyph_rejections[rejection_start..].to_vec(),
+                            diagnostics
+                                .output
+                                .native_glyph_rejections_dropped
+                                .saturating_sub(dropped_start),
+                        )
                     };
                     canvas.draw_picture(&picture, Some(&inverse_matrix), None);
                     let bytes = picture
                         .approximate_bytes_used()
                         .saturating_add(cache_context.retained_resource_estimate)
                         .saturating_add(inline_resource_estimate(node, fallback_raster_scale))
-                        .saturating_add(debug_size(&selection_updates).unwrap_or(usize::MAX));
+                        .saturating_add(debug_size(&selection_updates).unwrap_or(usize::MAX))
+                        .saturating_add(debug_size(&native_glyph_rejections).unwrap_or(usize::MAX));
                     self.picture_cache.borrow_mut().insert(
                         key,
                         CachedPicture {
@@ -1354,6 +1407,8 @@ impl SkiaLayerRenderer {
                             inverse_matrix,
                             next_text_source_id: *next_text_source_id,
                             selection_updates,
+                            native_glyph_rejections,
+                            native_glyph_rejections_dropped,
                         },
                         bytes,
                     );
@@ -1489,7 +1544,16 @@ impl SkiaLayerRenderer {
                 let mut preparation_budget = GlyphPreparationBudget::new();
                 let mut glyph_variants = HashMap::<
                     String,
-                    HashMap<String, (usize, u32, HashSet<u32>, bool, TextVariantKind)>,
+                    HashMap<
+                        String,
+                        (
+                            usize,
+                            u32,
+                            HashSet<u32>,
+                            Option<NativeGlyphPreparationFailure>,
+                            TextVariantKind,
+                        ),
+                    >,
                 >::new();
                 let mut glyph_variant_sources = HashMap::<String, u32>::new();
                 for (op_index, op) in ops.iter().enumerate() {
@@ -1500,16 +1564,17 @@ impl SkiaLayerRenderer {
                         PaintOp::GlyphRun { run, .. } => Some((
                             &run.variant,
                             run.source.id.0,
-                            glyph_run_minimum_byte_cost(run, resources).and_then(|minimum_bytes| {
-                                preparation_budget.prepare(minimum_bytes, || {
+                            preparation_budget.prepare(
+                                glyph_run_minimum_byte_cost(run, resources).unwrap_or(0),
+                                || {
                                     self.prepare_cached_glyph(
                                         op,
                                         resources,
                                         fallback_raster_scale,
                                         cache_context,
                                     )
-                                })
-                            }),
+                                },
+                            ),
                         )),
                         PaintOp::GlyphOutline { outline, .. } => Some((
                             &outline.variant,
@@ -1539,19 +1604,27 @@ impl SkiaLayerRenderer {
                                 order,
                                 variant.part_count,
                                 HashSet::new(),
-                                true,
+                                None,
                                 variant.variant_kind,
                             )
                         });
                         if state.1 != variant.part_count || variant.part_count == 0 {
-                            state.3 = false;
+                            state.3.get_or_insert(
+                                NativeGlyphPreparationFailure::VariantPartsIncomplete,
+                            );
                         }
                         if !state.2.insert(variant.part_index) {
-                            state.3 = false;
+                            state.3.get_or_insert(
+                                NativeGlyphPreparationFailure::VariantPartsIncomplete,
+                            );
                         }
-                        state.3 &= prepared.is_some();
-                        if let Some(prepared) = prepared {
-                            prepared_glyphs.insert(op_index, prepared);
+                        match prepared {
+                            Ok(prepared) => {
+                                prepared_glyphs.insert(op_index, prepared);
+                            }
+                            Err(failure) => {
+                                state.3.get_or_insert(failure);
+                            }
                         }
                     }
                 }
@@ -1567,16 +1640,21 @@ impl SkiaLayerRenderer {
                     candidates.sort_by_key(|(_, state)| state.0);
                     let mut selected = None;
                     let mut rejected = Vec::new();
-                    for (variant_id, (_, expected_part_count, parts, supported, kind)) in candidates
-                    {
+                    for (variant_id, (_, expected_part_count, parts, failure, kind)) in candidates {
                         let parts_complete = parts.len() as u32 == expected_part_count
                             && (0..expected_part_count).all(|index| parts.contains(&index));
-                        if supported && parts_complete {
+                        if failure.is_none() && parts_complete {
                             if selected.is_none() {
                                 selected = Some((variant_id, kind));
                             }
                         } else {
-                            rejected.push((variant_id, kind));
+                            rejected.push((
+                                variant_id,
+                                kind,
+                                failure.unwrap_or(
+                                    NativeGlyphPreparationFailure::VariantPartsIncomplete,
+                                ),
+                            ));
                         }
                     }
                     if let Some((id, _)) = &selected {
@@ -2709,6 +2787,36 @@ mod tests {
 
     #[test]
     fn native_skia_keeps_glyph_run_fallback_when_exact_blob_cannot_instantiate() {
+        // Failed preparations consume work just like successful ones, even when
+        // no font/path object is retained. Test through the production budget API.
+        let mut entry_budget = GlyphPreparationBudget::new();
+        let failure = NativeGlyphPreparationFailure::UnsupportedOutlinePayload;
+        for _ in 0..4096 {
+            let result = entry_budget.prepare::<PreparedGlyph>(0, || Err(failure.clone()));
+            assert!(matches!(result, Err(value) if value == failure));
+        }
+        assert!(matches!(
+            entry_budget.prepare::<PreparedGlyph>(0, || panic!(
+                "exhausted entry budget must skip construction"
+            )),
+            Err(NativeGlyphPreparationFailure::PreparationBudgetExceeded)
+        ));
+        let mut byte_budget = GlyphPreparationBudget::new();
+        let max_bytes = super::super::glyph_replay::MAX_PREPARED_GLYPH_BYTES;
+        assert!(matches!(
+            byte_budget.prepare::<PreparedGlyph>(max_bytes + 1, || panic!(
+                "oversized minimum must skip construction"
+            )),
+            Err(NativeGlyphPreparationFailure::PreparationBudgetExceeded)
+        ));
+        let failed = byte_budget.prepare::<PreparedGlyph>(max_bytes, || Err(failure.clone()));
+        assert!(matches!(failed, Err(value) if value == failure));
+        assert!(matches!(
+            byte_budget.prepare::<PreparedGlyph>(0, || panic!(
+                "failed work must not restore its byte allowance"
+            )),
+            Err(NativeGlyphPreparationFailure::PreparationBudgetExceeded)
+        ));
         let resources = portable_font_resources();
         let run = portable_glyph_run(GlyphRunOrientation::Horizontal);
         let proof = native_skia_glyph_run_replay_proof(&run, &resources);

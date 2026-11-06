@@ -36,7 +36,8 @@ pub use cache::{NativeSkiaCacheStats, NativeSkiaCacheUsage};
 pub use prepared_page::PreparedSkiaPage;
 pub use region_plan::SkiaRegionPlan;
 pub use renderer::{
-    native_skia_glyph_run_replay_proof, NativeGlyphRunReplayProof, NativeGlyphRunReplayProofReason,
+    native_skia_glyph_run_replay_proof, NativeGlyphPreparationFailure,
+    NativeGlyphReplayRejectReport, NativeGlyphRunReplayProof, NativeGlyphRunReplayProofReason,
     SkiaLayerRenderer,
 };
 

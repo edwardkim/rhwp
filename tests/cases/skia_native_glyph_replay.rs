@@ -8,7 +8,8 @@ use rhwp::paint::*;
 use rhwp::renderer::layer_renderer::LayerRasterRenderer;
 use rhwp::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
 use rhwp::renderer::skia::{
-    native_skia_glyph_run_replay_proof, NativeGlyphRunReplayProofReason, SkiaLayerRenderer,
+    native_skia_glyph_run_replay_proof, NativeGlyphPreparationFailure,
+    NativeGlyphRunReplayProofReason, SkiaLayerRenderer,
 };
 use rhwp::renderer::{PathCommand, TextStyle};
 
@@ -666,4 +667,168 @@ fn native_glyph_replay_renders_resolved_colrv0_layers_in_order() {
         .unwrap()
         .rgba[0] = f32::NAN;
     assert_same_pixels(render(&tree), render(&fallback_tree()));
+}
+
+#[test]
+fn native_glyph_preparation_reports_exact_proof_with_and_without_picture_cache() {
+    use rhwp::renderer::layer_renderer::{RasterRenderOptions, VariantRejectReason};
+    for case in 0..4 {
+        let mut tree = glyph_tree(TTF, 0, 'A');
+        let expected_reason = match case {
+            0 => {
+                tree.resources.font_resources_mut().blobs[0]
+                    .digest
+                    .as_mut()
+                    .unwrap()
+                    .value = "wrong".into();
+                NativeGlyphRunReplayProofReason::FontBlobDigestMismatch
+            }
+            1 => {
+                tree.resources.font_resources_mut().faces[0].face_index = 99;
+                NativeGlyphRunReplayProofReason::ExactFaceUnavailable
+            }
+            2 => {
+                glyph_mut(&mut tree).diagnostics.cluster_mismatch_count = 1;
+                NativeGlyphRunReplayProofReason::ClusterMismatch
+            }
+            _ => {
+                glyph_mut(&mut tree).shape_key.font_instance.face_key.0 = "missing".into();
+                NativeGlyphRunReplayProofReason::FontFaceMissing
+            }
+        };
+        let expected_proof = proof(&tree);
+        assert!(expected_proof.reasons.contains(&expected_reason));
+        tree.root = LayerNode::group(
+            tree.root.bounds,
+            None,
+            vec![tree.root.clone()],
+            CacheHint::StaticSubtree,
+            GroupKind::Generic,
+        );
+        let cached = SkiaLayerRenderer::new();
+        let cold = cached
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .unwrap();
+        let warm = cached
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .unwrap();
+        let uncached = SkiaLayerRenderer::new()
+            .with_cache_limits(0, 0)
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .unwrap();
+        assert!(warm.diagnostics.static_picture_cache_hits > 0);
+        for output in [&cold, &warm, &uncached] {
+            let rejected = &output.diagnostics.native_glyph_rejections;
+            assert_eq!(rejected.len(), 1, "case {case}");
+            assert_eq!(
+                rejected[0].failure,
+                NativeGlyphPreparationFailure::GlyphRunRejected(expected_proof.clone())
+            );
+            assert_eq!(output.diagnostics.native_glyph_rejections_dropped, 0);
+            assert!(output.diagnostics.variant_selections[0].fallback_required);
+            if case == 0 {
+                assert_eq!(
+                    output.diagnostics.variant_selections[0].rejected_variants[0].reasons,
+                    vec![VariantRejectReason::FontBlobDigestMismatch]
+                );
+            }
+            assert_same_pixels(
+                image::load_from_memory(&output.bytes).unwrap().to_rgba8(),
+                render(&fallback_tree()),
+            );
+        }
+        assert_eq!(
+            cold.diagnostics.variant_selections,
+            warm.diagnostics.variant_selections
+        );
+        assert_eq!(
+            cold.diagnostics.variant_selections,
+            uncached.diagnostics.variant_selections
+        );
+    }
+}
+
+#[test]
+fn native_outline_preparation_reports_payload_failure_and_retains_fallback() {
+    use rhwp::renderer::layer_renderer::RasterRenderOptions;
+    let mut tree = outline_tree();
+    outline_mut(&mut tree).paint_style.font_size = 0.0;
+    let output = SkiaLayerRenderer::new()
+        .render_raster_with_options(&tree, RasterRenderOptions::default())
+        .unwrap();
+    assert_eq!(
+        output.diagnostics.native_glyph_rejections[0].failure,
+        NativeGlyphPreparationFailure::UnsupportedOutlinePayload
+    );
+    assert_same_pixels(
+        image::load_from_memory(&output.bytes).unwrap().to_rgba8(),
+        render(&fallback_tree()),
+    );
+}
+
+#[test]
+fn native_preparation_reports_bound_count_and_unicode_identifiers_on_public_replay() {
+    use rhwp::renderer::layer_renderer::RasterRenderOptions;
+    let mut tree = glyph_tree(TTF, 0, 'A');
+    tree.resources.font_resources_mut().blobs[0]
+        .digest
+        .as_mut()
+        .unwrap()
+        .value = "wrong".into();
+    let candidate = ops_mut(&mut tree).pop().unwrap();
+    let identifier = "한".repeat(256);
+    for index in 0..259 {
+        let mut candidate = candidate.clone();
+        let PaintOp::GlyphRun { run, .. } = &mut candidate else {
+            unreachable!()
+        };
+        run.variant.equivalence_group = identifier.clone();
+        run.variant.anchor_op_id = Some(identifier.clone());
+        run.variant.variant_id = format!("{identifier}-{index}");
+        ops_mut(&mut tree).push(candidate);
+    }
+    tree.root = LayerNode::group(
+        tree.root.bounds,
+        None,
+        vec![tree.root.clone()],
+        CacheHint::StaticSubtree,
+        GroupKind::Generic,
+    );
+    let renderer = SkiaLayerRenderer::new();
+    let cold = renderer
+        .render_raster_with_options(&tree, RasterRenderOptions::default())
+        .unwrap();
+    let warm = renderer
+        .render_raster_with_options(&tree, RasterRenderOptions::default())
+        .unwrap();
+    let uncached = SkiaLayerRenderer::new()
+        .with_cache_limits(0, 0)
+        .render_raster_with_options(&tree, RasterRenderOptions::default())
+        .unwrap();
+    assert!(warm.diagnostics.static_picture_cache_hits > 0);
+    let expected = "한".repeat(85);
+    for output in [&cold, &warm, &uncached] {
+        assert_eq!(output.diagnostics.native_glyph_rejections.len(), 256);
+        assert_eq!(output.diagnostics.native_glyph_rejections_dropped, 3);
+        for report in &output.diagnostics.native_glyph_rejections {
+            assert_eq!(report.equivalence_group, expected);
+            assert_eq!(report.variant_id, expected);
+            assert!(report.equivalence_group.len() <= 256 && report.variant_id.len() <= 256);
+            assert!(matches!(&report.failure,
+                NativeGlyphPreparationFailure::GlyphRunRejected(proof)
+                if proof.reasons == vec![NativeGlyphRunReplayProofReason::FontBlobDigestMismatch]));
+        }
+        assert_same_pixels(
+            image::load_from_memory(&output.bytes).unwrap().to_rgba8(),
+            render(&fallback_tree()),
+        );
+    }
+    assert_eq!(
+        cold.diagnostics.native_glyph_rejections,
+        warm.diagnostics.native_glyph_rejections
+    );
+    assert_eq!(
+        cold.diagnostics.native_glyph_rejections,
+        uncached.diagnostics.native_glyph_rejections
+    );
 }

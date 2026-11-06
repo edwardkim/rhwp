@@ -87,6 +87,11 @@ pub struct LayerRenderDiagnostics {
     pub backend: Option<VariantSelectionBackend>,
     pub render_profile: Option<String>,
     pub variant_selections: Vec<TextVariantSelectionReport>,
+    /// Native-only actual preparation failures, limited to 256 reports per replay.
+    #[cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]
+    pub native_glyph_rejections: Vec<crate::renderer::skia::NativeGlyphReplayRejectReport>,
+    #[cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]
+    pub native_glyph_rejections_dropped: usize,
     pub shaped_measurements: Vec<ShapedMeasurementRunReport>,
     pub shaped_measurement_lines: Vec<ShapedMeasurementLineReport>,
     pub line_break_shadows: Vec<LineBreakShadowReport>,
