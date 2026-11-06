@@ -301,7 +301,7 @@ impl NativeDocumentSession {
 
         let tree = self
             .core
-            .build_page_layer_tree_with_profile(page, crate::paint::RenderProfile::Screen)?;
+            .build_page_layer_tree_shared_with_profile(page, crate::paint::RenderProfile::Screen)?;
         let plan = SkiaRegionPlan::new(tree.page_width, tree.page_height, region, options)?;
         cache.stats.misses = cache.stats.misses.saturating_add(1);
         if plan.intersection().is_none() {
@@ -354,7 +354,7 @@ impl NativeDocumentSession {
         };
         let tree = self
             .core
-            .build_page_layer_tree_with_profile(page, crate::paint::RenderProfile::Screen)?;
+            .build_page_layer_tree_shared_with_profile(page, crate::paint::RenderProfile::Screen)?;
         let plan = SkiaTilePlan::new(tree.page_width, tree.page_height, region, options)?;
         // Reserve before the output, then before each new tile. Tile snapshots
         // share the same byte budget and LRU as exact full-page snapshots.
