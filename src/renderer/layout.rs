@@ -3923,6 +3923,7 @@ mod kopub_symbol_metrics;
 mod leader_tab;
 mod paragraph_frame_widths;
 mod square_host_flow;
+mod table_break_border;
 mod table_partial;
 mod table_rows;
 mod terminal_tracking;

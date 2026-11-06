@@ -1955,6 +1955,7 @@ fn try_resolve_single_border_style<S: storage::Storage>(
         gradient,
         image_fill,
         diagonal_attr: bf.attr,
+        break_cell_separate_line: bf.break_cell_separate_line,
         diagonal: bf.diagonal,
         center_line: if bf.center_line != CenterLine::None {
             bf.center_line

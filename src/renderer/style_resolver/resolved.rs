@@ -494,6 +494,8 @@ pub struct ResolvedBorderStyle {
     pub image_fill: Option<ResolvedImageFill>,
     /// 대각선 속성 비트 (BorderFill.attr)
     pub diagonal_attr: u16,
+    /// 자동으로 나뉜 표의 경계는 셀의 네 변 대신 diagonal 선을 소비한다.
+    pub break_cell_separate_line: bool,
     /// 대각선 정보
     pub diagonal: DiagonalLine,
     /// 중심선 방향
@@ -534,6 +536,7 @@ impl Default for ResolvedBorderStyle {
             gradient: None,
             image_fill: None,
             diagonal_attr: 0,
+            break_cell_separate_line: false,
             diagonal: DiagonalLine::default(),
             center_line: CenterLine::None,
         }
@@ -731,7 +734,7 @@ crate::storage::clone_fields!(ResolvedCharStyle, {text_paint, font_family, font_
 
 crate::storage::clone_fields!(ResolvedParaStyle, {alignment, vertical_alignment, line_spacing, line_spacing_type, margin_left, margin_right, indent, spacing_before, spacing_after, head_type, para_level, numbering_id, border_fill_id, border_spacing, border_connect, border_ignore_margin, default_tab_width, tab_stops, auto_tab_left, auto_tab_right, condense_min_space, english_break_unit, korean_break_unit, widow_orphan, keep_with_next, keep_lines, page_break_before});
 
-crate::storage::clone_fields!(ResolvedBorderStyle, {borders, fill_color, pattern, gradient, image_fill, diagonal_attr, diagonal, center_line});
+crate::storage::clone_fields!(ResolvedBorderStyle, {borders, fill_color, pattern, gradient, image_fill, diagonal_attr, break_cell_separate_line, diagonal, center_line});
 
 crate::storage::clone_fields!(ResolvedStyleSet, {section_tab_width_bits, script_metrics, source_hwp3_native, source_program_projection_slots, native_pua_fonts, display_only_otf_slots, unsubstituted_font_slots, char_overlap_size_bounds, source_char_shapes, resolved_dpi, isolated_jamo_font, page_number_char_style_id, page_number_font_is_hft, supplemental_metrics, style_char_shapes, char_styles, para_styles, border_styles, numberings, bullets, hwp3_variant, hft_ascii_halfwidth, kerning_measurement_context, horizontal_shaping_context});
 

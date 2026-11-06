@@ -7941,6 +7941,27 @@ impl LayoutEngine {
                 }
             }
 
+            // 셀·zone 기본선과 암묵적 wrap 정책 뒤에 명시적인 표 경계선을 적용한다.
+            // 실제 끝 컷과 다음 시작 컷이 같은 선 종류를 소비한다.
+            let automatic_break_edges = super::table_break_border::AutomaticBreakEdges {
+                top_row: (is_continuation && !start_cut.is_empty() && header_rows.is_empty())
+                    .then_some(start_row),
+                bottom_row: (!is_last_part && !end_cut.is_empty())
+                    .then_some(end_row.saturating_sub(1)),
+            };
+            if let Some(line) = super::table_break_border::separate_break_line(table, styles) {
+                if automatic_break_edges.top_row.is_some() {
+                    if let Some(edge) = h_edges.first_mut() {
+                        super::table_break_border::replace_grid_edge(edge, line);
+                    }
+                }
+                if automatic_break_edges.bottom_row.is_some() {
+                    if let Some(edge) = h_edges.last_mut() {
+                        super::table_break_border::replace_grid_edge(edge, line);
+                    }
+                }
+            }
+
             // 복구한 Square 흐름의 마지막 줄은 최종 프레임 경계도 소유한다.
             // 쪽 나누기가 소비한 높이는 이 그리기 전용 확장과 구분한다.
             if self.profile.get().hwp5_stored_pagination_layout()
@@ -8035,6 +8056,7 @@ impl LayoutEngine {
                     styles,
                     &table_node.children,
                     open_top_row,
+                    automatic_break_edges,
                     self.show_transparent_borders.get(),
                 );
                 table_node.children.extend(borders);
@@ -8046,6 +8068,7 @@ impl LayoutEngine {
                         styles,
                         table_node.bbox,
                         open_top_row.is_some(),
+                        automatic_break_edges,
                     ));
             } else {
                 table_node.children.extend(render_edge_borders(

@@ -635,6 +635,9 @@ pub struct BorderFill {
     pub fill: Fill,
     /// 3차원 효과 (HWPX borderFill@threeD)
     pub three_d: bool,
+    /// 표 참조 문맥의 자동 분할 경계선 별도 설정(HWPX breakCellSeparateLine).
+    /// 선 종류·굵기·색은 diagonal을 사용하며 네 변·중심선과 구분한다.
+    pub break_cell_separate_line: bool,
 }
 
 /// 중심선 방향 (HWPX borderFill@centerLine)

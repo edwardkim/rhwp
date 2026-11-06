@@ -1479,6 +1479,7 @@ impl LayoutEngine {
                 styles,
                 &table_node.children,
                 None,
+                super::table_break_border::AutomaticBreakEdges::default(),
                 self.show_transparent_borders.get(),
             );
             table_node.children.extend(borders);

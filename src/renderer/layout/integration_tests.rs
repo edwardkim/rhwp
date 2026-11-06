@@ -108,6 +108,7 @@ mod tests {
                 gradient: None,
                 image_fill: None,
                 diagonal_attr: 0,
+                break_cell_separate_line: false,
                 diagonal: Default::default(),
                 center_line: Default::default(),
             }],

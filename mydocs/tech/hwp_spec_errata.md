@@ -951,6 +951,35 @@ HWPX 파서·직렬화기도 같은 scalar 순서를 소비한다. 이미 보존
 `output/pr-review/issue8153-handbook-raw100-20261022/remaining-raw100-diagnostic/spec-contract-audit/`
 아래에 있으며, 제품의 실행문은 변경하지 않았다.
 
+## 38. 표 참조 BorderFill의 자동 분할 경계선 문맥
+
+표24의 bit10을 꺾인 BackSlash 설명만으로 소비하면 표의 자동 분할 경계선 속성을
+놓친다. 공식 원문 PDF는 보존한다. 표가 참조하는 BorderFill의 별도 경계선 문맥을
+다음과 같이 보완한다. 중심선·셀 대각선의 기존 해석을 모든 문맥에서 바꾸지는 않는다.
+
+- 원본 `samples/issue8610/36849-nars-press-release-20211116.hwp`의 표 참조
+  borderFill15는 attr `0x0400`이며 diagonal 선 종류0이다. 일반 셀 borderFill5의
+  네 변은 0.4mm 실선이다. renderer를 통하지 않고 압축 DocInfo 레코드를 읽었다.
+- 같은 원본의 실제 한컴2020 11.0.0.9136 HWPX 저장은 borderFill15를
+  `breakCellSeparateLine="1"`, `centerLine="NONE"`, `diagonal@type="NONE"`으로
+  발행한다. 정상 대조군 #5885의 표 참조 borderFill3는 attr0, 별도 경계선0이다.
+- [한컴 공식 자동화 설명](https://forum.developer.hancom.com/t/topic/1357)의
+  TableBorderFill 예제는 BreakCellSeparateLine을 켜고 DiagonalType·DiagonalWidth·
+  DiagonalColor로 자동 분할 경계선을 지정한다. 이 선은 셀에 그리는 대각선이 아니다.
+  HWPML BORDERFILL에도 BreakCellSeparateLine이 있으나 기존 설명표는 의미가 비어 있다.
+- 기존 독립 한컴 Print에서 NARS1쪽 하단·2쪽 상하·3쪽 상단에는 전폭 수평선이
+  없고, 실제 마지막 셀 종료선은 유지된다. 별도 선 종류NONE의 직접 관찰 근거다.
+  설정이 꺼진 #5885의 닫힌 경계를 같은 wrap 종류라는 이유로 없애지 않는다.
+
+구현은 원본 속성을 HWP/HWPX 모델과 해소된 스타일에 보존하고, 실제 부분 표의
+내부 내용 컷에서 별도 선 종류·굵기·색을 소비한다. NONE도 명시적인 덮어쓰기다.
+기본 셀/zone 테두리 수집 뒤에 적용해 옛 선을 재생성하지 않으며, 비분할 표와 실제
+최종 종료선은 해당되지 않는다. HWP5 중심선 bit13의 방향 문맥은 구분한다.
+
+[원본 바이트·한컴 저장·독립 PDF 선 증거](../pr/assets/planet6897_20261106/pr8615/break-border/hancom-save-observation.json)와
+[보정 계획](../pr/pr_8615_review_impl.md#자동-분할-경계선의-메인터너-보정-계획)을 따른다.
+이 정정 자체는 최종 Native/fresh WASM 전쪽 시각 검증 통과를 뜻하지 않는다.
+
 ## 검증 원칙
 
 1. **사양 우선·불일치 교차 검증**: 공식 사양의 단위·속성·규칙을 먼저 따른다. 실제 결과가

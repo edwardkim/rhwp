@@ -437,7 +437,7 @@ where
             ("threeD", three_d),
             ("shadow", shadow),
             ("centerLine", center_line_type(bf)),
-            ("breakCellSeparateLine", "0"),
+            ("breakCellSeparateLine", bool01(bf.break_cell_separate_line)),
         ],
         storage,
     )?;

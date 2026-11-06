@@ -778,6 +778,7 @@ impl DocumentCore {
             center_line: CenterLine::None,
             fill,
             three_d: false,
+            break_cell_separate_line: false,
         };
 
         // 기존 BorderFill에서 동일한 항목 검색
@@ -839,6 +840,7 @@ impl DocumentCore {
                 center_line: CenterLine::None,
                 fill: Fill::default(),
                 three_d: false,
+                break_cell_separate_line: false,
             });
         bf.raw_data = None;
 

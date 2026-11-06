@@ -1710,6 +1710,7 @@ pub(super) fn render_spaced_table_outer_frame(
     styles: &ResolvedStyleSet,
     frame: BoundingBox,
     open_top: bool,
+    automatic_break_edges: super::table_break_border::AutomaticBreakEdges,
 ) -> Vec<RenderNode> {
     if table.cell_spacing == 0 {
         return Vec::new();
@@ -1724,6 +1725,14 @@ pub(super) fn render_spaced_table_outer_frame(
     let mut border = style.clone();
     if open_top {
         border.borders[2].line_type = crate::model::style::BorderLineType::None;
+    }
+    if let Some(line) = super::table_break_border::separate_break_line(table, styles) {
+        if automatic_break_edges.top_row.is_some() {
+            border.borders[2] = line;
+        }
+        if automatic_break_edges.bottom_row.is_some() {
+            border.borders[3] = line;
+        }
     }
     render_cell_box_borders(tree, &border, frame.x, frame.y, frame.width, frame.height)
 }
@@ -4809,6 +4818,7 @@ impl LayoutEngine {
                 styles,
                 &table_node.children,
                 None,
+                super::table_break_border::AutomaticBreakEdges::default(),
                 self.show_transparent_borders.get(),
             );
             table_node.children.extend(borders);
@@ -4818,6 +4828,7 @@ impl LayoutEngine {
                 styles,
                 table_node.bbox,
                 false,
+                super::table_break_border::AutomaticBreakEdges::default(),
             ));
         } else if independent_col_row_y.is_none() {
             if let Some((start, end)) =

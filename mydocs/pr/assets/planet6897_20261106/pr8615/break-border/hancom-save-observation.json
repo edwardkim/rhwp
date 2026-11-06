@@ -1,0 +1,22 @@
+[
+  {
+    "input": "samples/issue8610/36849-nars-press-release-20211116.hwp",
+    "input_sha256": "c41571e0bda978ce72eb96283d6437cff635b6a1d424919a6f84b9388df8ed89",
+    "job_id": "885acf97-de06-4195-b110-71cabca44053",
+    "engine": "2020",
+    "hancom_version": "11.0.0.9136",
+    "observation": "한컴 HWPX 저장. 기준 Print 재산출 또는 대체가 아님.",
+    "hwpx_sha256": "2fac00ea690a8f786263d18021a80b5226f08ab0008930f1dae3498ec2561add",
+    "border_fill_xml": "<ns0:borderFill xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" id=\"15\" threeD=\"0\" shadow=\"0\" centerLine=\"NONE\" breakCellSeparateLine=\"1\"><ns0:slash type=\"NONE\" Crooked=\"0\" isCounter=\"0\" /><ns0:backSlash type=\"NONE\" Crooked=\"0\" isCounter=\"0\" /><ns0:leftBorder type=\"SOLID\" width=\"0.12 mm\" color=\"#000000\" /><ns0:rightBorder type=\"SOLID\" width=\"0.12 mm\" color=\"#000000\" /><ns0:topBorder type=\"SOLID\" width=\"0.12 mm\" color=\"#000000\" /><ns0:bottomBorder type=\"SOLID\" width=\"0.12 mm\" color=\"#000000\" /></ns0:borderFill>"
+  },
+  {
+    "input": "samples/issue5885/3171199_design_capability_criteria.hwp",
+    "input_sha256": "6980eda2b04765cc8051da8581ee7f29fc9cb4780bb42ae14ab98883c1e90a69",
+    "job_id": "3c6ae6ae-50a9-454d-a286-4bc4786b02cd",
+    "engine": "2020",
+    "hancom_version": "11.0.0.9136",
+    "observation": "한컴 HWPX 저장. 기준 Print 재산출 또는 대체가 아님.",
+    "hwpx_sha256": "7d718ab0976a856eb6278c05c403b43a340d079724b2f18fedc77821fae4e73a",
+    "border_fill_xml": "<ns0:borderFill xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" id=\"3\" threeD=\"0\" shadow=\"0\" centerLine=\"NONE\" breakCellSeparateLine=\"0\"><ns0:slash type=\"NONE\" Crooked=\"0\" isCounter=\"0\" /><ns0:backSlash type=\"NONE\" Crooked=\"0\" isCounter=\"0\" /><ns0:leftBorder type=\"SOLID\" width=\"0.12 mm\" color=\"#000000\" /><ns0:rightBorder type=\"SOLID\" width=\"0.12 mm\" color=\"#000000\" /><ns0:topBorder type=\"SOLID\" width=\"0.12 mm\" color=\"#000000\" /><ns0:bottomBorder type=\"SOLID\" width=\"0.12 mm\" color=\"#000000\" /></ns0:borderFill>"
+  }
+]
