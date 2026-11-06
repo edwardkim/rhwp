@@ -8517,6 +8517,54 @@ export class HwpDocument {
         }
     }
     /**
+     * 표 셀 안 문단에 그림을 넣는다 — 서명·도장처럼 셀과 함께 움직여야 하는 그림.
+     *
+     * `insertPicture` 의 셀 분기는 그림을 표 밖 본문 문단에 띄운다. 이 API 는 그림을
+     * `cell_path_json` 이 가리키는 셀 문단의 컨트롤로 넣는다(가로 기준 단, 세로 기준 문단,
+     * 한컴 저장본과 같은 구조). `offset_x_hu`/`offset_y_hu` 는 그 기준의 HWPUNIT(음수 허용).
+     * 반환 `controlIdx` 는 셀 문단 안 번호다 — 속성은 `setCellPicturePropertiesByPath` 로 바꾼다.
+     * @param {number} section_idx
+     * @param {number} para_idx
+     * @param {number} char_offset
+     * @param {string} cell_path_json
+     * @param {Uint8Array} image_data
+     * @param {number} width
+     * @param {number} height
+     * @param {number} natural_width_px
+     * @param {number} natural_height_px
+     * @param {string} extension
+     * @param {string} description
+     * @param {number | null} [offset_x_hu]
+     * @param {number | null} [offset_y_hu]
+     * @returns {string}
+     */
+    insertPictureInCell(section_idx, para_idx, char_offset, cell_path_json, image_data, width, height, natural_width_px, natural_height_px, extension, description, offset_x_hu, offset_y_hu) {
+        let deferred6_0;
+        let deferred6_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passArray8ToWasm0(image_data, wasm.__wbindgen_malloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ptr2 = passStringToWasm0(extension, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len2 = WASM_VECTOR_LEN;
+            const ptr3 = passStringToWasm0(description, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len3 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_insertPictureInCell(this.__wbg_ptr, section_idx, para_idx, char_offset, ptr0, len0, ptr1, len1, width, height, natural_width_px, natural_height_px, ptr2, len2, ptr3, len3, isLikeNone(offset_x_hu) ? Number.MAX_SAFE_INTEGER : (offset_x_hu) >> 0, isLikeNone(offset_y_hu) ? Number.MAX_SAFE_INTEGER : (offset_y_hu) >> 0);
+            var ptr5 = ret[0];
+            var len5 = ret[1];
+            if (ret[3]) {
+                ptr5 = 0; len5 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred6_0 = ptr5;
+            deferred6_1 = len5;
+            return getStringFromWasm0(ptr5, len5);
+        } finally {
+            wasm.__wbindgen_free(deferred6_0, deferred6_1, 1);
+        }
+    }
+    /**
      * 덧말 넣기. `char_offset`은 원문 축 글자 자리다.
      * `json`: `{"mainText","rubyText","below":bool,"styleId":number|null}`.
      * @param {number} sec
@@ -10255,6 +10303,43 @@ export class HwpDocument {
             throw takeFromExternrefTable0(ret[1]);
         }
         return ret[0] !== 0;
+    }
+    /**
+     * 띄운 그림을 다른 문단·셀 문단으로 옮겨 붙인다 (다른 쪽으로 끌어 놓기).
+     * 셀 경로 JSON 이 `[]` 이면 본문 문단이다.
+     * @param {number} src_section
+     * @param {number} src_para
+     * @param {string} src_cell_path_json
+     * @param {number} src_control
+     * @param {number} dst_section
+     * @param {number} dst_para
+     * @param {number} dst_char_offset
+     * @param {string} dst_cell_path_json
+     * @param {number} horz_offset
+     * @param {number} vert_offset
+     * @returns {string}
+     */
+    relocateFloatingPicture(src_section, src_para, src_cell_path_json, src_control, dst_section, dst_para, dst_char_offset, dst_cell_path_json, horz_offset, vert_offset) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(src_cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(dst_cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_relocateFloatingPicture(this.__wbg_ptr, src_section, src_para, ptr0, len0, src_control, dst_section, dst_para, dst_char_offset, ptr1, len1, horz_offset, vert_offset);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
     }
     /**
      * [#5959] 이번 apply 가 push 한 BorderFill 꼬리 항목을 절단한다.
