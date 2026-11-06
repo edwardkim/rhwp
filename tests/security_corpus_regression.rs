@@ -289,13 +289,23 @@ const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &[
 /// 흔적으로 보이며, **문서에 보이지 않는 문자가 실제로 있다**는 탐지 자체는 옳다.
 /// `.hwp`·`.hwpx` 는 같은 문서의 두 포맷이라 같은 1건이 두 번 잡힌다.
 ///
+/// `samples/issue8692/employment_service_interim_report.hwp` 도 같은 흔적이다. 0구역
+/// 277·284·290 문단은 문장 끝(`… 되어 있다.<U+200B><U+200B>`, `… 이루어져야 한다.<U+200B><U+200B> 개선은`,
+/// `… 조치할 것<U+200B><U+200B>`), 285 문단은 첫머리(`<U+200B>○ 진술문`)에 U+200B 이 있다.
+/// 낱자 사이가 아니고 숨은 문구도 없다.
+///
 /// 규칙을 느슨하게 하지 않고 이 문서만 뺀다. 제로폭 탐지의 감도를 낮추면
 /// 낱자 사이에 끼워 넣는 진짜 회피(`비밀<U+200B>번호`)까지 함께 놓친다.
 /// 항목을 추가할 때는 반드시 위와 같은 개별 근거(문단·코드포인트·앞뒤 문자)를 남긴다.
 const KNOWN_GENUINE_ZERO_WIDTH: &[&str] = &[
     "정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
     "정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+    "employment_service_interim_report.hwp",
 ];
+
+/// `samples/` 바로 아래가 아닌 허용목록 문서. 자기검증이 조용히 건너뛰지 않게 경로를 둔다.
+const KNOWN_GENUINE_ZERO_WIDTH_SUBDIR: &[&str] =
+    &["samples/issue8692/employment_service_interim_report.hwp"];
 
 const SECURITY_SWEEP_SAMPLES_ENV: &str = "RHWP_SECURITY_SWEEP_SAMPLES_JSON";
 
@@ -556,11 +566,15 @@ fn allowlisted_documents_still_actually_trigger_detection() {
     }
 
     // 제로폭 축도 같은 규칙으로 지킨다 — 허용목록은 어느 축에서든 자기검증돼야 한다.
-    for name in KNOWN_GENUINE_ZERO_WIDTH {
-        let path = repo("samples").join(name);
+    let subdir = KNOWN_GENUINE_ZERO_WIDTH_SUBDIR.iter().map(|rel| repo(rel));
+    let top_level = KNOWN_GENUINE_ZERO_WIDTH
+        .iter()
+        .map(|name| repo("samples").join(name));
+    for path in top_level.chain(subdir) {
         if !path.exists() {
             continue;
         }
+        let name = path.display();
         let v = inspect_unicode(&path);
         assert_eq!(
             v["clean"], false,
