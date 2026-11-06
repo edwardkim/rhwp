@@ -59,67 +59,7 @@ pub(crate) fn apply_font_environment(
             )?;
             #[cfg(not(target_arch = "wasm32"))]
             {
-                if supply.mappings.is_empty() && supply.glyph_fallbacks.is_empty() {
-                    native
-                } else {
-                    let mut value = serde_json::to_value(native)
-                        .map_err(|e| rhwp::error::HwpError::RenderError(e.to_string()))?;
-                    if value.is_null() {
-                        value = serde_json::json!({"id":"native-webfont-supply", "substitutions":{}, "preserveSourceMetrics":true});
-                    }
-                    let object = value.as_object_mut().ok_or_else(|| {
-                        rhwp::error::HwpError::RenderError("글꼴 환경이 올바르지 않습니다".into())
-                    })?;
-                    let mappings = object
-                        .entry("substitutions")
-                        .or_insert_with(|| serde_json::json!({}))
-                        .as_object_mut()
-                        .ok_or_else(|| {
-                            rhwp::error::HwpError::RenderError(
-                                "글꼴 치환이 올바르지 않습니다".into(),
-                            )
-                        })?;
-                    for (source, target) in &supply.mappings {
-                        mappings.insert(source.clone(), target.clone().into());
-                    }
-                    if let Some(programs) = object
-                        .get_mut("selectedPrograms")
-                        .and_then(|v| v.as_object_mut())
-                    {
-                        for source in supply.mappings.keys() {
-                            programs.remove(source);
-                        }
-                    }
-                    if let Some(entries) = object
-                        .get_mut("documentSubstitutions")
-                        .and_then(|v| v.as_array_mut())
-                    {
-                        entries.retain(|entry| {
-                            !entry["source"]
-                                .as_str()
-                                .is_some_and(|source| supply.mappings.contains_key(source))
-                        });
-                    }
-                    if !supply.glyph_fallbacks.is_empty() {
-                        object.insert(
-                            "documentGlyphFallbacks".into(),
-                            supply.glyph_fallbacks.into(),
-                        );
-                    }
-                    use sha2::{Digest, Sha256};
-                    let identity = serde_json::to_vec(&(&value, &supply.resources))
-                        .map_err(|e| rhwp::error::HwpError::RenderError(e.to_string()))?;
-                    let digest: String = Sha256::digest(identity)
-                        .iter()
-                        .map(|byte| format!("{byte:02x}"))
-                        .collect();
-                    value["id"] = format!("native-webfont-{}", &digest[..24]).into();
-                    Some(
-                        rhwp::renderer::font_environment::FontEnvironment::from_json(
-                            &value.to_string(),
-                        )?,
-                    )
-                }
+                supply.merge_into_environment(native)?
             }
             #[cfg(target_arch = "wasm32")]
             {
