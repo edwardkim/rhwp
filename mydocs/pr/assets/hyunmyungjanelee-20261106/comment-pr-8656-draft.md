@@ -3,7 +3,7 @@
 
 soft-edge 반경 다음의 원본 크기·선택적 alpha를 해석하는 원 기여를 수용했습니다. 실제 Desktop Print와 비교하고 21/22바이트 합성 대조군·HWP/HWPX 저장을 확인했습니다. blur와 다른 그림 효과 전체가 구현됐다는 의미는 아닙니다.
 
-같은 입력의 독립 한컴 Desktop Print와 전체 1쪽를 비교해 Native 최저 **99.91617%**, 최적화 fresh WASM 최저 **99.91621%**를 확인했습니다. 전체 회귀·Native 공식 검사·lint·새 sample 보안 및 최종 head CI의 실제 결과는 [검토 기록](https://github.com/edwardkim/rhwp/blob/devel/mydocs/pr/archives/pr_8656_review.md)에 남겼습니다. 수치는 원 재현물의 전쪽 최저이며 추가 경계와 남은 차이는 별도로 구분했습니다.
+같은 입력의 독립 한컴 Desktop Print와 전체 1쪽을 비교해 Native 최저 **99.91617%**, 최적화 fresh WASM 최저 **99.91621%**를 확인했습니다. 전체 회귀·Native 공식 검사·lint·새 sample 보안 및 최종 head CI의 실제 결과는 [검토 기록](https://github.com/edwardkim/rhwp/blob/devel/mydocs/pr/archives/pr_8656_review.md)에 남겼습니다. 수치는 원 재현물의 전쪽 최저이며 추가 경계와 남은 차이는 별도로 구분했습니다.
 
 문서 비교는 [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 따랐습니다. 아래 raw 실루엣은 96dpi·2px 이웃 기준의 내용 일치율 보조값이며 사람의 판정 정확도가 아닙니다. 독립 Print와 같은 영역을 직접 확대 판독했습니다.
 

@@ -3,7 +3,7 @@
 
 온전한 행의 control-only 도형 복원과 저장 줄 없는 그림 원점 보정을 수용했습니다. 그림 뒤 본문이 있는 칸의 기존 Square 회피 조판·행 높이·기준선 차이는 남아 있어 [#8579](https://github.com/edwardkim/rhwp/issues/8579)를 전체 해결로 닫지 않습니다. 이 범위는 기존 출력 유지와 별도로 기록합니다.
 
-같은 입력의 독립 한컴 Desktop Print와 전체 2쪽를 비교해 Native 최저 **100.00000%**, 최적화 fresh WASM 최저 **100.00000%**를 확인했습니다. 전체 회귀·Native 공식 검사·lint·새 sample 보안 및 최종 head CI의 실제 결과는 [검토 기록](https://github.com/edwardkim/rhwp/blob/devel/mydocs/pr/archives/pr_8599_review.md)에 남겼습니다. 수치는 원 재현물의 전쪽 최저이며 추가 경계와 남은 차이는 별도로 구분했습니다.
+같은 입력의 독립 한컴 Desktop Print와 전체 2쪽을 비교해 Native 최저 **100.00000%**, 최적화 fresh WASM 최저 **100.00000%**를 확인했습니다. 전체 회귀·Native 공식 검사·lint·새 sample 보안 및 최종 head CI의 실제 결과는 [검토 기록](https://github.com/edwardkim/rhwp/blob/devel/mydocs/pr/archives/pr_8599_review.md)에 남겼습니다. 수치는 원 재현물의 전쪽 최저이며 추가 경계와 남은 차이는 별도로 구분했습니다.
 
 문서 비교는 [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 따랐습니다. 아래 raw 실루엣은 96dpi·2px 이웃 기준의 내용 일치율 보조값이며 사람의 판정 정확도가 아닙니다. 독립 Print와 같은 영역을 직접 확대 판독했습니다.
 

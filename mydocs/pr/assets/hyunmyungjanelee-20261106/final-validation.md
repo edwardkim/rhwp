@@ -1,6 +1,6 @@
 # 최종 로컬 검증
 
-기준 `5716a226b562b7300193dd0b573ded9cd71ac890`, 검증 제품 src tree `c1ea19fbc94dd6aac77d4368755b6da5a9544e42`다. 보정 code `99a1085a9c` 이후 제품 소스는 바뀌지 않았다. `ec814abd46`은 기존 baseline 순서 복원이고 최종 증적 commit은 문서·PNG·JSON·TSV뿐이다. 원격 CI는 아직 실행하지 않았다.
+기준 `5716a226b562b7300193dd0b573ded9cd71ac890`, 검증 제품 src tree `c1ea19fbc94dd6aac77d4368755b6da5a9544e42`다. 보정 code `99a1085a9c` 이후 제품 소스는 바뀌지 않았다. `ec814abd46`은 기존 baseline 순서 복원이고 최종 증적 commit은 문서·PNG·JSON·TSV뿐이다. 로컬 검증 이후 최종 head `71052fccc6fc5090fa94ca9dd013be0ff5984ff7`의 GitHub 필수 CI와 self-review도 성공했다. [원격 완료 기록](remote-completion.md)에서 실제 URL·결과와 로컬 집계를 구분한다.
 
 | 검사 | 실제 결과 |
 | --- | --- |

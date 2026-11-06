@@ -1,0 +1,11 @@
+{
+  "id": 42169674541,
+  "job": 127734291817,
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/edwardkim/rhwp/actions/runs/42169674541",
+  "evidence": [
+    "2026-11-06T05:42:02.5364156Z {\"ready\":true,\"reason\":\"successful-pr-worker-measurements\",\"pullNumber\":8683,\"finalHeadRunId\":42166096972,\"finalHeadRunAttempt\":1,\"finalHeadSha\":\"71052fccc6fc5090fa94ca9dd013be0ff5984ff7\",\"reviewOnlyTail\":false,\"sourceRunId\":42166096972,\"latestRunAttempt\":1,\"measurementAttempts\":{\"b\":1,\"c\":1,\"d\":1,\"e\":1},\"testedMergeSha\":\"2ae8c0dca28980902c680eb0938ccb3d7af539bb\",\"sourceHeadSha\":\"71052fccc6fc5090fa94ca9dd013be0ff5984ff7\",\"artifactIds\":[13479639037,13480008937,13480392244,13480765238]}",
+    "2026-11-06T05:42:08.8000249Z {\"published\":true,\"reason\":\"published\",\"previousSha\":\"af48871eb5d1c07e13ed0aadce4c3e689524d9f0\",\"commitSha\":\"e581547d281f744262fd8f06bb3d99e66dbeb2a0\",\"blobSha\":\"a5336301f559e205267b28001ff67f3c9a7358b7\",\"sourceMergeSha\":\"c80f355faa2bd810eda0724ec606027e7bbc019f\"}"
+  ]
+}
