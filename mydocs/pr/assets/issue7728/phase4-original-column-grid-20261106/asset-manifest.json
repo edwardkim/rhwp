@@ -2,8 +2,18 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "1d93914165fb8661b475ae03607311724e23380f58b1015ec8e421dd70bc3f56",
-      "bytes": 5323
+      "sha256": "60ad6839cae92754559797d72cdd6dfac6fd9821ad6fdd6111c1629279e348a5",
+      "bytes": 8534
+    },
+    {
+      "path": "actual-canvas2d-print-p007.png",
+      "sha256": "bb0852f18808ae48216f1aa9857f5889ff0956ca1dd84ca55b6bab4ba30199b9",
+      "bytes": 149473
+    },
+    {
+      "path": "actual-studio-consumption.json",
+      "sha256": "4c4e5214be68c22d58608bb38353082c0873d1d36f46dc272bd3b0ebad5f0401",
+      "bytes": 87502
     },
     {
       "path": "after-native-p006-overlay.png",
@@ -86,6 +96,16 @@
       "bytes": 447
     },
     {
+      "path": "cbta-png-pixel-comparison.json",
+      "sha256": "c1a294ffee996a9a0a6a0447276972b528029fbd152f7af7e5cdff65d11c8942",
+      "bytes": 3095
+    },
+    {
+      "path": "control-canvaskit-default-print.png",
+      "sha256": "19e086d390bfa5edcf00865bab0b156067f021a8757f5f2d7376141fa9531351",
+      "bytes": 39506
+    },
+    {
       "path": "controls-wasm.json",
       "sha256": "073233aa48edf41bb9481d85311d43d717b29f6cf72977daa25f5240ce635c45",
       "bytes": 29983
@@ -94,6 +114,21 @@
       "path": "controls.json",
       "sha256": "15b0801143b138bf6ac884bc9958b2a277d3df52b8061ec4d3b5e37ad70a2a97",
       "bytes": 29022
+    },
+    {
+      "path": "final-local-gates.json",
+      "sha256": "2acd493a042b4d6886c696d9eabf5080af9bdc594a0f1df85afebb0f17eb5985",
+      "bytes": 14135
+    },
+    {
+      "path": "frame-regression-localization.json",
+      "sha256": "189343704705783b3d8a71ebbedaf0c3fb27eb51878e6f0c561877a4a53ccca4",
+      "bytes": 6714
+    },
+    {
+      "path": "markdown-links.json",
+      "sha256": "5329c22d6a3e7fa71a3983438a9aaac18667710b5aa93e946735aa348f58c8dd",
+      "bytes": 498
     },
     {
       "path": "native-png-change-scope.json",
@@ -129,6 +164,21 @@
       "path": "page10-independent-pdf-geometry.json",
       "sha256": "9417176c3ff75f61a7039a3657d97e44b7c0a58fc487012141bf512c83be0e3a",
       "bytes": 1165
+    },
+    {
+      "path": "prior-accepted-comparison.json",
+      "sha256": "1e3dd45412f518f5e2b7d8fb497d7a21f396078347b7aa2cff9067ea92d07415",
+      "bytes": 9728
+    },
+    {
+      "path": "prior-scope-page-comparison.tsv",
+      "sha256": "804fe91b4cad1fa6cfee181671e2a1cceeaf688cb2887fb7ffddd37c50236672",
+      "bytes": 210576
+    },
+    {
+      "path": "prior-scope-summary.json",
+      "sha256": "e7b13311d399351b28b858af78cbf6d4d090d923b2f6e1479faf1e2209005fa7",
+      "bytes": 17512
     },
     {
       "path": "registered-native-focused.json",

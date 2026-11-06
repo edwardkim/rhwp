@@ -1,0 +1,7 @@
+{
+  "command": "python3 scripts/check_markdown_links.py <현재 두 문서> --changed-from HEAD^",
+  "exit_code": 0,
+  "log_sha256": "24f84a5823e708bd6aa4e9e797c5e2341185581174b2613ab11027874d5bdfcb",
+  "summary": "검사 문서: 2개\n변경 파일: 45개 (HEAD^ 기준)\n내부 Markdown 상대 링크: 이상 없음\n",
+  "unscoped_previous_run": "전체 tracked 파일을 읽는 불필요한 범용 스캔은 중단하고 공식 changed-from 범위 검사로 완료. 검사기 수정 없음."
+}

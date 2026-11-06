@@ -1,0 +1,236 @@
+{
+  "results": [
+    {
+      "backend": "native",
+      "key": "delegation7700",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-fast-native/delegation7700/delegation7700/silhouette_manifest.json",
+      "pages": 103,
+      "identical_prior_png_pages": 103,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 103,
+      "different_png_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "prime-width",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-fast-native/prime-width/prime-width/silhouette_manifest.json",
+      "pages": 3,
+      "identical_prior_png_pages": 3,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 3,
+      "different_png_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "rowbreak8539",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-fast-native/rowbreak8539/rowbreak8539/silhouette_manifest.json",
+      "pages": 3,
+      "identical_prior_png_pages": 3,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 3,
+      "different_png_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "science",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-fast-native/science/science/silhouette_manifest.json",
+      "pages": 4,
+      "identical_prior_png_pages": 4,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 4,
+      "different_png_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "nov-resaved",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-fast-native/nov-resaved/nov-resaved/silhouette_manifest.json",
+      "pages": 21,
+      "identical_prior_png_pages": 21,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 21,
+      "different_png_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "nov-original",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-fast-native/nov-original/nov-original/silhouette_manifest.json",
+      "pages": 21,
+      "identical_prior_png_pages": 21,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 21,
+      "different_png_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "rectangles",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-fast-native/rectangles/rectangles/silhouette_manifest.json",
+      "pages": 50,
+      "identical_prior_png_pages": 50,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 50,
+      "different_png_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "staggered7",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-fast-native/staggered7/staggered7/silhouette_manifest.json",
+      "pages": 7,
+      "identical_prior_png_pages": 7,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 7,
+      "different_png_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "cbta7727",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7727-new-print-whole/native-candidate/silhouette_manifest.json",
+      "pages": 204,
+      "identical_prior_png_pages": 202,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 204,
+      "different_png_pages": [
+        {
+          "page": 152,
+          "prior_raw": 99.95333,
+          "current_raw": 99.95333,
+          "delta_pp": "0.00000",
+          "png_identical": false
+        },
+        {
+          "page": 170,
+          "prior_raw": 99.95328,
+          "current_raw": 99.95328,
+          "delta_pp": "0.00000",
+          "png_identical": false
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "delegation7700",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-fast-wasm/delegation7700/delegation7700/silhouette_manifest.json",
+      "pages": 103,
+      "identical_prior_png_pages": 103,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 103,
+      "different_png_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "prime-width",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-fast-wasm/prime-width/prime-width/silhouette_manifest.json",
+      "pages": 3,
+      "identical_prior_png_pages": 3,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 3,
+      "different_png_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "rowbreak8539",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-fast-wasm/rowbreak8539/rowbreak8539/silhouette_manifest.json",
+      "pages": 3,
+      "identical_prior_png_pages": 3,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 3,
+      "different_png_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "science",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-fast-wasm/science/science/silhouette_manifest.json",
+      "pages": 4,
+      "identical_prior_png_pages": 4,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 4,
+      "different_png_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "nov-resaved",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-fast-wasm/nov-resaved/nov-resaved/silhouette_manifest.json",
+      "pages": 21,
+      "identical_prior_png_pages": 21,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 21,
+      "different_png_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "nov-original",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-fast-wasm/nov-original/nov-original/silhouette_manifest.json",
+      "pages": 21,
+      "identical_prior_png_pages": 21,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 21,
+      "different_png_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "rectangles",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-fast-wasm/rectangles/rectangles/silhouette_manifest.json",
+      "pages": 50,
+      "identical_prior_png_pages": 50,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 50,
+      "different_png_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "staggered7",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7700-v6-fast-wasm/staggered7/staggered7/silhouette_manifest.json",
+      "pages": 7,
+      "identical_prior_png_pages": 7,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 7,
+      "different_png_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "cbta7727",
+      "prior_head": "fc378076f23aa60838a2871a7532d09830384216",
+      "prior_manifest": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7727-new-print-whole/wasm-candidate/silhouette_manifest.json",
+      "pages": 204,
+      "identical_prior_png_pages": 202,
+      "declines_over_0_1pp": [],
+      "raw_identical_pages": 204,
+      "different_png_pages": [
+        {
+          "page": 152,
+          "prior_raw": 99.95327,
+          "current_raw": 99.95327,
+          "delta_pp": "0.00000",
+          "png_identical": false
+        },
+        {
+          "page": 170,
+          "prior_raw": 99.95321,
+          "current_raw": 99.95321,
+          "delta_pp": "0.00000",
+          "png_identical": false
+        }
+      ]
+    }
+  ],
+  "drops": [],
+  "full_diagnostic_sha256": "c3ff22cb2014584e2f1d3e7f00015ef223536410f691f92b70573b6f41d11b06",
+  "full_diagnostic_path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-prior-accepted-comparison.json",
+  "meaning": "전832쪽 raw가 직전 수용 코드와 정확히 같다. 달라진 PNG4개는 별도 픽셀 비교를 보존했다."
+}

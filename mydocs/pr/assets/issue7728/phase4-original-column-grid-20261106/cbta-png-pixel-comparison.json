@@ -1,0 +1,74 @@
+[
+  {
+    "backend": "native",
+    "page": 152,
+    "prior": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7727-readonly-native/candidate/cbta7727/rhwp_png/rhwp_152.png",
+    "current": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-prior-scope/native/cbta7727/cbta7727/rhwp_png/rhwp_152.png",
+    "prior_pixel_sha256": "e1e251d9865dded2a5e0f2ec3a77dd40af899a3366608e13a780400f714d6064",
+    "current_pixel_sha256": "b2f7f93d63b7438d3180c56165a6889125ff1a51dcd9588e14717d34d199ce95",
+    "same_size": true,
+    "pixel_identical": false,
+    "changed_pixels": 4,
+    "max_channel_delta": 4,
+    "bbox": [
+      41,
+      442,
+      1070,
+      732
+    ]
+  },
+  {
+    "backend": "native",
+    "page": 170,
+    "prior": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7727-readonly-native/candidate/cbta7727/rhwp_png/rhwp_170.png",
+    "current": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-prior-scope/native/cbta7727/cbta7727/rhwp_png/rhwp_170.png",
+    "prior_pixel_sha256": "a68453af24ef23c1cf04217ee5418a7b093e89b9f753e764aa3af89ae22c45b8",
+    "current_pixel_sha256": "5feafbac29591e80b9a2ee73c148d5d574691bea1e1d507f1f4c96f7f33638b5",
+    "same_size": true,
+    "pixel_identical": false,
+    "changed_pixels": 4,
+    "max_channel_delta": 4,
+    "bbox": [
+      41,
+      442,
+      1070,
+      732
+    ]
+  },
+  {
+    "backend": "wasm",
+    "page": 152,
+    "prior": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7727-readonly-wasm/candidate/cbta7727/rhwp_png/rhwp_152.png",
+    "current": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-prior-scope/wasm/cbta7727/cbta7727/rhwp_png/rhwp_152.png",
+    "prior_pixel_sha256": "da70e1683b051179aa9d678b51846fcb342d73e91564372d4cb76ba6829a2a74",
+    "current_pixel_sha256": "157e6f48f5d17419ef008a2358bf5070a6771cdf5c70e693894f8aaa4925d6c4",
+    "same_size": true,
+    "pixel_identical": false,
+    "changed_pixels": 4,
+    "max_channel_delta": 4,
+    "bbox": [
+      41,
+      442,
+      1070,
+      732
+    ]
+  },
+  {
+    "backend": "wasm",
+    "page": 170,
+    "prior": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7727-readonly-wasm/candidate/cbta7727/rhwp_png/rhwp_170.png",
+    "current": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-prior-scope/wasm/cbta7727/cbta7727/rhwp_png/rhwp_170.png",
+    "prior_pixel_sha256": "9d1486b97bdaab326530dae8de0b3a1a512b1719141c12ba969404951b916ff7",
+    "current_pixel_sha256": "2af53ad171321c9008ece347284cf6c3841ff550a09b559e08b41e43357f0e38",
+    "same_size": true,
+    "pixel_identical": false,
+    "changed_pixels": 4,
+    "max_channel_delta": 4,
+    "bbox": [
+      41,
+      442,
+      1070,
+      732
+    ]
+  }
+]
