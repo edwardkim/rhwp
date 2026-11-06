@@ -7945,7 +7945,7 @@ impl LayoutEngine {
                         para_index,
                         cell_ctx.as_ref(),
                     ) {
-                        RenderNode::new(
+                        Some(RenderNode::new(
                             num_id,
                             RenderNodeType::Image(image),
                             BoundingBox::new(
@@ -7955,9 +7955,17 @@ impl LayoutEngine {
                                 num_style.font_size,
                                 num_style.font_size,
                             ),
-                        )
+                        ))
+                    } else if picture_bullet::image_reference(
+                        styles,
+                        composed.para_style_id as usize,
+                    )
+                    .is_some()
+                    {
+                        // 외부 Link의 빈 슬롯은 참조를 보존하되 그림·문자 마커를 출력하지 않는다.
+                        None
                     } else {
-                        RenderNode::new(
+                        Some(RenderNode::new(
                             num_id,
                             RenderNodeType::TextRun(TextRunNode {
                                 text: num_text.clone(),
@@ -7980,9 +7988,11 @@ impl LayoutEngine {
                                 display_text: None,
                             }),
                             BoundingBox::new(marker_x, text_y, num_width, line_height),
-                        )
+                        ))
                     };
-                    line_node.children.push(num_node);
+                    if let Some(num_node) = num_node {
+                        line_node.children.push(num_node);
+                    }
                 }
             }
 
