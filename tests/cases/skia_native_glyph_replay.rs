@@ -933,7 +933,11 @@ fn native_picture_diagnostics_do_not_retain_a_previous_siblings_report_cap() {
 }
 
 fn bounded_vertical_glyph_tree() -> PageLayerTree {
-    let mut tree = glyph_tree(TTF, 0, 'A');
+    bounded_vertical_glyph_tree_with_font(TTF, 'A')
+}
+
+fn bounded_vertical_glyph_tree_with_font(bytes: &[u8], character: char) -> PageLayerTree {
+    let mut tree = glyph_tree(bytes, 0, character);
     let run = glyph_mut(&mut tree);
     run.variant.variant_id = "verticalGlyphRun".into();
     run.variant.requires = vec![
@@ -959,6 +963,75 @@ fn bounded_vertical_glyph_tree() -> PageLayerTree {
     run.clusters[0].flags = vec![GlyphClusterFlag::FallbackBoundary];
     run.diagnostics.reason = Some("boundedVerticalHwp5TableCellV1".into());
     tree
+}
+
+#[test]
+fn bounded_vertical_replay_checks_source_scalars_before_a_cached_glyph_is_selected() {
+    use rhwp::renderer::layer_renderer::RasterRenderOptions;
+    const SUPPLEMENTARY: &[u8] = include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf");
+
+    let rebind = |tree: &mut PageLayerTree, text: &str| {
+        let PaintOp::TextRun { run, source, .. } = &mut ops_mut(tree)[0] else {
+            unreachable!()
+        };
+        run.text = text.into();
+        let rebound = TextSourceSpan::for_text_run(0, run);
+        *source = Some(rebound.clone());
+        let run = glyph_mut(tree);
+        run.source = rebound.clone();
+        run.clusters[0].source_range_utf8 = rebound.utf8_range;
+        run.clusters[0].source_range_utf16 = Some(rebound.utf16_range);
+        run.clusters[0].text_range_utf8 = Some(rebound.utf8_range);
+        tree.text_sources = TextSourceTable::from_layer_node(&tree.root);
+    };
+    let mut supplementary = bounded_vertical_glyph_tree_with_font(SUPPLEMENTARY, '😀');
+    rebind(&mut supplementary, "😀");
+    assert!(proof(&supplementary).typeface_constructible);
+    assert_selected(&supplementary);
+    let renderer = SkiaLayerRenderer::new();
+    let positive = renderer
+        .render_raster_with_options(&supplementary, RasterRenderOptions::default())
+        .unwrap();
+    assert_eq!(
+        positive.diagnostics.variant_selections[0]
+            .selected_variant_id
+            .as_deref(),
+        Some("verticalGlyphRun")
+    );
+    assert!(positive.diagnostics.native_glyph_rejections.is_empty());
+
+    let mut multiple = supplementary.clone();
+    rebind(&mut multiple, "éé");
+    // The resource/run declaration is unchanged: both strings occupy four
+    // UTF-8 bytes and two UTF-16 units. Only the actual source distinguishes
+    // this malformed bounded claim from the supplementary-scalar control.
+    assert!(proof(&multiple).typeface_constructible);
+    let mut fallback = multiple.clone();
+    ops_mut(&mut fallback).retain(|op| matches!(op, PaintOp::TextRun { .. }));
+    let expected = render(&fallback);
+    let uncached = SkiaLayerRenderer::new().with_cache_limits(0, 0);
+    for renderer in [&renderer, &uncached] {
+        for _ in 0..2 {
+            let output = renderer
+                .render_raster_with_options(&multiple, RasterRenderOptions::default())
+                .unwrap();
+            assert_eq!(
+                output.diagnostics.variant_selections[0]
+                    .selected_variant_id
+                    .as_deref(),
+                Some("textRun")
+            );
+            assert!(matches!(
+                &output.diagnostics.native_glyph_rejections[0].failure,
+                NativeGlyphPreparationFailure::GlyphRunRejected(proof)
+                    if proof.reasons == vec![NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported]
+            ));
+            assert_same_pixels(
+                image::load_from_memory(&output.bytes).unwrap().to_rgba8(),
+                expected.clone(),
+            );
+        }
+    }
 }
 
 #[test]

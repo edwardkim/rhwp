@@ -168,6 +168,9 @@ fn native_skia_glyph_run_contract_is_replayable(
     native_skia_glyph_run_replay_proof(run, resources).contract_replayable
 }
 
+/// Checks the glyph/resource declaration. The enclosing leaf's source text is
+/// not available here; replay additionally checks that bounded vertical runs
+/// replace exactly one source scalar before suppressing their TextRun fallback.
 pub fn native_skia_glyph_run_replay_proof(
     run: &LayerGlyphRunPaint,
     resources: &ResourceArena,
@@ -1620,15 +1623,15 @@ impl SkiaLayerRenderer {
                 result?;
             }
             LayerNodeKind::Leaf { ops } => {
-                let fallback_source_ids = ops
+                let fallback_sources = ops
                     .iter()
                     .filter_map(|op| match op {
-                        PaintOp::TextRun { source, .. } => {
-                            source.as_ref().map(|source| source.id.0)
-                        }
+                        PaintOp::TextRun { source, run, .. } => source
+                            .as_ref()
+                            .map(|source| (source.id.0, run.text.chars().take(2).count() == 1)),
                         _ => None,
                     })
-                    .collect::<HashSet<_>>();
+                    .collect::<HashMap<_, _>>();
                 let mut variant_order = 0usize;
                 let mut prepared_glyphs = HashMap::<usize, Rc<PreparedGlyph>>::new();
                 let mut preparation_budget = GlyphPreparationBudget::new();
@@ -1657,6 +1660,22 @@ impl SkiaLayerRenderer {
                             preparation_budget.prepare(
                                 glyph_run_minimum_byte_cost(run, resources).unwrap_or(0),
                                 || {
+                                    // Four UTF-8 bytes / two UTF-16 units can
+                                    // represent one supplementary scalar or
+                                    // multiple BMP scalars. The source span
+                                    // alone cannot prove the producer subset.
+                                    if run.diagnostics.reason.as_deref()
+                                        == Some("boundedVerticalHwp5TableCellV1")
+                                        && fallback_sources.get(&run.source.id.0) != Some(&true)
+                                    {
+                                        return Err(NativeGlyphPreparationFailure::GlyphRunRejected(
+                                            NativeGlyphRunReplayProof {
+                                                contract_replayable: false,
+                                                typeface_constructible: false,
+                                                reasons: vec![NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported],
+                                            },
+                                        ));
+                                    }
                                     self.prepare_cached_glyph(
                                         op,
                                         resources,
@@ -1752,7 +1771,7 @@ impl SkiaLayerRenderer {
                     }
                     let fallback = glyph_variant_sources
                         .get(&group)
-                        .is_some_and(|source| fallback_source_ids.contains(source));
+                        .is_some_and(|source| fallback_sources.contains_key(source));
                     cache_context.diagnostics.borrow_mut().actual_selection(
                         &group,
                         selected.as_ref().map(|(id, kind)| (id.as_str(), *kind)),

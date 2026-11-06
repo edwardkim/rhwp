@@ -61,6 +61,10 @@ paint/instance 크기 일치, anchor와 source id, 잔차 0 및 fill-only paint�
 전체 tree의 기존 source-table/anchor 검증과 font byte digest·정확한 face 구성·유한 좌표 검사도
 계속 적용한다. 하나라도 실패하면 TextRun이 유지되며 P78의 typed 준비 실패로 관측된다.
 글리프의 페이지 좌표는 producer의 positions를 그대로 사용하며 추가 회전을 적용하지 않는다.
+실제 leaf에서는 source에 대응하는 fallback 본문이 정확히 한 Unicode scalar인지 캐시 조회 전에
+확인한다. UTF-8 4바이트·UTF-16 2단위만으로는 `😀`와 `éé`를 구분할 수 없기 때문이다.
+공개 `native_skia_glyph_run_replay_proof`는 run과 resource 선언만 받으므로 이 본문 검사는
+실제 leaf replay에 추가로 적용한다. 기존 fallback index에서 scalar 판정을 한 번만 계산한다.
 
 일반 세로쓰기와 RTL의 기존 TextRun 표시는 계속 별도 경로를 사용한다. 이 변경으로 HWPX,
 sideways, mixed-per-glyph, 임의 세로 shaper, 합성/가변 instance 또는 손상된 bounded claim의
@@ -69,5 +73,7 @@ exact 권한을 열지 않는다. 플랫폼 공통 Text IR v2의 strict 가용�
 기존 Native glyph suite에 upright 원점/pixels와 prepared-cache 재사용, 18가지 선언·cluster·
 font·placement 손상의 원자적 fallback 회귀를 추가했다. 기존 #4969 합성 HWP5 표 셀 case도
 실제 producer가 발행한 두 글리프의 public Native proof와 반복 render/selection을 확인한다.
+동일한 byte/unit 범위의 정상 supplementary scalar와 두 BMP scalar 대조는 prepared glyph
+cache를 먼저 채운 상태에서도 두 글자 fallback이 보존되는지 검사한다.
 새 source unit test 수를 늘리지 않았다. 통합 head에서 focused Native suite를 검증하며,
 실물 OS/GPU와 최종 한컴 문서 대조는 사용자 후속 검증 범위다.
