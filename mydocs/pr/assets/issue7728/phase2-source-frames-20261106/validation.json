@@ -1,0 +1,614 @@
+{
+  "status": "부분 보정. re_review_required, 이슈 종료와 PR 제출 불가",
+  "recorded_at": "2026-11-06T01:12:28.367625+00:00",
+  "source_parent": "2e85891b2d0e4a26173e0d1ff03156410146fc70",
+  "source_diff_sha256": "c50ecdb35aa9c510bf691cb34fab5f878af313e6ef63dd4a4a564a7874d0a0ec",
+  "source_files": {
+    "src/renderer/layout/table_layout.rs": "5f1e2883bf22e7faf78be5e4e54bab85fd9edaefd899f9cf45cdc2de8ec4784a",
+    "src/renderer/layout/table_layout/stored_intra_paragraph_frame.rs": "ecf6e60fd7b9bd264a6d8c9571866845bf30877b858e10696bca36ba7828074c",
+    "src/renderer/layout/table_layout/stored_page_unit_frames.rs": "4397b3dbc57cc30f68e8d1858c5a5ade5d4136744a3a6fecf4f67432d36f4cdc",
+    "src/renderer/layout/table_layout/stored_span_content.rs": "3f74d07723fb7975c293cf452ca9334a59201eb30e51627ce93c1d633999b813",
+    "src/renderer/layout/table_layout/stored_zero_origin.rs": "985dc716a9199108ccea20c0ccf7d63b5d7906c47fce203b2809aee32ef0fd13",
+    "src/renderer/typeset/table/block/prepare.rs": "33aa7eeafa092b85c1bafdf11cb6a5ebc9de0a6fb461c6c456f1698a476abb6d",
+    "src/renderer/typeset/table/deferred_float_flow.rs": "e91f083bfe2bf93c9dc0598270393e949290f11fb6b84f36d55db24a5adb980f"
+  },
+  "native_binary": {
+    "sha256": "5fc39246406de1a5a0cbb91bb51cb35f1fcf7f1bba6ac01b62391c746142d38c",
+    "size": 73070080
+  },
+  "build_command": [
+    "/usr/bin/sandbox-exec",
+    "-f",
+    "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--features",
+    "native-skia",
+    "--lib",
+    "--bin",
+    "rhwp"
+  ],
+  "build_log": {
+    "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-native-build.log",
+    "sha256": "0c823c5528e21f126f471817e2e68586afe03b0fb6e51e017b6cffccb4a76000"
+  },
+  "input": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "3838f718ab1356c7f07e9cd3a28edad95f8e5a74f3985d944db45f597cc19dc9",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-001.png",
+      "pdf_sha256": "224a900ba433a0349322ec652fe179d82f16ceb22c20531246cc4c8b67f2be28"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "5c3502c9c24d954279769a26d6557439cce97a363bb9663444ec9966ead0872b",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-002.png",
+      "pdf_sha256": "81ac3c3cc57029fa6fd6a50f3c52b0a9ffd8db858d5a397cb9a86923a3aa93c9"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "4acd4e9296a78514d1d2ebb2003225fb9094580c3d645477548769f455f39a2b",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-003.png",
+      "pdf_sha256": "4ba22e568382bbae484cc1aed642df7b0d716b843d4fa1b17155a827108ba1ef"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "7ea7c60bc4a0241d91a2710dc013086154400211a9539a2c81c5de1279f157be",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-004.png",
+      "pdf_sha256": "7dda0e37e365cf7b10a1d88ad3bf109cf75522f4967d3529583c931ea96ae4c8"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "54cbcc1b5887eb6db53f39ccbca6e13a95e49082bd620341698440e30be67ebe",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-005.png",
+      "pdf_sha256": "99829014d392e9f10bf30da9db1f4a1ef9542840fafbe8abd2cce19d24bcbd87"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "0fc80eed41eb345a54ef4f42ebbce8f280f303e6d42f3ea360526f03282ca2ab",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-006.png",
+      "pdf_sha256": "60873286dcab124766ba9299905e6141e5be38d8531fa50a313c35338e3617ca"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "11acc5844ae0abd05236a6995bfcba84b96b3e649fd26ec5d15c3fdb2258ccc2",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-007.png",
+      "pdf_sha256": "26e20a531f5210b832ab8eb183de21df8123969ff7c3b45a1324deb2ace3c8c3"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "bbee6f3490c27b334ec2d33c9d815f50d3b580586cc99e5ccc51bf03ac28fe4b",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-008.png",
+      "pdf_sha256": "ce80ab404260d4154f6996f3fefc462155f2cf32db0fadcd52031db83c77860a"
+    },
+    {
+      "page": 9,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_009.png",
+      "rhwp_sha256": "a29098595f3a7ef77ba15b51da04bfb6275d734d81066e15358be80eea4b4dfc",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-009.png",
+      "pdf_sha256": "5a6a3d49c43142395491c42341805f8f31f25a2a92347308205b7fd2489a9aef"
+    },
+    {
+      "page": 10,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_010.png",
+      "rhwp_sha256": "49f9981096a2ce6495e13ba030a6a091aeba2cb6d181e2ca9bc6f70adb46cc39",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-010.png",
+      "pdf_sha256": "cc2262e9b23e2c572d31fda7a3892209589fd4a59d8e9a9a1cf804793dde4253"
+    },
+    {
+      "page": 11,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_011.png",
+      "rhwp_sha256": "b6b765fdcf44ca0d6141762fb0d4cf6405cae64d55ab14c7c87b223f8911e2e5",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-011.png",
+      "pdf_sha256": "72fbbee31f5a154fef639c8e518aa09e4c02872e25b386443df44630a48b0b56"
+    },
+    {
+      "page": 12,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_012.png",
+      "rhwp_sha256": "dbbf475126a9e65244b7f662961afe78e0e3138f1526d5c34cc985a946beea60",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-012.png",
+      "pdf_sha256": "6f751d4321660bf695f45672c57f46f59055ce86172597d27ebf6720f34c3d36"
+    },
+    {
+      "page": 13,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_013.png",
+      "rhwp_sha256": "00937ddb2140a6e6aa9ed773db19f8bc77fc1baf89924aec048a760fd1506983",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-013.png",
+      "pdf_sha256": "32ef7c2a45302b5f0b968a29f9aa77e39c863d05b3b9cd8882dbfa28bd14a40b"
+    },
+    {
+      "page": 14,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_014.png",
+      "rhwp_sha256": "e510043d393353af2eb0f51f6b80d107fe252041e76f9f0dd3352f3d587599d6",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-014.png",
+      "pdf_sha256": "d381a35d58b913c8f498400c1547819034934aa3882a952db0f341e939abbf82"
+    },
+    {
+      "page": 15,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_015.png",
+      "rhwp_sha256": "92ca8aa09a7e32ca45ad18e66cd7a15279d61fa4b08b8fa7f8965fda7ef67912",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-015.png",
+      "pdf_sha256": "e9b8a5a82cce2c0b90da2ec709f50a5e5666a030a6fbf3dabc37c1633207612c"
+    },
+    {
+      "page": 16,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_016.png",
+      "rhwp_sha256": "c41716b9aaf306932685b131e470dcf308da069114397e32b43ea3945739a9fd",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-016.png",
+      "pdf_sha256": "107e90b459a6117c0b863f7a67b5245a88188e76292b40bfd5f572811f1185cc"
+    },
+    {
+      "page": 17,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_017.png",
+      "rhwp_sha256": "1f3746320dbcff3e29739f87f5ff8c5dc97d11b0109f0815cdc02c52ed64f7e0",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-017.png",
+      "pdf_sha256": "0da085955e064dd9b7d81e9db17c3d7ab61ff72910cbc9965ad74dc6c8050a2c"
+    },
+    {
+      "page": 18,
+      "rhwp_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/rhwp_png/rhwp_018.png",
+      "rhwp_sha256": "9dc76fae00dca387cb5d6709cf930315b7be4689d5399038f9230fd7b6521995",
+      "pdf_png": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-whole-native/candidate/electrical7728/pdf_png/pdf-018.png",
+      "pdf_sha256": "55f80b34f9cecacb81cb08ec7ea4bf8a46cc336617765ebfb28ccd10933978f8"
+    }
+  ],
+  "independent_pdf": {
+    "path": "pdf/issue7728/70833-electrical-safety-rule-hancom2020-print-20261106.pdf",
+    "sha256": "6cec821ff5897714669602c8707d66f669cfcb1187362c69101a0255c8d17956",
+    "pages": 18
+  },
+  "native_all_pages": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98888,
+      "silhouette_raw_unmatched_pixels": 4,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 35975,
+      "tolerant_content_match_percent": 99.98888
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99439,
+      "silhouette_raw_unmatched_pixels": 4,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 71277,
+      "tolerant_content_match_percent": 99.99439
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99763,
+      "silhouette_raw_unmatched_pixels": 2,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 84532,
+      "tolerant_content_match_percent": 99.99763
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.90408,
+      "silhouette_raw_unmatched_pixels": 1679,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 80108,
+      "tolerant_content_match_percent": 97.90408
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.74611,
+      "silhouette_raw_unmatched_pixels": 3225,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 99112,
+      "tolerant_content_match_percent": 96.74611
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 59.22973,
+      "silhouette_raw_unmatched_pixels": 42143,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 103367,
+      "tolerant_content_match_percent": 59.22973
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 48.62869,
+      "silhouette_raw_unmatched_pixels": 59208,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 115255,
+      "tolerant_content_match_percent": 48.62869
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.79732,
+      "silhouette_raw_unmatched_pixels": 163,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 80424,
+      "tolerant_content_match_percent": 99.79732
+    },
+    {
+      "page": 9,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.70433,
+      "silhouette_raw_unmatched_pixels": 2404,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 104719,
+      "tolerant_content_match_percent": 97.70433
+    },
+    {
+      "page": 10,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.57724,
+      "silhouette_raw_unmatched_pixels": 177,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 41868,
+      "tolerant_content_match_percent": 99.57724
+    },
+    {
+      "page": 11,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9619,
+      "silhouette_raw_unmatched_pixels": 10,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 26249,
+      "tolerant_content_match_percent": 99.9619
+    },
+    {
+      "page": 12,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.5452,
+      "silhouette_raw_unmatched_pixels": 3578,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 103566,
+      "tolerant_content_match_percent": 96.5452
+    },
+    {
+      "page": 13,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.97129,
+      "silhouette_raw_unmatched_pixels": 2,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 6967,
+      "tolerant_content_match_percent": 99.97129
+    },
+    {
+      "page": 14,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.48718,
+      "silhouette_raw_unmatched_pixels": 26,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 5070,
+      "tolerant_content_match_percent": 99.48718
+    },
+    {
+      "page": 15,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.34239,
+      "silhouette_raw_unmatched_pixels": 15,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 2281,
+      "tolerant_content_match_percent": 99.34239
+    },
+    {
+      "page": 16,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98648,
+      "silhouette_raw_unmatched_pixels": 15,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 110918,
+      "tolerant_content_match_percent": 99.98648
+    },
+    {
+      "page": 17,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.74176,
+      "silhouette_raw_unmatched_pixels": 151,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 58473,
+      "tolerant_content_match_percent": 99.74176
+    },
+    {
+      "page": 18,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.76455,
+      "silhouette_raw_unmatched_pixels": 157,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 66682,
+      "tolerant_content_match_percent": 99.76455
+    }
+  ],
+  "page_counts": {
+    "rhwp": 18,
+    "pdf": 18
+  },
+  "minimum_raw": 48.62869,
+  "below90": [
+    6,
+    7
+  ],
+  "base": "170b886f167b705b6e630c5b34bb638d92fae0a9",
+  "base_declines_over_0_1_percentage_points": [
+    {
+      "page": 7,
+      "base_raw": 49.35093,
+      "candidate_raw": 48.62869,
+      "delta_percentage_points": -0.72224
+    }
+  ],
+  "native_skia_gates": [
+    {
+      "name": "native-lib",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-native-native-lib.log",
+      "started_at": "2026-11-06T01:05:00.624567+00:00",
+      "exit_code": 0,
+      "seconds": 180.962,
+      "log_sha256": "1a6bca9ccf7f5227da431e1dd9b4abc2609ca6b599359d82752e5bc39559fd59",
+      "summaries": [
+        "test result: ok. 3857 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 11.17s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "name": "native-png",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-native-native-png.log",
+      "started_at": "2026-11-06T01:08:03.113284+00:00",
+      "exit_code": 0,
+      "seconds": 165.15,
+      "log_sha256": "425ca2a3f5d929c05d6028187b4362fea5702239e41446371cc52bd29123bf0f",
+      "summaries": [
+        "     Summary [   2.288s] 2 tests run: 2 passed, 296 skipped"
+      ]
+    },
+    {
+      "name": "native-pdf",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-native-native-pdf.log",
+      "started_at": "2026-11-06T01:10:49.341015+00:00",
+      "exit_code": 0,
+      "seconds": 13.136,
+      "log_sha256": "1d28482cab5db40bc7290d8ff686cb5947b2fc3593ed236983158049674fc9a2",
+      "summaries": [
+        "     Summary [   1.744s] 22 tests run: 22 passed, 271 skipped"
+      ]
+    }
+  ],
+  "diagnostics": [
+    {
+      "name": "blank-before",
+      "command": [
+        "python3",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-blank-boundary-check.py",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-anchor-v1-focus/native/electrical7728"
+      ],
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-phase2-blank-before.log"
+    },
+    {
+      "name": "blank-after",
+      "command": [
+        "python3",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-blank-boundary-check.py",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-focus/native/electrical7728"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-phase2-blank-after.log"
+    },
+    {
+      "name": "zero-before",
+      "command": [
+        "python3",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-zero-frame-ownership-check.py",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-blank-v3-focus/native/electrical7728"
+      ],
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-phase2-zero-before.log"
+    },
+    {
+      "name": "zero-after",
+      "command": [
+        "python3",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-zero-frame-ownership-check.py",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-focus/native/electrical7728"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-phase2-zero-after.log"
+    },
+    {
+      "name": "prefill-before",
+      "command": [
+        "python3",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-prefill-boundary-check.py",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-prefill-before-pagination.json"
+      ],
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-phase2-prefill-before.log"
+    },
+    {
+      "name": "prefill-after",
+      "command": [
+        "python3",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-prefill-boundary-check.py",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-v5-pagination.json"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-phase2-prefill-after.log"
+    },
+    {
+      "name": "remaining-complete-row",
+      "command": [
+        "python3",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-complete-row-ownership-check.py",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-focus/native/electrical7728"
+      ],
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-phase2-remaining-complete-row.log"
+    }
+  ],
+  "images": [
+    {
+      "file": "before-native-p004-review.png",
+      "producer": "before",
+      "original": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-anchor-v1-focus/native/electrical7728/review/review_004.png",
+      "sha256": "447ee043fd8d364938b207cea0f4dadc801bcf19131795150c28eaf5352c87d7"
+    },
+    {
+      "file": "after-native-p004-review.png",
+      "producer": "after",
+      "original": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-focus/native/electrical7728/review/review_004.png",
+      "sha256": "d102e60ad1b963349f408ae116233fdaae19b844784b40ac7373df8f315e1234"
+    },
+    {
+      "file": "before-native-p004-overlay.png",
+      "producer": "before",
+      "original": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-anchor-v1-focus/native/electrical7728/overlay/overlay_004.png",
+      "sha256": "67557a9525efc1f439339f7c199f3b39b9259b4c7a06a033b51c07b0ef2adcb3"
+    },
+    {
+      "file": "after-native-p004-overlay.png",
+      "producer": "after",
+      "original": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-focus/native/electrical7728/overlay/overlay_004.png",
+      "sha256": "011d34c68e3c7aa22142bc99f00fb62b4eb170e6c13669c59699fadebe294950"
+    },
+    {
+      "file": "before-native-p005-review.png",
+      "producer": "before",
+      "original": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-anchor-v1-focus/native/electrical7728/review/review_005.png",
+      "sha256": "35083941b0653d61b7244149267f6b4762e8564f1e9302ed2da49e8453a70ac6"
+    },
+    {
+      "file": "after-native-p005-review.png",
+      "producer": "after",
+      "original": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-focus/native/electrical7728/review/review_005.png",
+      "sha256": "9c21684d8d09b59e3981590438769bb97820eca7712916a0e2f7de86c5a1e7d1"
+    },
+    {
+      "file": "before-native-p005-overlay.png",
+      "producer": "before",
+      "original": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-anchor-v1-focus/native/electrical7728/overlay/overlay_005.png",
+      "sha256": "c0f789779cf02f1a4b05c2af1b7c8f96d9c446902e5811555dc501ce02de3091"
+    },
+    {
+      "file": "after-native-p005-overlay.png",
+      "producer": "after",
+      "original": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-focus/native/electrical7728/overlay/overlay_005.png",
+      "sha256": "39b7a594c96a3f1020328213cc4b66ab4d9fa763422d1eae654d61c4cc68e0bd"
+    },
+    {
+      "file": "before-native-p009-review.png",
+      "producer": "before",
+      "original": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-anchor-v1-focus/native/electrical7728/review/review_009.png",
+      "sha256": "89e3199c22666455286feb61de5fe84e59e0354fcd440ab74dd9cf547cbb7688"
+    },
+    {
+      "file": "after-native-p009-review.png",
+      "producer": "after",
+      "original": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-focus/native/electrical7728/review/review_009.png",
+      "sha256": "9f904d6d5a7d82100ac28f5959cff26e4cdf24a77a481494ffd4a7089b29d4e7"
+    },
+    {
+      "file": "before-native-p009-overlay.png",
+      "producer": "before",
+      "original": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-anchor-v1-focus/native/electrical7728/overlay/overlay_009.png",
+      "sha256": "afbaf9096e4e18240b3b51c1faab9026cd8e002395af3fc3945c648c64e6bb12"
+    },
+    {
+      "file": "after-native-p009-overlay.png",
+      "producer": "after",
+      "original": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-frame-v5-focus/native/electrical7728/overlay/overlay_009.png",
+      "sha256": "6b3694a61140f6c0df869c3a976ca421e0eff5132671c1bfe2192abe778fc08f"
+    }
+  ],
+  "direct_review": "후보의 4·5·6·7·9쪽 review/overlay를 직접 판독했다. V4와 V5 재출력의 PNG SHA가 같음도 확인했다.",
+  "fresh_wasm": "현재 후보 미실행. 이전 WASM 결과 재사용 안 함.",
+  "full_nextest": "현재 후보 미실행. 기존 12657 PASS 재사용 안 함.",
+  "formal_new_tests": "미달이 남아 신규 추가 보류. ignored 진단만 실행."
+}

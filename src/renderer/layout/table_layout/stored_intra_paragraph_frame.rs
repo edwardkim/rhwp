@@ -48,7 +48,7 @@ impl LayoutEngine {
         };
         if paragraph.stored_text_partition_is_dirty()
             || paragraph.cell_format_vpos_dirty
-            || !paragraph.controls.is_empty()
+            || !crate::renderer::cell_paragraph_has_only_text_metadata(paragraph)
         {
             return false;
         }
@@ -61,7 +61,8 @@ impl LayoutEngine {
         let synthetic = crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
         previous.tag & synthetic == 0
             && current.tag & synthetic == 0
-            && previous.vertical_pos > 0
+            && (previous.vertical_pos > 0
+                || (previous.vertical_pos == 0 && unit.stored_frame_break_before))
             && current.vertical_pos == 0
             && previous.line_height > 0
             && current.line_height > 0
@@ -187,7 +188,11 @@ impl LayoutEngine {
             }
             let line = paragraph.line_segs.get(unit.vis_start)?;
             if let Some(before) = previous {
-                if line.vertical_pos == 0 && before.vertical_pos > 0 {
+                if line.vertical_pos == 0
+                    && (before.vertical_pos > 0
+                        || (unit.stored_frame_break_before
+                            && units[index - 1].para_idx == unit.para_idx))
+                {
                     let ink = hwpunit_to_px(
                         before.vertical_pos.checked_add(before.line_height)?,
                         self.dpi,

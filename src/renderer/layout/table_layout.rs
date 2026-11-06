@@ -1957,6 +1957,16 @@ pub(super) struct CellUnit {
 }
 
 impl CellUnit {
+    /// 원본 개체 프레임의 남은 빈 띠는 앞 글줄의 문단을 참조하되 그 잉크를 소유하지 않는다.
+    pub(super) fn is_stored_blank_frame_tail(&self) -> bool {
+        self.empty_spacer
+            && self.stored_frame_break_before
+            && self.vis_start == self.vis_end
+            && self.nested_row.is_none()
+            && !self.mixed_nested_fragment
+            && self.non_inline_control_range.is_none()
+    }
+
     /// 자식 행 내부의 글줄 컷과 새 자식 행의 시작 경계를 구분한다.
     pub(super) fn starts_nested_row(&self) -> bool {
         self.nested_row.is_some()
@@ -2868,10 +2878,11 @@ impl LayoutEngine {
                     .render_normalization
                     .borrow()
                     .stored_opening_row_frame(table)
-                    .map(|frame| frame.end_row);
+                    .map(|frame| frame.end_row)
+                    .or_else(|| self.stored_measured_object_frame_row_count(table));
             }
         }
-        None
+        self.stored_measured_object_frame_row_count(table)
     }
 
     pub(crate) fn native_stored_row_has_text_frame_boundary(
@@ -16671,9 +16682,13 @@ impl LayoutEngine {
                                     &row_units[index],
                                 )
                             });
+                            let row_has_blank_source_frame = row_units.iter().any(|units| {
+                                units.iter().any(CellUnit::is_stored_blank_frame_tail)
+                            });
                             if let Some(driver_index) = driver.filter(|driver_index| {
                                 (row_is_auto_height
                                     || row_has_plain_line_cuts
+                                    || row_has_blank_source_frame
                                     || driver_is_nested_table_rows
                                     || row_has_joint_source_boundary
                                     || row_has_plain_restart_cut
@@ -16733,7 +16748,11 @@ impl LayoutEngine {
                                     if last_row_fragment {
                                         uh += row_extra - row_extra * 0.5;
                                     }
-                                    if row_has_plain_source_boundary || row_has_plain_line_cuts {
+                                    if row_has_plain_source_boundary
+                                        || row_has_plain_line_cuts
+                                        || row_has_blank_source_frame
+                                        || row_has_stored_in_paragraph_cut
+                                    {
                                         if driver_unit.stored_frame_break_before {
                                             source_frame_start.clone_from(&fragment.start_cut);
                                         }
@@ -18459,6 +18478,7 @@ impl LayoutEngine {
             }
         }
         self.preserve_source_page_frame_extents(cell, table, styles, &mut units);
+        self.preserve_stored_blank_opening_frame(cell, table, styles, &mut units);
         units
     }
 
@@ -20277,7 +20297,7 @@ impl LayoutEngine {
         let Some(para) = cell.paragraphs.get(previous_unit.para_idx) else {
             return 0.0;
         };
-        if !para.controls.is_empty() {
+        if !crate::renderer::cell_paragraph_has_only_text_metadata(para) {
             return 0.0;
         }
         let Some(previous_seg) = para.line_segs.get(previous_unit.vis_end - 1) else {
@@ -26685,6 +26705,9 @@ impl LayoutEngine {
     }
 
     fn cell_unit_has_visible_content(cell: &crate::model::table::Cell, unit: &CellUnit) -> bool {
+        if unit.is_stored_blank_frame_tail() {
+            return false;
+        }
         if unit.nested_row.is_some() {
             return true;
         }

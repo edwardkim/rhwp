@@ -199,7 +199,7 @@ impl LayoutEngine {
         if !cell.paragraphs.iter().any(|para| {
             !para.stored_text_partition_is_dirty()
                 && !para.cell_format_vpos_dirty
-                && para.controls.is_empty()
+                && crate::renderer::cell_paragraph_has_only_text_metadata(para)
                 && !para.text.trim().is_empty()
                 && para.line_segs.windows(2).enumerate().any(|(index, lines)| {
                     if !std::ptr::eq(&lines[0], previous) || !std::ptr::eq(&lines[1], next) {
@@ -234,6 +234,32 @@ impl LayoutEngine {
         // A zero-spacing pair alone does not identify a physical page boundary.
         if previous.line_spacing == 0 {
             return None;
+        }
+        // 원시 행 높이는 최소 선언값이다. 앞 행이 저장 글줄에 따라 성장했다면
+        // 같은 물리 행 계획의 원점으로 첫 개체 프레임과의 교차를 판정한다.
+        // 유닛을 재귀 조회하지 않아 줄 생산자와 컷 소비자가 같은 계획을 읽는다.
+        let measured_opening = !self
+            .render_normalization
+            .borrow()
+            .cell_frame_reflowed(table, cell)
+            && self
+                .stored_frame_row_plans
+                .borrow()
+                .get(&(table as *const Table as usize))
+                .is_some_and(|rows| {
+                    let row = usize::from(cell.row);
+                    let (Some(prefix), Some(&height)) = (rows.get(..row), rows.get(row)) else {
+                        return false;
+                    };
+                    let start = prefix.iter().sum::<f64>()
+                        + crate::renderer::hwpunit_to_px(table.cell_spacing as i32, self.dpi)
+                            * row as f64;
+                    let frame =
+                        crate::renderer::hwpunit_to_px(table.common.height as i32, self.dpi);
+                    start < frame && frame < start + height
+                });
+        if measured_opening {
+            return Some(SavedZeroOriginWitness::OpeningFrame);
         }
         let rows = table.get_raw_row_heights();
         let row = usize::from(cell.row);

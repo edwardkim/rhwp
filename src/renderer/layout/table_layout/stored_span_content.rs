@@ -397,12 +397,15 @@ impl LayoutEngine {
 
     pub(super) fn stored_plain_text_cell_frame(&self, table: &Table, cell: &Cell) -> bool {
         self.stored_body_text_cell_frame(table, cell)
-            && cell.paragraphs.iter().all(|para| para.controls.is_empty())
+            && cell
+                .paragraphs
+                .iter()
+                .all(crate::renderer::cell_paragraph_has_only_text_metadata)
     }
 
     /// 머리말·꼬리말 정의는 별도 쪽 영역의 소유자이며 셀 본문의 개체가 아니다.
-    /// 저장 줄의 유효성은 같은 계약으로 확인하되, 기존 순수 글줄 소비자는 위의
-    /// 더 엄격한 컨트롤 없음 조건을 유지한다.
+    /// 저장 줄의 유효성은 같은 계약으로 확인하되, 순수 글줄 소비자는 위의
+    /// 독립 개체 없는 한 단 메타데이터 조건을 유지한다.
     pub(super) fn stored_body_text_cell_frame(&self, table: &Table, cell: &Cell) -> bool {
         self.stored_cell_content_frame(table, cell, false)
     }
@@ -433,9 +436,10 @@ impl LayoutEngine {
                             control,
                             crate::model::control::Control::Header(_)
                                 | crate::model::control::Control::Footer(_)
-                        ) || (inline_objects
-                            && control.is_treat_as_char_object()
-                            && !matches!(control, crate::model::control::Control::Table(_)))
+                        ) || crate::renderer::cell_control_is_text_metadata(control)
+                            || (inline_objects
+                                && control.is_treat_as_char_object()
+                                && !matches!(control, crate::model::control::Control::Table(_)))
                     })
                     && !para.line_segs.is_empty()
                     && para.line_segs.iter().all(|line| {
