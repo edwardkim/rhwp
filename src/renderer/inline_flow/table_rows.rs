@@ -88,14 +88,12 @@ pub(crate) fn supports_table_text_rows_with_storage<S: crate::storage::Storage>(
         && para.controls.iter().all(|c| match c {
             Control::Table(t) => {
                 // Captions and cell notes have their own placement/reservation owner.
-                // Nested tables are included in the outer table's measured height;
-                // they do not consume a separate slot in the host text stream.
                 t.caption.is_none()
                     && !t.cells.iter().any(|cell| {
                         cell.paragraphs.iter().any(|p| {
                             p.controls
                                 .iter()
-                                .any(|c| matches!(c, Control::Footnote(_)))
+                                .any(|c| matches!(c, Control::Footnote(_) | Control::Table(_)))
                         })
                     })
                     && (t.common.treat_as_char
