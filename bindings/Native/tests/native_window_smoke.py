@@ -15,10 +15,12 @@ from unittest.mock import patch
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "examples"))
 from PySide6.QtCore import QEvent, QMimeData, QPointF, Qt
-from PySide6.QtGui import QFocusEvent, QImage, QInputMethodEvent, QKeyEvent, QKeySequence, QMouseEvent
-from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QAccessible, QFocusEvent, QImage, QInputMethodEvent, QKeyEvent, QKeySequence, QMouseEvent
+from PySide6.QtWidgets import QApplication, QWidget
+from native_accessibility import AccessibilityState, QtAccessibilityBinding
 from qt_native_host import NativeWindow, scalar_from_utf16, utf16_length
 from native_file_store import FileStamp
+from native_accessibility_contract import position as semantic_position, response as semantic_response
 
 
 class IdleWorker:
@@ -257,6 +259,110 @@ class AdapterTests(unittest.TestCase):
                  "originX": 0, "originY": 0, "width": 512, "height": 512,
                  "stride": 512 * 4, "byteLength": 512 * 512 * 4}
         callback({**reply, **changes})
+
+    def accessible_window(self):
+        window = self.tiled_window()
+        packet = semantic_response()
+        window.info["selection"] = packet["snapshot"]["selection"]
+        window.semantic.invalidate(window.accessibility_key())
+        ticket, _ = window.semantic.take_request()
+        self.assertTrue(window.semantic.accept(ticket, packet))
+        interface = QAccessible.queryAccessibleInterface(window.canvas)
+        self.assertEqual(interface.role(), QAccessible.Role.Document)
+        self.assertIsNotNone(interface.textInterface())
+        return window, interface
+
+    def test_qt_native_text_interface_reads_utf16_snapshot_without_native_calls(self):
+        window, interface = self.accessible_window()
+        text = interface.textInterface()
+        with patch.object(window.worker, "host_request", side_effect=AssertionError("synchronous native query")), \
+                patch.object(window.worker, "submit", side_effect=AssertionError("synchronous native submit")):
+            self.assertEqual(text.characterCount(), 4)
+            self.assertEqual(text.text(1, 3), "😀")
+            self.assertEqual(text.text(1, 2), "")
+            self.assertEqual(text.cursorPosition(), 3)
+            self.assertEqual(text.selection(0), (1, 3))
+            self.assertEqual(text.selectionCount(), 1)
+            self.assertTrue(interface.state().readOnly)
+            self.assertIn("bodyAndTableCellText", interface.text(QAccessible.Text.Description))
+            self.assertIn("rhwp-role:bodyParagraph", text.attributes(1)[0])
+            self.assertEqual(text.textAtOffset(1, QAccessible.TextBoundaryType.CharBoundary), ("😀", 1, 3))
+            self.assertEqual(text.textBeforeOffset(-2, QAccessible.TextBoundaryType.CharBoundary), ("😀", 1, 3))
+        self.assertEqual(window.worker.requests, [])
+
+    def test_qt_factory_handles_accessibility_queries_before_provider_binding(self):
+        class EarlyDocument(QWidget):
+            _rhwp_accessibility_document = True
+        widget = EarlyDocument()
+        self.addCleanup(widget.close)
+        early = QAccessible.queryAccessibleInterface(widget)
+        self.assertIsNotNone(early.textInterface())
+        self.assertTrue(early.state().invalid)
+        state = AccessibilityState()
+        binding = QtAccessibilityBinding(widget, state, lambda _rectangle: None)
+        self.assertIs(early, binding.interface)
+        self.assertIs(QAccessible.queryAccessibleInterface(widget), binding.interface)
+        self.assertFalse(early.state().invalid)
+        state.close()
+        self.assertTrue(early.state().invalid)
+
+    def test_qt_grapheme_boundaries_preserve_combining_sequences_and_report_unknown_lines(self):
+        window = self.tiled_window()
+        packet = semantic_response(text="e\u0301😀")
+        window.info["selection"] = packet["snapshot"]["selection"]
+        window.semantic.invalidate(window.accessibility_key())
+        ticket, _ = window.semantic.take_request()
+        self.assertTrue(window.semantic.accept(ticket, packet))
+        text = QAccessible.queryAccessibleInterface(window.canvas).textInterface()
+        self.assertEqual(text.textAtOffset(0, QAccessible.TextBoundaryType.CharBoundary), ("e\u0301", 0, 2))
+        self.assertEqual(text.textAtOffset(1, QAccessible.TextBoundaryType.CharBoundary), ("e\u0301", 0, 2))
+        self.assertEqual(text.textAtOffset(2, QAccessible.TextBoundaryType.CharBoundary), ("😀", 2, 4))
+        self.assertEqual(text.textAtOffset(0, QAccessible.TextBoundaryType.LineBoundary), ("", -1, -1))
+
+    def test_qt_caret_move_does_not_announce_document_text_deletion(self):
+        window, interface = self.accessible_window()
+        events = []
+        selection = {"anchor": semantic_position(offset=3), "focus": semantic_position(offset=3)}
+        with patch.object(QAccessible, "updateAccessibility", side_effect=lambda event: events.append(event.type())):
+            window.absorb({"outcome": {"selection": selection}})
+        self.assertEqual(interface.textInterface().text(0, -1), "a😀b")
+        self.assertEqual(interface.textInterface().cursorPosition(), -1)
+        self.assertNotIn(QAccessible.Event.TextUpdated, events)
+
+    def test_qt_character_geometry_is_queued_then_read_from_completed_native_rects(self):
+        window, interface = self.accessible_window()
+        text = interface.textInterface()
+        with patch.object(window.worker, "host_request", side_effect=AssertionError("synchronous native query")), \
+                patch.object(window.worker, "submit", side_effect=AssertionError("synchronous native submit")):
+            self.assertTrue(text.characterRect(1).isEmpty())
+            self.assertTrue(text.characterRect(2).isEmpty())  # Inside a surrogate pair.
+        self.assertEqual(len(window.semantic.geometry_wanted), 1)
+        window.request_semantics()
+        window.pump()
+        self.assertEqual(window.worker.requests[-1]["op"], "selectionRects")
+        self.assertEqual(window.worker.requests[-1]["selection"], {
+            "anchor": semantic_position(offset=1), "focus": semantic_position(offset=2)})
+        self.complete_step(window, rects=[{"page": 0, "bounds": {"x": 10, "y": 20, "width": 8, "height": 12}}])
+        with patch.object(window.worker, "host_request", side_effect=AssertionError("synchronous native query")):
+            rectangle = text.characterRect(1)
+            self.assertFalse(rectangle.isEmpty())
+            self.assertEqual((rectangle.width(), rectangle.height()), (8, 12))
+            self.assertEqual(text.offsetAtPoint(rectangle.center()), 1)
+
+    def test_qt_semantics_invalidate_on_revision_and_close_and_preserve_limits(self):
+        window, interface = self.accessible_window()
+        text = interface.textInterface()
+        window.absorb({"info": {**window.info, "revision": 4}})
+        self.assertEqual(text.characterCount(), 0)
+        packet = semantic_response(revision=4)
+        packet["snapshot"].update(complete=False, truncated=True, limitations=["nodeLimit", "headersFooters"])
+        ticket, _ = window.semantic.take_request()
+        self.assertTrue(window.semantic.accept(ticket, packet))
+        self.assertIn("nodeLimit", interface.text(QAccessible.Text.Description))
+        self.assertIn("truncated=True", interface.text(QAccessible.Text.Description))
+        window.shutdown_worker()
+        self.assertEqual(text.characterCount(), 0)
+        self.assertTrue(interface.state().invalid)
 
     def test_scroll_reuses_client_tiles_and_keeps_images_out_of_frame_metadata(self):
         window = self.tiled_window()
@@ -1466,11 +1572,22 @@ def actual_smoke(library, screenshot=None):
         QApplication.sendEvent(window.canvas, commit)
         pump(app, lambda: idle() and window.info.get("compositionId") is None)
         assert window.context["text"] == "각"
+        pump(app, lambda: window.semantic.snapshot is not None and idle())
+        accessible = QAccessible.queryAccessibleInterface(window.canvas)
+        accessible_text = accessible.textInterface()
+        assert accessible.role() == QAccessible.Role.Document and accessible_text is not None
+        with patch.object(window.worker.host, "host_request", side_effect=AssertionError("Qt getter called native code")):
+            assert accessible_text.text(0, -1) == "각" and accessible_text.characterCount() == 1
+            assert accessible_text.cursorPosition() == 1
+            assert accessible_text.characterRect(0).isEmpty()
+        pump(app, lambda: 0 in window.semantic.character_rects and idle())
+        assert not accessible_text.characterRect(0).isEmpty(), window.semantic.character_rects
         for key, expected in ((Qt.Key.Key_Left, 0), (Qt.Key.Key_Right, 1)):
             QApplication.sendEvent(window.canvas, QKeyEvent(QEvent.Type.KeyPress, key, Qt.KeyboardModifier.NoModifier))
             pump(app, lambda: idle() and window.info["selection"]["focus"]["scalarOffset"] == expected)
         window.document_actions["undo"].trigger()
         pump(app, lambda: idle() and window.context.get("text") == "")
+        assert accessible_text.characterCount() == 0
         window.document_actions["redo"].trigger()
         pump(app, lambda: idle() and window.context.get("text") == "각")
         window.command("pasteText", text="\n".join(f"페이지 {index}" for index in range(110)))
@@ -1499,6 +1616,7 @@ def actual_smoke(library, screenshot=None):
             QApplication.sendEvent(window.canvas, QKeyEvent(QEvent.Type.KeyPress, key, control))
             pump(app, idle)
         assert app.clipboard().text() == "각"
+        assert accessible_text.selectionCount() == 1 and accessible_text.selection(0) == (0, 1)
         QApplication.sendEvent(window.canvas, QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_X, control))
         pump(app, lambda: idle() and window.context.get("text") == "")
         QApplication.sendEvent(window.canvas, QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_V, control))
@@ -1531,6 +1649,7 @@ def actual_smoke(library, screenshot=None):
             pump(app, lambda: window.info["documentId"] != document_id and idle() and bool(window.frames))
             assert not window.info["isDirty"]
             assert window.source_path == output and output.name in window.windowTitle()
+            assert accessible_text.text(0, -1) == "각"
             assert not window.errors, window.errors
             original_bytes = output.read_bytes()
             window.command("replace", text="충돌 시 유지할 편집")
@@ -1575,12 +1694,14 @@ def actual_smoke(library, screenshot=None):
             window.new_document()
             pump(app, lambda: window.info["documentId"] != document_id and idle() and bool(window.frames))
             assert window.source_path is None and window.context["text"] == ""
-        print('{"ok":true,"qtOffscreen":true,"nativeRender":true,"syntheticKoreanIME":true,"clipboard":true,"multiPage":true,"caretVisible":true,"saveReopen":true,"dirtyCloseCancel":true,"saveEditRacePreserved":true,"newDocumentDiscard":true,"externalConflictPreserved":true,"osIMEVerified":false,"tiledViewport":true,"clientTileReuse":true,"renderCancellation":true,"compositionUndo":true,"standardActions":true,"dragAutoscroll":true}')
+            assert accessible_text.characterCount() == 0
+        print('{"ok":true,"qtOffscreen":true,"nativeRender":true,"syntheticKoreanIME":true,"clipboard":true,"multiPage":true,"caretVisible":true,"saveReopen":true,"dirtyCloseCancel":true,"saveEditRacePreserved":true,"newDocumentDiscard":true,"externalConflictPreserved":true,"osIMEVerified":false,"tiledViewport":true,"clientTileReuse":true,"renderCancellation":true,"compositionUndo":true,"standardActions":true,"dragAutoscroll":true,"qtAccessibleTextAPI":true,"nativeSemanticSnapshot":true,"accessibleCharacterGeometry":true,"screenReaderVerified":false}')
     finally:
         pump(app, lambda: not window.io_jobs)
         window.confirm_unsaved_changes = lambda: "discard"
         window.close()
         pump(app, lambda: window.finished)
+        assert window.semantic.closed
         app.clipboard().clear()
 
 

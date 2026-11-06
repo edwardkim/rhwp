@@ -28,6 +28,7 @@ SOURCE_FILES = {
             "native_host.py", "native_worker.py", "native_file_store.py", "native_worker_file_store.py",
             "native_viewport_tiles.py",
             "native_gl.py", "qt_gpu_view.py",
+            "native_accessibility.py",
             "qt_native_host.py", "qt-requirements.txt",
         )
     },

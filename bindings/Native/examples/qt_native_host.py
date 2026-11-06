@@ -11,7 +11,7 @@ from pathlib import Path
 import sys
 import time
 
-from PySide6.QtCore import QEvent, QMimeData, QPointF, QRectF, Qt, QTimer
+from PySide6.QtCore import QEvent, QMimeData, QPoint, QPointF, QRectF, Qt, QTimer
 from PySide6.QtGui import QAction, QColor, QImage, QKeySequence, QPainter, QPen
 from PySide6.QtWidgets import QApplication, QFileDialog, QGridLayout, QLabel, QMainWindow, QMessageBox, QScrollBar, QWidget
 
@@ -20,6 +20,7 @@ from native_file_store import read_document, read_recovery
 from native_worker import NativeWorker
 from native_worker_file_store import NativeWorkerFileStore
 from native_viewport_tiles import NATIVE_CACHE_BYTES, TileImageCache, frame_byte_cost, plan_visible_tiles
+from native_accessibility import AccessibilityState, QtAccessibilityBinding, ensure_qt_accessibility_factory, selection_identity
 
 
 def utf16_length(text):
@@ -71,6 +72,7 @@ class CanvasInputMixin:
     """Shared input/IME and overlays; contains no QObject base or renderer."""
 
     rhwp_native_canvas = True
+    _rhwp_accessibility_document = True
 
     def __init__(self, window):
         super().__init__(window)
@@ -244,6 +246,7 @@ class NativeWindow(QMainWindow):
         self.recovery_interval = recovery_interval
         self.next_recovery_attempt = 0.0
         self.recovery_path = None
+        ensure_qt_accessibility_factory()
         self.worker = worker or NativeWorker(library)
         self.renderer_requested = renderer
         self.renderer = "cpu"
@@ -304,6 +307,7 @@ class NativeWindow(QMainWindow):
         self.state = {"config": {"pages": [], "viewport": {"width": 800, "height": 600},
                                  "zoom": 1, "deviceScale": 1, "pageGap": 18},
                       "scroll": {"x": 0, "y": 0}}
+        self.semantic = AccessibilityState()
         self.canvas = Canvas(self)
         if renderer != "cpu":
             try:
@@ -320,6 +324,7 @@ class NativeWindow(QMainWindow):
                         self.worker.close()
                         self.worker.wait_closed()
                     raise RuntimeError(f"GL renderer unavailable: {error}") from error
+        self.semantic_binding = QtAccessibilityBinding(self.canvas, self.semantic, self.map_accessible_rectangle)
         self.vertical = QScrollBar(Qt.Orientation.Vertical)
         self.horizontal = QScrollBar(Qt.Orientation.Horizontal)
         central = QWidget()
@@ -383,6 +388,7 @@ class NativeWindow(QMainWindow):
         previous.dispose_gpu()
         self.gpu = None
         self.canvas = Canvas(self)
+        self.semantic_binding = QtAccessibilityBinding(self.canvas, self.semantic, self.map_accessible_rectangle)
         self.canvas_layout.replaceWidget(previous, self.canvas)
         previous.hide()
         previous.deleteLater()
@@ -474,6 +480,8 @@ class NativeWindow(QMainWindow):
                 callback(result)
             self.maybe_recover()
             self.pump()
+            if self.pending is None and self.job is None and not self.actions:
+                self.request_semantics()
             self.update_document_ui()
         except Exception as error:
             failed = self.job.failed if self.job is not None else None
@@ -556,6 +564,7 @@ class NativeWindow(QMainWindow):
             self.stop_drag()
             self.reset_tiles()
         self.update_document_ui()
+        self.semantic.invalidate(self.accessibility_key())
 
     def step_done(self, result):
         if not result.get("ok") or result.get("kind") == "skipped":
@@ -578,6 +587,7 @@ class NativeWindow(QMainWindow):
     def opened(self, result, path=None, source_stamp=None):
         self.stop_drag()
         self.document_generation += 1
+        self.semantic.invalidate(self.accessibility_key())
         self.reset_tiles()
         self.source_path = Path(path) if path is not None else None
         self.saved_path = None
@@ -744,6 +754,7 @@ class NativeWindow(QMainWindow):
                 bar.blockSignals(False)
             self.canvas.update()
             QApplication.inputMethod().update(Qt.InputMethodQuery.ImCursorRectangle)
+            self.semantic_binding.notify("geometry")
         except Exception as error:
             self.fail(error)
 
@@ -778,6 +789,55 @@ class NativeWindow(QMainWindow):
 
     def current_tile_identity(self):
         return (self.document_generation, *self.geometry_key())
+
+    def accessibility_key(self):
+        if not self.info:
+            return None
+        return (self.document_generation, *self.geometry_key(),
+                selection_identity(self.info.get("selection")))
+
+    def request_semantics(self):
+        if (self.closing or self.intent is not None or not self.pages or self.loading_pages
+                or self.page_geometry_key != self.geometry_key()):
+            return
+        self.semantic.invalidate(self.accessibility_key())
+        request = self.semantic.take_request()
+        if request is None:
+            return
+        ticket, command = request
+        def received(result):
+            if result is None:
+                return
+            try:
+                self.semantic.accept(ticket, result)
+            except (ValueError, KeyError, TypeError) as error:
+                self.semantic.failed(ticket)
+                self.fail(error)
+        accepted = self.enqueue([lambda _: command if self.semantic.current(ticket) else None], received,
+                                failed=lambda _: self.semantic.failed(ticket))
+        if not accepted:
+            self.semantic.failed(ticket)
+
+    def map_accessible_rectangle(self, rectangle):
+        # Consume the completed NativeView placement. Accessibility reads must
+        # never call mapped()/host_request or derive new document layout.
+        if (self.loading_pages or self.page_geometry_key != self.geometry_key()
+                or self.semantic.key != self.accessibility_key()):
+            return None
+        page = next((item for item in self.view.get("visible", []) if item["page"] == rectangle.get("page")), None)
+        bounds = rectangle.get("bounds", {})
+        values = [bounds.get(key) for key in ("x", "y", "width", "height")]
+        if page is None or any(not isinstance(value, (int, float)) or not math.isfinite(value) for value in values):
+            return None
+        if values[2] <= 0 or values[3] <= 0:
+            return None
+        zoom, placed = self.state["config"]["zoom"], page["pageRect"]
+        local = QRectF(placed["x"] + values[0] * zoom, placed["y"] + values[1] * zoom,
+                       values[2] * zoom, values[3] * zoom).toAlignedRect()
+        local = local.intersected(self.canvas.rect())
+        if local.isEmpty():
+            return None
+        return local.translated(self.canvas.mapToGlobal(QPoint(0, 0)))
 
     def reset_tiles(self):
         self.cancel_render()
@@ -1566,6 +1626,7 @@ class NativeWindow(QMainWindow):
 
     def shutdown_worker(self):
         self.stop_drag()
+        self.semantic.close()
         self.closing = True
         self.gpu_failure_timer.stop()
         if self.gpu is not None:

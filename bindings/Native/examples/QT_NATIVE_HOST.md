@@ -125,6 +125,33 @@ stamp를 얻은 뒤 교체 승인을 받고, 게시 직전에 같은 stamp인지
 context 정리와 FBO 수명은 [QOpenGLWidget](https://doc.qt.io/qt-6/qopenglwidget.html),
 state handoff는 [QPainter](https://doc.qt.io/qt-6/qpainter.html#beginNativePainting) 계약을 따른다.
 
+## 문서 읽기 접근성
+
+- `native_accessibility.py`는 문서 Canvas에 `QAccessibleWidget` + `QAccessibleTextInterface` factory를 등록한다.
+  Qt 제목·도구 막대의 기본 접근성과 별개로 본문을 `QAccessible.Role.Document`의 text interface로 노출한다.
+  PySide6 6.10.2에서 Python subclass·factory·Qt `textInterface()` 호출을 실제로 검사한다.
+- 기존 worker `accessibility` 명령으로 최대 256개 node·64 KiB UTF-8 텍스트·깊이 8·geometry query 64개·선택
+  rect 64개인 snapshot을 비동기로 받는다. 문서 세대·document ID·revision·font generation·선택에 묶고,
+  늦은 응답을 폐기한다. 같은 revision의 선택 이동은 텍스트를 지우지 않고 선택만 알 수 없는 상태로 두었다가
+  새 snapshot으로 갱신한다. 문서 변경·교체·종료에는 이전 텍스트와 geometry를 폐기한다.
+- 본문과 표 셀 텍스트를 Native snapshot의 구조 순서로 연결하며 문단 사이에 명시적인 개행을 넣는다.
+  Qt offset은 UTF-16 code unit, Native 주소는 Unicode scalar다. surrogate pair 중간 조회를 텍스트 조각이나
+  Native 주소로 변환하지 않는다. bounded snapshot 밖의 cursor·선택은 `-1`로 알 수 없음을 표시한다.
+  시각적 읽기 순서, 전체 문서 absolute offset, 표의 행·열 접근성 tree를 주장하지 않는다.
+- `complete`·`truncated`·Native limitations는 문서 Description에, node role·text-complete·geometry status는
+  text attributes에 보존한다. 읽기 전용 접근성 adapter이며 접근성 API의 편집·선택 변경·자동 스크롤은 지원하지 않는다.
+  기존 키보드·IME 편집은 계속 Native editor를 사용한다.
+- 완전한 단일 문자 선택의 snapshot geometry는 즉시 재사용한다. 나머지 `characterRect`는 실제 문자 rect가
+  없으면 빈 QRect를 반환하고 기존 `selectionRects` 요청을 예약한다. 예약 8개·완료 cache 64개로 제한하며,
+  완료 후 Qt `LocationChanged`를 알린다. 문단 start/end caret에서 임의 문자 폭을 추정하지 않는다.
+  조회 시 native 호출 없이 완료된 NativeView의 page placement·zoom을 화면 좌표로 변환한다.
+- Qt query는 native worker/파일 I/O를 동기로 호출하지 않는다. `offsetAtPoint`는 캐시된 문자 geometry만
+  사용한다. Char boundary는 Qt grapheme finder, Paragraph boundary는 구조적 문단 경계를 사용한다.
+  실제 조판 line·word·sentence 경계는 미지원으로 반환한다. PySide6 6.10.2의 기본 boundary method를
+  Python에서 base-call할 때 생기는 out-parameter 바인딩 오류를 unsafe 포인터로 우회하지 않는다.
+- 이 검사는 실제 Qt 접근성 interface/event API 연결의 근거다. 실물 OS의 accessibility bridge와
+  screen reader qualification은 별도이며, offscreen 검사만으로 완료했다고 주장하지 않는다.
+
 ## 표시와 입력 범위
 
 - 여러 쪽을 세로로 표시한다. 참조 UI는 최대 512쪽을 읽는다. P58 view 계약이 zoom·DPR·scroll·좌표
@@ -155,6 +182,7 @@ state handoff는 [QPainter](https://doc.qt.io/qt-6/qpainter.html#beginNativePain
 
 ```bash
 python3 -B bindings/Native/tests/native_viewport_tiles_contract.py
+python3 -B bindings/Native/tests/native_accessibility_contract.py
 QT_QPA_PLATFORM=offscreen .venv-qt/bin/python -B bindings/Native/tests/native_window_smoke.py
 QT_QPA_PLATFORM=offscreen .venv-qt/bin/python -B bindings/Native/tests/native_gpu_window_smoke.py
 QT_QPA_PLATFORM=offscreen .venv-qt/bin/python -B bindings/Native/tests/native_window_smoke.py \
@@ -191,6 +219,10 @@ token cleanup을 검사하며, Native 라이브러리를 인자로 주면 실제
 타일 검사에는 실제 origin을 반영한 paint, 겹치는 스크롤의 image 재사용, overlay 보존, stale buffer 무복사 해제와
 render 취소 중 편집 FIFO 유지가 포함된다. 실제 native 스모크에서도 Native cache 통계·상한, 겹치는 스크롤의
 추가 buffer 복사 없음과 실행 중 render 취소 요청 뒤 기존 화면 복구를 검사한다.
+접근성 계약은 UTF-16·scalar·문단/셀 주소 변환, snapshot/geometry 요청 상한과 stale 응답 거절을 검사한다.
+Qt 검사에는 provider 연결 전 factory query, 실제 text interface의 emoji/선택/커서/경계 조회,
+getter의 native 호출 금지와 비동기 문자 geometry가 포함된다. 실제 Native 스모크도 본문 읽기·선택·geometry·
+undo·재열기·새 문서·닫기 뒤 semantic 상태를 Qt 접근성 API로 확인한다.
 
 근거: [QInputMethodEvent](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QInputMethodEvent.html),
 [QImage](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QImage.html),
