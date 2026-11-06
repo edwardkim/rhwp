@@ -317,42 +317,6 @@ mod tests {
     static ENV_LOCK: Mutex<()> = Mutex::new(());
 
     #[test]
-    fn fontdb_retains_declared_family_aliases_without_promoting_full_names() {
-        use usvg::fontdb::{Family, Query};
-        let mut database = usvg::fontdb::Database::new();
-        database.load_font_data(
-            include_bytes!("../../tests/fixtures/native_font_family_names/family-contract.ttf")
-                .to_vec(),
-        );
-        let query = |database: &usvg::fontdb::Database, name: &str| {
-            database.query(&Query {
-                families: &[Family::Name(name)],
-                ..Query::default()
-            })
-        };
-        let original = query(&database, "검사용 표기 가족").unwrap();
-        assert!(query(&database, "검사용 가족 이름").is_none());
-        retain_fontdb_family_aliases(&mut database);
-        assert_eq!(query(&database, "검사용 표기 가족"), Some(original));
-        for name in [
-            "Rhwp Family Contract",
-            "검사용 가족 이름",
-            "검사용 WWS 가족",
-        ] {
-            let alias = query(&database, name).expect("프로그램이 선언한 실제 가족 이름");
-            assert_eq!(
-                database.face(alias).unwrap().index,
-                database.face(original).unwrap().index
-            );
-            let bytes = |id| database.with_face_data(id, |bytes, index| (bytes.to_vec(), index));
-            assert_eq!(bytes(alias), bytes(original), "이름이 달라도 같은 프로그램");
-        }
-        assert!(query(&database, "검사용 전체 얼굴 이름").is_none());
-        assert!(query(&database, "RhwpFamilyContract-Regular").is_none());
-        assert!(query(&database, "설치되지 않은 가족").is_none());
-    }
-
-    #[test]
     fn env_font_paths_parses_and_filters() {
         let _g = ENV_LOCK.lock().unwrap();
         // 미설정

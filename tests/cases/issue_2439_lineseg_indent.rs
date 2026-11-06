@@ -1,13 +1,22 @@
-use super::{authoritative_stored_line_start_px, uses_hwp5_stored_line_start_profile};
-use crate::model::page::{ColumnDef, PageDef};
-use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
-use crate::model::provenance::LayoutCompatibilityProfile;
-use crate::renderer::composer::compose_paragraph;
-use crate::renderer::layout::LayoutEngine;
-use crate::renderer::page_layout::PageLayoutInfo;
-use crate::renderer::pagination::{ColumnContent, PageContent, PageItem};
-use crate::renderer::render_tree::{RenderNode, RenderNodeType};
-use crate::renderer::style_resolver::{ResolvedCharStyle, ResolvedParaStyle, ResolvedStyleSet};
+//! 관계형·고정형: 합성 저장 LineSeg의 본문 원점과 run 소속을 검사한다.
+//! 주석 갱신: 2026-11-06T21:01:51+09:00.
+//! 이동 직전 원본 변경: 2026-11-06T20:11:29+09:00 6844f6ec0854b1c8150244d65cc1a099031287ac.
+//! 기존 내부 검사 5건을 공개 Document·LayoutEngine 경로로 이동했다.
+//! 입력은 이 파일에서 구성한 합성 Paragraph이며 실물 HWP/HWPX·Print PDF는 없다.
+//! 원본 단위에서 정한 기대 좌표와 run 연결 관계를 보존한다. 설치 글꼴에 의존하지 않는다.
+//! Native/fresh WASM raw·전쪽 최저값·TSV·PNG는 이 합성 단위 계약의 실측 근거가 아니며
+//! 해당 수치를 추정하지 않는다. 실제 문서의 조판 일치율을 검증하는 검사로 취급하지 않는다.
+
+use rhwp::model::document::{Document, HWP5_ORIGIN_HWPX_MARKER_PATH};
+use rhwp::model::page::{ColumnDef, PageDef};
+use rhwp::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
+use rhwp::model::provenance::SourceFormat;
+use rhwp::renderer::composer::compose_paragraph;
+use rhwp::renderer::layout::LayoutEngine;
+use rhwp::renderer::page_layout::PageLayoutInfo;
+use rhwp::renderer::pagination::{ColumnContent, PageContent, PageItem};
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+use rhwp::renderer::style_resolver::{ResolvedCharStyle, ResolvedParaStyle, ResolvedStyleSet};
 
 const DPI: f64 = 96.0;
 const BODY_LEFT_PX: f64 = 37.76;
@@ -32,8 +41,21 @@ fn collect_render_nodes<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>)
     }
 }
 
-fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTree {
+fn synthetic_lineseg_indent_tree() -> rhwp::renderer::render_tree::PageRenderTree {
+    lineseg_indent_tree(
+        &Document::default(),
+        [line_seg(1_900, 76_616), line_seg(10_320, 68_196)],
+        false,
+    )
+}
+
+fn lineseg_indent_tree(
+    document: &Document,
+    segments: [LineSeg; 2],
+    non_body_frame: bool,
+) -> rhwp::renderer::render_tree::PageRenderTree {
     let engine = LayoutEngine::with_default_dpi();
+    engine.set_layout_profile(document.layout_profile());
     let page_def = PageDef {
         width: 59_528,
         height: 84_188,
@@ -46,7 +68,13 @@ fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTr
         landscape: true,
         ..Default::default()
     };
-    let layout = PageLayoutInfo::from_page_def_default(&page_def, &ColumnDef::default());
+    let mut layout = PageLayoutInfo::from_page_def_default(&page_def, &ColumnDef::default());
+    if non_body_frame {
+        // 본문 전체 높이를 갖지 않는 별도 프레임은 저장 본문 원점을 빌리지 않는다.
+        layout.column_areas[0].height -= 24.0;
+        layout.column_areas[0].width = 42_520.0 * DPI / 7_200.0;
+    }
+    let [heading_segment, literal_segment] = segments;
 
     let heading = "1.  작성요령".to_string();
     let literal_number = "1.의료기기".to_string();
@@ -60,7 +88,7 @@ fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTr
             }],
             text: heading,
             para_shape_id: 0,
-            line_segs: vec![line_seg(1_900, 76_616)],
+            line_segs: vec![heading_segment],
             ..Default::default()
         },
         Paragraph {
@@ -78,46 +106,23 @@ fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTr
             ],
             text: literal_number,
             para_shape_id: 1,
-            line_segs: vec![line_seg(10_320, 68_196)],
+            line_segs: vec![literal_segment],
             ..Default::default()
         },
     ];
     let composed: Vec<_> = paragraphs.iter().map(compose_paragraph).collect();
-    let styles = ResolvedStyleSet {
-        section_tab_width_bits: Default::default(),
-        source_hwp3_native: false,
-        source_program_projection_slots: Default::default(),
-        unsubstituted_font_slots: Default::default(),
-        isolated_jamo_font: None,
-        script_metrics: Default::default(),
-        native_pua_fonts: Default::default(),
-        display_only_otf_slots: Default::default(),
-        char_overlap_size_bounds: None,
-        source_char_shapes: Default::default(),
-        resolved_dpi: None,
-        page_number_char_style_id: None,
-        style_char_shapes: Vec::new(),
-        page_number_font_is_hft: false,
-        hwp3_variant: false,
-        hft_ascii_halfwidth: false,
-        char_styles: vec![ResolvedCharStyle::default(), ResolvedCharStyle::default()],
-        para_styles: vec![
-            ResolvedParaStyle {
-                margin_left: 1_900.0 * DPI / 7_200.0,
-                ..Default::default()
-            },
-            ResolvedParaStyle {
-                margin_left: (4_129.0 / 2.0) * DPI / 7_200.0,
-                ..Default::default()
-            },
-        ],
-        border_styles: Vec::new(),
-        numberings: Vec::new(),
-        bullets: Vec::new(),
-        kerning_measurement_context: None,
-        horizontal_shaping_context: None,
-        supplemental_metrics: None,
-    };
+    let mut styles = ResolvedStyleSet::default();
+    styles.char_styles = vec![ResolvedCharStyle::default(), ResolvedCharStyle::default()];
+    styles.para_styles = vec![
+        ResolvedParaStyle {
+            margin_left: 1_900.0 * DPI / 7_200.0,
+            ..Default::default()
+        },
+        ResolvedParaStyle {
+            margin_left: (4_129.0 / 2.0) * DPI / 7_200.0,
+            ..Default::default()
+        },
+    ];
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
@@ -177,75 +182,81 @@ fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTr
     )
 }
 
+fn line_x(tree: &rhwp::renderer::render_tree::PageRenderTree, paragraph: usize) -> f64 {
+    let mut nodes = Vec::new();
+    collect_render_nodes(&tree.root, &mut nodes);
+    nodes
+        .iter()
+        .find(|node| {
+            matches!(
+                &node.node_type,
+                RenderNodeType::TextLine(line) if line.para_index == Some(paragraph)
+            )
+        })
+        .expect("합성 문단의 최종 TextLine")
+        .bbox
+        .x
+}
+
 #[test]
 fn matching_lineseg_start_keeps_heading_at_para_margin() {
-    let seg = line_seg(1_900, 76_616);
-    let styled_margin_px = 1_900.0 * DPI / 7_200.0;
-    let offset = authoritative_stored_line_start_px(
-        styled_margin_px,
-        Some(&seg),
-        COLUMN_WIDTH_HU,
-        DPI,
-        true,
-    );
-
-    assert!((BODY_LEFT_PX + offset - 63.09).abs() < 0.02);
+    let tree = synthetic_lineseg_indent_tree();
+    assert!((line_x(&tree, 0) - 63.09).abs() < 0.02);
 }
 
 #[test]
 fn larger_authoritative_lineseg_start_positions_literal_number() {
-    let seg = line_seg(10_320, 68_196);
-    let styled_margin_px = (4_129.0 / 2.0) * DPI / 7_200.0;
-    let offset = authoritative_stored_line_start_px(
-        styled_margin_px,
-        Some(&seg),
-        COLUMN_WIDTH_HU,
-        DPI,
-        true,
-    );
-
-    assert!((BODY_LEFT_PX + offset - 175.36).abs() < 0.02);
+    let tree = synthetic_lineseg_indent_tree();
+    assert!((line_x(&tree, 1) - 175.36).abs() < 0.02);
 }
 
 #[test]
 fn synthetic_or_non_body_geometry_does_not_override_para_margin() {
-    let styled_margin_px = 27.5;
     let mut synthetic = line_seg(10_320, 68_196);
     synthetic.tag |= LineSeg::TAG_IMPLEMENTATION_PROPERTY;
-    assert_eq!(
-        authoritative_stored_line_start_px(
-            styled_margin_px,
-            Some(&synthetic),
-            COLUMN_WIDTH_HU,
-            DPI,
-            true,
-        ),
-        styled_margin_px,
+    let synthetic_tree = lineseg_indent_tree(
+        &Document::default(),
+        [line_seg(1_900, 76_616), synthetic],
+        false,
     );
+    let styled_origin = BODY_LEFT_PX + (4_129.0 / 2.0) * DPI / 7_200.0;
+    assert!((line_x(&synthetic_tree, 1) - styled_origin).abs() < 0.02);
 
-    let wrap_or_cell_seg = line_seg(39_123, 3_397);
-    assert_eq!(
-        authoritative_stored_line_start_px(
-            styled_margin_px,
-            Some(&wrap_or_cell_seg),
-            42_520,
-            DPI,
-            false,
-        ),
-        styled_margin_px,
+    let non_body_tree = lineseg_indent_tree(
+        &Document::default(),
+        [line_seg(1_900, 76_616), line_seg(39_123, 3_397)],
+        true,
     );
+    assert!((line_x(&non_body_tree, 1) - styled_origin).abs() < 0.02);
 }
 
 #[test]
 fn hwp5_origin_hwpx_keeps_the_hwp5_stored_line_start_contract() {
-    let native_hwp5 = LayoutCompatibilityProfile::new(false, false, false, false, false, true);
-    let hwp5_origin_hwpx = LayoutCompatibilityProfile::new(false, false, false, true, true, false);
-    let original_hwpx = LayoutCompatibilityProfile::new(false, false, true, true, false, false);
+    let native_hwp5 = Document::default();
+    let mut hwp5_origin_hwpx = Document::default();
+    hwp5_origin_hwpx.provenance.format = SourceFormat::Hwpx;
+    hwp5_origin_hwpx
+        .hwpx_aux_entries
+        .push((HWP5_ORIGIN_HWPX_MARKER_PATH.into(), b"1".to_vec()));
+    let mut original_hwpx = Document::default();
+    original_hwpx.provenance.format = SourceFormat::Hwpx;
 
-    assert!(uses_hwp5_stored_line_start_profile(native_hwp5));
-    assert!(uses_hwp5_stored_line_start_profile(hwp5_origin_hwpx));
+    for document in [&native_hwp5, &hwp5_origin_hwpx] {
+        let tree = lineseg_indent_tree(
+            document,
+            [line_seg(1_900, 76_616), line_seg(10_320, 68_196)],
+            false,
+        );
+        assert!((line_x(&tree, 1) - 175.36).abs() < 0.02);
+    }
+    let original_tree = lineseg_indent_tree(
+        &original_hwpx,
+        [line_seg(1_900, 76_616), line_seg(10_320, 68_196)],
+        false,
+    );
+    let styled_origin = BODY_LEFT_PX + (4_129.0 / 2.0) * DPI / 7_200.0;
     assert!(
-        !uses_hwp5_stored_line_start_profile(original_hwpx),
+        (line_x(&original_tree, 1) - styled_origin).abs() < 0.02,
         "원본 HWPX의 별도 저장 LineSeg 계약까지 HWP5로 넓히면 안 된다"
     );
 }

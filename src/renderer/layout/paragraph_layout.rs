@@ -12774,9 +12774,6 @@ mod trailing_tac_width_tests {
 }
 
 #[cfg(test)]
-mod issue_2439_lineseg_indent_tests;
-
-#[cfg(test)]
 mod issue_1151_v3_helper_tests {
     //! Issue #1151 v3/#1459: sibling TopAndBottom 예약 높이 helper 단위 검증.
     //!
