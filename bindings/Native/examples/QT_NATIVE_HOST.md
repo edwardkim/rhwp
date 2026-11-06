@@ -46,8 +46,31 @@ stamp를 얻은 뒤 교체 승인을 받고, 게시 직전에 같은 stamp인지
   새 문서에 적용하지 않는다. 기존 문서에 이미 접수한 편집은 dirty 확인 이전에 완료한다.
 - 일반 입력 큐의 64개 상한과 별도로 저장 ack/cancel용 한 슬롯을 예약한다. 입력이 가득 차도
   파일 게시 이후 checkpoint 또는 token 정리가 멈추지 않으며 편집 명령끼리의 순서는 유지한다.
-- 조합 중인 텍스트는 입력기 focus-loss 취소를 기다린다. native 조합이 남아 있으면 확정·취소 후 다시
-  요청하도록 안내한다. 파일 I/O가 진행 중이면 worker를 먼저 닫지 않는다.
+- native 조합이 남아 있으면 확정·취소 후 문서 전환을 다시 요청하도록 안내한다.
+  파일 I/O가 진행 중이면 worker를 먼저 닫지 않는다.
+
+## 표준 명령과 드래그 선택
+
+- 파일·편집·보기 메뉴와 도구 막대는 같은 `QAction`을 사용한다. `QKeySequence.StandardKey`의
+  플랫폼별 전체 키 목록을 등록하고 `QKeyEvent.matches`로 처리하므로 Ctrl/Cmd 및 Shift+Insert 같은
+  대체 키도 Qt 설정을 따른다. 저장과 다른 이름으로 저장은 별도 action이며, 안전 저장 adapter를
+  연결한 호스트의 `save_document`가 있으면 저장 action이 해당 함수를 사용한다.
+- AltGr/Ctrl+Alt의 문자는 `ShortcutOverride`부터 편집기로 전달한다. 조합 중 Undo 또는 Escape는
+  현재 조합만 취소하고, 확대·축소는 허용한다. 다른 문서·편집 명령은 조합 확정·취소를 안내하며
+  미확정 글자를 저장하거나 clipboard 작업에 섞지 않는다. 접수됐지만 아직 완료되지 않은 IME
+  action도 이 판단에 포함한다.
+- 메뉴·팝업으로 이동하는 focus 이벤트는 조합을 취소하지 않는다. 다른 위젯·앱으로 focus가
+  이동하면 Qt 입력기를 reset하고 native 조합을 FIFO로 취소한다. 이 정책은 Qt adapter 수준의
+  동작이며 실제 OS 입력기·후보창 검증을 대신하지 않는다.
+- 드래그 포인터가 viewport 밖으로 나가면 40ms 타이머에서 축마다 회당 최대 32 logical pixel씩
+  스크롤하고, native view가 제공한 가장 가까운 보이는 페이지를 다시 hit-test한다. 이전 hit가
+  끝나기 전에는 다음 스크롤을 시작하지 않으며, GUI action이 4개 이상 대기하면 재시도한다.
+  원래 64개 FIFO 상한을 유지하고 편집 명령을 버리거나 native 조판을 UI에서 실행하지 않는다.
+- 드래그 release·focus 이동·문서/폰트/revision 교체·문서 전환·종료 시 타이머를 정리한다.
+  release 직후 대기 중인 최초 hit도 anchor를 보존한 뒤 마지막 선택 지점을 적용한다.
+- IME 문맥·캐럿·선택 geometry는 요청 당시의 문서 세대·revision·폰트·선택·조합 커서와
+  완료 시점을 비교한다. 이전 상태의 결과는 후보창 좌표에 반영하지 않으며, 현재 페이지 좌표는
+  최신 scroll/zoom 변환으로 표시한다. 주변 문자열 치환·재변환은 여전히 별도 Native API 범위다.
 
 ## 타일 화면과 캐시
 
@@ -118,7 +141,8 @@ state handoff는 [QPainter](https://doc.qt.io/qt-6/qpainter.html#beginNativePain
 - 페이지 크기 조회 중 click/drag hit test를 보류하며, 완성된 뷰의 좌표만 사용합니다.
   click/drag, selection/caret overlay, 좌우·상하·Home/End, Backspace/Delete, Enter, Ctrl+A/Z/Y,
   Ctrl+C/X/V를 연결한다. Ctrl+Alt 또는 AltGr의 출력 문자는 shortcut으로 소비하지 않고 본문에 입력합니다. Home/End는 문단 경계다. 셀·inline object 편집은 native API의 거절을 표시한다.
-- Qt `QInputMethodEvent` preedit→update→commit을 native composition에 연결한다. Focus loss는 cancel이다.
+- Qt `QInputMethodEvent` preedit→update→commit을 native composition에 연결한다. 다른 위젯·앱으로
+  focus가 이동하면 취소하며, 메뉴·팝업 focus는 위 표준 명령 정책을 따른다.
   surrogate pair 중간 offset과 주변 문자열 replacementStart/replacementLength는 안전하게 거절한다.
   주변 문맥·cursor·anchor는 마지막 완료된 native snapshot에서 읽고 scalar→UTF-16으로 바꾼다.
   bounded 문맥 밖의 anchor와 absolute position은 완전한 문서 위치라고 주장하지 않는다.

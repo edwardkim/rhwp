@@ -4,12 +4,14 @@ import argparse
 import json
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
+from copy import deepcopy
 from dataclasses import dataclass
+import math
 from pathlib import Path
 import sys
 
 from PySide6.QtCore import QEvent, QMimeData, QPointF, QRectF, Qt, QTimer
-from PySide6.QtGui import QColor, QImage, QPainter, QPen
+from PySide6.QtGui import QAction, QColor, QImage, QKeySequence, QPainter, QPen
 from PySide6.QtWidgets import QApplication, QFileDialog, QGridLayout, QLabel, QMainWindow, QMessageBox, QScrollBar, QWidget
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -37,6 +39,11 @@ def scalar_from_utf16(text, offset):
 
 def body():
     return {"section": 0, "paragraph": 0, "scalarOffset": 0, "cellPath": []}
+
+
+def altgr_modifiers(modifiers):
+    return bool(modifiers & Qt.KeyboardModifier.GroupSwitchModifier) or bool(
+        modifiers & Qt.KeyboardModifier.ControlModifier and modifiers & Qt.KeyboardModifier.AltModifier)
 
 
 @dataclass
@@ -91,6 +98,12 @@ class CanvasInputMixin:
         super().resizeEvent(event)
 
     def event(self, event):
+        if event.type() == QEvent.Type.ShortcutOverride and (
+                altgr_modifiers(event.modifiers()) or self.window.is_composing()):
+            # Give the focused editor first refusal before a window QAction can
+            # consume AltGr text or a composition-cancelling Undo/Escape.
+            event.accept()
+            return True
         if event.type() == QEvent.Type.DevicePixelRatioChange:
             self.window.rebuild_view()
         return super().event(event)
@@ -106,15 +119,15 @@ class CanvasInputMixin:
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             self.setFocus()
-            self.window.click(event.position(), False)
+            self.window.start_drag(event.position())
 
     def mouseMoveEvent(self, event):
-        if event.buttons() & Qt.MouseButton.LeftButton and len(self.window.actions) < 4:
-            self.window.click(event.position(), True)
+        if event.buttons() & Qt.MouseButton.LeftButton:
+            self.window.drag_to(event.position())
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
-            self.window.click(event.position(), True)
+            self.window.end_drag(event.position())
 
     def keyPressEvent(self, event):
         self.window.key(event)
@@ -141,8 +154,10 @@ class CanvasInputMixin:
             event.ignore()
             return
         self.window.preedit_color = color
-        self.window.ime(event.commitString(), event.preeditString(), cursor, cursor_visible)
-        event.accept()
+        if self.window.ime(event.commitString(), event.preeditString(), cursor, cursor_visible):
+            event.accept()
+        else:
+            event.ignore()
 
     def inputMethodQuery(self, query):
         context = self.window.context
@@ -164,7 +179,9 @@ class CanvasInputMixin:
         return values[query] if query in values else super().inputMethodQuery(query)
 
     def focusOutEvent(self, event):
-        self.window.cancel_composition()
+        self.window.stop_drag()
+        if event.reason() not in (Qt.FocusReason.PopupFocusReason, Qt.FocusReason.MenuBarFocusReason):
+            self.window.cancel_composition(reset=True)
         super().focusOutEvent(event)
 
 
@@ -198,6 +215,22 @@ class Canvas(CanvasInputMixin, QWidget):
 class NativeWindow(QMainWindow):
     MAX_ACTIONS = 64
     MAX_PAGES = 512
+    MAX_DRAG_ACTIONS = 4
+    MAX_DRAG_SCROLL = 32
+    STANDARD_ACTIONS = (
+        ("new", "새 문서", QKeySequence.StandardKey.New, "file"),
+        ("open", "열기", QKeySequence.StandardKey.Open, "file"),
+        ("save", "저장", QKeySequence.StandardKey.Save, "file"),
+        ("saveAs", "다른 이름으로 저장", QKeySequence.StandardKey.SaveAs, "file"),
+        ("undo", "실행 취소", QKeySequence.StandardKey.Undo, "edit"),
+        ("redo", "다시 실행", QKeySequence.StandardKey.Redo, "edit"),
+        ("cut", "잘라내기", QKeySequence.StandardKey.Cut, "edit"),
+        ("copy", "복사", QKeySequence.StandardKey.Copy, "edit"),
+        ("paste", "붙여넣기", QKeySequence.StandardKey.Paste, "edit"),
+        ("selectAll", "전체 선택", QKeySequence.StandardKey.SelectAll, "edit"),
+        ("zoomIn", "확대", QKeySequence.StandardKey.ZoomIn, "view"),
+        ("zoomOut", "축소", QKeySequence.StandardKey.ZoomOut, "view"),
+    )
 
     def __init__(self, library, input_path=None, output_path=None, worker=None, renderer="cpu"):
         super().__init__()
@@ -232,7 +265,15 @@ class NativeWindow(QMainWindow):
         self.job = None
         self.epoch = 0
         self.drag_anchor = None
+        self.drag_token = None
+        self.drag_point = None
+        self.drag_document = None
+        self.drag_hit_pending = False
+        self.drag_timer = QTimer(self)
+        self.drag_timer.setInterval(40)
+        self.drag_timer.timeout.connect(self.autoscroll_drag)
         self.preedit = ""
+        self.ime_pending = 0
         self.preedit_start = None
         self.preedit_cursor = 0
         self.preedit_cursor_visible = True
@@ -285,15 +326,16 @@ class NativeWindow(QMainWindow):
         self.horizontal.valueChanged.connect(lambda value: self.set_scroll(x=value))
         toolbar = self.addToolBar("문서")
         self.document_actions = {}
-        for name, label, handler in [("new", "새 문서", self.new_document), ("open", "열기", self.open_dialog),
-                                     ("save", "저장", self.save_document),
-                                     ("saveAs", "다른 이름으로 저장", self.save_dialog),
-                                     ("undo", "실행 취소", lambda: self.command("undo")),
-                                     ("redo", "다시 실행", lambda: self.command("redo")),
-                                     ("zoomIn", "확대", lambda: self.zoom_at(1.1)),
-                                     ("zoomOut", "축소", lambda: self.zoom_at(1 / 1.1))]:
-            action = toolbar.addAction(label)
-            action.triggered.connect(handler)
+        menus = {name: self.menuBar().addMenu(label) for name, label in
+                 (("file", "파일"), ("edit", "편집"), ("view", "보기"))}
+        for name, label, standard, menu in self.STANDARD_ACTIONS:
+            action = QAction(label, self)
+            action.setShortcuts(QKeySequence.keyBindings(standard))
+            action.triggered.connect(lambda _checked=False, name=name: self.invoke_action(name))
+            self.addAction(action)
+            menus[menu].addAction(action)
+            if name in ("new", "open", "save", "undo", "redo", "zoomIn", "zoomOut"):
+                toolbar.addAction(action)
             self.document_actions[name] = action
         self.document_status = QLabel()
         self.statusBar().addPermanentWidget(self.document_status)
@@ -362,7 +404,10 @@ class NativeWindow(QMainWindow):
         for name in ("save", "saveAs"):
             self.document_actions[name].setEnabled(available and bool(self.info) and not self.saving)
         for name, capability in (("undo", "canUndo"), ("redo", "canRedo")):
-            self.document_actions[name].setEnabled(available and bool(self.info.get(capability)))
+            self.document_actions[name].setEnabled(available and (
+                bool(self.info.get(capability)) or (name == "undo" and self.is_composing())))
+        for name in ("copy", "cut", "paste", "selectAll"):
+            self.document_actions[name].setEnabled(available and bool(self.info))
         for name in ("zoomIn", "zoomOut"):
             self.document_actions[name].setEnabled(available and bool(self.pages))
         # Standalone Save As permits later edits. A pending replacement/close
@@ -467,7 +512,7 @@ class NativeWindow(QMainWindow):
         self.render_next()
 
     def absorb(self, result):
-        geometry_keys = ("documentId", "revision", "fontGeneration", "selection")
+        geometry_keys = ("documentId", "revision", "fontGeneration", "selection", "compositionId")
         previous = tuple(self.info.get(key) for key in geometry_keys)
         if result.get("info"):
             self.info = result["info"]
@@ -485,10 +530,12 @@ class NativeWindow(QMainWindow):
                     self.info[key] = outcome[key]
         if previous != tuple(self.info.get(key) for key in geometry_keys):
             self.caret = None
+            self.context.clear()
             self.rects.clear()
             self.preedit_rects.clear()
+            QApplication.inputMethod().update(Qt.InputMethodQuery.ImQueryAll)
         if previous[:3] != self.geometry_key():
-            self.drag_anchor = None
+            self.stop_drag()
             self.reset_tiles()
         self.update_document_ui()
 
@@ -511,6 +558,7 @@ class NativeWindow(QMainWindow):
         self.job.last_result = result
 
     def opened(self, result, path=None, source_stamp=None):
+        self.stop_drag()
         self.document_generation += 1
         self.reset_tiles()
         self.source_path = Path(path) if path is not None else None
@@ -530,6 +578,7 @@ class NativeWindow(QMainWindow):
         self.state["scroll"] = {"x": 0, "y": 0}
         self.context.clear()
         self.preedit = ""
+        self.ime_pending = 0
         self.preedit_start = None
         self.preedit_cursor = 0
         self.preedit_rects.clear()
@@ -558,11 +607,26 @@ class NativeWindow(QMainWindow):
             elif not self.loading_pages:
                 self.rebuild_view()
             if self.info.get("selection"):
-                self.enqueue([lambda _: {"op": "imeContext"}], self.got_context)
-                self.enqueue([lambda _: {"op": "caretRect", "position": self.ime_caret_position()}], self.got_caret)
-                self.enqueue([lambda _: {"op": "selectionRects", "selection": self.info["selection"]}],
-                             lambda reply: self.set_rects(reply["rects"]))
+                self.enqueue_input_query(lambda: {"op": "imeContext"}, self.got_context)
+                self.enqueue_input_query(lambda: {"op": "caretRect", "position": self.ime_caret_position()},
+                                         self.got_caret)
+                self.enqueue_input_query(lambda: {"op": "selectionRects", "selection": self.info["selection"]},
+                                         lambda reply: self.set_rects(reply["rects"]))
         self.enqueue([lambda _: {"op": "info"}], got_info)
+
+    def input_geometry_key(self):
+        return (self.document_generation, self.geometry_key(), deepcopy(self.info.get("selection")),
+                self.info.get("compositionId"), deepcopy(self.preedit_start), self.preedit_cursor)
+
+    def enqueue_input_query(self, request, done):
+        expected = []
+        def query(_):
+            expected[:] = [self.input_geometry_key()]
+            return request()
+        def received(reply):
+            if reply is not None and expected and expected[0] == self.input_geometry_key():
+                done(reply)
+        return self.enqueue([query], received)
 
     def load_page_size(self, page, count, load=None):
         if load is None:
@@ -628,7 +692,7 @@ class NativeWindow(QMainWindow):
         QApplication.inputMethod().update(Qt.InputMethodQuery.ImCursorRectangle)
 
     def ensure_caret_visible(self):
-        if self.caret and self.pages and self.view and not self.loading_pages:
+        if self.caret and self.pages and self.view and not self.loading_pages and self.drag_token is None:
             self.apply_view(action="ensureCaret", page=self.caret["page"], margin=12,
                             rect={"x": self.caret["x"], "y": self.caret["y"],
                                   "width": self.caret.get("width", 0), "height": self.caret["height"]})
@@ -826,18 +890,19 @@ class NativeWindow(QMainWindow):
                    "region": tile.region, "scale": tile.scale}, rendered)
         self.pending_render = self.pending[0]
 
-    def click(self, point, extend):
-        if (not self.info or self.preedit or self.loading_pages or not self.pages or not self.view
+    def click(self, point, extend, *, drag_token=None, done=None):
+        if (not self.info or self.is_composing() or self.loading_pages or not self.pages or not self.view
                 or self.page_geometry_key != self.geometry_key()):
-            return
+            return False
         geometry, epoch = self.page_geometry_key, self.epoch
         hit = self.worker.host.host_request(op="view", state=self.state,
             command={"action": "pageAt", "x": point.x(), "y": point.y()})["query"]
         if hit is None:
-            return
+            return False
         def current_geometry():
             return (geometry == self.page_geometry_key == self.geometry_key()
-                    and epoch == self.epoch and not self.loading_pages and not self.preedit)
+                    and epoch == self.epoch and not self.loading_pages and not self.is_composing()
+                    and (drag_token is None or drag_token is self.drag_token))
         def hit_test(_):
             if current_geometry():
                 return {"op": "hitTest", "page": hit["page"], **hit["point"]}
@@ -849,7 +914,106 @@ class NativeWindow(QMainWindow):
                 self.drag_anchor = position
             return {"op": "setSelection" if self.info.get("selection") else "beginEdit",
                     "selection": {"anchor": self.drag_anchor, "focus": position}}
-        self.enqueue([hit_test, select], refresh=True)
+        return self.enqueue([hit_test, select], done=done, refresh=True, failed=done)
+
+    def stop_drag(self):
+        self.drag_timer.stop()
+        self.drag_token = self.drag_point = self.drag_document = None
+        self.drag_anchor = None
+        self.drag_hit_pending = False
+
+    def start_drag(self, point):
+        self.stop_drag()
+        self.drag_token = object()
+        self.drag_document = (self.document_generation, self.geometry_key())
+        self.drag_point = QPointF(point)
+        if not self.queue_drag_hit(point, False):
+            self.stop_drag()
+
+    def outside_viewport(self, point):
+        return not QRectF(self.canvas.rect()).contains(point)
+
+    def drag_to(self, point):
+        if self.drag_token is None or self.drag_point is None:
+            return
+        self.drag_point = QPointF(point)
+        if self.outside_viewport(point):
+            self.drag_timer.start()
+        else:
+            if self.queue_drag_hit(point, True):
+                self.drag_timer.stop()
+            else:
+                self.drag_timer.start()
+
+    def queue_drag_hit(self, point, extend):
+        if self.drag_hit_pending or len(self.actions) + (self.job is not None) >= self.MAX_DRAG_ACTIONS:
+            return False
+        token = self.drag_token
+        requested = QPointF(point)
+        def received(reply):
+            if token is self.drag_token:
+                self.drag_hit_pending = False
+                if self.drag_anchor is None or (reply is not None and not reply.get("ok", True)):
+                    self.stop_drag()
+                    return
+                if (self.drag_point is not None and self.drag_point != requested
+                        and not self.outside_viewport(self.drag_point)):
+                    self.drag_to(self.drag_point)
+                elif self.drag_point is not None and not self.outside_viewport(self.drag_point):
+                    self.drag_timer.stop()
+        self.drag_hit_pending = True
+        accepted = self.click(point, extend, drag_token=token, done=received)
+        if not accepted:
+            self.drag_hit_pending = False
+        return accepted
+
+    def drag_hit_point(self, point):
+        # Viewport edges may lie in page margins or inter-page gaps. Reuse the
+        # native view's visible page rectangles to query the nearest visible page.
+        viewport = QRectF(self.canvas.rect())
+        candidates = []
+        for item in self.view.get("visible", []):
+            bounds = item["pageRect"]
+            area = QRectF(bounds["x"], bounds["y"], bounds["width"], bounds["height"]).intersected(viewport)
+            if area.isEmpty():
+                continue
+            x = max(area.left(), min(math.nextafter(area.right(), area.left()), point.x()))
+            y = max(area.top(), min(math.nextafter(area.bottom(), area.top()), point.y()))
+            nearest = QPointF(x, y)
+            distance = (nearest.x() - point.x()) ** 2 + (nearest.y() - point.y()) ** 2
+            candidates.append((distance, nearest))
+        return min(candidates, key=lambda item: item[0])[1] if candidates else None
+
+    def autoscroll_drag(self):
+        if (self.drag_point is None or self.drag_document != (self.document_generation, self.geometry_key())
+                or self.closing or self.intent is not None or self.is_composing()):
+            self.stop_drag()
+            return
+        if (self.drag_hit_pending or self.drag_anchor is None or self.loading_pages
+                or len(self.actions) + (self.job is not None) >= self.MAX_DRAG_ACTIONS):
+            return
+        point = self.drag_point
+        def step(value, extent):
+            distance = value if value < 0 else max(0, value - extent)
+            return max(-self.MAX_DRAG_SCROLL, min(self.MAX_DRAG_SCROLL, distance))
+        dx, dy = step(point.x(), self.canvas.width()), step(point.y(), self.canvas.height())
+        if dx or dy:
+            self.scroll(dx, dy)
+        hit = self.drag_hit_point(point)
+        if hit is not None:
+            if self.queue_drag_hit(hit, True) and not self.outside_viewport(point):
+                self.drag_timer.stop()
+
+    def end_drag(self, point):
+        token = self.drag_token
+        self.drag_timer.stop()
+        self.drag_point = None
+        def finished(_=None):
+            if token is self.drag_token:
+                self.stop_drag()
+        hit = self.drag_hit_point(point)
+        if token is None or hit is None or not self.click(hit, True, drag_token=token, done=finished):
+            finished()
 
     def command(self, op, **fields):
         def request(_):
@@ -859,56 +1023,76 @@ class NativeWindow(QMainWindow):
             return {"op": op, **values}
         self.enqueue([request], refresh=True)
 
+    def is_composing(self):
+        return bool(self.preedit or self.ime_pending or self.info.get("compositionId") is not None)
+
+    def invoke_action(self, name):
+        if self.closing or self.intent is not None:
+            return False
+        if self.is_composing():
+            if name == "undo":
+                self.cancel_composition(reset=True)
+                return True
+            if name not in ("zoomIn", "zoomOut"):
+                self.statusBar().showMessage("한글 조합을 확정하거나 취소한 뒤 다시 시도해 주세요.")
+                return False
+        handlers = {
+            "new": self.new_document, "open": self.open_dialog,
+            "save": lambda: getattr(self, "save_document", self.save_dialog)(),
+            "saveAs": self.save_dialog,
+            "undo": lambda: self.command("undo"), "redo": lambda: self.command("redo"),
+            "copy": lambda: self.enqueue([lambda _: {"op": "copySelection"}], self.copied),
+            "cut": lambda: self.enqueue([lambda _: {"op": "cutSelection"}], self.copied, refresh=True),
+            "paste": self.paste_clipboard,
+            "selectAll": lambda: self.command("executeCommand", command={"command": "selectAll"}),
+            "zoomIn": lambda: self.zoom_at(1.1), "zoomOut": lambda: self.zoom_at(1 / 1.1),
+        }
+        handlers[name]()
+        return True
+
+    def paste_clipboard(self):
+        mime = QApplication.clipboard().mimeData()
+        if mime is not None:
+            if mime.hasHtml():
+                self.command("pasteHtml", html=mime.html())
+            elif mime.hasText():
+                self.command("pasteText", text=mime.text())
+
     def key(self, event):
         modifiers = event.modifiers()
-        control = bool(modifiers & Qt.KeyboardModifier.ControlModifier) and not bool(
-            modifiers & (Qt.KeyboardModifier.AltModifier | Qt.KeyboardModifier.GroupSwitchModifier))
+        altgr = altgr_modifiers(modifiers)
         shift = bool(modifiers & Qt.KeyboardModifier.ShiftModifier)
         key = event.key()
-        if control:
-            if key == Qt.Key.Key_C:
-                self.enqueue([lambda _: {"op": "copySelection"}], self.copied)
-            elif key == Qt.Key.Key_X:
-                self.enqueue([lambda _: {"op": "cutSelection"}], self.copied, refresh=True)
-            elif key == Qt.Key.Key_V:
-                mime = QApplication.clipboard().mimeData()
-                if mime is not None:
-                    if mime.hasHtml():
-                        self.command("pasteHtml", html=mime.html())
-                    elif mime.hasText():
-                        self.command("pasteText", text=mime.text())
-            elif key == Qt.Key.Key_Z:
-                self.command("redo" if shift else "undo")
-            elif key == Qt.Key.Key_Y:
-                self.command("redo")
-            elif key == Qt.Key.Key_A:
-                self.command("executeCommand", command={"command": "selectAll"})
-            elif key == Qt.Key.Key_S:
-                self.save_document()
-            elif key == Qt.Key.Key_O:
-                self.open_dialog()
-            elif key == Qt.Key.Key_N:
-                self.new_document()
-            else:
+        if not altgr:
+            for name, _label, standard, _menu in self.STANDARD_ACTIONS:
+                if event.matches(standard):
+                    self.update_document_ui()
+                    self.document_actions[name].trigger()
+                    event.accept()
+                    return
+            if key == Qt.Key.Key_Escape and self.is_composing():
+                self.cancel_composition(reset=True)
+                event.accept()
+                return
+            if modifiers & (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.MetaModifier | Qt.KeyboardModifier.AltModifier):
                 event.ignore()
                 return
+        names = {Qt.Key.Key_Left: "moveLeft", Qt.Key.Key_Right: "moveRight", Qt.Key.Key_Up: "moveUp",
+                 Qt.Key.Key_Down: "moveDown", Qt.Key.Key_Home: "home", Qt.Key.Key_End: "end",
+                 Qt.Key.Key_Backspace: "deleteBackward", Qt.Key.Key_Delete: "deleteForward",
+                 Qt.Key.Key_Return: "splitParagraph", Qt.Key.Key_Enter: "splitParagraph"}
+        if key in names and not self.is_composing():
+            command = {"command": names[key]}
+            if key in (Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up, Qt.Key.Key_Down, Qt.Key.Key_Home, Qt.Key.Key_End):
+                command["extendSelection"] = shift
+            if key in (Qt.Key.Key_Up, Qt.Key.Key_Down):
+                command["preferredX"] = self.preferred_x
+            self.command("executeCommand", command=command)
+        elif event.text() and not self.is_composing():
+            self.command("replace", text=event.text())
         else:
-            names = {Qt.Key.Key_Left: "moveLeft", Qt.Key.Key_Right: "moveRight", Qt.Key.Key_Up: "moveUp",
-                     Qt.Key.Key_Down: "moveDown", Qt.Key.Key_Home: "home", Qt.Key.Key_End: "end",
-                     Qt.Key.Key_Backspace: "deleteBackward", Qt.Key.Key_Delete: "deleteForward",
-                     Qt.Key.Key_Return: "splitParagraph", Qt.Key.Key_Enter: "splitParagraph"}
-            if key in names:
-                command = {"command": names[key]}
-                if key in (Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up, Qt.Key.Key_Down, Qt.Key.Key_Home, Qt.Key.Key_End):
-                    command["extendSelection"] = shift
-                if key in (Qt.Key.Key_Up, Qt.Key.Key_Down):
-                    command["preferredX"] = self.preferred_x
-                self.command("executeCommand", command=command)
-            elif event.text() and not self.preedit:
-                self.command("replace", text=event.text())
-            else:
-                event.ignore()
-                return
+            event.ignore()
+            return
         event.accept()
 
     def copied(self, result):
@@ -920,6 +1104,7 @@ class NativeWindow(QMainWindow):
         QApplication.clipboard().setMimeData(mime)
 
     def ime(self, committed, preedit, cursor, cursor_visible=True):
+        generation = self.document_generation
         def begin(_):
             if self.info.get("compositionId") is None:
                 selection = self.info["selection"]
@@ -939,6 +1124,9 @@ class NativeWindow(QMainWindow):
             steps += [lambda _: {"op": "cancelComposition", "compositionId": self.info["compositionId"]}
                       if self.info.get("compositionId") is not None else None]
         def done(_):
+            if generation != self.document_generation:
+                return
+            self.ime_pending = max(0, self.ime_pending - 1)
             self.preedit, self.preedit_cursor = preedit, cursor
             self.preedit_cursor_visible = cursor_visible
             self.preedit_rects = []
@@ -953,13 +1141,24 @@ class NativeWindow(QMainWindow):
                 self.enqueue([current_preedit],
                              lambda reply: self.set_preedit_rects(reply["rects"]) if reply else None)
             self.refresh()
-        self.enqueue(steps, done)
+            self.update_document_ui()
+        def failed(_):
+            if generation == self.document_generation:
+                self.ime_pending = max(0, self.ime_pending - 1)
+                self.update_document_ui()
+        accepted = self.enqueue(steps, done, failed=failed)
+        if accepted:
+            self.ime_pending += 1
+            self.update_document_ui()
+        return accepted
 
     def set_preedit_rects(self, rects):
         self.preedit_rects = rects
         self.canvas.update()
 
-    def cancel_composition(self):
+    def cancel_composition(self, *, reset=False):
+        if reset:
+            QApplication.inputMethod().reset()
         if self.info and not self.closing:
             self.enqueue([lambda _: {"op": "cancelComposition", "compositionId": self.info["compositionId"]}
                           if self.info.get("compositionId") is not None else None],
@@ -967,7 +1166,13 @@ class NativeWindow(QMainWindow):
 
     def clear_preedit(self):
         self.preedit = ""
+        self.preedit_start = None
+        self.preedit_cursor = 0
         self.preedit_rects = []
+        self.caret = None
+        self.context.clear()
+        self.canvas.update()
+        QApplication.inputMethod().update(Qt.InputMethodQuery.ImQueryAll)
 
     def confirm_unsaved_changes(self):
         answer = QMessageBox.question(self, "변경 내용 저장", "현재 문서의 변경 내용을 저장할까요?",
@@ -986,6 +1191,7 @@ class NativeWindow(QMainWindow):
         self.refresh()
 
     def request_transition(self, operation, path=None):
+        self.stop_drag()
         if self.closing or self.saving:
             self.statusBar().showMessage("진행 중인 저장 작업을 마친 뒤 다시 시도해 주세요.")
             return False
@@ -1275,6 +1481,7 @@ class NativeWindow(QMainWindow):
         return accepted
 
     def shutdown_worker(self):
+        self.stop_drag()
         self.closing = True
         self.gpu_failure_timer.stop()
         if self.gpu is not None:
@@ -1285,6 +1492,7 @@ class NativeWindow(QMainWindow):
         self.update_document_ui()
 
     def closeEvent(self, event):
+        self.stop_drag()
         if self.finished:
             event.accept()
             return

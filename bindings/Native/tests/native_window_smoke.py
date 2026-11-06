@@ -15,7 +15,7 @@ from unittest.mock import patch
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "examples"))
 from PySide6.QtCore import QEvent, QMimeData, QPointF, Qt
-from PySide6.QtGui import QImage, QInputMethodEvent, QKeyEvent
+from PySide6.QtGui import QFocusEvent, QImage, QInputMethodEvent, QKeyEvent, QKeySequence, QMouseEvent
 from PySide6.QtWidgets import QApplication
 from qt_native_host import NativeWindow, scalar_from_utf16, utf16_length
 from native_file_store import FileStamp
@@ -781,6 +781,247 @@ class AdapterTests(unittest.TestCase):
                 self.assertEqual(worker.requests, [{**expected, "target": {"documentId": 7, "revision": 1}}])
                 self.assertTrue(event.isAccepted())
 
+    def test_standard_actions_register_all_platform_bindings_and_route_save_separately(self):
+        window = self.lifecycle_window()
+        invoked = []
+        window.new_document = lambda: invoked.append("new")
+        window.open_dialog = lambda: invoked.append("open")
+        window.save_document = lambda: invoked.append("save")
+        window.save_dialog = lambda: invoked.append("saveAs")
+        for name, _label, standard, _menu in window.STANDARD_ACTIONS:
+            with self.subTest(action=name):
+                bindings = QKeySequence.keyBindings(standard)
+                self.assertEqual(window.document_actions[name].shortcuts(), bindings)
+                if name in ("new", "open", "save", "saveAs"):
+                    combination = bindings[0][0]
+                    event = QKeyEvent(QEvent.Type.KeyPress, combination.key(), combination.keyboardModifiers())
+                    self.assertTrue(event.matches(standard))
+                    window.key(event)
+                    self.assertTrue(event.isAccepted())
+        self.assertEqual(invoked, ["new", "open", "save", "saveAs"])
+
+    def test_shift_insert_and_alternative_redo_use_standard_actions(self):
+        window = self.lifecycle_window()
+        window.info["canRedo"] = True
+        invoked = []
+        window.command = lambda operation, **fields: invoked.append((operation, fields))
+        clipboard = self.app.clipboard()
+        self.addCleanup(clipboard.clear)
+        clipboard.setText("표준 붙여넣기")
+        paste = QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_Insert, Qt.KeyboardModifier.ShiftModifier)
+        self.assertTrue(paste.matches(QKeySequence.StandardKey.Paste))
+        window.key(paste)
+        redo = QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_Z,
+                        Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier)
+        self.assertTrue(redo.matches(QKeySequence.StandardKey.Redo))
+        window.key(redo)
+        self.assertEqual(invoked, [("pasteText", {"text": "표준 붙여넣기"}), ("redo", {})])
+
+    def test_altgr_shortcut_override_reaches_the_editor_as_text(self):
+        window = self.lifecycle_window()
+        modifiers = Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.AltModifier
+        override = QKeyEvent(QEvent.Type.ShortcutOverride, Qt.Key.Key_C, modifiers, "ç")
+        QApplication.sendEvent(window.canvas, override)
+        self.assertTrue(override.isAccepted())
+        event = QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_C, modifiers, "ç")
+        window.key(event)
+        window.pump()
+        self.assertEqual(window.worker.requests, [{"op": "replace", "text": "ç", "target": window.target()}])
+
+    def test_pending_ime_blocks_file_and_clipboard_actions_before_native_completion(self):
+        window = self.lifecycle_window()
+        position = {"section": 0, "paragraph": 0, "scalarOffset": 0, "cellPath": []}
+        window.info["selection"] = {"anchor": position, "focus": position}
+        self.assertTrue(window.ime("", "ㄱ", 1))
+        invoked = []
+        window.save_dialog = lambda: invoked.append("save")
+        for name in ("save", "saveAs", "new", "copy", "cut", "paste", "selectAll"):
+            window.document_actions[name].trigger()
+        self.assertEqual(invoked, [])
+        self.assertEqual(len(window.actions), 1)
+        self.assertEqual(window.ime_pending, 1)
+        self.assertIn("조합", window.statusBar().currentMessage())
+
+    def test_composition_undo_cancels_preedit_without_undoing_an_earlier_edit(self):
+        window = self.lifecycle_window()
+        window.info.update(compositionId=12, canUndo=False)
+        window.preedit = "가"
+        window.update_document_ui()
+        self.assertTrue(window.document_actions["undo"].isEnabled())
+        window.document_actions["undo"].trigger()
+        window.pump()
+        self.assertEqual(window.worker.requests, [{"op": "cancelComposition", "compositionId": 12,
+                                                 "target": window.target()}])
+        self.complete_step(window, outcome={"revision": 4, "compositionId": None})
+        self.assertEqual(window.preedit, "")
+        self.assertIsNone(window.caret)
+        self.assertIsNone(window.preedit_start)
+        self.assertFalse(window.is_composing())
+
+    def test_menu_focus_preserves_preedit_and_real_focus_loss_cancels_it(self):
+        window = self.lifecycle_window()
+        window.info["compositionId"] = 12
+        window.preedit = "가"
+        for reason in (Qt.FocusReason.PopupFocusReason, Qt.FocusReason.MenuBarFocusReason):
+            window.canvas.focusOutEvent(QFocusEvent(QEvent.Type.FocusOut, reason))
+            self.assertFalse(window.actions)
+            self.assertEqual(window.preedit, "가")
+        window.canvas.focusOutEvent(QFocusEvent(QEvent.Type.FocusOut, Qt.FocusReason.OtherFocusReason))
+        window.pump()
+        self.assertEqual(window.worker.requests[0]["op"], "cancelComposition")
+
+    def test_late_input_geometry_is_discarded_when_preedit_cursor_or_selection_changes(self):
+        for changed in ("cursor", "selection", "font", "generation"):
+            with self.subTest(changed=changed):
+                window = self.lifecycle_window()
+                position = {"section": 0, "paragraph": 0, "scalarOffset": 0, "cellPath": []}
+                window.info["selection"] = {"anchor": dict(position), "focus": dict(position)}
+                window.preedit_start = dict(position)
+                window.preedit_cursor = 1
+                received = []
+                window.enqueue_input_query(lambda: {"op": "caretRect", "position": position}, received.append)
+                window.pump()
+                if changed == "cursor":
+                    window.preedit_cursor = 2
+                elif changed == "selection":
+                    window.info["selection"]["focus"]["scalarOffset"] = 1
+                elif changed == "font":
+                    window.info["fontGeneration"] += 1
+                else:
+                    window.document_generation += 1
+                self.complete_step(window, caret={"page": 0, "x": 10, "y": 20, "height": 16})
+                self.assertEqual(received, [])
+
+    def drag_window(self):
+        class ViewHost:
+            def host_request(self, **request):
+                command = request["command"]
+                return {"query": {"page": 0, "point": {"x": command["x"], "y": command["y"]}}}
+        window = self.lifecycle_window()
+        window.worker.host = ViewHost()
+        window.canvas.resize(300, 200)
+        window.pages = [{"width": 1000, "height": 2000}]
+        window.view = {"visible": [{"page": 0, "pageRect": {
+            "x": 0, "y": 0, "width": 1000, "height": 2000}}]}
+        window.page_geometry_key = window.geometry_key()
+        window.render_next = lambda: None
+        window.scrolls = []
+        def scrolled(x, y):
+            window.scrolls.append((x, y))
+            window.epoch += 1
+        window.scroll = scrolled
+        return window
+
+    def finish_drag_hit(self, window, offset=1):
+        position = {"section": 0, "paragraph": 0, "scalarOffset": offset, "cellPath": []}
+        self.complete_step(window, hit={"position": position})
+        self.complete_step(window, outcome={"revision": 3, "selection": {
+            "anchor": window.drag_anchor, "focus": position}})
+
+    def test_drag_timer_bounds_scroll_and_waits_for_the_previous_hit_completion(self):
+        window = self.drag_window()
+        press = QMouseEvent(QEvent.Type.MouseButtonPress, QPointF(20, 20), QPointF(20, 20),
+                            Qt.MouseButton.LeftButton, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+        QApplication.sendEvent(window.canvas, press)
+        window.pump()
+        self.finish_drag_hit(window)
+        window.drag_to(QPointF(10000, 10000))
+        self.assertTrue(window.drag_timer.isActive())
+        pump(self.app, lambda: bool(window.scrolls), timeout=2)
+        self.assertEqual(window.scrolls, [(window.MAX_DRAG_SCROLL, window.MAX_DRAG_SCROLL)])
+        self.assertTrue(window.drag_hit_pending)
+        window.autoscroll_drag()
+        self.assertEqual(len(window.scrolls), 1)
+        window.pump()
+        request = window.worker.requests[-1]
+        self.assertEqual(request["op"], "hitTest")
+        self.assertTrue(0 <= request["x"] < window.canvas.width())
+        self.assertTrue(0 <= request["y"] < window.canvas.height())
+        window.stop_drag()
+        self.assertFalse(window.drag_timer.isActive())
+
+    def test_release_before_first_hit_keeps_the_anchor_and_stops_the_timer(self):
+        window = self.drag_window()
+        window.start_drag(QPointF(20, 20))
+        window.pump()
+        window.drag_to(QPointF(20, 10000))
+        window.autoscroll_drag()
+        self.assertFalse(window.scrolls)
+        release = QMouseEvent(QEvent.Type.MouseButtonRelease, QPointF(20, 10000), QPointF(20, 10000),
+                              Qt.MouseButton.LeftButton, Qt.MouseButton.NoButton, Qt.KeyboardModifier.NoModifier)
+        QApplication.sendEvent(window.canvas, release)
+        self.assertFalse(window.drag_timer.isActive())
+        self.finish_drag_hit(window, 1)
+        self.finish_drag_hit(window, 7)
+        self.assertEqual(window.info["selection"]["anchor"]["scalarOffset"], 1)
+        self.assertEqual(window.info["selection"]["focus"]["scalarOffset"], 7)
+        self.assertIsNone(window.drag_token)
+
+    def test_drag_backpressure_does_not_scroll_or_grow_the_native_action_queue(self):
+        window = self.drag_window()
+        window.start_drag(QPointF(20, 20))
+        window.pump()
+        self.finish_drag_hit(window)
+        for _ in range(window.MAX_DRAG_ACTIONS):
+            window.enqueue([lambda _: {"op": "info"}])
+        window.drag_to(QPointF(20, 10000))
+        for _ in range(10):
+            window.autoscroll_drag()
+        self.assertEqual(len(window.actions), window.MAX_DRAG_ACTIONS)
+        self.assertFalse(window.scrolls)
+        self.assertEqual(window.errors, [])
+
+    def test_drag_inside_viewport_retries_the_latest_hit_after_queue_backpressure(self):
+        window = self.drag_window()
+        window.start_drag(QPointF(20, 20))
+        window.pump()
+        self.finish_drag_hit(window)
+        for _ in range(window.MAX_DRAG_ACTIONS):
+            window.enqueue([lambda _: {"op": "info"}])
+        window.drag_to(QPointF(40, 50))
+        self.assertTrue(window.drag_timer.isActive())
+        window.pump()
+        for _ in range(window.MAX_DRAG_ACTIONS):
+            self.complete_step(window, info=dict(window.info))
+        window.autoscroll_drag()
+        window.pump()
+        self.assertEqual(window.worker.requests[-1], {"op": "hitTest", "page": 0, "x": 40, "y": 50,
+                                                     "target": window.target()})
+        self.assertFalse(window.scrolls)
+        self.assertFalse(window.drag_timer.isActive())
+
+    def test_popup_focus_and_close_request_stop_an_active_drag_timer(self):
+        for operation in ("focus", "close"):
+            with self.subTest(operation=operation):
+                window = self.drag_window()
+                window.start_drag(QPointF(20, 20))
+                window.pump()
+                self.finish_drag_hit(window)
+                window.drag_to(QPointF(20, 10000))
+                self.assertTrue(window.drag_timer.isActive())
+                if operation == "focus":
+                    window.canvas.focusOutEvent(QFocusEvent(QEvent.Type.FocusOut, Qt.FocusReason.PopupFocusReason))
+                else:
+                    window.close()
+                self.assertFalse(window.drag_timer.isActive())
+                self.assertIsNone(window.drag_token)
+
+    def test_stopped_drag_drops_queued_selection_and_document_changes_stop_its_timer(self):
+        window = self.drag_window()
+        window.start_drag(QPointF(20, 20))
+        window.pump()
+        window.drag_to(QPointF(20, 10000))
+        window.stop_drag()
+        self.complete_step(window, hit={"position": {"scalarOffset": 7}})
+        self.assertEqual([request["op"] for request in window.worker.requests], ["hitTest"])
+        self.assertFalse(window.drag_timer.isActive())
+        window.start_drag(QPointF(20, 20))
+        window.drag_to(QPointF(20, 10000))
+        self.assertTrue(window.drag_timer.isActive())
+        window.absorb({"info": {**window.info, "revision": 4}})
+        self.assertFalse(window.drag_timer.isActive())
+        self.assertIsNone(window.drag_token)
+
     def test_utf16_non_bmp_and_surrogate_rejection(self):
         self.assertEqual(utf16_length("가😀각"), 4)
         self.assertEqual(scalar_from_utf16("가😀각", 3), 2)
@@ -1114,6 +1355,12 @@ def actual_smoke(library, screenshot=None):
             QApplication.sendEvent(window.canvas, QInputMethodEvent(text, []))
             pump(app, lambda: idle() and window.preedit == text)
             assert window.info["compositionId"] is not None
+        window.document_actions["save"].trigger()
+        assert not window.saving and window.info["compositionId"] is not None
+        window.document_actions["undo"].trigger()
+        pump(app, lambda: idle() and not window.is_composing() and window.context.get("text") == "")
+        QApplication.sendEvent(window.canvas, QInputMethodEvent("각", []))
+        pump(app, lambda: idle() and window.preedit == "각")
         commit = QInputMethodEvent("", [])
         commit.setCommitString("각")
         QApplication.sendEvent(window.canvas, commit)
@@ -1122,9 +1369,9 @@ def actual_smoke(library, screenshot=None):
         for key, expected in ((Qt.Key.Key_Left, 0), (Qt.Key.Key_Right, 1)):
             QApplication.sendEvent(window.canvas, QKeyEvent(QEvent.Type.KeyPress, key, Qt.KeyboardModifier.NoModifier))
             pump(app, lambda: idle() and window.info["selection"]["focus"]["scalarOffset"] == expected)
-        window.command("undo")
+        window.document_actions["undo"].trigger()
         pump(app, lambda: idle() and window.context.get("text") == "")
-        window.command("redo")
+        window.document_actions["redo"].trigger()
         pump(app, lambda: idle() and window.context.get("text") == "각")
         window.command("pasteText", text="\n".join(f"페이지 {index}" for index in range(110)))
         pump(app, lambda: idle() and window.info.get("pageCount", 0) > 1
@@ -1133,6 +1380,17 @@ def actual_smoke(library, screenshot=None):
         assert 0 <= caret.top() < caret.bottom() <= window.canvas.height(), (
             "off-screen caret after multi-page paste", caret, window.state)
         assert window.state["scroll"]["y"] > 0
+        drag_start = window.drag_hit_point(QPointF(window.canvas.width() / 2, window.canvas.height() / 2))
+        assert drag_start is not None
+        window.start_drag(drag_start)
+        pump(app, lambda: idle() and window.drag_anchor is not None and not window.drag_hit_pending)
+        before_scroll = window.state["scroll"]["y"]
+        window.drag_to(QPointF(drag_start.x(), -80))
+        pump(app, lambda: window.state["scroll"]["y"] < before_scroll
+             and window.info["selection"]["anchor"] != window.info["selection"]["focus"])
+        window.end_drag(QPointF(drag_start.x(), 0))
+        pump(app, lambda: idle() and window.drag_token is None)
+        assert not window.drag_timer.isActive()
         window.command("undo")
         pump(app, lambda: idle() and window.context.get("text") == "각"
              and window.info.get("pageCount") == 1 and len(window.pages) == 1 and bool(window.frames))
@@ -1217,7 +1475,7 @@ def actual_smoke(library, screenshot=None):
             window.new_document()
             pump(app, lambda: window.info["documentId"] != document_id and idle() and bool(window.frames))
             assert window.source_path is None and window.context["text"] == ""
-        print('{"ok":true,"qtOffscreen":true,"nativeRender":true,"syntheticKoreanIME":true,"clipboard":true,"multiPage":true,"caretVisible":true,"saveReopen":true,"dirtyCloseCancel":true,"saveEditRacePreserved":true,"newDocumentDiscard":true,"externalConflictPreserved":true,"osIMEVerified":false,"tiledViewport":true,"clientTileReuse":true,"renderCancellation":true}')
+        print('{"ok":true,"qtOffscreen":true,"nativeRender":true,"syntheticKoreanIME":true,"clipboard":true,"multiPage":true,"caretVisible":true,"saveReopen":true,"dirtyCloseCancel":true,"saveEditRacePreserved":true,"newDocumentDiscard":true,"externalConflictPreserved":true,"osIMEVerified":false,"tiledViewport":true,"clientTileReuse":true,"renderCancellation":true,"compositionUndo":true,"standardActions":true,"dragAutoscroll":true}')
     finally:
         pump(app, lambda: not window.io_jobs)
         window.confirm_unsaved_changes = lambda: "discard"
