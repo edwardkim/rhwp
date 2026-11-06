@@ -188,7 +188,8 @@ class NativeEditorController extends ChangeNotifier {
         'maxTextBytes': 32768,
         'maxDepth': 4,
         'maxGeometryQueries': 0,
-        'maxSelectionRects': 0,
+        // Native ABI 1 requires a positive cap even with geometry disabled.
+        'maxSelectionRects': 1,
       },
     });
     final snapshot = Map<String, Object?>.from(a['snapshot']! as Map);

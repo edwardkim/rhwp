@@ -78,6 +78,17 @@ class ViewTransport extends FakeTransport {
       case 'selectionRects':
         result.addAll({'kind': 'selectionRects', 'rects': const []});
       case 'accessibility':
+        final options = command['request']! as Map;
+        final selectionLimit = options['maxSelectionRects']! as int;
+        // Native ABI 1 validates this positive cap even for geometry:false.
+        if (selectionLimit < 1 || selectionLimit > 256) {
+          result.addAll({
+            'ok': false,
+            'code': 'limitExceeded',
+            'error': 'accessibility selection rectangle budget is invalid',
+          });
+          break;
+        }
         result.addAll({
           'kind': 'accessibility',
           'snapshot': {
@@ -128,6 +139,30 @@ class ViewTransport extends FakeTransport {
 }
 
 void main() {
+  test(
+    'editor requests a valid bounded text-only accessibility snapshot',
+    () async {
+      final transport = ViewTransport();
+      final document = await NativeDocument.connect(transport);
+      addTearDown(document.dispose);
+      await document.newDocument();
+      final editor = NativeEditorController(document);
+      addTearDown(editor.dispose);
+      await editor.initialize();
+      final queries = transport.requests.where(
+        (request) => request['op'] == 'accessibility',
+      );
+      expect(queries, isNotEmpty);
+      for (final query in queries) {
+        final options = query['request']! as Map;
+        expect(options['geometry'], isFalse);
+        expect(options['maxGeometryQueries'], 0);
+        expect(options['maxSelectionRects'], inInclusiveRange(1, 256));
+      }
+      expect(editor.ready, isTrue);
+      expect(editor.semantics, isNotNull);
+    },
+  );
   testWidgets(
     'custom raster viewport receives the transform used for native hit testing',
     (tester) async {
