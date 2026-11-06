@@ -1,0 +1,289 @@
+{
+  "source_parent": "708256f1baad28721ab173a2c519ec41ed256c46",
+  "production_diff_sha256": "a9ef1986a002ba49bd5615f32f1b4577ba969c6efc6e6e9daee599ef020b0042",
+  "source_files": {
+    "src/renderer/composer/line_breaking.rs": "e311aa846fe6cdccc79e8bc96b916c0f3a3a4fad2645ca2d89d15ae933f44430"
+  },
+  "measurement_date": "2026-11-06",
+  "method": "현행 Visual Sweep / PDFium / 192DPI / 2024 compat / 색상 경계 보정 전2px raw",
+  "results": [
+    {
+      "backend": "native",
+      "pages": 197,
+      "minimum_raw": 94.83034,
+      "below98": [
+        {
+          "page": 21,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 95.85474,
+          "silhouette_raw_unmatched_pixels": 3953,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 95362,
+          "tolerant_content_match_percent": 95.85474
+        },
+        {
+          "page": 44,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.84052,
+          "silhouette_raw_unmatched_pixels": 1480,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 68535,
+          "tolerant_content_match_percent": 97.84052
+        },
+        {
+          "page": 120,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 95.84016,
+          "silhouette_raw_unmatched_pixels": 3604,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 86638,
+          "tolerant_content_match_percent": 95.84016
+        },
+        {
+          "page": 129,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 94.83034,
+          "silhouette_raw_unmatched_pixels": 3914,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 75711,
+          "tolerant_content_match_percent": 94.83034
+        },
+        {
+          "page": 130,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 95.95341,
+          "silhouette_raw_unmatched_pixels": 2675,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 66105,
+          "tolerant_content_match_percent": 95.95341
+        }
+      ],
+      "qualified_pages": [
+        {
+          "page": 30,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 81311,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 189,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.98891,
+          "silhouette_raw_unmatched_pixels": 11,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 99193,
+          "tolerant_content_match_percent": 99.98891
+        }
+      ],
+      "input": {
+        "path": "mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/saved-split-1x2.hwp",
+        "sha256": "4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9"
+      },
+      "pdf": {
+        "path": "pdf/issue4138-ascii-split-20261016-2024.pdf",
+        "sha256": "5a82290de1571c692c7246fe6b57ae136602ae52c2068f2568fffc6c91bfd571"
+      },
+      "native_binary_sha256": "b7369f1d9797847de1ecc9d885a551b039fb8fc9a8832aaf55e388fdc32387ea",
+      "wasm_sha256": null
+    },
+    {
+      "backend": "wasm",
+      "pages": 197,
+      "minimum_raw": 94.9857,
+      "below98": [
+        {
+          "page": 21,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 95.83624,
+          "silhouette_raw_unmatched_pixels": 3993,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 95899,
+          "tolerant_content_match_percent": 95.83624
+        },
+        {
+          "page": 44,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.89153,
+          "silhouette_raw_unmatched_pixels": 1459,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 69197,
+          "tolerant_content_match_percent": 97.89153
+        },
+        {
+          "page": 120,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 95.90529,
+          "silhouette_raw_unmatched_pixels": 3616,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 88309,
+          "tolerant_content_match_percent": 95.90529
+        },
+        {
+          "page": 129,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 94.9857,
+          "silhouette_raw_unmatched_pixels": 3945,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 78675,
+          "tolerant_content_match_percent": 94.9857
+        },
+        {
+          "page": 130,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 95.90371,
+          "silhouette_raw_unmatched_pixels": 2811,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 68623,
+          "tolerant_content_match_percent": 95.90371
+        }
+      ],
+      "qualified_pages": [
+        {
+          "page": 30,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 82999,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 189,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9901,
+          "silhouette_raw_unmatched_pixels": 10,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 100978,
+          "tolerant_content_match_percent": 99.9901
+        }
+      ],
+      "input": {
+        "path": "mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/saved-split-1x2.hwp",
+        "sha256": "4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9"
+      },
+      "pdf": {
+        "path": "pdf/issue4138-ascii-split-20261016-2024.pdf",
+        "sha256": "5a82290de1571c692c7246fe6b57ae136602ae52c2068f2568fffc6c91bfd571"
+      },
+      "native_binary_sha256": "b7369f1d9797847de1ecc9d885a551b039fb8fc9a8832aaf55e388fdc32387ea",
+      "wasm_sha256": "5c87cf0372e709b392e8a78ba3c1bed094b9b34a78a15468aee3fcde2c7f7ebd"
+    }
+  ],
+  "fixed_coordinate_red_green": [
+    {
+      "stage": "before",
+      "compile_exit": 0,
+      "test_exit": 101
+    },
+    {
+      "stage": "after",
+      "compile_exit": 0,
+      "test_exit": 0
+    }
+  ],
+  "font_supply": {
+    "family": "RHWP Hancom Legacy Equation",
+    "font_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+    "independent_input_sha256": "043bd13726665c0ffdc56dbb67af0ddf0a1ce1cd7143d354b91b2b538a94641d",
+    "independent_pdf_sha256": "fac168772daf90528ec97da6a4760ea009a4635ee2f9cc0b64c29d3356132797",
+    "job": "9a0ef340-fe76-4ebc-b090-a6d6544c008a",
+    "target_type3_programs": 39,
+    "equal_programs": 37,
+    "unequal_codepoints": [
+      "U+22C5",
+      "U+0020"
+    ],
+    "distribution": "내부 검증용 로컬 공급. 글꼴 바이너리·추출 프로그램·윤곽 배열은 커밋하지 않음."
+  },
+  "formal_test_results": [
+    {
+      "stage": "before",
+      "name": "issue_4138_print_closing_positions",
+      "exit_code": 101,
+      "summary": [
+        "test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.73s"
+      ]
+    },
+    {
+      "stage": "before",
+      "name": "issue_4138_punctuation_line_ownership",
+      "exit_code": 101,
+      "summary": [
+        "test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.69s"
+      ]
+    },
+    {
+      "stage": "after",
+      "name": "issue_4138_print_closing_positions",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s"
+      ]
+    },
+    {
+      "stage": "after",
+      "name": "issue_4138_punctuation_line_ownership",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.69s"
+      ]
+    },
+    {
+      "stage": "after",
+      "name": "issue_4138_reparsed_split_frame_cache",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.71s"
+      ]
+    },
+    {
+      "stage": "after",
+      "name": "issue_4138_numeric_closing_units",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.59s"
+      ]
+    },
+    {
+      "stage": "after",
+      "name": "issue_4138_print_temperature_position",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.61s"
+      ]
+    },
+    {
+      "stage": "after",
+      "name": "issue_5587_overwide_nested_table_clip",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s"
+      ]
+    },
+    {
+      "stage": "after",
+      "name": "issue_6861_nested_table_clip_reserved",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s"
+      ]
+    }
+  ]
+}

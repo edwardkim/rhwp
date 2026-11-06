@@ -203,6 +203,9 @@ pub(crate) fn is_line_start_forbidden(ch: char) -> bool {
             | '\u{3001}'
             | '\u{3002}'
             | '\u{2026}'
+            // ONE DOT LEADER도 앞 글자와 줄을 함께 소유한다. UAX #14 IN/LB22와
+            // 독립 한컴 Print의 `흡|기․냉각수`처럼 점만 다음 줄 머리로 보내지 않는다.
+            | '\u{2024}'
             | '\u{00B7}'
             // ‧ HYPHENATION POINT — 한컴 저장 조판 실측: 줄머리 0건 · 줄끝 2건.
             // `·`(U+00B7)는 이미 있는데 이것만 빠져 있어 줄 머리로 내려갔다.
@@ -672,8 +675,8 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
         }
         let numeric_closer =
             korean_break_unit == 1 && ch.is_ascii_digit() && i < numeric_closer_end;
-        if is_hangul(ch) || numeric_closer {
-            if korean_break_unit == 0 {
+        if is_hangul(ch) || is_cjk_ideograph(ch) || numeric_closer {
+            if korean_break_unit == 0 && is_hangul(ch) {
                 // 어절 모드: 연속 한글 + 후행 금칙 문자를 하나의 토큰으로
                 let start = i;
                 let mut max_fs = 0.0f64;
@@ -784,7 +787,8 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
                 }
                 continue;
             } else {
-                // 글자 모드: 한글 개별 분할
+                // 글자 모드: 한글·CJK의 한 글자와 뒤따르는 줄머리 금칙을 함께 소유한다.
+                // CJK도 독립 Print의 `滴下|物)`처럼 닫는 괄호를 앞 글자와 묶는다.
                 let utf16_pos = if i < char_offsets.len() {
                     char_offsets[i]
                 } else {
@@ -989,34 +993,6 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
                 i += 1;
                 continue;
             }
-        }
-
-        // CJK 한자/일본어: 항상 개별 토큰
-        if is_cjk_ideograph(ch) {
-            let utf16_pos = if i < char_offsets.len() {
-                char_offsets[i]
-            } else {
-                i as u32
-            };
-            let style_id = find_active_char_shape(char_shapes, utf16_pos);
-            current_lang = detect_lang_category(ch);
-            let ts = metric_scope.try_style(styles, style_id, current_lang, i, storage)?;
-            let fs = token_line_font_size(styles, style_id);
-            let w = reflow_scalar_width(ch, &ts) + inline_width_px_at(inline_controls, i, styles);
-            storage.push(
-                &mut tokens,
-                BreakToken::Text {
-                    start_idx: i,
-                    end_idx: i + 1,
-                    base_width: w,
-                    width: w,
-                    max_font_size: fs,
-                    base_char_widths: vec![],
-                    char_widths: vec![],
-                },
-            )?;
-            i += 1;
-            continue;
         }
 
         // 기타 문자 (기호, NonBreakingSpace 등): 개별 Text 토큰
