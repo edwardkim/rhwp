@@ -54,7 +54,12 @@ class FileStamp:
 
 
 def read_document(path):
-    """Read one bounded regular file; reject symlinks and detectable mid-read edits."""
+    """Return bytes and their observed FileStamp from one bounded regular file.
+
+    Keep this pair together when opening a worker-owned document: a later stat
+    must not attach newer source metadata to older bytes. Symlinks and detectable
+    mid-read edits are rejected.
+    """
     path = Path(path)
     before = path.lstat()
     if not stat.S_ISREG(before.st_mode):
@@ -146,6 +151,28 @@ def _save_format(path):
     return extension[1:]
 
 
+def publish_document(path, data, expected=None):
+    """Publish bounded bytes and return the stamp of those exact stored bytes.
+
+    ``expected=None`` means exclusive new-file publication. Replacing an existing
+    file requires the stamp observed when its bytes were read with
+    :func:`read_document`. The caller serializes publications and acknowledges
+    its native save token only after this function succeeds.
+    """
+    if len(data) > MAX_BYTES:
+        raise ValueError("serialized document exceeds the host file byte limit")
+    _write_staged(path, data, expected)
+    try:
+        _, observed = read_document(path)
+        if observed.digest != hashlib.sha256(data).hexdigest():
+            raise ExternalFileChanged("destination changed after file publication")
+        return observed
+    except Exception as error:
+        # Publication already completed; preserve the destination on every
+        # verification/finalization failure, just as on a directory fsync error.
+        raise PublicationError(path) from error
+
+
 class NativeFileStore:
     """Same-thread adapter; the application owns its session and destination paths."""
 
@@ -180,11 +207,8 @@ class NativeFileStore:
             report = prepared["report"]
             if report.get("count", 0) and not accept_loss:
                 raise ContentLossNeedsAcceptance(report)
-            _write_staged(path, data, expected)
+            observed = publish_document(path, data, expected)
             committed = True
-            _, observed = read_document(path)
-            if observed.digest != hashlib.sha256(data).hexdigest():
-                raise ExternalFileChanged("destination changed after file publication")
             self.source_path, self.source_stamp = path, observed
             status = self.host.request(self.handle, op="acknowledgeSave", token=prepared["token"])
             return {"path": str(path), "revision": prepared["revision"],
