@@ -82,3 +82,8 @@
 - 대표 이미지 안정 경로: `mydocs/pr/assets/semanticist21_20261105/validation-r6/png/pr8629/<backend>/<key>/<review 또는 overlay>_NNN.png`. 같은 PR의 추가 완료 페이지는 [패널 목록](assets/semanticist21_20261105/validation-r6/panels.md)을 따른다.
 - URL은 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/` 뒤에 위 실제 경로를 붙인다. devel 포함 확인 후 `--body-file` 게시·API 재조회한다.
 - 문서 비교는 [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 따른다. 원 PR·관련 이슈 close는 같은 해결 범위의 완료와 포함 관계를 확인한 뒤 처리한다.
+
+## 관련 이슈의 후속 처리
+
+- [Issue #8628](https://github.com/edwardkim/rhwp/issues/8628): 원고지 칸 배치·저장 줄 없는 재조판·편집/분할·격자 속성 HWPX 왕복과 공개 API를 검증한다.
+- 현재는 Open이며, 통합 PR의 실제 CI·merge와 devel 포함을 확인한 뒤 같은 증거를 연결해 완료 처리한다. PR 번호와 이슈 번호를 구분한다.

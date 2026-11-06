@@ -62,10 +62,13 @@ input_preprocess=scripts_disabled다. 두 입력의 Scripts는 같은 빈 기본
 실제 WASM export와 두 public 선언 파일 각각 631개 export의 존재·인수 수 검사 PASS,
 생성 타입 소비 Node 10건 PASS.
 
-전체 Node 2,723 PASS·실패/취소/skip 0의 이전 실행을 재사용했다.
-해당 실행 뒤 Studio/editor/shared/scripts 변화는 같은 선언 행의 순서만 바뀐 public 타입 두 개이며
-JS glue SHA도 같다. 현재 ABI·소비·실제 API·브라우저를 다시 실행했다.
-이전 2,723건을 현재 source에서 새로 실행한 것으로 표현하지 않는다.
+최종 Studio 소스 `5feccb130e`의 전체 Node는 새 실제 실행으로 2,744건 PASS·실패/취소/skip 0이다.
+기존 2,723건 재사용 기록은 과거 R6 단계의 판단이며 현재 완료 근거로 대신하지 않는다.
+TypeScript·Vite production build도 새 실행에서 exit 0이다.
+실제 겹침·덧말 Canvas2D와 CanvasKit compatibility/default의 screen/print 12캡처,
+웹폰트 브라우저 7시나리오, 최소 글꼴 실제 PageRenderer 관계 검사도 각각 exit 0이다.
+[같은 두 원본 1쪽의 최종 Studio raw 100.00%·review·overlay](../studio-symbol/README.md),
+[공통 글꼴 소비 보정·설치 글꼴과 무관한 회귀](../canvas-symbol-fallback-analysis.md)를 연결한다.
 
 ## 집중 회귀와 전체 검증의 구분
 
@@ -73,14 +76,11 @@ JS glue SHA도 같다. 현재 ABI·소비·실제 API·브라우저를 다시 �
 정식 원본·0 거리 대조·독립 원점 등 기존 3+신규 5의 총 8건 PASS, exit 0.
 Mac 네 원본의 전체 1쪽·내용 계약을 보완한 관련 6건 PASS, exit 0.
 모든 회귀 실행에서 bwrap으로 저장소 공개 글꼴 5개만 실제 노출했다.
-이전 R5 전체 12,735 PASS·45 ignored는 이전 제품 결과이며 R6 전체 실행의 완료가 아니다.
-최종 코드의 공식 편람·R6 전체 Rust·lint·Native Skia·release·doctest는 완료 뒤 별도로 확정한다.
-
-### 전체 Node 재사용의 실제 식별자
-
-- 이전 실제 전체 Node 로그 SHA-256 `0c2e9eb2cf0f3f95f29b8b462bff7cf95b53cae7f9a973d75de701bd90da2ff1`.
-- 비교한 이전 frontend source SHA `af0505ce2b863f4712ab1da3a101c35cee71ca30`.
-- 해당 source 이후 현재 frontend·테스트·npm/editor·shared·scripts의 변화는 public 선언 두 개다.
-- `rhwp-studio/public/rhwp.d.ts`: 실제 SHA-256 `3b13b78ffee6847681d4d9a8ba4acd5359d9c22dbec1eafdcb4c8541f2a5340c`, 같은 선언 행이며 순서만 다름.
-- `rhwp-studio/public/rhwp_bg.wasm.d.ts`: 실제 SHA-256 `fb02e9d0706c033df6dbce1699d2ae065f9f50bbeff128d966be3ebef9a294c5`, 같은 선언 행이며 순서만 다름.
-- JS glue SHA-256 `2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138`.
+최소 공개 시스템 글꼴 5개에서 R6 현재 제품의 전체 실제 목록을 대조했다.
+55 binaries, 발견 12,785건 중 eligible 12,740건 PASS·기존 ignored 45건,
+미실행·예상 밖 이름·중복 0건이다. 수정하지 않은 0.5초 성능 검사는 조용한 환경에서 먼저 1건
+실행하고, 그 정확한 보집합 12,739건을 이어 실행해 모두 실제 exit 0을 확인했다.
+이전 R5 전체 12,735건을 새 실행으로 재표기하지 않았다.
+Rust 생산 코드 불변·추가 test 변경은 주석뿐인 조건으로 이후 Studio 보정 단계에서도 재사용한다.
+공식 편람 383쪽은 min 99.96%·공개 기준 하락 0·exit 0을 확인했다.
+남은 Cargo lint·Native Skia·release·doctest는 최종 검증 요약에서 실제 종료 뒤 확정한다.

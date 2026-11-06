@@ -3,7 +3,7 @@
 // 실제 Studio 측정: 2026-11-06 09:35:39 KST, 각 1쪽, 96 DPI·Print·색상 경계 보정 전 2px raw. 직접 exporter와 실제 Studio 결과는 근거 문서에서 구분한다.
 // 2026-11-06 KST: PR #8616 HWPX 두 원본 각 1쪽 Native/fresh WASM raw 100.00% (96 DPI).
 // 근거: mydocs/pr/assets/semanticist21_20261105/canvas-symbol-fallback-analysis.md.
-// 특정 시스템 글꼴·픽셀 좌표에 의존하지 않으며 기존 공개 웹 글꼴 공급을 실제로 소비한다.
+// 특정 설치 글꼴·픽셀 좌표에 의존하지 않으며 실제 PageRenderer의 글꼴 후보 소비를 검사한다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';

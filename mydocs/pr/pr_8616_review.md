@@ -130,3 +130,8 @@ screen/print 12캡처에서 검정 모양과 원래 파란 덧말을 함께 확�
 [원인·관계형 회귀·라이선스 분석](assets/semanticist21_20261105/canvas-symbol-fallback-analysis.md),
 [같은 두 원본 1쪽의 실제 Studio review·overlay·TSV](assets/semanticist21_20261105/studio-symbol/README.md)를 연결한다.
 Canvas2D raw는 겹침·덧말 모두 100.00000%이며 직접 WASM exporter 100.00%와 구분한다.
+
+## 관련 이슈의 후속 처리
+
+- [Issue #8019](https://github.com/edwardkim/rhwp/issues/8019): Ruby·CharOverlap 삽입/읽기/속성 편집과 ByPath·14모양·덧말 실제 출력을 검증한다.
+- 현재는 Open이며, 통합 PR의 실제 CI·merge와 devel 포함을 확인한 뒤 같은 증거를 연결해 완료 처리한다. PR 번호와 이슈 번호를 구분한다.

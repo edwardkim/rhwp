@@ -45,6 +45,21 @@ PNG pair에는 정본 run_manifest가 없으므로 전체 exporter metadata의 �
 90% 또는 100% raw를 RGB 완전 동일·내용 전수 동일로 표현하지 않는다.
 PR #8564의 동적 파일명 재평가 차이는 직접 판독과 API 기록에 명시한다.
 
-최종 코드의 공식 Native 편람 383쪽 gate와 R6 전체 Rust·lint·Skia·release·doctest는
-실제 종료 뒤 최종 검증 기록에서 확정한다. 후보 시각 수치 완료를 해당 필수 검증 완료로 대신하지 않는다.
+공식 Native 편람 383쪽 gate는 실제 exit 0·최저 99.96%·공개 기준 하락 0으로 완료했다.
+최소 공개 글꼴 5개에서 전체 Rust 12,740건 PASS·기존 ignored 45건, 실제 목록 누락·중복 0을 확인했다.
+후속 Studio 보정 `5feccb130e`는 Rust 생산 코드·Native/WASM bytes와 직접 exporter를 바꾸지 않는다.
+전체 Node 2,744건·production build·실제 Studio 12캡처는 새 소스에서 다시 통과했다.
+[실제 실행과 재사용 경계](runtime-checks.md)를 연결하며, 남은 Cargo 게이트는 완료 뒤 최종 기록에서 확정한다.
+
+## 보호 PR #8389·#8397
+
+[현재 Native/fresh WASM 전쪽 TSV 34개·전체 대조](protected/README.md)를 함께 제출한다.
+각 backend 17개 고유 문서 1770쪽, 공개 기준의 중복 보호 행을 포함한 2153행을 대조해
+표시값 하락·누락·오류 0이다. 상승은 허용하고 소수 셋째 자리에서 반올림한 표시값을 비교했다.
+
+## 실제 Studio의 추가 확대 판독
+
+[PR #8616 같은 두 원본 1쪽의 최종 review·overlay·TSV와 실제 backend 화면](../studio-symbol/README.md)을 연결한다.
+직접 exporter의 결과를 Studio 화면으로 재표기하지 않았다. 자동 컬러 이모지와 반각 크기 차이를
+기존 전각 공급·공통 후보 병합에서 보정했고 실제 Canvas2D도 두 원본 모두 raw 100.00%를 확인했다.
 원시 실행 로그·metric/run JSON은 output의 로컬 검증 자료이며 제출하지 않는다.
