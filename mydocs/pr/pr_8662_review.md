@@ -65,3 +65,20 @@ Native Skia 공식 3종(라이브러리 4,040건 및 통합 24건)과 이번 PR�
 승격하지 않는 반례를 함께 확인했다. 원본 언어 슬롯의 표시 family 공유 반례 1건도 정식 Cargo 경로에서 통과했다.
 이 7건의 집중 검사는 전체 Cargo 회귀·lint·fresh WASM을 대신하지 않는다.
 2022 Print 대조군은 그 출력의 실제 Haansoft Batang 대체 환경과 구분해 검사한다.
+
+## 원 주장 페이지의 Native·fresh WASM 직접 대조
+
+저장 줄 없는 TAC 표·변경 추적 0x08·넘친 공백의 주장을 서로 다른 입력으로 확인했다.
+아래 R11 제품 source `048f44da99d83e186f3a9e139563d20545c8bdb4`의 전쪽 TSV와
+각 1쪽 review·overlay를 직접 판독했다. 최종 보정 head의 전쪽 검증과 구분한다.
+
+| 입력·기준 | Native / fresh WASM | 실제 판독 내용 | 동일 입력의 전쪽 TSV·PNG·해시 |
+| --- | --- | --- | --- |
+| `sign-board-2020` 전1쪽 | 100.00% / 100.00% | 의무설치기한 3행과 관리카드·설치 표의 행 경계 보존. 원본 서울서체, 2022 대체 조건과 구분 | [Native](assets/planet6897_20261106/pr8662/r11/sign-board-2020/native.tsv) · [WASM](assets/planet6897_20261106/pr8662/r11/sign-board-2020/wasm.tsv) · [review](assets/planet6897_20261106/pr8662/r11/sign-board-2020/wasm-review-001.png) · [overlay](assets/planet6897_20261106/pr8662/r11/sign-board-2020/wasm-overlay-001.png) · [근거](assets/planet6897_20261106/pr8662/r11/sign-board-2020/provenance.json) |
+| `policy-track2020` 전1쪽 | 99.91% / 99.71% | 변경 추적 0x08이 있는 정책연구 신청서의 제목·기간·예산·체크·뒤 활용방안 행 보존 | [Native](assets/planet6897_20261106/pr8662/r11/policy-track2020/native.tsv) · [WASM](assets/planet6897_20261106/pr8662/r11/policy-track2020/wasm.tsv) · [review](assets/planet6897_20261106/pr8662/r11/policy-track2020/wasm-review-001.png) · [overlay](assets/planet6897_20261106/pr8662/r11/policy-track2020/wasm-overlay-001.png) · [근거](assets/planet6897_20261106/pr8662/r11/policy-track2020/provenance.json) |
+| `policy-track2024` 전1쪽 | 99.99% / 99.74% | 같은 신청서의 2024 Print와 표 행 높이·뒤 안내문 소속 대조 | [Native](assets/planet6897_20261106/pr8662/r11/policy-track2024/native.tsv) · [WASM](assets/planet6897_20261106/pr8662/r11/policy-track2024/wasm.tsv) · [review](assets/planet6897_20261106/pr8662/r11/policy-track2024/wasm-review-001.png) · [overlay](assets/planet6897_20261106/pr8662/r11/policy-track2024/wasm-overlay-001.png) · [근거](assets/planet6897_20261106/pr8662/r11/policy-track2024/provenance.json) |
+| `policy-flags0` 전1쪽 | 97.75% / 97.54% | 추적 플래그 0 대조군도 같은 신청서의 줄·표 행 순서 보존 | [Native](assets/planet6897_20261106/pr8662/r11/policy-flags0/native.tsv) · [WASM](assets/planet6897_20261106/pr8662/r11/policy-flags0/wasm.tsv) · [review](assets/planet6897_20261106/pr8662/r11/policy-flags0/wasm-review-001.png) · [overlay](assets/planet6897_20261106/pr8662/r11/policy-flags0/wasm-overlay-001.png) · [근거](assets/planet6897_20261106/pr8662/r11/policy-flags0/provenance.json) |
+| `overflow-space-2020` 전1쪽 | 100.00% / 100.00% | 넘친 줄 끝 공백이 다음 내용의 줄바꿈·순서·후속 단락을 밀거나 잃지 않음 | [Native](assets/planet6897_20261106/pr8662/r11/overflow-space-2020/native.tsv) · [WASM](assets/planet6897_20261106/pr8662/r11/overflow-space-2020/wasm.tsv) · [review](assets/planet6897_20261106/pr8662/r11/overflow-space-2020/wasm-review-001.png) · [overlay](assets/planet6897_20261106/pr8662/r11/overflow-space-2020/wasm-overlay-001.png) · [근거](assets/planet6897_20261106/pr8662/r11/overflow-space-2020/provenance.json) |
+| `overflow-space-2024` 전1쪽 | 100.00% / 100.00% | 2024 Print에서도 같은 줄 끝 공백·후속 단락 계약 유지 | [Native](assets/planet6897_20261106/pr8662/r11/overflow-space-2024/native.tsv) · [WASM](assets/planet6897_20261106/pr8662/r11/overflow-space-2024/wasm.tsv) · [review](assets/planet6897_20261106/pr8662/r11/overflow-space-2024/wasm-review-001.png) · [overlay](assets/planet6897_20261106/pr8662/r11/overflow-space-2024/wasm-overlay-001.png) · [근거](assets/planet6897_20261106/pr8662/r11/overflow-space-2024/provenance.json) |
+
+정책연구 신청서의 글자 획과 마지막 활용방안 줄에 남은 미세 글꼴 차이를 픽셀 동일로 주장하지 않는다. 표 경계·줄바꿈·내용 누락과 겹침은 관측하지 않았다. 2022 표지판의 실제 Haansoft Batang 조건은 위 별도 증거를 재사용한다.
