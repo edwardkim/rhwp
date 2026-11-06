@@ -5066,21 +5066,13 @@ impl LayoutEngine {
                                                         // 투영된 첫 행 유닛은 이 위쪽 바깥 띠를
                                                         // 이미 예약한다. 이어받는 하위 표의 커서는
                                                         // 그 띠를 다시 예약하지 않는다.
-                                                        ((recursive_cut.start_row == 0
-                                                            && recursive_cut
-                                                                .start_cut
-                                                                .iter()
-                                                                .all(|cut| *cut == 0))
-                                                            || (!nested_table.common.treat_as_char
-                                                                && recursive_cut.start_row > 0))
-                                                        .then(|| {
-                                                            nested_y
-                                                                + hwpunit_to_px(
-                                                                    nested_table.outer_margin_top
-                                                                        as i32,
-                                                                    self.dpi,
-                                                                )
-                                                        })
+                                                        (recursive_cut.start_row == 0
+                                                            && recursive_cut.start_cut.iter().all(|cut| *cut == 0))
+                                                        .then(|| nested_y + hwpunit_to_px(
+                                                            nested_table.outer_margin_top as i32, self.dpi))
+                                                        .or_else(|| self.nested_row_continuation_outer_top(
+                                                            nested_table, recursive_cut,
+                                                        ).map(|top| nested_y + top))
                                                     }));
                                         let plain_source_height = recursive_cut
                                             .end_row

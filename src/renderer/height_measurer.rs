@@ -7,7 +7,8 @@ mod reflow_cell_frames;
 mod rowspan_block;
 mod table_wrapper;
 pub(crate) use table_wrapper::{
-    sole_nested_table_in_paragraph, unrestricted_wrapper_frame, whole_table_frame_height,
+    sole_nested_table_in_paragraph, unrestricted_wrapper_frame,
+    unstored_tac_wrapper_shares_anchor_line, whole_table_frame_height,
     wrapper_owns_paint_or_horizontal_frame, TableWrapperVerticalFrame,
 };
 

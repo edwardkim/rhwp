@@ -1,5 +1,5 @@
-//! #7728: 계속 표의 열 프레임과 독립 Print의 셀 괘선 끝점을 보호한다.
-//! 주석 갱신: 2026-11-06T17:23:42+09:00.
+//! 관계형·고정형: #7728 계속 표의 열 프레임과 독립 Print의 셀 괘선 끝점을 보호한다.
+//! 주석 갱신: 2026-11-06T17:52:38+09:00.
 //! 검사 분류: `continuation_column_frames_keep_opening_span_and_row_edges`와
 //! `continued_parent_border_contains_owned_nested_frames`,
 //! `sibling_nested_source_frames_close_on_the_parent_row_boundary`는 관계형이다.
@@ -7,11 +7,17 @@
 //! 검사 분류: `independent_print_page6_keeps_the_enclosing_bottom_border`와
 //! `independent_print_page10_keeps_all_grid_edges`는 고정형(독립 PDF ±2 CSSpx)이다.
 //! 6쪽 고정형 근거: 코드9274604528 N99.97875% / fresh WASM99.97413%, 전18쪽 및 직접 판독.
-//! 12쪽 새 관계형은 보정 전 실제 FAIL → 후보 Native PASS, 새 WASM 수용은 아직 미완료다.
+//! 12쪽 정렬 관계는 실제 FAIL → PASS이며 최종 N99.83837% / W99.83778%다.
+//! 검사 분류: `closed_tac_wrapper_paints_the_outer_top_reserved_by_its_source_frame`와
+//! `atomic_child_continuation_keeps_its_source_outer_top_margin`는 관계형(원본 프레임/여백 계약)이다.
+//! 최신 공통 보정: 전18쪽 N최저98.83905% / fresh WASM최저98.83565%, 누락0.
+//! 최신6쪽 N99.58584% / W99.26284%,7쪽99.70863/99.71627%,9쪽98.83905/98.87584%.
+//! 6쪽·10쪽만 독립 PDF의 ±2px 좌표를 고정하며 나머지는 소속·포함·정렬·원본 여백 관계다.
+//! 최신 증적: mydocs/pr/assets/issue7728/phase10-all-pages-98-20261106/README.md.
 //! 원본 70833 HWP와 독립 한컴2020 Print PDF, compat2022,96DPI/PDFium/2px raw.
 //! 코드04f03cfa 전18쪽 Native 최저94.62153%, fresh WASM 최저94.27517%, 미달·누락0.
-//! 새 포함 관계 검사는 HEAD429에서 실제 FAIL → 보정 후보 PASS. 새 후보 전체98% 수용은 미완료다.
-//! 관계형 대상6쪽 N/W94.62153/94.82126%,7쪽94.79966/94.27517%: 절대 좌표를 고정하지 않는다.
+//! 포함 관계 검사는 HEAD429에서 실제 FAIL → 후보 PASS이며, 아래 phase6 수치는 보정 전 이력이다.
+//! phase6 당시 관계형 대상6쪽 N/W94.62153/94.82126%,7쪽94.79966/94.27517%였다.
 //! 고정형 대상10쪽 N/W99.57724/99.47384%: 독립 벡터 선 중심·직접 판독 후 ±2px를 쓴다.
 //! 셀 간격·병합을 포함한 선언 폭을 그대로 paint 폭으로 간주하지 않고 시작·계속 조각의 같은 열 소유를 검사한다.
 //! 증적: mydocs/pr/assets/issue7728/phase6-important-regressions-20261106/README.md.
@@ -381,5 +387,86 @@ fn independent_print_page6_keeps_the_enclosing_bottom_border() {
             (actual - expected).abs() <= 2.0,
             "독립 하단 괘선: 실제 {actual}, PDF {expected}, 허용2px"
         );
+    }
+}
+
+// 관계형: 선언 상자가 자식 본체·양쪽 바깥여백·부모 안여백으로 닫힌 TAC 호스트다.
+#[test]
+fn closed_tac_wrapper_paints_the_outer_top_reserved_by_its_source_frame() {
+    let core = open();
+    let page = core.build_page_render_tree(8).unwrap();
+    let wrapper = nodes(&page.root)
+        .into_iter()
+        .find(|n| matches!(&n.node_type,RenderNodeType::Table(t)if t.para_index==Some(46)))
+        .unwrap();
+    let owner = wrapper
+        .children
+        .iter()
+        .find(|n| matches!(&n.node_type, RenderNodeType::TableCell(_)))
+        .unwrap();
+    let child = nodes(owner)
+        .into_iter()
+        .find(|n| matches!(&n.node_type,RenderNodeType::Table(t)if(t.row_count,t.col_count)==(6,3)))
+        .unwrap();
+    let Control::Table(source) = &core.document().sections[0].paragraphs[46].controls[0] else {
+        panic!("원본 래퍼")
+    };
+    let cell = &source.cells[0];
+    let child_source = source_tables(&cell.paragraphs)
+        .into_iter()
+        .find(|t| (t.row_count, t.col_count) == (6, 3))
+        .unwrap();
+    assert!(child_source.common.treat_as_char);
+    let pad = cell.effective_padding(&source.padding);
+    assert_eq!(
+        source.common.height as i32,
+        child_source.common.height as i32
+            + child_source.outer_margin_top as i32
+            + child_source.outer_margin_bottom as i32
+            + pad.top as i32
+            + pad.bottom as i32,
+        "독립 원본 프레임 등식"
+    );
+    let expected =
+        owner.bbox.y + (pad.top as f64 + child_source.outer_margin_top as f64) * 96.0 / 7200.0;
+    assert!(
+        (child.bbox.y - expected).abs() <= 96.0 / 7200.0,
+        "예약한 위 바깥여백: 실제{}, 원본{expected}",
+        child.bbox.y
+    );
+}
+
+// 관계형: 줄 내부 컷이 없는 행 이어받기도 원본 바깥 위 여백을 한 번 소비한다.
+#[test]
+fn atomic_child_continuation_keeps_its_source_outer_top_margin() {
+    let core = open();
+    let source = source_tables(&core.document().sections[0].paragraphs[15..16]);
+    for page in [5, 6] {
+        let tree = core.build_page_render_tree(page).unwrap();
+        for shape in [(9, 4), (13, 4)] {
+            let child_source = source
+                .iter()
+                .find(|t| (t.row_count, t.col_count) == shape)
+                .unwrap();
+            let parent_source=source.iter().find(|t|(t.row_count,t.col_count)==(7,1)&&t.cells.iter().any(|c|c.paragraphs.iter().any(|p|p.controls.iter().any(|c|matches!(c,Control::Table(x)if x.common.instance_id==child_source.common.instance_id))))).unwrap();
+            let parent=nodes(&tree.root).into_iter().find(|n|matches!(&n.node_type,RenderNodeType::Table(t)if(t.row_count,t.col_count)==(7,1))&&nodes(n).into_iter().any(|x|matches!(&x.node_type,RenderNodeType::Table(t)if(t.row_count,t.col_count)==shape))).unwrap();
+            let owner = parent
+                .children
+                .iter()
+                .find(|n| matches!(&n.node_type,RenderNodeType::TableCell(c)if c.row==6))
+                .unwrap();
+            let child=nodes(owner).into_iter().find(|n|matches!(&n.node_type,RenderNodeType::Table(t)if(t.row_count,t.col_count)==shape)).unwrap();
+            let cell = parent_source.cells.iter().find(|c| c.row == 6).unwrap();
+            let pad = cell.effective_padding(&parent_source.padding);
+            let expected = owner.bbox.y
+                + (pad.top as f64 + child_source.outer_margin_top as f64) * 96.0 / 7200.0;
+            assert!(
+                (child.bbox.y - expected).abs() <= 96.0 / 7200.0,
+                "같은 원본 위 여백: page{}, shape{shape:?}, 실제{}, 원본{}",
+                page + 1,
+                child.bbox.y,
+                expected
+            );
+        }
     }
 }

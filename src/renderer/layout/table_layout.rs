@@ -9812,7 +9812,7 @@ impl LayoutEngine {
                                             && Some(lines[*ci]) == own_line
                                     }).count()
                                     });
-                                let table_anchor_y = if inline_body_height_hu < 0x8000_0000
+                                let table_anchor_y = if (inline_body_height_hu < 0x8000_0000
                                     && om_top_hu + om_bottom_hu > 0
                                     && line_tac_table_count.is_some_and(|count| count <= 1)
                                     && super::stored_tac_frame::owned_body_height(
@@ -9823,7 +9823,10 @@ impl LayoutEngine {
                                         self.dpi,
                                         hwpunit_to_px(10, self.dpi),
                                     )
-                                    .is_some()
+                                    .is_some())
+                                    // 저장 글줄이 없는 닫힌 래퍼도 측정과 같은
+                                    // 원본 프레임이 TAC의 위 바깥여백을 소유한다.
+                                    || crate::renderer::height_measurer::unstored_tac_wrapper_shares_anchor_line(table, cell)
                                 {
                                     table_anchor_y
                                         + hwpunit_to_px(
@@ -26643,12 +26646,8 @@ impl LayoutEngine {
             .iter()
             .rposition(|unit| unit.para_idx == para_idx && unit.nested_row.is_some())?
             + 1;
-        if !units[run_start..run_end]
-            .iter()
-            .any(|unit| unit.nested_table_fragment.is_some())
-        {
-            return None;
-        }
+        // 원자 행도 nested_row에 정확한 자식 커서를 갖는다. 내부 글줄 컷의
+        // 존재 여부로 같은 행 커서를 스칼라 배치 경로로 되돌리지 않는다.
         let mut visible_height = 0.0;
         let mut flow_height = 0.0;
         for unit in units.iter().take(hi).skip(lo) {
@@ -26984,7 +26983,10 @@ impl LayoutEngine {
         let para = cell.paragraphs.get(pi)?;
         let has_row_cuts = units[run_start..run_end]
             .iter()
-            .any(|unit| unit.nested_table_fragment.is_some());
+            .any(|unit| unit.nested_table_fragment.is_some())
+            || units[run_start..run_end]
+                .iter()
+                .all(|unit| unit.nested_row.is_some());
         let child = para.controls.iter().find_map(|control| match control {
             Control::Table(child) => Some(child.as_ref()),
             _ => None,
@@ -27096,13 +27098,19 @@ impl LayoutEngine {
             // 첫·끝 소유 유닛의 edges가 바깥여백도 이미 예약했다.
             // 중간 조각에 끝 여백을 반복하면 실제로 들어가는 다음 행을 밀어낸다.
             // 셀 내부에서 자른 재귀 viewport는 매 쪽의 물리 바깥 상자를 별도로 연다.
-            if repeats_outer_frame {
-                if start > run_start {
-                    physical += hwpunit_to_px(child.outer_margin_top as i32, self.dpi);
-                }
-                if end < run_end {
-                    physical += hwpunit_to_px(child.outer_margin_bottom as i32, self.dpi);
-                }
+            if start > run_start {
+                physical += self
+                    .nested_row_continuation_outer_top(child, &cut)
+                    .unwrap_or_else(|| {
+                        if repeats_outer_frame {
+                            hwpunit_to_px(child.outer_margin_top as i32, self.dpi)
+                        } else {
+                            0.0
+                        }
+                    });
+            }
+            if repeats_outer_frame && end < run_end {
+                physical += hwpunit_to_px(child.outer_margin_bottom as i32, self.dpi);
             }
             // 반복 머리행은 상위 컷과 viewport가 이미 한 번 더한다.
             physical -= self.nested_continuation_header_height(cell, units, start, styles);

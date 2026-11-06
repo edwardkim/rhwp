@@ -12,6 +12,17 @@ pub(super) struct NestedRowFlowEdges {
 }
 
 impl LayoutEngine {
+    /// 원자 행 사이의 이어받기도 새 자식 표의 바깥 위 프레임을 연다.
+    /// 부모 예약과 실제 자식 원점에서 같은 원본 여백을 한 번 소비한다.
+    pub(in crate::renderer::layout) fn nested_row_continuation_outer_top(
+        &self,
+        child: &Table,
+        cut: &NestedTableCut,
+    ) -> Option<f64> {
+        (!child.common.treat_as_char && cut.start_row > 0)
+            .then(|| crate::renderer::hwpunit_to_px(i32::from(child.outer_margin_top), self.dpi))
+    }
+
     /// 독립 저장 줄로 닫힌 전체 표의 마지막 빈 행 공간을 같은 계산으로 회수한다.
     /// 부분 내용 컷은 선언된 행의 미소비 물리 띠를 소유하므로 이 전체 상자 규칙과 다르다.
     pub(super) fn fit_complete_stored_row_frame(
