@@ -1610,6 +1610,61 @@ fn condensed_line_width_hwp(width_hwp: i32, space_savings_hwp: i32) -> i32 {
     width_hwp - space_savings_hwp
 }
 
+/// 낱말 사이 첫 구분 공백은 뒤의 작성 공백과 같은 종료 컷이 아니다.
+/// 독립 한컴 Print의 맑은 고딕/HFT 대조에서는 첫 구분 공백이 넘쳐도
+/// 다음 공백까지 앞줄에 걸고, 나머지 작성 공백만 다음 줄에서 전진한다.
+/// 문단 끝·명시적 개행·앞줄에서 이월된 공백과 개체 슬롯은 기존 계약을 유지한다.
+fn first_interword_separator(
+    tokens: &[BreakToken],
+    token_index: usize,
+    text_chars: &[char],
+    line_start: usize,
+) -> bool {
+    let Some(BreakToken::Space {
+        idx, inline_width, ..
+    }) = tokens.get(token_index)
+    else {
+        return false;
+    };
+    if *idx <= line_start
+        || *inline_width != 0.0
+        || text_chars.get(*idx) != Some(&' ')
+        || !text_chars
+            .get(idx - 1)
+            .is_some_and(|ch| !ch.is_whitespace() && !ch.is_control() && *ch != '\u{FFFC}')
+    {
+        return false;
+    }
+    let mut next_index = idx + 1;
+    let mut additional_space = false;
+    for token in tokens.iter().skip(token_index + 1) {
+        match token {
+            BreakToken::Space {
+                idx, inline_width, ..
+            } if *idx == next_index
+                && *inline_width == 0.0
+                && text_chars.get(*idx) == Some(&' ') =>
+            {
+                additional_space = true;
+                next_index += 1;
+            }
+            BreakToken::Text {
+                start_idx,
+                end_idx,
+                width,
+                ..
+            } => {
+                return additional_space
+                    && *start_idx == next_index
+                    && end_idx > start_idx
+                    && *width > 0.0;
+            }
+            _ => return false,
+        }
+    }
+    false
+}
+
 /// Hancom absorbs the first overflowing blank at the end of the row, then
 /// continues the remaining blanks on the next row (#7168). A visible inline
 /// object at that offset must instead move with its space. Both fill paths use
@@ -2416,7 +2471,10 @@ fn fill_one_interval(
                     eff_w(cursor.is_first_line),
                     (*inline_width > 0.0)
                         .then(|| (cursor.lw + to_hwp(*inline_width), cursor.line_space_savings)),
-                ) {
+                )
+                .filter(|_| {
+                    !first_interword_separator(tokens, ti, text_chars, cursor.line_start_idx)
+                }) {
                     let absorbed = cut > *idx;
                     // [#7418] 줄 끝에 건 공백이 문단의 마지막 글자면 문단이 여기서 끝난다 —
                     // 종전에는 글자 없는 빈 행을 하나 더 게시했다. 한/글은 넘친 공백 **하나**만

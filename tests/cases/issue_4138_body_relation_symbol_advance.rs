@@ -1,9 +1,10 @@
 //! 관계형: 원본 HFT 기호의 전진과 표시용 별칭 적용 전후의 내용 소유를 검사한다.
-//! 주석 갱신: 2026-11-07T01:05:45+09:00.
-//! 2026-11-07 raw(192DPI, PDFium, 2px): 21쪽 Native97.42188% / fresh WASM97.39579%.
-//! 전197쪽 최저94.83034% /94.98570%; 21·44·129·130쪽은98% 미만으로 보정 중이다.
+//! 주석 갱신: 2026-11-07T02:11:45+09:00.
+//! 2026-11-07 raw(192DPI, PDFium, 2px): 21쪽 Native99.97728% / fresh WASM99.97745%.
+//! 전197쪽 최저94.83034% /94.98570%; 44·129·130쪽은98% 미만으로 보정 중이다.
 //! 독립 Type3의1000/1000em은 원본 글리프 비율이며 페이지 절대 px 핀이 아니다.
-//! 근거: mydocs/pr/assets/issue4138/body-relation-symbol-20261107/README.md.
+//! 기호의 원본 비율 근거: mydocs/pr/assets/issue4138/body-relation-symbol-20261107/README.md.
+//! 현재 출력·좌표 근거: mydocs/pr/assets/issue4138/interword-space-20261107/README.md.
 
 use rhwp::{
     renderer::{
