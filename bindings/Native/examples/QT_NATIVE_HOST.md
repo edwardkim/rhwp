@@ -18,6 +18,26 @@ python3 -m venv .venv-qt
 별도 I/O executor에서 수행한 뒤 native 저장 token을 acknowledge한다. 문서를 여는 파일 읽기도 I/O
 executor를 사용한다. 파일 쓰기가 실패하면 cancel하며, 이미 성공한 파일은 ack 오류 때문에 삭제하지 않는다.
 
+## 문서 교체와 종료
+
+- 도구 막대의 새 문서·열기와 창 닫기는 이미 접수한 편집 명령 뒤에서 native `info`를 확인한다.
+  변경 내용이 있으면 **새 파일로 저장 / 저장하지 않고 계속 / 취소**를 선택한다. 취소와 저장 대화상자
+  취소는 현재 문서를 유지한다. Ctrl+N으로 새 문서를 요청할 수 있다.
+- 저장 선택 시 파일 쓰기와 저장 token acknowledge를 마친 뒤 문서 상태를 다시 확인한다. 저장 실패,
+  저장 완료 확인 실패 또는 저장 중 추가 편집으로 dirty가 남으면 문서 교체·종료를 보류한다.
+  저장은 기존과 같이 새 HWPX 파일 생성만 지원한다. 기존 파일 덮어쓰기·복구는 별도 file-store 예제의 범위다.
+- 일반적인 새 파일로 저장 중에는 본문을 계속 편집할 수 있다. 저장 중인 파일은 준비 당시 revision이며,
+  이후 편집은 dirty로 남는다. 저장 작업 도중 새 문서·열기·닫기 요청은 저장 완료 후 다시 시도하도록 안내한다.
+- 제목에는 파일명과 변경 표시(`*`)를, 상태 영역에는 dirty와 문서 작업 진행 여부를 표시한다.
+  문서 전환 중 새 입력과 관련 action을 비활성화하고, 실행 취소·다시 실행은 완료된 native capability를 따른다.
+- 파일 읽기에는 문서 교체 의도를 묶는다. 읽는 동안 더 새로운 열기 요청이 접수되면 늦게 끝난 이전 읽기를
+  반영하지 않는다. 읽기 뒤 문서 revision이 달라지면 교체를 보류한다. 실행 중 native open 자체의 강제 취소를
+  주장하지 않으며 이 단계에서는 추가 교체 요청을 받지 않는다.
+- 접수된 GUI action은 문서 세대와 document ID를 보유한다. 교체 전 action의 지연 target 계산이나 callback을
+  새 문서에 적용하지 않는다. 기존 문서에 이미 접수한 편집은 dirty 확인 이전에 완료한다.
+- 조합 중인 텍스트는 입력기 focus-loss 취소를 기다린다. native 조합이 남아 있으면 확정·취소 후 다시
+  요청하도록 안내한다. 파일 I/O가 진행 중이면 worker를 먼저 닫지 않는다.
+
 ## 표시와 입력 범위
 
 - 여러 쪽을 세로로 표시한다. 참조 UI는 최대 512쪽을 읽는다. P58 view 계약이 zoom·DPR·scroll·좌표
@@ -59,6 +79,9 @@ QT_QPA_PLATFORM=offscreen .venv-qt/bin/python -B bindings/Native/tests/native_wi
 실제 스모크에는 P61까지의 worker/editor/IME 문맥·clipboard ABI가 포함된 native-skia 라이브러리가 필요하다.
 Ctrl+A/C/X/V로 Qt clipboard의 복사·잘라내기·붙여넣기와 한 번의 undo/redo도 검사한다.
 다중 문단 붙여넣기로 여러 쪽을 만든 뒤 undo하여 페이지 크기 배치·뷰가 함께 갱신되는지도 검사한다.
+문서 수명 검사는 dirty 닫기 취소, 기존 입력 뒤 dirty 확인, 저장 대화상자 취소, 쓰기·ack·executor 실패,
+저장 중 추가 편집, 늦은 파일 읽기와 이전 action 세대를 포함한다. 실제 native 스모크도 dirty 닫기 취소와
+저장 bytes 준비 이후 추가 편집을 실행하여 저장본과 현재 문서를 각각 확인하고, 변경 폐기 후 새 문서를 연다.
 
 근거: [QInputMethodEvent](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QInputMethodEvent.html),
 [QImage](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QImage.html),
