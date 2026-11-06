@@ -295,3 +295,18 @@ Studio Node는 2,748 PASS/0 FAIL/2 skip, TypeScript·Vite build는 exit 0이다.
 부모 포함·형제 하단·열 경계·독립10쪽의 4개 검사 PASS이며, 6쪽 review/overlay를 직접 확인했다.
 Native 잔여는 7쪽96.06208%,9쪽97.70433%,12쪽96.54520%다. fresh WASM은 아직 미검증이다.
 [전쪽 TSV와 부분 증적](../pr/assets/issue7728/phase8-shared-closing-frame-20261106/README.md)을 보존한다.
+
+같은 코드 `9274604528`의 fresh WASM 전18쪽도 다시 출력했다. 4쪽99.93457%,
+5쪽98.93301%,6쪽99.97413%이며6쪽 review/overlay를 직접 확인했다. 이 코드는
+7쪽95.50736%,9쪽97.31315%,12쪽96.53672%가98% 미만이다.
+
+## 8단계 — 선언 첫 격자 프레임의 세로 정렬 소유 전달
+
+첫 부분 표의 수용 높이가 원본 선언 개체 높이와1HU 반올림 범위로 닫히면 기존 PageItem의
+원본 프레임 소유를 전달한다. 새 높이·좌표를 계산하지 않는다. 12쪽의 선택된 두 글줄은
+원본 Center 대신 Top으로 배치되던 실제 결함이며, 위0px/아래15.2px 관계 검사가 FAIL→PASS다.
+Native12쪽은99.83837%로 개선했고 전18쪽을 재출력했다. 관계형4건·고정형2건의 정식 원본을
+현재 frozen Native에 링크해6 PASS를 확인했다.6쪽 하단 고정형은 별도의 실제1 FAIL→1 PASS이며
+같은 쪽의 Native/fresh WASM98% 이상과 독립PDF 선 중심·직접 판독을 근거로 추가했다.
+[부분 증적](../pr/assets/issue7728/phase9-declared-frame-alignment-20261106/README.md)에 정리한다.
+새 코드의 Native 잔여는7·9쪽이고 새 fresh WASM·전체 회귀·정상 대조군은 미완료다.

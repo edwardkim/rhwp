@@ -1,9 +1,13 @@
 //! #7728: 계속 표의 열 프레임과 독립 Print의 셀 괘선 끝점을 보호한다.
-//! 주석 갱신: 2026-11-06T17:11:03+09:00.
+//! 주석 갱신: 2026-11-06T17:23:42+09:00.
 //! 검사 분류: `continuation_column_frames_keep_opening_span_and_row_edges`와
 //! `continued_parent_border_contains_owned_nested_frames`,
 //! `sibling_nested_source_frames_close_on_the_parent_row_boundary`는 관계형이다.
-//! 검사 분류: `independent_print_page10_keeps_all_grid_edges`는 고정형(독립 PDF ±2 CSSpx)이다.
+//! 검사 분류: `declared_partial_cell_centers_only_its_owned_lines`는 관계형이다.
+//! 검사 분류: `independent_print_page6_keeps_the_enclosing_bottom_border`와
+//! `independent_print_page10_keeps_all_grid_edges`는 고정형(독립 PDF ±2 CSSpx)이다.
+//! 6쪽 고정형 근거: 코드9274604528 N99.97875% / fresh WASM99.97413%, 전18쪽 및 직접 판독.
+//! 12쪽 새 관계형은 보정 전 실제 FAIL → 후보 Native PASS, 새 WASM 수용은 아직 미완료다.
 //! 원본 70833 HWP와 독립 한컴2020 Print PDF, compat2022,96DPI/PDFium/2px raw.
 //! 코드04f03cfa 전18쪽 Native 최저94.62153%, fresh WASM 최저94.27517%, 미달·누락0.
 //! 새 포함 관계 검사는 HEAD429에서 실제 FAIL → 보정 후보 PASS. 새 후보 전체98% 수용은 미완료다.
@@ -296,4 +300,86 @@ fn sibling_nested_source_frames_close_on_the_parent_row_boundary() {
         (bottoms[0] - bottoms[1]).abs() < 1e-6,
         "같은 부모 물리 행에서 닫히는 두 자식의 하단은 같아야 함: {bottoms:?}"
     );
+}
+
+// 관계형: 선언된 첫 물리 조각 안에서 선택한 본문은 원본 Center 정렬을 지킨다.
+#[test]
+fn declared_partial_cell_centers_only_its_owned_lines() {
+    let core = open();
+    let page = core.build_page_render_tree(11).unwrap();
+    let outer = nodes(&page.root)
+        .into_iter()
+        .find(|n| matches!(&n.node_type,RenderNodeType::Table(t)if(t.row_count,t.col_count)==(7,4)))
+        .unwrap();
+    let cell = outer
+        .children
+        .iter()
+        .find(|n| matches!(&n.node_type,RenderNodeType::TableCell(c)if c.row==6&&c.col==3))
+        .unwrap();
+    let Control::Table(source) = &core.document().sections[0].paragraphs[83].controls[0] else {
+        panic!("원본 표")
+    };
+    let original = source
+        .cells
+        .iter()
+        .find(|c| c.row == 6 && c.col == 3)
+        .unwrap();
+    assert_eq!(
+        original.vertical_align,
+        rhwp::model::table::VerticalAlign::Center
+    );
+    let padding = original.effective_padding(&source.padding);
+    let scale = 96.0 / 7200.0;
+    let runs: Vec<_> = nodes(cell)
+        .into_iter()
+        .filter(|n| matches!(&n.node_type,RenderNodeType::TextRun(t)if!t.text.trim().is_empty()))
+        .collect();
+    assert!(runs.len() >= 2);
+    let top = runs.iter().map(|n| n.bbox.y).reduce(f64::min).unwrap();
+    let bottom = runs
+        .iter()
+        .map(|n| n.bbox.y + n.bbox.height)
+        .reduce(f64::max)
+        .unwrap();
+    let above = top - cell.bbox.y - padding.top as f64 * scale;
+    let below = cell.bbox.y + cell.bbox.height - padding.bottom as f64 * scale - bottom;
+    assert!(
+        (above - below).abs() <= 2.0 * scale,
+        "선택된 글줄 상자의 위아래 공간이 같아야 함: 위 {above}, 아래 {below}"
+    );
+}
+
+// 고정형: Native99.97875% / fresh WASM99.97413%와 직접 판독을 마친 6쪽의 독립 PDF ±2px.
+#[test]
+fn independent_print_page6_keeps_the_enclosing_bottom_border() {
+    let core = open();
+    let page = core.build_page_render_tree(5).unwrap();
+    let outer = nodes(&page.root)
+        .into_iter()
+        .find(|n| matches!(&n.node_type,RenderNodeType::Table(t)if(t.row_count,t.col_count)==(2,2)))
+        .unwrap();
+    let (left, right, bottom) = outer
+        .children
+        .iter()
+        .filter_map(|n| match &n.node_type {
+            RenderNodeType::Line(line)
+                if (line.y1 - line.y2).abs() < 1e-6 && line.x1 != line.x2 =>
+            {
+                Some((line.x1.min(line.x2), line.x1.max(line.x2), line.y1))
+            }
+            _ => None,
+        })
+        .max_by(|a, b| a.2.total_cmp(&b.2))
+        .unwrap();
+    // 독립 한컴2020 Print PDF 6쪽의 바깥 표 하단 선 중심(pt×96/72).
+    for (actual, expected) in [
+        (left, 77.39866638183594),
+        (right, 717.3746744791666),
+        (bottom, 1041.2613118489583),
+    ] {
+        assert!(
+            (actual - expected).abs() <= 2.0,
+            "독립 하단 괘선: 실제 {actual}, PDF {expected}, 허용2px"
+        );
+    }
 }

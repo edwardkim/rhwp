@@ -26,3 +26,12 @@
 - `after-native-silhouette.tsv`: `922174033a46bccddf8f1c0f67711520d0bf498e5685e330359881bb7ad79f67`.
 - `after-native-p006-review.png`: `74b1cf9a82726baf20bfb434fd2d328b295e8b640a19cec57dc97a4e190c37b5`.
 - `after-native-p006-overlay.png`: `b395554114264c295bcf0c6dc6777988c3c1d5520db8d0eeb8660e2ccee60c8b`.
+
+## 같은 코드9274604528의 fresh WASM 보완
+
+Mac locked wrapper `--target web --out-dir pkg --no-opt` 로컬 대체 빌드다. Docker 최적화 결과가 아니다.
+전18쪽 재출력: 4쪽99.93457%,5쪽98.93301%,6쪽99.97413%이며 7쪽95.50736%,9쪽97.31315%,
+12쪽96.53672%가98% 미만이다. 6쪽 review/overlay를 직접 판독했고 심한 하단 역전은 없다.
+Root pkg와 Studio public의 JS/WASM hash가 frozen package와 같음을 확인했다. 실제 Studio 응답 수용은 아니다.
+
+{"rhwp.js": "370ddff0fd1a1cf6f889edb1b2a42f420fac62f7f57df4b9cff19829e60cdd5f", "rhwp_bg.wasm": "47d10c4d7cb7feaf3c711aa66a4798bfa3b364aadc7ba8f7e4ae83206680d09b"}
