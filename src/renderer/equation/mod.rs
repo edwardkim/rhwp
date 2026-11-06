@@ -85,6 +85,33 @@ pub(crate) fn stored_horizontal_scale(width: f64, layout: &layout::LayoutBox) ->
     }
 }
 
+/// 원본 HFT 표시 face를 실제로 사용하는 수식만 같은 Print 종이 프레임으로 보낸다.
+pub(crate) fn uses_original_hft_glyphs(layout: &layout::LayoutBox) -> bool {
+    hancom_glyphs::used_font_families(layout).contains(legacy_glyphs::FONT_FAMILY)
+}
+
+/// 원본 HFT 단일 글줄의 표시 기준선을 논리 줄 프레임 안에 둔다.
+/// 독립 한컴2024 정상 저장·Print의 네 크기·28개 문자/숫자/연산자와
+/// A4/A5 대조에서 확인했다. 현대 face의 줄 프레임을 재사용하지 않는다.
+/// 저장 개체 크기나 호스트 기준선은 그대로 두고 표시 글줄만 발행한다.
+pub(crate) fn publish_original_hft_print_line(
+    equation: &mut crate::renderer::render_tree::EquationNode,
+) {
+    let value = &mut equation.layout_box;
+    let fs = value.font_size;
+    if legacy_glyphs::is_line(value, fs) {
+        if let Some((height, _)) = layout::legacy_logical_frame(value, fs) {
+            // HFT 논리 줄의 높이는 기존 측정 프레임이 소유한다. glyph의
+            // 자연 text 기준선(80%)과 저장 호스트의 84% 기준선을 구분한다.
+            value.y += height * 0.8 - value.baseline;
+            // Native/Canvas가 읽는 layout과 SVG/PDF가 읽는 표시 조각을
+            // 같은 원점에서 함께 발행한다. 캐시된 이전 SVG를 남기지 않는다.
+            equation.svg_content =
+                svg_render::render_equation_svg(value, &equation.color_str, equation.font_size);
+        }
+    }
+}
+
 /// 수식 스크립트와 BaseUnit에서 레이아웃이 소비할 intrinsic HWPUNIT 크기를 계산한다.
 pub fn intrinsic_size_hwp(script: &str, font_size: u32) -> (u32, u32) {
     let font_size_px = super::hwpunit_to_px(font_size.max(1) as i32, super::DEFAULT_DPI);

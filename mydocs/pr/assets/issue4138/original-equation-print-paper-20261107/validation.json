@@ -1,0 +1,790 @@
+{
+  "parent": "dbf9b54beb419f26d1595b6bfe792f17cf4498b6",
+  "upstream_base": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "stage_complete": true,
+  "whole_pr_ready": false,
+  "source_files": {
+    "src/paint/mod.rs": "8014c73767c70df6d5702a586136a7d3b90c6e17d8318bb0964f45a5d811c8ed",
+    "src/paint/paper_viewport.rs": "c86149804027e4c83fff4d3f653e9bc4f4bcea722bb7f42a083358aa6275dbe5",
+    "src/paint/equation_print_frame.rs": "b0ced677bb1063a6a2c100fdd071b7024391050cb777abe9b214300d67c85a31",
+    "src/renderer/equation/mod.rs": "30e0a33e29726949dc7408354f88fde8bae69cff61f0ca1ef65e98823d9886d2",
+    "src/renderer/equation/legacy_glyphs.rs": "150dca3f2b4a7c774827f84b4e38559bd48a0f17236f49b1d171ea4185876a31",
+    "src/renderer/equation/layout/script_geometry.rs": "6c8b6b59273486a5859aedd32050ef52846fad48af3dbefc87a2143a2b1fc5ee",
+    "src/renderer/svg.rs": "2a8e42b67a57bb0c204e54ca257c0fc38b2675753c24f01d364302fb3ad48b13",
+    "src/renderer/svg_layer.rs": "34189d49dd5c1c98f0f934170c205a1130542ca1f119490978f6b750d82dab9c",
+    "src/renderer/svg/font_file_lookup.rs": "e6b61624689d4f0975797f4086dec1ae48ebf41e8e155e755311b2f85b6a64c0",
+    "src/renderer/svg/system_fonts.rs": "e947ac908468a292062d65a94c8eb6de158001b687330310eb9ebb37dcc55ec6"
+  },
+  "binary": {
+    "path": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/rhwp-candidate-native",
+    "sha256": "de23f5eb61e0248dc49aba211e186cb531291253b783f380db091910698801b9"
+  },
+  "wasm_kind": "Mac locked wrapper --target web --out-dir pkg --no-opt 로컬 대체 빌드. Docker 최적화 아님.",
+  "wasm_files": {
+    "rhwp.js": "370ddff0fd1a1cf6f889edb1b2a42f420fac62f7f57df4b9cff19829e60cdd5f",
+    "rhwp_bg.wasm": "0ef815820ded8062b01b506edb0229748e34409f81b7b5d74e46fb75824b2b15"
+  },
+  "build_steps": [
+    {
+      "stage": "candidate",
+      "kind": "native",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--bin",
+        "rhwp"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "target": "/Users/tsjang/rhwp/target/pr-review",
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-build.log",
+      "started_at": "2026-11-06T21:18:57.285468+00:00",
+      "pid": 87694,
+      "exit_code": 0,
+      "seconds": 207.662,
+      "log_sha256": "08dd71bbc49dc261f043296f9e6223337e0c64d97dd55c2b0b2345e1e20bc2d4"
+    },
+    {
+      "stage": "candidate",
+      "kind": "wasm",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "target": "/Users/tsjang/rhwp/target/pr-review",
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-wasm-build.log",
+      "started_at": "2026-11-06T21:23:25.879236+00:00",
+      "pid": 9888,
+      "exit_code": 0,
+      "seconds": 9.923,
+      "log_sha256": "3a1ad79b5cd9b58e33b081d383a7d23fa16d367199157f7457c5d74ce69267be"
+    }
+  ],
+  "new_formal_tests": {
+    "kind": "formal-thirteen",
+    "compile_command": [
+      "rustc",
+      "--edition=2021",
+      "--test",
+      "/Users/tsjang/rhwp/tests/cases/issue_4138_original_equation_print_paper.rs",
+      "--extern",
+      "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/librhwp-candidate.rlib",
+      "-L",
+      "dependency=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps",
+      "-L",
+      "native=/Users/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+      "-o",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/formal-tests",
+      "--extern",
+      "serde_json=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libserde_json-67d6313cceeae34f.rlib",
+      "--extern",
+      "ttf_parser=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libttf_parser-29a0d332d5024b81.rlib",
+      "--extern",
+      "sha2=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libsha2-1677794bdf3da50a.rlib",
+      "--extern",
+      "roxmltree=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libroxmltree-2f7c87df9404699d.rlib"
+    ],
+    "exit_code": 0,
+    "summary": [
+      "test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.41s"
+    ]
+  },
+  "focused_packet": {
+    "kind": "focused-packet",
+    "compile_command": [
+      "rustc",
+      "--edition=2021",
+      "--test",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/focused-formal.rs",
+      "--extern",
+      "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/librhwp-candidate.rlib",
+      "-L",
+      "dependency=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps",
+      "-L",
+      "native=/Users/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+      "-o",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/focused-formal",
+      "--extern",
+      "serde_json=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libserde_json-67d6313cceeae34f.rlib",
+      "--extern",
+      "ttf_parser=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libttf_parser-29a0d332d5024b81.rlib",
+      "--extern",
+      "sha2=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libsha2-1677794bdf3da50a.rlib",
+      "--extern",
+      "roxmltree=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libroxmltree-2f7c87df9404699d.rlib"
+    ],
+    "exit_code": 0,
+    "summary": [
+      "test result: ok. 130 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.82s"
+    ]
+  },
+  "focused_packet_note": "130 실행에는 output 진단 검사 1개가 포함된다. 새 정식 검사는 13개이며 중복 합산하지 않는다.",
+  "svg_consumer_packet": {
+    "compile_command": [
+      "rustc",
+      "--edition=2021",
+      "--test",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/svg-consumer-packet.rs",
+      "--extern",
+      "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/librhwp-candidate.rlib",
+      "-L",
+      "dependency=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps",
+      "-L",
+      "native=/Users/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+      "-o",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/svg-consumer-packet",
+      "--extern",
+      "serde_json=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libserde_json-67d6313cceeae34f.rlib",
+      "--extern",
+      "ttf_parser=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libttf_parser-29a0d332d5024b81.rlib",
+      "--extern",
+      "sha2=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libsha2-1677794bdf3da50a.rlib",
+      "--extern",
+      "roxmltree=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libroxmltree-2f7c87df9404699d.rlib",
+      "--cfg",
+      "feature=\"native-skia\"",
+      "--extern",
+      "image=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libimage-041e8b6b4e50ab80.rlib",
+      "--extern",
+      "base64=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libbase64-8aba6b423e1d5b7e.rlib"
+    ],
+    "env_keys": {
+      "CARGO_BIN_EXE_rhwp": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/rhwp-candidate-native"
+    },
+    "exit_code": 0,
+    "summary": [
+      "test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.43s"
+    ]
+  },
+  "lint": [
+    {
+      "name": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 29.105
+    },
+    {
+      "name": "all-target-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 69.943
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 34.177
+    },
+    {
+      "name": "prepare-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 1.884
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+      ],
+      "exit_code": 0,
+      "seconds": 0.802
+    },
+    {
+      "name": "unit-tiers",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+      ],
+      "exit_code": 0,
+      "seconds": 23.041
+    }
+  ],
+  "wasm_clippy": {
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--lib",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "seconds": 64.628
+  },
+  "whole": [
+    {
+      "backend": "native",
+      "pages": 197,
+      "minimum": 95.77112,
+      "below98": [
+        {
+          "page": 129,
+          "raw": 95.77112
+        },
+        {
+          "page": 130,
+          "raw": 96.28173
+        }
+      ],
+      "byte_identical_pages": 190,
+      "png_changed_pages": [
+        10,
+        12,
+        40,
+        44,
+        45,
+        129,
+        130
+      ],
+      "deltas": [
+        {
+          "page": 10,
+          "before": 99.31293,
+          "after": 99.3313
+        },
+        {
+          "page": 12,
+          "before": 99.17769,
+          "after": 99.22763
+        },
+        {
+          "page": 40,
+          "before": 99.87579,
+          "after": 99.91712
+        },
+        {
+          "page": 44,
+          "before": 97.9744,
+          "after": 98.15528
+        },
+        {
+          "page": 45,
+          "before": 98.94138,
+          "after": 99.07101
+        },
+        {
+          "page": 129,
+          "before": 94.76447,
+          "after": 95.77112
+        },
+        {
+          "page": 130,
+          "before": 95.98723,
+          "after": 96.28173
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "pages": 197,
+      "minimum": 95.77492,
+      "below98": [
+        {
+          "page": 129,
+          "raw": 95.77492
+        },
+        {
+          "page": 130,
+          "raw": 96.26748
+        }
+      ],
+      "byte_identical_pages": 190,
+      "png_changed_pages": [
+        10,
+        12,
+        40,
+        44,
+        45,
+        129,
+        130
+      ],
+      "deltas": [
+        {
+          "page": 10,
+          "before": 99.47986,
+          "after": 99.5003
+        },
+        {
+          "page": 12,
+          "before": 99.34169,
+          "after": 99.38781
+        },
+        {
+          "page": 40,
+          "before": 99.87445,
+          "after": 99.91923
+        },
+        {
+          "page": 44,
+          "before": 98.0113,
+          "after": 98.15661
+        },
+        {
+          "page": 45,
+          "before": 98.95601,
+          "after": 99.08486
+        },
+        {
+          "page": 129,
+          "before": 94.83414,
+          "after": 95.77492
+        },
+        {
+          "page": 130,
+          "before": 95.92003,
+          "after": 96.26748
+        }
+      ]
+    }
+  ],
+  "paper_controls": [
+    {
+      "backend": "native",
+      "key": "a4",
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "backend": "native",
+      "key": "a5",
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "backend": "native",
+      "key": "linear-mixed",
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "backend": "native",
+      "key": "after-fill",
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "backend": "wasm",
+      "key": "a4",
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "backend": "wasm",
+      "key": "a5",
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "backend": "wasm",
+      "key": "linear-mixed",
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "backend": "wasm",
+      "key": "after-fill",
+      "minimum": 100.0,
+      "exit_code": 0
+    }
+  ],
+  "svg_controls": [
+    {
+      "phase": "before",
+      "backend": "native",
+      "key": "a4",
+      "exit_code": 1,
+      "raw": 88.78012
+    },
+    {
+      "phase": "before",
+      "backend": "native",
+      "key": "a5",
+      "exit_code": 1,
+      "raw": 89.04726
+    },
+    {
+      "phase": "before",
+      "backend": "native",
+      "key": "linear-mixed",
+      "exit_code": 1,
+      "raw": 81.51363
+    },
+    {
+      "phase": "before",
+      "backend": "native",
+      "key": "after-fill",
+      "exit_code": 0,
+      "raw": 90.72482
+    },
+    {
+      "phase": "after",
+      "backend": "native",
+      "key": "a4",
+      "exit_code": 0,
+      "raw": 100.0
+    },
+    {
+      "phase": "after",
+      "backend": "native",
+      "key": "a5",
+      "exit_code": 0,
+      "raw": 100.0
+    },
+    {
+      "phase": "after",
+      "backend": "native",
+      "key": "linear-mixed",
+      "exit_code": 0,
+      "raw": 100.0
+    },
+    {
+      "phase": "after",
+      "backend": "native",
+      "key": "after-fill",
+      "exit_code": 0,
+      "raw": 100.0
+    },
+    {
+      "phase": "after",
+      "backend": "wasm",
+      "key": "a4",
+      "exit_code": 0,
+      "raw": 100.0
+    },
+    {
+      "phase": "after",
+      "backend": "wasm",
+      "key": "a5",
+      "exit_code": 0,
+      "raw": 100.0
+    },
+    {
+      "phase": "after",
+      "backend": "wasm",
+      "key": "linear-mixed",
+      "exit_code": 0,
+      "raw": 100.0
+    },
+    {
+      "phase": "after",
+      "backend": "wasm",
+      "key": "after-fill",
+      "exit_code": 0,
+      "raw": 100.0
+    }
+  ],
+  "embedded_font_audit": [
+    {
+      "capture": "svg/after/native/a4/svg/a4.svg",
+      "font_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+      "embedded_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+      "bytes_identical": true
+    },
+    {
+      "capture": "svg/after/native/a5/svg/a5.svg",
+      "font_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+      "embedded_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+      "bytes_identical": true
+    },
+    {
+      "capture": "svg/after/native/after-fill/svg/after-fill.svg",
+      "font_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+      "embedded_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+      "bytes_identical": true
+    },
+    {
+      "capture": "svg/after/native/linear-mixed/svg/linear-mixed.svg",
+      "font_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+      "embedded_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+      "bytes_identical": true
+    },
+    {
+      "capture": "svg/after/wasm/a4/svg/wasm_001.svg",
+      "font_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+      "embedded_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+      "bytes_identical": true
+    },
+    {
+      "capture": "svg/after/wasm/a5/svg/wasm_001.svg",
+      "font_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+      "embedded_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+      "bytes_identical": true
+    },
+    {
+      "capture": "svg/after/wasm/after-fill/svg/wasm_001.svg",
+      "font_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+      "embedded_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+      "bytes_identical": true
+    },
+    {
+      "capture": "svg/after/wasm/linear-mixed/svg/wasm_001.svg",
+      "font_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+      "embedded_sha256": "d50300a5e483053b08201e198807e98f1303748b9f82f7ba917bdc51d9bcb9d9",
+      "bytes_identical": true
+    }
+  ],
+  "rebased_originals": [
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "control",
+      "raw": 100.0,
+      "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/focus-three/captures/candidate/native/control/control/silhouette_manifest.json"
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "repro",
+      "raw": 100.0,
+      "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/focus-three/captures/candidate/native/repro/repro/silhouette_manifest.json"
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "used",
+      "raw": 100.0,
+      "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/focus-three/captures/candidate/native/used/used/silhouette_manifest.json"
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "control",
+      "raw": 100.0,
+      "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/focus-three/captures/candidate/wasm/control/control/silhouette_manifest.json"
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "repro",
+      "raw": 100.0,
+      "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/focus-three/captures/candidate/wasm/repro/repro/silhouette_manifest.json"
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "used",
+      "raw": 100.0,
+      "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/focus-three/captures/candidate/wasm/used/used/silhouette_manifest.json"
+    }
+  ],
+  "independent_textboxes": [
+    {
+      "backend": "native",
+      "key": "protected",
+      "exit_code": 0,
+      "raw": 100.0,
+      "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/independent-controls/native/protected/protected/silhouette_manifest.json"
+    },
+    {
+      "backend": "native",
+      "key": "empty",
+      "exit_code": 0,
+      "raw": 100.0,
+      "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/independent-controls/native/empty/empty/silhouette_manifest.json"
+    },
+    {
+      "backend": "native",
+      "key": "space",
+      "exit_code": 0,
+      "raw": 100.0,
+      "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/independent-controls/native/space/space/silhouette_manifest.json"
+    },
+    {
+      "backend": "wasm",
+      "key": "protected",
+      "exit_code": 0,
+      "raw": 100.0,
+      "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/independent-controls/wasm/protected/protected/silhouette_manifest.json"
+    },
+    {
+      "backend": "wasm",
+      "key": "empty",
+      "exit_code": 0,
+      "raw": 100.0,
+      "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/independent-controls/wasm/empty/empty/silhouette_manifest.json"
+    },
+    {
+      "backend": "wasm",
+      "key": "space",
+      "exit_code": 0,
+      "raw": 100.0,
+      "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/independent-controls/wasm/space/space/silhouette_manifest.json"
+    }
+  ],
+  "red_green": {
+    "physical-print-frame": {
+      "compile_command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/Users/tsjang/rhwp/tests/cases/issue_4138_original_equation_print_paper.rs",
+        "--extern",
+        "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/librhwp-candidate.rlib",
+        "-L",
+        "dependency=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/candidate-native-deps",
+        "-L",
+        "native=/Users/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+        "-o",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-print-frame-repair/before-tests-v2",
+        "--extern",
+        "serde_json=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-legacy-subscript-repair/candidate-native-deps/libserde_json-67d6313cceeae34f.rlib",
+        "--extern",
+        "ttf_parser=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-legacy-subscript-repair/candidate-native-deps/libttf_parser-29a0d332d5024b81.rlib"
+      ],
+      "exit_code": 101,
+      "summary": [
+        "test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.97s"
+      ]
+    },
+    "svg-layout-fragment": {
+      "compile_command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/Users/tsjang/rhwp/tests/cases/issue_4138_original_equation_print_paper.rs",
+        "--extern",
+        "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-print-plane-repair/librhwp-candidate.rlib",
+        "-L",
+        "dependency=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-print-plane-repair/candidate-native-deps",
+        "-L",
+        "native=/Users/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+        "-o",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-consumer-repair/before-tests",
+        "--extern",
+        "serde_json=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-print-plane-repair/candidate-native-deps/libserde_json-67d6313cceeae34f.rlib",
+        "--extern",
+        "ttf_parser=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-print-plane-repair/candidate-native-deps/libttf_parser-29a0d332d5024b81.rlib",
+        "--extern",
+        "sha2=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-print-plane-repair/candidate-native-deps/libsha2-1677794bdf3da50a.rlib",
+        "--extern",
+        "roxmltree=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-print-plane-repair/candidate-native-deps/libroxmltree-2f7c87df9404699d.rlib"
+      ],
+      "source_sha256": "e54af368f68814ce78c637c1826d0134f2422371c00c5ef1b386109760977d21",
+      "exit_code": 101,
+      "summary": [
+        "test result: FAILED. 9 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.72s"
+      ]
+    },
+    "svg-resource-and-affine": {
+      "compile_command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/Users/tsjang/rhwp/tests/cases/issue_4138_original_equation_print_paper.rs",
+        "--extern",
+        "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-consumer-repair/librhwp-candidate.rlib",
+        "-L",
+        "dependency=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-consumer-repair/candidate-native-deps",
+        "-L",
+        "native=/Users/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+        "-o",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-resource-replay-repair/before-tests",
+        "--extern",
+        "serde_json=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-consumer-repair/candidate-native-deps/libserde_json-67d6313cceeae34f.rlib",
+        "--extern",
+        "ttf_parser=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-consumer-repair/candidate-native-deps/libttf_parser-29a0d332d5024b81.rlib",
+        "--extern",
+        "sha2=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-consumer-repair/candidate-native-deps/libsha2-1677794bdf3da50a.rlib",
+        "--extern",
+        "roxmltree=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-consumer-repair/candidate-native-deps/libroxmltree-2f7c87df9404699d.rlib"
+      ],
+      "source_sha256": "d75a32b5f8c33aba6cb4a4f1220931d09ac922c6b2d0db7c716bb0838311bbea",
+      "exit_code": 101,
+      "summary": [
+        "test result: FAILED. 10 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.75s"
+      ]
+    },
+    "supplied-family": {
+      "compile_command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/Users/tsjang/rhwp/tests/cases/issue_4138_original_equation_print_paper.rs",
+        "--extern",
+        "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-resource-replay-repair/librhwp-candidate.rlib",
+        "-L",
+        "dependency=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-resource-replay-repair/candidate-native-deps",
+        "-L",
+        "native=/Users/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+        "-o",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/before-tests",
+        "--extern",
+        "serde_json=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-resource-replay-repair/candidate-native-deps/libserde_json-67d6313cceeae34f.rlib",
+        "--extern",
+        "ttf_parser=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-resource-replay-repair/candidate-native-deps/libttf_parser-29a0d332d5024b81.rlib",
+        "--extern",
+        "sha2=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-resource-replay-repair/candidate-native-deps/libsha2-1677794bdf3da50a.rlib",
+        "--extern",
+        "roxmltree=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-resource-replay-repair/candidate-native-deps/libroxmltree-2f7c87df9404699d.rlib"
+      ],
+      "exit_code": 101,
+      "summary": [
+        "test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.91s"
+      ]
+    }
+  },
+  "test_source_sha256": "cea24c155f4b70deb035b57b3f1f9b64c7f9764adfb6e761654739793f4434db",
+  "oracle_sha256": "7501e7b7d949282b14155457afbaffc0122e17b2432f457826af49dcdca97e81",
+  "post_build_metadata_only": "빌드 후 테스트 상단 주석 시각과 독립 Print job 메타데이터를 보완했다. runtime SHA는 빌드와 일치한다."
+}

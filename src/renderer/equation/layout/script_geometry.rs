@@ -20,30 +20,6 @@ fn ends_with_uppercase_letter(node: &EqNode) -> bool {
     }
 }
 
-/// 구형 원본 face의 단일 글줄만 인증한다. 분수·중첩 첨자·대체 글리프를
-/// 본문 한 줄로 접지 않으며, 행과 자식이 같은 기준선을 소유해야 한다.
-fn legacy_glyph_line(value: &LayoutBox, fs: f64) -> bool {
-    if (value.font_size - fs).abs() > 1e-8 {
-        return false;
-    }
-    match &value.kind {
-        LayoutKind::HancomGlyphs(run) => {
-            run.font_family == super::super::legacy_glyphs::FONT_FAMILY && !run.glyphs.is_empty()
-        }
-        LayoutKind::Row(items) => {
-            !items.is_empty()
-                && items.iter().all(|item| {
-                    (item.y + item.baseline - value.baseline).abs() < 1e-8
-                        && legacy_glyph_line(item, fs)
-                })
-        }
-        LayoutKind::FontStyle { body, .. } | LayoutKind::Color { body, .. } => {
-            (body.y + body.baseline - value.baseline).abs() < 1e-8 && legacy_glyph_line(body, fs)
-        }
-        _ => false,
-    }
-}
-
 impl EqLayout {
     /// 빈 본체도 첨자의 기준선 프레임을 소유한다. 잉크와 전진폭은 없다.
     /// 일반 Empty나 공개 LaTeX의 배치를 빈 글줄로 바꾸지 않는다.
@@ -86,7 +62,9 @@ impl EqLayout {
         sub: &LayoutBox,
         fs: f64,
     ) -> (f64, f64) {
-        if self.legacy_math_face && legacy_glyph_line(base, fs) && legacy_glyph_line(sub, fs * 0.64)
+        if self.legacy_math_face
+            && super::super::legacy_glyphs::is_line(base, fs)
+            && super::super::legacy_glyphs::is_line(sub, fs * 0.64)
         {
             // 독립 한컴2024 Print의 6/9/12/18pt·40조건에서 구형 아래첨자의
             // 기준선은 본체보다 약 0.28em 낮다. 자식 ascent의 비율로 원점을

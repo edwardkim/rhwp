@@ -25,6 +25,28 @@ pub(super) fn family_file_for_chars(
     family_file_from_database(system_fonts(), names, bold, chars)
 }
 
+/// 명시한 파일·폴더는 배포 파일명이 아닌 내부 family로도 해석한다.
+/// 시스템 글꼴보다 먼저 조회하며 공급 경로 사이의 우선순위를 유지한다.
+pub(super) fn supplied_family_file_for_chars(
+    paths: &[PathBuf],
+    names: &[String],
+    bold: bool,
+    chars: &std::collections::HashSet<char>,
+) -> Option<PathBuf> {
+    for path in paths {
+        let mut fonts = Database::new();
+        if path.is_dir() {
+            fonts.load_fonts_dir(path);
+        } else if path.is_file() {
+            let _ = fonts.load_font_file(path);
+        }
+        if let Some(file) = family_file_from_database(&fonts, names, bold, chars) {
+            return Some(file);
+        }
+    }
+    None
+}
+
 pub(super) fn family_file_from_database(
     fonts: &Database,
     names: &[String],

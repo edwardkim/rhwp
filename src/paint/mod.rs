@@ -16,6 +16,7 @@ pub(crate) mod device_clip;
 pub(crate) mod device_fill;
 pub(crate) mod device_image;
 pub(crate) mod dot_leader;
+mod equation_print_frame;
 pub mod font;
 pub mod font_glyph;
 mod font_size;

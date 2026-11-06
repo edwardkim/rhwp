@@ -167,6 +167,14 @@ pub(super) fn find_font_file(plan: &FontFileLookupPlan) -> Option<std::path::Pat
             }
         }
     }
+    if let Some(path) = super::system_fonts::supplied_family_file_for_chars(
+        &plan.custom_dirs,
+        &plan.families,
+        plan.bold,
+        &std::collections::HashSet::new(),
+    ) {
+        return Some(path);
+    }
     if let Some(path) = super::system_fonts::family_file(&plan.families, plan.bold) {
         return Some(path);
     }
@@ -198,5 +206,12 @@ pub(super) fn find_font_file_for_chars(
     if covered {
         return Some(preferred);
     }
-    super::system_fonts::family_file_for_chars(&plan.families, plan.bold, chars).or(Some(preferred))
+    super::system_fonts::supplied_family_file_for_chars(
+        &plan.custom_dirs,
+        &plan.families,
+        plan.bold,
+        chars,
+    )
+    .or_else(|| super::system_fonts::family_file_for_chars(&plan.families, plan.bold, chars))
+    .or(Some(preferred))
 }

@@ -67,3 +67,27 @@ pub(super) fn measure(text: &str, role: Role, fs: f64, pad: f64) -> Option<Glyph
         baseline_shift: 0.0,
     })
 }
+
+/// 구형 원본 face의 단일 글줄만 인증한다. 분수·중첩 첨자·대체 글리프를
+/// 본문 한 줄로 접지 않으며, 행과 자식이 같은 기준선을 소유해야 한다.
+pub(super) fn is_line(value: &super::layout::LayoutBox, fs: f64) -> bool {
+    if (value.font_size - fs).abs() > 1e-8 {
+        return false;
+    }
+    match &value.kind {
+        super::layout::LayoutKind::HancomGlyphs(run) => {
+            run.font_family == FONT_FAMILY && !run.glyphs.is_empty()
+        }
+        super::layout::LayoutKind::Row(items) => {
+            !items.is_empty()
+                && items.iter().all(|item| {
+                    (item.y + item.baseline - value.baseline).abs() < 1e-8 && is_line(item, fs)
+                })
+        }
+        super::layout::LayoutKind::FontStyle { body, .. }
+        | super::layout::LayoutKind::Color { body, .. } => {
+            (body.y + body.baseline - value.baseline).abs() < 1e-8 && is_line(body, fs)
+        }
+        _ => false,
+    }
+}

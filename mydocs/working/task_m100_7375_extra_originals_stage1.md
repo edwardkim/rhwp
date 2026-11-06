@@ -208,3 +208,25 @@ wide/edge/tight Native 98.81412/98.36366/97.17452%→각100%, fresh WASM 각100%
 재산출했고 부모와 바뀐 PNG가 각각0쪽이다. Native 44·129·130쪽, WASM 129·130쪽의
 수식 잔여는 그대로 남아 있으므로 PR 제출을 완료로 처리하지 않는다.
 [전후 TSV·review/overlay·검사와 producer](../pr/assets/issue4138/page-frame-coverage-20261107/README.md).
+
+
+## 2026-11-07 원본 수식의 공통 Print 프레임과 SVG 실제 소비
+
+부모 dbf9b54beb에서 본문만 소비하던 물리 PrintPaper를 구형 원본 수식의 공통 paint에도
+연결했다. 단일 글줄은 자연 표시 기준선과 저장 호스트 기준선을 구분하며 채우기 뒤에도 같은
+결과를 쓴다. 현대 표시·Screen·Print2020·HighQuality와 source bbox·글자 크기는 유지한다.
+SVG의 오래된 표시 조각·미소비 그룹 행렬·다른 face 추정·파일명만 읽던 공급 경로도 함께
+복구했다. 명시한 폴더의 내부 family·스타일·문자 범위로 공급하고 무관한 face는 선택하지 않는다.
+
+독립 한컴2024 Save 후 Print의 A4/A5/혼합/채우기 뒤 40조건·68글리프는 Native/fresh WASM
+직접 PNG 및 SVG raster에서 각100%다. SVG 8개의 원본 글꼴 바이트도 공급 파일과 같다.
+관계형8·독립192DPI ±2px 고정형5의 실제 단계별 실패→최종13 PASS, 집중130 PASS(이 중
+기존 output 진단1개), 별도 SVG 소비31 PASS를 확인했다. fmt·Native/전체 target/WASM
+Clippy·manifest·unit tier를 통과했다. #8696 원본3종과 독립 글상자3종도 두 경로100%다.
+
+실제 분할197쪽은 양쪽 새로 출력했다. 부모 대비 바뀐 PNG는7쪽,190쪽은 바이트가 같다.
+Native 최저95.77112% /fresh WASM95.77492%,98% 미달129·130쪽의 복합 수식 가로 간격은
+남아 있다. 최종 전체 회귀·handbook·실제 Studio 소비 검증 및 PR 제출을 완료로 처리하지 않는다.
+[전후 TSV·review/overlay·producer와 검사 근거](../pr/assets/issue4138/original-equation-print-paper-20261107/README.md).
+독립 자연 저장235조건과 추가 그룹170조건에서 논리 전진·그룹 프레임을 구분하는 조사를
+이어가며, 폰트 바이너리·글꼴 복원 표본·진단 스크립트는 ignored output에만 보존한다.

@@ -191,9 +191,11 @@ impl PagePaintContext {
             f: 0.0,
         };
         let mut sources = std::collections::HashSet::new();
+        let mut equation_sources = std::collections::HashSet::new();
         fn collect(
             node: &LayerNode,
             sources: &mut std::collections::HashSet<u32>,
+            equation_sources: &mut std::collections::HashSet<crate::renderer::render_tree::NodeId>,
             rounded: &mut bool,
             plane: crate::paint::PaintReplayPlane,
             inherited_layer: Option<crate::renderer::render_tree::RenderLayerInfo>,
@@ -206,6 +208,7 @@ impl PagePaintContext {
                         collect(
                             child,
                             sources,
+                            equation_sources,
                             rounded,
                             plane,
                             active_layer,
@@ -217,6 +220,7 @@ impl PagePaintContext {
                     collect(
                         child,
                         sources,
+                        equation_sources,
                         rounded,
                         plane,
                         active_layer,
@@ -230,6 +234,17 @@ impl PagePaintContext {
                             continue;
                         }
                         *rounded |= PagePaintContext::op_has_print_solid_fill(op, hangul2024_print);
+                        if !*rounded {
+                            if let (Some(id), PaintOp::Equation { equation, .. }) =
+                                (node.source_node_id, op)
+                            {
+                                if crate::renderer::equation::uses_original_hft_glyphs(
+                                    &equation.layout_box,
+                                ) {
+                                    equation_sources.insert(id);
+                                }
+                            }
+                        }
                         if let PaintOp::TextRun {
                             run,
                             source: Some(source),
@@ -329,6 +344,7 @@ impl PagePaintContext {
             collect(
                 node,
                 &mut sources,
+                &mut equation_sources,
                 &mut rounded,
                 plane,
                 None,
@@ -336,6 +352,11 @@ impl PagePaintContext {
             );
         }
         publish(node, &sources, transform);
+        // 이 종이/DC 계약은 명시적인 2024 Print에만 있다. Screen·HighQuality와
+        // 기존 2020 표시 경로를 같은 축으로 바꾸지 않는다.
+        if self.print_paper.is_some() {
+            super::equation_print_frame::publish(node, &equation_sources, transform);
+        }
     }
 
     fn shape_has_print_solid_fill(style: &crate::renderer::ShapeStyle) -> bool {
