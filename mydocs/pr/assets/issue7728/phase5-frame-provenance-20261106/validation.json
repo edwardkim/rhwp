@@ -1,0 +1,843 @@
+{
+  "status": "집중 회귀·전기안전 전18쪽 Native 복구, 전체 제출 검증 미완료",
+  "base": "5716a226b562b7300193dd0b573ded9cd71ac890",
+  "producer": {
+    "head": "1a4b2bf37bac8e06c980cf5b79dc8fb818f2a9c6",
+    "source_diff_sha256": "486845f3b60c39099400f6144f42ab9d31b4de299bd5795167a80652c5be05b5",
+    "pid": 63665,
+    "started_at": "2026-11-06T03:42:17.020852+00:00",
+    "jobs": 8,
+    "current": "complete",
+    "success": true,
+    "command": [
+      "/usr/bin/sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--lib",
+      "--bin",
+      "rhwp"
+    ],
+    "cargo_pid": 66197,
+    "exit_code": 0,
+    "seconds": 166.216,
+    "rhwp-issue7728-repaired-v17-native": {
+      "sha256": "b9be9966f1919d0d43a21bd5616d3d2d10ef2108ec8e90c1cebae451dca87038",
+      "size": 73207360
+    },
+    "librhwp-issue7728-repaired-v17.rlib": {
+      "sha256": "3d68f4c66509946629c84cb2282d6a70e87850483a85981655b3b62b67749ac7",
+      "size": 132497368
+    }
+  },
+  "changed_source_sha256": {
+    "src/renderer/layout/table_layout.rs": "d3104864a0f87d66b0ac6d26cc4fe5c2a126251bd6d349d6bfdfcf1540d8db1b",
+    "src/renderer/layout/table_layout/stored_intra_paragraph_frame.rs": "8d75bfc7946a9dc04ff454ab0b65aea39784c408fb14534c44b54bebabdbbdb6",
+    "src/renderer/layout/table_layout/stored_nested_source_cut.rs": "6860cf4a52f6e924bb6f7f18a6a38ebc68367a041aae2d298ed20792840e70b8",
+    "src/renderer/layout/table_layout/stored_ordinary_row_frame.rs": "6194d22d4379b968e0697a698b0da6f66adb48e84ab0b0575d85e5bd605ca92c",
+    "src/renderer/layout/table_layout/stored_page_unit_frames.rs": "2b00b2fdc68bb25e0456daf7894db5e846318ae73ac3616cd18a2be5a7910976",
+    "src/renderer/layout/table_layout/stored_span_content.rs": "90d688bdbbc8201e8d63f609ce8a9f6b057f15714005ca47ecf75e993657b891",
+    "src/renderer/layout/table_layout/stored_zero_origin.rs": "4a3c9bf0a307a10587feac98aab0f4059bf380486b0082a98aeee0b71d6d637c"
+  },
+  "focused_before": {
+    "pid": 1982,
+    "stage": "rebase-v10-extern-fixed",
+    "head": "1a4b2bf37bac8e06c980cf5b79dc8fb818f2a9c6",
+    "library": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/librhwp-issue7728-rebase-v10.rlib",
+    "library_sha256": "025e2e1c38b150bbe1470cc9a76e39f69ee3866aa2c0aa3d19ac1fc67a902a7a",
+    "source": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/counterexamples-and-fix.rs",
+    "success": false,
+    "current": "complete",
+    "compile_command": [
+      "rustc",
+      "--edition=2021",
+      "--test",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/counterexamples-and-fix.rs",
+      "--extern",
+      "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/librhwp-issue7728-rebase-v10.rlib",
+      "--extern",
+      "serde_json=/Users/tsjang/rhwp/target/issue7375/release-test/deps/libserde_json-67d6313cceeae34f.rlib",
+      "-L",
+      "dependency=/Users/tsjang/rhwp/target/issue7375/release-test/deps",
+      "-L",
+      "native=/Users/tsjang/rhwp/target/issue7375/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+      "-o",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/focused-rebase-v10-extern-fixed/tests",
+      "--extern",
+      "roxmltree=/Users/tsjang/rhwp/target/issue7375/release-test/deps/libroxmltree-96e156fe64779806.rlib"
+    ],
+    "test_command": [
+      "/usr/bin/sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/focused-rebase-v10-extern-fixed/tests",
+      "child_frames::",
+      "saved_frames::",
+      "current7728::",
+      "source71352",
+      "pii::issue_5846_closed_block_cut_keeps_cost_label_owners_and_alignment",
+      "split::saved_split_final_continuation_keeps_its_source_tail_and_print_origin",
+      "--test-threads",
+      "8"
+    ],
+    "exit_code": 101,
+    "seconds": 7.532,
+    "summaries": [
+      "test result: FAILED. 8 passed; 9 failed; 0 ignored; 0 measured; 5 filtered out; finished in 6.77s"
+    ],
+    "failures": [
+      "test pii::issue_5846_closed_block_cut_keeps_cost_label_owners_and_alignment ... FAILED",
+      "test child_frames::split_child_end_and_following_heading_match_completed_print_page ... FAILED",
+      "test child_frames::a_blank_prefix_line_does_not_paint_the_next_pages_picture ... FAILED",
+      "test source71352_has_no_new_text_overlap ... FAILED",
+      "test saved_frames::a_cut_inside_a_nested_table_is_not_written_as_a_later_host_line ... FAILED",
+      "test saved_frames::reopened_layout_matches_the_layout_that_was_saved ... FAILED",
+      "test saved_frames::the_sixty_one_character_edit_survives_the_round_trip ... FAILED",
+      "test split::saved_split_final_continuation_keeps_its_source_tail_and_print_origin ... FAILED",
+      "test saved_frames::shorter_edit_and_untouched_save_keep_their_layout ... FAILED",
+      "test result: FAILED. 8 passed; 9 failed; 0 ignored; 0 measured; 5 filtered out; finished in 6.77s"
+    ]
+  },
+  "focused_after": {
+    "pid": 79092,
+    "stage": "repaired-v17",
+    "head": "1a4b2bf37bac8e06c980cf5b79dc8fb818f2a9c6",
+    "library": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/librhwp-issue7728-repaired-v17.rlib",
+    "library_sha256": "3d68f4c66509946629c84cb2282d6a70e87850483a85981655b3b62b67749ac7",
+    "source": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/counterexamples-and-fix.rs",
+    "success": true,
+    "current": "complete",
+    "compile_command": [
+      "rustc",
+      "--edition=2021",
+      "--test",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/counterexamples-and-fix.rs",
+      "--extern",
+      "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/librhwp-issue7728-repaired-v17.rlib",
+      "--extern",
+      "serde_json=/Users/tsjang/rhwp/target/issue7375/release-test/deps/libserde_json-67d6313cceeae34f.rlib",
+      "-L",
+      "dependency=/Users/tsjang/rhwp/target/issue7375/release-test/deps",
+      "-L",
+      "native=/Users/tsjang/rhwp/target/issue7375/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+      "-o",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/focused-repaired-v17/tests",
+      "--extern",
+      "roxmltree=/Users/tsjang/rhwp/target/issue7375/release-test/deps/libroxmltree-96e156fe64779806.rlib"
+    ],
+    "test_command": [
+      "/usr/bin/sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/focused-repaired-v17/tests",
+      "child_frames::",
+      "saved_frames::",
+      "current7728::",
+      "source71352",
+      "pii::issue_5846_closed_block_cut_keeps_cost_label_owners_and_alignment",
+      "split::saved_split_final_continuation_keeps_its_source_tail_and_print_origin",
+      "--test-threads",
+      "8"
+    ],
+    "exit_code": 0,
+    "seconds": 7.838,
+    "summaries": [
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 7.09s"
+    ],
+    "failures": []
+  },
+  "visual": {
+    "pid": 79091,
+    "current": "complete",
+    "collection_complete": true,
+    "steps": [
+      {
+        "stage": "before",
+        "key": "electrical7728",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",
+          "--pdf",
+          "pdf/issue7728/70833-electrical-safety-rule-hancom2020-print-20261106.pdf",
+          "--key",
+          "electrical7728",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/rhwp-issue7728-rebase-v10-native",
+          "--rasterizer",
+          "png",
+          "--dpi",
+          "96",
+          "--compat",
+          "2022",
+          "--page-workers",
+          "8",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--embed-fonts",
+          "full",
+          "--out",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/before/electrical7728"
+        ],
+        "binary_sha256": "5135aca13e241b4a82d914d75541cf8af6263f68bc91f509de9a85d5debd465a",
+        "source_head": "1a4b2bf37bac8e06c980cf5b79dc8fb818f2a9c6",
+        "source_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "doc_sha256": "a80b09754ce4f8e73398af9a9467f570c02be237815fec203ee8ff2db1bb8cbb",
+        "pdf_sha256": "6cec821ff5897714669602c8707d66f669cfcb1187362c69101a0255c8d17956",
+        "pid": 79133,
+        "exit_code": 0,
+        "seconds": 18.053
+      },
+      {
+        "stage": "before",
+        "key": "giant4138",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/saved-split-1x2.hwp",
+          "--pdf",
+          "pdf/issue4138-ascii-split-20261016-2024.pdf",
+          "--key",
+          "giant4138",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/rhwp-issue7728-rebase-v10-native",
+          "--rasterizer",
+          "png",
+          "--dpi",
+          "192",
+          "--compat",
+          "2024",
+          "--page-workers",
+          "8",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--embed-fonts",
+          "full",
+          "--out",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/before/giant4138",
+          "--pages",
+          "177-178"
+        ],
+        "binary_sha256": "5135aca13e241b4a82d914d75541cf8af6263f68bc91f509de9a85d5debd465a",
+        "source_head": "1a4b2bf37bac8e06c980cf5b79dc8fb818f2a9c6",
+        "source_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "doc_sha256": "4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9",
+        "pdf_sha256": "5a82290de1571c692c7246fe6b57ae136602ae52c2068f2568fffc6c91bfd571",
+        "pid": 80551,
+        "exit_code": 1,
+        "seconds": 10.519
+      },
+      {
+        "stage": "before",
+        "key": "pii5846",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "samples/task2097/75544_pii_bunseok.hwpx",
+          "--pdf",
+          "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+          "--key",
+          "pii5846",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/rhwp-issue7728-rebase-v10-native",
+          "--rasterizer",
+          "png",
+          "--dpi",
+          "96",
+          "--compat",
+          "2022",
+          "--page-workers",
+          "8",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--embed-fonts",
+          "full",
+          "--out",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/before/pii5846",
+          "--pages",
+          "41-42",
+          "--font-environment",
+          "mydocs/pr/assets/issue7445/resolution-20261005/pii5846-reference-font-environment.json"
+        ],
+        "binary_sha256": "5135aca13e241b4a82d914d75541cf8af6263f68bc91f509de9a85d5debd465a",
+        "source_head": "1a4b2bf37bac8e06c980cf5b79dc8fb818f2a9c6",
+        "source_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "doc_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+        "pdf_sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+        "pid": 81318,
+        "exit_code": 0,
+        "seconds": 4.07
+      },
+      {
+        "stage": "before",
+        "key": "lpg71352",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "samples/issue8060/71352_lpg_regulatory_impact.hwp",
+          "--pdf",
+          "pdf/issue8060/71352_lpg_regulatory_impact-2024.pdf",
+          "--key",
+          "lpg71352",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/rhwp-issue7728-rebase-v10-native",
+          "--rasterizer",
+          "png",
+          "--dpi",
+          "96",
+          "--compat",
+          "2024",
+          "--page-workers",
+          "8",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--embed-fonts",
+          "full",
+          "--out",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/before/lpg71352",
+          "--pages",
+          "2"
+        ],
+        "binary_sha256": "5135aca13e241b4a82d914d75541cf8af6263f68bc91f509de9a85d5debd465a",
+        "source_head": "1a4b2bf37bac8e06c980cf5b79dc8fb818f2a9c6",
+        "source_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "doc_sha256": "4e9b240082ba91b99669325292cae2b62e88765854d1e7bbbc6d44146dc14d55",
+        "pdf_sha256": "c2e1b4beea546d02436e85f9b491ab64093c6327bf6ef227f02f4f075608f501",
+        "pid": 81490,
+        "exit_code": 0,
+        "seconds": 3.789
+      },
+      {
+        "stage": "after",
+        "key": "electrical7728",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",
+          "--pdf",
+          "pdf/issue7728/70833-electrical-safety-rule-hancom2020-print-20261106.pdf",
+          "--key",
+          "electrical7728",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/rhwp-issue7728-repaired-v17-native",
+          "--rasterizer",
+          "png",
+          "--dpi",
+          "96",
+          "--compat",
+          "2022",
+          "--page-workers",
+          "8",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--embed-fonts",
+          "full",
+          "--out",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/after/electrical7728"
+        ],
+        "binary_sha256": "b9be9966f1919d0d43a21bd5616d3d2d10ef2108ec8e90c1cebae451dca87038",
+        "source_head": "1a4b2bf37bac8e06c980cf5b79dc8fb818f2a9c6",
+        "source_diff_sha256": "486845f3b60c39099400f6144f42ab9d31b4de299bd5795167a80652c5be05b5",
+        "doc_sha256": "a80b09754ce4f8e73398af9a9467f570c02be237815fec203ee8ff2db1bb8cbb",
+        "pdf_sha256": "6cec821ff5897714669602c8707d66f669cfcb1187362c69101a0255c8d17956",
+        "pid": 81668,
+        "exit_code": 0,
+        "seconds": 11.837
+      },
+      {
+        "stage": "after",
+        "key": "giant4138",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/saved-split-1x2.hwp",
+          "--pdf",
+          "pdf/issue4138-ascii-split-20261016-2024.pdf",
+          "--key",
+          "giant4138",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/rhwp-issue7728-repaired-v17-native",
+          "--rasterizer",
+          "png",
+          "--dpi",
+          "192",
+          "--compat",
+          "2024",
+          "--page-workers",
+          "8",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--embed-fonts",
+          "full",
+          "--out",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/after/giant4138",
+          "--pages",
+          "177-178"
+        ],
+        "binary_sha256": "b9be9966f1919d0d43a21bd5616d3d2d10ef2108ec8e90c1cebae451dca87038",
+        "source_head": "1a4b2bf37bac8e06c980cf5b79dc8fb818f2a9c6",
+        "source_diff_sha256": "486845f3b60c39099400f6144f42ab9d31b4de299bd5795167a80652c5be05b5",
+        "doc_sha256": "4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9",
+        "pdf_sha256": "5a82290de1571c692c7246fe6b57ae136602ae52c2068f2568fffc6c91bfd571",
+        "pid": 82783,
+        "exit_code": 0,
+        "seconds": 10.526
+      },
+      {
+        "stage": "after",
+        "key": "pii5846",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "samples/task2097/75544_pii_bunseok.hwpx",
+          "--pdf",
+          "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+          "--key",
+          "pii5846",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/rhwp-issue7728-repaired-v17-native",
+          "--rasterizer",
+          "png",
+          "--dpi",
+          "96",
+          "--compat",
+          "2022",
+          "--page-workers",
+          "8",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--embed-fonts",
+          "full",
+          "--out",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/after/pii5846",
+          "--pages",
+          "41-42",
+          "--font-environment",
+          "mydocs/pr/assets/issue7445/resolution-20261005/pii5846-reference-font-environment.json"
+        ],
+        "binary_sha256": "b9be9966f1919d0d43a21bd5616d3d2d10ef2108ec8e90c1cebae451dca87038",
+        "source_head": "1a4b2bf37bac8e06c980cf5b79dc8fb818f2a9c6",
+        "source_diff_sha256": "486845f3b60c39099400f6144f42ab9d31b4de299bd5795167a80652c5be05b5",
+        "doc_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+        "pdf_sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+        "pid": 83602,
+        "exit_code": 0,
+        "seconds": 3.78
+      },
+      {
+        "stage": "after",
+        "key": "lpg71352",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "samples/issue8060/71352_lpg_regulatory_impact.hwp",
+          "--pdf",
+          "pdf/issue8060/71352_lpg_regulatory_impact-2024.pdf",
+          "--key",
+          "lpg71352",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/rhwp-issue7728-repaired-v17-native",
+          "--rasterizer",
+          "png",
+          "--dpi",
+          "96",
+          "--compat",
+          "2024",
+          "--page-workers",
+          "8",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--embed-fonts",
+          "full",
+          "--out",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/after/lpg71352",
+          "--pages",
+          "2"
+        ],
+        "binary_sha256": "b9be9966f1919d0d43a21bd5616d3d2d10ef2108ec8e90c1cebae451dca87038",
+        "source_head": "1a4b2bf37bac8e06c980cf5b79dc8fb818f2a9c6",
+        "source_diff_sha256": "486845f3b60c39099400f6144f42ab9d31b4de299bd5795167a80652c5be05b5",
+        "doc_sha256": "4e9b240082ba91b99669325292cae2b62e88765854d1e7bbbc6d44146dc14d55",
+        "pdf_sha256": "c2e1b4beea546d02436e85f9b491ab64093c6327bf6ef227f02f4f075608f501",
+        "pid": 83822,
+        "exit_code": 0,
+        "seconds": 3.843
+      }
+    ],
+    "results": [
+      {
+        "stage": "before",
+        "key": "electrical7728",
+        "pages": 18,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/before/electrical7728/electrical7728/silhouette_manifest.json",
+        "minimum_raw": 94.62153,
+        "below90": []
+      },
+      {
+        "stage": "before",
+        "key": "giant4138",
+        "pages": 2,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/before/giant4138/giant4138/silhouette_manifest.json",
+        "minimum_raw": 22.53834,
+        "below90": [
+          177,
+          178
+        ]
+      },
+      {
+        "stage": "before",
+        "key": "pii5846",
+        "pages": 2,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/before/pii5846/pii5846/silhouette_manifest.json",
+        "minimum_raw": 96.11992,
+        "below90": []
+      },
+      {
+        "stage": "before",
+        "key": "lpg71352",
+        "pages": 1,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/before/lpg71352/lpg71352/silhouette_manifest.json",
+        "minimum_raw": 92.44211,
+        "below90": []
+      },
+      {
+        "stage": "after",
+        "key": "electrical7728",
+        "pages": 18,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/after/electrical7728/electrical7728/silhouette_manifest.json",
+        "minimum_raw": 94.62153,
+        "below90": []
+      },
+      {
+        "stage": "after",
+        "key": "giant4138",
+        "pages": 2,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/after/giant4138/giant4138/silhouette_manifest.json",
+        "minimum_raw": 93.17983,
+        "below90": []
+      },
+      {
+        "stage": "after",
+        "key": "pii5846",
+        "pages": 2,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/after/pii5846/pii5846/silhouette_manifest.json",
+        "minimum_raw": 100.0,
+        "below90": []
+      },
+      {
+        "stage": "after",
+        "key": "lpg71352",
+        "pages": 1,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/after/lpg71352/lpg71352/silhouette_manifest.json",
+        "minimum_raw": 96.84314,
+        "below90": []
+      }
+    ],
+    "capture_workers": 8,
+    "scope": "7728 전18쪽과 이번 실패의 실제 출력 경계. 후속 전체 범위 검증을 대체하지 않음."
+  },
+  "page_comparison": {
+    "electrical7728": [
+      {
+        "page": 1,
+        "before": 99.98888,
+        "after": 99.98888,
+        "delta": 0.0
+      },
+      {
+        "page": 2,
+        "before": 99.99439,
+        "after": 99.99439,
+        "delta": 0.0
+      },
+      {
+        "page": 3,
+        "before": 99.99763,
+        "after": 99.99763,
+        "delta": 0.0
+      },
+      {
+        "page": 4,
+        "before": 97.90408,
+        "after": 97.90408,
+        "delta": 0.0
+      },
+      {
+        "page": 5,
+        "before": 95.35356,
+        "after": 95.35356,
+        "delta": 0.0
+      },
+      {
+        "page": 6,
+        "before": 94.62153,
+        "after": 94.62153,
+        "delta": 0.0
+      },
+      {
+        "page": 7,
+        "before": 94.79966,
+        "after": 94.79966,
+        "delta": 0.0
+      },
+      {
+        "page": 8,
+        "before": 99.79732,
+        "after": 99.79732,
+        "delta": 0.0
+      },
+      {
+        "page": 9,
+        "before": 97.70433,
+        "after": 97.70433,
+        "delta": 0.0
+      },
+      {
+        "page": 10,
+        "before": 99.57724,
+        "after": 99.57724,
+        "delta": 0.0
+      },
+      {
+        "page": 11,
+        "before": 99.9619,
+        "after": 99.9619,
+        "delta": 0.0
+      },
+      {
+        "page": 12,
+        "before": 96.5452,
+        "after": 96.5452,
+        "delta": 0.0
+      },
+      {
+        "page": 13,
+        "before": 99.97129,
+        "after": 99.97129,
+        "delta": 0.0
+      },
+      {
+        "page": 14,
+        "before": 99.48718,
+        "after": 99.48718,
+        "delta": 0.0
+      },
+      {
+        "page": 15,
+        "before": 99.34239,
+        "after": 99.34239,
+        "delta": 0.0
+      },
+      {
+        "page": 16,
+        "before": 99.98648,
+        "after": 99.98648,
+        "delta": 0.0
+      },
+      {
+        "page": 17,
+        "before": 99.74176,
+        "after": 99.74176,
+        "delta": 0.0
+      },
+      {
+        "page": 18,
+        "before": 99.76455,
+        "after": 99.76455,
+        "delta": 0.0
+      }
+    ],
+    "giant4138": [
+      {
+        "page": 177,
+        "before": 36.2907,
+        "after": 93.17983,
+        "delta": 56.88913
+      },
+      {
+        "page": 178,
+        "before": 22.53834,
+        "after": 100.0,
+        "delta": 77.46166
+      }
+    ],
+    "pii5846": [
+      {
+        "page": 41,
+        "before": 96.11992,
+        "after": 100.0,
+        "delta": 3.88008
+      },
+      {
+        "page": 42,
+        "before": 98.9837,
+        "after": 100.0,
+        "delta": 1.0163
+      }
+    ],
+    "lpg71352": [
+      {
+        "page": 2,
+        "before": 92.44211,
+        "after": 96.84314,
+        "delta": 4.40103
+      }
+    ]
+  },
+  "electrical_fresh_pngs_byte_identical": 18,
+  "native_required": {
+    "pid": 80612,
+    "head": "1a4b2bf37bac8e06c980cf5b79dc8fb818f2a9c6",
+    "base": "5716a226b562b7300193dd0b573ded9cd71ac890",
+    "host": "현재 Mac",
+    "jobs": 8,
+    "test_threads": 8,
+    "cargo_sequential": true,
+    "current": "complete",
+    "success": true,
+    "steps": [
+      {
+        "name": "prepare",
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/issue7728-repaired-v17-native-required-prepare.log",
+        "started_at": "2026-11-06T03:45:42.553722+00:00",
+        "pid": 80837,
+        "exit_code": 0,
+        "seconds": 1.412,
+        "log_sha256": "2db59f56f4158158c875c3397d0f246623450e03223d565eeb743f962255f3a4",
+        "summaries": []
+      },
+      {
+        "name": "native-lib",
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+          "cargo",
+          "test",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--lib",
+          "--",
+          "--test-threads",
+          "8"
+        ],
+        "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/issue7728-repaired-v17-native-required-native-lib.log",
+        "started_at": "2026-11-06T03:45:44.348320+00:00",
+        "pid": 80911,
+        "exit_code": 0,
+        "seconds": 211.434,
+        "log_sha256": "ff73bc55963165fcffb92f33a7fe4374e57ca0c1e1040b3e1a0d5e5178628e83",
+        "summaries": [
+          "test result: ok. 3857 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 11.81s",
+          "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+          "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+          "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+        ]
+      },
+      {
+        "name": "native-png",
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+          "node",
+          "scripts/run-rust-test.mjs",
+          "issue_2225_missing_picture_placeholder",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/issue7728-repaired-v17-native-required-native-png.log",
+        "started_at": "2026-11-06T03:49:21.486364+00:00",
+        "pid": 96555,
+        "exit_code": 0,
+        "seconds": 180.434,
+        "log_sha256": "187d0e5ca21626c650c1bcc288496c61661649592869e16d1d5d0a88c35d3a0d",
+        "summaries": [
+          "     Summary [   2.368s] 2 tests run: 2 passed, 313 skipped"
+        ]
+      },
+      {
+        "name": "native-pdf",
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+          "node",
+          "scripts/run-rust-test.mjs",
+          "render_p37_direct_pdf_export",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/issue7728-repaired-v17-native-required-native-pdf.log",
+        "started_at": "2026-11-06T03:52:23.779137+00:00",
+        "pid": 10070,
+        "exit_code": 0,
+        "seconds": 12.305,
+        "log_sha256": "c704b3363f59a7c476d8b4bb9971bcdd6c0e27f12451284cff75d9ec6e9b4fe3",
+        "summaries": [
+          "     Summary [   1.858s] 22 tests run: 22 passed, 302 skipped"
+        ]
+      }
+    ],
+    "fresh_wasm": "이 실행의 범위 아님; 새 base/head 전체 검증 미완료"
+  },
+  "direct_review": [
+    "giant4138 p177 overlay: 끝 괘선·제목 순서 복구, 세부 글자 위치 차이는 남음",
+    "giant4138 p178 review: 원문 두 그림·후속 본문·다음 제목 보존",
+    "pii5846 p41 review와p42 overlay: 비용편익 라벨 앞/뒤 소속·이어받기 정렬 복구",
+    "lpg71352 p2 overlay: 본문/꼬리말 겹침 복구, 잔여 글자 위치 차이는 남음"
+  ],
+  "pending": [
+    "이 소스의 fresh WASM 전쪽·실제 소비 경로",
+    "거대 표·개인정보·LPG 전체 페이지 및 이전 완료 문서의 변경 영향 검증",
+    "전체 nextest·범위 lint/build/manifest/unit-tier",
+    "리베이스로 반영한 PR 기능 보존·최종 head 편람 gate"
+  ],
+  "native_required_state_sha256": "14f24836c797a021207b743ffad7d578a2eae5405a49376d75d3159e331bdec6",
+  "minimal_font_profile_sha256": "3ed96e145379aab622c4510cb42c016664bec9a28256b31b20b1d1f5b26eefdf"
+}

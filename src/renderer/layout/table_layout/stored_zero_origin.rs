@@ -173,6 +173,10 @@ impl LayoutEngine {
                 .render_normalization
                 .borrow()
                 .table_text_reflowed(table)
+            || self
+                .render_normalization
+                .borrow()
+                .nested_table_has_reflowed_host(table)
             || table.common.treat_as_char
             || table.common.text_wrap != TextWrap::TopAndBottom
             || table.layout_page_break() != TablePageBreak::RowBreak
@@ -238,10 +242,14 @@ impl LayoutEngine {
         // 원시 행 높이는 최소 선언값이다. 앞 행이 저장 글줄에 따라 성장했다면
         // 같은 물리 행 계획의 원점으로 첫 개체 프레임과의 교차를 판정한다.
         // 유닛을 재귀 조회하지 않아 줄 생산자와 컷 소비자가 같은 계획을 읽는다.
-        let measured_opening = !self
-            .render_normalization
-            .borrow()
-            .cell_frame_reflowed(table, cell)
+        // 측정 행 원점과 원본 글줄 원점을 직접 비교하는 보완은 위쪽 정렬에서만
+        // 성립한다. 가운데·아래 정렬의 지역 원점0은 행 위쪽의 물리 쪽 경계가 아니며,
+        // 아래의 독립 원시 프레임·동료 소유 근거를 통해서만 인증한다.
+        let measured_opening = cell.vertical_align == crate::model::table::VerticalAlign::Top
+            && !self
+                .render_normalization
+                .borrow()
+                .cell_frame_reflowed(table, cell)
             && self
                 .stored_frame_row_plans
                 .borrow()

@@ -388,7 +388,7 @@ impl LayoutEngine {
             if unit.para_idx != last.para_idx {
                 break;
             }
-            if Self::stored_in_paragraph_unit_is_original_restart(cell, unit) {
+            if self.stored_in_paragraph_unit_is_original_restart(table, cell, unit) {
                 return index == end;
             }
         }

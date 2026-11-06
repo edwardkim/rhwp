@@ -16587,6 +16587,7 @@ impl LayoutEngine {
                     // 닫는 행 경계는 한/글이 실제로 쪽을 넘긴 자리이므로 셀 내부 쪽 나눔과
                     // 같이 보존한다. 첫 조각 뒤의 행만 이 경계를 연다.
                     let stored_object_frame_row = self.stored_object_frame_row_count(nt);
+                    let measured_object_frame_row = self.stored_measured_object_frame_row_count(nt);
                     if std::env::var_os("RHWP_DIAG_SCAN").is_some() {
                         let normalization = self.render_normalization.borrow();
                         eprintln!(
@@ -16804,11 +16805,11 @@ impl LayoutEngine {
 
                                     let mut hard_break_before = driver_unit.hard_break_before
                                         || (reset_before && ri == 0 && fragment_index == 0)
-                                        || (stored_object_frame_row == Some(ri)
+                                        || (measured_object_frame_row == Some(ri)
                                             && fragment_index == 0);
                                     let mut stored_frame_break_before = driver_unit
                                         .stored_frame_break_before
-                                        || (stored_object_frame_row == Some(ri)
+                                        || (measured_object_frame_row == Some(ri)
                                             && fragment_index == 0);
                                     let mut vpos_gap_before =
                                         vpos_gap_before_para && ri == 0 && fragment_index == 0;
@@ -17085,7 +17086,7 @@ impl LayoutEngine {
                             // hard break, so capacity selection keeps the header
                             // with the following stored frame.
                             stored_frame_break_before: (stored_frame_break_before_para && ri == 0)
-                                || stored_object_frame_row == Some(ri),
+                                || measured_object_frame_row == Some(ri),
                             page_frame_reset_before: hard_break_before,
                             vpos_gap_before,
                             para_idx: pi,
@@ -20363,7 +20364,7 @@ impl LayoutEngine {
         if cell.row_span == 1
             && cell.height > 0
             && cell.height < 0x8000_0000
-            && Self::stored_in_paragraph_unit_is_original_restart(cell, next_unit)
+            && self.stored_in_paragraph_unit_is_original_restart(table, cell, next_unit)
         {
             let (_, _, top, bottom) = self.resolve_stored_nested_cell_padding(cell, table, styles);
             let padding = top + bottom;
@@ -23354,7 +23355,7 @@ impl LayoutEngine {
                 // 부모에 투영된 행의 시작은 자식이 인증한 물리 프레임일 수 있다.
                 // 표식만 믿지 않고 원래 자식 컷까지 같은 공통 조회로 추적한다.
                 let nested_source_frame = u.stored_frame_break_before
-                    && self.stored_nested_source_unit_frame_break(cell, table, j, styles);
+                    && self.stored_nested_object_unit_frame_break(cell, table, j, styles);
                 // 한 저장 줄이 자식 표 전체를 소유하면, 행으로 펼친 뒤에도 그
                 // 줄의 쪽 시작을 유지한다. 현재 잔여에는 안 들어가지만 새 밴드에는
                 // 전부 들어가는 원본 표에만 적용하며 큰 표의 행 분할은 보존한다.

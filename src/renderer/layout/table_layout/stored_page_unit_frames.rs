@@ -38,6 +38,20 @@ impl LayoutEngine {
                 continue;
             }
             let boundary = index + 1;
+            // 원시 선언으로 이미 닫혔거나 정규화로 축소한 상자는 기존 소비자가 소유한다.
+            // 이 보완은 원본 글줄로 행이 성장하여 원시 합으로는 찾지 못한 경계만
+            // 인증한다. 기존 경계에 새 강제 쪽 나눔 의미를 중복 부여하지 않는다.
+            let raw_rows = table.get_raw_row_heights();
+            if raw_rows.get(..boundary).is_some_and(|prefix| {
+                prefix
+                    .iter()
+                    .all(|&height| height > 0 && height <= i32::MAX as u32)
+                    && prefix.iter().map(|&height| i64::from(height)).sum::<i64>()
+                        + i64::from(table.cell_spacing) * index as i64
+                        >= i64::from(table.common.height)
+            }) {
+                return None;
+            }
             // 첫 상자를 닫는 원본 행만 인증한다. 뒤에서 새로 조판한 내용이나
             // 경계를 가로지르는 병합 칸은 이 원점을 증명하지 못한다.
             let original = table

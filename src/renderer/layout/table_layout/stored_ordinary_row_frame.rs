@@ -442,7 +442,7 @@ impl LayoutEngine {
                 self.cell_units(cell, table, styles)
                     .get(next)
                     .is_some_and(|unit| {
-                        Self::stored_in_paragraph_unit_is_original_restart(cell, unit)
+                        self.stored_in_paragraph_unit_is_original_restart(table, cell, unit)
                     })
             });
         if cut.len() != cells.len()
@@ -540,7 +540,7 @@ impl LayoutEngine {
             // 다른 칸이 완료돼도 원본 문단 내부의 다음 쪽 줄은 같은
             // 마지막 프레임을 연다. 전체 줄 전진 합으로 그 상자를 늘리지 않는다.
             if !paragraph_restart
-                && !Self::stored_in_paragraph_unit_is_original_restart(cell, first)
+                && !self.stored_in_paragraph_unit_is_original_restart(table, cell, first)
             {
                 return None;
             }
@@ -631,7 +631,8 @@ impl LayoutEngine {
                 let page_origin_is_shared = cells.iter().zip(cut).all(|(cell, &start)| {
                     let units = self.cell_units(cell, table, styles);
                     units.get(start).is_none_or(|unit| {
-                        let owns = Self::stored_in_paragraph_unit_is_original_restart(cell, unit);
+                        let owns =
+                            self.stored_in_paragraph_unit_is_original_restart(table, cell, unit);
                         has_page_owner |= owns;
                         owns
                     })
