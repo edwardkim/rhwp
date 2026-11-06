@@ -100,6 +100,21 @@ document.setFontEnvironment(undefined); // 기본 조판 복원
 프로그램 ID와 선언만으로 글리프 공급이나 PDF 일치를 인증하지 않으며 실제 바이트·cmap·backend
 소비와 독립 출력 대조는 별도로 확인한다.
 
+## 공급 글꼴의 이름 판정과 폭 표 없는 TrueType
+
+문서의 글꼴 이름은 Windows GDI family, 즉 name ID 1이다. name ID 16이 있는 글꼴은 `fontdb`가
+ID 1을 버리므로 Native 공급 판정 전에 같은 face의 family로 되살린다. 예를 들어 `서울한강체 M`은
+ID 1이고 `서울한강체`는 ID 16이다. 전체 이름(ID 4)은 family로 받지 않는다.
+
+폭 표가 없는 face를 원본 TrueType으로 선언한 슬롯은 이름이 같은 프로그램이 실제로 공급되면
+추정 폭 대신 그 프로그램의 hmtx로 측정한다. HWP5의 글꼴 유형 비트는 폭 표가 있는 face의 HFT 공급
+순서를 덮어쓰지 않으며, 폭 표가 없어 덮어쓸 계약이 없는 face에서만 이 선언을 사용한다. 프로그램이
+없으면 측정은 그대로다. 그래서 같은 문서라도 글꼴 공급 여부에 따라 줄바꿈이 달라지며, 비교할 기준
+PDF도 같은 글꼴 환경에서 만든 것을 써야 한다.
+
+Visual Sweep의 WASM 공급은 기본 `--rasterizer png` 경로의 `prepareHftOtfFonts`가 담당한다.
+진단용 `--rasterizer svg`에는 이 준비가 없어 공급 글꼴의 폭 측정을 확인할 수 없다.
+
 ## 같은 이름의 TrueType·HFT 프로그램 구분
 
 독립 PDF와 실제 글꼴 파일이 TrueType 프로그램을 사용하는 것으로 확인되었을 때만
