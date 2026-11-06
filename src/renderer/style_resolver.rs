@@ -508,6 +508,9 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
     Ok(styles)
 }
 
+/// 한/글이 저장 줄을 그대로 쓰는 변경 추적 설정 비트 (#8639 실측).
+const TRACK_CHANGE_KEEPS_STORED_ROWS: u32 = 0x08;
+
 /// 대체 선언과 실제 선택을 구분한다. HFT의 원본 전진, 내장 프로그램,
 /// 실제 대체 face 및 폭을 추정하는 face를 원본 TTF의 캐시 갱신 근거로 쓰지 않는다.
 fn refresh_source_program_projection_slots_with_storage<S: storage::Storage>(
@@ -516,6 +519,15 @@ fn refresh_source_program_projection_slots_with_storage<S: storage::Storage>(
     storage: &S,
 ) -> Result<(), S::Error> {
     styles.source_program_projection_slots = Default::default();
+    // [#8639] 한/글은 변경 추적 설정(`HWPTAG_TRACKCHANGE` · `<hh:trackchageConfig flags>`)에
+    // 0x08 이 있으면 가로 상자가 같은 저장 줄을 그대로 쓰고, 없을 때만 현재 글꼴로 다시
+    // 조판한다. 한/글 2020·2024 Print 실측: 86712(flags 0)는 표·문단만 남겨도 재조판하고
+    // flags 를 8 로 바꾸면 저장 줄을 유지한다. 반대로 정책연구과제심의신청서(flags 56)는
+    // 저장 줄을 유지하고 flags 를 0 으로 바꾸면 원본 KoPub 으로 재조판한다(16·32 는 무관).
+    // 저장 줄이 유지되는 문서에서 원본 프로그램으로 다시 짜면 한/글과 어긋난다.
+    if doc_info.track_change_flags() & TRACK_CHANGE_KEEPS_STORED_ROWS != 0 {
+        return Ok(());
+    }
     let dpi = styles.resolved_dpi.unwrap_or(96.0);
     let mut fallback_char_styles = None;
     let mut build_fallback = || -> Result<Vec<ResolvedCharStyle>, S::Error> {
