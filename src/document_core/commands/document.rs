@@ -1697,6 +1697,127 @@ impl DocumentCore {
             })
     }
 
+    /// 셀·글상자·머리말/꼬리말의 문단 기준 어울림 개체는 본문과 같은 밴드 프레임을 쓴다.
+    /// 실제 배제 영역을 함께 가진 프레임에서 원본 저장 줄을 수용하고, 맞지 않는 줄만
+    /// 다시 발행한다. 쪽/용지 기준 개체와 저장 좌표를 보존하는 형식은 기존 소유자에 둔다.
+    fn project_container_float_bands(
+        paragraphs: &mut [Paragraph],
+        width: f64,
+        project_here: bool,
+        admit_stored: bool,
+        styles: &ResolvedStyleSet,
+        dpi: f64,
+    ) {
+        use crate::model::shape::{HorzRelTo, VertRelTo};
+        if project_here && width > 0.0 {
+            let mut host = 0;
+            while host < paragraphs.len() {
+                let p = &paragraphs[host];
+                let local_shapes =
+                    p.controls
+                        .iter()
+                        .filter(|c| control_owns_body_band(c))
+                        .all(|c| {
+                            matches!(c, Control::Shape(shape)
+                        if shape.common().horz_rel_to == HorzRelTo::Para
+                            && shape.common().vert_rel_to == VertRelTo::Para)
+                        });
+                if !local_shapes
+                    || !p.controls.iter().any(control_owns_body_band)
+                    || (!admit_stored && !crate::renderer::para_has_no_stored_line_segs(p))
+                {
+                    host += 1;
+                    continue;
+                }
+                if let Some(band) = crate::renderer::composer::layout_container_picture_band(
+                    paragraphs,
+                    host,
+                    width,
+                    styles,
+                    dpi,
+                    admit_stored,
+                ) {
+                    let range = band.paragraph_range.clone();
+                    if range.start == host {
+                        for ((paragraph, (rows, spaces)), preserved) in paragraphs[range.clone()]
+                            .iter_mut()
+                            .zip(band.line_segs.into_iter().zip(band.space_metrics))
+                            .zip(band.preserved_stored)
+                        {
+                            if !preserved {
+                                paragraph.publish_float_band_rows(rows, spaces);
+                            }
+                        }
+                        host = range.end.max(host + 1);
+                        continue;
+                    }
+                }
+                host += 1;
+            }
+        }
+        for paragraph in paragraphs {
+            for control in &mut paragraph.controls {
+                match control {
+                    Control::Table(table) => {
+                        for cell in &mut table.cells {
+                            let padding = cell.effective_padding(&table.padding);
+                            let content_width = (f64::from(cell.width)
+                                - f64::from(padding.left)
+                                - f64::from(padding.right))
+                            .max(0.0)
+                                * dpi
+                                / 7200.0;
+                            Self::project_container_float_bands(
+                                &mut cell.paragraphs,
+                                content_width,
+                                true,
+                                admit_stored,
+                                styles,
+                                dpi,
+                            );
+                        }
+                    }
+                    Control::Header(header) => Self::project_container_float_bands(
+                        &mut header.paragraphs,
+                        width,
+                        true,
+                        admit_stored,
+                        styles,
+                        dpi,
+                    ),
+                    Control::Footer(footer) => Self::project_container_float_bands(
+                        &mut footer.paragraphs,
+                        width,
+                        true,
+                        admit_stored,
+                        styles,
+                        dpi,
+                    ),
+                    Control::Shape(shape) => {
+                        let shape_width = shape.common().width;
+                        if let Some(text) = shape.drawing_mut().and_then(|d| d.text_box.as_mut()) {
+                            let content_width = (f64::from(shape_width)
+                                - f64::from(text.margin_left)
+                                - f64::from(text.margin_right))
+                            .max(0.0)
+                                * dpi
+                                / 7200.0;
+                            Self::project_container_float_bands(
+                                &mut text.paragraphs,
+                                content_width,
+                                true,
+                                admit_stored,
+                                styles,
+                                dpi,
+                            );
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
     /// [#8399] rhwp 가 계산한 줄뿐인(또는 줄이 없는) 문단에 어울림 개체 밴드가 걸리면 그 밴드를
     /// 줄로 발행한다.
     ///
@@ -1710,6 +1831,16 @@ impl DocumentCore {
         let hwp3_layout = document.layout_profile().hwp3_layout();
         for section in &mut document.sections {
             let page_def = section.section_def.page_def.clone();
+            let initial_columns = Self::find_initial_column_def(&section.paragraphs);
+            let container_layout = PageLayoutInfo::from_page_def(&page_def, &initial_columns, dpi);
+            Self::project_container_float_bands(
+                &mut section.paragraphs,
+                container_layout.body_area.width,
+                false,
+                !hwp3_layout,
+                styles,
+                dpi,
+            );
             let mut min_projected = None;
             let mut host_index = 0usize;
             while host_index < section.paragraphs.len() {

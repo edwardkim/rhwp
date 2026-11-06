@@ -768,6 +768,26 @@ pub(crate) fn composed_tac_line_assignment_with_storage<S: crate::storage::Stora
     comp: &ComposedParagraph,
     storage: &S,
 ) -> Result<Option<Vec<(usize, usize)>>, S::Error> {
+    // 현재 프레임의 원시 슬롯 경계를 먼저 소비한다. 가시 문자가 없는 표 줄과
+    // 그 뒤의 머리말 기준 문자 줄은 같은 char_start로 투영되므로 문자 범위만
+    // 다시 비교하면 표가 뒤 줄로 옮겨지고 실제 표 줄을 빈 guide로 지운다.
+    if let Some(frame) = comp.frame_geometry.as_ref().filter(|frame| {
+        !frame.stored_partition && frame.line_segs.len() == comp.lines.len()
+    }) {
+        let mut assignments = storage.vec(comp.tac_controls.len())?;
+        for (_, _, control) in &comp.tac_controls {
+            let Some(owner) = control_slot_line_index_with_starts_with_storage(
+                para,
+                *control,
+                frame.line_segs.iter().map(|line| line.text_start),
+                storage,
+            )? else {
+                return Ok(None);
+            };
+            storage.push(&mut assignments, (*control, owner))?;
+        }
+        return Ok(Some(assignments));
+    }
     let Some(first) = para.line_segs.first() else {
         return Ok(None);
     };
