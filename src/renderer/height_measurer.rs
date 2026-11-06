@@ -266,7 +266,6 @@ fn stored_square_picture_wrap_anchor_for_control(
         anchor_para_index: para_idx,
         anchor_cs: first_seg.column_start as i32,
         anchor_sw: first_seg.segment_width as i32,
-        anchor_image_margin_right: common.margin.right as i32,
         band_y_range: None,
     };
     if target_para_idx.is_some_and(|target_idx| target_idx != target) {

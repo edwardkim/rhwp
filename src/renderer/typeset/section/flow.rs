@@ -101,7 +101,6 @@ impl TypesetEngine {
                                     anchor_para_index: para_idx,
                                     anchor_cs: crate::renderer::px_to_hwpunit(cs_px, self.dpi),
                                     anchor_sw: crate::renderer::px_to_hwpunit(sw_px, self.dpi),
-                                    anchor_image_margin_right: 0,
                                     band_y_range: None,
                                 },
                             );
@@ -191,7 +190,6 @@ impl TypesetEngine {
                                 anchor_para_index: para_idx,
                                 anchor_cs: crate::renderer::px_to_hwpunit(cs_px, self.dpi),
                                 anchor_sw: crate::renderer::px_to_hwpunit(sw_px, self.dpi),
-                                anchor_image_margin_right: 0,
                                 band_y_range: Some((top - cur, bottom - cur)),
                             },
                         );

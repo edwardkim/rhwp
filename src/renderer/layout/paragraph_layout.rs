@@ -7039,9 +7039,9 @@ impl LayoutEngine {
             // typeset 의 wrap_around state machine 매칭 결과 (ColumnContent.wrap_anchors)
             // 가 layout 에 전달되어 본 분기가 동작.
             //
-            // [Task #722] inter-image-text gap 보정 — 한컴 viewer 는 anchor image 의
-            // outer margin_right (HU) 만큼 cs 에 더해 text 시작 x 결정. sw 에서 동일량
-            // 차감하여 가용 폭 정합. WrapAnchorRef.anchor_image_margin_right 활용.
+            // 저장 cs 는 그림 왼쪽 바깥 여백 + 폭 + 오른쪽 바깥 여백까지 포함한 글 시작이고
+            // cs + sw 는 줄 끝이다(HWP5·HWPX 전수 실측, 한컴의 HWP3 변환본도 같다).
+            // 그림 바깥 여백은 저장 줄에 이미 들어 있으므로 여기서 더하지 않는다.
             //
             // `LineSeg.sw`는 문단의 left/right margin을 포함한 source line box 폭이다.
             // 따라서 일반 stored-segment 경로와 마찬가지로 TextLine bbox의 usable width에서는
@@ -7069,8 +7069,7 @@ impl LayoutEngine {
                         }
                     }
                 };
-                let mr = anchor.anchor_image_margin_right;
-                let cs_px = crate::renderer::hwpunit_to_px(cs + mr, self.dpi);
+                let cs_px = crate::renderer::hwpunit_to_px(cs, self.dpi);
                 if synthetic_zone {
                     // 합성 배제 존: 한글의 문단 왼 여백은 **열 기준** 들여쓰기라,
                     // 개체 회피 지점이 이미 여백보다 오른쪽이면 여백은 소진된다.
@@ -7084,7 +7083,7 @@ impl LayoutEngine {
                     // 양(max(0, margin_l - cs))과 오른 여백만 뺀다.
                     let sw_px = if sw > 0 {
                         Some(
-                            (crate::renderer::hwpunit_to_px((sw - mr).max(0), self.dpi)
+                            (crate::renderer::hwpunit_to_px(sw.max(0), self.dpi)
                                 - (effective_margin_left - cs_px).max(0.0)
                                 - effective_margin_right)
                                 .max(0.0),
@@ -7107,15 +7106,14 @@ impl LayoutEngine {
                     // effective_margin_left 에 둔다. 좁힌 줄은 같은 상대 위치를 cs 만큼 옮긴
                     // 자리에서 시작해 저장 줄 상자 끝(cs + sw)에서 끝난다.
                     let _ = base_end;
-                    let shift = crate::renderer::hwpunit_to_px(cs + mr - base_cs, self.dpi);
-                    let avail =
-                        crate::renderer::hwpunit_to_px((sw - mr + base_cs).max(0), self.dpi)
-                            - effective_margin_left;
+                    let shift = crate::renderer::hwpunit_to_px(cs - base_cs, self.dpi);
+                    let avail = crate::renderer::hwpunit_to_px((sw + base_cs).max(0), self.dpi)
+                        - effective_margin_left;
                     (shift, Some(avail.max(0.0)))
                 } else {
                     let sw_px = if sw > 0 {
                         Some(
-                            (crate::renderer::hwpunit_to_px((sw - mr).max(0), self.dpi)
+                            (crate::renderer::hwpunit_to_px(sw.max(0), self.dpi)
                                 - effective_margin_left
                                 - effective_margin_right)
                                 .max(0.0),

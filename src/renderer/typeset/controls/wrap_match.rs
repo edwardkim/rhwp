@@ -152,38 +152,11 @@ pub(in crate::renderer::typeset) fn anchor_table_has_absolute_frame(
         })
 }
 
-pub(in crate::renderer::typeset) fn picture_anchor(
-    paragraphs: &[Paragraph],
-    band: WrapBand,
-) -> WrapAnchorRef {
-    let anchor_margin_right = paragraphs
-        .get(band.anchor_para)
-        .and_then(|p| {
-            p.controls.iter().find_map(|c| {
-                let cm = match c {
-                    Control::Picture(pic) => Some(&pic.common),
-                    Control::Shape(s) => {
-                        if let crate::model::shape::ShapeObject::Picture(pic) = s.as_ref() {
-                            Some(&pic.common)
-                        } else {
-                            None
-                        }
-                    }
-                    _ => None,
-                };
-                cm.filter(|cm| {
-                    !cm.treat_as_char
-                        && matches!(cm.text_wrap, crate::model::shape::TextWrap::Square)
-                })
-                .map(|cm| cm.margin.right as i32)
-            })
-        })
-        .unwrap_or(0);
+pub(in crate::renderer::typeset) fn picture_anchor(band: WrapBand) -> WrapAnchorRef {
     WrapAnchorRef {
         anchor_para_index: band.anchor_para,
         anchor_cs: band.cs,
         anchor_sw: band.sw,
-        anchor_image_margin_right: anchor_margin_right,
         band_y_range: None,
     }
 }
