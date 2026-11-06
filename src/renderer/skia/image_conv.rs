@@ -324,6 +324,12 @@ pub(super) fn draw_image_bytes(
     if !is_valid_destination_rect(x, y, width, height) {
         return false;
     }
+    // Check the original span before JPEG normalization, tone/effect expansion
+    // and print fast paths. The normalized span is checked again below.
+    if sampling.strict_resource_failures && bytes.len() > crate::model::bin_data::MAX_BIN_DATA_BYTES
+    {
+        return false;
+    }
     if effect == ImageEffect::RealPic
         && brightness == 0
         && contrast == 0

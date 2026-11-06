@@ -1524,6 +1524,9 @@ pub(crate) fn decode_image_with_format_limited(
 ) -> Option<image::DynamicImage> {
     // 한도를 넘어 거절된 BMP 도 호출부가 줄여 디코드하므로 검사보다 먼저 자리를 낸다.
     make_room_for_decode(data);
+    if data.len() > crate::model::bin_data::MAX_BIN_DATA_BYTES {
+        return None;
+    }
     if matches!(
         format,
         image::ImageFormat::Png | image::ImageFormat::Jpeg | image::ImageFormat::Bmp
@@ -1551,6 +1554,24 @@ pub(crate) fn decode_image_with_format_limited(
     limits.max_image_width = Some(CANVASKIT_MAX_IMAGE_DIMENSION);
     limits.max_image_height = Some(CANVASKIT_MAX_IMAGE_DIMENSION);
     limits.max_alloc = Some(CANVASKIT_MAX_IMAGE_PIXELS.saturating_mul(4));
+    // The output-allocation budget alone does not bound source pixels for
+    // RGB/gray TIFF: a successful decode can fit that budget, then exceed it
+    // when a tone/mask conversion expands the image to RGBA. Check dimensions
+    // before full decode, including formats without our fast header parser.
+    if !matches!(
+        format,
+        image::ImageFormat::Png | image::ImageFormat::Jpeg | image::ImageFormat::Bmp
+    ) {
+        let mut header = image::ImageReader::with_format(Cursor::new(data), format);
+        header.limits(limits.clone());
+        let (width, height) = header.into_dimensions().ok()?;
+        if width == 0
+            || height == 0
+            || u64::from(width) * u64::from(height) > CANVASKIT_MAX_IMAGE_PIXELS
+        {
+            return None;
+        }
+    }
     reader.limits(limits);
     reader.decode().ok()
 }

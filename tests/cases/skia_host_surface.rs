@@ -475,6 +475,70 @@ fn host_surface_bounds_encoded_image_dimensions_and_pixels_before_full_decode() 
     }
 }
 
+fn gray_tiff_header(width: u32, height: u32) -> Vec<u8> {
+    // A tiny uncompressed gray strip and a real TIFF directory. Oversized cases
+    // change only the dimensions; the test never allocates their pixel plane.
+    let data_offset = 8 + 2 + 10 * 12 + 4;
+    let mut bytes = b"II\x2a\0\x08\0\0\0".to_vec();
+    bytes.extend_from_slice(&10_u16.to_le_bytes());
+    for (tag, kind, count, value) in [
+        (256_u16, 4_u16, 1_u32, width),
+        (257, 4, 1, height),
+        (258, 3, 1, 8),
+        (259, 3, 1, 1),
+        (262, 3, 1, 1),
+        (273, 4, 1, data_offset),
+        (277, 3, 1, 1),
+        (278, 4, 1, height),
+        (279, 4, 1, 4),
+        (284, 3, 1, 1),
+    ] {
+        bytes.extend_from_slice(&tag.to_le_bytes());
+        bytes.extend_from_slice(&kind.to_le_bytes());
+        bytes.extend_from_slice(&count.to_le_bytes());
+        bytes.extend_from_slice(&value.to_le_bytes());
+    }
+    bytes.extend_from_slice(&0_u32.to_le_bytes());
+    bytes.extend_from_slice(&[200; 4]);
+    bytes
+}
+
+#[test]
+fn host_surface_tiff_tone_conversion_keeps_the_source_pixel_limit() {
+    for (width, height) in [(2_u32, 2_u32), (8192, 4097)] {
+        let tiff = gray_tiff_header(width, height);
+        assert_eq!(
+            image::ImageReader::with_format(Cursor::new(&tiff), image::ImageFormat::Tiff)
+                .into_dimensions()
+                .unwrap(),
+            (width, height),
+        );
+        let mut image = ImageNode::new(74, Some(tiff));
+        image.brightness = 10;
+        let page = tree(vec![PaintOp::image(
+            BoundingBox::new(2.0, 2.0, 4.0, 4.0),
+            image,
+            None,
+        )]);
+        let result = SkiaLayerRenderer::new().render_to_surface_strict(
+            &mut surface(),
+            &page,
+            Default::default(),
+        );
+        if width == 2 {
+            result.unwrap();
+        } else {
+            assert!(
+                result
+                    .unwrap_err()
+                    .to_string()
+                    .contains("image decode failed"),
+                "oversized gray TIFF must fail before conversion to RGBA"
+            );
+        }
+    }
+}
+
 #[test]
 fn host_surface_strict_decode_preserves_skia_webp_support_and_valid_cache_hits() {
     // Lossless 2x2 opaque-red WebP. The image crate's WebP feature is disabled;
