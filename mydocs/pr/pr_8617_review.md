@@ -28,3 +28,11 @@ fix(visual-sweep): 글꼴 catalog family 이름의 앞뒤 공백을 Native 와 �
 ## 적용과 보정 계획
 
 [이 PR 구현 계획](pr_8617_review_impl.md) · [전체 순서·게이트](assets/planet6897_20261106/integration-plan.md).
+
+## 실제 집중 검증 — 글꼴 catalog 공백
+
+- 고정 base `08963f6825956984d38b0d9392f44777db7107ab`의 `visual_sweep_png.py`와 후보 source `46aca162bcf7fbcbc114cc42a251e6047598b371`을 같은 새 테스트 클래스에 공급했다.
+- `FontFamilyTrailingSpaceTests` 2개는 base에서 각각 assertion FAIL이고 오류(errors)는 0이었다. 후보에서는 2개 모두 PASS했다.
+- 실제 검사: 처음/캐시 공급의 primaryFamily·별칭 앞뒤 공백 제거, 가운데 공백 보존, PostScript 이름 무변경, 예전 공백 포함 cache의 무효화·재생성.
+- 테스트 글꼴은 저장소의 `tests/fixtures/native_inline_placeholder/placeholder-contract.ttf`를 사용했고 name table family만 앞뒤 공백을 가진 값으로 바꿨다. 설치 글꼴이 없어도 실행되는 관계 검사다.
+- 실행 로그·중간 JSON은 ignored output에만 보존했다. 이 결과를 `interview.hwp`의 실제 Native/fresh WASM 2쪽 시각 검증이나 최종 승인으로 확대하지 않는다.
