@@ -2706,6 +2706,8 @@ impl LayoutEngine {
             });
             let mut para_y = text_y_start;
             let mut has_preceding_text = false;
+            // [#8686] 흐름을 전진시키지 않은 칸 안 자리차지 표의 바깥 상자 띠.
+            let mut cell_float_bands: Vec<std::ops::Range<f64>> = Vec::new();
             // [#3637] 이 조각에서 **실제로 그려지는 첫 문단**의 vpos. 아래 중첩 표
             // 문단 스냅이 쓰는 조각 원점이다. `line_segs.first()` 를 그대로 쓰면 셀
             // 전체 좌표라 연속 조각에서 원점만큼 통째로 밀린다.
@@ -3163,6 +3165,21 @@ impl LayoutEngine {
                             para_y =
                                 text_y_start + frame.line_y(cp_idx, line.vertical_pos, self.dpi);
                         }
+                    }
+                }
+                // [#8686] 앞 문단의 자리차지 표 띠는 흐름을 전진시키지 않는다. 이 조각에서
+                // 시작하는 문단의 첫 줄이 띠와 겹칠 때만 띠 끝으로 넘어간다.
+                if start_line == 0 && start_line < end_line {
+                    if let Some(line) = para.line_segs.first() {
+                        para_y = crate::renderer::float_placement::clear_topbottom_bands(
+                            &cell_float_bands,
+                            para_y,
+                            styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map_or(0.0, |style| style.spacing_before),
+                            hwpunit_to_px(line.line_height, self.dpi),
+                        );
                     }
                 }
                 let para_y_before_compose = para_y;
@@ -5381,7 +5398,7 @@ impl LayoutEngine {
                                     // 컷 없는 저장 떠 있는 개체는 물리 본문과 여백을
                                     // 이미 확정했다. 배치가 반환한 전체 띠의 여백을
                                     // table_top에서 다시 더하지 않는다.
-                                    para_y = stored_float_frame
+                                    let flow_end = stored_float_frame
                                         .filter(|_| {
                                             split_info.as_ref().is_none_or(|split| {
                                                 split.start_row == 0
@@ -5427,6 +5444,25 @@ impl LayoutEngine {
                                                 frame.occupied_bottom - successor_before
                                             }
                                         });
+                                    let exclusion_band = stored_float_frame.filter(|frame| {
+                                        frame.flow == crate::renderer::float_placement::ParagraphFloatFlow::Exclusion
+                                            && matches!(nested_table.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
+                                    });
+                                    if let Some(frame) = exclusion_band {
+                                        // [#8686] 인증된 자리차지 표는 본문 흐름에서 빠진 배제 띠다.
+                                        // 흐름은 호스트 문단의 글줄로만 전진하고, 이 조각이 그린
+                                        // 표 끝까지를 띠로 남긴다.
+                                        cell_float_bands.push(
+                                            frame.table_top
+                                                - hwpunit_to_px(
+                                                    nested_table.outer_margin_top as i32,
+                                                    self.dpi,
+                                                )
+                                                ..flow_end,
+                                        );
+                                    } else {
+                                        para_y = flow_end;
+                                    }
                                     has_preceding_text = true;
                                 }
                             }
@@ -5681,6 +5717,11 @@ impl LayoutEngine {
                     }
                 }
             }
+            // [#8686] 조각 내용은 흐름을 전진시키지 않은 자리차지 표의 띠 끝까지다.
+            para_y = cell_float_bands
+                .iter()
+                .map(|band| band.end)
+                .fold(para_y, f64::max);
 
             // [#7095] 쪽이 정한 비끝 조각 상자 안에서 칸 `valign=Center` 를 적용한다.
             //
