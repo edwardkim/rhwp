@@ -6,8 +6,12 @@ based and advertises no external texture consumer/fence completion contract.
 """
 
 import argparse
+import io
 from pathlib import Path
+import struct
 import sys
+import zipfile
+import zlib
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "examples"))
 from native_gl import NativeGlPresenter
@@ -46,6 +50,7 @@ class QtTarget:
         self.framebuffer = QOpenGLFramebufferObject(256, 192, format)
         assert self.framebuffer.isValid() and self.framebuffer.bind()
         self.readbacks = 0
+        self.comparisons = []
 
     @property
     def target(self):
@@ -105,17 +110,109 @@ def same_pixels(reference, actual, label):
                               "maxChannelDifference": max(differences)})
 
 
+def same_tile_pixels(reference, actual, label):
+    # Ganesh rasterizes the canonical page into a differently sized target.
+    # Antialias coverage and image interpolation can round RGB by one RGBA8
+    # step. Tile copies themselves are exact; alpha, geometric support, integer
+    # overlap, fallback, repeats and failed publication stay exact below.
+    assert len(reference) == len(actual)
+    rgb_differences = []
+    for index, (left, right) in enumerate(zip(reference, actual)):
+        difference = abs(left - right)
+        if index % 4 == 3:
+            assert difference == 0, {"case": label, "alphaByte": index,
+                                     "reference": left, "actual": right}
+        elif difference:
+            rgb_differences.append(difference)
+    maximum = max(rgb_differences, default=0)
+    assert maximum <= 1, {"case": label, "maxRgbDifference": maximum,
+                           "mismatchedRgbChannels": len(rgb_differences)}
+    return {"case": label, "mismatchedRgbChannels": len(rgb_differences),
+            "maxRgbDifference": maximum, "alphaDifferences": 0}
+
+
+def same_geometry_pixels(reference, actual, label):
+    comparison = same_tile_pixels(reference, actual, label)
+    outline_pixels = 0
+    for index in range(0, len(reference), 4):
+        left, right = reference[index:index + 4], actual[index:index + 4]
+        # The fixture's blue picture outline is antialiased over white paper.
+        # Its exact pixel support must survive, even where AA intensity rounds.
+        left_outline = left[0] == left[1] and left[2] > left[0]
+        right_outline = right[0] == right[1] and right[2] > right[0]
+        assert left_outline == right_outline, {"case": label, "displacedOutlinePixel": index // 4}
+        if left_outline:
+            outline_pixels += 1
+        else:
+            assert left == right, {"case": label, "geometryPixel": index // 4,
+                                   "reference": list(left), "actual": list(right)}
+    assert outline_pixels, "geometry control requires the fixture's blue picture outline"
+    return dict(comparison, exactOutlineSupport=True, exactOtherGeometry=True)
+
+
+def pixel_region(pixels, x, y, width, height):
+    return b"".join(pixels[((row * 256 + x) * 4):((row * 256 + x + width) * 4)]
+                    for row in range(y, y + height))
+
+
+def transparent_images(document):
+    """Keep fixture geometry and PNG dimensions; remove filtered image color."""
+    def chunk(kind, data):
+        return (struct.pack(">I", len(data)) + kind + data
+                + struct.pack(">I", zlib.crc32(kind + data)))
+
+    source, output = io.BytesIO(document), io.BytesIO()
+    replaced = 0
+    with zipfile.ZipFile(source) as archive, zipfile.ZipFile(output, "w") as result:
+        for entry in archive.infolist():
+            data = archive.read(entry)
+            if entry.filename.lower().startswith("bindata/") and entry.filename.lower().endswith(".png"):
+                assert data[:8] == b"\x89PNG\r\n\x1a\n" and data[12:16] == b"IHDR"
+                width, height = struct.unpack(">II", data[16:24])
+                assert 0 < width <= 1024 and 0 < height <= 1024
+                header = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)
+                rows = (b"\0" + bytes(width * 4)) * height
+                data = (data[:8] + chunk(b"IHDR", header)
+                        + chunk(b"IDAT", zlib.compress(rows)) + chunk(b"IEND", b""))
+                replaced += 1
+            result.writestr(entry, data)
+    assert replaced, "geometry control requires a fixture PNG"
+    return output.getvalue()
+
+
 def placement(snapshot, x=0, y=0, scale=0.5, background=0xffffff):
     return {"snapshot": snapshot, "originX": x, "originY": y,
             "scale": scale, "backgroundColor": background}
 
 
-def render_pair(target, direct, cached, stamp, pages, label, clear=0xFF55575A):
+def transformed_pages(snapshot):
+    return [
+        ("vertical scroll", [placement(snapshot, 0, -32)]),
+        ("negative placement", [placement(snapshot, -16, -64)]),
+        ("fractional negative", [placement(snapshot, -15.25, -31.5)]),
+        ("fractional positive", [placement(snapshot, 8.5, 9.25)]),
+        ("overlapping pages", [placement(snapshot, -10.25, 8.5),
+            placement(snapshot, 47.75, 31.25, 0.25)]),
+    ]
+
+
+def render_pair(target, direct, cached, stamp, pages, label, clear=0xFF55575A,
+                exact=False, geometry=False):
     direct.render(stamp, target.target, pages, clear_color=clear)
     reference = target.pixels()
     result = cached.render(stamp, target.target, pages, clear_color=clear)
-    same_pixels(reference, target.pixels(), label)
+    actual = target.pixels()
+    if geometry:
+        target.comparisons.append(same_geometry_pixels(reference, actual, label))
+    elif exact:
+        same_pixels(reference, actual, label)
+        target.comparisons.append({"case": label, "exact": True})
+    else:
+        target.comparisons.append(same_tile_pixels(reference, actual, label))
     budget(result["info"])
+    repeated = cached.render(stamp, target.target, pages, clear_color=clear)
+    same_pixels(actual, target.pixels(), label + " cached repeat")
+    budget(repeated["info"])
     return result["info"]
 
 
@@ -139,33 +236,35 @@ def run(library, document):
             view = 1
             pages = [placement(snapshot)]
             first = render_pair(target, direct, cached, stamp, pages, "cold page")
+            cold_pixels = target.pixels()
             assert first["tileCache"]["misses"] > 0 and first["tileCache"]["canonicalReplays"] > 0
             assert first["tileCache"]["cachedTiles"] > 0
             repeated = render_pair(target, direct, cached, stamp, pages, "same page hit")
+            same_pixels(cold_pixels, target.pixels(), "cold versus warm cache")
             assert repeated["tileCache"]["hits"] > first["tileCache"]["hits"]
             assert repeated["tileCache"]["canonicalReplays"] == first["tileCache"]["canonicalReplays"]
-            for label, pages in [
-                ("vertical scroll", [placement(snapshot, 0, -32)]),
-                ("negative placement", [placement(snapshot, -16, -64)]),
-                ("fractional negative", [placement(snapshot, -15.25, -31.5)]),
-                ("fractional positive", [placement(snapshot, 8.5, 9.25)]),
-                ("overlapping pages", [placement(snapshot, -10.25, 8.5),
-                    placement(snapshot, 47.75, 31.25, 0.25)]),
-            ]:
+            for label, pages in transformed_pages(snapshot):
                 view += 1
                 stamp = configure(worker, info, view=view)
                 previous = cached.info()["tileCache"]
                 state = render_pair(target, direct, cached, stamp, pages, label)
                 if label == "vertical scroll":
                     assert state["tileCache"]["hits"] > previous["hits"], state
+                    same_pixels(pixel_region(cold_pixels, 0, 32, 256, 160),
+                                pixel_region(target.pixels(), 0, 0, 256, 160),
+                                "integer scroll overlap including tile seams")
+                elif label == "negative placement":
+                    same_pixels(pixel_region(cold_pixels, 16, 64, 240, 128),
+                                pixel_region(target.pixels(), 0, 0, 240, 128),
+                                "negative placement overlap including tile seams")
             # Transparent/partial-alpha backgrounds preserve the original path.
             before = cached.info()["tileCache"]
             state = render_pair(target, direct, cached, stamp,
-                [placement(snapshot, 8, 4, background=None)], "no page background")
+                [placement(snapshot, 8, 4, background=None)], "no page background", exact=True)
             assert state["tileCache"]["viewportFallbacks"] > before["viewportFallbacks"]
             before = state["tileCache"]
             state = render_pair(target, direct, cached, stamp, [placement(snapshot)],
-                                "partial-alpha clear", clear=0x8055575A)
+                                "partial-alpha clear", clear=0x8055575A, exact=True)
             assert state["tileCache"]["viewportFallbacks"] > before["viewportFallbacks"]
             # Four tiles pinned by the first page cannot be evicted to admit a
             # second scale in the same frame. It uses visible P90 replay instead.
@@ -188,7 +287,7 @@ def run(library, document):
             owners.append(tight)
             rejected(lambda: target.presenter(worker.host), "limitExceeded")
             tight_state = render_pair(target, direct, tight, stamp,
-                                     [placement(snapshot)], "framebuffer-only budget")
+                                     [placement(snapshot)], "framebuffer-only budget", exact=True)
             assert tight_state["managedTargets"]["targets"] == 1, tight_state
             assert tight_state["managedTargets"]["estimatedBytes"] == 256 * 192 * 4, tight_state
             assert tight_state["tileCache"]["cachedTiles"] == 0, tight_state
@@ -222,8 +321,25 @@ def run(library, document):
                 assert repeated_failure["managedTargets"]["estimatedBytes"] == after["managedTargets"]["estimatedBytes"]
                 assert repeated_failure["framesSubmitted"] == before["framesSubmitted"]
             same_pixels(valid, target.pixels(), "repeated failed staging cleanup")
-            # Restore a current valid input, retained across actual GL recreation.
+            # Restore the same layout with transparent PNG payloads: filtered
+            # color can no longer hide a displaced border or clip. AA outline
+            # support and all other geometry must remain exact.
             replacement = {"documentId": bad_info["documentId"], "revision": bad_info["revision"]}
+            restored = worker.wait(worker.open_bytes(transparent_images(document), replace=replacement))
+            assert restored["ok"], restored
+            info = restored["info"]
+            view += 1
+            stamp = configure(worker, info, view=view)
+            snapshot = export(worker, info)
+            retained.append(snapshot)
+            for label, pages in [("cold page", [placement(snapshot)]), *transformed_pages(snapshot)]:
+                view += 1
+                stamp = configure(worker, info, view=view)
+                render_pair(target, direct, cached, stamp, pages, "geometry " + label, geometry=True)
+                if label == "cold page":
+                    assert target.pixels() != cold_pixels, "transparent image control did not change pixels"
+            # Keep the original colored image in the context recreation check.
+            replacement = {"documentId": info["documentId"], "revision": info["revision"]}
             restored = worker.wait(worker.open_bytes(document, replace=replacement))
             assert restored["ok"], restored
             info = restored["info"]
@@ -269,6 +385,7 @@ def run(library, document):
             print({"contract": "PASS", "device": result["info"]["device"],
                    "tileCache": result["info"]["tileCache"],
                    "managedTargets": result["info"]["managedTargets"],
+                   "directTileComparisons": target.comparisons,
                    "hostVerificationReadbacks": first_readbacks + second.readbacks,
                    "wholeFrameReadbacks": 0})
         finally:

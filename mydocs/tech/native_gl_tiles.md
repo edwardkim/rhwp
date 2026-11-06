@@ -140,3 +140,23 @@ idle eviction bytes, 모든 canonical/scratch/pin reservation의 상한, strict 
 host FBO 보존, current 없는 cache clear의 불변성, 실제 GL context 교체 뒤 cache 분리도
 검사한다. readback은 호스트 검증으로만 수행한다. 이 합성 관계 검사는 전체 문서의
 한컴 시각 일치율·실물 좌표나 지속 hardware 성능을 인증하지 않는다.
+
+direct viewport replay와 canonical page replay의 비교에만 RGB 채널당 최대 1의 RGBA8
+차이를 허용하며 alpha는 정확히 같아야 한다. 실제 Mesa 22.3.6 llvmpipe GL 검사에서
+256×192 viewport와 397×562 canonical page의 차이는 작은 그림의 보간과 파란 outline의
+antialias 강도에 나타났다. 최초 frame은 RGB 285채널이 최대 1만큼 달랐고 alpha 차이는
+없었다. 별도 진단에서 GPU backing texture를 직접 읽어 canonical→각 tile→viewport
+scratch→host FBO 복사는 바이트 단위로 일치함을 확인했다. 이 차이를 GPU 복사의 색상
+양자화나 hardware 성능 검증으로 해석하지 않는다. 다른 크기의 raster target으로
+replay할 때 관찰된 antialias·보간 강도 차이를 한정해서 검사한다.
+
+이 허용값은 좌표나 경계를 느슨하게 비교하는 기준이 아니다. probe는 같은 그림의 PNG를
+동일 크기의 투명 RGBA로 교체한 대조군도 실제 GL로 그린다. 음수·fractional origin과
+겹친 page에서 파란 그림 outline의 **픽셀 집합**이 정확히 일치해야 하며, outline 이외의
+표 테두리·종이·viewport 배경·clip pixels는 모든 RGBA byte가 같아야 한다. 투명 그림
+대조군에서도 outline의 antialias 강도에만 위 RGB 1 차이를 허용한다. 정수 scroll과 음수
+이동으로 재사용한 겹침 영역은 tile seam을 포함해 정확히 비교한다. 캐시의 cold/warm과
+각 frame의 재사용 반복, transparent/partial-alpha·framebuffer-only fallback, 잘못된 요청과
+strict 실패 후 기존 host FBO 보존에도 허용값을 적용하지 않는다. 출력의
+`directTileComparisons`는 각 비교의 RGB 차이와 정확한 geometry 검사 여부를 기록하며,
+추가 readback은 `hostVerificationReadbacks`에만 포함한다.
