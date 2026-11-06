@@ -5639,10 +5639,11 @@ let body_height=match nested_body_heights
             && raw_table_height <= common_h * 1.05
             && {
                 // [#5757] 비-TAC 표의 **선언끼리 모순** 축소: Σ셀선언(cellSz)이 표
-                // 선언높이(hp:sz)를 넘는 문서에서 한글은 행을 비례 축소해 표 선언을
-                // 지킨다 (156739836 일러두기 3×3: Σ셀선언 981.8 > 표선언 966.2,
-                // 오라클 괘선 실측 ×0.984 균일 축소 → 한 쪽에 통째 배치. rhwp 는
-                // 983.7px 로 12.4px 넘겨 불필요한 쪽나눔 → 전 문서 +1쪽).
+                // 선언높이(hp:sz)를 넘는 문서에서 한글은 표 선언을 지킨다
+                // (156739836 일러두기 3×3: Σ셀선언 981.8 > 표선언 966.2, 한 쪽에 통째
+                // 배치. rhwp 는 983.7px 로 12.4px 넘겨 불필요한 쪽나눔 → 전 문서 +1쪽).
+                // 이 표의 괘선 18 / 18.5 / 928.5 는 비례 축소와 마지막 행 회수를
+                // 가르지 못한다(#8682 재측정).
                 //
                 // 콘텐츠가 선언을 밀어 키운 표(#5714 행 성장 축)는 건드리면 안 되므로,
                 // 측정 합이 셀 선언 합을 사실상 넘지 않는 경우(성장분 ≤ 축소 임계)로
@@ -5676,9 +5677,22 @@ let body_height=match nested_body_heights
                 fire
             }
         {
-            let scale = common_h / raw_table_height;
-            for h in &mut row_heights {
-                *h *= scale;
+            // [#8682] 마지막 행의 빈 공간이 초과분을 담으면 앞 행은 저장 선언 그대로 둔다.
+            // 별지 서식 1쪽 7행 표: 선언 794.9 > 표 선언 782.5, 한/글 괘선은 앞 6행이 선언대로이고
+            // 마지막 행만 372.8 → 360.5 로 줄어든다. 비례 축소는 저장 행 경계를 위로 끌어 표 안
+            // 글이 아래로 갈수록 어긋난다. 회수를 입증하지 못한 표만 종전대로 비례 축소한다.
+            if let Some(tail) = crate::renderer::table_row_frame::declared_tail_row_height(
+                table,
+                &row_heights,
+                cell_spacing,
+                self.dpi,
+            ) {
+                row_heights[row_count - 1] = tail;
+            } else {
+                let scale = common_h / raw_table_height;
+                for h in &mut row_heights {
+                    *h *= scale;
+                }
             }
             common_h
         } else if !table.common.treat_as_char
