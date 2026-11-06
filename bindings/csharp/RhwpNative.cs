@@ -74,6 +74,15 @@ public static class RhwpNative
     [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr rhwp_native_host_request(byte[] request, UIntPtr requestLength, byte[] data, UIntPtr dataLength);
 
+    // Presentation handles are the explicit cross-thread exception. A lease
+    // keeps its bytes valid until release; callers must serialize that release
+    // with every consumer of the borrowed pointer.
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_presentation_request(byte[] request, UIntPtr requestLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_presentation_lease_data(ulong lease, out UIntPtr length);
+
     public static string SessionClose(ulong handle) => TakeResultString(rhwp_session_close(handle));
 
     public static string SessionBufferCopy(ulong buffer, byte[] destination)

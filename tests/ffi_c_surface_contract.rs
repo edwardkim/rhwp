@@ -36,7 +36,19 @@ fn read(path: &str) -> String {
 
 /// Rust `pub [unsafe] extern "C" fn NAME(args) -> ret` 를 파싱한다.
 fn rust_surface() -> Surface {
-    let src = [read(RUST_FFI), read("bindings/Native/src/session.rs")].join("\n");
+    // Presentation and GPU exports live in sibling modules too. Enumerate
+    // their source instead of silently omitting new ABI entry points.
+    let mut paths: Vec<_> = fs::read_dir("bindings/Native/src")
+        .expect("Native FFI source directory must exist")
+        .map(|entry| entry.expect("Native FFI source entry").path())
+        .filter(|path| path.extension().is_some_and(|extension| extension == "rs"))
+        .collect();
+    paths.sort();
+    let src = paths
+        .iter()
+        .map(|path| read(path.to_str().expect("Native FFI source path must be UTF-8")))
+        .collect::<Vec<_>>()
+        .join("\n");
     let mut out = Surface::new();
     let mut rest = src.as_str();
 
