@@ -44,21 +44,38 @@ fn single_flow_table(para: &Paragraph) -> bool {
 /// 아래 1984). 저장 줄이 모두 한컴이 쓴 줄일 때만 그 높이를 읽는다. 위·왼쪽·오른쪽 캡션은
 /// 표 본체 원점이나 폭을 바꾸는 다른 기하라 이 상자로 대체하지 않는다.
 pub(crate) fn stored_bottom_caption_hu(table: &Table) -> Option<i64> {
+    if table
+        .caption
+        .as_ref()
+        .is_some_and(|caption| caption.direction != crate::model::shape::CaptionDirection::Bottom)
+    {
+        return None;
+    }
+    stored_vertical_caption_hu(table)
+}
+
+/// 위·아래 캡션이 원본 외곽 줄 상자에 포함한 높이와 본체 사이 간격.
+/// 본체 원점의 방향은 caller가 유지하며 좌우 캡션으로 넓히지 않는다.
+pub(crate) fn stored_vertical_caption_hu(table: &Table) -> Option<i64> {
     let Some(caption) = table.caption.as_ref() else {
         return Some(0);
     };
-    if caption.direction != crate::model::shape::CaptionDirection::Bottom
-        || caption.paragraphs.is_empty()
+    if !matches!(
+        caption.direction,
+        crate::model::shape::CaptionDirection::Top | crate::model::shape::CaptionDirection::Bottom
+    ) || caption.paragraphs.is_empty()
     {
         return None;
     }
     let mut height = 0i64;
     for para in &caption.paragraphs {
         let (first, last) = (para.line_segs.first()?, para.line_segs.last()?);
-        if para
-            .line_segs
-            .iter()
-            .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+        if para.stored_text_partition_is_dirty()
+            || para.cell_format_vpos_dirty
+            || para
+                .line_segs
+                .iter()
+                .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
         {
             return None;
         }

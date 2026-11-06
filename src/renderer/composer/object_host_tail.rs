@@ -2,6 +2,27 @@
 
 use crate::model::{control::Control, paragraph::Paragraph, shape::TextWrap};
 
+/// 현재 구성에서 표 하나가 독립적으로 소유한 물리 줄이다.
+/// 같은 줄의 여러 표는 전체 인라인 줄 계획이 원점을 정하므로 여기서 나누지 않는다.
+pub(crate) fn composed_tac_row(para: &Paragraph, control: usize) -> Option<usize> {
+    if !crate::renderer::para_has_composed_object_rows(para)
+        || !matches!(para.controls.get(control), Some(Control::Table(table))
+            if table.common.treat_as_char)
+    {
+        return None;
+    }
+    let row = crate::renderer::layout::control_line_seg_index(para, control)?;
+    para.controls
+        .iter()
+        .enumerate()
+        .all(|(other, value)| {
+            other == control
+                || !matches!(value, Control::Table(table) if table.common.treat_as_char)
+                || crate::renderer::layout::control_line_seg_index(para, other) != Some(row)
+        })
+        .then_some(row)
+}
+
 /// 저장 쪽 경계를 재해석하지 않고 현재 구성한 줄 소유만 사용한다.
 pub(crate) fn composed_object_tail(para: &Paragraph) -> Option<std::ops::Range<usize>> {
     if !crate::renderer::para_has_composed_object_rows(para) {

@@ -13750,6 +13750,10 @@ impl LayoutEngine {
                     // typeset의 확정 결과에는 앵커와 바깥 여백이 이미 포함된다.
                     // legacy 호스트 높이/제목/앵커 보정을 다시 실행하지 않는다.
                     col_area.y + placement.table_top
+                } else if let Some(placement) = flow_placement {
+                    // 수용한 줄 pen이 표 원점의 소유자다. 뒤의 저장 줄·회피·캡션
+                    // 폴백이 같은 원점을 다시 해석하지 않도록 이 경로에서 확정한다.
+                    col_area.y + placement.y + hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
                 } else {
                     let table_y_start =
                         if let Some((_, _, _, lane_top, _, _)) = para_float_lane_info {
@@ -14058,7 +14062,8 @@ impl LayoutEngine {
                     } else {
                         None
                     };
-                let table_y_start = if is_tac && inline_pos.is_none() {
+                let table_y_start = if is_tac && inline_pos.is_none() && flow_placement.is_none() {
+                    // 확정된 줄 원점에는 그 줄까지의 오프셋이 이미 포함되어 있다.
                     stored_empty_full_band_tac_table_top(para, control_index, t, col_area, self.dpi)
                         .or_else(|| {
                             composed_empty_host_tac_line_offset(para, control_index, self.dpi)
@@ -15056,10 +15061,14 @@ impl LayoutEngine {
             // 남겨야 한다. 그렇지 않으면 표까지 본문 높이만큼 함께 아래로 이동한다.
             para_start_y.insert(para_index, anchor_y);
         } else if let Some(existing_y) = para_start_y.get(&para_index) {
-            // A preceding host fragment owns the paragraph origin; advancing
-            // the table cursor does not create a new origin for its later row.
+            // 앞 호스트 조각의 문단 원점은 뒤 개체 줄의 pen과 별개다.
+            // 확정한 줄 프레임은 표 배치가 직접 소비하며 공동 앵커를 다시 쓰지 않는다.
             if tac_in_front_decoration_line_shift.is_none()
                 && is_current_tac
+                && !ctx
+                    .inline_placements
+                    .get(&(para_index, control_index))
+                    .is_some_and(|placement| placement.owns_vertical_frame())
                 && self.table_push_floor.get().is_none()
                 && y_offset > *existing_y + 1.0
                 && !tac_line_fits_above_offset_float

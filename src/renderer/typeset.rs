@@ -5312,6 +5312,17 @@ impl TypesetEngine {
         } else {
             None
         };
+        // 실제 수용한 독립 개체 줄의 pen을 paint에 전달한다. 후행 표가 이미 소비한
+        // 앞 표의 줄 오프셋을 다시 더하지 않도록 저장/현재 줄의 좌표계를 구분한다.
+        let composed_table_row_origin = crate::renderer::composer::composed_tac_row(para, ctrl_idx)
+            .filter(|&row| {
+                fmt.line_count() == para.line_segs.len()
+                    && self.is_effective_tac_table(para, table, fmt)
+                    && fmt.line_heights.get(row).is_some_and(|height| {
+                        (*height - table_total_height).abs() <= self.dpi / 7200.0
+                    })
+            })
+            .map(|_| st.current_height + pre_height);
         let mut stored_table_row_origin = None;
         // 단일 원본 개체 줄의 원점은 실제 수용 끝에서 같은 줄 전진을 제외해 얻는다.
         // 문단 위 간격을 소비하기 전의 커서나 저장 제품군으로 원점을 추정하지 않는다.
@@ -6380,7 +6391,12 @@ impl TypesetEngine {
                 Some(origin)
             },
         );
-        let stored_table_row_origin = stored_table_row_origin.or(accepted_single_row_origin);
+        let stored_table_row_origin = stored_table_row_origin
+            .or(accepted_single_row_origin)
+            .or_else(|| {
+                composed_table_row_origin
+                    .filter(|_| !st.inline_placements.contains_key(&(para_idx, ctrl_idx)))
+            });
         if let Some(origin) = stored_table_row_origin {
             // 줄 뒤 간격까지 실제로 수용한 같은 흐름 끝을 전달한다. 본체 높이로
             // 끝을 다시 추정하면 뒤 문단이 저장 줄 간격만큼 위로 이동한다.

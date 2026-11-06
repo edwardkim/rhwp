@@ -149,6 +149,7 @@ impl FormattedParagraph {
         dpi: f64,
     ) -> (f64, f64) {
         let unchanged_rows = self.line_count() == para.line_segs.len()
+            && !self.stored_ladder_is_filler
             && self.computed_host_lines.is_none()
             && !self.exact_reflow_text_box
             && self.square_host_plan.is_none()
