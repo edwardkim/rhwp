@@ -1,0 +1,206 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:rhwp_native_reference/rhwp_native_flutter.dart';
+
+import 'support/fake_transport.dart';
+import 'native_document_view_test.dart' show pumpUntil;
+
+class ViewTransport extends FakeTransport {
+  ViewTransport() {
+    capabilities['atomicImeEdits'] = true;
+  }
+  String text = 'A';
+  int cursor = 1;
+  final requests = <Map<String, Object?>>[];
+  static const point = {
+    'section': 0,
+    'paragraph': 0,
+    'scalarOffset': 0,
+    'cellPath': <Object?>[],
+  };
+  @override
+  Map<String, Object?> get info => {
+    ...super.info,
+    'editing': true,
+    'isDirty': true,
+    'selection': {
+      'anchor': {...point, 'scalarOffset': cursor},
+      'focus': {...point, 'scalarOffset': cursor},
+    },
+    'compositionId': null,
+  };
+  Map<String, Object?> get ime => {
+    'revision': revision,
+    'fontGeneration': fontGeneration,
+    'compositionId': null,
+    'preedit': null,
+    'selection': info['selection'],
+    'context': {
+      'text': text,
+      'cursorScalar': cursor,
+      'anchorScalar': cursor,
+      'selectedText': '',
+      'absoluteStartScalar': 0,
+      'position': {...point, 'scalarOffset': cursor},
+      'textTruncated': false,
+      'selectionTruncated': false,
+    },
+  };
+  @override
+  Future<Map<String, Object?>> hostRequest(
+    Map<String, Object?> request, {
+    Uint8List? data,
+  }) async {
+    final command = request['command'];
+    if (command is! Map) return super.hostRequest(request, data: data);
+    final op = command['op'];
+    if ([
+      'new',
+      'info',
+      'pageSize',
+      'renderRegion',
+      'renderTiledRegion',
+    ].contains(op)) {
+      return super.hostRequest(request, data: data);
+    }
+    requests.add(Map<String, Object?>.from(command));
+    final id = ++serial;
+    final result = <String, Object?>{'ok': true, 'requestId': id};
+    switch (op) {
+      case 'imeEditContext':
+        result.addAll({'kind': 'imeEditContext', 'context': ime});
+      case 'caretRect':
+        result.addAll({
+          'kind': 'caretRect',
+          'caret': {'page': 0, 'x': 1, 'y': 1, 'height': 2},
+        });
+      case 'selectionRects':
+        result.addAll({'kind': 'selectionRects', 'rects': const []});
+      case 'accessibility':
+        result.addAll({
+          'kind': 'accessibility',
+          'snapshot': {
+            'revision': revision,
+            'fontGeneration': fontGeneration,
+            'nodes': [
+              {'text': text},
+            ],
+            'complete': true,
+            'truncated': false,
+            'limitations': const [],
+          },
+        });
+      case 'hitTest':
+        result.addAll({
+          'kind': 'hitTest',
+          'hit': {
+            'position': {...point, 'scalarOffset': cursor},
+          },
+        });
+      case 'applyImeEdit':
+        text = 'AB';
+        cursor = 2;
+        revision++;
+        result.addAll({
+          'kind': 'edited',
+          'outcome': {'revision': revision},
+        });
+      case 'setSelection':
+        result.addAll({
+          'kind': 'edited',
+          'outcome': {'revision': revision},
+        });
+      case 'executeCommand':
+        result.addAll({
+          'kind': 'commandExecuted',
+          'outcome': {
+            'outcome': {'revision': revision},
+            'preferredX': null,
+          },
+        });
+      default:
+        throw StateError('Unexpected editor request $op');
+    }
+    completions.add(result);
+    return {'ok': true, 'requestId': id};
+  }
+}
+
+void main() {
+  testWidgets(
+    'reference editor connects input, native caret and semantic selection',
+    (tester) async {
+      final semantics = tester.ensureSemantics();
+      final transport = ViewTransport();
+      final document = await NativeDocument.connect(transport);
+      final opened = document.newDocument();
+      await pumpUntil(tester, () => document.info != null);
+      await opened;
+      await tester.pumpWidget(
+        MaterialApp(home: NativeEditorView(document: document)),
+      );
+      await pumpUntil(
+        tester,
+        () => transport.requests.any((r) => r['op'] == 'accessibility'),
+      );
+      await tester.tapAt(tester.getCenter(find.byType(NativeEditorView)));
+      await pumpUntil(tester, () => tester.testTextInput.hasAnyClients);
+      expect(tester.testTextInput.isVisible, isTrue);
+      await pumpUntil(
+        tester,
+        () => tester.testTextInput.log.any(
+          (call) => call.method == 'TextInput.setCaretRect',
+        ),
+      );
+      expect(find.bySemanticsLabel('현재 문단 입력'), findsOneWidget);
+      tester.testTextInput.updateEditingValue(
+        const TextEditingValue(
+          text: 'AB',
+          selection: TextSelection.collapsed(offset: 2),
+        ),
+      );
+      await pumpUntil(
+        tester,
+        () =>
+            transport.requests.any((r) => r['op'] == 'applyImeEdit') &&
+            document.info!.revision == 1,
+      );
+      final edit = transport.requests.firstWhere(
+        (r) => r['op'] == 'applyImeEdit',
+      );
+      expect((edit['expected']! as Map)['revision'], 0);
+      expect(((edit['edit']! as Map)['replacement']! as Map)['text'], 'B');
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 20));
+      final close = document.dispose();
+      await tester.runAsync(() => close);
+      semantics.dispose();
+    },
+  );
+  testWidgets(
+    'replacement document reconnects input owner and old view disposes safely',
+    (tester) async {
+      final transport = ViewTransport();
+      final document = await NativeDocument.connect(transport);
+      final opened = document.newDocument();
+      await pumpUntil(tester, () => document.info != null);
+      await opened;
+      await tester.pumpWidget(
+        MaterialApp(home: NativeEditorView(document: document)),
+      );
+      await pumpUntil(
+        tester,
+        () => transport.requests.any((r) => r['op'] == 'accessibility'),
+      );
+      final generation = document.editorGeneration;
+      final replacement = document.newDocument();
+      await pumpUntil(tester, () => document.editorGeneration > generation);
+      await replacement;
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 20));
+      await tester.runAsync(document.dispose);
+      expect(tester.takeException(), isNull);
+    },
+  );
+}

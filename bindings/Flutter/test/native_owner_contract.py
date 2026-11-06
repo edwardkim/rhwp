@@ -37,6 +37,12 @@ class OwnerContracts(unittest.TestCase):
         cls.api.rhwp_flutter_reply_free.argtypes = [ctypes.c_void_p, ctypes.POINTER(Reply)]
         cls.api.rhwp_flutter_reply_free.restype = None
         cls.mock.mock_allow_finish.argtypes = [ctypes.c_int]
+        cls.mock.mock_snapshot_poll.argtypes = [ctypes.c_int]
+        cls.api.rhwp_flutter_reply_claim_snapshot.argtypes = [ctypes.c_void_p, ctypes.POINTER(Reply)]
+        cls.api.rhwp_flutter_reply_claim_snapshot.restype = ctypes.c_uint64
+        cls.mock.rhwp_presentation_request.argtypes = [ctypes.c_char_p, ctypes.c_size_t]
+        cls.mock.rhwp_presentation_request.restype = ctypes.c_void_p
+        cls.mock.rhwp_string_free.argtypes = [ctypes.c_void_p]
 
     def setUp(self):
         self.owner = self.api.rhwp_flutter_owner_create(str(ARGS.mock.resolve()).encode())
@@ -46,6 +52,7 @@ class OwnerContracts(unittest.TestCase):
         self.assertEqual(startup['id'], 0)
         self.assertTrue(startup['json']['worker'])
         self.mock.mock_allow_finish(1)
+        self.mock.mock_snapshot_poll(0)
 
     def tearDown(self):
         self.mock.mock_allow_finish(1)
@@ -63,6 +70,42 @@ class OwnerContracts(unittest.TestCase):
                 time.sleep(0.001)
             self.assertIsNone(self.owner, 'native cleanup did not finish')
         self.assertEqual(self.mock.mock_wrong_thread_calls(), 0)
+
+    def snapshot_reply(self):
+        self.assertEqual(self.submit(1, {'op': 'workerCreate'}), 0)
+        self.take()
+        self.mock.mock_snapshot_poll(1)
+        self.assertEqual(self.submit(3, handle=11), 0)
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline:
+            pointer = self.api.rhwp_flutter_owner_poll(self.owner)
+            if pointer:
+                return pointer
+            time.sleep(0.001)
+        self.fail('snapshot reply missing')
+
+    def test_unclaimed_snapshot_reply_is_released_even_during_close(self):
+        baseline = self.mock.mock_snapshot_releases()
+        pointer = self.snapshot_reply()
+        self.assertEqual(self.mock.mock_snapshot_live(), 1)
+        self.api.rhwp_flutter_owner_close(self.owner)
+        self.api.rhwp_flutter_reply_free(self.owner, pointer)
+        self.assertEqual(self.mock.mock_snapshot_live(), 0)
+        self.assertEqual(self.mock.mock_snapshot_releases(), baseline + 1)
+
+    def test_claimed_snapshot_moves_to_consumer_without_double_release(self):
+        baseline = self.mock.mock_snapshot_releases()
+        pointer = self.snapshot_reply()
+        self.assertEqual(self.api.rhwp_flutter_reply_claim_snapshot(self.owner, pointer), 77)
+        self.assertEqual(self.api.rhwp_flutter_reply_claim_snapshot(self.owner, pointer), 0)
+        self.api.rhwp_flutter_reply_free(self.owner, pointer)
+        self.assertEqual(self.mock.mock_snapshot_releases(), baseline)
+        payload = b'{"op":"snapshotRelease","snapshot":77}'
+        reply = self.mock.rhwp_presentation_request(payload, len(payload))
+        self.assertTrue(json.loads(ctypes.string_at(reply))['ok'])
+        self.mock.rhwp_string_free(reply)
+        self.assertEqual(self.mock.mock_snapshot_live(), 0)
+        self.assertEqual(self.mock.mock_snapshot_releases(), baseline + 1)
 
     def submit(self, operation, request=None, handle=0, length=0):
         self.serial += 1

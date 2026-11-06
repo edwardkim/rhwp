@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import 'native_document.dart';
+import 'native_viewport.dart';
 
 Future<ui.Image> decodeNativeRasterFrame(NativeRasterFrame frame) async {
   ui.ImmutableBuffer? buffer;
@@ -30,9 +31,16 @@ Future<ui.Image> decodeNativeRasterFrame(NativeRasterFrame frame) async {
 }
 
 class _DecodedImage {
-  const _DecodedImage(this.image, this.logicalSize);
+  const _DecodedImage(
+    this.image,
+    this.logicalSize,
+    this.origin,
+    this.pageWidth,
+  );
   final ui.Image image;
   final Size logicalSize;
+  final Offset origin;
+  final double pageWidth;
 }
 
 /// A bounded, read-only CPU reference viewport. This is not a desktop editor
@@ -54,6 +62,7 @@ class _NativeDocumentViewState extends State<NativeDocumentView> {
   Object? _error;
   _DecodedImage? _image;
   double _zoom = 1;
+  double _pageWidth = 0;
 
   @override
   void initState() {
@@ -72,6 +81,11 @@ class _NativeDocumentViewState extends State<NativeDocumentView> {
             frame.width / frame.scale * zoom,
             frame.height / frame.scale * zoom,
           ),
+          Offset(
+            frame.originX / frame.scale * zoom,
+            frame.originY / frame.scale * zoom,
+          ),
+          _pageWidth,
         );
       },
       disposeImage: (decoded) => _disposeImage(decoded.image),
@@ -91,7 +105,23 @@ class _NativeDocumentViewState extends State<NativeDocumentView> {
         }
       },
     );
-    _changes = widget.document.changes.listen((_) {
+    Object? identity = widget.document.info == null
+        ? null
+        : (
+            widget.document.info!.documentId,
+            widget.document.info!.revision,
+            widget.document.info!.fontGeneration,
+            widget.document.info!.pageCount,
+          );
+    _changes = widget.document.changes.listen((info) {
+      final next = (
+        info.documentId,
+        info.revision,
+        info.fontGeneration,
+        info.pageCount,
+      );
+      if (identity == next) return;
+      identity = next;
       if (!mounted) return;
       _presenter.clear();
       setState(() {
@@ -167,7 +197,9 @@ class _NativeDocumentViewState extends State<NativeDocumentView> {
           generation != document.viewGeneration) {
         return;
       }
-      _zoom = math.min(1.0, viewport.width / size.width);
+      final geometry = NativePageViewport.fit(size, viewport);
+      _zoom = geometry.zoom;
+      _pageWidth = size.width * _zoom;
       final frame = await document.renderRegion(
         page: widget.page,
         x: 0,
@@ -210,14 +242,20 @@ class _NativeDocumentViewState extends State<NativeDocumentView> {
       return ColoredBox(
         color: const Color(0xff55575a),
         child: ClipRect(
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: image == null
-                ? const SizedBox.shrink()
-                : SizedBox.fromSize(
-                    size: image.logicalSize,
-                    child: RawImage(image: image.image, fit: BoxFit.fill),
-                  ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (image != null)
+                Positioned(
+                  left:
+                      (constraints.maxWidth - image.pageWidth) / 2 +
+                      image.origin.dx,
+                  top: image.origin.dy,
+                  width: image.logicalSize.width,
+                  height: image.logicalSize.height,
+                  child: RawImage(image: image.image, fit: BoxFit.fill),
+                ),
+            ],
           ),
         ),
       );

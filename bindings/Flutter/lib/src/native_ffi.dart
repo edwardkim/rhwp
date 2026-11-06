@@ -81,6 +81,8 @@ typedef _PollNative = Pointer<_Reply> Function(Pointer<Void>);
 typedef _PollDart = Pointer<_Reply> Function(Pointer<Void>);
 typedef _FreeNative = Void Function(Pointer<Void>, Pointer<_Reply>);
 typedef _FreeDart = void Function(Pointer<Void>, Pointer<_Reply>);
+typedef _ClaimNative = Uint64 Function(Pointer<Void>, Pointer<_Reply>);
+typedef _ClaimDart = int Function(Pointer<Void>, Pointer<_Reply>);
 typedef _CloseNative = Void Function(Pointer<Void>);
 typedef _CloseDart = void Function(Pointer<Void>);
 typedef _StatusNative = Int32 Function(Pointer<Void>);
@@ -95,7 +97,7 @@ class _OwnedReply {
 /// All legacy rhwp calls, strings, buffers and Rust TLS stay on the shim's
 /// native owner thread. Dart FFI only submits copies and polls completed data.
 final class NativeOwnerTransport implements NativeWorkerTransport {
-  NativeOwnerTransport._(this._library, this._owner) {
+  NativeOwnerTransport._(this._library, this._owner, this.nativeLibraryPath) {
     _timer = Timer.periodic(const Duration(milliseconds: 4), (_) => _poll());
   }
 
@@ -109,7 +111,8 @@ final class NativeOwnerTransport implements NativeWorkerTransport {
     final abi = library.lookupFunction<Uint32 Function(), int Function()>(
       'rhwp_flutter_owner_abi_version',
     );
-    if (abi() != 1) {
+    final ownerAbi = abi();
+    if (ownerAbi != 1 && ownerAbi != 2) {
       throw const NativeCallException(
         'ownerAbi',
         'Unsupported owner dispatcher ABI.',
@@ -145,9 +148,14 @@ final class NativeOwnerTransport implements NativeWorkerTransport {
         'Could not create owner thread.',
       );
     }
-    final transport = NativeOwnerTransport._(library, owner);
+    final transport = NativeOwnerTransport._(library, owner, nativePath);
     try {
-      transport._capabilities = (await transport._startup.future).json;
+      transport._capabilities = {
+        ...(await transport._startup.future).json,
+        'ownerPresentationCleanup':
+            ownerAbi >= 2 &&
+            library.providesSymbol('rhwp_flutter_reply_claim_snapshot'),
+      };
       if (transport._capabilities['abiVersion'] != 1) {
         throw const NativeCallException(
           'nativeAbi',
@@ -161,6 +169,7 @@ final class NativeOwnerTransport implements NativeWorkerTransport {
     }
   }
 
+  final String nativeLibraryPath;
   final DynamicLibrary _library;
   final Pointer<Void> _owner;
   late final _SubmitDart _submit = _library
@@ -170,6 +179,12 @@ final class NativeOwnerTransport implements NativeWorkerTransport {
   late final _FreeDart _free = _library.lookupFunction<_FreeNative, _FreeDart>(
     'rhwp_flutter_reply_free',
   );
+  late final _ClaimDart? _claimSnapshot =
+      _library.providesSymbol('rhwp_flutter_reply_claim_snapshot')
+      ? _library.lookupFunction<_ClaimNative, _ClaimDart>(
+          'rhwp_flutter_reply_claim_snapshot',
+        )
+      : null;
   late final _CloseDart _nativeClose = _library
       .lookupFunction<_CloseNative, _CloseDart>('rhwp_flutter_owner_close');
   late final _StatusDart _finished = _library
@@ -278,6 +293,7 @@ final class NativeOwnerTransport implements NativeWorkerTransport {
       if (pointer == nullptr) break;
       final reply = pointer.ref;
       final id = reply.requestId;
+      final completer = id == 0 ? _startup : _pending.remove(id);
       _OwnedReply? owned;
       Object? error;
       StackTrace? trace;
@@ -303,13 +319,15 @@ final class NativeOwnerTransport implements NativeWorkerTransport {
             ? null
             : Uint8List.fromList(reply.bytes.asTypedList(reply.byteLength));
         owned = _OwnedReply(json, bytes);
+        if (completer != null && !completer.isCompleted && !_closing) {
+          _claimSnapshot?.call(_owner, pointer);
+        }
       } catch (caught, stack) {
         error = caught;
         trace = stack;
       } finally {
         _free(_owner, pointer);
       }
-      final completer = id == 0 ? _startup : _pending.remove(id);
       if (completer != null && !completer.isCompleted) {
         if (error != null) {
           completer.completeError(error, trace);
@@ -372,6 +390,7 @@ final class NativeOwnerTransport implements NativeWorkerTransport {
       'workerCancel',
       'workerClose',
       'workerStatus',
+      'presentationConfigure',
       'view',
     };
     if (!allowed.contains(request['op'])) {

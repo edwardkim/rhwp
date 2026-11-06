@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #include <stdatomic.h>
 #include <stdint.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -12,25 +13,35 @@ static atomic_int wrong_thread;
 static atomic_int worker_releases;
 static atomic_int buffer_releases;
 static atomic_int allow_finish = 1;
+static atomic_int snapshot_poll;
+static atomic_int snapshot_releases;
+static atomic_int snapshot_live;
+typedef struct StringResult { int metadata; char bytes[]; } StringResult;
 
 static int check(void) {
   if (on_owner) return 1;
   atomic_fetch_add(&wrong_thread, 1);
   return 0;
 }
-static char* result(const char* value) {
+static char* result_kind(const char* value, int metadata) {
   size_t length = strlen(value) + 1;
-  char* copy = malloc(length);
-  if (copy) memcpy(copy, value, length);
-  return copy;
+  StringResult* copy = malloc(sizeof(*copy) + length);
+  if (!copy) return NULL;
+  copy->metadata = metadata;
+  memcpy(copy->bytes, value, length);
+  return copy->bytes;
 }
+static char* result(const char* value) { return result_kind(value, 0); }
+
 char* rhwp_session_capabilities(void) {
   on_owner = 1;
   return result("{\"ok\":true,\"worker\":true,\"nativeSkia\":true}");
 }
 void rhwp_string_free(char* string) {
-  (void)check();
-  free(string);
+  if (!string) return;
+  StringResult* allocated = (StringResult*)((char*)string - offsetof(StringResult, bytes));
+  if (!allocated->metadata) (void)check();
+  free(allocated);
 }
 char* rhwp_native_host_request(const uint8_t* input, size_t length, const uint8_t* data, size_t data_length) {
   (void)data; (void)data_length;
@@ -45,6 +56,10 @@ char* rhwp_native_host_request(const uint8_t* input, size_t length, const uint8_
     worker = 0; atomic_fetch_add(&worker_releases, 1); return result("{\"ok\":true}");
   }
   if (strstr(json, "workerPoll") && worker) {
+    if (atomic_load(&snapshot_poll)) {
+      atomic_fetch_add(&snapshot_live, 1);
+      return result("{\"ok\":true,\"completion\":{\"ok\":true,\"requestId\":1,\"kind\":\"renderSnapshot\",\"snapshot\":77}}");
+    }
     buffer_live = 1;
     return result("{\"ok\":true,\"completion\":{\"ok\":true,\"requestId\":1,\"kind\":\"frame\",\"buffer\":42,\"byteLength\":64,\"width\":4,\"height\":4,\"stride\":16,\"originX\":0,\"originY\":0,\"revision\":0,\"fontGeneration\":0}}");
   }
@@ -63,3 +78,16 @@ int mock_wrong_thread_calls(void) { return atomic_load(&wrong_thread); }
 int mock_worker_releases(void) { return atomic_load(&worker_releases); }
 int mock_buffer_releases(void) { return atomic_load(&buffer_releases); }
 void mock_allow_finish(int allow) { atomic_store(&allow_finish, allow); }
+
+char* rhwp_presentation_request(const uint8_t* input, size_t length) {
+  if (length >= 256) return result_kind("{\"ok\":false}", 1);
+  char json[256]; memcpy(json, input, length); json[length] = 0;
+  if (strstr(json, "snapshotRelease") && strstr(json, "77") && atomic_load(&snapshot_live) > 0) {
+    atomic_fetch_sub(&snapshot_live, 1); atomic_fetch_add(&snapshot_releases, 1);
+    return result_kind("{\"ok\":true}", 1);
+  }
+  return result_kind("{\"ok\":false}", 1);
+}
+void mock_snapshot_poll(int enabled) { atomic_store(&snapshot_poll, enabled); }
+int mock_snapshot_releases(void) { return atomic_load(&snapshot_releases); }
+int mock_snapshot_live(void) { return atomic_load(&snapshot_live); }

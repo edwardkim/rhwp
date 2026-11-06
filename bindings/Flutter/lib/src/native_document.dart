@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -10,19 +11,28 @@ class NativeDocumentInfo {
     this.documentId,
     this.revision,
     this.fontGeneration,
-    this.pageCount,
-  );
+    this.pageCount, {
+    this.details = const {},
+  });
   factory NativeDocumentInfo.fromJson(Map<String, Object?> json) =>
       NativeDocumentInfo(
         json['documentId']! as int,
         json['revision']! as int,
         json['fontGeneration']! as int,
         json['pageCount']! as int,
+        details: Map.unmodifiable(json),
       );
   final int documentId;
   final int revision;
   final int fontGeneration;
   final int pageCount;
+  final Map<String, Object?> details;
+  bool get isDirty => details['isDirty'] == true;
+  bool get editing => details['editing'] == true;
+  int? get compositionId => details['compositionId'] as int?;
+  Map<String, Object?>? get selection => details['selection'] == null
+      ? null
+      : Map<String, Object?>.from(details['selection']! as Map);
   Map<String, Object?> get target => {
     'documentId': documentId,
     'revision': revision,
@@ -79,11 +89,23 @@ class _Operation {
     this.openBytes,
     this.render = false,
     this.viewGeneration = 0,
+    this.inputBytes = 0,
+    this.refreshAfter = false,
+    this.beforeSubmit,
+    this.releaseSnapshot,
   });
   final Map<String, Object?>? Function() build;
   final Uint8List? openBytes;
   final bool render;
   final int viewGeneration;
+  final int inputBytes;
+  final bool refreshAfter;
+  final Future<void> Function(Map<String, Object?>)? beforeSubmit;
+  final Future<void> Function(int)? releaseSnapshot;
+  Map<String, Object?>? presentationStamp;
+  bool refreshing = false;
+  Map<String, Object?>? result;
+  int get retainedBytes => (openBytes?.length ?? 0) + inputBytes;
   final done = Completer<Object?>();
   int? requestId;
   bool cancelRequested = false;
@@ -117,6 +139,8 @@ class NativeDocument {
   final int worker;
   final _queue = Queue<_Operation>();
   final _changes = StreamController<NativeDocumentInfo>.broadcast();
+  final _rasterInvalidations = StreamController<int>.broadcast(sync: true);
+  int _rasterInvalidationGeneration = 0;
   late final Timer _timer;
   _Operation? _pending;
   bool _pumping = false;
@@ -125,13 +149,33 @@ class NativeDocument {
   int _queuedBytes = 0;
   int _documentEpoch = 0;
   int _viewGeneration = 0;
+  int _editorGeneration = 0;
+  int _presentationGeneration = 0;
   NativeDocumentInfo? _info;
   Future<void>? _closeFuture;
 
   NativeDocumentInfo? get info => _info;
   bool get isDisposed => _disposed;
   int get viewGeneration => _viewGeneration;
+  int get editorGeneration => _editorGeneration;
+  int get presentationGeneration => _presentationGeneration;
+  int beginPresentation() {
+    if (_disposed) throw const NativeDisposedException();
+    return ++_presentationGeneration;
+  }
+
+  int beginEditor() {
+    if (_disposed) throw const NativeDisposedException();
+    return ++_editorGeneration;
+  }
+
+  void endEditor(int generation) {
+    if (generation == _editorGeneration) _editorGeneration++;
+  }
+
   Stream<NativeDocumentInfo> get changes => _changes.stream;
+  Stream<int> get rasterInvalidations => _rasterInvalidations.stream;
+  int get rasterInvalidationGeneration => _rasterInvalidationGeneration;
 
   int beginView() {
     if (_disposed) throw const NativeDisposedException();
@@ -152,12 +196,23 @@ class NativeDocument {
   }
 
   Future<Object?> _enqueue(_Operation operation) {
-    final bytes = operation.openBytes?.length ?? 0;
+    final bytes = operation.retainedBytes;
     _checkAdmission(bytes);
     _queuedBytes += bytes;
     _queue.add(operation);
     unawaited(_pump());
     return operation.done.future;
+  }
+
+  Future<Object?> _enqueueRasterIntent(
+    _Operation operation, {
+    required bool invalidate,
+  }) {
+    final future = _enqueue(operation);
+    // Notify after FIFO acceptance: listeners may immediately queue capture,
+    // which must remain behind this mutation and its fresh-info barrier.
+    if (invalidate) _rasterInvalidations.add(++_rasterInvalidationGeneration);
+    return future;
   }
 
   void _checkAdmission(int bytes) {
@@ -171,8 +226,10 @@ class NativeDocument {
   Future<NativeDocumentInfo> newDocument() {
     _checkAdmission(0);
     beginView();
-    return _enqueue(_Operation(() => {'op': 'new', 'replace': _info?.target}))
-        .then((value) => value! as NativeDocumentInfo);
+    return _enqueueRasterIntent(
+      _Operation(() => {'op': 'new', 'replace': _info?.target}),
+      invalidate: true,
+    ).then((value) => value! as NativeDocumentInfo);
   }
 
   Future<NativeDocumentInfo> openBytes(Uint8List bytes) {
@@ -185,13 +242,164 @@ class NativeDocument {
     _checkAdmission(bytes.length);
     beginView();
     final owned = Uint8List.fromList(bytes);
-    return _enqueue(_Operation(() => const {'op': 'open'}, openBytes: owned))
-        .then((value) => value! as NativeDocumentInfo);
+    return _enqueueRasterIntent(
+      _Operation(() => const {'op': 'open'}, openBytes: owned),
+      invalidate: true,
+    ).then((value) => value! as NativeDocumentInfo);
   }
 
   Future<NativeDocumentInfo> refreshInfo() =>
       _enqueue(_Operation(() => const {'op': 'info'}))
           .then((value) => value! as NativeDocumentInfo);
+
+  /// Bounded editor/accessibility requests retain their accepted document ID.
+  /// Mutations keep the FIFO slot through a fresh info response, so following
+  /// commands see the authoritative revision and dirty/composition state.
+  Future<Map<String, Object?>> request(
+    String operation, [
+    Map<String, Object?> fields = const {},
+  ]) {
+    const reads = {
+      'imeContext',
+      'imeEditContext',
+      'copySelection',
+      'accessibility',
+      'caretRect',
+      'hitTest',
+      'selectionRects',
+    };
+    const mutations = {
+      'beginEdit',
+      'setSelection',
+      'executeCommand',
+      'applyImeEdit',
+      'cutSelection',
+      'pasteText',
+      'pasteHtml',
+      'replace',
+      'undo',
+      'redo',
+      'cancelComposition',
+      'commitComposition',
+    };
+    if (!reads.contains(operation) && !mutations.contains(operation)) {
+      throw ArgumentError('Unsupported reference editor operation: $operation');
+    }
+    if (fields.containsKey('op') || fields.containsKey('target')) {
+      throw ArgumentError(
+        'Operation and target are owned by the document FIFO.',
+      );
+    }
+    final acceptedDocument = _requireInfo().documentId;
+    final encoded = jsonEncode(fields);
+    final bytes = utf8.encode(encoded).length;
+    if (bytes > 256 * 1024) {
+      throw const NativeCallException(
+        'requestLimit',
+        'Editor request exceeds 256 KiB.',
+      );
+    }
+    _checkAdmission(bytes);
+    final owned = Map<String, Object?>.from(jsonDecode(encoded) as Map);
+    final mutation = mutations.contains(operation);
+    if (mutation) _cancelRender();
+    final raster =
+        mutation &&
+        operation != 'beginEdit' &&
+        operation != 'setSelection' &&
+        (operation != 'executeCommand' ||
+            const {
+              'deleteBackward',
+              'deleteForward',
+              'splitParagraph',
+              'joinPreviousParagraph',
+            }.contains(
+              (owned['command'] is Map
+                  ? (owned['command']! as Map)['command']
+                  : null),
+            ));
+    return _enqueueRasterIntent(
+      _Operation(
+        () {
+          final info = _requireInfo();
+          if (info.documentId != acceptedDocument) {
+            throw const NativeCallException(
+              'staleDocument',
+              'Document changed before editor input executed.',
+            );
+          }
+          return {'op': operation, ...owned, 'target': info.target};
+        },
+        inputBytes: bytes,
+        refreshAfter: mutation,
+      ),
+      invalidate: raster,
+    ).then((result) => Map<String, Object?>.from(result! as Map));
+  }
+
+  /// Capture owned immutable render input on the legacy owner dispatcher.
+  /// The caller must release the resulting handle or transfer it exactly once
+  /// to a platform adapter. Cleanup also covers a poll arriving after dispose.
+  Future<Map<String, Object?>> capturePresentation({
+    required int page,
+    required int viewGeneration,
+    required int deviceGeneration,
+    required double deviceScale,
+    required Future<void> Function(int) releaseSnapshot,
+  }) {
+    final presentation = transport.capabilities['presentation'];
+    if (transport.capabilities['ownerPresentationCleanup'] != true ||
+        presentation is! Map ||
+        presentation['workerRenderSnapshots'] != true ||
+        viewGeneration != _presentationGeneration ||
+        deviceGeneration <= 0 ||
+        !deviceScale.isFinite ||
+        deviceScale <= 0 ||
+        deviceScale > 16) {
+      throw const NativeCallException(
+        'unsupportedPresentation',
+        'Invalid or unsupported snapshot presentation.',
+      );
+    }
+    final acceptedDocument = _requireInfo().documentId;
+    late _Operation operation;
+    operation = _Operation(
+      () {
+        final info = _requireInfo();
+        if (info.documentId != acceptedDocument ||
+            viewGeneration != _presentationGeneration) {
+          throw const NativeCallException(
+            'stalePresentation',
+            'Presentation changed before capture.',
+          );
+        }
+        operation.presentationStamp = Map.unmodifiable({
+          ...info.target,
+          'fontGeneration': info.fontGeneration,
+          'viewGeneration': viewGeneration,
+          'deviceGeneration': deviceGeneration,
+          'deviceScale': deviceScale,
+        });
+        return {
+          'op': 'exportRenderSnapshot',
+          'target': info.target,
+          'fontGeneration': info.fontGeneration,
+          'page': page,
+          'profile': 'screen',
+        };
+      },
+      beforeSubmit: (_) async {
+        await transport.hostRequest({
+          'op': 'presentationConfigure',
+          'worker': worker,
+          'stamp': operation.presentationStamp,
+        });
+      },
+      releaseSnapshot: releaseSnapshot,
+    );
+    return _enqueue(operation)
+        .then((result) => Map<String, Object?>.from(result! as Map));
+  }
 
   Future<NativePageSize> pageSize(int page) => _enqueue(
     _Operation(
@@ -282,6 +490,14 @@ class NativeDocument {
               operation.viewGeneration,
             );
           }
+          final beforeSubmit = operation.beforeSubmit;
+          if (beforeSubmit != null) {
+            await beforeSubmit(command);
+          }
+          if (_disposed) {
+            _finish(operation, null, const NativeDisposedException());
+            continue;
+          }
           final accepted = operation.openBytes != null
               ? await transport.hostRequest({
                   'op': 'workerOpen',
@@ -314,7 +530,7 @@ class NativeDocument {
   ]) {
     if (identical(_pending, operation)) _pending = null;
     if (!operation.creditReleased) {
-      _queuedBytes -= operation.openBytes?.length ?? 0;
+      _queuedBytes -= operation.retainedBytes;
       operation.creditReleased = true;
     }
     if (!operation.done.isCompleted) {
@@ -353,12 +569,19 @@ class NativeDocument {
     if (_polling || _disposed || _pending?.requestId == null) return;
     _polling = true;
     try {
+      final polling = _pending;
       final completion = await transport.pollWorker(worker);
-      if (completion != null) await _complete(completion);
+      if (completion != null) await _complete(completion, polling);
     } catch (error, stack) {
       if (!_disposed) {
         final pending = _pending;
-        if (pending != null) _finish(pending, null, error, stack);
+        if (pending != null) {
+          if (pending.refreshing) {
+            _info = null;
+            beginView();
+          }
+          _finish(pending, null, error, stack);
+        }
         unawaited(
           dispose().then<void>((_) {}, onError: (Object _, StackTrace _) {}),
         );
@@ -369,13 +592,20 @@ class NativeDocument {
     }
   }
 
-  Future<void> _complete(Map<String, Object?> result) async {
-    final operation = _pending;
+  Future<void> _complete(
+    Map<String, Object?> result, [
+    _Operation? polling,
+  ]) async {
+    final operation = _pending ?? polling;
     final buffer = result['buffer'];
     if (_disposed ||
         operation == null ||
         operation.requestId != result['requestId']) {
       if (buffer is int) await transport.releaseBuffer(buffer);
+      final snapshot = result['snapshot'];
+      if (snapshot is int && operation?.releaseSnapshot != null) {
+        await operation!.releaseSnapshot!(snapshot);
+      }
       if (!_disposed) {
         throw const NativeCallException(
           'unexpectedCompletion',
@@ -385,6 +615,10 @@ class NativeDocument {
       return;
     }
     if (result['ok'] != true) {
+      if (operation.refreshing) {
+        _info = null;
+        beginView();
+      }
       if (buffer is int) await transport.releaseBuffer(buffer);
       _finish(
         operation,
@@ -405,6 +639,48 @@ class NativeDocument {
                 'Document request was cancelled.',
               ),
       );
+      return;
+    }
+    if (operation.releaseSnapshot != null &&
+        result['kind'] == 'renderSnapshot') {
+      final snapshot = result['snapshot'];
+      final stamp = operation.presentationStamp!;
+      final info = _info;
+      final metadata = result['info'];
+      if (snapshot is! int ||
+          metadata is! Map ||
+          metadata['current'] != true ||
+          info == null ||
+          stamp['documentId'] != info.documentId ||
+          stamp['revision'] != info.revision ||
+          stamp['fontGeneration'] != info.fontGeneration ||
+          stamp['viewGeneration'] != _presentationGeneration) {
+        if (snapshot is int) await operation.releaseSnapshot!(snapshot);
+        _finish(
+          operation,
+          null,
+          const NativeCallException(
+            'stalePresentation',
+            'Stale snapshot capture.',
+          ),
+        );
+      } else {
+        _finish(
+          operation,
+          Map<String, Object?>.unmodifiable({...result, 'stamp': stamp}),
+        );
+      }
+      return;
+    }
+    if (operation.refreshAfter && !operation.refreshing) {
+      operation.result = Map.unmodifiable(result);
+      operation.refreshing = true;
+      final accepted = await transport.hostRequest({
+        'op': 'workerSubmit',
+        'worker': worker,
+        'command': {'op': 'info'},
+      });
+      operation.requestId = accepted['requestId']! as int;
       return;
     }
     if (operation.render) {
@@ -469,7 +745,7 @@ class NativeDocument {
       if (_info?.documentId != info.documentId) ++_documentEpoch;
       _info = info;
       _changes.add(info);
-      _finish(operation, info);
+      _finish(operation, operation.refreshing ? operation.result : info);
     } else if (result['kind'] == 'pageSize') {
       final size = result['size']! as Map;
       final width = (size['width']! as num).toDouble(),
@@ -494,6 +770,7 @@ class NativeDocument {
   Future<void> dispose() {
     if (_closeFuture != null) return _closeFuture!;
     _disposed = true;
+    _rasterInvalidations.add(++_rasterInvalidationGeneration);
     ++_viewGeneration;
     _timer.cancel();
     final operations = [..._queue, ?_pending];
@@ -508,6 +785,7 @@ class NativeDocument {
     }
     _closeFuture = transport.close().whenComplete(() {
       unawaited(_changes.close());
+      unawaited(_rasterInvalidations.close());
     });
     return _closeFuture!;
   }

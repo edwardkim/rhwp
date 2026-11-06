@@ -72,6 +72,7 @@ static void* symbol(void* library, const char* name) { return dlsym(library, nam
 
 typedef char* (*HostRequest)(const uint8_t*, size_t, const uint8_t*, size_t);
 typedef char* (*Capabilities)(void);
+typedef char* (*PresentationRequest)(const uint8_t*, size_t);
 typedef char* (*BufferCopy)(uint64_t, uint8_t*, size_t);
 typedef char* (*BufferRelease)(uint64_t);
 typedef void (*StringFree)(char*);
@@ -81,6 +82,7 @@ typedef struct NativeApi {
   BufferCopy copy;
   BufferRelease release;
   StringFree string_free;
+  PresentationRequest presentation;
 } NativeApi;
 static NativeApi pinned_api;
 static char* pinned_path;
@@ -88,7 +90,7 @@ static char* pinned_path;
  * Rust TLS destructors must remain mapped through owner-thread teardown. */
 static void* pinned_library;
 
-uint32_t rhwp_flutter_owner_abi_version(void) { return 1; }
+uint32_t rhwp_flutter_owner_abi_version(void) { return 2; }
 
 typedef struct Command {
   RhwpFlutterReply* reply;
@@ -122,6 +124,10 @@ struct RhwpFlutterOwner {
   uint64_t buffers[MAX_BUFFERS];
   size_t buffer_count;
 };
+
+static void mark_cleanup_error(RhwpFlutterOwner* owner) {
+  mutex_lock(&owner->mutex); owner->cleanup_error = 1; mutex_unlock(&owner->mutex);
+}
 
 static char* duplicate(const char* value) {
   size_t length = strlen(value);
@@ -180,6 +186,7 @@ static int load_api(RhwpFlutterOwner* owner) {
       LOAD_API(copy, "rhwp_session_buffer_copy");
       LOAD_API(release, "rhwp_session_buffer_release");
       LOAD_API(string_free, "rhwp_string_free");
+      LOAD_API(presentation, "rhwp_presentation_request");
 #undef LOAD_API
       if (api.host && api.capabilities && api.copy && api.release && api.string_free) {
         pinned_path = duplicate(owner->library_path);
@@ -232,9 +239,17 @@ static void queue_reply(RhwpFlutterOwner* owner, RhwpFlutterReply* reply) {
 }
 static void release_native_buffer(RhwpFlutterOwner* owner, uint64_t buffer) {
   char* result = owner->api.release(buffer);
-  if (!native_true(result, "ok")) owner->cleanup_error = 1;
+  if (!native_true(result, "ok")) mark_cleanup_error(owner);
   owner->api.string_free(result);
   remove_handle(owner->buffers, &owner->buffer_count, buffer);
+}
+static void release_native_snapshot(RhwpFlutterOwner* owner, uint64_t snapshot) {
+  if (!owner->api.presentation) { mark_cleanup_error(owner); return; }
+  char json[128];
+  int length = snprintf(json, sizeof(json), "{\"op\":\"snapshotRelease\",\"snapshot\":%llu}", (unsigned long long)snapshot);
+  char* reply = owner->api.presentation((const uint8_t*)json, (size_t)length);
+  if (!native_true(reply, "ok")) mark_cleanup_error(owner);
+  owner->api.string_free(reply);
 }
 static void execute(RhwpFlutterOwner* owner, Command* command) {
   RhwpFlutterReply* reply = command->reply;
@@ -278,7 +293,14 @@ static void execute(RhwpFlutterOwner* owner, Command* command) {
       if (owner->buffer_count < MAX_BUFFERS) owner->buffers[owner->buffer_count++] = buffer;
       else { release_native_buffer(owner, buffer); buffer = 0; reply->error = -3; }
     }
+    const char* kind = field(native, "kind");
+    if (reply->operation == RHWP_FLUTTER_POLL_WORKER && kind && strncmp(kind, "\"renderSnapshot\"", 16) == 0) {
+      reply->snapshot_handle = native_handle(native, "snapshot");
+    }
     reply->json = copy_json(owner, reply, native);
+    if (reply->error && reply->snapshot_handle) {
+      release_native_snapshot(owner, reply->snapshot_handle); reply->snapshot_handle = 0;
+    }
     if (reply->error && buffer) release_native_buffer(owner, buffer);
   }
   uncharge(owner, command->json_length + command->data_length);
@@ -290,7 +312,7 @@ static void execute(RhwpFlutterOwner* owner, Command* command) {
 static void cleanup_native(RhwpFlutterOwner* owner) {
   for (size_t i = 0; i < owner->worker_count; ++i) {
     char* result = worker_call(owner, "workerClose", owner->workers[i]);
-    if (!native_true(result, "ok")) owner->cleanup_error = 1;
+    if (!native_true(result, "ok")) mark_cleanup_error(owner);
     owner->api.string_free(result);
   }
   while (owner->buffer_count) release_native_buffer(owner, owner->buffers[owner->buffer_count - 1]);
@@ -304,9 +326,9 @@ static void cleanup_native(RhwpFlutterOwner* owner) {
       if (!ok || finished) {
         if (ok) {
           char* released = worker_call(owner, "workerRelease", worker);
-          if (!native_true(released, "ok")) owner->cleanup_error = 1;
+          if (!native_true(released, "ok")) mark_cleanup_error(owner);
           owner->api.string_free(released);
-        } else owner->cleanup_error = 1;
+        } else mark_cleanup_error(owner);
         remove_handle(owner->workers, &owner->worker_count, worker);
       } else ++index;
     }
@@ -420,8 +442,16 @@ RhwpFlutterReply* rhwp_flutter_owner_poll(RhwpFlutterOwner* owner) {
   mutex_unlock(&owner->mutex);
   return reply;
 }
+uint64_t rhwp_flutter_reply_claim_snapshot(RhwpFlutterOwner* owner, RhwpFlutterReply* reply) {
+  (void)owner;
+  if (!reply) return 0;
+  uint64_t snapshot = reply->snapshot_handle;
+  reply->snapshot_handle = 0;
+  return snapshot;
+}
 void rhwp_flutter_reply_free(RhwpFlutterOwner* owner, RhwpFlutterReply* reply) {
   if (!reply) return;
+  if (reply->snapshot_handle) release_native_snapshot(owner, reply->snapshot_handle);
   free((void*)reply->json); free((void*)reply->release_json); free((void*)reply->bytes);
   mutex_lock(&owner->mutex);
   owner->owned_bytes -= reply->charged_bytes; --owner->outstanding;

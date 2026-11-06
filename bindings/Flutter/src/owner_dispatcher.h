@@ -37,6 +37,7 @@ typedef struct RhwpFlutterReply {
   /* Private queue/accounting fields; clients must not modify them. */
   size_t charged_bytes;
   struct RhwpFlutterReply* next;
+  uint64_t snapshot_handle;
 } RhwpFlutterReply;
 
 /* One pinned native library path per process. Creation and all operations are
@@ -51,8 +52,12 @@ RHWP_FLUTTER_EXPORT int rhwp_flutter_owner_submit(
     const uint8_t* data, size_t data_length,
     uint64_t handle, size_t buffer_length);
 RHWP_FLUTTER_EXPORT RhwpFlutterReply* rhwp_flutter_owner_poll(RhwpFlutterOwner*);
-/* Frees shim-owned copies only. Legacy native strings/buffers are freed on the
- * native owner thread before replies cross this boundary. */
+/* ABI2: claim an immutable presentation handle only when delivering its JSON
+ * to the caller. Unclaimed snapshots are released by reply_free, including
+ * decode failure and close races. This operation transfers no legacy TLS state. */
+RHWP_FLUTTER_EXPORT uint64_t rhwp_flutter_reply_claim_snapshot(RhwpFlutterOwner*, RhwpFlutterReply*);
+/* Frees shim copies and unclaimed cross-thread presentation snapshots. Legacy
+ * strings/buffers stay on the owner thread. */
 RHWP_FLUTTER_EXPORT void rhwp_flutter_reply_free(RhwpFlutterOwner*, RhwpFlutterReply*);
 RHWP_FLUTTER_EXPORT void rhwp_flutter_owner_close(RhwpFlutterOwner*);
 RHWP_FLUTTER_EXPORT int rhwp_flutter_owner_finished(RhwpFlutterOwner*);

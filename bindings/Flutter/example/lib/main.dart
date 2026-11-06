@@ -117,7 +117,9 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
         Expanded(
           child: _document == null
               ? const SizedBox.shrink()
-              : NativeDocumentView(document: _document!),
+              : _document!.transport.capabilities['atomicImeEdits'] == true
+                  ? NativeEditorView(document: _document!)
+                  : NativeDocumentView(document: _document!),
         ),
       ],
     ),

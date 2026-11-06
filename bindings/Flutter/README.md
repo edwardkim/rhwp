@@ -76,3 +76,48 @@ raster thread로 전달해야 하며, Flutter 내부 `SkCanvas*`나 렌더러 �
 
 관련 API: [Flutter native FFI](https://docs.flutter.dev/interop/bind-native-code),
 [Flutter raw image decode](https://api.flutter.dev/flutter/dart-ui/decodeImageFromPixels.html).
+
+## 입력·선택·IME 참조 연결 (P102)
+
+`NativeEditorView`는 `NativeDocumentView` 또는 외부 GPU viewport 위에 Native caret/selection
+geometry를 표시한다. `NativeEditorController`가 편집을 직렬화하고, NativeDocument의 각 편집은
+최신 info를 받기까지 FIFO slot을 유지한다. 이후 입력은 실제 완료 revision을 사용하며,
+이미 받은 입력이 다른 문서나 새 editor owner로 옮겨 가지 않는다.
+
+Flutter DeltaTextInputClient의 UTF-16 문맥은 Native `imeEditContext`/`applyImeEdit`와 연결한다.
+전체 bounded context와 revision/font/selection/composition을 검증하며 surrogate 중간,
+16 KiB·4096 scalar 초과, 오래된 oldText, 근거 없는 조합 범위 이동은 거절하고 Native 상태로
+다시 동기화한다. 한글 preview 갱신은 같은 composition을 유지하고, 확정+새 조합은 취소 baseline을
+분리한다. focus loss/Escape는 현재 조합을 취소한다. 조합 중 Undo는 조합만 취소한다.
+
+키 이동·grapheme 삭제·문단 분리·undo/redo·plain-text clipboard는 Native 명령을 사용한다.
+AltGr를 Ctrl 단축키로 취급하지 않는다. 드래그 hit-test는 하나만 진행하고 다음 위치를 합친다.
+IME candidate rect와 선택 overlay는 Native geometry에 동일한 page/viewport transform을 적용한다.
+DPR은 raster/texture 해상도에만 적용하고 pointer/candidate rect의 logical 단위를 두 번 확대하지 않는다.
+
+접근성 조회는 완료한 Native body/table snapshot(64 nodes·32 KiB·depth4)을 읽는다. 현재 bounded
+문단에는 Flutter text-field selection/action을 연결한다. 생략한 control·header·note·shape와
+불완전 scope는 Native limitations/complete 상태를 유지한다. 여러 문단/객체를 걸친 선택은 Native에
+유지되며 clipboard/명령으로 다룰 수 있지만 이 IME 문맥으로 편집하지 않는다.
+
+이 뷰는 한 페이지 상단을 표시하는 참조 연결이다. 제품용 다중 페이지 navigation/scroll,
+서식 도구·파일 전환 UI 전체와 OS별 실물 IME/AT qualification을 완료했다고 표시하지 않는다.
+
+## 스냅샷 전송과 종료 경계
+
+owner dispatcher ABI2는 immutable snapshot을 포함한 reply에 별도 소유권을 둔다. Dart에 정상
+전달할 때만 `rhwp_flutter_reply_claim_snapshot`을 호출하고, 디코딩 실패·종료·미수령 reply는
+`reply_free`가 thread-safe presentation API로 해제한다. 기존 ABI1 shim은 CPU 경로로 사용하며
+snapshot capture는 `ownerPresentationCleanup` capability가 있어야 활성화한다.
+
+`capturePresentation`은 owner thread에서 source stamp를 설정한 뒤 worker snapshot을 내보낸다.
+반환 handle은 호출자가 해제하거나 platform adapter에 한 번만 넘긴다. dispose 이후 이미 시작한
+poll이 결과를 받는 경우에도 release callback을 실행하므로 이 callback은 source/widget 종료 후에도
+유효해야 한다. `NativeOwnerTransport.nativeLibraryPath`와 metadata adapter의 정규화한 module
+경로가 일치해야 같은 registry를 사용한다.
+
+`rasterInvalidations`는 문서 열기/교체와 텍스트·history·composition 작업의 FIFO 수락 후 즉시
+발생한다. GPU 뷰는 이전 Texture를 숨기고 그 편집 뒤에 새 capture를 넣는다. CPU fallback의
+`viewGeneration`과 GPU의 `presentationGeneration`을 분리하며, 다른 viewport가 presentation을
+획득하면 이전 뷰는 재획득 경쟁 없이 중단한다. snapshotInfo.current만으로 view/device 유효성을
+추정하지 않고 전체 stamp를 확인해야 한다.
