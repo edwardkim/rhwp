@@ -1,9 +1,12 @@
 //! 수식 Skia의 실제 face 선택·텍스트 표시와 늘인 괄호 표시.
 use super::super::font_lookup::{
-    select_typeface_for_character, text_family_candidates, typeface_candidates_for_families,
+    match_supplied_family, match_system_family_style, select_typeface_for_character,
+    text_family_candidates, typeface_candidates_for_families, TypefaceCandidate,
 };
 use super::{stroke_paint, EquationFonts, EQ_FONT_FAMILY};
 use skia_safe::{font, paint, Canvas, Color, Font, FontStyle, Paint, PathBuilder};
+
+use crate::renderer::equation::hancom_glyphs::GlyphRun;
 
 pub(super) fn draw_text(
     canvas: &Canvas,
@@ -38,51 +41,7 @@ pub(super) fn draw_text_with_family(
     if text.is_empty() {
         return;
     }
-    // 수식의 한글은 SVG/Canvas와 같은 명조 대체 글꼴과 정체 스타일을 쓴다.
-    let has_cjk = crate::renderer::equation::text_has_cjk(text);
-    let family = explicit_family.unwrap_or(if has_cjk {
-        crate::renderer::equation::CJK_EQUATION_FONT_FAMILY
-    } else {
-        EQ_FONT_FAMILY
-    });
-    let font_style = match (bold, italic && !has_cjk) {
-        (true, true) => FontStyle::bold_italic(),
-        (true, false) => FontStyle::bold(),
-        (false, true) => FontStyle::italic(),
-        (false, false) => FontStyle::normal(),
-    };
-    let mut families: Vec<String> = family
-        .split(',')
-        .map(str::trim)
-        .map(str::to_owned)
-        .collect();
-    let postscript_requests = families.clone();
-    // Match the web equation's serif CJK fallback before general body fallbacks.
-    if has_cjk {
-        families.extend(
-            [
-                "AppleMyungjo",
-                "Noto Serif KR",
-                "Noto Serif CJK KR",
-                "Nanum Myeongjo",
-            ]
-            .map(str::to_owned),
-        );
-    }
-    for fallback in text_family_candidates("") {
-        if !families.contains(&fallback) {
-            families.push(fallback);
-        }
-    }
-    let chain = typeface_candidates_for_families(
-        fonts.font_mgr,
-        fonts.system_families,
-        fonts.custom_typefaces,
-        fonts.bundled_typefaces,
-        &families,
-        &postscript_requests,
-        font_style,
-    );
+    let chain = equation_typeface_chain(fonts, text, italic, bold, explicit_family);
     // Preserve shaping within consecutive characters using the same face. Use
     // these exact runs for measurement and paint, including centered symbols.
     let mut runs: Vec<(Option<usize>, String)> = Vec::new();
@@ -123,6 +82,129 @@ pub(super) fn draw_text_with_family(
     for (face, text, width) in runs {
         canvas.draw_str(&text, (draw_x as f32, baseline_y as f32), &face, &paint);
         draw_x += width;
+    }
+}
+
+/// Build the same character fallback ladder for measured text and positioned
+/// Hancom glyphs. Face selection is shared; positioned runs never remeasure it.
+fn equation_typeface_chain(
+    fonts: &EquationFonts<'_>,
+    text: &str,
+    italic: bool,
+    bold: bool,
+    explicit_family: Option<&str>,
+) -> Vec<TypefaceCandidate> {
+    // 수식의 한글은 SVG/Canvas와 같은 명조 대체 글꼴과 정체 스타일을 쓴다.
+    let has_cjk = crate::renderer::equation::text_has_cjk(text);
+    let family = explicit_family.unwrap_or(if has_cjk {
+        crate::renderer::equation::CJK_EQUATION_FONT_FAMILY
+    } else {
+        EQ_FONT_FAMILY
+    });
+    let font_style = match (bold, italic && !has_cjk) {
+        (true, true) => FontStyle::bold_italic(),
+        (true, false) => FontStyle::bold(),
+        (false, true) => FontStyle::italic(),
+        (false, false) => FontStyle::normal(),
+    };
+    let mut families: Vec<String> = family
+        .split(',')
+        .map(str::trim)
+        .map(str::to_owned)
+        .collect();
+    let postscript_requests = families.clone();
+    // Match the web equation's serif CJK fallback before general body fallbacks.
+    if has_cjk {
+        families.extend(
+            [
+                "AppleMyungjo",
+                "Noto Serif KR",
+                "Noto Serif CJK KR",
+                "Nanum Myeongjo",
+            ]
+            .map(str::to_owned),
+        );
+    }
+    for fallback in text_family_candidates("") {
+        if !families.contains(&fallback) {
+            families.push(fallback);
+        }
+    }
+    typeface_candidates_for_families(
+        fonts.font_mgr,
+        fonts.system_families,
+        fonts.custom_typefaces,
+        fonts.bundled_typefaces,
+        &families,
+        &postscript_requests,
+        font_style,
+    )
+}
+
+pub(super) fn draw_hancom_glyphs(
+    canvas: &Canvas,
+    fonts: &EquationFonts<'_>,
+    run: &GlyphRun,
+    x: f64,
+    baseline_y: f64,
+    font_size: f64,
+    color: Color,
+) {
+    // Keep an installed/supplied original face first, including its regular
+    // metrics. Only missing characters enter the equation fallback ladder.
+    let original =
+        match_supplied_family(fonts.custom_typefaces, run.font_family, FontStyle::normal())
+            .or_else(|| {
+                match_supplied_family(
+                    fonts.bundled_typefaces,
+                    run.font_family,
+                    FontStyle::normal(),
+                )
+            })
+            .or_else(|| {
+                match_system_family_style(
+                    fonts.font_mgr,
+                    fonts.system_families,
+                    run.font_family,
+                    FontStyle::normal(),
+                )
+            });
+    let primary = original
+        .into_iter()
+        .map(|typeface| TypefaceCandidate {
+            typeface,
+            source: "hancomEquation",
+        })
+        .collect::<Vec<_>>();
+    let mut fallbacks = None;
+    let mut paint = Paint::default();
+    paint.set_anti_alias(true);
+    paint.set_color(color);
+    for ((character, offset), shear) in run.glyphs.chars().zip(&run.positions).zip(&run.shears) {
+        let selected = if let Some(original) = select_typeface_for_character(&primary, character) {
+            Some(original)
+        } else {
+            let chain = fallbacks.get_or_insert_with(|| {
+                equation_typeface_chain(fonts, &run.glyphs, false, false, None)
+            });
+            select_typeface_for_character(chain, character).or_else(|| chain.first())
+        };
+        let mut font = selected
+            .map(|candidate| Font::new(candidate.typeface.clone(), font_size as f32))
+            .unwrap_or_default();
+        font.set_size(font_size as f32);
+        font.set_edging(font::Edging::AntiAlias);
+        font.set_hinting(skia_safe::FontHinting::None);
+        font.set_subpixel(true);
+        font.set_skew_x(-(*shear as f32));
+        // No measure_str or accumulated fallback advances: these are the
+        // producer's original origins, baseline and per-character shear.
+        canvas.draw_str(
+            character.to_string(),
+            ((x + offset) as f32, baseline_y as f32),
+            &font,
+            &paint,
+        );
     }
 }
 
