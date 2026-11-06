@@ -36,4 +36,4 @@
 - `ttfs/opensource/NotoSansSymbols2-Regular.ttf`
 - `ttfs/opensource/RHWPOldHangul-Regular.otf`
 
-전체 회귀·Rust lint 묶음·Native 공식 3종·편람 383쪽·base fresh WASM 및 확장 소유 경계는 이번 선행 검토에서 아직 실행하지 않았다. 선언 높이 경계의 90% 미달과 보정 승인 대기 상태에서 수용 후보 제출 완료로 표시하지 않는다. [보정 계획](../../pr_8658_review_impl.md)의 승인 후 최종 후보로 필수 검증을 한 단위로 완료한다.
+전체 회귀·Rust lint 묶음·Native 공식 3종·편람 383쪽·base fresh WASM 및 확장 소유 경계는 이번 선행 검토에서 아직 실행하지 않았다. 선언 높이 경계의 90% 미달과 보정 승인 대기 상태에서 수용 후보 제출 완료로 표시하지 않는다. [보정 계획](../../archives/pr_8658_review_impl.md)의 승인 후 최종 후보로 필수 검증을 한 단위로 완료한다.

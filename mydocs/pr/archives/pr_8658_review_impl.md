@@ -27,3 +27,8 @@
 실제 측정은 그림 점유 566.96px + 안 여백 1.88px × 2 = 570.72px다. `resolve_row_heights_with_common_fit`이 이 측정 행을 받지만, `trust_declared_row_heights`의 ViewText 격자 판정이 그림만 있는 칸을 빈 칸으로 수용해 `cellSz=566.96px`로 덮는다. 최종 표 높이는 567.0px로 반올림되어 아래 괘선과 뒤 본문이 어긋난다. 여백을 측정에 다시 더할 문제가 아니다.
 
 선행 계약은 #3386 → 원 보정 `81d208159` 및 추가 보정 `a60ac3974d` → #7160 통합 `505661360e9`의 저장 줄 없는 텍스트 격자 허용 → `08958748dec`의 개체 높이 확인 보호다. #3386의 독립 출력은 `pdf/issue1663_coanchored_float_orphan-2024.pdf`, #7160은 `pdf/distribution_doc-2024.pdf`다. 그림 점유를 빈 문자열과 동일하게 취급한 가정을 제거하고, 실제 저장 줄 및 텍스트 격자의 선언 높이 계약은 보존한다. #3386의 기존 측정 서명에 상수 조건을 덧붙이지 않는다.
+
+
+## 승인된 계획의 완료
+
+메인터너 보정 `19de2f3b54`와 회귀 `08cd5ab833`을 완료했다. 경계·원 사례 전 10쪽은 Native/fresh optimized WASM 각각 raw 100.00%, 로컬 필수 검사와 exact-head GitHub CI·self-review를 통과해 수용 PR #8694 merge `67adf83672eedd0672a4a1b0cb81db7ef7e85574`로 수용했다. [최종 검토](pr_8658_review.md)와 [원격 완료 기록](../assets/pr8658/remote-completion.md)을 따른다. 이 문서의 기존 미달 수치는 보정 승인 전의 관측을 보존한 것이다.

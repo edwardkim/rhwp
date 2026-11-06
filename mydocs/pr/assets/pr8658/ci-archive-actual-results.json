@@ -1,0 +1,48 @@
+{
+  "head": "d440ddc370026ba89ac79a6f6bc2385b24195973",
+  "run": 42207470188,
+  "jobs": [
+    {
+      "job": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+      "id": 127863114721,
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42207470188/job/127863114721",
+      "passed": 3801,
+      "skipped": 12,
+      "actual_summary": "2026-11-06T11:21:13.4629318Z      Summary [  47.309s] 3801 tests run: 3801 passed, 12 skipped"
+    },
+    {
+      "job": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+      "id": 127863151514,
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42207470188/job/127863151514",
+      "passed": 2083,
+      "skipped": 9,
+      "actual_summary": "2026-11-06T11:25:10.2370649Z      Summary [ 247.980s] 2083 tests run: 2083 passed, 9 skipped"
+    },
+    {
+      "job": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "id": 127864104095,
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42207470188/job/127864104095",
+      "passed": 2073,
+      "skipped": 5,
+      "actual_summary": "2026-11-06T11:26:17.8928965Z      Summary [ 208.784s] 2073 tests run: 2073 passed, 5 skipped"
+    },
+    {
+      "job": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "id": 127865136243,
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42207470188/job/127865136243",
+      "passed": 2071,
+      "skipped": 12,
+      "actual_summary": "2026-11-06T11:30:58.7124511Z      Summary [ 333.827s] 2071 tests run: 2071 passed, 12 skipped"
+    },
+    {
+      "job": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "id": 127865199530,
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42207470188/job/127865199530",
+      "passed": 2538,
+      "skipped": 7,
+      "actual_summary": "2026-11-06T11:29:06.0806137Z      Summary [ 210.300s] 2538 tests run: 2538 passed (1 slow), 7 skipped"
+    }
+  ],
+  "passed": 12566,
+  "existing_skipped": 45
+}

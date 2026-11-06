@@ -1,0 +1,15 @@
+{
+  "acceptance_pr": 8694,
+  "head": "d440ddc370026ba89ac79a6f6bc2385b24195973",
+  "merge_sha": "67adf83672eedd0672a4a1b0cb81db7ef7e85574",
+  "merged_at": "2026-11-06T11:42:13Z",
+  "source_pr": 8658,
+  "source_merged": true,
+  "source_merged_at": "2026-11-06T11:42:16Z",
+  "source_merge_commit": "759f35f2fbccc2682356dc22cb31b1068b57e178",
+  "original_head": "218c8856ad0a338fd1820c43e62b40dbcdcb86bb",
+  "issue8576_state": "closed",
+  "issue8576_closed_at": "2026-11-06T11:42:40Z",
+  "issue8579_state": "open",
+  "fork_branch_preserved": true
+}

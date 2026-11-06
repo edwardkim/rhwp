@@ -1,0 +1,8 @@
+{
+  "approval": "user explicitly approved upstream acceptance PR, exact-head CI, self-review, merge, records, issue completion, comments and cleanup",
+  "candidate": "d440ddc370026ba89ac79a6f6bc2385b24195973",
+  "base": "08963f6825956984d38b0d9392f44777db7107ab",
+  "source": "218c8856ad0a338fd1820c43e62b40dbcdcb86bb",
+  "merge_tree": "bc7ffc8c344cb1351951a3596a0317591f94084a",
+  "observed_at": "2026-11-06T11:03:38.704336+00:00"
+}
