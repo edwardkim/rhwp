@@ -2972,7 +2972,8 @@ pub(crate) fn trace_char_width_decisions<'a>(
 
 /// CJK 문자 여부 판별 (EmbeddedTextMeasurer의 히우리스틱 폭 계산에서 사용)
 pub(crate) fn is_cjk_char(c: char) -> bool {
-    ('\u{1100}'..='\u{11FF}').contains(&c)   // 한글 자모
+    c == '\u{3007}' // 한자 숫자 영: Unicode East_Asian_Width=W, 한컴 Print 전진 1em
+    || ('\u{1100}'..='\u{11FF}').contains(&c) // 한글 자모
     || ('\u{3130}'..='\u{318F}').contains(&c) // 한글 호환 자모 (ㆍ U+318D 포함)
     || ('\u{AC00}'..='\u{D7AF}').contains(&c) // 한글 음절
     || ('\u{A960}'..='\u{A97F}').contains(&c) // 한글 자모 확장-A (옛한글 초성)
