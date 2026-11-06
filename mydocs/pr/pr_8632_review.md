@@ -34,4 +34,8 @@
 
 ## 누적 통합 상태
 
-[공통 검토·보정 계획](kang_t_20261106_review_plan.md#누적-통합에서-확인한-보정-방침--승인-대기)을 따른다. #8566·#8595는 clean merge, #8632 누적 적용은 mutation registry와 WASM API의 두 기능 추가 위치가 겹쳐 승인 대기다. 현재 코드는 앞선 두 원 기여의 통합 상태이며 #8632 source는 fetch ref에 보존했다. 최종 동작·시각 검증은 아직 진행 전이다.
+[공통 검토·보정 계획](kang_t_20261106_review_plan.md#누적-통합에서-확인한-보정-방침--승인-완료)에 따라 작업지시자가 두 기능 보존·메인테이너 보정과 필수 로컬 검증을 승인했다. 누적 통합 `46af1d5d22e4fd2fd567a893bd36ce43f12d2ab6`에서 WASM API와 mutation registry에 두 API를 모두 보존했고 세 원 head의 ancestry를 확인했다. 실제 동작·시각 검증은 진행 중이며 원격 작업은 아직 승인 전이다.
+
+## 공통 편집 규칙 검토 — 실행 전 추적
+
+`실제 mouse drag → updatePictureMoveDrag(시작 쪽 좌표/현재 놓을 쪽 분리) → finishPictureMoveDrag → snapshot relocateFloatingPicture → 컨트롤 제거/목적 경로 재번호 → 앵커 재삽입/재조판 → 실제 배치/선택/Undo`를 확인한다. BinData를 복제하지 않고 소유권을 옮기며 표 칸은 Para/Column/flow_with_text를 적용한다. 같은 본문 문단의 그림 제거로 목적 표의 번호가 바뀌는 경계에서 Native 소유권과 Studio 선택 ref가 함께 맞는지도 실제 실행할 예정이다. 함수 존재나 원 CI 성공으로 해당 경계를 통과 처리하지 않는다.

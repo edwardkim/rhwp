@@ -34,4 +34,10 @@
 
 ## 누적 통합 상태
 
-[공통 검토·보정 계획](kang_t_20261106_review_plan.md#누적-통합에서-확인한-보정-방침--승인-대기)을 따른다. #8566·#8595는 clean merge, #8632 누적 적용은 mutation registry와 WASM API의 두 기능 추가 위치가 겹쳐 승인 대기다. 현재 코드는 앞선 두 원 기여의 통합 상태이며 #8632 source는 fetch ref에 보존했다. 최종 동작·시각 검증은 아직 진행 전이다.
+[공통 검토·보정 계획](kang_t_20261106_review_plan.md#누적-통합에서-확인한-보정-방침--승인-완료)에 따라 작업지시자가 두 기능 보존·메인테이너 보정과 필수 로컬 검증을 승인했다. 누적 통합 `46af1d5d22e4fd2fd567a893bd36ce43f12d2ab6`에서 WASM API와 mutation registry에 두 API를 모두 보존했고 세 원 head의 ancestry를 확인했다. 실제 동작·시각 검증은 진행 중이며 원격 작업은 아직 승인 전이다.
+
+## 공통 조판 규칙 검토 — 실행 전 추적
+
+`insertPictureInCell → insert_picture_in_cell_native → 공통 insert_picture_native_anchored → 셀 문단 Picture(Para/Column/flow_with_text) → cell_units_uncached → cached cell_units → 행 컷/소유/예약 높이 → 셀 배치`를 추적한다. 변경한 비인라인 그림 높이는 텍스트 옆 점유 띠와 겹치는 부분을 한 번만 계상하며 TopAndBottom 별도 띠는 보존한다. 저장·재조판·분할 시작/끝·후속 본문과 최근 #8658의 선언 높이 경계를 대조한다. 신규 API와 기존 UI의 삽입 경로는 구분하며 기존 메뉴가 자동으로 신규 API를 소비한다고 간주하지 않는다.
+
+빈 경로와 마지막 셀 문단 번호 오류의 실패 원자성, 기존 본문/글상자 삽입의 컨트롤 스트림 갭과 저장 재열기, Storage 소비 경계를 실제로 확인한다. 아직 실행 전이므로 완료 판정이 아니다.

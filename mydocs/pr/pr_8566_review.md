@@ -34,4 +34,8 @@
 
 ## 누적 통합 상태
 
-[공통 검토·보정 계획](kang_t_20261106_review_plan.md#누적-통합에서-확인한-보정-방침--승인-대기)을 따른다. #8566·#8595는 clean merge, #8632 누적 적용은 mutation registry와 WASM API의 두 기능 추가 위치가 겹쳐 승인 대기다. 현재 코드는 앞선 두 원 기여의 통합 상태이며 #8632 source는 fetch ref에 보존했다. 최종 동작·시각 검증은 아직 진행 전이다.
+[공통 검토·보정 계획](kang_t_20261106_review_plan.md#누적-통합에서-확인한-보정-방침--승인-완료)에 따라 작업지시자가 두 기능 보존·메인테이너 보정과 필수 로컬 검증을 승인했다. 누적 통합 `46af1d5d22e4fd2fd567a893bd36ce43f12d2ab6`에서 WASM API와 mutation registry에 두 API를 모두 보존했고 세 원 head의 ancestry를 확인했다. 실제 동작·시각 검증은 진행 중이며 원격 작업은 아직 승인 전이다.
+
+## 공통 조판 규칙 검토 — 실행 전 추적
+
+`ParaShape.attr1[20..21] → ResolvedParaStyle.vertical_alignment → publish_regenerated_rows → publish_vertical_alignment_baselines → LineSeg.baseline_distance`를 확인했다. 먼저 기존 수식 줄 구성·메트릭을 발행한 뒤 정렬점만 저장한다. 정렬 0은 기존 글꼴 기준선을 유지한다. 저장 정보 재사용과 실제 편집 후 재조판을 각각 실행하고 원본·편집본의 페이지/내용 보존 및 Native/Canvas/SVG 소비를 대조한다. 코퍼스 집계는 기여자 관측이며 메인테이너의 실제 검증으로 표시하지 않는다.
