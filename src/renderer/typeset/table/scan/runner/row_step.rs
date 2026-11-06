@@ -180,13 +180,6 @@ impl TypesetEngine {
                     || (required.is_finite()
                         && avail_for_rows.is_finite()
                         && required - avail_for_rows <= roundoff);
-                if fits && required > avail_for_rows && std::env::var_os("RHWP_DIAG_SCAN").is_some()
-                {
-                    eprintln!(
-                        "DIAG_SCAN ROW_SUM_ROUNDOFF r={r} required={required:.17} available={avail_for_rows:.17} difference={:.17} roundoff={roundoff:.17}",
-                        required - avail_for_rows,
-                    );
-                }
                 if r == cursor_row || fits {
                     consumed += cs_before + h;
                     r += 1;

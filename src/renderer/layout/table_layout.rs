@@ -16588,15 +16588,6 @@ impl LayoutEngine {
                     // 같이 보존한다. 첫 조각 뒤의 행만 이 경계를 연다.
                     let stored_object_frame_row = self.stored_object_frame_row_count(nt);
                     let measured_object_frame_row = self.stored_measured_object_frame_row_count(nt);
-                    if std::env::var_os("RHWP_DIAG_SCAN").is_some() {
-                        let normalization = self.render_normalization.borrow();
-                        eprintln!(
-                            "DIAG_SCAN OBJECT_ROW_FRAME table={:p} rows={} declared={} reflowed={} unscoped={} host={} boundary={:?} heights={:?}",
-                            nt, nrow, nt.common.height, normalization.table_text_reflowed(nt),
-                            normalization.table_frame_reflowed_without_cell_scope(nt),
-                            normalization.nested_table_has_reflowed_host(nt), stored_object_frame_row, rhs,
-                        );
-                    }
                     for (ri, rh) in rhs.iter().enumerate() {
                         // [#4069] CELL 분할 중첩 표는 큰 행을 단일 atom으로 바깥
                         // 원장에 올리지 않는다. 행에서 콘텐츠가 가장 높은 셀의 unit

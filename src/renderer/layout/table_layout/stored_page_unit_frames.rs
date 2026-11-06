@@ -62,12 +62,6 @@ impl LayoutEngine {
                     usize::from(cell.row) + usize::from(cell.row_span.max(1)) <= boundary
                         && self.stored_plain_text_cell_frame(table, cell)
                 });
-            if std::env::var_os("RHWP_DIAG_SCAN").is_some() {
-                eprintln!(
-                    "DIAG_SCAN MEASURED_OBJECT_FRAME table={:p} boundary={} original={}",
-                    table, boundary, original
-                );
-            }
             return original.then_some(boundary);
         }
         None
