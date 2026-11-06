@@ -2875,32 +2875,36 @@ endbfchar <DB80DEB1>";
         use crate::renderer::render_tree::{BoundingBox, RectangleNode};
         use crate::renderer::{GradientFillInfo, ShapeStyle};
 
-        let bbox = BoundingBox::new(0.0, 0.0, 96.0, 96.0);
-        let gradient = GradientFillInfo {
-            gradient_type: 2,
-            angle: 0,
-            center_x: 50,
-            center_y: 50,
-            colors: vec![0x000000ff, 0x00ff0000],
-            positions: vec![0.0, 1.0],
-        };
-        let tree = crate::paint::PageLayerTree::with_profile(
-            96.0,
-            96.0,
-            LayerNode::leaf(
-                bbox,
-                None,
-                vec![PaintOp::rectangle(
+        // Type 2 now has bounded exact radial admission. The approximate
+        // cone and SkSL square gradients remain unsupported by Direct PDF.
+        for gradient_type in [3, 4] {
+            let bbox = BoundingBox::new(0.0, 0.0, 96.0, 96.0);
+            let gradient = GradientFillInfo {
+                gradient_type,
+                angle: 0,
+                center_x: 50,
+                center_y: 50,
+                colors: vec![0x000000ff, 0x00ff0000],
+                positions: vec![0.0, 1.0],
+            };
+            let tree = crate::paint::PageLayerTree::with_profile(
+                96.0,
+                96.0,
+                LayerNode::leaf(
                     bbox,
-                    RectangleNode::new(0.0, ShapeStyle::default(), Some(Box::new(gradient))),
-                )],
-            ),
-            RenderProfile::Print,
-        );
+                    None,
+                    vec![PaintOp::rectangle(
+                        bbox,
+                        RectangleNode::new(0.0, ShapeStyle::default(), Some(Box::new(gradient))),
+                    )],
+                ),
+                RenderProfile::Print,
+            );
 
-        let error = layer_trees_to_pdf(&[tree]).unwrap_err();
-        assert!(error.contains("gradient fill"), "unexpected error: {error}");
-        assert!(error.contains("use the svg backend"));
+            let error = layer_trees_to_pdf(&[tree]).unwrap_err();
+            assert!(error.contains("gradient fill"), "unexpected error: {error}");
+            assert!(error.contains("use the svg backend"));
+        }
     }
 
     #[cfg(feature = "native-skia")]
