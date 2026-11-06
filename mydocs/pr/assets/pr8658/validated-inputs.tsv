@@ -1,0 +1,11 @@
+role	path	bytes	sha256	validated_commit	working_file_matches_commit
+original	samples/issue8576/cell-square-six-pictures-35x25.hwpx	10529	f84ca77970e603bf0c2ca3ae412ccf8a89073ded9fbf698c0fb4f92bb1d389be	3356b54df3	true
+original	samples/issue8576/cell-square-six-pictures-60x30-grows.hwpx	10527	fb41f37577578900a2e7e4be5691eea19ac190ed500bca3003b940c3f8c1ee71	3356b54df3	true
+original	samples/issue8576/split-row-picture-only-para.hwp	14848	550ae896a1f34e5eaea5a07aaceece19646b3c8bbf191d6ecfaa0f33749c8fab	3356b54df3	true
+derived	tests/fixtures/pr8658/cell-square-six-pictures-center.hwpx	10530	430cd3a991e973bdf7b40704a191e9706b83b42c6a982b68ee58eadb5772b79e	3356b54df3	true
+derived	tests/fixtures/pr8658/cell-square-six-pictures-exact-fit.hwpx	10528	ab33965d54f0b71a84ffe4fab3004179a858fc1b5dd5a6ed7f86e91d45b25b5e	3356b54df3	true
+desktop-print	pdf/issue8576/cell-square-six-pictures-35x25-2024.pdf	11077	5b13909893f3e1e7c49d531c75bceb8068832edf31a31d4d9af218e6047f2443	3356b54df3	true
+desktop-print	pdf/issue8576/cell-square-six-pictures-60x30-grows-2024.pdf	11774	8ba22b151ae96ca9907d55125aa008813a5b52db50788279c3eff0cd10146713	3356b54df3	true
+desktop-print	pdf/issue8576/cell-square-six-pictures-center-2024.pdf	11081	5d4ad702ec43c343f2f59652d0673f22a8b61c884baf59f0cd971fc81b91d014	3356b54df3	true
+desktop-print	pdf/issue8576/cell-square-six-pictures-exact-fit-2024.pdf	11074	ddf830671c5cd3baef7f39ac3ed01c06e4d2b2ea28f6cb3291839c15c71e3758	3356b54df3	true
+desktop-print	pdf/issue8576/split-row-picture-only-para-2020.pdf	16253	dc16aa6065987b2e60a336b3a1309499652328dcbd383f3956a6ba6e2cfa7f8b	3356b54df3	true
