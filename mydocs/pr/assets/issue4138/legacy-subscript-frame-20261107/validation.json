@@ -1,0 +1,235 @@
+{
+  "parent": "79ee0477b6365d936a97df320e384451b75dc081",
+  "base": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "runtime_source": {
+    "src/renderer/equation/layout/script_geometry.rs": "b7bfaa6dfa7332aa6b6cbd28cd2b044ca7ffe66fe40db65159a668dd04b078b6"
+  },
+  "test_source": {
+    "tests/cases/issue_4138_legacy_subscript_line_frame.rs": "199c45155e5cac79b5320d5ce49f293bb11bbc5ed9ad2db859d0247340d68c87"
+  },
+  "native": {
+    "path": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-legacy-subscript-repair/rhwp-candidate-native",
+    "sha256": "be5799dcafc066192a875fa8baca4399f9917934e1b9912f7fa344fdb08786f8"
+  },
+  "wasm_package_files": {
+    "rhwp.js": "370ddff0fd1a1cf6f889edb1b2a42f420fac62f7f57df4b9cff19829e60cdd5f",
+    "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+    "rhwp_bg.wasm.d.ts": "e9d78e8d4d8ed14f11799378c1c86a82658eb382e27215cab20287b0deba83f0",
+    "README.md": "ad35a0f1fbf601b33f5a969103656e220e75031ceee42bb7fc2d95ed32ed25aa",
+    "rhwp_bg.wasm": "e660e62fa77d141f47e6f539ad6423000ec7829dd2ba10d2bd63cf3de350dcad",
+    ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+    "package.json": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+    "rhwp.d.ts": "8c8a2b204f38fdfeb6392c3236c3adc7ccdfa82b415cf161414a349023ebdb7f"
+  },
+  "build_seconds": [
+    175.227,
+    148.8
+  ],
+  "wasm_kind": "Mac locked wrapper --target web --out-dir pkg --no-opt 로컬 대체 빌드. Docker 최적화 아님.",
+  "formal_before_after": [
+    {
+      "key": "before",
+      "exit_code": 101,
+      "summary": [
+        "test result: FAILED. 0 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.69s"
+      ]
+    },
+    {
+      "key": "after",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s"
+      ]
+    }
+  ],
+  "focused": [
+    "test result: ok. 117 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.97s"
+  ],
+  "focused_note": "112 existing + 4 formal + 1 temporary independent 40-condition diagnostic = 117 tests; not full nextest",
+  "modern_40_layouts_unchanged": true,
+  "lint": [
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 13.125
+    },
+    {
+      "name": "all-target-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 8.958
+    }
+  ],
+  "whole": [
+    {
+      "backend": "native",
+      "pages": 197,
+      "missing": [],
+      "minimum": 94.76447,
+      "below98": [
+        44,
+        129,
+        130
+      ],
+      "affected": [
+        {
+          "page": 44,
+          "before": 97.84052,
+          "after": 97.9744
+        },
+        {
+          "page": 45,
+          "before": 98.92784,
+          "after": 98.94138
+        },
+        {
+          "page": 129,
+          "before": 94.83034,
+          "after": 94.76447
+        },
+        {
+          "page": 130,
+          "before": 95.95341,
+          "after": 95.98723
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "pages": 197,
+      "missing": [],
+      "minimum": 94.83414,
+      "below98": [
+        129,
+        130
+      ],
+      "affected": [
+        {
+          "page": 44,
+          "before": 97.89153,
+          "after": 98.0113
+        },
+        {
+          "page": 45,
+          "before": 98.94677,
+          "after": 98.95601
+        },
+        {
+          "page": 129,
+          "before": 94.9857,
+          "after": 94.83414
+        },
+        {
+          "page": 130,
+          "before": 95.90371,
+          "after": 95.92003
+        }
+      ]
+    }
+  ],
+  "comparison": [
+    {
+      "backend": "native",
+      "changed_png_pages": [
+        44,
+        45,
+        129,
+        130
+      ],
+      "same_font_supply": false,
+      "metrics": [
+        {
+          "page": 44,
+          "before": 97.84052,
+          "after": 97.9744
+        },
+        {
+          "page": 129,
+          "before": 94.83034,
+          "after": 94.76447
+        },
+        {
+          "page": 130,
+          "before": 95.95341,
+          "after": 95.98723
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "changed_png_pages": [
+        44,
+        45,
+        129,
+        130
+      ],
+      "same_font_supply": true,
+      "metrics": [
+        {
+          "page": 44,
+          "before": 97.89153,
+          "after": 98.0113
+        },
+        {
+          "page": 129,
+          "before": 94.9857,
+          "after": 94.83414
+        },
+        {
+          "page": 130,
+          "before": 95.90371,
+          "after": 95.92003
+        }
+      ]
+    }
+  ],
+  "native_same_font_rerender": {
+    "same_supply": true,
+    "rows": [
+      {
+        "key": "before",
+        "same_whole_pngs": {
+          "44": true,
+          "45": true,
+          "129": true,
+          "130": true
+        }
+      },
+      {
+        "key": "after",
+        "same_whole_pngs": {
+          "44": true,
+          "45": true,
+          "129": true,
+          "130": true
+        }
+      }
+    ]
+  },
+  "scope_complete": false,
+  "remaining": [
+    "p44 Native below98",
+    "p129/p130 both below98; p129 raw decreases remain submission hold",
+    "Native tight-space control97.17452",
+    "other existing scope below98",
+    "full nextest/final gates/handbook/actual consumers pending"
+  ]
+}
