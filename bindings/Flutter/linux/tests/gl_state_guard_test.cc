@@ -1,8 +1,11 @@
 #include "gl_state_guard.h"
 #include <gtk/gtk.h>
+#include <epoxy/egl.h>
 #include <array>
+#include <cmath>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 
 namespace {
 void check(bool condition) { if (!condition) throw std::runtime_error("GL handoff state was not restored"); }
@@ -74,16 +77,43 @@ void deleted_owned_names_are_not_restored() {
 }  // namespace
 
 int main(int argc, char** argv) {
-  if (!gtk_init_check(&argc, &argv)) { std::cerr << "GTK display unavailable\n"; return 2; }
-  auto* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_widget_realize(window);
+  const bool use_es = argc > 1 && std::string(argv[1]) == "--gles";
+  GtkWidget* window = nullptr;
+  GdkGLContext* context = nullptr;
+  EGLDisplay display = EGL_NO_DISPLAY;
+  EGLContext egl_context = EGL_NO_CONTEXT;
+  EGLSurface surface = EGL_NO_SURFACE;
   GError* error = nullptr;
-  auto* context = gdk_window_create_gl_context(gtk_widget_get_window(window), &error);
-  if (!context) { std::cerr << (error ? error->message : "GL context failed") << '\n'; return 2; }
-  gdk_gl_context_set_required_version(context, 3, 3);
-  gdk_gl_context_set_use_es(context, FALSE);
-  if (!gdk_gl_context_realize(context, &error)) { std::cerr << error->message << '\n'; return 2; }
-  gdk_gl_context_make_current(context);
+  if (use_es) {
+    // Flutter's real raster callback owns a directly current EGL context; GTK
+    // has no GdkGLContext registered on that thread. Reproduce that boundary.
+    display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (display == EGL_NO_DISPLAY || !eglInitialize(display, nullptr, nullptr) ||
+        !eglBindAPI(EGL_OPENGL_ES_API)) return 2;
+    const EGLint attributes[] = {EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
+      EGL_SURFACE_TYPE, EGL_PBUFFER_BIT, EGL_RED_SIZE, 8, EGL_GREEN_SIZE, 8,
+      EGL_BLUE_SIZE, 8, EGL_ALPHA_SIZE, 8, EGL_NONE};
+    EGLConfig config;
+    EGLint count = 0;
+    if (!eglChooseConfig(display, attributes, &config, 1, &count) || count != 1) return 2;
+    const EGLint dimensions[] = {EGL_WIDTH, 32, EGL_HEIGHT, 32, EGL_NONE};
+    const EGLint version[] = {EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE};
+    surface = eglCreatePbufferSurface(display, config, dimensions);
+    egl_context = eglCreateContext(display, config, EGL_NO_CONTEXT, version);
+    if (surface == EGL_NO_SURFACE || egl_context == EGL_NO_CONTEXT ||
+        !eglMakeCurrent(display, surface, surface, egl_context)) return 2;
+    check(!gdk_gl_context_get_current() && !epoxy_is_desktop_gl() && epoxy_gl_version() >= 30);
+  } else {
+    if (!gtk_init_check(&argc, &argv)) { std::cerr << "GTK display unavailable\n"; return 2; }
+    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_widget_realize(window);
+    context = gdk_window_create_gl_context(gtk_widget_get_window(window), &error);
+    if (!context) { std::cerr << (error ? error->message : "GL context failed") << '\n'; return 2; }
+    gdk_gl_context_set_required_version(context, 3, 3);
+    gdk_gl_context_set_use_es(context, FALSE);
+    if (!gdk_gl_context_realize(context, &error)) { std::cerr << error->message << '\n'; return 2; }
+    gdk_gl_context_make_current(context);
+  }
   try {
     GLuint fbo[2], textures[2], vao, buffer, sampler;
     glGenFramebuffers(2, fbo); glGenTextures(2, textures);
@@ -101,6 +131,12 @@ int main(int argc, char** argv) {
     glBlendFuncSeparate(GL_ONE, GL_DST_COLOR, GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA);
     glStencilMaskSeparate(GL_FRONT, 0x3c); glStencilMaskSeparate(GL_BACK, 0x5a);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 17); glPixelStorei(GL_PACK_ALIGNMENT, 8);
+    if (use_es) {
+      glDepthRangef(.125f, .875f); glClearDepthf(.25f);
+      glDisable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+    } else {
+      glDepthRange(.125, .875); glClearDepth(.25);
+    }
     check(glGetError() == GL_NO_ERROR);
     {
       rhwp_flutter::GlStateGuard guard;
@@ -112,6 +148,12 @@ int main(int argc, char** argv) {
       glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); glDepthMask(GL_TRUE);
       glBlendFunc(GL_ZERO, GL_ZERO); glStencilMask(0);
       glPixelStorei(GL_UNPACK_ROW_LENGTH, 0); glPixelStorei(GL_PACK_ALIGNMENT, 4);
+      if (use_es) {
+        glDepthRangef(0, 1); glClearDepthf(1);
+        glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+      } else {
+        glDepthRange(0, 1); glClearDepth(1);
+      }
     }
     check(integer(GL_DRAW_FRAMEBUFFER_BINDING) == GLint(fbo[0]));
     check(integer(GL_READ_FRAMEBUFFER_BINDING) == GLint(fbo[1]));
@@ -133,14 +175,26 @@ int main(int argc, char** argv) {
     check(integer(GL_BLEND_DST_RGB) == GL_DST_COLOR && integer(GL_BLEND_DST_ALPHA) == GL_ONE_MINUS_DST_ALPHA);
     check(integer(GL_STENCIL_WRITEMASK) == 0x3c && integer(GL_STENCIL_BACK_WRITEMASK) == 0x5a);
     check(integer(GL_UNPACK_ROW_LENGTH) == 17 && integer(GL_PACK_ALIGNMENT) == 8);
+    GLfloat depth_range[2], clear_depth;
+    glGetFloatv(GL_DEPTH_RANGE, depth_range); glGetFloatv(GL_DEPTH_CLEAR_VALUE, &clear_depth);
+    check(std::abs(depth_range[0] - .125f) < .000001f &&
+          std::abs(depth_range[1] - .875f) < .000001f && std::abs(clear_depth - .25f) < .000001f);
+    if (use_es) check(!glIsEnabled(GL_PRIMITIVE_RESTART_FIXED_INDEX));
     check(glGetError() == GL_NO_ERROR);
     deleted_owned_names_are_not_restored();
     check(glGetError() == GL_NO_ERROR);
-    std::cout << "GL state handoff passed: " << glGetString(GL_RENDERER) << '\n';
+    std::cout << "GL state handoff passed: " << glGetString(GL_VERSION) << " / " << glGetString(GL_RENDERER) << '\n';
     glBindFramebuffer(GL_FRAMEBUFFER, 0); glBindVertexArray(0);
     glDeleteFramebuffers(2, fbo); glDeleteTextures(2, textures); glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &buffer); glDeleteSamplers(1, &sampler);
   } catch (const std::exception& failure) { std::cerr << failure.what() << '\n'; return 1; }
-  gdk_gl_context_clear_current(); g_object_unref(context); gtk_widget_destroy(window);
+  if (use_es) {
+    eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    eglDestroyContext(display, egl_context);
+    eglDestroySurface(display, surface);
+    eglTerminate(display);
+  } else {
+    gdk_gl_context_clear_current(); g_object_unref(context); gtk_widget_destroy(window);
+  }
   return 0;
 }

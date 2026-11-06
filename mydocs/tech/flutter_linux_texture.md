@@ -15,8 +15,10 @@ CPU pixel buffers, Vulkan, or cross-context texture export.
 - The GTK platform thread registers textures and handles the bounded method
   channel metadata below. `snapshotInfo` and `snapshotRelease` are P89's explicit
   cross-thread registry operations. The capability query is a handle-free query.
-- Only `FlTextureGL.populate`, with Flutter's current GDK/EGL or GLX desktop GL
-  3.3 context, creates/renders/releases a P90 presenter. A texture cannot acquire
+- Only `FlTextureGL.populate`, with Flutter's current EGL/GLES 3 or desktop
+  GL 3.3 context, creates/renders/releases a P90 presenter. A GDK context is an
+  optional retained owner; EGL/GLX current identity and raster OS thread are
+  authoritative. A texture cannot acquire
   a second raster OS thread owner while its original owner lives. Each context
   has a distinct nonzero identity. A context switch or raster-owner exit requires
   the next device generation and a newly configured presentation stamp.
@@ -35,15 +37,32 @@ flushes its Ganesh work and invalidates its cached GL state before calling the
 external callback; it borrows the result with TopLeft origin and premultiplied
 RGBA. This adapter submits to that same current GL command queue and returns the
 texture on that raster callback. It does not infer a cross-context fence from
-`submit`, nor access Flutter's `GrDirectContext`. Impeller/Vulkan and arbitrary
-external consumers are outside this contract.
+`submit`, nor access Flutter's `GrDirectContext`. The public OpenGLES texture path
+also supports Flutter's Impeller renderer; Vulkan and arbitrary external
+consumers are outside this contract.
+
+Flutter 3.47.9의 고정
+[Linux GL manager](https://github.com/flutter/flutter/blob/c197ca5199e9ee5661e865596c9c07294dfab51c/engine/src/flutter/shell/platform/linux/fl_opengl_manager.cc)는
+EGL context를 직접 생성하며 raster thread에 `GdkGLContext`를 등록하지 않는다. 따라서
+`gdk_gl_context_get_current()`가 null이어도 유효한 callback이다. 이 구현은 current EGL
+context를 먼저 확인하고, GLX 경로도 유지한다. 실제 API profile을 조회해 desktop GL 3.3
+이상 또는 GLES 3.0 이상만 허용한다. 현재 engine의 EGL context는 GL manager 생성부터
+해당 engine의 종료까지 유지되며 adapter가 소유·교체·파괴하지 않는다. owner thread와
+현재 native context를 callback마다 다시 확인하고, 다른 context에서는 이전 presenter의
+GL 함수를 호출하지 않는다. engine 종료 뒤 callback이 없으면 아래의 bounded abandon
+규칙을 적용한다. public `fl_dart_project_set_enable_impeller(FALSE)`는 renderer만 바꾸며
+이 EGL/GLES context를 desktop GL로 바꾸는 선택지가 아니다.
 
 `GlStateGuard` additionally restores draw/read FBO, renderbuffer, viewport,
 scissor, program, VAO/buffer bindings, blend/depth/stencil settings and masks,
 pixel-store state, and texture/sampler bindings for at most 256 texture units.
 The native presenter resets its own independent Ganesh state on every replay.
-The guard's public desktop GL state test uses a real GDK context; it is not a
-full Flutter compositor or native document replay qualification. Capturing all
+The guard uses ES float depth functions and profile/version-specific binding
+and enable lists. It never issues desktop-only polygon mode, double depth,
+1D/rectangle texture, or desktop enable queries on GLES. Its public tests cover
+real desktop GDK and direct EGL GLES contexts, including a raster thread without
+a current GDK context. Those state tests alone are not a Flutter compositor or
+native document replay qualification. Capturing all
 texture-unit bindings has a bounded CPU cost that still needs application
 profiling. It makes no claim about unsupported GL extensions or other backends.
 
@@ -186,6 +205,12 @@ Public FlTextureGL offers no completion fence or share-group-destruction proof
 that would safely relax this policy. These cases need application lifecycle
 qualification, rather than a claim of complete GPU resource recovery.
 
+첫 snapshot이 도착하기 전에 Texture가 그려지는 `notReady`와 정상 종료의 `closing`은
+persistent renderer 오류로 기록하지 않는다. 하지만 callback의 FALSE 반환에는 항상
+`GError`를 제공한다. 고정
+[Flutter callback consumer](https://github.com/flutter/flutter/blob/c197ca5199e9ee5661e865596c9c07294dfab51c/engine/src/flutter/shell/platform/linux/fl_engine.cc#L466-L469)는
+실패 시 오류 메시지를 읽으므로 null 오류 객체를 정상 대기의 의미로 반환하면 안 된다.
+
 Flutter 3.47.9 revision `c197ca5199e9ee5661e865596c9c07294dfab51c`의
 [GL texture 경로](https://github.com/flutter/flutter/blob/c197ca5199e9ee5661e865596c9c07294dfab51c/engine/src/flutter/shell/platform/embedder/embedder_external_texture_gl.cc)는
 `MarkNewFrameAvailable`에서 이전 `last_image_`를 비운 뒤에만 새 populate를 호출한다.
@@ -201,7 +226,7 @@ Ganesh/current-GL 명령 순서와 이 경로를 대조한 검증을 macOS의 �
 
 ## Parent/P102 integration
 
-P99 deliberately changes neither Dart nor `pubspec.yaml` nor the P97 dispatcher.
+P99 deliberately changes neither production Dart nor `pubspec.yaml` nor the P97 dispatcher.
 In the plugin package's pubspec, add the Linux registration stanza:
 
 ```yaml
@@ -228,8 +253,8 @@ and overlays/hit testing, and forward only snapshot/stamp metadata over this
 channel. P102 must add owner-thread snapshot configure/export RPCs, track ownership
 through late replies, react to device generation changes, choose explicit GPU/CPU
 policy from capabilities/diagnostics, and perform asynchronous close. Actual app
-registration, Flutter texture sampling, IME overlays, and real hardware remain
-integration/qualification work rather than results of the portable tests below.
+IME overlays, pixel comparison of Flutter's sampled output, and real hardware
+remain integration/qualification work rather than results of the portable tests below.
 
 ## Checks
 
@@ -244,13 +269,55 @@ With GTK3/epoxy development packages and a Flutter Linux engine artifact directo
 ```bash
 python3 -B bindings/Flutter/linux/tests/check_linux_plugin.py \
   --output /new/path/p99-checks --flutter-engine /flutter/bin/cache/artifacts/engine/linux-x64 \
-  --gl-state
+  --gl-state --gles-state
 ```
 
 `--gl-state` needs a working display, for example a separately managed Xvfb with
-`GDK_BACKEND=x11 LIBGL_ALWAYS_SOFTWARE=1`. That reports software Mesa GL state
-restoration, not hardware/native-Skia rendering. `--dev-root` accepts a task-local
+`GDK_BACKEND=x11 LIBGL_ALWAYS_SOFTWARE=1`. `--gles-state` creates a directly current
+EGL ES 3 context without GDK TLS. The same restoration/deleted-name tests run on
+both profiles; ES depth/primitive-restart state is also changed and restored.
+These report software Mesa GL state restoration, not hardware/native-Skia
+rendering. `--dev-root` accepts a task-local
 unpacked development prefix; `--native-include` can select a P90 public header
 before source integration. The script compiles/links the actual plugin against
 real Flutter headers/library with undefined symbols rejected. It does not invoke
 Cargo or a full Flutter app build.
+
+## 실제 Flutter EGL 회귀
+
+Flutter 3.47.9 (`c197ca5199e9ee5661e865596c9c07294dfab51c`, Dart 3.13.7,
+engine `89c39edfdfae2949f6806e4a315c0c08522238b7`)의 Linux runner를 별도로
+생성하고 plugin을 실제 generated registrant에 연결했다. 최초 구현은 등록만 성공했고,
+실제 callback에서 `gdk=0`, current EGL 존재, GLES 3.2인 조건을 거절했다. 기존 desktop
+state guard를 direct EGL에서 실행하면 `glGetDoublev`를 호출하다 중단되는 RED도 보존했다.
+단순히 context 검사만 제거하는 보정으로는 해결되지 않는다.
+
+수정 후 C++17 `-Wall -Wextra -Werror` public-header compile/link, portable lifetime
+13개 경우·226개 검사, desktop GL 4.5와 직접 생성한 GLES 3.0/3.1/3.2 state 복원 및
+삭제된 texture/FBO 회귀가 통과했다. 실제 Flutter runner는 owner dispatcher를 통해 새
+문서를 만들고 편집한 뒤 snapshot을 capture하고, 같은 process registry를 쓰는 plugin에
+소유권을 이전했다. 기본 Impeller의 GLES 3.0/3.2와 public Skia 선택의 GLES 3.2에서
+producer publication과 정상 종료를 확인했다. `MESA_GLES_VERSION_OVERRIDE=2.0`의
+Skia runner에서는 명시적인 unsupported, 제출 frame 0, 정상 종료를 확인했다.
+
+최종 native artifact는 P90 strict-image/loader 보정을 포함하며 SHA-256은
+`26e81f691c34448e21c455107307aaf60e70e8e4dff8a2aab31574af2e97a56e`이다.
+기본 Impeller 검증은 이 artifact를 사용했고, 앞선 public Skia 경로는
+`0090604f98a05bf34bed4079e24677264251707843e4f44b8c1ccf2e26dbb02b`를 사용했다.
+각 성공 실행의 frame 수는 1이고 whole-frame readback은 0이었다. 종료 후 snapshot ID가
+registry에서 사라졌고 release failure·live/pending/orphaned raster slot은 모두 0,
+`cleanupComplete == true`, `registered == false`였다. 해당 artifact에는 P93 full stamp
+check가 아직 없으므로 native `snapshotInfo.current`와 document/revision/font만 대조한
+backend 회귀이며, P102 production controller의 full-stamp 요구를 낮추지 않았다.
+
+production source의 성공 실행과 별도로 RAM에만 GL-error 관측을 추가한 runner도 실행했다.
+GLES 3.0/3.2의 첫 frame 이전 warmup, native replay 전후, state guard 복원 뒤, 정상 종료에서
+모두 GL error 0이었다. 이 관측은 배포 source에서 GL 오류를 소비하거나 renderer 동작을
+바꾸는 API로 남기지 않는다.
+
+이 실행은 Xvfb의 software Mesa/llvmpipe 검증이다. 실제 하드웨어 가속, Flutter가 샘플링한
+최종 픽셀의 시각 비교, offscreen/context-loss/engine-restart의 OS qualification을
+완료한 것으로 보고하지 않는다. 테스트 runner·로그·source hash는 독립 증적에 보존하며,
+재현용 P102 entry point는 owner ABI 2와 `NativeDocument.capturePresentation`이 있는
+참조 패키지에서 실행한다. 이 entry point는 테스트 process 안에서만 pre-P93 raw metadata
+경로를 허용하며 앱의 renderer 정책을 우회하는 production fallback API가 아니다.

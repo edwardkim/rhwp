@@ -266,8 +266,6 @@ class LinuxContext final : public Context {
   std::thread::id owner = std::this_thread::get_id();
 
   LinuxContext() : gdk(gdk_gl_context_get_current()), get_current(nullptr), get_proc(nullptr), native(nullptr) {
-    if (!gdk || !epoxy_is_desktop_gl() || epoxy_gl_version() < 33)
-      throw Failure("unsupported", "Flutter Linux desktop OpenGL 3.3 current context is required");
     struct Resolver { void* library; const char* current; const char* proc; };
     // Handles intentionally remain resident while GL procedures may be used by
     // any deferred raster owner. EGL supports Wayland and X11; GLX is the other
@@ -282,12 +280,20 @@ class LinuxContext final : public Context {
       std::memcpy(&get_proc, &proc, sizeof(proc));
       if (get_current && get_proc && (native = get_current())) break;
     }
-    if (!native) throw Failure("unsupported", "current GDK context is neither EGL nor GLX");
-    g_object_ref(gdk);
+    if (!native) throw Failure("unsupported", "no current EGL or GLX context");
+    const bool desktop = epoxy_is_desktop_gl();
+    const int version = epoxy_gl_version();
+    if ((desktop && version < 33) || (!desktop && version < 30))
+      throw Failure("unsupported", "desktop OpenGL 3.3 or OpenGL ES 3 current context is required");
+    // Flutter creates EGL contexts directly, so no GdkGLContext is registered
+    // in its raster-thread TLS. The native current-context identity and owner
+    // thread remain authoritative; a GDK context is an optional retained owner.
+    if (gdk) g_object_ref(gdk);
   }
-  ~LinuxContext() override { g_object_unref(gdk); }
+  ~LinuxContext() override { if (gdk) g_object_unref(gdk); }
   bool same_current() const noexcept override {
-    return owner == std::this_thread::get_id() && gdk_gl_context_get_current() == gdk && get_current() == native;
+    return owner == std::this_thread::get_id() && get_current() == native &&
+           (!gdk || gdk_gl_context_get_current() == gdk);
   }
   bool same_context(const Context& other) const noexcept override {
     const auto* context = dynamic_cast<const LinuxContext*>(&other);
@@ -410,8 +416,13 @@ static gboolean populate(FlTextureGL* texture, uint32_t* target, uint32_t* name,
     *target = GL_TEXTURE_2D; *name = frame.texture; *width = frame.width; *height = frame.height;
     return TRUE;
   } catch (const Failure& failure) {
-    if (failure.code != "closing") state->error(failure.code, failure.what());
+    // A newly registered Texture may be painted before the owner captures its
+    // first snapshot. Warmup is not a persistent renderer/device failure.
     if (error) g_clear_error(error);
+    if (failure.code != "closing" && failure.code != "notReady")
+      state->error(failure.code, failure.what());
+    // Flutter 3.47's engine dereferences error->message on every FALSE result,
+    // including benign warmup/close. Never return FALSE with a null GError.
     g_set_error_literal(error, g_quark_from_static_string("rhwp-texture"), 1, failure.what());
   } catch (const std::exception& failure) {
     state->error("nativeError", failure.what());

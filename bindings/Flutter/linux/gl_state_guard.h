@@ -7,7 +7,7 @@
 
 namespace rhwp_flutter {
 
-// Desktop GL 3.3 state modified by Ganesh and target allocation. Flutter's
+// Desktop GL 3.3 / GLES 3 state modified by Ganesh and target allocation. Flutter's
 // public texture callback supplies the current context; no engine Skia object
 // is accessed. Texture-unit capture is bounded and includes sampler bindings.
 class GlStateGuard {
@@ -38,12 +38,13 @@ class GlStateGuard {
   GLint viewport_[4], scissor_[4], polygon_mode_[2];
   struct Stencil { GLint function, reference, value_mask, write_mask, fail, depth_fail, pass; };
   Stencil stencil_[2];
-  struct Unit { std::array<GLint, 10> textures; GLint sampler; };
+  struct Unit { std::array<GLint, 11> textures{}; GLint sampler; };
   std::vector<Unit> units_;
   struct Uniform { GLint buffer; GLint64 start, size; };
   std::vector<Uniform> uniforms_;
-  std::array<GLboolean, 16> enabled_;
-  bool indirect_;
+  std::vector<GLenum> texture_targets_, texture_bindings_, enable_caps_;
+  std::vector<GLboolean> enabled_;
+  bool desktop_, indirect_;
 };
 }  // namespace rhwp_flutter
 #endif

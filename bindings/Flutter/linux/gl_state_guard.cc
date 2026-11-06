@@ -1,13 +1,14 @@
 #include "gl_state_guard.h"
 #include "texture_state.h"
+#include <iterator>
 
 namespace rhwp_flutter {
 namespace {
-constexpr GLenum kEnables[] = {GL_BLEND, GL_CULL_FACE, GL_DEPTH_TEST, GL_STENCIL_TEST,
-    GL_SCISSOR_TEST, GL_DITHER, GL_FRAMEBUFFER_SRGB, GL_MULTISAMPLE,
-    GL_RASTERIZER_DISCARD, GL_PRIMITIVE_RESTART, GL_SAMPLE_ALPHA_TO_COVERAGE,
-    GL_SAMPLE_ALPHA_TO_ONE, GL_SAMPLE_COVERAGE, GL_POLYGON_OFFSET_FILL,
-    GL_TEXTURE_CUBE_MAP_SEAMLESS, GL_DEPTH_CLAMP};
+constexpr GLenum kCommonEnables[] = {GL_BLEND, GL_CULL_FACE, GL_DEPTH_TEST, GL_STENCIL_TEST,
+    GL_SCISSOR_TEST, GL_DITHER, GL_RASTERIZER_DISCARD, GL_SAMPLE_ALPHA_TO_COVERAGE,
+    GL_SAMPLE_COVERAGE, GL_POLYGON_OFFSET_FILL};
+constexpr GLenum kDesktopEnables[] = {GL_FRAMEBUFFER_SRGB, GL_MULTISAMPLE,
+    GL_PRIMITIVE_RESTART, GL_SAMPLE_ALPHA_TO_ONE, GL_TEXTURE_CUBE_MAP_SEAMLESS, GL_DEPTH_CLAMP};
 constexpr GLenum kTextureTargets[] = {GL_TEXTURE_1D, GL_TEXTURE_2D, GL_TEXTURE_3D,
     GL_TEXTURE_CUBE_MAP, GL_TEXTURE_1D_ARRAY, GL_TEXTURE_2D_ARRAY,
     GL_TEXTURE_RECTANGLE, GL_TEXTURE_BUFFER, GL_TEXTURE_2D_MULTISAMPLE,
@@ -37,6 +38,38 @@ void GlStateGuard::forget_deleted_framebuffer(GLuint name) noexcept {
 }
 
 GlStateGuard::GlStateGuard() {
+  desktop_ = epoxy_is_desktop_gl();
+  const auto version = epoxy_gl_version();
+  if ((desktop_ && version < 33) || (!desktop_ && version < 30))
+    throw Failure("unsupported", "desktop GL 3.3 or GLES 3 is required for state handoff");
+  enable_caps_.assign(std::begin(kCommonEnables), std::end(kCommonEnables));
+  if (desktop_) {
+    enable_caps_.insert(enable_caps_.end(), std::begin(kDesktopEnables), std::end(kDesktopEnables));
+    texture_targets_.assign(std::begin(kTextureTargets), std::end(kTextureTargets));
+    texture_bindings_.assign(std::begin(kTextureBindings), std::end(kTextureBindings));
+    if (version >= 40) {
+      texture_targets_.push_back(GL_TEXTURE_CUBE_MAP_ARRAY);
+      texture_bindings_.push_back(GL_TEXTURE_BINDING_CUBE_MAP_ARRAY);
+    }
+  } else {
+    // No desktop-only enums/functions may be issued in an ES context. Capture
+    // newer ES core bindings only when that version actually exposes them.
+    enable_caps_.push_back(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+    texture_targets_ = {GL_TEXTURE_2D, GL_TEXTURE_3D, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_2D_ARRAY};
+    texture_bindings_ = {GL_TEXTURE_BINDING_2D, GL_TEXTURE_BINDING_3D,
+                        GL_TEXTURE_BINDING_CUBE_MAP, GL_TEXTURE_BINDING_2D_ARRAY};
+    if (version >= 31) {
+      texture_targets_.push_back(GL_TEXTURE_2D_MULTISAMPLE);
+      texture_bindings_.push_back(GL_TEXTURE_BINDING_2D_MULTISAMPLE);
+    }
+    if (version >= 32) {
+      texture_targets_.insert(texture_targets_.end(), {GL_TEXTURE_BUFFER, GL_TEXTURE_CUBE_MAP_ARRAY,
+                                                     GL_TEXTURE_2D_MULTISAMPLE_ARRAY});
+      texture_bindings_.insert(texture_bindings_.end(), {GL_TEXTURE_BINDING_BUFFER,
+          GL_TEXTURE_BINDING_CUBE_MAP_ARRAY, GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY});
+    }
+  }
+  enabled_.resize(enable_caps_.size());
   GLint count;
   glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &count);
   if (count < 1 || count > 256) throw Failure("unsupported", "GL texture-unit state exceeds guard budget");
@@ -44,7 +77,7 @@ GlStateGuard::GlStateGuard() {
   glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &count);
   if (count < 1 || count > 256) throw Failure("unsupported", "GL uniform-binding state exceeds guard budget");
   uniforms_.resize(size_t(count));
-  indirect_ = epoxy_gl_version() >= 40;
+  indirect_ = desktop_ ? version >= 40 : version >= 31;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &draw_fbo_);
   glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &read_fbo_);
   glGetIntegerv(GL_RENDERBUFFER_BINDING, &renderbuffer_);
@@ -67,8 +100,8 @@ GlStateGuard::GlStateGuard() {
   glGetIntegerv(GL_ACTIVE_TEXTURE, &active_);
   for (size_t unit = 0; unit < units_.size(); ++unit) {
     glActiveTexture(GL_TEXTURE0 + GLenum(unit));
-    for (size_t binding = 0; binding < units_[unit].textures.size(); ++binding)
-      glGetIntegerv(kTextureBindings[binding], &units_[unit].textures[binding]);
+    for (size_t binding = 0; binding < texture_bindings_.size(); ++binding)
+      glGetIntegerv(texture_bindings_[binding], &units_[unit].textures[binding]);
     glGetIntegerv(GL_SAMPLER_BINDING, &units_[unit].sampler);
   }
   glActiveTexture(GLenum(active_));
@@ -85,8 +118,15 @@ GlStateGuard::GlStateGuard() {
   glGetFloatv(GL_POLYGON_OFFSET_UNITS, &polygon_units_);
   glGetFloatv(GL_SAMPLE_COVERAGE_VALUE, &coverage_);
   glGetBooleanv(GL_SAMPLE_COVERAGE_INVERT, &coverage_invert_);
-  glGetDoublev(GL_DEPTH_RANGE, depth_range_);
-  glGetDoublev(GL_DEPTH_CLEAR_VALUE, &clear_depth_);
+  if (desktop_) {
+    glGetDoublev(GL_DEPTH_RANGE, depth_range_);
+    glGetDoublev(GL_DEPTH_CLEAR_VALUE, &clear_depth_);
+  } else {
+    GLfloat range[2], depth;
+    glGetFloatv(GL_DEPTH_RANGE, range);
+    glGetFloatv(GL_DEPTH_CLEAR_VALUE, &depth);
+    depth_range_[0] = range[0]; depth_range_[1] = range[1]; clear_depth_ = depth;
+  }
   glGetIntegerv(GL_STENCIL_CLEAR_VALUE, &clear_stencil_);
   glGetBooleanv(GL_COLOR_WRITEMASK, color_mask_);
   glGetBooleanv(GL_DEPTH_WRITEMASK, &depth_mask_);
@@ -95,7 +135,7 @@ GlStateGuard::GlStateGuard() {
   glGetIntegerv(GL_FRONT_FACE, &front_face_);
   glGetIntegerv(GL_VIEWPORT, viewport_);
   glGetIntegerv(GL_SCISSOR_BOX, scissor_);
-  glGetIntegerv(GL_POLYGON_MODE, polygon_mode_);
+  if (desktop_) glGetIntegerv(GL_POLYGON_MODE, polygon_mode_);
   glGetIntegerv(GL_PACK_ALIGNMENT, &pack_alignment_);
   glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpack_alignment_);
   glGetIntegerv(GL_PACK_ROW_LENGTH, &pack_row_);
@@ -104,7 +144,7 @@ GlStateGuard::GlStateGuard() {
   glGetIntegerv(GL_PACK_SKIP_PIXELS, &pack_skip_pixels_);
   glGetIntegerv(GL_UNPACK_SKIP_ROWS, &unpack_skip_rows_);
   glGetIntegerv(GL_UNPACK_SKIP_PIXELS, &unpack_skip_pixels_);
-  for (size_t index = 0; index < enabled_.size(); ++index) enabled_[index] = glIsEnabled(kEnables[index]);
+  for (size_t index = 0; index < enabled_.size(); ++index) enabled_[index] = glIsEnabled(enable_caps_[index]);
   constexpr GLenum params[2][7] = {
       {GL_STENCIL_FUNC, GL_STENCIL_REF, GL_STENCIL_VALUE_MASK, GL_STENCIL_WRITEMASK,
        GL_STENCIL_FAIL, GL_STENCIL_PASS_DEPTH_FAIL, GL_STENCIL_PASS_DEPTH_PASS},
@@ -129,7 +169,7 @@ GlStateGuard::~GlStateGuard() {
   glUseProgram(GLuint(program_));
   glBindVertexArray(GLuint(vao_));
   glBindBuffer(GL_ARRAY_BUFFER, GLuint(array_));
-  if (vao_) glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GLuint(element_));
+  if (vao_ || !desktop_) glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GLuint(element_));
   glBindBuffer(GL_COPY_READ_BUFFER, GLuint(copy_read_));
   glBindBuffer(GL_COPY_WRITE_BUFFER, GLuint(copy_write_));
   glBindBuffer(GL_PIXEL_PACK_BUFFER, GLuint(pack_buffer_));
@@ -145,8 +185,8 @@ GlStateGuard::~GlStateGuard() {
   if (indirect_) glBindBuffer(GL_DRAW_INDIRECT_BUFFER, GLuint(indirect_buffer_));
   for (size_t unit = 0; unit < units_.size(); ++unit) {
     glActiveTexture(GL_TEXTURE0 + GLenum(unit));
-    for (size_t binding = 0; binding < units_[unit].textures.size(); ++binding)
-      glBindTexture(kTextureTargets[binding], GLuint(units_[unit].textures[binding]));
+    for (size_t binding = 0; binding < texture_targets_.size(); ++binding)
+      glBindTexture(texture_targets_[binding], GLuint(units_[unit].textures[binding]));
     glBindSampler(GLuint(unit), GLuint(units_[unit].sampler));
   }
   glActiveTexture(GLenum(active_));
@@ -157,8 +197,13 @@ GlStateGuard::~GlStateGuard() {
   glLineWidth(line_width_);
   glPolygonOffset(polygon_factor_, polygon_units_);
   glSampleCoverage(coverage_, coverage_invert_);
-  glDepthRange(depth_range_[0], depth_range_[1]);
-  glClearDepth(clear_depth_);
+  if (desktop_) {
+    glDepthRange(depth_range_[0], depth_range_[1]);
+    glClearDepth(clear_depth_);
+  } else {
+    glDepthRangef(GLfloat(depth_range_[0]), GLfloat(depth_range_[1]));
+    glClearDepthf(GLfloat(clear_depth_));
+  }
   glClearStencil(clear_stencil_);
   glColorMask(color_mask_[0], color_mask_[1], color_mask_[2], color_mask_[3]);
   glDepthMask(depth_mask_);
@@ -167,7 +212,7 @@ GlStateGuard::~GlStateGuard() {
   glFrontFace(GLenum(front_face_));
   glViewport(viewport_[0], viewport_[1], viewport_[2], viewport_[3]);
   glScissor(scissor_[0], scissor_[1], scissor_[2], scissor_[3]);
-  glPolygonMode(GL_FRONT_AND_BACK, GLenum(polygon_mode_[0]));
+  if (desktop_) glPolygonMode(GL_FRONT_AND_BACK, GLenum(polygon_mode_[0]));
   glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment_);
   glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment_);
   glPixelStorei(GL_PACK_ROW_LENGTH, pack_row_);
@@ -177,7 +222,7 @@ GlStateGuard::~GlStateGuard() {
   glPixelStorei(GL_UNPACK_SKIP_ROWS, unpack_skip_rows_);
   glPixelStorei(GL_UNPACK_SKIP_PIXELS, unpack_skip_pixels_);
   for (size_t index = 0; index < enabled_.size(); ++index) {
-    if (enabled_[index]) glEnable(kEnables[index]); else glDisable(kEnables[index]);
+    if (enabled_[index]) glEnable(enable_caps_[index]); else glDisable(enable_caps_[index]);
   }
   for (size_t face = 0; face < 2; ++face) {
     const GLenum which = face ? GL_BACK : GL_FRONT;

@@ -12,6 +12,7 @@ def main():
     parser.add_argument("--dev-root", type=Path)
     parser.add_argument("--native-include", type=Path)
     parser.add_argument("--gl-state", action="store_true", help="requires a running X/Wayland display")
+    parser.add_argument("--gles-state", action="store_true", help="check direct EGL GLES 3 state without a GDK context")
     args = parser.parse_args()
     source = Path(__file__).resolve().parents[1]
     output = args.output.resolve()
@@ -45,11 +46,14 @@ def main():
         str(source / "rhwp_texture_plugin.cc"), str(source / "texture_state.cc"),
         str(source / "gl_state_guard.cc"), "-o", str(plugin)] + libraries)
     print("real Flutter public-header compile/link passed:", plugin)
-    if args.gl_state:
+    if args.gl_state or args.gles_state:
         check = output / "gl-state-test"
         run(common + includes + [str(source / "gl_state_guard.cc"), str(source / "texture_state.cc"),
             str(source / "tests/gl_state_guard_test.cc"), "-o", str(check)] + libraries)
-        run([str(check)])
+        if args.gl_state:
+            run([str(check)])
+        if args.gles_state:
+            run([str(check), "--gles"])
 
 
 if __name__ == "__main__":
