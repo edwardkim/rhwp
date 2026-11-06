@@ -1,12 +1,9 @@
-use skia_safe::{
-    font, paint, Canvas, Color, Font, FontMgr, FontStyle, Paint, PathBuilder, Typeface,
-};
-use std::collections::HashMap;
+use skia_safe::{paint, Canvas, Color, FontMgr, Paint, PathBuilder};
 
 use super::font_catalog::TypefaceCatalog;
-use super::font_lookup::{match_supplied_family, match_system_family_style, SystemFontFamilies};
+use super::font_lookup::SystemFontFamilies;
 mod glyphs;
-use glyphs::{draw_stretch_bracket, draw_text, draw_text_with_family};
+use glyphs::{draw_hancom_glyphs, draw_stretch_bracket, draw_text, draw_text_with_family};
 
 use crate::renderer::equation::ast::MatrixStyle;
 use crate::renderer::equation::layout::{
@@ -64,46 +61,15 @@ fn render_box(
 
     match &lb.kind {
         LayoutKind::HancomGlyphs(run) => {
-            let family = run.font_family;
-            let typeface =
-                match_supplied_family(fonts.custom_typefaces, family, FontStyle::normal())
-                    .or_else(|| {
-                        match_supplied_family(fonts.bundled_typefaces, family, FontStyle::normal())
-                    })
-                    .or_else(|| {
-                        match_system_family_style(
-                            fonts.font_mgr,
-                            fonts.system_families,
-                            family,
-                            FontStyle::normal(),
-                        )
-                    });
-            let mut font = if let Some(typeface) = typeface {
-                Font::new(typeface, fs as f32)
-            } else {
-                let mut font = Font::default();
-                font.set_size(fs as f32);
-                font
-            };
-            font.set_edging(font::Edging::AntiAlias);
-            font.set_hinting(skia_safe::FontHinting::None);
-            font.set_subpixel(true);
-            let mut paint = Paint::default();
-            paint.set_anti_alias(true);
-            paint.set_color(color);
-            for ((glyph, offset), shear) in run.glyphs.chars().zip(&run.positions).zip(&run.shears)
-            {
-                font.set_skew_x(-(*shear as f32));
-                canvas.draw_str(
-                    glyph.to_string(),
-                    (
-                        (x + offset) as f32,
-                        (y + lb.baseline + run.baseline_shift) as f32,
-                    ),
-                    &font,
-                    &paint,
-                );
-            }
+            draw_hancom_glyphs(
+                canvas,
+                fonts,
+                run,
+                x,
+                y + lb.baseline + run.baseline_shift,
+                fs,
+                color,
+            );
         }
         LayoutKind::Row(children) => {
             for child in children {

@@ -604,7 +604,9 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
             assert_eq!(vertical_reports.len(), 2, "{backend:?}");
             if matches!(
                 backend,
-                VariantSelectionBackend::CanvasKit | VariantSelectionBackend::CanvasKitBrowser
+                VariantSelectionBackend::CanvasKit
+                    | VariantSelectionBackend::CanvasKitBrowser
+                    | VariantSelectionBackend::NativeSkia
             ) {
                 assert!(vertical_reports.iter().all(|report| {
                     report.selected_variant_id.as_deref() == Some("verticalGlyphRun")
@@ -617,6 +619,46 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
                         && report.fallback_required
                 }));
             }
+        }
+
+        #[cfg(feature = "native-skia")]
+        {
+            use rhwp::renderer::layer_renderer::RasterRenderOptions;
+            use rhwp::renderer::skia::{native_skia_glyph_run_replay_proof, SkiaLayerRenderer};
+            for op in &ops {
+                if let PaintOp::GlyphRun { run, .. } = op {
+                    let proof = native_skia_glyph_run_replay_proof(run, &layer_tree.resources);
+                    assert!(
+                        proof.typeface_constructible,
+                        "published vertical run: {proof:?}"
+                    );
+                }
+            }
+            let renderer = SkiaLayerRenderer::new();
+            let first = renderer
+                .render_raster_with_options(&layer_tree, RasterRenderOptions::default())
+                .expect("Native exact vertical replay");
+            let second = renderer
+                .render_raster_with_options(&layer_tree, RasterRenderOptions::default())
+                .expect("Native exact vertical replay with prepared glyph cache");
+            for output in [&first, &second] {
+                let selected = output
+                    .diagnostics
+                    .variant_selections
+                    .iter()
+                    .filter(|report| {
+                        matches!(report.equivalence_group.as_str(), "text-0" | "text-1")
+                    })
+                    .collect::<Vec<_>>();
+                assert_eq!(selected.len(), 2);
+                assert!(selected
+                    .iter()
+                    .all(|report| report.selected_variant_id.as_deref()
+                        == Some("verticalGlyphRun")
+                        && !report.fallback_required));
+                assert!(output.diagnostics.native_glyph_rejections.is_empty());
+            }
+            assert_eq!(first.bytes, second.bytes);
         }
 
         let browser_plan = analyze_canvaskit_replay_plan(&layer_tree, CanvasKitReplayMode::Default);

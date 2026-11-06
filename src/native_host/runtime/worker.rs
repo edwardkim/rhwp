@@ -103,6 +103,8 @@ fn execute(
     owner: &mut Option<OwnedDocument>,
     id: NativeRequestId,
     command: NativeRuntimeCommand,
+    shared: &Shared,
+    phase: &AtomicU8,
 ) -> Result<NativeRuntimeOutput, NativeHostError> {
     use NativeRuntimeCommand as C;
     use NativeRuntimeOutput as O;
@@ -239,20 +241,79 @@ fn execute(
             if doc.session().font_generation() != font_generation {
                 return Err(invalid("stale font generation"));
             }
-            let frame = doc.session().render_region(
-                page,
-                RasterRegion {
-                    x: region.x,
-                    y: region.y,
-                    width: region.width,
-                    height: region.height,
-                },
-                scale,
-            )?;
+            let frame = doc.session().render_region(page, region.into(), scale)?;
             Ok(O::Frame {
                 document_id: doc.id,
                 frame,
             })
+        }
+        C::RenderTiledRegion {
+            target,
+            font_generation,
+            page,
+            region,
+            scale,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            if doc.session().font_generation() != font_generation {
+                return Err(invalid("stale font generation"));
+            }
+            #[cfg(feature = "native-skia")]
+            {
+                let frame = doc.session().render_tiled_region_cancellable(
+                    page,
+                    region.into(),
+                    scale,
+                    || {
+                        phase.load(Ordering::Acquire) != CANCELLED
+                            && shared.lifecycle.load(Ordering::Acquire) == RUNNING
+                            && !shared.superseded(id)
+                    },
+                )?;
+                match frame {
+                    Some(frame) => Ok(O::Frame {
+                        document_id: doc.id,
+                        frame,
+                    }),
+                    None if phase.load(Ordering::Acquire) == CANCELLED => Ok(O::Cancelled),
+                    None => Ok(O::Skipped(NativeRuntimeSkipReason::SupersededRender)),
+                }
+            }
+            #[cfg(not(feature = "native-skia"))]
+            {
+                let _ = (region, scale, shared, phase);
+                Err(NativeHostError::FeatureDisabled)
+            }
+        }
+        C::SetRasterCacheLimit { target, max_bytes } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            #[cfg(feature = "native-skia")]
+            {
+                doc.session().set_region_cache_limit(max_bytes)?;
+                Ok(O::RasterCacheLimit { target, max_bytes })
+            }
+            #[cfg(not(feature = "native-skia"))]
+            {
+                let _ = max_bytes;
+                Err(NativeHostError::FeatureDisabled)
+            }
+        }
+        C::RasterCacheStats { target } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            #[cfg(feature = "native-skia")]
+            {
+                Ok(O::RasterCacheStats {
+                    target,
+                    stats: doc.session().region_cache_stats(),
+                })
+            }
+            #[cfg(not(feature = "native-skia"))]
+            {
+                Err(NativeHostError::FeatureDisabled)
+            }
         }
         C::BeginEdit { target, selection } => {
             document(owner)?.check(target)?;
@@ -474,7 +535,14 @@ pub(super) fn worker_loop(
                 NativeRuntimeSkipReason::SupersededRender,
             ))
         } else {
-            execute(&mut owner, request.id, request.command).map_err(NativeRuntimeFailure::from)
+            execute(
+                &mut owner,
+                request.id,
+                request.command,
+                shared,
+                &request.phase,
+            )
+            .map_err(NativeRuntimeFailure::from)
         };
         shared.set_current(owner.as_ref().map(OwnedDocument::stamp));
         let retained = match &result {
@@ -503,7 +571,11 @@ pub(super) fn worker_loop(
                 NativeRuntimeSkipReason::SupersededRender,
             ));
         }
-        request.phase.store(COMPLETED, Ordering::Release);
+        // A running tiled cancellation either wins before this transition and
+        // receives Cancelled, or observes COMPLETED and reports TooLate.
+        if request.phase.swap(COMPLETED, Ordering::AcqRel) == CANCELLED {
+            result = Ok(NativeRuntimeOutput::Cancelled);
+        }
         if shared.lifecycle.load(Ordering::Acquire) != RUNNING {
             discard_prepared(&mut owner, &result);
             break;

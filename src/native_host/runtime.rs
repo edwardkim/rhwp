@@ -9,8 +9,9 @@
 //! Limits cover outstanding request count and retained input/output byte buffers,
 //! not the expanded document, editor snapshots, serializer reports or Skia working
 //! memory. Hosts must also bound runtime count and their own received buffers.
-//! Cancellation succeeds only before the worker claims a request. `close`/Drop
-//! discard queued work and completions without joining: an active synchronous
+//! Cancellation covers queued commands and executing tiled renders at tile
+//! boundaries. `close`/Drop discard queued work and unread completions without
+//! joining, and stop tiled work at the next boundary. An active synchronous
 //! parse/serialization/Skia call finishes on its owner thread before its document
 //! and memory are released. No running native call is forcibly interrupted.
 
@@ -83,8 +84,8 @@ pub struct NativeRuntimeTarget {
 pub struct NativeRuntimeConfig {
     /// Includes queued, executing and completed-but-unread requests (1..=16).
     pub max_outstanding: usize,
-    /// Aggregate buffer reservations (1..=128 MiB). A render reserves the existing
-    /// 64 MiB frame ceiling; a save reserves 128 MiB, copy/cut 1 MiB,
+    /// Aggregate buffer reservations (1..=128 MiB). Renders reserve their exact
+    /// enclosing RGBA output size; a save reserves 128 MiB, copy/cut 1 MiB,
     /// and accessibility 8 MiB before acceptance. Snapshot allocations are
     /// measured after the bounded query, not transient layout memory or RSS.
     pub max_pending_bytes: usize,
@@ -106,6 +107,17 @@ pub struct NativeRuntimeRegion {
     pub y: f64,
     pub width: f64,
     pub height: f64,
+}
+
+impl From<NativeRuntimeRegion> for RasterRegion {
+    fn from(region: NativeRuntimeRegion) -> Self {
+        Self {
+            x: region.x,
+            y: region.y,
+            width: region.width,
+            height: region.height,
+        }
+    }
 }
 
 /// Typed transport commands; no engine or renderer crosses the thread boundary.
@@ -184,6 +196,22 @@ pub enum NativeRuntimeCommand {
         region: NativeRuntimeRegion,
         scale: f64,
     },
+    /// Fixed-grid tiles for interactive viewports; not the exact full-page crop API.
+    RenderTiledRegion {
+        target: NativeRuntimeTarget,
+        font_generation: u64,
+        page: u32,
+        region: NativeRuntimeRegion,
+        scale: f64,
+    },
+    /// Combined full-page and tile raster retention, separate from renderer resources.
+    SetRasterCacheLimit {
+        target: NativeRuntimeTarget,
+        max_bytes: usize,
+    },
+    RasterCacheStats {
+        target: NativeRuntimeTarget,
+    },
     BeginEdit {
         target: NativeRuntimeTarget,
         selection: NativeTextSelection,
@@ -241,10 +269,24 @@ impl fmt::Debug for NativeRuntimeCommand {
 
 impl NativeRuntimeCommand {
     fn is_render(&self) -> bool {
-        matches!(self, Self::RenderRegion { .. })
+        matches!(
+            self,
+            Self::RenderRegion { .. } | Self::RenderTiledRegion { .. }
+        )
     }
 
-    fn byte_reservation(&self) -> Option<usize> {
+    fn byte_reservation(&self) -> Result<usize, NativeRuntimeError> {
+        if let Self::RenderRegion { region, scale, .. }
+        | Self::RenderTiledRegion { region, scale, .. } = self
+        {
+            NativeDocumentSession::check_scale(*scale)
+                .map_err(|_| NativeRuntimeError::InvalidArgument)?;
+            let options = crate::renderer::layer_renderer::RasterRenderOptions::default();
+            return RasterRegion::from(*region)
+                .pixel_window(*scale, options.max_dimension, MAX_FRAME_PIXELS)
+                .map(|window| window.output_bytes)
+                .map_err(|_| NativeRuntimeError::InvalidArgument);
+        }
         let selection_bytes = |selection: &NativeTextSelection| {
             selection
                 .anchor
@@ -255,7 +297,7 @@ impl NativeRuntimeCommand {
                     crate::document_core::native_interaction::NativeCellPathEntry,
                 >())
         };
-        match self {
+        let bytes = match self {
             Self::Open {
                 bytes, password, ..
             } => bytes
@@ -269,7 +311,6 @@ impl NativeRuntimeCommand {
             Self::BeginEdit { selection, .. } | Self::SetSelection { selection, .. } => {
                 selection_bytes(selection)
             }
-            Self::RenderRegion { .. } => usize::try_from(MAX_FRAME_PIXELS).ok()?.checked_mul(4),
             Self::CaretRect { position, .. } => position
                 .cell_path
                 .capacity()
@@ -283,7 +324,8 @@ impl NativeRuntimeCommand {
             Self::ImeContext { .. } => Some(64 * 1024),
             Self::Accessibility { .. } => Some(ACCESSIBILITY_RESERVATION_BYTES),
             _ => Some(0),
-        }
+        };
+        bytes.ok_or(NativeRuntimeError::ByteCapacity)
     }
 }
 
@@ -361,6 +403,15 @@ pub enum NativeRuntimeOutput {
         snapshot: NativeAccessibilitySnapshot,
     },
     DocumentClosed,
+    RasterCacheLimit {
+        target: NativeRuntimeTarget,
+        max_bytes: usize,
+    },
+    #[cfg(feature = "native-skia")]
+    RasterCacheStats {
+        target: NativeRuntimeTarget,
+        stats: super::region_cache::NativeRegionCacheStats,
+    },
     PageSize {
         target: NativeRuntimeTarget,
         page: u32,
@@ -404,6 +455,9 @@ impl fmt::Debug for NativeRuntimeOutput {
             Self::Clipboard { .. } => "Clipboard",
             Self::Accessibility { .. } => "Accessibility",
             Self::DocumentClosed => "DocumentClosed",
+            Self::RasterCacheLimit { .. } => "RasterCacheLimit",
+            #[cfg(feature = "native-skia")]
+            Self::RasterCacheStats { .. } => "RasterCacheStats",
             Self::PageSize { .. } => "PageSize",
             Self::CaretRect { .. } => "CaretRect",
             Self::HitTest { .. } => "HitTest",
@@ -448,6 +502,7 @@ pub struct NativeRuntimeCompletion {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NativeRuntimeError {
     InvalidConfig,
+    InvalidArgument,
     QueueFull,
     ByteCapacity,
     Closed,
@@ -460,6 +515,7 @@ impl NativeRuntimeError {
     pub fn code(&self) -> &'static str {
         match self {
             Self::InvalidConfig => "invalidConfig",
+            Self::InvalidArgument => "invalidArgument",
             Self::QueueFull => "queueFull",
             Self::ByteCapacity => "byteCapacity",
             Self::Closed => "closed",
@@ -532,6 +588,7 @@ struct Request {
 }
 struct InFlight {
     render: bool,
+    tiled: bool,
     phase: Arc<AtomicU8>,
     reservation: usize,
 }
@@ -608,8 +665,9 @@ impl NativeRuntime {
         if self.in_flight.len() >= self.config.max_outstanding {
             return Err(reject(NativeRuntimeError::QueueFull, command));
         }
-        let Some(reservation) = command.byte_reservation() else {
-            return Err(reject(NativeRuntimeError::ByteCapacity, command));
+        let reservation = match command.byte_reservation() {
+            Ok(reservation) => reservation,
+            Err(error) => return Err(reject(error, command)),
         };
         let Some(total) = self
             .reserved_bytes
@@ -628,6 +686,7 @@ impl NativeRuntime {
         };
         let phase = Arc::new(AtomicU8::new(QUEUED));
         let render = command.is_render();
+        let tiled = matches!(command, NativeRuntimeCommand::RenderTiledRegion { .. });
         let request = Request {
             id,
             command,
@@ -643,6 +702,7 @@ impl NativeRuntime {
                     id,
                     InFlight {
                         render,
+                        tiled,
                         phase,
                         reservation,
                     },
@@ -679,6 +739,15 @@ impl NativeRuntime {
             .compare_exchange(QUEUED, CANCELLED, Ordering::AcqRel, Ordering::Acquire)
         {
             Ok(_) | Err(CANCELLED) => NativeRuntimeCancelOutcome::Cancelled,
+            Err(CLAIMED) if request.tiled => match request.phase.compare_exchange(
+                CLAIMED,
+                CANCELLED,
+                Ordering::AcqRel,
+                Ordering::Acquire,
+            ) {
+                Ok(_) | Err(CANCELLED) => NativeRuntimeCancelOutcome::Cancelled,
+                Err(_) => NativeRuntimeCancelOutcome::TooLate,
+            },
             Err(_) => NativeRuntimeCancelOutcome::TooLate,
         }
     }
@@ -740,8 +809,9 @@ impl NativeRuntime {
         }
     }
 
-    /// Cancel queued work and discard unread outputs. Does not persist edits,
-    /// acknowledge saves, join, or interrupt an executing engine call.
+    /// Cancel queued work, stop tiled work at its next tile boundary and discard
+    /// unread outputs. Does not persist edits, acknowledge saves, join, or
+    /// interrupt an executing native call.
     pub fn close(&mut self) {
         let _ = self.shared.lifecycle.compare_exchange(
             RUNNING,

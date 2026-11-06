@@ -1,4 +1,7 @@
-//! Direct PDF accepts bounded linear shaders without raster or solid-color substitution.
+//! 관계형·고정형: 합성 gradient의 벡터 shading·색상 관계와 거부 경계를 검사한다.
+//! 주석 갱신: 2026-11-06T12:48:21+09:00; 직전 파일 커밋: 2026-10-17T12:38:33+09:00 (7bc5f1827f1b9285fd2e85ad9dc77b4dcb2aa5b6).
+//! 합성 알고리즘 계약이며 실물 문서의 절대 조판 좌표나 raw 시각 측정값은 비해당이다.
+//! P81은 type 2만 별도 원형 계약으로 열고 근사·SkSL type과 pattern 거부는 유지한다.
 
 #![cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]
 
@@ -173,8 +176,8 @@ fn direct_pdf_rejects_collapsed_edges_and_nonportable_gradient_axes() {
 }
 
 #[test]
-fn direct_pdf_keeps_non_linear_and_pattern_fills_closed() {
-    for kind in [0, 2, 3, 4, 99] {
+fn direct_pdf_keeps_unproved_gradient_types_and_pattern_fills_closed() {
+    for kind in [0, 3, 4, 99] {
         let mut unsupported = gradient(90);
         unsupported.gradient_type = kind;
         let error = layer_trees_to_pdf(&[tree("rectangle", unsupported, bounds())]).unwrap_err();
