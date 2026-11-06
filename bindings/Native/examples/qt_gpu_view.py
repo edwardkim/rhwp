@@ -226,9 +226,11 @@ def create_gpu_canvas(window, input_mixin):
         raise RendererUnavailable("native_gl Python adapter is unavailable") from error
 
     class GpuCanvas(input_mixin, QOpenGLWidget):
-        def __init__(self):
-            super().__init__(window)
-            self.controller = GpuViewportController(window)
+        def __init__(self, parent):
+            # Qt may retain this dynamic Python class in its meta-type cache.
+            # Its methods must not capture the particular window in a closure.
+            super().__init__(parent)
+            self.controller = GpuViewportController(self.window)
             self.presenter = None
             self.gl_context = None
             self.get_integer = None
@@ -247,7 +249,7 @@ def create_gpu_canvas(window, input_mixin):
             self.context_check = QTimer(self)
             self.context_check.setSingleShot(True)
             self.context_check.timeout.connect(self.check_context)
-            window.gpu = self.controller
+            self.window.gpu = self.controller
 
         def showEvent(self, event):
             super().showEvent(event)
@@ -281,7 +283,7 @@ def create_gpu_canvas(window, input_mixin):
                 self.gl_context.aboutToBeDestroyed.connect(self.context_destroying)
                 # NativeGlPresenter owns the CFUNCTYPE closures until release or
                 # abandon. Its closures retain these bound methods/context too.
-                self.presenter = NativeGlPresenter(window.worker.host, self.controller.context_id,
+                self.presenter = NativeGlPresenter(self.window.worker.host, self.controller.context_id,
                     self.controller.device_generation, self.proc, self.matching_current)
                 pointer = self.proc(b"glGetIntegerv")
                 if not pointer:
@@ -328,7 +330,7 @@ def create_gpu_canvas(window, input_mixin):
                         result = self.presenter.render(args[0], target, args[1], clear_color=0xff55575a)
                         self.controller.last_frame = result["frame"]
                         self.controller.last_info = result["info"]
-                        window.frame_count += 1
+                        self.window.frame_count += 1
                         success = True
                 finally:
                     painter.endNativePainting()
@@ -348,11 +350,11 @@ def create_gpu_canvas(window, input_mixin):
                     self.controller.last_frame = None
                     painter.fillRect(self.rect(), QColor("#55575a"))
                 painter.end()
-                window.paint_count += 1
+                self.window.paint_count += 1
 
         def device_error(self, error):
             self.failed_device = True
-            window.gpu_failed(error)
+            self.window.gpu_failed(error)
 
         def release_presenter(self):
             presenter = self.presenter
@@ -367,7 +369,7 @@ def create_gpu_canvas(window, input_mixin):
             except Exception as error:
                 # Never attempt GL cleanup after makeCurrent/context loss failed.
                 presenter.abandon()
-                window.fail(error)
+                self.window.fail(error)
             finally:
                 self.doneCurrent()
             self.presenter = None
@@ -387,4 +389,4 @@ def create_gpu_canvas(window, input_mixin):
             self.release_presenter()
             self.controller.close()
 
-    return GpuCanvas()
+    return GpuCanvas(window)
