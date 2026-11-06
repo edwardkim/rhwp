@@ -154,3 +154,7 @@ issue5679/10857_delegation_rules.hwp	1
 issue8641/field_table_after_page_box.hwpx	6
 # #8641 새 fixture: #8645·#8649 합본과 이 수정의 대조에서 보고서 2 → 2(이 수정으로 늘지 않음, 표 겹침은 문서 고유).
 issue8641/labor_standards_report.hwp	2
+
+# #8677 신규 공개 샘플(연구용역 최종보고서 1411000-201000007, 111쪽): 수정 전(devel 5716a226b5)과 수정 후의
+# 값이 같다 — 27쪽 표 셀 글줄과 각주 영역 글줄이 겹치는 기존 형상 14건(#8685)이며 이 PR(89쪽 셀 유일 문단 표) 범위 밖이다.
+issue8677/1411000-201000007_final_report.hwp	14
