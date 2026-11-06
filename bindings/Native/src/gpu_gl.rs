@@ -16,7 +16,7 @@ pub(crate) fn capabilities() -> Value {
     let limits = Value::Null;
     json!({
         "abiVersion":1,"available":available,"hostFboRendering":available,
-        "externalTextureExport":false,"crossThreadHandles":false,
+        "externalTextureExport":false,"crossThreadHandles":false,"tileCache":available,"clearCaches":available,
         "maxPresentersPerThread":4,"limits":limits,
     })
 }
@@ -97,7 +97,8 @@ pub unsafe extern "C" fn rhwp_gl_presenter_create(
     })
 }
 
-/// Owner-thread info/render/release/abandon JSON operations. Render/release
+/// Owner-thread info/render/clearCaches/release/abandon JSON operations. Render,
+/// cache clear, and release
 /// check is_current immediately before using GL. Abandon/Drop never call it.
 ///
 /// # Safety
@@ -260,6 +261,10 @@ mod enabled {
             context_id: u64,
             device_generation: u64,
         },
+        ClearCaches {
+            context_id: u64,
+            device_generation: u64,
+        },
         Abandon {},
     }
 
@@ -297,6 +302,21 @@ mod enabled {
                         )?
                     };
                     Ok(json!({"ok":true,"frame":frame,"info":owner.presenter.info()?}))
+                }
+                Request::ClearCaches {
+                    context_id,
+                    device_generation,
+                } => {
+                    owner
+                        .presenter
+                        .check_context(context_id, device_generation)?;
+                    owner.current()?;
+                    unsafe {
+                        owner
+                            .presenter
+                            .clear_caches(context_id, device_generation)?;
+                    }
+                    Ok(json!({"ok":true,"info":owner.presenter.info()?}))
                 }
                 Request::Release {
                     context_id,

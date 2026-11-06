@@ -43,7 +43,7 @@ loader는 생성 중에만 호출한다. 그 결과 GL function pointer는 owner
 유효해야 하며 loader에는 `gl`로 시작하는 심볼만 전달한다. Skia의 optional EGL probe는
 전달하지 않는다. GL resolver가 외부 API 이름에 반환하는 dispatch stub을 EGL 함수로
 호출하는 일을 막는다. function pointer는
-해당 context에 유효해야 한다. `is_current`는 생성·render·정상 release 전에 호출하며
+해당 context에 유효해야 한다. `is_current`는 생성·render·cache clear·정상 release 전에 호출하며
 정확히 1일 때만 통과한다. callback과 `user_data`는 release/abandon 또는 owner thread
 종료까지 살아 있어야 하고 callback은 ABI에 재진입하거나 unwind하면 안 된다.
 `bindings/Native/examples/native_gl.py`는 Python callback과 그 closure/context, CDLL
@@ -96,7 +96,8 @@ GPU target에는 이 ABI로 접근할 수 있는 CPU stride/view가 없다.
 
 1. target·placement·quota와 snapshot의 현재 source stamp를 확인한다. RAII borrow가
    producer snapshot handle이 반환된 뒤에도 입력과 P89 reservation을 pin한다.
-2. 제한된 GPU scratch surface에 clear하고 모든 page를 strict replay한다. renderer는
+2. 제한된 GPU scratch surface에 clear하고 모든 page를 strict replay하거나,
+   같은 불변 입력에서 strict replay가 완료된 [GPU tile](native_gl_tiles.md)을 재사용한다. renderer는
    snapshot의 고정된 명시적 font bytes로 만들며 원래 font path를 다시 읽지 않는다.
 3. scratch flush/submit 성공 뒤 GPU-backed image를 만들고 source를 다시 확인한다.
 4. borrowed host FBO에 `Src` copy로 전체 scratch를 그린 뒤 flush/submit한다.
@@ -134,6 +135,8 @@ submit 반환만으로 외부 GPU sampling이 끝났다고 판단하지 않는�
 | viewport dimension·pixels·RGBA target 추정량 | 4,096 / 16,777,216 / 64 MiB |
 | 한 frame의 page placement | 32개 |
 | scratch target pool | 2개 / 128 MiB |
+| page GPU tile cache | 512px tile / 64개 / 64 MiB |
+| scratch·canonical 작업·tile의 공통 target admission | 67개 / 192 MiB |
 | frozen-font renderer cache | 기본 2개 / 최대 8개 |
 | renderer별 picture/glyph/image cache 합계 추정량 | 8 MiB 이하, 세 종류에 균등 분배 |
 | cached renderer의 명시적 per-face font-copy 추정 합계 | 64 MiB |
@@ -150,6 +153,10 @@ cache를 필요한 만큼 비운다. renderer당 cache 한도를 3개 cache 각�
 driver의 실제 texture 배치·Skia 중간 작업·deferred GPU references·metadata·allocator·
 OS font manager·개별 resource decode의 전체 VRAM/RSS를 측정하거나 제한하지 않는다.
 명시적 font 프로그램은 고정되지만 시스템 fallback 이식성은 인증하지 않는다.
+
+`clearCaches`는 matching current context/generation에서 idle tile·scratch·renderer와
+purgeable Skia 자원을 해제한다. source/snapshot은 유지한다. tile key·phase·LRU pin과
+canonical replay의 fallback, 실제 cache/target 계상은 [GPU tile 계약](native_gl_tiles.md)을 따른다.
 
 `info`는 device vendor/renderer/version, 알려진 software renderer 문자열의 탐지 결과,
 현재 pool/cache 계상과 제출 수를 보고한다. software 이름 탐지는 문자열에 근거한

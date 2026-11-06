@@ -64,6 +64,11 @@ class NativeGlPresenter:
     def info(self):
         return self._request(op="info")["info"]
 
+    def clear_caches(self):
+        """Release idle GPU/cache resources with the matching context current."""
+        return self._request(op="clearCaches", contextId=self.context_id,
+                             deviceGeneration=self.device_generation)["info"]
+
     def release(self):
         """Call with matching context current, before context destruction."""
         if self._closed:

@@ -4,6 +4,7 @@
 //! target is touched. This submits work on the same GL queue; it neither swaps
 //! a window nor exports a texture for another context to sample.
 
+use std::cell::RefCell;
 use std::ffi::{c_void, CStr};
 use std::marker::PhantomData;
 use std::rc::Rc;
@@ -22,6 +23,10 @@ use super::presentation::{
 use super::render_snapshot::NativeRenderSnapshot;
 use super::NativeHostError;
 use crate::renderer::skia::{SkiaLayerRenderer, SkiaSurfaceRenderOptions};
+
+mod tiles;
+use tiles::{CachedTile, ManagedTarget, TargetAllocation, TargetBudget, TileCache, TilePlan};
+pub use tiles::{NativeGlTargetStats, NativeGlTileStats};
 
 const MIB: usize = 1024 * 1024;
 const MAX_COORDINATE: f64 = 16_777_216.0;
@@ -52,6 +57,11 @@ pub struct NativeGlPresenterConfig {
     pub max_renderer_font_bytes: usize,
     pub renderer_cache_bytes: usize,
     pub resource_cache_bytes: usize,
+    pub tile_size: usize,
+    pub max_cached_tiles: usize,
+    pub max_tile_bytes: usize,
+    pub max_managed_targets: usize,
+    pub max_managed_target_bytes: usize,
 }
 
 impl Default for NativeGlPresenterConfig {
@@ -67,6 +77,11 @@ impl Default for NativeGlPresenterConfig {
             max_renderer_font_bytes: 64 * MIB,
             renderer_cache_bytes: 8 * MIB,
             resource_cache_bytes: 64 * MIB,
+            tile_size: 512,
+            max_cached_tiles: 64,
+            max_tile_bytes: 64 * MIB,
+            max_managed_targets: 67,
+            max_managed_target_bytes: 192 * MIB,
         }
     }
 }
@@ -83,6 +98,11 @@ impl NativeGlPresenterConfig {
             || !(1..=64 * MIB).contains(&self.max_renderer_font_bytes)
             || self.renderer_cache_bytes > 8 * MIB
             || self.resource_cache_bytes > 64 * MIB
+            || ![128, 256, 512, 1024].contains(&self.tile_size)
+            || self.max_cached_tiles > 64
+            || self.max_tile_bytes > 64 * MIB
+            || !(1..=67).contains(&self.max_managed_targets)
+            || !(1..=192 * MIB).contains(&self.max_managed_target_bytes)
         {
             return Err(invalid("invalid GL presenter limits"));
         }
@@ -110,7 +130,11 @@ impl NativeGlPresenterConfig {
             .ok_or_else(|| limit("GL target pixel quota exceeded"))?;
         let bytes = pixels
             .checked_mul(4)
-            .filter(|bytes| *bytes <= self.max_target_bytes && *bytes <= self.max_scratch_bytes)
+            .filter(|bytes| {
+                *bytes <= self.max_target_bytes
+                    && *bytes <= self.max_scratch_bytes
+                    && *bytes <= self.max_managed_target_bytes
+            })
             .ok_or_else(|| limit("GL target byte quota exceeded"))?;
         Ok(bytes)
     }
@@ -229,14 +253,12 @@ pub struct NativeGlPresenterInfo {
     pub frames_submitted: u64,
     pub whole_frame_readbacks: u64,
     pub external_texture_export: bool,
+    pub tile_cache: NativeGlTileStats,
+    pub managed_targets: NativeGlTargetStats,
+    pub renderer_cache_estimated_bytes: usize,
 }
 
-struct Scratch {
-    surface: Surface,
-    width: i32,
-    height: i32,
-    bytes: usize,
-}
+type Scratch = ManagedTarget;
 
 struct CachedRenderer {
     renderer: SkiaLayerRenderer,
@@ -254,6 +276,8 @@ pub struct NativeGlPresenter {
     device: NativeGlDeviceInfo,
     scratch: Vec<Scratch>,
     renderers: Vec<CachedRenderer>,
+    tiles: TileCache,
+    target_budget: TargetBudget,
     submissions: u64,
     context: Option<gpu::DirectContext>,
     state: &'static str,
@@ -299,6 +323,11 @@ impl NativeGlPresenter {
             device,
             scratch: Vec::new(),
             renderers: Vec::new(),
+            tiles: TileCache::default(),
+            target_budget: TargetBudget::new(
+                config.max_managed_targets,
+                config.max_managed_target_bytes,
+            ),
             submissions: 0,
             context: Some(context),
             state: "live",
@@ -343,7 +372,7 @@ impl NativeGlPresenter {
             device: self.device.clone(),
             config: self.config,
             scratch_targets: self.scratch.len(),
-            scratch_estimated_bytes: self.scratch.iter().map(|target| target.bytes).sum(),
+            scratch_estimated_bytes: self.scratch.iter().map(|target| target.bytes()).sum(),
             renderers: self.renderers.len(),
             renderer_font_estimated_bytes: self
                 .renderers
@@ -355,6 +384,18 @@ impl NativeGlPresenter {
             frames_submitted: self.submissions,
             whole_frame_readbacks: 0,
             external_texture_export: false,
+            tile_cache: self.tiles.stats(),
+            managed_targets: self.target_budget.stats(),
+            renderer_cache_estimated_bytes: self
+                .renderers
+                .iter()
+                .map(|renderer| {
+                    let stats = renderer.renderer.cache_stats();
+                    stats.pictures.approximate_bytes
+                        + stats.glyphs.approximate_bytes
+                        + stats.images.approximate_bytes
+                })
+                .sum(),
         })
     }
 
@@ -424,13 +465,42 @@ impl NativeGlPresenter {
             return Ok(self.scratch.remove(index));
         }
         while self.scratch.len() >= self.config.max_scratch_targets
-            || self.scratch.iter().map(|entry| entry.bytes).sum::<usize>() + bytes
+            || self
+                .scratch
+                .iter()
+                .map(|entry| entry.bytes())
+                .sum::<usize>()
+                + bytes
                 > self.config.max_scratch_bytes
         {
             self.scratch.remove(0);
         }
+        self.ensure_target_room(1, bytes);
+        let allocation = self.target_budget.reserve(bytes)?;
+        self.allocate_target(target.width, target.height, allocation)
+    }
+
+    fn ensure_target_room(&mut self, count: usize, bytes: usize) -> bool {
+        while !self.target_budget.can_reserve(count, bytes) {
+            if self.tiles.evict_idle() {
+                continue;
+            }
+            if self.scratch.pop().is_some() {
+                continue;
+            }
+            return false;
+        }
+        true
+    }
+
+    fn allocate_target(
+        &mut self,
+        width: i32,
+        height: i32,
+        allocation: TargetAllocation,
+    ) -> Result<ManagedTarget, NativeHostError> {
         let info = ImageInfo::new(
-            (target.width, target.height),
+            (width, height),
             ColorType::RGBA8888,
             AlphaType::Premul,
             ColorSpace::new_srgb(),
@@ -448,12 +518,7 @@ impl NativeGlPresenter {
             None,
         )
         .ok_or_else(|| unsupported("Skia could not allocate a GL scratch target"))?;
-        Ok(Scratch {
-            surface,
-            width: target.width,
-            height: target.height,
-            bytes,
-        })
+        Ok(ManagedTarget::new(surface, width, height, allocation))
     }
 
     /// # Safety
@@ -510,7 +575,7 @@ impl NativeGlPresenter {
         // Qt/host GL work may have changed bindings since the previous call.
         self.context.as_mut().expect("checked live").reset(None);
         let mut scratch = self.scratch(target, bytes)?;
-        let result = self.replay_and_publish(
+        let mut result = self.replay_and_publish(
             &mut scratch,
             stamp,
             target,
@@ -518,6 +583,17 @@ impl NativeGlPresenter {
             &inputs,
             clear_color,
         );
+        if result.is_err() && self.context.is_some() {
+            // Failed scratch draws can still reference tiles. Drain their work
+            // before a later call can evict those map entries. No failed frame
+            // is copied to the visible target by this scratch-only submission.
+            if let Err(error) = self.submit_surface(
+                &mut scratch.surface,
+                "GL failed-frame cleanup submit failed; presenter abandoned",
+            ) {
+                result = Err(error);
+            }
+        }
         if self.context.is_some() {
             self.scratch.push(scratch);
         }
@@ -535,32 +611,39 @@ impl NativeGlPresenter {
     ) -> Result<NativeGlFrame, NativeHostError> {
         let replay_started = Instant::now();
         scratch.surface.canvas().clear(Color::from(clear_color));
+        // Keep every tile referenced by this frame pinned until submission.
+        // Cache admission/eviction cannot reclaim those surfaces mid-frame.
+        let mut tile_pins = Vec::new();
         for (placement, input) in placements.iter().zip(inputs) {
-            self.renderer(input.snapshot())?.render_to_surface_strict(
+            if !self.replay_tiles(
                 &mut scratch.surface,
-                input.snapshot().tree(),
-                SkiaSurfaceRenderOptions {
-                    scale: placement.scale,
-                    origin_x: placement.origin_x,
-                    origin_y: placement.origin_y,
-                    background_color: placement.background_color,
-                },
-            )?;
+                stamp,
+                target,
+                *placement,
+                input,
+                clear_color,
+                &mut tile_pins,
+            )? {
+                self.tiles.observations.viewport_fallbacks =
+                    self.tiles.observations.viewport_fallbacks.saturating_add(1);
+                self.renderer(input.snapshot())?.render_to_surface_strict(
+                    &mut scratch.surface,
+                    input.snapshot().tree(),
+                    SkiaSurfaceRenderOptions {
+                        scale: placement.scale,
+                        origin_x: placement.origin_x,
+                        origin_y: placement.origin_y,
+                        background_color: placement.background_color,
+                    },
+                )?;
+            }
         }
         let replay_micros = micros(replay_started);
         let flush_started = Instant::now();
-        if self
-            .context
-            .as_mut()
-            .expect("checked live")
-            .flush_and_submit_surface(&mut scratch.surface, gpu::SyncCpu::No)
-            .is_err()
-        {
-            self.abandon()?;
-            return Err(unsupported(
-                "GL scratch flush/submit failed; presenter abandoned",
-            ));
-        }
+        self.submit_surface(
+            &mut scratch.surface,
+            "GL scratch flush/submit failed; presenter abandoned",
+        )?;
         let image = scratch.surface.image_snapshot();
         if !image.is_texture_backed() {
             return Err(unsupported("GL scratch snapshot is not GPU backed"));
@@ -598,18 +681,10 @@ impl NativeGlPresenter {
         let mut copy = Paint::default();
         copy.set_blend_mode(BlendMode::Src);
         visible.canvas().draw_image(&image, (0.0, 0.0), Some(&copy));
-        if self
-            .context
-            .as_mut()
-            .expect("checked live")
-            .flush_and_submit_surface(&mut visible, gpu::SyncCpu::No)
-            .is_err()
-        {
-            self.abandon()?;
-            return Err(unsupported(
-                "GL host-target flush/submit failed; presenter abandoned",
-            ));
-        }
+        self.submit_surface(
+            &mut visible,
+            "GL host-target flush/submit failed; presenter abandoned",
+        )?;
         self.submissions += 1;
         Ok(NativeGlFrame {
             backend: "openGlGanesh",
@@ -628,6 +703,213 @@ impl NativeGlPresenter {
         })
     }
 
+    fn submit_surface(
+        &mut self,
+        surface: &mut Surface,
+        message: &'static str,
+    ) -> Result<(), NativeHostError> {
+        if self
+            .context
+            .as_mut()
+            .expect("checked live")
+            .flush_and_submit_surface(surface, gpu::SyncCpu::No)
+            .is_err()
+        {
+            self.abandon()?;
+            return Err(unsupported(message));
+        }
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn replay_tiles(
+        &mut self,
+        scratch: &mut Surface,
+        stamp: NativePresentationStamp,
+        target: NativeGlTarget,
+        placement: NativeGlPlacement,
+        input: &NativePresentationSnapshotBorrow,
+        clear_color: u32,
+        frame_pins: &mut Vec<Rc<CachedTile>>,
+    ) -> Result<bool, NativeHostError> {
+        let Some(plan) = TilePlan::new(
+            self.config,
+            stamp,
+            target,
+            placement,
+            input.snapshot(),
+            clear_color,
+        ) else {
+            return Ok(false);
+        };
+        let mut found: Vec<_> = plan.keys.iter().map(|key| self.tiles.get(key)).collect();
+        let missing_count = found.iter().filter(|tile| tile.is_none()).count();
+        if missing_count != 0 {
+            let missing_bytes: usize = plan
+                .keys
+                .iter()
+                .zip(&found)
+                .filter(|(_, tile)| tile.is_none())
+                .map(|(key, _)| key.region.bytes())
+                .sum();
+            while !self
+                .tiles
+                .has_room(self.config, missing_count, missing_bytes)
+            {
+                if !self.tiles.evict_idle() {
+                    self.tiles.observations.pinned_admission_fallbacks = self
+                        .tiles
+                        .observations
+                        .pinned_admission_fallbacks
+                        .saturating_add(1);
+                    return Ok(false);
+                }
+            }
+            let working_bytes = plan
+                .canonical_bytes
+                .checked_add(missing_bytes)
+                .ok_or_else(|| limit("GL tile working target byte overflow"))?;
+            if !self.ensure_target_room(missing_count + 1, working_bytes) {
+                self.tiles.observations.target_admission_fallbacks = self
+                    .tiles
+                    .observations
+                    .target_admission_fallbacks
+                    .saturating_add(1);
+                return Ok(false);
+            }
+            let canonical_allocation = self.target_budget.reserve(plan.canonical_bytes)?;
+            let allocations: Vec<_> = plan
+                .keys
+                .iter()
+                .zip(&found)
+                .filter(|(_, tile)| tile.is_none())
+                .map(|(key, _)| self.target_budget.reserve(key.region.bytes()))
+                .collect::<Result<_, _>>()?;
+            let mut canonical =
+                self.allocate_target(plan.width, plan.height, canonical_allocation)?;
+            canonical.surface.canvas().clear(Color::TRANSPARENT);
+            self.tiles.observations.canonical_replays =
+                self.tiles.observations.canonical_replays.saturating_add(1);
+            let replay = self.renderer(input.snapshot()).and_then(|renderer| {
+                renderer
+                    .render_to_surface_strict(
+                        &mut canonical.surface,
+                        input.snapshot().tree(),
+                        SkiaSurfaceRenderOptions {
+                            scale: placement.scale,
+                            origin_x: plan.phase_x,
+                            origin_y: plan.phase_y,
+                            background_color: placement.background_color,
+                        },
+                    )
+                    .map_err(NativeHostError::from)
+            });
+            if let Err(error) = replay {
+                // Keep its reservation until every partial canonical task has
+                // left Skia's unsubmitted graph, even for non-fallback errors.
+                self.submit_surface(
+                    &mut canonical.surface,
+                    "GL failed-canonical cleanup submit failed; presenter abandoned",
+                )?;
+                if matches!(
+                    error,
+                    NativeHostError::Core(_)
+                        | NativeHostError::InvalidArgument(_)
+                        | NativeHostError::LimitExceeded(_)
+                ) {
+                    // Full-page staging must not turn an offscreen resource
+                    // problem into a failure of the prior visible replay path.
+                    self.tiles.observations.canonical_failures =
+                        self.tiles.observations.canonical_failures.saturating_add(1);
+                    return Ok(false);
+                }
+                return Err(error);
+            }
+            self.submit_surface(
+                &mut canonical.surface,
+                "GL canonical tile flush/submit failed; presenter abandoned",
+            )?;
+            let image = canonical.surface.image_snapshot();
+            if !image.is_texture_backed() {
+                return Err(unsupported("GL canonical tile input is not GPU backed"));
+            }
+            let mut copy = Paint::default();
+            copy.set_blend_mode(BlendMode::Src);
+            let mut prepared = Vec::with_capacity(missing_count);
+            let mut allocations = allocations.into_iter();
+            for (index, key) in plan.keys.iter().enumerate() {
+                if found[index].is_some() {
+                    continue;
+                }
+                let region = key.region;
+                let mut tile = self.allocate_target(
+                    region.width,
+                    region.height,
+                    allocations
+                        .next()
+                        .expect("one reservation per missing tile"),
+                )?;
+                tile.surface.canvas().draw_image(
+                    &image,
+                    (-region.x as f32, -region.y as f32),
+                    Some(&copy),
+                );
+                self.submit_surface(
+                    &mut tile.surface,
+                    "GL tile copy flush/submit failed; presenter abandoned",
+                )?;
+                prepared.push((
+                    index,
+                    Rc::new(CachedTile {
+                        key: key.clone(),
+                        target: RefCell::new(tile),
+                    }),
+                ));
+            }
+            input.validate_current(stamp)?;
+            // Publish cache entries only after every strict replay and tile GPU
+            // copy succeeded. The canonical target is never a hidden tile backing.
+            for (index, tile) in prepared {
+                found[index] = Some(Rc::clone(&tile));
+                self.tiles.insert(tile);
+            }
+        }
+        for tile in found.into_iter().flatten() {
+            let image = tile.target.borrow_mut().surface.image_snapshot();
+            if !image.is_texture_backed() {
+                return Err(unsupported("cached GL tile is not GPU backed"));
+            }
+            scratch.canvas().draw_image(
+                &image,
+                (
+                    (plan.integer_x + tile.key.region.x) as f32,
+                    (plan.integer_y + tile.key.region.y) as f32,
+                ),
+                None,
+            );
+            frame_pins.push(tile);
+        }
+        Ok(true)
+    }
+
+    /// # Safety
+    /// Call only while the matching context is current. No render may be active.
+    pub unsafe fn clear_caches(
+        &mut self,
+        context_id: u64,
+        generation: u64,
+    ) -> Result<(), NativeHostError> {
+        self.check_context(context_id, generation)?;
+        self.tiles.clear();
+        self.scratch.clear();
+        self.renderers.clear();
+        self.context
+            .as_mut()
+            .expect("checked live")
+            .free_gpu_resources();
+        Ok(())
+    }
+
     /// # Safety
     /// The matching context must be current. This explicitly frees GL resources.
     pub unsafe fn release(
@@ -636,6 +918,7 @@ impl NativeGlPresenter {
         generation: u64,
     ) -> Result<(), NativeHostError> {
         self.check_context(context_id, generation)?;
+        self.tiles.clear();
         self.scratch.clear();
         self.renderers.clear();
         self.context
@@ -654,6 +937,7 @@ impl NativeGlPresenter {
         if let Some(context) = &mut self.context {
             context.abandon();
         }
+        self.tiles.clear();
         self.scratch.clear();
         self.renderers.clear();
         self.context.take();
