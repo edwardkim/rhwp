@@ -4,7 +4,7 @@
 
 **메인터너 보정 후 수용 가능 — 원 PR 주장 범위의 로컬 검증 완료.**
 
-원본별 Native/fresh WASM 전쪽 TSV와 같은 주장 페이지의 review·overlay를 아래에 연결했다. 원격 PR 생성·CI·merge·close는 실제 실행 뒤 별도로 기록한다.
+원본별 Native/fresh WASM 전쪽 TSV와 같은 주장 페이지의 review·overlay를 아래에 연결했다. [통합 PR #8659](https://github.com/edwardkim/rhwp/pull/8659)의 정확한 code head CI가 성공했다. [통합 리뷰](pr_8659_review.md)에 실행 URL을 기록했으며, trailing head 확인·merge·원 PR close는 후속 조건이다.
 
 ## 접수 정보
 
