@@ -1,0 +1,28 @@
+[
+  {
+    "backend": "native",
+    "page": 10,
+    "raw": 99.57724,
+    "source_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-visual/after/electrical7728/electrical7728/silhouette_manifest.json",
+    "input_png_sha256": "49f9981096a2ce6495e13ba030a6a091aeba2cb6d181e2ca9bc6f70adb46cc39",
+    "pdf_png_sha256": "cc2262e9b23e2c572d31fda7a3892209589fd4a59d8e9a9a1cf804793dde4253",
+    "review": "mydocs/pr/assets/issue7728/phase6-important-regressions-20261106/current-native-p010-review.png",
+    "review_sha256": "eb855eb2a95205d54dbb68adb801f6365bd318ddfe6322ad99fecb56190b1311",
+    "overlay": "mydocs/pr/assets/issue7728/phase6-important-regressions-20261106/current-native-p010-overlay.png",
+    "overlay_sha256": "0f378045fbda578c13fdf325123e01eb016d58a628e5b0a1af72739da95963c6",
+    "direct_review": "직접 판독: 표의 병합 머리·두 본문 행·3열 괘선 끝점과 앞뒤 제목/본문/쪽번호를 확인. 글리프·미세 간격 차이는 남으며 100%라고 표시하지 않음. 새 고정 검사는 양쪽98% 이상인 이 쪽의 독립 PDF 선 중심만 ±2px로 확인함."
+  },
+  {
+    "backend": "wasm",
+    "page": 10,
+    "raw": 99.47384,
+    "source_manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/repaired-v17-fresh-wasm-visual/fresh-wasm/electrical7728/electrical7728/silhouette_manifest.json",
+    "input_png_sha256": "beaeb6bb97fdcb7d78f68f2579becbbf26364de3805767835355613aaf691e37",
+    "pdf_png_sha256": "cc2262e9b23e2c572d31fda7a3892209589fd4a59d8e9a9a1cf804793dde4253",
+    "review": "mydocs/pr/assets/issue7728/phase6-important-regressions-20261106/current-wasm-p010-review.png",
+    "review_sha256": "2cbae32d04d6a34febbc7cc75b972dfc1f17f31a19cfb9f478d311383b1463d4",
+    "overlay": "mydocs/pr/assets/issue7728/phase6-important-regressions-20261106/current-wasm-p010-overlay.png",
+    "overlay_sha256": "a2119ebd2841eefb2b95988c327a6a34561cd725e178d3092f368cbb1b30a8a0",
+    "direct_review": "직접 판독: 표의 병합 머리·두 본문 행·3열 괘선 끝점과 앞뒤 제목/본문/쪽번호를 확인. 글리프·미세 간격 차이는 남으며 100%라고 표시하지 않음. 새 고정 검사는 양쪽98% 이상인 이 쪽의 독립 PDF 선 중심만 ±2px로 확인함."
+  }
+]

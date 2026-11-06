@@ -1,0 +1,157 @@
+{
+  "runtime_head": "04f03cfafde42d2f77946a8a076ab527b8956468",
+  "base": "5716a226b562b7300193dd0b573ded9cd71ac890",
+  "before_after": {
+    "source": "tests/cases/issue_7728_print_column_frame_guards.rs",
+    "source_sha256": "0bfc7299f8420021cfed264c6fd5355e85cbfdd82cff927c18fe775129b60ec7",
+    "results": [
+      {
+        "stage": "candidate",
+        "library": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/librhwp-issue7728-repaired-v17.rlib",
+        "library_sha256": "3d68f4c66509946629c84cb2282d6a70e87850483a85981655b3b62b67749ac7",
+        "compile_command": [
+          "rustc",
+          "--edition=2021",
+          "--test",
+          "/Users/tsjang/rhwp/tests/cases/issue_7728_print_column_frame_guards.rs",
+          "--extern",
+          "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/librhwp-issue7728-repaired-v17.rlib",
+          "-L",
+          "dependency=/Users/tsjang/rhwp/target/issue7375/release-test/deps",
+          "-L",
+          "native=/Users/tsjang/rhwp/target/issue7375/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+          "-o",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/important-regressions-final-candidate/tests"
+        ],
+        "compile_exit_code": 0,
+        "test_command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/important-regressions-final-candidate/tests",
+          "--test-threads",
+          "8",
+          "--nocapture"
+        ],
+        "exit_code": 0,
+        "summary": [
+          "test independent_print_page10_keeps_all_grid_edges ... ok",
+          "test continuation_column_frames_keep_opening_span_and_row_edges ... ok",
+          "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s"
+        ],
+        "logs": {
+          "compile.log": {
+            "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/important-regressions-final-candidate/compile.log",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "tests.log": {
+            "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/important-regressions-final-candidate/tests.log",
+            "sha256": "46d741b6ab3759f7f9ba0f55a1cbb2b74df554a12fcc52c611070c7e5b2c1b22"
+          }
+        }
+      },
+      {
+        "stage": "base5716",
+        "library": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/librhwp-fixed-base5716.rlib",
+        "library_sha256": "0ef03467321f4e003151c51396ebaa42a40b9ada7df1cb178f871366f23288ea",
+        "compile_command": [
+          "rustc",
+          "--edition=2021",
+          "--test",
+          "/Users/tsjang/rhwp/tests/cases/issue_7728_print_column_frame_guards.rs",
+          "--extern",
+          "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/librhwp-fixed-base5716.rlib",
+          "-L",
+          "dependency=/Users/tsjang/rhwp/target/issue7375-base5716/release-test/deps",
+          "-L",
+          "native=/Users/tsjang/rhwp/target/issue7375-base5716/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+          "-o",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/important-regressions-final-base5716/tests"
+        ],
+        "compile_exit_code": 0,
+        "test_command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/important-regressions-final-base5716/tests",
+          "--test-threads",
+          "8",
+          "--nocapture"
+        ],
+        "exit_code": 101,
+        "summary": [
+          "독립 Print 셀 (0,0) 위쪽: 실제 497.82666666666677, 독립 439.8386637369792, 허용2px",
+          "test independent_print_page10_keeps_all_grid_edges ... FAILED",
+          "test continuation_column_frames_keep_opening_span_and_row_edges ... FAILED",
+          "test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s"
+        ],
+        "logs": {
+          "compile.log": {
+            "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/important-regressions-final-base5716/compile.log",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "tests.log": {
+            "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/important-regressions-final-base5716/tests.log",
+            "sha256": "db442d1e73a3e4bca3b883e09f02480e5528f319e11d4d6d9cc7955bd9c81b13"
+          }
+        }
+      }
+    ]
+  },
+  "registered_native_focused": {
+    "pid": 41934,
+    "head": "04f03cfafde42d2f77946a8a076ab527b8956468",
+    "source": "tests/cases/issue_7728_print_column_frame_guards.rs",
+    "source_sha256": "0bfc7299f8420021cfed264c6fd5355e85cbfdd82cff927c18fe775129b60ec7",
+    "current": "complete",
+    "success": true,
+    "command": [
+      "/usr/bin/sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--test",
+      "regression_suite_011",
+      "--test",
+      "regression_suite_015",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(/(^|::)issue_7728_(print_column_frame_guards|original_nested_frames)::/)"
+    ],
+    "manifest_plans": [
+      {
+        "caseName": "issue_7728_print_column_frame_guards",
+        "target": "regression_suite_011",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_7728_original_nested_frames",
+        "target": "regression_suite_015",
+        "grouped": true
+      }
+    ],
+    "child_pid": 42032,
+    "exit_code": 0,
+    "seconds": 30.159,
+    "summary": [
+      "     Summary [   0.218s] 6 tests run: 6 passed, 651 skipped"
+    ]
+  },
+  "full_nextest_with_new_tests": "pending",
+  "native_required_runtime_unchanged": true,
+  "source_files": {
+    "tests/cases/issue_7728_print_column_frame_guards.rs": "0bfc7299f8420021cfed264c6fd5355e85cbfdd82cff927c18fe775129b60ec7",
+    "mydocs/pr/assets/issue7728/phase6-important-regressions-20261106/whole-native.tsv": "fa896633b70d53e472b93f2d6c9aca51ed5f2dd75a1fba8a2b516b67f7d986a2",
+    "mydocs/pr/assets/issue7728/phase6-important-regressions-20261106/whole-wasm.tsv": "75b1cfc962b887f21a80e1059b8c75dcc39027994683b8a9fdcddc12f3fdb67d",
+    "mydocs/pr/assets/issue7728/phase6-important-regressions-20261106/independent-page10-grid-vectors.json": "1dccafe92ef4dd5aa19dce405a6936650afa447e656bf7a928758d48cf7963be"
+  }
+}

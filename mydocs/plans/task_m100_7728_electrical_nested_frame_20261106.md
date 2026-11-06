@@ -1,7 +1,10 @@
 # #7728 — 전기안전관리법 70833의 중첩 표와 뒤 본문 흐름
 
-상태는 원본 전18쪽 Native 보존·기존9실패 집중 복구 후 최종 전체 검증 대기다.
-새 소스의 fresh WASM·전체 nextest·리베이스 기능 보존은 아직 완료하지 않았다. `task/7375-rectangle-corners`의 #7727 최종 검증 커밋
+코드 `04f03cfa`의 전체 nextest 12,761건과 기존 범위 Native/fresh WASM 각각 416쪽은 통과했다.
+사용자 지시에 따라 #7375·#7640·#7642·#7700·#7727·#7728까지 마무리하고 PR을 준비한다.
+다음 이슈는 시작하지 않는다. 새 중요 회귀 2건을 추가한 Native 집중 6건은 통과했으며,
+새 검사를 포함한 전체 회귀·최종 편람 gate와 새 devel의 남은 기능 보존 검증을 계속한다.
+`task/7375-rectangle-corners`의 #7727 최종 검증 커밋
 `55e40d72e8470d89d375b72b8c168ec702dbcc17` 다음 단계로 진행한다.
 renderer의 빈 TAC 래퍼 측정을 보정했다. 기존 검사 기대값·원본은 바꾸지 않았다.
 #7445 부모는 먼저 닫지 않는다.
@@ -208,3 +211,56 @@ base `5716a226` 위 후보 `1a4b2bf`에서 기존 9개 실패를 같은 최소 �
 [phase5-frame-provenance](../pr/assets/issue7728/phase5-frame-provenance-20261106/README.md)에 정리했다.
 현재 소스의 fresh WASM 전쪽·기존 완료 문서의 영향 검증·전체 nextest·범위 lint/build/
 manifest/unit-tier·실제 소비 경로와 새 devel 기능 보존은 후속 필수 항목이다. PR·이슈 종료는 보류한다.
+
+## 6단계 — 전체 회귀와 리베이스 후 기능 보존 검증
+
+5단계 소스와 동일한 코드 `04f03cfafde42d2f77946a8a076ab527b8956468`에서 최소 글꼴 전체
+nextest는 12,761 PASS/0 FAIL/45 skip, 448.384초, exit 0으로 완료했다. Native Skia 3종의
+실제 소스 hash 일치도 확인했다. fresh WASM, fmt, Native/default/WASM/all-target Clippy,
+workspace build, manifest와 unit-tier 검사는 모두 exit 0이다.
+
+Mac fresh WASM은 locked wrapper의 `--target web --out-dir pkg --no-opt` 로컬 대체 빌드다.
+Docker 최적화 통과가 아니다. root `pkg`·Studio public·동결 패키지의 JS/WASM hash가 같다.
+전기안전 전 18쪽은 Native/fresh WASM 모두 4단계와 raw 및 새 PNG가 동일하다. 집중 반례
+23쪽의 양쪽 텍스트 순서·문단 소속·그림 수도 대조했으며, 세 반례 문서의 전쪽 수용과 구분한다.
+
+기존 완료 범위 9조건·416쪽을 각 backend에서 새로 산출했다. Native 최저 92.05232%,
+fresh WASM 최저 92.16419%이며, 누락·90% 미달·이전 고정 base와 직전 수용본 대비
+0.1%p 초과 하락은 없다. 직전 시각 검증 실행 대비 최대 하락은 Native 0.00051%p, WASM 0.00048%p다.
+각 backend의 PNG 416개 중 372개가 이전 실행과 바이트 단위로 같다. 나머지 차이도 원값과
+소속을 기록하며 모두 동일하다고 표시하지 않는다. 이 결과는 새 devel과의 별도 대조를 대신하지 않는다.
+
+고정 `5716a226` base와 후보의 별도 전쪽 비교도 9조건·416쪽씩 완료했다. 양쪽 모두
+90% 미달·누락·0.1%p 초과 하락이 없다. #8659 보존 범위 128조건·301쪽씩도 같은 최소 글꼴
+환경에서 base/후보를 실제 비교했다. Native 최저 91.18286%, fresh WASM 최저 92.20279%,
+90% 미달·누락·0.1%p 초과 하락은 모두 0쪽이다. 실제 공개 WASM API 12그룹은 양쪽 통과했고
+저장 30건은 바이트가 같으며, base 공개 메서드·export의 제거 또는 arity 변화도 없다.
+
+새 중요 회귀 2건은 같은 최종 파일로 devel 2 FAIL→후보 2 PASS를 확인했다. 실제 suite의
+최소 글꼴 Native Skia에서는 기존 4건과 함께 6 PASS/0 FAIL이었다.
+[검사 분류·독립 좌표·전후 실행과 현재 review/overlay](../pr/assets/issue7728/phase6-important-regressions-20261106/README.md)에 정리했다.
+10쪽의 표 괘선은 양쪽 98% 이상에서 독립 PDF ±2px 고정형으로 검사하고, 6→7쪽의
+계속 열 프레임은 관계형으로 검사한다. 기존 원본·검사 기대값은 유지했다.
+
+활성 규칙·Native 공개 공급·편람 전용 URL의 중복 제외 105개를 실제 GET·글꼴 파싱으로
+점검했다. 모두 HTTP 200이므로 제외한 설정은 없다. 편람 전용 7개는 고정 원본 hash도 일치한다.
+Studio Node는 2,748 PASS/0 FAIL/2 skip, TypeScript·Vite build는 exit 0이다.
+
+위 결과를 수집하던 중 새 upstream `08963f6825956984d38b0d9392f44777db7107ab`(#8683)을
+확인했다. 시작 전이던 새 2건 포함 전체 회귀는 취소하고, 이번 변경을 커밋·리베이스한 뒤
+최종 검증을 실행한다. 지금의 결과를 새 base/head 검증 완료로 재인용하지 않는다.
+
+리베이스로 들어온 #8659의 기능은 고정 base `5716a226b562b7300193dd0b573ded9cd71ac890`와
+후보에서 직접 비교한다. 같은 Mac의 고정 Git blob으로 Native와 fresh WASM 기준 산출물을
+별도 target에서 만들었고, 후보 산출물을 덮어쓰지 않았다. 원 PR 12그룹의 실제 공개 API는
+양쪽 모두 PASS이며 생성 저장본 30개의 SHA-256도 각각 같다. 실제 WASM의 기존 export
+633개와 생성 JS의 공개 export·method 이름/인수 개수 607개는 모두 보존됐다. 후보에 추가된
+셀 도형 삭제 API는 기존 기능 보존과 별도로 구분했다.
+
+기존 9조건의 새 devel/후보 전쪽 대조, #8659의 원본·편집·저장 128조건·301쪽 전쪽 대조,
+거대 표·개인정보·LPG 3문서 311쪽의 전쪽 비교와 실제 Studio 소비 검증은 진행 중이다.
+현재 기록은 이 항목들의 완료 증거가 아니다. 모든 비교는 같은 입력·독립 PDF·DPI·compat와
+정본 Visual Sweep의 2px raw를 유지한다. 실행 로그와 미완료 상태는 ignored
+`output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/`에 보존한다.
+실행 중에는 해당 head와 소스를 고정하며, 결과 확인·대표 review/overlay 판독·증적 정리 후
+이 단계의 로컬 커밋을 진행한다. PR·이슈 종료와 최종 편람 gate 완료는 아직 선언하지 않는다.

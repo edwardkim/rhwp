@@ -1,0 +1,873 @@
+{
+  "current": "complete",
+  "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+  "source_count": 105,
+  "workers": 4,
+  "method": "실제 GET·최대20초·실패 경로만 총3회 확인·HTTP200과 글꼴 파싱 확인. 다운로드는 즉시 삭제하고 메타데이터만 보존.",
+  "available": 105,
+  "unavailable": 0,
+  "source_evidence": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/webfont-response-audit/results.json",
+  "source_evidence_sha256": "5562fee471cb4db88bd8f949d591ec46b46bd4cd7fbe19301d483410e360241d",
+  "remote_sources": 74,
+  "relative_sources": 31,
+  "configuration_changed": false,
+  "slowest_seconds": 1.205271,
+  "response_evidence": [
+    {
+      "url": "fonts/Cafe24Ssurround-v2.0.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Cafe24 Ssurround Bold",
+      "sha256": "2d726dbf8863d66e6d5cf56e2532c5d14d8a4b514461b565c513c1da6ae2f41a",
+      "seconds": 0.072881
+    },
+    {
+      "url": "fonts/Cafe24Supermagic-Regular-v1.0.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Cafe24 Supermagic",
+      "sha256": "65434a217b9532867a1fe41417d0ad51210a60027a51dca40748aafed48ef0ba",
+      "seconds": 0.079317
+    },
+    {
+      "url": "fonts/D2Coding-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "D2Coding",
+      "sha256": "4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8",
+      "seconds": 0.080651
+    },
+    {
+      "url": "fonts/GowunBatang-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Gowun Batang",
+      "sha256": "0c6a288aa0c12081dccde769c312f71f290b353243747dd24fb8c57f94f01d72",
+      "seconds": 0.079282
+    },
+    {
+      "url": "fonts/GowunDodum-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Gowun Dodum",
+      "sha256": "349c098a6181952dab564bf891b8efcacfbf855adc28d40b4aa2e5937c101c56",
+      "seconds": 0.006329
+    },
+    {
+      "url": "fonts/Happiness-Sans-Bold.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Happiness Sans",
+      "sha256": "54becdfd4f7f58e872eba8fbc67778e29cff94c1cd03f9a0ebadfbe482b4aba0",
+      "seconds": 0.002256
+    },
+    {
+      "url": "fonts/Happiness-Sans-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Happiness Sans",
+      "sha256": "4fc37e7663c3d440b5a6af6938bde0c6618b666553ed521745f3362050bd4988",
+      "seconds": 0.005532
+    },
+    {
+      "url": "fonts/Happiness-Sans-Title.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Happiness Sans",
+      "sha256": "057e6821a062d9192964d99cf058fe6608230e9e4a464c9652b3756e02460e22",
+      "seconds": 0.00184
+    },
+    {
+      "url": "fonts/HappinessSansVF.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Happiness Sans VF",
+      "sha256": "cd29de60acf8c466938400561fcbfb14812dd5981f4f78b0c8da74609682423c",
+      "seconds": 0.002365
+    },
+    {
+      "url": "fonts/LatinModernMath-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Latin Modern Math",
+      "sha256": "b11060f37967c090457580275129d0d7da1d5fbfc82b04e78c91aa31977f547c",
+      "seconds": 0.00189
+    },
+    {
+      "url": "fonts/NanumGothic-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "NanumGothic",
+      "sha256": "b2b25ce9c9179e0a4c867bd2610e1db5595965345aa1cdb857964ab802c4ee3e",
+      "seconds": 0.001271
+    },
+    {
+      "url": "fonts/NanumGothicCoding-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "NanumGothicCoding",
+      "sha256": "6bd0831252dc3bd96f3257ec4eaf794d88ffb185346eb5d3f889248a7a3c6239",
+      "seconds": 0.037691
+    },
+    {
+      "url": "fonts/NanumMyeongjo-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "NanumMyeongjo",
+      "sha256": "52d27bf4ee205020a4aa9eb19ef4835e4aa04a94f7742b13e69e5c8b9a74072a",
+      "seconds": 0.015969
+    },
+    {
+      "url": "fonts/NotoSansKR-Bold.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Noto Sans KR Thin",
+      "sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020",
+      "seconds": 0.015652
+    },
+    {
+      "url": "fonts/NotoSansKR-ExtraLight.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Noto Sans KR ExtraLight",
+      "sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673",
+      "seconds": 0.011764
+    },
+    {
+      "url": "fonts/NotoSansKR-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Noto Sans KR",
+      "sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+      "seconds": 0.001816
+    },
+    {
+      "url": "fonts/NotoSansSymbols2-Regular.ttf",
+      "http_code": 200,
+      "available": true,
+      "family": "Noto Sans Symbols2",
+      "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688",
+      "seconds": 0.003156
+    },
+    {
+      "url": "fonts/NotoSerifKR-Bold.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Noto Serif KR ExtraLight",
+      "sha256": "504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941",
+      "seconds": 0.001431
+    },
+    {
+      "url": "fonts/NotoSerifKR-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Noto Serif KR ExtraLight",
+      "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+      "seconds": 0.002041
+    },
+    {
+      "url": "fonts/Pretendard-Black.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Pretendard Black",
+      "sha256": "c5fd0c3568fc1368a3edc0d0fbb36df029935954276e3573451b3bae09e27296",
+      "seconds": 0.002629
+    },
+    {
+      "url": "fonts/Pretendard-Bold.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Pretendard",
+      "sha256": "4609c3356e536fafe38f4add0daeceb3d8595d3057bce13c428c33ddbd43d362",
+      "seconds": 0.001699
+    },
+    {
+      "url": "fonts/Pretendard-ExtraBold.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Pretendard ExtraBold",
+      "sha256": "dd7c1e156f508eb962acc7a33a7a1896d1e0b71e11156fad96e731689ceb6dc3",
+      "seconds": 0.001257
+    },
+    {
+      "url": "fonts/Pretendard-ExtraLight.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Pretendard ExtraLight",
+      "sha256": "df43dc9165dff4542114674bcd8b79b7daae6dec004004586d5d076fec6fe2aa",
+      "seconds": 0.001821
+    },
+    {
+      "url": "fonts/Pretendard-Light.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Pretendard Light",
+      "sha256": "b7426635cce2ea2b95c9c802e43fba1c620e0dafaf25f737c069b8b4e09fa841",
+      "seconds": 0.001646
+    },
+    {
+      "url": "fonts/Pretendard-Medium.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Pretendard Medium",
+      "sha256": "d03481330eeba0659ab5b87f25ceb504a35de377dd90a0d0aba2982eb2d05e2c",
+      "seconds": 0.001578
+    },
+    {
+      "url": "fonts/Pretendard-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Pretendard",
+      "sha256": "fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63",
+      "seconds": 0.001452
+    },
+    {
+      "url": "fonts/Pretendard-SemiBold.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Pretendard SemiBold",
+      "sha256": "c863f76a7de5c1ddc1ed8b2fa794964530774592c4f31407a84e2a2ae93f17f0",
+      "seconds": 0.000946
+    },
+    {
+      "url": "fonts/Pretendard-Thin.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Pretendard Thin",
+      "sha256": "1539755224a64719d5b18406762c476db74fcc299b9e4641ca1e9812fbc7a09b",
+      "seconds": 0.001005
+    },
+    {
+      "url": "fonts/RHWPOldHangul-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "RHWP Old Hangul",
+      "sha256": "1a45a61e9a320c1bc62ca1401f7b23ceffffe8133dc2a9650ad4e12524f8dcab",
+      "seconds": 0.000801
+    },
+    {
+      "url": "fonts/RHWPPublicBatang-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "RHWP Public Batang",
+      "sha256": "20d454f45cdf29cc4619e769f1f59f3b8920941b6b274a530e82d3b75e24dbfb",
+      "seconds": 0.002136
+    },
+    {
+      "url": "fonts/SpoqaHanSans-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "SpoqaHanSans",
+      "sha256": "6568bf80b50c14f2e54f56f2c07e668416f39f880baf5ea2825d315767f98f69",
+      "seconds": 0.001053
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "ROKG R",
+      "sha256": "2c79a998f6b730afe2e311b6098055e9b6b29c1f2ba75f2871fd5dd8f4787426",
+      "seconds": 0.106364
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Bold.ttf",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPubBatang",
+      "sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+      "seconds": 0.381445,
+      "pinned_hash_matched": true,
+      "kind": "required-handbook-webfont"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Light.ttf",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPubBatang",
+      "sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+      "seconds": 0.378767,
+      "pinned_hash_matched": true,
+      "kind": "required-handbook-webfont"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Medium.ttf",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPubBatang",
+      "sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+      "seconds": 0.375649,
+      "pinned_hash_matched": true,
+      "kind": "required-handbook-webfont"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Bold.ttf",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPubDotum",
+      "sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+      "seconds": 0.27435,
+      "pinned_hash_matched": true,
+      "kind": "required-handbook-webfont"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Light.ttf",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPubDotum",
+      "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+      "seconds": 0.322422,
+      "pinned_hash_matched": true,
+      "kind": "required-handbook-webfont"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Medium.ttf",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPubDotum",
+      "sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+      "seconds": 0.248556,
+      "pinned_hash_matched": true,
+      "kind": "required-handbook-webfont"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/gh/google/fonts@2fe1e8c6b137fb13041a7cfca6fdcd8a910ea4dc/ofl/notoserif/NotoSerif%5Bwdth,wght%5D.ttf",
+      "http_code": 200,
+      "available": true,
+      "family": "Noto Serif",
+      "sha256": "4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713",
+      "seconds": 0.244336
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/2410-3@1.0/Batang_Regular.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "GyeonggiBatang",
+      "sha256": "a3dbeaab2b78381675d7732b906da896bd709c44d3c35675dd73417af496473b",
+      "seconds": 0.131118
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/2410-3@1.0/Title_Medium.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "GyeonggiTitle",
+      "sha256": "c0ed7d2afaeafd68ce2aad87a197acdb493c14c8b12823f961942b52daf351bb",
+      "seconds": 0.063547
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "HCR Batang",
+      "sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+      "seconds": 0.277838,
+      "pinned_hash_matched": true,
+      "kind": "required-handbook-webfont"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "HCR Dotum",
+      "sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+      "seconds": 0.48171
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NanumBarunpen.woff",
+      "http_code": 200,
+      "available": true,
+      "family": null,
+      "sha256": "3441703777d493d77bfbe720cd358c740cb794da7d3cb18218ce1906e90920e0",
+      "seconds": 0.23272
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NanumSquareRound.woff",
+      "http_code": 200,
+      "available": true,
+      "family": null,
+      "sha256": "5ca05d9443ffe73aa0ed78574616491f687c8a4389ccefbc2eba12b1156cfc53",
+      "seconds": 0.113186
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/korean-webfonts/1/orgs/govs/mcst/MunhwaGothic/MunhwaGothicStd-Bold.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Munhwa Gothic Std B",
+      "sha256": "b98cea218075a5f7fb23e5ab62c8d33e523c65cc2bd0540305430da15807f599",
+      "seconds": 0.038744
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/korean-webfonts/1/orgs/govs/mcst/MunhwaGothic/MunhwaGothicStd-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Munhwa Gothic Std R",
+      "sha256": "0dca5496b7fa2ddf453fdb4f249b99bc9032dd3bfac4affef146622a4829ec04",
+      "seconds": 0.088622
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/korean-webfonts/1/orgs/govs/mcst/MunhwaHoonmin/MunhwaHoonminStd-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Munhwa Hoonmin Std R",
+      "sha256": "b83ade4c534b8b0da58f2dcdb3ddabdf948d6a6a34853598aa7e48107ecac414",
+      "seconds": 0.091249
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/korean-webfonts/1/orgs/govs/mcst/MunhwaMyungjo/MunhwaMyungjoStd-Bold.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Munhwa Myungjo Std B",
+      "sha256": "03adfe78705e2c7503a6d138395f02c9e15887b2340fe574322577d944b90435",
+      "seconds": 0.073368
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/korean-webfonts/1/orgs/govs/mcst/MunhwaMyungjo/MunhwaMyungjoStd-Regular.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Munhwa Myungjo Std R",
+      "sha256": "2c4ae1f41288e30a32b0f71db5db8eeda2bd6d89e202fa9d9cabbb99565bdb97",
+      "seconds": 0.317685
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/korean-webfonts/1/orgs/govs/mcst/MunhwaScript/MunhwaScriptStd-Bold.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Munhwa Script Std B",
+      "sha256": "8fd4d8c82fa524626e8004a2aa736b141dd8cd9578546bd37c40e9bee5c9ec61",
+      "seconds": 0.037127
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/korean-webfonts/1/orgs/govs/mcst/MunhwaScript/MunhwaScriptStd-Light.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Munhwa Script Std L",
+      "sha256": "1701512f8985df3e1e72114c94ff83139fe61fc63a2843edaeb6437f84c3cb2b",
+      "seconds": 0.038843
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/korean-webfonts/1/orgs/govs/mcst/MunhwaScriptFreestyle/MunhwaScriptFreestyleStd-Bold.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Munhwa Script Freestyle Std B",
+      "sha256": "4ba3802099a14561d804c1b5cf898c3fd03d7236295cd6e1b59a2197c5f51aac",
+      "seconds": 0.039715
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/korean-webfonts/1/orgs/govs/mcst/MunhwaScriptFreestyle/MunhwaScriptFreestyleStd-Light.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Munhwa Script Freestyle Std L",
+      "sha256": "3f6ce804a614348ea6a854140513fb1bf619a1714b5910e01969e952be29c7b7",
+      "seconds": 0.040118
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@duppla-font/helvetica-now@1.0.0/files/HelveticaNowTextMedium.otf",
+      "http_code": 200,
+      "available": true,
+      "family": "HelveticaNowText Medium",
+      "sha256": "9df25c14674c79b53762830bf93e6e9d68f84116aad1c7be6ed4a2a2cb1f3cd7",
+      "seconds": 0.0472
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontpkg/segoe-ui@5.67.0/segoeui.ttf",
+      "http_code": 200,
+      "available": true,
+      "family": "Segoe UI",
+      "sha256": "73db31e13ef5151beb6a5272cff4c6de6ae2f0bbc3688f4046e5e63593f9953a",
+      "seconds": 0.086496
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontpkg/zhuque-fangsong-technical-preview@0.212.0/ZhuqueFangsong-Regular.ttf",
+      "http_code": 200,
+      "available": true,
+      "family": "Zhuque Fangsong (technical preview)",
+      "sha256": "558c62730844fe54ba220146ed62f859d4e2880188d92d985f8921c6e3743bc4",
+      "seconds": 1.205271
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/bodoni-moda@5.3.0/files/bodoni-moda-latin-400-italic.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "Bodoni Moda",
+      "sha256": "af5632f8ebdccaab99601183265d9c11ce6307017783c1bac14972c7b8af4f12",
+      "seconds": 0.019944
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/calistoga@5.3.0/files/calistoga-latin-400-normal.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "Calistoga",
+      "sha256": "183e76196b9255f1db9dfa9fcf653aa92e3b3e768292cf8102f9861b1d3645c7",
+      "seconds": 0.01966
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/cormorant-garamond@5.3.0/files/cormorant-garamond-cyrillic-300-italic.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "Cormorant Garamond Light",
+      "sha256": "e0acaab460a92f62097245b640bbcbaf814d7aeabaaf1953c37afdaf0ee529a3",
+      "seconds": 0.028082
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/dejavu-serif@5.3.0/files/dejavu-serif-latin-400-normal.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "DejaVu Serif",
+      "sha256": "8dbcad0d5f9f95d4ca21080e87dc83fc7c728106c1536769f346c397e8a26bfa",
+      "seconds": 0.038732
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/fira-sans-extra-condensed@5.3.0/files/fira-sans-extra-condensed-cyrillic-100-italic.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "Fira Sans Extra Condensed Thin",
+      "sha256": "2ae036c4141064c4cf7e43e0e021a4a6a29a97c02fef7ce93eb5c05f4bcbe262",
+      "seconds": 0.024015
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/libre-baskerville@5.3.0/files/libre-baskerville-latin-400-italic.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "Libre Baskerville",
+      "sha256": "67431ee9cf055c785b9c155c6d867ac8a23078a41e654612503d7dd354a0b8c5",
+      "seconds": 0.022456
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/nanum-brush-script@5.3.0/files/nanum-brush-script-0-400-normal.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "Nanum Brush Script",
+      "sha256": "2354024d603f6639c5d5e166d4a2af5fce52e21303370018e5cdbd729bc32f4b",
+      "seconds": 0.019342
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/nanum-gothic@5.3.0/files/nanum-gothic-0-400-normal.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "NanumGothic",
+      "sha256": "1ba252ec5874a4d14fd131424e421c1e1db2f1e72ac3339dc4d405ab8091d04a",
+      "seconds": 0.019668
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/nanum-gothic@5.3.0/files/nanum-gothic-0-700-normal.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "NanumGothic",
+      "sha256": "df75e9a52bd115ffd2229f5ed8d729fba9c225231a71de450f8dafb859f07023",
+      "seconds": 0.018153
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/nanum-gothic@5.3.0/files/nanum-gothic-0-800-normal.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "NanumGothicExtraBold",
+      "sha256": "34995c23a186918bd9952671c2214b7ecd01ed7a68bce483f751f168588b6c2b",
+      "seconds": 0.024945
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/nanum-myeongjo@5.3.0/files/nanum-myeongjo-0-400-normal.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "NanumMyeongjo",
+      "sha256": "b9e19d999c73ed4f4c6f85796e8f6e5f0c39994ce666415c18773128bae93723",
+      "seconds": 0.018488
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/nanum-myeongjo@5.3.0/files/nanum-myeongjo-0-800-normal.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "NanumMyeongjoExtraBold",
+      "sha256": "655380dcf19042e65901a659596314cc0f381565c8e2c53328ad6c53a4477e79",
+      "seconds": 0.018053
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-jp@5.3.0/files/noto-sans-jp-0-100-normal.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "Noto Sans JP Thin",
+      "sha256": "5af3e681ea01cdbd0fadb13958a9c169028fb2ade465415834bc98f6e8d6d74a",
+      "seconds": 0.021651
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-kr@5.3.0/files/noto-sans-kr-0-500-normal.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "Noto Sans KR Medium",
+      "sha256": "5e4504a0aeb8777d295cc3d85f393a2c555461589e638658e73d511270720be5",
+      "seconds": 0.019125
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.3.0/files/roboto-latin-400-normal.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "Roboto",
+      "sha256": "425c0713a8176f92273d378599c7eac57de7fafabd4bd0ed457b70eb8f80d371",
+      "seconds": 0.020411
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/shippori-mincho@5.3.0/files/shippori-mincho-0-400-normal.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "Shippori Mincho",
+      "sha256": "6cd9feb87ca3665549263eb7ba587c71acc8402c7f83b7db88880ebf371e9bdf",
+      "seconds": 0.018815
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/song-myung@5.3.0/files/song-myung-10-400-normal.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "Song Myung",
+      "sha256": "69b5350e9c4d11b8885da683c1dc6010d38d033f371a3d07fac970ee1e382771",
+      "seconds": 0.020228
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource/zen-maru-gothic@5.3.0/files/zen-maru-gothic-10-300-normal.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "Zen Maru Gothic Light",
+      "sha256": "0e8be88251b2c13c3f1738f52b0d1e4f4951a499a9c04e3b5b02b23ef2558ad3",
+      "seconds": 0.019974
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@kfonts/nanum-barun-gothic-yet-hangul-otf@0.2.0/src/NanumBarunGothic-YetHangul.otf",
+      "http_code": 200,
+      "available": true,
+      "family": "NanumBarunGothicOTF YetHangul",
+      "sha256": "a04fc101076c96063dc2a6c9a2b767232032c1b88de15a7dbf1b5f35a3c6c256",
+      "seconds": 0.209095
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@kfonts/nanum-barun-gothic@0.3.0/NanumBarunGothic.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "NanumBarunGothic",
+      "sha256": "57c3dea5ad0ece1b51b306b4bac64fc1743c8e9407c635f19cc3cd64939aa886",
+      "seconds": 0.079716
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@kfonts/nanum-barun-gothic@0.3.0/NanumBarunGothicLight.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "NanumBarunGothic Light",
+      "sha256": "aad2fd4110c38d04e47481369a2846ea964f5bca7bbbe71e4350f6df4aa7c770",
+      "seconds": 0.131075
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@kfonts/nanum-gothic-otf@0.2.0/src/NanumGothic.otf",
+      "http_code": 200,
+      "available": true,
+      "family": "NanumGothicOTF",
+      "sha256": "7bdf5d68debc8d1c3e682b61410f7c469a707352fc3f784e4da23f1f12370b89",
+      "seconds": 0.148257
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@kfonts/nanum-gothic-otf@0.2.0/src/NanumGothicBold.otf",
+      "http_code": 200,
+      "available": true,
+      "family": "NanumGothicOTF",
+      "sha256": "a2b76c0968c5b66a0e4474a83ba8b84c294d8bf0c61f68cff2eaa34851fbb270",
+      "seconds": 0.144478
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@kfonts/nanum-myeongjo-otf@0.2.0/src/NanumMyeongjoExtraBold.otf",
+      "http_code": 200,
+      "available": true,
+      "family": "NanumMyeongjoOTF",
+      "sha256": "b4afd220800805c3cf84f65423c749614b5cdb9dacec41caa04ff15e025dd4b9",
+      "seconds": 0.133152
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@kfonts/nanum-square-otf@0.2.0/src/NanumSquareB.otf",
+      "http_code": 200,
+      "available": true,
+      "family": "NanumSquareOTF",
+      "sha256": "708ba74b146b52d6b15517cc7306f38b287d86832fcce4d70069b34499b31b07",
+      "seconds": 0.050828
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@marcius-studio/font@0.0.1/HelveticaNeueCyr/HelveticaNeueCyr-Black.ttf",
+      "http_code": 200,
+      "available": true,
+      "family": "HelveticaNeueCyr",
+      "sha256": "392948d5c30b3231907f149bf52f58dc431d7c2fee545f6ea8a074b6a13962e5",
+      "seconds": 0.020423
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@noonnu/62570che@0.1.0/fonts/62570-normal.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "62570",
+      "sha256": "3c0c30795b3e1574105d42bef52aae044a6d2ddcf642276a3a8d3f7462b83f0c",
+      "seconds": 0.033057
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@noonnu/hcr-dotum@0.1.0/fonts/hcrdotum-normal.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "HCR Dotum",
+      "sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+      "seconds": 0.296182
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@noonnu/kbiz-hanmaum-myungjo@0.1.0/fonts/kbizhanmaummyungjo-normal.woff",
+      "http_code": 200,
+      "available": true,
+      "family": null,
+      "sha256": "03b55f13babbacf1a10444ab406fb546ea64ad9ca903f631b5360afb28cb1b17",
+      "seconds": 0.237645
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@noonnu/s-core-dream-3-light@0.1.0/fonts/s-coredream-3light-normal.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "S-Core Dream 3 Light",
+      "sha256": "14c2bdc5882226f3f9f3cd023f63ed3bc96899af21006a825f91e4344e893df8",
+      "seconds": 1.080054
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/alibabapuhuiti-3-75-semibold@1.0.0/AlibabaPuHuiTi-3-75-SemiBold.otf",
+      "http_code": 200,
+      "available": true,
+      "family": "Alibaba PuHuiTi 3.0",
+      "sha256": "fd789c70fa4f1a265fe11a64d29bb48926aef7e14da338cb5ca5e6c359ae7e72",
+      "seconds": 0.385174
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/centschbook-mono@3.2.1/Century-Schoolbook-Monospace-BT.ttf",
+      "http_code": 200,
+      "available": true,
+      "family": "CentSchbook Mono BT",
+      "sha256": "137c1c1e8a782949f80b2855d231afb37e6927f407b5629737e5a4077111fe76",
+      "seconds": 0.026405
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubBatang-Bold.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPub Batang",
+      "sha256": "aca3dbb68fa1f09e9ea34753596a8dc7aec29cd15b9559d4ed1ece442fbc8542",
+      "seconds": 0.116361
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubBatang-Light.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPub Batang",
+      "sha256": "2e8500e2fca3501397620a8d3459bf927502989a2e1f5967d38c3f4e97c965b1",
+      "seconds": 0.09317
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubBatang-Medium.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPub Batang",
+      "sha256": "d88dc4aa42af7ff0f468ff4a33b64d8d21ad69a6cc7d505775edb928a3644466",
+      "seconds": 0.075709
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubDotum-Bold.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPubDotum Bold",
+      "sha256": "8935b31c9b49aac2cb81eaa1de931ae84645d92b72e905bb722f84857f0a9fc9",
+      "seconds": 0.083252
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubDotum-Light.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPubDotum Light",
+      "sha256": "697dd52dcdf4d294924fc0dd58ed82ec568bfa64f1a785ff5e3a35b67f5313fd",
+      "seconds": 0.084935
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubDotum-Medium.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPubDotum Medium",
+      "sha256": "16b8b274949c3382a0f68f85ed6b4143be19c5c3ddd003568d26f22cfc3ef9d8",
+      "seconds": 0.078936
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Batang-Bold.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPubWorldBatang_Pro",
+      "sha256": "c34427249d93ebdf7d0a7158e4ac4294958d8e9877a43a130dd09310f0a22bf6",
+      "seconds": 0.11291
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Batang-Light.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPubWorldBatang_Pro",
+      "sha256": "679e263af731c5a23bbe666d67cc1cc5ebed2a16c3985ed7879fce5b0d447ed9",
+      "seconds": 0.147191
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Batang-Medium.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPubWorldBatang_Pro",
+      "sha256": "3ce1a2bf7deb9184c83292c9bca9de46a995f19a37f443a6705d02b68b353a79",
+      "seconds": 0.139503
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Bold.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPubWorldDotum_Pro",
+      "sha256": "61a989ab282d34c898ef538911c07a4956370c624e10a082d44ef9cb32af93fe",
+      "seconds": 1.06056
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Light.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPubWorldDotum_Pro",
+      "sha256": "bc8cea5d8e4c4d82f631e40af09a7e7b92565b2124861c8387bea60dd5890417",
+      "seconds": 0.09508
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Medium.woff2",
+      "http_code": 200,
+      "available": true,
+      "family": "KoPubWorldDotum_Pro",
+      "sha256": "bfd1d33b00f75d13a92382c1bfac2464e1fb972c699f4f0a97290db3d959d3a4",
+      "seconds": 0.094345
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/futura-font@1.0.0/FuturaBT-Medium.ttf",
+      "http_code": 200,
+      "available": true,
+      "family": "Futura Md BT",
+      "sha256": "0b7756bba814ffd187abbf37d0c9dafa6083cd1d8a05ac94d16ffaf82ab6284a",
+      "seconds": 0.024999
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/helvetica-original@1.0.0/Black/Helvetica-Black.ttf",
+      "http_code": 200,
+      "available": true,
+      "family": null,
+      "sha256": "b89fbfc64a0600798c93e303fc4b40611f570233ad9008a633e2dcfe7a79564f",
+      "seconds": 0.04084
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/noto-sans-cjk-jp@1.0.1/fonts/NotoSansCJKjp-Regular.woff",
+      "http_code": 200,
+      "available": true,
+      "family": "Noto Sans CJK JP Regular",
+      "sha256": "cd581b5f837445d27fe099ae0a341d630cdb846d1679753acee335182cf0c852",
+      "seconds": 0.319653
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/react-native-font-sim@2.0.1/fonts/SimSun.ttf",
+      "http_code": 200,
+      "available": true,
+      "family": "SimSun",
+      "sha256": "ca4da082cd970f0c8abaa79f213ddcbc475f7b5afabcb81b385998f9ebfbb53f",
+      "seconds": 0.951515
+    }
+  ],
+  "handbook_source_evidence": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/webfont-handbook-response-audit.json",
+  "handbook_source_evidence_sha256": "5f4e47afea47fe3952b62f837ff44f83fd7ec2005a35b1a9d07d823a3508a627"
+}

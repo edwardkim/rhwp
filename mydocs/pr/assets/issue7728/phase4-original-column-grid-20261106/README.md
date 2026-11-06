@@ -1,5 +1,11 @@
 # #7728 — 저장 글줄과 원본 열 너비의 독립 소유
 
+`base-native-silhouette.tsv`와 `base-wasm-silhouette.tsv`는 보정 전 고정 devel `170b886f`의
+실패 증거다. 그 파일의 5·6·7·9·10쪽 미달은 보정 후 모두 90% 이상이며, 코드 `04f03cfa`에서도
+Native/fresh WASM 전 18쪽을 다시 확인했다. 최신 전쪽 값과 중요 회귀는
+[6단계 증적](../phase6-important-regressions-20261106/README.md)에 연결한다. 아래 각 단계의
+전체 회귀 실패·잔여 기록은 당시 이력이며 최종 상태는 해당 단계 이후의 검증과 구분한다.
+
 원본 `70833-electrical-safety-rule-regulatory-analysis.hwp`와 독립 한컴2020 Print PDF는
 이전 단계와 같은 바이트다. 원본·PDF·비교 문턱·기존 검사 기대값은 바꾸지 않았다.
 코드 부모는 `0be6d69ee75df4eb5ec657d09b264aaae109a108`, 적용 diff SHA-256은
