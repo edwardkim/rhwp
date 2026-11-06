@@ -283,6 +283,11 @@ impl NativeEditor {
             .map(|preview| {
                 let replacement =
                     plan_replacement(expected, &committed.result, &preview.replacement)?;
+                // The next context query validates this cancellation baseline
+                // too. A short preview can replace a span larger than either
+                // bounded input after the commit has expanded the context.
+                let original = scalar_text(&committed.result, replacement.scalars.clone());
+                check_text_bound(&original)?;
                 let selected = plan_selection(
                     expected,
                     &replacement.result,
@@ -294,7 +299,7 @@ impl NativeEditor {
                 self.check_next_ime_window(expected, &replacement.result, &selected, Some(span))?;
                 Ok::<_, NativeHostError>(PlannedPreedit {
                     range: replacement.range,
-                    original: scalar_text(&committed.result, replacement.scalars),
+                    original,
                     text: preview.replacement.text,
                     selection: selected,
                     changed: replacement.changed,

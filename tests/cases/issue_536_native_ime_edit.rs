@@ -7,7 +7,7 @@ use rhwp::document_core::native_interaction::{
 use rhwp::model::control::Control;
 use rhwp::native_host::editor::ime_edit::{
     NativeImeEdit, NativeImeEditContext, NativeImePreedit, NativeImeReplacement,
-    NativeImeUtf16Range, NativeImeUtf16Selection, MAX_IME_EDIT_BYTES,
+    NativeImeUtf16Range, NativeImeUtf16Selection, MAX_IME_EDIT_BYTES, MAX_IME_EDIT_SCALARS,
 };
 use rhwp::native_host::editor::NativeEditor;
 use rhwp::native_host::save::NativeSaveFormat;
@@ -453,6 +453,74 @@ fn native_ime_long_result_must_remain_representable_in_the_next_context() {
     assert_eq!(editor.selection(), &selected(2500, 2500));
     assert_eq!(editor.composition_id(), None);
     assert!(!editor.can_undo());
+}
+
+#[test]
+fn native_ime_new_preedit_must_keep_its_cancel_baseline_queryable() {
+    for (old, new) in [("a", "b"), ("😀", "😁")] {
+        let original = old.repeat(MAX_IME_EDIT_SCALARS);
+        let inserted = new.repeat(MAX_IME_EDIT_SCALARS);
+        let original_units = original.encode_utf16().count() as u32;
+        let inserted_units = inserted.encode_utf16().count() as u32;
+        let mut editor = editor(&original);
+        editor.replace_selection(0, "x").unwrap();
+        editor.undo(revision(&editor)).unwrap();
+        editor
+            .set_selection(revision(&editor), selected(7, 3))
+            .unwrap();
+        let id = editor
+            .begin_composition(revision(&editor))
+            .unwrap()
+            .composition_id
+            .unwrap();
+        let context = editor.ime_edit_context(revision(&editor)).unwrap();
+
+        // Both incoming strings and final preview fit the contract. The new
+        // preedit would still retain an oversized committed cancellation span,
+        // making the next context query fail after an otherwise accepted edit.
+        let edit = NativeImeEdit::Commit {
+            replacement: replace(0, 0, &inserted),
+            selection: None,
+            preedit: Some(NativeImePreedit {
+                replacement: replace(0, inserted_units + original_units, ""),
+                selection: None,
+            }),
+        };
+        assert!(matches!(
+            editor.apply_ime_edit(context.revision, &context, edit),
+            Err(NativeHostError::LimitExceeded(_))
+        ));
+        assert_eq!(text(&editor), original);
+        assert_eq!(editor.ime_edit_context(revision(&editor)).unwrap(), context);
+        editor.cancel_composition(revision(&editor), id).unwrap();
+        assert_eq!(editor.selection(), &selected(7, 3));
+        assert!(editor.can_redo());
+        assert!(!editor.can_undo());
+
+        // A bounded cancellation span remains valid even when the committed
+        // paragraph exceeds one context. Cancel preserves the commit and one
+        // undo restores the original reversed selection and text.
+        apply(
+            &mut editor,
+            NativeImeEdit::Commit {
+                replacement: replace(0, 0, &inserted),
+                selection: None,
+                preedit: Some(NativeImePreedit {
+                    replacement: replace(inserted_units, inserted_units + original_units, ""),
+                    selection: None,
+                }),
+            },
+        );
+        assert_eq!(text(&editor), inserted);
+        let context = editor.ime_edit_context(revision(&editor)).unwrap();
+        editor
+            .cancel_composition(context.revision, context.composition_id.unwrap())
+            .unwrap();
+        assert_eq!(text(&editor), format!("{inserted}{original}"));
+        editor.undo(revision(&editor)).unwrap();
+        assert_eq!(text(&editor), original);
+        assert_eq!(editor.selection(), &selected(7, 3));
+    }
 }
 
 #[test]
