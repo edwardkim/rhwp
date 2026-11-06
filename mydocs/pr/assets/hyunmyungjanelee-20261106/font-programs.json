@@ -1,0 +1,27 @@
+[
+  {
+    "source": "/home/edward/mygithub/ttfs/hamchod-r.ttf",
+    "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43",
+    "validation_only": true
+  },
+  {
+    "source": "/home/edward/mygithub/ttfs/hamchob-r.ttf",
+    "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85",
+    "validation_only": true
+  },
+  {
+    "source": "/home/edward/mygithub/ttfs/kopub/KoPub Dotum Light.ttf",
+    "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+    "validation_only": true
+  },
+  {
+    "source": "/home/edward/mygithub/ttfs/windows/gulim.ttc",
+    "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+    "validation_only": true
+  },
+  {
+    "source": "/home/edward/mygithub/ttfs/windows/arial.ttf",
+    "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1",
+    "validation_only": true
+  }
+]

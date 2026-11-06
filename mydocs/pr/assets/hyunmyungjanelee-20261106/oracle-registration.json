@@ -1,0 +1,13 @@
+{
+  "method": "same-directory canonical Desktop Print; exact input/PDF hashes in input-reference-pairs.json; source metadata selects 2020/2024; full PDF page count equals rendered complete document",
+  "new_rows": [
+    "samples/issue8513/textbox_floating_table_offset.hwpx\t1\t1",
+    "samples/issue8579/partial_table_control_only_para.hwp\t2\t2",
+    "samples/issue8584/short_row_grid_r21.hwpx\t1\t1",
+    "samples/issue8584/short_row_grid_r4.hwpx\t1\t1",
+    "samples/issue8594/bindata_link_shift.hwp\t1\t1",
+    "samples/issue8593/picture_soft_edge.hwp\t1\t1",
+    "samples/issue8513/textbox_floating_table_following_control.hwpx\t1\t1",
+    "samples/issue8579/partial_table_following_text.hwpx\t2\t2"
+  ]
+}

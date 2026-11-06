@@ -1,0 +1,9 @@
+{
+  "purpose": "Minimal wrong implementation bypasses the owner Storage only at the two new bounded grid consumers. All layout rules are retained.",
+  "source_origin": "current task source, isolated copy",
+  "changes": [
+    "fallback_paragraph_frame_owner_widths_with_storage uses Unbounded for new grid",
+    "closing_row_frames_with_storage uses Unbounded for new grid"
+  ],
+  "workspace_root": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/negative-storage-src"
+}

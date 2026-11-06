@@ -806,7 +806,7 @@ impl Table {
             storage.collect(self.cells.iter().map(|cell| to_i32(u64::from(cell.width))))?;
         // 칸 경계가 행마다 엇갈리는 표는 표 레이아웃이 하한 해 경계로 칸을 그린다.
         // 문단 줄 나눔도 같은 경계 폭을 써야 측정과 배치가 같은 줄 수를 낸다.
-        if let Some(widths) = self.contradictory_cell_widths_hu() {
+        if let Some(widths) = self.contradictory_cell_widths_hu_with_storage(storage)? {
             for (owner, width) in owners.iter_mut().zip(widths) {
                 *owner = width;
             }
@@ -924,17 +924,19 @@ impl Table {
     /// judged solely against its own cells and `common.width`. Such auxiliary
     /// widths cannot define the shared fallback grid.
     pub fn invalid_declared_width_rows(&self) -> std::collections::BTreeSet<u16> {
-        let tolerance =
-            (u64::from(self.common.width) / 100).max(usize::from(self.col_count).max(1) as u64);
-        self.declared_width_rows_exceeding(tolerance)
-    }
-
-    fn declared_width_rows_exceeding(&self, tolerance: u64) -> std::collections::BTreeSet<u16> {
-        match self.declared_width_rows_exceeding_with_storage(tolerance, &crate::storage::Unbounded)
-        {
+        match self.invalid_declared_width_rows_with_storage(&crate::storage::Unbounded) {
             Ok(value) => value,
             Err(never) => match never {},
         }
+    }
+
+    fn invalid_declared_width_rows_with_storage<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<std::collections::BTreeSet<u16>, S::Error> {
+        let tolerance =
+            (u64::from(self.common.width) / 100).max(usize::from(self.col_count).max(1) as u64);
+        self.declared_width_rows_exceeding_with_storage(tolerance, storage)
     }
 
     pub(crate) fn declared_width_rows_exceeding_with_storage<S: crate::storage::Storage>(

@@ -1,0 +1,362 @@
+[
+  {
+    "key": "textbox_floating_table_offset-saved-hwp",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 4198,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "textbox_floating_table_offset-saved-hwpx",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 4198,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "partial_table_control_only_para-saved-hwp",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 28008,
+        "tolerant_content_match_percent": 100.0
+      },
+      {
+        "page": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 12779,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "page_counts": {
+      "rhwp": 2,
+      "pdf": 2
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "partial_table_control_only_para-saved-hwpx",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 28008,
+        "tolerant_content_match_percent": 100.0
+      },
+      {
+        "page": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 12779,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "page_counts": {
+      "rhwp": 2,
+      "pdf": 2
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "short_row_grid_r21-saved-hwp",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.99034,
+        "silhouette_raw_unmatched_pixels": 4,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 41391,
+        "tolerant_content_match_percent": 99.99034
+      }
+    ],
+    "page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "short_row_grid_r21-saved-hwpx",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.99034,
+        "silhouette_raw_unmatched_pixels": 4,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 41391,
+        "tolerant_content_match_percent": 99.99034
+      }
+    ],
+    "page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "short_row_grid_r4-saved-hwp",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.96838,
+        "silhouette_raw_unmatched_pixels": 4,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 12652,
+        "tolerant_content_match_percent": 99.96838
+      }
+    ],
+    "page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "short_row_grid_r4-saved-hwpx",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.96838,
+        "silhouette_raw_unmatched_pixels": 4,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 12652,
+        "tolerant_content_match_percent": 99.96838
+      }
+    ],
+    "page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "bindata_link_shift-saved-hwp",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.98529,
+        "silhouette_raw_unmatched_pixels": 7,
+        "silhouette_boundary_reconciled_pixels": 7,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 47571,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "bindata_link_shift-saved-hwpx",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.98529,
+        "silhouette_raw_unmatched_pixels": 7,
+        "silhouette_boundary_reconciled_pixels": 7,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 47571,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "picture_soft_edge-saved-hwp",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.91617,
+        "silhouette_raw_unmatched_pixels": 40,
+        "silhouette_boundary_reconciled_pixels": 9,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 47713,
+        "tolerant_content_match_percent": 99.93503
+      }
+    ],
+    "page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "picture_soft_edge-saved-hwpx",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.91617,
+        "silhouette_raw_unmatched_pixels": 40,
+        "silhouette_boundary_reconciled_pixels": 9,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 47713,
+        "tolerant_content_match_percent": 99.93503
+      }
+    ],
+    "page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "textbox_floating_table_following_control-saved-hwp",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 5300,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "textbox_floating_table_following_control-saved-hwpx",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 5300,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "partial_table_following_text-saved-hwp",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 95.27771,
+        "silhouette_raw_unmatched_pixels": 1385,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 29329,
+        "tolerant_content_match_percent": 95.27771
+      },
+      {
+        "page": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 12779,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "page_counts": {
+      "rhwp": 2,
+      "pdf": 2
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "partial_table_following_text-saved-hwpx",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 95.27771,
+        "silhouette_raw_unmatched_pixels": 1385,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 29329,
+        "tolerant_content_match_percent": 95.27771
+      },
+      {
+        "page": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 12779,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "page_counts": {
+      "rhwp": 2,
+      "pdf": 2
+    },
+    "run_state": "complete"
+  }
+]

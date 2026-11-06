@@ -1,0 +1,16 @@
+{
+  "method": "bwrap",
+  "system_font_paths_hidden": [
+    "/usr/share/fonts",
+    "/usr/local/share/fonts"
+  ],
+  "home_font_paths": "not mounted",
+  "validation_fonts": [
+    "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+    "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+    "ttfs/opensource/NotoSansKR-Regular.ttf",
+    "ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+    "ttfs/opensource/RHWPOldHangul-Regular.otf"
+  ],
+  "normal_private_font_probe_visible": false
+}

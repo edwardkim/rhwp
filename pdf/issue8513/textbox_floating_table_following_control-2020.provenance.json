@@ -1,0 +1,16 @@
+{
+  "job_id": "1ba4d837-4eca-4928-b61a-56f7014c2ee1",
+  "status": "succeeded",
+  "engine": "2020",
+  "result": {
+    "engine": "2020",
+    "hancom_version": "11.0.0.9136",
+    "bytes": 10993,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+  },
+  "input": "samples/issue8513/textbox_floating_table_following_control.hwpx",
+  "input_sha256": "f891ac02a635a34d02d8d3649f5a4757350e5a15a4725a1c5760ece75bc15d71",
+  "pdf_sha256": "55afab8d0ba1233cff6a39cebe0cdea9d99ee5a7fdcbf8b28d6b2648a29e9bce",
+  "purpose": "maintainer public boundary control"
+}

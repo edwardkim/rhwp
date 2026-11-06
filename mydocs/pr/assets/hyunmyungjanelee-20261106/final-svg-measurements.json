@@ -1,0 +1,82 @@
+[
+  {
+    "key": "bindata_link_shift",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.98543,
+        "silhouette_raw_unmatched_pixels": 7,
+        "silhouette_boundary_reconciled_pixels": 7,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 48050,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "picture_soft_edge",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.94771,
+        "silhouette_raw_unmatched_pixels": 25,
+        "silhouette_boundary_reconciled_pixels": 8,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 47811,
+        "tolerant_content_match_percent": 99.96444
+      }
+    ],
+    "page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "textbox_floating_table_following_control",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 4682,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "run_state": "complete"
+  },
+  {
+    "key": "short_row_grid_r21",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 41875,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "run_state": "complete"
+  }
+]

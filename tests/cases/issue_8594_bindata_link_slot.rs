@@ -1,3 +1,12 @@
+//! 검사 유형: 관계형.
+//! 주석 갱신: 2026-11-06T11:54:54+09:00; 직전 파일 커밋: d60381eb473a3d56a47866b7ef2c124cd45f9e37 (2026-11-05T14:42:30+09:00).
+//! 2026-11-06 Visual Sweep: 96dpi·PDFium·색상 경계 보정 전 2px raw 실루엣.
+//! 같은 입력의 저장 버전에 맞는 Desktop Print(2020→compat 2022, 2024→compat 2024)와 대조.
+//! bindata_link_shift: 전 1쪽 Native 99.98529% / fresh optimized WASM 99.98529%; 전쪽 최저 99.98529% / 99.98529%.
+//! 증거: mydocs/pr/assets/hyunmyungjanelee-20261106/{native,wasm}-<입력-stem>.tsv,
+//! input-reference-pairs.json·측정 JSON·대표 PNG 및 해당 원 PR review 문서.
+//! Native/fresh WASM의 직접 확대 판독과 입력·PDF·제품 해시는 공통 기록에 연결한다.
+//!
 //! [#8594] HWP5 BinData 연결(Link) 레코드 뒤 그림이 다른 그림을 그리거나 사라지던
 //! 결함의 회귀 가드.
 //!

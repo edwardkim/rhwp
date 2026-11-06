@@ -1,0 +1,9 @@
+{
+  "mutation": "only two bounded grid consumers use Unbounded; source isolated under output, no change to review worktree",
+  "negative_decoded_bytes": 3000653,
+  "fixed_input_cap": 3065060,
+  "corrected_decoded_bytes": 3065061,
+  "negative_formal_test_exit": 101,
+  "positive_formal_test_result": "3 passed in isolated issue_8584 module, same public PdfImportSession handoff",
+  "process_memory_guarantee": false
+}

@@ -1,4 +1,13 @@
-//! 검사 유형: 관계형.
+//! 검사 유형: 관계형·고정형.
+//! 주석 갱신: 2026-11-06T11:54:54+09:00; 직전 파일 커밋: c4d0fe74575279b26592f8a22008a5abbbbd923c (2026-11-03T16:32:02+09:00).
+//! 2026-11-06 Visual Sweep: 96dpi·PDFium·색상 경계 보정 전 2px raw 실루엣.
+//! 같은 입력의 저장 버전에 맞는 Desktop Print(2020→compat 2022, 2024→compat 2024)와 대조.
+//! textbox_floating_table_offset: 전 1쪽 Native 100.00000% / fresh optimized WASM 100.00000%; 전쪽 최저 100.00000% / 100.00000%.
+//! textbox_floating_table_following_control: 전 1쪽 Native 100.00000% / fresh optimized WASM 100.00000%; 전쪽 최저 100.00000% / 100.00000%.
+//! 증거: mydocs/pr/assets/hyunmyungjanelee-20261106/{native,wasm}-<입력-stem>.tsv,
+//! input-reference-pairs.json·측정 JSON·대표 PNG 및 해당 원 PR review 문서.
+//! Native/fresh WASM의 직접 확대 판독과 입력·PDF·제품 해시는 공통 기록에 연결한다.
+//!
 //!
 //! 글상자 안에서 글자처럼 취급하지 않는 '글앞으로' 표는 자기 가로·세로 오프셋 자리에 놓인다.
 //!
@@ -89,4 +98,32 @@ fn floating_table_in_textbox_keeps_its_offsets() {
         title.x,
         title.x + title.width
     );
+}
+
+#[test]
+fn floating_table_paint_does_not_advance_the_following_inline_table() {
+    fn table_with_text<'a>(node: &'a RenderNode, text: &str) -> Option<&'a RenderNode> {
+        if matches!(node.node_type, RenderNodeType::Table(_)) && run_box(node, text).is_some() {
+            return Some(node);
+        }
+        node.children
+            .iter()
+            .find_map(|child| table_with_text(child, text))
+    }
+    let core = DocumentCore::from_bytes(include_bytes!(
+        "../../samples/issue8513/textbox_floating_table_following_control.hwpx"
+    ))
+    .unwrap();
+    let tree = core.build_page_render_tree(0).unwrap();
+    let floating = table_with_text(&tree.root, "BOX").unwrap().bbox;
+    let following = table_with_text(&tree.root, "FOLLOW").unwrap().bbox;
+    let title = run_box(&tree.root, "TITLE").unwrap();
+    let body = run_box(&tree.root, "BODY").unwrap();
+    // Independent Desktop Print puts FOLLOW beneath TITLE, to the left of
+    // BOX, with its top above BOX's bottom. Paint and body flow stay separate.
+    assert!(following.y >= title.y + title.height);
+    assert!(following.x + following.width < floating.x);
+    assert!(following.y < floating.y + floating.height);
+    assert!(body.y >= following.y + following.height);
+    assert!(body.y >= floating.y + floating.height);
 }

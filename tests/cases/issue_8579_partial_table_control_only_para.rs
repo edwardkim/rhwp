@@ -1,3 +1,13 @@
+//! 검사 유형: 관계형·고정형.
+//! 주석 갱신: 2026-11-06T11:54:54+09:00; 직전 파일 커밋: bf7a74526f6ff3290a1672ffee5bb86e3cb741a8 (2026-11-04T21:00:19+09:00).
+//! 2026-11-06 Visual Sweep: 96dpi·PDFium·색상 경계 보정 전 2px raw 실루엣.
+//! 같은 입력의 저장 버전에 맞는 Desktop Print(2020→compat 2022, 2024→compat 2024)와 대조.
+//! partial_table_control_only_para: 전 2쪽 Native 100.00000%,100.00000% / fresh optimized WASM 100.00000%,100.00000%; 전쪽 최저 100.00000% / 100.00000%.
+//! partial_table_following_text: 전 2쪽 Native 95.27771%,100.00000% / fresh optimized WASM 95.18540%,100.00000%; 전쪽 최저 95.27771% / 95.18540%.
+//! 증거: mydocs/pr/assets/hyunmyungjanelee-20261106/{native,wasm}-<입력-stem>.tsv,
+//! input-reference-pairs.json·측정 JSON·대표 PNG 및 해당 원 PR review 문서.
+//! Native/fresh WASM의 직접 확대 판독과 입력·PDF·제품 해시는 공통 기록에 연결한다.
+//!
 //! #8579: 쪽 나눔 표 경로의 저장 줄 없는 개체 전용 칸 문단.
 //!
 //! HWP5 칸 문단이 글자 없이 개체만 들고 `LINE_SEG` 가 없으면 줄 수가 0 이다.

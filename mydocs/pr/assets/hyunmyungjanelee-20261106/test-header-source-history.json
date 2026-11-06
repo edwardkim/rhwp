@@ -1,0 +1,27 @@
+[
+  {
+    "file": "tests/cases/issue_8513_textbox_floating_table_offset.rs",
+    "previous_commit": "c4d0fe74575279b26592f8a22008a5abbbbd923c",
+    "previous_commit_time": "2026-11-03T16:32:02+09:00"
+  },
+  {
+    "file": "tests/cases/issue_8579_partial_table_control_only_para.rs",
+    "previous_commit": "bf7a74526f6ff3290a1672ffee5bb86e3cb741a8",
+    "previous_commit_time": "2026-11-04T21:00:19+09:00"
+  },
+  {
+    "file": "tests/cases/issue_8584_short_row_column_boundary.rs",
+    "previous_commit": "910d4e96208fdc8acd5419a2baba3321c7174f42",
+    "previous_commit_time": "2026-11-05T05:12:52+09:00"
+  },
+  {
+    "file": "tests/cases/issue_8593_picture_soft_edge_dim.rs",
+    "previous_commit": "88f902646a4f0fa4dee822821a27fb848e50cdb3",
+    "previous_commit_time": "2026-11-06T09:26:03+09:00"
+  },
+  {
+    "file": "tests/cases/issue_8594_bindata_link_slot.rs",
+    "previous_commit": "d60381eb473a3d56a47866b7ef2c124cd45f9e37",
+    "previous_commit_time": "2026-11-05T14:42:30+09:00"
+  }
+]

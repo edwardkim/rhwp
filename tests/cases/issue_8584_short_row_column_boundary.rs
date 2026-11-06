@@ -1,3 +1,13 @@
+//! 검사 유형: 관계형·고정형.
+//! 주석 갱신: 2026-11-06T11:54:54+09:00; 직전 파일 커밋: 910d4e96208fdc8acd5419a2baba3321c7174f42 (2026-11-05T05:12:52+09:00).
+//! 2026-11-06 Visual Sweep: 96dpi·PDFium·색상 경계 보정 전 2px raw 실루엣.
+//! 같은 입력의 저장 버전에 맞는 Desktop Print(2020→compat 2022, 2024→compat 2024)와 대조.
+//! short_row_grid_r21: 전 1쪽 Native 99.99030% / fresh optimized WASM 100.00000%; 전쪽 최저 99.99030% / 100.00000%.
+//! short_row_grid_r4: 전 1쪽 Native 99.99207% / fresh optimized WASM 100.00000%; 전쪽 최저 99.99207% / 100.00000%.
+//! 증거: mydocs/pr/assets/hyunmyungjanelee-20261106/{native,wasm}-<입력-stem>.tsv,
+//! input-reference-pairs.json·측정 JSON·대표 PNG 및 해당 원 PR review 문서.
+//! Native/fresh WASM의 직접 확대 판독과 입력·PDF·제품 해시는 공통 기록에 연결한다.
+//!
 //! #8584: 짧은 행의 칸은 다른 행이 고정한 열 경계 뒤까지 넓어진다.
 //!
 //! 재현물은 공개 샘플(test-image.hwpx, issue3738)로 만든 23열 표다. 0행 머리 칸
@@ -136,5 +146,45 @@ fn control_without_fixing_row_keeps_declared_head_cell() {
         text_lines(head.node),
         2,
         "대조군 머리 칸의 글은 한컴처럼 두 줄로 꺾인다"
+    );
+}
+
+#[test]
+#[cfg(all(feature = "pdf-import", target_pointer_width = "64"))]
+fn contradictory_grid_reopen_refuses_the_remaining_request_budget_and_recovers() {
+    use rhwp::{parser::pdf::PdfImportPolicy, PdfImportSession};
+    const SOURCE: &[u8] = include_bytes!("../../samples/issue8584/short_row_grid_r21.hwpx");
+    let mut healthy = PdfImportSession::new(PdfImportPolicy::default()).unwrap();
+    let expected = healthy.reopen_hwpx_export(SOURCE, 1024 * 1024).unwrap();
+    let used = healthy.resource_usage().decoded_bytes;
+    // Native 64-bit, minimal-font corrected public reopen used 3,065,061
+    // decoded bytes. An input policy one byte below that observation must
+    // refuse. Later producers may reject earlier; this is not a counter pin.
+    let cap = 3_065_061 - 1;
+    assert!(
+        used > cap,
+        "contradictory grid scratch bypassed the request"
+    );
+    let mut policy = PdfImportPolicy::default();
+    policy.backend.decoded_bytes = cap;
+    let mut refused = PdfImportSession::new(policy).unwrap();
+    let error = refused
+        .reopen_hwpx_export(SOURCE, 1024 * 1024)
+        .err()
+        .unwrap();
+    assert!(error.to_string().contains("PDF_RESOURCE_LIMIT:"), "{error}");
+    let failed = refused.resource_usage();
+    assert!(failed.failure.is_some());
+    assert!(failed.decoded_bytes <= cap);
+    assert!(refused.reopen_hwpx_export(SOURCE, 1024 * 1024).is_err());
+    assert_eq!(refused.resource_usage().decoded_bytes, failed.decoded_bytes);
+    let mut policy = PdfImportPolicy::default();
+    policy.backend.decoded_bytes = used;
+    let mut fresh = PdfImportSession::new(policy).unwrap();
+    let actual = fresh.reopen_hwpx_export(SOURCE, 1024 * 1024).unwrap();
+    assert_eq!(actual.page_count(), expected.page_count());
+    assert_eq!(
+        actual.export_hwpx_native().unwrap(),
+        expected.export_hwpx_native().unwrap()
     );
 }

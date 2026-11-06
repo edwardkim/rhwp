@@ -3817,6 +3817,7 @@ impl LayoutEngine {
 
         let flow_first_child = textbox_node.children.len();
         let flow_first_border_range = self.para_border_ranges.borrow().len();
+        let mut paragraph_origins = Vec::with_capacity(composed_paras.len());
         let mut para_y = inner_area.y + vert_offset;
         for (tb_para_idx, composed) in composed_paras.iter().enumerate() {
             // vpos 기반 수직 위치: 원본 HWP 파일에서는 vertical_pos가 누적 절대값,
@@ -3829,6 +3830,7 @@ impl LayoutEngine {
                     + textbox_vpos_px(first_ls.vertical_pos, textbox_vpos_origin_hu, self.dpi);
                 para_y = vpos_y.max(para_y);
             }
+            paragraph_origins.push(para_y);
             // [#6651] 글자처럼 개체 폭 합을 첫 줄 글자 오프셋(`first_line_x_offset`)으로
             // 넘기지 않는다. 그 오프셋은 "개체를 문단 시작에 놓고 글자를 뒤에" 두던 옛
             // 모델의 것이고, 지금은 `layout_composed_paragraph` 의 `run_tacs` 분기가 개체의
@@ -3888,6 +3890,9 @@ impl LayoutEngine {
                 _ => free_space,
             };
             if vert_offset > 0.0 {
+                for origin in &mut paragraph_origins {
+                    *origin += vert_offset;
+                }
                 for node in &mut textbox_node.children[flow_first_child..] {
                     Self::translate_subtree_y(node, vert_offset);
                 }
@@ -3927,18 +3932,9 @@ impl LayoutEngine {
 
         let mut inline_y = inner_area.y + vert_offset; // 텍스트 영역 시작 위치
         for (pi, para) in textbox_paragraphs[..para_count].iter().enumerate() {
-            // 이 문단에 해당하는 composed 문단의 시작 y 위치 계산
-            let para_start_y = if pi < composed_paras.len() {
-                if let Some(first_seg) = para.line_segs.first() {
-                    inner_area.y
-                        + vert_offset
-                        + textbox_vpos_px(first_seg.vertical_pos, textbox_vpos_origin_hu, self.dpi)
-                } else {
-                    inline_y
-                }
-            } else {
-                inline_y
-            };
+            // 글과 개체가 같은 실제 문단 배치 결과를 소비한다. 떠 있는 개체의
+            // paint 끝을 다음 문단 원점으로 사용하면 글 흐름과 소유가 갈라진다.
+            let para_start_y = paragraph_origins[pi];
 
             // 문단 정렬 조회
             let para_alignment = if pi < composed_paras.len() {
@@ -4584,6 +4580,23 @@ impl LayoutEngine {
                             table.outer_margin_top,
                             self.dpi,
                         );
+                        let table_ctx = CellContext {
+                            in_textbox: true,
+                            parent_para_index: para_index,
+                            path: table_enclosing_path.clone(),
+                        };
+                        let inline_origin = table
+                            .common
+                            .treat_as_char
+                            .then(|| {
+                                tree.get_inline_shape_position(
+                                    section_index,
+                                    pi,
+                                    ctrl_idx_in_para,
+                                    Some(&table_ctx),
+                                )
+                            })
+                            .flatten();
                         let table_inline_x = if table.common.treat_as_char {
                             advance_to_control(&mut inline_x);
                             let x =
@@ -4591,18 +4604,24 @@ impl LayoutEngine {
                             inline_x += hwpunit_to_px(table.flow_width_hu() as i32, self.dpi)
                                 + hwpunit_to_px(table.outer_margin_left as i32, self.dpi)
                                 + hwpunit_to_px(table.outer_margin_right as i32, self.dpi);
-                            Some(x)
+                            Some(inline_origin.map_or(x, |(x, _)| x))
                         } else {
                             floating_offset.map(|(dx, _)| inner_area.x + dx)
                         };
                         let dy = floating_offset.map_or(0.0, |(_, dy)| dy);
-                        inline_y = self.layout_embedded_table(
+                        let fallback_y = if table.common.treat_as_char {
+                            inline_obj_y + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
+                        } else {
+                            para_start_y + dy
+                        };
+                        let table_y = inline_origin.map_or(fallback_y, |(_, y)| y);
+                        let table_bottom = self.layout_embedded_table(
                             tree,
                             &mut textbox_node,
                             table,
                             styles,
                             &inner_area,
-                            para_start_y + dy,
+                            table_y,
                             Some((
                                 section_index,
                                 para_index,
@@ -4613,6 +4632,14 @@ impl LayoutEngine {
                             host_align,
                             table_inline_x,
                         );
+                        if table.common.treat_as_char
+                            || !matches!(
+                                table.common.text_wrap,
+                                TextWrap::InFrontOfText | TextWrap::BehindText
+                            )
+                        {
+                            inline_y = table_bottom;
+                        }
                     }
                     _ => {}
                 }
