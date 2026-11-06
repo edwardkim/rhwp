@@ -1179,7 +1179,15 @@ impl LayoutEngine {
         para: &'a Paragraph,
         selected: &std::ops::Range<usize>,
     ) -> Option<&'a crate::model::table::Table> {
-        let [Control::Table(table)] = para.controls.as_slice() else {
+        // [#8657] 각주 번호(자동 번호 컨트롤)는 같은 호스트 줄의 번호이지 표와 다투는
+        // 내용이 아니다. 번호 컨트롤을 빼고 표 하나만 남으면 같은 블록 표 경로로 그린다.
+        // 종전에는 `[표]` 단독만 받아, `[자동 번호, 표]` 각주는 영역 높이만 예약하고
+        // 표를 통째로 빠뜨렸다(docs#889 1쪽 각주 1) 13행 표).
+        let mut content = para
+            .controls
+            .iter()
+            .filter(|control| !matches!(control, Control::AutoNumber(_)));
+        let (Some(Control::Table(table)), None) = (content.next(), content.next()) else {
             return None;
         };
         if selected.start != 0
@@ -1204,7 +1212,8 @@ impl LayoutEngine {
             // as a block by that path. The note must consume the same owned line
             // rather than reserving its height while dropping its table.
             if para.stored_text_partition_is_dirty()
-                || !Self::tac_stored_band_is_outer_box(para, table)
+                || !(Self::tac_stored_band_is_outer_box(para, table)
+                    || Self::footnote_sole_line_is_table_box(para, table))
                 || crate::renderer::height_measurer::is_tac_table_inline_in_para(
                     table, seg_width, para,
                 )
@@ -1213,6 +1222,20 @@ impl LayoutEngine {
             }
         }
         Some(table)
+    }
+
+    /// [#8657] 바깥 여백이 0 인 표는 공용 밴드 판정(`tac_stored_band_is_outer_box`)이 쓰는
+    /// 여백 등식이 없다. 각주의 유일한 저장 줄 높이가 표 바깥 상자와 정확히 같으면 그 줄은
+    /// 표가 통째로 소유한다(docs#889 각주 1): 줄 18480HU = 표 18480HU + 여백 0).
+    fn footnote_sole_line_is_table_box(
+        para: &Paragraph,
+        table: &crate::model::table::Table,
+    ) -> bool {
+        matches!(para.line_segs.as_slice(), [line]
+            if i64::from(line.line_height)
+                == i64::from(table.common.height.min(i32::MAX as u32))
+                    + i64::from(table.outer_margin_top)
+                    + i64::from(table.outer_margin_bottom))
     }
 
     fn footnote_block_table_frame<'a>(
@@ -1247,7 +1270,11 @@ impl LayoutEngine {
         let top_offset = if table.common.treat_as_char {
             // Same stored-band producer as the body TAC path. The verified
             // saved line contains the top/table/bottom outer box.
-            self.tac_table_stored_outer_band_top(para, table, body_height, 0.0)?
+            self.tac_table_stored_outer_band_top(para, table, body_height, 0.0)
+                .or_else(|| {
+                    Self::footnote_sole_line_is_table_box(para, table)
+                        .then(|| hwpunit_to_px(table.outer_margin_top as i32, self.dpi))
+                })?
         } else {
             hwpunit_to_px(table.common.vertical_offset as i32, self.dpi)
                 + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
@@ -1656,6 +1683,7 @@ impl LayoutEngine {
                 if let Some(block) = placement.block_table {
                     y += placement.spacing.before;
                     let anchor_y = y;
+                    let children_before_number = fn_node.children.len();
                     if placement.route == FootnoteParagraphRoute::Numbered {
                         // 번호와 표는 같은 호스트 줄에 속한다. 번호 줄의 높이를
                         // 표 아래에 다시 더하지 않고 공통 advance에 포함한다.
@@ -1694,6 +1722,62 @@ impl LayoutEngine {
                         number_drawn = true;
                     }
                     let style = styles.para_styles.get(composed.para_style_id as usize);
+                    // [#8657] 글자처럼 취급 표는 같은 줄의 번호와 그 뒤 글자 다음에 놓인다
+                    // (docs#889 각주 `[번호] 빈칸 [표]`: 한/글 「1)」 85.1~92.9pt, 표는 그 뒤).
+                    // 방금 그린 번호 글자의 끝에 표 앞 실제 글자(번호 자리 제외) 폭을 더한다.
+                    fn number_right(node: &RenderNode, number: &str) -> f64 {
+                        let own = match &node.node_type {
+                            RenderNodeType::TextRun(run)
+                                if !number.is_empty() && run.text.contains(number) =>
+                            {
+                                node.bbox.x + node.bbox.width
+                                    - run.text.split(number).last().map_or(0.0, |tail| {
+                                        node.bbox.width * tail.chars().count() as f64
+                                            / run.text.chars().count().max(1) as f64
+                                    })
+                            }
+                            _ => f64::MIN,
+                        };
+                        node.children
+                            .iter()
+                            .map(|child| number_right(child, number))
+                            .fold(own, f64::max)
+                    }
+                    let number_line_right = (placement.route == FootnoteParagraphRoute::Numbered
+                        && block.table.common.treat_as_char)
+                        .then(|| {
+                            let right = fn_node.children[children_before_number..]
+                                .iter()
+                                .map(|child| number_right(child, number_text.trim()))
+                                .fold(f64::MIN, f64::max);
+                            let positions = para.control_text_positions();
+                            let position_of = |wanted: fn(&Control) -> bool| {
+                                para.controls
+                                    .iter()
+                                    .position(wanted)
+                                    .and_then(|index| positions.get(index).copied())
+                            };
+                            let table_pos =
+                                position_of(|control| matches!(control, Control::Table(_)))
+                                    .unwrap_or(0);
+                            let number_pos =
+                                position_of(|control| matches!(control, Control::AutoNumber(_)));
+                            let before: String = para
+                                .text
+                                .chars()
+                                .enumerate()
+                                .take(table_pos)
+                                .filter(|(index, _)| Some(*index) != number_pos)
+                                .map(|(_, ch)| ch)
+                                .collect();
+                            let char_shape = para.char_shape_id_at(table_pos).unwrap_or(base_cs_id);
+                            right
+                                + estimate_text_width(
+                                    &before,
+                                    &resolved_to_text_style(styles, char_shape, 0),
+                                )
+                        })
+                        .filter(|right| right.is_finite() && *right > 0.0);
                     self.layout_table(
                         tree,
                         fn_node,
@@ -1719,7 +1803,10 @@ impl LayoutEngine {
                         false,
                         0.0,
                         Some((
-                            block.line_left_offset.map(|offset| fn_area.x + offset),
+                            block.line_left_offset.map(|offset| {
+                                let left = fn_area.x + offset;
+                                number_line_right.map_or(left, |right| left.max(right))
+                            }),
                             anchor_y + block.top_offset,
                         )),
                         Self::standalone_table_char_border_fill(Some(para), block.table, styles),
