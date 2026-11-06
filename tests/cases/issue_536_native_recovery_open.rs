@@ -25,7 +25,7 @@ fn run(runtime: &mut NativeRuntime, command: Command) -> Result<Output, String> 
     loop {
         if let Some(completion) = runtime.try_recv().unwrap() {
             assert_eq!(completion.request_id, request);
-            return completion.result.map_err(|error| error.to_string());
+            return completion.result.map_err(|error| error.message);
         }
         assert!(Instant::now() < deadline, "recovery worker deadline");
         thread::sleep(Duration::from_millis(2));
