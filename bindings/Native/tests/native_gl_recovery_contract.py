@@ -7,9 +7,12 @@ hardware-loss injection or a certification of driver VRAM reclamation.
 
 import argparse
 import ctypes
+import io
 import json
 from pathlib import Path
 import sys
+import xml.etree.ElementTree as ET
+import zipfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "examples"))
 from native_gl import NativeGlPresenter
@@ -127,7 +130,39 @@ def compare(cpu, gpu, width, height, opaque_pages):
             "boundaryMaxDifference": max((abs(a - b) for a, b in zip(cpu, gpu)), default=0)}
 
 
+def quality_document(document):
+    """Keep the picture/table corpus and add an unambiguous editable tail.
+
+    The source fixture has only a top-level paragraph containing an inline
+    table. Its initial caret has object affinity, which scalar editing rejects.
+    A separate ordinary paragraph lets the public editor create distinct text
+    pages without changing or dropping that original rendering control.
+    """
+    output = io.BytesIO()
+    with zipfile.ZipFile(io.BytesIO(document)) as source, zipfile.ZipFile(output, "w") as target:
+        for entry in source.infolist():
+            data = source.read(entry.filename)
+            if entry.filename == "Contents/section0.xml":
+                for _, (prefix, uri) in ET.iterparse(io.BytesIO(data), events=["start-ns"]):
+                    ET.register_namespace(prefix, uri)
+                root = ET.fromstring(data)
+                namespace = "{http://www.hancom.co.kr/hwpml/2011/paragraph}"
+                paragraphs = root.findall(namespace + "p")
+                assert paragraphs, "quality corpus must contain a top-level paragraph"
+                paragraph_index = len(paragraphs)
+                identifiers = [int(node.get("id", "0")) for node in root.iter(namespace + "p")]
+                attributes = dict(paragraphs[-1].attrib, id=str(max(identifiers) + 1),
+                                  pageBreak="0", columnBreak="0")
+                paragraph = ET.SubElement(root, namespace + "p", attributes)
+                run = ET.SubElement(paragraph, namespace + "run", {"charPrIDRef": "0"})
+                ET.SubElement(run, namespace + "t")
+                data = ET.tostring(root, encoding="utf-8", xml_declaration=True)
+            target.writestr(entry, data)
+    return output.getvalue(), paragraph_index
+
+
 def run(library, document):
+    document, paragraph_index = quality_document(document)
     retained, verification_readbacks, metrics = [], 0, []
     reference_frames = 0
     with NativeWorker(library) as worker:
@@ -135,7 +170,7 @@ def run(library, document):
         assert opened["ok"], opened
         info = opened["info"]
         target_id = {"documentId": info["documentId"], "revision": info["revision"]}
-        caret = {"section": 0, "paragraph": 0, "scalarOffset": 0, "cellPath": []}
+        caret = {"section": 0, "paragraph": paragraph_index, "scalarOffset": 0, "cellPath": []}
         accepted(worker, {"op": "beginEdit", "target": target_id,
                           "selection": {"anchor": caret, "focus": caret}})
         accepted(worker, {"op": "pasteText", "target": target_id,
