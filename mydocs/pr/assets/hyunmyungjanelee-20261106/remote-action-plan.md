@@ -1,6 +1,6 @@
-# 원격 처리 계획 — 로컬 검증 완료·승인 대기
+# 원격 처리 계획 — 사용자 승인 완료·실행 단계
 
-대상은 #8515·#8599·#8608·#8631·#8656이다. 원 fork `kidsnote/rhwp`의 실제 push 권한이 없으므로 본 저장소의 `review/integration-20261106-hyunmyungjanelee`에 원 기여 SHA를 보존한 후보를 올리고 devel 대상 통합 Open PR로 처리한다. 원 PR 브랜치와 fork는 변경하거나 삭제하지 않는다. 현재 push·공개 댓글·PR 생성·merge 승인은 없다. 로컬 필수 검증은 완료했으며 #8599의 기존 차이에 한정한 수용 예외와 원격 범위 결정을 기다린다.
+대상은 #8515·#8599·#8608·#8631·#8656이다. 원 fork `kidsnote/rhwp`의 실제 push 권한이 없으므로 본 저장소의 `review/integration-20261106-hyunmyungjanelee`에 원 기여 SHA를 보존한 후보를 올리고 devel 대상 통합 Open PR로 처리한다. 원 PR 브랜치와 fork는 변경하거나 삭제하지 않는다. 로컬 필수 검증 완료 뒤 작업지시자가 기존 차이 한정 예외와 push·Open PR·새 head CI·self-review·merge·원 PR 완료·댓글·운영 기록·동기화·정리를 승인했다. remote-approval.json을 따른다.
 
 1. 로컬 필수 검증의 완료와 후보 SHA를 확정하고 사용자에게 통합 branch push·Open PR·새 head CI·self-review·merge 및 아래 후속 범위를 함께 제시한다. 성공하지 않은 항목을 CI로 넘기지 않는다.
 2. 승인 뒤 최신 원 PR head, upstream/devel, 본인 계정의 reviewer 없는 Open PR을 재조회한다. 원 head가 바뀌면 기존 검증을 새 head에 그대로 적용하지 않는다. 변경된 기준은 실제 merge-tree와 기능 보존으로 대조한다.
@@ -11,4 +11,4 @@
 7. 각 원 PR에 한국어 존댓말로 감사·수용 범위·보정·실제 검증과 devel에 존재하는 시각 asset URL을 게시한다. 문서별/페이지별 증거가 해당 PR과 일치하는지 확인한다.
 8. 필수 후속 처리가 끝나면 이번 작업 전용 branch·두 worktree·임시 upstream head를 안전 조건에 따라 정리한다. 루트 output 전체와 기본 target/pr-review/debug는 사용 종료 후 정리한다. 다른 작업 worktree와 contributor fork는 보존한다.
 
-이 문서는 실행 승인이나 완료 판정이 아니다. 최종 검증 결과는 final-validation.md에 있다. 원격 처리는 사용자 승인 뒤에만 수행한다.
+승인된 원격 범위와 실제 완료를 구분한다. 최종 로컬 검증은 final-validation.md에 있으며 새 head GitHub CI 성공을 확인하기 전에는 병합하지 않는다.

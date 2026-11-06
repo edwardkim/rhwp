@@ -1,0 +1,31 @@
+{
+  "recorded_utc": "2026-11-06T05:01:41.675811+00:00",
+  "user_decision": "기존 차이 한정 예외·5건 원격 처리 승인",
+  "approved_candidate": "07f672be60703b97ebfe5f31726ce463a291a638",
+  "product_src_tree": "c1ea19fbc94dd6aac77d4368755b6da5a9544e42",
+  "original_prs": [
+    8515,
+    8599,
+    8608,
+    8631,
+    8656
+  ],
+  "exception": {
+    "pr": 8599,
+    "scope": "최신 devel과 동일한 기존 그림 뒤 본문 겹침만 수용 예외. 새 회귀는 포함하지 않는다.",
+    "keep_open_issue": 8579
+  },
+  "remote_scope": [
+    "upstream 통합 branch push",
+    "Open PR 생성",
+    "새 head CI 확인",
+    "self-review",
+    "merge commit으로 병합",
+    "원 PR 5건 완료 반영",
+    "감사 댓글",
+    "운영 기록 반영",
+    "devel 동기화",
+    "작업 전용 branch/worktree/output/debug 정리"
+  ],
+  "workflow_cancel_rerun": "이번 승인은 임의 취소·재실행 승인을 추가하지 않는다. 필요 시 운영 규칙에 따라 확인한다."
+}

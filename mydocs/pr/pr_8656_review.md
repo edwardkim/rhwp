@@ -32,6 +32,6 @@
 
 ## 원격 범위
 
-현재 사용자 승인은 이 기여자 PR의 묶음 처리다. reviewer 지정 외의 공개 댓글·push·새 PR·merge는 아직 수행하지 않았다. 로컬 결과와 원 PR별 판정이 확정되면 구체적인 통합/후속 댓글 범위를 승인 대상으로 제시한다.
+작업지시자가 기존 차이 한정 예외·통합 branch push·Open PR·새 head CI·self-review·merge·원 PR 완료·감사 댓글·운영 기록·devel 동기화·정리를 승인했다. [승인 기록](assets/hyunmyungjanelee-20261106/remote-approval.json)에 범위를 고정했다. CI 및 원격 실행의 실제 완료는 별도로 기록한다.
 
 최종 제출·후속 범위는 [원격 처리안](assets/hyunmyungjanelee-20261106/remote-action-plan.md)에 기록했다. 원 fork에는 push 권한이 없어 원 기여 SHA를 보존하는 upstream 통합 PR 경로를 제안한다.
