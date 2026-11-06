@@ -130,13 +130,6 @@ fn is_placement_fill_mode(mode: crate::model::style::ImageFillMode) -> bool {
     )
 }
 
-fn textbox_has_visible_text(text_box: &TextBox) -> bool {
-    text_box
-        .paragraphs
-        .iter()
-        .any(|para| para.text.chars().any(|ch| !ch.is_whitespace()))
-}
-
 fn textbox_contains_non_tac_picture(text_box: &TextBox) -> bool {
     text_box.paragraphs.iter().any(|para| {
         para.controls
@@ -172,9 +165,6 @@ fn textbox_vpos_px(vertical_pos: i32, origin_hu: Option<i32>, dpi: f64) -> f64 {
     hwpunit_to_px(normalize_textbox_vpos_hu(vertical_pos, origin_hu), dpi)
 }
 
-/// #1681 편람 글상자에 도입된 경험적 보정을 텍스트가 있는 글상자에만 유지한다.
-/// 글상자 포함 여부와 비인쇄 여부는 별개이며 이 조건은 포맷의 일반 비인쇄 규칙이 아니다.
-/// #6852: 일반 도형의 흰색 채우기를 마스크로 추정하면 명시된 실선까지 소실된다.
 /// 글상자 안 글앞으로/글뒤로 표의 (가로, 세로) 오프셋(px). 오프셋에 표 바깥 여백(왼쪽·위)을 더한다.
 /// 가로 단·문단 기준 왼쪽 정렬, 세로 문단 기준만 다룬다. 그 밖의 배치는 None 이며 기존처럼 문단 정렬로 놓는다.
 fn textbox_floating_table_offset_px(
@@ -200,29 +190,6 @@ fn textbox_floating_table_offset_px(
                 / HWPUNIT_PER_INCH,
         )
     })
-}
-
-fn should_suppress_group_textbox_construction_stroke(drawing: &DrawingObjAttr) -> bool {
-    let Some(text_box) = drawing.text_box.as_ref() else {
-        return false;
-    };
-    if drawing.caption.is_some() {
-        return false;
-    }
-    let sa = &drawing.shape_attr;
-    let has_rotation_or_shear = sa.render_b.abs() > 1e-6 || sa.render_c.abs() > 1e-6;
-    if sa.group_level == 0 || has_rotation_or_shear {
-        return false;
-    }
-    let line = &drawing.border_line;
-    let line_type = line.attr & 0x3f;
-    if line_type != 1 || line.color != 0 || line.width <= 0 || line.width > 40 {
-        return false;
-    }
-    textbox_has_visible_text(text_box)
-        && drawing.fill.fill_type == FillType::None
-        && drawing.fill.gradient.is_none()
-        && drawing.fill.image.is_none()
 }
 
 fn push_placeholder_render_node(
@@ -1812,12 +1779,9 @@ impl LayoutEngine {
 
         match shape {
             ShapeObject::Rectangle(rect) => {
-                let (mut style, gradient) = drawing_to_shape_style(&rect.drawing, self.dpi);
-                // 기존 글상자 보정만 적용한다. 일반 사각형의 선은 원본 스타일을 따른다.
-                if should_suppress_group_textbox_construction_stroke(&rect.drawing) {
-                    style.stroke_color = None;
-                    style.stroke_width = 0.0;
-                }
+                // 글상자의 텍스트·채우기와 선의 가시성은 별개다.
+                // 그룹 자식도 원본의 명시된 SOLID/NONE을 그대로 소비한다.
+                let (style, gradient) = drawing_to_shape_style(&rect.drawing, self.dpi);
                 let round_px = if rect.round_rate > 0 {
                     // 한컴 곡률 50%는 반원이다. 짧은 변의 절반이 반지름이며,
                     // 백분율을 적용한 뒤 다시 2로 나누면 50%도 둥근 모서리에 그친다.

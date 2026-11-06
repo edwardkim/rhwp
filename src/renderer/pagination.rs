@@ -718,15 +718,26 @@ impl ActiveHeaderFooter {
             if *para_idx > page_last_para {
                 continue;
             }
+            // 새 양쪽 선언은 이전 홀수·짝수 선언을 대체한다. 빈 머리말도
+            // 유효한 재정의이며, 복제 실패 전에 기존 선택을 지우지 않는다.
+            let reference = crate::storage::try_clone(hf_ref, storage)?;
             let slot = match (is_header, apply_to) {
-                (true, HeaderFooterApply::Both) => &mut self.header_both,
+                (true, HeaderFooterApply::Both) => {
+                    self.header_even = None;
+                    self.header_odd = None;
+                    &mut self.header_both
+                }
                 (true, HeaderFooterApply::Even) => &mut self.header_even,
                 (true, HeaderFooterApply::Odd) => &mut self.header_odd,
-                (false, HeaderFooterApply::Both) => &mut self.footer_both,
+                (false, HeaderFooterApply::Both) => {
+                    self.footer_even = None;
+                    self.footer_odd = None;
+                    &mut self.footer_both
+                }
                 (false, HeaderFooterApply::Even) => &mut self.footer_even,
                 (false, HeaderFooterApply::Odd) => &mut self.footer_odd,
             };
-            *slot = Some(crate::storage::try_clone(hf_ref, storage)?);
+            *slot = Some(reference);
         }
         Ok(())
     }
