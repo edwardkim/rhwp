@@ -1,0 +1,24 @@
+{
+  "sourceSha": "e4aefbcce7bf3db783ec39f3223e79b53082fbc1",
+  "rasterizer": "SVG in actual browser; auxiliary consumer check",
+  "dpi": 96,
+  "profile": "print",
+  "layoutGeneration": "2024",
+  "used": {
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "silhouette_raw_match_percent": 91.34948,
+    "silhouette_raw_unmatched_pixels": 450,
+    "silhouette_boundary_reconciled_pixels": 0,
+    "silhouette_color_tolerance": 32,
+    "silhouette_content_union_pixels": 5202,
+    "tolerant_content_match_percent": 91.34948
+  },
+  "usedVisualAccuracyProxyPercent": 10.51519,
+  "embeddedFontPrograms": [
+    {
+      "family": "\"함초롬돋움\"",
+      "sha256": "1c0dce5aff03b79c58f5a628c088b0806e5b28cc080d8cecefb58f1a415413b6"
+    }
+  ],
+  "nativeAndCanvasGatesNotReplaced": true
+}

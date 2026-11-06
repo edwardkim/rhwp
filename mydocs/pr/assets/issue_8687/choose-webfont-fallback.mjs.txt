@@ -1,0 +1,27 @@
+// Diagnostic runner setup: perform the visible choice required by a fresh browser.
+// Product code and the original regression assertions remain unchanged.
+import {createRequire} from 'node:module';
+const require=createRequire(process.cwd()+'/rhwp-studio/package.json');
+const puppeteer=require('puppeteer-core').default;
+const originalLaunch=puppeteer.launch.bind(puppeteer);
+puppeteer.launch=async (...args)=>{
+ const browser=await originalLaunch(...args);
+ const originalPage=browser.newPage.bind(browser);
+ browser.newPage=async (...pageArgs)=>{
+  const page=await originalPage(...pageArgs);
+  let busy=false;
+  const timer=setInterval(async()=>{
+   if(busy||page.isClosed())return;
+   busy=true;
+   try{for(const button of await page.$$('button')){
+    if(await button.isVisible() && await button.evaluate(e=>e.textContent.trim())==='대체 글꼴로 보기'){
+     await button.click();console.log('[setup] selected the visible webfont fallback button');
+    }
+   }}catch(error){if(!page.isClosed())console.log('[setup] page changed during UI inspection');}
+   finally{busy=false;}
+  },1000);
+  page.on('close',()=>clearInterval(timer));
+  return page;
+ };
+ return browser;
+};

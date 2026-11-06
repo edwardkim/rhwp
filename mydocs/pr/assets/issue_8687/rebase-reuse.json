@@ -1,0 +1,58 @@
+{
+  "recordedAt": "2026-11-06T21:49:05.507430+09:00",
+  "userInstruction": "rebase, 충돌없으면 현재 테스트 자료 그대로 사용해도됨.",
+  "previousBase": "08963f6825956984d38b0d9392f44777db7107ab",
+  "newBase": "45684640be5eddcf5972b063260250345b34d928",
+  "validatedProductSource": "e4aefbcce7bf3db783ec39f3223e79b53082fbc1",
+  "rebasedProductSource": "87c073fa7094603f6915c43851da7ed66697565b",
+  "conflicts": [],
+  "rangeDiff": "1:  86aaa4f4ff = 1:  134b19d809 수정: 원본 글꼴 대체 관측에서 부적합한 이름 제외 (#8687)\n2:  e4aefbcce7 = 2:  87c073fa70 수정: 목록형 원본 글꼴의 정상 대체를 조판과 표시에 공유 (#8687)\n",
+  "patchFiles": [
+    {
+      "path": "src/document_core/host_font_environment.rs",
+      "oldBlob": "405cc20d447e3944a0d7232b6d8d75c64bfd6b3f",
+      "newBlob": "405cc20d447e3944a0d7232b6d8d75c64bfd6b3f",
+      "sameBytes": true
+    },
+    {
+      "path": "src/renderer/font_environment.rs",
+      "oldBlob": "70f00d614b3855a2be1496659e9c31dcbdbf3a82",
+      "newBlob": "70f00d614b3855a2be1496659e9c31dcbdbf3a82",
+      "sameBytes": true
+    },
+    {
+      "path": "src/renderer/style_resolver.rs",
+      "oldBlob": "3ad998059d8fa3841284699026b372437482188c",
+      "newBlob": "3ad998059d8fa3841284699026b372437482188c",
+      "sameBytes": true
+    },
+    {
+      "path": "src/renderer/style_resolver/document_font_chain.rs",
+      "oldBlob": "405b4d9f0e6f1a42594122f20922563ee05e24cc",
+      "newBlob": "405b4d9f0e6f1a42594122f20922563ee05e24cc",
+      "sameBytes": true
+    },
+    {
+      "path": "tests/cases/issue_8687_declared_font_fallback_names.rs",
+      "oldBlob": "bb3329fd33b9942f5ec08039e3e76841ef37cfa0",
+      "newBlob": "bb3329fd33b9942f5ec08039e3e76841ef37cfa0",
+      "sameBytes": true
+    }
+  ],
+  "upstreamChanges": {
+    "commits": 14,
+    "integration": "PR #8694 / original PR #8658; table and object occupancy",
+    "fontPatchFilesChangedByUpstream": false
+  },
+  "reuseAuthorized": true,
+  "expensiveValidationRerunAfterRebase": false,
+  "evidenceRemainsLabelledWithItsActualProducerSource": true,
+  "baselineWasmSeparateBuild": "not performed; use the existing Native baseline and candidate Native/fresh WASM evidence set under the explicit reuse authorization",
+  "postRebaseManifest": {
+    "sources": 2099,
+    "staticTestAttrs": 8872,
+    "integrationTargets": "48/48",
+    "exitCode": 0,
+    "base": "45684640be5eddcf5972b063260250345b34d928"
+  }
+}

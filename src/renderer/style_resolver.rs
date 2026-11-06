@@ -19,6 +19,7 @@ use crate::renderer::font_rule_layout_name_projection::{
 pub const LANG_COUNT: usize = 7;
 
 mod ascii_punctuation;
+mod document_font_chain;
 mod missing_fonts;
 pub(crate) use missing_fonts::{missing_char_table, missing_latin_default};
 mod page_number;
@@ -1363,6 +1364,7 @@ fn try_lookup_font_name_decision<A: storage::Storage>(
                     storage.push(&mut decision.css_family_chain, face)?;
                 }
             }
+            document_font_chain::prefer_declared_single_face(font, &mut decision, storage)?;
         }
     }
     Ok(decision)

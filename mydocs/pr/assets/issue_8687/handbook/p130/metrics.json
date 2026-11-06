@@ -1,0 +1,40 @@
+{
+  "page": 130,
+  "rhwp_png": "output/pr-review/issue8687/fixed-automatic-handbook-gate/required-handbook-8153-native/rhwp_png/rhwp_130.png",
+  "pdf_png": "output/pr-review/issue8687/fixed-automatic-handbook-gate/required-handbook-8153-native/pdf_png/pdf-130.png",
+  "overlay_png": "mydocs/pr/assets/issue_8687/handbook/p130/overlay_130.png",
+  "width": 740,
+  "height": 1006,
+  "pixel_diff_threshold": 32,
+  "overlay_color_legend": {
+    "rhwp_only": "blue",
+    "pdf_only": "red",
+    "both_different": "orange",
+    "matching": "gray"
+  },
+  "total_pixels": 744440,
+  "diff_pixels": 20946,
+  "diff_ratio": 0.02813659,
+  "pixel_match_percent": 97.18634,
+  "ink_union_pixels": 65065,
+  "ink_diff_pixels": 20946,
+  "ink_diff_ratio": 0.32192423,
+  "ink_match_percent": 67.80758,
+  "visual_accuracy_proxy_percent": 67.80758,
+  "tolerant_content_match_radius_px": 2,
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "silhouette_raw_match_percent": 99.96465,
+  "silhouette_raw_unmatched_pixels": 23,
+  "silhouette_boundary_reconciled_pixels": 5,
+  "silhouette_color_tolerance": 32,
+  "silhouette_content_union_pixels": 65065,
+  "tolerant_content_match_percent": 99.97234,
+  "mean_abs_channel_delta": 2.761,
+  "max_channel_delta": 244,
+  "diff_bbox": [
+    92,
+    81,
+    739,
+    927
+  ]
+}

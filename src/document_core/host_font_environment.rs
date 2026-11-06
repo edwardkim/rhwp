@@ -52,7 +52,8 @@ impl DocumentCore {
                 else {
                     continue;
                 };
-                if font.is_embedded
+                if !FontEnvironment::valid_name(&font.name)
+                    || font.is_embedded
                     || font.alt_type != 1
                     || self
                         .font_environment
@@ -74,7 +75,7 @@ impl DocumentCore {
                 };
                 let Some(fallback) = fallback
                     .map(str::trim)
-                    .filter(|f| !f.is_empty() && *f != font.name)
+                    .filter(|f| FontEnvironment::valid_name(f) && *f != font.name)
                 else {
                     continue;
                 };
