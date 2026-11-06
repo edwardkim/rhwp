@@ -60,6 +60,8 @@ mod font_file_lookup;
 #[cfg(not(target_arch = "wasm32"))]
 mod system_fonts;
 #[cfg(not(target_arch = "wasm32"))]
+pub(crate) use system_fonts::restore_legacy_family_names;
+#[cfg(not(target_arch = "wasm32"))]
 mod webfont_subset;
 #[cfg(all(test, not(target_arch = "wasm32")))]
 use font_file_lookup::FontFileName;

@@ -60,8 +60,16 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
         // 정의하지 않는다. HWPX의 명시 type과 달리 이 값만으로 실제 TTF를
         // 확정해 같은 family의 HFT 공급 순서를 덮어쓰지 않는다. HWPX에서
         // rhwp가 변환한 문서는 명시적 type을 이 비트에 저장하므로 보존한다.
+        // 폭 표가 없는 face는 덮어쓸 HFT 계약이 없어 표시를 남긴다. 그래야 실제
+        // 공급한 같은 이름의 TrueType 프로그램이 추정 폭을 대신한다(#8661).
         for style in &mut styles.char_styles {
-            style.font_families_source_ttf.fill(false);
+            for lang in 0..style.font_families_source_ttf.len() {
+                let family = style.font_family_for_lang(lang);
+                let face = family.split(',').next().unwrap_or(family).trim();
+                if super::font_metrics_data::find_metric(face, false, style.italic).is_some() {
+                    style.font_families_source_ttf[lang] = false;
+                }
+            }
         }
     }
     if missing_fonts::missing_char_table(document) {

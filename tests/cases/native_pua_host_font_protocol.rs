@@ -707,7 +707,7 @@ fn literal_space_programs_are_owned_by_source_type() {
 }
 
 #[test]
-fn unassigned_hwp5_font_bits_do_not_create_truetype_requests() {
+fn truetype_requests_follow_the_declared_face_type_across_sources() {
     use rhwp::model::provenance::SourceFormat;
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
@@ -725,10 +725,12 @@ fn unassigned_hwp5_font_bits_do_not_create_truetype_requests() {
     for shape in &mut doc.doc_info.char_shapes {
         shape.font_ids = [0; 7];
     }
+    // 폭 표 없는 HWP5 face도 요청한다. 폭 표가 있는 face의 HFT 공급 순서 보호는
+    // issue_8661_supplied_ttf_without_metric.rs가 검사한다.
     doc.provenance.format = SourceFormat::Hwp5;
     doc.provenance.hwpx_lineage = false;
     core.set_document(doc.clone());
-    assert!(!core
+    assert!(core
         .native_otf_font_requests()
         .iter()
         .any(|request| request.source_ttf));
