@@ -6812,6 +6812,37 @@ impl ParagraphFloatPlacement {
         Self::from_stored_host_at(para, table, control_index, text_origin, table_height, dpi)
     }
 
+    /// [#8686] 제어문자가 글 중간에 있어도 세로 오프셋은 그 제어문자가 속한 저장 줄
+    /// (#6860 앵커 줄)에서 잰다. 저장 호스트 줄이 모두 표 띠 위에서 끝나면 글 앞·뒤
+    /// 제어문자와 같은 앵커 계약이다.
+    pub fn from_stored_inner_host(
+        para: &Paragraph,
+        table: &Table,
+        control_index: usize,
+        text_origin: f64,
+        table_height: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        Self::text_inner_control_position(para, control_index)?;
+        Self::from_stored_host_at(para, table, control_index, text_origin, table_height, dpi)
+    }
+
+    fn text_inner_control_position(para: &Paragraph, control_index: usize) -> Option<usize> {
+        let text_len = para.text.chars().count();
+        if text_len == 0 || para.char_offsets.len() != text_len {
+            return None;
+        }
+        let position = *para.control_text_positions().get(control_index)?;
+        (position > 0
+            && position < text_len
+            && !para.text.contains('\n')
+            && para
+                .text
+                .chars()
+                .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{FFFC}'))
+        .then_some(position)
+    }
+
     /// 저장 글 앞 제어문자와 선행 호스트 줄이 동일한 앵커 계약에 속하는지 확인한다.
     pub(crate) fn stored_head_host_lines_are_valid(
         para: &Paragraph,
@@ -8030,6 +8061,16 @@ fn stored_host_exclusion_frame(
     )
     .or_else(|| {
         ParagraphFloatPlacement::from_stored_head_host(
+            para,
+            table,
+            control_index,
+            paragraph_origin,
+            body_height,
+            dpi,
+        )
+    })
+    .or_else(|| {
+        ParagraphFloatPlacement::from_stored_inner_host(
             para,
             table,
             control_index,
