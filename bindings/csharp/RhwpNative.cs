@@ -94,6 +94,23 @@ public static class RhwpNative
     [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr rhwp_gl_presenter_request(ulong presenter, byte[] request, UIntPtr requestLength);
 
+    // Metal pointers stay typed at the C ABI and presenters stay on their
+    // producer OS thread. The native capability is false on other platforms.
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_metal_capabilities();
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_metal_presenter_create(IntPtr device, IntPtr commandQueue, ulong deviceGeneration, byte[] config, UIntPtr configLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_metal_presenter_render(ulong presenter, IntPtr texture, byte[] request, UIntPtr requestLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_metal_presenter_request(ulong presenter, byte[] request, UIntPtr requestLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_metal_frame_check(byte[] request, UIntPtr requestLength);
+
     public static string SessionClose(ulong handle) => TakeResultString(rhwp_session_close(handle));
 
     public static string SessionBufferCopy(ulong buffer, byte[] destination)

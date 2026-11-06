@@ -10,6 +10,8 @@ pub mod editor;
 pub mod fonts;
 #[cfg(all(feature = "native-skia-gl", target_os = "linux"))]
 pub mod gpu_gl;
+#[cfg(all(feature = "native-skia-metal", target_os = "macos"))]
+pub mod gpu_metal;
 pub mod presentation;
 #[cfg(feature = "native-skia")]
 pub mod region_cache;

@@ -94,6 +94,33 @@ char *rhwp_gl_presenter_recreate(uint64_t presenter, uint64_t context_id, uint64
  * allocation/submission failure does not establish a device-loss diagnosis.
  * TLS owner teardown also abandons before native objects drop. */
 char *rhwp_gl_presenter_request(uint64_t presenter, const uint8_t *request, size_t request_len);
+/* Optional macOS Metal/Ganesh producer ABI v1. Capability probe always exists;
+ * disabled builds return featureDisabled without dereferencing any pointers.
+ * Device/queue/texture are typed borrowed Objective-C pointers, NEVER JSON
+ * numbers. Device and queue match; Ganesh retains them. Create/render/request
+ * handles belong to one dedicated producer OS thread, not the Flutter UI thread.
+ * Every string is released with rhwp_string_free. Config/request <=64 KiB. */
+char *rhwp_metal_capabilities(void);
+char *rhwp_metal_presenter_create(const void *device, const void *command_queue,
+    uint64_t device_generation, const uint8_t *config, size_t config_len);
+/* Borrowed texture: matching device, BGRA8Unorm, 2D, single sample, shader-read
+ * and render-target usage. Render JSON contains stamp, target{width,height,
+ * deviceGeneration}, placements, clearColor. Caller keeps target exclusively
+ * writable and retained for the call. Strict scratch replay precedes target
+ * write. Success waits for PRODUCER GPU completion, with no CPU readback;
+ * Flutter CONSUMER completion/reuse permission is not provided. Do not publish
+ * failure/stale results or recycle a published texture without proven consumer
+ * GPU completion. Source/device generations are checked before and after GPU
+ * wait. Request accepts info/release/abandon on the same producer thread. */
+char *rhwp_metal_presenter_render(uint64_t presenter, const void *texture,
+    const uint8_t *request, size_t request_len);
+char *rhwp_metal_presenter_request(uint64_t presenter, const uint8_t *request, size_t request_len);
+/* Bounded cross-thread {stamp,snapshots:[1..8 IDs]} check. No presenter/TLS/
+ * layout/replay is accessed. Handles remain alive for this call; checks include
+ * source document/revision/font AND configured view/device generations.
+ * Success returns {ok:true,current:true}; stale/error means do not acquire.
+ * This does not freeze future source changes or establish a GPU fence. */
+char *rhwp_metal_frame_check(const uint8_t *request, size_t request_len);
 void rhwp_string_free(char *value);
 
 #ifdef __cplusplus
