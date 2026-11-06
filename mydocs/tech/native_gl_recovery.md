@@ -125,11 +125,47 @@ sRGB, premultiplied RGBA8, top-left/stride를 명시하며 GL도 같은 계약�
 
 acceptance는 uniform 3×3 내부의 각 encoded 8-bit 채널에 **1 LSB**를 허용한다. 서로 다른
 CPU/GPU blending quantization을 구분하기 위한 제한이며 평균 오차로 큰 내부 색 오류를
-숨기지 않는다. opaque page의 aliased clip은 alpha coverage를 **정확히** 비교한다.
-glyph/image AA boundary의 차이는 별도 최대값을 보고하고 CPU boundary의 **1 device
-pixel support** 밖으로 새지 않아야 한다. 여러 page 순서, 음수/fractional origin·scale,
-transparent/partial-alpha 배경과 premul `RGB <= A`를 함께 검사한다. 전체 HWP 문서의
-한컴 시각 일치율이나 glyph 경계의 완전한 pixel identity 인증을 대신하지 않는다.
+숨기지 않는다. glyph/image AA boundary의 차이는 별도 최대값을 보고하고 CPU boundary의
+**1 device pixel support** 밖으로 새지 않아야 한다. 여러 page 순서, 음수/fractional
+origin·scale, transparent/partial-alpha viewport clear와 premul `RGB <= A`를 함께 검사한다.
+전체 HWP 문서의 한컴 시각 일치율이나 glyph 경계의 완전한 pixel identity 인증을 대신하지 않는다.
+
+fractional page clip의 alpha를 frame 전체에서 CPU와 동일하다고 가정하지 않는다.
+locked `skia-safe/skia-bindings 0.156.0`의 Skia tag는 `m156.5`다. CPU의
+[SkRasterClip.cpp:141–158](https://github.com/rust-skia/skia/blob/m156.5/src/core/SkRasterClip.cpp#L141-L158)은
+non-AA clip을 device rectangle의 `round()`로 region에 넣는다. Ganesh의
+[GrClip.h:94–110, 158–178](https://github.com/rust-skia/skia/blob/m156.5/src/gpu/ganesh/GrClip.h#L94-L178)은
+GPU raster rounding의 불확실성을 위해 half-pixel tolerance `0.05`, bounds tolerance
+`0.001`과 서로 다른 내부/외부 pixel bounds를 명시한다. host surface의 non-AA clip
+요청을 서로 다른 backend의 모든 경계 byte가 같다는 계약으로 확대하지 않는다.
+
+실제 Mesa 22.3.6 llvmpipe 검사에서 `(32.5, 24.25)`의 작은 page는 `x=32,
+y=24..164`의 141개 pixel에서 CPU alpha 0, GL alpha 255였다. `(32.75, 24.75)`의
+내용 없는 page와 `clearColor=0x40112233`에서는 premul clear `(4,9,13,64)`와 white
+paper `(255,255,255,255)` 사이의 GL 경계 값 `(67,71,74,112)`도 관찰됐다. 차이는
+분수 좌표가 지나는 pixel cell 안에만 있었으며 내부·외부의 정확한 색은 바뀌지 않았다.
+이는 software GL에서 확인한 backend 경계 동작이며 hardware device loss나 성능 증거가 아니다.
+
+probe는 replay 전에 worker에서 얻은 page size와 실제 placements의 f32 physical geometry로
+각 pixel cell을 분류한다. CPU/GPU 출력으로 허용 mask를 만들지 않는다. page와 양의 면적으로
+일부만 겹치는 cell에서만 clear/white-paper endpoint 사이 **같은 혼합 비율의 premul RGBA**를
+허용하고, encoded 채널의 양자화 차이는 최대 1로 제한한다. 완전히 들어간 불투명 paper의
+alpha와 완전히 벗어난 clear는 정확해야 한다. 내용 없는 대조군의 내부·외부는 RGBA 전체가
+정확한 endpoint와 같아야 한다. 정수 clip은 경계의 모호한 cell도 없으므로 전체 결과를
+정확히 비교한다. nested page에서 뒤 page가 완전히 덮은 cell은 앞 경계의 모호함을 남기지 않는다.
+
+독립 blank 대조군 15개는 정수·1/4·1/2·3/4 좌표, half-pixel 직전·직후, 음수 origin의
+오른쪽·아래 clip, transparent/opaque/partial-alpha viewport clear, host page preclear 생략,
+nested page 합성을 검사한다. 1 pixel 이동, 내부 alpha 변조, page 밖 pixel 변조를
+거절하는 별도 음성 대조군 3개도 실행한다. 원래 picture/table/서로 다른 text page의 여섯
+입력은 유지한다. `clipBoundaryMaxDifference/nonClipMaxDifference`는 page 경계 혼합과
+나머지 paint 차이를 구분하며 `ambiguousBackgroundCells/alphaDifferentPixels`도 보고한다.
+
+이 corpus의 Screen `PageLayerTree`에는 기본 흰 종이 `PageBackground`가 있다
+([layout::build_page_background](../../src/renderer/layout.rs)). `backgroundColor: null`은
+host의 추가 page clear를 생략하며, authored 흰 종이 paint를 제거하지 않는다. 따라서
+probe의 해당 경우는 transparent paper 구현을 인증하지 않고 transparent/partial-alpha
+viewport clear 뒤에 흰 paper가 합성되는 경로를 검사한다.
 
 `timingScope: hostWallClock`이며 replay 시간에는 tile miss의 canonical/copy submit도
 포함된다. publish의 flush-submit 시간은 scratch/image/wrap/host copy 작업이다. 정상

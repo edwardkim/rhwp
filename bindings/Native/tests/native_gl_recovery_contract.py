@@ -10,6 +10,7 @@ import ctypes
 import io
 import json
 from pathlib import Path
+import struct
 import sys
 import xml.etree.ElementTree as ET
 import zipfile
@@ -91,12 +92,96 @@ def cpu_pixels(host, stamp, target, pages, clear):
         host.presentation_request(op="frameRelease", frame=frame)
 
 
-def compare(cpu, gpu, width, height, opaque_pages):
+def premul_argb(color):
+    alpha = color >> 24 & 255
+    return tuple(((color >> shift & 255) * alpha + 127) // 255
+                 for shift in (16, 8, 0)) + (alpha,)
+
+
+def page_rectangles(placements, sizes):
+    # The API consumes f32 Skia geometry. No pixel masks come from either
+    # rendered output; dimensions are queried on the worker before replay.
+    def f32(value):
+        return struct.unpack("f", struct.pack("f", value))[0]
+
+    rectangles = []
+    for page in placements:
+        size, scale = sizes[page["snapshot"]], f32(page["scale"])
+        left, top = f32(page["originX"]), f32(page["originY"])
+        right = f32(left + f32(f32(size["width"]) * scale))
+        bottom = f32(top + f32(f32(size["height"]) * scale))
+        color = page["backgroundColor"]
+        assert color in (None, 0xFFFFFF), "quality corpus has white Screen paper"
+        # layout::build_page_background emits white paper for this corpus even
+        # when the caller omits the additional host page preclear.
+        rgba = (255, 255, 255, 255)
+        rectangles.append((left, top, right, bottom, rgba))
+    return rectangles
+
+
+def cell_colors(x, y, rectangles, clear):
+    """Possible blank-page endpoints from positive-area pixel-cell geometry."""
+    colors = [clear]
+    intersects = False
+    for left, top, right, bottom, color in rectangles:
+        if x + 1 <= left or x >= right or y + 1 <= top or y >= bottom:
+            continue
+        intersects = True
+        if color is None:
+            continue
+        if left <= x and x + 1 <= right and top <= y and y + 1 <= bottom:
+            colors = [color]
+        elif color not in colors:
+            colors.append(color)
+    # The controls use nested pages: at most one unresolved edge remains after
+    # any fully covering page. Fail explicitly if a future corpus changes that.
+    assert len(colors) <= 2, "clip control requires at most one unresolved page edge"
+    return colors, intersects
+
+
+def endpoint_color(pixel, colors):
+    if len(colors) == 1:
+        return tuple(pixel) == colors[0]
+    start, end = colors
+    axis = max(range(4), key=lambda channel: abs(end[channel] - start[channel]))
+    delta = end[axis] - start[axis]
+    assert delta
+    amount = min(1, max(0, (pixel[axis] - start[axis]) / delta))
+    return all(abs(pixel[channel] - (start[channel] + amount * (end[channel] - start[channel]))) <= 1
+               for channel in range(4))
+
+
+def check_clip(cpu, gpu, width, height, rectangles, clear, blank=False):
+    opaque = all(rectangle[4] is not None for rectangle in rectangles)
+    ambiguous, alpha_differences = 0, 0
+    clip_max, non_clip_max = 0, 0
+    for index in range(width * height):
+        colors, intersects = cell_colors(index % width, index // width, rectangles, clear)
+        left, right = cpu[index * 4:index * 4 + 4], gpu[index * 4:index * 4 + 4]
+        if blank or (opaque and len(colors) > 1) or not intersects:
+            assert endpoint_color(left, colors) and endpoint_color(right, colors), {
+                "clipPixel": [index % width, index // width], "cpu": list(left),
+                "gpu": list(right), "expectedEndpoints": colors}
+        if opaque and len(colors) == 1:
+            assert left[3] == right[3] == colors[0][3], {
+                "exactAlphaPixel": [index % width, index // width], "cpu": left[3],
+                "gpu": right[3], "expectedAlpha": colors[0][3]}
+        ambiguous += len(colors) > 1
+        alpha_differences += left[3] != right[3]
+        difference = max(abs(a - b) for a, b in zip(left, right))
+        if len(colors) > 1:
+            clip_max = max(clip_max, difference)
+        else:
+            non_clip_max = max(non_clip_max, difference)
+    return {"ambiguousBackgroundCells": ambiguous, "alphaDifferentPixels": alpha_differences,
+            "clipBoundaryMaxDifference": clip_max, "nonClipMaxDifference": non_clip_max}
+
+
+def compare(cpu, gpu, width, height, rectangles, clear):
     """Uniform interiors: <=1 encoded 8-bit unit. AA edges: <=1 pixel support.
 
-    Aliased opaque page clips must have exactly equal alpha coverage. Glyph and
-    image AA boundary color differences are reported separately, not used as
-    a substitute for interior color/premul/clip acceptance.
+    Fractional page-edge cells use independently derived clip geometry and
+    premul endpoints. All fully inside/outside opaque coverage stays exact.
     """
     assert len(cpu) == len(gpu) == width * height * 4
     count = width * height
@@ -115,8 +200,7 @@ def compare(cpu, gpu, width, height, opaque_pages):
     interior_max = max((abs(cpu[index * 4 + channel] - gpu[index * 4 + channel])
                         for index in uniform for channel in range(4)), default=0)
     assert interior_max <= 1, {"uniformInteriorMaxDifference": interior_max}
-    if opaque_pages:
-        assert cpu[3::4] == gpu[3::4], "opaque page alpha clip/origin coverage changed"
+    clipping = check_clip(cpu, gpu, width, height, rectangles, clear)
     # New GPU coverage/color boundaries must stay in the one-pixel AA support
     # of CPU boundaries; uniform interiors have already passed exact color rules.
     for index in range(count):
@@ -127,7 +211,8 @@ def compare(cpu, gpu, width, height, opaque_pages):
                    for yy in range(max(0, y - 1), min(height, y + 2))
                    for xx in range(max(0, x - 1), min(width, x + 2))), "GPU difference escaped CPU AA boundary support"
     return {"uniformPixels": len(uniform), "uniformInteriorMaxDifference": interior_max,
-            "boundaryMaxDifference": max((abs(a - b) for a, b in zip(cpu, gpu)), default=0)}
+            "boundaryMaxDifference": max((abs(a - b) for a, b in zip(cpu, gpu)), default=0),
+            **clipping}
 
 
 def quality_document(document):
@@ -161,7 +246,102 @@ def quality_document(document):
     return output.getvalue(), paragraph_index
 
 
+def blank_document(document):
+    """Remove visible content; preserve an authored section and query its size."""
+    output = io.BytesIO()
+    with zipfile.ZipFile(io.BytesIO(document)) as source, zipfile.ZipFile(output, "w") as target:
+        for entry in source.infolist():
+            data = source.read(entry)
+            if entry.filename == "Contents/section0.xml":
+                for _, (prefix, uri) in ET.iterparse(io.BytesIO(data), events=["start-ns"]):
+                    ET.register_namespace(prefix, uri)
+                root = ET.fromstring(data)
+                namespace = "{http://www.hancom.co.kr/hwpml/2011/paragraph}"
+                section = root.find(".//" + namespace + "secPr")
+                assert section is not None
+                root.clear()
+                paragraph = ET.SubElement(root, namespace + "p",
+                    {"id": "1", "paraPrIDRef": "0", "styleIDRef": "0"})
+                run = ET.SubElement(paragraph, namespace + "run", {"charPrIDRef": "0"})
+                run.append(section)
+                ET.SubElement(run, namespace + "t")
+                data = ET.tostring(root, encoding="utf-8", xml_declaration=True)
+            target.writestr(entry, data)
+    return output.getvalue()
+
+
+def oracle_negative_controls():
+    clear = premul_argb(0x40112233)
+    rectangles = [(1.75, 1.75, 5.75, 5.75, (255, 255, 255, 255))]
+    pixels = b"".join(bytes((255, 255, 255, 255) if 2 <= x < 6 and 2 <= y < 6 else clear)
+                      for y in range(8) for x in range(8))
+    check_clip(pixels, pixels, 8, 8, rectangles, clear, blank=True)
+    shifted = b"".join(bytes(clear) + pixels[row * 32:row * 32 + 28] for row in range(8))
+    wrong_alpha, outside = bytearray(pixels), bytearray(pixels)
+    wrong_alpha[(3 * 8 + 3) * 4 + 3] = 128
+    outside[:4] = bytes((255, 255, 255, 255))
+    for label, invalid in [("one pixel shift", shifted), ("uniform alpha", wrong_alpha),
+                            ("outside pixel", outside)]:
+        try:
+            check_clip(pixels, invalid, 8, 8, rectangles, clear, blank=True)
+        except AssertionError:
+            continue
+        raise AssertionError("analytic clip oracle accepted " + label)
+
+
+def blank_clip_controls(library, document):
+    oracle_negative_controls()
+    metrics = []
+    with NativeWorker(library) as worker:
+        opened = worker.wait(worker.open_bytes(blank_document(document)))
+        assert opened["ok"], opened
+        info = opened["info"]
+        stamp_for(worker, info, 1)
+        page = snapshot(worker, info)
+        size = accepted(worker, {"op": "pageSize", "target": {
+            "documentId": info["documentId"], "revision": info["revision"]}, "page": 0})["size"]
+        sizes = {page: size}
+        target, owner = QualityTarget(context_id=90), None
+        try:
+            owner = target.presenter(worker.host, {"maxCachedTiles": 0, "maxTileBytes": 0})
+            cases = [(label + " top-left", [placement(page, 32 + phase, 24 + phase)], 0x40112233)
+                     for label, phase in [("integer", 0), ("quarter", 0.25), ("half", 0.5),
+                         ("three-quarter", 0.75), ("before-half", 0.499), ("after-half", 0.501)]]
+            raster = page_rectangles([placement(page)], sizes)[0]
+            for label, phase in [("integer", 0), ("quarter", 0.25), ("half", 0.5),
+                                 ("three-quarter", 0.75)]:
+                cases.append((label + " bottom-right", [placement(page,
+                    128 + phase - raster[2], 120 + phase - raster[3])], 0x40112233))
+            cases += [
+                ("transparent clear", [placement(page, 32.5, 24.25, 0.125)], 0),
+                ("opaque clear", [placement(page, 32.75, 24.25, 0.125)], 0xFF112233),
+                ("no host preclear, transparent viewport", [placement(page, 32.75, 24.25, 0.125, None)], 0),
+                ("no host preclear, partial-alpha viewport", [placement(page, 32.75, 24.25, 0.125, None)], 0x80557799),
+                ("nested pages", [placement(page, 32.5, 24.25, 0.125),
+                    placement(page, 64.25, 58.75, 0.0625)], 0x40112233),
+            ]
+            for view, (label, placements, clear) in enumerate(cases, start=2):
+                stamp = stamp_for(worker, info, view)
+                cpu = cpu_pixels(worker.host, stamp, target.target, placements, clear)
+                result = owner.render(stamp, target.target, placements, clear_color=clear)
+                gpu = target.pixels()
+                rectangles = page_rectangles(placements, sizes)
+                clipping = check_clip(cpu, gpu, 256, 192, rectangles, premul_argb(clear), blank=True)
+                if label.startswith("integer"):
+                    assert cpu == gpu, {"exactBlankControl": label}
+                metrics.append({"case": label, "rectangles": rectangles, **clipping})
+                budget(result["info"])
+            return {"cases": metrics, "cpuReferenceFrames": len(cases),
+                    "hostVerificationReadbacks": target.readbacks, "oracleNegativeControls": 3}
+        finally:
+            if owner is not None and not owner._closed:
+                owner.release()
+            target.close()
+            worker.host.presentation_request(op="snapshotRelease", snapshot=page)
+
+
 def run(library, document):
+    clip_controls = blank_clip_controls(library, document)
     document, paragraph_index = quality_document(document)
     retained, verification_readbacks, metrics = [], 0, []
     reference_frames = 0
@@ -180,6 +360,9 @@ def run(library, document):
         stamp = stamp_for(worker, info, view=1)
         pages = [snapshot(worker, info, page) for page in range(2)]
         retained.extend(pages)
+        sizes = {handle: accepted(worker, {"op": "pageSize", "target": {
+            "documentId": info["documentId"], "revision": info["revision"]}, "page": index})["size"]
+            for index, handle in enumerate(pages)}
         target, owner = QualityTarget(context_id=101, generation=1), None
         view = 1
         try:
@@ -196,8 +379,8 @@ def run(library, document):
                 ("opaque tile frame", [placement(pages[0], -15.25, -31.5, 0.75)], 0xff112233),
                 ("fractional negative", [placement(pages[0], -15.25, -31.5, 0.75)], 0x40112233),
                 ("positive clip", [placement(pages[0], 32.5, 24.25, 0.125)], 0x00112233),
-                ("transparent page", [placement(pages[0], 32.5, 24.25, 0.125, None)], 0),
-                ("partial-alpha viewport", [placement(pages[0], 32.5, 24.25, 0.125, None)], 0x80557799),
+                ("no host page preclear", [placement(pages[0], 32.5, 24.25, 0.125, None)], 0),
+                ("partial-alpha clear behind white paper", [placement(pages[0], 32.5, 24.25, 0.125, None)], 0x80557799),
                 ("distinct overlapping pages", [placement(pages[0], -10.25, 8.5, 0.5),
                     placement(pages[1], 47.75, 31.25, 0.25)], 0x80112233),
             ]
@@ -208,7 +391,7 @@ def run(library, document):
                 reference_frames += 1
                 frame = owner.render(stamp, target.target, placements, clear_color=clear)
                 metrics.append({"case": label, **compare(reference, target.pixels(), 256, 192,
-                    all(page["backgroundColor"] is not None for page in placements))})
+                    page_rectangles(placements, sizes), premul_argb(clear))})
                 assert frame["frame"]["stamp"] == stamp
                 assert frame["frame"]["timingScope"] == "hostWallClock"
                 assert frame["info"]["wholeFrameReadbacks"] == frame["info"]["wholeFrameCpuUploads"] == 0
@@ -349,9 +532,10 @@ def run(library, document):
             target.close()
             for page in retained:
                 worker.host.presentation_request(op="snapshotRelease", snapshot=page)
-        print(json.dumps({"contract": "PASS", "quality": metrics,
-            "hostVerificationReadbacks": verification_readbacks, "wholeFrameReadbacks": 0,
-            "cpuReferenceFrames":reference_frames,
+        print(json.dumps({"contract": "PASS", "quality": metrics, "blankClipControls": clip_controls,
+            "hostVerificationReadbacks": verification_readbacks + clip_controls["hostVerificationReadbacks"],
+            "wholeFrameReadbacks": 0,
+            "cpuReferenceFrames": reference_frames + clip_controls["cpuReferenceFrames"],
             "wholeFrameCpuUploads": 0, "normalRetireRecreateCycles": 8,
             "contextCredits": exhausted, "simulatedHostContextTransitions": True,
             "hardwareDeviceLossObserved": False}))
