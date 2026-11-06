@@ -1186,7 +1186,9 @@ function relocatePictureToDropPage(this: any, state: any): boolean {
       const r = wasm.relocateFloatingPicture(ref.sec, ref.ppi, pathJson(ref.cellPath), ref.ci,
         hit.sectionIndex, inCell ? hit.parentParaIndex : hit.paragraphIndex, hit.charOffset,
         inCell ? pathJson(hit.cellPath) : '[]', state.origHorzOffset, state.origVertOffset);
-      moved = { sec: r.sec, ppi: r.paraIdx, ci: r.controlIdx, type: 'image', ...(inCell ? { cellPath: hit.cellPath } : {}) };
+      // 원본 그림을 빼면 hit-test 당시의 표 번호가 바뀔 수 있다.
+      // Native가 반환한 실제 소유 경로를 위치 보정과 선택에서 함께 쓴다.
+      moved = { sec: r.sec, ppi: r.paraIdx, ci: r.controlIdx, type: 'image', ...(r.cellPath.length ? { cellPath: r.cellPath } : {}) };
       const now = find(moved, state.dropPage);
       if (now) {
         const props = getObjectProperties.call(this, moved);

@@ -1,6 +1,8 @@
 //! 관계형·고정형 — 띄운 그림을 다른 문단·칸 문단으로 옮겨 붙이면 소속과 오프셋이 바뀌고 저장 후에도 남으며,
 //! 다른 쪽 칸으로 옮긴 그림은 그 칸 안에 그려진다 (#8557). 고정형은 독립 한컴 인쇄의 전체 쪽수(4)뿐이다.
-//! 주석 갱신: 2026-11-05T09:30:00+09:00 (새 파일, 다른 쪽 칸으로 옮긴 그림의 쪽·칸 소속 검사 추가)
+//! 주석 갱신: 2026-11-06T22:17:14+09:00 (Asia/Seoul; 메인테이너 경계 검사 추가)
+//! 직전 파일 변경: a1146f76a0cbafcb11691f73b576dcb428bd62e0 2026-11-05T09:16:56+09:00 (Git 시각; 아래 측정일과 구분).
+//! 추가 합성 검사는 실패 원자성·기본 인수·반환 소유 경로만 검사하며 새 배치를 고정하지 않는다.
 //! 앞 세 검사는 합성 문서의 소속·개수·오프셋과 그림 데이터 보존만 본다(시각 측정 해당 없음).
 //! 쪽·칸 소속 검사: 2026-11-05 측정, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`
 //! raw 실루엣(2px 이웃, Native 는 스크립트의 웹폰트 자동 공급),
@@ -243,19 +245,17 @@ fn moving_a_picture_out_of_its_paragraph_renumbers_the_destination_table_path() 
     let table = control_index(&core, para, |c| matches!(c, Control::Table(_)));
     assert!(pic < table, "전제: 그림이 표보다 앞 번호");
 
-    core.relocate_floating_picture_native(
-        0,
-        para,
-        &[],
-        pic,
-        0,
-        para,
-        0,
-        &[(table, 0, 0)],
-        300,
-        400,
-    )
-    .expect("같은 문단의 뒤쪽 표 칸으로 옮기기");
+    let reply = core
+        .relocate_floating_picture_native(0, para, &[], pic, 0, para, 0, &[(table, 0, 0)], 300, 400)
+        .expect("같은 문단의 뒤쪽 표 칸으로 옮기기");
+    let reply: serde_json::Value = serde_json::from_str(&reply).unwrap();
+    assert_eq!(
+        reply["cellPath"],
+        serde_json::json!([{
+            "controlIndex": table - 1, "cellIndex": 0, "cellParaIndex": 0
+        }]),
+        "삭제 전 hit-test 경로 대신 실제 도착 소유 경로를 반환한다"
+    );
     assert_eq!(
         pictures(core.document())
             .iter()
@@ -360,4 +360,121 @@ fn picture_moved_to_a_later_page_cell_is_drawn_inside_that_cell() {
             && image[3] <= cell[3] + 0.5,
         "그림 {image:?} 이 칸 {cell:?} 안에 있다"
     );
+}
+
+#[test]
+fn unsupported_caption_destination_preserves_the_source_picture() {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_picture_native(
+        0,
+        0,
+        0,
+        &[],
+        &PNG,
+        4000,
+        2000,
+        1,
+        1,
+        "png",
+        "서명",
+        Some(100),
+        Some(200),
+    )
+    .unwrap();
+    let picture = control_index(&core, 0, |c| matches!(c, Control::Picture(_)));
+    core.set_picture_properties_native(0, 0, picture, r#"{"hasCaption":true}"#)
+        .unwrap();
+    let before = serde_json::to_value(core.document()).unwrap();
+    assert!(core
+        .relocate_floating_picture_native(0, 0, &[], picture, 0, 0, 0, &[(picture, 0, 0)], 0, 0)
+        .is_err());
+    assert_eq!(
+        serde_json::to_value(core.document()).unwrap(),
+        before,
+        "지원하지 않는 캡션/순환 경로는 그림 제거 전에 거절한다"
+    );
+    assert_eq!(pictures(core.document()).len(), 1);
+}
+
+#[test]
+fn relocation_reports_and_preserves_nested_cell_ownership() {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.create_table_native(0, 0, 0, 1, 1).unwrap();
+    let para = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .position(|p| p.controls.iter().any(|c| matches!(c, Control::Table(_))))
+        .unwrap();
+    let table = control_index(&core, para, |c| matches!(c, Control::Table(_)));
+    let nested = core
+        .create_table_in_cell_by_path_native(0, para, &[(table, 0, 0)], 0, 1, 1, None, None, true)
+        .unwrap();
+    let nested: serde_json::Value = serde_json::from_str(&nested).unwrap();
+    let wire = nested["cellPath"].as_array().unwrap();
+    let path: Vec<(usize, usize, usize)> = wire
+        .iter()
+        .map(|e| {
+            (
+                e["controlIndex"]
+                    .as_u64()
+                    .or_else(|| e["controlIdx"].as_u64())
+                    .unwrap() as usize,
+                e["cellIndex"]
+                    .as_u64()
+                    .or_else(|| e["cellIdx"].as_u64())
+                    .unwrap() as usize,
+                e["cellParaIndex"]
+                    .as_u64()
+                    .or_else(|| e["cellParaIdx"].as_u64())
+                    .unwrap() as usize,
+            )
+        })
+        .collect();
+    assert_eq!(path.len(), 2, "실제 중첩 칸 경로");
+    core.insert_picture_native(
+        0,
+        0,
+        0,
+        &[],
+        &PNG,
+        1000,
+        1000,
+        1,
+        1,
+        "png",
+        "중첩 칸 이동",
+        Some(100),
+        Some(200),
+    )
+    .unwrap();
+    let picture = control_index(&core, 0, |c| matches!(c, Control::Picture(_)));
+    let reply = core
+        .relocate_floating_picture_native(0, 0, &[], picture, 0, para, 0, &path, -100, 200)
+        .unwrap();
+    let reply: serde_json::Value = serde_json::from_str(&reply).unwrap();
+    let expected: Vec<_> = path
+        .iter()
+        .map(|&(c, cell, p)| {
+            serde_json::json!({
+                "controlIndex": c, "cellIndex": cell, "cellParaIndex": p
+            })
+        })
+        .collect();
+    assert_eq!(reply["cellPath"], serde_json::json!(expected));
+    let mut owner = &core.document().sections[0].paragraphs[para];
+    for &(control, cell, paragraph) in &path {
+        let Control::Table(table) = &owner.controls[control] else {
+            panic!("표 경로")
+        };
+        owner = &table.cells[cell].paragraphs[paragraph];
+    }
+    let Control::Picture(picture) = &owner.controls[reply["controlIdx"].as_u64().unwrap() as usize]
+    else {
+        panic!("중첩 칸 소유 그림")
+    };
+    assert_eq!(picture.common.horizontal_offset as i32, -100);
+    assert_eq!(picture.common.vertical_offset as i32, 200);
+    assert!(picture.common.flow_with_text);
 }

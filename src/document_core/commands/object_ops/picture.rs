@@ -1289,6 +1289,14 @@ impl DocumentCore {
             dst_para,
             dst_cell_path,
         )?;
+        // 도착 컨테이너의 종류도 제거 전에 검증한다. 그림 캡션 등 지원하지 않는
+        // 경로를 나중에 거절하면 원본 그림만 먼저 사라질 수 있다.
+        let into_table_cell = !dst_cell_path.is_empty()
+            && !Self::cell_path_terminates_at_textbox(
+                &self.document.sections[dst_section],
+                dst_para,
+                dst_cell_path,
+            )?;
         let picture = {
             let section = self.document.sections.get_mut(src_section).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", src_section))
@@ -1328,12 +1336,6 @@ impl DocumentCore {
         } else {
             dst_cell_path.to_vec()
         };
-        let into_table_cell = !dst_path.is_empty()
-            && !Self::cell_path_terminates_at_textbox(
-                &self.document.sections[dst_section],
-                dst_para,
-                &dst_path,
-            )?;
         let mut picture = picture;
         if let Control::Picture(pic) = &mut picture {
             pic.common.horizontal_offset = horz_offset as u32;
@@ -1382,10 +1384,20 @@ impl DocumentCore {
             section: dst_section,
             para: dst_para,
         });
-        Ok(crate::document_core::helpers::json_ok_with(&format!(
-            "\"sec\":{},\"paraIdx\":{},\"controlIdx\":{}",
-            dst_section, dst_para, new_ctrl_idx
-        )))
+        // 소비자는 삭제 전 hit-test 경로를 재사용하지 않고 실제 도착 소유 경로를 쓴다.
+        let cell_path: Vec<_> = dst_path
+            .iter()
+            .map(|&(control, cell, para)| {
+                serde_json::json!({
+                    "controlIndex": control, "cellIndex": cell, "cellParaIndex": para
+                })
+            })
+            .collect();
+        Ok(serde_json::json!({
+            "ok": true, "sec": dst_section, "paraIdx": dst_para,
+            "controlIdx": new_ctrl_idx, "cellPath": cell_path
+        })
+        .to_string())
     }
 
     /// 같은 본문 문단 아래에서 `src_path` 문단의 `removed` 번 컨트롤이 빠진 뒤의 `dst_path`.
@@ -1748,6 +1760,12 @@ impl DocumentCore {
             false
         };
 
+        // 셀 자체가 있어도 마지막 문단 번호는 잘못될 수 있다. BinData 등록 전에
+        // 실제 삽입 문단까지 검증해 실패한 요청이 문서 자원을 남기지 않게 한다.
+        if cell_path_is_textbox || anchor_in_cell {
+            self.resolve_paragraph_by_path(section_idx, para_idx, cell_path)?;
+        }
+
         // --- 1·2. BinData 등록 (콘텐츠 + 메타데이터) ---
         // [Task #2230] 그림 지정(assign_picture_image_native)과 규칙 공유를 위해
         // register_embedded_bin_data 로 추출.
@@ -1761,10 +1779,8 @@ impl DocumentCore {
                 // Picture 를 body paragraph 의 sibling 으로 띄우지 않고, 실제 text_box
                 // paragraph 안에 삽입한다. 글상자 내부 좌표계는 text_box content box
                 // 기준이므로 caller 가 전달한 offset 은 Para-relative 로 해석한다.
-                let (offset_x_hu, offset_y_hu) = match (paper_offset_x_hu, paper_offset_y_hu) {
-                    (Some(x), Some(y)) => (x, y),
-                    _ => (0, 0),
-                };
+                let offset_x_hu = paper_offset_x_hu.unwrap_or(0);
+                let offset_y_hu = paper_offset_y_hu.unwrap_or(0);
                 // 표 셀 문단 안 그림은 한컴 저장본처럼 가로 기준을 단(셀 내용 영역)으로 둔다.
                 let (horz_rel_to, horz_rel_bits) = if cell_path_is_textbox {
                     (HorzRelTo::Para, 3u32)

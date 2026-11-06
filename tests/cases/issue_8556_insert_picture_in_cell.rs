@@ -1,6 +1,8 @@
 //! 관계형·고정형 — `insert_picture_in_cell_native` 는 그림을 표 문단의 형제가 아니라 칸 문단 안에 넣고,
 //! 글 옆 칸 그림은 행 나눔에서 한 번만 센다 (#8556). 고정형은 독립 한컴 인쇄의 전체 쪽수(5)뿐이다.
-//! 주석 갱신: 2026-11-04T21:48:00+09:00 (새 파일, 본문 영역 제한·행 나눔 쪽 소속 검사 추가)
+//! 주석 갱신: 2026-11-06T22:17:14+09:00 (Asia/Seoul; 메인테이너 경계 검사 추가)
+//! 직전 파일 변경: c2f05a26f38fc314c012d0655067cd664be35bd1 2026-11-04T21:48:26+09:00 (Git 시각; 아래 측정일과 구분).
+//! 추가 합성 검사는 실패 원자성·기본 인수·반환 소유 경로만 검사하며 새 배치를 고정하지 않는다.
 //! 앞 두 검사는 합성 문서의 소속·위치 기준·오프셋만 본다(시각 측정 해당 없음).
 //! 쪽 소속 검사: 2026-11-04 측정, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`
 //! raw 실루엣(2px 이웃), 입력 `samples/issue8556/21868765_cell_picture_insert.hwp`(같은 편집),
@@ -208,4 +210,74 @@ fn cell_picture_beside_host_text_grows_the_row_once_for_pagination() {
     };
     assert_eq!(page_of("33."), 0, "「33.」 행은 1쪽");
     assert_eq!(page_of("34."), 1, "「34.」 행은 2쪽");
+}
+
+fn blank_cell_core() -> (DocumentCore, usize, usize) {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.create_table_native(0, 0, 0, 1, 1).unwrap();
+    let (para, control) = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find_map(|(pi, p)| {
+            p.controls
+                .iter()
+                .position(|c| matches!(c, Control::Table(_)))
+                .map(|ci| (pi, ci))
+        })
+        .unwrap();
+    (core, para, control)
+}
+
+#[test]
+fn invalid_cell_paragraph_does_not_register_image_data_or_change_document() {
+    let (mut core, para, control) = blank_cell_core();
+    for path in [[(control, 0, 999)], [(control, 999, 0)], [(999, 0, 0)]] {
+        let before = serde_json::to_value(core.document()).unwrap();
+        assert!(core
+            .insert_picture_in_cell_native(
+                0, para, 0, &path, &PNG, 5000, 3000, 1, 1, "png", "서명", None, None
+            )
+            .is_err());
+        assert_eq!(
+            serde_json::to_value(core.document()).unwrap(),
+            before,
+            "실패한 경로 {path:?}는 BinData·문단·저장 메타데이터를 바꾸지 않는다"
+        );
+    }
+}
+
+#[test]
+fn each_cell_picture_offset_defaults_independently() {
+    for (x, y) in [(Some(1200), None), (None, Some(-500)), (None, None)] {
+        let (mut core, para, control) = blank_cell_core();
+        core.insert_picture_in_cell_native(
+            0,
+            para,
+            0,
+            &[(control, 0, 0)],
+            &PNG,
+            5000,
+            3000,
+            1,
+            1,
+            "png",
+            "서명",
+            x,
+            y,
+        )
+        .unwrap();
+        assert_eq!(
+            cell_picture(core.document(), "독립 오프셋"),
+            (
+                HorzRelTo::Column,
+                VertRelTo::Para,
+                x.unwrap_or(0),
+                y.unwrap_or(0),
+                false,
+                true
+            )
+        );
+    }
 }
