@@ -58,6 +58,86 @@ fn glyph_at(renderer: &SkiaLayerRenderer, y: f64, fixed_glyph_advances: bool) ->
         .expect("글리프를 투명 RGBA에 재생한다")
 }
 
+/// 검사 유형: 고정형(독립 Print PDF의 192DPI 화소 위치 ±2px, 채널 차이 32 이하).
+/// 주석 갱신: 2026-11-07 03:33 KST.
+/// interword-space-{wide,edge,tight}.hwpx 전1쪽 Native/fresh WASM 각각 100%에서 추가했다.
+/// 기준: pdf/issue4138/interword-space-tight-2024.pdf의 왼쪽 용지 테두리.
+/// PDFium 192DPI의 y=1250, x=37/38 회색 값 60/194는 글자 없는 구간의 독립 관측이다.
+/// 표 괘선의 최소 장치 폭 검사는 위의 기존 모듈에 유지하고, 이 검사는 용지 테두리의
+/// 소수 원점이 정수 화소 중심으로 옮겨져 두 화소의 coverage가 사라지는 회귀를 검출한다.
+mod issue_4138_page_frame_fractional_coverage {
+    use super::*;
+    use rhwp::paint::RenderProfile;
+    use rhwp::renderer::render_tree::RenderNodeType;
+    use rhwp::DocumentCore;
+
+    #[test]
+    fn paper_frame_preserves_independent_print_fractional_edge_coverage() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        let mut core = DocumentCore::from_bytes(
+            &std::fs::read(root.join("pdf/issue4138/interword-space-tight.hwpx"))
+                .expect("독립 Print와 동일한 입력"),
+        )
+        .expect("HWPX 입력");
+        core.set_hangul2024_compat(true);
+        let page = core
+            .build_page_render_tree(0)
+            .expect("용지 테두리 생산 경로");
+        // 글꼴 공급과 무관하게 실제 조판기가 만든 네 변을 그대로 재생한다.
+        let ops: Vec<_> = page
+            .root
+            .children
+            .iter()
+            .filter_map(|node| match &node.node_type {
+                RenderNodeType::Line(line) => Some(PaintOp::line(node.bbox, line.clone())),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(ops.len(), 4, "원본 용지 테두리 네 변");
+        let bounds = page.root.bbox;
+        let tree = PageLayerTree::with_profile(
+            bounds.width,
+            bounds.height,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, bounds.width, bounds.height),
+                None,
+                ops,
+            ),
+            RenderProfile::Print,
+        );
+        let pixels = SkiaLayerRenderer::new()
+            .render_pixels_with_options(
+                &tree,
+                RasterRenderOptions {
+                    scale: 2.0,
+                    transparent: false,
+                    background_color: Some(0x00FF_FFFF),
+                    ..Default::default()
+                },
+            )
+            .expect("글꼴 없는 Native 용지 테두리 재생");
+        let observed = |x: usize| {
+            let at = 1250 * pixels.stride + x * 4;
+            [pixels.bytes[at], pixels.bytes[at + 1], pixels.bytes[at + 2]]
+        };
+        let matched = (-2i32..=2).any(|shift| {
+            [(37i32, 60i32), (38, 194)]
+                .into_iter()
+                .all(|(x, expected)| {
+                    observed((x + shift) as usize)
+                        .into_iter()
+                        .all(|value| (i32::from(value) - expected).abs() <= 32)
+                })
+        });
+        assert!(
+            matched,
+            "독립 PDF의 두 화소 coverage [60, 194]가 ±2px 안에 있어야 한다: x=37/38 {:?}/{:?}",
+            observed(37),
+            observed(38),
+        );
+    }
+}
+
 fn ink_center(image: &RasterPixels) -> (f64, f64) {
     let mut mass = 0.0;
     let mut x_sum = 0.0;

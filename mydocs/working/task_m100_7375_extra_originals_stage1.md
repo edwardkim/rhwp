@@ -194,3 +194,17 @@ Native 최저 94.76447%, WASM 최저 94.83414%다. 44쪽은 97.97440/98.01130%�
 45쪽도 98.94138/98.95601%지만 보이는 가로 차이가 있어 완료 페이지로 판정하지 않았다.
 [전후 TSV·review/overlay·독립 원점](../pr/assets/issue4138/legacy-subscript-frame-20261107/README.md).
 이 단계는 전체 목표 완료·PR 제출 가능 판정이 아니며, 가로 배치 보정을 계속한다.
+
+## 2026-11-07 용지 테두리의 소수 원점 보정
+
+공백 대조군 Native 미달의 원인은 글꼴이 아니라 용지 테두리를 화소 중심으로 옮긴
+coverage 차이였다. 용지 테두리의 원점 소유를 공통 LineStyle→paint JSON→Native/CanvasKit에
+전달했고, 표 괘선의 기존 최소 굵기·정렬 경로는 유지했다. 독립 Print 192DPI의 두 화소를
+±2px·채널 차이 32 이하로 검사하여 실제 부모 1 FAIL→후보 PASS를 확인했다.
+
+wide/edge/tight Native 98.81412/98.36366/97.17452%→각100%, fresh WASM 각100%를
+유지했다. 기존 Native 검사까지 5 PASS, 집중 117 PASS, CanvasKit 선 계획 5 PASS다.
+#8696과 독립 글상자 대조 16건은 모두100%를 유지했다. 197쪽은 양 backend에서 전쪽
+재산출했고 부모와 바뀐 PNG가 각각0쪽이다. Native 44·129·130쪽, WASM 129·130쪽의
+수식 잔여는 그대로 남아 있으므로 PR 제출을 완료로 처리하지 않는다.
+[전후 TSV·review/overlay·검사와 producer](../pr/assets/issue4138/page-frame-coverage-20261107/README.md).

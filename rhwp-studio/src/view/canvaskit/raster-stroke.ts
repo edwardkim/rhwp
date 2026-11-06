@@ -38,6 +38,9 @@ export function rasterLineGeometry(
   const [px, py] = [a * line.x1 + c * line.y1 + e, b * line.x1 + d * line.y1 + f];
   const [ex, ey] = [a * dx + c * dy, b * dx + d * dy];
   if (![px, py, ex, ey].every(Number.isFinite)) return original;
+  if (style.preserveFractionalPosition) {
+    return [line.x1, line.y1, line.x2, line.y2, rasterWidth];
+  }
   let sx = 0, sy = 0;
   if (ex !== 0 && ey === 0) sy = Math.floor(py) + 0.5 - py;
   else if (ex === 0 && ey !== 0) sx = Math.floor(px) + 0.5 - px;

@@ -1,0 +1,624 @@
+{
+  "parent_head": "0510f302953de8acf3f777d55bf892979a67a1fb",
+  "base": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "kind": "용지 테두리의 소수 원점 보정; 분수/첨자 잔여는 별개 미완료",
+  "whole": [
+    {
+      "backend": "native",
+      "pages": 197,
+      "missing": [],
+      "minimum": 94.76447,
+      "below98": [
+        44,
+        129,
+        130
+      ],
+      "changed_png_pages": [],
+      "previous_producer": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-legacy-subscript-repair",
+      "manifest_sha256": "bd9fa9eb0f19374d41f00d6e5286d8911ac0d55fd5971b5f76b824bb65e4991b"
+    },
+    {
+      "backend": "wasm",
+      "pages": 197,
+      "missing": [],
+      "minimum": 94.83414,
+      "below98": [
+        129,
+        130
+      ],
+      "changed_png_pages": [],
+      "previous_producer": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-legacy-subscript-repair",
+      "manifest_sha256": "8148a14fa252953ffbbf488f9c31c2a0f352d1525433bd39c643bde190e57896"
+    }
+  ],
+  "controls": [
+    {
+      "key": "wide",
+      "backend": "native",
+      "before_raw": 98.81412,
+      "after_raw": 100.0,
+      "body_png_unchanged": true,
+      "body_crop_pixels": [
+        61,
+        61,
+        1526,
+        2182
+      ],
+      "source": {
+        "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-interword-space-investigation/interword-spaces.hwpx",
+        "sha256": "a3313b8c499531f2c065192d88cb692b6f4906bab3fd4125a3a384f7032c2d1a"
+      },
+      "pdf": {
+        "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-interword-space-investigation/interword-spaces-2024.pdf",
+        "sha256": "6a9313294f8867d96193f5d1cf75588758be125a5a427b91b44a3067fc64b83c"
+      }
+    },
+    {
+      "key": "wide",
+      "backend": "wasm",
+      "before_raw": 100.0,
+      "after_raw": 100.0,
+      "body_png_unchanged": true,
+      "body_crop_pixels": [
+        61,
+        61,
+        1526,
+        2182
+      ],
+      "source": {
+        "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-interword-space-investigation/interword-spaces.hwpx",
+        "sha256": "a3313b8c499531f2c065192d88cb692b6f4906bab3fd4125a3a384f7032c2d1a"
+      },
+      "pdf": {
+        "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-interword-space-investigation/interword-spaces-2024.pdf",
+        "sha256": "6a9313294f8867d96193f5d1cf75588758be125a5a427b91b44a3067fc64b83c"
+      }
+    },
+    {
+      "key": "edge",
+      "backend": "native",
+      "before_raw": 98.36366,
+      "after_raw": 100.0,
+      "body_png_unchanged": true,
+      "body_crop_pixels": [
+        61,
+        61,
+        1526,
+        2182
+      ],
+      "source": {
+        "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-interword-space-investigation/frame-edge-spaces.hwpx",
+        "sha256": "32fb2f12b19c36a21e674d86ee5de3ab9b3f35f5c2b166362cf222a6751ccfc5"
+      },
+      "pdf": {
+        "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-interword-space-investigation/frame-edge-spaces-2024.pdf",
+        "sha256": "643c7c4ffbee7636c77d2ed53f46ae2ec1d48f47a9a16b30c972ba77683240d4"
+      }
+    },
+    {
+      "key": "edge",
+      "backend": "wasm",
+      "before_raw": 100.0,
+      "after_raw": 100.0,
+      "body_png_unchanged": true,
+      "body_crop_pixels": [
+        61,
+        61,
+        1526,
+        2182
+      ],
+      "source": {
+        "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-interword-space-investigation/frame-edge-spaces.hwpx",
+        "sha256": "32fb2f12b19c36a21e674d86ee5de3ab9b3f35f5c2b166362cf222a6751ccfc5"
+      },
+      "pdf": {
+        "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-interword-space-investigation/frame-edge-spaces-2024.pdf",
+        "sha256": "643c7c4ffbee7636c77d2ed53f46ae2ec1d48f47a9a16b30c972ba77683240d4"
+      }
+    },
+    {
+      "key": "tight",
+      "backend": "native",
+      "before_raw": 97.17452,
+      "after_raw": 100.0,
+      "body_png_unchanged": true,
+      "body_crop_pixels": [
+        61,
+        61,
+        1526,
+        2182
+      ],
+      "source": {
+        "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-interword-space-investigation/tight-spaces.hwpx",
+        "sha256": "1ca8014e5502d480b3fdecda628709bca535959516d1ed84b9e5c5bc5b265fe2"
+      },
+      "pdf": {
+        "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-interword-space-investigation/tight-spaces-2024.pdf",
+        "sha256": "4ba1386563473788c875fee3b82d7e4bbed2797056158554fdf4b44bdd31ecb4"
+      }
+    },
+    {
+      "key": "tight",
+      "backend": "wasm",
+      "before_raw": 100.0,
+      "after_raw": 100.0,
+      "body_png_unchanged": true,
+      "body_crop_pixels": [
+        61,
+        61,
+        1526,
+        2182
+      ],
+      "source": {
+        "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-interword-space-investigation/tight-spaces.hwpx",
+        "sha256": "1ca8014e5502d480b3fdecda628709bca535959516d1ed84b9e5c5bc5b265fe2"
+      },
+      "pdf": {
+        "path": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-interword-space-investigation/tight-spaces-2024.pdf",
+        "sha256": "4ba1386563473788c875fee3b82d7e4bbed2797056158554fdf4b44bdd31ecb4"
+      }
+    }
+  ],
+  "producer": {
+    "native": {
+      "path": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/rhwp-candidate-native",
+      "sha256": "546b3bc69063d465f859b258c4818514858cff449d984d06f030cbf3666b1e79"
+    },
+    "rlib": {
+      "path": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/librhwp-candidate.rlib",
+      "sha256": "50309f41d882b58734eac35d7c2bc369edeb9caf35e9b8474e5f332682c908f9"
+    },
+    "package": {
+      "rhwp.js": "370ddff0fd1a1cf6f889edb1b2a42f420fac62f7f57df4b9cff19829e60cdd5f",
+      "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+      "rhwp_bg.wasm.d.ts": "8f22eadc575f370fcbd6034f1982e8081ae8956c379e4544c24fb7fa3d809aa6",
+      "README.md": "ad35a0f1fbf601b33f5a969103656e220e75031ceee42bb7fc2d95ed32ed25aa",
+      "rhwp_bg.wasm": "f6f4305e23901a7c2c055a961c49b98b3c3b1f75180d953de9b18f593ab3f4df",
+      ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+      "package.json": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+      "rhwp.d.ts": "5638e41da6c2ec671122ab0bedaf6e4dec8498194d89fe430c27ab2d904288e2"
+    },
+    "wasm_build": "Mac locked wrapper --target web --out-dir pkg --no-opt 로컬 대체 빌드. Docker 최적화 아님.",
+    "product_source_hashes": {
+      "src/renderer/mod.rs": "3f19e14309bb9de7763af17d6d6288459635f84c67b21b8e5da9d5202a3f7b31",
+      "src/renderer/layout.rs": "f2d2b59894f1a9795d84a451bf4dae728b9a91d99417cb2715bc450e6be12a2d",
+      "src/renderer/layout/utils.rs": "ec537ed511412eee3aeb607ed67d95891511425090eea7778a74679e57459e92",
+      "src/renderer/raster_stroke.rs": "0d48c10f5e2f69f75a0a38a6826ec9cf09c6dc28d7b24578ac6790229d1baa60",
+      "src/paint/json.rs": "b898899a8af61e1dfb735ca6cb3d42fc749f8cd8f4ffca7c95b05f400e95d15d"
+    }
+  },
+  "tests": [
+    {
+      "name": "before-native-compile",
+      "command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/Users/tsjang/rhwp/tests/cases/native_fractional_glyph_origin.rs",
+        "--extern",
+        "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-legacy-subscript-repair/librhwp-candidate.rlib",
+        "-L",
+        "dependency=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-legacy-subscript-repair/candidate-native-deps",
+        "-L",
+        "native=/Users/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+        "-o",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/before-native-guards",
+        "--extern",
+        "serde_json=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-legacy-subscript-repair/candidate-native-deps/libserde_json-67d6313cceeae34f.rlib",
+        "--extern",
+        "ttf_parser=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-legacy-subscript-repair/candidate-native-deps/libttf_parser-29a0d332d5024b81.rlib",
+        "--cfg",
+        "feature=\"native-skia\""
+      ],
+      "exit_code": 0,
+      "seconds": 11.002,
+      "summary": []
+    },
+    {
+      "name": "before-native-guards",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/before-native-guards",
+        "--test-threads=8",
+        "--nocapture",
+        "paper_frame_preserves_independent_print_fractional_edge_coverage"
+      ],
+      "exit_code": 101,
+      "seconds": 0.828,
+      "summary": [
+        "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.04s"
+      ]
+    },
+    {
+      "name": "after-native-compile",
+      "command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/Users/tsjang/rhwp/tests/cases/native_fractional_glyph_origin.rs",
+        "--extern",
+        "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/librhwp-candidate.rlib",
+        "-L",
+        "dependency=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/candidate-native-deps",
+        "-L",
+        "native=/Users/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+        "-o",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/after-native-guards",
+        "--extern",
+        "serde_json=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-legacy-subscript-repair/candidate-native-deps/libserde_json-67d6313cceeae34f.rlib",
+        "--extern",
+        "ttf_parser=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-legacy-subscript-repair/candidate-native-deps/libttf_parser-29a0d332d5024b81.rlib",
+        "--cfg",
+        "feature=\"native-skia\""
+      ],
+      "exit_code": 0,
+      "seconds": 2.066,
+      "summary": []
+    },
+    {
+      "name": "after-native-guards",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/after-native-guards",
+        "--test-threads=8",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "seconds": 0.862,
+      "summary": [
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s"
+      ]
+    },
+    {
+      "name": "focused-compile",
+      "command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/focused-formal.rs",
+        "--extern",
+        "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/librhwp-candidate.rlib",
+        "-L",
+        "dependency=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/candidate-native-deps",
+        "-L",
+        "native=/Users/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+        "-o",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/focused-formal",
+        "--extern",
+        "serde_json=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-legacy-subscript-repair/candidate-native-deps/libserde_json-67d6313cceeae34f.rlib",
+        "--extern",
+        "ttf_parser=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-legacy-subscript-repair/candidate-native-deps/libttf_parser-29a0d332d5024b81.rlib"
+      ],
+      "exit_code": 0,
+      "seconds": 1.305,
+      "summary": []
+    },
+    {
+      "name": "focused-tests",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/focused-formal",
+        "--test-threads=8",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "seconds": 11.734,
+      "summary": [
+        "test result: ok. 117 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.98s"
+      ]
+    }
+  ],
+  "preservation": [
+    [
+      {
+        "stage": "candidate",
+        "backend": "native",
+        "key": "control",
+        "raw": 100.0,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/focus-three/captures/candidate/native/control/control/silhouette_manifest.json"
+      },
+      {
+        "stage": "candidate",
+        "backend": "native",
+        "key": "repro",
+        "raw": 100.0,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/focus-three/captures/candidate/native/repro/repro/silhouette_manifest.json"
+      },
+      {
+        "stage": "candidate",
+        "backend": "native",
+        "key": "used",
+        "raw": 100.0,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/focus-three/captures/candidate/native/used/used/silhouette_manifest.json"
+      },
+      {
+        "stage": "candidate",
+        "backend": "wasm",
+        "key": "control",
+        "raw": 100.0,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/focus-three/captures/candidate/wasm/control/control/silhouette_manifest.json"
+      },
+      {
+        "stage": "candidate",
+        "backend": "wasm",
+        "key": "repro",
+        "raw": 100.0,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/focus-three/captures/candidate/wasm/repro/repro/silhouette_manifest.json"
+      },
+      {
+        "stage": "candidate",
+        "backend": "wasm",
+        "key": "used",
+        "raw": 100.0,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/focus-three/captures/candidate/wasm/used/used/silhouette_manifest.json"
+      }
+    ],
+    [
+      {
+        "backend": "native",
+        "key": "protected",
+        "exit_code": 0,
+        "raw": 100.0,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/independent-controls/native/protected/protected/silhouette_manifest.json"
+      },
+      {
+        "backend": "native",
+        "key": "empty",
+        "exit_code": 0,
+        "raw": 100.0,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/independent-controls/native/empty/empty/silhouette_manifest.json"
+      },
+      {
+        "backend": "native",
+        "key": "space",
+        "exit_code": 0,
+        "raw": 100.0,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/independent-controls/native/space/space/silhouette_manifest.json"
+      },
+      {
+        "backend": "wasm",
+        "key": "protected",
+        "exit_code": 0,
+        "raw": 100.0,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/independent-controls/wasm/protected/protected/silhouette_manifest.json"
+      },
+      {
+        "backend": "wasm",
+        "key": "empty",
+        "exit_code": 0,
+        "raw": 100.0,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/independent-controls/wasm/empty/empty/silhouette_manifest.json"
+      },
+      {
+        "backend": "wasm",
+        "key": "space",
+        "exit_code": 0,
+        "raw": 100.0,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/independent-controls/wasm/space/space/silhouette_manifest.json"
+      }
+    ],
+    [
+      {
+        "backend": "native",
+        "key": "local",
+        "exit_code": 0,
+        "raw": 100.0,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/box-origin-counter/page-frame-boundary-preservation/native/local/local/silhouette_manifest.json"
+      },
+      {
+        "backend": "native",
+        "key": "page",
+        "exit_code": 0,
+        "raw": 100.0,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/box-origin-counter/page-frame-boundary-preservation/native/page/page/silhouette_manifest.json"
+      },
+      {
+        "backend": "wasm",
+        "key": "local",
+        "exit_code": 0,
+        "raw": 100.0,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/box-origin-counter/page-frame-boundary-preservation/wasm/local/local/silhouette_manifest.json"
+      },
+      {
+        "backend": "wasm",
+        "key": "page",
+        "exit_code": 0,
+        "raw": 100.0,
+        "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/box-origin-counter/page-frame-boundary-preservation/wasm/page/page/silhouette_manifest.json"
+      }
+    ]
+  ],
+  "handbook_focus": [
+    {
+      "phase": "before",
+      "exit_code": 0,
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/2025 행정업무운영 편람(최종).hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+        "--key",
+        "handbook-hwpx",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/giant-legacy-subscript-repair/rhwp-candidate-native",
+        "--rasterizer",
+        "png",
+        "--dpi",
+        "96",
+        "--compat",
+        "2024",
+        "--pages",
+        "38,59,130,272",
+        "--page-workers",
+        "8",
+        "--embed-fonts",
+        "full",
+        "--out",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/handbook-focus/before",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts/KoPub Batang Light.ttf",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts/KoPub Batang Medium.ttf",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts/KoPub Batang Bold.ttf",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts/KoPub Dotum Light.ttf",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts/KoPub Dotum Medium.ttf",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts/KoPub Dotum Bold.ttf",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts/HANDotum.ttf",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts/HANDotumB.ttf",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts"
+      ],
+      "metrics": [
+        {
+          "page": 38,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 59769,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 59,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 132390,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 130,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.96463,
+          "silhouette_raw_unmatched_pixels": 23,
+          "silhouette_boundary_reconciled_pixels": 5,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 65022,
+          "tolerant_content_match_percent": 99.97232
+        },
+        {
+          "page": 272,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 36368,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/handbook-focus/before/handbook-hwpx/silhouette_manifest.json"
+    },
+    {
+      "phase": "after",
+      "exit_code": 0,
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/2025 행정업무운영 편람(최종).hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+        "--key",
+        "handbook-hwpx",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/rhwp-candidate-native",
+        "--rasterizer",
+        "png",
+        "--dpi",
+        "96",
+        "--compat",
+        "2024",
+        "--pages",
+        "38,59,130,272",
+        "--page-workers",
+        "8",
+        "--embed-fonts",
+        "full",
+        "--out",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/handbook-focus/after",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts/KoPub Batang Light.ttf",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts/KoPub Batang Medium.ttf",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts/KoPub Batang Bold.ttf",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts/KoPub Dotum Light.ttf",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts/KoPub Dotum Medium.ttf",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts/KoPub Dotum Bold.ttf",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts/HANDotum.ttf",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts/HANDotumB.ttf",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts"
+      ],
+      "metrics": [
+        {
+          "page": 38,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 59769,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 59,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 132390,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 130,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.96463,
+          "silhouette_raw_unmatched_pixels": 23,
+          "silhouette_boundary_reconciled_pixels": 5,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 65022,
+          "tolerant_content_match_percent": 99.97232
+        },
+        {
+          "page": 272,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 36368,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "manifest": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/page-frame-coverage-repair-v2/handbook-focus/after/handbook-hwpx/silhouette_manifest.json"
+    }
+  ],
+  "handbook_scope": "현재 Mac 로컬 글꼴, Native 96DPI 38/59/130/272쪽 집중 보존 확인. 최소 글꼴/383쪽 gate 완료 주장이 아님."
+}

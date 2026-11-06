@@ -1,0 +1,142 @@
+{
+  "initial": [
+    {
+      "name": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 23.496
+    },
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 36.015
+    },
+    {
+      "name": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 19.571
+    },
+    {
+      "name": "all-target-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 46.851
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 80.334
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+      ],
+      "exit_code": 1,
+      "seconds": 4.488
+    }
+  ],
+  "completion": [
+    {
+      "name": "prepare-after-format",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 14.728
+    },
+    {
+      "name": "manifest-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+      ],
+      "exit_code": 0,
+      "seconds": 0.931
+    },
+    {
+      "name": "unit-tiers",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+      ],
+      "exit_code": 0,
+      "seconds": 60.373
+    },
+    {
+      "name": "studio-raster",
+      "command": [
+        "node",
+        "--test",
+        "rhwp-studio/tests/canvaskit-raster-stroke.test.ts"
+      ],
+      "exit_code": 0,
+      "seconds": 0.199
+    },
+    {
+      "name": "studio-build",
+      "command": [
+        "npm",
+        "run",
+        "build",
+        "--prefix",
+        "rhwp-studio"
+      ],
+      "exit_code": 0,
+      "seconds": 31.474
+    }
+  ],
+  "studio_final_test": "CanvasKit 선 계획 5 PASS; 최소 장치 폭이 max(선언 장치 폭, 1)과 같은지 추가 확인. 로그는 ignored output의 studio-raster-final.log."
+}

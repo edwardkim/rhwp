@@ -1310,6 +1310,10 @@ pub struct LineStyle {
     /// 각 획을 다시 픽셀 중심에 옮기면 공통 간격과 복합 coverage가 바뀐다.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub compound_component: bool,
+    /// 원본 프레임의 분수 장치 좌표를 유지한다. 최소 획 폭과 별개이며,
+    /// 용지 테두리를 표 격자처럼 화소 중심에 옮기지 않는다.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub preserve_fractional_position: bool,
     /// 시작 화살표
     pub start_arrow: ArrowStyle,
     /// 끝 화살표

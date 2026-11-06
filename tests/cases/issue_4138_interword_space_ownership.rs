@@ -1,10 +1,11 @@
 //! 관계형: 줄 끝 첫 구분 공백과 뒤에 작성한 공백의 소유·전진 비율을 구분한다.
-//! 주석 갱신: 2026-11-07T02:11:45+09:00.
+//! 주석 갱신: 2026-11-07T03:42:00+09:00.
 //! 실제 21쪽 Native 99.97728% / fresh WASM 99.97745%; 같은 쪽의 독립 좌표는 별도 고정형으로 보호한다.
-//! 합성 대조군 raw(Native/WASM): wide 98.81412/100%, edge 98.36366/100%, tight 97.17452/100%.
-//! tight Native의 잔여 차이는 미완료이며 절대 px 핀을 추가하지 않는다. 모두 독립 한컴2024 Print와 1쪽이다.
+//! 용지 테두리 보정 후 합성 대조군 raw(Native/WASM): wide·edge·tight 모두 100/100%(각 독립 Print 1쪽).
+//! 용지 테두리의 고정형 화소 검사는 native_fractional_glyph_origin에 추가했다.
 //! 문단 소속·첫 낱말·작성 공백 수에 따른 font_size 비율을 검사하며 후보 좌표를 기대값으로 복제하지 않는다.
 //! 근거: mydocs/pr/assets/issue4138/interword-space-20261107/README.md.
+//! 추가 근거: mydocs/pr/assets/issue4138/page-frame-coverage-20261107/README.md.
 
 use rhwp::{
     renderer::{
