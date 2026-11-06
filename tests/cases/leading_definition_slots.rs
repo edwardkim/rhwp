@@ -201,3 +201,92 @@ fn definition_insertion_preserves_empty_field_and_title_slots() {
         matches!(&para.controls[range.control_idx], Control::Field(field) if field.field_id == 42)
     );
 }
+
+/// 공개 재현 문서와 독립 한컴 Print PDF의 Native/fresh WASM 전쪽 대조를
+/// 2026-11-07 제품 코드 24bb81d03에서 완료했다(각 1쪽, 원본·HWP 저장본 모두 100%).
+/// 숫자 좌표 대신 본문 글자 상자의 수용, 표 전후 순서와 내용 보존을 검사한다.
+#[test]
+fn reopened_report_keeps_complete_text_boxes_around_inline_table() {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+
+    fn descendants<'a>(node: &'a RenderNode, nodes: &mut Vec<&'a RenderNode>) {
+        nodes.push(node);
+        for child in &node.children {
+            descendants(child, nodes);
+        }
+    }
+
+    fn check(core: &DocumentCore) {
+        assert_eq!(core.page_count(), 1);
+        let tree = core.build_page_render_tree(0).unwrap();
+        let mut nodes = Vec::new();
+        descendants(&tree.root, &mut nodes);
+        let body: Vec<_> = nodes
+            .iter()
+            .filter_map(|node| match &node.node_type {
+                RenderNodeType::TextRun(run)
+                    if run.para_index == Some(0) && run.cell_context.is_none() =>
+                {
+                    Some((*node, run))
+                }
+                _ => None,
+            })
+            .collect();
+        let text: String = body.iter().map(|(_, run)| run.text.as_str()).collect();
+        assert_eq!(
+            text,
+            "담당 업무 내역은 다음과 같습니다. 검토 후 승인해 주세요."
+        );
+        for (node, run) in &body {
+            assert!(
+                node.bbox.height + 1e-6 >= run.style.font_size,
+                "저장 줄이 없는 본문도 글자 상자를 온전히 담는다: {:?}",
+                node.bbox
+            );
+            assert!(run.baseline > 0.0 && run.baseline <= node.bbox.height);
+        }
+        let tables: Vec<_> = nodes
+            .iter()
+            .filter(|node| matches!(node.node_type, RenderNodeType::Table(_)))
+            .collect();
+        assert_eq!(tables.len(), 1);
+        let table = tables[0];
+        let prefix = body
+            .iter()
+            .find(|(_, run)| run.text.starts_with("담당 업무"))
+            .unwrap()
+            .0;
+        let suffix = body
+            .iter()
+            .find(|(_, run)| run.text.starts_with("검토 후"))
+            .unwrap()
+            .0;
+        assert!(prefix.bbox.x + prefix.bbox.width <= table.bbox.x);
+        assert!(table.bbox.x + table.bbox.width <= suffix.bbox.x);
+        assert!(prefix.bbox.y < table.bbox.y + table.bbox.height);
+        assert!(suffix.bbox.y < table.bbox.y + table.bbox.height);
+        for expected in ["검토용 업무 보고서", "업무", "담당", "자료 검토", "김 담당"]
+        {
+            let count = nodes.iter().filter(|node| matches!(&node.node_type, RenderNodeType::TextRun(run) if run.text == expected)).count();
+            assert_eq!(count, 1, "머리말·셀 내용은 한 번만 보존한다: {expected}");
+        }
+    }
+
+    let input = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("mydocs/pr/assets/leading-definition-slots/input/report-implicit-column.hwpx");
+    let core = DocumentCore::from_bytes(&std::fs::read(input).unwrap()).unwrap();
+    check(&core);
+    let before = serde_json::to_value(&core.document().sections[0].paragraphs[0]).unwrap();
+    let bytes = core.export_hwp_with_adapter().unwrap();
+    assert_eq!(
+        serde_json::to_value(&core.document().sections[0].paragraphs[0]).unwrap(),
+        before
+    );
+    let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+    assert!(reopened.document().sections[0].paragraphs[0]
+        .line_segs
+        .is_empty());
+    check(&reopened);
+    let twice = DocumentCore::from_bytes(&reopened.export_hwp_with_adapter().unwrap()).unwrap();
+    check(&twice);
+}
