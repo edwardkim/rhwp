@@ -24,7 +24,9 @@ fix(layout): 칸 안의 쪽 기준 글 앞으로 표를 칸 흐름에 쌓지 않
 
 - [tests/cases/issue_8648_cell_page_overlay_no_flow.rs](../../tests/cases/issue_8648_cell_page_overlay_no_flow.rs)
 
-실행 전이므로 PASS로 기록하지 않는다. HWP/HWPX/PDF 커밋 포함·실행 파일 SHA, 전쪽 TSV 및 확대 판독은 아직 완료하지 않았다.
+통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 검증 뒤 현재까지 root 변경은 문서뿐이다.
+
+Native Skia 전용 검사·전쪽 Native/fresh WASM·쪽수·확대 판독·lint는 별도 완료 조건이며, 기본 feature 통과로 대신하지 않는다.
 
 ## 적용과 보정 계획
 
