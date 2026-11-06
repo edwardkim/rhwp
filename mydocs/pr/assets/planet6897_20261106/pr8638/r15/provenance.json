@@ -1,0 +1,58 @@
+{
+  "input": "mydocs/pr/assets/planet6897_20261106/pr8638/evaluation-original.hwp",
+  "pdf": "pdf/planet6897-20261106/pr8638/evaluation-original-2020.pdf",
+  "producer": {
+    "source_head": "048f44da99d83e186f3a9e139563d20545c8bdb4",
+    "changes": [
+      {
+        "path": "src/document_core/commands/formatting.rs",
+        "sha256": "c6c51d702884d72e88ce92d07b308fc0b7aa474a359e01f79bb28574a21f51d7"
+      },
+      {
+        "path": "src/renderer/layout/text_measurement.rs",
+        "sha256": "8990b68b2c03eaa3d428a43f61cb0440935d2002cc563a97db492b9f665e2532"
+      },
+      {
+        "path": "src/document_core/commands/html_import/inline_content.rs",
+        "sha256": "f1f477f92a0d2bfd1ef8cd40072463e4875484707e3fc21619576d3fc7baf578"
+      },
+      {
+        "path": "tests/cases/pr_8552_font_name_error_atomicity.rs",
+        "sha256": "26d2399859e91b116909074ab982f899f303b5aaf9720070a1f2893cdd7087ea"
+      },
+      {
+        "path": "tests/cases/native_pua_host_font_protocol.rs",
+        "sha256": "3150525be6ef916e5c4b4a1f132a4af44edd3baa4f4c304d5b12b29f96860425"
+      }
+    ]
+  },
+  "files": [
+    {
+      "path": "native.tsv",
+      "sha256": "308a91404e1b87dcb983ea24c4bcb1cc9ca6ae48dcc0c18eee99fa2c5b5132a0"
+    },
+    {
+      "path": "native-review.png",
+      "sha256": "160aacf0cf29db099f31daee73fbb8b86945c5242926de3d2e8e23ec508249bd"
+    },
+    {
+      "path": "native-overlay.png",
+      "sha256": "7746f1adfd3a4cb082ca7bed993732da7e912b5fc4e84042c8de584d8111f16b"
+    },
+    {
+      "path": "wasm.tsv",
+      "sha256": "12d1d9de49c1c6ebfd0107e188566540d259cd2a9e7f0ff4f1f0af733e48ebcb"
+    },
+    {
+      "path": "wasm-review.png",
+      "sha256": "ea774bed57826520a6f9982f0431049e3dbd184420dc43f00d328975b041ee9c"
+    },
+    {
+      "path": "wasm-overlay.png",
+      "sha256": "3f12866ca793bc053fd0928d094a454013972f211af5d406fb3a2b253b206184"
+    }
+  ],
+  "input_sha256": "a89b8d63ec93e34281c8dbe22f6ef89804a97130855432bda5416a2a3e1ad5ec",
+  "pdf_sha256": "10866c14fdf960ad41407ee8c12629c2f60e73e2817e1891e1081f3da71cfc3e",
+  "status": "R15 완료 측정. 제목 원점 차이는 별도 보정 중이며 최종 승인 아님."
+}

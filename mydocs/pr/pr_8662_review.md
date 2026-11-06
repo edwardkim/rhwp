@@ -20,6 +20,18 @@ fix: 저장 줄 없는 HWP5 TAC 표 행 높이·넘친 공백 줄 끝·변경 �
 원본 저장/편집 계약·측정과 배치의 공통 결과·backend 실제 소비를 소스와 독립 한컴 Print로 대조할 예정이다.
 개별 주장 페이지에 대응하는 입력·PDF를 output의 PR별 폴더에 준비했다. 약칭과 코드 예시는 실제 입력으로 세지 않는다.
 
+## 표지판 관리대장의 실제 Print 조건 대조
+
+기존 회귀가 명시한 Haansoft Batang 조건과 2022 PDF의 실제 내장 프로그램을 맞춰
+같은 원본 전1쪽을 비교했다. 제품 `048f44da99`에서 Native·fresh WASM 모두 raw
+**100.00%**다. 「의무설치기한」 머리 칸의 3행 보존·셀 내부 포함·표 겹침 없음과
+뒤 관리카드·설치 표의 경계를 직접 대조했다.
+
+2020 PDF는 서울한강·서울남산을 사용하므로 같은 이름의 별도 Print를 동일 조건으로
+취급하지 않는다. 초기 2022 측정의 글꼴 조건 누락을 보정했으며 원본·PDF·임계값은
+바꾸지 않았다. [원 주장 페이지의 두 TSV·review·overlay와 조건](assets/planet6897_20261106/pr8662/print2022/README.md).
+나머지 주장과 통합 최종 검증은 아직 완료되지 않아 최종 판정은 보류한다.
+
 ## 회귀·입력 확인
 
 - [tests/cases/issue_8619_dotum_one_dot_leader_supplier.rs](../../tests/cases/issue_8619_dotum_one_dot_leader_supplier.rs)
