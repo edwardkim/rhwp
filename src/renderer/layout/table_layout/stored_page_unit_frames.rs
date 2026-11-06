@@ -10,31 +10,51 @@ impl LayoutEngine {
     /// 앞 행이 원본 줄에 맞춰 성장한 경우에도 개체의 첫 프레임과 정확히 닫히는
     /// 행 경계를 보존한다. 셀 유닛을 다시 만들지 않고 이미 확정한 물리 행을 읽는다.
     pub(super) fn stored_measured_object_frame_row_count(&self, table: &Table) -> Option<usize> {
+        let profile = self.profile.get();
+        let normalization = self.render_normalization.borrow();
+        if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            || profile.session_edited()
+            || table.common.treat_as_char
+            || table.common.height == 0
+            || table.common.height > i32::MAX as u32
+            || table.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
+            || !self.indexed_stored_row_boxes_exceed_object_frame(table)
+            || normalization.table_frame_reflowed_without_cell_scope(table)
+            || normalization.nested_table_has_reflowed_host(table)
+        {
+            return None;
+        }
+        drop(normalization);
         let rows = self.stored_frame_row_plans.borrow();
         let rows = rows.get(&(table as *const Table as usize))?;
-        let mut prefix = 0i64;
+        let mut prefix = 0.0;
+        let declared = hwpunit_to_px(table.common.height as i32, self.dpi);
+        let spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
         for (index, height) in rows.iter().enumerate().take(rows.len().saturating_sub(1)) {
-            prefix += i64::from(crate::renderer::px_to_hwpunit(*height, self.dpi))
-                + if index > 0 {
-                    i64::from(table.cell_spacing)
-                } else {
-                    0
-                };
-            if prefix != i64::from(table.common.height) {
+            // 개별 행을 정수로 절삭한 뒤 더하면 합성된 저장 줄 높이에서 1HU씩
+            // 잃을 수 있다. 실제 물리 합과 선언을 같은 좌표계에서 정확히 비교한다.
+            prefix += *height + if index > 0 { spacing } else { 0.0 };
+            if prefix.to_bits() != declared.to_bits() {
                 continue;
             }
             let boundary = index + 1;
             // 첫 상자를 닫는 원본 행만 인증한다. 뒤에서 새로 조판한 내용이나
             // 경계를 가로지르는 병합 칸은 이 원점을 증명하지 못한다.
-            return table
+            let original = table
                 .cells
                 .iter()
                 .filter(|cell| usize::from(cell.row) < boundary)
                 .all(|cell| {
                     usize::from(cell.row) + usize::from(cell.row_span.max(1)) <= boundary
                         && self.stored_plain_text_cell_frame(table, cell)
-                })
-                .then_some(boundary);
+                });
+            if std::env::var_os("RHWP_DIAG_SCAN").is_some() {
+                eprintln!(
+                    "DIAG_SCAN MEASURED_OBJECT_FRAME table={:p} boundary={} original={}",
+                    table, boundary, original
+                );
+            }
+            return original.then_some(boundary);
         }
         None
     }

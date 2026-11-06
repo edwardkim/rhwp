@@ -2846,6 +2846,9 @@ impl LayoutEngine {
         &self,
         table: &crate::model::table::Table,
     ) -> Option<usize> {
+        if !self.native_stored_table_has_fragment_frames(table) {
+            return self.stored_measured_object_frame_row_count(table);
+        }
         let rows = usize::from(table.row_count);
         if rows < 2 || table.common.height == 0 || table.common.height >= 0x8000_0000 {
             return None;
@@ -16583,10 +16586,16 @@ impl LayoutEngine {
                     // 쪽에서 갈린 원본 중첩 표는 개체 높이로 첫 조각만 저장한다. 그 높이가
                     // 닫는 행 경계는 한/글이 실제로 쪽을 넘긴 자리이므로 셀 내부 쪽 나눔과
                     // 같이 보존한다. 첫 조각 뒤의 행만 이 경계를 연다.
-                    let stored_object_frame_row = self
-                        .native_stored_table_has_fragment_frames(nt)
-                        .then(|| self.stored_object_frame_row_count(nt))
-                        .flatten();
+                    let stored_object_frame_row = self.stored_object_frame_row_count(nt);
+                    if std::env::var_os("RHWP_DIAG_SCAN").is_some() {
+                        let normalization = self.render_normalization.borrow();
+                        eprintln!(
+                            "DIAG_SCAN OBJECT_ROW_FRAME table={:p} rows={} declared={} reflowed={} unscoped={} host={} boundary={:?} heights={:?}",
+                            nt, nrow, nt.common.height, normalization.table_text_reflowed(nt),
+                            normalization.table_frame_reflowed_without_cell_scope(nt),
+                            normalization.nested_table_has_reflowed_host(nt), stored_object_frame_row, rhs,
+                        );
+                    }
                     for (ri, rh) in rhs.iter().enumerate() {
                         // [#4069] CELL 분할 중첩 표는 큰 행을 단일 atom으로 바깥
                         // 원장에 올리지 않는다. 행에서 콘텐츠가 가장 높은 셀의 unit
@@ -16794,9 +16803,13 @@ impl LayoutEngine {
                                     }
 
                                     let mut hard_break_before = driver_unit.hard_break_before
-                                        || (reset_before && ri == 0 && fragment_index == 0);
-                                    let mut stored_frame_break_before =
-                                        driver_unit.stored_frame_break_before;
+                                        || (reset_before && ri == 0 && fragment_index == 0)
+                                        || (stored_object_frame_row == Some(ri)
+                                            && fragment_index == 0);
+                                    let mut stored_frame_break_before = driver_unit
+                                        .stored_frame_break_before
+                                        || (stored_object_frame_row == Some(ri)
+                                            && fragment_index == 0);
                                     let mut vpos_gap_before =
                                         vpos_gap_before_para && ri == 0 && fragment_index == 0;
                                     for ((cell_units, start), end) in row_units
@@ -17071,7 +17084,8 @@ impl LayoutEngine {
                             // nested row. Project it once, just like the host's
                             // hard break, so capacity selection keeps the header
                             // with the following stored frame.
-                            stored_frame_break_before: stored_frame_break_before_para && ri == 0,
+                            stored_frame_break_before: (stored_frame_break_before_para && ri == 0)
+                                || stored_object_frame_row == Some(ri),
                             page_frame_reset_before: hard_break_before,
                             vpos_gap_before,
                             para_idx: pi,
@@ -23337,6 +23351,10 @@ impl LayoutEngine {
                     cell.paragraphs.get(u.para_idx).is_some_and(|para| {
                         self.stored_plain_zero_origin_line_boundary(cell, table, para, u.vis_start)
                     });
+                // 부모에 투영된 행의 시작은 자식이 인증한 물리 프레임일 수 있다.
+                // 표식만 믿지 않고 원래 자식 컷까지 같은 공통 조회로 추적한다.
+                let nested_source_frame = u.stored_frame_break_before
+                    && self.stored_nested_source_unit_frame_break(cell, table, j, styles);
                 // 한 저장 줄이 자식 표 전체를 소유하면, 행으로 펼친 뒤에도 그
                 // 줄의 쪽 시작을 유지한다. 현재 잔여에는 안 들어가지만 새 밴드에는
                 // 전부 들어가는 원본 표에만 적용하며 큰 표의 행 분할은 보존한다.
@@ -23358,6 +23376,7 @@ impl LayoutEngine {
                     && u.stored_frame_break_before
                     && (plain_zero_origin_boundary
                         || body_frame_reset
+                        || nested_source_frame
                         || self.stored_joint_zero_origin_boundary(cell, table)
                             == Some((u.para_idx, u.vis_start))
                         || declared_saved_frame_break
@@ -23481,6 +23500,7 @@ impl LayoutEngine {
                         ("body", body_frame_reset),
                         ("declared", declared_saved_frame_break),
                         ("plain_zero", plain_zero_origin_boundary),
+                        ("nested_source", nested_source_frame),
                         ("following_nested", follows_single_cell_nested_host),
                         ("hwp_scale", hwp5_page_scale_cross_para_reset),
                         ("hwpx_scale", hwpx_page_scale_cross_para_reset),

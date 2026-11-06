@@ -43,6 +43,19 @@ impl LayoutEngine {
         }) else {
             return false;
         };
+        // 원본의 첫 개체 상자가 완결 행에서 닫힌 경우는 문자 줄 reset이 아니다.
+        // 상위 컷에서도 같은 자식 행 계획을 인증하고, 그 행의 첫 유닛만 보존한다.
+        if unit.stored_frame_break_before
+            && unit
+                .nested_row
+                .is_some_and(|row| self.stored_object_frame_row_count(child) == Some(row))
+            && unit
+                .nested_table_fragment
+                .as_ref()
+                .is_none_or(|fragment| fragment.start_cut.iter().all(|&start| start == 0))
+        {
+            return true;
+        }
         if let Some((row, fragment)) = unit.nested_row.zip(unit.nested_table_fragment.as_ref()) {
             return self.stored_nested_source_cut_frame_break(
                 child,
