@@ -1,6 +1,7 @@
 """관계형: 편람 기준 TSV 하한·backend 신원과 웹폰트 공급 계약을 검사한다.
 
-주석 갱신: 2026-11-04 17:13 KST. 실물 절대 px 좌표를 고정하는 검사가 아니다.
+주석 갱신: 2026-11-06T21:53:53+09:00 (Asia/Seoul).
+실물 절대 px 좌표를 고정하는 검사가 아니다.
 """
 import copy
 import csv
@@ -148,7 +149,7 @@ class HandbookGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             cache = Path(temp)
             original = ROOT / 'tests/fixtures/fonts/RHWPExactKerningSmoke.ttf'
-            font = TTFont(original)
+            font = TTFont(original, recalcTimestamp=False)
             font.flavor = 'woff'
             source = cache / 'fixture.woff'
             font.save(source)
@@ -157,9 +158,18 @@ class HandbookGateTests(unittest.TestCase):
             (cache / expected).mkdir()
             source.replace(cache / expected / source.name)
             with patch.object(handbook, 'WEBFONTS', {('Missing', 'Regular'): ('fixture.woff', expected)}), \
-                    patch.object(handbook.urllib.request, 'urlopen') as fetch:
+                    patch.object(handbook.urllib.request, 'urlopen') as fetch, \
+                    patch('fontTools.ttLib.tables._h_e_a_d.timestampNow', return_value=3_900_000_000):
                 records = handbook.supply_webfonts(ROOT, cache, lambda *_: False)
+            first_bytes = Path(records[0]['native_path']).read_bytes()
+            with patch.object(handbook, 'WEBFONTS', {('Missing', 'Regular'): ('fixture.woff', expected)}), \
+                    patch.object(handbook.urllib.request, 'urlopen') as second_fetch, \
+                    patch('fontTools.ttLib.tables._h_e_a_d.timestampNow', return_value=3_900_000_060):
+                repeated = handbook.supply_webfonts(ROOT, cache, lambda *_: False)
             fetch.assert_not_called()
+            second_fetch.assert_not_called()
+            self.assertEqual(records[0]['native_sha256'], repeated[0]['native_sha256'])
+            self.assertEqual(first_bytes, Path(repeated[0]['native_path']).read_bytes())
             self.assertEqual(len(records), 1)
             self.assertEqual(records[0]['source_sha256'], expected)
             converted = TTFont(records[0]['native_path'])

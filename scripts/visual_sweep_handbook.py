@@ -160,7 +160,8 @@ def supply_webfonts(root, cache, has_face=None, *, font_paths=()):
         from fontTools.ttLib import TTFont
         target = face_cache / (name + '.ttf')
         # 매번 원본에서 변환해 기존 TTF 캐시 변조를 통과시키지 않는다.
-        font = TTFont(source)
+        # 원본을 재검증해 변환하되 실행 시각으로 프로그램 해시를 바꾸지 않는다.
+        font = TTFont(source, recalcTimestamp=False)
         try:
             font.flavor = None
             with tempfile.NamedTemporaryFile(dir=face_cache, suffix='.ttf', delete=False) as out:
