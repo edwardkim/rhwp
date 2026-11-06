@@ -239,16 +239,7 @@ fn execute(
             if doc.session().font_generation() != font_generation {
                 return Err(invalid("stale font generation"));
             }
-            let frame = doc.session().render_region(
-                page,
-                RasterRegion {
-                    x: region.x,
-                    y: region.y,
-                    width: region.width,
-                    height: region.height,
-                },
-                scale,
-            )?;
+            let frame = doc.session().render_region(page, region.into(), scale)?;
             Ok(O::Frame {
                 document_id: doc.id,
                 frame,
@@ -266,16 +257,9 @@ fn execute(
             if doc.session().font_generation() != font_generation {
                 return Err(invalid("stale font generation"));
             }
-            let frame = doc.session().render_tiled_region(
-                page,
-                RasterRegion {
-                    x: region.x,
-                    y: region.y,
-                    width: region.width,
-                    height: region.height,
-                },
-                scale,
-            )?;
+            let frame = doc
+                .session()
+                .render_tiled_region(page, region.into(), scale)?;
             Ok(O::Frame {
                 document_id: doc.id,
                 frame,

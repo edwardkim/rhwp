@@ -641,3 +641,193 @@ fn tiled_runtime_and_raster_cache_controls_report_feature_disabled() {
         );
     }
 }
+
+fn viewport_command(
+    target: NativeRuntimeTarget,
+    region: NativeRuntimeRegion,
+    scale: f64,
+    use_tiles: bool,
+) -> Command {
+    if use_tiles {
+        Command::RenderTiledRegion {
+            target,
+            font_generation: 0,
+            page: 0,
+            region,
+            scale,
+        }
+    } else {
+        Command::RenderRegion {
+            target,
+            font_generation: 0,
+            page: 0,
+            region,
+            scale,
+        }
+    }
+}
+
+#[test]
+fn runtime_output_reservations_match_enclosing_rgba_and_hold_until_receipt() {
+    // floor(-0.3*1.25)..ceil(3.1*1.25) is [-1,4), and the
+    // vertical interval is [0,4): exactly 5*4*4 = 80 RGBA bytes.
+    let region = NativeRuntimeRegion {
+        x: -0.3,
+        y: 0.2,
+        width: 3.4,
+        height: 2.9,
+    };
+    for use_tiles in [false, true] {
+        let mut runtime = NativeRuntime::spawn(NativeRuntimeConfig {
+            max_outstanding: 4,
+            max_pending_bytes: 80,
+        })
+        .unwrap();
+        let target = new(&mut runtime).target();
+        let first = runtime
+            .try_submit(viewport_command(target, region, 1.25, use_tiles))
+            .unwrap();
+        assert_eq!(
+            runtime
+                .try_submit(viewport_command(target, region, 1.25, use_tiles))
+                .unwrap_err()
+                .error,
+            NativeRuntimeError::ByteCapacity
+        );
+        let completion = next(&mut runtime);
+        assert_eq!(completion.request_id, first);
+        #[cfg(feature = "native-skia")]
+        {
+            let Output::Frame { frame, .. } = completion.result.unwrap() else {
+                panic!("rejected second request must not supersede the first");
+            };
+            assert_eq!((frame.origin_x, frame.origin_y), (-1, 0));
+            assert_eq!((frame.pixels.width, frame.pixels.height), (5, 4));
+            assert_eq!((frame.pixels.stride, frame.pixels.bytes.len()), (20, 80));
+        }
+        #[cfg(not(feature = "native-skia"))]
+        assert_eq!(completion.result.unwrap_err().code, "featureDisabled");
+        let after_receipt = runtime
+            .try_submit(viewport_command(target, region, 1.25, use_tiles))
+            .unwrap();
+        assert_eq!(next(&mut runtime).request_id, after_receipt);
+    }
+}
+
+#[test]
+fn many_small_viewports_use_real_bytes_while_completion_credits_stay_bounded() {
+    let mut runtime = NativeRuntime::spawn(NativeRuntimeConfig {
+        max_outstanding: 4,
+        max_pending_bytes: 4 * 8 * 8 * 4,
+    })
+    .unwrap();
+    let target = new(&mut runtime).target();
+    let mut accepted = Vec::new();
+    for _ in 0..4 {
+        accepted.push(runtime.try_submit(render(target)).unwrap());
+    }
+    assert_eq!(
+        runtime.try_submit(render(target)).unwrap_err().error,
+        NativeRuntimeError::QueueFull
+    );
+    for (index, id) in accepted.into_iter().enumerate() {
+        let completion = next(&mut runtime);
+        assert_eq!(completion.request_id, id);
+        if index < 3 {
+            assert!(matches!(
+                completion.result.unwrap(),
+                Output::Skipped(NativeRuntimeSkipReason::SupersededRender)
+            ));
+        } else {
+            #[cfg(feature = "native-skia")]
+            assert!(matches!(completion.result.unwrap(), Output::Frame { .. }));
+            #[cfg(not(feature = "native-skia"))]
+            assert_eq!(completion.result.unwrap_err().code, "featureDisabled");
+        }
+    }
+}
+
+#[test]
+fn invalid_render_geometry_is_rejected_before_superseding_a_valid_request() {
+    let region = NativeRuntimeRegion {
+        x: 0.0,
+        y: 0.0,
+        width: 8.0,
+        height: 8.0,
+    };
+    for use_tiles in [false, true] {
+        let mut runtime = runtime();
+        let target = new(&mut runtime).target();
+        let first = runtime.try_submit(render(target)).unwrap();
+        for (invalid, scale) in [
+            (
+                NativeRuntimeRegion {
+                    x: f64::NAN,
+                    ..region
+                },
+                1.0,
+            ),
+            (
+                NativeRuntimeRegion {
+                    x: f64::INFINITY,
+                    ..region
+                },
+                1.0,
+            ),
+            (
+                NativeRuntimeRegion {
+                    width: -1.0,
+                    ..region
+                },
+                1.0,
+            ),
+            (
+                NativeRuntimeRegion {
+                    height: 0.0,
+                    ..region
+                },
+                1.0,
+            ),
+            (
+                NativeRuntimeRegion {
+                    x: f64::MAX,
+                    ..region
+                },
+                1.0,
+            ),
+            (
+                NativeRuntimeRegion {
+                    width: 16_385.0,
+                    ..region
+                },
+                1.0,
+            ),
+            (
+                NativeRuntimeRegion {
+                    width: 4097.0,
+                    height: 4096.0,
+                    ..region
+                },
+                1.0,
+            ),
+            (region, 0.0),
+            (region, -1.0),
+            (region, 64.1),
+            (region, f64::NAN),
+        ] {
+            assert_eq!(
+                runtime
+                    .try_submit(viewport_command(target, invalid, scale, use_tiles))
+                    .unwrap_err()
+                    .error,
+                NativeRuntimeError::InvalidArgument
+            );
+        }
+        let completion = next(&mut runtime);
+        assert_eq!(completion.request_id, first);
+        #[cfg(feature = "native-skia")]
+        assert!(matches!(completion.result.unwrap(), Output::Frame { .. }));
+        #[cfg(not(feature = "native-skia"))]
+        assert_eq!(completion.result.unwrap_err().code, "featureDisabled");
+    }
+}

@@ -83,8 +83,8 @@ pub struct NativeRuntimeTarget {
 pub struct NativeRuntimeConfig {
     /// Includes queued, executing and completed-but-unread requests (1..=16).
     pub max_outstanding: usize,
-    /// Aggregate buffer reservations (1..=128 MiB). A render reserves the existing
-    /// 64 MiB frame ceiling; a save reserves 128 MiB, copy/cut 1 MiB,
+    /// Aggregate buffer reservations (1..=128 MiB). Renders reserve their exact
+    /// enclosing RGBA output size; a save reserves 128 MiB, copy/cut 1 MiB,
     /// and accessibility 8 MiB before acceptance. Snapshot allocations are
     /// measured after the bounded query, not transient layout memory or RSS.
     pub max_pending_bytes: usize,
@@ -106,6 +106,17 @@ pub struct NativeRuntimeRegion {
     pub y: f64,
     pub width: f64,
     pub height: f64,
+}
+
+impl From<NativeRuntimeRegion> for RasterRegion {
+    fn from(region: NativeRuntimeRegion) -> Self {
+        Self {
+            x: region.x,
+            y: region.y,
+            width: region.width,
+            height: region.height,
+        }
+    }
 }
 
 /// Typed transport commands; no engine or renderer crosses the thread boundary.
@@ -263,7 +274,18 @@ impl NativeRuntimeCommand {
         )
     }
 
-    fn byte_reservation(&self) -> Option<usize> {
+    fn byte_reservation(&self) -> Result<usize, NativeRuntimeError> {
+        if let Self::RenderRegion { region, scale, .. }
+        | Self::RenderTiledRegion { region, scale, .. } = self
+        {
+            NativeDocumentSession::check_scale(*scale)
+                .map_err(|_| NativeRuntimeError::InvalidArgument)?;
+            let options = crate::renderer::layer_renderer::RasterRenderOptions::default();
+            return RasterRegion::from(*region)
+                .pixel_window(*scale, options.max_dimension, MAX_FRAME_PIXELS)
+                .map(|window| window.output_bytes)
+                .map_err(|_| NativeRuntimeError::InvalidArgument);
+        }
         let selection_bytes = |selection: &NativeTextSelection| {
             selection
                 .anchor
@@ -274,7 +296,7 @@ impl NativeRuntimeCommand {
                     crate::document_core::native_interaction::NativeCellPathEntry,
                 >())
         };
-        match self {
+        let bytes = match self {
             Self::Open {
                 bytes, password, ..
             } => bytes
@@ -287,9 +309,6 @@ impl NativeRuntimeCommand {
             Self::CopySelection { .. } | Self::CutSelection { .. } => Some(MAX_CLIPBOARD_BYTES),
             Self::BeginEdit { selection, .. } | Self::SetSelection { selection, .. } => {
                 selection_bytes(selection)
-            }
-            Self::RenderRegion { .. } | Self::RenderTiledRegion { .. } => {
-                usize::try_from(MAX_FRAME_PIXELS).ok()?.checked_mul(4)
             }
             Self::CaretRect { position, .. } => position
                 .cell_path
@@ -304,7 +323,8 @@ impl NativeRuntimeCommand {
             Self::ImeContext { .. } => Some(64 * 1024),
             Self::Accessibility { .. } => Some(ACCESSIBILITY_RESERVATION_BYTES),
             _ => Some(0),
-        }
+        };
+        bytes.ok_or(NativeRuntimeError::ByteCapacity)
     }
 }
 
@@ -481,6 +501,7 @@ pub struct NativeRuntimeCompletion {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NativeRuntimeError {
     InvalidConfig,
+    InvalidArgument,
     QueueFull,
     ByteCapacity,
     Closed,
@@ -493,6 +514,7 @@ impl NativeRuntimeError {
     pub fn code(&self) -> &'static str {
         match self {
             Self::InvalidConfig => "invalidConfig",
+            Self::InvalidArgument => "invalidArgument",
             Self::QueueFull => "queueFull",
             Self::ByteCapacity => "byteCapacity",
             Self::Closed => "closed",
@@ -641,8 +663,9 @@ impl NativeRuntime {
         if self.in_flight.len() >= self.config.max_outstanding {
             return Err(reject(NativeRuntimeError::QueueFull, command));
         }
-        let Some(reservation) = command.byte_reservation() else {
-            return Err(reject(NativeRuntimeError::ByteCapacity, command));
+        let reservation = match command.byte_reservation() {
+            Ok(reservation) => reservation,
+            Err(error) => return Err(reject(error, command)),
         };
         let Some(total) = self
             .reserved_bytes

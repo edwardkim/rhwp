@@ -1449,8 +1449,8 @@ fn native_thin_page_tile_metadata_cap_evicts_even_below_the_byte_budget() {
 mod runtime_contracts {
     use rhwp::native_host::runtime::{
         NativeRuntime, NativeRuntimeCommand as Command, NativeRuntimeCompletion,
-        NativeRuntimeConfig, NativeRuntimeInfo, NativeRuntimeOutput as Output, NativeRuntimeRegion,
-        NativeRuntimeTarget,
+        NativeRuntimeConfig, NativeRuntimeError, NativeRuntimeInfo, NativeRuntimeOutput as Output,
+        NativeRuntimeRegion, NativeRuntimeTarget,
     };
     use std::thread;
     use std::time::{Duration, Instant};
@@ -1576,5 +1576,69 @@ mod runtime_contracts {
             })
             .unwrap();
         assert_eq!(next(&mut runtime).result.unwrap_err().code, "limitExceeded");
+    }
+
+    #[test]
+    fn worker_output_budget_matches_actual_exact_and_tiled_frame_geometry() {
+        for use_tiles in [false, true] {
+            let mut runtime = NativeRuntime::spawn(NativeRuntimeConfig {
+                max_outstanding: 4,
+                max_pending_bytes: 80,
+            })
+            .unwrap();
+            let target = new(&mut runtime).target();
+            let make_command = || {
+                let region = NativeRuntimeRegion {
+                    x: -0.3,
+                    y: 0.2,
+                    width: 3.4,
+                    height: 2.9,
+                };
+                if use_tiles {
+                    Command::RenderTiledRegion {
+                        target,
+                        font_generation: 0,
+                        page: 0,
+                        region,
+                        scale: 1.25,
+                    }
+                } else {
+                    Command::RenderRegion {
+                        target,
+                        font_generation: 0,
+                        page: 0,
+                        region,
+                        scale: 1.25,
+                    }
+                }
+            };
+            let first = runtime.try_submit(make_command()).unwrap();
+            assert_eq!(
+                runtime.try_submit(make_command()).unwrap_err().error,
+                NativeRuntimeError::ByteCapacity
+            );
+            let mut invalid = make_command();
+            match &mut invalid {
+                Command::RenderRegion { region, .. }
+                | Command::RenderTiledRegion { region, .. } => region.width = -1.0,
+                _ => unreachable!(),
+            }
+            assert_eq!(
+                runtime.try_submit(invalid).unwrap_err().error,
+                NativeRuntimeError::InvalidArgument
+            );
+            let completion = next(&mut runtime);
+            assert_eq!(completion.request_id, first);
+            let Output::Frame { frame, .. } = completion.result.unwrap() else {
+                panic!("rejected request superseded a valid frame");
+            };
+            assert_eq!((frame.origin_x, frame.origin_y), (-1, 0));
+            assert_eq!((frame.pixels.width, frame.pixels.height), (5, 4));
+            assert_eq!((frame.pixels.stride, frame.pixels.bytes.len()), (20, 80));
+            let second = runtime.try_submit(make_command()).unwrap();
+            let completion = next(&mut runtime);
+            assert_eq!(completion.request_id, second);
+            assert!(matches!(completion.result.unwrap(), Output::Frame { .. }));
+        }
     }
 }

@@ -102,6 +102,28 @@ def buffer_quota_contract(library):
         raise AssertionError("closed worker handle remained registered after release")
 
 
+def viewport_budget_contract(library):
+    for operation in ("renderRegion", "renderTiledRegion"):
+        with NativeWorker(library, {"maxOutstanding": 4, "maxPendingBytes": 80}) as worker:
+            info = accepted(worker, {"op": "new", "replace": None})["info"]
+            target = {"documentId": info["documentId"], "revision": info["revision"]}
+            command = {"op": operation, "target": target, "fontGeneration": 0, "page": 0,
+                       "region": {"x": -0.3, "y": 0.2, "width": 3.4, "height": 2.9},
+                       "scale": 1.25}
+            request = worker.submit(command)
+            try:
+                worker.submit(command)
+            except NativeCallError as error:
+                assert error.code == "byteCapacity", error.response
+            else:
+                raise AssertionError("unread frame did not reserve its 80-byte output")
+            frame = worker.wait(request)
+            assert frame["ok"] and frame["kind"] == "frame", frame
+            assert (frame["width"], frame["height"], frame["byteLength"]) == (5, 4, 80), frame
+            assert len(worker.copy_buffer(frame)) == 80
+            assert len(worker.copy_buffer(accepted(worker, command))) == 80
+
+
 def run(library):
     with NativeWorker(library, {"maxOutstanding": 1}) as worker:
         first = worker.submit({"op": "new", "replace": None})
@@ -179,6 +201,7 @@ def run(library):
         assert len(pixels) == frame["height"] * frame["stride"]
         viewer.wait_closed()
     buffer_quota_contract(library)
+    viewport_budget_contract(library)
     print('{"ok":true,"contract":"native-worker","queueCredit":true,"saveRevision":true,"threadOwnership":true,"saveBufferQuotaCleanup":true}')
 
 

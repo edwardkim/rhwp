@@ -38,6 +38,88 @@ pub struct RasterRegion {
     pub height: f64,
 }
 
+/// Exact endpoint limit shared by output admission and Skia region planning.
+pub(crate) const MAX_RASTER_PIXEL_COORDINATE: i32 = 16_777_216;
+
+/// Allocation-free output geometry. Runtime reservations and render plans use
+/// this same calculation, including fractional and negative logical origins.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct RasterRegionWindow {
+    pub origin_x: i32,
+    pub origin_y: i32,
+    pub width: i32,
+    pub height: i32,
+    pub stride: usize,
+    pub output_bytes: usize,
+}
+
+impl RasterRegion {
+    pub(crate) fn pixel_window(
+        self,
+        scale: f64,
+        max_dimension: i32,
+        max_pixels: u64,
+    ) -> LayerRenderResult<RasterRegionWindow> {
+        let invalid = || HwpError::RenderError("invalid raster region geometry".into());
+        if !scale.is_finite() || scale <= 0.0 || !(scale as f32).is_finite() || scale as f32 <= 0.0
+        {
+            return Err(invalid());
+        }
+        let right = self.x + self.width;
+        let bottom = self.y + self.height;
+        if [self.x, self.y, self.width, self.height, right, bottom]
+            .into_iter()
+            .any(|value| !value.is_finite())
+            || self.width <= 0.0
+            || self.height <= 0.0
+            || right <= self.x
+            || bottom <= self.y
+        {
+            return Err(invalid());
+        }
+        let endpoints = [
+            (self.x * scale).floor(),
+            (self.y * scale).floor(),
+            (right * scale).ceil(),
+            (bottom * scale).ceil(),
+        ];
+        let exact = f64::from(MAX_RASTER_PIXEL_COORDINATE);
+        if endpoints
+            .iter()
+            .any(|value| !value.is_finite() || !(-exact..=exact).contains(value))
+        {
+            return Err(invalid());
+        }
+        let [origin_x, origin_y, right, bottom] = endpoints.map(|value| value as i32);
+        let width = right.checked_sub(origin_x).ok_or_else(invalid)?;
+        let height = bottom.checked_sub(origin_y).ok_or_else(invalid)?;
+        if width <= 0 || height <= 0 || width > max_dimension || height > max_dimension {
+            return Err(HwpError::RenderError(
+                "raster window dimensions out of range".into(),
+            ));
+        }
+        let pixels = (width as u64)
+            .checked_mul(height as u64)
+            .ok_or_else(|| HwpError::RenderError("raster pixel count overflow".into()))?;
+        if pixels > max_pixels {
+            return Err(HwpError::RenderError(format!(
+                "raster pixel count out of range: {pixels}"
+            )));
+        }
+        let byte_limit = || HwpError::ResourceLimit("raster byte count overflow".into());
+        let stride = (width as usize).checked_mul(4).ok_or_else(byte_limit)?;
+        let output_bytes = stride.checked_mul(height as usize).ok_or_else(byte_limit)?;
+        Ok(RasterRegionWindow {
+            origin_x,
+            origin_y,
+            width,
+            height,
+            stride,
+            output_bytes,
+        })
+    }
+}
+
 /// RGBA pixels and their integer origin on the scaled full-page pixel grid.
 ///
 /// `pixels.width`/`height` are the enclosing window size, which can be larger
