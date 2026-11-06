@@ -4,6 +4,7 @@
 
 mod anisotropic_image;
 mod cache;
+mod culling;
 mod diagnostics;
 mod equation_conv;
 mod equation_glyph;

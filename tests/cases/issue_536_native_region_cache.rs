@@ -33,6 +33,328 @@ fn request() -> RasterRegion {
     }
 }
 
+fn culling_shape(bounds: BoundingBox, stroke_width: f64) -> LayerNode {
+    LayerNode::leaf(
+        bounds,
+        None,
+        vec![PaintOp::rectangle(
+            bounds,
+            RectangleNode::new(
+                0.0,
+                ShapeStyle {
+                    fill_color: Some(0x22aa44),
+                    stroke_color: Some(0x773311),
+                    stroke_width,
+                    ..Default::default()
+                },
+                None,
+            ),
+        )],
+    )
+}
+
+#[test]
+fn proven_off_clip_subtree_is_skipped_without_changing_pixels() {
+    let page = BoundingBox::new(0.0, 0.0, 128.0, 96.0);
+    let outside = LayerNode::group(
+        // Deliberately incorrect layout bounds: the proof uses actual ops.
+        BoundingBox::new(0.0, 0.0, 1.0, 1.0),
+        None,
+        (0..48)
+            .map(|i| culling_shape(BoundingBox::new(80.0, f64::from(i), 8.0, 4.0), 0.25))
+            .collect(),
+        CacheHint::None,
+        GroupKind::Generic,
+    );
+    let tree = PageLayerTree::new(
+        page.width,
+        page.height,
+        LayerNode::clip_rect(
+            page,
+            None,
+            BoundingBox::new(0.0, 0.0, 32.0, 64.0),
+            LayerNode::group(
+                page,
+                None,
+                vec![
+                    culling_shape(BoundingBox::new(8.0, 8.0, 16.0, 16.0), 0.25),
+                    outside,
+                ],
+                CacheHint::None,
+                GroupKind::Generic,
+            ),
+            ClipKind::Generic,
+        ),
+    );
+    let enabled = SkiaLayerRenderer::new().with_cache_limits(0, 0);
+    let disabled = SkiaLayerRenderer::new()
+        .with_cache_limits(0, 0)
+        .with_viewport_culling(false);
+    let options = RasterRenderOptions::default();
+    assert_eq!(
+        enabled
+            .render_pixels_with_options(&tree, options)
+            .unwrap()
+            .bytes,
+        disabled
+            .render_pixels_with_options(&tree, options)
+            .unwrap()
+            .bytes
+    );
+    let skipped = enabled
+        .render_raster_with_options(&tree, options)
+        .unwrap()
+        .diagnostics;
+    let replayed = disabled
+        .render_raster_with_options(&tree, options)
+        .unwrap()
+        .diagnostics;
+    assert!(skipped.layer_nodes_culled > 0);
+    assert_eq!(replayed.layer_nodes_culled, 0);
+    assert!(replayed.layer_nodes_replayed >= skipped.layer_nodes_replayed + 48);
+    assert!(replayed.paint_ops_replayed >= skipped.paint_ops_replayed + 48);
+}
+
+#[test]
+fn stroke_floor_and_antialiasing_near_clip_survive_culling_at_fractional_scales() {
+    let bounds = BoundingBox::new(0.0, 0.0, 128.0, 96.0);
+    for profile in [
+        rhwp::paint::RenderProfile::Screen,
+        rhwp::paint::RenderProfile::Print,
+    ] {
+        for scale in [0.125, 0.75, 1.25, 2.0] {
+            for cached in [false, true] {
+                let mut tree = PageLayerTree::new(
+                    bounds.width,
+                    bounds.height,
+                    LayerNode::clip_rect(
+                        bounds,
+                        None,
+                        BoundingBox::new(0.0, 0.0, 32.0, 48.0),
+                        LayerNode::group(
+                            bounds,
+                            None,
+                            vec![
+                                culling_shape(BoundingBox::new(32.1, 8.0, 8.0, 16.0), 0.01),
+                                culling_shape(BoundingBox::new(110.0, 8.0, 8.0, 16.0), 0.01),
+                            ],
+                            CacheHint::StaticSubtree,
+                            GroupKind::Generic,
+                        ),
+                        ClipKind::Generic,
+                    ),
+                );
+                tree.profile = profile;
+                let options = RasterRenderOptions {
+                    scale,
+                    transparent: true,
+                    ..Default::default()
+                };
+                let enabled = if cached {
+                    SkiaLayerRenderer::new()
+                } else {
+                    SkiaLayerRenderer::new().with_cache_limits(0, 0)
+                };
+                let disabled = SkiaLayerRenderer::new()
+                    .with_cache_limits(0, 0)
+                    .with_viewport_culling(false);
+                let reference = disabled.render_pixels_with_options(&tree, options).unwrap();
+                assert!(reference.bytes.chunks_exact(4).any(|pixel| pixel[3] > 0),
+                    "the stroke beyond the clip must contribute boundary alpha: {profile:?} {scale}");
+                for _ in 0..2 {
+                    assert_eq!(
+                        enabled
+                            .render_pixels_with_options(&tree, options)
+                            .unwrap()
+                            .bytes,
+                        reference.bytes
+                    );
+                }
+                if !cached {
+                    assert!(
+                        enabled
+                            .render_raster_with_options(&tree, options)
+                            .unwrap()
+                            .diagnostics
+                            .layer_nodes_culled
+                            > 0
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn print_fill_snapping_matches_without_culling_at_clip_edges() {
+    let bounds = BoundingBox::new(0.0, 0.0, 128.0, 96.0);
+    for scale in [0.125, 0.75, 1.25, 2.0] {
+        for x in [30.1, 31.9, 32.1] {
+            let shape = |x| {
+                let bbox = BoundingBox::new(x, 8.2, 8.1, 16.3);
+                LayerNode::leaf(
+                    bbox,
+                    None,
+                    vec![PaintOp::rectangle(
+                        bbox,
+                        RectangleNode::new(
+                            0.0,
+                            ShapeStyle {
+                                fill_color: Some(0x33bb77),
+                                ..Default::default()
+                            },
+                            None,
+                        ),
+                    )],
+                )
+            };
+            let mut tree = PageLayerTree::new(
+                bounds.width,
+                bounds.height,
+                LayerNode::clip_rect(
+                    bounds,
+                    None,
+                    BoundingBox::new(0.0, 0.0, 32.0, 48.0),
+                    LayerNode::group(
+                        bounds,
+                        None,
+                        vec![shape(x), shape(110.0)],
+                        CacheHint::None,
+                        GroupKind::Generic,
+                    ),
+                    ClipKind::Generic,
+                ),
+            );
+            tree.profile = rhwp::paint::RenderProfile::Print;
+            let options = RasterRenderOptions {
+                scale,
+                transparent: true,
+                ..Default::default()
+            };
+            let enabled = SkiaLayerRenderer::new().with_cache_limits(0, 0);
+            let disabled = SkiaLayerRenderer::new()
+                .with_cache_limits(0, 0)
+                .with_viewport_culling(false);
+            assert_eq!(
+                enabled
+                    .render_pixels_with_options(&tree, options)
+                    .unwrap()
+                    .bytes,
+                disabled
+                    .render_pixels_with_options(&tree, options)
+                    .unwrap()
+                    .bytes
+            );
+            assert!(
+                enabled
+                    .render_raster_with_options(&tree, options)
+                    .unwrap()
+                    .diagnostics
+                    .layer_nodes_culled
+                    > 0
+            );
+        }
+    }
+}
+
+#[test]
+fn unknown_shadow_bounds_are_replayed_even_outside_the_clip() {
+    let bounds = BoundingBox::new(0.0, 0.0, 128.0, 96.0);
+    let shape = BoundingBox::new(100.0, 10.0, 8.0, 8.0);
+    let tree = PageLayerTree::new(
+        bounds.width,
+        bounds.height,
+        LayerNode::clip_rect(
+            bounds,
+            None,
+            BoundingBox::new(0.0, 0.0, 32.0, 48.0),
+            LayerNode::leaf(
+                shape,
+                None,
+                vec![PaintOp::ellipse(
+                    shape,
+                    EllipseNode::new(
+                        ShapeStyle {
+                            fill_color: Some(0),
+                            shadow: Some(rhwp::renderer::ShadowStyle {
+                                shadow_type: 1,
+                                color: 0,
+                                offset_x: -100.0,
+                                offset_y: 0.0,
+                                alpha: 0,
+                            }),
+                            ..Default::default()
+                        },
+                        None,
+                    ),
+                )],
+            ),
+            ClipKind::Generic,
+        ),
+    );
+    let output = SkiaLayerRenderer::new()
+        .with_cache_limits(0, 0)
+        .render_raster_with_options(&tree, RasterRenderOptions::default())
+        .unwrap();
+    assert_eq!(output.diagnostics.layer_nodes_culled, 0);
+    assert!(output.diagnostics.paint_ops_replayed > 0);
+}
+
+#[test]
+fn cold_fixed_tiles_match_with_culling_enabled_or_disabled() {
+    let bounds = BoundingBox::new(0.0, 0.0, 1400.0, 900.0);
+    let tree = PageLayerTree::new(
+        bounds.width,
+        bounds.height,
+        LayerNode::group(
+            bounds,
+            None,
+            (0..80)
+                .map(|i| {
+                    culling_shape(
+                        BoundingBox::new(
+                            f64::from(i % 10) * 135.0 + 0.3,
+                            f64::from(i / 10) * 100.0 + 0.7,
+                            30.0,
+                            20.0,
+                        ),
+                        0.1,
+                    )
+                })
+                .collect(),
+            CacheHint::None,
+            GroupKind::Generic,
+        ),
+    );
+    for scale in [0.75, 1.25, 2.0] {
+        let options = RasterRenderOptions {
+            scale,
+            ..Default::default()
+        };
+        let region = RasterRegion {
+            x: 397.3,
+            y: 237.1,
+            width: 240.5,
+            height: 180.4,
+        };
+        let enabled = SkiaLayerRenderer::new().with_cache_limits(0, 0);
+        let disabled = SkiaLayerRenderer::new()
+            .with_cache_limits(0, 0)
+            .with_viewport_culling(false);
+        let result = enabled
+            .render_tiled_region_pixels_with_options(&tree, region, options)
+            .unwrap();
+        let reference = disabled
+            .render_tiled_region_pixels_with_options(&tree, region, options)
+            .unwrap();
+        assert_eq!(
+            (result.origin_x, result.origin_y),
+            (reference.origin_x, reference.origin_y)
+        );
+        assert_eq!(result.pixels.bytes, reference.pixels.bytes);
+    }
+}
+
 fn page() -> PageLayerTree {
     let bounds = BoundingBox::new(0.0, 0.0, 60.0, 45.0);
     let gradient = PaintOp::rectangle(

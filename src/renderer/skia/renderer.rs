@@ -431,6 +431,7 @@ struct PageReplayOutput {
 }
 
 pub struct SkiaLayerRenderer {
+    viewport_culling: bool,
     font_mgr: FontMgr,
     text_shaper: OnceCell<Option<Shaper>>,
     /// 사용자 지정 경로의 family별 TTC face·스타일 catalog.
@@ -465,6 +466,7 @@ impl SkiaLayerRenderer {
             };
         }
         SKIA_FONT_BASE.with(|(font_mgr, system_families)| Self {
+            viewport_culling: true,
             font_mgr: font_mgr.clone(),
             text_shaper: OnceCell::new(),
             custom_typefaces: TypefaceCatalog::default(),
@@ -488,6 +490,14 @@ impl SkiaLayerRenderer {
         self.picture_cache = RefCell::new(BoundedCache::new(max_entries, max_bytes));
         self.glyph_cache = RefCell::new(BoundedCache::new(max_entries, max_bytes));
         self.image_cache = ImageResourceCache::new(max_entries, max_bytes);
+        self
+    }
+
+    /// Cull only proven simple-shape bounds outside a raster canvas clip.
+    /// Unknown text, SVG, image/effect bounds and strict vector replay remain
+    /// fully replayed. Disable for direct pixel/counter comparison.
+    pub fn with_viewport_culling(mut self, enabled: bool) -> Self {
+        self.viewport_culling = enabled;
         self
     }
 
@@ -996,6 +1006,10 @@ impl SkiaLayerRenderer {
         let diagnostics = RefCell::new(ReplayDiagnostics::new(tree));
         let cache_before = self.cache_stats();
         let image_before = self.image_cache.observations();
+        let culling = super::culling::CullingIndex::new(
+            &tree.root,
+            self.viewport_culling && !strict_resource_failures,
+        );
         // Resource bytes are fingerprinted once per page, not once per group.
         let mut cache_context = ReplayCacheContext::new(
             tree,
@@ -1003,6 +1017,7 @@ impl SkiaLayerRenderer {
             strict_resource_failures,
             canvas.image_info().color_type() != skia_safe::ColorType::Unknown,
             &diagnostics,
+            &culling,
         );
         let matrix = canvas.local_to_device_as_3x3();
         if tree.profile == crate::paint::RenderProfile::Print
@@ -1104,6 +1119,12 @@ impl SkiaLayerRenderer {
         strict_resource_failures: bool,
         cache_context: &ReplayCacheContext<'_>,
     ) -> LayerRenderResult<()> {
+        if cache_context.culling.is_outside(node, canvas) {
+            let mut diagnostics = cache_context.diagnostics.borrow_mut();
+            diagnostics.output.layer_nodes_culled =
+                diagnostics.output.layer_nodes_culled.saturating_add(1);
+            return Ok(());
+        }
         {
             let mut diagnostics = cache_context.diagnostics.borrow_mut();
             diagnostics.output.layer_nodes_replayed =

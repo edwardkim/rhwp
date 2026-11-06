@@ -98,6 +98,9 @@ pub struct LayerRenderDiagnostics {
     pub shaped_measurement_paragraphs: Vec<ShapedMeasurementParagraphSummary>,
     pub shaped_measurement_pages: Vec<ShapedMeasurementPageSummary>,
     pub layer_nodes_replayed: usize,
+    /// Proven simple-shape subtrees skipped outside the raster clip. Each
+    /// skipped root counts once; descendants are not visited or counted.
+    pub layer_nodes_culled: usize,
     pub paint_ops_replayed: usize,
     pub tile_fallback_cap_hits: usize,
     pub image_effect_preprocess_failures: usize,
