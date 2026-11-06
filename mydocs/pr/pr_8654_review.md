@@ -26,10 +26,18 @@ fix(layout): 같은 줄 TAC 표 공유 기준선과 rowspan 초과분 — #8645�
 - [tests/cases/issue_8641_tac_prefix_line_owner.rs](../../tests/cases/issue_8641_tac_prefix_line_owner.rs)
 - [tests/cases/issue_8648_cell_page_overlay_no_flow.rs](../../tests/cases/issue_8648_cell_page_overlay_no_flow.rs)
 
-통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 검증 뒤 제품·테스트 코드는 변경하지 않았다. 검증 원본·Print 기준의 추가와 문서 기록을 구분한다.
+통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 이는 최초 통합 source의 결과다. 이후 메인터너 보정으로 제품·테스트 코드가 바뀌었으므로 보정 후 head의 회귀 통과로 재사용하지 않는다. 새 보정본의 검증 결과와 원본·Print 추가를 구분한다.
 
 Native Skia 공식 3종(라이브러리 4,040건 및 통합 24건)과 이번 PR의 추가 5개 모듈 14건이 모두 통과했다. 라이브러리의 기존 ignored는 12건이며, focused 실행에서 제외된 다른 테스트를 실패나 ignored로 합산하지 않는다. 전쪽 Native/fresh WASM·쪽수·확대 판독·lint는 별도 완료 조건이며, 회귀 통과로 대신하지 않는다.
 
 ## 적용과 보정 계획
 
 [이 PR 구현 계획](pr_8654_review_impl.md) · [전체 순서·게이트](assets/planet6897_20261106/integration-plan.md).
+
+## 같은 발신명 대조군의 기존 증거 재사용
+
+PR #8649와 겹치는 sender-overlay 원본·독립 Print는 같은 입력 SHA의 R11 완료 측정을
+재사용한다. 전1쪽 Native/fresh WASM raw는 각각 **100.00%**이고, 실제 발신명·본문·
+날짜를 대응 페이지에서 직접 판독했다.
+[같은 입력의 TSV·review·overlay 및 판독 기록](pr_8649_review.md#실제-발신명-overlay와-셀-흐름-대조)을
+연결한다. 이 한 대조군으로 다른 stamp·노동 보고서·필드 상자 검증을 대체하지 않는다.
