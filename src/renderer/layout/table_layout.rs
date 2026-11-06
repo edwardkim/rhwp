@@ -26919,7 +26919,15 @@ impl LayoutEngine {
             return Some(0.0);
         }
         let selected = &units[start..end];
-        if !crate::renderer::para_has_no_stored_line_segs(para) {
+        // 호스트의 저장 글줄은 자식 표 안에서 선택한 행 컷의 물리 여백을
+        // 대신하지 않는다. 실제 자식 커서와 앞뒤 띠를 함께 보존한 부분 투영은
+        // 아래의 공통 자식 프레임 질의로 예약한다. 스칼라 저장 띠는 기존대로 둔다.
+        let projects_partial_child_rows = has_row_cuts
+            && (start > run_start || end < run_end)
+            && selected
+                .iter()
+                .all(|unit| unit.nested_row_flow_edges.is_some());
+        if !crate::renderer::para_has_no_stored_line_segs(para) && !projects_partial_child_rows {
             // 저장한 물리 띠의 부분 컷은 재해석하지 않는다. 전체 원본 표가
             // 선택됐고 저장 줄이 남은 빈 띠를 입증할 때만 공통 전체 상자를 쓴다.
             if start != run_start

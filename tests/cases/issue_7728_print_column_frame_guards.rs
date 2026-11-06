@@ -1,9 +1,11 @@
 //! #7728: 계속 표의 열 프레임과 독립 Print의 셀 괘선 끝점을 보호한다.
-//! 주석 갱신: 2026-11-06T14:16:32+09:00.
-//! 검사 분류: `continuation_column_frames_keep_opening_span_and_row_edges`는 관계형이다.
+//! 주석 갱신: 2026-11-06T16:51:25+09:00.
+//! 검사 분류: `continuation_column_frames_keep_opening_span_and_row_edges`와
+//! `continued_parent_border_contains_owned_nested_frames`는 관계형이다.
 //! 검사 분류: `independent_print_page10_keeps_all_grid_edges`는 고정형(독립 PDF ±2 CSSpx)이다.
 //! 원본 70833 HWP와 독립 한컴2020 Print PDF, compat2022,96DPI/PDFium/2px raw.
 //! 코드04f03cfa 전18쪽 Native 최저94.62153%, fresh WASM 최저94.27517%, 미달·누락0.
+//! 새 포함 관계 검사는 HEAD429에서 실제 FAIL → 보정 후보 PASS. 새 후보 전체98% 수용은 미완료다.
 //! 관계형 대상6쪽 N/W94.62153/94.82126%,7쪽94.79966/94.27517%: 절대 좌표를 고정하지 않는다.
 //! 고정형 대상10쪽 N/W99.57724/99.47384%: 독립 벡터 선 중심·직접 판독 후 ±2px를 쓴다.
 //! 셀 간격·병합을 포함한 선언 폭을 그대로 paint 폭으로 간주하지 않고 시작·계속 조각의 같은 열 소유를 검사한다.
@@ -206,4 +208,58 @@ fn independent_print_page10_keeps_all_grid_edges() {
         checked, 7,
         "독립 Print의 병합 머리와 두 본문 행 셀 모두 검사"
     );
+}
+
+// 관계형: 부모 행의 하단 괘선은 현재 컷에 속한 자식 표와 원본 안여백을 포함해야 한다.
+#[test]
+fn continued_parent_border_contains_owned_nested_frames() {
+    let core = open();
+    let page = core.build_page_render_tree(5).expect("6쪽 계속 조각");
+    let outer: Vec<_> = nodes(&page.root)
+        .into_iter()
+        .filter(
+            |n| matches!(&n.node_type,RenderNodeType::Table(t) if (t.row_count,t.col_count)==(2,2)),
+        )
+        .collect();
+    assert_eq!(outer.len(), 1);
+    fn bottom_border(table: &RenderNode) -> f64 {
+        table
+            .children
+            .iter()
+            .filter_map(|n| match &n.node_type {
+                RenderNodeType::Line(l) if (l.y1 - l.y2).abs() < 1e-6 && l.x1 != l.x2 => Some(l.y1),
+                _ => None,
+            })
+            .reduce(f64::max)
+            .expect("실제 수평 괘선")
+    }
+    let original = source_tables(&core.document().sections[0].paragraphs[15..16]);
+    let source = original
+        .iter()
+        .find(|t| (t.row_count, t.col_count) == (2, 2))
+        .unwrap();
+    let parent_bottom = bottom_border(outer[0]);
+    let mut checked = 0;
+    for cell in &outer[0].children {
+        let RenderNodeType::TableCell(owner) = &cell.node_type else {
+            continue;
+        };
+        if owner.row != 1 {
+            continue;
+        }
+        let source_cell = source
+            .cells
+            .iter()
+            .find(|c| c.row == owner.row && c.col == owner.col)
+            .unwrap();
+        let child=nodes(cell).into_iter().find(|n|matches!(&n.node_type,RenderNodeType::Table(t)if(t.row_count,t.col_count)==(7,1))).expect("현재 칸의 안쪽 표");
+        let pad = source_cell.effective_padding(&source.padding).bottom as f64 * 96.0 / 7200.0;
+        assert!(
+            parent_bottom + 1e-6 >= bottom_border(child) + pad,
+            "부모 하단 {parent_bottom}이 자식 하단 {}과 원본 안여백 {pad}를 포함해야 함",
+            bottom_border(child)
+        );
+        checked += 1;
+    }
+    assert_eq!(checked, 2, "양쪽 열의 실제 괘선 확인");
 }
