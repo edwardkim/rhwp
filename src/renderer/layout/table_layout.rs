@@ -5450,17 +5450,34 @@ impl LayoutEngine {
             return;
         }
         let viewtext_content_grid = table.cells.iter().all(|cell| {
+            // 저장 줄 없는 ViewText 텍스트 격자만 선언 프레임을 재사용한다.
+            // 빈 문자열인 그림/표 호스트도 실제 점유 높이가 있다. 그 높이가
+            // 우연히 cellSz와 같다고 안 여백까지 중복으로 판정하면, 측정에서
+            // 확보한 개체와 여백의 공간을 paint에서 다시 줄이게 된다 (#8576).
+            let has_object = cell.paragraphs.iter().any(|paragraph| {
+                paragraph.controls.iter().any(|control| {
+                    matches!(
+                        control,
+                        Control::Picture(_)
+                            | Control::Shape(_)
+                            | Control::Table(_)
+                            | Control::Equation(_)
+                            | Control::Form(_)
+                    )
+                })
+            });
             let has_visible_content = cell.paragraphs.iter().any(|paragraph| {
                 paragraph
                     .text
                     .chars()
                     .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}')
             });
-            !has_visible_content
-                || cell
-                    .paragraphs
-                    .iter()
-                    .all(crate::renderer::para_has_no_stored_line_segs)
+            !has_object
+                && (!has_visible_content
+                    || cell
+                        .paragraphs
+                        .iter()
+                        .all(crate::renderer::para_has_no_stored_line_segs))
         });
         let mut decl = vec![f64::NAN; row_count];
         for cell in &table.cells {
