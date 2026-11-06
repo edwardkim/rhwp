@@ -64,6 +64,18 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
 
     ),
     (
+        "commands/object_ops/picture.rs",
+        "insert_picture_native",
+        Exempt::DelegatesTo("insert_picture_native_anchored"),
+        "기존 그림 넣기 진입점은 구역 무효화를 수행하는 공통 구현에 위임한다(칸 문단 앵커 여부만 다르다, #8556).",
+    ),
+    (
+        "commands/object_ops/picture.rs",
+        "insert_picture_in_cell_native",
+        Exempt::DelegatesTo("insert_picture_native_anchored"),
+        "칸 경로를 검증한 뒤 같은 공통 구현에 칸 문단 앵커로 위임한다(#8556).",
+    ),
+    (
         "commands/clipboard.rs",
         "paste_internal_native",
         Exempt::DelegatesTo("paste_internal_at_caret_native"),
