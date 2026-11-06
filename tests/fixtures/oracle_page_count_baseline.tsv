@@ -591,3 +591,16 @@ samples/issue8584/short_row_grid_r21.hwpx	1	1
 samples/issue8584/short_row_grid_r4.hwpx	1	1
 samples/issue8593/picture_soft_edge.hwp	1	1
 samples/issue8594/bindata_link_shift.hwp	1	1
+
+# #7375: samples 밖의 고정 크기·빈 글줄·공백 대조군을 명시 등록.
+# 독립 Hancom2024 Print와 Native/fresh WASM 각1쪽100%; paper-textbox-minimum-20261106 증거 참조.
+pdf/issue7375/paper-textbox-protected.hwpx	1	1
+pdf/issue7375/paper-textbox-empty.hwpx	1	1
+pdf/issue7375/paper-textbox-space.hwpx	1	1
+
+# #7375: 원본3종과 상자/쪽 좌표계2종의 독립 한컴2024 Print 전1쪽 확인.
+samples/header-footer-paper-frame.hwpx	1	1
+pdf/issue8687/font_list_name_fallback.hwpx	1	1
+pdf/issue8687/font_list_name_used_fallback.hwpx	1	1
+pdf/issue7375/paper-textbox-vpos-local.hwpx	1	1
+pdf/issue7375/paper-textbox-vpos-page.hwpx	1	1

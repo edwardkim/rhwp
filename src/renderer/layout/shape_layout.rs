@@ -5,6 +5,7 @@ mod compound_rectangle;
 mod connector_style;
 mod curve_geometry;
 mod line_direction;
+mod overlay_textbox;
 mod path_stroke_arrows;
 mod source_line_frame;
 mod textbox_reflow;
@@ -1070,6 +1071,21 @@ impl LayoutEngine {
             }
         }
 
+        // 부동 글상자의 내용 하한은 원점을 정하기 전에 확정한다. 아래 정렬,
+        // 쪽 안 제한, 캡션과 실제 paint가 같은 높이·같은 글줄을 소비한다.
+        // 묶음/셀의 직접 배치는 각 로컬·아핀 프레임의 소유를 유지한다.
+        let prepared_textbox = if !extract_shape_transform(shape.shape_attr()).has_transform() {
+            overlay_textbox::prepare(shape, shape_w, shape_h, styles, self.dpi)
+        } else {
+            None
+        };
+        if let Some(prepared) = &prepared_textbox {
+            shape_h = prepared.height;
+        }
+        let shape = prepared_textbox
+            .as_ref()
+            .map_or(shape, |prepared| &prepared.shape);
+
         // 문단 여백 반영: Para 기준 위치 지정 시 문단의 왼쪽/오른쪽 여백 고려
         let composed_para = paragraphs.get(para_index).and_then(|_| {
             // composed 데이터가 없으므로 paragraphs에서 직접 para_shape_id 사용
@@ -1113,7 +1129,9 @@ impl LayoutEngine {
             height: col_area.height - (para_y - col_area.y).max(0.0),
         };
         // 조판이 원본 프레임으로 확정한 잉크 원점은 paint에서 다시 추정하지 않는다.
-        let (shape_x, shape_y) = if let Some(origin) = stored_frame_origin {
+        let (shape_x, shape_y) = if let Some(origin) =
+            stored_frame_origin.filter(|_| prepared_textbox.is_none())
+        {
             origin
         } else if let Some((ix, iy)) = inline_pos {
             (ix, iy)
