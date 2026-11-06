@@ -1,0 +1,311 @@
+{
+  "head": "9470fb026a8cd3b3d9594db55298b6f6c347bfda",
+  "base": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "producer": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-after-a7feb849",
+  "producer_sha256": "8e28876b650b3145e265406400644a52a289cc9db9e3e7650e2d0e324b59d0b5",
+  "measured_at": "2026-11-06T14:16:56.905075+00:00",
+  "cases": [
+    {
+      "key": "original-36474334",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/original-36474334.tsv",
+      "sha256": "172562839188b3f7e781fcccb328d1c7f9e9734418eaadb30f862f46ae522f1e",
+      "pages": 2,
+      "minimum": 99.9,
+      "exit_code": 0
+    },
+    {
+      "key": "report-838",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/report-838.tsv",
+      "sha256": "7959031b86d6f1a56740cb4dcb586e842e31242abd775bc08b27c5156dfe1b56",
+      "pages": 109,
+      "minimum": 94.99,
+      "exit_code": 0
+    },
+    {
+      "key": "cell-exclusion-36478532",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/cell-exclusion-36478532.tsv",
+      "sha256": "172562839188b3f7e781fcccb328d1c7f9e9734418eaadb30f862f46ae522f1e",
+      "pages": 2,
+      "minimum": 99.9,
+      "exit_code": 0
+    },
+    {
+      "key": "stored-band",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/stored-band.tsv",
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "pages": 2,
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "key": "nars-2021",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/nars-2021.tsv",
+      "sha256": "ef6c67b8b2acddb05d67ce21d3c3ef4db10ecfe071356e749f4cfbae3cc39702",
+      "pages": 3,
+      "minimum": 96.5,
+      "exit_code": 0
+    },
+    {
+      "key": "footnote-captioned",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/footnote-captioned.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "key": "legislation-summary",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/legislation-summary.tsv",
+      "sha256": "d5a2089ea3769cbfc3afb1fa02c1a3987edabceb26d189d6e89c53056566950c",
+      "pages": 10,
+      "minimum": 99.95,
+      "exit_code": 0
+    },
+    {
+      "key": "cover",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/cover.tsv",
+      "sha256": "2a736db9e18a91002cd063287ce5dadd4719c09c840a19563ddc89fd625a8616",
+      "pages": 4,
+      "minimum": 99.79,
+      "exit_code": 0
+    },
+    {
+      "key": "original-36493460",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/original-36493460.tsv",
+      "sha256": "c0f9c8fbc83248e37199e4a8b2e01df23d13d86dd6ce7f1486ba0c7bf3298405",
+      "pages": 1,
+      "minimum": 99.9,
+      "exit_code": 0
+    },
+    {
+      "key": "sign-board-2020",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/sign-board-2020.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "key": "sign-board-2022",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/sign-board-2022.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "key": "8658-small",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/8658-small.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "key": "8658-large",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/8658-large.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "key": "8658-center",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/8658-center.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "key": "8658-exact-fit",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/8658-exact-fit.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "key": "8658-overlap",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/8658-overlap.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "key": "8658-disjoint",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/8658-disjoint.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "key": "8658-remaining-space",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/8658-remaining-space.tsv",
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "pages": 2,
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "key": "8658-split",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/8658-split.tsv",
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "pages": 2,
+      "minimum": 100.0,
+      "exit_code": 0
+    },
+    {
+      "key": "report-628",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/report-628.tsv",
+      "sha256": "c3962a966d7d7406b2229948888098f23294f3b5ebf5749d4cabcfa1f30bcf72",
+      "pages": 195,
+      "minimum": 33.39,
+      "exit_code": 1
+    },
+    {
+      "key": "font-list-original",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/font-list-original.tsv",
+      "sha256": "047ed272a4c3248f8271d87a5b6a6236fc2ce50dcf4fb647614f7f2698694c46",
+      "pages": 1,
+      "minimum": 91.21,
+      "exit_code": 0
+    },
+    {
+      "key": "font-list-used",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/font-list-used.tsv",
+      "sha256": "047ed272a4c3248f8271d87a5b6a6236fc2ce50dcf4fb647614f7f2698694c46",
+      "pages": 1,
+      "minimum": 91.21,
+      "exit_code": 0
+    },
+    {
+      "key": "font-list-control",
+      "tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native/font-list-control.tsv",
+      "sha256": "ee17049e6ba21fbde235c09f1e96e7514fe52ffc9e2f9a44565f184007d877d1",
+      "pages": 1,
+      "minimum": 91.1,
+      "exit_code": 0
+    }
+  ],
+  "native_previous_comparison": [
+    {
+      "key": "report-628",
+      "page": 59,
+      "before": 74.79,
+      "after": 99.86,
+      "delta_pp": 25.07
+    },
+    {
+      "key": "report-628",
+      "page": 143,
+      "before": 85.52,
+      "after": 99.17,
+      "delta_pp": 13.65
+    }
+  ],
+  "displayed_decreases": [],
+  "remaining_below90": 11,
+  "fontconfig_faces": [
+    "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/validation-rebase-source/ttfs/opensource/RHWPOldHangul-Regular.otf\tRHWP Old Hangul",
+    "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/validation-rebase-source/ttfs/opensource/NotoSansKR-Regular.ttf\tNoto Sans KR",
+    "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/validation-rebase-source/ttfs/opensource/NotoSansKR-ExtraLight.ttf\tNoto Sans KR ExtraLight",
+    "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/validation-rebase-source/ttfs/opensource/RHWPPublicBatang-Regular.ttf\tRHWP Public Batang",
+    "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/validation-rebase-source/ttfs/opensource/NotoSansSymbols2-Regular.ttf\tNoto Sans Symbols2"
+  ],
+  "rust_focused": {
+    "passed": 10,
+    "failed": 0,
+    "filtered_out": 963,
+    "exit_code": 0,
+    "command": [
+      "bash",
+      "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/run-minimal-a7feb849.sh",
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--features",
+      "native-skia",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/tsjang/rhwp/target/pr-review",
+      "--test",
+      "regression_suite_005",
+      "--test",
+      "regression_suite_013",
+      "--test",
+      "regression_suite_014",
+      "-E",
+      "test(issue_8687_declared_font_fallback_names::) | test(issue_8597_invalid_font_name_host_fallback::) | test(font_program_identity_contracts::)",
+      "--test-threads",
+      "12",
+      "--no-fail-fast"
+    ]
+  },
+  "new_base_native": {
+    "producer": {
+      "source": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+      "producer": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-base-a7feb849",
+      "producer_sha256": "098436e7a61f2ee3a0248124360e76da51e80039eba554ab4888d8af2af26bbb"
+    },
+    "comparison": [
+      {
+        "key": "font-list-original",
+        "page": 1,
+        "base_raw": 91.21,
+        "candidate_raw": 91.21,
+        "delta_pp": 0.0,
+        "base_png_sha256": "b53e6849a4de6a5bc729414cfdd517c4a6f042f3f85cc8701e11b19ba8c867ea",
+        "candidate_png_sha256": "b53e6849a4de6a5bc729414cfdd517c4a6f042f3f85cc8701e11b19ba8c867ea",
+        "png_byte_identical": true,
+        "base_tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native-base/font-list-original.tsv",
+        "base_tsv_sha256": "047ed272a4c3248f8271d87a5b6a6236fc2ce50dcf4fb647614f7f2698694c46"
+      },
+      {
+        "key": "font-list-used",
+        "page": 1,
+        "base_raw": 91.21,
+        "candidate_raw": 91.21,
+        "delta_pp": 0.0,
+        "base_png_sha256": "b53e6849a4de6a5bc729414cfdd517c4a6f042f3f85cc8701e11b19ba8c867ea",
+        "candidate_png_sha256": "b53e6849a4de6a5bc729414cfdd517c4a6f042f3f85cc8701e11b19ba8c867ea",
+        "png_byte_identical": true,
+        "base_tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native-base/font-list-used.tsv",
+        "base_tsv_sha256": "047ed272a4c3248f8271d87a5b6a6236fc2ce50dcf4fb647614f7f2698694c46"
+      },
+      {
+        "key": "font-list-control",
+        "page": 1,
+        "base_raw": 91.1,
+        "candidate_raw": 91.1,
+        "delta_pp": 0.0,
+        "base_png_sha256": "4b9198db15a86f4fc11393e3ea7bb3f2a847abe5bb67491cf15ae787b8060e96",
+        "candidate_png_sha256": "4b9198db15a86f4fc11393e3ea7bb3f2a847abe5bb67491cf15ae787b8060e96",
+        "png_byte_identical": true,
+        "base_tsv": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/native-base/font-list-control.tsv",
+        "base_tsv_sha256": "ee17049e6ba21fbde235c09f1e96e7514fe52ffc9e2f9a44565f184007d877d1"
+      }
+    ],
+    "all_png_identical": true
+  },
+  "fresh_wasm": "최적화 포함 후보 빌드 진행 중. 새 base는 후보 빌드 뒤 순차 실행.",
+  "final_status": "필수 보정·검증 진행 중. 전체 승인 또는 PR 준비 완료 아님.",
+  "images": [
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/incoming-used-review.png",
+      "sha256": "fe311df505960d4442e7a232494cf3fded579fb0c7f62ec1edc5a8e224692aaf",
+      "source": "font_list_name_used_fallback.hwpx",
+      "page": 1
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/rebase-a7feb849/incoming-used-overlay.png",
+      "sha256": "3fce863ebffe8a60a3fc82b211fa8c1450f9177bc37afa2e9a873c9460904cf6",
+      "source": "font_list_name_used_fallback.hwpx",
+      "page": 1
+    }
+  ]
+}
