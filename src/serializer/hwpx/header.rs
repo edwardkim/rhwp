@@ -519,17 +519,28 @@ fn para_head_text_offset_type_str(attr: u32) -> &'static str {
     }
 }
 
-// [#2947] parser 측 parse_numbering_format_code() (표 43) 의 역매핑.
-fn numbering_format_str(code: u8) -> &'static str {
+// [#2947] parser 측 parse_numbering_format_code() 의 역매핑. 문단 번호(표 41)와
+// 각주·미주·쪽 번호·자동 번호(표 134)가 같은 코드와 OWPML 이름을 쓴다.
+pub(crate) fn numbering_format_str(code: u8) -> &'static str {
     match code {
         1 => "CIRCLED_DIGIT",
         2 => "ROMAN_CAPITAL",
         3 => "ROMAN_SMALL",
         4 => "LATIN_CAPITAL",
         5 => "LATIN_SMALL",
+        6 => "CIRCLED_LATIN_CAPITAL",
+        7 => "CIRCLED_LATIN_SMALL",
         8 => "HANGUL_SYLLABLE",
-        12 => "HANGUL_NUMBER",
-        13 => "HANJA_NUMBER",
+        9 => "CIRCLED_HANGUL_SYLLABLE",
+        10 => "HANGUL_JAMO",
+        11 => "CIRCLED_HANGUL_JAMO",
+        12 => "HANGUL_PHONETIC",
+        13 => "IDEOGRAPH",
+        14 => "CIRCLED_IDEOGRAPH",
+        15 => "DECAGON_CIRCLE",
+        16 => "DECAGON_CIRCLE_HANJA",
+        0x80 => "SYMBOL",
+        0x81 => "USER_CHAR",
         _ => "DIGIT",
     }
 }
@@ -958,10 +969,8 @@ where
         ],
         storage,
     )?;
-    // 원본 HWPX paraHead 영역이 있으면 그대로 splice(10수준 + align/
-    // useInstWidth/autoIndent/checkable/형식문자열 무손실 복원). 모델의 7수준
-    // NumberingHead 로는 표현 못하는 정보를 보존한다. 없으면(HWP5 경로 등)
-    // 아래 하드코딩 뼈대로 폴백.
+    // 원본 HWPX paraHead 영역이 있으면 그대로 splice(checkable 등 모델에 없는
+    // 속성까지 무손실 복원). 없으면(HWP5 경로 등) 모델의 10수준 값으로 쓴다.
     if let Some(raw) = &n.raw_para_heads {
         w.get_mut()
             .write_all(raw.as_bytes())
@@ -969,12 +978,9 @@ where
         end_tag(w, "hh:numbering", storage)?;
         return Ok(());
     }
-    // Stage 1: 10 레벨 paraHead 뼈대 출력. 실제 값은 NumberingHead 참조해 생성.
-    for level in 0..10usize {
-        let idx = level.min(6);
-        let h = &n.heads[idx];
-        let start = n.level_start_numbers.get(idx).copied().unwrap_or(1);
-        let level_s = xml_value(storage, level + 1)?;
+    for (idx, h) in n.heads.iter().enumerate() {
+        let start = n.level_start_numbers[idx];
+        let level_s = xml_value(storage, idx + 1)?;
         let start_s = xml_value(storage, start)?;
         let wa = xml_value(storage, h.width_adjust)?;
         // [#2947] h.number_format 을 무시하고 "DIGIT" 로 고정 방출하면 HWP5 경유
@@ -1007,7 +1013,7 @@ where
         // [#3838] 번호 형식 문자열은 `hh:paraHead` 의 **텍스트 내용**이다("^1." 등).
         // 자기닫힘으로 내보내면 형식이 사라져 문단 번호가 아예 렌더되지 않는다.
         // 한컴 원본 실측: paraHead 232개 중 172개가 내용을 갖는다.
-        let format_str = n.level_formats.get(idx).map(String::as_str).unwrap_or("");
+        let format_str = n.level_formats[idx].as_str();
         if format_str.is_empty() {
             empty_tag(w, "hh:paraHead", &attrs, storage)?;
         } else {
@@ -1113,14 +1119,17 @@ where
                 }
                 _ => "REAL_PIC",
             };
+            // 한/글은 그림 글머리표의 그림을 core 이름공간 `<hc:img>`로 쓰고 읽는다. head 이름공간
+            // `<hh:img>`는 무시하고 글머리표 문자를 그린다(12.30 Mac에서 확인).
             empty_tag(
                 w,
-                "hh:img",
+                "hc:img",
                 &[
                     ("binaryItemIDRef", manifest_id),
                     ("bright", &bright),
                     ("contrast", &contrast),
                     ("effect", effect),
+                    ("alpha", "0"),
                 ],
                 storage,
             )?;
@@ -1271,16 +1280,38 @@ where
         ],
         storage,
     )?;
-    empty_tag(
-        w,
-        "hh:heading",
-        &[
-            ("type", head_type_str(ps.head_type)),
-            ("idRef", &xml_value(storage, ps.numbering_id)?),
-            ("level", &xml_value(storage, ps.para_level)?),
-        ],
-        storage,
-    )?;
+    let heading = [
+        ("type", head_type_str(ps.head_type)),
+        ("idRef", &xml_value(storage, ps.numbering_id)?),
+        ("level", &xml_value(storage, ps.para_level)?),
+    ];
+    if ps.para_level < 7 {
+        empty_tag(w, "hh:heading", &heading, storage)?;
+    } else {
+        // 한/글은 8~10수준 머리를 2016 문단 네임스페이스 case 에만 두고, 이를 모르는
+        // 읽기 프로그램용 default 는 머리 없음으로 둔다(한/글 12.30 저장본과 같은 꼴).
+        start_tag(w, "hp:switch", storage)?;
+        start_tag_attrs(
+            w,
+            "hp:case",
+            &[(
+                "hp:required-namespace",
+                crate::parser::hwpx::header::HWPML_2016_PARAGRAPH_NS,
+            )],
+            storage,
+        )?;
+        empty_tag(w, "hh:heading", &heading, storage)?;
+        end_tag(w, "hp:case", storage)?;
+        start_tag(w, "hp:default", storage)?;
+        empty_tag(
+            w,
+            "hh:heading",
+            &[("type", "NONE"), ("idRef", "0"), ("level", "0")],
+            storage,
+        )?;
+        end_tag(w, "hp:default", storage)?;
+        end_tag(w, "hp:switch", storage)?;
+    }
     empty_tag(
         w,
         "hh:breakSetting",

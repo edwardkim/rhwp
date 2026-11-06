@@ -950,9 +950,10 @@ impl TypesetState {
         S: crate::storage::Storage,
     >(
         &mut self,
-        note: crate::renderer::pagination::FootnoteRef,
+        mut note: crate::renderer::pagination::FootnoteRef,
         storage: &S,
     ) -> Result<(), S::Error> {
+        note.column_index = self.data.current_column;
         if let Some(page) = self.data.pages.last_mut() {
             storage.push(&mut page.footnotes, note)?;
         }

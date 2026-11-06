@@ -1317,6 +1317,9 @@ fn parse_para_shape_margin_children(
     Ok(())
 }
 
+/// 한/글이 8~10수준 문단 머리를 담는 `<hp:case>` 의 required-namespace.
+pub(crate) const HWPML_2016_PARAGRAPH_NS: &str = "http://www.hancom.co.kr/hwpml/2016/paragraph";
+
 /// `<switch>` 내부의 `<case>`/`<default>` 분기에서 margin, lineSpacing을 파싱.
 /// HwpUnitChar 네임스페이스 case를 우선 적용한다.
 fn parse_para_shape_switch(
@@ -1326,8 +1329,11 @@ fn parse_para_shape_switch(
 ) -> Result<(), HwpxError> {
     let mut buf = Vec::new();
     let mut in_hwpunitchar_case = false;
+    let mut in_paragraph_case = false;
     let mut in_default = false;
     let mut found_case = false;
+    // 한/글은 8~10수준 문단 머리를 2016 문단 네임스페이스 case 에만 두고 default 는 머리 없음이다.
+    let mut found_heading_case = false;
     // default 값을 임시 저장 (case가 없을 때 폴백)
     let mut def_margin_left: Option<i32> = None;
     let mut def_margin_right: Option<i32> = None;
@@ -1359,6 +1365,10 @@ fn parse_para_shape_switch(
                         if is_hwpunitchar {
                             in_hwpunitchar_case = true;
                         }
+                        in_paragraph_case = ce
+                            .attributes()
+                            .flatten()
+                            .any(|attr| attr_str(&attr) == HWPML_2016_PARAGRAPH_NS);
                     }
                     b"default" => {
                         in_default = true;
@@ -1369,6 +1379,11 @@ fn parse_para_shape_switch(
             Ok(Event::Empty(ref ce)) => {
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
+                if local == b"heading" && (in_paragraph_case || (in_default && !found_heading_case))
+                {
+                    parse_para_shape_child(ce, ps);
+                    found_heading_case |= in_paragraph_case;
+                }
                 if in_hwpunitchar_case || in_default {
                     match local {
                         b"margin" | b"intent" | b"left" | b"right" | b"prev" | b"next" => {
@@ -1485,6 +1500,7 @@ fn parse_para_shape_switch(
                 match local {
                     b"case" => {
                         in_hwpunitchar_case = false;
+                        in_paragraph_case = false;
                     }
                     b"default" => {
                         in_default = false;
@@ -2338,7 +2354,7 @@ fn parse_numbering_para_head_attrs(
             b"text" => format_str = attr_str(&attr),
             b"numFormat" => {
                 head.number_format = parse_numbering_format_code(&attr_str(&attr));
-                head.attr = (head.attr & !(0x0f << 5)) | ((head.number_format as u32) << 5);
+                head.attr = (head.attr & !(0x1f << 5)) | ((head.number_format as u32) << 5);
             }
             b"charPrIDRef" => head.char_shape_id = parse_u32(&attr),
             b"widthAdjust" => head.width_adjust = parse_i16(&attr),
@@ -2362,6 +2378,10 @@ fn read_numbering_para_head_text(reader: &mut Reader<&[u8]>) -> Result<String, H
             Ok(Event::CData(ref t)) => {
                 text.push_str(t.as_ref());
             }
+            // 번호 서식의 &·<·>는 글자 참조로 따로 온다. 버리면 다시 열 때 빠진다.
+            Ok(Event::GeneralRef(ref r)) => {
+                text.push_str(&super::section::decode_xml_general_ref(r));
+            }
             Ok(Event::End(ref ee)) => {
                 if local_name(ee.name().as_ref()) == b"paraHead" {
                     break;
@@ -2384,7 +2404,7 @@ fn apply_numbering_para_head(
     start: Option<u32>,
     format_str: String,
 ) {
-    if !(1..=7).contains(&level) {
+    if !(1..=crate::model::style::NUMBERING_LEVELS).contains(&level) {
         return;
     }
 
@@ -2396,7 +2416,7 @@ fn apply_numbering_para_head(
     num.level_formats[idx] = format_str;
 }
 
-fn parse_numbering_format_code(value: &str) -> u8 {
+pub(crate) fn parse_numbering_format_code(value: &str) -> u8 {
     // 코드 값은 한글문서파일형식 5.0 rev1.3 "표 41: 문단 번호 형식"과 OWPML
     // Core XML schema.xml 의 NumberType1 enumeration 순서가 1:1 대응한다
     // (mydocs/tech/한글문서파일형식_5.0_revision1.3.md:978-993). 이전 구현은
@@ -2423,6 +2443,12 @@ fn parse_numbering_format_code(value: &str) -> u8 {
         "HANGUL_PHONETIC" | "HANGUL_NUMBER" => 12,
         "IDEOGRAPH" | "HANJA_NUMBER" => 13,
         "CIRCLED_IDEOGRAPH" => 14,
+        // 한/글은 갑·을·병을 DECAGON_CIRCLE, 甲·乙·丙을 DECAGON_CIRCLE_HANJA로 쓴다.
+        "DECAGON_CIRCLE" => 15,
+        "DECAGON_CIRCLE_HANJA" => 16,
+        // 각주·쪽 번호의 4가지 기호(*, †, ‡, §)와 사용자 기호(표 134 0x80·0x81)
+        "SYMBOL" => 0x80,
+        "USER_CHAR" => 0x81,
         _ => value.parse().unwrap_or(0),
     }
 }

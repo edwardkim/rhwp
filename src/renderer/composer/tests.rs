@@ -857,11 +857,19 @@ fn test_compose_multi_line_multi_style() {
 
 /// table-vpos-01 page 5의 10/11/12 마커는 CharOverlap 하나에 두 개의
 /// HWP PUA 구성 글자가 들어온다. 텍스트 흐름과 캐럿 이동은 한 글자 폭이어야 한다.
+/// 두 글자는 사각형 블록의 십의자리 1·일의자리 0이다(한컴 12.30 사각형 "12" 저장본과 같은 블록).
 #[test]
 fn test_char_overlap_multi_component_is_single_advance() {
     let chars = vec!['\u{F02BA}', '\u{F02C3}'];
-    assert_eq!(decode_pua_overlap_number(&chars), None);
+    assert_eq!(decode_pua_overlap_number(&chars).as_deref(), Some("10"));
+    assert_eq!(pua_overlap_number_border(&chars), 3);
     assert_eq!(char_overlap_advance_units(&chars), 1);
+    // 한컴 반전 원·반전 사각형 "12"
+    assert_eq!(
+        decode_pua_overlap_number(&['\u{F029D}', '\u{F02A8}']).as_deref(),
+        Some("12")
+    );
+    assert_eq!(pua_overlap_number_border(&['\u{F02D7}', '\u{F02E2}']), 4);
 }
 
 /// [#4085] `charSz` 는 OWPML 상 "테두리 내부 글자의 크기 비율"이므로 테두리를

@@ -42,6 +42,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `pattern-image-replay-api.mjs` | 유틸 | active | 반복 이미지 shader의 생성·소유·해제 계약용 API 모형 | 합성 pattern image | 수동 | `renderer-contract.test.mjs`에서 간접 import |
 | `middle-dot-canvas-paint.test.mjs` | 상시 | active | 가운뎃점의 실제 Canvas 원형 경로와 앞뒤 내용 소유 | k-water-rfp.hwp | npm e2e:middle-dot-canvas-paint | 원본 공개 WASM·Canvas paint 소비 검사 |
 | `canvaskit-cropped-contain.test.mjs` | 상시 | active | #7235 crop 이후 이미지 비율과 letterbox의 실제 CanvasKit replay 검사 | 합성 이미지 | 수동 | run-with-vite.mjs 경유 |
+| `char-overlap-monochrome-fallback.test.mjs` | 상시 | active | #8616 겹침 모양 단색·덧말 원색과 공개 글꼴 후보 소비 | char_overlap/hancom-mac-shapes.hwpx, dutmal/hancom-mac-dutmal.hwpx | 수동 | run-with-vite.mjs 경유, 최소 글꼴·좌표 독립 관계 검사 |
 | `glyph-outline-portable-geometry.test.mjs` | 상시 | active | #536 strict outline의 유효 좌표 replay와 f32 범위 초과 시 전체 TextRun fallback 픽셀 보존 | 합성 outline·TextRun | npm e2e:glyph-outline-portable-geometry | Chromium software CanvasKit, run-with-vite.mjs 경유 |
 | `issue-7442-nested-table-pointer.test.mjs` | 상시 | active | #7442 F5 선택 후 드래그·일반 hover/resize·Undo·블록 선택·외곽선 클릭 | basic/issue1994_behindtext_table_20200830.hwp | 수동 | fresh WASM 필수 |
 | `issue-6806-zero-shape-resize-undo.test.mjs` | 상시 | active | #6806 저장 높이 0 도형의 실제 WASM 리사이즈·Studio undo/redo | issue6023/30269_reform_recommendation.hwp | 수동 | 기존 누락 항목 등록 |

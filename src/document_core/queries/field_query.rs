@@ -2667,6 +2667,7 @@ pub(crate) fn remove_field_control_in_para(
             range.control_idx -= 1;
         }
     }
+    para.forget_para_text_if_emptied();
     Ok(control_idx)
 }
 

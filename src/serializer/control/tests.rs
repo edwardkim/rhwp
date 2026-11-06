@@ -1162,10 +1162,15 @@ fn char_overlap_non_bmp_char_roundtrip() {
     let Control::CharOverlap(r) = parsed else {
         panic!("CharOverlap 이 아님");
     };
+    // HWP 원문 배열은 한컴 저장본처럼 테두리 글자(◯)를 앞에 둔다.
     assert_eq!(
         r.chars,
-        vec!['\u{1D400}'],
+        vec!['◯', '\u{1D400}'],
         "비BMP 문자가 왕복 보존되어야 함"
+    );
+    assert_eq!(
+        crate::renderer::composer::char_overlap_plain_text(&r),
+        "\u{1D400}"
     );
     assert_eq!(r.char_shape_ids, vec![3]);
 }
@@ -1186,10 +1191,11 @@ fn char_overlap_256_char_shape_ids_no_wraparound() {
         hwp_wire_chars: false,
     };
     let data = serialize_char_overlap(&co);
-    // 카운트 바이트: chars 카운트(2) + WCHAR(2×1) + 테두리(1) + 크기(1) + 펼침(1) = offset 7
-    let cnt = data[7];
+    // 카운트 바이트: chars 카운트(2) + WCHAR(2×2, 펼친 글자끼리 겹침의 전각 공백 표지와 '가')
+    // + 테두리(1) + 크기(1) + 펼침(1) = offset 9
+    let cnt = data[9];
     // 기록된 ID 바이트 수와 카운트 필드가 일치해야 한다 (손상 레코드 금지)
-    let id_bytes = data.len() - 8;
+    let id_bytes = data.len() - 10;
     assert_eq!(
         cnt as usize * 4,
         id_bytes,

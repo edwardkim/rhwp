@@ -174,3 +174,44 @@ pub(crate) fn stored_column_top_spacing(
         0.0
     }
 }
+
+/// 원본 FIRST..LAST가 같은 물리 행의 비중첩 수평 조각을 완결하는지 확인한다.
+/// bit31은 구현 편의 속성이며, 이 소유 관계 자체를 별도 줄로 바꾸지 않는다.
+/// 같은 높이의 개별 완결 행·쪽/단 시작·내용 없는 합성 자리표는 이 경계가 아니다.
+pub(crate) fn has_declared_fragment_boundary(para: &Paragraph, index: usize) -> bool {
+    let rows = &para.line_segs;
+    let Some((previous, current)) = index
+        .checked_sub(1)
+        .and_then(|before| rows.get(before).zip(rows.get(index)))
+    else {
+        return false;
+    };
+    if previous.vertical_pos != current.vertical_pos
+        || previous.column_start == current.column_start
+    {
+        return false;
+    }
+    let top = current.vertical_pos;
+    let mut start = index - 1;
+    while start > 0 && rows[start - 1].vertical_pos == top {
+        start -= 1;
+    }
+    let mut end = index + 1;
+    while end < rows.len() && rows[end].vertical_pos == top {
+        end += 1;
+    }
+    let row = &rows[start..end];
+    row.iter().enumerate().all(|(offset, segment)| {
+        segment.line_height > 0
+            && segment.segment_width > 0
+            && segment.is_first_segment() == (offset == 0)
+            && segment.is_last_segment() == (offset + 1 == row.len())
+            && (offset == 0
+                || (!segment.is_first_line_of_page() && !segment.is_first_line_of_column()))
+    }) && row.windows(2).all(|pair| {
+        pair[0]
+            .column_start
+            .checked_add(pair[0].segment_width)
+            .is_some_and(|right| right <= pair[1].column_start)
+    })
+}

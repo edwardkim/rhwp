@@ -193,6 +193,7 @@ impl DocumentCore {
             {
                 para.control_mask &= !(1u32 << 0x0011);
             }
+            para.forget_para_text_if_emptied();
 
             Self::reflow_paragraph_line_segs_after_control_delete(para, &self.styles, self.dpi);
             section.raw_stream = None;
@@ -225,7 +226,7 @@ impl DocumentCore {
     }
 
     /// 각주 컨트롤 내부 문단의 가변 참조를 얻는다.
-    fn get_footnote_paragraph_mut(
+    pub(crate) fn get_footnote_paragraph_mut(
         &mut self,
         section_idx: usize,
         para_idx: usize,
@@ -271,7 +272,7 @@ impl DocumentCore {
     }
 
     /// 각주 컨트롤 내부 문단의 불변 참조를 얻는다.
-    fn get_footnote_paragraph_ref(
+    pub(crate) fn get_footnote_paragraph_ref(
         &self,
         section_idx: usize,
         para_idx: usize,

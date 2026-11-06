@@ -1447,7 +1447,13 @@ impl DocumentCore {
         let flow_after = body_paragraph_flow_signature(
             &self.document.sections[section_idx].paragraphs[para_idx],
         );
-        let flow_changed = flow_before != flow_after;
+        // 원고지 구역의 칸 배치는 렌더 정규화본에만 있어, 쪽 나눔을 미루면 칸 없이 그린다.
+        // 원고지 문서는 작아 입력마다 다시 나눈다.
+        let cell_grid_section = self.document.sections[section_idx]
+            .section_def
+            .cell_grid()
+            .is_some();
+        let flow_changed = flow_before != flow_after || cell_grid_section;
         if self.batch_mode {
             // 문단의 새 줄 구성은 위에서 갱신했다. 쪽 소속 확정은 endBatch가 소유한다.
             self.mark_section_dirty(section_idx);
@@ -1967,12 +1973,44 @@ impl DocumentCore {
         let para_style = self.styles.para_styles.get(para.para_shape_id as usize);
         // 본문: 열 상자를 그대로 넘긴다. 이 자리가 대화형 편집의 관문이고,
         // 종전에 두 끝점을 버려 `column_start=0` 을 발행했던 지점이다.
+        let column_width = col_area.width;
         reflow_line_segs(
             &mut self.document.sections[section_idx].paragraphs[para_idx],
-            ParagraphBox::body_for_style(col_area.width, para_style, self.dpi),
+            ParagraphBox::body_for_style(column_width, para_style, self.dpi),
             &self.styles,
             self.dpi,
         );
+        // 원고지 구역: 칸 수로 줄을 다시 나누고, 문단 세로 위치를 셈하는 줄 간격을 격자에 맞춘다.
+        let document = &mut self.document;
+        crate::renderer::cell_grid::fit_body_paragraph(
+            &mut document.sections[section_idx],
+            &document.doc_info.para_shapes,
+            para_idx,
+            column_width,
+            &self.styles,
+            self.dpi,
+        );
+    }
+
+    /// 본문 문단을 다시 짠 서식 편집 뒤에 원고지 구역이면 칸 수로 다시 나눈다.
+    pub(crate) fn fit_cell_grid(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    ) {
+        let column_width = self.body_wrap_width(section_idx);
+        let document = &mut self.document;
+        if let Some(section) = document.sections.get_mut(section_idx) {
+            crate::renderer::cell_grid::fit_body_paragraph(
+                section,
+                &document.doc_info.para_shapes,
+                para_idx,
+                column_width,
+                styles,
+                self.dpi,
+            );
+        }
     }
 
     /// 표 셀 내부 문단에 텍스트 삽입 (네이티브)
@@ -3496,6 +3534,19 @@ impl DocumentCore {
         for (i, &(ctrl_idx, cell_idx, cell_para_idx)) in path.iter().enumerate() {
             let control = para.controls.get(ctrl_idx)?;
             if i + 1 == path.len() {
+                if matches!(control, Control::Header(_) | Control::Footer(_)) {
+                    // 머리말·꼬리말 영역 폭 = 쪽 글 영역 폭(`reflow_hf_paragraph`와 같다).
+                    let page_def = &self
+                        .document
+                        .sections
+                        .get(section_idx)?
+                        .section_def
+                        .page_def;
+                    let width = page_def.width as i32
+                        - page_def.margin_left as i32
+                        - page_def.margin_right as i32;
+                    return (cell_idx == 0).then_some((width, 0, 0));
+                }
                 return Self::cell_metrics_for_control(control, cell_idx);
             }
             para = match control {
@@ -3504,6 +3555,9 @@ impl DocumentCore {
                     .paragraphs
                     .get(cell_para_idx)?,
                 Control::Picture(p) => p.caption.as_ref()?.paragraphs.get(cell_para_idx)?,
+                Control::Header(_) | Control::Footer(_) if cell_idx == 0 => {
+                    control.header_footer_paragraphs()?.get(cell_para_idx)?
+                }
                 _ => return None,
             };
         }
@@ -3536,6 +3590,15 @@ impl DocumentCore {
         let pad_right_px = hwpunit_to_px(pad_right as i32, dpi);
         let available_width = (cell_width_px - pad_left_px - pad_right_px).max(0.0);
 
+        // 머리말·꼬리말 문단은 그 편집 경로(`reflow_hf_paragraph`)와 같은 상자로 다시 짠다.
+        let header_footer = path.len() == 1
+            && self
+                .document
+                .sections
+                .get(section_idx)
+                .and_then(|section| section.paragraphs.get(parent_para_idx))
+                .and_then(|para| para.controls.get(path[0].0))
+                .is_some_and(|control| control.header_footer_paragraphs().is_some());
         let Ok(paras) = self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)
         else {
             return;
@@ -3544,7 +3607,12 @@ impl DocumentCore {
             return;
         };
         let para_style = styles.para_styles.get(cell_para.para_shape_id as usize);
-        let paragraph_box = ParagraphBox::content_for_style(available_width, para_style, dpi);
+        let paragraph_box = if header_footer {
+            let margins = para_style.map_or(0.0, |s| s.margin_left + s.margin_right);
+            ParagraphBox::content_width_px((available_width - margins).max(0.0), dpi)
+        } else {
+            ParagraphBox::content_for_style(available_width, para_style, dpi)
+        };
         // 셀 내용 상자 — 열이 없으므로 미스냅.
         reflow_line_segs(cell_para, paragraph_box, &styles, dpi);
     }
@@ -6268,6 +6336,16 @@ impl DocumentCore {
                     })?;
                     &mut caption.paragraphs
                 }
+                Some(ctrl @ (Control::Header(_) | Control::Footer(_))) => {
+                    if cell_idx != 0 {
+                        return Err(HwpError::RenderError(format!(
+                            "경로[{}]: 머리말·꼬리말의 cell_index는 0이어야 합니다 ({})",
+                            i, cell_idx
+                        )));
+                    }
+                    ctrl.header_footer_paragraphs_mut()
+                        .expect("머리말·꼬리말 컨트롤")
+                }
                 _ => {
                     return Err(HwpError::RenderError(format!(
                         "경로[{}]: controls[{}]가 표/글상자/그림 캡션이 아닙니다",
@@ -6522,6 +6600,18 @@ impl DocumentCore {
         for (i, &(ctrl_idx, cell_idx, _cpi)) in path.iter().enumerate() {
             let table = match para.controls.get_mut(ctrl_idx) {
                 Some(Control::Table(t)) => t.as_mut(),
+                // 머리말·꼬리말 뿌리: 그 문단에 든 표로 내려간다(머리말 문단 자체는 머리말 API가 맡는다).
+                Some(ctrl @ (Control::Header(_) | Control::Footer(_)))
+                    if i == 0 && cell_idx == 0 && path.len() > 1 =>
+                {
+                    para = ctrl
+                        .header_footer_paragraphs_mut()
+                        .and_then(|paragraphs| paragraphs.get_mut(_cpi))
+                        .ok_or_else(|| {
+                            HwpError::RenderError("머리말·꼬리말 문단 범위 초과".to_string())
+                        })?;
+                    continue;
+                }
                 _ => return Err(HwpError::RenderError("경로: 표가 아닙니다".to_string())),
             };
             let cell = table
@@ -6627,6 +6717,18 @@ impl DocumentCore {
         for (i, &(ctrl_idx, cell_idx, _cpi)) in path.iter().enumerate() {
             let table = match para.controls.get_mut(ctrl_idx) {
                 Some(Control::Table(t)) => t.as_mut(),
+                // 머리말·꼬리말 뿌리: 그 문단에 든 표로 내려간다(머리말 문단 자체는 머리말 API가 맡는다).
+                Some(ctrl @ (Control::Header(_) | Control::Footer(_)))
+                    if i == 0 && cell_idx == 0 && path.len() > 1 =>
+                {
+                    para = ctrl
+                        .header_footer_paragraphs_mut()
+                        .and_then(|paragraphs| paragraphs.get_mut(_cpi))
+                        .ok_or_else(|| {
+                            HwpError::RenderError("머리말·꼬리말 문단 범위 초과".to_string())
+                        })?;
+                    continue;
+                }
                 _ => return Err(HwpError::RenderError("경로: 표가 아닙니다".to_string())),
             };
             let cell = table

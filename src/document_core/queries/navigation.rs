@@ -118,7 +118,8 @@ fn advance_paragraph_number(
         para_shape.para_level,
         paragraph.numbering_restart,
     );
-    let level_index = (para_shape.para_level as usize).min(6);
+    let level_index =
+        (para_shape.para_level as usize).min(crate::model::style::NUMBERING_LEVELS - 1);
     let format = &numbering.level_formats[level_index];
     if format.is_empty() {
         return None;
@@ -352,7 +353,7 @@ mod tests {
         for format in &mut numbering.level_formats {
             *format = "^N".to_owned();
         }
-        numbering.level_start_numbers = [1; 7];
+        numbering.level_start_numbers = [1; crate::model::style::NUMBERING_LEVELS];
 
         let mut document = Document::default();
         document.doc_info.para_shapes = para_shapes;
@@ -377,7 +378,7 @@ mod tests {
         for format in &mut numbering.level_formats {
             *format = "^N".to_owned();
         }
-        numbering.level_start_numbers = [1; 7];
+        numbering.level_start_numbers = [1; crate::model::style::NUMBERING_LEVELS];
 
         let mut document = Document::default();
         document.doc_info.para_shapes =

@@ -1,3 +1,27 @@
+//! 관계형 및 고정형 회귀: 누름틀·탭 소유·셀 정렬·원본 앞 간격 관계와 완료 첫 쪽의 독립 Print 좌표 ±2 CSSpx.
+//! 주석 갱신: 2026-11-06T08:25:01+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 5172f2d55c73b2ed33d4d3657d81e769bc9004c2, 작성 2026-11-06T08:13:58+09:00, 커밋 2026-11-06T08:13:58+09:00.
+//! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
+//! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
+//! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
+//! 36455985_no_lineseg_cell_spacing_before.hwpx (issue7344-first-cell-no-ls-before): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 99.99788%.
+//! 고정 1쪽: Native 100.0%, fresh WASM 99.99788%; 같은 영역의 독립 Print 확대 판독 완료.
+//! 36494836_field_marker_tac_lines.hwpx (issue7344-stored-fields-tabs): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! 고정 1쪽: Native 100.0%, fresh WASM 100.0%; 같은 영역의 독립 Print 확대 판독 완료.
+//! 36312980_broken_cell_ladder_center.hwpx (issue7344-broken-cell-ladder): 전 1쪽, Native 최저 99.86918%, fresh WASM 최저 100.0%.
+//! 고정 1쪽: Native 99.86918%, fresh WASM 100.0%; 같은 영역의 독립 Print 확대 판독 완료.
+//! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.md.
+//! 원본 형식 계약:
+//! 관계형·고정형: 누름틀·탭 소유, 셀 정렬·원본 간격 및 완료 쪽의 독립 Print 좌표.
+//! 주석 갱신: 2026-11-06T03:10:15+09:00. 직전 파일 변경:
+//! 2026-10-24T15:11:35+09:00, 60972534680a0c5e51e54ec189b92e252e81a867.
+//! 측정: 2026-11-06 KST, 기존 독립 한컴 Print PDF, 96dpi PDFium, 보정 전 2px raw.
+//! 36494836: 전 1쪽 Native/fresh WASM 각각 100.00%; 36312980: 전 1쪽 99.87%/100.00%.
+//! 36455985: 전 1쪽 양쪽 100.00%; 각 원본의 전쪽 최저값이며 독립 PDF와 쪽수가 같다.
+//! 제품 source: 2de033b4e42be406a01ea0b9053a4531247e147c. 5개 글꼴 최소 환경에서 검사한다.
+//! 정식 근거: mydocs/pr/assets/semanticist21_20261105/first-cell-spacing/README.md.
+//! 기존 완료 쪽의 ±2 CSSpx 좌표·소유 관계는 유지하고, 앞 공간은 원본 속성의 합과 비교한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 //! [Issue #7344] 결재문서 `본문` 누름틀의 시작 마커가 글자처럼 취급하는 표 문단의 첫머리에
@@ -12,7 +36,7 @@
 //! ```
 //!
 //! 두 표의 상단 간격은 저장 줄 원점 차 `2222HU = 29.6px` 이다. 수정 전 rhwp 는 1×1 표의
-//! 높이(`17.1px`)만큼만 내려 3×3 표와 그 뒤 본문 전체를 12.5px 위로 올렸다. 한/글 2024 PDF
+//! 높이(`17.1px`)만큼만 내려 3×3 표와 그 뒤 본문 전체를 12.5px 위로 올렸다. 독립 한컴 Print PDF
 //! (MCP 변환)에서 3×3 표 첫 줄은 devel 보다 9.32pt 아래이고 이 수정 뒤 +0.08pt 차이다.
 //!
 //! 누름틀 시작 마커는 원시 스트림의 8유닛 칸만 차지하고 줄 상자를 만들지 않으므로, 줄
@@ -29,7 +53,7 @@ const HU_PER_PX: f64 = 75.0;
 
 /// 96dpi CSS 좌표. 독립 Print 괘선의 PDF pt × 96/72가 기대값이며,
 /// 검증한 완료 페이지의 Native/fresh WASM 98% 조건은
-/// mydocs/pr/assets/issue7445/completed-20261009/pixel-regression-20261014/evidence.json에 연결한다.
+/// mydocs/pr/assets/semanticist21_20261105/first-cell-spacing/README.md에 연결한다.
 fn assert_completed_page_css_px(actual: f64, independent: f64, owner: &str) {
     assert!(
         (actual - independent).abs() <= 2.0,
@@ -114,7 +138,7 @@ fn field_begin_marker_keeps_the_stored_tac_line_origins() {
 
 // ---------------------------------------------------------------------------
 // 바뀐 쪽 Visual Sweep 에서 드러난 같은 결재문서 계열의 나머지 세 결함.
-// 기대값은 저장값(탭 폭·표 선언 폭·문단 위 간격·셀 안 여백)과 한/글 2024 PDF 실측으로 정한다.
+// 기대값은 저장값(탭 폭·표 선언 폭·문단 위 간격·셀 안 여백)과 독립 한컴 Print PDF 실측으로 정한다.
 // ---------------------------------------------------------------------------
 
 fn load_rel(rel: &str) -> DocumentCore {
@@ -138,7 +162,7 @@ fn hu(v: f64) -> f64 {
 /// 탭은 원시 스트림 8유닛을 차지하는 가시 글자다. 종전에는 그 stride 를 컨트롤 갭으로 읽어
 /// 탭마다 세그먼트가 갈렸고, 표가 **첫 탭 바로 뒤**에 놓여 한/글보다 186px 왼쪽에 그려졌다.
 /// 한/글은 저장 탭 폭(`<hp:tab width=4000>`)으로 전진하고, 마지막 표 뒤 말미 공백은 정렬 폭에서
-/// 뺀다(#6173 일반 문단 계약). 한/글 2024 PDF 의 표 왼쪽 ≈ 327.4px 와 이 식의 값이 맞는다.
+/// 뺀다(#6173 일반 문단 계약). 독립 한컴 Print PDF 의 표 왼쪽 ≈ 327.4px 와 이 식의 값이 맞는다.
 #[test]
 fn centered_inline_table_after_tabs_uses_stored_tab_widths() {
     let core = load();
@@ -232,7 +256,7 @@ fn centered_inline_table_after_tabs_uses_stored_tab_widths() {
 /// [#7344] 문단 앵커가 끊긴 셀 사다리(36312980 1쪽 `내용` 칸: p1·p2 vpos=0, p3 vpos=7040).
 ///
 /// 배치는 끊긴 사다리를 순차 적층으로 그린다. 정렬 높이만 마지막 vpos(108.5px)를 써서 4줄
-/// (85.1px)이 가운데보다 11.7px 위로 쏠렸다. 한/글 2024 PDF 는 위·아래 여백이 같다.
+/// (85.1px)이 가운데보다 11.7px 위로 쏠렸다. 독립 한컴 Print PDF 는 위·아래 여백이 같다.
 #[test]
 fn broken_cell_ladder_centers_the_stacked_lines() {
     let core = load_rel("samples/issue7344/36312980_broken_cell_ladder_center.hwpx");
@@ -275,10 +299,49 @@ fn broken_cell_ladder_centers_the_stacked_lines() {
     );
 }
 
+/// 독립 HWPX 원문의 실제 HWPUNIT 값을 읽는다. HwpUnitChar 1배와 IR 2배를 혼동하지 않는다.
+fn source_spacing_before_hwpunit(shape_id: u16) -> f64 {
+    use std::io::{Cursor, Read};
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue7344/36455985_no_lineseg_cell_spacing_before.hwpx");
+    let mut archive = zip::ZipArchive::new(Cursor::new(std::fs::read(path).unwrap())).unwrap();
+    let mut header = String::new();
+    archive
+        .by_name("Contents/header.xml")
+        .unwrap()
+        .read_to_string(&mut header)
+        .unwrap();
+    let xml = roxmltree::Document::parse(&header).unwrap();
+    let id = shape_id.to_string();
+    let shape = xml
+        .descendants()
+        .find(|node| {
+            node.has_tag_name(("http://www.hancom.co.kr/hwpml/2011/head", "paraPr"))
+                && node.attribute("id") == Some(id.as_str())
+        })
+        .expect("원본 문단 모양");
+    let case = shape
+        .descendants()
+        .find(|node| {
+            node.is_element()
+                && node.tag_name().name() == "case"
+                && node.attributes().any(|attr| {
+                    attr.name() == "required-namespace" && attr.value().contains("HwpUnitChar")
+                })
+        })
+        .expect("1배 HWPUNIT 원문 case");
+    let before = case
+        .descendants()
+        .find(|node| node.is_element() && node.tag_name().name() == "prev")
+        .expect("문단 앞 간격");
+    assert_eq!(before.attribute("unit"), Some("HWPUNIT"));
+    before.attribute("value").unwrap().parse().unwrap()
+}
+
 /// [#7344] 저장 줄이 없는 셀 첫 문단의 위 간격(36455985 1쪽 `내용` 칸, 위 정렬).
 ///
 /// 칸의 유일한 문단은 중첩 표만 들고 `linesegarray` 가 없다. 한/글은 다시 조판하며 문단 위
-/// 간격(paraPr `prev=1200` HwpUnitChar = 16px)을 그대로 두어, 한/글 2024 PDF 에서 중첩 표 머리
+/// 간격(paraPr `prev=1200` HwpUnitChar = 16px)을 그대로 두어, 독립 한컴 Print PDF 에서 중첩 표 머리
 /// 글자가 종전 rhwp 보다 13pt 아래에 있다. 저장 줄이 있는 칸은 그 값이 첫 줄 vpos 로 남는다(#6630).
 #[test]
 fn cell_first_paragraph_without_stored_lines_keeps_spacing_before() {
@@ -325,9 +388,23 @@ fn cell_first_paragraph_without_stored_lines_keeps_spacing_before() {
     );
     let pad_top = hu(f64::from(host.padding.top));
     let lead = nested_y - (cell_y + pad_top);
-    let spacing_before = hu(1200.0);
+    let spacing_before = hu(source_spacing_before_hwpunit(first.para_shape_id));
+    let nested = first
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            rhwp::model::control::Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .expect("원본 중첩 표");
+    let outer_top = hu(f64::from(nested.outer_margin_top));
+    let source_lead = spacing_before + outer_top;
     assert!(
-        (lead - spacing_before).abs() <= 0.5,
-        "중첩 표가 칸 안 여백 아래 {lead:.2}px 에 놓인다 — 문단 위 간격 {spacing_before:.2}px 여야 한다"
+        spacing_before > 0.0 && outer_top > 0.0,
+        "앞 간격과 바깥 여백을 실제로 구분하는 원본"
+    );
+    assert!(
+        (lead / source_lead - 1.0).abs() < 1e-6,
+        "안 여백 다음 중첩 표의 앞 공간 {lead:.6}은 원본 문단 앞 간격 {spacing_before:.6} + 바깥 위 여백 {outer_top:.6}을 한 번씩 소비해야 한다"
     );
 }

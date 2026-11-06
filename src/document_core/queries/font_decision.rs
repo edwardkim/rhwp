@@ -247,7 +247,8 @@ fn source_character(
     }
     for (control, position) in para.controls.iter().zip(control_positions) {
         // shortcut: 겹침 런의 원문 소유권을 전달할 때까지 첫 겹침부터 뒤 주소는 확정하지 않는다.
-        if (matches!(control, Control::CharOverlap(_)) && position <= logical_offset)
+        if (matches!(control, Control::CharOverlap(_) | Control::Ruby(_))
+            && position <= logical_offset)
             || (control.is_logical_inline() && position == logical_offset)
         {
             return None;

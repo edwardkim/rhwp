@@ -1,0 +1,22 @@
+{
+  "8528/follow-two-sizes.hwp": {
+    "path": "tests/fixtures/numbering_char_shape/follow-two-sizes.hwp",
+    "sha256": "94306aa8dd8cdac456bfa666b5832fe8857491497720c85c8f5c8d43fc7df6f2"
+  },
+  "8564/hancom-date-path-codes.hwpx": {
+    "path": "tests/fixtures/date_path_codes/hancom-date-path-codes.hwpx",
+    "sha256": "d7a2cadf7855f03c3ce7a418506a370a02d7290b1487006a3b2dd0da078240ec"
+  },
+  "8572/footnote-01.hwp": {
+    "path": "samples/footnote-01.hwp",
+    "sha256": "5bbc8a8fd23415aad59dd91d1eb261050946d9c64635933fcd49609ec2cc94e5"
+  },
+  "8586/hancom-page-number-mid.hwpx": {
+    "path": "tests/fixtures/page_number_position/hancom-page-number-mid.hwpx",
+    "sha256": "d49cfee4fffd6107bd51ea0f307fae17f63b8ef7f37840a04f79f43c38c7b3cf"
+  },
+  "8629/hancom-mac-200-b5.hwp": {
+    "path": "tests/fixtures/wonggoji/hancom-mac-200-b5.hwp",
+    "sha256": "aee3057cbc9571400ca9c741ad5210ce2320faa0c2056da9b9773f0d7abb814c"
+  }
+}

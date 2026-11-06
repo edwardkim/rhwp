@@ -31,6 +31,7 @@ mod font_environment;
 mod host_font_environment;
 mod loaded_frame_restore;
 mod table_reflow_owners;
+mod tac_host_rows;
 pub use canvas_metric_requests::{CanvasMetricBatch, CanvasMetricReply, CanvasMetricRequest};
 pub use host_font_environment::{
     DeclaredFontFallbackRequest, ObservedFontFallback, ObservedFontSource,
@@ -46,7 +47,7 @@ pub use commands::paragraph_block::{
     TemplateFillTarget, TemplateOperation, TemplateOperationResult, TemplateScope,
     TEMPLATE_REQUEST_MAX_BYTES,
 };
-pub use commands::{TableColumnWidths, TableCreationOptions};
+pub use commands::{ComposeHost, TableColumnWidths, TableCreationOptions};
 pub mod converters;
 pub(crate) mod html_table_import;
 mod html_table_width;

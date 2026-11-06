@@ -37,6 +37,18 @@ impl ComposedParagraph {
                     )
                 })
                 .collect()
+        } else if crate::renderer::para_has_no_stored_line_segs(para) {
+            // 합성 줄은 저장 캐시로 수용하지 않는다. 대신 조합기가 이미 발행한
+            // 개체의 실제 줄 소속을 사용해 측정과 전체·부분 배치가 공유한다.
+            (0..para.controls.len())
+                .map(|index| {
+                    self.inline_controls
+                        .iter()
+                        .find(|owner| owner.control_index == index)
+                        .filter(|owner| owner.line_index < self.lines.len())
+                        .map(|owner| owner.line_index)
+                })
+                .collect()
         } else {
             crate::renderer::float_placement::stored_control_line_indices(para)
         }

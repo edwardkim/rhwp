@@ -1440,10 +1440,15 @@ fn serialize_bookmark_ctrl_data(bm: &Bookmark) -> Option<Vec<u8>> {
 fn serialize_char_overlap(co: &CharOverlap) -> Vec<u8> {
     let mut w = ByteWriter::new();
 
-    // 겹칠 글자: WCHAR(UTF-16LE) 배열, 서로게이트 쌍 포함
-    let mut utf16: Vec<u16> = Vec::with_capacity(co.chars.len());
+    // 겹칠 글자: WCHAR(UTF-16LE) 배열, 서로게이트 쌍 포함. HWP 밖에서 온 겹침은
+    // 한컴 저장본처럼 표지(테두리 글자·전각 공백)를 앞에 둔다.
+    let prefix = (!co.hwp_wire_chars)
+        .then(|| co.hwp_prefix())
+        .flatten()
+        .filter(|prefix| co.chars.first() != Some(prefix));
+    let mut utf16: Vec<u16> = Vec::with_capacity(co.chars.len() + 1);
     let mut buf = [0u16; 2];
-    for &ch in &co.chars {
+    for ch in prefix.into_iter().chain(co.chars.iter().copied()) {
         utf16.extend_from_slice(ch.encode_utf16(&mut buf));
     }
     // u16 카운트 필드 wraparound 방지 (스펙상 최대 9글자라 실사용에선 도달하지 않음)

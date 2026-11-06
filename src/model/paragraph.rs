@@ -26,6 +26,13 @@ pub struct CharShapeRun {
     pub char_shape_id: u32,
 }
 
+/// 원고지 칸 격자(HWPUNIT). 구역 정의의 줄 격자가 한 줄 높이, 글자 격자가 한 칸 폭이다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+pub struct CellGrid {
+    pub line: i32,
+    pub cell: i32,
+}
+
 /// 문단 (HWPTAG_PARA_HEADER + 하위 레코드)
 #[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Paragraph {
@@ -130,6 +137,10 @@ pub struct Paragraph {
     /// 문자 분할의 유효성과 별개이며 원본 파일이나 IR로 직렬화하지 않는다.
     #[serde(skip_serializing)]
     pub layout_rebased_body_axis: bool,
+    /// 원고지 구역의 칸 격자. 렌더 정규화본에만 두고 파일·IR로 직렬화하지 않는다.
+    /// 있으면 문단 배치가 글자를 칸에 놓는다.
+    #[serde(skip_serializing)]
+    pub layout_cell_grid: Option<CellGrid>,
     /// 영역 태그 정보
     pub range_tags: Vec<RangeTag>,
     /// 필드 텍스트 범위 (0x03~0x04 사이 텍스트 인덱스 + 컨트롤 인덱스)
@@ -191,6 +202,10 @@ pub struct Paragraph {
     /// splitting starts a continuation, and width reflow discards the old frames.
     #[serde(skip_serializing)]
     pub cell_vpos_reset: Option<bool>,
+    /// 글자처럼 취급 표의 높이 변화로 편집이 옮긴 저장 줄 흐름. 저장할 때 이 문단이 새 쪽
+    /// 맨 앞이면 저장 사본에만 쪽 원점 vpos를 적는다. 직렬화하지 않는다.
+    #[serde(skip_serializing)]
+    pub stored_flow_shifted: bool,
     /// [#7436] 번호·개요 문단의 번호 문자열(본문과의 거리 공백 포함).
     ///
     /// 번호는 문서 순서의 계수기에서 정해지는데, 줄 나눔은 문단 하나만 보고 줄을 채운다.
@@ -214,7 +229,7 @@ pub enum NumberingMarker {
     Unresolved,
     /// 번호·개요 문단이 아니거나, 그려질 번호가 없다.
     Absent,
-    /// 그려질 번호 문자열과 그 수준의 문단 머리 속성.
+    /// 번호 문자열과 그 수준의 문단 머리 속성. 빈 문자열도 본문 거리를 점유한다.
     Text(String, MarkerHead),
 }
 
@@ -243,7 +258,7 @@ impl NumberingMarker {
     /// 그려질 번호 문자열 — 계산 전이거나 번호가 없으면 `None`.
     pub fn text(&self) -> Option<&str> {
         match self {
-            NumberingMarker::Text(text, _) => Some(text),
+            NumberingMarker::Text(text, _) if !text.is_empty() => Some(text),
             _ => None,
         }
     }
@@ -541,6 +556,14 @@ pub fn tab_ext_is_placeholder(ext: &[u16; 7]) -> bool {
 /// 위 자리표의 정본 표기 — HWP5 이진 서식기가 내는 "데이터 없음" 마커와 같다.
 pub const TAB_EXT_PLACEHOLDER: [u16; 7] = [0, 0, 0, 0, 0, 0, 0x0009];
 
+/// 경계(시작·끝)에 친 글자를 품지 않는 필드: 웹 링크와 날짜·파일 경로 코드.
+/// 한/글은 날짜·파일 경로 코드의 글을 문서를 열 때와 다른 이름으로 저장할 때 다시 쓴다.
+/// 코드 경계에서 친 글이 코드 안에 들어가면 그때 사라진다.
+fn keeps_boundary_text_outside(control: Option<&Control>) -> bool {
+    matches!(control, Some(Control::Field(field))
+        if matches!(field.field_type, FieldType::Hyperlink | FieldType::Date | FieldType::Path))
+}
+
 impl Paragraph {
     /// 재구성된 본문 축에서 단일 표가 저장 줄의 물리 상자 전체를 소유한다.
     pub(crate) fn rebased_single_table_row(&self) -> bool {
@@ -786,6 +809,7 @@ impl Paragraph {
                 | Control::Endnote(_)
                 | Control::AutoNumber(_)
                 | Control::CharOverlap(_)
+                | Control::Ruby(_)
         )
     }
 
@@ -965,6 +989,30 @@ impl Paragraph {
         self.layout_object_projection = false;
         self.layout_float_band = false;
         self.layout_field_values.clear();
+    }
+
+    /// PARA_TEXT 로 실을 내용이 있는가 — 글자, 컨트롤, 제목 차례 표시, 짝 fieldBegin 을 아는
+    /// 다단락 필드의 고아 끝 마커(#4398). 저장기가 PARA_TEXT 를 쓰는 조건과 같다.
+    pub(crate) fn has_para_text_content(&self) -> bool {
+        !self.text.is_empty()
+            || !self.controls.is_empty()
+            || !self.title_marks.is_empty()
+            || self
+                .orphan_field_ends
+                .iter()
+                .any(|end| end.begin_ctrl_id != 0)
+    }
+
+    /// 편집이 내용을 모두 걷어낸 문단은 원본의 빈 PARA_TEXT 표지를 버린다.
+    ///
+    /// `has_para_text` 는 끝 표시만 든 원본 PARA_TEXT 를 다시 쓰게 하는 표지다. 개체나 글을
+    /// 지워 빈 문단이 됐는데 표지가 남으면 저장기가 char_count 1 문단에 PARA_TEXT `0d 00` 을
+    /// 쓰고, 한/글 12.30 은 그 HWP 를 "파일이 손상되었습니다"로 거절한다. 한/글이 쓰는 빈
+    /// 문단에는 PARA_TEXT 가 없고, 저장본을 다시 열어도 이 표지는 꺼진다.
+    pub(crate) fn forget_para_text_if_emptied(&mut self) {
+        if !self.has_para_text_content() {
+            self.has_para_text = false;
+        }
     }
 
     #[inline]
@@ -1337,6 +1385,7 @@ impl Paragraph {
         self.char_count = self.char_count.saturating_sub(CTRL_CHAR_CODE_UNITS);
         self.control_mask =
             Self::compute_control_mask_for(&self.text, &self.controls, &self.field_ranges);
+        self.forget_para_text_if_emptied();
         removed
     }
 
@@ -1511,6 +1560,7 @@ impl Paragraph {
                         | Control::Footnote(_)
                         | Control::Endnote(_)
                         | Control::CharOverlap(_)
+                        | Control::Ruby(_)
                         | Control::AutoNumber(_)
                 )
         };
@@ -1581,17 +1631,23 @@ impl Paragraph {
         let char_offset = effective_char_offset;
         // 링크 경계에 삽입하는 글자는 링크 밖에 둔다. 시작 경계에서는 링크의
         // 서식 run을 뒤로 밀고, 끝 경계에서는 복원된 일반 서식 run을 유지한다.
-        let hyperlink_starts = self
+        // 날짜·파일 경로 코드의 글은 한/글이 문서를 열거나 다른 이름으로 저장할 때
+        // 다시 쓰므로 경계에 친 글자를 품지 않는다(서식은 일반 글처럼 앞 글자를 잇는다).
+        let outside_starts = self
             .field_ranges
             .iter()
             .filter(|range| {
                 range.start_char_idx < range.end_char_idx
                     && range.start_char_idx == char_offset
-                    && matches!(self.controls.get(range.control_idx),
-                    Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink)
+                    && keeps_boundary_text_outside(self.controls.get(range.control_idx))
             })
             .count() as u32;
-        let at_hyperlink_start = hyperlink_starts > 0;
+        let at_hyperlink_start = self.field_ranges.iter().any(|range| {
+            range.start_char_idx < range.end_char_idx
+                && range.start_char_idx == char_offset
+                && matches!(self.controls.get(range.control_idx),
+                    Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink)
+        });
         let at_hyperlink_end = self.field_ranges.iter().any(|range| {
             range.start_char_idx < range.end_char_idx
                 && range.end_char_idx == char_offset
@@ -1607,9 +1663,9 @@ impl Paragraph {
         } else {
             self.char_offsets[char_offset - 1] + Self::char_stream_len(text_chars[char_offset - 1])
         };
-        let begin_units = hyperlink_starts * 8;
+        let begin_units = outside_starts * 8;
         let utf16_insert_pos =
-            if at_hyperlink_start && utf16_insert_pos >= preceding_text_end + begin_units {
+            if outside_starts > 0 && utf16_insert_pos >= preceding_text_end + begin_units {
                 utf16_insert_pos - begin_units
             } else {
                 utf16_insert_pos
@@ -1717,16 +1773,19 @@ impl Paragraph {
         // 5-1. field_ranges: 삽입 지점 이후의 char 인덱스 시프트
         let inserted_len = new_chars.len();
         for fr in &mut self.field_ranges {
-            let is_hyperlink = matches!(self.controls.get(fr.control_idx),
-                Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink);
+            // 글을 모두 지운 코드는 누름틀 문단의 첫 빈 필드 규칙처럼 친 글자를 품는다.
+            let outside = keeps_boundary_text_outside(self.controls.get(fr.control_idx))
+                && (fr.start_char_idx < fr.end_char_idx
+                    || matches!(self.controls.get(fr.control_idx),
+                        Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink));
             if fr.start_char_idx > char_offset
-                || (is_hyperlink
+                || (outside
                     && fr.start_char_idx == char_offset
                     && fr.start_char_idx < fr.end_char_idx)
             {
                 fr.start_char_idx += inserted_len;
             }
-            if fr.end_char_idx > char_offset || (fr.end_char_idx == char_offset && !is_hyperlink) {
+            if fr.end_char_idx > char_offset || (fr.end_char_idx == char_offset && !outside) {
                 fr.end_char_idx += inserted_len;
             }
         }
@@ -1895,6 +1954,7 @@ impl Paragraph {
 
         // 6. char_count 갱신
         self.char_count -= utf16_delta;
+        self.forget_para_text_if_emptied();
 
         actual_count
     }
@@ -2328,6 +2388,9 @@ impl Paragraph {
             source_line_seg_vertical_pos: None,
             // 새 줄은 본문 축을 이어 붙인 저장 줄이 아니다.
             layout_rebased_body_axis: false,
+            // 갈라진 문단은 앞 문단의 새 저장 줄에 이어 계산된다.
+            stored_flow_shifted: false,
+            layout_cell_grid: None,
             // 새로 계산된 줄은 `char_offsets` 와 같은 HWP5 축에서 나오므로 보정이 없다 (#5961).
             hwpx_axis_shift: 0,
             range_tags: new_range_tags,
@@ -2830,13 +2893,17 @@ impl Paragraph {
                         .then(|| order(Slot::Control(r.control_idx)))
                         .flatten();
                     let end = order(Slot::End(ri));
-                    // 계산식 결과 뒤에 친 글자도 한/글처럼 필드 밖에 둔다.
+                    // 계산식·날짜·파일 경로 코드 경계의 입력은 필드 밖에 둔다.
                     let outside = matches!(
                         self.controls.get(r.control_idx),
                         Some(Control::Field(field))
                             if matches!(
                                 field.field_type,
-                                FieldType::ClickHere | FieldType::Hyperlink | FieldType::Formula
+                                FieldType::ClickHere
+                                    | FieldType::Hyperlink
+                                    | FieldType::Formula
+                                    | FieldType::Date
+                                    | FieldType::Path
                             )
                     );
                     match () {

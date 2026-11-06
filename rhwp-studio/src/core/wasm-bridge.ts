@@ -229,6 +229,7 @@ import {
   documentSubstituteFamilies,
   formatCssFontFamilyList,
   parseCssFontFamilyList,
+  completeFontFamilyList,
 } from './font-substitution';
 import { rememberRawCanvasFontDescriptor } from './canvas-font-raw';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
@@ -290,8 +291,7 @@ function substituteCssFontFamily(cssFont: string): string {
       candidate.toLocaleLowerCase('en-US') === name.toLocaleLowerCase('en-US'))) continue;
     push(name);
   }
-  for (const name of studioChain.slice(1)) push(name);
-  return prefix + formatCssFontFamilyList(merged);
+  return prefix + formatCssFontFamilyList(completeFontFamilyList(merged, studioChain.slice(1)));
 }
 
 let canvasFontSubstitutionInstalled = false;

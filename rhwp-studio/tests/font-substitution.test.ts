@@ -47,18 +47,18 @@ test('fontFamilyChainForDisplay는 중복 없이 generic font를 그대로 처�
   assert.equal(fontFamilyChainForDisplay('serif', 0, 0), 'serif');
   assert.equal(
     fontFamilyChainForDisplay('없는글꼴', 0, 0),
-    '"Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", sans-serif',
+    '"Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", "Noto Sans Symbols2", "함초롬바탕", "D2Coding", "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", sans-serif',
   );
   assert.equal(
     fontFamilyChainForDisplay('없는글꼴', 0, 0, { confirmedLocalFonts: ['없는글꼴'] }),
-    '"없는글꼴", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", sans-serif',
+    '"없는글꼴", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", "Noto Sans Symbols2", "함초롬바탕", "D2Coding", "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", sans-serif',
   );
 });
 
 test('fontFamilyWithFallback 기존 helper는 동일한 fallback 계열을 사용한다', () => {
   assert.equal(
     fontFamilyWithFallback('굴림체'),
-    '"굴림체", "GulimChe", "D2Coding", "Noto Sans Mono", "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", monospace',
+    '"굴림체", "GulimChe", "D2Coding", "Noto Sans Mono", "Noto Sans Symbols2", "함초롬바탕", "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", monospace',
   );
 });
 
@@ -132,7 +132,7 @@ test('치환 대상이 설치돼 있지 않으면 legacy 이름의 기존 체인
 
   assert.equal(
     chain,
-    '"한양중고딕", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", sans-serif',
+    '"한양중고딕", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", "Noto Sans Symbols2", "함초롬바탕", "D2Coding", "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", sans-serif',
   );
 });
 

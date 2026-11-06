@@ -83,6 +83,7 @@ impl TypesetEngine {
             footnote_between_notes_margin_px(footnote_shape, self.dpi),
             column_def.column_type,
         );
+        state.configure_footnote_placement(footnote_shape.placement);
         state.initialize_source(
             hide_empty_line,
             profile,
