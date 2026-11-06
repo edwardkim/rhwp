@@ -1253,7 +1253,7 @@ mod tests {
             main_text: "기준글".to_string(),
             ruby_text: "덧말".to_string(),
             pos_type: 1, // BOTTOM
-            align: 2,    // CENTER
+            align: 3,    // CENTER
             sz_ratio: 80,
             option: 3,
             style_id_ref: 5,
@@ -1282,7 +1282,7 @@ mod tests {
         assert_eq!(r.main_text, "기준글", "mainText 보존");
         assert_eq!(r.ruby_text, "덧말", "subText(덧말) 보존");
         assert_eq!(r.pos_type, 1, "posType(BOTTOM) 보존");
-        assert_eq!(r.align, 2, "align(CENTER) 보존");
+        assert_eq!(r.align, 3, "align(CENTER) 보존");
         assert_eq!(r.sz_ratio, 80, "szRatio 보존");
         assert_eq!(r.option, 3, "option 보존");
         assert_eq!(r.style_id_ref, 5, "styleIDRef 보존");

@@ -104,6 +104,34 @@ fn deferred_pagination_result_json(result: DeferredPaginationStepResult) -> Stri
     .to_string()
 }
 
+/// 셀 경로 덧말·글자 겹침 API의 문단 주소.
+fn compose_cell(
+    sec: u32,
+    parent_para: u32,
+    path: &[(usize, usize, usize)],
+) -> crate::document_core::ComposeHost<'_> {
+    crate::document_core::ComposeHost::Cell {
+        sec: sec as usize,
+        parent_para: parent_para as usize,
+        path,
+    }
+}
+
+/// 각주·미주 덧말·글자 겹침 API의 문단 주소.
+fn compose_note(
+    sec: u32,
+    para: u32,
+    control: u32,
+    note_para: u32,
+) -> crate::document_core::ComposeHost<'static> {
+    crate::document_core::ComposeHost::Note {
+        sec: sec as usize,
+        para: para as usize,
+        control: control as usize,
+        note_para: note_para as usize,
+    }
+}
+
 /// [Task #1161] 클립보드 API 의 cellPath JSON 인자 파싱.
 /// 빈 문자열 또는 `"[]"` 면 본문(빈 경로), 그 외에는
 /// `[{"controlIndex","cellIndex","cellParaIndex"}, ...]` 를 파싱한다.
@@ -1572,6 +1600,9 @@ impl HwpDocument {
     }
 
     /// 구역 정의(SectionDef)를 변경하고 재페이지네이션한다.
+    ///
+    /// 원고지 키: `lineGrid`·`charGrid`(줄·글자 격자, HWPUNIT, 0은 끔), `wonggojiFormat`(원고지 정서법).
+    /// 셋이 모두 켜진 구역은 글 문단을 칸에 맞춰 다시 짠다.
     #[wasm_bindgen(js_name = setSectionDef)]
     pub fn set_section_def(&mut self, section_idx: u32, json: &str) -> Result<String, JsValue> {
         self.set_section_def_native(section_idx as usize, json)
@@ -2948,6 +2979,35 @@ impl HwpDocument {
 
     // ─── Phase 1: 기본 편집 보조 API ───────────────────────────
 
+    /// 본문 캐럿 자리(`charOffset`은 논리 오프셋)에서 구역을 나눈다 — 한/글 [쪽-구역 나누기].
+    /// 새 구역은 앞 구역의 구역 정의와 캐럿 자리의 단 정의를 잇고 새 쪽에서 시작한다.
+    ///
+    /// 반환: `{"ok":true,"section":<새 구역>,"para":0,"charOffset":0}`
+    #[wasm_bindgen(js_name = splitSection)]
+    pub fn split_section(
+        &mut self,
+        section_idx: u32,
+        para_idx: u32,
+        char_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.split_section_native(
+            section_idx as usize,
+            para_idx as usize,
+            char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// `sectionIdx` 구역을 앞 구역에 합친다 — 한/글에서 구역 경계를 지울 때와 같다.
+    /// 합친 문단은 앞 구역의 모양을 따른다. 두 문단을 잇는 일은 `mergeParagraph`가 한다.
+    ///
+    /// 반환: `{"ok":true,"section":<앞 구역>,"para":<옮겨 온 첫 문단>}`
+    #[wasm_bindgen(js_name = mergeSection)]
+    pub fn merge_section(&mut self, section_idx: u32) -> Result<String, JsValue> {
+        self.merge_section_native(section_idx as usize)
+            .map_err(|e| e.into())
+    }
+
     /// 구역(Section) 수를 반환한다.
     #[wasm_bindgen(js_name = getSectionCount)]
     pub fn get_section_count(&self) -> u32 {
@@ -4158,8 +4218,9 @@ impl HwpDocument {
     /// 마지막 마디의 `cellParaIndex` 가 캐럿이 있는 칸 문단, `char_offset` 은 그 문단의 캐럿 offset.
     ///
     /// options JSON: `{ rowCount, colCount, colWidths?: [u32, ...], rowHeights?: [u32, ...],
-    ///                 treatAsChar?: bool }` — 칸 안 표는 **글자처럼 취급만** 만든다(한/글 기본값).
-    /// `treatAsChar:false` 는 조용히 무시하지 않고 오류로 돌려준다.
+    ///                 treatAsChar?: bool }` — `treatAsChar` 기본값은 참(글자처럼 취급)이다.
+    /// 거짓이면 한/글 12.30처럼 자리 차지 표를 만든다. 경로의 첫 마디가 머리말·꼬리말
+    /// (`{controlIndex: 머리말 컨트롤, cellIndex: 0, cellParaIndex: 머리말 문단}`)이면 그 문단에 만든다.
     ///
     /// 반환: `{"ok":true,"cellParaIdx":N,"controlIdx":0,"cellPath":[..안쪽 표 첫 칸까지]}`
     #[wasm_bindgen(js_name = createTableInCellByPath)]
@@ -4173,11 +4234,10 @@ impl HwpDocument {
     ) -> Result<String, JsValue> {
         let options: serde_json::Value = serde_json::from_str(options_json)
             .map_err(|e| JsValue::from_str(&format!("options JSON 파싱 실패: {}", e)))?;
-        if options.get("treatAsChar").and_then(|v| v.as_bool()) == Some(false) {
-            return Err(JsValue::from_str(
-                "칸 안 표는 글자처럼 취급만 지원한다 (treatAsChar:false 는 받지 않는다)",
-            ));
-        }
+        let treat_as_char = options
+            .get("treatAsChar")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(true);
         let count = |key: &str, default: u64| -> u16 {
             options.get(key).and_then(|v| v.as_u64()).unwrap_or(default) as u16
         };
@@ -4204,6 +4264,7 @@ impl HwpDocument {
             count("colCount", 2),
             col_widths.as_deref(),
             row_heights.as_deref(),
+            treat_as_char,
         )
         .map_err(|e| e.into())
     }
@@ -8039,13 +8100,30 @@ impl HwpDocument {
 
     /// 새 스타일을 생성한다.
     ///
-    /// json: {"name":"...", "englishName":"...", "type":0, "nextStyleId":0}
-    /// 반환값: 새 스타일 ID (0-based)
+    /// json: {"name":"...", "englishName":"...", "type":0, "nextStyleId":0, "index":3}
+    /// `index`를 주면 그 자리에 끼워 넣고, 그 자리부터 뒤 스타일을 가리키던 모든 참조(문단·덧말·
+    /// 바탕쪽·메모·다른 스타일의 다음 스타일)를 한 칸씩 민다. 한컴은 고른 스타일 바로 뒤에 새 스타일을 둔다.
+    /// `nextStyleId`는 끼워 넣은 뒤의 번호다. 없으면 목록 끝에 붙인다.
+    /// 반환값: 새 스타일 ID (0-based). `index`가 목록 길이보다 크거나, 문단이 스타일 번호를 1바이트로
+    /// 저장하므로 256개를 채운 목록 가운데에 끼우면 -1이다.
     #[wasm_bindgen(js_name = createStyle)]
     pub fn create_style(&mut self, json: &str) -> i32 {
         use crate::document_core::helpers::{json_i32, json_str};
         use crate::model::style::Style;
 
+        let count = self.core.document.doc_info.styles.len();
+        let index = match json_i32(json, "index") {
+            None => count,
+            Some(index) => match usize::try_from(index) {
+                Ok(index) if index <= count => index,
+                _ => return -1,
+            },
+        };
+        // 문단은 스타일 번호를 1바이트로 저장한다. 256개를 채운 목록 가운데에 끼우면 마지막 스타일이
+        // 가리킬 수 없는 256번으로 밀리므로 끼우지 않는다. 끝에 붙이기는 예전처럼 막지 않는다.
+        if index < count && count > usize::from(u8::MAX) {
+            return -1;
+        }
         let name = json_str(json, "name").unwrap_or_default();
         let english_name = json_str(json, "englishName").unwrap_or_default();
         let style_type = json_i32(json, "type").unwrap_or(0) as u8;
@@ -8080,12 +8158,14 @@ impl HwpDocument {
             char_shape_id,
             lock_form: false,
         };
-        self.core.document.doc_info.styles.push(new_style);
+        if index < count {
+            self.remap_style_ids(|id| if id >= index as u16 { id + 1 } else { id });
+        }
+        self.core.document.doc_info.styles.insert(index, new_style);
         self.core.document.doc_info.raw_stream_dirty = true;
-        let new_id = (self.core.document.doc_info.styles.len() - 1) as i32;
         // 스타일 캐시 갱신
         self.core.rebuild_resolved_styles();
-        new_id
+        index as i32
     }
 
     /// 스타일을 삭제한다.
@@ -8094,9 +8174,6 @@ impl HwpDocument {
     /// 삭제된 스타일을 사용 중인 문단은 바탕글(ID 0)로 변경된다.
     #[wasm_bindgen(js_name = deleteStyle)]
     pub fn delete_style(&mut self, style_id: u32) -> bool {
-        use crate::model::document::RawRecord;
-        use crate::model::identity::walk::{walk, Node};
-
         if style_id == 0 {
             return false; // 바탕글은 삭제 불가
         }
@@ -8104,63 +8181,95 @@ impl HwpDocument {
         if style_id as usize >= styles.len() {
             return false;
         }
-        let sid = style_id as u8;
-        // 스타일 표는 인덱스 기반이다. 지운 스타일을 가리키던 번호는 바탕글(0)로, 그 뒤 번호는
-        // 한 칸씩 당긴다.
-        let remap = |id: u8| match id.cmp(&sid) {
-            std::cmp::Ordering::Less => id,
-            std::cmp::Ordering::Equal => 0,
-            std::cmp::Ordering::Greater => id - 1,
-        };
-        // HWP 원본 바탕쪽은 구역 정의의 원시 레코드로 그대로 저장된다. 그 안 문단 머리의
-        // 스타일 번호(PARA_HEADER 10번째 바이트)도 옮겨야 저장본이 모델과 같다.
-        let remap_raw = |records: &mut [RawRecord]| {
+        let sid = style_id as u16;
+        self.remap_style_ids(|id| {
+            if id == sid {
+                0
+            } else if id > sid {
+                id - 1
+            } else {
+                id
+            }
+        });
+        // 스타일 삭제 (인덱스 기반이므로 뒤의 ID가 변경됨에 주의)
+        self.core.document.doc_info.styles.remove(style_id as usize);
+        // 스타일 캐시 갱신
+        self.core.rebuild_resolved_styles();
+        true
+    }
+
+    /// 스타일 번호를 가리키는 모든 참조를 `remap`으로 바꾼다. 스타일 목록 자체는 바꾸지 않는다.
+    ///
+    /// 문단(본문·표·글상자·머리말·주석·메모·바탕쪽·복사해 둔 문단), 덧말, 다른 스타일의 다음 스타일,
+    /// 그리고 원본 레코드로 다시 쓰는 바탕쪽·구역 끝 목록(확장 바탕쪽·메모)의 문단 머리를 함께 고친다.
+    fn remap_style_ids(&mut self, remap: impl Fn(u16) -> u16) {
+        use crate::model::identity::walk::{walk, Node};
+
+        let remap_records = |records: &mut [crate::model::document::RawRecord]| {
+            // 저장된 바탕쪽은 원본 레코드를 다시 쓴다. 문단 머리의 스타일 번호(PARA_HEADER 10번째
+            // 바이트)도 옮겨야 저장본이 모델과 같다.
             for record in records {
                 if record.tag_id == crate::parser::tags::HWPTAG_PARA_HEADER {
                     if let Some(id) = record.data.get_mut(10) {
-                        *id = remap(*id);
+                        *id = remap(u16::from(*id)) as u8;
                     }
                 }
             }
         };
-        self.core.document.doc_info.styles.remove(style_id as usize);
-        // 본문뿐 아니라 표 셀·글상자·머리말/꼬리말·각주/미주·캡션·메모·바탕쪽 문단과 덧말도
-        // 같은 스타일 표를 가리킨다. 하나라도 빠지면 그 문단이 다른 스타일을 가리킨 채 저장된다.
-        let mut visit = |node: &mut Node<'_>| -> Result<(), HwpError> {
-            match node {
-                Node::Paragraph(para) => para.style_id = remap(para.style_id),
-                Node::Control(Control::Ruby(ruby)) => {
-                    if let Ok(id) = u8::try_from(ruby.style_id_ref) {
-                        ruby.style_id_ref = remap(id).into();
+        let remap_paragraphs = |paragraphs: &mut [Paragraph]| {
+            walk(paragraphs, |node| {
+                match node {
+                    Node::Paragraph(para) => para.style_id = remap(u16::from(para.style_id)) as u8,
+                    Node::Control(Control::Ruby(ruby)) => {
+                        ruby.style_id_ref = remap(ruby.style_id_ref);
                     }
+                    Node::Control(Control::SectionDef(section_def)) => {
+                        remap_records(&mut section_def.extra_child_records);
+                    }
+                    _ => {}
                 }
-                Node::Control(Control::SectionDef(def)) => remap_raw(&mut def.extra_child_records),
-                _ => {}
-            }
-            Ok(())
+                Ok(())
+            })
+            .expect("style reference traversal is infallible");
         };
+        // 구역 끝 목록은 원본 레코드와 모델 투영이 같을 때만 저장한다. 둘을 함께 고쳤으면 다시 봉인한다.
+        let tail_sealed =
+            crate::model::section_tail::validate_preservation(&self.core.document).is_ok();
+        // 표·글상자·머리말·주석도 같은 스타일 풀을 참조한다. 모양과 원문은 바꾸지 않는다.
         for section in &mut self.core.document.sections {
-            walk(&mut section.paragraphs, &mut visit).expect("스타일 번호 순회는 실패하지 않는다");
-            // 렌더와 HWPX 저장은 구역의 구역 정의 사본에서 바탕쪽을 읽는다.
+            remap_paragraphs(&mut section.paragraphs);
+            remap_records(&mut section.section_def.extra_child_records);
             for master in &mut section.section_def.master_pages {
-                walk(&mut master.paragraphs, &mut visit)
-                    .expect("스타일 번호 순회는 실패하지 않는다");
+                remap_paragraphs(&mut master.paragraphs);
             }
-            remap_raw(&mut section.section_def.extra_child_records);
-        }
-        for s in &mut self.core.document.doc_info.styles {
-            s.next_style_id = remap(s.next_style_id);
-        }
-        // 스타일 캐시 갱신
-        self.core.rebuild_resolved_styles();
-        // DocInfo(styles 목록)와 문단 style_id 가 함께 바뀌었으므로 저장 스트림을 무효화한다.
-        // raw_stream_dirty 미설정 시 DocInfo 가, 섹션 raw_stream 잔존 시 본문이 각각 원본
-        // 바이트로 재방출돼 스타일 삭제·문단 재배정이 .hwp 저장에서 유실된다.
-        self.core.document.doc_info.raw_stream_dirty = true;
-        for section in &mut self.core.document.sections {
+            if let Some(tail) = &mut section.trailing_lists {
+                remap_records(&mut tail.records);
+            }
+            // 본문 원본 스트림을 다시 쓰지 않게 해 문단 스타일 번호 변경이 HWP 저장에 남게 한다.
             section.raw_stream = None;
         }
-        true
+        if tail_sealed {
+            self.core.document.seal_section_tail_provenance();
+        }
+        // 복사해 둔 문단도 같은 스타일 표를 가리킨다. 붙이면 옮기지 않은 번호의 다른 스타일이 된다.
+        if let Some(clipboard) = &mut self.core.clipboard {
+            remap_paragraphs(&mut clipboard.paragraphs);
+        }
+        if let Some(transpose) = &mut self.core.table_transpose_clipboard {
+            for paragraphs in transpose.data.cells.iter_mut().flatten() {
+                remap_paragraphs(paragraphs);
+            }
+        }
+        for s in &mut self.core.document.doc_info.styles {
+            let next = remap(u16::from(s.next_style_id)) as u8;
+            if next != s.next_style_id {
+                s.next_style_id = next;
+                // 원본 레코드 봉인이 없는 기본 문서에서도 이전 연결을 다시 쓰지 않는다.
+                s.raw_data = None;
+            }
+        }
+        // 스타일 목록과 문단 스타일 번호가 함께 바뀌므로 DocInfo 원본 스트림도 다시 쓴다.
+        self.core.document.doc_info.raw_stream_dirty = true;
     }
 
     /// 문서에 정의된 문단 번호(Numbering) 목록을 조회한다.
@@ -8220,17 +8329,13 @@ impl HwpDocument {
         // 기본 7수준 번호 형식 생성 (한컴 기본 패턴)
         use crate::model::style::{Numbering, NumberingHead};
         let mut n = Numbering::default();
-        n.level_formats = [
-            "^1.".to_string(), // 1.
-            "^2)".to_string(), // 가)
-            "^3)".to_string(), // (1)
-            "^4)".to_string(), // (가)
-            "^5)".to_string(), // ①
-            "^6)".to_string(), // ㄱ)
-            "^7)".to_string(), // a)
-        ];
+        // 1. 가) (1) (가) ① ㄱ) a) — 8~10수준은 비워 둔다.
+        let texts = ["^1.", "^2)", "^3)", "^4)", "^5)", "^6)", "^7)"];
+        for (format, text) in n.level_formats.iter_mut().zip(texts) {
+            *format = text.to_string();
+        }
         n.start_number = 1;
-        n.level_start_numbers = [1; 7];
+        n.level_start_numbers = [1; crate::model::style::NUMBERING_LEVELS];
         // 수준별 번호 형식 코드 설정
         // [#7418] 한/글 기본 머리 모양은 자동 내어쓰기(속성 bit3)다 — 둘째 줄부터 본문 시작에 맞춘다.
         n.heads[0] = NumberingHead {
@@ -8293,7 +8398,7 @@ impl HwpDocument {
                     let arr_str = &rest[bracket_start + 1..bracket_start + bracket_end];
                     let mut level = 0;
                     for part in arr_str.split(',') {
-                        if level >= 7 {
+                        if level >= crate::model::style::NUMBERING_LEVELS {
                             break;
                         }
                         let trimmed = part.trim().trim_matches('"');
@@ -8314,7 +8419,7 @@ impl HwpDocument {
                     let arr_str = &rest[bracket_start + 1..bracket_start + bracket_end];
                     let mut level = 0;
                     for part in arr_str.split(',') {
-                        if level >= 7 {
+                        if level >= crate::model::style::NUMBERING_LEVELS {
                             break;
                         }
                         if let Ok(code) = part.trim().parse::<u8>() {
@@ -8331,11 +8436,52 @@ impl HwpDocument {
         }
 
         n.start_number = json_i32(json, "startNumber").unwrap_or(1) as u16;
-        n.level_start_numbers = [n.start_number as u32; 7];
+        n.level_start_numbers = [n.start_number as u32; crate::model::style::NUMBERING_LEVELS];
         self.core.document.doc_info.numberings.push(n);
         // 새 번호 정의는 DocInfo 원본 스트림에 없어 HWP 저장이 모델에서 다시 쓰게 한다.
         self.core.document.doc_info.raw_stream_dirty = true;
         self.core.document.doc_info.numberings.len() as u16
+    }
+
+    /// 문단 번호 정의의 한 수준에 번호 글자 모양을 단다(한/글 '문단 번호 사용자 정의 모양'의 글자 모양 지정).
+    ///
+    /// numberingId는 1부터, level은 0부터다. json은 applyCharFormat의 글자 속성과 바탕 글자 모양
+    /// `baseCharShapeId`이고, `fontSize` 0은 '본문 글자 크기 따름'이다. null이면 글자 모양을 뗀다.
+    /// 반환값: 단 글자 모양 ID(뗐으면 4294967295)
+    #[wasm_bindgen(js_name = setNumberingCharShape)]
+    pub fn set_numbering_char_shape(
+        &mut self,
+        numbering_id: u16,
+        level: u32,
+        json: Option<String>,
+    ) -> Result<u32, JsValue> {
+        self.core
+            .set_numbering_char_shape_native(numbering_id, level as usize, json.as_deref())
+            .map_err(|e| e.into())
+    }
+
+    /// 글머리표 정의를 새로 만든다(한/글 '글머리표/그림 글머리표 사용자 정의 모양').
+    ///
+    /// json: {"char":"❏","align":1,"useInstWidth":false,"autoIndent":false,"widthAdjust":1000,
+    /// "textOffset":70,"charShape":{"fontSize":0,"bold":true,"baseCharShapeId":0}}. 빠진 값은 한/글
+    /// 기본 머리 모양(왼쪽·자동 내어쓰기·본문과의 간격 50%)이고, charShape가 없으면 본문 글자 모양을
+    /// 따른다. imageData(와 extension, 예: "png")를 주면 그 그림을 넣어 그림 글머리표로 만든다.
+    /// 반환값: Bullet ID (1-based)
+    #[wasm_bindgen(js_name = createBullet)]
+    pub fn create_bullet(
+        &mut self,
+        json: &str,
+        image_data: Option<Vec<u8>>,
+        extension: Option<String>,
+    ) -> Result<u16, JsValue> {
+        let image = match (&image_data, &extension) {
+            (Some(bytes), Some(extension)) => Some((bytes.as_slice(), extension.as_str())),
+            (None, None) => None,
+            _ => return Err(JsValue::from_str("그림과 확장자를 함께 주어야 함")),
+        };
+        self.core
+            .create_bullet_native(json, image)
+            .map_err(|e| e.into())
     }
 
     /// 특정 문자의 글머리표 정의가 없으면 생성한다.
@@ -8882,6 +9028,35 @@ impl HwpDocument {
     #[wasm_bindgen(js_name = getPageHide)]
     pub fn get_page_hide(&self, sec: u32, para: u32) -> Result<String, JsValue> {
         self.get_page_hide_native(sec as usize, para as usize)
+            .map_err(|e| e.into())
+    }
+
+    /// 구역의 쪽 번호 매기기를 정한다 (쪽 > 쪽 번호 매기기, #7635).
+    ///
+    /// position: 0 없음, 1~3 위 왼쪽·가운데·오른쪽, 4~6 아래, 7·8 바깥쪽 위·아래, 9·10 안쪽 위·아래.
+    /// format: 번호 모양(0 = 1,2,3). dash: 줄표(`- 1 -`).
+    /// 결과: `{ok, controlIdx, removed}` — 첫 문단에 넣은 컨트롤 차례와 지운 (문단, 컨트롤 차례)를 지운 차례대로.
+    #[wasm_bindgen(js_name = setPageNumberPosition)]
+    pub fn set_page_number_position(
+        &mut self,
+        section_idx: u32,
+        position: u32,
+        format: u32,
+        dash: bool,
+    ) -> Result<String, JsValue> {
+        self.set_page_number_position_native(
+            section_idx as usize,
+            u8::try_from(position).unwrap_or(u8::MAX),
+            u8::try_from(format).unwrap_or(u8::MAX),
+            dash,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 구역의 쪽 번호 매기기를 읽는다: `{ok, exists, position?, format?, dash?}` (#7635).
+    #[wasm_bindgen(js_name = getPageNumberPosition)]
+    pub fn get_page_number_position(&self, section_idx: u32) -> Result<String, JsValue> {
+        self.get_page_number_position_native(section_idx as usize)
             .map_err(|e| e.into())
     }
 
@@ -9694,6 +9869,275 @@ impl HwpDocument {
     pub fn get_outline_navigation(&self) -> Result<String, JsValue> {
         self.core
             .get_outline_navigation_native()
+            .map_err(|e| e.into())
+    }
+
+    /// 덧말 넣기. `char_offset`은 원문 축 글자 자리다.
+    /// `json`: `{"mainText","rubyText","below":bool,"styleId":number|null}`.
+    #[wasm_bindgen(js_name = insertRuby)]
+    pub fn insert_ruby(
+        &mut self,
+        sec: u32,
+        para: u32,
+        char_offset: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .insert_ruby_native(sec as usize, para as usize, char_offset as usize, json)
+            .map_err(|e| e.into())
+    }
+
+    /// 글자 겹치기 넣기. `char_offset`은 원문 축 글자 자리다.
+    /// `json`: `{"text","shape":0~13,"innerSize":-8~2,"overlap":bool}`.
+    #[wasm_bindgen(js_name = insertCharOverlap)]
+    pub fn insert_char_overlap(
+        &mut self,
+        sec: u32,
+        para: u32,
+        char_offset: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .insert_char_overlap_native(sec as usize, para as usize, char_offset as usize, json)
+            .map_err(|e| e.into())
+    }
+
+    /// 덧말·글자 겹침 하나의 값(겹칠 글자는 친 글 그대로).
+    #[wasm_bindgen(js_name = getComposeControl)]
+    pub fn get_compose_control(
+        &self,
+        sec: u32,
+        para: u32,
+        ctrl_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.core
+            .get_compose_control_native(sec as usize, para as usize, ctrl_idx as usize)
+            .map_err(|e| e.into())
+    }
+
+    /// 덧말·글자 겹침 하나를 고친다. 입력은 넣을 때와 같다.
+    #[wasm_bindgen(js_name = setComposeControl)]
+    pub fn set_compose_control(
+        &mut self,
+        sec: u32,
+        para: u32,
+        ctrl_idx: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .set_compose_control_native(sec as usize, para as usize, ctrl_idx as usize, json)
+            .map_err(|e| e.into())
+    }
+
+    /// 덧말·글자 겹침 하나를 지운다. `keep_main_text`면 덧말만 지우고 본말을 글로 남긴다.
+    #[wasm_bindgen(js_name = deleteComposeControl)]
+    pub fn delete_compose_control(
+        &mut self,
+        sec: u32,
+        para: u32,
+        ctrl_idx: u32,
+        keep_main_text: bool,
+    ) -> Result<String, JsValue> {
+        self.core
+            .delete_compose_control_native(
+                sec as usize,
+                para as usize,
+                ctrl_idx as usize,
+                keep_main_text,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 셀 경로(표 셀·중첩 셀·글상자, 머리말·꼬리말 뿌리)의 문단에 덧말을 넣는다. 입력은 `insertRuby`와 같다.
+    #[wasm_bindgen(js_name = insertRubyByPath)]
+    pub fn insert_ruby_by_path(
+        &mut self,
+        sec: u32,
+        parent_para: u32,
+        path_json: &str,
+        char_offset: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.core
+            .insert_ruby_at(
+                compose_cell(sec, parent_para, &path),
+                char_offset as usize,
+                json,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 셀 경로의 문단에 글자 겹침을 넣는다. 입력은 `insertCharOverlap`과 같다.
+    #[wasm_bindgen(js_name = insertCharOverlapByPath)]
+    pub fn insert_char_overlap_by_path(
+        &mut self,
+        sec: u32,
+        parent_para: u32,
+        path_json: &str,
+        char_offset: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.core
+            .insert_char_overlap_at(
+                compose_cell(sec, parent_para, &path),
+                char_offset as usize,
+                json,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 셀 경로 문단의 덧말·글자 겹침 하나의 값.
+    #[wasm_bindgen(js_name = getComposeControlByPath)]
+    pub fn get_compose_control_by_path(
+        &self,
+        sec: u32,
+        parent_para: u32,
+        path_json: &str,
+        ctrl_idx: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.core
+            .get_compose_control_at(compose_cell(sec, parent_para, &path), ctrl_idx as usize)
+            .map_err(|e| e.into())
+    }
+
+    /// 셀 경로 문단의 덧말·글자 겹침 하나를 고친다.
+    #[wasm_bindgen(js_name = setComposeControlByPath)]
+    pub fn set_compose_control_by_path(
+        &mut self,
+        sec: u32,
+        parent_para: u32,
+        path_json: &str,
+        ctrl_idx: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.core
+            .set_compose_control_at(
+                compose_cell(sec, parent_para, &path),
+                ctrl_idx as usize,
+                json,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 셀 경로 문단의 덧말·글자 겹침 하나를 지운다. `keep_main_text`면 본말을 글로 남긴다.
+    #[wasm_bindgen(js_name = deleteComposeControlByPath)]
+    pub fn delete_compose_control_by_path(
+        &mut self,
+        sec: u32,
+        parent_para: u32,
+        path_json: &str,
+        ctrl_idx: u32,
+        keep_main_text: bool,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.core
+            .delete_compose_control_at(
+                compose_cell(sec, parent_para, &path),
+                ctrl_idx as usize,
+                keep_main_text,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 각주·미주 문단에 덧말을 넣는다. 주소는 `insertTextInFootnote`와 같다.
+    #[wasm_bindgen(js_name = insertRubyInFootnote)]
+    pub fn insert_ruby_in_footnote(
+        &mut self,
+        sec: u32,
+        para: u32,
+        control_idx: u32,
+        fn_para: u32,
+        char_offset: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .insert_ruby_at(
+                compose_note(sec, para, control_idx, fn_para),
+                char_offset as usize,
+                json,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 각주·미주 문단에 글자 겹침을 넣는다.
+    #[wasm_bindgen(js_name = insertCharOverlapInFootnote)]
+    pub fn insert_char_overlap_in_footnote(
+        &mut self,
+        sec: u32,
+        para: u32,
+        control_idx: u32,
+        fn_para: u32,
+        char_offset: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .insert_char_overlap_at(
+                compose_note(sec, para, control_idx, fn_para),
+                char_offset as usize,
+                json,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 각주·미주 문단의 덧말·글자 겹침 하나의 값.
+    #[wasm_bindgen(js_name = getComposeControlInFootnote)]
+    pub fn get_compose_control_in_footnote(
+        &self,
+        sec: u32,
+        para: u32,
+        control_idx: u32,
+        fn_para: u32,
+        ctrl_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.core
+            .get_compose_control_at(
+                compose_note(sec, para, control_idx, fn_para),
+                ctrl_idx as usize,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 각주·미주 문단의 덧말·글자 겹침 하나를 고친다.
+    #[wasm_bindgen(js_name = setComposeControlInFootnote)]
+    pub fn set_compose_control_in_footnote(
+        &mut self,
+        sec: u32,
+        para: u32,
+        control_idx: u32,
+        fn_para: u32,
+        ctrl_idx: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .set_compose_control_at(
+                compose_note(sec, para, control_idx, fn_para),
+                ctrl_idx as usize,
+                json,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 각주·미주 문단의 덧말·글자 겹침 하나를 지운다. `keep_main_text`면 본말을 글로 남긴다.
+    #[wasm_bindgen(js_name = deleteComposeControlInFootnote)]
+    pub fn delete_compose_control_in_footnote(
+        &mut self,
+        sec: u32,
+        para: u32,
+        control_idx: u32,
+        fn_para: u32,
+        ctrl_idx: u32,
+        keep_main_text: bool,
+    ) -> Result<String, JsValue> {
+        self.core
+            .delete_compose_control_at(
+                compose_note(sec, para, control_idx, fn_para),
+                ctrl_idx as usize,
+                keep_main_text,
+            )
             .map_err(|e| e.into())
     }
 

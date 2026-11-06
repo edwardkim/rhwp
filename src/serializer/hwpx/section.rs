@@ -257,8 +257,10 @@ where
         &xml_value(
             storage,
             format_args!(
-                r#"<hp:grid lineGrid="{}" charGrid="{}" wonggojiFormat="0"/>"#,
-                sd.line_grid, sd.char_grid
+                r#"<hp:grid lineGrid="{}" charGrid="{}" wonggojiFormat="{}"/>"#,
+                sd.line_grid,
+                sd.char_grid,
+                u8::from(sd.wonggoji_format())
             ),
         )?,
         1,
@@ -459,28 +461,9 @@ where
 /// HanjaDigit=IDEOGRAPH, HanjaGapEul=DECAGON_CIRCLE, FourSymbol=SYMBOL)은 파서 표기를
 /// 그대로 따른다.
 fn note_number_format_str(format: crate::model::footnote::NumberFormat) -> &'static str {
-    use crate::model::footnote::NumberFormat::*;
-    match format {
-        Digit => "DIGIT",
-        CircledDigit => "CIRCLED_DIGIT",
-        UpperRoman => "ROMAN_CAPITAL",
-        LowerRoman => "ROMAN_SMALL",
-        UpperAlpha => "LATIN_CAPITAL",
-        LowerAlpha => "LATIN_SMALL",
-        CircledUpperAlpha => "CIRCLED_LATIN_CAPITAL",
-        CircledLowerAlpha => "CIRCLED_LATIN_SMALL",
-        HangulSyllable => "HANGUL_SYLLABLE",
-        CircledHangulSyllable => "CIRCLED_HANGUL_SYLLABLE",
-        HangulJamo => "HANGUL_JAMO",
-        CircledHangulJamo => "CIRCLED_HANGUL_JAMO",
-        HangulDigit => "HANGUL_PHONETIC",
-        HanjaDigit => "IDEOGRAPH",
-        CircledHanjaDigit => "CIRCLED_IDEOGRAPH",
-        HanjaGapEul => "DECAGON_CIRCLE",
-        HanjaGapEulHanja => "DECAGON_CIRCLE_HANJA",
-        FourSymbol => "SYMBOL",
-        UserChar => "USER_CHAR",
-    }
+    super::header::numbering_format_str(
+        crate::model::footnote::FootnoteShape::number_format_attr_code(format) as u8,
+    )
 }
 
 /// [#2742] 주석 장식 문자(IR `char`) → HWPX 속성값.
@@ -3684,9 +3667,12 @@ where
         _ => "TOP",
     };
     let align = match r.align {
-        1 => "RIGHT",
-        2 => "CENTER",
-        _ => "LEFT",
+        1 => "LEFT",
+        2 => "RIGHT",
+        3 => "CENTER",
+        4 => "DISTRIBUTE",
+        5 => "DISTRIBUTE_SPACE",
+        _ => "JUSTIFY",
     };
     xml_value(
         storage,
@@ -3861,6 +3847,13 @@ where
         4 => "SHAPE_REVERSAL_RECTANGLE",
         5 => "SHAPE_TRIANGLE",
         6 => "SHAPE_REVERSAL_TIRANGLE",
+        7 => "SHAPE_LIGHT",
+        8 => "SHAPE_RHOMBUS",
+        9 => "SHAPE_REVERSAL_RHOMBUS",
+        10 => "SHAPE_ROUNDED_RECTANGLE",
+        11 => "SHAPE_EMPTY_CIRCULATE_TRIANGLE",
+        12 => "SHAPE_THIN_CIRCULATE_TRIANGLE",
+        13 => "SHAPE_THICK_CIRCULATE_TRIANGLE",
         _ => "CHAR",
     };
     let compose_type = if co.expansion == 1 {
@@ -3869,9 +3862,11 @@ where
         "SPREAD"
     };
     // [#5140] 겹침 글자도 사용자 정의 기호일 수 있다. 속성이라 위치 축과 무관하므로
-    // 본문과 같은 표를 그대로 적용한다.
+    // 본문과 같은 표를 그대로 적용한다. HWP 원문 배열의 표지와 PUA 숫자는 한컴
+    // HWPX처럼 친 글로 돌린다.
+    let plain = crate::renderer::composer::char_overlap_plain_text(co);
     let text = storage
-        .chars(co.chars.iter().map(|&c| hancom_symbol_for_hwpx(c)))
+        .chars(plain.chars().map(hancom_symbol_for_hwpx))
         .map_err(xml_error)?;
     let mut out = xml_value(
         storage,
@@ -3940,13 +3935,8 @@ where
             ),
             num = an.number,
             nt = auto_number_type_to_str(an.number_type),
-            // [#2957] <hp:autoNumFormat type> 은 <hp:pageNum formatType> 과 달리 원 문자
-            // 형식을 "CIRCLED_DIGIT"로 표기한다(각주/미주 경로에서 실측 검증됨, #2742).
-            ty = if an.format == 1 {
-                "CIRCLED_DIGIT"
-            } else if an.format == 18 {
-                // [#6872] 사용자 기호(`NumberFormat::UserChar` 서수). `page_num_format_to_str`
-                // 는 쪽 번호용 0..7 만 알아서 이 값을 DIGIT 으로 떨궜다.
+            ty = if an.format == 18 {
+                // [#6872] 사용자 기호(`NumberFormat::UserChar` 서수).
                 "USER_CHAR"
             } else {
                 page_num_format_to_str(an.format)
@@ -4169,20 +4159,9 @@ fn page_num_pos_to_str(pos: u8) -> &'static str {
 }
 
 /// 번호 형식 코드(표 134) → HWPX `formatType` 문자열. `parse_page_num_attrs`의 역매핑.
+/// 문단 번호와 같은 OWPML 이름을 쓴다(원 문자는 스펙 철자 "CIRCLED_DIGIT").
 fn page_num_format_to_str(fmt: u8) -> &'static str {
-    match fmt {
-        0 => "DIGIT",
-        // [#XXXX] OWPML Core 스키마 NumberType1(<hp:pageNum formatType>)의 실제 값은
-        // "CIRCLED_DIGIT"이다 (Core XML schema.xml 12행). "CIRCLE_DIGIT"은 오탈자.
-        1 => "CIRCLED_DIGIT",
-        2 => "ROMAN_CAPITAL",
-        3 => "ROMAN_SMALL",
-        4 => "LATIN_CAPITAL",
-        5 => "LATIN_SMALL",
-        6 => "HANGUL",
-        7 => "HANJA",
-        _ => "DIGIT",
-    }
+    super::header::numbering_format_str(fmt)
 }
 
 /// `<hp:ctrl><hp:pageNum .../></hp:ctrl>` — 쪽 번호 위치(PageNumberPos) 컨트롤.
@@ -6669,6 +6648,14 @@ mod tests {
         assert!(
             xml.contains(r#"<hp:grid lineGrid="1200" charGrid="900" wonggojiFormat="0"/>"#),
             "구역 그리드가 IR 값이어야 함: {xml:.600}"
+        );
+        // 원고지 정서법(HWP5 flags bit 22)도 HWPX 속성으로 나간다.
+        let mut wonggoji = doc.sections[0].clone();
+        wonggoji.section_def.set_wonggoji_format(true);
+        let xml = String::from_utf8(write_section(&wonggoji, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(
+            xml.contains(r#"<hp:grid lineGrid="1200" charGrid="900" wonggojiFormat="1"/>"#),
+            "원고지 정서법이 IR 값이어야 함: {xml:.600}"
         );
         assert!(
             xml.contains(

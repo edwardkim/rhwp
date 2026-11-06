@@ -492,6 +492,7 @@ impl TypesetEngine {
                                             if !st.pages.is_empty() {
                                                 st.record_current_footnote_with_storage(
                                                     FootnoteRef {
+                                                        column_index: 0,
                                                         number: fn_ctrl.number,
                                                         source: FootnoteSource::ShapeTextBox {
                                                             para_index: para_idx,

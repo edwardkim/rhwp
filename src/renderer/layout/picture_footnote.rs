@@ -5,10 +5,7 @@ use super::super::page_layout::LayoutRect;
 use super::super::pagination::{FootnoteFragment, FootnoteRef, FootnoteSource};
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
-use super::super::{
-    format_number, hwpunit_to_px, AutoNumberCounter, LineStyle, NumberFormat as NumFmt,
-    PathCommand, StrokeDash, TextStyle,
-};
+use super::super::{hwpunit_to_px, AutoNumberCounter, PathCommand, StrokeDash, TextStyle};
 use super::border_rendering::border_width_to_px;
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::{
@@ -158,7 +155,7 @@ fn stored_footnote_number_prefix(para: &Paragraph, number: u16) -> Option<(Strin
         };
         if auto.number_type != crate::model::control::AutoNumberType::Footnote
             || auto.superscript
-            || auto.format > 8
+            || !crate::renderer::note_marker::supported_format(auto.format)
             || positions.get(index) != Some(&index)
             || para.text.chars().nth(index) != Some(' ')
         {
@@ -167,7 +164,11 @@ fn stored_footnote_number_prefix(para: &Paragraph, number: u16) -> Option<(Strin
         if auto.prefix_char != '\0' {
             prefix.push(auto.prefix_char);
         }
-        prefix.push_str(&format_number(number, NumFmt::from_hwp_format(auto.format)));
+        prefix.push_str(&crate::renderer::note_marker::number_text(
+            number,
+            auto.format,
+            auto.user_symbol,
+        ));
         if auto.suffix_char != '\0' {
             prefix.push(auto.suffix_char);
         }
@@ -274,6 +275,51 @@ fn footnote_composed_with_number(
         }
     }
     Some(numbered)
+}
+
+/// 각주 내용 번호 "작게": 일반 문단 경로가 그린 번호 run을 본문 각주 표시와 같은 크기(3/4)·
+/// 기준선으로 줄이고, 같은 줄 뒤의 글자 run을 줄어든 폭만큼 당긴다(한/글 12.30 Mac 인쇄).
+fn shrink_footnote_number(nodes: &mut [RenderNode], number: &str) {
+    for line in nodes
+        .iter_mut()
+        .filter(|node| matches!(node.node_type, RenderNodeType::TextLine(_)))
+    {
+        let Some(index) = line.children.iter().position(|child| {
+            matches!(&child.node_type, RenderNodeType::TextRun(run)
+                if run.display_or_text().trim_end() == number)
+        }) else {
+            continue;
+        };
+        let node = &mut line.children[index];
+        let RenderNodeType::TextRun(run) = &mut node.node_type else {
+            return;
+        };
+        let base = run.style.font_size;
+        let (size, baseline) =
+            crate::renderer::script_metrics::ScriptMetricsContract::NoteReference.draw_metrics(
+                base,
+                run.baseline,
+                true,
+                false,
+                run.style.font_position,
+            );
+        run.style.font_size = size;
+        run.baseline = baseline;
+        // 실제 크기·기준선으로 소비했으므로 paint가 첨자를 다시 축소하지 않는다.
+        run.style.superscript = false;
+        run.style.subscript = false;
+        run.style.font_position = None;
+        run.layout_positions = None;
+        let width = estimate_text_width(run.display_or_text(), &run.style);
+        let dx = node.bbox.width - width;
+        node.bbox.width = width;
+        for next in &mut line.children[index + 1..] {
+            if matches!(next.node_type, RenderNodeType::TextRun(_)) {
+                next.bbox.x -= dx;
+            }
+        }
+        return;
+    }
 }
 
 fn footnote_composed_line_count(
@@ -1562,6 +1608,7 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         fn_area: &LayoutRect,
         shape: &FootnoteShape,
+        source_indices: &[usize],
         bin_data_content: &[BinDataContent],
     ) {
         let mut y = fn_area.y;
@@ -1578,25 +1625,9 @@ impl LayoutEngine {
                 footnote_separator_length_px(shape.separator_length, fn_area.width, self.dpi);
             let line_width = border_width_to_px(shape.separator_line_width).max(0.5);
 
-            if crate::renderer::note_separator::has_ink(shape.separator_color) {
-                let border = crate::model::style::BorderLine {
-                    line_type: super::border_rendering::border_line_type_from_code(
-                        shape.separator_line_type,
-                    ),
-                    width: shape.separator_line_width,
-                    color: shape.separator_color,
-                };
-                fn_node
-                    .children
-                    .extend(super::border_rendering::create_border_line_nodes(
-                        tree,
-                        &border,
-                        fn_area.x,
-                        y,
-                        fn_area.x + sep_length,
-                        y,
-                    ));
-            }
+            super::note_separator::append(
+                tree, fn_node, shape, fn_area.x, y, sep_length, line_width,
+            );
             y += line_width;
 
             // (3) 구분선 아래 여백
@@ -1607,13 +1638,15 @@ impl LayoutEngine {
         // 각주 TextRun에 마커를 인코딩하여 히트테스트에서 식별 가능하도록 함
         // section_index = footnote_index (footnotes 배열 인덱스)
         // para_index = usize::MAX - 2000 - fn_para_idx (각주 내 문단 인덱스)
-        for (i, fn_ref) in footnotes.iter().enumerate() {
+        for (frame_index, fn_ref) in footnotes.iter().enumerate() {
+            let i = source_indices[frame_index];
             let fn_paras = get_footnote_paragraphs(fn_ref, paragraphs);
             let number_text = format_footnote_number(
                 fn_ref.number,
                 &shape.number_format,
                 shape.prefix_char,
                 shape.suffix_char,
+                shape.user_char,
             );
             let (fragment_start, fragment_end) = fragment_line_bounds(
                 fn_ref.fragment,
@@ -1690,6 +1723,7 @@ impl LayoutEngine {
                             selected_start,
                             selected_end,
                             true,
+                            shape.number_code_superscript,
                         );
                         number_drawn = true;
                     }
@@ -1810,9 +1844,11 @@ impl LayoutEngine {
                         selected_start,
                         selected_end,
                         is_last_selected_line,
-                    );
+                            shape.number_code_superscript,
+                        );
                 } else {
                     let composed = numbered.as_ref().unwrap_or(&composed);
+                    let first_new_child = fn_node.children.len();
                     // 각주 줄도 원본 인라인 개체와 문서의 BinData를 소비한다.
                     // 텍스트 줄만 전달하면 높이는 예약하면서 TAC 표·그림을
                     // 출력하지 못한다. 이어받기에도 같은 글줄 소유를 사용한다.
@@ -1840,6 +1876,12 @@ impl LayoutEngine {
                         Some(placement.spacing),
                         None,
                     );
+                    if shape.number_code_superscript && numbered.is_some() {
+                        shrink_footnote_number(
+                            &mut fn_node.children[first_new_child..],
+                            paragraph_number.trim_end(),
+                        );
+                    }
                     if is_last_selected_line {
                         // fragment의 마지막 줄은 trailing line-spacing을 쓰지 않는다.
                         let trail_ls = composed
@@ -1882,6 +1924,8 @@ impl LayoutEngine {
         line_end: usize,
         // fragment의 마지막 선택 줄은 trailing line_spacing을 누적하지 않는다.
         is_last_selected_line: bool,
+        // 각주 모양 "각주 내용 번호 속성: 작게"
+        small_number: bool,
     ) -> f64 {
         let mut y = y_start;
         let stored_prefix = (self.profile.get().hwpx_stored_layout()
@@ -1947,10 +1991,20 @@ impl LayoutEngine {
                 // 빈/비빈 문단 모두 동일한 base_cs_id 사용 → 리렌더링 시 폰트·폭 변동 방지
                 let base_style = {
                     let mut ts = resolved_to_text_style(styles, base_cs_id, 0);
-                    if stored_prefix.is_none() {
+                    if small_number {
+                        ts.font_size = FootnoteMarkerNode::font_size(ts.font_size);
+                    } else if stored_prefix.is_none() {
                         ts.font_size = (ts.font_size * 0.9).max(8.0);
                     }
                     ts
+                };
+                let number_baseline = if small_number {
+                    FootnoteMarkerNode::reference_baseline(
+                        resolved_to_text_style(styles, base_cs_id, 0).font_size,
+                        baseline,
+                    )
+                } else {
+                    baseline
                 };
 
                 let num_width = estimate_text_width(number_text, &base_style);
@@ -1972,7 +2026,7 @@ impl LayoutEngine {
                         is_vertical: false,
                         char_overlap: None,
                         border_fill_id: 0,
-                        baseline,
+                        baseline: number_baseline,
                         field_marker: FieldMarkerType::None,
                         layout_positions: None,
                         display_text: None,
@@ -2343,39 +2397,11 @@ fn format_footnote_number(
     format: &NumberFormat,
     prefix: char,
     suffix: char,
+    user_symbol: char,
 ) -> String {
-    let num_str = match format {
-        NumberFormat::Digit => number.to_string(),
-        NumberFormat::CircledDigit => {
-            // ① ~ ⑳
-            if number >= 1 && number <= 20 {
-                char::from_u32(0x2460 + (number - 1) as u32)
-                    .map(|c| c.to_string())
-                    .unwrap_or_else(|| number.to_string())
-            } else {
-                number.to_string()
-            }
-        }
-        NumberFormat::LowerAlpha => {
-            if number >= 1 && number <= 26 {
-                char::from_u32(b'a' as u32 + (number - 1) as u32)
-                    .map(|c| c.to_string())
-                    .unwrap_or_else(|| number.to_string())
-            } else {
-                number.to_string()
-            }
-        }
-        NumberFormat::UpperAlpha => {
-            if number >= 1 && number <= 26 {
-                char::from_u32(b'A' as u32 + (number - 1) as u32)
-                    .map(|c| c.to_string())
-                    .unwrap_or_else(|| number.to_string())
-            } else {
-                number.to_string()
-            }
-        }
-        _ => number.to_string(), // 기타 형식은 숫자로 fallback
-    };
+    // 본문 각주 표시와 같은 번호 모양 코드(표 134)로 그린다.
+    let code = FootnoteShape::number_format_attr_code(*format) as u8;
+    let num_str = crate::renderer::note_marker::number_text(number, code, user_symbol);
 
     let prefix_str = if prefix != '\0' {
         prefix.to_string()

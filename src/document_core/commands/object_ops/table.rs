@@ -178,6 +178,23 @@ impl DocumentCore {
                         ))
                     })?
                 }
+                ctrl @ (crate::model::control::Control::Header(_)
+                | crate::model::control::Control::Footer(_)) => {
+                    if cell_idx != 0 {
+                        return Err(HwpError::RenderError(format!(
+                            "경로[{}]: 머리말·꼬리말의 cell_index는 0이어야 합니다 ({})",
+                            i, cell_idx
+                        )));
+                    }
+                    ctrl.header_footer_paragraphs_mut()
+                        .and_then(|paragraphs| paragraphs.get_mut(cell_para_idx))
+                        .ok_or_else(|| {
+                            HwpError::RenderError(format!(
+                                "경로[{}]: 머리말·꼬리말 문단 {} 범위 초과",
+                                i, cell_para_idx
+                            ))
+                        })?
+                }
                 _ => {
                     return Err(HwpError::RenderError(format!(
                         "경로[{}]: controls[{}] 가 표/글상자/그림 캡션이 아닙니다",
@@ -1224,19 +1241,23 @@ impl DocumentCore {
         )))
     }
 
-    /// [#8262] 표 칸 안 문단에 글자처럼 취급 표를 만든다 — 셀 경로라 깊이에 상관없다.
+    /// [#8262] 표 칸 안 문단에 표를 만든다 — 셀 경로라 깊이에 상관없다.
     ///
     /// `path` 는 다른 by-path API 와 같은 `(control, cell, cell_para)` 사슬이고, 마지막 마디의
     /// `cell_para` 가 캐럿이 있는 칸 문단, `char_offset` 은 그 문단의 캐럿 축 offset 이다.
+    /// 첫 마디가 머리말·꼬리말(`cell` 0, `cell_para` 는 머리말·꼬리말 문단)이면 그 문단에 만든다.
     ///
     /// 구조는 한/글 2020 이 칸 안에 만든 표와 같다(#8262 표본):
     /// - 캐럿 위치에서 칸 문단을 가른다. **앞쪽이 비면 원래 문단이 표 문단이 되고**,
     ///   **뒤쪽은 비어도 새 문단으로** 내린다. 표 문단에는 표만 있다.
-    /// - 폭은 칸 안쪽 폭(칸 폭 − 왼/오른 안 여백) − 바깥 여백, 칸 수로 균등.
+    /// - 폭은 칸 안쪽 폭(칸 폭 − 왼/오른 안 여백) − 바깥 여백, 칸 수로 균등. 머리말·꼬리말은
+    ///   쪽 글 영역 폭이 칸 안쪽 폭이다.
     /// - 세로 기준 문단 · 가로 기준 단(`InlineTableAnchor::Cell`).
+    /// - `treat_as_char` 가 거짓이면 한/글 12.30 이 칸에서 글자처럼 취급을 끄고 만든 표처럼
+    ///   본문 표 만들기와 같은 자리 차지 표(위아래, 쪽 경계 셀 단위, 제목 줄 반복)다.
     ///
-    /// 칸이 아닌 컨테이너(글상자 등)는 받지 않는다. 입력이 틀리면 문서를 바꾸지 않고 오류를
-    /// 돌려준다.
+    /// 칸·머리말·꼬리말이 아닌 컨테이너(글상자 등)는 받지 않는다. 입력이 틀리면 문서를 바꾸지
+    /// 않고 오류를 돌려준다.
     ///
     /// 반환: `{"ok":true,"cellParaIdx":<표 문단>,"controlIdx":0,"cellPath":[..안쪽 표 첫 칸까지]}`
     #[allow(clippy::too_many_arguments)]
@@ -1250,6 +1271,7 @@ impl DocumentCore {
         col_count: u16,
         col_widths_hu: Option<&[u32]>,
         row_heights_hu: Option<&[u32]>,
+        treat_as_char: bool,
     ) -> Result<String, HwpError> {
         use crate::model::paragraph::{CharShapeRef, LineSeg};
 
@@ -1262,9 +1284,9 @@ impl DocumentCore {
         let &(_, _, cell_para_idx) = path
             .last()
             .ok_or_else(|| HwpError::RenderError("경로가 비어있습니다".to_string()))?;
-        if !self.innermost_container_is_table_cell(section_idx, parent_para_idx, path) {
+        if !self.innermost_container_takes_table(section_idx, parent_para_idx, path) {
             return Err(HwpError::RenderError(
-                "경로가 표 칸을 가리키지 않습니다".to_string(),
+                "경로가 표 칸이나 머리말·꼬리말을 가리키지 않습니다".to_string(),
             ));
         }
 
@@ -1296,7 +1318,7 @@ impl DocumentCore {
         let inherited_line =
             creation_line::for_empty(self, empty_para, default_char_shape_id, inner_width);
 
-        let (table, added_border_fill) = self.build_inline_table(
+        let (mut table, added_border_fill) = self.build_inline_table(
             content_width,
             row_count,
             col_count,
@@ -1307,6 +1329,17 @@ impl DocumentCore {
             inherited_line,
             InlineTableAnchor::Cell,
         )?;
+        if !treat_as_char {
+            // 본문 표 만들기(`create_table_with_options_native`)의 자리 차지 표와 같은 값이다.
+            // 위치 비트는 칸 기준(세로 문단·가로 단)이 이미 같아 글자처럼 취급 비트만 끈다.
+            let flags = table.common.attr & !1;
+            table.attr = flags;
+            table.common.attr = flags;
+            table.common.treat_as_char = false;
+            table.raw_ctrl_data[common_obj_offsets::FLAGS].copy_from_slice(&flags.to_le_bytes());
+            table.repeat_header = true;
+            table.raw_table_record_attr = 2 | (1 << 2);
+        }
 
         // 본문 표 문단(`create_table_with_options_native`)과 같은 모양 — 컨트롤 8 + 문단 끝 1.
         let mut raw_header_extra = vec![0u8; 10];
@@ -1327,8 +1360,11 @@ impl DocumentCore {
                 text_height: 1000,
                 baseline_distance: 850,
                 line_spacing: 600,
-                segment_width: inner_width,
-                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                // 한/글 표준: 자리 차지 표 문단의 줄 폭은 0이다(본문 표 만들기와 같다).
+                segment_width: if treat_as_char { inner_width } else { 0 },
+                // 새 표의 앵커는 한컴 파일에서 읽은 저장 사다리가 아니다.
+                // 뒤 합성 문단과 같은 재조판 경로가 표의 점유를 함께 소비한다.
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE | LineSeg::TAG_IMPLEMENTATION_PROPERTY,
                 ..Default::default()
             }],
             para_shape_id: default_para_shape_id,
@@ -1409,8 +1445,9 @@ impl DocumentCore {
         )))
     }
 
-    /// 경로의 마지막 마디가 **표 칸**인가(글상자·캡션이 아니라). 경로가 틀려도 false.
-    fn innermost_container_is_table_cell(
+    /// 경로의 마지막 마디가 **표 칸**이나 머리말·꼬리말인가(글상자·캡션이 아니라). 경로가 틀려도 false.
+    /// 머리말·꼬리말은 본문 문단의 컨트롤이라 경로의 첫 마디로만 온다.
+    fn innermost_container_takes_table(
         &self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -1425,16 +1462,25 @@ impl DocumentCore {
             return false;
         };
         for (i, &(ctrl_idx, cell_idx, cell_para_idx)) in path.iter().enumerate() {
-            let Some(Control::Table(t)) = para.controls.get(ctrl_idx) else {
-                return false;
-            };
-            let Some(cell) = t.cells.get(cell_idx) else {
-                return false;
+            let paragraphs = match para.controls.get(ctrl_idx) {
+                Some(Control::Table(t)) => match t.cells.get(cell_idx) {
+                    Some(cell) => &cell.paragraphs,
+                    None => return false,
+                },
+                Some(control @ (Control::Header(_) | Control::Footer(_)))
+                    if i == 0 && cell_idx == 0 =>
+                {
+                    match control.header_footer_paragraphs() {
+                        Some(paragraphs) => paragraphs,
+                        None => return false,
+                    }
+                }
+                _ => return false,
             };
             if i + 1 == path.len() {
                 return true;
             }
-            let Some(next) = cell.paragraphs.get(cell_para_idx) else {
+            let Some(next) = paragraphs.get(cell_para_idx) else {
                 return false;
             };
             para = next;

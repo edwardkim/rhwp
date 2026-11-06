@@ -40,6 +40,8 @@ impl TypesetState {
                 square_band_bottom: 0.0,
                 square_band_top: None,
                 current_footnote_height: 0.0,
+                footnote_placement: Default::default(),
+                footnote_frames: Vec::new(),
                 deferred_body_footnotes: Vec::new(),
                 own_line_notes: Vec::new(),
                 line_registered_notes: std::collections::HashSet::new(),
@@ -837,6 +839,7 @@ impl TypesetState {
         self.data.page_anchored_bands.clear();
         if self.data.current_column + 1 < self.data.col_count {
             self.data.current_column += 1;
+            self.select_footnote_frame();
             // Task #321: col 0 상단의 body-wide TopAndBottom 표/도형이 차지한 높이를
             // current_height의 시작값으로 사용 (가용 공간만 줄임, zone_y_offset은 건드리지 않음).
             // layout은 body_wide_reserved로 별도 처리하므로 여기서 zone_y_offset에
@@ -1022,6 +1025,7 @@ impl TypesetState {
         self.data.current_endnote_flow = false;
         self.data.column_had_compact_endnote_rewind = false;
         self.data.current_footnote_height = 0.0;
+        self.data.footnote_frames.clear();
         self.data.current_footnote_body_bottom_reserved = false;
         self.data.deferred_hwpx_note_body = false;
         self.data.current_bottom_fixed_exclusion = 0.0;

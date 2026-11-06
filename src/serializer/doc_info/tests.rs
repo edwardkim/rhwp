@@ -726,7 +726,7 @@ fn test_serialize_numbering_roundtrip() {
     };
     numbering.level_formats[0] = "^1.".to_string();
     numbering.start_number = 1;
-    numbering.level_start_numbers = [1; 7];
+    numbering.level_start_numbers = [1; crate::model::style::NUMBERING_LEVELS];
 
     let data = serialize_numbering(&numbering);
     let mut r = crate::parser::byte_reader::ByteReader::new(&data);
@@ -755,7 +755,7 @@ fn numbering_serializes_number_format_into_attr_bits() {
         number_format: 8, // 예: HANGUL_MIXED
     };
     numbering.level_formats[0] = "^1.".to_string();
-    numbering.level_start_numbers = [1; 7];
+    numbering.level_start_numbers = [1; crate::model::style::NUMBERING_LEVELS];
 
     let data = serialize_numbering(&numbering);
     let mut r = crate::parser::byte_reader::ByteReader::new(&data);

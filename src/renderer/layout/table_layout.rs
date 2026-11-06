@@ -9684,9 +9684,10 @@ impl LayoutEngine {
                                 // spacing_before`)가 이미 소비했으므로 문단 시작 커서가 아니라
                                 // 배치된 첫 줄을 원점으로 쓴다(36455985 `내용` 칸: 중첩 표만 든
                                 // 문단 `prev=1200`, 한/글 2024 PDF 에서 칸 상단 + 안 여백 + 16px).
+                                // 개체의 줄 소속을 알아도 저장 원점이 생기지는 않는다.
+                                // 재조판한 첫 줄은 위 간격을 이미 소비한 실제 배치를 쓴다.
                                 let reflowed_first_unit = cp_idx == 0
                                     && start_line == 0
-                                    && own_line.is_none()
                                     && crate::renderer::para_has_no_stored_line_segs(para);
                                 let table_anchor_y =
                                     if crate::renderer::composer::stored_first_tac_line(para)

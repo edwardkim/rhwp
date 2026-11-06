@@ -406,6 +406,33 @@ pub struct SectionDef {
     pub master_pages: Vec<MasterPage>,
 }
 
+impl SectionDef {
+    /// 원고지 정서법 (HWP5 flags bit 22, HWPX `<hp:grid wonggojiFormat>`).
+    pub const WONGOJI_FORMAT: u32 = 1 << 22;
+
+    pub fn wonggoji_format(&self) -> bool {
+        self.flags & Self::WONGOJI_FORMAT != 0
+    }
+
+    pub fn set_wonggoji_format(&mut self, on: bool) {
+        if on {
+            self.flags |= Self::WONGOJI_FORMAT;
+        } else {
+            self.flags &= !Self::WONGOJI_FORMAT;
+        }
+    }
+
+    /// 원고지 칸 격자. 줄·글자 격자가 모두 있고 원고지 정서법이 켜진 구역만 칸에 맞춰 짠다.
+    pub fn cell_grid(&self) -> Option<crate::model::paragraph::CellGrid> {
+        (self.wonggoji_format() && self.line_grid > 0 && self.char_grid > 0).then(|| {
+            crate::model::paragraph::CellGrid {
+                line: i32::from(self.line_grid),
+                cell: i32::from(self.char_grid),
+            }
+        })
+    }
+}
+
 impl Document {
     /// HWPX 인쇄 설정의 편집 용지 표시 값. 미기재와 미지원 값은 구분한다.
     pub(crate) fn hwpx_print_crop_mark(settings: &[u8]) -> Option<bool> {

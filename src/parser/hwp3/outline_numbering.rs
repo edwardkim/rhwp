@@ -14,7 +14,7 @@ pub(super) fn custom_numbering(custom: &str) -> Option<crate::model::style::Numb
         .collect::<Option<Vec<_>>>()?;
     let mut numbering = Numbering {
         start_number: 0,
-        level_start_numbers: [1; 7],
+        level_start_numbers: [1; crate::model::style::NUMBERING_LEVELS],
         ..Default::default()
     };
     let mut has_verified_hangul_form = false;

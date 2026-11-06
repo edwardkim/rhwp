@@ -1381,7 +1381,7 @@ pub(super) fn compose_horizontal_shaping_handoff(
     }
 
     let text_chars = para.text.chars().collect::<Vec<_>>();
-    let inline_controls = flow_inline_controls(para);
+    let inline_controls = flow_inline_controls(para, styles);
     let projection = prepare_paragraph_projection(
         para,
         &text_chars,
@@ -3438,7 +3438,7 @@ fn flow_inline_controls_with_tac_tables_with_storage<S: crate::storage::Storage>
 ) -> Result<Vec<FlowInlineControl>, S::Error> {
     Ok({
         let text_len = para.text.chars().count();
-        let mut controls = flow_inline_controls_with_storage(para, storage)?;
+        let mut controls = flow_inline_controls_with_storage(para, styles, storage)?;
         for ((control, char_position), utf16_position) in para
             .controls
             .iter()
@@ -3937,10 +3937,12 @@ fn char_index_to_utf16_offset(para: &Paragraph, char_index: usize) -> u32 {
     // 끝의 빈 physical line(예: trailing Shift+Enter)을 단순 text 길이로 매핑하면
     // SectionDef/ColumnDef가 앞선 문단에서 21이어야 할 start가 5로 되돌아간다.
     // 마지막 visible char의 실제 stream offset을 기준으로 종단을 계산한다.
+    // 탭은 한 scalar지만 PARA_TEXT에서 8유닛이다. 한 유닛만 더하면 문단 끝 뒤 줄 조각이
+    // 탭 제어 문자 가운데서 시작하고, 한/글은 그 저장본을 손상된 문서로 보고 열지 않는다.
     para.char_offsets
         .last()
         .zip(para.text.chars().last())
-        .map(|(offset, ch)| *offset + ch.len_utf16() as u32)
+        .map(|(offset, ch)| *offset + Paragraph::char_stream_len(ch))
         .unwrap_or_else(|| {
             // 합성 문단처럼 char_offsets가 비어 있으면 char_index(Unicode scalar
             // index)를 UTF-16 code-unit 위치로 직접 환산한다. 단순 `as u32`는
@@ -3948,7 +3950,7 @@ fn char_index_to_utf16_offset(para: &Paragraph, char_index: usize) -> u32 {
             para.text
                 .chars()
                 .take(char_index)
-                .map(|ch| ch.len_utf16() as u32)
+                .map(Paragraph::char_stream_len)
                 .sum()
         })
 }
@@ -3961,11 +3963,24 @@ fn line_start_utf16_offset(
     char_index: usize,
     inline_controls: &[FlowInlineControl],
 ) -> u32 {
+    // 개체 투영 입력(`inline_frame_input`)은 개체를 원시 위치의 U+FFFC 한 scalar로 싣는다.
+    // 그 자리표가 문단의 마지막 scalar면 문단 끝은 개체 제어 문자 8유닛 뒤다.
+    let end = (char_index > 0 && char_index == para.char_offsets.len())
+        .then(|| para.char_offsets[char_index - 1])
+        .filter(|&raw| {
+            inline_controls.iter().any(|control| {
+                control.char_position == char_index - 1 && control.utf16_position == raw
+            })
+        })
+        .map_or_else(
+            || char_index_to_utf16_offset(para, char_index),
+            |raw| raw + CTRL_CHAR_CODE_UNITS,
+        );
     inline_controls
         .iter()
         .filter(|control| control.char_position == char_index)
         .map(|control| control.utf16_position)
-        .fold(char_index_to_utf16_offset(para, char_index), u32::min)
+        .fold(end, u32::min)
 }
 
 /// `baseline_distance` from a row's height — the one expression, so the frame
@@ -4456,7 +4471,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
         // [#7160] 저장 줄이 없는 TAC 표 host 는 표 폭까지 줄 경계 판정에 넣는다.
         flow_inline_controls_with_tac_tables_with_storage(para, styles, dpi, storage)?
     } else {
-        flow_inline_controls_with_storage(para, storage)?
+        flow_inline_controls_with_storage(para, styles, storage)?
     };
     if purpose == FramePurpose::PictureAnchor {
         let prefix = crate::renderer::layout::leading_endnote_prefix_geometry(para, styles, 0);
@@ -5954,6 +5969,16 @@ fn try_reflow_line_segs_impl<S: Storage>(
             if let Some(height_hwp) = inline_control_line_height_hwp(para) {
                 apply_inline_control_line_height(&mut seg, height_hwp);
             }
+            // 덧말만 든 문단도 글자 있는 줄처럼 덧말 높이·기준선·간격을 쓴다(한컴 12.30 저장 줄).
+            if let Some((height_hwp, baseline)) =
+                inline_control_flow::empty_text_ruby_row(para, styles)
+            {
+                if height_hwp > seg.line_height {
+                    apply_inline_control_line_height(&mut seg, height_hwp);
+                    seg.baseline_distance = baseline;
+                    seg.line_spacing = compute_line_spacing_hwp(ls_type, ls_value, height_hwp, dpi);
+                }
+            }
             mark_indented_lines(
                 std::slice::from_mut(&mut seg),
                 0,
@@ -6006,7 +6031,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
     }
 
     let text_len = text_chars.len();
-    let inline_controls = flow_inline_controls_with_storage(para, storage)?;
+    let inline_controls = flow_inline_controls_with_storage(para, styles, storage)?;
 
     // 문단 스타일에서 들여쓰기 및 줄 나눔 설정 조회 (들여쓰기는 목록 마커를 얹은 값)
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
@@ -6311,6 +6336,15 @@ fn try_reflow_line_segs_impl<S: Storage>(
             if inline_owns_row_height {
                 if let Some(baseline) = control.baseline_distance_hwp {
                     text_seg.baseline_distance = baseline;
+                }
+                // 프레임 채움과 같이 줄 간격에 참여하는 개체(덧말 등)는 그 높이로 간격을 잰다.
+                if let Some(height) = control.spacing_height_hwp {
+                    text_seg.line_spacing = compute_line_spacing_hwp(
+                        ls_type,
+                        ls_value,
+                        text_seg.line_height.max(height),
+                        dpi,
+                    );
                 }
             }
         }

@@ -441,24 +441,27 @@ impl PartialEq for ParaShape {
 
 impl Eq for ParaShape {}
 
+/// 문단 번호·개요 수준 수. 한/글은 1~10수준을 쓴다(HWP 5.1 번호 레코드의 8~10수준 확장,
+/// HWPX `hh:paraHead` level 1~10).
+pub const NUMBERING_LEVELS: usize = 10;
+
 /// 문단 번호 정의 (HWPTAG_NUMBERING)
 #[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Numbering {
     /// 원본 레코드 바이트 (라운드트립 보존용)
     pub raw_data: Option<Vec<u8>>,
-    /// 수준별(1~7) 문단 머리 정보
-    pub heads: [NumberingHead; 7],
+    /// 수준별(1~10) 문단 머리 정보
+    pub heads: [NumberingHead; NUMBERING_LEVELS],
     /// 수준별 번호 형식 문자열
-    pub level_formats: [String; 7],
+    pub level_formats: [String; NUMBERING_LEVELS],
     /// 시작 번호
     pub start_number: u16,
     /// 수준별 시작 번호
-    pub level_start_numbers: [u32; 7],
+    pub level_start_numbers: [u32; NUMBERING_LEVELS],
     /// HWPX `<hh:numbering>` 의 자식 `<hh:paraHead>` 영역 원본 XML
-    /// (여는/닫는 태그 사이 그대로). 모델은 7수준만 표현하지만 HWPX 는
-    /// 10수준 + align/useInstWidth/autoIndent/checkable/형식문자열 등을
-    /// 가지므로, 무손실 라운드트립을 위해 원본 구간을 그대로 보존해 splice 한다.
-    /// HWP5 바이너리 경로 등 원본 XML 이 없으면 `None` → 하드코딩 폴백.
+    /// (여는/닫는 태그 사이 그대로). HWPX 는 수준 값 외에 checkable 등 모델에 없는
+    /// 속성도 가지므로, 무손실 라운드트립을 위해 원본 구간을 그대로 보존해 splice 한다.
+    /// HWP5 바이너리 경로 등 원본 XML 이 없으면 `None` → 모델 값으로 쓴다.
     pub raw_para_heads: Option<String>,
 }
 

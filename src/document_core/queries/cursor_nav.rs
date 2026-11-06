@@ -10,6 +10,32 @@ use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::renderer::render_tree::TextRunNode;
 
+/// 셀 경로의 머리말·꼬리말 마디. 글상자처럼 셀 0 하나이고 `cell_para_idx`가 머리말·꼬리말 문단이다.
+pub(crate) fn header_footer_step(
+    control: &Control,
+    step: usize,
+    cell_idx: usize,
+    cell_para_idx: usize,
+) -> Result<&Paragraph, HwpError> {
+    if cell_idx != 0 {
+        return Err(HwpError::RenderError(format!(
+            "경로[{}]: 머리말·꼬리말의 cell_index는 0이어야 합니다 ({})",
+            step, cell_idx
+        )));
+    }
+    let paragraphs = control.header_footer_paragraphs().ok_or_else(|| {
+        HwpError::RenderError(format!("경로[{}]: 머리말·꼬리말이 아닙니다", step))
+    })?;
+    paragraphs.get(cell_para_idx).ok_or_else(|| {
+        HwpError::RenderError(format!(
+            "경로[{}]: 머리말·꼬리말 문단 {} 범위 초과 (총 {}개)",
+            step,
+            cell_para_idx,
+            paragraphs.len()
+        ))
+    })
+}
+
 /// 글자겹침과 확장 필드는 화면 글자 수와 무관하게 모델의 캐럿 한 칸을 차지한다.
 ///
 /// `compute_char_positions(run.text)`는 raw marker의 가상 글리프 폭을 반환하므로,
@@ -738,6 +764,9 @@ impl DocumentCore {
                         ))
                     })?;
                 }
+                Control::Header(_) | Control::Footer(_) => {
+                    para = header_footer_step(ctrl, i, cell_idx, cell_para_idx)?;
+                }
                 _ => {
                     return Err(HwpError::RenderError(format!(
                         "경로[{}]: controls[{}]가 표/글상자/그림 캡션이 아닙니다",
@@ -851,6 +880,9 @@ impl DocumentCore {
                         ))
                     })?
                 }
+                Some(ctrl @ (Control::Header(_) | Control::Footer(_))) => {
+                    header_footer_step(ctrl, i, cell_idx, cell_para_idx)?
+                }
                 _ => {
                     return Err(HwpError::RenderError(format!(
                         "경로[{}]: controls[{}]가 표/글상자/그림 캡션이 아닙니다",
@@ -956,6 +988,9 @@ impl DocumentCore {
                         ))
                     })?
                 }
+                Some(ctrl @ (Control::Header(_) | Control::Footer(_))) => {
+                    header_footer_step(ctrl, i, cell_idx, cell_para_idx)?
+                }
                 _ => {
                     return Err(HwpError::RenderError(format!(
                         "경로[{}]: controls[{}]가 표/글상자/그림 캡션이 아닙니다",
@@ -994,6 +1029,9 @@ impl DocumentCore {
                     .ok_or_else(|| HwpError::RenderError("그림에 캡션이 없습니다".to_string()))?;
                 Ok(caption.paragraphs.len())
             }
+            Some(ctrl @ (Control::Header(_) | Control::Footer(_))) if last.1 == 0 => Ok(ctrl
+                .header_footer_paragraphs()
+                .map_or(0, |paragraphs| paragraphs.len())),
             _ => Err(HwpError::RenderError(format!(
                 "controls[{}]가 표/글상자/그림 캡션이 아닙니다",
                 last.0

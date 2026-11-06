@@ -469,6 +469,12 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
         isolated_jamo_font: None,
         page_number_char_style_id,
         page_number_font_is_hft,
+        style_char_shapes: storage.try_collect(
+            doc_info
+                .styles
+                .iter()
+                .map(|style| Ok(u32::from(style.char_shape_id))),
+        )?,
         char_styles,
         para_styles,
         border_styles,
@@ -970,6 +976,27 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
         kerning: cs.kerning,
         shade_color: cs.shade_color,
     })
+}
+
+impl ResolvedCharStyle {
+    /// 기준 크기 0 인 글자 모양을 `font_size`(px) 기준 크기로 다시 해소한 값.
+    ///
+    /// 한/글 '문단 번호 사용자 정의 모양'의 '본문 글자 크기 따름'은 번호 글자 모양의 기준 크기를 0 으로
+    /// 저장하고 번호를 문단 본문 크기로 그린다. 크기에서 나오는 값은 [`try_resolve_single_char_style`]
+    /// 와 같은 식으로 다시 계산하고 글꼴·장평·꾸밈은 그대로 둔다.
+    pub(crate) fn with_base_size(&self, cs: &CharShape, font_size: f64) -> Self {
+        let mut style = self.clone();
+        style.font_size = font_size;
+        // 상대 크기는 해소 경로와 같은 순서(비율을 먼저 구해 곱함)로 계산해 반올림 잔차를 맞춘다.
+        style.font_sizes = (0..LANG_COUNT)
+            .map(|lang| font_size * (f64::from(cs.relative_sizes[lang]) / 100.0))
+            .collect();
+        style.letter_spacings = (0..LANG_COUNT)
+            .map(|lang| style.font_sizes[lang] * cs.spacings[lang] as f64 / 100.0)
+            .collect();
+        style.letter_spacing = style.letter_spacings[0];
+        style
+    }
 }
 
 /// [#7702] 한/글이 앞 글자 언어와 무관하게 **영문 슬롯** 글꼴로 재고 그리는 기호.

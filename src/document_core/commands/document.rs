@@ -783,6 +783,8 @@ impl DocumentCore {
                 })
                 .collect();
 
+            // 원고지 구역: 저장 줄이 없어 새로 짠 글 문단은 칸 수로 다시 나눈다.
+            let cell_grid = section.section_def.cell_grid();
             let mut body_line_seg_changed = false;
             // [Issue #1920] vpos 재계산(아래) 시 저장 vpos 의 새 쪽 시작 신호를 보존하기
             // 위해, 이번 패스에서 LINE_SEG 가 합성(reflow)된 문단 — 저장 vpos 신뢰 불가 —
@@ -804,7 +806,18 @@ impl DocumentCore {
                 // 본문 합성 lineseg 는 흐름 소비를 문단당 ~2.7px 팽창시켜 sijang
                 // 밀도 핀 -5쪽(302 vs 307, #2070v2)만 남기는 잉여 축으로 판정.
                 // 본문 NO_LS 텍스트 문단의 실폭 래핑은 composer recompose 가 담당한다.
-                if Self::needs_line_seg_reflow_in_scope(para, include_empty, section_sized) {
+                // 원고지 구역의 글 문단은 저장 줄이 없으면(HWP5 계보 HWPX는 줄 없이 저장한다) 칸으로 짓는다.
+                let unlined_grid_paragraph = cell_grid.is_some()
+                    && (para.line_segs.is_empty()
+                        || (para.line_segs.len() == 1
+                            && para.line_segs[0].is_missing_lineseg_placeholder()))
+                    && crate::renderer::cell_grid::shape_takes_grid(
+                        para,
+                        &source_doc_info.para_shapes,
+                    );
+                if unlined_grid_paragraph
+                    || Self::needs_line_seg_reflow_in_scope(para, include_empty, section_sized)
+                {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     // 본문: 열 상자를 그대로 넘긴다 — 렌더가 깎는 상자와 같아야 한다.
                     // 개체 여백은 공통으로 계상하고, 저장 구역의 간격 호환은 전용 진입점에 둔다.
@@ -822,6 +835,24 @@ impl DocumentCore {
                             styles,
                             dpi,
                         );
+                    }
+                    if let (Some(grid), Some(style)) = (cell_grid, para_style) {
+                        if crate::renderer::cell_grid::paragraph_takes_grid(
+                            para,
+                            &source_doc_info.para_shapes,
+                        ) {
+                            crate::renderer::cell_grid::rebreak_paragraph(
+                                para,
+                                grid,
+                                crate::renderer::px_to_hwpunit(
+                                    col_width - style.margin_left - style.margin_right,
+                                    dpi,
+                                ),
+                                crate::renderer::px_to_hwpunit(style.indent, dpi),
+                                styles,
+                                dpi,
+                            );
+                        }
                     }
                     body_line_seg_changed = true;
                     reflowed_paras.insert(pi);
@@ -985,6 +1016,14 @@ impl DocumentCore {
                         }
                     }
                 }
+            }
+
+            if let (Some(grid), true) = (cell_grid, body_line_seg_changed) {
+                crate::renderer::cell_grid::fit_section_spacing(
+                    &mut section.paragraphs,
+                    &source_doc_info.para_shapes,
+                    grid,
+                );
             }
 
             // HWPX: LINE_SEG를 실제로 합성/보정한 경우에만 문단 간 vpos를 재계산한다.
@@ -2417,12 +2456,17 @@ impl DocumentCore {
         // 재래핑된 표가 없으면 복제 없이 live IR 을 그대로 쓴다.
         let grown_tables = self.grown_table_heights();
         let grows_tables = grown_tables.iter().any(Option::is_some);
-        if !grows_tables && self.render_normalization.text_reflowed_tables.is_empty() {
+        let page_starts = self.shifted_page_starts();
+        if !grows_tables
+            && page_starts.is_empty()
+            && self.render_normalization.text_reflowed_tables.is_empty()
+        {
             return crate::serializer::serialize_document(&self.document)
                 .map_err(|e| HwpError::RenderError(e.to_string()));
         }
         let mut snapshot = self.document.clone();
         grown_table_heights::apply_grown_table_heights(&mut snapshot, &grown_tables);
+        self.write_page_starts(&mut snapshot, &page_starts);
         self.writeback_reflowed_table_frames(&mut snapshot);
         crate::serializer::serialize_document(&snapshot)
             .map_err(|e| HwpError::RenderError(e.to_string()))
@@ -2803,6 +2847,7 @@ impl DocumentCore {
         let grown_tables = self.grown_table_heights_with_storage(storage)?;
         let mut snapshot = storage.clone_document(&self.document)?;
         grown_table_heights::apply_grown_table_heights(&mut snapshot, &grown_tables);
+        self.write_page_starts(&mut snapshot, &self.shifted_page_starts());
         self.writeback_reflowed_table_frames_with_storage(&mut snapshot, storage)?;
         let _report = try_convert_if_hwpx_source(&mut snapshot, self.source_format, storage)?;
         super::header_footer_ops::lower_header_footer_field_markers(
@@ -2975,6 +3020,7 @@ impl DocumentCore {
         };
         let grown_tables = self.grown_table_heights();
         let grows_tables = grown_tables.iter().any(Option::is_some);
+        let page_starts = self.shifted_page_starts();
         // [#8302] rhwp 가 HWPX 에서 만든 HWP(`/RhwpHwpxOrigin`, `hwpx_lineage`)는 HWP5 계보가
         // 아니다. 그 IR 은 HWPX 저장 계약(줄 축·저장 줄 유무)을 그대로 지니므로 HWP5-origin
         // 마커를 붙이지 않고 HWPX 출처와 같은 경로로 내보낸다. 마커를 붙이면 다시 연 HWPX 가
@@ -2984,6 +3030,7 @@ impl DocumentCore {
         {
             let mut doc = self.document.clone();
             grown_table_heights::apply_grown_table_heights(&mut doc, &grown_tables);
+            self.write_page_starts(&mut doc, &page_starts);
             if let Some((_, value)) = doc
                 .hwpx_aux_entries
                 .iter_mut()
@@ -3012,6 +3059,7 @@ impl DocumentCore {
         {
             let mut doc = self.document.clone();
             grown_table_heights::apply_grown_table_heights(&mut doc, &grown_tables);
+            self.write_page_starts(&mut doc, &page_starts);
             if let Some((_, value)) = doc
                 .hwpx_aux_entries
                 .iter_mut()
@@ -3024,9 +3072,10 @@ impl DocumentCore {
             }
             lower_markers(&mut doc);
             serialize(&doc)
-        } else if grows_tables {
+        } else if grows_tables || !page_starts.is_empty() {
             let mut doc = self.document.clone();
             grown_table_heights::apply_grown_table_heights(&mut doc, &grown_tables);
+            self.write_page_starts(&mut doc, &page_starts);
             serialize(&doc)
         } else {
             serialize(&self.document)

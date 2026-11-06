@@ -4,7 +4,7 @@ mod column_width_contract_tests;
 use super::super::page_layout::PageLayoutInfo;
 use super::super::pagination::{ColumnContent, PageContent, PageItem};
 use super::text_measurement::estimate_text_width;
-use super::utils::{expand_numbering_format, numbering_format_to_number_format};
+use super::utils::expand_numbering_format;
 use super::*;
 use crate::model::image::Picture;
 use crate::model::page::{ColumnDef, PageDef};
@@ -115,9 +115,9 @@ fn note_separator_length_resolves_schema_sentinels_and_absolute_hwpunit() {
     assert!((note_separator_length_px(72_000, width, dpi) - width).abs() < 1e-9);
     assert_eq!(note_separator_length_px(0, width, dpi), 0.0);
 
-    // FootnoteArea가 실제 단 폭/시작점을 갖기 전에는 상대 sentinel을 넓히지 않는다.
+    // 실제 각주 프레임이 넘긴 폭에서 1/3·전체 너비 sentinel을 해석한다.
     assert!((footnote_separator_length_px(-3, width, dpi) - 200.0).abs() < 1e-9);
-    assert!((footnote_separator_length_px(-4, width, dpi) - 200.0).abs() < 1e-9);
+    assert!((footnote_separator_length_px(-4, width, dpi) - width).abs() < 1e-9);
 }
 
 #[test]
@@ -184,6 +184,7 @@ fn footnote_separator_caller_uses_absolute_hwpunit_width() {
         ..Default::default()
     }];
     let footnotes = vec![FootnoteRef {
+        column_index: 0,
         number: 1,
         source: FootnoteSource::Body {
             para_index: 0,
@@ -206,6 +207,7 @@ fn footnote_separator_caller_uses_absolute_hwpunit_width() {
         &ResolvedStyleSet::default(),
         &area,
         &shape,
+        &[0],
         &[],
     );
 
@@ -728,6 +730,7 @@ fn test_layout_with_composed_styles() {
         source_char_shapes: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
@@ -890,6 +893,7 @@ fn test_layout_multi_run_x_position() {
         source_char_shapes: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
@@ -1002,6 +1006,7 @@ fn test_resolved_to_text_style() {
         source_char_shapes: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
@@ -1051,6 +1056,7 @@ fn test_resolved_to_text_style_with_ratio() {
         source_char_shapes: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
@@ -1328,6 +1334,7 @@ fn test_layout_table_basic() {
     let styles = ResolvedStyleSet {
         section_tab_width_bits: Default::default(),
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         border_styles: vec![ResolvedBorderStyle::default()],
@@ -1634,7 +1641,7 @@ fn test_expand_numbering_format_digit() {
         heads: [NumberingHead {
             number_format: 0,
             ..Default::default()
-        }; 7],
+        }; 10],
         level_formats: [
             "^1.".to_string(),
             "^2.".to_string(),
@@ -1643,12 +1650,15 @@ fn test_expand_numbering_format_digit() {
             String::new(),
             String::new(),
             String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
         ],
         start_number: 0,
-        level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        level_start_numbers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         raw_para_heads: None,
     };
-    let counters = [3, 2, 1, 0, 0, 0, 0];
+    let counters = [3, 2, 1, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^1.",
         &counters,
@@ -1679,7 +1689,7 @@ fn test_expand_numbering_format_digit() {
 
 #[test]
 fn test_expand_numbering_format_hangul() {
-    let mut heads = [NumberingHead::default(); 7];
+    let mut heads = [NumberingHead::default(); 10];
     heads[1].number_format = 8; // HangulGaNaDa
     let numbering = Numbering {
         raw_data: None,
@@ -1692,12 +1702,15 @@ fn test_expand_numbering_format_hangul() {
             String::new(),
             String::new(),
             String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
         ],
         start_number: 0,
-        level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        level_start_numbers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         raw_para_heads: None,
     };
-    let counters = [1, 3, 0, 0, 0, 0, 0];
+    let counters = [1, 3, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^2.",
         &counters,
@@ -1715,7 +1728,7 @@ fn test_expand_numbering_format_zero_start_number_does_not_underflow() {
         heads: [NumberingHead {
             number_format: 0,
             ..Default::default()
-        }; 7],
+        }; 10],
         level_formats: [
             "^1.".to_string(),
             String::new(),
@@ -1724,12 +1737,15 @@ fn test_expand_numbering_format_zero_start_number_does_not_underflow() {
             String::new(),
             String::new(),
             String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
         ],
         start_number: 0,
-        level_start_numbers: [0, 1, 1, 1, 1, 1, 1],
+        level_start_numbers: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         raw_para_heads: None,
     };
-    let counters = [1, 0, 0, 0, 0, 0, 0];
+    let counters = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
     let result = expand_numbering_format(
         "^1.",
@@ -1750,7 +1766,7 @@ fn test_expand_numbering_format_level_path() {
         heads: [NumberingHead {
             number_format: 0,
             ..Default::default()
-        }; 7],
+        }; 10],
         level_formats: [
             "^N".to_string(),
             "^N".to_string(),
@@ -1759,14 +1775,17 @@ fn test_expand_numbering_format_level_path() {
             String::new(),
             String::new(),
             String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
         ],
         start_number: 0,
-        level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        level_start_numbers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         raw_para_heads: None,
     };
 
     // level 0: "1.", 카운터 전진 후 "2."
-    let counters = [1, 0, 0, 0, 0, 0, 0];
+    let counters = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1775,7 +1794,7 @@ fn test_expand_numbering_format_level_path() {
         0,
     );
     assert_eq!(result, "1.");
-    let counters = [2, 0, 0, 0, 0, 0, 0];
+    let counters = [2, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1786,7 +1805,7 @@ fn test_expand_numbering_format_level_path() {
     assert_eq!(result, "2.");
 
     // level 1: "1.1." → "1.4."
-    let counters = [1, 1, 0, 0, 0, 0, 0];
+    let counters = [1, 1, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1795,7 +1814,7 @@ fn test_expand_numbering_format_level_path() {
         1,
     );
     assert_eq!(result, "1.1.");
-    let counters = [1, 4, 0, 0, 0, 0, 0];
+    let counters = [1, 4, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1806,7 +1825,7 @@ fn test_expand_numbering_format_level_path() {
     assert_eq!(result, "1.4.");
 
     // ^n: 후행 마침표 없음
-    let counters = [2, 3, 0, 0, 0, 0, 0];
+    let counters = [2, 3, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^n",
         &counters,
@@ -1827,7 +1846,7 @@ fn test_expand_numbering_format_level_path() {
     assert_eq!(result, "[2.3]");
 
     // 상위 수준 카운터 0이면 시작번호로 폴백
-    let counters = [0, 2, 0, 0, 0, 0, 0];
+    let counters = [0, 2, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1841,7 +1860,7 @@ fn test_expand_numbering_format_level_path() {
 #[test]
 fn test_expand_numbering_format_level_path_mixed_format() {
     // 수준별 number_format 혼합: L1=Digit, L2=HangulGaNaDa → "1.가."
-    let mut heads = [NumberingHead::default(); 7];
+    let mut heads = [NumberingHead::default(); 10];
     heads[1].number_format = 8; // HangulGaNaDa
     let numbering = Numbering {
         raw_data: None,
@@ -1854,12 +1873,15 @@ fn test_expand_numbering_format_level_path_mixed_format() {
             String::new(),
             String::new(),
             String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
         ],
         start_number: 0,
-        level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        level_start_numbers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         raw_para_heads: None,
     };
-    let counters = [1, 1, 0, 0, 0, 0, 0];
+    let counters = [1, 1, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1872,27 +1894,12 @@ fn test_expand_numbering_format_level_path_mixed_format() {
 
 #[test]
 fn test_numbering_format_to_number_format() {
-    assert_eq!(numbering_format_to_number_format(10), NumFmt::HangulJamo);
-    assert!(matches!(
-        numbering_format_to_number_format(0),
-        NumFmt::Digit
-    ));
-    assert!(matches!(
-        numbering_format_to_number_format(1),
-        NumFmt::CircledDigit
-    ));
-    assert!(matches!(
-        numbering_format_to_number_format(2),
-        NumFmt::RomanUpper
-    ));
-    assert!(matches!(
-        numbering_format_to_number_format(8),
-        NumFmt::HangulGaNaDa
-    ));
-    assert!(matches!(
-        numbering_format_to_number_format(255),
-        NumFmt::Digit
-    ));
+    assert_eq!(NumFmt::from_hwp_format(10), NumFmt::HangulJamo);
+    assert!(matches!(NumFmt::from_hwp_format(0), NumFmt::Digit));
+    assert!(matches!(NumFmt::from_hwp_format(1), NumFmt::CircledDigit));
+    assert!(matches!(NumFmt::from_hwp_format(2), NumFmt::RomanUpper));
+    assert!(matches!(NumFmt::from_hwp_format(8), NumFmt::HangulGaNaDa));
+    assert!(matches!(NumFmt::from_hwp_format(255), NumFmt::Digit));
 }
 
 // =====================================================================
@@ -2084,6 +2091,7 @@ fn test_tac_leading_width_block_table_full_line() {
     let styles = ResolvedStyleSet {
         section_tab_width_bits: Default::default(),
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
@@ -2184,6 +2192,7 @@ fn test_tac_leading_width_inline_table_partial() {
     let styles = ResolvedStyleSet {
         section_tab_width_bits: Default::default(),
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
@@ -2995,6 +3004,7 @@ fn page_bg_color_and_image_present(
     let styles = ResolvedStyleSet {
         section_tab_width_bits: Default::default(),
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         border_styles: vec![ResolvedBorderStyle {

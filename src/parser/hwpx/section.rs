@@ -493,6 +493,7 @@ fn parse_grid(e: &quick_xml::events::BytesStart, sec_def: &mut SectionDef) {
         match attr.key.as_ref().as_bytes() {
             b"lineGrid" => sec_def.line_grid = parse_i32(&attr) as i16,
             b"charGrid" => sec_def.char_grid = parse_i32(&attr) as i16,
+            b"wonggojiFormat" => sec_def.set_wonggoji_format(parse_i32(&attr) != 0),
             _ => {}
         }
     }
@@ -2158,7 +2159,7 @@ fn read_text_content(reader: &mut Reader<&[u8]>) -> Result<String, HwpxError> {
         .collect())
 }
 
-fn decode_xml_general_ref(r: &BytesRef<'_>) -> String {
+pub(crate) fn decode_xml_general_ref(r: &BytesRef<'_>) -> String {
     if let Ok(Some(ch)) = r.resolve_char_ref() {
         return ch.to_string();
     }
@@ -5447,6 +5448,16 @@ fn cell_text_direction_from_hwpx(value: &str) -> u8 {
     }
 }
 
+/// 쪽 번호·자동 번호의 번호 모양 이름 → 표 134 코드. 문단 번호(표 41)와 같은 코드·이름을
+/// 쓴다. `HANGUL`·`HANJA`는 이전 rhwp가 가나다·一二三에 쓰던 이름이라 그 뜻으로 읽는다.
+fn number_type_code(value: &str) -> u8 {
+    match value {
+        "HANGUL" => 8,
+        "HANJA" => 13,
+        _ => super::header::parse_numbering_format_code(value),
+    }
+}
+
 fn parse_page_num_attrs(e: &quick_xml::events::BytesStart) -> PageNumberPos {
     let mut pn = PageNumberPos::default();
     for attr in e.attributes().flatten() {
@@ -5468,19 +5479,7 @@ fn parse_page_num_attrs(e: &quick_xml::events::BytesStart) -> PageNumberPos {
                 };
             }
             b"formatType" => {
-                pn.format = match attr_str(&attr).as_str() {
-                    "DIGIT" => 0,
-                    // [#XXXX] 스펙 표기는 "CIRCLED_DIGIT"(NumberType1). 과거 오탈자
-                    // "CIRCLE_DIGIT"로 저장된 한컴 실물 파일과의 호환을 위해 둘 다 인식한다.
-                    "CIRCLED_DIGIT" | "CIRCLE_DIGIT" => 1,
-                    "ROMAN_CAPITAL" => 2,
-                    "ROMAN_SMALL" => 3,
-                    "LATIN_CAPITAL" => 4,
-                    "LATIN_SMALL" => 5,
-                    "HANGUL" => 6,
-                    "HANJA" => 7,
-                    _ => 0,
-                };
+                pn.format = number_type_code(&attr_str(&attr));
             }
             // [#7633] 줄표(측면) 문자. 한/글은 `""`·공백·속성 없음을 줄표 없는 쪽 번호로,
             // `"-"` 만 `- 1 -` 로 그린다. 빈 값을 `'-'` 로 채우면 줄표가 새로 생긴다.
@@ -6089,25 +6088,9 @@ fn parse_ctrl_autonum(
                             // 과거 parse_u8 은 문자열을 0으로만 떨궈 DIGIT 외 형식을 잃었다.
                             // pageNum formatType 과 동일한 문자열→코드 매핑을 사용한다.
                             b"type" => {
-                                an.format = match attr_str(&attr).as_str() {
-                                    "DIGIT" => 0,
-                                    // [#2957] 실제 한컴 스펙 표기는 "CIRCLED_DIGIT" (pageNum
-                                    // formatType 의 "CIRCLE_DIGIT" 와 다름). 구값도 겸용 인식.
-                                    "CIRCLE_DIGIT" | "CIRCLED_DIGIT" => 1,
-                                    "ROMAN_CAPITAL" => 2,
-                                    "ROMAN_SMALL" => 3,
-                                    "LATIN_CAPITAL" => 4,
-                                    "LATIN_SMALL" => 5,
-                                    "HANGUL" => 6,
-                                    "HANJA" => 7,
-                                    // [#6872] 사용자 기호. 종전에는 `_ => 0` 에 걸려
-                                    // DIGIT 으로 떨어졌고, 왕복 저장본의 각주 번호
-                                    // 모양이 사용자 기호에서 숫자로 바뀌었다.
-                                    // 코드는 `NumberFormat::UserChar` 의 서수(18)를
-                                    // 그대로 쓴다 — pageNum 이 쓰는 0..7 과 겹치지 않는다.
-                                    "USER_CHAR" => 18,
-                                    _ => 0,
-                                };
+                                // 모델의 순서값이 아니라 HWP의 실제 번호 코드로 통일한다.
+                                // USER_CHAR=0x81이며 본문 참조·접두·왕복 저장이 함께 쓴다.
+                                an.format = number_type_code(&attr_str(&attr));
                             }
                             b"userChar" => {
                                 let s = attr_str(&attr);
@@ -6690,6 +6673,14 @@ fn parse_compose(
                     "SHAPE_REVERSAL_RECTANGLE" => 4,
                     "SHAPE_TRIANGLE" => 5,
                     "SHAPE_REVERSAL_TIRANGLE" => 6,
+                    // 한컴 12.30이 저장하는 나머지 일곱 모양. 모르는 이름은 글자끼리 겹치기다.
+                    "SHAPE_LIGHT" => 7,
+                    "SHAPE_RHOMBUS" => 8,
+                    "SHAPE_REVERSAL_RHOMBUS" => 9,
+                    "SHAPE_ROUNDED_RECTANGLE" => 10,
+                    "SHAPE_EMPTY_CIRCULATE_TRIANGLE" => 11,
+                    "SHAPE_THIN_CIRCULATE_TRIANGLE" => 12,
+                    "SHAPE_THICK_CIRCULATE_TRIANGLE" => 13,
                     _ => 0,
                 };
             }
@@ -6796,10 +6787,13 @@ fn parse_dutmal(
                 };
             }
             b"align" => {
+                // HWP `tdut`과 같은 문단 정렬 번호로 읽어 두 형식 사이에서 값이 바뀌지 않게 한다.
                 ruby.align = match attr_str(&attr).as_str() {
-                    "LEFT" => 0,
-                    "RIGHT" => 1,
-                    "CENTER" => 2,
+                    "LEFT" => 1,
+                    "RIGHT" => 2,
+                    "CENTER" => 3,
+                    "DISTRIBUTE" => 4,
+                    "DISTRIBUTE_SPACE" => 5,
                     _ => 0,
                 };
             }

@@ -1,3 +1,20 @@
+//! 관계형 및 고정형 회귀: 겹침·주석 슬롯의 소유·연속성·왕복 보존과 독립 Print 첫 쪽 좌표 ±2 CSSpx.
+//! 주석 갱신: 2026-11-06T08:25:01+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 5172f2d55c73b2ed33d4d3657d81e769bc9004c2, 작성 2026-11-06T08:13:58+09:00, 커밋 2026-11-06T08:13:58+09:00.
+//! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
+//! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
+//! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
+//! nonbmp-endnote-false.hwp (8616-existing-caret-false-hwp): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! 고정 1쪽: Native 100.0%, fresh WASM 100.0%; 같은 영역의 독립 Print 확대 판독 완료.
+//! nonbmp-endnote-false.hwpx (8616-existing-caret-false-hwpx): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! 고정 1쪽: Native 100.0%, fresh WASM 100.0%; 같은 영역의 독립 Print 확대 판독 완료.
+//! nonbmp-endnote-true.hwp (8616-existing-caret-true-hwp): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! 고정 1쪽: Native 100.0%, fresh WASM 100.0%; 같은 영역의 독립 Print 확대 판독 완료.
+//! nonbmp-endnote-true.hwpx (8616-existing-caret-true-hwpx): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! 고정 1쪽: Native 100.0%, fresh WASM 100.0%; 같은 영역의 독립 Print 확대 판독 완료.
+//! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.md.
+//! 원본 형식 계약:
 //! 글자겹침은 payload 글자 수와 무관하게 논리 캐럿 한 칸이다.
 //! 물리 treatAsChar나 HWP UTF-16 원문 자리를 바꾸지 않고 공개 입력·복사 축을 맞춘다.
 
@@ -77,7 +94,7 @@ fn slots(p: &Paragraph) -> Vec<(&'static str, usize)> {
 }
 
 fn variants(make: impl Fn() -> HwpDocument) -> Vec<(&'static str, HwpDocument)> {
-    let mut doc = make();
+    let doc = make();
     let hwp = doc.export_hwp_native().unwrap();
     let hwpx = doc.export_hwpx_native().unwrap();
     vec![
@@ -112,7 +129,12 @@ fn mixed_overlap_note_uses_one_axis_in_public_getters_and_both_formats() {
         let Control::CharOverlap(overlap) = &p.controls[0] else {
             panic!("겹침 원문 누락: {format}");
         };
-        assert_eq!(overlap.chars, ['가', '나'], "두 glyph도 한 슬롯: {format}");
+        // HWP 원문 배열은 한컴처럼 테두리 글자(◯)를 앞에 둔다. 친 글은 같다.
+        assert_eq!(
+            rhwp::renderer::composer::char_overlap_plain_text(overlap),
+            "가나",
+            "두 glyph도 한 슬롯: {format}"
+        );
         assert_eq!(overlap.border_type, 1, "{format}");
         assert!(!p.controls[0].is_treat_as_char_object(), "{format}");
     }

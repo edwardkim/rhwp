@@ -328,16 +328,9 @@ fn note_separator_length_px(raw: i32, available_width: f64, dpi: f64) -> f64 {
     resolved.clamp(0.0, available_width)
 }
 
-/// 현재 FootnoteArea는 다단 각주도 body 전체 폭으로 합쳐 그린다.
-///
-/// 고정 길이(-1/-2)와 양수 HWPUNIT은 그 구조와 무관하게 해석할 수 있지만,
-/// 상대 길이(-3/-4)는 실제 소유 단의 폭/시작점을 알아야 한다. 다단 placement를
-/// 함께 고치기 전까지 상대 sentinel은 기존 1/3 폭을 보존해 범위를 넓히지 않는다.
+/// 각주 프레임이 소유 단 또는 통합 본문의 실제 폭을 전달한다.
 fn footnote_separator_length_px(raw: i32, area_width: f64, dpi: f64) -> f64 {
-    match raw {
-        -3 | -4 => area_width.max(0.0) / 3.0,
-        _ => note_separator_length_px(raw, area_width, dpi),
-    }
+    note_separator_length_px(raw, area_width, dpi)
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -2921,17 +2914,17 @@ fn is_tolerated_endnote_column_bottom_bleed_with_limit(
 pub(crate) struct NumberingState {
     /// 현재 활성 numbering_id
     current_id: Option<u16>,
-    /// 수준별 카운터 (0~6 → 1~7수준)
-    counters: [u32; 7],
+    /// 수준별 카운터 (0~9 → 1~10수준)
+    counters: [u32; crate::model::style::NUMBERING_LEVELS],
     /// numbering_id별 카운터 히스토리 ("이전 번호 목록에 이어" 지원)
-    history: std::collections::HashMap<u16, [u32; 7]>,
+    history: std::collections::HashMap<u16, [u32; crate::model::style::NUMBERING_LEVELS]>,
 }
 
 impl NumberingState {
     /// 카운터를 초기 상태로 리셋
     fn reset(&mut self) {
         self.current_id = None;
-        self.counters = [0; 7];
+        self.counters = [0; crate::model::style::NUMBERING_LEVELS];
         self.history.clear();
     }
 
@@ -2941,9 +2934,9 @@ impl NumberingState {
         numbering_id: u16,
         level: u8,
         restart: Option<crate::model::paragraph::NumberingRestart>,
-    ) -> [u32; 7] {
+    ) -> [u32; crate::model::style::NUMBERING_LEVELS] {
         use crate::model::paragraph::NumberingRestart;
-        let level = (level as usize).min(6);
+        let level = (level as usize).min(crate::model::style::NUMBERING_LEVELS - 1);
 
         // numbering_id가 변경되면 현재 카운터를 히스토리에 저장하고
         // 새 numbering_id의 히스토리에서 복원 (없으면 리셋)
@@ -2961,7 +2954,7 @@ impl NumberingState {
             } else {
                 // 처음 등장하는 id → 상위 레벨 카운터 상속, 현재 레벨 이하 리셋
                 let prev = self.counters;
-                self.counters = [0; 7];
+                self.counters = [0; crate::model::style::NUMBERING_LEVELS];
                 self.counters[..level].copy_from_slice(&prev[..level]);
             }
             self.current_id = Some(numbering_id);
@@ -2976,9 +2969,7 @@ impl NumberingState {
                 // 해당 수준의 카운터를 지정 값 - 1로 설정 (advance에서 +1 하므로)
                 self.counters[level] = start.saturating_sub(1);
                 // 하위 수준 리셋
-                for i in (level + 1)..7 {
-                    self.counters[i] = 0;
-                }
+                self.counters[level + 1..].fill(0);
             }
             None => {
                 // 기본: 앞 번호 목록에 이어
@@ -2989,9 +2980,7 @@ impl NumberingState {
         self.counters[level] += 1;
 
         // 하위 수준 리셋
-        for i in (level + 1)..7 {
-            self.counters[i] = 0;
-        }
+        self.counters[level + 1..].fill(0);
 
         self.counters
     }
@@ -3909,10 +3898,12 @@ mod column_separators;
 mod fill_background;
 mod fixed_textbox_flow;
 mod floating_equation;
+mod footnote_frames;
 mod header_footer_layout;
 mod hidden_paragraph_marker;
 mod nested_table_origin;
 mod note_reference;
+mod note_separator;
 mod paragraph_border;
 mod paragraph_layout;
 mod picture_border;
@@ -4963,7 +4954,7 @@ impl LayoutEngine {
 
         // 단별 콘텐츠 레이아웃
         let mut paper_images: Vec<RenderNode> = Vec::new();
-        let body_content_bottom = self.build_columns(
+        let body_flow_bottoms = self.build_columns(
             tree.frame_mut(),
             &mut body_node,
             &mut paper_images,
@@ -5136,7 +5127,7 @@ impl LayoutEngine {
             styles,
             layout,
             bin_data_content,
-            body_content_bottom,
+            &body_flow_bottoms,
         );
 
         // 꼬리말 + 쪽 번호 (감추기 설정 시 건너뜀)
@@ -5718,11 +5709,39 @@ impl LayoutEngine {
             footer_area.y + footer_area.height / 2.0
         };
         // 글상자 상단과 기준선을 혼용하지 않고 아래끝에서 기준선 여유를 뺀다.
-        // 독립 한컴 Print의 HFT Type3 글상자는 em=1000, yMin=-200이다.
-        // TTF의 기존 기준선 여유를 HFT에도 쓰면 자동 번호가 약 0.133em 위에 놓인다.
-        // 미수록 TTF는 기존 여유를 유지한다. SFNT 하강 메트릭이 있는 경우
-        // 측정 원본의 값을 쓰며 출력용 대체 face의 메트릭으로 바꾸지 않는다.
-        let descent = if source_hft {
+        band_bottom - Self::page_number_descent(style, source_hft, source_descent_em)
+    }
+
+    /// 위쪽 자동 쪽번호의 최종 글자 기준선이다. 꼬리말 쪽의 거울이다.
+    /// 한컴 Print는 글자 칸(1em)의 위끝을 머리말 밴드의 위끝(위쪽 여백 선)에 두고,
+    /// 머리말 밴드가 없으면 위쪽 여백의 중앙에 둔다. 위쪽 10mm·머리말 30mm는 36.12pt,
+    /// 위쪽 20mm·머리말 15mm는 64.44pt, 위쪽 25mm·머리말 0mm는 43.20pt(10pt 함초롬바탕)다.
+    fn header_page_number_y(
+        header_area: &LayoutRect,
+        style: &TextStyle,
+        source_hft: bool,
+        source_descent_em: Option<f64>,
+    ) -> f64 {
+        let band_top = if header_area.height > 1e-6 {
+            header_area.y
+        } else {
+            header_area.y / 2.0
+        };
+        band_top + style.font_size - Self::page_number_descent(style, source_hft, source_descent_em)
+    }
+
+    /// 자동 쪽번호 글자 칸의 기준선 아래 여유.
+    /// 독립 한컴 Print의 HFT Type3 글상자는 em=1000, yMin=-200이다.
+    /// TTF의 기존 기준선 여유를 HFT에도 쓰면 자동 번호가 약 0.133em 위에 놓인다.
+    /// 미수록 TTF는 기존 여유를 유지한다. SFNT 하강 메트릭이 있는 경우
+    /// 측정 원본의 값을 쓰며 출력용 대체 face의 메트릭으로 바꾸지 않는다.
+    fn page_number_descent(
+        style: &TextStyle,
+        source_hft: bool,
+        source_descent_em: Option<f64>,
+    ) -> f64 {
+        let font_size = style.font_size;
+        if source_hft {
             font_size * 0.2
         } else {
             let face = super::style_resolver::primary_font_name(
@@ -5734,8 +5753,7 @@ impl LayoutEngine {
             let descent_em = source_descent_em
                 .or_else(|| font_metrics_data::win_descent_em(face, style.bold, style.italic));
             font_size * descent_em.unwrap_or(1.0 / 3.0)
-        };
-        band_bottom - descent
+        }
     }
 
     fn page_number_baseline_y(
@@ -6511,56 +6529,6 @@ impl LayoutEngine {
         footer_node
     }
 
-    /// 각주 영역 노드를 생성하여 tree에 추가한다.
-    #[allow(clippy::too_many_arguments)]
-    fn build_footnote_area(
-        &self,
-        tree: &mut PageRenderTree,
-        page_content: &PageContent,
-        paragraphs: &[Paragraph],
-        footnote_shape: &FootnoteShape,
-        styles: &ResolvedStyleSet,
-        layout: &PageLayoutInfo,
-        bin_data_content: &[BinDataContent],
-        body_content_bottom: f64,
-    ) {
-        let mut footnote_layout = layout.clone();
-        if !page_content.footnotes.is_empty() {
-            let fn_height = self.estimate_footnote_area_height(
-                &page_content.footnotes,
-                paragraphs,
-                footnote_shape,
-                styles,
-                layout.body_area.width,
-            );
-            footnote_layout.update_footnote_area(fn_height);
-            if footnote_shape.print_inline_after_text {
-                footnote_layout.footnote_area.y = body_content_bottom;
-            }
-        }
-
-        if !page_content.footnotes.is_empty() {
-            let fn_id = tree.next_id();
-            let mut fn_node = RenderNode::new(
-                fn_id,
-                RenderNodeType::FootnoteArea,
-                layout_rect_to_bbox(&footnote_layout.footnote_area),
-            );
-
-            self.layout_footnote_area(
-                tree.frame_mut(),
-                &mut fn_node,
-                &page_content.footnotes,
-                paragraphs,
-                styles,
-                &footnote_layout.footnote_area,
-                footnote_shape,
-                bin_data_content,
-            );
-            tree.root.children.push(fn_node);
-        }
-    }
-
     /// 쪽 번호를 렌더링한다.
     fn build_page_number(
         &self,
@@ -6587,6 +6555,7 @@ impl LayoutEngine {
                 pnp.prefix_char,
                 pnp.suffix_char,
                 pnp.dash_char,
+                pnp.user_symbol,
             );
             let target_area = match pnp.position {
                 1..=3 | 7 | 9 => &layout.header_area,
@@ -6665,8 +6634,7 @@ impl LayoutEngine {
                 _ => target_area.x + (target_area.width - text_width) / 2.0,
             };
 
-            // 자동 꼬리말 쪽번호는 아래쪽 여백 선을 기준으로 배치한다.
-            // 머리말 위치의 기존 실제 글자 배치는 이번 보정 범위 밖이다.
+            // 자동 쪽번호는 아래쪽 여백 선·위쪽 여백 선을 기준으로 배치한다.
             let border_drawn = !page_content
                 .page_hide
                 .as_ref()
@@ -6682,7 +6650,12 @@ impl LayoutEngine {
                     source_descent_em,
                 )
             } else {
-                target_area.y + target_area.height / 2.0 + font_size / 3.0
+                Self::header_page_number_y(
+                    target_area,
+                    &page_num_style,
+                    styles.page_number_font_is_hft,
+                    source_descent_em,
+                )
             };
             // 본문 기준 테두리 경로도 공통 쪽번호 기준선을 사용한다.
             // 종이 기준 테두리·감추기 여부로 별도의 글자 원점을 만들지 않는다.
@@ -6699,9 +6672,9 @@ impl LayoutEngine {
             } else {
                 footer_center
             };
-            // 꼬리말의 줄과 글자 상자는 같은 최종 기준선을 공유한다.
+            // 줄과 글자 상자는 같은 최종 기준선을 공유한다.
             // 글꼴 이름이나 각주 유무에 따른 임시 이동은 적용하지 않는다.
-            let run_y = if is_footer { y - font_size } else { y };
+            let run_y = y - font_size;
 
             let line_id = tree.next_id();
             let mut line_node = RenderNode::new(
@@ -6760,8 +6733,8 @@ impl LayoutEngine {
         layout: &PageLayoutInfo,
         outline_numbering_id: u16,
         wrap_around_paras: &[super::pagination::WrapAroundPara],
-    ) -> f64 {
-        let mut body_flow_bottom = layout.body_area.y;
+    ) -> footnote_frames::BodyFlowBottoms {
+        let mut body_flow_bottoms = footnote_frames::BodyFlowBottoms::new(layout.body_area.y);
         let mut prev_zone_y_end: f64 = 0.0;
         let mut current_zone_start_y: f64 = 0.0;
         let mut last_zone_y_offset: f64 = -1.0;
@@ -7058,9 +7031,7 @@ impl LayoutEngine {
                     self.dpi,
                 ));
             // 수용 판정과 같은 저장 내용 하단일 때만 새 텍스트 영역과 겹치는 뒤 여백을 제외한다.
-            if body_content_bottom.is_finite() {
-                body_flow_bottom = body_flow_bottom.max(body_content_bottom);
-            }
+            body_flow_bottoms.record(col_content.column_index, body_content_bottom);
             let closing_content_bottom = (blank_band_tail.is_none() && apply_trailing_ls_subtract)
                 .then(|| {
                     let PageItem::FullParagraph { para_index } = col_content.items.last()? else {
@@ -7198,7 +7169,7 @@ impl LayoutEngine {
                 prev_zone_sep_y_end,
             );
         }
-        body_flow_bottom
+        body_flow_bottoms
     }
 
     /// [Task #866 v2 Stage 3] 단일 zone 의 단 구분선을 emit.

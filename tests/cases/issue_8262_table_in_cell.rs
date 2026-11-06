@@ -1,3 +1,14 @@
+//! 관계형 회귀: 셀 안 중첩 표의 포함·문단 순서·속성·HWPUNIT 폭. 절대 배치 좌표를 고정하지 않는다.
+//! 주석 갱신: 2026-11-06T08:25:01+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 5172f2d55c73b2ed33d4d3657d81e769bc9004c2, 작성 2026-11-06T08:13:58+09:00, 커밋 2026-11-06T08:13:58+09:00.
+//! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
+//! Print 프로필·96 DPI·PDFium·색상 경계 보정 전 2px raw. 독립 PDF와 전체 쪽수가 같다.
+//! 대응 실문서·API 저장본의 전쪽 결과이며 입력 개입·합성 분기의 전수 시각 측정으로 주장하지 않는다.
+//! nested-empty-current.hwp (rebase-empty-nested-hwp): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! nested-empty-current.hwpx (rebase-empty-nested-hwpx): 전 1쪽, Native 최저 100.0%, fresh WASM 최저 100.0%.
+//! 원본·PDF SHA, 명령·원본별 전쪽 TSV·정밀 raw·대표 PNG:
+//! mydocs/pr/assets/semanticist21_20261105/validation-r6/README.md 및 measurements.md.
+//! 원본 형식 계약:
 //! 관계형 및 고정형 회귀: [#8262] 표 칸 안 표의 포함·문단 순서와 원본 속성·HWPUNIT 폭.
 //! 주석 갱신: 2026-11-01T17:04:07+09:00 (Asia/Seoul). 절대 px 위치를 고정하지 않는다.
 //! 직전 파일 변경: 6135bc2135b8366839f02bbada3df5fe33b13963, 2026-11-01T15:58:43+09:00.
@@ -166,7 +177,7 @@ fn create_table_in_empty_cell_matches_hancom() {
     );
 
     let json = doc
-        .create_table_in_cell_by_path_native(0, 0, &[(2, 4, 0)], 0, 2, 2, None, None)
+        .create_table_in_cell_by_path_native(0, 0, &[(2, 4, 0)], 0, 2, 2, None, None, true)
         .unwrap();
     let v: serde_json::Value = serde_json::from_str(&json).unwrap();
     assert_eq!(v["ok"], true);
@@ -233,7 +244,7 @@ fn create_table_between_characters_in_cell_matches_hancom() {
     // 바깥 칸 폭 20,977 → 안쪽 19,957 → −566 = 19,391 → 칸당 9,695 (한/글과 같음)
     let mut doc = doc_with_text_in_first_cell();
     let json = doc
-        .create_table_in_cell_by_path_native(0, 0, &[(2, 0, 0)], 2, 2, 2, None, None)
+        .create_table_in_cell_by_path_native(0, 0, &[(2, 0, 0)], 2, 2, 2, None, None, true)
         .unwrap();
     let v: serde_json::Value = serde_json::from_str(&json).unwrap();
     assert_eq!(v["cellParaIdx"], 1, "앞쪽 `가나` 가 남아 표는 둘째 문단");
@@ -254,7 +265,7 @@ fn create_table_between_characters_in_cell_matches_hancom() {
 fn create_table_at_cell_text_start_uses_original_paragraph() {
     // 앞쪽이 비면 따로 문단을 두지 않는다 — 원래 문단이 표 문단이 된다.
     let mut doc = doc_with_text_in_first_cell();
-    doc.create_table_in_cell_by_path_native(0, 0, &[(2, 0, 0)], 0, 1, 1, None, None)
+    doc.create_table_in_cell_by_path_native(0, 0, &[(2, 0, 0)], 0, 1, 1, None, None, true)
         .unwrap();
     assert_eq!(cell0_texts(&doc), vec!["<표>", "가나다라"]);
 }
@@ -263,7 +274,7 @@ fn create_table_at_cell_text_start_uses_original_paragraph() {
 fn create_table_at_cell_text_end_adds_empty_paragraph_after() {
     // 뒤쪽은 비어도 새 문단으로 내린다.
     let mut doc = doc_with_text_in_first_cell();
-    doc.create_table_in_cell_by_path_native(0, 0, &[(2, 0, 0)], 4, 1, 1, None, None)
+    doc.create_table_in_cell_by_path_native(0, 0, &[(2, 0, 0)], 4, 1, 1, None, None, true)
         .unwrap();
     assert_eq!(cell0_texts(&doc), vec!["가나다라", "<표>", ""]);
 }
@@ -273,10 +284,20 @@ fn create_table_in_nested_cell_by_path() {
     // 깊이 2: 3×3 가운데 칸의 2×2, 그 첫 칸에 다시 2×2.
     // 안쪽 칸 폭 6,199 → 안쪽 5,179 → −566 = 4,613 → 칸당 2,306
     let mut doc = doc_with_body_table(3, 3);
-    doc.create_table_in_cell_by_path_native(0, 0, &[(2, 4, 0)], 0, 2, 2, None, None)
+    doc.create_table_in_cell_by_path_native(0, 0, &[(2, 4, 0)], 0, 2, 2, None, None, true)
         .unwrap();
     let json = doc
-        .create_table_in_cell_by_path_native(0, 0, &[(2, 4, 0), (0, 0, 0)], 0, 2, 2, None, None)
+        .create_table_in_cell_by_path_native(
+            0,
+            0,
+            &[(2, 4, 0), (0, 0, 0)],
+            0,
+            2,
+            2,
+            None,
+            None,
+            true,
+        )
         .unwrap();
     let v: serde_json::Value = serde_json::from_str(&json).unwrap();
     assert_eq!(v["cellPath"].as_array().map(|a| a.len()), Some(3));
@@ -295,22 +316,22 @@ fn create_table_in_cell_rejects_bad_input_without_change() {
 
     // 칸 번호 범위 밖
     assert!(doc
-        .create_table_in_cell_by_path_native(0, 0, &[(2, 9, 0)], 0, 2, 2, None, None)
+        .create_table_in_cell_by_path_native(0, 0, &[(2, 9, 0)], 0, 2, 2, None, None, true)
         .is_err());
     // 칸 문단 번호 범위 밖
     assert!(doc
-        .create_table_in_cell_by_path_native(0, 0, &[(2, 0, 5)], 0, 2, 2, None, None)
+        .create_table_in_cell_by_path_native(0, 0, &[(2, 0, 5)], 0, 2, 2, None, None, true)
         .is_err());
     // 글자 수보다 큰 offset
     assert!(doc
-        .create_table_in_cell_by_path_native(0, 0, &[(2, 0, 0)], 5, 2, 2, None, None)
+        .create_table_in_cell_by_path_native(0, 0, &[(2, 0, 0)], 5, 2, 2, None, None, true)
         .is_err());
     // 빈 경로 · 0 행
     assert!(doc
-        .create_table_in_cell_by_path_native(0, 0, &[], 0, 2, 2, None, None)
+        .create_table_in_cell_by_path_native(0, 0, &[], 0, 2, 2, None, None, true)
         .is_err());
     assert!(doc
-        .create_table_in_cell_by_path_native(0, 0, &[(2, 0, 0)], 0, 0, 2, None, None)
+        .create_table_in_cell_by_path_native(0, 0, &[(2, 0, 0)], 0, 0, 2, None, None, true)
         .is_err());
 
     assert_eq!(
@@ -324,7 +345,7 @@ fn create_table_in_cell_rejects_bad_input_without_change() {
 #[test]
 fn create_table_in_cell_survives_hwp_and_hwpx_roundtrip() {
     let mut doc = doc_with_text_in_first_cell();
-    doc.create_table_in_cell_by_path_native(0, 0, &[(2, 0, 0)], 2, 2, 2, None, None)
+    doc.create_table_in_cell_by_path_native(0, 0, &[(2, 0, 0)], 2, 2, 2, None, None, true)
         .unwrap();
 
     // 다시 읽은 `table.attr` 는 한/글이 저장한 같은 형식의 문서를 읽었을 때와 같아야 한다.

@@ -44,7 +44,7 @@ impl TypesetEngine {
                     refs,
                     paragraphs,
                     styles,
-                    st.layout.body_area.width,
+                    st.footnote_area_width(),
                     st.footnote_separator_overhead,
                     st.footnote_between_notes_margin,
                 );
@@ -72,6 +72,7 @@ impl TypesetEngine {
             .filter(|split| split.force_next_page && st.col_count == 1);
         if let Some(split) = split {
             st.record_current_footnote(FootnoteRef {
+                column_index: 0,
                 number: footnote.number,
                 source: source.clone(),
                 fragment: Some(split.prefix),
@@ -79,6 +80,7 @@ impl TypesetEngine {
             st.add_footnote_fragment_height(split.prefix_height, split.prefix.draw_separator);
             st.force_new_page();
             st.record_current_footnote(FootnoteRef {
+                column_index: 0,
                 number: footnote.number,
                 source,
                 fragment: Some(split.suffix),
@@ -89,6 +91,7 @@ impl TypesetEngine {
         }
 
         st.record_current_footnote(FootnoteRef {
+            column_index: 0,
             number: footnote.number,
             source,
             fragment: None,
@@ -125,6 +128,7 @@ impl TypesetEngine {
         // admit another note over an already accepted table fragment.
         let body_bottom_queue = st.col_count == 1;
         let note_ref = |note: &TableCellFootnote, fragment| FootnoteRef {
+            column_index: 0,
             number: note.number,
             source: FootnoteSource::table_cell_path(para_idx, ctrl_idx, &note.cell_path),
             fragment,
@@ -142,7 +146,7 @@ impl TypesetEngine {
                 &refs,
                 paragraphs_all,
                 styles,
-                st.layout.body_area.width,
+                st.footnote_area_width(),
                 st.footnote_separator_overhead,
                 st.footnote_between_notes_margin,
             )
@@ -186,6 +190,7 @@ impl TypesetEngine {
                         fragment: Option<FootnoteFragment>,
                         content_height: f64| {
             st.record_current_footnote(FootnoteRef {
+                column_index: 0,
                 number: note.number,
                 source: FootnoteSource::table_cell_path(para_idx, ctrl_idx, &note.cell_path),
                 fragment,

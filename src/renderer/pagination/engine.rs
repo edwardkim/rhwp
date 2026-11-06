@@ -439,6 +439,7 @@ impl Paginator {
             footnote_between_notes_margin,
             footnote_safety_margin,
         );
+        st.footnote_placement = footnote_shape.placement;
 
         // 비-TAC 표 뒤의 ghost 빈 문단 스킵.
         // HWP에서 비-TAC 표의 LINE_SEG 높이는 실제 표 높이보다 작으며,
@@ -2074,6 +2075,7 @@ impl Paginator {
                                         storage.push(
                                             &mut page.footnotes,
                                             FootnoteRef {
+                                                column_index: st.current_column,
                                                 number: fn_ctrl.number,
                                                 source: FootnoteSource::ShapeTextBox {
                                                     para_index: para_idx,
@@ -2135,6 +2137,7 @@ impl Paginator {
                         storage.push(
                             &mut page.footnotes,
                             FootnoteRef {
+                                column_index: st.current_column,
                                 number: fn_ctrl.number,
                                 source: FootnoteSource::Body {
                                     para_index: para_idx,
@@ -2477,6 +2480,7 @@ impl Paginator {
                 storage.push(
                     &mut page.footnotes,
                     FootnoteRef {
+                        column_index: st.current_column,
                         number: fn_ctrl.number,
                         source: FootnoteSource::table_cell_path_with_storage(
                             para_idx, ctrl_idx, &cell_path, storage,

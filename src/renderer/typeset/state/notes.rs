@@ -51,6 +51,9 @@ impl TypesetState {
         height: f64,
         draw_separator: bool,
     ) {
+        if self.add_scoped_footnote_height(height, draw_separator) {
+            return;
+        }
         // [#2097 진단] 각주 예약 시점 — 동작 불변.
         if std::env::var("RHWP_DIAG_FN").is_ok() {
             eprintln!(
@@ -225,6 +228,7 @@ impl TypesetState {
         };
         let existing_height = page.layout.footnote_area.height.max(0.0);
         page.footnotes.push(FootnoteRef {
+            column_index: 0,
             number,
             source,
             fragment: None,
@@ -256,6 +260,7 @@ impl TypesetState {
         });
         let existing_height = page.layout.footnote_area.height.max(0.0);
         page.footnotes.push(FootnoteRef {
+            column_index: 0,
             number,
             source,
             fragment: Some(fragment),
@@ -299,6 +304,11 @@ impl TypesetState {
         note_count: usize,
         fresh: bool,
     ) -> f64 {
+        if let Some(height) =
+            self.projected_scoped_footnote_height(note_content_height, note_count, fresh)
+        {
+            return height;
+        }
         let current_height = if fresh {
             0.0
         } else {
@@ -455,6 +465,7 @@ impl TypesetState {
                 control_index: note.control_index,
             };
             let whole = FootnoteRef {
+                column_index: 0,
                 number: note.number,
                 source: source.clone(),
                 fragment: None,
@@ -468,6 +479,7 @@ impl TypesetState {
             } else if let Some(split) = self.own_line_note_split(&note, guard) {
                 self.record_current_footnote_with_storage(
                     FootnoteRef {
+                        column_index: 0,
                         number: note.number,
                         source: source.clone(),
                         fragment: Some(split.prefix),
@@ -477,6 +489,7 @@ impl TypesetState {
                 self.add_footnote_fragment_height(split.prefix_height, split.prefix.draw_separator);
                 self.defer_body_footnote_for_next_page(
                     FootnoteRef {
+                        column_index: 0,
                         number: note.number,
                         source,
                         fragment: Some(split.suffix),

@@ -16,6 +16,8 @@ pub(super) struct PaginationState {
     pub current_height: f64,
     pub current_column: u16,
     pub current_footnote_height: f64,
+    pub footnote_placement: crate::model::footnote::FootnotePlacement,
+    pub footnote_frames: Vec<crate::renderer::footnote_frames::Reservation>,
     pub is_first_footnote_on_page: bool,
     pub col_count: u16,
     pub layout: PageLayoutInfo,
@@ -61,6 +63,8 @@ impl PaginationState {
             current_height: 0.0,
             current_column: 0,
             current_footnote_height: 0.0,
+            footnote_placement: Default::default(),
+            footnote_frames: Vec::new(),
             is_first_footnote_on_page: true,
             col_count,
             layout,
@@ -174,6 +178,7 @@ impl PaginationState {
         self.flush_column_with_storage(storage)?;
         if self.current_column + 1 < self.col_count {
             self.current_column += 1;
+            self.select_footnote_frame();
             self.current_height = 0.0;
         } else {
             self.push_new_page_with_storage(storage)?;
@@ -278,7 +283,53 @@ impl PaginationState {
     }
 
     /// 각주 높이 추가
+    fn footnote_frame_policy(&self) -> crate::renderer::footnote_frames::FramePolicy {
+        crate::renderer::footnote_frames::FramePolicy {
+            placement: self.footnote_placement,
+            columns: self.col_count,
+        }
+    }
+
+    fn select_footnote_frame(&mut self) {
+        let policy = self.footnote_frame_policy();
+        if policy.spans_page() {
+            return;
+        }
+        let frame = if policy.charges_column(self.current_column) {
+            self.footnote_frames
+                .get(usize::from(policy.target(self.current_column)))
+                .copied()
+                .unwrap_or_default()
+        } else {
+            Default::default()
+        };
+        self.current_footnote_height = frame.height;
+        self.is_first_footnote_on_page = frame.count == 0;
+    }
+
+    /// 수용한 각주의 소유 프레임에 높이를 예약한다.
     pub fn add_footnote_height(&mut self, height: f64) {
+        let policy = self.footnote_frame_policy();
+        if !policy.spans_page() {
+            self.footnote_frames
+                .resize(usize::from(self.col_count), Default::default());
+            self.footnote_frames[usize::from(policy.target(self.current_column))].add(
+                height,
+                true,
+                self.footnote_separator_overhead,
+                self.footnote_between_notes_margin,
+            );
+            let maximum = self
+                .footnote_frames
+                .iter()
+                .map(|frame| frame.height)
+                .fold(0.0, f64::max);
+            if let Some(page) = self.pages.last_mut() {
+                page.layout.update_footnote_area(maximum);
+            }
+            self.select_footnote_frame();
+            return;
+        }
         if self.is_first_footnote_on_page {
             self.current_footnote_height += self.footnote_separator_overhead;
             self.is_first_footnote_on_page = false;
@@ -290,6 +341,28 @@ impl PaginationState {
     }
 
     pub fn projected_footnote_height(&self, note_content_height: f64, note_count: usize) -> f64 {
+        let policy = self.footnote_frame_policy();
+        if !policy.spans_page() {
+            let frame = self
+                .footnote_frames
+                .get(usize::from(policy.target(self.current_column)))
+                .copied()
+                .unwrap_or_default();
+            let projected = frame.projected(
+                note_content_height,
+                note_count,
+                true,
+                self.footnote_separator_overhead,
+                self.footnote_between_notes_margin,
+            );
+            return if policy.charges_column(self.current_column)
+                || projected > self.base_available_height()
+            {
+                projected
+            } else {
+                0.0
+            };
+        }
         if note_count == 0 {
             return self.current_footnote_height;
         }
@@ -336,6 +409,7 @@ impl PaginationState {
         self.current_column = 0;
         self.current_height = 0.0;
         self.current_footnote_height = 0.0;
+        self.footnote_frames.clear();
         self.is_first_footnote_on_page = true;
         self.page_vpos_base = None;
         self.page_has_block_table = false;

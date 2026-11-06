@@ -42,6 +42,7 @@ impl TypesetEngine {
             if follows_same_host_note {
                 let line = &fn_ctrl.paragraphs[0].line_segs[0];
                 st.record_current_footnote(FootnoteRef {
+                    column_index: 0,
                     number: fn_ctrl.number,
                     source: FootnoteSource::Body {
                         para_index: para_idx,
@@ -86,6 +87,7 @@ impl TypesetEngine {
         {
             st.defer_body_footnote_for_next_page(
                 FootnoteRef {
+                    column_index: 0,
                     number: fn_ctrl.number,
                     source,
                     fragment: None,
@@ -391,6 +393,7 @@ impl TypesetEngine {
                         )
                     {
                         st.record_current_footnote(FootnoteRef {
+                            column_index: 0,
                             number: fn_ctrl.number,
                             source: source.clone(),
                             fragment: Some(split.suffix),
@@ -405,6 +408,7 @@ impl TypesetEngine {
             }
             if let Some(split) = current_page_reset_fragments {
                 st.record_current_footnote(FootnoteRef {
+                    column_index: 0,
                     number: fn_ctrl.number,
                     source: source.clone(),
                     fragment: Some(split.prefix),
@@ -414,6 +418,7 @@ impl TypesetEngine {
                 // 표시 뒤 본문은 현재 쪽의 남은 본문 상자를 계속 사용한다.
                 st.defer_body_footnote_for_next_page(
                     FootnoteRef {
+                        column_index: 0,
                         number: fn_ctrl.number,
                         source: source.clone(),
                         fragment: Some(split.suffix),
@@ -443,6 +448,7 @@ impl TypesetEngine {
                 }
             }
             st.record_current_footnote(FootnoteRef {
+                column_index: 0,
                 number: fn_ctrl.number,
                 source,
                 fragment: None,
