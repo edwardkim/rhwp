@@ -1099,6 +1099,7 @@ impl LayoutEngine {
                         styles,
                     ))
                     .max(self.calc_nested_controls_bottom_height(
+                        table,
                         &composed_paras,
                         &cell.paragraphs,
                         styles,

@@ -3472,6 +3472,7 @@ impl HeightMeasurer {
 
     fn cell_nested_controls_bottom(
         &self,
+        parent: &Table,
         cell: &crate::model::table::Cell,
         styles: &ResolvedStyleSet,
         depth: usize,
@@ -3479,6 +3480,7 @@ impl HeightMeasurer {
         _parent_cell_w: f64,
     ) -> f64 {
         match self.cell_nested_controls_bottom_with_storage(
+            parent,
             cell,
             styles,
             depth,
@@ -3492,6 +3494,7 @@ impl HeightMeasurer {
 
     pub(crate) fn cell_nested_controls_bottom_with_storage<S: crate::storage::Storage>(
         &self,
+        parent: &Table,
         cell: &crate::model::table::Cell,
         styles: &ResolvedStyleSet,
         depth: usize,
@@ -3575,7 +3578,8 @@ impl HeightMeasurer {
                     p,
                     self.hwpx_stored_layout, storage)?;
                 let mut closed_frame = None;
-                let heights: Vec<f64> = storage.try_collect(p.controls.iter().map(|ctrl| -> Result<_,S::Error> {
+                let mut stored_host_frame = None;
+                let heights: Vec<f64> = storage.try_collect(p.controls.iter().enumerate().map(|(control_index, ctrl)| -> Result<_,S::Error> {
 
     Ok(if let Control::Table(nested) = ctrl {
                         let stretch = self.render_normalization.nested_table_width_scale(nested);
@@ -3594,6 +3598,15 @@ let body_height=match nested_body_heights
                                 )?
                                 .total_height
                             }};
+                        if !self.session_edited
+                            && (self.is_native_hwp5 || self.hwpx_stored_layout)
+                            && !self.render_normalization.table_text_reflowed(parent)
+                            && !self.render_normalization.table_text_reflowed(nested)
+                        {
+                            stored_host_frame = crate::renderer::float_placement::stored_nested_host_frame(
+                                p, nested, control_index, 0.0, body_height, self.dpi,
+                            );
+                        }
                         // 기존 한 번의 재귀 측정에서 닫힌 상자도 함께 생산한다.
                         // 미수용 경로에서 자식을 다시 측정하지 않는다.
                         if (self.is_native_hwp5 || self.hwpx_stored_layout)
@@ -3636,6 +3649,13 @@ let body_height=match nested_body_heights
                         0.0
                     })
 }))?;
+                if let Some(frame) = stored_host_frame {
+                    // 배제 개체도 칸의 물리 공간은 점유한다. 흐름 전진과 구분하며
+                    // 배치가 소비하는 저장 앵커·오프셋·바깥여백을 그대로 사용한다.
+                    return Ok(crate::renderer::float_placement::stored_nested_host_content_bottom(
+                        paragraphs, pidx, frame, self.dpi,
+                    ));
+                }
                 if let Some(frame) = closed_frame {
                     return Ok(frame.occupied_bottom);
                 }
@@ -4401,7 +4421,7 @@ let body_height=match nested_body_heights
                         .max()
                         .unwrap_or(0);
                     let nested_bottom = self.cell_nested_controls_bottom_with_storage(
-                        cell, styles, depth, cell_w_px, storage,
+                        table, cell, styles, depth, cell_w_px, storage,
                     )?;
                     hwpunit_to_px(last_seg_end, self.dpi)
                         .max(text_height)
@@ -5252,7 +5272,7 @@ let body_height=match nested_body_heights
                     storage,
                 )?;
                 let nested_bottom = self.cell_nested_controls_bottom_with_storage(
-                    cell, styles, depth, cell_w_px, storage,
+                    table, cell, styles, depth, cell_w_px, storage,
                 )?;
                 let wrap_bottom = self.cell_wrap_objects_bottom_height(&cell.paragraphs, styles);
                 // [Task #2221] 단일행과 동일 — 중첩/TAC 표의 저장 LINE_SEG 텍스트
@@ -6045,7 +6065,7 @@ let mut tables=p.controls.iter().filter_map(|c| match c{Control::Table(t)=>Some(
                         )?
                 } else {
                     let nested_bottom = self.cell_nested_controls_bottom_with_storage(
-                        cell, styles, depth, mc_cell_w, storage,
+                        table, cell, styles, depth, mc_cell_w, storage,
                     )?;
                     nested_bottom.max(mc.total_content_height)
                 };

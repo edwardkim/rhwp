@@ -6066,7 +6066,11 @@ fn try_reflow_line_segs_impl<S: Storage>(
                 .filter_map(|(start, ctrl)| {
                     inline_control_occupied_size_hwp(ctrl, styles, dpi)
                         .map(|occupied| (start, Some(occupied)))
-                        .or_else(|| matches!(ctrl, Control::Field(_)).then_some((start, None)))
+                        .or_else(|| {
+                            (matches!(ctrl, Control::Field(_))
+                                || inline_frame_input::is_nonflow_anchor(ctrl))
+                            .then_some((start, None))
+                        })
                 }),
         )?;
         if inline_sizes.iter().any(|(_, occupied)| occupied.is_some()) {
@@ -6075,23 +6079,23 @@ fn try_reflow_line_segs_impl<S: Storage>(
             let mut line_start = 0u32;
             let mut line_width = 0i32;
             let mut line_height = 0i32;
-            // [#8507] 필드 시작(누름틀 등)은 폭이 없어도 줄의 내용이다. 한/글 2020 은 그 뒤
+            // 필드 시작과 종이층 개체의 앵커는 폭이 없어도 줄의 내용이다. 한/글 2020은 그 뒤
             // 글자처럼 취급 개체가 남은 폭에 들지 않으면 개체를 다음 줄로 넘기고 필드 줄을
             // 글자 높이의 빈 줄로 남긴다(합성 field_over19: 표 바깥 폭이 줄보다 19HU 넓으면
             // 표가 160%·10pt 빈 줄 1600HU 만큼 아래). 줄 맨 앞 개체는 넘쳐도 그 줄에 둔다.
-            let mut line_has_field = false;
+            let mut line_has_anchor = false;
 
             for (utf16_start, occupied) in inline_sizes.iter().copied() {
                 let Some((ctrl_width, ctrl_height)) = occupied else {
-                    line_has_field = true;
+                    line_has_anchor = true;
                     continue;
                 };
-                if (line_width > 0 || line_has_field) && line_width + ctrl_width > max_line_width {
+                if (line_width > 0 || line_has_anchor) && line_width + ctrl_width > max_line_width {
                     storage.push(&mut line_specs, (line_start, line_width, line_height))?;
                     line_start = utf16_start;
                     line_width = 0;
                     line_height = 0;
-                    line_has_field = false;
+                    line_has_anchor = false;
                 }
                 line_width += ctrl_width;
                 line_height = line_height.max(ctrl_height);

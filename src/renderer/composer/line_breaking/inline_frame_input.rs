@@ -3,6 +3,24 @@
 
 use super::*;
 
+/// 글앞·글뒤 개체의 본체는 종이층 소유지만 원시 앵커는 문단 줄에 속한다.
+/// 폭·높이는 개체에서 가져오지 않고 그 줄의 글자 상자를 유지한다.
+/// 배제 밴드를 만드는 어울림·자리차지 개체는 각 흐름 소유자에 남긴다.
+pub(super) fn is_nonflow_anchor(control: &Control) -> bool {
+    use crate::model::shape::TextWrap;
+    let common = match control {
+        Control::Table(table) => &table.common,
+        Control::Picture(picture) => &picture.common,
+        Control::Shape(shape) => shape.common(),
+        _ => return false,
+    };
+    !common.treat_as_char
+        && matches!(
+            common.text_wrap,
+            TextWrap::InFrontOfText | TextWrap::BehindText
+        )
+}
+
 pub(super) fn project(
     source: &Paragraph,
     styles: &ResolvedStyleSet,

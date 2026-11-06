@@ -5780,6 +5780,7 @@ impl LayoutEngine {
                         cell_w_px, pad_left, pad_right, self.dpi,
                     );
                     let (line_based, object_based) = self.calc_cell_paragraphs_content_parts(
+                        table,
                         &cell.paragraphs,
                         styles,
                         inner_width,
@@ -5918,8 +5919,12 @@ impl LayoutEngine {
                 // controls_height를 별도로 더하면 이중 계산됨
                 // [Task #2211] 1-b 와 동일 — 저장 LINE_SEG 줄 흐름은 pad 미가산,
                 // 개체 기반 지오메트리는 pad 가산 유지.
-                let (line_based, object_based) =
-                    self.calc_cell_paragraphs_content_parts(&cell.paragraphs, styles, inner_width);
+                let (line_based, object_based) = self.calc_cell_paragraphs_content_parts(
+                    table,
+                    &cell.paragraphs,
+                    styles,
+                    inner_width,
+                );
                 // [#3386] 1-b 와 동일 — 모순 선언(span 합) 초과 성장 시 여백 가산.
                 let stored_frame_end =
                     crate::renderer::float_placement::stored_hwpx_no_adjust_cell_content_end(
@@ -6206,12 +6211,17 @@ impl LayoutEngine {
     /// 셀 문단들의 콘텐츠 높이 합산 (spacing + line_height + line_spacing)
     pub(crate) fn calc_cell_paragraphs_content_height(
         &self,
+        parent: &crate::model::table::Table,
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
         cell_inner_width_px: f64,
     ) -> f64 {
-        let (line_based, object_based) =
-            self.calc_cell_paragraphs_content_parts(paragraphs, styles, cell_inner_width_px);
+        let (line_based, object_based) = self.calc_cell_paragraphs_content_parts(
+            parent,
+            paragraphs,
+            styles,
+            cell_inner_width_px,
+        );
         line_based.max(object_based)
     }
 
@@ -6221,6 +6231,7 @@ impl LayoutEngine {
     /// 두 축의 pad 취급이 다르다 (#1486 p19 Square 그림 캘리브레이션).
     pub(crate) fn calc_cell_paragraphs_content_parts(
         &self,
+        parent: &crate::model::table::Table,
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
         cell_inner_width_px: f64,
@@ -6249,7 +6260,7 @@ impl LayoutEngine {
         let line_based_height =
             self.calc_composed_paras_content_height(&composed_paras, paragraphs, styles);
         let object_based = self
-            .calc_nested_controls_bottom_height(&composed_paras, paragraphs, styles)
+            .calc_nested_controls_bottom_height(parent, &composed_paras, paragraphs, styles)
             .max(self.calc_non_inline_controls_flow_height(paragraphs))
             .max(self.calc_cell_wrap_objects_bottom_height(paragraphs, styles));
         (line_based_height, object_based)
@@ -10193,7 +10204,11 @@ impl LayoutEngine {
                                 })
                                 .flatten()
                             {
-                                if let Some(x) = float_x {
+                                if let Some(frame) = stored_float_frame {
+                                    // 배제 프레임의 점유 하단과 본문 커서는 다른 값이다.
+                                    // 저장 줄 위의 빈 공간은 뒤 문단이 계속 사용할 수 있다.
+                                    para_y = frame.paragraph_end(para_y, 0.0);
+                                } else if let Some(x) = float_x {
                                     // [#6787] 나란히 무리는 **가장 높은 표** 만큼만 흐름을
                                     // 전진시키고, 가로만 채워 나간다.
                                     let lane_bottom = cell_float_lane
@@ -10209,13 +10224,14 @@ impl LayoutEngine {
                                     ));
                                     para_y = lane_bottom.max(nested_y + advance);
                                 } else {
-                                    para_y = stored_float_frame
-                                        .filter(|frame| matches!(frame.flow, crate::renderer::float_placement::ParagraphFloatFlow::NextLine))
-                                        .map_or(nested_y + advance, |frame| frame.paragraph_end(para_y, 0.0));
+                                    para_y = nested_y + advance;
                                 }
                                 // [#5712] TopAndBottom 흐름 표가 커서를 전진시켰다 —
                                 // 같은 문단 뒤 TAC 표의 co-anchored 적층 판별 신호.
-                                if matches!(nested_table.common.text_wrap, TextWrap::TopAndBottom) {
+                                if matches!(nested_table.common.text_wrap, TextWrap::TopAndBottom)
+                                    && stored_float_frame
+                                        .is_none_or(|frame| frame.advances_paragraph_flow())
+                                {
                                     prior_float_table_stacked = true;
                                 }
                             }
@@ -10943,6 +10959,7 @@ impl LayoutEngine {
                 };
 
                 let nested_bottom = self.calc_nested_controls_bottom_height(
+                    table,
                     &composed_paras,
                     &cell.paragraphs,
                     styles,
@@ -11163,7 +11180,12 @@ impl LayoutEngine {
             // 행 높이에 넣는다 — `tbl sz height 64362` = 63356(개체) + 724(vertOffset)
             // + 282(`tc cellSz height` = cellMargin top+bottom, 곧 글 내용 높이 0).
             let non_flow_object_extent = self
-                .calc_nested_controls_bottom_height(&composed_paras, &cell.paragraphs, styles)
+                .calc_nested_controls_bottom_height(
+                    table,
+                    &composed_paras,
+                    &cell.paragraphs,
+                    styles,
+                )
                 .max(self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs, styles))
                 .max(self.calc_non_inline_controls_flow_height(&cell.paragraphs));
             // [#2148 #2279] 저장 vpos 흐름이 물리적으로 줄들을 담지 못하는 퇴화
@@ -11864,6 +11886,7 @@ impl LayoutEngine {
     /// 측정 높이를 더한 값을 셀 콘텐츠 끝점 후보로 사용한다.
     pub(crate) fn calc_nested_controls_bottom_height(
         &self,
+        parent: &crate::model::table::Table,
         composed_paras: &[ComposedParagraph],
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
@@ -11943,6 +11966,44 @@ impl LayoutEngine {
                 // 조건**(호스트가 칸의 마지막 문단)으로 싣는다 — 뒤 형제 문단이 있을 때
                 // 그 몫을 싣지 않는 계약(59043 `□ 편익`)은 그대로다.
                 let host_is_cell_last_para = pidx + 1 == paragraphs.len();
+                if !self.profile.get().session_edited()
+                    && (self.profile.get().hwp5_stored_pagination_layout()
+                        || self.profile.get().hwpx_stored_layout())
+                    && !self
+                        .render_normalization
+                        .borrow()
+                        .table_text_reflowed(parent)
+                {
+                    let frame =
+                        p.controls
+                            .iter()
+                            .enumerate()
+                            .find_map(|(control_index, control)| {
+                                let Control::Table(child) = control else {
+                                    return None;
+                                };
+                                if self
+                                    .render_normalization
+                                    .borrow()
+                                    .table_text_reflowed(child)
+                                {
+                                    return None;
+                                }
+                                crate::renderer::float_placement::stored_nested_host_frame(
+                                    p,
+                                    child,
+                                    control_index,
+                                    0.0,
+                                    self.nested_table_body_height(child, styles),
+                                    self.dpi,
+                                )
+                            });
+                    if let Some(frame) = frame {
+                        return crate::renderer::float_placement::stored_nested_host_content_bottom(
+                            paragraphs, pidx, frame, self.dpi,
+                        );
+                    }
+                }
                 // [#7066] 저장 줄별 그룹은 측정(`height_measurer::cell_nested_controls_bottom`)
                 // 과 **같은 함수**로 낸다. 한 줄에 나란히 놓인 표는 그 줄이 합이 아니라
                 // 최댓값만 차지하므로, 합산하면 정렬용 콘텐츠 높이가 칸보다 커져 여유가
@@ -24488,7 +24549,7 @@ impl LayoutEngine {
                 )
             }).flatten();
         }
-        crate::renderer::float_placement::ParagraphFloatPlacement::from_stored_host(
+        crate::renderer::float_placement::stored_nested_host_frame(
             para,
             child,
             control,
@@ -24496,16 +24557,6 @@ impl LayoutEngine {
             body_height,
             self.dpi,
         )
-        .or_else(|| {
-            crate::renderer::float_placement::ParagraphFloatPlacement::from_stored_head_host(
-                para, child, control, origin, body_height, self.dpi,
-            )
-        })
-        .or_else(|| {
-            crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_stored_offset_host(
-                para, child, control, origin, body_height, self.dpi,
-            )
-        })
         .or_else(|| {
             // 앞의 세 경로는 현재 호스트 줄과 제어 슬롯만으로 앵커를 인증한다.
             // 다른 문단의 편집은 그 지역 근거를 무효화하지 않는다. 앞뒤 문단의

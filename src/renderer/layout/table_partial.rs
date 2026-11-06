@@ -2206,6 +2206,7 @@ impl LayoutEngine {
                         styles,
                     );
                     let nested_bottom = self.calc_nested_controls_bottom_height(
+                        table,
                         composed_store.eager_slice(),
                         &cell.paragraphs,
                         styles,
