@@ -1,0 +1,17 @@
+# Kang-T PR 3건 누적 검토 계획
+
+## 범위와 고정한 출처
+
+원 [#8566](pr_8566_review.md)·[#8595](pr_8595_review.md)·[#8632](pr_8632_review.md)를 오래된 순서로 검토한다. 각각 #8555·#8556·#8557이며 공통 대표 이슈가 없으므로 날짜 기반 통합 branch `review/integration-20261106-kang-t-picture-editing`를 사용한다. 기준 devel `45684640be5eddcf5972b063260250345b34d928`와 원 head를 개별 review에 고정했다. 원 commit을 재작성하지 않고 merge ancestry로 보존한다.
+
+## 실행할 검증
+
+1. 원 증상이 최신 devel에서도 남아 있는지 실제 API·재조판·그림 drag 흐름으로 재현하고 선행 해결 PR→통합·보정→독립 근거를 추적한다.
+2. 개별 3건의 merge-tree는 모두 충돌 없이 생성됐다. 누적 적용도 순서대로 확인하며, 충돌이 있으면 해결 방침을 구체화해 작업지시자 승인 뒤 보정한다.
+3. 세 원 입력과 Mac 한컴 Print PDF를 그대로 재사용한다. 4·5·4쪽 전쪽의 base/후보 Native와 fresh optimized WASM TSV를 같은 조건으로 비교하고 90%·2%p 하락·쪽수·직접 판독을 확인한다. 생성 저장본의 재열기를 편집 검증과 구분한다.
+4. baseline 정렬 0/위/가운데/아래, 칸 삽입의 소속/빈 경로/Storage 한도·실패 원자성·저장, 재배치의 본문↔칸·중첩 경로·다른 쪽·같은 쪽·앞뒤 방향과 Undo/Redo를 해당 공통 계약으로 확인한다. 최신 devel의 그림 삽입·분할·겹침 방지·저장 기능도 보존한다.
+5. Windows Chrome CDP `http://127.0.0.1:19222`에서 테스트가 만든 탭만 사용한다. 현재 사용자 탭·문서·세션은 보존한다. WASM 원본·public 동기화와 실제 초기화 때 받은 bundle 출처를 고정하고 API 소비와 실제 mouse drag를 구분한다.
+6. 집중 회귀와 경계를 먼저 확인한 뒤 공유 절대 target `/home/edward/mygithub/rhwp/target/pr-review`에서 Cargo/WASM을 순차 실행한다. 최소 글꼴 전체 회귀·Native 공식 3종·Rust lint·Studio unit/type/build·관련 E2E·Native 편람 383쪽 gate를 최종 후보 한 단위로 완료한다. 생성 suite와 로그는 stage하지 않는다.
+7. PR별 판정·증적·첫 기여 환영 댓글 초안을 완료한다. 수용 가능한 원격 후보가 구체화되면 push·PR·CI·merge·댓글·종료 정리의 별도 승인을 요청한다.
+
+기여자 제공 CI/코퍼스 집계와 메인테이너의 실제 실행은 구분한다. 원 제공 Mac Print는 유효한 인쇄 자료로 재사용하며 버전 표기만으로 재변환하지 않는다. Linux에서 편람 gate를 직접 확인한다. 현재 원격 작업은 reviewer 지정만 수행했고 기타 원격 변경은 승인 전이다.
