@@ -4383,15 +4383,15 @@ impl LayoutEngine {
         // 셀 내용 우측에 정확히 flush 된다.
         let fit_om_left = hwpunit_to_px(table.outer_margin_left as i32, self.dpi);
         let fit_avail_w = (col_area.width - fit_om_left).max(0.0);
-        let stored_column_frame = (self.profile.get().hwp5_stored_pagination_layout()
+        let original_column_grid = (self.profile.get().hwp5_stored_pagination_layout()
             || self.profile.get().hwpx_stored_layout())
             && !self
                 .render_normalization
                 .borrow()
                 .table_text_reflowed(table)
-            // 다른 문단이나 조상 셀의 편집은 이 표의 저장 열 구획을 무효화하지 않는다.
-            // 실제 자식 셀·글줄의 dirty 상태와 행별 폭 닫힘을 같은 원본에서 확인한다.
-            && crate::renderer::float_placement::stored_complete_column_frame(table);
+            // 같은 원본의 셀·열 너비가 닫는 수평 그리드를 사용한다. 저장 글줄이
+            // 없어도 측정이 쓰던 원본 너비를 paint에서만 내용 상자로 줄이지 않는다.
+            && crate::renderer::float_placement::complete_declared_column_grid(table);
         // 안 여백은 내용의 시작점이며 원본 개체 폭의 축소 명령이 아니다.
         // 같은 원점에서 원본 표가 부모의 물리 셀 안에 들어가면 저장 열 구획을 유지한다.
         let original_width_fits_cell = depth > 0
@@ -4442,7 +4442,7 @@ impl LayoutEngine {
         if depth > 0
             && table.col_count > 1
             && !table.common.treat_as_char
-            && !stored_column_frame
+            && !original_column_grid
             && table_width > fit_avail_w + 0.5
             && !original_width_fits_cell
         {

@@ -1,0 +1,7 @@
+{
+  "before": "{\"page\": 7, \"native\": [{\"shape\": [9, 4], \"source_width_hu\": 23254, \"native_width_px\": 296.2, \"source_width_px\": 310.1}, {\"shape\": [13, 4], \"source_width_hu\": 23537, \"native_width_px\": 296.2, \"source_width_px\": 313.8}], \"scope\": \"원본 셀 그리드와 paint 소비의 폭 일치. render tree JSON의 소수1자리 표시에 맞춰 대조. 진단 전용\"}\nTraceback (most recent call last):\n  File \"/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-annex4-width-check.py\", line 11, in <module>\n    assert all(r['native_width_px']==r['source_width_px'] for r in rows),'original absolute column grid is not resized to the parent content width'\n           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: original absolute column grid is not resized to the parent content width\n",
+  "before_log_sha256": "73ce2e0dcbb1c321ed76e58e0f0edf0da6d2da0aac890cb3603c857817dceb82",
+  "after": "{\"page\": 7, \"native\": [{\"shape\": [9, 4], \"source_width_hu\": 23254, \"native_width_px\": 310.1, \"source_width_px\": 310.1}, {\"shape\": [13, 4], \"source_width_hu\": 23537, \"native_width_px\": 313.8, \"source_width_px\": 313.8}], \"scope\": \"원본 셀 그리드와 paint 소비의 폭 일치. render tree JSON의 소수1자리 표시에 맞춰 대조. 진단 전용\"}\n",
+  "after_log_sha256": "4ac547bdd055b5df6d7516f17df6c1559d5b0051f62af81c900b85c75069c107",
+  "meaning": "ignored 진단의 실제 FAIL→PASS. 정식 회귀 등록은 별도로 기록한다."
+}

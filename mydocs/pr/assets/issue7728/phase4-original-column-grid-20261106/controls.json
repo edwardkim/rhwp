@@ -1,0 +1,739 @@
+{
+  "pid": 46859,
+  "current": "complete",
+  "success": true,
+  "base": "170b886f167b705b6e630c5b34bb638d92fae0a9",
+  "head": "0be6d69ee75df4eb5ec657d09b264aaae109a108",
+  "source_diff_sha256": "0d72c82d83c4b858759a67e7c9de436c82a7ba9aed23fd3c19e92afd4248bd29",
+  "steps": [
+    {
+      "key": "nested42065",
+      "label": "base",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "--pdf",
+        "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+        "--key",
+        "nested42065",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/rhwp-base-native",
+        "--rasterizer",
+        "png",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--page-workers",
+        "8",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--embed-fonts",
+        "full",
+        "--out",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-controls/base/nested42065"
+      ],
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-control-nested42065-base.log",
+      "pid": 46870,
+      "exit_code": 0,
+      "seconds": 11.319
+    },
+    {
+      "key": "nested42065",
+      "label": "candidate",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "--pdf",
+        "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+        "--key",
+        "nested42065",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/rhwp-issue7728-grid-v9-native",
+        "--rasterizer",
+        "png",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--page-workers",
+        "8",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--embed-fonts",
+        "full",
+        "--out",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-controls/candidate/nested42065"
+      ],
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-control-nested42065-candidate.log",
+      "pid": 47717,
+      "exit_code": 0,
+      "seconds": 10.612
+    },
+    {
+      "key": "clip5587",
+      "label": "base",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/basic/issue1994_behindtext_table_20200830.hwp",
+        "--pdf",
+        "samples/issue1994/issue_1994.pdf",
+        "--key",
+        "clip5587",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/rhwp-base-native",
+        "--rasterizer",
+        "png",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--page-workers",
+        "8",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--embed-fonts",
+        "full",
+        "--out",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-controls/base/clip5587"
+      ],
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-control-clip5587-base.log",
+      "pid": 48509,
+      "exit_code": 1,
+      "seconds": 9.677
+    },
+    {
+      "key": "clip5587",
+      "label": "candidate",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/basic/issue1994_behindtext_table_20200830.hwp",
+        "--pdf",
+        "samples/issue1994/issue_1994.pdf",
+        "--key",
+        "clip5587",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/rhwp-issue7728-grid-v9-native",
+        "--rasterizer",
+        "png",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--page-workers",
+        "8",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--embed-fonts",
+        "full",
+        "--out",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-controls/candidate/clip5587"
+      ],
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-control-clip5587-candidate.log",
+      "pid": 49234,
+      "exit_code": 1,
+      "seconds": 9.326
+    },
+    {
+      "key": "reserved6861",
+      "label": "base",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/issue6861/3194097-performance-rating-roster.hwp",
+        "--pdf",
+        "pdf/3194097-performance-rating-roster-2020.pdf",
+        "--key",
+        "reserved6861",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/rhwp-base-native",
+        "--rasterizer",
+        "png",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--page-workers",
+        "8",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--embed-fonts",
+        "full",
+        "--out",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-controls/base/reserved6861"
+      ],
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-control-reserved6861-base.log",
+      "pid": 49960,
+      "exit_code": 0,
+      "seconds": 2.662
+    },
+    {
+      "key": "reserved6861",
+      "label": "candidate",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/issue6861/3194097-performance-rating-roster.hwp",
+        "--pdf",
+        "pdf/3194097-performance-rating-roster-2020.pdf",
+        "--key",
+        "reserved6861",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/rhwp-issue7728-grid-v9-native",
+        "--rasterizer",
+        "png",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--page-workers",
+        "8",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--embed-fonts",
+        "full",
+        "--out",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-controls/candidate/reserved6861"
+      ],
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-control-reserved6861-candidate.log",
+      "pid": 50075,
+      "exit_code": 0,
+      "seconds": 2.807
+    }
+  ],
+  "results": [
+    {
+      "key": "nested42065",
+      "label": "base",
+      "pages": 17,
+      "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "minimum_raw": 94.96839,
+      "below90": [],
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 96.51299,
+          "silhouette_raw_unmatched_pixels": 1695,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 48609,
+          "tolerant_content_match_percent": 96.51299
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.28397,
+          "silhouette_raw_unmatched_pixels": 1077,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 62761,
+          "tolerant_content_match_percent": 98.28397
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.74981,
+          "silhouette_raw_unmatched_pixels": 87,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 34774,
+          "tolerant_content_match_percent": 99.74981
+        },
+        {
+          "page": 4,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.89355,
+          "silhouette_raw_unmatched_pixels": 99,
+          "silhouette_boundary_reconciled_pixels": 4,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 92998,
+          "tolerant_content_match_percent": 99.89785
+        },
+        {
+          "page": 5,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.01768,
+          "silhouette_raw_unmatched_pixels": 663,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 67493,
+          "tolerant_content_match_percent": 99.01768
+        },
+        {
+          "page": 6,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.09623,
+          "silhouette_raw_unmatched_pixels": 1282,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 67340,
+          "tolerant_content_match_percent": 98.09623
+        },
+        {
+          "page": 7,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.72693,
+          "silhouette_raw_unmatched_pixels": 1948,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 85699,
+          "tolerant_content_match_percent": 97.72693
+        },
+        {
+          "page": 8,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.4934,
+          "silhouette_raw_unmatched_pixels": 484,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 95538,
+          "tolerant_content_match_percent": 99.4934
+        },
+        {
+          "page": 9,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.78715,
+          "silhouette_raw_unmatched_pixels": 241,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 113227,
+          "tolerant_content_match_percent": 99.78715
+        },
+        {
+          "page": 10,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.99276,
+          "silhouette_raw_unmatched_pixels": 3556,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 177159,
+          "tolerant_content_match_percent": 97.99276
+        },
+        {
+          "page": 11,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.73623,
+          "silhouette_raw_unmatched_pixels": 1952,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 154458,
+          "tolerant_content_match_percent": 98.73623
+        },
+        {
+          "page": 12,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.54326,
+          "silhouette_raw_unmatched_pixels": 568,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 124360,
+          "tolerant_content_match_percent": 99.54326
+        },
+        {
+          "page": 13,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.35681,
+          "silhouette_raw_unmatched_pixels": 815,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 126713,
+          "tolerant_content_match_percent": 99.35681
+        },
+        {
+          "page": 14,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.01927,
+          "silhouette_raw_unmatched_pixels": 3155,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 159285,
+          "tolerant_content_match_percent": 98.01927
+        },
+        {
+          "page": 15,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.40984,
+          "silhouette_raw_unmatched_pixels": 2397,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 150740,
+          "tolerant_content_match_percent": 98.40984
+        },
+        {
+          "page": 16,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 95.98237,
+          "silhouette_raw_unmatched_pixels": 3191,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 79425,
+          "tolerant_content_match_percent": 95.98237
+        },
+        {
+          "page": 17,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 94.96839,
+          "silhouette_raw_unmatched_pixels": 788,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 15661,
+          "tolerant_content_match_percent": 94.96839
+        }
+      ],
+      "manifest": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-controls/base/nested42065/nested42065/silhouette_manifest.json"
+    },
+    {
+      "key": "nested42065",
+      "label": "candidate",
+      "pages": 17,
+      "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "minimum_raw": 94.96839,
+      "below90": [],
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 96.51299,
+          "silhouette_raw_unmatched_pixels": 1695,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 48609,
+          "tolerant_content_match_percent": 96.51299
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.28397,
+          "silhouette_raw_unmatched_pixels": 1077,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 62761,
+          "tolerant_content_match_percent": 98.28397
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.74981,
+          "silhouette_raw_unmatched_pixels": 87,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 34774,
+          "tolerant_content_match_percent": 99.74981
+        },
+        {
+          "page": 4,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.89996,
+          "silhouette_raw_unmatched_pixels": 93,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 92961,
+          "tolerant_content_match_percent": 99.89996
+        },
+        {
+          "page": 5,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.01768,
+          "silhouette_raw_unmatched_pixels": 663,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 67493,
+          "tolerant_content_match_percent": 99.01768
+        },
+        {
+          "page": 6,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.09623,
+          "silhouette_raw_unmatched_pixels": 1282,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 67340,
+          "tolerant_content_match_percent": 98.09623
+        },
+        {
+          "page": 7,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.72693,
+          "silhouette_raw_unmatched_pixels": 1948,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 85699,
+          "tolerant_content_match_percent": 97.72693
+        },
+        {
+          "page": 8,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.4934,
+          "silhouette_raw_unmatched_pixels": 484,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 95538,
+          "tolerant_content_match_percent": 99.4934
+        },
+        {
+          "page": 9,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.78715,
+          "silhouette_raw_unmatched_pixels": 241,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 113227,
+          "tolerant_content_match_percent": 99.78715
+        },
+        {
+          "page": 10,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.99276,
+          "silhouette_raw_unmatched_pixels": 3556,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 177159,
+          "tolerant_content_match_percent": 97.99276
+        },
+        {
+          "page": 11,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.73623,
+          "silhouette_raw_unmatched_pixels": 1952,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 154458,
+          "tolerant_content_match_percent": 98.73623
+        },
+        {
+          "page": 12,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.54326,
+          "silhouette_raw_unmatched_pixels": 568,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 124360,
+          "tolerant_content_match_percent": 99.54326
+        },
+        {
+          "page": 13,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.35681,
+          "silhouette_raw_unmatched_pixels": 815,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 126713,
+          "tolerant_content_match_percent": 99.35681
+        },
+        {
+          "page": 14,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.01927,
+          "silhouette_raw_unmatched_pixels": 3155,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 159285,
+          "tolerant_content_match_percent": 98.01927
+        },
+        {
+          "page": 15,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.40984,
+          "silhouette_raw_unmatched_pixels": 2397,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 150740,
+          "tolerant_content_match_percent": 98.40984
+        },
+        {
+          "page": 16,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 95.98237,
+          "silhouette_raw_unmatched_pixels": 3191,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 79425,
+          "tolerant_content_match_percent": 95.98237
+        },
+        {
+          "page": 17,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 94.96839,
+          "silhouette_raw_unmatched_pixels": 788,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 15661,
+          "tolerant_content_match_percent": 94.96839
+        }
+      ],
+      "manifest": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-controls/candidate/nested42065/nested42065/silhouette_manifest.json"
+    },
+    {
+      "key": "clip5587",
+      "label": "base",
+      "pages": 4,
+      "input_sha256": "8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f",
+      "pdf_sha256": "aba4e44b839de113a867e130a01d966bd3bfaf5e1eb048aebbed9ba45365f29e",
+      "minimum_raw": 88.23109,
+      "below90": [
+        3
+      ],
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 94.84051,
+          "silhouette_raw_unmatched_pixels": 8296,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 160791,
+          "tolerant_content_match_percent": 94.84051
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.535,
+          "silhouette_raw_unmatched_pixels": 3540,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 241638,
+          "tolerant_content_match_percent": 98.535
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 88.23109,
+          "silhouette_raw_unmatched_pixels": 17961,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 152614,
+          "tolerant_content_match_percent": 88.23109
+        },
+        {
+          "page": 4,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.01124,
+          "silhouette_raw_unmatched_pixels": 3375,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 112923,
+          "tolerant_content_match_percent": 97.01124
+        }
+      ],
+      "manifest": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-controls/base/clip5587/clip5587/silhouette_manifest.json"
+    },
+    {
+      "key": "clip5587",
+      "label": "candidate",
+      "pages": 4,
+      "input_sha256": "8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f",
+      "pdf_sha256": "aba4e44b839de113a867e130a01d966bd3bfaf5e1eb048aebbed9ba45365f29e",
+      "minimum_raw": 88.23109,
+      "below90": [
+        3
+      ],
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 94.84051,
+          "silhouette_raw_unmatched_pixels": 8296,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 160791,
+          "tolerant_content_match_percent": 94.84051
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.535,
+          "silhouette_raw_unmatched_pixels": 3540,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 241638,
+          "tolerant_content_match_percent": 98.535
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 88.23109,
+          "silhouette_raw_unmatched_pixels": 17961,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 152614,
+          "tolerant_content_match_percent": 88.23109
+        },
+        {
+          "page": 4,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.01124,
+          "silhouette_raw_unmatched_pixels": 3375,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 112923,
+          "tolerant_content_match_percent": 97.01124
+        }
+      ],
+      "manifest": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-controls/candidate/clip5587/clip5587/silhouette_manifest.json"
+    },
+    {
+      "key": "reserved6861",
+      "label": "base",
+      "pages": 1,
+      "input_sha256": "13e9bef258573d3a06e27793d17b97138f4d86e1368bfdb00d27179269d3c060",
+      "pdf_sha256": "6254374c077e0558133fdc5e03c20fc7d8740a1395bace3e6007cc8707052107",
+      "minimum_raw": 99.9508,
+      "below90": [],
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9508,
+          "silhouette_raw_unmatched_pixels": 15,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 30490,
+          "tolerant_content_match_percent": 99.9508
+        }
+      ],
+      "manifest": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-controls/base/reserved6861/reserved6861/silhouette_manifest.json"
+    },
+    {
+      "key": "reserved6861",
+      "label": "candidate",
+      "pages": 1,
+      "input_sha256": "13e9bef258573d3a06e27793d17b97138f4d86e1368bfdb00d27179269d3c060",
+      "pdf_sha256": "6254374c077e0558133fdc5e03c20fc7d8740a1395bace3e6007cc8707052107",
+      "minimum_raw": 99.9508,
+      "below90": [],
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9508,
+          "silhouette_raw_unmatched_pixels": 15,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 30490,
+          "tolerant_content_match_percent": 99.9508
+        }
+      ],
+      "manifest": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-controls/candidate/reserved6861/reserved6861/silhouette_manifest.json"
+    }
+  ],
+  "meaning": "전체 수집 완료. 개별 미달과 base 대비 하락은 results의 원 수치로 따로 판정."
+}

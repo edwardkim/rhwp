@@ -1,0 +1,27 @@
+{
+  "before_code_head": "0be6d69ee75df4eb5ec657d09b264aaae109a108",
+  "candidate_source_diff_sha256": "0d72c82d83c4b858759a67e7c9de436c82a7ba9aed23fd3c19e92afd4248bd29",
+  "identical_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+  ],
+  "changed_pages": [
+    7
+  ],
+  "meaning": "동일 입력·PDF·글꼴·Native 직접PNG의 SHA 비교. 동일한 쪽의 이전 직접 판독 근거와 새 전쪽 TSV를 구분한다."
+}

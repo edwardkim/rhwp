@@ -1,0 +1,101 @@
+{
+  "pid": 61640,
+  "head": "0be6d69ee75df4eb5ec657d09b264aaae109a108",
+  "base": "170b886f167b705b6e630c5b34bb638d92fae0a9",
+  "host": "현재 Mac",
+  "jobs": 8,
+  "test_threads": 8,
+  "cargo_sequential": true,
+  "working_diff_sha256": "0d72c82d83c4b858759a67e7c9de436c82a7ba9aed23fd3c19e92afd4248bd29",
+  "current": "complete",
+  "success": true,
+  "steps": [
+    {
+      "name": "native-lib",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-native-native-lib.log",
+      "started_at": "2026-11-06T01:50:13.463998+00:00",
+      "pid": 65421,
+      "exit_code": 0,
+      "seconds": 240.933,
+      "log_sha256": "560a67951e57f1f7214593bdaa2259ac294031dc4d5ee747853740f67fd8fd62",
+      "summaries": [
+        "test result: ok. 3857 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 12.86s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "name": "native-png",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-native-native-png.log",
+      "started_at": "2026-11-06T01:54:20.849086+00:00",
+      "pid": 83357,
+      "exit_code": 0,
+      "seconds": 273.55,
+      "log_sha256": "61652966e98224ed28941e49735e1a81ff2e46b47269ea4b237704349e31ec88",
+      "summaries": [
+        "     Summary [   2.453s] 2 tests run: 2 passed, 296 skipped"
+      ]
+    },
+    {
+      "name": "native-pdf",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "log": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-native-native-pdf.log",
+      "started_at": "2026-11-06T01:59:01.424619+00:00",
+      "pid": 4009,
+      "exit_code": 0,
+      "seconds": 15.421,
+      "log_sha256": "3dff5a41bc5259388f17a4eae81c0e7f3c8f25bd779daa820ea899473ebd0a56",
+      "summaries": [
+        "     Summary [   1.736s] 22 tests run: 22 passed, 271 skipped"
+      ]
+    }
+  ]
+}

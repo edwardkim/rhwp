@@ -144,3 +144,24 @@ ignored 진단은 각각 실제 FAIL→PASS다. 원본과 새 정식 회귀 검�
 [phase3-complete-row](../pr/assets/issue7728/phase3-complete-row-20261106/README.md)에
 전후 TSV·review/overlay·실제 컷 변화와 Native 3종 증적을 정리했다. 새 fresh WASM·최종 전체
 회귀·영향 대조군과 7쪽 잔여를 계속 보정한다. 부분 보정을 이슈 해결·PR 준비로 바꾸지 않는다.
+
+
+## 4단계 — 완결 표의 원본 수평 그리드
+
+7쪽 마지막 조각의 폭 축소는 full layout의 #4042 부모 내용 상자 맞춤이 원인이었다.
+원본 셀 소속과 선언 폭 합으로 닫힌 수평 그리드를 별도로 인증하고, 기존 저장 글줄 인증은
+세로 소비자에 그대로 유지했다. 같은 원본의 측정·부분 표·완결 표가 같은 열 너비를 사용한다.
+
+- 새 소스 Native/fresh WASM 각각 전18쪽 완료, 누락0,90% 미달0.
+  최저는 Native94.62153%(6쪽),WASM94.27517%(7쪽)다. 고정 devel 대비0.1%p 초과 하락0.
+- Native Skia3종을 새 소스·Mac 최소 글꼴 환경에서 실제 완료했다.
+  lib4,039PASS/0FAIL/12ignore,PNG2PASS,직접PDF22PASS이며 세 종료 코드가 모두0이다.
+- 폭 맞춤·클리핑 대조군3건22쪽을 base/후보 Native/WASM으로 모두 비교했다.
+  페이지별 raw는 전부 같다. base부터 미달인 #5587의3쪽은 기존 미달로 구분한다.
+- 원본 열 너비·빈 행 첫 글줄·완결 행 계속 소속의 관계형과,양쪽98% 이상인10쪽의
+  독립 PDF ±2px 검사를 준비했다. 실제 이전 단계3PASS/1FAIL→현재4PASS를 확인했다.
+  원래 #6854·#7418 검사는 제거하지 않았다.
+
+[phase4-original-column-grid](../pr/assets/issue7728/phase4-original-column-grid-20261106/README.md)에
+전후 TSV·review/overlay·source/build/hash·Native3종과 검사 전후 증적을 정리했다.
+새 suite 등록 경로에서도 최소 글꼴 Native Skia4PASS를 확인했다. 전체 nextest·영향 경계·실제 소비 경로와 최종 제출 검증은 계속 진행한다.

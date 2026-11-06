@@ -1,0 +1,36 @@
+{
+  "head": "0be6d69ee75df4eb5ec657d09b264aaae109a108",
+  "source_diff_sha256": "0d72c82d83c4b858759a67e7c9de436c82a7ba9aed23fd3c19e92afd4248bd29",
+  "pid": 28180,
+  "started_at": "2026-11-06T01:41:33.373176+00:00",
+  "jobs": 8,
+  "current": "complete",
+  "success": true,
+  "command": [
+    "/usr/bin/sandbox-exec",
+    "-f",
+    "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--features",
+    "native-skia",
+    "--lib",
+    "--bin",
+    "rhwp"
+  ],
+  "cargo_pid": 28214,
+  "exit_code": 0,
+  "seconds": 144.9,
+  "rhwp-issue7728-grid-v9-native": {
+    "sha256": "a1659a54cc8f8620de0442da898ef09a5e9265655f75f5d54b366ff97eb19e63",
+    "size": 72991072
+  },
+  "librhwp-issue7728-grid-v9.rlib": {
+    "sha256": "965d2c8cb9aa65610392b90b64b42c0c9c359641bdaf24b18e59c8c2f5a6e1ff",
+    "size": 131883520
+  },
+  "source_inventory_sha256": "c45d6489587c8320e200001eb32db003aac2795e9181095d7e82e8d1f1abe3ae"
+}

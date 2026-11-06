@@ -1,0 +1,31 @@
+{
+  "head": "0be6d69ee75df4eb5ec657d09b264aaae109a108",
+  "source_diff_sha256": "0d72c82d83c4b858759a67e7c9de436c82a7ba9aed23fd3c19e92afd4248bd29",
+  "artifacts": {
+    "rhwp.js": {
+      "sha256": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b",
+      "bytes": 536865,
+      "studio_public_sha256": "47290dcfc03dd6f5552011ae7e44bb22432cad0319ab24bb1cdaf8601030651b"
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "5ae62f116318e704219b6f8183e4a2acc86da541b4b99fea2da0e22a29ce6f81",
+      "bytes": 30716096,
+      "studio_public_sha256": "5ae62f116318e704219b6f8183e4a2acc86da541b4b99fea2da0e22a29ce6f81"
+    },
+    "rhwp.d.ts": {
+      "sha256": "8160a419b532814c4ba8006ab487d47ed54c41553b11282eab77a8e0f8744798",
+      "bytes": 214580
+    },
+    "rhwp_bg.wasm.d.ts": {
+      "sha256": "2845d0d99bedba40ceb18663c1052b9f245a1fbbc07b0f9aa29a1428c200ae97",
+      "bytes": 75003
+    },
+    "package.json": {
+      "sha256": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+      "bytes": 429
+    }
+  },
+  "pkg": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-20261106-031441/issue7728-grid-v9-pkg",
+  "profile": "현재 Mac locked web/no-opt 로컬 대체 빌드",
+  "docker_optimized": false
+}
