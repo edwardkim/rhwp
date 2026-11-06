@@ -26,7 +26,10 @@ def transient(response):
 def device_failure(response):
     # A strict replay/resource or budget failure is a document diagnostic. Do
     # not switch it to the CPU renderer's permissive placeholder policy.
-    return (response.get("code") == "unsupported" or
+    return (response.get("code") in (
+                "unsupported", "featureDisabled", "backendUnavailable",
+                "contextNotCurrent", "contextUnavailable", "contextCreationFailed",
+                "targetUnavailable", "deviceLost", "submissionFailed", "recoveryFailed") or
             response.get("code") == "invalidArgument" and
             response.get("error") == "matching host GL context is not current")
 

@@ -231,7 +231,11 @@ class SnapshotTests(unittest.TestCase):
         self.assertTrue(self.window.device_errors)
         self.assertFalse(self.window.errors)
         self.assertTrue(transient({"code": "staleFrame", "retryable": True}))
-        self.assertFalse(device_failure({"code": "documentError"}))
+        for code in ("documentError", "limitExceeded", "allocationFailed", "contextMismatch"):
+            self.assertFalse(device_failure({"code": code}))
+        for code in ("backendUnavailable", "contextUnavailable", "contextCreationFailed",
+                     "targetUnavailable", "deviceLost", "submissionFailed", "recoveryFailed"):
+            self.assertTrue(device_failure({"code": code, "deviceFailure": code == "deviceLost"}))
         self.assertTrue(device_failure({"code": "invalidArgument",
             "error": "matching host GL context is not current"}))
 
