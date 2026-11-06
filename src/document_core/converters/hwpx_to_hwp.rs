@@ -1505,12 +1505,12 @@ fn insert_section_def_control<S: crate::storage::Storage>(
         **section_def = storage.clone_section_def(&section.section_def)?;
         return Ok(());
     }
-    storage.reserve(&mut first_para.controls, 1)?;
     storage.bytes(std::mem::size_of::<SectionDef>())?;
     first_para.insert_leading_definition(
         0,
         Control::SectionDef(Box::new(storage.clone_section_def(&section.section_def)?)),
-    );
+        storage,
+    )?;
     report.section_def_controls_inserted += 1;
 
     Ok(())

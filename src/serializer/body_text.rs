@@ -142,14 +142,14 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
             } else {
                 let mut clone = storage.clone_paragraph(p)?;
                 if needs_secd {
-                    storage.reserve(&mut clone.controls, 1)?;
                     storage.bytes(std::mem::size_of_val(&section.section_def))?;
                     clone.insert_leading_definition(
                         0,
                         Control::SectionDef(Box::new(
                             storage.clone_section_def(&section.section_def)?,
                         )),
-                    );
+                        storage,
+                    )?;
                 }
                 if needs_default_column {
                     let leading_defs = clone
@@ -157,7 +157,6 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
                         .iter()
                         .take_while(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
                         .count();
-                    storage.reserve(&mut clone.controls, 1)?;
                     clone.insert_leading_definition(
                         leading_defs,
                         Control::ColumnDef(crate::model::page::ColumnDef {
@@ -165,7 +164,8 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
                             same_width: true,
                             ..Default::default()
                         }),
-                    );
+                        storage,
+                    )?;
                 }
                 Ok(Some(clone))
             }
