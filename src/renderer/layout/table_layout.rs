@@ -4970,7 +4970,6 @@ impl LayoutEngine {
                     cap_x,
                     cap_w,
                     cap_y,
-                    &mut self.auto_counter.borrow_mut(),
                     bin_data_content,
                     cap_cell_ctx,
                     CaptionOwner::new(
@@ -10877,6 +10876,7 @@ impl LayoutEngine {
             }
 
             // 새 줄을 그리면서 정렬·저장 extent만 원본 줄로 되돌리지 않는다.
+            let source_cell = cell;
             let current_frame_cell =
                 ComposedParagraph::cell_with_frame_geometry(&composed_paras, cell);
             let cell = current_frame_cell.as_ref().unwrap_or(cell);
@@ -11425,7 +11425,9 @@ impl LayoutEngine {
                     tree,
                     table_node,
                     &mut cell_node,
-                    cell,
+                    // 각 문단이 현재 프레임을 한 번 투영한다. 원본 개체 주소와
+                    // 저장 host의 초과분 판정은 재투영한 임시 셀로 바꾸지 않는다.
+                    source_cell,
                     &composed_paras,
                     table,
                     styles,

@@ -296,8 +296,10 @@ impl LayoutEngine {
                     text_wrap: Some(pic.common.text_wrap),
                     external_path: pic.image_attr.external_path.clone(),
                     content_inset: utils::picture_content_inset(pic),
-                    pre_rotation_ratio: crate::renderer::image_geometry::picture_pre_rotation_ratio(pic),
- source_rect: crate::renderer::image_geometry::picture_source_rect(pic),
+                    pre_rotation_ratio: crate::renderer::image_geometry::picture_pre_rotation_ratio(
+                        pic,
+                    ),
+                    source_rect: crate::renderer::image_geometry::picture_source_rect(pic),
                     ..ImageNode::new(bin_data_id, image_data)
                 }),
                 BoundingBox::new(pic_x + margin_left, pic_y + margin_top, pic_w, pic_h),
@@ -306,8 +308,7 @@ impl LayoutEngine {
             // col_node.children에 들어있으면 그 앞에 끼워넣어 z-order 보존
             // (인라인 TAC 그림은 박스 프레임 시각이고 InFrontOfText 표가
             //  본문 콘텐츠로 그 위에 그려져야 함).
-            let border_node =
-                self.make_picture_border_node(tree, pic, img_node.bbox, img_node.id);
+            let border_node = self.make_picture_border_node(tree, pic, img_node.bbox, img_node.id);
             let insert_pos = col_node.children.iter().position(|c| {
                 matches!(&c.node_type, RenderNodeType::Table(t)
                     if t.para_index == Some(para_index))
@@ -428,7 +429,6 @@ impl LayoutEngine {
                 pic_x,
                 pic_w,
                 cap_y,
-                &mut self.auto_counter.borrow_mut(),
                 bin_data_content,
                 Some(cell_ctx),
                 CaptionOwner::new(

@@ -5,7 +5,7 @@ use super::super::page_layout::LayoutRect;
 use super::super::pagination::{FootnoteFragment, FootnoteRef, FootnoteSource};
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
-use super::super::{hwpunit_to_px, AutoNumberCounter, PathCommand, StrokeDash, TextStyle};
+use super::super::{hwpunit_to_px, PathCommand, StrokeDash, TextStyle};
 use super::border_rendering::border_width_to_px;
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::{
@@ -678,7 +678,6 @@ impl LayoutEngine {
                 cap_x,
                 cap_w,
                 cap_y,
-                &mut self.auto_counter.borrow_mut(),
                 bin_data_content,
                 caption_cell_ctx,
                 CaptionOwner::new(
@@ -980,7 +979,6 @@ impl LayoutEngine {
                 cap_x,
                 cap_w,
                 cap_y,
-                &mut self.auto_counter.borrow_mut(),
                 bin_data_content,
                 Some(cell_ctx),
                 CaptionOwner::new(
@@ -1036,7 +1034,6 @@ impl LayoutEngine {
         content_x: f64,
         content_width: f64,
         y_start: f64,
-        _auto_counter: &mut AutoNumberCounter,
         bin_data_content: &[BinDataContent],
         cell_ctx: Option<super::CellContext>,
         caption_owner: Option<CaptionOwner>,

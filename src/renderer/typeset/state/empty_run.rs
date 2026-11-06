@@ -66,17 +66,17 @@ impl TypesetState {
                 (source.len() == 1).then(|| source[0])
             })
             .map(|vpos| crate::renderer::hwpunit_to_px(vpos.saturating_add(last.line_height), dpi));
-        let first_height =
-            crate::renderer::hwpunit_to_px(paragraphs[first].line_segs[0].line_height, dpi);
-        // 셀 재구성으로 원본 프레임이 실제 무효화되고 빈 줄 자체도 예산 밖이면
-        // 옛 reset 앞이라는 이유로 숨기지 않는다. 마지막 줄 뒤 간격만 넘치는
-        // 경우를 줄 상자 넘침으로 바꾸지 않는다.
+        // 이미 수용한 본문의 커서가 물리 프레임을 넘었으면 원래 reset의
+        // 꼬리 흡수로 다음 쪽의 빈 prefix까지 없애지 않는다. dirty 표식은
+        // 저장 줄 재기준에도 생기므로, 아직 프레임 안인 본문 뒤의 빈 줄이
+        // 안 들어간다는 사실만으로 원래 쪽 경계를 무효화하지 않는다.
+        // sample16의 정상 저장 꼬리와 수식 재구성 뒤 넘친 본문이 이 경계다.
         if self.data.vpos_ladder_dirty
             && !self.data.profile.session_edited()
             && (self.data.profile.hwp5_stored_pagination_layout()
                 || self.data.profile.hwpx_stored_layout())
             && source_bottom.is_some_and(|bottom| bottom <= self.base_available_height())
-            && self.data.current_height + first_height > self.available_height()
+            && self.data.current_height > self.available_height()
         {
             self.data.saved_empty_run = Some(SavedEmptyRun {
                 first,
