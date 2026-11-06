@@ -1471,6 +1471,62 @@ mod direct_pdf_preflight_contract {
     }
 
     #[test]
+    fn preflight_and_export_reject_page_extents_that_underflow_skia_scalars() {
+        let options = DirectPdfExportOptions::default();
+        for tiny in [1e-50, 1e-300, f64::MIN_POSITIVE] {
+            assert!(tiny * 0.75 > 0.0);
+            assert_eq!((tiny * 0.75) as f32, 0.0);
+            for width in [true, false] {
+                let mut tree = page(leaf(Vec::new()));
+                if width {
+                    tree.page_width = tiny;
+                } else {
+                    tree.page_height = tiny;
+                }
+                let pages = [tree];
+                let report =
+                    preflight_direct_pdf(&pages, &options, DirectPdfPreflightLimits::default());
+                assert!(!report.is_admitted());
+                assert!(!report.truncated);
+                assert_eq!(report.issues.len(), 1);
+                assert_eq!(
+                    report.issues[0].reason,
+                    if width {
+                        Reason::InvalidPageWidth
+                    } else {
+                        Reason::InvalidPageHeight
+                    }
+                );
+                assert_eq!(
+                    report.issues[0].location,
+                    DirectPdfPreflightLocation {
+                        page_index: Some(0),
+                        ..Default::default()
+                    }
+                );
+                // Exercise the real public export path: this must return Err,
+                // rather than pass a zero width/height to Skia's begin_page.
+                assert_eq!(
+                    layer_trees_to_pdf(&pages).unwrap_err(),
+                    report.issues[0].message
+                );
+            }
+        }
+        // Positivity is checked after conversion, without inventing a minimum
+        // physical page size. Small representable extents remain supported.
+        let mut small = page(leaf(Vec::new()));
+        small.page_width = 0.0001;
+        small.page_height = 0.0002;
+        assert!(preflight_direct_pdf(
+            std::slice::from_ref(&small),
+            &options,
+            DirectPdfPreflightLimits::default(),
+        )
+        .is_admitted());
+        assert!(layer_trees_to_pdf(&[small]).unwrap().starts_with(b"%PDF-"));
+    }
+
+    #[test]
     fn preflight_static_success_does_not_mask_a_strict_image_decode_failure() {
         // A recognized PNG signature has no decodable image. Static inspection
         // must not allocate a decoded image or claim successful resource replay.

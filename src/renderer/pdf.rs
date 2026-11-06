@@ -1191,7 +1191,10 @@ mod direct_pdf_validation {
     pub(super) fn page_dimension(value: f64, width: bool) -> Result<f32, Failure> {
         let label = if width { "width" } else { "height" };
         let points = value * CSS_PX_TO_PDF_POINT;
-        if !points.is_finite() || points <= 0.0 {
+        let skia_points = points as f32;
+        // A positive f64 page extent can underflow to zero in Skia's scalar
+        // type. Reject before begin_page, whose native canvas must be non-null.
+        if !points.is_finite() || points <= 0.0 || skia_points <= 0.0 {
             return Err(failure(
                 if width {
                     Reason::InvalidPageWidth
@@ -1205,7 +1208,7 @@ mod direct_pdf_validation {
             return Err(failure(if width { Reason::PageWidthTooLarge } else { Reason::PageHeightTooLarge },
                 format!("direct PDF page {label} exceeds {MAX_PDF_PAGE_DIMENSION_POINTS} points: {points}")));
         }
-        Ok(points as f32)
+        Ok(skia_points)
     }
 
     pub(super) fn preflight(

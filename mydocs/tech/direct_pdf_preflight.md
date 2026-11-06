@@ -79,6 +79,9 @@ for issue in &report.issues {
 `raster_dpi`를 포함한다. 이미지 형식은 signature로 확인하고 실제 decode는 export에
 남긴다. 예를 들어 PNG signature만 있는 잘린 payload는 정적 통과 뒤 실제 export에서
 `cannot decode image payload`로 실패한다. 사전검사 결과를 성공한 PDF의 증거로 쓰지 않는다.
+페이지 크기는 PDF point로 변환한 실제 f32 값도 양수여야 한다. 양의 f64 값이 f32에서
+0으로 사라지면 사전검사와 실제 export 모두 `InvalidPageWidth` 또는 `InvalidPageHeight`로
+거부한다. 표현 가능한 작은 페이지에는 별도의 임의 최솟값을 두지 않는다.
 
 실제 이미지 decode, 폰트 탐색·생성, 정확한 글리프 face 준비, text alternative 계약,
 RawSvg 준비와 PDF recording은 기존의 strict export 경로에서 별도로 검증된다.
