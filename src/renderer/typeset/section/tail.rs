@@ -50,9 +50,15 @@ impl TypesetEngine {
         force_page_break: bool,
         storage: &S,
     ) -> Result<bool, S::Error> {
-        // 이 단계에서는 이미 확정한 각주 영역의 기존 빈 줄 이월만 준비한다.
-        // 새 물리 예약은 뒤의 실제 문단 원점 선택 후 paragraph::flow에서 조회한다.
-        st.prepare_saved_empty_run(para_idx, paragraphs, self.dpi, |_| None);
+        // 조기 흡수 전에 실제 paint와 같은 각주 경계를 조회한다.
+        // 원본 프레임의 소속과 현재 fit을 분리하며 뒤 flow도 같은 예약을 소비한다.
+        st.prepare_saved_empty_run(para_idx, paragraphs, self.dpi, |st| {
+            crate::renderer::typeset::notes::footnotes::measure::BodyFootnoteMeasure {
+                engine: self,
+                styles,
+            }
+            .stored_current_area_height(st, paragraphs)
+        });
         if st.saved_empty_run_contains(para_idx) {
             // 실제 줄 상자를 fit/이월한다. 저장 reset 앞이라는 이유로
             // 줄의 물리 점유를 감추지 않는다.

@@ -57,6 +57,34 @@ impl TypesetState {
         {
             return;
         }
+        // 원본의 쪽 좌표와 재기준한 현재 커서는 다른 축이다. 다음 reset=0이
+        // 닫는 원본 프레임에서 이 빈 줄의 잉크가 본문 안이었는지 먼저 확인한다.
+        let source_bottom = paragraphs[reset - 1]
+            .source_line_seg_vertical_pos
+            .as_ref()
+            .map_or(Some(last.vertical_pos), |source| {
+                (source.len() == 1).then(|| source[0])
+            })
+            .map(|vpos| crate::renderer::hwpunit_to_px(vpos.saturating_add(last.line_height), dpi));
+        let first_height =
+            crate::renderer::hwpunit_to_px(paragraphs[first].line_segs[0].line_height, dpi);
+        // 셀 재구성으로 원본 프레임이 실제 무효화되고 빈 줄 자체도 예산 밖이면
+        // 옛 reset 앞이라는 이유로 숨기지 않는다. 마지막 줄 뒤 간격만 넘치는
+        // 경우를 줄 상자 넘침으로 바꾸지 않는다.
+        if self.data.vpos_ladder_dirty
+            && !self.data.profile.session_edited()
+            && (self.data.profile.hwp5_stored_pagination_layout()
+                || self.data.profile.hwpx_stored_layout())
+            && source_bottom.is_some_and(|bottom| bottom <= self.base_available_height())
+            && self.data.current_height + first_height > self.available_height()
+        {
+            self.data.saved_empty_run = Some(SavedEmptyRun {
+                first,
+                reset,
+                page: self.data.pages.len(),
+            });
+            return;
+        }
         // 저장 빈 줄의 점유와 그 뒤의 reset은 별개다. 같은 저장 프레임에
         // 있는 빈 꼬리가 실제 각주 상자 위에 모두 들어가면, 추정용 안전
         // 여백 때문에 빈 줄만 다음 쪽으로 보내지 않는다. 각주의 원래
@@ -86,7 +114,17 @@ impl TypesetState {
                             - height
                             - self.data.current_zone_y_offset
                             - self.data.current_bottom_fixed_exclusion;
-                        if height.is_finite() && height > 0.0 && top >= 0.0 && bottom <= capacity {
+                        if std::env::var_os("RHWP_DIAG_FLOW").is_some() {
+                            eprintln!(
+                                "DIAG_EMPTY_FRAME first={first} reset={reset} base={base} source_bottom={source_bottom:?} actual_top={top} actual_bottom={bottom} current={} note={height} capacity={capacity}",
+                                self.data.current_height
+                            );
+                        }
+                        if height.is_finite()
+                            && height > 0.0
+                            && top >= 0.0
+                            && source_bottom.is_some_and(|bottom| bottom <= capacity)
+                        {
                             self.reserve_painted_footnote_area(height);
                             self.data.saved_empty_run = Some(SavedEmptyRun {
                                 first,
