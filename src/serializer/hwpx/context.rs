@@ -327,7 +327,13 @@ impl SerializeContext {
         // binaryItemIDRef 의 숫자를 그대로 bin_data_id 로 파싱하므로(숫자 불변식),
         // 순번(i+1) 명명은 링크 항목으로 id 에 구멍이 있는 문서(#1891 73504)에서
         // 이름과 id 가 어긋나 재파스 그림 참조가 엉킨다.
-        for bd in doc.bin_data_content.iter() {
+        for (index, bd) in doc.bin_data_content.iter().enumerate() {
+            // HWP5 연결 레코드 자리 항목은 BinData 가 아니다 — 아래 bin_data_list 루프가
+            // 외부 참조로 처리한다.
+            if crate::model::bin_data::is_hwp5_link_slot(bd, doc.doc_info.bin_data_list.get(index))
+            {
+                continue;
+            }
             // [#3546] OOXML 차트 파트(HWPX 파서가 60000+N 으로 주입)는 BinData 가
             // 아니다 — 원본은 Chart/chartN.xml 이고 content.hpf 도 나열하지 않는다.
             // manifest 등록 없이 원형 경로로 별도 방출한다.
