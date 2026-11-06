@@ -1,7 +1,8 @@
 //! #7728: 계속 표의 열 프레임과 독립 Print의 셀 괘선 끝점을 보호한다.
-//! 주석 갱신: 2026-11-06T16:51:25+09:00.
+//! 주석 갱신: 2026-11-06T17:11:03+09:00.
 //! 검사 분류: `continuation_column_frames_keep_opening_span_and_row_edges`와
-//! `continued_parent_border_contains_owned_nested_frames`는 관계형이다.
+//! `continued_parent_border_contains_owned_nested_frames`,
+//! `sibling_nested_source_frames_close_on_the_parent_row_boundary`는 관계형이다.
 //! 검사 분류: `independent_print_page10_keeps_all_grid_edges`는 고정형(독립 PDF ±2 CSSpx)이다.
 //! 원본 70833 HWP와 독립 한컴2020 Print PDF, compat2022,96DPI/PDFium/2px raw.
 //! 코드04f03cfa 전18쪽 Native 최저94.62153%, fresh WASM 최저94.27517%, 미달·누락0.
@@ -262,4 +263,37 @@ fn continued_parent_border_contains_owned_nested_frames() {
         checked += 1;
     }
     assert_eq!(checked, 2, "양쪽 열의 실제 괘선 확인");
+}
+
+// 관계형: 같은 부모 물리 행의 양쪽 자식 프레임은 공통 하단에서 닫힌다.
+#[test]
+fn sibling_nested_source_frames_close_on_the_parent_row_boundary() {
+    let core = open();
+    let page = core.build_page_render_tree(5).unwrap();
+    let outer = nodes(&page.root)
+        .into_iter()
+        .find(|n| matches!(&n.node_type,RenderNodeType::Table(t)if(t.row_count,t.col_count)==(2,2)))
+        .unwrap();
+    let mut bottoms = Vec::new();
+    for cell in &outer.children {
+        if !matches!(&cell.node_type,RenderNodeType::TableCell(c)if c.row==1) {
+            continue;
+        }
+        let child=nodes(cell).into_iter().find(|n|matches!(&n.node_type,RenderNodeType::Table(t)if(t.row_count,t.col_count)==(7,1))).unwrap();
+        let bottom = child
+            .children
+            .iter()
+            .filter_map(|n| match &n.node_type {
+                RenderNodeType::Line(l) if (l.y1 - l.y2).abs() < 1e-6 && l.x1 != l.x2 => Some(l.y1),
+                _ => None,
+            })
+            .reduce(f64::max)
+            .unwrap();
+        bottoms.push(bottom);
+    }
+    assert_eq!(bottoms.len(), 2);
+    assert!(
+        (bottoms[0] - bottoms[1]).abs() < 1e-6,
+        "같은 부모 물리 행에서 닫히는 두 자식의 하단은 같아야 함: {bottoms:?}"
+    );
 }

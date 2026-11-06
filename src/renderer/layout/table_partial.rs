@@ -5021,86 +5021,9 @@ impl LayoutEngine {
                                                 })
                                             })
                                             .flatten();
-                                        let plain_source_height = recursive_cut
-                                            .end_row
-                                            .checked_sub(1)
-                                            .and_then(|last_row| {
-                                                let row_start =
-                                                    if recursive_cut.start_row == last_row {
-                                                        recursive_cut.start_cut.as_slice()
-                                                    } else {
-                                                        &[]
-                                                    };
-                                                let extra = self.stored_child_cut_frame_extra(
-                                                    nested_table,
-                                                    recursive_cut,
-                                                    styles,
-                                                )?;
-                                                let content = self.row_cut_content_height(
-                                                    nested_table,
-                                                    last_row,
-                                                    row_start,
-                                                    &recursive_cut.end_cut,
-                                                    styles,
-                                                );
-                                                let spare = (cell_y + cell_h
-                                                    - pad_bottom
-                                                    - nested_y
-                                                    - self.nested_cut_physical_height(
-                                                        nested_table,
-                                                        recursive_cut,
-                                                        styles,
-                                                    ))
-                                                .max(0.0);
-                                                Some(content + extra.min(spare))
-                                            });
-                                        let reflow_closing_band = (!is_block_split
-                                            && !start_cut_is_block)
-                                            .then(|| {
-                                                self.reflow_nested_band_at_height(
-                                                    table,
-                                                    usize::from(cell.row),
-                                                    if usize::from(cell.row) == start_row {
-                                                        start_cut
-                                                    } else {
-                                                        &[]
-                                                    },
-                                                    if usize::from(cell.row) + 1 == end_row {
-                                                        end_cut
-                                                    } else {
-                                                        &[]
-                                                    },
-                                                    cell_h,
-                                                    styles,
-                                                )
-                                            })
-                                            .flatten();
-                                        let rendered_bottom = self.layout_partial_table_resolved(
-                                            tree,
-                                            nested_parent,
-                                            nested_table.as_ref(),
-                                            PartialTableHostContext {
-                                                paragraphs: &[],
-                                                para_index: 0,
-                                                control_index: 0,
-                                                repeat_fragment_outer_margin: false,
-                                                pre_emitted_host_height: 0.0,
-                                                pre_emitted_host_content_height: 0.0,
-                                                host_line_spacing: 0.0,
-                                                predecessor_flow_bottom: None,
-                                                resolved_table_left: reflow_block_origin
-                                                    .and_then(|origin| origin.0)
-                                                    .or(stored_inline_left).or_else(
-                                                    || {
-                                                        stored_float_frame
-                                                            .and_then(|f| f.table_left)
-                                                    },
-                                                ),
-                                                end_row_owns_stored_frame: false,
-                                                computed_fragment_frame: false,
-                                                // 같은 원본 프레임의 바깥여백은 부모 흐름에 예약했다.
-                                                // 실제 표 원점에서는 위 여백만 한 번 소비한다.
-                                                resolved_table_top: reflow_block_origin
+                                        // 물리 여유와 실제 paint가 같은 최종 원점을 소비한다.
+                                        // 저장/재조판 경로의 위쪽 바깥 띠를 뒤에서 다시 더하지 않는다.
+                                        let resolved_nested_table_top = reflow_block_origin
                                                     .map(|origin| origin.1)
                                                     .or_else(|| source_frame_height
                                                     .map(|_| {
@@ -5158,7 +5081,91 @@ impl LayoutEngine {
                                                                     self.dpi,
                                                                 )
                                                         })
-                                                    })),
+                                                    }));
+                                        let plain_source_height = recursive_cut
+                                            .end_row
+                                            .checked_sub(1)
+                                            .and_then(|last_row| {
+                                                let row_start =
+                                                    if recursive_cut.start_row == last_row {
+                                                        recursive_cut.start_cut.as_slice()
+                                                    } else {
+                                                        &[]
+                                                    };
+                                                let extra = self.stored_child_cut_frame_extra(
+                                                    nested_table,
+                                                    recursive_cut,
+                                                    styles,
+                                                )?;
+                                                let content = self.row_cut_content_height(
+                                                    nested_table,
+                                                    last_row,
+                                                    row_start,
+                                                    &recursive_cut.end_cut,
+                                                    styles,
+                                                );
+                                                let spare = (cell_y + cell_h
+                                                    - pad_bottom
+                                                    - resolved_nested_table_top
+                                                        .unwrap_or(nested_y)
+                                                    - hwpunit_to_px(
+                                                        i32::from(nested_table.outer_margin_bottom),
+                                                        self.dpi,
+                                                    )
+                                                    - self.nested_cut_physical_height(
+                                                        nested_table,
+                                                        recursive_cut,
+                                                        styles,
+                                                    ))
+                                                .max(0.0);
+                                                Some(content + extra.min(spare))
+                                            });
+                                        let reflow_closing_band = (!is_block_split
+                                            && !start_cut_is_block)
+                                            .then(|| {
+                                                self.reflow_nested_band_at_height(
+                                                    table,
+                                                    usize::from(cell.row),
+                                                    if usize::from(cell.row) == start_row {
+                                                        start_cut
+                                                    } else {
+                                                        &[]
+                                                    },
+                                                    if usize::from(cell.row) + 1 == end_row {
+                                                        end_cut
+                                                    } else {
+                                                        &[]
+                                                    },
+                                                    cell_h,
+                                                    styles,
+                                                )
+                                            })
+                                            .flatten();
+                                        let rendered_bottom = self.layout_partial_table_resolved(
+                                            tree,
+                                            nested_parent,
+                                            nested_table.as_ref(),
+                                            PartialTableHostContext {
+                                                paragraphs: &[],
+                                                para_index: 0,
+                                                control_index: 0,
+                                                repeat_fragment_outer_margin: false,
+                                                pre_emitted_host_height: 0.0,
+                                                pre_emitted_host_content_height: 0.0,
+                                                host_line_spacing: 0.0,
+                                                predecessor_flow_bottom: None,
+                                                resolved_table_left: reflow_block_origin
+                                                    .and_then(|origin| origin.0)
+                                                    .or(stored_inline_left)
+                                                    .or_else(|| {
+                                                        stored_float_frame
+                                                            .and_then(|f| f.table_left)
+                                                    }),
+                                                end_row_owns_stored_frame: false,
+                                                computed_fragment_frame: false,
+                                                // 같은 원본 프레임의 바깥여백은 부모 흐름에 예약했다.
+                                                // 실제 표 원점에서는 위 여백만 한 번 소비한다.
+                                                resolved_table_top: resolved_nested_table_top,
                                             },
                                             section_index,
                                             styles,
@@ -5183,7 +5190,11 @@ impl LayoutEngine {
                                                 .filter(|_| !recursive_cut.end_cut.is_empty())
                                                 .or(joint_opening_height)
                                                 .or(plain_source_height)
-                                                .or_else(|| reflow_closing_band.as_ref().map(|band| band.last_row_height)),
+                                                .or_else(|| {
+                                                    reflow_closing_band
+                                                        .as_ref()
+                                                        .map(|band| band.last_row_height)
+                                                }),
                                             source_frame_height
                                                 .filter(|_| !recursive_cut.start_cut.is_empty()),
                                             &[],

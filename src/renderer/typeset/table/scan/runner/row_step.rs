@@ -1383,7 +1383,10 @@ impl TypesetEngine {
             let source_blank_band = layout_engine
                 .stored_nested_plain_cut_frame_extra(table, r, row_start_cut, &res.end_cut, styles)
                 .map(|extra| {
-                    (split_total + extra).min((avail_for_rows - consumed - cs_before).max(0.0))
+                    (split_total + extra).min(
+                        (v.blank_row_available_height().min(avail_for_rows) - consumed - cs_before)
+                            .max(0.0),
+                    )
                 })
                 .filter(|height| *height > split_total);
             let split_total = source_blank_band.unwrap_or(split_total);

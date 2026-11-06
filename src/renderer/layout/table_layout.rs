@@ -22770,33 +22770,56 @@ impl LayoutEngine {
         end_cut: &[usize],
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
-        let cell_order = self.indexed_row_cut_cell_order(table, row);
-        let [cell_index] = cell_order.as_slice() else {
+        if end_cut.is_empty() {
             return None;
-        };
-        let cell = &table.cells[*cell_index];
-        let units = self.cell_units(cell, table, styles);
-        let start = start_cut.first().copied().unwrap_or(0);
-        let end = end_cut.first().copied()?;
-        let last = units.get(end.checked_sub(1)?)?;
-        let child = cell
-            .paragraphs
-            .get(last.para_idx)?
-            .controls
-            .iter()
-            .find_map(|control| {
-                if let Control::Table(child) = control {
-                    Some(child.as_ref())
-                } else {
-                    None
-                }
-            })?;
-        let split = self
-            .nested_table_split_from_cut_units(cell, table, styles, start, end, last.para_idx)
-            .or_else(|| {
-                self.mixed_nested_split_from_cut(cell, table, styles, start, end, last.para_idx)
-            })?;
-        self.stored_child_cut_frame_extra(child, &split.recursive_cut?, styles)
+        }
+        let cell_order = self.indexed_row_cut_cell_order(table, row);
+        let occupied = self.row_cut_content_height(table, row, start_cut, end_cut, styles);
+        let mut required = occupied;
+        let mut has_source_frame = false;
+        for (slot, &cell_index) in cell_order.iter().enumerate() {
+            let cell = &table.cells[cell_index];
+            let units = self.cell_units(cell, table, styles);
+            let start = start_cut.get(slot).copied().unwrap_or(0);
+            let Some(&end) = end_cut.get(slot) else {
+                continue;
+            };
+            let Some(last) = end.checked_sub(1).and_then(|end| units.get(end)) else {
+                continue;
+            };
+            let Some(child) = cell.paragraphs.get(last.para_idx).and_then(|para| {
+                para.controls.iter().find_map(|control| match control {
+                    Control::Table(child) => Some(child.as_ref()),
+                    _ => None,
+                })
+            }) else {
+                continue;
+            };
+            let Some(cut) = self
+                .nested_table_split_from_cut_units(cell, table, styles, start, end, last.para_idx)
+                .or_else(|| {
+                    self.mixed_nested_split_from_cut(cell, table, styles, start, end, last.para_idx)
+                })
+                .and_then(|split| split.recursive_cut)
+            else {
+                continue;
+            };
+            let Some(extra) = self.stored_child_cut_frame_extra(child, &cut, styles) else {
+                continue;
+            };
+            has_source_frame = true;
+            // 여러 열은 각 칸의 내용+빈 띠 중 최댓값을 예약한다. 짧은 칸의
+            // 여분을 이미 더 긴 다른 칸의 높이에 다시 더하지 않는다.
+            let start: Vec<_> = (0..cell_order.len())
+                .map(|i| start_cut.get(i).copied().unwrap_or(0))
+                .collect();
+            let mut isolated_end = start.clone();
+            isolated_end[slot] = end;
+            let cell_height =
+                self.row_cut_content_height(table, row, &start, &isolated_end, styles);
+            required = required.max(cell_height + extra);
+        }
+        has_source_frame.then_some(required - occupied)
     }
 
     pub(super) fn stored_child_cut_frame_extra(
@@ -22816,6 +22839,16 @@ impl LayoutEngine {
         };
         if let Some(minimum) =
             self.stored_plain_cut_frame_minimum(table, row, start, &cut.end_cut, styles)
+        {
+            return Some(
+                minimum - self.row_cut_content_height(table, row, start, &cut.end_cut, styles),
+            );
+        }
+        // 자식 개체의 선언 첫 상자에서 닫힌 컷도 부모 행의 최소 공간을
+        // 소비한다. 원본 행 선언과 정확한 자식 행 경계가 함께 있어야 하며,
+        // 임의 용량 컷이나 이어받은 내용에 선언 높이를 다시 부과하지 않는다.
+        if let Some(minimum) =
+            self.stored_nested_object_opening_row_minimum(table, row, start, &cut.end_cut, styles)
         {
             return Some(
                 minimum - self.row_cut_content_height(table, row, start, &cut.end_cut, styles),
@@ -22873,6 +22906,49 @@ impl LayoutEngine {
             self.stored_spanning_frame_cut_trailing_spacing(table, cell, &units, end) > 0.0
         });
         owns_boundary.then_some(minimum - first)
+    }
+
+    fn stored_nested_object_opening_row_minimum(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start: &[usize],
+        end: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        if start.iter().any(|&cut| cut > 0) || end.is_empty() {
+            return None;
+        }
+        let order = self.indexed_row_cut_cell_order(table, row);
+        let [index] = order.as_slice() else {
+            return None;
+        };
+        let cell = &table.cells[*index];
+        if cell.dirty_flag || cell.row_span != 1 || cell.height >= 0x8000_0000 {
+            return None;
+        }
+        let [para] = cell.paragraphs.as_slice() else {
+            return None;
+        };
+        if !para.text.trim().is_empty() {
+            return None;
+        }
+        let child = para.controls.iter().find_map(|control| match control {
+            Control::Table(child) => Some(child.as_ref()),
+            _ => None,
+        })?;
+        let units = self.cell_units(cell, table, styles);
+        let cut = Self::nested_row_projection_cut(units.get(..*end.first()?)?)?;
+        if cut.start_row != 0
+            || !cut.start_cut.is_empty()
+            || !cut.end_cut.is_empty()
+            || self.stored_object_frame_row_count(child) != Some(cut.end_row)
+        {
+            return None;
+        }
+        let minimum = hwpunit_to_px(cell.height as i32, self.dpi);
+        let content = self.row_cut_content_height(table, row, start, end, styles);
+        (minimum > content).then_some(minimum)
     }
 
     /// Return whether a row records an in-paragraph return from a positive

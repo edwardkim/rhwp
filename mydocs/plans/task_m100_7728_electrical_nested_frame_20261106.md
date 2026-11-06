@@ -286,3 +286,12 @@ Studio Node는 2,748 PASS/0 FAIL/2 skip, TypeScript·Vite build는 exit 0이다.
 `output/open-issues-oldest-20261105/post-rebase-ece9/rebase-5716a226-20261106-115256/`에 보존한다.
 실행 중에는 해당 head와 소스를 고정하며, 결과 확인·대표 review/overlay 판독·증적 정리 후
 이 단계의 로컬 커밋을 진행한다. PR·이슈 종료와 최종 편람 gate 완료는 아직 선언하지 않는다.
+
+## 7단계 — 부모·자식의 빈 종료 공간 공유
+
+행 내부 줄 컷이 없는 원자 행도 선언 첫 개체 상자에 대응하는 같은 커서로 질의한다.
+여러 칸의 요구 높이는 최댓값으로 합치고, 수용한 빈 띠 예산을 paint의 최종 원점과
+원본 안·바깥여백으로 닫는다. 6쪽 Native는 99.97875%, 5쪽은 99.00598%로 개선했다.
+부모 포함·형제 하단·열 경계·독립10쪽의 4개 검사 PASS이며, 6쪽 review/overlay를 직접 확인했다.
+Native 잔여는 7쪽96.06208%,9쪽97.70433%,12쪽96.54520%다. fresh WASM은 아직 미검증이다.
+[전쪽 TSV와 부분 증적](../pr/assets/issue7728/phase8-shared-closing-frame-20261106/README.md)을 보존한다.
