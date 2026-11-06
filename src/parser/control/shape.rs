@@ -976,21 +976,26 @@ fn parse_picture(common: CommonObjAttr, shape_attr: ShapeComponentAttr, data: &[
                 pic.raw_picture_extra[4],
             ]);
         }
-        if pic.raw_picture_extra.len() >= 18 {
-            if let Some(&alpha) = pic.raw_picture_extra.last() {
-                pic.image_attr.transparency =
-                    crate::model::image::alpha_byte_to_transparency_percent(alpha);
-            }
+        // 꼬리 중간의 그림 효과 정보 뒤에 원본 크기와 투명도가 온다.
+        let layout = crate::model::image::picture_extra_layout(&pic.raw_picture_extra);
+        if let Some(&alpha) = layout
+            .alpha_offset
+            .and_then(|i| pic.raw_picture_extra.get(i))
+        {
+            pic.image_attr.transparency =
+                crate::model::image::alpha_byte_to_transparency_percent(alpha);
         }
-        // [#1929] extra 꼬리의 원본 이미지 크기(offset 9..17: w4+h4)를 img_dim 으로
+        // [#1929] extra 꼬리의 원본 이미지 크기(w4+h4)를 img_dim 으로
         // 적재 — HWPX `hp:imgDim` 대응 필드. 종전에는 HWP5 파스가 이를 읽지 않아
         // HWPX→HWP5 왕복에서 imgDim 이 (0,0) 으로 소실됐다 (직렬화기 non-raw
         // 경로가 기록해도 재파스가 버림).
-        if pic.raw_picture_extra.len() >= 17 {
-            let e = &pic.raw_picture_extra;
+        if let Some(e) = layout
+            .dim_offset
+            .and_then(|i| pic.raw_picture_extra.get(i..i + 8))
+        {
             pic.img_dim = (
-                u32::from_le_bytes([e[9], e[10], e[11], e[12]]),
-                u32::from_le_bytes([e[13], e[14], e[15], e[16]]),
+                u32::from_le_bytes([e[0], e[1], e[2], e[3]]),
+                u32::from_le_bytes([e[4], e[5], e[6], e[7]]),
             );
         }
     }
