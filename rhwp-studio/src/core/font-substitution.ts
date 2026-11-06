@@ -12,6 +12,7 @@
 
 import { getDetectedOSFonts, REGISTERED_FONTS } from './font-loader.ts';
 import { getLocalFontState, resolveLocalFont } from './local-fonts.ts';
+import { TEXT_SYMBOL_FONT_FAMILIES } from './text-symbol-font.ts';
 
 import {
   FONT_RULE_DISPLAY_CHAIN_POLICY_IDS,
@@ -302,6 +303,25 @@ function pushUniqueFontFamily(families: string[], fontName: string): void {
   families.push(name);
 }
 
+/** 기존 요청·별칭의 순서는 보존하고, 빠진 후보를 다음 공통 후보 앞에 넣는다.
+ * generic 뒤에 누락 후보를 붙이면 브라우저가 그 후보에 도달하지 못할 수 있다.
+ */
+export function completeFontFamilyList(incoming: readonly string[], fallback: readonly string[]): string[] {
+  const families: string[] = [];
+  for (const name of incoming) pushUniqueFontFamily(families, name);
+  const key = (name: string) => name.toLocaleLowerCase('en-US');
+  for (let index = 0; index < fallback.length; index++) {
+    const name = fallback[index].trim();
+    if (!name || families.some(existing => key(existing) === key(name))) continue;
+    const following = fallback.slice(index + 1).find(candidate =>
+      families.some(existing => key(existing) === key(candidate)));
+    const position = following === undefined ? families.length
+      : families.findIndex(existing => key(existing) === key(following));
+    families.splice(position, 0, name);
+  }
+  return families;
+}
+
 function bodyFallbackFamilies(fontName: string): string[] {
   if (GENERIC_FONTS.has(fontName)) return [fontName];
   // KoPub바탕체는 이름에 "바탕체"가 있지만 Windows BatangChe와 달리 비례폭 출판 명조다.
@@ -323,8 +343,13 @@ function bodyFallbackFamilies(fontName: string): string[] {
 function systemFallbackFamilies(fontName: string): string[] {
   const body = bodyFallbackFamilies(fontName);
   if (GENERIC_FONTS.has(fontName)) return body;
-  // Native의 일반 텍스트 글리프 대체 순서와 같다. 색상 사용 여부는 글꼴 준비에서 결정한다.
-  return [...body.slice(0, -1), 'Segoe UI Emoji', 'Noto Emoji', 'Noto Color Emoji', body.at(-1)!];
+  // 본문 후보 뒤에 공개 문자 기호를 먼저 두어 누락 글자가 컬러 이모지로 바뀌지 않게 한다.
+  // 명시적으로 요청한 이모지 face는 호출자가 앞에 보존한다.
+  const families: string[] = [];
+  for (const name of [...body.slice(0, -1), ...TEXT_SYMBOL_FONT_FAMILIES, 'Segoe UI Emoji', 'Noto Emoji', 'Noto Color Emoji', body.at(-1)!]) {
+    pushUniqueFontFamily(families, name);
+  }
+  return families;
 }
 
 /** 원래 선언은 유지하고, 빠진 글리프를 공급할 일반 텍스트 후보를 같은 순서로 준비·소비한다. */

@@ -15,7 +15,7 @@
 //! 원본별 HWP/HWPX 전 19쪽: Native 최저 99.98%, fresh WASM 최저 99.98%, PDF 쪽수 일치.
 //! 대상 8·9·10·11쪽은 두 형식·두 backend 모두 100.00%; 절대 배치 좌표를 고정하지 않는다.
 //! 제품 source: dc39658f812d22c961ddd0fbc8e71c7ec7a52e5b. 시스템 글꼴 공급에 의존하지 않는다.
-//! 정식 근거: mydocs/pr/assets/semanticist21_20261105/rebase-ece9-note-repair/repair-evidence.json.
+//! 정식 근거: mydocs/pr/assets/semanticist21_20261105/rebase-ece9-note-repair/README.md.
 //! TSV: 같은 폴더 hwp-native.tsv, hwp-wasm.tsv, hwpx-native.tsv, hwpx-wasm.tsv.
 //! 독립 PDF: pdf/number_shapes/note-formats-hancom-mac-12.30.pdf.
 //! 각주 10·11쪽 review·overlay와 확대 판독은 같은 증적 폴더에 연결한다.

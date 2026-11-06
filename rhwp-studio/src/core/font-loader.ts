@@ -14,6 +14,7 @@ import {
   resolveProjectedCanvasKitFontPlan,
   type ProjectedWebFontEntry,
 } from './font-rule-runtime.ts';
+import { TEXT_SYMBOL_FONT_FAMILY } from './text-symbol-font.ts';
 
 type FontEntry = ProjectedWebFontEntry;
 
@@ -60,8 +61,8 @@ const FONT_LIST: readonly FontEntry[] = FONT_RULE_WEBFONT_ENTRIES;
 /** @font-face에 등록된 폰트 이름 Set */
 export const REGISTERED_FONTS = new Set(FONT_LIST.map(f => f.name));
 
-/** 문서 기본 서체와 Canvas 옛한글 paint가 직접 요청하는 공급 자원. */
-const CRITICAL_FONTS = new Set(['함초롬바탕', '함초롬돋움', 'RHWP Old Hangul']);
+/** 문서 기본 서체·옛한글·모노크롬 기호 paint가 직접 요청하는 공급 자원. */
+const CRITICAL_FONTS = new Set(['함초롬바탕', '함초롬돋움', 'RHWP Old Hangul', TEXT_SYMBOL_FONT_FAMILY]);
 
 /** CSS @font-face에 등록한 글꼴 (문서 요청 단위로 누적) */
 const registeredFontFaces: FontEntry[] = [];
