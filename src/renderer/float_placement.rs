@@ -7795,6 +7795,73 @@ pub(crate) fn nested_overlay_stored_line_lead(
     }
 }
 
+/// [#8686] 저장 호스트 줄이 인증한 자리차지 표의 배제 띠 끝(문단 원점 기준 좌표계).
+/// 배치가 흐름을 전진시키지 않는 같은 프레임이므로, 측정은 뒤 문단이 오프셋 위
+/// 공간에 들어가도 칸 내용이 이 띠 끝까지 닿는다고 센다.
+pub(crate) fn stored_host_exclusion_bottom(
+    para: &Paragraph,
+    table: &Table,
+    control_index: usize,
+    paragraph_origin: f64,
+    body_height: f64,
+    dpi: f64,
+) -> Option<f64> {
+    if para.cell_format_vpos_dirty
+        || para
+            .controls
+            .iter()
+            .filter(|control| matches!(control, Control::Table(_)))
+            .count()
+            != 1
+    {
+        return None;
+    }
+    ParagraphFloatPlacement::from_stored_host(
+        para,
+        table,
+        control_index,
+        paragraph_origin,
+        body_height,
+        dpi,
+    )
+    .or_else(|| {
+        ParagraphFloatPlacement::from_stored_head_host(
+            para,
+            table,
+            control_index,
+            paragraph_origin,
+            body_height,
+            dpi,
+        )
+    })
+    .filter(|frame| frame.flow == ParagraphFloatFlow::Exclusion)
+    .map(|frame| frame.occupied_bottom)
+}
+
+/// [#8686] 흐름을 전진시키지 않은 자리차지 표의 바깥 상자 띠에는 글줄이 들어갈 수 없다.
+/// 문단 첫 줄(`origin + spacing_before`부터 `line_height`)이 띠와 겹치면 문단 원점을
+/// 띠 끝으로 옮긴다. 띠 위 오프셋 공간에 들어가는 줄은 그 자리에 둔다.
+pub(crate) fn clear_topbottom_bands(
+    bands: &[Range<f64>],
+    origin: f64,
+    spacing_before: f64,
+    line_height: f64,
+) -> f64 {
+    let mut origin = origin;
+    let mut sorted: Vec<&Range<f64>> = bands
+        .iter()
+        .filter(|band| band.start.is_finite() && band.end.is_finite() && band.start < band.end)
+        .collect();
+    sorted.sort_by(|a, b| a.start.total_cmp(&b.start));
+    for band in sorted {
+        let top = origin + spacing_before;
+        if top < band.end && top + line_height.max(0.0) > band.start {
+            origin = band.end;
+        }
+    }
+    origin
+}
+
 /// 흐름 표는 나란함/적층을 따르지만 배경의 시각 높이는 같은 앵커에서 최댓값으로 합친다.
 /// 측정과 셀 정렬이 같은 결과를 소비하며 배경을 뒤에 놓인 새 흐름으로 더하지 않는다.
 pub(crate) fn nested_group_occupied_height(

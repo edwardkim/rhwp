@@ -3753,6 +3753,49 @@ let body_height=match nested_body_heights
                     } else {
                         candidate
                     };
+                    // [#8686] 흐름을 전진시키지 않는 저장 호스트 배제 띠는 뒤 문단이
+                    // 오프셋 위 공간에 있어도 칸 내용의 끝이다. 배치와 같은 프레임을 쓴다.
+                    let bottom = if self.is_native_hwp5 || self.hwpx_stored_layout {
+                        let spacing_before = styles
+                            .para_styles
+                            .get(p.para_shape_id as usize)
+                            .map_or(0.0, |s| s.spacing_before);
+                        let last = pidx + 1 == paragraphs.len();
+                        p.controls
+                            .iter()
+                            .enumerate()
+                            .filter_map(|(ci, ctrl)| {
+                                let Control::Table(nested) = ctrl else {
+                                    return None;
+                                };
+                                if self.render_normalization.table_text_reflowed(nested) {
+                                    return None;
+                                }
+                                let margins = hwpunit_to_px(
+                                    i32::from(nested.outer_margin_top)
+                                        + i32::from(nested.outer_margin_bottom),
+                                    self.dpi,
+                                );
+                                let lead = if last {
+                                    crate::renderer::layout::table_layout::para_relative_float_table_lead(
+                                        nested, self.dpi,
+                                    )
+                                } else {
+                                    0.0
+                                };
+                                crate::renderer::float_placement::stored_host_exclusion_bottom(
+                                    p,
+                                    nested,
+                                    ci,
+                                    para_top - spacing_before,
+                                    heights[ci] - margins - lead,
+                                    self.dpi,
+                                )
+                            })
+                            .fold(bottom, f64::max)
+                    } else {
+                        bottom
+                    };
                     prior_nested_end.set(prior_nested_end.get().max(bottom));
                     bottom
                 })
