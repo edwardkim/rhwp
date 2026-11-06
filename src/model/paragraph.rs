@@ -1201,7 +1201,12 @@ impl Paragraph {
     }
 
     /// 구역·단 정의를 보강할 때 기존 선행 컨트롤의 슬롯과 소유 인덱스를 보존한다.
-    pub(crate) fn insert_leading_definition(&mut self, index: usize, control: Control) {
+    pub(crate) fn insert_leading_definition<S: crate::storage::Storage>(
+        &mut self,
+        index: usize,
+        control: Control,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         debug_assert!(matches!(
             control,
             Control::SectionDef(_) | Control::ColumnDef(_)
@@ -1212,6 +1217,15 @@ impl Paragraph {
             .take_while(|control| matches!(control, Control::SectionDef(_) | Control::ColumnDef(_)))
             .count();
         debug_assert!(index <= leading_defs);
+        // Aligning the parallel records and inserting a definition can grow both
+        // vectors. Reserve through the request storage before changing coordinates.
+        storage.reserve(&mut self.controls, 1)?;
+        let additional_records = self
+            .controls
+            .len()
+            .saturating_sub(self.ctrl_data_records.len())
+            + 1;
+        storage.reserve(&mut self.ctrl_data_records, additional_records)?;
         let existing_room = self.char_offsets.first().copied().unwrap_or(0);
         let auxiliary_slots = self
             .field_ranges
@@ -1249,6 +1263,7 @@ impl Paragraph {
         self.align_ctrl_data_records();
         self.ctrl_data_records.insert(index, None);
         self.controls.insert(index, control);
+        Ok(())
     }
 
     /// 선행 확장 제어문자가 들어갈 만큼 첫 텍스트 앞 스트림 좌표를 확보한다.
