@@ -452,12 +452,25 @@ pub(super) fn reconcile_tac_height(
     // 현재 조판한 단일 표 줄의 확정 끝점에는 바깥 여백과 후행 간격도 들어 있다.
     // 셀 실측 본체만으로 다시 상한을 걸면 이미 예약한 물리 공간을 회수하게 된다.
     let cap = if measured_tac_floor.is_some()
-        && para.controls.iter().any(|control| match control {
-            Control::Table(table) => {
-                flow.single_tac_line_has_unstored_cell_text(para, table, fmt, tac_count)
-            }
-            _ => false,
-        }) {
+        && para
+            .controls
+            .iter()
+            .enumerate()
+            .any(|(control_index, control)| match control {
+                Control::Table(table) => {
+                    let measured = measured_tables.iter().find(|measured| {
+                        measured.para_index == para_idx && measured.control_index == control_index
+                    });
+                    flow.single_tac_line_has_current_cell_rows(
+                        para,
+                        table,
+                        fmt,
+                        tac_count,
+                        measured.map_or(&[], |measured| measured.cells.as_slice()),
+                    )
+                }
+                _ => false,
+            }) {
         cap.max(st.tac_height_page().current_height - snapped_base)
     } else {
         cap

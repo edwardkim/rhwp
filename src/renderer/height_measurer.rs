@@ -3921,6 +3921,10 @@ let body_height=match nested_body_heights
                     )? <= declared + 0.5)
             }))?;
 
+        // 재구성한 줄은 뒤의 선언 높이 조정·상세 컷 원장도 같은 셀에서 소비한다.
+        // 원본 저장 줄로 하한을 다시 만들면 이미 수용한 새 줄이 축소·클리핑된다.
+        let mut current_cell_frames =
+            std::collections::HashMap::<usize, crate::model::table::Cell>::new();
         // 2단계: 셀 내 실제 컨텐츠 높이 계산 (layout_table과 동일)
         for (cell_index, cell) in table.cells.iter().enumerate() {
             if cell.row_span == 1 && (cell.row as usize) < row_count {
@@ -4251,7 +4255,11 @@ let body_height=match nested_body_heights
                         Ok(projected)
                     })
                     .transpose()?;
-                let cell = frame_cell.as_ref().unwrap_or(cell);
+                if let Some(frame_cell) = frame_cell {
+                    storage.reserve_map(&mut current_cell_frames, 1)?;
+                    current_cell_frames.insert(cell_index, frame_cell);
+                }
+                let cell = current_cell_frames.get(&cell_index).unwrap_or(cell);
                 let text_height = (self.is_native_hwp5 || self.hwpx_stored_layout)
                     .then(|| self.section_column_spacing_hu.get())
                     .flatten()
@@ -5264,7 +5272,11 @@ let body_height=match nested_body_heights
                         Ok(projected)
                     })
                     .transpose()?;
-                let cell = frame_cell.as_ref().unwrap_or(cell);
+                if let Some(frame_cell) = frame_cell {
+                    storage.reserve_map(&mut current_cell_frames, 1)?;
+                    current_cell_frames.insert(cell_index, frame_cell);
+                }
+                let cell = current_cell_frames.get(&cell_index).unwrap_or(cell);
                 // 단, 비-인라인 이미지/도형은 LINE_SEG에 미포함이므로 별도 합산
                 let non_inline_h = self.measure_non_inline_controls_height_with_storage(
                     cell,
@@ -5522,7 +5534,8 @@ let body_height=match nested_body_heights
                     .iter()
                     .flat_map(|c| c.paragraphs.iter())
                     .any(|p| !crate::renderer::para_has_no_stored_line_segs(p));
-            for cell in &table.cells {
+            for (cell_index, source_cell) in table.cells.iter().enumerate() {
+                let cell = current_cell_frames.get(&cell_index).unwrap_or(source_cell);
                 let r = cell.row as usize;
                 if cell.row_span != 1 || r >= row_count || cell.paragraphs.is_empty() {
                     continue;
@@ -5772,6 +5785,7 @@ let body_height=match nested_body_heights
                 .enumerate()
                 .filter(|(_, cell)| (cell.row as usize) < row_count)
                 .map(|(cell_index, cell)| -> Result<_,S::Error> {
+                    let cell = current_cell_frames.get(&cell_index).unwrap_or(cell);
 
                     // [#1809] aim 직접 분기 → 단일 출처 통일 (위 2-c단계와 동일 근거)
                     let eff_pad = cell.effective_padding(&table.padding);

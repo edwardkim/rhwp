@@ -40,7 +40,20 @@ impl EqLayout {
             if self.variable_bold {
                 return None;
             }
-            let run = super::super::legacy_glyphs::measure(text, role, fs, self.dpi, pad)?;
+            let mut run = super::super::legacy_glyphs::measure(text, role, fs, self.dpi, pad)?;
+            if self.implicit_legacy_font {
+                // 독립 Print에서 같은 행의 수학 본체는 한글 대체보다 위에 놓인다.
+                run.baseline_shift = -fs * 0.06;
+                return Some(LayoutBox {
+                    font_size: fs,
+                    x: 0.0,
+                    y: 0.0,
+                    width: run.width,
+                    height: fs * 1.2,
+                    baseline: fs * 1.2 * 0.84,
+                    kind: LayoutKind::HancomGlyphs(run),
+                });
+            }
             return Some(LayoutBox {
                 font_size: fs,
                 x: 0.0,

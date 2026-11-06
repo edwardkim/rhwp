@@ -4568,7 +4568,7 @@ impl TypesetEngine {
             );
         let unstored_cell_band = self
             .tac_flow_query()
-            .single_tac_line_has_unstored_cell_text(para, table, fmt, tac_count)
+            .single_tac_line_has_current_cell_rows(para, table, fmt, tac_count, &ft.cells)
             && ft.total_height > table_height + 0.5;
         let owns_tac_band =
             ladder_omits_band || hwpx_rowbreak_tac_missing_owned_line || unstored_cell_band;

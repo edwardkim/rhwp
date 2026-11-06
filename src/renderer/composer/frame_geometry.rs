@@ -14,6 +14,20 @@ pub(crate) struct FrameGeometry {
 }
 
 impl ComposedParagraph {
+    /// 현재 줄 소속을 셀의 정렬·저장 extent·실제 문단 배치까지 함께 전달한다.
+    pub(crate) fn cell_with_frame_geometry(
+        composed: &[Self],
+        source: &crate::model::table::Cell,
+    ) -> Option<crate::model::table::Cell> {
+        let mut projected = None;
+        for (index, (common, paragraph)) in composed.iter().zip(&source.paragraphs).enumerate() {
+            if let Cow::Owned(paragraph) = common.paragraph_with_frame_geometry(paragraph) {
+                let cell = projected.get_or_insert_with(|| source.clone());
+                cell.paragraphs[index] = paragraph;
+            }
+        }
+        projected
+    }
     /// 여러 인라인 표의 같은 줄/다른 줄 소속을 현재 프레임이 발행했는지 본다.
     pub(crate) fn frame_owns_multiple_inline_tables(&self) -> bool {
         self.frame_geometry

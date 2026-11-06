@@ -167,9 +167,9 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band_with_storag
         || (crate::renderer::para_has_no_stored_line_segs(para)
             && (line_breaking::supports_overlay_table_frame_controls(para)
                 || line_breaking::supports_overlay_shape_frame_controls(para)));
-    if !paragraph_box.is_usable() || !frame_admits_controls {
-        return Ok(None);
-    }
+        if !paragraph_box.is_usable() || !frame_admits_controls {
+            return Ok(None);
+        }
 
         // 저장 원점 복원은 측정·배치와 읽기 전용 증거 프로브가 같은 상자를 사용한다.
         let paragraph_box = if stored_geometry_policy.requires_realign {
@@ -193,17 +193,24 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band_with_storag
                 SpaceMetric::KoPubJustified,
                 storage,
             )?;
-    // 캐시 수용 실패 정책이나 줄 수 감소만으로 원본을 무효화하지 않는다.
-    // 본문과 같은 마커 기하 갱신과 실제 공백 메트릭 변경만 공통 프레임에 요청한다.
-    // 일반 geometry miss와 원문 밖 목록 마커의 기하 갱신은 별개다.
-    // 같은 가로 상자·현재 마커와 실제 어절 흡수는 아래 공통 인증이 확인한다.
-    // 명시적 물리 경계·외부 어울림·원문 축은 can_rejoin/project 경로에서
-    // 보존하며, 저장 세대나 셀의 일반 miss 정책만으로 이 계약을 끄지 않는다.
-    let refreshes_marker_metrics =
-        stored_word_tail::projects_current_marker_geometry(para, &paragraph_box, styles);
+        // 캐시 수용 실패 정책이나 줄 수 감소만으로 원본을 무효화하지 않는다.
+        // 본문과 같은 마커 기하 갱신과 실제 공백 메트릭 변경만 공통 프레임에 요청한다.
+        // 일반 geometry miss와 원문 밖 목록 마커의 기하 갱신은 별개다.
+        // 같은 가로 상자·현재 마커와 실제 어절 흡수는 아래 공통 인증이 확인한다.
+        // 명시적 물리 경계·외부 어울림·원문 축은 can_rejoin/project 경로에서
+        // 보존하며, 저장 세대나 셀의 일반 miss 정책만으로 이 계약을 끄지 않는다.
+        let refreshes_marker_metrics =
+            stored_word_tail::projects_current_marker_geometry(para, &paragraph_box, styles);
         let rejoinable_word_tail = !stored_geometry_policy.preserve_hwp3_origins
             && (regenerated_spaces_change_metrics || refreshes_marker_metrics)
-            && stored_word_tail::can_rejoin_stored_word_tail_with_storage(para, &frame, styles, dpi, justified_kopub_picture, storage)?;
+            && stored_word_tail::can_rejoin_stored_word_tail_with_storage(
+                para,
+                &frame,
+                styles,
+                dpi,
+                justified_kopub_picture,
+                storage,
+            )?;
         let stale = stored_geometry_policy.requires_realign
             || (!para.layout_field_values.is_empty()
                 && (para.stored_text_partition_dirty
@@ -293,7 +300,12 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band_with_storag
                         {
                             *dst = crate::storage::try_clone(source, storage)?;
                         }
-                        preserved_tab_count = composed.lines[..prefix_len].iter().flat_map(|line| &line.runs).flat_map(|run| run.text.chars()).filter(|&ch| ch == '\t').count();
+                        preserved_tab_count = composed.lines[..prefix_len]
+                            .iter()
+                            .flat_map(|line| &line.runs)
+                            .flat_map(|run| run.text.chars())
+                            .filter(|&ch| ch == '\t')
+                            .count();
                     }
                 }
                 let mut reconciled = crate::storage::try_clone(composed, storage)?;
@@ -303,23 +315,52 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band_with_storag
                 }
                 // 보존한 앞행의 탭만 남기고 재조판 줄은 현재 TabDef로 계산한다.
                 reconciled.tab_extended.truncate(preserved_tab_count);
-                let uncached_inline_frame = inline_frame_admission::supports_uncached_inline_host(para)
-                    || (crate::renderer::para_has_no_stored_line_segs(para)
-                        && line_breaking::supports_inline_form_frame_controls(para));
-                if rejoinable_word_tail || !measured_inline_table_heights.is_empty() || uncached_inline_frame {
+                let uncached_inline_frame =
+                    inline_frame_admission::supports_uncached_inline_host(para)
+                        || (crate::renderer::para_has_no_stored_line_segs(para)
+                            && line_breaking::supports_inline_form_frame_controls(para));
+                // 재측정한 수식은 새 줄 소속과 물리 메트릭도 같은 프레임에서 발행한다.
+                // 글줄만 바꾸고 이 결과를 버리면 측정·배치가 원본 저장 줄로 되돌아간다.
+                let remeasured_equation_frame =
+                    line_breaking::remeasured_equation_start_row(para).is_some();
+                if rejoinable_word_tail
+                    || !measured_inline_table_heights.is_empty()
+                    || uncached_inline_frame
+                    || remeasured_equation_frame
+                {
                     for control in &mut reconciled.inline_controls {
-                        if let Some(line) = control_slot_line_index_with_starts_with_storage(para, control.control_index, reflowed_para.line_segs.iter().map(|segment| segment.text_start), storage)? { control.line_index = line; }
+                        if let Some(line) = control_slot_line_index_with_starts_with_storage(
+                            para,
+                            control.control_index,
+                            reflowed_para
+                                .line_segs
+                                .iter()
+                                .map(|segment| segment.text_start),
+                            storage,
+                        )? {
+                            control.line_index = line;
+                        }
                     }
-                    storage.bytes(std::mem::size_of::<frame_geometry::FrameGeometry>() + 2 * std::mem::size_of::<usize>())?;
-                    reconciled.frame_geometry = Some(std::sync::Arc::new(frame_geometry::FrameGeometry {
-                        line_segs: reflowed_para.line_segs,
-                        space_metrics: reflowed_para.layout_space_metrics,
-                        inline_table_heights: storage.copy_slice(measured_inline_table_heights)?,
-                        stored_partition: false,
-                    }));
+                    storage.bytes(
+                        std::mem::size_of::<frame_geometry::FrameGeometry>()
+                            + 2 * std::mem::size_of::<usize>(),
+                    )?;
+                    reconciled.frame_geometry =
+                        Some(std::sync::Arc::new(frame_geometry::FrameGeometry {
+                            line_segs: reflowed_para.line_segs,
+                            space_metrics: reflowed_para.layout_space_metrics,
+                            inline_table_heights: storage
+                                .copy_slice(measured_inline_table_heights)?,
+                            stored_partition: false,
+                        }));
                 }
                 if crate::renderer::para_has_no_stored_line_segs(para) {
-                    reconciled.horizontal_shaping = line_breaking::compose_horizontal_shaping_handoff(para, &reconciled, styles);
+                    reconciled.horizontal_shaping =
+                        line_breaking::compose_horizontal_shaping_handoff(
+                            para,
+                            &reconciled,
+                            styles,
+                        );
                 }
                 Some(reconciled)
             }

@@ -4462,7 +4462,7 @@ pub(crate) fn layout_paragraph_in_frame_with_storage<S: Storage>(
         styles,
         dpi,
         true,
-        0,
+        FrameStart::Scalar(0),
         FramePurpose::Body,
         storage,
     )
@@ -4501,7 +4501,7 @@ fn layout_paragraph_in_frame_impl(
         styles,
         dpi,
         allow_kerning,
-        start_char,
+        FrameStart::Scalar(start_char),
         purpose,
         &Unbounded,
     ) {
@@ -4510,13 +4510,20 @@ fn layout_paragraph_in_frame_impl(
     }
 }
 
+/// 채움 시작은 원본 UTF-16 슬롯과 투영 후 scalar 인덱스를 구분한다.
+#[derive(Clone, Copy)]
+enum FrameStart {
+    Scalar(usize),
+    SourceUtf16(u32),
+}
+
 fn try_layout_paragraph_in_frame_impl<S: Storage>(
     para: &Paragraph,
     frame: &mut LayoutFrame,
     styles: &ResolvedStyleSet,
     dpi: f64,
     allow_kerning: bool,
-    start_char: usize,
+    start: FrameStart,
     purpose: FramePurpose,
     storage: &S,
 ) -> Result<Option<Vec<LineSeg>>, S::Error> {
@@ -4539,16 +4546,29 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
         return Ok(None);
     }
 
+    let source_start_utf16 = match start {
+        FrameStart::Scalar(0) => 0,
+        FrameStart::Scalar(index) => char_index_to_utf16_offset(para, index),
+        FrameStart::SourceUtf16(offset) => offset,
+    };
     let projected = if (para.line_segs.is_empty()
         && (supports_tac_table_band_frame_controls(para)
             || supports_inline_form_frame_controls(para)))
         || no_ls_inline_picture_host_fill(para)
+        || remeasured_equation_start_row(para).is_some()
     {
+        // 종단 수식도 실제 폭을 가진 토큰이다. 원문에 없는 마커는 이 입력에만 투영한다.
         inline_frame_input::project_with_storage(para, styles, dpi, storage)?
     } else {
         None
     };
     let para = projected.as_ref().map_or(para, |(input, _)| input);
+    let start_char = match (start, projected.as_ref()) {
+        (FrameStart::Scalar(index), None) => index,
+        _ => para
+            .char_offsets
+            .partition_point(|offset| *offset < source_start_utf16),
+    };
     let mut text_chars = storage.collect(para.text.chars())?;
     // 필드는 공백을 건너뛰는 줄 경계가 아닌 원자 토큰이다. 토큰화 전용
     // 필드 마커로 투영하며 원문과 모델 축은 바꾸지 않는다.
@@ -5110,7 +5130,14 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
         // 한 boundary라도 예산/범위 검증에 실패하면 일부 K1 row를 게시하지
         // 않고 문단 전체를 원래 scalar transaction으로 다시 실행한다.
         return try_layout_paragraph_in_frame_impl(
-            para, frame, styles, dpi, false, start_char, purpose, storage,
+            para,
+            frame,
+            styles,
+            dpi,
+            false,
+            FrameStart::Scalar(start_char),
+            purpose,
+            storage,
         );
     }
     result
@@ -5351,19 +5378,13 @@ pub(crate) fn resolve_stored_line_segs_in_frame_with_storage<S: crate::storage::
                             storage,
                         )?)
                 {
-                    let (start_char, _) = super::utf16_range_to_text_range(
-                        &para.char_offsets,
-                        para.line_seg_text_start(start_row),
-                        u32::MAX,
-                        para.text.chars().count(),
-                    );
                     if try_layout_paragraph_in_frame_impl(
                         para,
                         frame,
                         styles,
                         dpi,
                         true,
-                        start_char,
+                        FrameStart::SourceUtf16(para.line_seg_text_start(start_row)),
                         FramePurpose::Body,
                         storage,
                     )?
@@ -5990,7 +6011,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
             styles,
             dpi,
             true,
-            0,
+            FrameStart::Scalar(0),
             FramePurpose::Body,
             storage,
         )? {
@@ -6219,7 +6240,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
             styles,
             dpi,
             true,
-            0,
+            FrameStart::Scalar(0),
             FramePurpose::Body,
             storage,
         )? {

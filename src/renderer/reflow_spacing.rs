@@ -11,7 +11,12 @@ pub(crate) fn plain_text_spacing(
     style: Option<&ResolvedParaStyle>,
     start_line: usize,
 ) -> Option<ParagraphVerticalSpacing> {
-    if !para.controls.is_empty() || !crate::renderer::para_has_no_stored_line_segs(para) {
+    if !para
+        .controls
+        .iter()
+        .all(crate::renderer::composer::control_is_width_neutral_marker)
+        || !crate::renderer::para_has_no_stored_line_segs(para)
+    {
         return None;
     }
     Some(ParagraphVerticalSpacing {

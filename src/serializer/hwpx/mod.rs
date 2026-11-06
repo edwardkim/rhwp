@@ -1069,6 +1069,7 @@ mod tests {
             eqedit: 0,
             font_name: "HYhwpEQ".to_string(),
             version_info: "Equation Version 60".to_string(),
+            implicit_legacy_font: false,
             raw_ctrl_data: Vec::new(),
             raw_ctrl_seal: None,
             unpositioned_host_frame_seal: None,

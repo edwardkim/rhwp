@@ -10865,6 +10865,11 @@ impl LayoutEngine {
                 }
             }
 
+            // 새 줄을 그리면서 정렬·저장 extent만 원본 줄로 되돌리지 않는다.
+            let current_frame_cell =
+                ComposedParagraph::cell_with_frame_geometry(&composed_paras, cell);
+            let cell = current_frame_cell.as_ref().unwrap_or(cell);
+
             // 인라인 이미지/도형 최대 높이
             let mut max_inline_height: f64 = 0.0;
 
