@@ -1,0 +1,208 @@
+{
+  "code_head": "fa0436f4951db3bcafa2403c05e202cb425355fe",
+  "base": "45684640be5eddcf5972b063260250345b34d928",
+  "measurement_date": "2026-11-06",
+  "method": "현행 Visual Sweep 색상 경계 보정 전 2px raw, PDFium. Root pkg 및 Studio public에 동기화한 --no-opt 로컬 fresh WASM이며 Docker 최적화 증거가 아니다.",
+  "results": [
+    {
+      "stage": "base",
+      "backend": "native",
+      "pages": 4,
+      "minimum_raw": 86.38551,
+      "focus_page": 3,
+      "focus_raw": 86.38551,
+      "below98": [
+        3
+      ],
+      "tsv": "mydocs/pr/assets/issue1994/reference-fonts-20261106/base-native-silhouette.tsv",
+      "native_binary_sha256": "db92ecc4504e263664b3236dcf989c44b698066776b8597eed2db25123486506",
+      "wasm_sha256": null,
+      "input": {
+        "path": "samples/basic/issue1994_behindtext_table_20200830.hwp",
+        "sha256": "8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f"
+      },
+      "pdf": {
+        "path": "samples/issue1994/issue_1994.pdf",
+        "sha256": "aba4e44b839de113a867e130a01d966bd3bfaf5e1eb048aebbed9ba45365f29e"
+      },
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+        "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+        "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+        "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+        "version": "152.0.7947.0",
+        "wrapper_version": "5.12.1",
+        "version_exit_code": 0
+      },
+      "dpi": 96,
+      "compat": "2022"
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "pages": 4,
+      "minimum_raw": 86.10823,
+      "focus_page": 3,
+      "focus_raw": 86.10823,
+      "below98": [
+        3
+      ],
+      "tsv": "mydocs/pr/assets/issue1994/reference-fonts-20261106/base-wasm-silhouette.tsv",
+      "native_binary_sha256": "db92ecc4504e263664b3236dcf989c44b698066776b8597eed2db25123486506",
+      "wasm_sha256": "bb22d3f501b3151c7ef44e79f774316de320640c30c472af324cbe9c40e4b4f5",
+      "input": {
+        "path": "samples/basic/issue1994_behindtext_table_20200830.hwp",
+        "sha256": "8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f"
+      },
+      "pdf": {
+        "path": "samples/issue1994/issue_1994.pdf",
+        "sha256": "aba4e44b839de113a867e130a01d966bd3bfaf5e1eb048aebbed9ba45365f29e"
+      },
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+        "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+        "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+        "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+        "version": "152.0.7947.0",
+        "wrapper_version": "5.12.1",
+        "version_exit_code": 0
+      },
+      "dpi": 96,
+      "compat": "2022"
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "pages": 4,
+      "minimum_raw": 98.22544,
+      "focus_page": 3,
+      "focus_raw": 98.22544,
+      "below98": [],
+      "tsv": "mydocs/pr/assets/issue1994/reference-fonts-20261106/candidate-native-silhouette.tsv",
+      "native_binary_sha256": "ab03ac2a2328ef57c78135edd62f25430cbcb5f7480b726cabb88cd12857a9a2",
+      "wasm_sha256": null,
+      "input": {
+        "path": "samples/basic/issue1994_behindtext_table_20200830.hwp",
+        "sha256": "8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f"
+      },
+      "pdf": {
+        "path": "samples/issue1994/issue_1994.pdf",
+        "sha256": "aba4e44b839de113a867e130a01d966bd3bfaf5e1eb048aebbed9ba45365f29e"
+      },
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+        "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+        "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+        "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+        "version": "152.0.7947.0",
+        "wrapper_version": "5.12.1",
+        "version_exit_code": 0
+      },
+      "dpi": 96,
+      "compat": "2022"
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "pages": 4,
+      "minimum_raw": 98.14207,
+      "focus_page": 3,
+      "focus_raw": 98.19505,
+      "below98": [],
+      "tsv": "mydocs/pr/assets/issue1994/reference-fonts-20261106/candidate-wasm-silhouette.tsv",
+      "native_binary_sha256": "ab03ac2a2328ef57c78135edd62f25430cbcb5f7480b726cabb88cd12857a9a2",
+      "wasm_sha256": "d54389b3bded90c84cc0e22060200cfbb033804d8573bad9fd3ecb5c80b32f70",
+      "input": {
+        "path": "samples/basic/issue1994_behindtext_table_20200830.hwp",
+        "sha256": "8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f"
+      },
+      "pdf": {
+        "path": "samples/issue1994/issue_1994.pdf",
+        "sha256": "aba4e44b839de113a867e130a01d966bd3bfaf5e1eb048aebbed9ba45365f29e"
+      },
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+        "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+        "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+        "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+        "version": "152.0.7947.0",
+        "wrapper_version": "5.12.1",
+        "version_exit_code": 0
+      },
+      "dpi": 96,
+      "compat": "2022"
+    }
+  ],
+  "pixel_tests": [
+    {
+      "stage": "base",
+      "compile_exit": 0,
+      "test_exit": 101
+    },
+    {
+      "stage": "candidate",
+      "compile_exit": 0,
+      "test_exit": 0
+    }
+  ]
+}

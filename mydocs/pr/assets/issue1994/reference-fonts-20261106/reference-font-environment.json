@@ -1,0 +1,15 @@
+{
+  "id": "issue1994-hancom2020-confirmed-pdf-font-programs",
+  "substitutions": {
+    "한겨레결체": "Haansoft Batang",
+    "나눔고딕": "Haansoft Batang"
+  },
+  "trueTypeFaces": [
+    "Haansoft Batang"
+  ],
+  "glyphFallbacks": {
+    "Haansoft Batang": [
+      "Wingdings"
+    ]
+  }
+}

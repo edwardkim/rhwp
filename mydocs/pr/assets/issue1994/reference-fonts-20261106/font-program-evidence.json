@@ -1,0 +1,88 @@
+{
+  "pdf_path": "samples/issue1994/issue_1994.pdf",
+  "pdf_sha256": "aba4e44b839de113a867e130a01d966bd3bfaf5e1eb048aebbed9ba45365f29e",
+  "pdf_subset_program_sha256": "362afd8025f179c30213dfcb2fe9c34231bcefe7777088297faa5188269cae43",
+  "local_source_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+  "target_family": "Haansoft Batang",
+  "pages": 4,
+  "visible_filled_or_stroked_glyph_pairs": 486,
+  "outline_equal_count": 471,
+  "outline_unequal_count": 15,
+  "unequal_pairs": [
+    {
+      "codepoint": 8211,
+      "pdf_glyph_id": 93
+    },
+    {
+      "codepoint": 8216,
+      "pdf_glyph_id": 311
+    },
+    {
+      "codepoint": 8217,
+      "pdf_glyph_id": 315
+    },
+    {
+      "codepoint": 8220,
+      "pdf_glyph_id": 378
+    },
+    {
+      "codepoint": 8221,
+      "pdf_glyph_id": 380
+    },
+    {
+      "codepoint": 8228,
+      "pdf_glyph_id": 163
+    },
+    {
+      "codepoint": 8729,
+      "pdf_glyph_id": 409
+    },
+    {
+      "codepoint": 8758,
+      "pdf_glyph_id": 5
+    },
+    {
+      "codepoint": 9635,
+      "pdf_glyph_id": 155
+    },
+    {
+      "codepoint": 9646,
+      "pdf_glyph_id": 221
+    },
+    {
+      "codepoint": 9654,
+      "pdf_glyph_id": 420
+    },
+    {
+      "codepoint": 9742,
+      "pdf_glyph_id": 411
+    },
+    {
+      "codepoint": 12300,
+      "pdf_glyph_id": 452
+    },
+    {
+      "codepoint": 12301,
+      "pdf_glyph_id": 453
+    },
+    {
+      "codepoint": 12685,
+      "pdf_glyph_id": 480
+    }
+  ],
+  "method": "get_texttrace의 실제 fill/stroke glyph ID를 추적하고, 분해한 정규화 원본 outline 명령 전수를 비교. 원본 글꼴·추출 프로그램·윤곽 좌표는 커밋하지 않는다.",
+  "requested_document_faces": [
+    "한겨레결체",
+    "나눔고딕"
+  ],
+  "scope": "기존 한컴 Print PDF가 실제 사용한 프로그램에 맞춘 비교 세션. 문서 IR·기본 출력 글꼴 선택 정책 변경 아님.",
+  "fresh_hancom_print": {
+    "job_id": "792978dc-aeb5-475e-83e1-e896b7cdeff0",
+    "engine": "2020",
+    "product": "11.0.0.9136",
+    "pages": 4,
+    "print_method": 0
+  },
+  "status": "동일 기준 PDF의 전4쪽 base/후보 Native/fresh WASM 재검증 완료. 후보 양쪽 전쪽98% 이상.",
+  "recorded_at": "2026-11-06T22:11:35.503379+09:00"
+}

@@ -1,10 +1,9 @@
-//! Issue #1994: 용지 기준 글뒤 표의 바깥여백 원점을 한 번 소비한다.
-//!
-//! 검사 유형: 관계형. 원본 오프셋·바깥여백과 최종 표 원점의 관계를 검사한다.
-//! 절대 PDF 픽셀 핀이 아니다. 독립 기준은 samples/issue1994/issue_1994.pdf 3쪽이다.
-//! Native 전 4쪽 중 3쪽은 88.23109% → 91.80504%이며 fresh WASM 새 후보는
-//! 아직 검증 중이다. 브랜치의 전쪽 98% 완료 기준을 통과했다는 의미가 아니다.
-//! 주석 갱신: 2026-11-06 21:06 KST.
+//! 관계형: #1994 원본 오프셋·바깥여백과 최종 표 원점의 소비 관계를 검사한다.
+//! 주석 갱신: 2026-11-06T22:13:05+09:00; 직전 파일 커밋: 2026-11-06T21:09:45+09:00 (fa0436f495).
+//! 2026-11-06 raw(96DPI, PDFium, 2px): 3쪽 Native 98.22544% / fresh WASM 98.19505%.
+//! 전4쪽 최저 98.22544% / 98.14207%; 기준 PDF가 사용한 글꼴 환경의 시각 결과다.
+//! 실행 가능한 원점 관계 검사는 시스템 글꼴 설치를 요구하지 않는다. 절대 px 핀은 별도 파일이다.
+//! 근거: mydocs/pr/assets/issue1994/reference-fonts-20261106/README.md.
 
 use rhwp::model::control::Control;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -35,13 +34,17 @@ fn paper_overlay_consumes_its_source_outer_origin_once() {
         };
         let table = placed
             .iter()
-            .find(|node| matches!(&node.node_type, RenderNodeType::Table(meta)
-                if meta.para_index == Some(owner) && meta.cell_context.is_none()))
+            .find(|node| {
+                matches!(&node.node_type, RenderNodeType::Table(meta)
+                if meta.para_index == Some(owner) && meta.cell_context.is_none())
+            })
             .unwrap();
-        let expected = f64::from(source.common.horizontal_offset)
-            + f64::from(source.outer_margin_left);
+        let expected =
+            f64::from(source.common.horizontal_offset) + f64::from(source.outer_margin_left);
         let actual_hwp = table.bbox.x * 7200.0 / 96.0;
-        assert!((actual_hwp - expected).abs() < 0.01,
-            "표 원점은 원본의 바깥 상자 오프셋과 여백을 한 번 소비함: {actual_hwp} / {expected}");
+        assert!(
+            (actual_hwp - expected).abs() < 0.01,
+            "표 원점은 원본의 바깥 상자 오프셋과 여백을 한 번 소비함: {actual_hwp} / {expected}"
+        );
     }
 }
