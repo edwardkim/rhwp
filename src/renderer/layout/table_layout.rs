@@ -10974,10 +10974,13 @@ impl LayoutEngine {
                     0.0
                 };
 
+                // 정렬과 실제 배치는 같은 원본 선언·현재 구성 줄을 소비한다.
+                // 투영한 높이를 원본 선언처럼 다시 넘기면 저장 host의 초과분을
+                // 잃고 정렬 여백만 생겨 중첩 표가 바깥 칸을 벗어난다(#7872).
                 let nested_bottom = self.calc_nested_controls_bottom_height(
                     table,
                     &composed_paras,
-                    &cell.paragraphs,
+                    &source_cell.paragraphs,
                     styles,
                 );
                 let wrap_object_bottom =
