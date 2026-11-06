@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute the production disabled ABI with a small dependency-free rustc shim."""
+"""Check disabled exports in a full Native SO or dependency-free rustc shim."""
 import argparse
 import ctypes
 import json
@@ -9,21 +9,29 @@ import subprocess
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--output", type=Path, required=True)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--library", type=Path, help="fresh full Native library with disabled D3D exports")
+    mode.add_argument("--output", type=Path, help="build and check the dependency-free rustc shim here")
     args = parser.parse_args()
-    source = Path(__file__).resolve().parents[3] / "Native/src/gpu_d3d.rs"
-    if not source.exists():
-        raise RuntimeError("production gpu_d3d.rs was not found")
-    args.output.mkdir(parents=True, exist_ok=True)
-    harness = args.output / "disabled.rs"
-    harness.write_text('#[path = ' + json.dumps(str(source)) + ']\nmod gpu_d3d;\n'
-        '#[no_mangle]\npub unsafe extern "C" fn rhwp_test_free(value:*mut std::ffi::c_char) {'
-        'if !value.is_null() { drop(unsafe { std::ffi::CString::from_raw(value) }); }}\n')
-    library = args.output / "libd3d_disabled.so"
-    subprocess.run(["rustc", "--edition=2021", "--crate-type", "cdylib", str(harness), "-o", str(library)], check=True, timeout=60)
+    if args.library:
+        library = args.library
+        free_name = "rhwp_string_free"
+    else:
+        source = Path(__file__).resolve().parents[3] / "Native/src/gpu_d3d.rs"
+        if not source.exists():
+            raise RuntimeError("production gpu_d3d.rs was not found")
+        args.output.mkdir(parents=True, exist_ok=True)
+        harness = args.output / "disabled.rs"
+        harness.write_text('#[path = ' + json.dumps(str(source)) + ']\nmod gpu_d3d;\n'
+            '#[no_mangle]\npub unsafe extern "C" fn rhwp_test_free(value:*mut std::ffi::c_char) {'
+            'if !value.is_null() { drop(unsafe { std::ffi::CString::from_raw(value) }); }}\n')
+        library = args.output / "libd3d_disabled.so"
+        subprocess.run(["rustc", "--edition=2021", "--crate-type", "cdylib", str(harness), "-o", str(library)], check=True, timeout=60)
+        free_name = "rhwp_test_free"
     api = ctypes.CDLL(str(library.resolve()))
-    api.rhwp_test_free.argtypes = [ctypes.c_void_p]
-    api.rhwp_test_free.restype = None
+    free_string = getattr(api, free_name)
+    free_string.argtypes = [ctypes.c_void_p]
+    free_string.restype = None
     def call(name, types, *values):
         function = getattr(api, name)
         function.argtypes = types
@@ -33,7 +41,7 @@ def main():
         try:
             return json.loads(ctypes.string_at(pointer))
         finally:
-            api.rhwp_test_free(pointer)
+            free_string(pointer)
     caps = call("rhwp_d3d_capabilities", [])
     assert caps["ok"] and caps["abiVersion"] == 1 and caps["available"] is False
     assert caps["consumerGpuCompletion"] is False and caps["wholeFrameReadbacks"] == 0
