@@ -931,3 +931,157 @@ fn native_picture_diagnostics_do_not_retain_a_previous_siblings_report_cap() {
     }
     assert!(renderer.cache_stats().pictures.hits > 0);
 }
+
+fn bounded_vertical_glyph_tree() -> PageLayerTree {
+    let mut tree = glyph_tree(TTF, 0, 'A');
+    let run = glyph_mut(&mut tree);
+    run.variant.variant_id = "verticalGlyphRun".into();
+    run.variant.requires = vec![
+        "fontResources".into(),
+        "text.glyphRun".into(),
+        "text.glyphRun.verticalUpright".into(),
+    ];
+    run.shape_key.writing_mode = WritingMode::VerticalRl;
+    run.shape_key.shaping_engine.0 = "rustybuzz-q4-vertical-v1".into();
+    run.writing_mode = WritingMode::VerticalRl;
+    run.orientation = GlyphRunOrientation::VerticalUpright;
+    run.placement.run_to_page = LayerAffineTransform {
+        a: 1.0,
+        b: 0.0,
+        c: 0.0,
+        d: 1.0,
+        e: 0.0,
+        f: 0.0,
+    };
+    run.placement.baseline_y = 0.0;
+    run.positions = vec![LayerPoint { x: 10.0, y: 42.0 }];
+    run.advances = Some(vec![LayerVector { dx: 0.0, dy: 32.0 }]);
+    run.clusters[0].flags = vec![GlyphClusterFlag::FallbackBoundary];
+    run.diagnostics.reason = Some("boundedVerticalHwp5TableCellV1".into());
+    tree
+}
+
+#[test]
+fn native_bounded_vertical_replay_uses_exact_upright_glyph_at_producer_origin() {
+    use rhwp::renderer::layer_renderer::RasterRenderOptions;
+    let tree = bounded_vertical_glyph_tree();
+    assert!(proof(&tree).typeface_constructible);
+    // The same unrotated glyph at the same origin is an independent control
+    // for consuming page-space vertical placement without applying a 90° turn.
+    assert_same_pixels(
+        assert_selected(&tree),
+        assert_selected(&glyph_tree(TTF, 0, 'A')),
+    );
+    let renderer = SkiaLayerRenderer::new();
+    for _ in 0..2 {
+        let output = renderer
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .unwrap();
+        assert_eq!(
+            output.diagnostics.variant_selections[0]
+                .selected_variant_id
+                .as_deref(),
+            Some("verticalGlyphRun")
+        );
+        assert!(!output.diagnostics.variant_selections[0].fallback_required);
+        assert!(output.diagnostics.native_glyph_rejections.is_empty());
+    }
+    assert!(renderer.cache_stats().glyphs.hits > 0);
+}
+
+#[test]
+fn native_vertical_replay_keeps_fallback_for_unproven_modes_and_malformed_bounded_claims() {
+    let base = bounded_vertical_glyph_tree();
+    let fallback = render(&fallback_tree());
+    for case in 0..18 {
+        let mut tree = base.clone();
+        let run = glyph_mut(&mut tree);
+        let expected = match case {
+            0 => {
+                run.diagnostics.reason = None;
+                NativeGlyphRunReplayProofReason::DirectionUnsupported
+            }
+            1 => {
+                run.diagnostics.reason = Some("boundedVerticalHwpxTableCellV1".into());
+                NativeGlyphRunReplayProofReason::VerticalOrientationUnsupported
+            }
+            2 => {
+                run.orientation = GlyphRunOrientation::VerticalSideways;
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            3 => {
+                run.orientation = GlyphRunOrientation::MixedPerGlyph;
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            4 => {
+                run.shape_key.shaping_engine.0 = "unproven".into();
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            5 => {
+                run.variant.requires.pop();
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            6 => {
+                run.clusters[0].source_range_utf8.end = 2;
+                NativeGlyphRunReplayProofReason::ClusterMismatch
+            }
+            7 => {
+                run.clusters[0].flags.clear();
+                NativeGlyphRunReplayProofReason::ClusterMismatch
+            }
+            8 => {
+                run.advances = None;
+                NativeGlyphRunReplayProofReason::AdvanceCountMismatch
+            }
+            9 => {
+                run.placement.run_to_page.e = 1.0;
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            10 => {
+                run.positions[0].y = f64::NAN;
+                NativeGlyphRunReplayProofReason::PositionNotFinite
+            }
+            11 => {
+                run.shape_key.font_instance.synthetic_bold = true;
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            12 => {
+                run.diagnostics.quality = TextVariantQuality::PositionAdjusted;
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            13 => {
+                run.paint_style.shadow_type = 1;
+                NativeGlyphRunReplayProofReason::UnsupportedPaintEffect
+            }
+            14 => {
+                run.writing_mode = WritingMode::HorizontalTb;
+                run.shape_key.writing_mode = WritingMode::HorizontalTb;
+                run.orientation = GlyphRunOrientation::Horizontal;
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            15 => {
+                run.paint_style.font_size += 1.0;
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            16 => {
+                tree.resources.font_resources_mut().blobs[0]
+                    .digest
+                    .as_mut()
+                    .unwrap()
+                    .value = "wrong".into();
+                NativeGlyphRunReplayProofReason::FontBlobDigestMismatch
+            }
+            _ => {
+                tree.resources.font_resources_mut().faces[0].face_index = 99;
+                NativeGlyphRunReplayProofReason::ExactFaceUnavailable
+            }
+        };
+        let rejected = proof(&tree);
+        assert!(!rejected.typeface_constructible, "case {case}");
+        assert!(
+            rejected.reasons.contains(&expected),
+            "case {case}: {rejected:?}"
+        );
+        assert_same_pixels(render(&tree), fallback.clone());
+    }
+}

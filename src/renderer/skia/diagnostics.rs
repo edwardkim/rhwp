@@ -45,7 +45,7 @@ fn shared_reject_reasons(failure: &NativeGlyphPreparationFailure) -> Vec<Variant
             Native::GlyphPositionCountMismatch => Shared::GlyphPositionCountMismatch,
             Native::AdvanceCountMismatch => Shared::GlyphAdvanceCountMismatch,
             Native::GlyphTransformUnsupported => Shared::GlyphTransformAuthorityPending,
-            Native::VerticalOrientationUnsupported => {
+            Native::VerticalOrientationUnsupported | Native::VerticalAuthorityUnsupported => {
                 Shared::VerticalGlyphOrientationAuthorityPending
             }
             Native::StrictVisualIneligible => Shared::StrictVisualIneligible,

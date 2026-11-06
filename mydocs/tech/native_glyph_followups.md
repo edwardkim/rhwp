@@ -47,3 +47,27 @@ Unicode 식별자·report 상한은 public Native renderer의 cold/warm/cache-of
 서로 다른 전진폭에도 위치·baseline·shear가 보존되고 원본 윤곽이 유지되는지 확인한다.
 새 글꼴 다운로드는 추가하지 않았다. 이 변경은 #8337의 Native 수식 fallback 경로를 다루며,
 실제 문서·최종 한컴 대조와 각 OS 설치 글꼴 조합 확인은 별도 검증 범위다.
+
+## P83 — 준비된 HWP5 upright 세로 GlyphRun 재생
+
+공통 producer가 `boundedVerticalHwp5TableCellV1`로 발행하는 HWP5 표 셀의 정확한 upright
+세로 GlyphRun을 Native의 엄격한 대체 선택에서도 소비한다. CanvasKit과 공유하는 선언 검사에
+Native를 추가하고, `verticalGlyphRun`·필수 capability 3개·rustybuzz vertical shaper·LTR/level 0·
+VerticalRl/Upright·Exact/Portable·무변형 instance 조건을 그대로 요구한다.
+
+Native resource proof는 producer의 leaf 계약을 추가 확인한다. 단일 glyph/cluster와 source의
+UTF-8/UTF-16 범위 및 FallbackBoundary, 단일 advance, identity placement와 baseline 0,
+paint/instance 크기 일치, anchor와 source id, 잔차 0 및 fill-only paint가 모두 필요하다.
+전체 tree의 기존 source-table/anchor 검증과 font byte digest·정확한 face 구성·유한 좌표 검사도
+계속 적용한다. 하나라도 실패하면 TextRun이 유지되며 P78의 typed 준비 실패로 관측된다.
+글리프의 페이지 좌표는 producer의 positions를 그대로 사용하며 추가 회전을 적용하지 않는다.
+
+일반 세로쓰기와 RTL의 기존 TextRun 표시는 계속 별도 경로를 사용한다. 이 변경으로 HWPX,
+sideways, mixed-per-glyph, 임의 세로 shaper, 합성/가변 instance 또는 손상된 bounded claim의
+exact 권한을 열지 않는다. 플랫폼 공통 Text IR v2의 strict 가용성 범위도 확장하지 않는다.
+
+기존 Native glyph suite에 upright 원점/pixels와 prepared-cache 재사용, 18가지 선언·cluster·
+font·placement 손상의 원자적 fallback 회귀를 추가했다. 기존 #4969 합성 HWP5 표 셀 case도
+실제 producer가 발행한 두 글리프의 public Native proof와 반복 render/selection을 확인한다.
+새 source unit test 수를 늘리지 않았다. 통합 head에서 focused Native suite를 검증하며,
+실물 OS/GPU와 최종 한컴 문서 대조는 사용자 후속 검증 범위다.

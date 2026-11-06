@@ -20,8 +20,9 @@ use crate::paint::{
     TextDecorationKind, TextVariantKind, TextVariantQuality, TextVisualReplayRole,
 };
 use crate::renderer::layer_renderer::{
-    LayerRasterRenderer, LayerRenderDiagnostics, LayerRenderResult, RasterOutputFormat,
-    RasterRenderOptions, RasterRenderOutput, TextVariantSelectionReport,
+    is_bounded_vertical_hwp5_replay_candidate, LayerRasterRenderer, LayerRenderDiagnostics,
+    LayerRenderResult, RasterOutputFormat, RasterRenderOptions, RasterRenderOutput,
+    TextVariantSelectionReport, VariantSelectionBackend,
 };
 use crate::renderer::raster_pixels::{
     RasterPixelFormat, RasterPixels, RasterRegion, RasterRegionPixels,
@@ -63,6 +64,7 @@ pub enum NativeGlyphRunReplayProofReason {
     AdvanceCountMismatch,
     GlyphTransformUnsupported,
     VerticalOrientationUnsupported,
+    VerticalAuthorityUnsupported,
     StrictVisualIneligible,
     MissingGlyph,
     ClusterMismatch,
@@ -98,6 +100,7 @@ impl NativeGlyphRunReplayProofReason {
             Self::AdvanceCountMismatch => "advanceCountMismatch",
             Self::GlyphTransformUnsupported => "glyphTransformUnsupported",
             Self::VerticalOrientationUnsupported => "verticalOrientationUnsupported",
+            Self::VerticalAuthorityUnsupported => "verticalAuthorityUnsupported",
             Self::StrictVisualIneligible => "strictVisualIneligible",
             Self::MissingGlyph => "missingGlyph",
             Self::ClusterMismatch => "clusterMismatch",
@@ -180,6 +183,59 @@ fn prepare_native_glyph_run(
     let mut contract_reasons = BTreeSet::new();
     let mut construction_reasons = BTreeSet::new();
 
+    let vertical_declared =
+        run.diagnostics.reason.as_deref() == Some("boundedVerticalHwp5TableCellV1");
+    let bounded_vertical =
+        is_bounded_vertical_hwp5_replay_candidate(run, VariantSelectionBackend::NativeSkia);
+    if vertical_declared && !bounded_vertical {
+        // A malformed bounded claim must never re-enter the ordinary horizontal lane.
+        contract_reasons.insert(NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported);
+    }
+    if bounded_vertical {
+        let source_ranges_match = run.source.utf8_range.start == 0
+            && run.source.utf16_range.start == 0
+            && matches!(
+                (run.source.utf8_range.end, run.source.utf16_range.end),
+                (1, 1) | (2, 1) | (3, 1) | (4, 2)
+            );
+        let cluster_matches = matches!(run.clusters.as_slice(), [cluster]
+            if source_ranges_match
+                && run.glyph_ids.len() == 1
+                && cluster.source_range_utf8 == run.source.utf8_range
+                && cluster.source_range_utf16 == Some(run.source.utf16_range)
+                && cluster.text_range_utf8 == Some(run.source.utf8_range)
+                && cluster.glyph_range == crate::paint::GlyphRange::new(0, 1)
+                && cluster.flags.as_slice() == [crate::paint::GlyphClusterFlag::FallbackBoundary]);
+        if !cluster_matches {
+            contract_reasons.insert(NativeGlyphRunReplayProofReason::ClusterMismatch);
+        }
+        if run.advances.as_ref().map(Vec::len) != Some(1) {
+            contract_reasons.insert(NativeGlyphRunReplayProofReason::AdvanceCountMismatch);
+        }
+        let placement = run.placement.run_to_page;
+        if [
+            placement.a,
+            placement.b,
+            placement.c,
+            placement.d,
+            placement.e,
+            placement.f,
+        ] != [1.0, 0.0, 0.0, 1.0, 0.0, 0.0]
+            || run.placement.baseline_y != 0.0
+            || run.paint_style.font_size != run.shape_key.font_instance.size_px
+            || run.variant.equivalence_group != format!("text-{}", run.source.id.0)
+            || run.variant.anchor_op_id.as_deref() != Some(run.variant.equivalence_group.as_str())
+            || run.diagnostics.max_origin_delta_px != 0.0
+            || run.diagnostics.max_advance_delta_px != 0.0
+            || run.diagnostics.max_residual_after_adjustment_px != 0.0
+        {
+            contract_reasons.insert(NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported);
+        }
+        if !run.paint_style.is_fill_only_glyph_replay() {
+            contract_reasons.insert(NativeGlyphRunReplayProofReason::UnsupportedPaintEffect);
+        }
+    }
+
     if run.glyph_ids.is_empty() {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::EmptyGlyphIds);
     }
@@ -196,8 +252,12 @@ fn prepare_native_glyph_run(
     if run.direction != crate::paint::TextDirection::Ltr
         || run.shape_key.direction != crate::paint::TextDirection::Ltr
         || run.bidi_level != Some(0)
-        || run.writing_mode != crate::paint::WritingMode::HorizontalTb
-        || run.shape_key.writing_mode != crate::paint::WritingMode::HorizontalTb
+        || ((!matches!(run.writing_mode, crate::paint::WritingMode::HorizontalTb)
+            || !matches!(
+                run.shape_key.writing_mode,
+                crate::paint::WritingMode::HorizontalTb
+            ))
+            && !bounded_vertical)
     {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::DirectionUnsupported);
     }
@@ -217,7 +277,7 @@ fn prepare_native_glyph_run(
     if run.glyph_transforms.is_some() {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::GlyphTransformUnsupported);
     }
-    if run.orientation != GlyphRunOrientation::Horizontal {
+    if run.orientation != GlyphRunOrientation::Horizontal && !bounded_vertical {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::VerticalOrientationUnsupported);
     }
     if !run.diagnostics.strict_visual_eligible {
@@ -2865,7 +2925,7 @@ mod tests {
     }
 
     #[test]
-    fn native_skia_rejects_vertical_glyph_run_contract_for_now() {
+    fn native_skia_rejects_vertical_glyph_runs_without_bounded_authority() {
         let resources = portable_font_resources();
         let run = portable_glyph_run(GlyphRunOrientation::VerticalUpright);
 

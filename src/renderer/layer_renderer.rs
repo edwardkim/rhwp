@@ -659,9 +659,9 @@ fn collect_glyph_run_reject_reasons(
 ) {
     let bounded_vertical_declared =
         run.diagnostics.reason.as_deref() == Some(BOUNDED_VERTICAL_HWP5_TABLE_CELL_REASON);
-    let bounded_vertical_canvaskit =
-        is_bounded_vertical_hwp5_canvaskit_candidate(run, options.backend);
-    if bounded_vertical_declared && !bounded_vertical_canvaskit {
+    let bounded_vertical_supported =
+        is_bounded_vertical_hwp5_replay_candidate(run, options.backend);
+    if bounded_vertical_declared && !bounded_vertical_supported {
         // Bounded provenance is an all-field capability claim. A malformed claim must not
         // fall through to the generic horizontal GlyphRun lane after changing only its mode.
         reasons.insert(VariantRejectReason::WritingModeAuthorityPending);
@@ -720,7 +720,7 @@ fn collect_glyph_run_reject_reasons(
     }
     if (!matches!(run.writing_mode, WritingMode::HorizontalTb)
         || !matches!(run.shape_key.writing_mode, WritingMode::HorizontalTb))
-        && !bounded_vertical_canvaskit
+        && !bounded_vertical_supported
     {
         reasons.insert(VariantRejectReason::WritingModeAuthorityPending);
     }
@@ -732,7 +732,7 @@ fn collect_glyph_run_reject_reasons(
         GlyphRunOrientation::MixedPerGlyph => {
             reasons.insert(VariantRejectReason::MixedPerGlyphAuthorityPending);
         }
-        GlyphRunOrientation::VerticalUpright if bounded_vertical_canvaskit => {}
+        GlyphRunOrientation::VerticalUpright if bounded_vertical_supported => {}
         GlyphRunOrientation::VerticalUpright | GlyphRunOrientation::VerticalSideways => {
             reasons.insert(VariantRejectReason::VerticalGlyphOrientationAuthorityPending);
         }
@@ -786,13 +786,15 @@ fn collect_glyph_run_reject_reasons(
     }
 }
 
-fn is_bounded_vertical_hwp5_canvaskit_candidate(
+pub(crate) fn is_bounded_vertical_hwp5_replay_candidate(
     run: &LayerGlyphRunPaint,
     backend: VariantSelectionBackend,
 ) -> bool {
     matches!(
         backend,
-        VariantSelectionBackend::CanvasKit | VariantSelectionBackend::CanvasKitBrowser
+        VariantSelectionBackend::CanvasKit
+            | VariantSelectionBackend::CanvasKitBrowser
+            | VariantSelectionBackend::NativeSkia
     ) && run.diagnostics.reason.as_deref() == Some(BOUNDED_VERTICAL_HWP5_TABLE_CELL_REASON)
         && run.variant.variant_id == BOUNDED_VERTICAL_GLYPH_VARIANT_ID
         && run.variant.variant_kind == TextVariantKind::GlyphRun
