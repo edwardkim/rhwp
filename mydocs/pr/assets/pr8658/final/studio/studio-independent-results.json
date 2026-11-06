@@ -1,0 +1,218 @@
+[
+  {
+    "sample": "exact-fit",
+    "backend": "canvas2d",
+    "profile": "print",
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8658/studio-independent/exact-fit-canvas2d/silhouette.tsv",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 8496,
+        "tolerant_content_match_percent": 100.0
+      }
+    ]
+  },
+  {
+    "sample": "exact-fit",
+    "backend": "canvaskit-compat",
+    "profile": "print",
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8658/studio-independent/exact-fit-canvaskit-compat/silhouette.tsv",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 9009,
+        "tolerant_content_match_percent": 100.0
+      }
+    ]
+  },
+  {
+    "sample": "exact-fit",
+    "backend": "canvaskit-default",
+    "profile": "print",
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8658/studio-independent/exact-fit-canvaskit-default/silhouette.tsv",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 9009,
+        "tolerant_content_match_percent": 100.0
+      }
+    ]
+  },
+  {
+    "sample": "large",
+    "backend": "canvas2d",
+    "profile": "print",
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8658/studio-independent/large-canvas2d/silhouette.tsv",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 12567,
+        "tolerant_content_match_percent": 100.0
+      }
+    ]
+  },
+  {
+    "sample": "large",
+    "backend": "canvaskit-compat",
+    "profile": "print",
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8658/studio-independent/large-canvaskit-compat/silhouette.tsv",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 12559,
+        "tolerant_content_match_percent": 100.0
+      }
+    ]
+  },
+  {
+    "sample": "large",
+    "backend": "canvaskit-default",
+    "profile": "print",
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8658/studio-independent/large-canvaskit-default/silhouette.tsv",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 12559,
+        "tolerant_content_match_percent": 100.0
+      }
+    ]
+  },
+  {
+    "sample": "split-opening",
+    "backend": "canvas2d",
+    "profile": "print",
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8658/studio-independent/split-opening-canvas2d/silhouette.tsv",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 22351,
+        "tolerant_content_match_percent": 100.0
+      }
+    ]
+  },
+  {
+    "sample": "split-opening",
+    "backend": "canvaskit-compat",
+    "profile": "print",
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8658/studio-independent/split-opening-canvaskit-compat/silhouette.tsv",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 22197,
+        "tolerant_content_match_percent": 100.0
+      }
+    ]
+  },
+  {
+    "sample": "split-opening",
+    "backend": "canvaskit-default",
+    "profile": "print",
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8658/studio-independent/split-opening-canvaskit-default/silhouette.tsv",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 22197,
+        "tolerant_content_match_percent": 100.0
+      }
+    ]
+  },
+  {
+    "sample": "split-end",
+    "backend": "canvas2d",
+    "profile": "print",
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8658/studio-independent/split-end-canvas2d/silhouette.tsv",
+    "metrics": [
+      {
+        "page": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 10838,
+        "tolerant_content_match_percent": 100.0
+      }
+    ]
+  },
+  {
+    "sample": "split-end",
+    "backend": "canvaskit-compat",
+    "profile": "print",
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8658/studio-independent/split-end-canvaskit-compat/silhouette.tsv",
+    "metrics": [
+      {
+        "page": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 10617,
+        "tolerant_content_match_percent": 100.0
+      }
+    ]
+  },
+  {
+    "sample": "split-end",
+    "backend": "canvaskit-default",
+    "profile": "print",
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8658/studio-independent/split-end-canvaskit-default/silhouette.tsv",
+    "metrics": [
+      {
+        "page": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 10617,
+        "tolerant_content_match_percent": 100.0
+      }
+    ]
+  }
+]

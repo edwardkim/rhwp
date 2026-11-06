@@ -1,0 +1,64 @@
+{
+  "capture_exit": 0,
+  "source_font_registration": true,
+  "initial_js_responses": 6,
+  "initial_wasm_responses": 6,
+  "initial_bundle_matches": true,
+  "prior_js_normalization_proof": "../studio-consumption-proof.json",
+  "print_independent": [
+    {
+      "backend": "canvas2d",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 8498,
+          "tolerant_content_match_percent": 100.0
+        }
+      ]
+    },
+    {
+      "backend": "canvaskit-compat",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 9009,
+          "tolerant_content_match_percent": 100.0
+        }
+      ]
+    },
+    {
+      "backend": "canvaskit-default",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 9009,
+          "tolerant_content_match_percent": 100.0
+        }
+      ]
+    }
+  ],
+  "backend_parity": {
+    "total": 4,
+    "compared": 4,
+    "passed": 3,
+    "failed": 1,
+    "missing": 0,
+    "errors": 0,
+    "identityMismatches": 0
+  }
+}

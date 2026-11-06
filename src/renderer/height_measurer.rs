@@ -2179,6 +2179,12 @@ impl HeightMeasurer {
                         p, self.dpi,
                     )
                     .unwrap_or(object_bottom);
+                // 겹침 허용 안 함으로 쌓인 그림은 맨 아래 그림까지가 개체 범위다.
+                let object_bottom =
+                    crate::renderer::float_placement::cell_paragraph_no_overlap_square_stack(
+                        paragraphs, pi, self.dpi,
+                    )
+                    .map_or(object_bottom, |stack| object_bottom.max(stack.bottom));
                 if object_bottom > 0.0 {
                     para_top + object_bottom
                 } else {

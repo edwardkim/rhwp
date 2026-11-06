@@ -3529,6 +3529,12 @@ impl LayoutEngine {
                         p, self.dpi,
                     )
                     .unwrap_or(object_bottom);
+                // 겹침 허용 안 함으로 쌓인 그림은 맨 아래 그림까지가 개체 범위다.
+                let object_bottom =
+                    crate::renderer::float_placement::cell_paragraph_no_overlap_square_stack(
+                        paragraphs, pi, self.dpi,
+                    )
+                    .map_or(object_bottom, |stack| object_bottom.max(stack.bottom));
                 if object_bottom > 0.0 {
                     para_top + object_bottom
                 } else {
@@ -5444,17 +5450,34 @@ impl LayoutEngine {
             return;
         }
         let viewtext_content_grid = table.cells.iter().all(|cell| {
+            // 저장 줄 없는 ViewText 텍스트 격자만 선언 프레임을 재사용한다.
+            // 빈 문자열인 그림/표 호스트도 실제 점유 높이가 있다. 그 높이가
+            // 우연히 cellSz와 같다고 안 여백까지 중복으로 판정하면, 측정에서
+            // 확보한 개체와 여백의 공간을 paint에서 다시 줄이게 된다 (#8576).
+            let has_object = cell.paragraphs.iter().any(|paragraph| {
+                paragraph.controls.iter().any(|control| {
+                    matches!(
+                        control,
+                        Control::Picture(_)
+                            | Control::Shape(_)
+                            | Control::Table(_)
+                            | Control::Equation(_)
+                            | Control::Form(_)
+                    )
+                })
+            });
             let has_visible_content = cell.paragraphs.iter().any(|paragraph| {
                 paragraph
                     .text
                     .chars()
                     .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}')
             });
-            !has_visible_content
-                || cell
-                    .paragraphs
-                    .iter()
-                    .all(crate::renderer::para_has_no_stored_line_segs)
+            !has_object
+                && (!has_visible_content
+                    || cell
+                        .paragraphs
+                        .iter()
+                        .all(crate::renderer::para_has_no_stored_line_segs))
         });
         let mut decl = vec![f64::NAN; row_count];
         for cell in &table.cells {
@@ -8061,6 +8084,15 @@ impl LayoutEngine {
                 self.profile.get().hwpx_stored_layout(),
             );
             let mut cell_float_lanes = vec![None; nested_groups.len()];
+            // 같은 문단의 '겹침 허용 안 함' 어울림 그림 쌓기. 칸 정렬·높이 측정과 같은 결과.
+            let no_overlap_square_stack =
+                crate::renderer::float_placement::cell_paragraph_no_overlap_square_stack(
+                    &cell.paragraphs,
+                    cp_idx,
+                    self.dpi,
+                );
+            let mut no_overlap_placer =
+                crate::renderer::float_placement::NoOverlapSquarePlacer::default();
 
             for (ctrl_idx, ctrl) in source_controls.iter().enumerate() {
                 match ctrl {
@@ -8910,6 +8942,16 @@ impl LayoutEngine {
                                     "[6313B] pic_y={pic_y:.1} pic_h={pic_h:.1} pic_x={pic_x:.1}"
                                 );
                             }
+                            // 겹침 허용 안 함인 어울림 그림은 같은 문단의 앞 그림과 겹치면 그 아래로
+                            // 내려 놓는다(한컴: 그림 높이 간격으로 차례로 아래에 쌓임).
+                            let pic_y = no_overlap_placer.place(
+                                no_overlap_square_stack.as_ref(),
+                                ctrl_idx,
+                                &pic.common,
+                                pic_x,
+                                pic_y,
+                                self.dpi,
+                            );
                             let pic_x = pic_x + picture_box.map_or(0.0, |frame| frame.margin_left);
                             let pic_y = pic_y + picture_box.map_or(0.0, |frame| frame.margin_top);
                             let pic_area = LayoutRect {
@@ -15697,7 +15739,18 @@ impl LayoutEngine {
             } else {
                 None
             };
+            // 겹침 허용 안 함으로 쌓인 그림은 합산 대신 쌓인 범위를 센다 — 배치·정렬과
+            // 같은 쌓기 결과를 써서 나란히 놓인 열을 두 번 세지 않는다.
+            let no_overlap_stack_band = parallel_other_band.is_none().then(|| {
+                crate::renderer::float_placement::cell_paragraph_no_overlap_square_stack(
+                    &cell.paragraphs,
+                    pi,
+                    self.dpi,
+                )
+                .map(|stack| stack.bottom)
+            });
             let para_other_non_inline_h = (parallel_other_band
+                .or(no_overlap_stack_band.flatten())
                 .unwrap_or(summed_para_other_non_inline_h)
                 - stored_square_picture_flow_h)
                 .max(0.0);

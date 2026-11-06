@@ -1,0 +1,37 @@
+{
+  "base-native": {
+    "documents": 36,
+    "pages": 76,
+    "minimum": 7.67,
+    "under_90": 6,
+    "process_nonzero": 6
+  },
+  "corrected-native": {
+    "documents": 36,
+    "pages": 77,
+    "minimum": 91.16,
+    "under_90": 0,
+    "process_nonzero": 0
+  },
+  "base-wasm": {
+    "documents": 36,
+    "pages": 76,
+    "minimum": 7.4,
+    "under_90": 6,
+    "process_nonzero": 6
+  },
+  "corrected-wasm": {
+    "documents": 36,
+    "pages": 77,
+    "minimum": 91.83,
+    "under_90": 0,
+    "process_nonzero": 0
+  },
+  "corrected-svg": {
+    "documents": 8,
+    "pages": 10,
+    "minimum": 99.98,
+    "under_90": 0,
+    "process_nonzero": 0
+  }
+}
