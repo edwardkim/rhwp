@@ -31,3 +31,7 @@ Native Skia 전용 검사·전쪽 Native/fresh WASM·쪽수·확대 판독·lint
 ## 적용과 보정 계획
 
 [이 PR 구현 계획](pr_8681_review_impl.md) · [전체 순서·게이트](assets/planet6897_20261106/integration-plan.md).
+
+## 추가 실문서 대조 기준
+
+[결재문서 36478532 원본과 Print 출처](assets/planet6897_20261106/pr8681/print-reference.md)를 확보했다. [이슈 #8686](https://github.com/edwardkim/rhwp/issues/8686)이 보고한 칸 안 자리차지 표와 후속 본문의 소속·포함 관계를 검증할 입력이다. 원 PR의 주 입력 36385506과 같은 문서로 취급하지 않는다. MCP 2020의 실제 한컴 11.0.0.9136·1-up 인쇄 실행 및 2쪽 PDF를 확인했다. Native/fresh WASM과의 출력 대조는 진행 전이며 보정 완료를 주장하지 않는다.
