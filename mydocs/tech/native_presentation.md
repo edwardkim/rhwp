@@ -77,6 +77,12 @@ completion의 snapshot만 close 때 대신 해제한다.
 명시적 font bytes는 snapshot에 고정되어 있고 원본 path를 다시 읽지 않는다. 시스템
 fallback까지 고정한 portable font 공급이라는 의미는 아니다.
 
+`presentation.fullStampChecks: true`에서는 `snapshotCheck`에 `snapshot`과 전체 `stamp`를
+보내 `{ok:true,current:bool}`로 확인한다. 이는 doc/revision/font input identity에 더해
+현재 source의 view/device generation과 정확한 DPR까지 비교하는 thread-safe metadata
+query다. `snapshotInfo.current`의 input current와 구분하며 Core/replay/legacy TLS를
+호출하지 않는다. 유효 handle의 stale/closed는 false, 잘못된 handle/stamp는 오류다.
+
 ## render, producer handle, consumer lease
 
 다른 render thread에서 아래 JSON을 `rhwp_presentation_request`로 보낸다. 이 호출은
@@ -125,6 +131,31 @@ raw CPU pointer를 읽는 동안 **같은 lease를 다른 스레드에서 해제
 pointer 사용/해제 경쟁을 막을 수 없다. library는 모든 call·worker·handle·lease가
 끝날 때까지 loaded 상태로 유지한다. worker는 close 후 `isFinished`를 확인하고
 release하는 기존 종료 절차를 따른다.
+
+## 여러 page의 CPU viewport
+
+`native-skia`에서는 cross-thread `renderCpuBatch`로 같은 source의 snapshot들을 하나의
+물리 viewport에 합성할 수 있다. GL/Linux feature에 의존하지 않는다. caller의 render
+owner에서만 renderer를 구성·사용하며 UI/paint callback에서 Core/조판을 조회하지 않는다.
+
+```json
+{"op":"renderCpuBatch","stamp":{"documentId":2,"revision":0,"fontGeneration":0,"viewGeneration":1,"deviceGeneration":1,"deviceScale":1.5},"viewport":{"width":1200,"height":900},"placements":[{"snapshot":3,"scale":1.5,"originX":20,"originY":10,"backgroundColor":16777215}],"clearColor":2148606515}
+```
+
+공용 `NativePagePlacement`는 GL의 기존 `NativeGlPlacement`와 같은 JSON/의미이며
+scale/origin은 physical viewport pixels다. page background는 opaque COLORREF 또는
+`null`, clear는 ARGB다. 최대 32개 page, dimension 4,096, 16,777,216 pixels를 checked
+계산한 뒤 기존 frame/replay quota를 먼저 확보한다. snapshot/font bytes는 고정된 입력이다.
+borrowed RGBA8 CPU Surface가 곧 output buffer에 그려 추가 전체-frame copy를 만들지 않는다.
+동시에 한 renderer만 보유하고 그 세 cache 합계 추정량도 8 MiB 이하로 나눈다.
+
+모든 strict replay와 현재 source stamp 재검사가 끝나야 producer frame을 등록한다.
+오류는 producer handle 없이 종료하고 임시 bytes/credit을 반환한다. 다른 기존 lease는
+영향받지 않는다. 성공 frame은 `pageCount`, `coordinateSpace: "viewportPixels"`,
+top-left origin 0/0과 physical target의 stride를 명시한다. 이 descriptor의 `rasterScale`
+1은 viewport pixel 단위이며 각 page의 입력 scale을 대체하지 않는다. 기존 single-page
+`renderCpu`는 `coordinateSpace: "pageRaster"`와 실제 page scale/origin을 유지한다.
+반환 producer/acquire/consumer lease와 stale/close 이후 메모리 계약은 같다.
 
 ## 한도와 수명 경계
 

@@ -5,6 +5,13 @@ use std::ffi::{c_char, c_void, CString};
 use rhwp_core::native_host::NativeHostError;
 use serde_json::{json, Value};
 
+#[cfg(all(feature = "native-skia-gl", target_os = "linux"))]
+use rhwp_core::native_host::gpu_gl::{NativeGlError, NativeGlFailureKind};
+#[cfg(all(feature = "native-skia-gl", target_os = "linux"))]
+type CallError = NativeGlError;
+#[cfg(not(all(feature = "native-skia-gl", target_os = "linux")))]
+type CallError = NativeHostError;
+
 pub type NativeGlGetProcAddress = unsafe extern "C" fn(*mut c_void, *const c_char) -> *const c_void;
 pub type NativeGlIsCurrent = unsafe extern "C" fn(*mut c_void, u64) -> i32;
 
@@ -12,23 +19,33 @@ pub(crate) fn capabilities() -> Value {
     let available = cfg!(all(feature = "native-skia-gl", target_os = "linux"));
     #[cfg(all(feature = "native-skia-gl", target_os = "linux"))]
     let limits = json!(rhwp_core::native_host::gpu_gl::NativeGlPresenterConfig::default());
+    #[cfg(all(feature = "native-skia-gl", target_os = "linux"))]
+    let credits = json!(rhwp_core::native_host::gpu_gl::context_credits());
     #[cfg(not(all(feature = "native-skia-gl", target_os = "linux")))]
     let limits = Value::Null;
+    #[cfg(not(all(feature = "native-skia-gl", target_os = "linux")))]
+    let credits = Value::Null;
     json!({
         "abiVersion":1,"available":available,"hostFboRendering":available,
         "externalTextureExport":false,"crossThreadHandles":false,"tileCache":available,"clearCaches":available,
-        "maxPresentersPerThread":4,"limits":limits,
+        "maxPresentersPerThread":4,"limits":limits,"typedFailures":available,
+        "recreate":available,"retire":available,"contextCredits":credits,
     })
 }
 
-fn response(f: impl FnOnce() -> Result<Value, NativeHostError>) -> *mut c_char {
+fn response(f: impl FnOnce() -> Result<Value, CallError>) -> *mut c_char {
     let value = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(f)) {
         Ok(Ok(value)) => value,
         Ok(Err(error)) => {
-            if matches!(&error, NativeHostError::InvalidArgument(message) if message == "stale presentation render stamp")
+            #[cfg(all(feature = "native-skia-gl", target_os = "linux"))]
             {
-                json!({"ok":false,"code":"staleFrame","retryable":true,"error":error.to_string()})
-            } else {
+                let info = error.info();
+                json!({"ok":false,"code":info.code,"error":info.message,
+                "failureKind":info.kind,"domain":info.domain,"deviceFailure":info.device_failure,
+                "requiresRecreate":info.requires_recreate,"retryable":info.retryable})
+            }
+            #[cfg(not(all(feature = "native-skia-gl", target_os = "linux")))]
+            {
                 json!({"ok":false,"code":error.code(),"error":error.to_string()})
             }
         }
@@ -44,7 +61,7 @@ fn response(f: impl FnOnce() -> Result<Value, NativeHostError>) -> *mut c_char {
 }
 
 #[cfg(not(all(feature = "native-skia-gl", target_os = "linux")))]
-fn disabled() -> Result<Value, NativeHostError> {
+fn disabled() -> Result<Value, CallError> {
     Ok(json!({"ok":false,"code":"featureDisabled","error":"native-skia-gl on Linux is required"}))
 }
 
@@ -124,6 +141,57 @@ pub unsafe extern "C" fn rhwp_gl_presenter_request(
     })
 }
 
+/// Recreate a TLS owner on an actual new current context and advanced device
+/// generation. Old callback/user_data remain borrowed until success/abandon.
+///
+/// # Safety
+/// The new context identity and callback/procedure lifetimes must be accurate.
+/// Nonempty config bytes must remain readable for the call.
+#[no_mangle]
+#[allow(clippy::too_many_arguments)]
+pub unsafe extern "C" fn rhwp_gl_presenter_recreate(
+    presenter: u64,
+    context_id: u64,
+    device_generation: u64,
+    get_proc_address: Option<NativeGlGetProcAddress>,
+    is_current: Option<NativeGlIsCurrent>,
+    user_data: *mut c_void,
+    config: *const u8,
+    config_len: usize,
+) -> *mut c_char {
+    response(|| {
+        #[cfg(all(feature = "native-skia-gl", target_os = "linux"))]
+        {
+            unsafe {
+                enabled::recreate(
+                    presenter,
+                    context_id,
+                    device_generation,
+                    get_proc_address,
+                    is_current,
+                    user_data,
+                    config,
+                    config_len,
+                )
+            }
+        }
+        #[cfg(not(all(feature = "native-skia-gl", target_os = "linux")))]
+        {
+            let _ = (
+                presenter,
+                context_id,
+                device_generation,
+                get_proc_address,
+                is_current,
+                user_data,
+                config,
+                config_len,
+            );
+            disabled()
+        }
+    })
+}
+
 #[cfg(all(feature = "native-skia-gl", target_os = "linux"))]
 mod enabled {
     use std::cell::RefCell;
@@ -150,19 +218,23 @@ mod enabled {
     }
 
     impl Owner {
-        fn current(&self) -> Result<(), NativeHostError> {
+        fn current(&self) -> Result<(), CallError> {
             // SAFETY: host maintains callback/user_data through release/abandon.
             if unsafe { (self.is_current)(self.user_data, self.context_id) } != 1 {
-                return Err(NativeHostError::InvalidArgument(
-                    "matching host GL context is not current".into(),
+                return Err(NativeGlError::new(
+                    NativeGlFailureKind::ContextNotCurrent,
+                    "matching host GL context is not current",
                 ));
             }
             Ok(())
         }
     }
 
-    fn invalid_handle() -> NativeHostError {
-        NativeHostError::InvalidArgument("unknown or foreign-thread GL presenter".into())
+    fn invalid_handle() -> CallError {
+        NativeGlError::new(
+            NativeGlFailureKind::WrongOwner,
+            "unknown or foreign-thread GL presenter",
+        )
     }
 
     unsafe fn bytes<'a>(pointer: *const u8, length: usize) -> Result<&'a [u8], NativeHostError> {
@@ -186,7 +258,7 @@ mod enabled {
         user_data: *mut c_void,
         config: *const u8,
         config_len: usize,
-    ) -> Result<Value, NativeHostError> {
+    ) -> Result<Value, CallError> {
         let loader = loader.ok_or_else(|| {
             NativeHostError::InvalidArgument("GL loader callback is required".into())
         })?;
@@ -215,8 +287,9 @@ mod enabled {
             || device_generation == 0
             || unsafe { current(user_data, context_id) } != 1
         {
-            return Err(NativeHostError::InvalidArgument(
-                "matching host GL context is not current".into(),
+            return Err(NativeGlError::new(
+                NativeGlFailureKind::ContextNotCurrent,
+                "matching host GL context is not current",
             ));
         }
         let id = NEXT_ID
@@ -265,6 +338,10 @@ mod enabled {
             context_id: u64,
             device_generation: u64,
         },
+        Retire {
+            context_id: u64,
+            device_generation: u64,
+        },
         Abandon {},
     }
 
@@ -272,7 +349,7 @@ mod enabled {
         id: u64,
         pointer: *const u8,
         length: usize,
-    ) -> Result<Value, NativeHostError> {
+    ) -> Result<Value, CallError> {
         let request: Request =
             serde_json::from_slice(unsafe { bytes(pointer, length)? }).map_err(|_| {
                 NativeHostError::InvalidArgument("invalid GL presenter request JSON".into())
@@ -318,6 +395,19 @@ mod enabled {
                     }
                     Ok(json!({"ok":true,"info":owner.presenter.info()?}))
                 }
+                Request::Retire {
+                    context_id,
+                    device_generation,
+                } => {
+                    owner
+                        .presenter
+                        .check_context(context_id, device_generation)?;
+                    owner.current()?;
+                    unsafe {
+                        owner.presenter.release(context_id, device_generation)?;
+                    }
+                    Ok(json!({"ok":true,"info":owner.presenter.info()?}))
+                }
                 Request::Release {
                     context_id,
                     device_generation,
@@ -338,6 +428,55 @@ mod enabled {
                     Ok(json!({"ok":true}))
                 }
             }
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub(super) unsafe fn recreate(
+        id: u64,
+        context_id: u64,
+        generation: u64,
+        loader: Option<NativeGlGetProcAddress>,
+        current: Option<NativeGlIsCurrent>,
+        user_data: *mut c_void,
+        pointer: *const u8,
+        length: usize,
+    ) -> Result<Value, CallError> {
+        let loader = loader.ok_or_else(|| {
+            NativeHostError::InvalidArgument("GL loader callback is required".into())
+        })?;
+        let current = current.ok_or_else(|| {
+            NativeHostError::InvalidArgument("GL current-context callback is required".into())
+        })?;
+        let config_bytes = unsafe { bytes(pointer, length)? };
+        OWNERS.with(|owners| {
+            let mut owners = owners.borrow_mut();
+            let owner = owners.get_mut(&id).ok_or_else(invalid_handle)?;
+            let config: NativeGlPresenterConfig = if config_bytes.is_empty() {
+                owner.presenter.info()?.config
+            } else {
+                serde_json::from_slice(config_bytes).map_err(|_| {
+                    NativeHostError::InvalidArgument("invalid GL presenter config".into())
+                })?
+            };
+            config.validate()?;
+            if unsafe { current(user_data, context_id) } != 1 {
+                return Err(NativeGlError::new(
+                    NativeGlFailureKind::ContextNotCurrent,
+                    "new matching host GL context is not current",
+                ));
+            }
+            unsafe {
+                owner
+                    .presenter
+                    .recreate(context_id, generation, config, |name| {
+                        loader(user_data, name.as_ptr())
+                    })?;
+            }
+            owner.context_id = context_id;
+            owner.is_current = current;
+            owner.user_data = user_data;
+            Ok(json!({"ok":true,"presenter":id,"info":owner.presenter.info()?}))
         })
     }
 

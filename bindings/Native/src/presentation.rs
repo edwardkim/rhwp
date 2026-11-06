@@ -5,8 +5,8 @@ use std::os::raw::c_char;
 use std::sync::OnceLock;
 
 use rhwp_core::native_host::presentation::{
-    NativePresentationConfig, NativePresentationId, NativePresentationRegistry,
-    NativePresentationStamp,
+    NativePagePlacement, NativePresentationConfig, NativePresentationId,
+    NativePresentationRegistry, NativePresentationStamp, NativePresentationViewport,
 };
 use rhwp_core::native_host::runtime::NativeRuntimeRegion;
 use rhwp_core::native_host::NativeHostError;
@@ -29,7 +29,10 @@ pub(crate) fn capabilities() -> Value {
         "abiVersion": 1,
         "workerRenderSnapshots": true,
         "crossThreadHandles": true,
+        "fullStampChecks": true,
         "cpuFrames": cfg!(feature = "native-skia"),
+        "cpuBatchFrames": cfg!(feature = "native-skia"),
+        "maxCpuBatchPages":32,"maxCpuBatchDimension":4096,
         "gpuFrames": false,
         "maxSources": config.max_sources,
         "maxSnapshots": config.max_snapshots,
@@ -55,11 +58,21 @@ enum Request {
     SnapshotRelease {
         snapshot: NativePresentationId,
     },
+    SnapshotCheck {
+        snapshot: NativePresentationId,
+        stamp: NativePresentationStamp,
+    },
     RenderCpu {
         snapshot: NativePresentationId,
         stamp: NativePresentationStamp,
         region: NativeRuntimeRegion,
         scale: f64,
+    },
+    RenderCpuBatch {
+        stamp: NativePresentationStamp,
+        viewport: NativePresentationViewport,
+        placements: Vec<NativePagePlacement>,
+        clear_color: u32,
     },
     FrameInfo {
         frame: NativePresentationId,
@@ -112,6 +125,9 @@ pub unsafe extern "C" fn rhwp_presentation_request(
                 registry.release_snapshot(snapshot)?;
                 json!({"ok":true})
             }
+            Request::SnapshotCheck { snapshot, stamp } => {
+                json!({"ok":true,"current":registry.snapshot_check(snapshot, stamp)?})
+            }
             Request::RenderCpu {
                 snapshot,
                 stamp,
@@ -119,6 +135,15 @@ pub unsafe extern "C" fn rhwp_presentation_request(
                 scale,
             } => {
                 let info = registry.render_cpu(snapshot, stamp, region.into(), scale)?;
+                json!({"ok":true,"frame":info.frame,"info":info})
+            }
+            Request::RenderCpuBatch {
+                stamp,
+                viewport,
+                placements,
+                clear_color,
+            } => {
+                let info = registry.render_cpu_batch(stamp, viewport, &placements, clear_color)?;
                 json!({"ok":true,"frame":info.frame,"info":info})
             }
             Request::FrameInfo { frame } => json!({"ok":true,"info":registry.frame_info(frame)?}),

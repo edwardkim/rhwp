@@ -124,6 +124,10 @@ whole-frame CPU readback은 추가하지 않는다. 같은 GL queue에서 submit
 외부 context/Flutter consumer sampling 완료는 다른 경계다. 새 GPU consumer lease나
 외부 texture/fence capability를 광고하지 않는다.
 
+current 없는 abandon으로 logical target 수가 0이 되었다고 old share-group의 driver
+이름까지 해제되었다고 주장하지 않는다. live+orphan process context credit과 정상
+retire/recreate, 독립 CPU batch 품질 비교는 [회복 계약](native_gl_recovery.md)을 따른다.
+
 ## 관계 검사
 
 `tests/cases/issue_536_native_gpu_tiles.rs`는 공개 ceiling/overflow 거절, 최소 framebuffer

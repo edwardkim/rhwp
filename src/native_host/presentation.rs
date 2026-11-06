@@ -89,6 +89,45 @@ impl NativePresentationStamp {
     }
 }
 
+const MAX_COORDINATE: f64 = 16_777_216.0;
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct NativePagePlacement {
+    pub snapshot: NativePresentationId,
+    pub scale: f64,
+    pub origin_x: f64,
+    pub origin_y: f64,
+    pub background_color: Option<u32>,
+}
+
+impl NativePagePlacement {
+    pub fn validate(self, snapshot: &NativeRenderSnapshot) -> Result<(), NativeHostError> {
+        let tree = snapshot.tree();
+        let values = [
+            self.scale,
+            self.origin_x,
+            self.origin_y,
+            tree.page_width,
+            tree.page_height,
+            self.origin_x + tree.page_width * self.scale,
+            self.origin_y + tree.page_height * self.scale,
+        ];
+        if self.scale <= 0.0
+            || self.scale > 16.0
+            || self.scale as f32 <= 0.0
+            || tree.page_width <= 0.0
+            || tree.page_height <= 0.0
+            || values
+                .into_iter()
+                .any(|value| !value.is_finite() || value.abs() > MAX_COORDINATE)
+        {
+            return Err(invalid("invalid page placement"));
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct NativePresentationConfig {
     pub max_sources: usize,
@@ -98,6 +137,42 @@ pub struct NativePresentationConfig {
     pub max_frame_bytes: usize,
     pub max_leases: usize,
     pub max_in_flight_replays: usize,
+}
+
+/// Physical presentation pixels, independent of any GL/Linux target type.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct NativePresentationViewport {
+    pub width: i32,
+    pub height: i32,
+}
+
+impl NativePresentationViewport {
+    /// Checked `(stride, byte_length)` for an RGBA8 target.
+    pub fn rgba_layout(
+        self,
+        max_dimension: i32,
+        max_pixels: usize,
+    ) -> Result<(usize, usize), NativeHostError> {
+        if self.width <= 0
+            || self.height <= 0
+            || self.width > max_dimension
+            || self.height > max_dimension
+        {
+            return Err(invalid("invalid presentation viewport size"));
+        }
+        let pixels = (self.width as usize)
+            .checked_mul(self.height as usize)
+            .filter(|pixels| *pixels <= max_pixels)
+            .ok_or_else(|| limit("presentation viewport pixel quota exceeded"))?;
+        let stride = (self.width as usize)
+            .checked_mul(4)
+            .ok_or_else(|| limit("presentation stride overflow"))?;
+        let bytes = pixels
+            .checked_mul(4)
+            .ok_or_else(|| limit("presentation byte length overflow"))?;
+        Ok((stride, bytes))
+    }
 }
 
 impl Default for NativePresentationConfig {
@@ -182,6 +257,8 @@ pub struct NativePresentationFrameInfo {
     pub stamp: NativePresentationStamp,
     pub descriptor: NativePresentationDescriptor,
     pub current: bool,
+    pub page_count: usize,
+    pub coordinate_space: &'static str,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -357,6 +434,36 @@ pub struct NativePresentationSnapshotBorrow {
     entry: Arc<Snapshot>,
 }
 
+#[derive(Debug)]
+pub enum NativePresentationBorrowError {
+    InvalidHandle,
+    Stale,
+    Host(NativeHostError),
+}
+
+impl From<NativePresentationBorrowError> for NativeHostError {
+    fn from(error: NativePresentationBorrowError) -> Self {
+        match error {
+            NativePresentationBorrowError::InvalidHandle => {
+                invalid("unknown presentation snapshot")
+            }
+            NativePresentationBorrowError::Stale => invalid("stale presentation render stamp"),
+            NativePresentationBorrowError::Host(error) => error,
+        }
+    }
+}
+
+impl std::fmt::Display for NativePresentationBorrowError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::InvalidHandle => f.write_str("unknown presentation snapshot"),
+            Self::Stale => f.write_str("stale presentation render stamp"),
+            Self::Host(error) => error.fmt(f),
+        }
+    }
+}
+impl std::error::Error for NativePresentationBorrowError {}
+
 impl NativePresentationSnapshotBorrow {
     pub fn snapshot(&self) -> &NativeRenderSnapshot {
         &self.entry.input
@@ -367,13 +474,26 @@ impl NativePresentationSnapshotBorrow {
     }
 
     pub fn validate_current(&self, stamp: NativePresentationStamp) -> Result<(), NativeHostError> {
-        stamp.validate()?;
+        self.validate_current_checked(stamp).map_err(Into::into)
+    }
+
+    pub fn validate_current_checked(
+        &self,
+        stamp: NativePresentationStamp,
+    ) -> Result<(), NativePresentationBorrowError> {
+        stamp
+            .validate()
+            .map_err(NativePresentationBorrowError::Host)?;
         if stamp.document_id != self.entry.document_id
             || stamp.revision != self.entry.input.revision()
             || stamp.font_generation != self.entry.input.font_generation()
-            || !self.entry.source.current(stamp)?
+            || !self
+                .entry
+                .source
+                .current(stamp)
+                .map_err(NativePresentationBorrowError::Host)?
         {
-            return Err(invalid("stale presentation render stamp"));
+            return Err(NativePresentationBorrowError::Stale);
         }
         Ok(())
     }
@@ -385,6 +505,8 @@ struct Frame {
     source: Arc<Source>,
     stamp: NativePresentationStamp,
     descriptor: NativePresentationDescriptor,
+    page_count: usize,
+    coordinate_space: &'static str,
     _allocation: Allocation,
 }
 
@@ -396,6 +518,8 @@ impl Frame {
             stamp: self.stamp,
             descriptor: self.descriptor.clone(),
             current: self.source.current(self.stamp)?,
+            page_count: self.page_count,
+            coordinate_space: self.coordinate_space,
         })
     }
 }
@@ -550,6 +674,20 @@ impl NativePresentationRegistry {
         })
     }
 
+    /// Metadata-only full-stamp query. A stale valid handle returns false;
+    /// malformed stamps/unknown handles remain errors. No Core/replay runs.
+    pub fn snapshot_check(
+        &self,
+        snapshot: NativePresentationId,
+        stamp: NativePresentationStamp,
+    ) -> Result<bool, NativeHostError> {
+        match self.borrow_snapshot_checked(snapshot, stamp) {
+            Ok(_) => Ok(true),
+            Err(NativePresentationBorrowError::Stale) => Ok(false),
+            Err(error) => Err(error.into()),
+        }
+    }
+
     pub fn release_snapshot(&self, snapshot: NativePresentationId) -> Result<(), NativeHostError> {
         lock(&self.records)?
             .snapshots
@@ -563,16 +701,25 @@ impl NativePresentationRegistry {
         snapshot: NativePresentationId,
         stamp: NativePresentationStamp,
     ) -> Result<NativePresentationSnapshotBorrow, NativeHostError> {
-        let records = lock(&self.records)?;
+        self.borrow_snapshot_checked(snapshot, stamp)
+            .map_err(Into::into)
+    }
+
+    pub fn borrow_snapshot_checked(
+        &self,
+        snapshot: NativePresentationId,
+        stamp: NativePresentationStamp,
+    ) -> Result<NativePresentationSnapshotBorrow, NativePresentationBorrowError> {
+        let records = lock(&self.records).map_err(NativePresentationBorrowError::Host)?;
         let borrowed = NativePresentationSnapshotBorrow {
             entry: Arc::clone(
                 records
                     .snapshots
                     .get(&snapshot)
-                    .ok_or_else(|| invalid("unknown presentation snapshot"))?,
+                    .ok_or(NativePresentationBorrowError::InvalidHandle)?,
             ),
         };
-        borrowed.validate_current(stamp)?;
+        borrowed.validate_current_checked(stamp)?;
         Ok(borrowed)
     }
 
@@ -647,6 +794,8 @@ impl NativePresentationRegistry {
                 id,
                 source: Arc::clone(&entry.source),
                 stamp,
+                page_count: 1,
+                coordinate_space: "pageRaster",
                 descriptor: NativePresentationDescriptor::Cpu {
                     width: window.width,
                     height: window.height,
@@ -664,12 +813,131 @@ impl NativePresentationRegistry {
                 _allocation: allocation,
             });
             let info = frame.info()?;
+            if !info.current {
+                return Err(invalid("presentation source changed during replay"));
+            }
             records.frames.insert(id, frame);
             Ok(info)
         }
         #[cfg(not(feature = "native-skia"))]
         {
             let _ = (snapshot, stamp, region, scale);
+            Err(NativeHostError::FeatureDisabled)
+        }
+    }
+
+    /// Compose owned immutable pages into one physical CPU viewport. This is
+    /// synchronous work for a caller-owned render thread, with no Core/layout
+    /// query and no renderer transfer. Every output uses the existing leases.
+    pub fn render_cpu_batch(
+        &self,
+        stamp: NativePresentationStamp,
+        viewport: NativePresentationViewport,
+        placements: &[NativePagePlacement],
+        clear_color: u32,
+    ) -> Result<NativePresentationFrameInfo, NativeHostError> {
+        #[cfg(feature = "native-skia")]
+        {
+            use crate::renderer::skia::SkiaSurfaceRenderOptions;
+            use skia_safe::{surfaces, AlphaType, Color, ColorSpace, ColorType, ImageInfo};
+            stamp.validate()?;
+            let (stride, byte_length) =
+                viewport.rgba_layout(4096, super::MAX_FRAME_PIXELS as usize)?;
+            if placements.is_empty() || placements.len() > 32 {
+                return Err(limit("CPU batch page count is outside its quota"));
+            }
+            let inputs: Vec<_> = placements
+                .iter()
+                .map(|placement| {
+                    let input = self
+                        .borrow_snapshot_checked(placement.snapshot, stamp)
+                        .map_err(NativeHostError::from)?;
+                    placement.validate(input.snapshot())?;
+                    Ok(input)
+                })
+                .collect::<Result<_, NativeHostError>>()?;
+            if inputs
+                .iter()
+                .any(|input| input.source() != inputs[0].source())
+            {
+                return Err(invalid(
+                    "CPU batch pages must share one presentation source",
+                ));
+            }
+            let mut allocation = Allocation::frame(&self.budget, byte_length)?;
+            let mut bytes = vec![0u8; byte_length];
+            let image_info = ImageInfo::new(
+                (viewport.width, viewport.height),
+                ColorType::RGBA8888,
+                AlphaType::Premul,
+                ColorSpace::new_srgb(),
+            );
+            {
+                let surface = surfaces::wrap_pixels(&image_info, &mut bytes, stride, None)
+                    .ok_or_else(|| {
+                        NativeHostError::Unsupported(
+                            "could not borrow the CPU presentation pixels".into(),
+                        )
+                    })?;
+                surface.canvas().clear(Color::from(clear_color));
+                for (placement, input) in placements.iter().zip(&inputs) {
+                    // At most one native renderer/font copy is live here. Its
+                    // three caches together retain at most the 8 MiB estimate.
+                    let renderer = input.snapshot().create_renderer()?.with_cache_limits(
+                        super::MAX_RENDER_CACHE_ENTRIES,
+                        super::MAX_RENDER_CACHE_BYTES / 3,
+                    );
+                    renderer.render_to_canvas_strict(
+                        surface.canvas(),
+                        input.snapshot().tree(),
+                        SkiaSurfaceRenderOptions {
+                            scale: placement.scale,
+                            origin_x: placement.origin_x,
+                            origin_y: placement.origin_y,
+                            background_color: placement.background_color,
+                        },
+                    )?;
+                }
+            }
+            allocation.replay_finished()?;
+            let mut records = lock(&self.records)?;
+            for input in &inputs {
+                input.validate_current(stamp)?;
+            }
+            let id = next_id()?;
+            let frame = Arc::new(Frame {
+                bytes: bytes.into_boxed_slice(),
+                id,
+                source: Arc::clone(&inputs[0].entry.source),
+                stamp,
+                page_count: placements.len(),
+                coordinate_space: "viewportPixels",
+                descriptor: NativePresentationDescriptor::Cpu {
+                    width: viewport.width,
+                    height: viewport.height,
+                    stride,
+                    byte_length,
+                    pixel_format: "rgba8Premultiplied",
+                    color_space: "srgb",
+                    alpha: "premultiplied",
+                    origin: "topLeft",
+                    origin_x: 0,
+                    origin_y: 0,
+                    raster_scale: 1.0,
+                    device_scale: stamp.device_scale,
+                },
+                _allocation: allocation,
+            });
+            let info = frame.info()?;
+            if !info.current {
+                return Err(invalid("presentation source changed during replay"));
+            }
+            records.frames.insert(id, frame);
+            Ok(info)
+        }
+        #[cfg(not(feature = "native-skia"))]
+        {
+            let _ = (stamp, viewport, placements, clear_color);
             Err(NativeHostError::FeatureDisabled)
         }
     }
@@ -705,9 +973,13 @@ impl NativePresentationRegistry {
             return Err(limit("presentation consumer lease count quota exceeded"));
         }
         let id = next_id()?;
+        let info = frame.info()?;
+        if !info.current {
+            return Err(invalid("stale presentation frame"));
+        }
         let result = NativePresentationLeaseInfo {
             lease: id,
-            frame: frame.info()?,
+            frame: info,
         };
         records.leases.insert(id, frame);
         Ok(result)

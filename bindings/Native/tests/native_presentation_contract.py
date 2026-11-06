@@ -68,8 +68,10 @@ def snapshot_quota_and_thread_contract(library):
         presentation = caps["presentation"]
         assert presentation["workerRenderSnapshots"]
         assert presentation["crossThreadHandles"]
+        assert presentation["fullStampChecks"]
         assert presentation["gpuFrames"] is False
         assert presentation["cpuFrames"] is caps["nativeSkia"]
+        assert presentation["cpuBatchFrames"] is caps["nativeSkia"]
         initial = stats(host)
         handles = []
         try:
@@ -93,9 +95,20 @@ def snapshot_quota_and_thread_contract(library):
                 result = consumer.submit(host.presentation_request, op="snapshotInfo",
                                          snapshot=handles[0]).result(timeout=30)
                 assert result["info"]["current"], result
+                checked = consumer.submit(host.presentation_request, op="snapshotCheck",
+                    snapshot=handles[0], stamp=stamp).result(timeout=30)
+                assert checked["current"]
+                wrong = dict(stamp, viewGeneration=stamp["viewGeneration"] + 1)
+                assert not consumer.submit(host.presentation_request, op="snapshotCheck",
+                    snapshot=handles[0], stamp=wrong).result(timeout=30)["current"]
                 # The new cross-thread exception does not move old worker handles.
                 consumer.submit(rejected, lambda: host.host_request(
                     op="presentationConfigure", worker=worker.worker, stamp=stamp)).result(timeout=30)
+            changed_view = dict(stamp, viewGeneration=stamp["viewGeneration"] + 1, deviceScale=1.5)
+            host.host_request(op="presentationConfigure", worker=worker.worker, stamp=changed_view)
+            assert not host.presentation_request(op="snapshotCheck", snapshot=handles[0], stamp=stamp)["current"]
+            assert host.presentation_request(op="snapshotCheck", snapshot=handles[0], stamp=changed_view)["current"]
+            assert host.presentation_request(op="snapshotInfo", snapshot=handles[0])["info"]["current"]
             released = handles.pop()
             host.presentation_request(op="snapshotRelease", snapshot=released)
             before = stats(host)
@@ -142,6 +155,7 @@ def cpu_lifetime_contract(library):
                 rejected(lambda: host.presentation_request(op="frameAcquire", frame=frame, stamp=stamp))
                 assert not host.presentation_request(op="frameInfo", frame=frame)["info"]["current"]
                 assert not host.presentation_request(op="snapshotInfo", snapshot=snapshot)["info"]["current"]
+                assert not host.presentation_request(op="snapshotCheck", snapshot=snapshot, stamp=stamp)["current"]
                 host.presentation_request(op="frameRelease", frame=frame)
                 frame = None
                 current = stats(host)
@@ -220,6 +234,9 @@ def main():
             _, stamp = setup(worker)
             rejected(lambda: worker.host.presentation_request(op="renderCpu", snapshot=0,
                 stamp=stamp, region={"x": 0, "y": 0, "width": 1, "height": 1}, scale=1),
+                code="featureDisabled")
+            rejected(lambda: worker.host.presentation_request(op="renderCpuBatch", stamp=stamp,
+                viewport={"width":1,"height":1}, placements=[], clearColor=0),
                 code="featureDisabled")
     deferred_snapshot_cleanup_contract(args.library)
     owner_thread_teardown_contract(args.library)

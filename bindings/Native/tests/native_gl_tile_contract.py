@@ -350,7 +350,7 @@ def run(library, document):
             cached.render(stamp, target.target, [placement(snapshot)])
             target.context.doneCurrent()
             before = cached.info()
-            rejected(cached.clear_caches)
+            rejected(cached.clear_caches, "contextNotCurrent")
             assert cached.info() == before
             target.make_current()
             cleared = cached.clear_caches()
@@ -375,7 +375,7 @@ def run(library, document):
             worker.host.host_request(op="presentationConfigure", worker=worker.worker, stamp=stamp)
             owner = second.presenter(worker.host)
             assert owner.info()["tileCache"]["cachedTiles"] == 0
-            rejected(lambda: owner.render(stamp, dict(second.target, contextId=1), [placement(snapshot)]))
+            rejected(lambda: owner.render(stamp, dict(second.target, contextId=1), [placement(snapshot)]), "contextMismatch")
             result = owner.render(stamp, second.target, [placement(snapshot)])
             budget(result["info"])
             assert result["info"]["tileCache"]["misses"] > 0

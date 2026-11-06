@@ -93,6 +93,12 @@ def disabled_contract(host):
     function.argtypes = [ctypes.c_uint64, ctypes.c_void_p, ctypes.c_size_t]
     function.restype = ctypes.c_void_p
     rejected(lambda: host._result(function(0, None, 0)), "featureDisabled")
+    function = host.library.rhwp_gl_presenter_recreate
+    function.argtypes = [ctypes.c_uint64, ctypes.c_uint64, ctypes.c_uint64,
+                         ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p,
+                         ctypes.c_void_p, ctypes.c_size_t]
+    function.restype = ctypes.c_void_p
+    rejected(lambda: host._result(function(0, 0, 0, None, None, None, None, 0)), "featureDisabled")
 
 
 def raw_request(host, handle, **request):
@@ -180,15 +186,15 @@ def gl_contract(library, document):
             assert calls["loader"] == loader_calls, "render reused the creation-only loader"
             before = presenter.info()
             rejected(lambda: presenter.render(stamp, dict(target, width=4097), placements))
-            rejected(lambda: presenter.render(stamp, dict(target, deviceGeneration=2), placements))
+            rejected(lambda: presenter.render(stamp, dict(target, deviceGeneration=2), placements), "contextMismatch")
             stale = rejected(lambda: presenter.render(dict(stamp, viewGeneration=2), target, placements), "staleFrame")
             assert stale["retryable"] is True
             assert presenter.info() == before and readback() == valid
             with ThreadPoolExecutor(max_workers=1) as other:
                 other.submit(rejected, presenter.info).result(timeout=20)
             context.doneCurrent()
-            rejected(presenter.release)
-            rejected(lambda: presenter.render(stamp, target, placements))
+            rejected(presenter.release, "contextNotCurrent")
+            rejected(lambda: presenter.render(stamp, target, placements), "contextNotCurrent")
             assert context.makeCurrent(surface)
             assert presenter.info()["framesSubmitted"] == before["framesSubmitted"]
             # Advance only the view; the same immutable page input remains valid.

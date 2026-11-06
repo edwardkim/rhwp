@@ -173,16 +173,62 @@ fn snapshot_handles_are_bounded_and_observe_source_close_without_owning_the_runt
     ));
     assert_eq!(registry.stats().unwrap(), before);
     assert!(registry.snapshot_info(id).unwrap().current);
+    let original = stamp(&info);
+    assert!(registry.snapshot_check(id, original).unwrap());
+    for changed in [
+        NativePresentationStamp {
+            document_id: original.document_id + 1,
+            ..original
+        },
+        NativePresentationStamp {
+            revision: original.revision + 1,
+            ..original
+        },
+        NativePresentationStamp {
+            font_generation: original.font_generation + 1,
+            ..original
+        },
+        NativePresentationStamp {
+            view_generation: original.view_generation + 1,
+            ..original
+        },
+        NativePresentationStamp {
+            device_generation: original.device_generation + 1,
+            ..original
+        },
+        NativePresentationStamp {
+            device_scale: 2.0,
+            ..original
+        },
+    ] {
+        assert!(!registry.snapshot_check(id, changed).unwrap());
+    }
+    assert!(std::thread::scope(|scope| scope
+        .spawn(|| registry.snapshot_check(id, original).unwrap())
+        .join()
+        .unwrap()));
+    let changed_view = NativePresentationStamp {
+        view_generation: 2,
+        device_scale: 1.5,
+        ..original
+    };
+    registry.configure_source(source, changed_view).unwrap();
+    assert!(!registry.snapshot_check(id, original).unwrap());
+    assert!(registry.snapshot_check(id, changed_view).unwrap());
+    assert!(registry.snapshot_info(id).unwrap().current);
+    assert_eq!(registry.stats().unwrap(), before);
     finish(&mut runtime);
     drop(runtime);
     assert!(!observer.is_current(info.target(), info.font_generation));
     assert!(!registry.snapshot_info(id).unwrap().current);
+    assert!(!registry.snapshot_check(id, changed_view).unwrap());
     registry.close_source(source).unwrap();
     registry.release_snapshot(id).unwrap();
     let empty = registry.stats().unwrap();
     assert_eq!(empty.retained_snapshots, 0);
     assert_eq!(empty.snapshot_estimated_bytes, 0);
     assert!(registry.release_snapshot(id).is_err());
+    assert!(registry.snapshot_check(id, changed_view).is_err());
     assert_eq!(registry.stats().unwrap(), empty);
 }
 

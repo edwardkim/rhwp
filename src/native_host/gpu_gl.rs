@@ -24,12 +24,18 @@ use super::render_snapshot::NativeRenderSnapshot;
 use super::NativeHostError;
 use crate::renderer::skia::{SkiaLayerRenderer, SkiaSurfaceRenderOptions};
 
+mod errors;
+mod recovery;
 mod tiles;
+pub use errors::{NativeGlError, NativeGlFailureInfo, NativeGlFailureKind, NativeGlResult};
+use recovery::ContextCredit;
+pub use recovery::{
+    context_credits, NativeGlContextCredits, NativeGlRecoveryInfo, MAX_GL_CONTEXT_CREDITS,
+};
 use tiles::{CachedTile, ManagedTarget, TargetAllocation, TargetBudget, TileCache, TilePlan};
 pub use tiles::{NativeGlTargetStats, NativeGlTileStats};
 
 const MIB: usize = 1024 * 1024;
-const MAX_COORDINATE: f64 = 16_777_216.0;
 
 fn invalid(message: &str) -> NativeHostError {
     NativeHostError::InvalidArgument(message.into())
@@ -39,8 +45,8 @@ fn limit(message: &str) -> NativeHostError {
     NativeHostError::LimitExceeded(message.into())
 }
 
-fn unsupported(message: &str) -> NativeHostError {
-    NativeHostError::Unsupported(message.into())
+fn unsupported(message: &str) -> NativeGlError {
+    NativeGlError::new(NativeGlFailureKind::BackendUnavailable, message)
 }
 
 /// Logical native target/font/cache ceilings, not total driver VRAM or RSS.
@@ -113,10 +119,6 @@ impl NativeGlPresenterConfig {
         self.validate()?;
         if target.context_id == 0
             || target.device_generation == 0
-            || target.width <= 0
-            || target.height <= 0
-            || target.width > self.max_dimension
-            || target.height > self.max_dimension
             || target.sample_count != 0
             || ![0, 8].contains(&target.stencil_bits)
         {
@@ -124,18 +126,17 @@ impl NativeGlPresenterConfig {
                 "invalid GL target identity, size, samples, or stencil",
             ));
         }
-        let pixels = (target.width as usize)
-            .checked_mul(target.height as usize)
-            .filter(|pixels| *pixels <= self.max_pixels)
-            .ok_or_else(|| limit("GL target pixel quota exceeded"))?;
-        let bytes = pixels
-            .checked_mul(4)
-            .filter(|bytes| {
-                *bytes <= self.max_target_bytes
-                    && *bytes <= self.max_scratch_bytes
-                    && *bytes <= self.max_managed_target_bytes
-            })
-            .ok_or_else(|| limit("GL target byte quota exceeded"))?;
+        let (_, bytes) = super::presentation::NativePresentationViewport {
+            width: target.width,
+            height: target.height,
+        }
+        .rgba_layout(self.max_dimension, self.max_pixels)?;
+        if bytes > self.max_target_bytes
+            || bytes > self.max_scratch_bytes
+            || bytes > self.max_managed_target_bytes
+        {
+            return Err(limit("GL target byte quota exceeded"));
+        }
         Ok(bytes)
     }
 }
@@ -168,42 +169,7 @@ pub struct NativeGlTarget {
     pub stencil_bits: u32,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct NativeGlPlacement {
-    pub snapshot: NativePresentationId,
-    pub scale: f64,
-    pub origin_x: f64,
-    pub origin_y: f64,
-    pub background_color: Option<u32>,
-}
-
-impl NativeGlPlacement {
-    pub fn validate(self, snapshot: &NativeRenderSnapshot) -> Result<(), NativeHostError> {
-        let tree = snapshot.tree();
-        let values = [
-            self.scale,
-            self.origin_x,
-            self.origin_y,
-            tree.page_width,
-            tree.page_height,
-            self.origin_x + tree.page_width * self.scale,
-            self.origin_y + tree.page_height * self.scale,
-        ];
-        if self.scale <= 0.0
-            || self.scale > 16.0
-            || self.scale as f32 <= 0.0
-            || tree.page_width <= 0.0
-            || tree.page_height <= 0.0
-            || values
-                .into_iter()
-                .any(|value| !value.is_finite() || value.abs() > MAX_COORDINATE)
-        {
-            return Err(invalid("invalid GL page placement"));
-        }
-        Ok(())
-    }
-}
+pub use super::presentation::NativePagePlacement as NativeGlPlacement;
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -233,6 +199,8 @@ pub struct NativeGlFrame {
     pub whole_frame_readbacks: u64,
     pub replay_micros: u64,
     pub flush_submit_micros: u64,
+    pub timing_scope: &'static str,
+    pub whole_frame_cpu_uploads: u64,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -256,6 +224,10 @@ pub struct NativeGlPresenterInfo {
     pub tile_cache: NativeGlTileStats,
     pub managed_targets: NativeGlTargetStats,
     pub renderer_cache_estimated_bytes: usize,
+    pub context_credits: NativeGlContextCredits,
+    pub recovery: NativeGlRecoveryInfo,
+    pub last_gpu_failure: Option<NativeGlFailureInfo>,
+    pub whole_frame_cpu_uploads: u64,
 }
 
 type Scratch = ManagedTarget;
@@ -282,6 +254,9 @@ pub struct NativeGlPresenter {
     context: Option<gpu::DirectContext>,
     state: &'static str,
     _owner_only: PhantomData<Rc<()>>,
+    context_credit: Option<ContextCredit>,
+    recovery: NativeGlRecoveryInfo,
+    last_gpu_failure: Option<NativeGlFailureInfo>,
 }
 
 impl NativeGlPresenter {
@@ -294,16 +269,25 @@ impl NativeGlPresenter {
         device_generation: u64,
         config: NativeGlPresenterConfig,
         mut load: impl FnMut(&CStr) -> *const c_void,
-    ) -> Result<Self, NativeHostError> {
+    ) -> NativeGlResult<Self> {
+        unsafe { Self::new_with_credit(context_id, device_generation, config, &mut load, None) }
+    }
+
+    unsafe fn new_with_credit(
+        context_id: u64,
+        device_generation: u64,
+        config: NativeGlPresenterConfig,
+        mut load: impl FnMut(&CStr) -> *const c_void,
+        credit: Option<ContextCredit>,
+    ) -> NativeGlResult<Self> {
         config.validate()?;
         if context_id == 0 || device_generation == 0 {
-            return Err(invalid("GL context identity/generation must be nonzero"));
+            return Err(invalid("GL context identity/generation must be nonzero").into());
         }
         let device = unsafe { read_device(&mut load)? };
+        // Qt/GLX resolvers may return non-null foreign dispatch stubs for EGL
+        // names. Ganesh's optional EGL query must never call those as EGL.
         let interface = gpu::gl::Interface::new_load_with_cstr(|name| {
-            // Skia also probes optional EGL entry points. A host GL resolver
-            // may return non-null dispatch stubs for those foreign names; they
-            // are not callable EGL functions. This adapter accepts GL only.
             if name.to_bytes().starts_with(b"gl") {
                 load(name)
             } else {
@@ -312,8 +296,18 @@ impl NativeGlPresenter {
         })
         .filter(|interface| interface.validate())
         .ok_or_else(|| unsupported("GL function interface is unavailable or incomplete"))?;
-        let mut context = gpu::direct_contexts::make_gl(interface, None)
-            .ok_or_else(|| unsupported("Skia could not create a GL Ganesh context"))?;
+        // Config/string/interface probes above create no GPU object. A native
+        // context factory attempt below may, even if it fails to return a handle.
+        let mut credit = match credit {
+            Some(credit) => credit,
+            None => ContextCredit::reserve()?,
+        };
+        credit.touch();
+        let mut context =
+            gpu::direct_contexts::make_gl(interface, None).ok_or_else(|| {
+                NativeGlError::new(NativeGlFailureKind::ContextCreationFailed,
+                "Skia native GL context creation failed; allocation/device cause is not confirmed")
+            })?;
         context.set_resource_cache_limit(config.resource_cache_bytes);
         Ok(Self {
             owner: thread::current().id(),
@@ -332,32 +326,41 @@ impl NativeGlPresenter {
             context: Some(context),
             state: "live",
             _owner_only: PhantomData,
+            context_credit: Some(credit),
+            recovery: NativeGlRecoveryInfo {
+                last_attempted_context_id: context_id,
+                last_attempted_device_generation: device_generation,
+                ..Default::default()
+            },
+            last_gpu_failure: None,
         })
     }
 
-    fn check_owner(&self) -> Result<(), NativeHostError> {
+    fn check_owner(&self) -> NativeGlResult<()> {
         if thread::current().id() != self.owner {
-            return Err(invalid("GL presenter belongs to another thread"));
+            return Err(NativeGlError::new(
+                NativeGlFailureKind::WrongOwner,
+                "GL presenter belongs to another thread",
+            ));
         }
         Ok(())
     }
 
-    pub fn check_context(
-        &self,
-        context_id: u64,
-        device_generation: u64,
-    ) -> Result<(), NativeHostError> {
+    pub fn check_context(&self, context_id: u64, device_generation: u64) -> NativeGlResult<()> {
         self.check_owner()?;
         if context_id != self.context_id || device_generation != self.device_generation {
-            return Err(invalid("GL context identity/device generation mismatch"));
+            return Err(NativeGlError::new(
+                NativeGlFailureKind::ContextMismatch,
+                "GL context identity/device generation mismatch",
+            ));
         }
         if self.context.is_none() {
-            return Err(invalid("GL presenter is no longer live"));
+            return Err(NativeGlError::new(NativeGlFailureKind::ContextUnavailable, "GL presenter is no longer live; explicitly recreate with a new context/device generation"));
         }
         Ok(())
     }
 
-    pub fn info(&self) -> Result<NativeGlPresenterInfo, NativeHostError> {
+    pub fn info(&self) -> NativeGlResult<NativeGlPresenterInfo> {
         self.check_owner()?;
         // This queries Skia's bookkeeping only; no GL/current-context callback.
         let cache = self
@@ -396,7 +399,31 @@ impl NativeGlPresenter {
                         + stats.images.approximate_bytes
                 })
                 .sum(),
+            context_credits: context_credits(),
+            recovery: self.recovery.clone(),
+            last_gpu_failure: self.last_gpu_failure.clone(),
+            whole_frame_cpu_uploads: 0,
         })
+    }
+
+    fn healthy_device(&mut self, message: &'static str) -> NativeGlResult<()> {
+        if self
+            .context
+            .as_mut()
+            .ok_or_else(|| {
+                NativeGlError::new(
+                    NativeGlFailureKind::ContextUnavailable,
+                    "GL context is no longer live",
+                )
+            })?
+            .is_device_lost()
+        {
+            let error = NativeGlError::new(NativeGlFailureKind::DeviceLost, message);
+            self.last_gpu_failure = Some(error.info());
+            self.abandon()?;
+            return Err(error);
+        }
+        Ok(())
     }
 
     fn renderer(
@@ -452,11 +479,7 @@ impl NativeGlPresenter {
         Ok(&self.renderers.last().expect("just inserted").renderer)
     }
 
-    fn scratch(
-        &mut self,
-        target: NativeGlTarget,
-        bytes: usize,
-    ) -> Result<Scratch, NativeHostError> {
+    fn scratch(&mut self, target: NativeGlTarget, bytes: usize) -> NativeGlResult<Scratch> {
         if let Some(index) = self
             .scratch
             .iter()
@@ -498,7 +521,7 @@ impl NativeGlPresenter {
         width: i32,
         height: i32,
         allocation: TargetAllocation,
-    ) -> Result<ManagedTarget, NativeHostError> {
+    ) -> NativeGlResult<ManagedTarget> {
         let info = ImageInfo::new(
             (width, height),
             ColorType::RGBA8888,
@@ -517,7 +540,14 @@ impl NativeGlPresenter {
             false,
             None,
         )
-        .ok_or_else(|| unsupported("Skia could not allocate a GL scratch target"))?;
+        .ok_or_else(|| {
+            let error = NativeGlError::new(
+                NativeGlFailureKind::AllocationFailed,
+                "Skia could not allocate a GL target; device loss is not confirmed",
+            );
+            self.last_gpu_failure = Some(error.info());
+            error
+        })?;
         Ok(ManagedTarget::new(surface, width, height, allocation))
     }
 
@@ -532,34 +562,37 @@ impl NativeGlPresenter {
         target: NativeGlTarget,
         placements: &[NativeGlPlacement],
         clear_color: u32,
-    ) -> Result<NativeGlFrame, NativeHostError> {
+    ) -> NativeGlResult<NativeGlFrame> {
         self.check_context(target.context_id, target.device_generation)?;
         stamp.validate()?;
         if stamp.device_generation != self.device_generation {
-            return Err(invalid("frame/device generation mismatch"));
+            return Err(NativeGlError::new(
+                NativeGlFailureKind::ContextMismatch,
+                "frame/device generation mismatch",
+            ));
         }
         let bytes = self.config.target_bytes(target)?;
         if placements.is_empty() || placements.len() > self.config.max_pages {
-            return Err(limit("GL placement count is outside its quota"));
+            return Err(limit("GL placement count is outside its quota").into());
         }
         let inputs: Vec<NativePresentationSnapshotBorrow> = placements
             .iter()
             .map(|placement| {
-                let input = registry.borrow_snapshot(placement.snapshot, stamp)?;
+                let input = registry.borrow_snapshot_checked(placement.snapshot, stamp)?;
                 placement.validate(input.snapshot())?;
                 Ok(input)
             })
-            .collect::<Result<_, NativeHostError>>()?;
+            .collect::<NativeGlResult<_>>()?;
         if inputs
             .iter()
             .any(|input| input.source() != inputs[0].source())
         {
-            return Err(invalid(
-                "all GL page placements must share one presentation source",
-            ));
+            return Err(
+                invalid("all GL page placements must share one presentation source").into(),
+            );
         }
         if self.submissions == u64::MAX {
-            return Err(limit("GL submission sequence exhausted"));
+            return Err(limit("GL submission sequence exhausted").into());
         }
         if self
             .context
@@ -567,10 +600,13 @@ impl NativeGlPresenter {
             .expect("checked live")
             .is_device_lost()
         {
+            let error = NativeGlError::new(
+                NativeGlFailureKind::DeviceLost,
+                "Skia reported GL device/context loss; presenter abandoned",
+            );
+            self.last_gpu_failure = Some(error.info());
             self.abandon()?;
-            return Err(unsupported(
-                "GL device/context was lost; presenter abandoned",
-            ));
+            return Err(error);
         }
         // Qt/host GL work may have changed bindings since the previous call.
         self.context.as_mut().expect("checked live").reset(None);
@@ -597,6 +633,9 @@ impl NativeGlPresenter {
         if self.context.is_some() {
             self.scratch.push(scratch);
         }
+        if result.is_ok() {
+            self.last_gpu_failure = None;
+        }
         result
     }
 
@@ -608,7 +647,7 @@ impl NativeGlPresenter {
         placements: &[NativeGlPlacement],
         inputs: &[NativePresentationSnapshotBorrow],
         clear_color: u32,
-    ) -> Result<NativeGlFrame, NativeHostError> {
+    ) -> NativeGlResult<NativeGlFrame> {
         let replay_started = Instant::now();
         scratch.surface.canvas().clear(Color::from(clear_color));
         // Keep every tile referenced by this frame pinned until submission.
@@ -672,11 +711,14 @@ impl NativeGlPresenter {
             ColorSpace::new_srgb(),
             None,
         )
-        .ok_or_else(|| unsupported("Skia could not borrow the host GL framebuffer"))?;
+        .ok_or_else(|| {
+            NativeGlError::new(NativeGlFailureKind::TargetUnavailable,
+            "Skia could not borrow the host GL framebuffer; target/resource cause is not confirmed")
+        })?;
         // Resource errors above have only changed scratch. Check the source again
         // immediately before the single full-target GPU copy becomes visible.
         for input in inputs {
-            input.validate_current(stamp)?;
+            input.validate_current_checked(stamp)?;
         }
         let mut copy = Paint::default();
         copy.set_blend_mode(BlendMode::Src);
@@ -700,6 +742,8 @@ impl NativeGlPresenter {
             whole_frame_readbacks: 0,
             replay_micros,
             flush_submit_micros: micros(flush_started),
+            timing_scope: "hostWallClock",
+            whole_frame_cpu_uploads: 0,
         })
     }
 
@@ -707,7 +751,7 @@ impl NativeGlPresenter {
         &mut self,
         surface: &mut Surface,
         message: &'static str,
-    ) -> Result<(), NativeHostError> {
+    ) -> NativeGlResult<()> {
         if self
             .context
             .as_mut()
@@ -715,8 +759,22 @@ impl NativeGlPresenter {
             .flush_and_submit_surface(surface, gpu::SyncCpu::No)
             .is_err()
         {
+            let lost = self
+                .context
+                .as_mut()
+                .expect("checked live")
+                .is_device_lost();
+            let error = NativeGlError::new(
+                if lost {
+                    NativeGlFailureKind::DeviceLost
+                } else {
+                    NativeGlFailureKind::SubmissionFailed
+                },
+                message,
+            );
+            self.last_gpu_failure = Some(error.info());
             self.abandon()?;
-            return Err(unsupported(message));
+            return Err(error);
         }
         Ok(())
     }
@@ -731,7 +789,7 @@ impl NativeGlPresenter {
         input: &NativePresentationSnapshotBorrow,
         clear_color: u32,
         frame_pins: &mut Vec<Rc<CachedTile>>,
-    ) -> Result<bool, NativeHostError> {
+    ) -> NativeGlResult<bool> {
         let Some(plan) = TilePlan::new(
             self.config,
             stamp,
@@ -823,7 +881,7 @@ impl NativeGlPresenter {
                         self.tiles.observations.canonical_failures.saturating_add(1);
                     return Ok(false);
                 }
-                return Err(error);
+                return Err(error.into());
             }
             self.submit_surface(
                 &mut canonical.surface,
@@ -866,7 +924,7 @@ impl NativeGlPresenter {
                     }),
                 ));
             }
-            input.validate_current(stamp)?;
+            input.validate_current_checked(stamp)?;
             // Publish cache entries only after every strict replay and tile GPU
             // copy succeeded. The canonical target is never a hidden tile backing.
             for (index, tile) in prepared {
@@ -892,14 +950,78 @@ impl NativeGlPresenter {
         Ok(true)
     }
 
+    /// Rebind only to a genuinely new host context with an advanced device
+    /// generation. The old native context is abandoned without GL calls.
+    ///
     /// # Safety
-    /// Call only while the matching context is current. No render may be active.
-    pub unsafe fn clear_caches(
+    /// The new context must really be current, have a new identity, and keep all
+    /// returned GL procedures valid. Failed admission changes no owner state.
+    pub unsafe fn recreate(
         &mut self,
         context_id: u64,
-        generation: u64,
-    ) -> Result<(), NativeHostError> {
+        device_generation: u64,
+        config: NativeGlPresenterConfig,
+        load: impl FnMut(&CStr) -> *const c_void,
+    ) -> NativeGlResult<()> {
+        self.check_owner()?;
+        config.validate()?;
+        if context_id == 0
+            || context_id == self.context_id
+            || context_id == self.recovery.last_attempted_context_id
+            || device_generation <= self.recovery.last_attempted_device_generation
+        {
+            return Err(NativeGlError::new(NativeGlFailureKind::RecoveryRejected,
+                "recreate requires a new actual context identity and a device generation newer than the last attempt"));
+        }
+        if self.recovery.attempts == u64::MAX {
+            return Err(limit("GL recovery attempt sequence exhausted").into());
+        }
+        // Reserve the new context before abandoning anything. An exhausted
+        // process live/orphan budget leaves the existing handle unchanged.
+        let credit = ContextCredit::reserve()?;
+        self.abandon()?;
+        self.recovery.attempts += 1;
+        self.recovery.last_attempted_context_id = context_id;
+        self.recovery.last_attempted_device_generation = device_generation;
+        match unsafe {
+            Self::new_with_credit(context_id, device_generation, config, load, Some(credit))
+        } {
+            Ok(mut replacement) => {
+                replacement.recovery = self.recovery.clone();
+                replacement.recovery.failure = None;
+                *self = replacement;
+                Ok(())
+            }
+            Err(error) => {
+                self.state = "recoveryFailed";
+                self.recovery.failure = Some(error.info());
+                self.last_gpu_failure = Some(error.info());
+                Err(NativeGlError {
+                    kind: NativeGlFailureKind::RecoveryFailed,
+                    error: error.error,
+                })
+            }
+        }
+    }
+
+    /// # Safety
+    /// Call only while the matching context is current. No render may be active.
+    pub unsafe fn clear_caches(&mut self, context_id: u64, generation: u64) -> NativeGlResult<()> {
         self.check_context(context_id, generation)?;
+        if self
+            .context
+            .as_mut()
+            .expect("checked live")
+            .is_device_lost()
+        {
+            let error = NativeGlError::new(
+                NativeGlFailureKind::DeviceLost,
+                "Skia reported device loss before cache cleanup",
+            );
+            self.last_gpu_failure = Some(error.info());
+            self.abandon()?;
+            return Err(error);
+        }
         self.tiles.clear();
         self.scratch.clear();
         self.renderers.clear();
@@ -912,12 +1034,9 @@ impl NativeGlPresenter {
 
     /// # Safety
     /// The matching context must be current. This explicitly frees GL resources.
-    pub unsafe fn release(
-        &mut self,
-        context_id: u64,
-        generation: u64,
-    ) -> Result<(), NativeHostError> {
+    pub unsafe fn release(&mut self, context_id: u64, generation: u64) -> NativeGlResult<()> {
         self.check_context(context_id, generation)?;
+        self.healthy_device("Skia reported device loss before resource retirement")?;
         self.tiles.clear();
         self.scratch.clear();
         self.renderers.clear();
@@ -926,13 +1045,16 @@ impl NativeGlPresenter {
             .expect("checked live")
             .release_resources_and_abandon();
         self.context.take();
+        if let Some(credit) = self.context_credit.take() {
+            credit.proven_release();
+        }
         self.state = "released";
         Ok(())
     }
 
     /// Context loss/TLS teardown fallback. Never calls the loader, host callback,
     /// or GL. Skia abandons before any surfaces/native objects are dropped.
-    pub fn abandon(&mut self) -> Result<(), NativeHostError> {
+    pub fn abandon(&mut self) -> NativeGlResult<()> {
         self.check_owner()?;
         if let Some(context) = &mut self.context {
             context.abandon();
@@ -941,6 +1063,9 @@ impl NativeGlPresenter {
         self.scratch.clear();
         self.renderers.clear();
         self.context.take();
+        if let Some(mut credit) = self.context_credit.take() {
+            credit.orphan();
+        }
         self.state = "abandoned";
         Ok(())
     }
@@ -952,6 +1077,9 @@ impl Drop for NativeGlPresenter {
         if let Some(context) = &mut self.context {
             context.abandon();
         }
+        if let Some(credit) = &mut self.context_credit {
+            credit.orphan();
+        }
     }
 }
 
@@ -961,7 +1089,7 @@ fn micros(started: Instant) -> u64 {
 
 unsafe fn read_device(
     load: &mut impl FnMut(&CStr) -> *const c_void,
-) -> Result<NativeGlDeviceInfo, NativeHostError> {
+) -> NativeGlResult<NativeGlDeviceInfo> {
     type GetString = unsafe extern "system" fn(u32) -> *const u8;
     let name = c"glGetString";
     let address = load(name);
@@ -970,7 +1098,7 @@ unsafe fn read_device(
     }
     // SAFETY: the typed loader contract requires a matching GL function pointer.
     let get_string = unsafe { std::mem::transmute::<*const c_void, GetString>(address) };
-    let text = |kind| -> Result<String, NativeHostError> {
+    let text = |kind| -> NativeGlResult<String> {
         let pointer = unsafe { get_string(kind) };
         if pointer.is_null() {
             return Err(unsupported("no current GL context/device string"));

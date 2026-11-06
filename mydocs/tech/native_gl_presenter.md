@@ -111,8 +111,9 @@ decode memory 옵션에는 각각 128 MiB 상한을 적용한다. 색조 처리 
 읽어오는 작업이 아니다. 일반 CPU replay의 best-effort 정책은 별도로 유지한다.
 source가 달라지면 C ABI는 `staleFrame`, `retryable: true`를 반환한다. Qt는 최신
 worker/configure 결과를 기다릴 수 있다. strict replay 오류는 `documentError`, target/
-입력 한도 오류는 `invalidArgument`/`limitExceeded`, GL 생성·할당·flush 실패는
-`unsupported`다. GPU loss/flush 실패는 owner를 abandon한다. GPU/device 실패가 host copy
+입력 한도 오류는 `invalidArgument`/`limitExceeded`다. GL/context/device 실패는
+[typed failure와 회복 계약](native_gl_recovery.md)으로 구분한다. 확인되지 않은 allocation/
+submit 실패를 device loss로 취급하지 않는다. GPU loss/flush 실패는 owner를 abandon한다. GPU/device 실패가 host copy
 시작 뒤 발생한 경우 이미 제출한 pixels를 되돌릴 수 있다는 보장은 하지 않는다.
 
 source 검사는 동시 변경의 관찰 시점에 판정한다. 확인 직후 발생하는 편집은 다음
@@ -162,6 +163,11 @@ canonical replay의 fallback, 실제 cache/target 계상은 [GPU tile 계약](na
 현재 pool/cache 계상과 제출 수를 보고한다. software 이름 탐지는 문자열에 근거한
 진단이며 `hardwareAccelerationVerified`는 항상 `false`다. wall-clock 시간은 GPU timestamp나
 지속 FPS 측정이 아니다. `info`는 GL/current callback 없이 owner의 Skia bookkeeping을 읽는다.
+
+정상 matching-current `retire`/`release`와 미입증 `abandon`의 자원 반환은 다르다.
+현재 native context와 orphan을 합한 process credit은 4개다. 새 context로의 명시적
+recreate와 failed/released 상태·credit, 독립 CPU frame 비교는
+[회복·품질 계약](native_gl_recovery.md)을 따른다.
 
 ## 실행 검증
 
