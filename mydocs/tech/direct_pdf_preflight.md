@@ -92,3 +92,41 @@ RawSvg 준비와 PDF recording은 기존의 strict export 경로에서 별도로
 `direct_pdf_preflight_contract`에서 합성 입력으로 보호한다. 이 검사는 실물 문서의
 절대 조판 좌표나 한컴 시각 일치율을 주장하지 않는다. 최종 한컴 자료 대조, 전체 corpus,
 실제 OS·GPU의 검증은 별도 후속 작업으로 남는다.
+
+## P81: 원형 gradient의 벡터 admission
+
+Type 1 선형에 이어 type 2 원형만 Direct PDF에 허용한다. 배경·사각형·타원·path 모두
+Native의 `gradient_paint`가 만드는 Skia radial shader를 PDF canvas에 그대로 기록한다.
+결과에는 표준 PDF의 `/ShadingType 3`과 동심 시작·끝 원이 있어야 하며, 단색 대체나
+전체 면의 이미지 기록은 이 계약에 포함되지 않는다. Type 3의 기존 원형 근사는 실제
+원뿔형의 증명이 아니므로 닫아 둔다. Type 4의 SkSL 사각 shader도 허용하지 않는다.
+
+원형의 물리 중심·반경은 Native와 동일한 `gradient_geometry::radial_circle`을
+소비한다. 반경은 중심에서 상자의 가장 먼 모서리까지의 거리다. 가로·세로로 각각
+정규화한 타원이나 긴 축의 절반을 반경으로 사용하는 해석은 허용하지 않는다.
+기존 한컴 원형 대조군의 근거는
+[`verified_radial_print_geometry.rs`](../../tests/cases/verified_radial_print_geometry.rs)에서
+확인할 수 있다. 이번 admission은 그 기하를 다른 PDF canvas에 기록하는 제한된 확장이다.
+
+| 항목 | 허용 조건 |
+| --- | --- |
+| 중심 | 가로·세로 각각 0~100% |
+| 상자 | 실제 f32 replay 사각형의 좌표·변·크기가 유한하고 비어 있지 않음 |
+| 반경 | 공통 f64 기하와 f32 중심·반경이 유한하며 f32 반경 제곱이 1 이상, 유한함 |
+| 원의 경계 | f32 중심±반경이 두 축 모두 유한하고 중심 양쪽에서 서로 구별됨 |
+| 색상 | 2~4096개 |
+| stop | 빈 목록의 균등 배치 또는 색상 수와 같은 유한·단조·0~1 위치 |
+| f32 stop | 서로 다른 원본 위치가 같은 f32 위치로 합쳐지지 않음; 의도한 동일 위치의 hard stop은 유지 |
+| opacity | 일반 도형의 기존 0~1 유한 값 계약을 유지 |
+| clip | 기존 layer clip 사각형·text clip 검사를 유지 |
+
+잘못된 중심은 `InvalidRadialGradientCenter`, 잘못된 원은
+`InvalidRadialGradientCircle`로 보고한다. f32에서 사라지는 색상 구간은
+`InvalidExpandedGradientStops`로 거부한다. 좌표·stop·opacity를 clamp해서 admission을
+통과시키지 않는다. Pattern fill과 shadow도 기존과 같이 거부한다.
+
+`direct_pdf_radial_gradient_contract`는 PDF의 radial shading·동심 원·이미지 부재,
+중심·가로세로비·hard stop·최대 색상 수·잘못된 입력·clip·opacity를 검사한다.
+Native의 같은 원형 shader는 독립적인 모서리 거리 규칙의 색상과 같은 거리의 등색선,
+clip 밖의 투명도와 clip 안의 alpha로 대조한다. 이 합성 계약을 실물 문서나 실제 GPU의
+최종 시각 검증으로 확대해서 해석하지 않는다.

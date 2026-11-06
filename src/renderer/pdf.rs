@@ -130,6 +130,8 @@ pub enum DirectPdfPreflightReason {
     InvalidGradientBounds,
     InvalidExpandedGradientStops,
     InvalidGradientAxis,
+    InvalidRadialGradientCenter,
+    InvalidRadialGradientCircle,
     UnsupportedPatternFill,
     UnsupportedShapeShadow,
     InvalidOpacity,
@@ -575,7 +577,7 @@ mod direct_pdf_validation {
         Ok(())
     }
 
-    fn validate_linear_gradient(
+    fn validate_gradient(
         gradient: &GradientFillInfo,
         bbox: BoundingBox,
         page_index: usize,
@@ -585,12 +587,23 @@ mod direct_pdf_validation {
         if inspection.stopped {
             return;
         }
-        if gradient.gradient_type != 1 {
+        let supported_type = matches!(gradient.gradient_type, 1 | 2);
+        if !supported_type {
             inspection.reject(unsupported(
                 page_index,
                 op,
                 Reason::UnsupportedGradientType,
                 "non-linear gradient fill",
+            ));
+        }
+        let valid_center = gradient.gradient_type != 2
+            || ((0..=100).contains(&gradient.center_x) && (0..=100).contains(&gradient.center_y));
+        if !valid_center {
+            inspection.reject(unsupported(
+                page_index,
+                op,
+                Reason::InvalidRadialGradientCenter,
+                "radial gradient center outside 0..=100 percent",
             ));
         }
         let valid_count = (2..=4096).contains(&gradient.colors.len());
@@ -638,7 +651,8 @@ mod direct_pdf_validation {
         // Derived checks require a valid, bounded source. Independent source
         // failures above are still all reported, without normalizing bad stops.
         if inspection.stopped
-            || gradient.gradient_type != 1
+            || !supported_type
+            || !valid_center
             || !valid_count
             || !valid_stops
             || !valid_bounds
@@ -667,6 +681,23 @@ mod direct_pdf_validation {
                 "invalid expanded gradient stop positions",
             ));
         }
+        if gradient.gradient_type == 2 {
+            // Distinct source stops must remain distinct in the f32 shader.
+            // Deliberate equal-position hard stops are preserved unchanged.
+            if positions
+                .windows(2)
+                .any(|pair| pair[0] < pair[1] && pair[0] as f32 == pair[1] as f32)
+            {
+                inspection.reject(unsupported(
+                    page_index,
+                    op,
+                    Reason::InvalidExpandedGradientStops,
+                    "collapsed radial gradient stop positions",
+                ));
+            }
+            inspection.check(validate_radial_circle(gradient, bbox, page_index, op));
+            return;
+        }
         let (x1, y1, x2, y2) = crate::renderer::linear_gradient_axis(
             gradient.angle,
             bbox.x,
@@ -692,6 +723,54 @@ mod direct_pdf_validation {
         }
     }
 
+    fn validate_radial_circle(
+        gradient: &GradientFillInfo,
+        bbox: BoundingBox,
+        page_index: usize,
+        op: &str,
+    ) -> Result<(), Failure> {
+        let invalid = || {
+            unsupported(
+                page_index,
+                op,
+                Reason::InvalidRadialGradientCircle,
+                "invalid radial gradient circle",
+            )
+        };
+        // Native and direct PDF replay consume this same physical circle:
+        // source center to the farthest corner, without per-axis normalization.
+        let (cx, cy, radius) = crate::renderer::gradient_geometry::radial_circle(
+            (bbox.x, bbox.y, bbox.width, bbox.height),
+            gradient.center_x,
+            gradient.center_y,
+        )
+        .ok_or_else(invalid)?;
+        if [cx, cy, radius]
+            .into_iter()
+            .any(|value| !is_valid_skia_scalar(value))
+        {
+            return Err(invalid());
+        }
+        let (cx, cy, radius) = (cx as f32, cy as f32, radius as f32);
+        let squared_radius = radius * radius;
+        // Keep the initial numerical subset explicit. Tiny/huge radii and
+        // circles collapsed against a large center must fail before Skia can
+        // substitute a solid fill or a degenerate shader.
+        if !squared_radius.is_finite()
+            || squared_radius < 1.0
+            || ![cx - radius, cx + radius, cy - radius, cy + radius]
+                .into_iter()
+                .all(f32::is_finite)
+            || cx - radius >= cx
+            || cx + radius <= cx
+            || cy - radius >= cy
+            || cy + radius <= cy
+        {
+            return Err(invalid());
+        }
+        Ok(())
+    }
+
     fn validate_shape_style(
         style: &ShapeStyle,
         gradient: Option<&GradientFillInfo>,
@@ -701,7 +780,7 @@ mod direct_pdf_validation {
         inspection: &mut Inspection,
     ) {
         if let Some(gradient) = gradient {
-            validate_linear_gradient(gradient, bbox, page_index, op, inspection);
+            validate_gradient(gradient, bbox, page_index, op, inspection);
         }
         if style.pattern.is_some() {
             inspection.reject(unsupported(
@@ -810,13 +889,7 @@ mod direct_pdf_validation {
         match op {
             PaintOp::PageBackground { bbox, background } => {
                 if let Some(gradient) = background.gradient.as_deref() {
-                    validate_linear_gradient(
-                        gradient,
-                        *bbox,
-                        page_index,
-                        "page background",
-                        inspection,
-                    );
+                    validate_gradient(gradient, *bbox, page_index, "page background", inspection);
                 }
                 if !is_valid_skia_scalar(background.border_width) || background.border_width < 0.0 {
                     inspection.reject(failure(
