@@ -265,7 +265,7 @@ pub(crate) fn caption_height_px_in_context_with_storage<S: crate::storage::Stora
             line_seg_height = line_seg_height.max(hwpunit_to_px(para_bottom - para_top, dpi));
         }
 
-        let composed = try_compose_paragraph_scoped(para, false, None, storage)?;
+        let composed = compose_caption_paragraph_with_storage(para, styles, storage)?;
         if composed.lines.is_empty() {
             let own_font_size = styles
                 .filter(|_| para.line_segs.is_empty())

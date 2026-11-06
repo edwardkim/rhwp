@@ -5227,7 +5227,9 @@ impl TypesetEngine {
             && is_first_table
             && !st.pre_emitted_host_paras.contains(&para_idx)
         {
-            let h = fmt.line_advances_sum(0..pre_table_end_line);
+            let h = fmt
+                .host_text_bounds(para, 0..pre_table_end_line, self.dpi)
+                .1;
             if !defer_host_line {
                 st.record_host_text_fragment(para_idx, 0..pre_table_end_line, para, fmt, self.dpi);
                 st.append_item(PageItem::PartialParagraph {
@@ -5939,7 +5941,8 @@ impl TypesetEngine {
             && !pre_text_exists
             && !no_lineseg_band_host;
         if should_add_post_text {
-            let post_height: f64 = fmt.line_advances_sum(post_table_start..total_lines);
+            let (post_content_height, post_height) =
+                fmt.host_text_bounds(para, post_table_start..total_lines, self.dpi);
             let stored_host_origin = st
                 .paragraph_float_placements
                 .get(&(para_idx, ctrl_idx))
@@ -6022,7 +6025,6 @@ impl TypesetEngine {
             // 쪽 끝의 마지막 줄은 글줄의 점유 끝으로 수용한다. 줄 뒤 간격은
             // 다음 흐름에는 보존하지만, 그 간격만 용지 밖에 남는다는 이유로
             // 본문에 들어가는 줄을 다음 쪽으로 옮기지 않는다.
-            let post_content_height = fmt.line_content_height(post_table_start..total_lines, 0.0);
             if (self.tac_table_line_index(para, table, fmt) == Some(0)
                 || session_grown_topbottom_spill)
                 && st.current_height + post_content_height > st.available_height() + 0.5
@@ -6057,14 +6059,14 @@ impl TypesetEngine {
                 && !session_grown_topbottom_spill
                 && st.current_height + post_height > st.available_height() + 0.5)
                 .then(|| {
-                    let mut used = st.current_height;
                     let mut fitted = post_table_start;
                     for line in post_table_start..total_lines {
-                        let height = fmt.line_heights.get(line).copied().unwrap_or(0.0);
-                        if used + height > st.available_height() + 0.5 {
+                        let content = fmt
+                            .host_text_bounds(para, post_table_start..line + 1, self.dpi)
+                            .0;
+                        if st.current_height + content > st.available_height() + 0.5 {
                             break;
                         }
-                        used += height + fmt.line_spacings.get(line).copied().unwrap_or(0.0);
                         fitted = line + 1;
                     }
                     fitted
@@ -6083,7 +6085,10 @@ impl TypesetEngine {
                     start_line: post_table_start,
                     end_line: split_line,
                 });
-                st.advance_flow_by(fmt.line_advances_sum(post_table_start..split_line));
+                st.advance_flow_by(
+                    fmt.host_text_bounds(para, post_table_start..split_line, self.dpi)
+                        .1,
+                );
                 st.advance_column_or_new_page();
                 st.record_host_text_fragment(
                     para_idx,
@@ -6097,7 +6102,10 @@ impl TypesetEngine {
                     start_line: split_line,
                     end_line: total_lines,
                 });
-                st.advance_flow_by(fmt.line_advances_sum(split_line..total_lines));
+                st.advance_flow_by(
+                    fmt.host_text_bounds(para, split_line..total_lines, self.dpi)
+                        .1,
+                );
             } else {
                 st.record_host_text_fragment(
                     para_idx,
@@ -6262,8 +6270,12 @@ impl TypesetEngine {
             && !should_add_post_text
             && para.control_text_positions().get(ctrl_idx).copied()
                 == Some(para.text.chars().count());
-        let restore_terminal_tac_spacing =
-            is_tac && (!has_post_text || whitespace_ends_before_table) && !has_following_tac_table;
+        let composed_tail_owns_spacing = crate::renderer::composer::composed_object_tail(para)
+            .is_some_and(|tail| tail.end == fmt.line_count());
+        let restore_terminal_tac_spacing = is_tac
+            && (!has_post_text || whitespace_ends_before_table)
+            && !has_following_tac_table
+            && !composed_tail_owns_spacing;
         if restore_terminal_tac_spacing {
             let occupied_end = st.current_height;
             st.advance_flow_by(fmt.total_height - fmt.height_for_fit);

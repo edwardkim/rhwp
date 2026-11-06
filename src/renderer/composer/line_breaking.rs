@@ -6086,10 +6086,9 @@ fn try_reflow_line_segs_impl<S: Storage>(
             let mut line_has_anchor = false;
 
             for (utf16_start, occupied) in inline_sizes.iter().copied() {
-                let Some((ctrl_width, ctrl_height)) = occupied else {
-                    line_has_anchor = true;
-                    continue;
-                };
+                // 폭 없는 앵커도 이미 넘친 개체 뒤에는 새 줄에 속한다.
+                // 앞 앵커만 남기고 뒤 앵커를 건너뛰면 말미의 정상 글자 줄을 잃는다.
+                let (ctrl_width, ctrl_height) = occupied.unwrap_or((0, 0));
                 if (line_width > 0 || line_has_anchor) && line_width + ctrl_width > max_line_width {
                     storage.push(&mut line_specs, (line_start, line_width, line_height))?;
                     line_start = utf16_start;
@@ -6097,6 +6096,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
                     line_height = 0;
                     line_has_anchor = false;
                 }
+                line_has_anchor |= occupied.is_none();
                 line_width += ctrl_width;
                 line_height = line_height.max(ctrl_height);
             }

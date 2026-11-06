@@ -19,3 +19,47 @@
 
 충돌·컴파일 보정 → 원인별 전체/집중 회귀 → 같은 원본·독립 Print Native/fresh WASM 전쪽 TSV와 직접 확대 판독 → 필수 lint/실제 backend → 개별 최종 리뷰 순서다.
 실행하지 않은 항목은 통과로 쓰지 않고, 보정 코드는 통합 브랜치의 일반 커밋으로 남긴다.
+
+
+## 메인터너 보정: 보고서 10쪽 캡션 안 중첩 표의 소유
+
+2026-11-06 추가 분석이다. 원본 `report-838-original.hwp`와 새 독립 2020 Print PDF는
+[기준 기록](assets/planet6897_20261106/pr8642/report-838-print-reference.md)을 따른다.
+Native 10쪽 63.09%의 빈 상단은 첫 표의 이어받기 행이 아니다. 원시 Section0 문단 44에서
+두 번째 표의 캡션 문단 안에 `1973~1979`·`1986~1994`를 담은 2행×3열 TAC 표가 있다.
+CTRL_HEADER level 3·TABLE level 4가 바깥 TABLE level 2보다 앞에 저장되며,
+파싱·RHWP 진단용 HWPX 내보내기에서도 이 구조와 내용을 보존한다. 진단용 HWPX를
+한컴 기준 출력이나 새 원본으로 사용하지 않는다.
+
+- 선행 해결 `f2755aeb4a`의 #3528 경계 처리와
+  `tests/issue_3528_nested_caption_boundary.rs`는 캡션 속 표의 파싱·저장 경계를 보호한다.
+  이번 실제 원본은 파서에서 손실되지 않아 이 경계를 완화하지 않는다.
+- `309aa25d0e`(#6754)는 빈 run의 TAC 표 출력 경로,
+  `51a730eefa`(#5875)는 깊이와 무관한 캡션 출력을 마련했다. 두 경로를 보존한다.
+- 생산: `composer/composition.inc.rs`는 본문에 별도 PageItem 소유자가 있을 때의
+  폭 분류로 TAC 표를 수집한다. 캡션은 별도 본문 PageItem을 발행하지 않으므로 이 분류를
+  그대로 쓰면 저장 줄 높이 314.6px만 남고 표가 출력되지 않는다.
+- 측정 소비: `caption_height_px_in_context_with_storage` → HeightMeasurer와
+  LayoutEngine의 캡션 높이. 실제 배치 소비: `layout_caption` →
+  `layout_composed_paragraph` → `layout_empty_runs_line`의 기존 TAC 표 출력.
+- 보정은 캡션 문단이 TAC 표를 소유한다는 문맥을 composition에 전달하고,
+  측정·배치가 같은 composition 결과를 소비하게 한다. 문서 ID·행 번호·좌표 상수를
+  조건으로 사용하지 않으며 일반 본문은 기존 PageItem 소유를 유지한다.
+
+위는 구현 전 근거다. Native/fresh WASM 전체 쪽수·90%·같은 영역 직접 판독과
+정상 캡션 대조군을 실제로 검증한 뒤 수용·회귀 등록을 판단한다. 현재 완료 판정은 아니다.
+## 24쪽 위 캡션 표의 저장 줄 경계 추가 추적
+
+각주 64의 두 글줄은 0·1352 HU, 표 호스트는 2704 HU다. 표의 저장 줄 높이 10002 HU는
+선언 표 높이 7970 + 위 캡션 글줄 900 + 캡션 간격 852 + 바깥 여백 140×2와 정확히 같다.
+독립 Print와 R6 래스터의 표 가로선은 각각 780~781·787픽셀에서 시작한다.
+
+`layout_inline_table_paragraph`는 위 캡션이 든 이 저장 외곽 상자를 기존 무캡션
+`tac_table_stored_outer_band_top`에서 거절한 뒤 `기준선 + 아래 여백 - 표 본체 높이`로
+원점을 계산한다. 그 뒤 `layout_table`이 위 캡션을 다시 포함해 표 본체를 내린다.
+기준선 8502 + 아래 여백 140 - 본체 7970 - 위 여백 140 = 532 HU(7.093px)의 차이가
+실제 가로선 차이와 대응한다. 이 수치는 보정 상수가 아니라 원본에서 읽은 구성 성분이다.
+
+같은 파일의 아래 캡션은 기존 `tac_stored_band_is_captioned_outer_box`가 별도 수용한다.
+위·아래 캡션의 원본 외곽 상자 소유를 공통으로 다루되 후속 원점 판정의 무캡션 계약을
+넓히지 않는 방향으로 검토한다. 구현·새 base 실제 출력 검증은 아직 완료하지 않았다.

@@ -3899,6 +3899,7 @@ mod fill_background;
 mod fixed_textbox_flow;
 mod floating_equation;
 mod footnote_frames;
+mod footnote_marker_geometry;
 mod header_footer_layout;
 mod hidden_paragraph_marker;
 mod nested_table_origin;

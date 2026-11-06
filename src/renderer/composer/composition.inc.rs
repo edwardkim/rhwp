@@ -261,10 +261,42 @@ fn try_compose_paragraph_scoped<S: crate::storage::Storage>(
     )
 }
 
+fn try_compose_paragraph_with_table_owner<S: crate::storage::Storage>(
+    para: &Paragraph,
+    protect_metrics: bool,
+    metric_styles: Option<&ResolvedStyleSet>,
+    table_owner: caption_paragraph::BlockTableOwner,
+    storage: &S,
+) -> Result<ComposedParagraph, S::Error> {
+    try_compose_paragraph_with_owners(
+        para, protect_metrics, metric_styles, table_owner, &[], storage,
+    )
+}
+
 fn try_compose_paragraph_scoped_with_frame_tables<S: crate::storage::Storage>(
     para: &Paragraph,
     protect_metrics: bool,
     metric_styles: Option<&ResolvedStyleSet>,
+    frame_tables: &[(usize, u32)],
+    storage: &S,
+) -> Result<ComposedParagraph, S::Error> {
+    try_compose_paragraph_with_owners(
+        para,
+        protect_metrics,
+        metric_styles,
+        caption_paragraph::BlockTableOwner::PageItems,
+        frame_tables,
+        storage,
+    )
+}
+
+// 캡션 문단의 소유권과 실제 프레임이 발행한 표 소속을 함께 소비한다.
+// 어느 경로도 선언 폭으로 다시 판정해 이미 배정한 표를 블록 줄로 옮기지 않는다.
+fn try_compose_paragraph_with_owners<S: crate::storage::Storage>(
+    para: &Paragraph,
+    protect_metrics: bool,
+    metric_styles: Option<&ResolvedStyleSet>,
+    table_owner: caption_paragraph::BlockTableOwner,
     frame_tables: &[(usize, u32)],
     storage: &S,
 ) -> Result<ComposedParagraph, S::Error> {
@@ -307,10 +339,11 @@ fn try_compose_paragraph_scoped_with_frame_tables<S: crate::storage::Storage>(
                 Control::Form(f) if f.common.treat_as_char => Some((pos, f.width as i32, i)),
                 Control::Table(t)
                     if t.common.treat_as_char
-                        && (frame_tables.iter().any(|&(owner, _)| owner == i)
-                        || super::height_measurer::is_tac_table_inline_in_para(
-                            t, seg_width, para,
-                        )) =>
+                        && (table_owner == caption_paragraph::BlockTableOwner::Paragraph
+                            || frame_tables.iter().any(|&(owner, _)| owner == i)
+                            || super::height_measurer::is_tac_table_inline_in_para(
+                                t, seg_width, para,
+                            )) =>
                 {
                     // [#5785 후속] 선언 폭 우선.
                     let table_width: u32 = t.flow_width_hu();
@@ -433,10 +466,19 @@ fn try_compose_paragraph_scoped_with_frame_tables<S: crate::storage::Storage>(
     if let Some(styles) = metric_styles {
         equation_line_metrics::try_refresh_equation_rows(&mut composed, para, styles, storage)?;
         empty_line_metrics::refresh_with_storage(&mut composed, para, styles, storage)?;
-        inline_picture_metrics::refresh_picture_rows_with_storage(&mut composed, para, styles, storage)?;
+        inline_picture_metrics::refresh_picture_rows_with_storage(
+            &mut composed,
+            para,
+            styles,
+            storage,
+        )?;
     }
 
-    supplemental_clusters::preserve_literal_spaces_with_storage(&mut composed, &para.literal_figure_spaces, storage)?;
+    supplemental_clusters::preserve_literal_spaces_with_storage(
+        &mut composed,
+        &para.literal_figure_spaces,
+        storage,
+    )?;
 
     // CharOverlap 글자를 조합된 텍스트에 삽입
     try_inject_char_overlap_text(&mut composed, para, metric_styles, storage)?;
@@ -592,8 +634,7 @@ pub(crate) fn tac_host_trailing_spacing(
 /// 다음 문단을 현재 프레임에서 재조판하면 저장 vpos가 간격의 나머지를
 /// 복원하지 않는다. 마지막 저장 TAC 줄은 후행 간격 전량을 흐름에 남긴다.
 fn successor_lacks_stored_text_axis(para: &Paragraph) -> bool {
-    para.stored_text_partition_is_dirty()
-        || crate::renderer::para_has_no_stored_line_segs(para)
+    para.stored_text_partition_is_dirty() || crate::renderer::para_has_no_stored_line_segs(para)
 }
 
 /// [#8544] 다음 문단의 첫 저장 줄이 이 TAC 줄의 `vpos + lh + ls` 에서 정확히 시작하면, 한/글은 표 줄
@@ -668,9 +709,8 @@ pub(crate) fn tac_successor_uses_reflow_spacing(
             .line_segs
             .last()
             .is_some_and(|last| std::ptr::eq(last, seg))
-        && next_para.is_some_and(|next| {
-            next.controls.is_empty() && successor_lacks_stored_text_axis(next)
-        })
+        && next_para
+            .is_some_and(|next| next.controls.is_empty() && successor_lacks_stored_text_axis(next))
 }
 
 /// 재구성한 표 줄의 옛 vpos와 독립 후속 줄의 새 로컬 축을 구분한다.

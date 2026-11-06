@@ -506,6 +506,8 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
         storage,
     )?;
 
+    super::composed_tail::place_with_storage(st, para_idx, para, &fmt, engine.dpi, storage)?;
+
     if let Some(plan) = stored_body_wide_host {
         // 최초 host의 모든 글줄이 같은 단에 실제 수용됐을 때만 원점과 끝을 확정한다.
         st.commit_stored_body_wide_host_with_storage(para_idx, para, plan, storage)?;

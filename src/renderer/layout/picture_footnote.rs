@@ -1057,8 +1057,7 @@ impl LayoutEngine {
             let first_caption_node = parent_node.children.len();
             let para_y_before_layout = para_y;
             // 먼저 문단을 조합
-            let mut composed =
-                crate::renderer::composer::compose_paragraph_in_context(para, styles);
+            let mut composed = crate::renderer::composer::compose_caption_paragraph(para, styles);
 
             // 자동 번호는 자리표 글자의 표시 문자열로만 바꿔 글자 위치 대응을 지킨다.
             crate::renderer::composer::project_caption_auto_numbers(&mut composed, para);
@@ -1828,30 +1827,17 @@ impl LayoutEngine {
                     // [#8657] 글자처럼 취급 표는 같은 줄의 번호와 그 뒤 글자 다음에 놓인다
                     // (docs#889 각주 `[번호] 빈칸 [표]`: 한/글 「1)」 85.1~92.9pt, 표는 그 뒤).
                     // 방금 그린 번호 글자의 끝에 표 앞 실제 글자(번호 자리 제외) 폭을 더한다.
-                    fn number_right(node: &RenderNode, number: &str) -> f64 {
-                        let own = match &node.node_type {
-                            RenderNodeType::TextRun(run)
-                                if !number.is_empty() && run.text.contains(number) =>
-                            {
-                                node.bbox.x + node.bbox.width
-                                    - run.text.split(number).last().map_or(0.0, |tail| {
-                                        node.bbox.width * tail.chars().count() as f64
-                                            / run.text.chars().count().max(1) as f64
-                                    })
-                            }
-                            _ => f64::MIN,
-                        };
-                        node.children
-                            .iter()
-                            .map(|child| number_right(child, number))
-                            .fold(own, f64::max)
-                    }
                     let number_line_right = (placement.route == FootnoteParagraphRoute::Numbered
                         && block.table.common.treat_as_char)
                         .then(|| {
                             let right = fn_node.children[children_before_number..]
                                 .iter()
-                                .map(|child| number_right(child, number_text.trim()))
+                                .filter_map(|child| {
+                                    super::footnote_marker_geometry::number_right(
+                                        child,
+                                        number_text.trim(),
+                                    )
+                                })
                                 .fold(f64::MIN, f64::max);
                             let positions = para.control_text_positions();
                             let position_of = |wanted: fn(&Control) -> bool| {

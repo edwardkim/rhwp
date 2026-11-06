@@ -22,6 +22,7 @@
 //! 다음 쪽 Square 그림 후보와 저장 밴드 소유 문단 조회는 deferred_picture가 담당한다.
 //! 표 포맷/분할 본체와 나머지 float 경로는 상위 구현에 남아 있다.
 
+mod composed_tail;
 mod decoration_host;
 pub(super) mod decoration_table;
 pub(super) mod deferred;
