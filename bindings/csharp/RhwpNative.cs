@@ -151,6 +151,23 @@ public static class RhwpNative
     [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr rhwp_read_text(byte[] inputPath, int page);
 
+    // Optional D3D12 producer ABI. COM pointers and metadata spans stay opaque;
+    // presenter handles belong to the creating producer OS thread.
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_d3d_capabilities();
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_d3d_presenter_create(IntPtr adapter, IntPtr device, IntPtr commandQueue, ulong deviceGeneration, IntPtr config, UIntPtr configLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_d3d_presenter_render(ulong presenter, IntPtr resource, IntPtr request, UIntPtr requestLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_d3d_presenter_request(ulong presenter, IntPtr request, UIntPtr requestLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_d3d_frame_check(IntPtr request, UIntPtr requestLength);
+
     [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
     private static extern void rhwp_string_free(IntPtr value);
 

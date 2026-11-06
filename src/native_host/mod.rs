@@ -8,6 +8,8 @@ pub mod clipboard;
 pub mod commands;
 pub mod editor;
 pub mod fonts;
+#[cfg(all(feature = "native-skia-d3d", target_os = "windows"))]
+pub mod gpu_d3d;
 #[cfg(all(feature = "native-skia-gl", target_os = "linux"))]
 pub mod gpu_gl;
 #[cfg(all(feature = "native-skia-metal", target_os = "macos"))]

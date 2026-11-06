@@ -2,6 +2,8 @@
 #[path = "../src/session.rs"]
 mod native_session;
 use native_session as session;
+#[path = "../src/gpu_d3d.rs"]
+mod gpu_d3d;
 #[path = "../src/gpu_gl.rs"]
 mod gpu_gl;
 #[path = "../src/gpu_metal.rs"]

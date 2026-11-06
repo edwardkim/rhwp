@@ -121,6 +121,30 @@ char *rhwp_metal_presenter_request(uint64_t presenter, const uint8_t *request, s
  * Success returns {ok:true,current:true}; stale/error means do not acquire.
  * This does not freeze future source changes or establish a GPU fence. */
 char *rhwp_metal_frame_check(const uint8_t *request, size_t request_len);
+/* Optional Windows D3D12/Ganesh producer ABI. These typed COM pointers are C
+ * arguments only; never encode pointer integers in JSON. The symbols exist in
+ * disabled/non-Windows builds and return featureDisabled without reading spans.
+ * Returned strings use rhwp_string_free on their calling thread. */
+struct IDXGIAdapter1;
+struct ID3D12Device;
+struct ID3D12CommandQueue;
+struct ID3D12Resource;
+char *rhwp_d3d_capabilities(void);
+char *rhwp_d3d_presenter_create(const struct IDXGIAdapter1 *adapter,
+    const struct ID3D12Device *device, const struct ID3D12CommandQueue *queue,
+    uint64_t device_generation, const uint8_t *config, size_t config_len);
+/* resource is a fresh shared DEFAULT-heap BGRA8 2D target, single sample/mip/layer,
+ * ALLOW_RENDER_TARGET|ALLOW_SIMULTANEOUS_ACCESS, initially COMMON, same device.
+ * Success proves producer GPU completion and COMMON decay, never Flutter GPU
+ * consumption. A D3D12 pointer is NOT a Flutter D3D11/DXGI surface descriptor.
+ * Failure without unpublishedTargetSafeToDiscard:true requires quarantine. */
+char *rhwp_d3d_presenter_render(uint64_t presenter,
+    const struct ID3D12Resource *resource, const uint8_t *request, size_t request_len);
+/* Owner-thread info/release/abandon. Unregister/descriptor release callbacks do
+ * not establish consumer GPU completion or permit immutable target recycling. */
+char *rhwp_d3d_presenter_request(uint64_t presenter, const uint8_t *request, size_t request_len);
+/* Cross-thread full stamp/P89 snapshot validation; no Core/layout/GPU work. */
+char *rhwp_d3d_frame_check(const uint8_t *request, size_t request_len);
 void rhwp_string_free(char *value);
 
 #ifdef __cplusplus

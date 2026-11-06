@@ -11,6 +11,7 @@ use std::path::{Path, PathBuf};
 
 use rhwp_core::wasm_api::HwpDocument;
 
+mod gpu_d3d;
 mod gpu_gl;
 mod gpu_metal;
 mod presentation;
