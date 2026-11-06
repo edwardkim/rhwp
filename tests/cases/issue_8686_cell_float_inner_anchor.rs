@@ -2,7 +2,7 @@
 //! 중간에 있어도 세로 오프셋은 제어문자가 속한 저장 줄에서 잰다. 저장 호스트 줄이 모두 표
 //! 띠 위에서 끝나면 표는 그 줄들 아래에 놓이고 호스트 글줄과 겹치지 않는다.
 //!
-//! 주석 갱신: 2026-11-07 (KST) — 측정값은 아래 표
+//! 주석 갱신: 2026-11-07 09:30 (KST) — 측정값은 아래 표
 //!
 //! - 입력: `samples/issue8686/cell_float_inner_anchor.hwp` — 합천군 교복구입비 지원 신청서
 //!   (공개 조례 서식, HWP, 1쪽) 그대로. 동의서 칸(r=14)의 문단 5 는 저장 줄 둘(「… 교복구입비」,
@@ -13,14 +13,17 @@
 //! - 수정 전 rhwp(task/8686 1단계, 칸 안 저장 프레임 인증이 글 앞·뒤 제어문자만 받음): 표를 호스트
 //!   첫 줄 아래에 두어 「동의하십니까?」 줄 위에 겹쳐 그렸다.
 //!
-//! 측정(2026-11-07, `scripts/visual_sweep.py --silhouette-only --dpi 96`, 판정값
+//! 측정(2026-11-07, 코드 6641965c69, `scripts/visual_sweep.py --silhouette-only --dpi 96`, 판정값
 //! `silhouette_raw_match_percent` = 색상 경계 보정 전 2px 이웃 내용 실루엣):
 //!
 //! | 입력 | 전체 쪽수(한컴=rhwp) | 쪽 | Native | fresh WASM | 수정 전 Native |
 //! |---|---|---|---|---|---|
-//! | cell_float_inner_anchor | 1 | 1 | 99.95 | (측정 예정) | 99.00 |
+//! | cell_float_inner_anchor | 1 | 1 | 99.95 | 99.97 | 99.00 |
 //!
-//! 증거: `mydocs/pr/assets/issue_8686/`. 검사는 제어문자가 글 중간에 있고 저장 호스트 줄이
+//! 두 경로 전쪽 최저: Native 99.95, fresh WASM 99.97.
+//!
+//! 증거: `mydocs/pr/assets/issue_8686/{native,native_base,wasm}/cell_float_inner_anchor_silhouette.tsv`,
+//! `review/cell_float_inner_anchor_p1_*.png`. 검사는 제어문자가 글 중간에 있고 저장 호스트 줄이
 //! 표 띠 위에서 끝난다는 원본 관계(전제), 그린 표가 「동의하십니까?」 줄 아래에 있고 겹치지
 //! 않는 관계(관계형), 독립 PDF 전체 쪽수(고정형)다. 절대 px 좌표는 고정하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
