@@ -4,7 +4,7 @@
 수정 전후 측정이다.
 
 - base: `a7feb849e1`
-- 측정 source: `75555763c4`. 이후 커밋은 주석·문서·CI 호출·증거만 바꾸고 `src/`는 바꾸지 않는다.
+- 측정 source: `75555763c4`. 이후 커밋은 검사 위치·주석·문서·증거만 바꾸고 `src/`는 바꾸지 않는다.
 - 측정: `scripts/visual_sweep.py`, 96dpi, 판정값 `silhouette_raw_match_percent`,
   Native와 fresh WASM(기본 `--rasterizer png`).
 - 파일 이름: `native_base`, `native_head`, `wasm_base`, `wasm_head`.
@@ -135,5 +135,6 @@ base와 같은 값으로 돌아왔다. `hwp5_postscript_name_does_not_select_the
 - `issue_7445_native_bold_tracking::native_bold_tracking_does_not_stretch_the_actual_glyph`
 - `issue_7445_negative_spacing_glyph_shape::negative_distribution_keeps_the_native_glyph_shape`
 
-`issue_8661_supplied_ttf_without_metric`은 `native-skia` 전용이라 기존 CI 경로에서 실행되지 않았다.
-Native Skia job의 두 프로필에 호출을 하나씩 추가했고, 같은 명령이 로컬에서 7건을 실행해 모두 통과한다.
+새 검사는 `native-skia` 전용이다. 기존 CI의 Native Skia job이 실행하는
+`tests/cases/issue_4961_font_decision_trace.rs`의 `supplied_ttf_without_metric` 모듈에 두어 CI 호출을
+추가하지 않고 실행되게 했다.

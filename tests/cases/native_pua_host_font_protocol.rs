@@ -726,7 +726,7 @@ fn truetype_requests_follow_the_declared_face_type_across_sources() {
         shape.font_ids = [0; 7];
     }
     // 폭 표 없는 HWP5 face도 요청한다. 폭 표가 있는 face의 HFT 공급 순서 보호는
-    // issue_8661_supplied_ttf_without_metric.rs가 검사한다.
+    // issue_4961_font_decision_trace.rs의 supplied_ttf_without_metric 모듈이 검사한다.
     doc.provenance.format = SourceFormat::Hwp5;
     doc.provenance.hwpx_lineage = false;
     core.set_document(doc.clone());
