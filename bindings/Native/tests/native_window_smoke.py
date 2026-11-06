@@ -2,6 +2,7 @@
 """Qt offscreen adapter checks; --library adds actual native render/IME/save flow."""
 import argparse
 import hashlib
+import copy
 from concurrent.futures import Future
 import os
 from pathlib import Path
@@ -61,6 +62,27 @@ class DeferredIO:
             self.futures[index].set_exception(error)
 
 
+class TileWorker(IdleWorker):
+    def __init__(self):
+        super().__init__()
+        self.host = self
+        self.cancellations, self.released_buffers, self.copied_buffers = [], [], []
+        self.next_view = None
+    def cancel(self, request_id):
+        self.cancellations.append(request_id)
+        return "cancelled"
+    def call(self, operation, buffer):
+        assert operation == "buffer_release"
+        self.released_buffers.append(buffer)
+    def host_request(self, **request):
+        assert request["op"] == "view"
+        return self.next_view
+    def copy_buffer(self, response):
+        self.copied_buffers.append(response["buffer"])
+        self.released_buffers.append(response["buffer"])
+        return response.get("pixels", b"\xff\0\0\xff" * (response["width"] * response["height"]))
+
+
 class AdapterTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -109,6 +131,137 @@ class AdapterTests(unittest.TestCase):
         # publisher. The file-store tests separately cover actual filesystem I/O.
         with patch("native_worker_file_store.publish_document", return_value=self.stamp()):
             io.run(index)
+    def tiled_window(self):
+        worker = TileWorker()
+        window = self.idle_window(worker)
+        window.info = {"documentId": 7, "revision": 3, "fontGeneration": 0,
+                       "pageCount": 1, "isDirty": False}
+        window.pages = [{"width": 1024, "height": 768}]
+        window.state["config"].update(pages=window.pages, viewport={"width": 400, "height": 400})
+        window.view = {"state": copy.deepcopy(window.state),
+                       "scrollLimit": {"x": 624, "y": 368},
+                       "visible": [{"page": 0, "rasterScale": 1,
+                                    "pageRegion": {"x": 0, "y": 0, "width": 400, "height": 400},
+                                    "pageRect": {"x": 0, "y": 0, "width": 1024, "height": 768}}]}
+        window.page_geometry_key = window.geometry_key()
+        window.refresh = lambda: None
+        window.reset_tiles()
+        window.sync_visible_tiles()
+        return window
+
+    def complete_tile(self, window, **changes):
+        _, callback = window.pending
+        window.pending = None
+        reply = {"ok": True, "kind": "frame", "buffer": 99,
+                 "revision": 3, "fontGeneration": 0,
+                 "originX": 0, "originY": 0, "width": 512, "height": 512,
+                 "stride": 512 * 4, "byteLength": 512 * 512 * 4}
+        callback({**reply, **changes})
+
+    def test_scroll_reuses_client_tiles_and_keeps_images_out_of_frame_metadata(self):
+        window = self.tiled_window()
+        window.render_next()
+        self.assertEqual(window.worker.requests[-1]["op"], "renderTiledRegion")
+        self.complete_tile(window)
+        key = window.visible_tiles[0].key(window.tile_identity)
+        image = window.tile_images.get(key).image
+        moved = copy.deepcopy(window.view)
+        moved["state"]["scroll"]["x"] = 100
+        moved["visible"][0]["pageRegion"].update(x=100, width=400)
+        moved["visible"][0]["pageRect"]["x"] = -100
+        window.worker.next_view = moved
+        window.set_scroll(x=100)
+        self.assertTrue(window.frames)
+        self.assertTrue(all(value is True for value in window.frames.values()))
+        self.assertIs(window.tile_images.get(key).image, image)
+        window.render_next()
+        self.assertEqual(len([r for r in window.worker.requests if r["op"] == "renderTiledRegion"]), 1)
+        self.assertEqual(window.worker.copied_buffers, [99])
+
+    def test_overlay_selection_changes_do_not_invalidate_raster_tiles(self):
+        window = self.tiled_window()
+        window.render_next()
+        self.complete_tile(window)
+        retained, identity = window.tile_images.retained_bytes, window.tile_identity
+        position = {"section": 0, "paragraph": 0, "scalarOffset": 0, "cellPath": []}
+        window.absorb({"outcome": {"selection": {"anchor": position, "focus": position}}})
+        window.set_rects([])
+        self.assertEqual(window.tile_identity, identity)
+        self.assertEqual(window.tile_images.retained_bytes, retained)
+        self.assertTrue(window.frames)
+
+    def test_stale_view_revision_font_and_native_metadata_are_released_without_copy(self):
+        for change in ("view", "revision", "font", "resultFont"):
+            with self.subTest(change=change):
+                window = self.tiled_window()
+                window.render_next()
+                if change == "view":
+                    window.epoch += 1
+                elif change == "revision":
+                    window.absorb({"info": {**window.info, "revision": 4}})
+                elif change == "font":
+                    window.absorb({"info": {**window.info, "fontGeneration": 1}})
+                self.complete_tile(window, **({"fontGeneration": 1} if change == "resultFont" else {}))
+                self.assertEqual(window.worker.copied_buffers, [])
+                self.assertEqual(window.worker.released_buffers, [99])
+                self.assertEqual(len(window.tile_images), 0)
+                self.assertEqual(window.errors, [])
+
+    def test_pending_render_cancellation_keeps_edit_fifo_until_completion(self):
+        window = self.tiled_window()
+        window.render_next()
+        pending_id = window.pending[0]
+        moved = copy.deepcopy(window.view)
+        moved["state"]["scroll"]["x"] = 100
+        moved["visible"][0]["pageRegion"]["x"] = 100
+        moved["visible"][0]["pageRect"]["x"] = -100
+        window.worker.next_view = moved
+        window.set_scroll(x=100)
+        window.command("replace", text="after render")
+        window.pump()
+        self.assertEqual(window.pending[0], pending_id)
+        self.assertEqual(window.worker.cancellations, [pending_id])
+        self.assertEqual([r["op"] for r in window.worker.requests], ["renderTiledRegion"])
+        self.complete_tile(window, kind="cancelled")
+        window.pump()
+        self.assertEqual([r["op"] for r in window.worker.requests], ["renderTiledRegion", "replace"])
+        self.assertEqual(window.worker.released_buffers, [99])
+        self.assertEqual(window.errors, [])
+
+    def test_skipped_render_is_normal_cancellation_and_does_not_poison_tile(self):
+        window = self.tiled_window()
+        window.render_next()
+        self.complete_tile(window, kind="skipped", reason="supersededRender")
+        self.assertFalse(window.tile_failures)
+        self.assertEqual(window.errors, [])
+        self.assertEqual(window.worker.copied_buffers, [])
+        self.assertEqual(window.worker.released_buffers, [99])
+
+    def test_invalid_tile_buffer_metadata_is_released_before_copy_and_not_retried(self):
+        window = self.tiled_window()
+        window.render_next()
+        self.complete_tile(window, width=100_000, byteLength=2**63)
+        window.render_next()
+        self.assertEqual(window.worker.copied_buffers, [])
+        self.assertEqual(window.worker.released_buffers, [99])
+        self.assertEqual(len([r for r in window.worker.requests if r["op"] == "renderTiledRegion"]), 1)
+        self.assertEqual(len(window.errors), 1)
+
+    def test_tile_paint_uses_actual_origin_and_clips_to_canonical_grid(self):
+        window = self.tiled_window()
+        window.view["visible"][0]["pageRegion"].update(x=512, width=400)
+        window.view["visible"][0]["pageRect"]["x"] = -512
+        window.sync_visible_tiles()
+        window.render_next()
+        row = b"\0\xff\0\xff" + b"\xff\0\0\xff" * 513
+        self.complete_tile(window, originX=511, width=514, stride=514 * 4,
+                           byteLength=514 * 512 * 4, pixels=row * 512)
+        window.worker.next_view = copy.deepcopy(window.view)
+        window.show()
+        self.app.processEvents()
+        painted = window.canvas.grab().toImage()
+        self.assertEqual(painted.pixelColor(0, 20).name(), "#ff0000")
+        self.assertEqual(window.tile_images.retained_bytes, 514 * 512 * 4)
 
     def test_dirty_close_cancel_keeps_document_and_worker(self):
         window = self.lifecycle_window()
@@ -665,19 +818,14 @@ class AdapterTests(unittest.TestCase):
         window.close()
 
     def test_actual_widget_paint_accepts_owned_frame_and_page_rect(self):
-        window = NativeWindow(None, worker=IdleWorker())
-        window.timer.stop()
-        window.actions.clear()
-        window.view = {"visible": [{"page": 0, "pageRect": {"x": 0, "y": 0, "width": 100, "height": 100}}]}
-        image = QImage(2, 2, QImage.Format.Format_RGBA8888_Premultiplied)
-        image.fill(Qt.GlobalColor.white)
-        window.frames = {0: (QPointF(0, 0), image)}
+        window = self.tiled_window()
+        window.render_next()
+        self.complete_tile(window)
+        window.worker.next_view = copy.deepcopy(window.view)
         window.show()
         self.app.processEvents()
         self.assertGreater(window.paint_count, 0)
-        window.finished = True
-        window.io.shutdown(wait=True)
-        window.close()
+        self.assertEqual(window.canvas.grab().toImage().pixelColor(10, 20).name(), "#ff0000")
 
     def test_next_queued_edit_uses_completed_revision(self):
         worker = IdleWorker()
@@ -945,6 +1093,23 @@ def actual_smoke(library, screenshot=None):
     try:
         pump(app, lambda: bool(window.frames) and bool(window.info.get("selection")) and idle())
         assert window.paint_count > 0 and window.frame_count > 0
+        assert window.raster_cache_stats["tileEntries"] > 0
+        assert window.raster_cache_stats["retainedBytes"] <= 32 * 1024 * 1024
+        copied = window.frame_count
+        window.scroll(0, 8)
+        pump(app, lambda: idle() and bool(window.frames))
+        window.scroll(0, -8)
+        pump(app, lambda: idle() and bool(window.frames))
+        assert window.frame_count == copied, "overlapping scroll recopied retained client tiles"
+        cancelled = window.render_cancellations
+        window.zoom_at(1.3)
+        window.pump()
+        assert window.pending_render is not None
+        window.zoom_at(1 / 1.3)
+        pump(app, lambda: idle() and bool(window.frames))
+        assert window.render_cancellations > cancelled
+        assert window.frame_count == copied, "stale zoom frame replaced a reusable viewport"
+        assert window.tile_images.retained_bytes <= window.tile_images.max_bytes
         for text in ("ㄱ", "가", "각"):
             QApplication.sendEvent(window.canvas, QInputMethodEvent(text, []))
             pump(app, lambda: idle() and window.preedit == text)
@@ -1052,7 +1217,7 @@ def actual_smoke(library, screenshot=None):
             window.new_document()
             pump(app, lambda: window.info["documentId"] != document_id and idle() and bool(window.frames))
             assert window.source_path is None and window.context["text"] == ""
-        print('{"ok":true,"qtOffscreen":true,"nativeRender":true,"syntheticKoreanIME":true,"clipboard":true,"multiPage":true,"caretVisible":true,"saveReopen":true,"dirtyCloseCancel":true,"saveEditRacePreserved":true,"newDocumentDiscard":true,"externalConflictPreserved":true,"osIMEVerified":false}')
+        print('{"ok":true,"qtOffscreen":true,"nativeRender":true,"syntheticKoreanIME":true,"clipboard":true,"multiPage":true,"caretVisible":true,"saveReopen":true,"dirtyCloseCancel":true,"saveEditRacePreserved":true,"newDocumentDiscard":true,"externalConflictPreserved":true,"osIMEVerified":false,"tiledViewport":true,"clientTileReuse":true,"renderCancellation":true}')
     finally:
         pump(app, lambda: not window.io_jobs)
         window.confirm_unsaved_changes = lambda: "discard"

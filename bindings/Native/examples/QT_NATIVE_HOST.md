@@ -3,7 +3,8 @@
 `qt_native_host.py`는 PySide6 QWidget에서 native Skia 픽셀을 표시하는 작은 참조 앱이다.
 WASM·DOM·브라우저를 사용하지 않는다. Rust worker가 문서 core를 소유하며 GUI는
 `QTimer`로 완료를 받는다. 입력은 최대 64개 action FIFO이고 문서 요청은 한 번에 하나만 보낸다.
-이미 실행 중인 조판·Skia 작업의 강제 취소를 보장하지 않는다.
+뷰가 바뀌거나 action이 접수되면 실행 중 tiled render에 취소를 요청한다. P77의 타일 경계 취소를
+사용하지만, 이미 실행 중인 조판·Skia 호출의 강제 중단을 보장하지 않는다.
 
 ```bash
 python3 -m venv .venv-qt
@@ -44,11 +45,31 @@ stamp를 얻은 뒤 교체 승인을 받고, 게시 직전에 같은 stamp인지
 - 조합 중인 텍스트는 입력기 focus-loss 취소를 기다린다. native 조합이 남아 있으면 확정·취소 후 다시
   요청하도록 안내한다. 파일 I/O가 진행 중이면 worker를 먼저 닫지 않는다.
 
+## 타일 화면과 캐시
+
+- `native_viewport_tiles.py`가 Native Skia와 같은 512px 페이지 픽셀 격자로 보이는 영역만 계획한다.
+  각 타일을 `renderTiledRegion`으로 요청하고, 마지막 타일은 확대된 페이지 끝의 올림 값을 포함한다.
+  논리 좌표 나눗셈으로 출력에 경계 픽셀이 추가되더라도 실제 `originX/Y`·크기로 배치하고 타일과 페이지의
+  교집합에 clip한다. 전체 페이지 exact-crop API와 동일한 antialiasing 결과를 주장하지 않는다.
+- 한 뷰는 최대 64개 타일·64개 페이지다. 비정상 수치·정확한 픽셀 좌표 범위 초과와 초과 타일 수를
+  격자 순회 전에 거절한다. UI의 기존 문서 최대 512쪽 제한도 유지한다.
+- 화면 QImage는 80 MiB·80개 entry 상한의 LRU만 소유한다. 현재 화면 목록에는 image 참조를 보관하지 않는다.
+  같은 문서 세대·document ID·revision·font generation·page·raster scale·DPR·타일 영역이면 스크롤 후 재사용한다.
+  선택·캐럿·조합 장식은 별도 overlay이며 선택 이동만으로 타일 캐시를 지우지 않는다.
+- 문서별 Native raster cache 상한은 `setRasterCacheLimit`으로 32 MiB를 지정한다. 한 뷰 렌더가 끝나면
+  `rasterCacheStats`를 조회하고 상태 영역에 화면 image와 Native 보유 바이트를 각각 표시한다. 이 수치는
+  문서 모델·폰트·리소스·Skia 중간 작업과 프로세스 전체 RSS를 포함하지 않는다.
+- 새로운 뷰와 접수된 action은 이전 render request ID에 `workerCancel`을 보낸다. 실제 완료를 받을 때까지
+  FIFO 슬롯을 유지하므로 편집 순서를 바꾸지 않는다. 취소·superseded skip은 오류로 표시하지 않는다.
+  stale 문서·revision·font·view 결과는 CPU로 복사하지 않고 native buffer를 바로 해제한다.
+- 확대율·DPR이 바뀐 화면에는 해당 scale의 타일이 필요하다. 보유된 같은 scale의 타일은 재사용하며,
+  이 경로는 CPU RGBA 출력이다. GPU surface 공유·GPU 직접 표시는 후속 host 작업이다.
+
 ## 표시와 입력 범위
 
 - 여러 쪽을 세로로 표시한다. 참조 UI는 최대 512쪽을 읽는다. P58 view 계약이 zoom·DPR·scroll·좌표
   변환을 담당한다. wheel은 스크롤, Ctrl+wheel은 포인터 기준 확대·축소다.
-- 화면에 보이는 region만 페이지별로 순서대로 렌더한다. native frame은 복사·release 후
+- 화면에 보이는 타일만 페이지별로 순서대로 렌더한다. 유효한 native frame은 복사·release 후
   `Format_RGBA8888_Premultiplied` QImage로 다시 소유한다. 이전 revision/font generation/view의
   결과는 표시하지 않는다. GUI에서 레이아웃을 재계산하지 않는다.
   페이지 크기 조회 도중 문서 revision이 바뀌면 이전 조회를 버리고 새 정보로 다시 시작한다.
@@ -72,17 +93,19 @@ stamp를 얻은 뒤 교체 승인을 받고, 게시 직전에 같은 stamp인지
 ## 검사
 
 ```bash
+python3 -B bindings/Native/tests/native_viewport_tiles_contract.py
 QT_QPA_PLATFORM=offscreen .venv-qt/bin/python -B bindings/Native/tests/native_window_smoke.py
 QT_QPA_PLATFORM=offscreen .venv-qt/bin/python -B bindings/Native/tests/native_window_smoke.py \
   --library /absolute/path/to/librhwp_native_ffi.so \
   --screenshot /new/path/qt-window.png
 ```
 
-첫 명령은 UTF-16 경계, QImage 소유권, IME replacement 거절, 큐 상한의 Qt adapter 검사다.
-라이브러리를 지정하면 실제 blank→region 표시→합성 Qt 조합 ㄱ/가/각→commit→좌우 키 이동→undo/redo→HWPX 새 파일
+첫 명령은 Qt 없이 실행하는 격자·분수 끝점·계획 상한·LRU 바이트/수명 계약 검사다.
+Qt 명령은 UTF-16 경계, QImage 소유권, IME replacement 거절, 큐 상한의 adapter 검사다.
+라이브러리를 지정하면 실제 blank→tile 표시→합성 Qt 조합 ㄱ/가/각→commit→좌우 키 이동→undo/redo→HWPX 새 파일
 저장→재열기를 검사한다. 이 검사는 OS 한글 입력기·후보창, 한컴 시각 일치 또는 플랫폼 배포 패키지 검증을
 대체하지 않는다. `--screenshot`은 선택 사항이며 실행 중인 QWidget을 새 PNG 파일로 남긴다.
-실제 스모크에는 P61까지의 worker/editor/IME 문맥·clipboard ABI가 포함된 native-skia 라이브러리가 필요하다.
+실제 스모크에는 P74의 tiled worker/cache ABI와 P77의 협력 취소를 포함한 native-skia 라이브러리가 필요하다.
 Ctrl+A/C/X/V로 Qt clipboard의 복사·잘라내기·붙여넣기와 한 번의 undo/redo도 검사한다.
 다중 문단 붙여넣기로 여러 쪽을 만든 뒤 undo하여 페이지 크기 배치·뷰가 함께 갱신되는지도 검사한다.
 문서 수명 검사는 dirty 닫기 취소, 기존 입력 뒤 dirty 확인, 저장 대화상자 취소, 쓰기·ack·executor 실패,
@@ -90,6 +113,9 @@ Ctrl+A/C/X/V로 Qt clipboard의 복사·잘라내기·붙여넣기와 한 번의
 저장 bytes 준비 이후 추가 편집을 실행하여 저장본과 현재 문서를 각각 확인하고, 변경 폐기 후 새 문서를 연다.
 `native_worker_file_store_contract.py`는 동일 payload의 손실 승인, 외부 변경, publication 이후 ack 실패와
 token cleanup을 검사하며, Native 라이브러리를 인자로 주면 실제 HWP/HWPX 저장·재열기도 실행한다.
+타일 검사에는 실제 origin을 반영한 paint, 겹치는 스크롤의 image 재사용, overlay 보존, stale buffer 무복사 해제와
+render 취소 중 편집 FIFO 유지가 포함된다. 실제 native 스모크에서도 Native cache 통계·상한, 겹치는 스크롤의
+추가 buffer 복사 없음과 실행 중 render 취소 요청 뒤 기존 화면 복구를 검사한다.
 
 근거: [QInputMethodEvent](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QInputMethodEvent.html),
 [QImage](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QImage.html),

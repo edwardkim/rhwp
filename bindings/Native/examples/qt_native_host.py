@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from native_file_store import read_document
 from native_worker import NativeWorker
 from native_worker_file_store import NativeWorkerFileStore
+from native_viewport_tiles import NATIVE_CACHE_BYTES, TileImageCache, frame_byte_cost, plan_visible_tiles
 
 
 def utf16_length(text):
@@ -51,6 +52,13 @@ class NativeAction:
     replacement: bool = False
 
 
+@dataclass
+class CachedTile:
+    image: QImage
+    origin_x: int
+    origin_y: int
+
+
 class Canvas(QWidget):
     def __init__(self, window):
         super().__init__(window)
@@ -62,12 +70,24 @@ class Canvas(QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.fillRect(self.rect(), QColor("#55575a"))
+        page_rects = {}
         for page in self.window.view.get("visible", []):
             bounds = page["pageRect"]
+            page_rects[page["page"]] = bounds
             painter.fillRect(QRectF(bounds["x"], bounds["y"], bounds["width"], bounds["height"]), Qt.GlobalColor.white)
-            frame = self.window.frames.get(page["page"])
-            if frame:
-                painter.drawImage(frame[0], frame[1])
+        for tile in self.window.visible_tiles:
+            frame = self.window.tile_images.get(tile.key(self.window.tile_identity))
+            bounds = page_rects.get(tile.page)
+            if frame is not None and bounds is not None:
+                painter.save()
+                factor = self.window.state["config"]["zoom"] / tile.scale
+                origin = QPointF(bounds["x"] + frame.origin_x * factor, bounds["y"] + frame.origin_y * factor)
+                painter.setClipRect(QRectF(bounds["x"], bounds["y"], bounds["width"], bounds["height"]),
+                                    Qt.ClipOperation.IntersectClip)
+                painter.setClipRect(QRectF(bounds["x"] + tile.x * factor, bounds["y"] + tile.y * factor,
+                    tile.width * factor, tile.height * factor), Qt.ClipOperation.IntersectClip)
+                painter.drawImage(origin, frame.image)
+                painter.restore()
         if self.window.view and self.window.pages and not self.window.loading_pages:
             painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(QColor(50, 120, 230, 75))
@@ -176,6 +196,15 @@ class NativeWindow(QMainWindow):
         self.output_path = Path(output_path) if output_path else None
         self.info, self.context, self.view = {}, {}, {}
         self.pages, self.frames, self.rects, self.preedit_rects = [], {}, [], []
+        self.tile_images = TileImageCache()
+        self.tile_identity = None
+        self.visible_tiles = ()
+        self.tile_failures = set()
+        self.pending_render = None
+        self.render_cancel_requested = False
+        self.render_cancellations = 0
+        self.raster_cache_stats = {}
+        self.cache_stats_epoch = -1
         self.loading_pages = False
         self.page_load_token = None
         self.page_geometry_key = None
@@ -234,6 +263,8 @@ class NativeWindow(QMainWindow):
             self.document_actions[name] = action
         self.document_status = QLabel()
         self.statusBar().addPermanentWidget(self.document_status)
+        self.raster_status = QLabel()
+        self.statusBar().addPermanentWidget(self.raster_status)
         self.resize(900, 700)
         self.update_document_ui()
         self.timer = QTimer(self)
@@ -283,6 +314,7 @@ class NativeWindow(QMainWindow):
         if len(self.actions) + (self.job is not None) >= self.MAX_ACTIONS + int(save_control):
             self.fail("입력 큐가 가득 찼습니다. 진행 중인 작업은 취소되지 않았습니다.")
             return False
+        self.cancel_render()
         action = NativeAction(deque(steps), self.document_generation,
             self.info.get("documentId"), done=done, refresh=refresh,
             page_load_token=page_load_token, failed=failed, replacement=replacement)
@@ -309,7 +341,7 @@ class NativeWindow(QMainWindow):
                     break
                 if self.pending is None or result["requestId"] != self.pending[0]:
                     if "buffer" in result:
-                        self.worker.copy_buffer(result)
+                        self.release_frame(result)
                     self.fail("예상하지 못한 worker completion")
                     continue
                 callback = self.pending[1]
@@ -391,6 +423,7 @@ class NativeWindow(QMainWindow):
             self.preedit_rects.clear()
         if previous[:3] != self.geometry_key():
             self.drag_anchor = None
+            self.reset_tiles()
         self.update_document_ui()
 
     def step_done(self, result):
@@ -413,6 +446,7 @@ class NativeWindow(QMainWindow):
 
     def opened(self, result, path=None, source_stamp=None):
         self.document_generation += 1
+        self.reset_tiles()
         self.source_path = Path(path) if path is not None else None
         self.saved_path = None
         self.file_store = NativeWorkerFileStore(self.info["documentId"],
@@ -441,6 +475,7 @@ class NativeWindow(QMainWindow):
         self.enqueue([lambda _: {"op": "beginEdit", "selection": {"anchor": body(), "focus": body()}}],
                      refresh=True)
         self.refresh()
+        self.enqueue([lambda _: {"op": "setRasterCacheLimit", "maxBytes": NATIVE_CACHE_BYTES}])
 
     def refresh(self):
         if not self.info or self.closing or self.intent is not None:
@@ -546,10 +581,13 @@ class NativeWindow(QMainWindow):
 
     def apply_view(self, **command):
         try:
-            self.view = self.worker.host.host_request(op="view", state=self.state, command=command)
+            view = self.worker.host.host_request(op="view", state=self.state, command=command)
+            self.cancel_render()
+            self.view = view
             self.state = self.view["state"]
             self.epoch += 1
-            self.frames.clear()
+            self.tile_failures.clear()
+            self.sync_visible_tiles()
             for bar, axis in ((self.horizontal, "x"), (self.vertical, "y")):
                 bar.blockSignals(True)
                 bar.setRange(0, int(self.view["scrollLimit"][axis] + 0.5))
@@ -589,31 +627,124 @@ class NativeWindow(QMainWindow):
         ready = self.caret and self.pages and self.view and not self.loading_pages
         return self.page_rect(self.caret["page"], self.caret) if ready else QRectF(0, 0, 1, 20)
 
+    def current_tile_identity(self):
+        return (self.document_generation, *self.geometry_key())
+
+    def reset_tiles(self):
+        self.cancel_render()
+        self.tile_identity = self.current_tile_identity()
+        self.tile_images.clear()
+        self.visible_tiles = ()
+        self.frames.clear()
+        self.tile_failures.clear()
+        self.raster_cache_stats = {}
+        self.cache_stats_epoch = -1
+        self.update_raster_status()
+
+    def sync_visible_tiles(self):
+        if self.tile_identity != self.current_tile_identity():
+            self.reset_tiles()
+        if not self.pages or self.loading_pages:
+            self.visible_tiles = ()
+            self.frames.clear()
+            return
+        try:
+            self.visible_tiles = plan_visible_tiles(self.pages, self.view.get("visible", []),
+                                                    self.state["config"]["deviceScale"])
+        except (ValueError, KeyError, TypeError) as error:
+            self.visible_tiles = ()
+            self.frames.clear()
+            self.fail(error)
+            return
+        # This map is visibility metadata only. QImages are owned solely by the
+        # byte/entry-bounded LRU, so eviction cannot leave hidden image owners.
+        self.frames = {tile.key(self.tile_identity): True for tile in self.visible_tiles
+                       if tile.key(self.tile_identity) in self.tile_images}
+        self.update_raster_status()
+
+    def update_raster_status(self):
+        if hasattr(self, "raster_status"):
+            native = self.raster_cache_stats.get("retainedBytes", 0)
+            self.raster_status.setText(f"타일 {len(self.tile_images)}개 · 화면 {self.tile_images.retained_bytes // 1024} KiB"
+                                      f" · Native {native // 1024} KiB")
+
+    def cancel_render(self):
+        if self.pending_render is None or self.render_cancel_requested:
+            return
+        # The pending completion retains the FIFO slot until it actually ends.
+        # P77 can stop only at tile boundaries; an active Skia call may finish.
+        self.render_cancel_requested = True
+        try:
+            self.worker.cancel(self.pending_render)
+            self.render_cancellations += 1
+        except Exception as error:
+            self.fail(error)
+
+    def release_frame(self, result):
+        if "buffer" in result:
+            self.worker.host.call("buffer_release", result["buffer"])
+
+    def query_raster_cache_stats(self):
+        def received(result):
+            self.raster_cache_stats = dict(result["stats"])
+            self.update_raster_status()
+        self.enqueue([lambda _: {"op": "rasterCacheStats"}], received)
+
     def render_next(self):
-        if not self.info or not self.view:
+        if self.closing or not self.info or not self.view or not self.pages or self.loading_pages:
             return
-        visible = next((item for item in self.view["visible"] if item["page"] not in self.frames), None)
-        if visible is None:
+        tile = next((item for item in self.visible_tiles if item.key(self.tile_identity) not in self.tile_images
+                     and item.key(self.tile_identity) not in self.tile_failures), None)
+        if tile is None:
+            if self.visible_tiles and self.cache_stats_epoch != self.epoch:
+                self.cache_stats_epoch = self.epoch
+                self.query_raster_cache_stats()
             return
-        epoch, target = self.epoch, self.target()
-        generation = self.info["fontGeneration"]
-        dpr, scale = self.state["config"]["deviceScale"], visible["rasterScale"]
+        epoch, target, identity = self.epoch, self.target(), self.tile_identity
+        key = tile.key(identity)
         def rendered(result):
-            if "buffer" in result:
-                pixels = self.worker.copy_buffer(result)  # copy + release, on GUI thread
-                if result.get("ok") and epoch == self.epoch and target == self.target() and generation == self.info["fontGeneration"]:
-                    image = QImage(pixels, result["width"], result["height"], result["stride"],
-                                   QImage.Format.Format_RGBA8888_Premultiplied).copy()
-                    image.setDevicePixelRatio(dpr)
-                    origin = self.mapped(visible["page"], result["originX"] / scale, result["originY"] / scale)
-                    self.frames[visible["page"]] = (origin, image)
-                    self.frame_count += 1
-                    self.canvas.update()
-            elif not result.get("ok"):
-                self.fail(result.get("error", "render failed"))
-                self.frames[visible["page"]] = None  # do not spin on the same error
-        self.send({"op": "renderRegion", "fontGeneration": generation, "page": visible["page"],
-                   "region": visible["pageRegion"], "scale": scale}, rendered)
+            self.pending_render = None
+            self.render_cancel_requested = False
+            current = (epoch == self.epoch and target == self.target() and identity == self.tile_identity
+                       and identity == self.current_tile_identity())
+            if not current or result.get("kind") in ("cancelled", "skipped"):
+                self.release_frame(result)
+                return
+            if not result.get("ok") or "buffer" not in result:
+                self.release_frame(result)
+                self.fail(result.get("error", "tiled render failed"))
+                self.tile_failures.add(key)
+                return
+            consumed = False
+            try:
+                if result.get("revision") != target["revision"] or result.get("fontGeneration") != identity[-1]:
+                    # A stale native result is never copied, even if its buffer
+                    # was already published before a cancellation took effect.
+                    self.tile_failures.add(key)
+                    return
+                frame_byte_cost(tile, result)
+                consumed = True  # copy_buffer releases in its own finally.
+                pixels = self.worker.copy_buffer(result)
+                image = QImage(pixels, result["width"], result["height"], result["stride"],
+                               QImage.Format.Format_RGBA8888_Premultiplied).copy()
+                if image.isNull():
+                    raise ValueError("tile QImage allocation failed")
+                image.setDevicePixelRatio(tile.device_scale)
+                if not self.tile_images.put(key, CachedTile(image, result["originX"], result["originY"]), image.sizeInBytes()):
+                    raise ValueError("tile image exceeds the client cache budget")
+                self.frames[key] = True
+                self.frame_count += 1
+                self.update_raster_status()
+                self.canvas.update()
+            except Exception as error:
+                self.tile_failures.add(key)
+                self.fail(error)
+            finally:
+                if not consumed:
+                    self.release_frame(result)
+        self.send({"op": "renderTiledRegion", "fontGeneration": identity[-1], "page": tile.page,
+                   "region": tile.region, "scale": tile.scale}, rendered)
+        self.pending_render = self.pending[0]
 
     def click(self, point, extend):
         if (not self.info or self.preedit or self.loading_pages or not self.pages or not self.view
