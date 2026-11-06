@@ -98,6 +98,11 @@ enable them on the renderer's package, and borrowed `Surface` types from two
 versions cannot be passed between them. Flush/submit errors are propagated
 before pixel verification, including errors from the preservation check.
 
+The locked bindgen parser and formatter must also agree: bindgen `0.73.2`
+uses Syn `3`, so its `prettyplease` formatter is locked to `0.3.0`, as in the
+root workspace. Retaining `prettyplease 0.2` would introduce Syn `2` at that
+boundary and fail compilation before the GPU probe can run.
+
 On success it emits a single JSON object with `schemaVersion: 1`. In addition
 to the device name and `softwareDevice`, the report records the packed Vulkan
 API/driver version and vendor/device identifiers. `deviceInitializationMicros`
