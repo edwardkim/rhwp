@@ -10,6 +10,7 @@ pub mod editor;
 pub mod fonts;
 #[cfg(feature = "native-skia")]
 pub mod region_cache;
+pub mod render_snapshot;
 pub mod runtime;
 pub mod save;
 pub mod view;
@@ -113,6 +114,9 @@ pub struct NativeDocumentSession {
     revision: u64,
     font_generation: u64,
     fonts: fonts::NativeFontState,
+    // Explicit immutable inputs, independent of the renderer's native copies.
+    // Snapshots share these bytes without reopening the caller's font paths.
+    font_data: std::sync::Arc<[Vec<u8>]>,
     saved_revision: Option<u64>,
     pending_save: Option<save::PendingSaveCheckpoint>,
     #[cfg(feature = "native-skia")]
@@ -140,6 +144,7 @@ impl NativeDocumentSession {
             revision: 0,
             font_generation: 0,
             fonts,
+            font_data: std::sync::Arc::from(Vec::<Vec<u8>>::new()),
             saved_revision: None,
             pending_save: None,
             #[cfg(feature = "native-skia")]
