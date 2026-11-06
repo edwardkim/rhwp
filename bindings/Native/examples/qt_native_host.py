@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Small Qt/native worker reference window. No WASM, DOM or GUI-thread layout."""
 import argparse
+import json
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
@@ -12,8 +13,9 @@ from PySide6.QtGui import QColor, QImage, QPainter, QPen
 from PySide6.QtWidgets import QApplication, QFileDialog, QGridLayout, QLabel, QMainWindow, QMessageBox, QScrollBar, QWidget
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from native_host import write_new_file
+from native_file_store import read_document
 from native_worker import NativeWorker
+from native_worker_file_store import NativeWorkerFileStore
 
 
 def utf16_length(text):
@@ -193,6 +195,8 @@ class NativeWindow(QMainWindow):
         self.paint_count = self.frame_count = 0
         self.saved_path = None
         self.source_path = None
+        self.file_store = None
+        self.save_operation = None
         self.document_generation = 0
         self.intent = None
         self.intent_serial = 0
@@ -219,7 +223,8 @@ class NativeWindow(QMainWindow):
         toolbar = self.addToolBar("문서")
         self.document_actions = {}
         for name, label, handler in [("new", "새 문서", self.new_document), ("open", "열기", self.open_dialog),
-                                     ("save", "새 파일로 저장", self.save_dialog),
+                                     ("save", "저장", self.save_document),
+                                     ("saveAs", "다른 이름으로 저장", self.save_dialog),
                                      ("undo", "실행 취소", lambda: self.command("undo")),
                                      ("redo", "다시 실행", lambda: self.command("redo")),
                                      ("zoomIn", "확대", lambda: self.zoom_at(1.1)),
@@ -259,7 +264,8 @@ class NativeWindow(QMainWindow):
         available = not self.closing and self.intent is None
         self.document_actions["new"].setEnabled(available and not self.saving)
         self.document_actions["open"].setEnabled(available and not self.saving)
-        self.document_actions["save"].setEnabled(available and bool(self.info) and not self.saving)
+        for name in ("save", "saveAs"):
+            self.document_actions[name].setEnabled(available and bool(self.info) and not self.saving)
         for name, capability in (("undo", "canUndo"), ("redo", "canRedo")):
             self.document_actions[name].setEnabled(available and bool(self.info.get(capability)))
         for name in ("zoomIn", "zoomOut"):
@@ -268,15 +274,19 @@ class NativeWindow(QMainWindow):
         # freezes new UI input while its FIFO barrier checks the accepted edits.
         self.canvas.setEnabled(available and bool(self.info))
 
-    def enqueue(self, steps, done=None, refresh=False, page_load_token=None, failed=None, replacement=False):
+    def enqueue(self, steps, done=None, refresh=False, page_load_token=None, failed=None, replacement=False,
+                save_control=False):
         if self.closing:
             return False
-        if len(self.actions) + (self.job is not None) >= self.MAX_ACTIONS:
+        # A single save owns one reserved cleanup/ack slot. Its completion cannot
+        # be starved by the ordinary bounded input queue. Edit order is unchanged.
+        if len(self.actions) + (self.job is not None) >= self.MAX_ACTIONS + int(save_control):
             self.fail("입력 큐가 가득 찼습니다. 진행 중인 작업은 취소되지 않았습니다.")
             return False
-        self.actions.append(NativeAction(deque(steps), self.document_generation,
+        action = NativeAction(deque(steps), self.document_generation,
             self.info.get("documentId"), done=done, refresh=refresh,
-            page_load_token=page_load_token, failed=failed, replacement=replacement))
+            page_load_token=page_load_token, failed=failed, replacement=replacement)
+        (self.actions.appendleft if save_control else self.actions.append)(action)
         return True
 
     def tick(self):
@@ -334,9 +344,11 @@ class NativeWindow(QMainWindow):
             self.job = self.actions.popleft()
         if self.job is not None and (self.job.generation != self.document_generation or
                 (self.job.document_id is not None and self.job.document_id != self.info.get("documentId"))):
-            refresh = self.job.refresh
+            discarded = self.job
             self.job = None
-            if refresh:
+            if discarded.failed:
+                discarded.failed({"ok": False, "kind": "skipped", "error": "document replaced before queued action"})
+            if discarded.refresh:
                 self.refresh()
             return self.pump()
         if self.job is not None:
@@ -399,10 +411,12 @@ class NativeWindow(QMainWindow):
             self.job.document_id = self.info.get("documentId")
         self.job.last_result = result
 
-    def opened(self, result, path=None):
+    def opened(self, result, path=None, source_stamp=None):
         self.document_generation += 1
         self.source_path = Path(path) if path is not None else None
         self.saved_path = None
+        self.file_store = NativeWorkerFileStore(self.info["documentId"],
+            self.source_path if source_stamp is not None else None, source_stamp)
         # Actions were accepted for the previous document, including those whose
         # target is filled lazily. They must never migrate to its replacement.
         self.actions.clear()
@@ -659,7 +673,7 @@ class NativeWindow(QMainWindow):
             elif key == Qt.Key.Key_A:
                 self.command("executeCommand", command={"command": "selectAll"})
             elif key == Qt.Key.Key_S:
-                self.save_dialog()
+                self.save_document()
             elif key == Qt.Key.Key_O:
                 self.open_dialog()
             elif key == Qt.Key.Key_N:
@@ -745,7 +759,7 @@ class NativeWindow(QMainWindow):
         self.preedit_rects = []
 
     def confirm_unsaved_changes(self):
-        answer = QMessageBox.question(self, "변경 내용 저장", "현재 문서의 변경 내용을 새 파일로 저장할까요?",
+        answer = QMessageBox.question(self, "변경 내용 저장", "현재 문서의 변경 내용을 저장할까요?",
             QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel,
             QMessageBox.StandardButton.Cancel)
         return {QMessageBox.StandardButton.Save: "save", QMessageBox.StandardButton.Discard: "discard"}.get(answer, "cancel")
@@ -798,8 +812,8 @@ class NativeWindow(QMainWindow):
                 return
             if choice == "save":
                 self.transition_phase = "saving"
-                self.save_dialog(on_saved=lambda _: self.saved_before_transition(intent),
-                                 on_failed=lambda _: self.abort_transition(intent))
+                self.save_document(on_saved=lambda _: self.saved_before_transition(intent),
+                                   on_failed=lambda _: self.abort_transition(intent))
                 return
         self.perform_transition(intent)
 
@@ -827,22 +841,16 @@ class NativeWindow(QMainWindow):
         else:
             self.transition_phase = "reading"
             path = Path(intent["path"])
-            def read():
-                with path.open("rb") as file:
-                    data = file.read(128 * 1024 * 1024 + 1)
-                if len(data) > 128 * 1024 * 1024:
-                    raise ValueError("문서 크기가 128 MiB를 넘습니다.")
-                return data
             def loaded(future):
                 if self.intent is not intent:
                     return
                 try:
-                    data = future.result()
+                    data, intent["source_stamp"] = future.result()
                 except Exception as error:
                     self.abort_transition(intent, str(error))
                     return
                 self.replace_document(intent, data)
-            self.io_jobs.append((self.io.submit(read), loaded))
+            self.io_jobs.append((self.io.submit(read_document, path), loaded))
 
     def replace_document(self, intent, data=None):
         def request(_):
@@ -858,7 +866,7 @@ class NativeWindow(QMainWindow):
             if self.intent is intent:
                 self.intent = None
                 self.transition_phase = None
-                self.opened(result, intent["path"])
+                self.opened(result, intent["path"], intent.get("source_stamp"))
         # The read may have overlapped accepted programmatic edits. A fresh info
         # barrier makes that race visible instead of retargeting the replacement.
         steps = [lambda _: {"op": "info"}] if self.info else []
@@ -877,67 +885,182 @@ class NativeWindow(QMainWindow):
     def open_path(self, path):
         return self.request_transition("open", Path(path))
 
-    def save_dialog(self, checked=False, *, on_saved=None, on_failed=None):
-        path = str(self.output_path) if self.output_path else ""
-        path, _ = QFileDialog.getSaveFileName(self, "새 HWPX 파일로 저장", path, "HWPX (*.hwpx)")
-        if path:
-            return self.save_new(path, on_saved=on_saved, on_failed=on_failed)
-        if on_failed:
-            on_failed(None)
-        return False
+    def confirm_content_loss(self, report):
+        dialog = QMessageBox(QMessageBox.Icon.Warning, "저장 내용 확인",
+            f"선택한 형식에서 보존할 수 없는 항목이 {report['count']}개 있습니다. 계속 저장하시겠습니까?",
+            QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Cancel, self)
+        dialog.setDefaultButton(QMessageBox.StandardButton.Cancel)
+        dialog.setDetailedText(json.dumps(report, ensure_ascii=False, indent=2)[:65536])
+        return dialog.exec() == QMessageBox.StandardButton.Save
 
-    def save_new(self, path, *, on_saved=None, on_failed=None):
+    def confirm_overwrite(self, path):
+        return QMessageBox.question(self, "기존 파일 교체", f"{path.name} 파일을 교체하시겠습니까?",
+            QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Cancel) == QMessageBox.StandardButton.Save
+
+    def save_document(self, checked=False, *, on_saved=None, on_failed=None):
+        if self.file_store is not None and self.file_store.source_path is not None:
+            return self._save_destination(None, on_saved=on_saved, on_failed=on_failed)
+        return self.save_dialog(on_saved=on_saved, on_failed=on_failed)
+
+    def save_dialog(self, checked=False, *, on_saved=None, on_failed=None):
         if self.saving or self.closing:
             return False
+        default = self.output_path or self.source_path
+        path, _ = QFileDialog.getSaveFileName(self, "다른 이름으로 저장", str(default) if default else "",
+            "한글 문서 (*.hwp *.hwpx)", options=QFileDialog.Option.DontConfirmOverwrite)
+        if not path:
+            if on_failed:
+                on_failed(None)
+            return False
+        destination = Path(path).absolute()
+        if (self.file_store is not None and destination == self.file_store.source_path) or not destination.exists():
+            return self._save_destination(destination, on_saved=on_saved, on_failed=on_failed)
+        # Observe the destination on the I/O executor before asking approval.
+        # Publication will check this exact stamp again, preserving later edits.
         self.saving = True
+        generation, document_id = self.document_generation, self.info.get("documentId")
         self.update_document_ui()
-        def failed(error):
+        def rejected(error=None):
             self.saving = False
             self.update_document_ui()
+            if error:
+                self.fail(error)
             if on_failed:
                 on_failed(error)
-        def prepared(result):
-            token, document_id = result["token"], self.info["documentId"]
+        def observed(future):
             try:
-                data = self.worker.copy_buffer(result)
+                _, stamp = future.result()
+                if generation != self.document_generation or document_id != self.info.get("documentId"):
+                    return rejected("파일 확인 중 문서가 교체되어 저장을 보류했습니다.")
+                if not self.confirm_overwrite(destination):
+                    return rejected()
+                self._save_destination(destination, destination_stamp=stamp, already_busy=True,
+                                       on_saved=on_saved, on_failed=on_failed)
             except Exception as error:
-                self.enqueue([lambda _: {"op": "cancelSave", "documentId": document_id, "token": token}])
+                rejected(error)
+        try:
+            self.io_jobs.append((self.io.submit(read_document, destination), observed))
+        except Exception as error:
+            rejected(error)
+            return False
+        return True
+
+    def save_new(self, path, *, on_saved=None, on_failed=None):
+        """Exclusive new-file API used by CLI/reference smoke callers."""
+        if Path(path).exists() or Path(path).is_symlink():
+            error = FileExistsError(path)
+            self.fail(error)
+            if on_failed:
+                on_failed(error)
+            return False
+        return self._save_destination(path, on_saved=on_saved, on_failed=on_failed)
+
+    def _save_destination(self, path, *, destination_stamp=None, already_busy=False, on_saved=None, on_failed=None):
+        if self.closing or (self.saving and not already_busy) or not self.info:
+            return False
+        self.saving = True
+        generation = self.document_generation
+        self.update_document_ui()
+        operation = None
+
+        def finish(error=None, result=None):
+            self.saving = False
+            self.save_operation = None
+            self.update_document_ui()
+            callback = on_failed if error is not None else on_saved
+            if callback:
+                callback(error if error is not None else result)
+
+        def failed(error):
+            if isinstance(error, dict):
+                error = RuntimeError(error.get("error", "native save request failed"))
+            if operation is not None:
+                error = operation.failure(error)
+            if error is not None and (not self.errors or self.errors[-1] != str(error)):
+                self.fail(error)
+            cleanup = operation.cancel_command if operation is not None else None
+            def cleaned(_reply=None):
+                if operation is not None:
+                    operation.cancelled()
+                finish(error or RuntimeError("저장을 취소했습니다."))
+            if cleanup is not None:
+                if not self.enqueue([lambda _: cleanup], cleaned, failed=cleaned, save_control=True):
+                    self.fail("저장 토큰 정리를 큐에 넣지 못했습니다. 문서를 유지합니다.")
+            else:
+                cleaned()
+
+        def request(_):
+            nonlocal operation
+            if self.file_store is None or self.file_store.document_id != self.info["documentId"]:
+                self.file_store = NativeWorkerFileStore(self.info["documentId"])
+            # This runs after previously accepted edits, so bind the completed
+            # revision rather than the state observed when Save was clicked.
+            operation = self.file_store.begin_save(self.target(), path, destination_stamp=destination_stamp)
+            self.save_operation = operation
+            return operation.prepare_command
+
+        def prepare_failed(reply):
+            if operation is not None:
+                try:
+                    operation.receive_prepared(reply, self.worker.copy_buffer)
+                except Exception as error:
+                    failed(error)
+                    return
+            failed(reply)
+
+        def prepared(reply):
+            try:
+                operation.receive_prepared(reply, self.worker.copy_buffer)
+                if operation.requires_loss_acceptance:
+                    if not self.confirm_content_loss(operation.report):
+                        failed(RuntimeError("내용 손실 보고를 승인하지 않아 저장을 취소했습니다."))
+                        return
+                    operation.accept_loss()
+                future = self.io.submit(operation.publish)
+            except Exception as error:
                 failed(error)
-                raise
+                return
+
             def persisted(future):
                 try:
                     future.result()
+                    command = operation.acknowledge_command
                 except Exception as error:
-                    self.fail(error)
-                    self.enqueue([lambda _: {"op": "cancelSave", "documentId": document_id, "token": token}])
                     failed(error)
                     return
+
                 def acknowledged(reply):
-                    self.saved_path = Path(path)
-                    self.source_path = Path(path)
-                    self.info["isDirty"] = reply["isDirty"]
-                    self.statusBar().showMessage(f"저장됨: {path}")
-                    def inspected(result):
-                        self.saving = False
-                        self.update_document_ui()
-                        if on_saved:
-                            on_saved(result)
-                    if not self.enqueue([lambda _: {"op": "info"}], inspected, failed=failed):
-                        failed("저장 후 문서 상태를 확인하지 못했습니다.")
-                if not self.enqueue([lambda _: {"op": "acknowledgeSave", "documentId": document_id, "token": token}],
-                                    acknowledged, failed=failed):
-                    failed("저장 완료 확인을 큐에 넣지 못했습니다.")
-            try:
-                future = self.io.submit(write_new_file, path, data)
-            except Exception as error:
-                self.enqueue([lambda _: {"op": "cancelSave", "documentId": document_id, "token": token}])
-                self.fail(error)
-                failed(error)
-                return
+                    try:
+                        result = operation.acknowledged(reply)
+                    except Exception as error:
+                        failed(error)
+                        return
+                    if generation != self.document_generation or operation.document_id != self.info.get("documentId"):
+                        finish(RuntimeError("이전 문서 파일은 저장했으며 현재 문서는 유지합니다."))
+                        return
+                    self.saved_path = self.source_path = operation.path
+                    self.info["isDirty"] = result["isDirty"]
+                    self.statusBar().showMessage(f"저장됨: {operation.path}")
+                    # Remain behind accepted edits when inspecting final dirty
+                    # state; this barrier must not use the priority save slot.
+                    def inspected(reply):
+                        finish(result=reply)
+                    def inspect_failed(error):
+                        if isinstance(error, dict):
+                            error = error.get("error", "저장 후 문서 상태를 확인하지 못했습니다.")
+                        self.fail(error)
+                        finish(error)
+                    if not self.enqueue([lambda _: {"op": "info"}], inspected, failed=inspect_failed):
+                        inspect_failed("파일은 저장했으나 문서 상태 확인을 큐에 넣지 못했습니다.")
+
+                if not self.enqueue([lambda _: command], acknowledged, failed=failed, save_control=True):
+                    failed(RuntimeError("저장 완료 확인을 큐에 넣지 못했습니다."))
             self.io_jobs.append((future, persisted))
-        accepted = self.enqueue([lambda _: {"op": "prepareSave", "format": "hwpx"}], prepared, failed=failed)
+
+        accepted = self.enqueue([request], prepared, failed=prepare_failed)
         if not accepted:
-            failed("저장을 큐에 넣지 못했습니다.")
+            failed(RuntimeError("저장을 큐에 넣지 못했습니다."))
         return accepted
 
     def shutdown_worker(self):

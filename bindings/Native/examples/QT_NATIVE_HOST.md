@@ -13,20 +13,24 @@ python3 -m venv .venv-qt
 ```
 
 `--input sample.hwpx`로 기존 문서를 열 수 있다. 입력 파일을 자동 수정하거나 저장하지 않는다.
-`--output new.hwpx`는 저장 대화상자의 기본 경로다. 저장은 새 파일에만 허용하며 기존 파일·심볼릭
-링크를 덮어쓰지 않는다. bytes 복사와 buffer release는 GUI 스레드에서 수행하고, 파일 쓰기·flush·close는
-별도 I/O executor에서 수행한 뒤 native 저장 token을 acknowledge한다. 문서를 여는 파일 읽기도 I/O
-executor를 사용한다. 파일 쓰기가 실패하면 cancel하며, 이미 성공한 파일은 ack 오류 때문에 삭제하지 않는다.
+`--output new.hwpx`는 다른 이름으로 저장 대화상자의 기본 경로다. HWP/HWPX 저장을 지원하고,
+일반 저장은 문서를 열 때 읽은 원본 bytes의 stamp를 사용하여 외부 변경을 확인한다. 파일 읽기와
+원자적 파일 교체·flush는 I/O executor에서 수행한다. 심볼릭 링크와 일반 파일이 아닌 경로는 거절한다.
+NativeWorkerFileStore의 prepare→동일 bytes/report 승인→파일 게시→ack 순서를 사용한다.
+내용 손실 보고는 승인 전에 표시하며, 거절·실패 시 token 정리를 받은 뒤 작업 상태를 해제한다.
+이미 게시한 파일은 ack 오류 때문에 삭제하지 않는다. 기존 다른 파일을 선택하면 그 파일을 읽어
+stamp를 얻은 뒤 교체 승인을 받고, 게시 직전에 같은 stamp인지 다시 확인한다. `save_new` API는
+계속 새 파일에만 쓰며, 원본을 포함하여 이미 있는 파일은 교체하지 않는다.
 
 ## 문서 교체와 종료
 
 - 도구 막대의 새 문서·열기와 창 닫기는 이미 접수한 편집 명령 뒤에서 native `info`를 확인한다.
-  변경 내용이 있으면 **새 파일로 저장 / 저장하지 않고 계속 / 취소**를 선택한다. 취소와 저장 대화상자
+  변경 내용이 있으면 **저장 / 저장하지 않고 계속 / 취소**를 선택한다. 취소와 저장 대화상자
   취소는 현재 문서를 유지한다. Ctrl+N으로 새 문서를 요청할 수 있다.
 - 저장 선택 시 파일 쓰기와 저장 token acknowledge를 마친 뒤 문서 상태를 다시 확인한다. 저장 실패,
   저장 완료 확인 실패 또는 저장 중 추가 편집으로 dirty가 남으면 문서 교체·종료를 보류한다.
-  저장은 기존과 같이 새 HWPX 파일 생성만 지원한다. 기존 파일 덮어쓰기·복구는 별도 file-store 예제의 범위다.
-- 일반적인 새 파일로 저장 중에는 본문을 계속 편집할 수 있다. 저장 중인 파일은 준비 당시 revision이며,
+  원본을 연 문서는 같은 경로에 안전하게 저장하며, 새 문서는 저장 위치를 선택한다.
+- 일반적인 저장 중에는 본문을 계속 편집할 수 있다. 저장 중인 파일은 준비 당시 revision이며,
   이후 편집은 dirty로 남는다. 저장 작업 도중 새 문서·열기·닫기 요청은 저장 완료 후 다시 시도하도록 안내한다.
 - 제목에는 파일명과 변경 표시(`*`)를, 상태 영역에는 dirty와 문서 작업 진행 여부를 표시한다.
   문서 전환 중 새 입력과 관련 action을 비활성화하고, 실행 취소·다시 실행은 완료된 native capability를 따른다.
@@ -35,6 +39,8 @@ executor를 사용한다. 파일 쓰기가 실패하면 cancel하며, 이미 성
   주장하지 않으며 이 단계에서는 추가 교체 요청을 받지 않는다.
 - 접수된 GUI action은 문서 세대와 document ID를 보유한다. 교체 전 action의 지연 target 계산이나 callback을
   새 문서에 적용하지 않는다. 기존 문서에 이미 접수한 편집은 dirty 확인 이전에 완료한다.
+- 일반 입력 큐의 64개 상한과 별도로 저장 ack/cancel용 한 슬롯을 예약한다. 입력이 가득 차도
+  파일 게시 이후 checkpoint 또는 token 정리가 멈추지 않으며 편집 명령끼리의 순서는 유지한다.
 - 조합 중인 텍스트는 입력기 focus-loss 취소를 기다린다. native 조합이 남아 있으면 확정·취소 후 다시
   요청하도록 안내한다. 파일 I/O가 진행 중이면 worker를 먼저 닫지 않는다.
 
@@ -82,6 +88,8 @@ Ctrl+A/C/X/V로 Qt clipboard의 복사·잘라내기·붙여넣기와 한 번의
 문서 수명 검사는 dirty 닫기 취소, 기존 입력 뒤 dirty 확인, 저장 대화상자 취소, 쓰기·ack·executor 실패,
 저장 중 추가 편집, 늦은 파일 읽기와 이전 action 세대를 포함한다. 실제 native 스모크도 dirty 닫기 취소와
 저장 bytes 준비 이후 추가 편집을 실행하여 저장본과 현재 문서를 각각 확인하고, 변경 폐기 후 새 문서를 연다.
+`native_worker_file_store_contract.py`는 동일 payload의 손실 승인, 외부 변경, publication 이후 ack 실패와
+token cleanup을 검사하며, Native 라이브러리를 인자로 주면 실제 HWP/HWPX 저장·재열기도 실행한다.
 
 근거: [QInputMethodEvent](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QInputMethodEvent.html),
 [QImage](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QImage.html),

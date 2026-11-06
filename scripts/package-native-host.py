@@ -25,7 +25,7 @@ SOURCE_FILES = {
     **{
         f"examples/{name}": f"bindings/Native/examples/{name}"
         for name in (
-            "native_host.py", "native_worker.py", "native_file_store.py",
+            "native_host.py", "native_worker.py", "native_file_store.py", "native_worker_file_store.py",
             "qt_native_host.py", "qt-requirements.txt",
         )
     },

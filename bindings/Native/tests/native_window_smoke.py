@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Qt offscreen adapter checks; --library adds actual native render/IME/save flow."""
 import argparse
+import hashlib
 from concurrent.futures import Future
 import os
 from pathlib import Path
@@ -16,6 +17,7 @@ from PySide6.QtCore import QEvent, QMimeData, QPointF, Qt
 from PySide6.QtGui import QImage, QInputMethodEvent, QKeyEvent
 from PySide6.QtWidgets import QApplication
 from qt_native_host import NativeWindow, scalar_from_utf16, utf16_length
+from native_file_store import FileStamp
 
 
 class IdleWorker:
@@ -85,9 +87,28 @@ class AdapterTests(unittest.TestCase):
 
     def complete_step(self, window, **reply):
         self.assertIsNotNone(window.pending)
+        if "token" in reply:
+            reply = {"kind": "preparedSave", "documentId": window.info["documentId"],
+                     "revision": window.info["revision"], "byteLength": len(b"serialized document"),
+                     "report": {"count": 0}, **reply}
+        elif "isDirty" in reply and "info" not in reply:
+            operation = window.save_operation
+            reply = {"kind": "saveStatus", "documentId": window.info["documentId"],
+                     "status": {"savedRevision": operation.revision, "revision": window.info["revision"],
+                                "dirty": reply["isDirty"]}, **reply}
         window.pending = None
         window.step_done({"ok": True, **reply})
         window.pump()
+
+    @staticmethod
+    def stamp(data=b"serialized document"):
+        return FileStamp(hashlib.sha256(data).hexdigest(), len(data), 1, 1, 1)
+
+    def complete_publication(self, io, index=0):
+        # Exercise the operation's real stage transitions with a controlled file
+        # publisher. The file-store tests separately cover actual filesystem I/O.
+        with patch("native_worker_file_store.publish_document", return_value=self.stamp()):
+            io.run(index)
 
     def test_dirty_close_cancel_keeps_document_and_worker(self):
         window = self.lifecycle_window()
@@ -143,7 +164,7 @@ class AdapterTests(unittest.TestCase):
         window.open_path("latest.hwpx")
         window.pump()
         self.complete_step(window, info=dict(window.info))
-        io.futures[1].set_result(b"latest document")
+        io.futures[1].set_result((b"latest document", self.stamp(b"latest document")))
         window.tick()
         self.complete_step(window, info=dict(window.info))
         self.assertEqual(window.worker.requests[-1]["data"], b"latest document")
@@ -152,6 +173,7 @@ class AdapterTests(unittest.TestCase):
         window.tick()
         self.assertEqual([r["data"] for r in window.worker.requests if r["op"] == "open"], [b"latest document"])
         self.assertEqual(window.source_path, Path("latest.hwpx"))
+        self.assertEqual(window.file_store.source_stamp, self.stamp(b"latest document"))
         self.assertEqual(window.errors, [])
 
     def test_edit_during_open_read_keeps_current_document(self):
@@ -164,7 +186,7 @@ class AdapterTests(unittest.TestCase):
         window.command("replace", text="arrived while reading")
         window.pump()
         self.complete_step(window, outcome={"revision": 4})
-        io.futures[0].set_result(b"other document")
+        io.futures[0].set_result((b"other document", self.stamp(b"other document")))
         window.tick()
         self.complete_step(window, info={**window.info, "isDirty": True})
         self.assertFalse(any(r["op"] == "open" for r in window.worker.requests))
@@ -198,6 +220,8 @@ class AdapterTests(unittest.TestCase):
         io.futures[0].set_exception(OSError("disk full"))
         window.tick()
         self.assertEqual(window.worker.requests[-1]["op"], "cancelSave")
+        self.assertTrue(window.saving)  # Retain the operation until token cleanup.
+        self.complete_step(window)
         self.assertIsNone(window.intent)
         self.assertFalse(window.closing)
         self.assertFalse(window.saving)
@@ -217,14 +241,14 @@ class AdapterTests(unittest.TestCase):
         window.command("replace", text="later edit")
         window.pump()
         self.complete_step(window, outcome={"revision": 4})
-        io.futures[0].set_result(None)
+        self.complete_publication(io)
         window.tick()
         self.complete_step(window, isDirty=True)
         self.complete_step(window, info={**window.info, "isDirty": True})
         self.assertIsNone(window.intent)
         self.assertFalse(window.saving)
-        self.assertEqual(window.source_path, Path("new.hwpx"))
-        self.assertEqual(window.saved_path, Path("new.hwpx"))
+        self.assertEqual(window.source_path, Path("new.hwpx").absolute())
+        self.assertEqual(window.saved_path, Path("new.hwpx").absolute())
         self.assertFalse(any(r["op"] == "new" for r in window.worker.requests))
         self.assertTrue(window.info["isDirty"])
 
@@ -238,7 +262,7 @@ class AdapterTests(unittest.TestCase):
             window.pump()
             self.complete_step(window, info=dict(window.info))
         self.complete_step(window, token=12, buffer=99)
-        io.futures[0].set_result(None)
+        self.complete_publication(io)
         window.tick()
         self.assertFalse(window.closing)
         self.complete_step(window, isDirty=False)
@@ -258,10 +282,14 @@ class AdapterTests(unittest.TestCase):
             window.pump()
             self.complete_step(window, info=dict(window.info))
         self.complete_step(window, token=12, buffer=99)
-        io.futures[0].set_result(None)
+        self.complete_publication(io)
         window.tick()
         window.pending = None
         window.step_done({"ok": False, "error": "ack failed after publication"})
+        window.pump()
+        self.assertTrue(window.saving)
+        self.assertEqual(window.worker.requests[-1]["op"], "cancelSave")
+        self.complete_step(window)
         self.assertFalse(window.closing)
         self.assertFalse(window.saving)
         self.assertIsNone(window.intent)
@@ -282,6 +310,8 @@ class AdapterTests(unittest.TestCase):
             self.complete_step(window, info=dict(window.info))
         self.complete_step(window, token=12, buffer=99)
         self.assertEqual(window.worker.requests[-1]["op"], "cancelSave")
+        self.assertTrue(window.saving)
+        self.complete_step(window)
         self.assertFalse(window.saving)
         self.assertIsNone(window.intent)
         self.assertTrue(window.info["isDirty"])
@@ -314,6 +344,104 @@ class AdapterTests(unittest.TestCase):
         self.assertNotIn("*", window.windowTitle())
         self.assertFalse(window.document_actions["undo"].isEnabled())
         self.assertTrue(window.document_actions["redo"].isEnabled())
+
+    def test_save_binds_the_revision_after_earlier_accepted_edits(self):
+        window = self.lifecycle_window()
+        window.command("replace", text="accepted before Save")
+        window.save_new("new.hwpx")
+        window.pump()
+        self.complete_step(window, outcome={"revision": 4})
+        self.assertEqual(window.worker.requests[-1], {
+            "op": "prepareSave", "target": {"documentId": 7, "revision": 4}, "format": "hwpx"})
+
+    def test_opened_source_save_uses_the_original_stamp_without_a_save_dialog(self):
+        from native_worker_file_store import NativeWorkerFileStore
+        window = self.lifecycle_window()
+        stamp = self.stamp(b"opened bytes")
+        window.file_store = NativeWorkerFileStore(7, window.source_path, stamp)
+        with patch("qt_native_host.QFileDialog.getSaveFileName", side_effect=AssertionError("unexpected dialog")):
+            self.assertTrue(window.save_document())
+        window.pump()
+        self.assertEqual(window.file_store.source_stamp, stamp)
+        self.assertEqual(window.worker.requests[-1]["format"], "hwpx")
+
+    def test_content_loss_rejection_releases_token_before_unblocking(self):
+        window = self.lifecycle_window()
+        io = DeferredIO()
+        window.io = io
+        window.confirm_content_loss = lambda _report: False
+        window.save_new("new.hwp")
+        window.pump()
+        self.complete_step(window, token=12, buffer=99, report={"count": 1, "items": [{"reason": "unsupported"}]})
+        self.assertEqual(window.worker.requests[-1], {"op": "cancelSave", "documentId": 7, "token": 12})
+        self.assertTrue(window.saving)
+        self.assertEqual(io.tasks, [])
+        self.complete_step(window)
+        self.assertFalse(window.saving)
+        self.assertFalse(window.file_store.busy)
+        self.assertTrue(window.info["isDirty"])
+
+    def test_save_cleanup_has_a_reserved_slot_when_input_queue_is_full(self):
+        window = self.lifecycle_window()
+        io = DeferredIO()
+        window.io = io
+        window.save_new("new.hwpx")
+        window.pump()
+        self.complete_step(window, token=12, buffer=99)
+        for _ in range(window.MAX_ACTIONS):
+            self.assertTrue(window.enqueue([lambda _: {"op": "replace", "text": "queued edit"}]))
+        io.futures[0].set_exception(OSError("disk full"))
+        window.tick()
+        self.assertEqual(window.worker.requests[-1]["op"], "cancelSave")
+        self.assertEqual(len(window.actions), window.MAX_ACTIONS)
+        self.assertTrue(window.file_store.busy)
+        self.complete_step(window)
+        self.assertFalse(window.file_store.busy)
+        self.assertFalse(window.saving)
+        self.assertEqual(window.worker.requests[-1]["op"], "replace")
+
+    def test_copy_failure_cancels_matching_prepared_token(self):
+        window = self.lifecycle_window()
+        def cannot_copy(_response):
+            raise MemoryError("cannot copy prepared save")
+        window.worker.copy_buffer = cannot_copy
+        window.save_new("new.hwpx")
+        window.pump()
+        self.complete_step(window, token=12, buffer=99)
+        self.assertTrue(window.saving)
+        self.assertEqual(window.worker.requests[-1], {"op": "cancelSave", "documentId": 7, "token": 12})
+        self.complete_step(window)
+        self.assertFalse(window.saving)
+        self.assertFalse(window.file_store.busy)
+
+    def test_save_as_observes_existing_destination_before_overwrite_approval(self):
+        window = self.lifecycle_window()
+        io = DeferredIO()
+        window.io = io
+        seen = []
+        window.confirm_overwrite = lambda path: seen.append(path) or False
+        with tempfile.TemporaryDirectory() as directory:
+            destination = Path(directory) / "existing.hwp"
+            destination.write_bytes(b"preserve destination")
+            with patch("qt_native_host.QFileDialog.getSaveFileName", return_value=(str(destination), "")):
+                self.assertTrue(window.save_dialog())
+            self.assertEqual(seen, [])
+            self.assertTrue(window.saving)
+            io.run(0)
+            window.tick()
+            self.assertEqual(seen, [destination])
+            self.assertFalse(window.saving)
+            self.assertFalse(any(r["op"] == "prepareSave" for r in window.worker.requests))
+            self.assertEqual(destination.read_bytes(), b"preserve destination")
+
+    def test_exclusive_save_new_never_replaces_the_opened_source(self):
+        window = self.lifecycle_window()
+        with tempfile.TemporaryDirectory() as directory:
+            destination = Path(directory) / "existing.hwpx"
+            destination.write_bytes(b"preserve opened source")
+            self.assertFalse(window.save_new(destination))
+            self.assertEqual(window.worker.requests, [])
+            self.assertEqual(destination.read_bytes(), b"preserve opened source")
 
     def test_unrelated_failed_edit_does_not_cancel_page_geometry_load(self):
         worker = IdleWorker()
@@ -685,6 +813,7 @@ class AdapterTests(unittest.TestCase):
         window.drag_anchor = {"paragraph": 9}
         window.preferred_x = 123
         window.view = {"visible": [{"page": 4}]}
+        window.info = {"documentId": 7, "revision": 0}
         window.opened({})
         self.assertIsNone(window.caret)
         self.assertEqual(window.rects, [])
@@ -880,6 +1009,22 @@ def actual_smoke(library, screenshot=None):
             assert not window.info["isDirty"]
             assert window.source_path == output and output.name in window.windowTitle()
             assert not window.errors, window.errors
+            original_bytes = output.read_bytes()
+            window.command("replace", text="충돌 시 유지할 편집")
+            pump(app, lambda: idle() and window.info["isDirty"])
+            output.write_bytes(b"external edit")
+            window.save_document()
+            pump(app, lambda: not window.saving and idle())
+            assert output.read_bytes() == b"external edit"
+            assert window.info["isDirty"] and not window.file_store.busy
+            assert "충돌 시 유지할 편집" in window.context["text"]
+            assert any("changed" in message for message in window.errors), window.errors
+            output.write_bytes(original_bytes)
+            window.errors.clear()
+            document_id = window.info["documentId"]
+            window.confirm_unsaved_changes = lambda: "discard"
+            window.open_path(output)
+            pump(app, lambda: window.info["documentId"] != document_id and idle() and bool(window.frames))
             window.command("replace", text="저장할 내용")
             pump(app, lambda: idle() and window.info["isDirty"])
             saved_text = window.context["text"]
@@ -887,7 +1032,7 @@ def actual_smoke(library, screenshot=None):
             original_io, deferred = window.io, DeferredIO()
             window.io = deferred
             window.confirm_unsaved_changes = lambda: "save"
-            saved_before_edit = Path(directory) / "before-later-edit.hwpx"
+            saved_before_edit = output  # Save now atomically replaces the opened source.
             try:
                 with patch("qt_native_host.QFileDialog.getSaveFileName", return_value=(str(saved_before_edit), "")):
                     window.new_document()
@@ -907,7 +1052,7 @@ def actual_smoke(library, screenshot=None):
             window.new_document()
             pump(app, lambda: window.info["documentId"] != document_id and idle() and bool(window.frames))
             assert window.source_path is None and window.context["text"] == ""
-        print('{"ok":true,"qtOffscreen":true,"nativeRender":true,"syntheticKoreanIME":true,"clipboard":true,"multiPage":true,"caretVisible":true,"saveReopen":true,"dirtyCloseCancel":true,"saveEditRacePreserved":true,"newDocumentDiscard":true,"osIMEVerified":false}')
+        print('{"ok":true,"qtOffscreen":true,"nativeRender":true,"syntheticKoreanIME":true,"clipboard":true,"multiPage":true,"caretVisible":true,"saveReopen":true,"dirtyCloseCancel":true,"saveEditRacePreserved":true,"newDocumentDiscard":true,"externalConflictPreserved":true,"osIMEVerified":false}')
     finally:
         pump(app, lambda: not window.io_jobs)
         window.confirm_unsaved_changes = lambda: "discard"
