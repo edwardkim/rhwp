@@ -385,12 +385,12 @@ fn unsupported_caption_destination_preserves_the_source_picture() {
     let picture = control_index(&core, 0, |c| matches!(c, Control::Picture(_)));
     core.set_picture_properties_native(0, 0, picture, r#"{"hasCaption":true}"#)
         .unwrap();
-    let before = serde_json::to_value(core.document()).unwrap();
+    let before = core.export_hwp_native().unwrap();
     assert!(core
         .relocate_floating_picture_native(0, 0, &[], picture, 0, 0, 0, &[(picture, 0, 0)], 0, 0)
         .is_err());
     assert_eq!(
-        serde_json::to_value(core.document()).unwrap(),
+        core.export_hwp_native().unwrap(),
         before,
         "지원하지 않는 캡션/순환 경로는 그림 제거 전에 거절한다"
     );

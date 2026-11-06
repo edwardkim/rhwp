@@ -234,14 +234,14 @@ fn blank_cell_core() -> (DocumentCore, usize, usize) {
 fn invalid_cell_paragraph_does_not_register_image_data_or_change_document() {
     let (mut core, para, control) = blank_cell_core();
     for path in [[(control, 0, 999)], [(control, 999, 0)], [(999, 0, 0)]] {
-        let before = serde_json::to_value(core.document()).unwrap();
+        let before = core.export_hwp_native().unwrap();
         assert!(core
             .insert_picture_in_cell_native(
                 0, para, 0, &path, &PNG, 5000, 3000, 1, 1, "png", "서명", None, None
             )
             .is_err());
         assert_eq!(
-            serde_json::to_value(core.document()).unwrap(),
+            core.export_hwp_native().unwrap(),
             before,
             "실패한 경로 {path:?}는 BinData·문단·저장 메타데이터를 바꾸지 않는다"
         );
