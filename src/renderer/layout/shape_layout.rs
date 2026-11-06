@@ -17,7 +17,9 @@ use super::super::page_layout::LayoutRect;
 use super::super::pagination::PageItem;
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
-use super::super::{hwpunit_to_px, px_to_hwpunit, PathCommand, ShapeStyle, TextStyle};
+use super::super::{
+    hwpunit_to_px, px_to_hwpunit, PathCommand, ShapeStyle, TextStyle, HWPUNIT_PER_INCH,
+};
 use super::paragraph_layout::{
     center_alignment_excludes_trailing_space, trailing_space_width_after_last_inline_object,
 };
@@ -172,11 +174,12 @@ fn textbox_floating_table_offset_px(
     let vert = common.vert_rel_to == VertRelTo::Para && common.vert_align == VertAlign::Top;
     (!common.treat_as_char && floating && horz && vert).then(|| {
         (
-            hwpunit_to_px(
-                common.horizontal_offset as i32 + outer_margin_left as i32,
-                dpi,
-            ),
-            hwpunit_to_px(common.vertical_offset as i32 + outer_margin_top as i32, dpi),
+            // 부호 있는 저장 오프셋과 여백은 합계가 i32 범위를 넘을 수 있다.
+            // f64는 이 정수 범위를 정확히 표현하므로 좌표를 자르거나 감싸지 않는다.
+            (common.horizontal_offset as i32 as f64 + f64::from(outer_margin_left)) * dpi
+                / HWPUNIT_PER_INCH,
+            (common.vertical_offset as i32 as f64 + f64::from(outer_margin_top)) * dpi
+                / HWPUNIT_PER_INCH,
         )
     })
 }
