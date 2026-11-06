@@ -1,0 +1,111 @@
+{
+  "role": "R11 완료 측정과 직접 판독. 통합 최종 head 판정은 별도.",
+  "inspected_at": "2026-11-06T20:33:43.928079+00:00",
+  "rows": [
+    {
+      "key": "childcare",
+      "backend": "native",
+      "input": {
+        "path": "samples/issue8423/30396-childcare-leave-recommendation.hwp",
+        "sha256": "f46bfde221a2876cae05e25255698b84f6b34e79df8b13610cb08fa4ff8ccd74"
+      },
+      "pdf": {
+        "path": "pdf/issue8423/30396-childcare-leave-recommendation-2022.pdf",
+        "sha256": "ef94efc5825d345f3172829cc5af4c069a375631a7cce5d84fe9d1d53b279a6e"
+      },
+      "source_head": "048f44da99d83e186f3a9e139563d20545c8bdb4",
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "path": "output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "sha256": "dcc537203eba3fab75d592380c1b584310a97e1a2ec48a48e2e10898411386a4"
+      },
+      "dpi": 96,
+      "raw_method": "unreconciled-2px-content-silhouette",
+      "layout_generation": "2022",
+      "comparison_profile": "print",
+      "files": [
+        {
+          "path": "native.tsv",
+          "sha256": "22828dbdd53e09de135d41e4e8e1c7c6b9ec5851f6a9965e57a2dc5616086d7a"
+        },
+        {
+          "path": "native-review-001.png",
+          "sha256": "1bd8030017b095672811013cdf97d478f7d9d191becad9c4aff61f0f0c89de29"
+        },
+        {
+          "path": "native-overlay-001.png",
+          "sha256": "327466b39d68cd4f231199023e24ca8cf2f8d5011f561ccf0bcdba9379fb7f13"
+        },
+        {
+          "path": "native-review-018.png",
+          "sha256": "2135aa02a3a9bd893065b5312c09c277e046e85b5a07ce3f942571c129b8324e"
+        },
+        {
+          "path": "native-overlay-018.png",
+          "sha256": "2de13055b7b41d25337f840487a2c65d83f3274ffa494a0e0c6e94f777aceeb0"
+        }
+      ]
+    },
+    {
+      "key": "childcare",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/issue8423/30396-childcare-leave-recommendation.hwp",
+        "sha256": "f46bfde221a2876cae05e25255698b84f6b34e79df8b13610cb08fa4ff8ccd74"
+      },
+      "pdf": {
+        "path": "pdf/issue8423/30396-childcare-leave-recommendation-2022.pdf",
+        "sha256": "ef94efc5825d345f3172829cc5af4c069a375631a7cce5d84fe9d1d53b279a6e"
+      },
+      "source_head": "048f44da99d83e186f3a9e139563d20545c8bdb4",
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "path": "output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "sha256": "dcc537203eba3fab75d592380c1b584310a97e1a2ec48a48e2e10898411386a4"
+      },
+      "dpi": 96,
+      "raw_method": "unreconciled-2px-content-silhouette",
+      "layout_generation": "2022",
+      "comparison_profile": "print",
+      "files": [
+        {
+          "path": "wasm.tsv",
+          "sha256": "d34a1c43bdbb986b49f9665bf71d656ddef7b9f79f7714ed161c4ff3cfbe55ad"
+        },
+        {
+          "path": "wasm-review-001.png",
+          "sha256": "e982f5c4b622c9d9db606f801f680e583b9251e0dabe9aa3c3ab993d56104375"
+        },
+        {
+          "path": "wasm-overlay-001.png",
+          "sha256": "9c1f85620e94e79b08377f8c80345b196c0fa59c0c52feb2e1b81085eb7a8119"
+        },
+        {
+          "path": "wasm-review-018.png",
+          "sha256": "f4f24cae484e1a8fcd86f79cb177ff7b99b84b5a93b7bdd3cb5dda35444e6fdc"
+        },
+        {
+          "path": "wasm-overlay-018.png",
+          "sha256": "937158ae0e069a1f56c6d9b7b86bb61a717e0b4e2f69ae613ab023bc3e9cd685"
+        }
+      ],
+      "wasm": {
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-common-fixes-r11/rhwp.js",
+            "sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-common-fixes-r11/rhwp_bg.wasm",
+            "sha256": "fb98b69311bc3ceeebfaa1052ed2098092aacb22f237ea7651cf4b7b6fe5ce5d"
+          }
+        ],
+        "exporter_sha256": "2d4cc3fbbdf4b4f528aa683649434221a783300e821fe68aaa2ae1e1b63220ee",
+        "font_registration_sha256": "5259038f8caad1f1c1a0dd9c2106589350a7d41ef8c5916c0108a1675951f9fe",
+        "comparison_profile": "print",
+        "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+        "render_tree": "WASM getPageRenderTree"
+      }
+    }
+  ]
+}
