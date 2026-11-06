@@ -1,4 +1,6 @@
 // 관계형 회귀: 독립 Print가 검정인 겹침 기호는 단색을 유지하고 파란 덧말은 색상을 보존한다.
+// 주석 갱신: 2026-11-06 09:56 KST. 직전 파일 변경: d0c751965a158f767791f7e70cfe4b3ebdc73970 (2026-11-06 09:34:59 +09:00).
+// 실제 Studio 측정: 2026-11-06 09:35:39 KST, 각 1쪽, 96 DPI·Print·색상 경계 보정 전 2px raw. 직접 exporter와 실제 Studio 결과는 근거 문서에서 구분한다.
 // 2026-11-06 KST: PR #8616 HWPX 두 원본 각 1쪽 Native/fresh WASM raw 100.00% (96 DPI).
 // 근거: mydocs/pr/assets/semanticist21_20261105/canvas-symbol-fallback-analysis.md.
 // 특정 시스템 글꼴·픽셀 좌표에 의존하지 않으며 기존 공개 웹 글꼴 공급을 실제로 소비한다.
@@ -13,7 +15,7 @@ await runTest('겹침 모양의 단색과 덧말의 원래 색상 보존', async
     window.__recyclingPaints = [];
     const fill = CanvasRenderingContext2D.prototype.fillText;
     CanvasRenderingContext2D.prototype.fillText = function (text, ...args) {
-      if (String(text).includes('♻')) {
+      if (text === '♻') {
         window.__recyclingPaints.push({ text, font: this.font, color: this.fillStyle });
       }
       return fill.call(this, text, ...args);
@@ -56,7 +58,10 @@ await runTest('겹침 모양의 단색과 덧말의 원래 색상 보존', async
       assert.ok(result.paints.length > 0, '실제 재활용 기호 paint를 실행한다');
       for (const paint of result.paints) {
         assert.equal(paint.color, '#000000');
-        assert.ok(paint.font.indexOf('D2Coding') >= 0);
+        assert.ok(paint.font.indexOf('함초롬바탕') >= 0);
+        assert.ok(paint.font.indexOf('함초롬바탕') < paint.font.indexOf('D2Coding'));
+        // 글꼴 프로그램이 없는 최소 환경에도 같은 후보·색상 계약을 적용한다.
+        // 실제 glyph 크기는 올바른 공급 환경의 독립 PDF 확대 판독으로 검증한다.
         assert.ok(paint.font.indexOf('D2Coding') < paint.font.indexOf('Segoe UI Emoji'));
       }
     } else {

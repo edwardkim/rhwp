@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — R6 전쪽 시각 검증과 개별 동작 판독 완료, 최종 편람·Rust 게이트 진행 중.**
+**머지 보류 — R6 전쪽 시각·편람·전체 회귀·Studio 검증 완료, 남은 Rust 게이트 진행 중.**
 
 원본별 Native/fresh WASM 전쪽 TSV와 같은 주장 페이지의 review·overlay를 아래에 연결했다. 원격 PR 생성·CI·merge·close는 실제 실행 뒤 별도로 기록한다.
 
@@ -101,9 +101,9 @@
 
 - 현재 전쪽 검증은 Native 128입력·301쪽 최저 91.81401%, fresh WASM 128입력·301쪽 최저 91.17272%다. 같은 새 base의 각 301쪽 대비 하락 0쪽이다. [현재 증거](assets/semanticist21_20261105/validation-r6/README.md)를 연결한다.
 - 실제 API 12그룹·브라우저 동작·TypeScript/production build·생성 타입 export와 소비 검사는 [API](assets/semanticist21_20261105/validation-r6/api/README.md)·[UI](assets/semanticist21_20261105/validation-r6/ui/README.md)에 연결했다. 원래 R5 전체 Rust 12,735건을 R6 새 실행으로 표현하지 않는다.
-- 최종 코드 커밋 `5172f2d55c73b2ed33d4d3657d81e769bc9004c2`의 공식 편람 게이트와 최소 글꼴 전체 Rust·lint·Native Skia·release·doctest를 진행 중이다. 이 필수 단계 전에는 최종 승인·PR 생성으로 넘어가지 않는다.
+- 공식 Native 편람 383쪽과 최소 글꼴 전체 Rust 12,740건 PASS, 전체 Node 2,744건·production build·실제 Studio 화면 검증을 완료했다. 남은 workspace lint·Native Skia·release·doctest는 진행 중이다. 이 필수 단계 전에는 최종 승인·PR 생성으로 넘어가지 않는다.
 - 실제 assertion을 확인해 관계형·고정형을 구분하고 27개 파일 첫머리를 실제 측정값으로 갱신했다. 원본 단위·비율 계약은 유지하며, [17개 완료 페이지](assets/semanticist21_20261105/validation-r6/qualification.md)는 양쪽 98% 이상과 독립 확대 판독 근거로 기존 고정 좌표를 유지한다.
-- 웹폰트 시간 제한·오프라인 검사는 관련 충돌이 없으므로 작업지시자 지시에 따라 반복하지 않는다.
+- 원래 웹폰트 수명 검사는 관련 충돌이 없어 재사용했으나, 최종 Studio 기호 공급 보정은 로딩 경로를 바꾸므로 로더 수명 14건과 실제 브라우저 7시나리오를 추가 실행해 모두 통과했다.
 
 ## Merge 후 contributor PR comment 계획
 
@@ -114,7 +114,19 @@
 - 대표 이미지 안정 경로: `mydocs/pr/assets/semanticist21_20261105/validation-r6/png/pr8616/<backend>/<key>/<review 또는 overlay>_NNN.png`. 같은 PR의 추가 완료 페이지는 [패널 목록](assets/semanticist21_20261105/validation-r6/panels.md)을 따른다.
 - URL은 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/` 뒤에 위 실제 경로를 붙인다. devel 포함 확인 후 `--body-file` 게시·API 재조회한다.
 - 문서 비교는 [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 따른다. 원 PR·관련 이슈 close는 같은 해결 범위의 완료와 포함 관계를 확인한 뒤 처리한다.
+- 실제 Studio의 추가 글꼴 보정은 `studio-symbol/overlap`·`studio-symbol/ruby`의 같은 원본 1쪽 review·overlay·TSV와 실제 backend 화면을 함께 사용한다.
 
 ## Mac 네 원본의 전체 페이지 계약
 
 HWP/HWPX 겹침·덧말 네 입력의 전체 1쪽을 독립 Print와 대조했다. 기존 모양·내용 순서 검사는 유지하고 전체 쪽수·내용 보존 검사를 보완했다. [관련 6건 최소 글꼴 PASS](assets/semanticist21_20261105/validation-r6/runtime-checks.md)를 연결한다. Mac PDF의 버전을 2020으로 재표기하거나 oracle PDF 선택 정책을 완화하지 않았다.
+
+## 실제 Studio의 단색 기호 공급 보정
+
+원 PR이 추가한 U+267B 겹침 모양은 원본과 독립 Print에서 검정이지만, Studio Canvas2D의
+자동 fallback이 컬러 이모지를 선택했다. 기존 전각 함초롬바탕을 반각 D2Coding·자동 이모지보다 먼저 소비하고,
+공통 CSS 병합에서 기존 원 요청·설치 별칭·로컬 승인·문서 대체 정책을 보존했다.
+새 비공개 글꼴 프로그램을 추가하지 않았다. 실제 Canvas2D·CanvasKit compatibility/default의
+screen/print 12캡처에서 검정 모양과 원래 파란 덧말을 함께 확인했다.
+[원인·관계형 회귀·라이선스 분석](assets/semanticist21_20261105/canvas-symbol-fallback-analysis.md),
+[같은 두 원본 1쪽의 실제 Studio review·overlay·TSV](assets/semanticist21_20261105/studio-symbol/README.md)를 연결한다.
+Canvas2D raw는 겹침·덧말 모두 100.00000%이며 직접 WASM exporter 100.00%와 구분한다.
