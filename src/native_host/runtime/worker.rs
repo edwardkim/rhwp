@@ -229,6 +229,27 @@ fn execute(
                 snapshot: doc.session().accessibility_snapshot(&request, selection)?,
             })
         }
+        C::ExportRenderSnapshot {
+            target,
+            font_generation,
+            page,
+            profile,
+            mut limits,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            if doc.session().font_generation() != font_generation {
+                return Err(invalid("stale font generation"));
+            }
+            limits.max_payload_bytes = limits.max_payload_bytes.min(shared.budget.max_bytes);
+            let snapshot = doc
+                .session()
+                .render_snapshot_with_limits(page, profile, limits)?;
+            Ok(O::RenderSnapshot {
+                document_id: doc.id,
+                snapshot: Arc::new(snapshot),
+            })
+        }
         C::RenderRegion {
             target,
             font_generation,
@@ -524,6 +545,10 @@ pub(super) fn worker_loop(
             break;
         }
         let render = request.command.is_render();
+        let exports_snapshot = matches!(
+            &request.command,
+            NativeRuntimeCommand::ExportRenderSnapshot { .. }
+        );
         let mut result = if request
             .phase
             .compare_exchange(QUEUED, CLAIMED, Ordering::AcqRel, Ordering::Acquire)
@@ -555,9 +580,17 @@ pub(super) fn worker_loop(
             Ok(NativeRuntimeOutput::Accessibility { snapshot, .. }) => {
                 accessibility_retained_bytes(snapshot)
             }
+            Ok(NativeRuntimeOutput::RenderSnapshot { snapshot, .. }) => {
+                snapshot.usage().estimated_bytes
+            }
             _ => 0,
         };
-        if retained > request.reservation {
+        let covered = if exports_snapshot {
+            request.reservation.grow_to(retained)
+        } else {
+            request.reservation.covers(retained)
+        };
+        if !covered {
             discard_prepared(&mut owner, &result);
             result = Err(NativeHostError::LimitExceeded(
                 "runtime output exceeds its reserved byte limit".into(),

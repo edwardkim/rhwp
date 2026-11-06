@@ -7,7 +7,7 @@
 use std::mem::size_of;
 use std::sync::Arc;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use super::fonts::NativeFontState;
 use super::{NativeDocumentSession, NativeHostError};
@@ -22,13 +22,23 @@ pub const MAX_SNAPSHOT_DEPTH: usize = 256;
 
 /// Admission limits for one page. Callers may lower, but cannot raise, the
 /// public hard ceilings. A zero limit rejects any input in that category.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct NativeRenderSnapshotLimits {
     pub max_nodes: usize,
     pub max_operations: usize,
     pub max_resources: usize,
     pub max_payload_bytes: usize,
     pub max_depth: usize,
+}
+
+pub(crate) fn profile_name(profile: RenderProfile) -> &'static str {
+    match profile {
+        RenderProfile::FastPreview => "fastPreview",
+        RenderProfile::Screen => "screen",
+        RenderProfile::Print => "print",
+        RenderProfile::HighQuality => "highQuality",
+    }
 }
 
 impl Default for NativeRenderSnapshotLimits {
@@ -44,7 +54,7 @@ impl Default for NativeRenderSnapshotLimits {
 }
 
 impl NativeRenderSnapshotLimits {
-    fn validate(self) -> Result<(), NativeHostError> {
+    pub(crate) fn validate(self) -> Result<(), NativeHostError> {
         if self.max_nodes > MAX_SNAPSHOT_NODES
             || self.max_operations > MAX_SNAPSHOT_OPERATIONS
             || self.max_resources > MAX_SNAPSHOT_RESOURCES

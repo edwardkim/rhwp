@@ -17,9 +17,9 @@
 
 use std::collections::HashMap;
 use std::fmt;
-use std::sync::atomic::{AtomicU64, AtomicU8, Ordering};
+use std::sync::atomic::{AtomicU64, AtomicU8, AtomicUsize, Ordering};
 use std::sync::mpsc::{self, Receiver, SyncSender, TryRecvError, TrySendError};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, Weak};
 use std::thread::{self, JoinHandle};
 
 use serde::{Deserialize, Serialize};
@@ -28,6 +28,7 @@ use super::accessibility::{NativeAccessibilityRequest, NativeAccessibilitySnapsh
 use super::clipboard::{NativeClipboardPayload, MAX_CLIPBOARD_BYTES};
 use super::commands::{NativeCommandOutcome, NativeEditCommand, NativeImeContext};
 use super::editor::{NativeEditOutcome, NativeEditor};
+use super::render_snapshot::{NativeRenderSnapshot, NativeRenderSnapshotLimits};
 use super::save::NativeSaveCaretPolicy;
 use super::save::{NativeSaveFormat, NativeSaveStatus, NativeSaveToken, PreparedSave};
 use super::NativePageSize;
@@ -86,8 +87,9 @@ pub struct NativeRuntimeConfig {
     pub max_outstanding: usize,
     /// Aggregate buffer reservations (1..=128 MiB). Renders reserve their exact
     /// enclosing RGBA output size; a save reserves 128 MiB, copy/cut 1 MiB,
-    /// and accessibility 8 MiB before acceptance. Snapshot allocations are
-    /// measured after the bounded query, not transient layout memory or RSS.
+    /// and accessibility 8 MiB before acceptance. Render snapshot input estimates
+    /// are charged after the bounded query, with its ceiling clamped to this
+    /// quota. These estimates exclude transient layout/native memory and RSS.
     pub max_pending_bytes: usize,
 }
 
@@ -167,6 +169,17 @@ pub enum NativeRuntimeCommand {
     Accessibility {
         target: NativeRuntimeTarget,
         request: NativeAccessibilityRequest,
+    },
+    /// Export only owned immutable inputs. The worker clamps the input ceiling
+    /// to its byte quota and charges the actual estimate before completion.
+    ExportRenderSnapshot {
+        target: NativeRuntimeTarget,
+        font_generation: u64,
+        page: u32,
+        #[serde(with = "snapshot_profile")]
+        profile: crate::paint::RenderProfile,
+        #[serde(default)]
+        limits: NativeRenderSnapshotLimits,
     },
     PageSize {
         target: NativeRuntimeTarget,
@@ -276,6 +289,12 @@ impl NativeRuntimeCommand {
     }
 
     fn byte_reservation(&self) -> Result<usize, NativeRuntimeError> {
+        if let Self::ExportRenderSnapshot { limits, .. } = self {
+            limits
+                .validate()
+                .map_err(|_| NativeRuntimeError::InvalidArgument)?;
+            return Ok(0);
+        }
         if let Self::RenderRegion { region, scale, .. }
         | Self::RenderTiledRegion { region, scale, .. } = self
         {
@@ -326,6 +345,26 @@ impl NativeRuntimeCommand {
             _ => Some(0),
         };
         bytes.ok_or(NativeRuntimeError::ByteCapacity)
+    }
+}
+
+mod snapshot_profile {
+    use crate::paint::RenderProfile;
+    use serde::{Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S: Serializer>(
+        profile: &RenderProfile,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(super::super::render_snapshot::profile_name(*profile))
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<RenderProfile, D::Error> {
+        let value = String::deserialize(deserializer)?;
+        RenderProfile::parse(&value)
+            .ok_or_else(|| serde::de::Error::custom("invalid render snapshot profile"))
     }
 }
 
@@ -402,6 +441,10 @@ pub enum NativeRuntimeOutput {
         target: NativeRuntimeTarget,
         snapshot: NativeAccessibilitySnapshot,
     },
+    RenderSnapshot {
+        document_id: NativeRequestId,
+        snapshot: Arc<NativeRenderSnapshot>,
+    },
     DocumentClosed,
     RasterCacheLimit {
         target: NativeRuntimeTarget,
@@ -454,6 +497,7 @@ impl fmt::Debug for NativeRuntimeOutput {
             Self::ImeContext(_) => "ImeContext",
             Self::Clipboard { .. } => "Clipboard",
             Self::Accessibility { .. } => "Accessibility",
+            Self::RenderSnapshot { .. } => "RenderSnapshot",
             Self::DocumentClosed => "DocumentClosed",
             Self::RasterCacheLimit { .. } => "RasterCacheLimit",
             #[cfg(feature = "native-skia")]
@@ -559,6 +603,101 @@ struct Shared {
     lifecycle: AtomicU8,
     latest_render: AtomicU64,
     current: Mutex<Option<Stamp>>,
+    budget: Arc<ByteBudget>,
+}
+
+struct ByteBudget {
+    max_bytes: usize,
+    used: AtomicUsize,
+}
+
+impl ByteBudget {
+    fn try_add(&self, amount: usize) -> bool {
+        self.used
+            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |used| {
+                used.checked_add(amount)
+                    .filter(|total| *total <= self.max_bytes)
+            })
+            .is_ok()
+    }
+
+    fn reserve(self: &Arc<Self>, bytes: usize) -> Option<Arc<ByteReservation>> {
+        self.try_add(bytes).then(|| {
+            Arc::new(ByteReservation {
+                budget: Arc::clone(self),
+                bytes: Mutex::new(Some(bytes)),
+            })
+        })
+    }
+}
+
+/// A close/receipt can release a reservation while a worker is preparing its
+/// output. The same short lock guards grow and release, so late output cannot
+/// recreate a released credit or subtract its bytes twice.
+struct ByteReservation {
+    budget: Arc<ByteBudget>,
+    bytes: Mutex<Option<usize>>,
+}
+
+impl ByteReservation {
+    fn grow_to(&self, retained: usize) -> bool {
+        let mut bytes = self.bytes.lock().unwrap_or_else(|error| error.into_inner());
+        let Some(current) = *bytes else {
+            return false;
+        };
+        if retained <= current {
+            return true;
+        }
+        if !self.budget.try_add(retained - current) {
+            return false;
+        }
+        *bytes = Some(retained);
+        true
+    }
+
+    fn covers(&self, retained: usize) -> bool {
+        self.bytes
+            .lock()
+            .unwrap_or_else(|error| error.into_inner())
+            .is_some_and(|bytes| retained <= bytes)
+    }
+
+    fn release(&self) {
+        if let Some(bytes) = self
+            .bytes
+            .lock()
+            .unwrap_or_else(|error| error.into_inner())
+            .take()
+        {
+            self.budget.used.fetch_sub(bytes, Ordering::AcqRel);
+        }
+    }
+}
+
+impl Drop for ByteReservation {
+    fn drop(&mut self) {
+        self.release();
+    }
+}
+
+/// Weak observation of a runtime's live document stamp. This retains neither
+/// the runtime, its queues, nor the document's native objects.
+#[derive(Clone)]
+pub struct NativeRuntimeObserver {
+    shared: Weak<Shared>,
+}
+
+impl NativeRuntimeObserver {
+    pub fn is_current(&self, target: NativeRuntimeTarget, font_generation: u64) -> bool {
+        self.shared.upgrade().is_some_and(|shared| {
+            shared.lifecycle.load(Ordering::Acquire) == RUNNING
+                && shared.current()
+                    == Some(Stamp {
+                        target,
+                        font_generation,
+                    })
+        })
+    }
 }
 impl Shared {
     fn current(&self) -> Option<Stamp> {
@@ -584,13 +723,13 @@ struct Request {
     id: NativeRequestId,
     command: NativeRuntimeCommand,
     phase: Arc<AtomicU8>,
-    reservation: usize,
+    reservation: Arc<ByteReservation>,
 }
 struct InFlight {
     render: bool,
     tiled: bool,
     phase: Arc<AtomicU8>,
-    reservation: usize,
+    reservation: Arc<ByteReservation>,
 }
 
 /// A movable host handle; the !Send engine is constructed only inside its worker.
@@ -600,7 +739,6 @@ pub struct NativeRuntime {
     sender: Option<SyncSender<Request>>,
     completions: Option<Receiver<NativeRuntimeCompletion>>,
     in_flight: HashMap<NativeRequestId, InFlight>,
-    reserved_bytes: usize,
     shared: Arc<Shared>,
     worker: Option<JoinHandle<()>>,
 }
@@ -619,6 +757,10 @@ impl NativeRuntime {
             lifecycle: AtomicU8::new(RUNNING),
             latest_render: AtomicU64::new(0),
             current: Mutex::new(None),
+            budget: Arc::new(ByteBudget {
+                max_bytes: config.max_pending_bytes,
+                used: AtomicUsize::new(0),
+            }),
         });
         let worker_shared = Arc::clone(&shared);
         let worker = thread::Builder::new()
@@ -643,7 +785,6 @@ impl NativeRuntime {
             sender: Some(sender),
             completions: Some(completions),
             in_flight: HashMap::new(),
-            reserved_bytes: 0,
             shared,
             worker: Some(worker),
         })
@@ -669,11 +810,7 @@ impl NativeRuntime {
             Ok(reservation) => reservation,
             Err(error) => return Err(reject(error, command)),
         };
-        let Some(total) = self
-            .reserved_bytes
-            .checked_add(reservation)
-            .filter(|total| *total <= self.config.max_pending_bytes)
-        else {
+        let Some(reservation) = self.shared.budget.reserve(reservation) else {
             return Err(reject(NativeRuntimeError::ByteCapacity, command));
         };
         let Ok(id) = NEXT_REQUEST_ID
@@ -691,7 +828,7 @@ impl NativeRuntime {
             id,
             command,
             phase: Arc::clone(&phase),
-            reservation,
+            reservation: Arc::clone(&reservation),
         };
         let Some(sender) = &self.sender else {
             return Err(reject(NativeRuntimeError::Closed, request.command));
@@ -707,7 +844,6 @@ impl NativeRuntime {
                         reservation,
                     },
                 );
-                self.reserved_bytes = total;
                 if render {
                     self.shared.latest_render.store(id.0, Ordering::Release);
                 }
@@ -759,7 +895,7 @@ impl NativeRuntime {
         match receiver.try_recv() {
             Ok(mut completion) => {
                 if let Some(request) = self.in_flight.remove(&completion.request_id) {
-                    self.reserved_bytes -= request.reservation;
+                    request.reservation.release();
                     if request.render
                         && self.shared.superseded(completion.request_id)
                         && !matches!(&completion.result, Ok(NativeRuntimeOutput::Cancelled))
@@ -789,12 +925,30 @@ impl NativeRuntime {
                         completion.result = Ok(NativeRuntimeOutput::Skipped(reason));
                     }
                 }
+                if let Ok(NativeRuntimeOutput::RenderSnapshot {
+                    document_id,
+                    snapshot,
+                }) = &completion.result
+                {
+                    if self.shared.current()
+                        != Some(Stamp {
+                            target: NativeRuntimeTarget {
+                                document_id: *document_id,
+                                revision: snapshot.revision(),
+                            },
+                            font_generation: snapshot.font_generation(),
+                        })
+                    {
+                        completion.result = Ok(NativeRuntimeOutput::Skipped(
+                            NativeRuntimeSkipReason::StaleFrame,
+                        ));
+                    }
+                }
                 Ok(Some(completion))
             }
             Err(TryRecvError::Empty) => Ok(None),
             Err(TryRecvError::Disconnected) => {
-                self.in_flight.clear();
-                self.reserved_bytes = 0;
+                self.release_reservations();
                 Err(
                     if matches!(
                         self.shared.lifecycle.load(Ordering::Acquire),
@@ -821,8 +975,19 @@ impl NativeRuntime {
         );
         self.sender.take();
         self.completions.take();
+        self.release_reservations();
+    }
+    fn release_reservations(&mut self) {
+        for request in self.in_flight.values() {
+            request.reservation.release();
+        }
         self.in_flight.clear();
-        self.reserved_bytes = 0;
+    }
+
+    pub fn observer(&self) -> NativeRuntimeObserver {
+        NativeRuntimeObserver {
+            shared: Arc::downgrade(&self.shared),
+        }
     }
     pub fn is_finished(&self) -> bool {
         self.worker.as_ref().is_none_or(JoinHandle::is_finished)

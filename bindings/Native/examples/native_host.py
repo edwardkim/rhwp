@@ -71,6 +71,19 @@ class NativeHost:
         function.restype = ctypes.c_void_p
         return self._result(function(arguments, len(encoded), payload, len(data)))
 
+    def presentation_request(self, **request):
+        """Cross-thread immutable handles; legacy session/worker calls stay affine.
+
+        Resolve the optional ABI lazily so existing CPU-only example clients can
+        continue to use older libraries. Keep this library alive for every lease.
+        """
+        encoded = json.dumps(request, ensure_ascii=False, allow_nan=False).encode("utf-8")
+        arguments = ctypes.create_string_buffer(encoded)
+        function = self.library.rhwp_presentation_request
+        function.argtypes = [ctypes.c_void_p, ctypes.c_size_t]
+        function.restype = ctypes.c_void_p
+        return self._result(function(arguments, len(encoded)))
+
     def copy_buffer(self, response):
         """Consume one retained buffer; ownership ends even when copying fails."""
         buffer = response["buffer"]

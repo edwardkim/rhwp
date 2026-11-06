@@ -32,6 +32,25 @@ char *rhwp_session_close(uint64_t handle);
  * are rejected before copying. This call does not release the source buffer. */
 char *rhwp_session_buffer_copy(uint64_t buffer, uint8_t *destination, size_t capacity);
 char *rhwp_session_buffer_release(uint64_t buffer);
+/* Presentation ABI v1 is the explicit cross-thread exception: snapshot,
+ * CPU frame producer, and consumer lease handles are process-wide. Legacy
+ * session/worker/buffer handles above still belong to their owner OS thread.
+ * Configure a live worker source through owner-thread host operation
+ * presentationConfigure, then submit exportRenderSnapshot and poll it there.
+ * rhwp_presentation_request accepts snapshotInfo/snapshotRelease, renderCpu,
+ * frameInfo/frameAcquire/frameRelease, leaseInfo/leaseRelease, and stats JSON.
+ * renderCpu is synchronous work for a render thread; acquisition/data access
+ * never implicitly renders. GPU presentation is not implemented/advertised.
+ * Every returned JSON string needs rhwp_string_free, on any OS thread. */
+char *rhwp_presentation_request(const uint8_t *request, size_t request_len);
+/* Immutable CPU bytes stay valid until this specific consumer lease is released,
+ * including after producer frame release or source close/staleness. New stale
+ * acquisitions are rejected. The caller coordinates pointer use versus release;
+ * never release concurrently, write the bytes, or unload the library while a
+ * lease/call/worker is live. byte_length must point to writable size_t storage.
+ * Invalid/released lease: NULL and length=0. NULL byte_length: NULL. CPU lease
+ * return does not establish GPU sampling completion or allow GPU target reuse. */
+const uint8_t *rhwp_presentation_lease_data(uint64_t lease, size_t *byte_length);
 void rhwp_string_free(char *value);
 
 #ifdef __cplusplus

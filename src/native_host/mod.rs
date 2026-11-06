@@ -8,6 +8,7 @@ pub mod clipboard;
 pub mod commands;
 pub mod editor;
 pub mod fonts;
+pub mod presentation;
 #[cfg(feature = "native-skia")]
 pub mod region_cache;
 pub mod render_snapshot;

@@ -11,6 +11,7 @@ use rhwp_core::document_core::native_interaction::{
 };
 use rhwp_core::native_host::accessibility::NativeAccessibilityRequest;
 use rhwp_core::native_host::editor::{NativeCompositionFocusLoss, NativeEditOutcome, NativeEditor};
+use rhwp_core::native_host::presentation::{NativePresentationId, NativePresentationStamp};
 use rhwp_core::native_host::runtime::{
     NativeRequestId, NativeRuntime, NativeRuntimeCommand, NativeRuntimeConfig, NativeRuntimeOutput,
     NativeRuntimeTarget,
@@ -35,8 +36,25 @@ static NEXT_HANDLE: AtomicU64 = AtomicU64::new(1);
 struct Host {
     sessions: HashMap<u64, ManagedSession>,
     workers: HashMap<u64, NativeRuntime>,
+    presentation_sources: HashMap<u64, NativePresentationId>,
     buffers: HashMap<u64, Vec<u8>>,
     buffer_bytes: usize,
+}
+
+impl Host {
+    fn close_presentation_sources(&mut self) {
+        for (_, source) in self.presentation_sources.drain() {
+            let _ = crate::presentation::registry().close_source(source);
+        }
+    }
+}
+
+impl Drop for Host {
+    fn drop(&mut self) {
+        // Global source handles must not outlive a disappearing TLS owner.
+        // Already transferred snapshots/leases retain their independent data.
+        self.close_presentation_sources();
+    }
 }
 
 enum ManagedSession {
@@ -336,6 +354,10 @@ enum HostRequest {
     WorkerRelease {
         worker: u64,
     },
+    PresentationConfigure {
+        worker: u64,
+        stamp: NativePresentationStamp,
+    },
     View {
         state: NativeViewState,
         command: ViewCommand,
@@ -447,7 +469,11 @@ pub unsafe extern "C" fn rhwp_native_host_request(
                 let mut host=host.borrow_mut();
                 let runtime=host.workers.get_mut(&worker).ok_or_else(invalid_handle)?;
                 runtime.close();
-                Ok(json!({"ok":true,"isFinished":runtime.is_finished()}))
+                let finished = runtime.is_finished();
+                if let Some(source) = host.presentation_sources.remove(&worker) {
+                    let _ = crate::presentation::registry().close_source(source);
+                }
+                Ok(json!({"ok":true,"isFinished":finished}))
             }),
             HostRequest::WorkerStatus { worker } => HOST.with(|host| {
                 let host=host.borrow();
@@ -458,11 +484,28 @@ pub unsafe extern "C" fn rhwp_native_host_request(
                 let mut host=host.borrow_mut();
                 if !host.workers.get(&worker).ok_or_else(invalid_handle)?.is_finished() {return Err(NativeHostError::InvalidArgument("close worker and wait for isFinished before releasing it or unloading the library".into()));}
                 let mut runtime=host.workers.remove(&worker).ok_or_else(invalid_handle)?;
+                if let Some(source) = host.presentation_sources.remove(&worker) {
+                    let _ = crate::presentation::registry().close_source(source);
+                }
                 match runtime.try_join() {
                     Ok(true)=>Ok(json!({"ok":true})),
                     Ok(false)=>unreachable!("finished worker can join"),
                     Err(error)=>Ok(json!({"ok":false,"code":error.code(),"error":error.to_string()})),
                 }
+            }),
+            HostRequest::PresentationConfigure { worker, stamp } => HOST.with(|host| {
+                let mut host = host.borrow_mut();
+                let runtime = host.workers.get(&worker).ok_or_else(invalid_handle)?;
+                let registry = crate::presentation::registry();
+                let source = if let Some(source) = host.presentation_sources.get(&worker).copied() {
+                    registry.configure_source(source, stamp)?;
+                    source
+                } else {
+                    let source = registry.create_source(runtime.observer(), stamp)?;
+                    host.presentation_sources.insert(worker, source);
+                    source
+                };
+                Ok(json!({"ok":true,"source":source,"stamp":stamp}))
             }),
             HostRequest::View { state, command } => {
                 let mut view = NativeView::try_from(state)?;
@@ -532,6 +575,31 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
             }
             NativeRuntimeOutput::Accessibility { target, snapshot } => {
                 json!({"ok":true,"kind":"accessibility","target":target,"snapshot":snapshot})
+            }
+            NativeRuntimeOutput::RenderSnapshot {
+                document_id,
+                snapshot,
+            } => {
+                let source = host
+                    .presentation_sources
+                    .get(&worker)
+                    .copied()
+                    .ok_or_else(|| {
+                        NativeHostError::InvalidArgument(
+                            "configure the worker presentation source before exporting a snapshot"
+                                .into(),
+                        )
+                    })?;
+                let registry = crate::presentation::registry();
+                let handle = registry.retain_snapshot(source, document_id.as_u64(), snapshot)?;
+                let info = match registry.snapshot_info(handle) {
+                    Ok(info) => info,
+                    Err(error) => {
+                        let _ = registry.release_snapshot(handle);
+                        return Err(error);
+                    }
+                };
+                json!({"ok":true,"kind":"renderSnapshot","snapshot":handle,"documentId":document_id,"info":info})
             }
             NativeRuntimeOutput::Info(info) => {
                 let mut encoded = json!(info);
@@ -635,6 +703,7 @@ pub(crate) fn response(f: impl FnOnce() -> Result<Value, NativeHostError>) -> *m
                 for worker in host.workers.values_mut() {
                     worker.close();
                 }
+                host.close_presentation_sources();
             });
             json!({"ok":false,"code":"panic","error":"native host panicked; sessions and buffers invalidated, workers closing; wait for workerStatus and workerRelease before unloading"})
         }
@@ -707,7 +776,7 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         Ok(
             json!({"ok":true,"abiVersion":1,"nativeSkia":cfg!(feature="native-skia"),
         "renderTiledRegion":cfg!(feature="native-skia"),"rasterCacheControls":cfg!(feature="native-skia"),
-        "cooperativeTiledCancellation":cfg!(feature="native-skia"),
+        "cooperativeTiledCancellation":cfg!(feature="native-skia"),"presentation":crate::presentation::capabilities(),
         "worker":true,"maxWorkers":4,"hostRequests":true,"viewState":true,"accessibilitySnapshots":true,"threadAffine":true,"maxSessions":MAX_SESSIONS,"maxDocumentBytes":MAX_DOCUMENT_BYTES,
         "maxRequestBytes":MAX_REQUEST_BYTES,"maxBufferBytes":MAX_BUFFER_BYTES,
         "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"}),

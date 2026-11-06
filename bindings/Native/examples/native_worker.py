@@ -80,6 +80,8 @@ class NativeWorker:
             for result in self._deferred:
                 if "buffer" in result:
                     self.host.call("buffer_release", result["buffer"])
+                if result.get("kind") == "renderSnapshot" and "snapshot" in result:
+                    self.host.presentation_request(op="snapshotRelease", snapshot=result["snapshot"])
             self._deferred.clear()
             result = self.host.host_request(op="workerClose", worker=self.worker)
             self._closed = True
