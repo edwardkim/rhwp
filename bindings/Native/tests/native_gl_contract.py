@@ -111,6 +111,7 @@ def gl_contract(library, document):
     calls = {"loader": 0, "current": 0, "forbidCurrent": False, "hostReadbacks": 0}
 
     def proc(name):
+        assert name.startswith(b"gl"), "native adapter requested a foreign API from the GL resolver"
         calls["loader"] += 1
         # Both Qt's QByteArray and str overloads resolve the same GL symbol.
         return context.getProcAddress(name.decode("ascii"))

@@ -276,9 +276,18 @@ impl NativeGlPresenter {
             return Err(invalid("GL context identity/generation must be nonzero"));
         }
         let device = unsafe { read_device(&mut load)? };
-        let interface = gpu::gl::Interface::new_load_with_cstr(|name| load(name))
-            .filter(|interface| interface.validate())
-            .ok_or_else(|| unsupported("GL function interface is unavailable or incomplete"))?;
+        let interface = gpu::gl::Interface::new_load_with_cstr(|name| {
+            // Skia also probes optional EGL entry points. A host GL resolver
+            // may return non-null dispatch stubs for those foreign names; they
+            // are not callable EGL functions. This adapter accepts GL only.
+            if name.to_bytes().starts_with(b"gl") {
+                load(name)
+            } else {
+                std::ptr::null()
+            }
+        })
+        .filter(|interface| interface.validate())
+        .ok_or_else(|| unsupported("GL function interface is unavailable or incomplete"))?;
         let mut context = gpu::direct_contexts::make_gl(interface, None)
             .ok_or_else(|| unsupported("Skia could not create a GL Ganesh context"))?;
         context.set_resource_cache_limit(config.resource_cache_bytes);
