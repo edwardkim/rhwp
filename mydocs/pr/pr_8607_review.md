@@ -24,10 +24,32 @@ fix(typeset): #8606 빈 host 의 자기 오프셋 자리차지 본표는 머리 
 
 - [tests/cases/issue_8606_coanchored_own_offset_table.rs](../../tests/cases/issue_8606_coanchored_own_offset_table.rs)
 
-통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 검증 뒤 제품·테스트 코드는 변경하지 않았다. 검증 원본·Print 기준의 추가와 문서 기록을 구분한다.
+통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 이는 최초 통합 source의 결과다. 이후 메인터너 보정으로 제품·테스트 코드가 바뀌었으므로 보정 후 head의 회귀 통과로 재사용하지 않는다. 새 보정본의 검증 결과와 원본·Print 추가를 구분한다.
 
 Native Skia 공식 3종(라이브러리 4,040건 및 통합 24건)과 이번 PR의 추가 5개 모듈 14건이 모두 통과했다. 라이브러리의 기존 ignored는 12건이며, focused 실행에서 제외된 다른 테스트를 실패나 ignored로 합산하지 않는다. 전쪽 Native/fresh WASM·쪽수·확대 판독·lint는 별도 완료 조건이며, 회귀 통과로 대신하지 않는다.
 
 ## 적용과 보정 계획
 
 [이 PR 구현 계획](pr_8607_review_impl.md) · [전체 순서·게이트](assets/planet6897_20261106/integration-plan.md).
+
+## 실제 주장 페이지 판독
+
+입력 `samples/issue8606/delegation_trimmed.hwpx`와 독립
+`pdf/issue8606_delegation_trimmed-2020.pdf`를 같은 1쪽 전체로 대조했다.
+R11 source `048f44da99d83e186f3a9e139563d20545c8bdb4`에서 쪽수는 양쪽 1쪽이며,
+Native/fresh WASM raw는 각각 **100.00% / 100.00%**다(96 DPI, 보정 전 2px 내용 실루엣).
+
+제목 `소속기관장에게 위임하는 사항`과 표 첫 행의 간격·본표의 자기 원점·마지막 7번
+항목과 아래 테두리를 직접 판독했다. 머리 표의 점유를 본표의 원점에 중복 가산해 표를
+다음 쪽으로 보내는 현상이 없고, 위임사무명·근거법령·수임기관의 병합 소속과 순서가
+Print와 같다. 작은 괄호·조문 번호와 마지막 오른쪽 칸도 같은 영역을 대조했다.
+
+[전쪽 Native TSV](assets/planet6897_20261106/pr8607/r11/delegation-trimmed/native.tsv) ·
+[전쪽 fresh WASM TSV](assets/planet6897_20261106/pr8607/r11/delegation-trimmed/wasm.tsv) ·
+[입력·PDF·producer SHA](assets/planet6897_20261106/pr8607/r11/delegation-trimmed/provenance.json).
+Native [review](assets/planet6897_20261106/pr8607/r11/delegation-trimmed/native-review-001.png)·
+[overlay](assets/planet6897_20261106/pr8607/r11/delegation-trimmed/native-overlay-001.png),
+fresh WASM [review](assets/planet6897_20261106/pr8607/r11/delegation-trimmed/wasm-review-001.png)·
+[overlay](assets/planet6897_20261106/pr8607/r11/delegation-trimmed/wasm-overlay-001.png).
+
+이 결과는 R11의 같은 주장 검증이다. 후속 제품 보정의 최종 head 검증을 대신하지 않는다.
