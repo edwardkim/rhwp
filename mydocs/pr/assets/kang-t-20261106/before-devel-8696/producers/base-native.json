@@ -1,0 +1,39 @@
+{
+  "source_sha": "45684640be5eddcf5972b063260250345b34d928",
+  "source_dir": "/home/edward/mygithub/rhwp",
+  "source_digest": "8eba7011d353a1f062a26c925be98220d16e41201d9da19ee3091d46ee654332",
+  "mode": "native",
+  "profile": "release-test",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--features",
+    "native-skia",
+    "--lib",
+    "--bin",
+    "rhwp",
+    "--message-format=json",
+    "--target-dir",
+    "/home/edward/mygithub/rhwp/target/pr-review"
+  ],
+  "started": "2026-11-06T12:39:30.165594+00:00",
+  "success": true,
+  "status": "passed",
+  "exit_code": 0,
+  "finished": "2026-11-06T12:44:45.786361+00:00",
+  "artifacts": {
+    "rhwp": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/base-producer/rhwp",
+      "bytes": 87814160,
+      "sha256": "66f9f0e621b5d29261d1d59e706bc32eb29a2ad3576be50f00f71e503b4affd0"
+    },
+    "librhwp.rlib": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/base-producer/librhwp.rlib",
+      "bytes": 158283802,
+      "sha256": "849d55f2fa5854c689a24fd44f5266158f5fc7d94ec595b22bb133d8b0ce795a"
+    }
+  }
+}

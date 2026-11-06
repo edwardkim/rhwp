@@ -1,0 +1,40 @@
+{
+  "source_sha": "5b1d43f3cf321478a2a8dfb1b26be48acfc579d6",
+  "source_dir": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-kang-t-picture-editing",
+  "source_digest": "8a646506a15243c7bbfc0824bdbcd829c0e56364a75bfeac3df898614b5ff637",
+  "mode": "native",
+  "profile": "release-test",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--features",
+    "native-skia",
+    "--lib",
+    "--bin",
+    "rhwp",
+    "--message-format=json",
+    "--target-dir",
+    "/home/edward/mygithub/rhwp/target/pr-review"
+  ],
+  "started": "2026-11-06T13:19:02.991013+00:00",
+  "success": true,
+  "status": "passed",
+  "optimized": true,
+  "exit_code": 0,
+  "finished": "2026-11-06T13:25:31.488787+00:00",
+  "artifacts": {
+    "rhwp": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/candidate-producer/rhwp",
+      "bytes": 87809336,
+      "sha256": "9587ffb93c365547809d71ab68ae70149452f68b3751d567edc323421d3f5138"
+    },
+    "librhwp.rlib": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/candidate-producer/librhwp.rlib",
+      "bytes": 158355030,
+      "sha256": "9c1298bac759ee549e06b02d6c2f41ff259aecf24028929e6a32439c914cdd13"
+    }
+  }
+}

@@ -26,10 +26,18 @@
 | `rhwp-studio/src/core/mutation-method-registry.ts` | `insertPictureInCell`과 `relocateFloatingPicture` 둘 다 MUTATING_METHODS에 등록 | 기존 그림/표 편집의 mutation route·캐시 무효화·Undo/Redo |
 | `src/wasm_api.rs` | 같은 위치에 추가한 두 WASM method를 각각 완전한 함수로 보존 | 각 Native API·parse_cell_path·인수·오류 전파와 기존 `insertPicture` |
 
-원 head 세 개와 실제 source commit은 재작성하지 않는다. 충돌한 임시 merge는 보정 승인 전에 abort해 앞선 clean 통합과 문서만 유지했다. 충돌 원문·해시와 두 API를 함께 유지하는 patch는 ignored `output/pr-review/kang-t-20261106/proposed-conflict-resolution.patch` 및 JSON에 준비했다. 아직 보정 patch를 적용하지 않았다.
+원 head 세 개와 실제 source commit은 재작성하지 않는다. 충돌한 임시 merge는 보정 승인 전에 abort해 앞선 clean 통합과 문서만 유지했다. 충돌 원문·해시와 두 API를 함께 유지하는 patch는 ignored `output/pr-review/kang-t-20261106/proposed-conflict-resolution.patch` 및 JSON에 보정 전 기록으로 준비했다. 아래 승인 기록의 통합 commit에서 적용을 완료했다.
 
 보정 뒤에는 문단 세로 정렬점·행 나눔의 줄/개체 점유·현재 devel의 겹침 방지/분할 그림을 함께 확인한다. 신규 API의 Storage 자원 한도·경로 오류·실패 원자성·컨트롤 스트림 좌표와 공개 WASM 선언도 대조한다. 실제 출력에서 추가 문제가 드러나면 이 세 원 PR의 동일 계약 안에서 원인을 보정하고 재검증한다. 필수 검증 범위를 축소하거나 기존 올바른 검사를 완화하지 않는다.
 
 기여자 제공 Mac Print 원본 전 13쪽의 Linux Native/fresh optimized WASM base/후보 비교와 직접 확대 판독, Windows Chrome CDP 19222의 실제 다른 쪽 drag·같은 쪽 이동·본문/칸 이동·Undo/Redo·저장 재열기, 집중/전체/Native/Studio/lint/편람 gate를 한 단위로 마친다. 원격 push·새 PR·공개 댓글·workflow 재실행·merge는 이번 로컬 보정 승인 범위와 구분한다.
 
 2026-11-06 작업지시자가 위 두 API 보존·메인테이너 보정과 필수 로컬 검증을 한 단위로 승인했다. 승인된 patch와 충돌 원문 해시를 대조해 적용했고 통합 commit `46af1d5d22e4fd2fd567a893bd36ce43f12d2ab6`에 기록했다. 세 원 head의 ancestry와 clean worktree를 확인했다. 이후 실측·테스트 결과는 각 원 PR review와 공통 검증 증적에 연결한다.
+
+## 최신 devel 보존 검증과 최종 실행 출처
+
+검토 중 #8696이 `a7feb849e11642b1438b7e9ee460ff4c8a7c946e`로 devel에 반영됐다. 원 기여 SHA를 보존하기 위해 충돌 없는 merge `226f0d487cc8d72305979ceb8ab46832017634d0`로 통합했다. 같은 Rust source digest의 Native·optimized WASM을 다시 생성했고 이후 Studio-only 포인터 보정은 `63236b9cc5`다.
+
+최신 후보의 전체 회귀 12,778건·Native 공식 3종·Rust lint 묶음·Studio 2,745건·타입·build·실제 CDP·원 13쪽 Native/WASM·정상 대조군 10쪽·SVG·편람 383쪽이 통과했다. 기준 devel도 별도 detached worktree에서 같은 profile/글꼴/입력으로 빌드해 비교를 완료했다. 정상 그림 배치 20쌍과 새 글꼴 사례 6쌍의 PNG가 동일하고 원 사례 52개 쪽/조건 대조에서 후퇴가 없다. 과거 후보의 결과를 새 기준 출력으로 표시하지 않으며, 입력 생성·폰트 프로그램·후보 source·실제 실행 근거는 [공통 증거](assets/kang-t-20261106/README.md)에 모은다.
+
+`insertPictureInCell`/`relocateFloatingPicture`를 함께 보존하는 최초 승인과 같은 계약의 경계 보정을 한 단위로 수행했다. 새 menu 구현·기존 private Windows 경로 검사나 오래된 커서 경고 수정을 별도 기능으로 확장하지 않았다. 원격 push·새 PR·공개 댓글·merge는 최종 로컬 결과가 구체화된 뒤 별도 승인을 확인한다.

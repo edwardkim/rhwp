@@ -1,0 +1,21 @@
+{
+  "new_base": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "state": "passed",
+  "started": "2026-11-06T14:37:07.223748+00:00",
+  "previous_source": "fd6f6d3a38a83a5e18313cf1d36918bbbd122f07",
+  "merge_tree": {
+    "exit": 0,
+    "output": "206aef8800c0d41de3e00b04da5acba89976c050\n"
+  },
+  "source": "226f0d487cc8d72305979ceb8ab46832017634d0",
+  "native": {
+    "exit": 0,
+    "completed": "2026-11-06T15:07:20.484058+00:00"
+  },
+  "wasm": {
+    "exit": 0,
+    "completed": "2026-11-06T15:19:12.360434+00:00"
+  },
+  "gates_exit": 0,
+  "finished": "2026-11-06T16:09:20.331573+00:00"
+}

@@ -1,0 +1,132 @@
+{
+  "label": "base-latest",
+  "browser": "Chrome/155.0.8059.40",
+  "ownTarget": "3E932E5C8197CA8EBF8B84A75AC81387",
+  "assertions": [],
+  "warnings": [],
+  "load": {
+    "version": "5.1.1.0",
+    "sectionCount": 1,
+    "pageCount": 4,
+    "encrypted": false,
+    "hwp3Variant": false,
+    "fallbackFont": "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+    "fontsUsed": [
+      "#중명조",
+      "HY견명조",
+      "HY그래픽",
+      "HY신명조",
+      "HY중고딕",
+      "Haansoft Batang",
+      "Haansoft Dotum",
+      "Segoe UI Symbol",
+      "굴림",
+      "나눔바른고딕",
+      "돋움",
+      "맑은 고딕",
+      "바탕",
+      "한양신명조",
+      "한양중고딕",
+      "한컴바탕",
+      "함초롬바탕"
+    ],
+    "fontSubstitutions": [
+      [
+        "나눔바른고딕",
+        "한컴바탕"
+      ],
+      [
+        "함초롬바탕",
+        "Segoe UI Symbol"
+      ],
+      [
+        "함초롬바탕",
+        "한컴바탕"
+      ]
+    ]
+  },
+  "before": [
+    {
+      "page": 3,
+      "type": "image",
+      "x": 400,
+      "y": 160,
+      "w": 66.7,
+      "h": 66.7,
+      "secIdx": 0,
+      "paraIdx": 4,
+      "controlIdx": 0,
+      "wrap": "square",
+      "plane": 2,
+      "zOrder": 1,
+      "stableIndex": [
+        0,
+        4,
+        0
+      ]
+    }
+  ],
+  "setup": {
+    "from": {
+      "x": 738.90625,
+      "y": 1054.2125
+    },
+    "to": {
+      "x": 755.56875,
+      "y": 495.125
+    },
+    "hit": {
+      "sectionIndex": 0,
+      "paragraphIndex": 0,
+      "charOffset": 13,
+      "parentParaIndex": 4,
+      "controlIndex": 1,
+      "cellIndex": 119,
+      "cellParaIndex": 0,
+      "cellPath": [
+        {
+          "controlIndex": 1,
+          "cellIndex": 119,
+          "cellParaIndex": 0
+        }
+      ],
+      "cursorRect": {
+        "pageIndex": 1,
+        "x": 393,
+        "y": 236.5,
+        "height": 16
+      }
+    },
+    "selected": {
+      "sec": 0,
+      "ppi": 4,
+      "ci": 0,
+      "type": "image"
+    }
+  },
+  "dragState": null,
+  "after": [
+    {
+      "page": 3,
+      "type": "image",
+      "x": 400,
+      "y": 160,
+      "w": 66.7,
+      "h": 66.7,
+      "secIdx": 0,
+      "paraIdx": 4,
+      "controlIdx": 0,
+      "wrap": "square",
+      "plane": 2,
+      "zOrder": 1,
+      "stableIndex": [
+        0,
+        4,
+        0
+      ]
+    }
+  ],
+  "sourceAnchorStillExists": true,
+  "reproduced": true,
+  "success": true
+}

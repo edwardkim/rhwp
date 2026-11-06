@@ -1,0 +1,37 @@
+{
+  "input": "samples/21868765_\ubcc4\ud45c2_\ubcf4\uac74\uc18c_\ubd84\uc7a5\uc0ac\ubb34.hwp",
+  "input_sha256": "ae694583e739ac48af97cb12ce573c2da9f4cb637721fdf84e5af4bf7ca17c13",
+  "method": "read original stored ParagraphShape attr1 bits20..21 and LineSeg without edit; not a rendered coordinate assertion",
+  "all_table_paragraph_lines": 446,
+  "alignment0_lines": 335,
+  "alignment2_lines": 111,
+  "alignment2_matching_half_text_height": 111,
+  "first_alignment2_locations": [
+    {
+      "body_para": 4,
+      "table_control": 0,
+      "cell": 5,
+      "cell_para": 0,
+      "text_height_hu": 1200,
+      "stored_baseline_distance_hu": 600
+    },
+    {
+      "body_para": 4,
+      "table_control": 0,
+      "cell": 8,
+      "cell_para": 0,
+      "text_height_hu": 1200,
+      "stored_baseline_distance_hu": 600
+    },
+    {
+      "body_para": 4,
+      "table_control": 0,
+      "cell": 11,
+      "cell_para": 0,
+      "text_height_hu": 1200,
+      "stored_baseline_distance_hu": 600
+    }
+  ],
+  "alignment1_or3_present": false,
+  "scope": "normal source independently corroborates alignment2; synthetic edit contract additionally exercises 0,1,2,3; not an independent corpus measurement"
+}

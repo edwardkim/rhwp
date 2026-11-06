@@ -1,0 +1,522 @@
+[
+  {
+    "key": "issue8555",
+    "fonts": "default",
+    "backend": "native",
+    "page": 1,
+    "base_raw": 96.17274,
+    "candidate_raw": 96.17274,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8555",
+    "fonts": "default",
+    "backend": "native",
+    "page": 2,
+    "base_raw": 98.13936,
+    "candidate_raw": 98.13936,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8555",
+    "fonts": "default",
+    "backend": "native",
+    "page": 3,
+    "base_raw": 96.97602,
+    "candidate_raw": 96.97602,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8555",
+    "fonts": "default",
+    "backend": "native",
+    "page": 4,
+    "base_raw": 97.73639,
+    "candidate_raw": 97.73639,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8556",
+    "fonts": "default",
+    "backend": "native",
+    "page": 1,
+    "base_raw": 94.39274,
+    "candidate_raw": 96.53824,
+    "delta_pp": 2.1455,
+    "png_identical": false
+  },
+  {
+    "key": "issue8556",
+    "fonts": "default",
+    "backend": "native",
+    "page": 2,
+    "base_raw": 65.31399,
+    "candidate_raw": 97.89354,
+    "delta_pp": 32.57955,
+    "png_identical": false
+  },
+  {
+    "key": "issue8556",
+    "fonts": "default",
+    "backend": "native",
+    "page": 3,
+    "base_raw": 69.80386,
+    "candidate_raw": 96.88663,
+    "delta_pp": 27.08277,
+    "png_identical": false
+  },
+  {
+    "key": "issue8556",
+    "fonts": "default",
+    "backend": "native",
+    "page": 4,
+    "base_raw": 70.84804,
+    "candidate_raw": 97.40282,
+    "delta_pp": 26.55478,
+    "png_identical": false
+  },
+  {
+    "key": "issue8556",
+    "fonts": "default",
+    "backend": "native",
+    "page": 5,
+    "base_raw": 70.50023,
+    "candidate_raw": 99.84792,
+    "delta_pp": 29.34769,
+    "png_identical": false
+  },
+  {
+    "key": "issue8557",
+    "fonts": "default",
+    "backend": "native",
+    "page": 1,
+    "base_raw": 96.24179,
+    "candidate_raw": 96.24179,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8557",
+    "fonts": "default",
+    "backend": "native",
+    "page": 2,
+    "base_raw": 98.13936,
+    "candidate_raw": 98.13936,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8557",
+    "fonts": "default",
+    "backend": "native",
+    "page": 3,
+    "base_raw": 97.0555,
+    "candidate_raw": 97.0555,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8557",
+    "fonts": "default",
+    "backend": "native",
+    "page": 4,
+    "base_raw": 97.73639,
+    "candidate_raw": 97.73639,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8555",
+    "fonts": "print-font",
+    "backend": "native",
+    "page": 1,
+    "base_raw": 99.13472,
+    "candidate_raw": 99.13472,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8555",
+    "fonts": "print-font",
+    "backend": "native",
+    "page": 2,
+    "base_raw": 99.86263,
+    "candidate_raw": 99.86263,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8555",
+    "fonts": "print-font",
+    "backend": "native",
+    "page": 3,
+    "base_raw": 99.64851,
+    "candidate_raw": 99.64851,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8555",
+    "fonts": "print-font",
+    "backend": "native",
+    "page": 4,
+    "base_raw": 99.46493,
+    "candidate_raw": 99.46493,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8556",
+    "fonts": "print-font",
+    "backend": "native",
+    "page": 1,
+    "base_raw": 96.5733,
+    "candidate_raw": 99.31803,
+    "delta_pp": 2.74473,
+    "png_identical": false
+  },
+  {
+    "key": "issue8556",
+    "fonts": "print-font",
+    "backend": "native",
+    "page": 2,
+    "base_raw": 66.84323,
+    "candidate_raw": 99.70284,
+    "delta_pp": 32.85961,
+    "png_identical": false
+  },
+  {
+    "key": "issue8556",
+    "fonts": "print-font",
+    "backend": "native",
+    "page": 3,
+    "base_raw": 70.27466,
+    "candidate_raw": 99.6236,
+    "delta_pp": 29.34894,
+    "png_identical": false
+  },
+  {
+    "key": "issue8556",
+    "fonts": "print-font",
+    "backend": "native",
+    "page": 4,
+    "base_raw": 71.53949,
+    "candidate_raw": 99.46282,
+    "delta_pp": 27.92333,
+    "png_identical": false
+  },
+  {
+    "key": "issue8556",
+    "fonts": "print-font",
+    "backend": "native",
+    "page": 5,
+    "base_raw": 70.10769,
+    "candidate_raw": 100.0,
+    "delta_pp": 29.89231,
+    "png_identical": false
+  },
+  {
+    "key": "issue8557",
+    "fonts": "print-font",
+    "backend": "native",
+    "page": 1,
+    "base_raw": 99.23183,
+    "candidate_raw": 99.23183,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8557",
+    "fonts": "print-font",
+    "backend": "native",
+    "page": 2,
+    "base_raw": 99.86263,
+    "candidate_raw": 99.86263,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8557",
+    "fonts": "print-font",
+    "backend": "native",
+    "page": 3,
+    "base_raw": 99.64563,
+    "candidate_raw": 99.64563,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8557",
+    "fonts": "print-font",
+    "backend": "native",
+    "page": 4,
+    "base_raw": 99.46493,
+    "candidate_raw": 99.46493,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8555",
+    "fonts": "default",
+    "backend": "wasm",
+    "page": 1,
+    "base_raw": 98.69132,
+    "candidate_raw": 98.69132,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8555",
+    "fonts": "default",
+    "backend": "wasm",
+    "page": 2,
+    "base_raw": 99.69223,
+    "candidate_raw": 99.69223,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8555",
+    "fonts": "default",
+    "backend": "wasm",
+    "page": 3,
+    "base_raw": 98.82676,
+    "candidate_raw": 98.82676,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8555",
+    "fonts": "default",
+    "backend": "wasm",
+    "page": 4,
+    "base_raw": 99.32886,
+    "candidate_raw": 99.32886,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8556",
+    "fonts": "default",
+    "backend": "wasm",
+    "page": 1,
+    "base_raw": 96.45269,
+    "candidate_raw": 98.85168,
+    "delta_pp": 2.39899,
+    "png_identical": false
+  },
+  {
+    "key": "issue8556",
+    "fonts": "default",
+    "backend": "wasm",
+    "page": 2,
+    "base_raw": 66.02719,
+    "candidate_raw": 99.61232,
+    "delta_pp": 33.58513,
+    "png_identical": false
+  },
+  {
+    "key": "issue8556",
+    "fonts": "default",
+    "backend": "wasm",
+    "page": 3,
+    "base_raw": 70.17677,
+    "candidate_raw": 98.78853,
+    "delta_pp": 28.61176,
+    "png_identical": false
+  },
+  {
+    "key": "issue8556",
+    "fonts": "default",
+    "backend": "wasm",
+    "page": 4,
+    "base_raw": 71.15598,
+    "candidate_raw": 99.22345,
+    "delta_pp": 28.06747,
+    "png_identical": false
+  },
+  {
+    "key": "issue8556",
+    "fonts": "default",
+    "backend": "wasm",
+    "page": 5,
+    "base_raw": 69.52157,
+    "candidate_raw": 100.0,
+    "delta_pp": 30.47843,
+    "png_identical": false
+  },
+  {
+    "key": "issue8557",
+    "fonts": "default",
+    "backend": "wasm",
+    "page": 1,
+    "base_raw": 98.68436,
+    "candidate_raw": 98.68436,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8557",
+    "fonts": "default",
+    "backend": "wasm",
+    "page": 2,
+    "base_raw": 99.69223,
+    "candidate_raw": 99.69223,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8557",
+    "fonts": "default",
+    "backend": "wasm",
+    "page": 3,
+    "base_raw": 98.87108,
+    "candidate_raw": 98.87108,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8557",
+    "fonts": "default",
+    "backend": "wasm",
+    "page": 4,
+    "base_raw": 99.32886,
+    "candidate_raw": 99.32886,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8555",
+    "fonts": "print-font",
+    "backend": "wasm",
+    "page": 1,
+    "base_raw": 99.09683,
+    "candidate_raw": 99.09683,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8555",
+    "fonts": "print-font",
+    "backend": "wasm",
+    "page": 2,
+    "base_raw": 99.86833,
+    "candidate_raw": 99.86833,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8555",
+    "fonts": "print-font",
+    "backend": "wasm",
+    "page": 3,
+    "base_raw": 99.63818,
+    "candidate_raw": 99.63818,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8555",
+    "fonts": "print-font",
+    "backend": "wasm",
+    "page": 4,
+    "base_raw": 99.46663,
+    "candidate_raw": 99.46663,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8556",
+    "fonts": "print-font",
+    "backend": "wasm",
+    "page": 1,
+    "base_raw": 96.58315,
+    "candidate_raw": 99.2609,
+    "delta_pp": 2.67775,
+    "png_identical": false
+  },
+  {
+    "key": "issue8556",
+    "fonts": "print-font",
+    "backend": "wasm",
+    "page": 2,
+    "base_raw": 66.45711,
+    "candidate_raw": 99.72369,
+    "delta_pp": 33.26658,
+    "png_identical": false
+  },
+  {
+    "key": "issue8556",
+    "fonts": "print-font",
+    "backend": "wasm",
+    "page": 3,
+    "base_raw": 69.98075,
+    "candidate_raw": 99.62866,
+    "delta_pp": 29.64791,
+    "png_identical": false
+  },
+  {
+    "key": "issue8556",
+    "fonts": "print-font",
+    "backend": "wasm",
+    "page": 4,
+    "base_raw": 71.07224,
+    "candidate_raw": 99.47152,
+    "delta_pp": 28.39928,
+    "png_identical": false
+  },
+  {
+    "key": "issue8556",
+    "fonts": "print-font",
+    "backend": "wasm",
+    "page": 5,
+    "base_raw": 69.97373,
+    "candidate_raw": 100.0,
+    "delta_pp": 30.02627,
+    "png_identical": false
+  },
+  {
+    "key": "issue8557",
+    "fonts": "print-font",
+    "backend": "wasm",
+    "page": 1,
+    "base_raw": 99.19892,
+    "candidate_raw": 99.19892,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8557",
+    "fonts": "print-font",
+    "backend": "wasm",
+    "page": 2,
+    "base_raw": 99.86833,
+    "candidate_raw": 99.86833,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8557",
+    "fonts": "print-font",
+    "backend": "wasm",
+    "page": 3,
+    "base_raw": 99.64128,
+    "candidate_raw": 99.64128,
+    "delta_pp": 0.0,
+    "png_identical": true
+  },
+  {
+    "key": "issue8557",
+    "fonts": "print-font",
+    "backend": "wasm",
+    "page": 4,
+    "base_raw": 99.46663,
+    "candidate_raw": 99.46663,
+    "delta_pp": 0.0,
+    "png_identical": true
+  }
+]

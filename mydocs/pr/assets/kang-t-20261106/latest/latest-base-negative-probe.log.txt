@@ -1,0 +1,16 @@
+
+running 1 test
+
+thread 'edited_cell_rows_publish_the_vertical_alignment_point' (17860) panicked at /home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/base-latest-producer/probe.rs:72:9:
+assertion `left == right` failed: 세로 정렬 1: 기준선은 정렬점이다
+  left: 850
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test edited_cell_rows_publish_the_vertical_alignment_point ... FAILED
+
+failures:
+
+failures:
+    edited_cell_rows_publish_the_vertical_alignment_point
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

@@ -1,0 +1,12 @@
+use rhwp::{DocumentCore,model::control::Control};
+fn main(){
+ let mut core=DocumentCore::from_bytes(&std::fs::read("/home/edward/mygithub/rhwp/samples/21868765_별표2_보건소_분장사무.hwp").unwrap()).unwrap();
+ let image=std::fs::read("/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/drag-probe.png").unwrap();
+ core.insert_picture_native(0,4,0,&[],&image,5000,5000,192,192,"png","Kang-T drag probe",Some(30000),Some(12000)).unwrap();
+ let para=&mut core.document_mut().sections[0].paragraphs[4];
+ let pic=para.controls.iter().position(|c|matches!(c,Control::Picture(_))).unwrap();
+ let table=para.controls.iter().position(|c|matches!(c,Control::Table(_))).unwrap();
+ if pic>table{para.controls.swap(pic,table);if para.ctrl_data_records.len()>pic.max(table){para.ctrl_data_records.swap(pic,table);}}
+ std::fs::write("/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/drag-before-table.hwp",core.export_hwp_native().unwrap()).unwrap();
+ println!("saved source body paragraph 4: picture before table");
+}

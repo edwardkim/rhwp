@@ -1,0 +1,59 @@
+{
+  "source_sha": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "source_dir": "/home/edward/mygithub/rhwp-worktrees/review-base-8696-kang-t",
+  "source_digest": "737379b955f4bb22eb47a13878a32432992fcbc0d86356d62ea1d370d994ca01",
+  "mode": "wasm",
+  "profile": "release",
+  "command": [
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--out-dir",
+    "pkg"
+  ],
+  "started": "2026-11-06T16:16:13.862336+00:00",
+  "success": true,
+  "status": "passed",
+  "environment": {
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_TARGET_DIR": "/home/edward/mygithub/rhwp/target/pr-review",
+    "CARGO_PROFILE_RELEASE_CODEGEN_UNITS": "16",
+    "BINARYEN_CORES": "16",
+    "RUSTFLAGS": null
+  },
+  "optimized": true,
+  "reuse_compiled_source_digest": "737379b955f4bb22eb47a13878a32432992fcbc0d86356d62ea1d370d994ca01",
+  "exit_code": 0,
+  "finished": "2026-11-06T16:29:27.706929+00:00",
+  "artifacts": {
+    "rhwp.js": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/base-latest-producer/pkg/rhwp.js",
+      "bytes": 559617,
+      "sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+      "public_sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+    },
+    "rhwp_bg.wasm": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/base-latest-producer/pkg/rhwp_bg.wasm",
+      "bytes": 28321391,
+      "sha256": "24e70f346d8287466c213b5aebc4b2828d49e1e321ed2fc9d836802e26f1679e",
+      "public_sha256": "24e70f346d8287466c213b5aebc4b2828d49e1e321ed2fc9d836802e26f1679e"
+    },
+    "rhwp.d.ts": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/base-latest-producer/pkg/rhwp.d.ts",
+      "bytes": 224571,
+      "sha256": "f8145d8a8f11267ea89fbda54ecaee0411f3a19783b189753d890689bc8e2be5",
+      "public_sha256": "3b13b78ffee6847681d4d9a8ba4acd5359d9c22dbec1eafdcb4c8541f2a5340c"
+    },
+    "rhwp_bg.wasm.d.ts": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/base-latest-producer/pkg/rhwp_bg.wasm.d.ts",
+      "bytes": 78001,
+      "sha256": "85e9c9a1b14165d47bacce273e62e19a04737aede9e8eeff3eeffc6c2b482c83",
+      "public_sha256": "fb02e9d0706c033df6dbce1699d2ae065f9f50bbeff128d966be3ebef9a294c5"
+    },
+    "package.json": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/base-latest-producer/pkg/package.json",
+      "bytes": 429,
+      "sha256": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19"
+    }
+  }
+}
