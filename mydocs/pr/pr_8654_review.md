@@ -46,3 +46,34 @@ PR #8645와 공유하는 field-page-box·tall-prefix 입력도 같은 R11 전쪽
 재사용한다. 각각 Native/WASM 최저는 99.98/100.00%, 100.00/100.00%이며 1쪽씩이다.
 [두 입력의 대응 페이지 PNG·TSV](pr_8645_review.md#실제-선행-줄쪽-기준-상자의-주장-검증)를
 연결한다. 이 결과만으로 별도 stamp·노동 보고서 경계의 완료를 선언하지 않는다.
+
+## 결재 표와 rowspan 문서의 개별 주장 페이지
+
+R11 source `048f44da99d83e186f3a9e139563d20545c8bdb4`에서 같은 원본과 독립 Print를
+96 DPI·보정 전2px 내용 실루엣으로 전쪽 대조했다. 아래 각 원본은 두 경로 쪽수가
+일치하며 모든 실제 주장 페이지의 review와 overlay를 직접 판독했다.
+
+| 입력 | 전체 쪽수 | Native 전쪽 최저 | fresh WASM 전쪽 최저 | 판독 쪽 |
+| --- | ---: | ---: | ---: | --- |
+| stamp-a | 1 | 100.00% | 100.00% | 1 |
+| stamp-b | 1 | 100.00% | 100.00% | 1 |
+| labor-report | 53 | 99.95% | 99.98% | 12, 13 |
+
+stamp-a·b1쪽은 왼쪽 시행/수신 표와 오른쪽 결재 표가 나란히 다른 원점에 남고,
+결재의 두 줄 이름·날짜가 같은 셀 프레임 안에 배치된다. 문서 제목과 긴 사업명,
+본문 항목·날짜·총무부장 발신명이 그 뒤 같은 쪽에 보존된다. labor-report12쪽은
+사업장 규모별 적용·배제 표와 각주10·11, 13쪽은 4대 사회보험 표의 병합된 제도 칸,
+비고의 화살표·적용확대 표기와 뒤 본문을 확인했다. rowspan의 내용이 앞 행과 겹치거나
+뒤 문단을 밀지 않으며 표의 시작·종료 괘선과 후속 내용 소속을 직접 대조했다.
+
+stamp-a: [Native TSV](assets/planet6897_20261106/pr8654/r11/stamp-a/native.tsv) · [fresh WASM TSV](assets/planet6897_20261106/pr8654/r11/stamp-a/wasm.tsv) · [입력·Print·producer 해시](assets/planet6897_20261106/pr8654/r11/stamp-a/provenance.json).
+1쪽 Native [review](assets/planet6897_20261106/pr8654/r11/stamp-a/native-review-001.png) · [overlay](assets/planet6897_20261106/pr8654/r11/stamp-a/native-overlay-001.png); fresh WASM [review](assets/planet6897_20261106/pr8654/r11/stamp-a/wasm-review-001.png) · [overlay](assets/planet6897_20261106/pr8654/r11/stamp-a/wasm-overlay-001.png).
+
+stamp-b: [Native TSV](assets/planet6897_20261106/pr8654/r11/stamp-b/native.tsv) · [fresh WASM TSV](assets/planet6897_20261106/pr8654/r11/stamp-b/wasm.tsv) · [입력·Print·producer 해시](assets/planet6897_20261106/pr8654/r11/stamp-b/provenance.json).
+1쪽 Native [review](assets/planet6897_20261106/pr8654/r11/stamp-b/native-review-001.png) · [overlay](assets/planet6897_20261106/pr8654/r11/stamp-b/native-overlay-001.png); fresh WASM [review](assets/planet6897_20261106/pr8654/r11/stamp-b/wasm-review-001.png) · [overlay](assets/planet6897_20261106/pr8654/r11/stamp-b/wasm-overlay-001.png).
+
+labor-report: [Native TSV](assets/planet6897_20261106/pr8654/r11/labor-report/native.tsv) · [fresh WASM TSV](assets/planet6897_20261106/pr8654/r11/labor-report/wasm.tsv) · [입력·Print·producer 해시](assets/planet6897_20261106/pr8654/r11/labor-report/provenance.json).
+12쪽 Native [review](assets/planet6897_20261106/pr8654/r11/labor-report/native-review-012.png) · [overlay](assets/planet6897_20261106/pr8654/r11/labor-report/native-overlay-012.png); fresh WASM [review](assets/planet6897_20261106/pr8654/r11/labor-report/wasm-review-012.png) · [overlay](assets/planet6897_20261106/pr8654/r11/labor-report/wasm-overlay-012.png).
+13쪽 Native [review](assets/planet6897_20261106/pr8654/r11/labor-report/native-review-013.png) · [overlay](assets/planet6897_20261106/pr8654/r11/labor-report/native-overlay-013.png); fresh WASM [review](assets/planet6897_20261106/pr8654/r11/labor-report/wasm-review-013.png) · [overlay](assets/planet6897_20261106/pr8654/r11/labor-report/wasm-overlay-013.png).
+
+이는 R11 완료 증거다. 후속 제품 보정의 최종 head·필수 회귀·lint·브라우저 검증 전이며 최종 승인으로 판정하지 않는다.
