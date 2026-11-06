@@ -623,10 +623,8 @@ fn atomic_ime_worker_rejects_retained_input_capacity_before_execution() {
             preedit: None,
         },
     };
-    assert!(matches!(
-        runtime.try_submit(command),
-        Err(NativeRuntimeError::ByteCapacity)
-    ));
+    let rejected = runtime.try_submit(command).unwrap_err();
+    assert_eq!(rejected.error, NativeRuntimeError::ByteCapacity);
     assert!(runtime
         .try_submit(NativeRuntimeCommand::New { replace: None })
         .is_ok());
