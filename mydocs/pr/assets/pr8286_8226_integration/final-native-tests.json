@@ -1,0 +1,90 @@
+{
+  "head": "170dd2412206b48cfbf925c5f5a67dcf93437e81",
+  "stages": [
+    {
+      "name": "prepare",
+      "argv": [
+        "sandbox-exec",
+        "-f",
+        "/Users/melee/Documents/Codex/2026-11-07/task/font-isolation-final-experiment.sb",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "lib",
+      "argv": [
+        "sandbox-exec",
+        "-f",
+        "/Users/melee/Documents/Codex/2026-11-07/task/font-isolation-final-experiment.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "2"
+      ],
+      "exit": 101
+    },
+    {
+      "name": "placeholder",
+      "argv": [
+        "sandbox-exec",
+        "-f",
+        "/Users/melee/Documents/Codex/2026-11-07/task/font-isolation-final-experiment.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "pdf",
+      "argv": [
+        "sandbox-exec",
+        "-f",
+        "/Users/melee/Documents/Codex/2026-11-07/task/font-isolation-final-experiment.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0
+    }
+  ],
+  "libFullRerun": {
+    "exit": 0,
+    "passed": 3857,
+    "ignored": 12,
+    "command": [
+      "env",
+      "-u",
+      "RHWP_FONT_PATH",
+      "TMPDIR=/Volumes/T7/DeveloperArtifacts/rhwp/workspaces/rhwp-container-bands-ea953a4b/output/pr-review/pr8286-resume/runtime-fixture-tmp",
+      "sandbox-exec",
+      "-f",
+      "font-isolation-final-v4.sb",
+      "/Volumes/T7/DeveloperArtifacts/rhwp/target/pr8286-independent/release-test/deps/rhwp-62b0e62c29c933dc",
+      "--test-threads",
+      "2"
+    ],
+    "cause": "Sandbox initially blocked exact test-generated Noto synthetic style fixture; allowed only that path and repeated full compiled Native lib suite",
+    "log": "../rhwp-container-bands/output/final-native-tests/lib-v4.log"
+  }
+}
