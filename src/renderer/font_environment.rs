@@ -6,6 +6,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::HwpError;
 
+/// 문서가 선언한 글꼴 이름 수는 레코드 번호로 제한되지 않는다. 공개 서식에서 267개까지 관측됐다.
+/// 입력 환경 JSON의 크기 상한과 별도로, 프로그램 조회 상한과 같은 값을 쓴다.
+const MAX_FONT_SUBSTITUTIONS: usize = 1024;
+
 /// Explicit final face substitutions shared by layout and paint.
 ///
 /// Global keys are exact document font names. Conflicting document declarations
@@ -536,7 +540,7 @@ impl FontEnvironment {
             });
         }
         if (substitutions.is_empty() && document_substitutions.is_empty())
-            || substitutions.len() > 256
+            || substitutions.len() > MAX_FONT_SUBSTITUTIONS
             || document_substitutions.len() > 256
         {
             return Ok(None);
@@ -773,7 +777,7 @@ impl FontEnvironment {
             || self.selection_rules.iter().any(|(source, rule_id)| {
                 self.canonical_selection_rule(source) != Some(rule_id.as_str())
             })
-            || self.substitutions.len() > 256
+            || self.substitutions.len() > MAX_FONT_SUBSTITUTIONS
             || self.selected_programs.len() > 256
             || self.selected_programs.iter().any(|(source, program)| {
                 !Self::valid_name(source)
