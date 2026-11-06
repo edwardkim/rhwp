@@ -40,6 +40,9 @@ char *rhwp_gl_presenter_request(uint64_t presenter,
 ```
 
 loader는 생성 중에만 호출한다. 그 결과 GL function pointer는 owner의 전체 수명 동안
+유효해야 하며 loader에는 `gl`로 시작하는 심볼만 전달한다. Skia의 optional EGL probe는
+전달하지 않는다. GL resolver가 외부 API 이름에 반환하는 dispatch stub을 EGL 함수로
+호출하는 일을 막는다. function pointer는
 해당 context에 유효해야 한다. `is_current`는 생성·render·정상 release 전에 호출하며
 정확히 1일 때만 통과한다. callback과 `user_data`는 release/abandon 또는 owner thread
 종료까지 살아 있어야 하고 callback은 ABI에 재진입하거나 unwind하면 안 된다.
@@ -99,6 +102,12 @@ GPU target에는 이 ABI로 접근할 수 있는 CPU stride/view가 없다.
 4. borrowed host FBO에 `Src` copy로 전체 scratch를 그린 뒤 flush/submit한다.
 
 늦은 image/SVG/font resource 오류는 scratch만 바꾸므로 이전 host pixels를 보존한다.
+encoded image는 lazy image 생성만으로 승인하지 않고 Skia codec의 완전한 decode 성공을
+검사한다. 형식 지원은 실제 빌드에 포함된 Skia decoder를 따른다. source는 8192×8192의
+각 변과 32M pixels, encoded bytes는 256 MiB 이내여야 하며 RGBA 검증 버퍼와 codec의
+decode memory 옵션에는 각각 128 MiB 상한을 적용한다. 색조 처리 등으로 RGBA로 확장하기
+전에도 source pixels를 검사한다. 이 과정은 개별 이미지 decode이며 target 전체를 CPU로
+읽어오는 작업이 아니다. 일반 CPU replay의 best-effort 정책은 별도로 유지한다.
 source가 달라지면 C ABI는 `staleFrame`, `retryable: true`를 반환한다. Qt는 최신
 worker/configure 결과를 기다릴 수 있다. strict replay 오류는 `documentError`, target/
 입력 한도 오류는 `invalidArgument`/`limitExceeded`, GL 생성·할당·flush 실패는

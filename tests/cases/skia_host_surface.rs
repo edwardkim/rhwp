@@ -540,22 +540,33 @@ fn host_surface_tiff_tone_conversion_keeps_the_source_pixel_limit() {
 }
 
 #[test]
-fn host_surface_strict_decode_preserves_skia_webp_support_and_valid_cache_hits() {
-    // Lossless 2x2 opaque-red WebP. The image crate's WebP feature is disabled;
-    // the strict resource policy must retain the formats supported by Skia.
+fn host_surface_strict_decode_preserves_available_skia_formats_and_valid_cache_hits() {
+    let check = |encoded: &[u8], expected: [u8; 4]| {
+        let valid = tree(vec![PaintOp::image(
+            BoundingBox::new(2.0, 2.0, 4.0, 4.0),
+            ImageNode::new(73, Some(encoded.to_vec())),
+            None,
+        )]);
+        let renderer = SkiaLayerRenderer::new();
+        for _ in 0..2 {
+            let mut target = surface();
+            renderer
+                .render_to_surface_strict(&mut target, &valid, Default::default())
+                .unwrap();
+            assert_eq!(pixel(&mut target, 3, 3), expected);
+        }
+    };
+    // WBMP is supported by the configured Skia build, while the image crate
+    // has no WBMP decoder. Strict replay must use Skia's actual format support.
+    let wbmp = [0_u8, 0, 1, 1, 128];
+    assert!(skia_safe::Image::from_encoded(skia_safe::Data::new_copy(&wbmp)).is_some());
+    check(&wbmp, [255, 255, 255, 255]);
+
+    // WebP decoding is an optional Skia feature. Preserve it when the caller
+    // enables that feature instead of assuming the default binary includes it.
     let webp = b"RIFF\x1c\0\0\0WEBPVP8L\x0f\0\0\0\x2f\x01\x40\0\0\x07\x10\xfd\x8f\xfe\x07\x22\xa2\xff\x01\0";
-    let valid = tree(vec![PaintOp::image(
-        BoundingBox::new(2.0, 2.0, 4.0, 4.0),
-        ImageNode::new(73, Some(webp.to_vec())),
-        None,
-    )]);
-    let renderer = SkiaLayerRenderer::new();
-    for _ in 0..2 {
-        let mut target = surface();
-        renderer
-            .render_to_surface_strict(&mut target, &valid, Default::default())
-            .unwrap();
-        assert_eq!(pixel(&mut target, 3, 3), [255, 0, 0, 255]);
+    if skia_safe::Image::from_encoded(skia_safe::Data::new_copy(webp)).is_some() {
+        check(webp, [255, 0, 0, 255]);
     }
 }
 
