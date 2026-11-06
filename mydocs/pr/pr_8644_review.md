@@ -24,10 +24,32 @@ fix(composer): 다음 문단 저장 vpos 가 간격 전량을 닫으면 TAC 표 
 
 - [tests/cases/issue_8544_tac_boundary_full_gap.rs](../../tests/cases/issue_8544_tac_boundary_full_gap.rs)
 
-통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 검증 뒤 제품·테스트 코드는 변경하지 않았다. 검증 원본·Print 기준의 추가와 문서 기록을 구분한다.
+통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 이는 최초 통합 source의 결과다. 이후 메인터너 보정으로 제품·테스트 코드가 바뀌었으므로 보정 후 head의 회귀 통과로 재사용하지 않는다. 새 보정본의 검증 결과와 원본·Print 추가를 구분한다.
 
 Native Skia 공식 3종(라이브러리 4,040건 및 통합 24건)과 이번 PR의 추가 5개 모듈 14건이 모두 통과했다. 라이브러리의 기존 ignored는 12건이며, focused 실행에서 제외된 다른 테스트를 실패나 ignored로 합산하지 않는다. 전쪽 Native/fresh WASM·쪽수·확대 판독·lint는 별도 완료 조건이며, 회귀 통과로 대신하지 않는다.
 
 ## 적용과 보정 계획
 
 [이 PR 구현 계획](pr_8644_review_impl.md) · [전체 순서·게이트](assets/planet6897_20261106/integration-plan.md).
+
+## 실제 주장 페이지와 뒤 문단 간격
+
+R11 source `048f44da99d83e186f3a9e139563d20545c8bdb4`에서 같은 원본·독립 Print의
+전체 2쪽을 비교했다. 양쪽 출력은 2쪽이고 Native/fresh WASM raw는 전쪽 **100.00%**다
+(96 DPI, 보정 전 2px 내용 실루엣). 입력·PDF·producer의 정확한 SHA는
+[provenance](assets/planet6897_20261106/pr8644/r11/leading-shape/provenance.json)에 기록했다.
+
+주장에 해당하는 2쪽에서 선행 빈 도형, A0~A2 표, B0~B2 표, `B 뒤 첫 줄`, `끝`의
+순서와 표 바닥·뒤 문단 사이 간격을 Native/fresh WASM에서 같은 Print로 직접 판독했다.
+표 뒤 간격이 줄어 뒤 문단이 올라오는 현상이 없고, 마지막 줄도 누락·중복되지 않는다.
+다른 문서의 표지나 높은 점수의 페이지를 주장 증거로 대체하지 않았다.
+
+[Native 전쪽 TSV](assets/planet6897_20261106/pr8644/r11/leading-shape/native.tsv) ·
+[fresh WASM 전쪽 TSV](assets/planet6897_20261106/pr8644/r11/leading-shape/wasm.tsv).
+Native [review 2쪽](assets/planet6897_20261106/pr8644/r11/leading-shape/native-review-002.png)·
+[overlay 2쪽](assets/planet6897_20261106/pr8644/r11/leading-shape/native-overlay-002.png),
+fresh WASM [review 2쪽](assets/planet6897_20261106/pr8644/r11/leading-shape/wasm-review-002.png)·
+[overlay 2쪽](assets/planet6897_20261106/pr8644/r11/leading-shape/wasm-overlay-002.png).
+
+이 절은 R11의 실제 주장 검증이다. 후속 제품 보정의 최종 head와 필수 회귀·gate는
+완료 후 따로 판정한다.
