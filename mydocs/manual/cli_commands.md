@@ -306,6 +306,9 @@ HWP/HWPX → SVG.
 ### `export-png <파일> [옵션]` *(native-skia feature 필요)*
 HWP/HWPX → PNG(Skia raster, AI 파이프라인/VLM 연동). 상세: [export_png_command.md](export_png_command.md)
 - `-o`, `-p`, `--font-path` (공통/폰트). `-p`는 0부터 시작하며 여러 번 지정할 수 있다.
+  - Native는 `--font-path`·`RHWP_FONT_PATH`의 `ttf`·`otf`·`ttc`를 경로 순서대로 최대 256개,
+    파일 하나 32 MiB까지 싣는다. 파일은 복사하지 않고 매핑해 공유하므로 전체 바이트 합계 제한은
+    없다(#8597). 한도를 넘어 싣지 않은 파일은 stderr에 `WARN: Native 글꼴 ...`과 이유를 남긴다.
 - `--json` — 전체 쪽수와 실제 PNG 경로·bytes·출력 backend/profile의 JSON manifest만 stdout에 출력.
 - `--metadata-only` — PNG를 만들지 않고 전체 쪽수 JSON만 출력.
 - `--render-tree-output <폴더>` — 같은 문서·글꼴 환경의 선택 쪽 render tree를 함께 저장.
