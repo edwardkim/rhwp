@@ -3994,6 +3994,34 @@ pub(super) fn baseline_distance_hwp(line_height_hwp: i32) -> i32 {
     (line_height_hwp as f64 * 0.85).round() as i32
 }
 
+/// 재조판한 줄의 `baseline_distance` 를 문단 세로 정렬점(HWP 5.0 표 44)으로 발행한다.
+///
+/// 한컴은 세로 정렬이 글꼴 기준(0)이 아니면 기준선 거리 자리에 그 정렬점을 저장한다 —
+/// 줄의 글자 높이에서 위 0, 가운데 절반(내림), 아래 전체. 공개 표본 1,205개의 저장 줄
+/// 55,800여 개가 개체 유무와 관계없이 이 규칙을 따른다(예외는 표본 한 개의 빈 문단뿐).
+/// 줄 구성은 글꼴 기준선으로 계산하므로 저장 직전 이 자리에서 바꾼다. 렌더러는 저장 줄과
+/// 같은 값을 받으므로, 편집한 문단과 편집하지 않은 문단이 같은 경로로 그려진다.
+pub(super) fn publish_vertical_alignment_baselines(
+    para: &mut Paragraph,
+    styles: &ResolvedStyleSet,
+) {
+    let alignment = styles
+        .para_styles
+        .get(para.para_shape_id as usize)
+        .map_or(0, |style| style.vertical_alignment);
+    if alignment == 0 {
+        return;
+    }
+    // 기준선만 바꾼다. 줄 경계와 함께 발행된 공백 규칙·출처 표시는 그대로 둔다.
+    for row in &mut para.line_segs {
+        row.baseline_distance = match alignment {
+            1 => 0,
+            2 => row.text_height / 2,
+            _ => row.text_height,
+        };
+    }
+}
+
 /// 셀 폭 변경 후 확정한 원시 줄 소유에서 수식의 물리 메트릭을 발행한다.
 /// 공백 scalar의 줄 끝 제외와 원시 수식 슬롯의 줄 소유는 다르다. paint와 같은
 /// 슬롯 질의를 사용하며, affectLineSpacing은 개체 높이를 퍼센트 간격의 기준으로 삼는다.
