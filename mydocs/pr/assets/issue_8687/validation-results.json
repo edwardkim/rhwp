@@ -1,0 +1,95 @@
+{
+  "validatedSource": "e4aefbcce7bf3db783ec39f3223e79b53082fbc1",
+  "base": "08963f6825956984d38b0d9392f44777db7107ab",
+  "targetDir": "/home/tsjang/rhwp/target/pr-review",
+  "fontEnvironment": "minimal namespace: five open-source fonts; declared licensed fixtures available; system/user/opt fonts hidden",
+  "nextest": {
+    "passed": 12758,
+    "failed": 0,
+    "slow": 12,
+    "defaultSkipped": 45,
+    "seconds": 980.817
+  },
+  "focusedDefault": {
+    "passed": 32,
+    "seconds": 0.86
+  },
+  "nativeFocused": {
+    "issue8687": 6,
+    "related": 29,
+    "passed": 35
+  },
+  "nativeSkia": {
+    "libPassed": 4040,
+    "libIgnored": 12,
+    "placeholderPassed": 2,
+    "directPdfPassed": 22
+  },
+  "optimizedWasm": {
+    "exitCode": 0,
+    "standardPipeline": "scripts/wasm-pack-locked.sh --target web",
+    "optimization": "wasm-opt included",
+    "jsSha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+    "wasmSha256": "15f62bf019f0f1ae845dd2f9e58893246c0a2127e8f65fa3094286351050e455",
+    "rootAndStudioPublicHashesMatch": true
+  },
+  "steps": [
+    {
+      "step": "focused",
+      "exitCode": 0,
+      "secondsIncludingBuild": 2874
+    },
+    {
+      "step": "full-nextest",
+      "exitCode": 0,
+      "secondsIncludingBuild": 992
+    },
+    {
+      "step": "native-skia-lib",
+      "exitCode": 0,
+      "secondsIncludingBuild": 931
+    },
+    {
+      "step": "native-skia-placeholder",
+      "exitCode": 0,
+      "secondsIncludingBuild": 955
+    },
+    {
+      "step": "native-skia-direct-pdf",
+      "exitCode": 0,
+      "secondsIncludingBuild": 66
+    },
+    {
+      "step": "fmt",
+      "exitCode": 0,
+      "secondsIncludingBuild": 65
+    },
+    {
+      "step": "clippy-native",
+      "exitCode": 0,
+      "secondsIncludingBuild": 410
+    },
+    {
+      "step": "clippy-wasm",
+      "exitCode": 0,
+      "secondsIncludingBuild": 338
+    },
+    {
+      "step": "workspace-build",
+      "exitCode": 0,
+      "secondsIncludingBuild": 672
+    },
+    {
+      "step": "clippy-all-targets",
+      "exitCode": 0,
+      "secondsIncludingBuild": 467
+    },
+    {
+      "step": "manifest",
+      "exitCode": 0,
+      "secondsIncludingBuild": 3
+    }
+  ],
+  "rebasedSource": "87c073fa7094603f6915c43851da7ed66697565b",
+  "rebaseReuse": "rebase-reuse.json"
+}

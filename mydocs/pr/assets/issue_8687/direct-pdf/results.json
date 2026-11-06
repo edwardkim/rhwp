@@ -1,0 +1,181 @@
+{
+  "productSourceSha": "e4aefbcce7bf3db783ec39f3223e79b53082fbc1",
+  "backend": "direct PDF rasterized by PDFium",
+  "profile": "print",
+  "dpi": 96,
+  "layoutGeneration": "2024",
+  "rows": [
+    {
+      "label": "used",
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "output/pr-review/issue8687/direct-pdf/used/rhwp-001.png",
+        "pdf_png": "output/pr-review/issue8687/fixed-native-review/used/pdf_png/pdf-001.png",
+        "overlay_png": "mydocs/pr/assets/issue_8687/direct-pdf/used/overlay_001.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 3203,
+        "diff_ratio": 0.00359537,
+        "pixel_match_percent": 99.64046,
+        "ink_union_pixels": 5250,
+        "ink_diff_pixels": 3203,
+        "ink_diff_ratio": 0.61009524,
+        "ink_match_percent": 38.99048,
+        "visual_accuracy_proxy_percent": 38.99048,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 91.67619,
+        "silhouette_raw_unmatched_pixels": 437,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 5250,
+        "tolerant_content_match_percent": 91.67619,
+        "mean_abs_channel_delta": 0.345,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          97,
+          0,
+          642,
+          926
+        ]
+      },
+      "export": {
+        "backend": "direct",
+        "bytes": 8945,
+        "fontEnvironment": {
+          "id": "native-webfont-2e604e5d903d7ad927272e83",
+          "preserveSourceMetrics": true,
+          "substitutions": {
+            "나눔스퀘어 Bold": "NotoSansKR-Regular"
+          }
+        },
+        "format": "pdf",
+        "nativeFontSupply": {
+          "genericFallbacks": [
+            "나눔스퀘어 Bold"
+          ],
+          "glyphFallbacks": [],
+          "mappings": {
+            "나눔스퀘어 Bold": "NotoSansKR-Regular"
+          },
+          "paths": [],
+          "resources": [],
+          "unavailable": [
+            "나눔스퀘어 Bold"
+          ],
+          "webFontStyles": {},
+          "webFonts": {}
+        },
+        "output": "output/pr-review/issue8687/used-direct.pdf",
+        "pageCount": 1,
+        "renderedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "pdf/issue8687/font_list_name_used_fallback.hwpx",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "nativeFontSupply",
+          "fontEnvironment"
+        ]
+      },
+      "fontInventory": "name                                 type              encoding         emb sub uni object ID\n------------------------------------ ----------------- ---------------- --- --- --- ---------\nAAAAAA+HCRDotum                      CID TrueType      Identity-H       yes yes yes      4  0\n",
+      "contentEachExactlyOnce": true,
+      "pdfSha256": "cf0f9b42b67eacdfc963110e0bbf421e388a90417131900fe5a19950b610c6b2"
+    },
+    {
+      "label": "control",
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "output/pr-review/issue8687/direct-pdf/control/rhwp-001.png",
+        "pdf_png": "output/pr-review/issue8687/fixed-native-review/control/pdf_png/pdf-001.png",
+        "overlay_png": "mydocs/pr/assets/issue_8687/direct-pdf/control/overlay_001.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 3064,
+        "diff_ratio": 0.00343934,
+        "pixel_match_percent": 99.65607,
+        "ink_union_pixels": 5230,
+        "ink_diff_pixels": 3064,
+        "ink_diff_ratio": 0.58585086,
+        "ink_match_percent": 41.41491,
+        "visual_accuracy_proxy_percent": 41.41491,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 91.6826,
+        "silhouette_raw_unmatched_pixels": 435,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 5230,
+        "tolerant_content_match_percent": 91.6826,
+        "mean_abs_channel_delta": 0.324,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          97,
+          0,
+          642,
+          926
+        ]
+      },
+      "export": {
+        "backend": "direct",
+        "bytes": 6631,
+        "fontEnvironment": {
+          "id": "native-webfont-26468bd0824b0b5c0b8b88b2",
+          "preserveSourceMetrics": true,
+          "substitutions": {
+            "나눔스퀘어 Bold": "NotoSansKR-Regular",
+            "나눔스퀘어 ExtraBold": "NotoSansKR-Regular"
+          }
+        },
+        "format": "pdf",
+        "nativeFontSupply": {
+          "genericFallbacks": [
+            "나눔스퀘어 Bold",
+            "나눔스퀘어 ExtraBold"
+          ],
+          "glyphFallbacks": [],
+          "mappings": {
+            "나눔스퀘어 Bold": "NotoSansKR-Regular",
+            "나눔스퀘어 ExtraBold": "NotoSansKR-Regular"
+          },
+          "paths": [],
+          "resources": [],
+          "unavailable": [
+            "나눔스퀘어 Bold",
+            "나눔스퀘어 ExtraBold"
+          ],
+          "webFontStyles": {},
+          "webFonts": {}
+        },
+        "output": "output/pr-review/issue8687/control-direct.pdf",
+        "pageCount": 1,
+        "renderedCount": 1,
+        "schemaVersion": "1.0",
+        "source": "samples/header-footer-paper-frame.hwpx",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "nativeFontSupply",
+          "fontEnvironment"
+        ]
+      },
+      "fontInventory": "name                                 type              encoding         emb sub uni object ID\n------------------------------------ ----------------- ---------------- --- --- --- ---------\nAAAAAA+KoPubDotumLight               CID TrueType      Identity-H       yes yes yes      4  0\n",
+      "contentEachExactlyOnce": true,
+      "pdfSha256": "ac3dd80ec320d25b5bc2816d6cb76f1d573ad4b31561c1576cdff60188abbbf5"
+    }
+  ]
+}

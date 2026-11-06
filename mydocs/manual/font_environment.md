@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-11-04
+last_verified: 2026-11-06
 ---
 
 # 명시적 조판 폰트 환경

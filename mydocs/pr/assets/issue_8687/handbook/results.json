@@ -1,0 +1,1619 @@
+{
+  "results": [
+    {
+      "label": "fixed",
+      "productSourceSha": "e4aefbcce7bf3db783ec39f3223e79b53082fbc1",
+      "driverCheckoutSha": "e4aefbcce7bf3db783ec39f3223e79b53082fbc1",
+      "binarySha256": "3904f2cb984e678ef9b3771d8b545a593633d0d913c80ad7c74d6c46b250f3b6",
+      "command": [
+        "output/pr-review/issue8687/minimal-font/run.sh",
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--handbook-gate",
+        "--rhwp-bin",
+        "output/pr-review/issue8687/fixed-rhwp",
+        "--page-workers",
+        "2",
+        "--out",
+        "output/pr-review/issue8687/fixed-automatic-handbook-gate"
+      ],
+      "exit": {
+        "exitCode": 0,
+        "elapsedSeconds": 962.1393852233887
+      },
+      "status": "passed",
+      "minimumRaw": 99.96465,
+      "minimumPages": [
+        130
+      ],
+      "pages": 383,
+      "webfontFallback": [
+        {
+          "family": "KoPubBatang",
+          "style": "Light",
+          "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Light.ttf",
+          "source_sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+          "native_path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f/KoPubBatang-Light.ttf",
+          "native_sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f"
+        },
+        {
+          "family": "KoPubBatang",
+          "style": "Medium",
+          "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Medium.ttf",
+          "source_sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+          "native_path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4/KoPubBatang-Medium.ttf",
+          "native_sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4"
+        },
+        {
+          "family": "KoPubBatang",
+          "style": "Bold",
+          "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Bold.ttf",
+          "source_sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+          "native_path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b/KoPubBatang-Bold.ttf",
+          "native_sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b"
+        },
+        {
+          "family": "KoPubDotum",
+          "style": "Light",
+          "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Light.ttf",
+          "source_sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+          "native_path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d/KoPubDotum-Light.ttf",
+          "native_sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+        },
+        {
+          "family": "KoPubDotum",
+          "style": "Medium",
+          "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Medium.ttf",
+          "source_sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+          "native_path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7/KoPubDotum-Medium.ttf",
+          "native_sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7"
+        },
+        {
+          "family": "KoPubDotum",
+          "style": "Bold",
+          "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Bold.ttf",
+          "source_sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+          "native_path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275/KoPubDotum-Bold.ttf",
+          "native_sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275"
+        },
+        {
+          "family": "HCR Batang",
+          "style": "Regular",
+          "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+          "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+          "native_path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/HANBatang.woff.ttf",
+          "native_sha256": "386e80a9183ee852f7909a2c31ca22c420c4d4a428ab4551904d24427dcf2328"
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+          "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6"
+        },
+        "pdf": {
+          "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+          "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e"
+        },
+        "git_head": "e4aefbcce7bf3db783ec39f3223e79b53082fbc1",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/usr/bin/python3.12",
+          "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+          "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+          "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+          "version": "153.0.7999.0",
+          "wrapper_version": "5.13.0",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "output/pr-review/issue8687/fixed-rhwp",
+          "path": "output/pr-review/issue8687/fixed-rhwp",
+          "sha256": "3904f2cb984e678ef9b3771d8b545a593633d0d913c80ad7c74d6c46b250f3b6"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+          "mappings": {
+            "굴림체": "D2Coding",
+            "맑은 고딕": "Pretendard-Regular",
+            "HY그래픽": "NotoSansKR-Regular",
+            "HY그래픽M": "NotoSansKR-Regular",
+            "-윤고딕120": "NotoSansKR-Regular",
+            "한양견고딕": "NotoSansKR-Regular",
+            "휴먼명조": "NotoSansKR-Regular",
+            "Times New Roman": "NotoSansKR-Regular",
+            "한양중고딕": "NotoSansKR-Regular",
+            "HCI Poppy": "NotoSerifKRExtraLight-Regular",
+            "Dinbol": "NotoSansKR-Regular",
+            "신명 세명조": "NotoSerifKRExtraLight-Regular",
+            "한양신명조": "NotoSansKR-Regular",
+            "#태고딕": "NotoSansKR-Regular",
+            "신명 신명조": "NotoSerifKRExtraLight-Regular",
+            "명조": "NotoSerifKRExtraLight-Bold"
+          },
+          "document_glyph_fallbacks": [
+            {
+              "languageSlot": 0,
+              "fontId": 10,
+              "source": "KoPub돋움체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 0,
+              "fontId": 11,
+              "source": "KoPub돋움체 Light",
+              "faces": [
+                "Noto Sans KR ExtraLight",
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 0,
+              "fontId": 12,
+              "source": "KoPub돋움체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 0,
+              "fontId": 13,
+              "source": "KoPub바탕체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 0,
+              "fontId": 14,
+              "source": "KoPub바탕체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 0,
+              "fontId": 15,
+              "source": "KoPub바탕체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 1,
+              "fontId": 11,
+              "source": "KoPub돋움체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 1,
+              "fontId": 12,
+              "source": "KoPub돋움체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 1,
+              "fontId": 13,
+              "source": "KoPub돋움체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 1,
+              "fontId": 14,
+              "source": "KoPub바탕체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 1,
+              "fontId": 15,
+              "source": "KoPub바탕체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 1,
+              "fontId": 16,
+              "source": "KoPub바탕체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 3,
+              "fontId": 10,
+              "source": "KoPub돋움체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 3,
+              "fontId": 11,
+              "source": "KoPub돋움체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 3,
+              "fontId": 12,
+              "source": "KoPub돋움체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 3,
+              "fontId": 13,
+              "source": "KoPub바탕체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 3,
+              "fontId": 14,
+              "source": "KoPub바탕체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 3,
+              "fontId": 15,
+              "source": "KoPub바탕체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 4,
+              "fontId": 7,
+              "source": "KoPub돋움체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 4,
+              "fontId": 8,
+              "source": "KoPub돋움체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 4,
+              "fontId": 9,
+              "source": "KoPub돋움체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 4,
+              "fontId": 10,
+              "source": "KoPub바탕체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 4,
+              "fontId": 11,
+              "source": "KoPub바탕체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 4,
+              "fontId": 12,
+              "source": "KoPub바탕체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 5,
+              "fontId": 9,
+              "source": "KoPub돋움체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 5,
+              "fontId": 10,
+              "source": "KoPub돋움체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 5,
+              "fontId": 11,
+              "source": "KoPub돋움체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 5,
+              "fontId": 12,
+              "source": "KoPub바탕체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 5,
+              "fontId": 13,
+              "source": "KoPub바탕체 Light",
+              "faces": [
+                "Noto Serif",
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 5,
+              "fontId": 14,
+              "source": "KoPub바탕체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 6,
+              "fontId": 7,
+              "source": "KoPub돋움체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 6,
+              "fontId": 8,
+              "source": "KoPub돋움체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 6,
+              "fontId": 9,
+              "source": "KoPub돋움체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 6,
+              "fontId": 10,
+              "source": "KoPub바탕체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 6,
+              "fontId": 11,
+              "source": "KoPub바탕체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 6,
+              "fontId": 12,
+              "source": "KoPub바탕체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            }
+          ],
+          "unmapped_sources": [
+            "#태고딕",
+            "-윤고딕120",
+            "-윤명조120",
+            "-윤명조140",
+            "Dinbol",
+            "Times New Roman",
+            "Yoon가변 윤명조 120_TT",
+            "정부상징 부처명_16040911",
+            "한양견고딕",
+            "한양신명조",
+            "휴먼명조"
+          ],
+          "local_document_substitutes": [
+            "-윤명조120",
+            "-윤명조140",
+            "Yoon가변 윤명조 120_TT",
+            "정부상징 부처명_16040911"
+          ],
+          "resources": [
+            {
+              "url": "fonts/D2Coding-Regular.woff2",
+              "source_sha256": "4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8",
+              "native_path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8/native.ttf",
+              "native_sha256": "7b3ed84051902dbc0e370bea30ef8a3b77581ea9740c3b88bc172ab80c636018",
+              "native_face": "D2Coding"
+            },
+            {
+              "url": "fonts/Pretendard-Regular.woff2",
+              "source_sha256": "fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63",
+              "native_path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63/native.ttf",
+              "native_sha256": "40ab320577e96b54e8322e4792f64a539c02a4df8986e2f486f514d711f44c90",
+              "native_face": "Pretendard-Regular"
+            },
+            {
+              "url": "fonts/NotoSansKR-Regular.woff2",
+              "source_sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+              "native_path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "native_sha256": "1bba3497e8e479611306abbaedc75607d2ff0ca8a7a00ecbec91c70e2cbe7bee",
+              "native_face": "NotoSansKR-Regular"
+            },
+            {
+              "url": "fonts/NotoSerifKR-Regular.woff2",
+              "source_sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+              "native_path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "native_sha256": "845709e6255507a97d63e7cf3b28ac017131adc5fea3cb8690d61df8cab08804",
+              "native_face": "NotoSerifKRExtraLight-Regular"
+            },
+            {
+              "url": "fonts/NotoSerifKR-Bold.woff2",
+              "source_sha256": "504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941",
+              "native_path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941/native.ttf",
+              "native_sha256": "227f2ed2532687483fad0d44d51f88d357abb580c08982350a8af1943eaef0b7",
+              "native_face": "NotoSerifKRExtraLight-Bold"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+              "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+              "native_path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/HANBatang.woff.ttf",
+              "native_sha256": "386e80a9183ee852f7909a2c31ca22c420c4d4a428ab4551904d24427dcf2328",
+              "native_face": "HCRBatang"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/google/fonts@2fe1e8c6b137fb13041a7cfca6fdcd8a910ea4dc/ofl/notoserif/NotoSerif%5Bwdth,wght%5D.ttf",
+              "source_sha256": "4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713",
+              "native_path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713/source.ttf",
+              "native_sha256": "4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713",
+              "native_face": "NotoSerif-Regular"
+            }
+          ],
+          "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+        "layout_generation": "2024",
+        "font_environment": {
+          "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/617628f54547afc8a0ee38c76ae6bc233d7097312da715f3e5f5db2aafeb7779.json",
+          "sha256": "617628f54547afc8a0ee38c76ae6bc233d7097312da715f3e5f5db2aafeb7779"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "explicit",
+          "files": [
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713/source.ttf",
+              "sha256": "4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f/KoPubBatang-Light.ttf",
+              "sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4/KoPubBatang-Medium.ttf",
+              "sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b/KoPubBatang-Bold.ttf",
+              "sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d/KoPubDotum-Light.ttf",
+              "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7/KoPubDotum-Medium.ttf",
+              "sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275/KoPubDotum-Bold.ttf",
+              "sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/HANBatang.woff",
+              "sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/HANBatang.woff.ttf",
+              "sha256": "386e80a9183ee852f7909a2c31ca22c420c4d4a428ab4551904d24427dcf2328"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8/native.ttf",
+              "sha256": "7b3ed84051902dbc0e370bea30ef8a3b77581ea9740c3b88bc172ab80c636018"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8/source.woff2",
+              "sha256": "4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63/native.ttf",
+              "sha256": "40ab320577e96b54e8322e4792f64a539c02a4df8986e2f486f514d711f44c90"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63/source.woff2",
+              "sha256": "fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "sha256": "1bba3497e8e479611306abbaedc75607d2ff0ca8a7a00ecbec91c70e2cbe7bee"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/source.woff2",
+              "sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "sha256": "845709e6255507a97d63e7cf3b28ac017131adc5fea3cb8690d61df8cab08804"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+              "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941/native.ttf",
+              "sha256": "227f2ed2532687483fad0d44d51f88d357abb580c08982350a8af1943eaef0b7"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941/source.woff2",
+              "sha256": "504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "label": "base",
+      "productSourceSha": "08963f6825956984d38b0d9392f44777db7107ab",
+      "driverCheckoutSha": "e4aefbcce7bf3db783ec39f3223e79b53082fbc1",
+      "binarySha256": "6ae877ba5c123cc285bd9bc12fdd3eee85ca2adfbf99466e33af13bdd40991f4",
+      "command": [
+        "output/pr-review/issue8687/minimal-font/run.sh",
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--handbook-gate",
+        "--rhwp-bin",
+        "output/pr-review/issue8687/base-rhwp",
+        "--page-workers",
+        "2",
+        "--out",
+        "output/pr-review/issue8687/base-automatic-handbook-gate"
+      ],
+      "exit": {
+        "exitCode": 0,
+        "elapsedSeconds": 967.4018650054932
+      },
+      "status": "passed",
+      "minimumRaw": 99.96465,
+      "minimumPages": [
+        130
+      ],
+      "pages": 383,
+      "webfontFallback": [
+        {
+          "family": "KoPubBatang",
+          "style": "Light",
+          "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Light.ttf",
+          "source_sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+          "native_path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f/KoPubBatang-Light.ttf",
+          "native_sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f"
+        },
+        {
+          "family": "KoPubBatang",
+          "style": "Medium",
+          "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Medium.ttf",
+          "source_sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+          "native_path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4/KoPubBatang-Medium.ttf",
+          "native_sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4"
+        },
+        {
+          "family": "KoPubBatang",
+          "style": "Bold",
+          "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Bold.ttf",
+          "source_sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+          "native_path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b/KoPubBatang-Bold.ttf",
+          "native_sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b"
+        },
+        {
+          "family": "KoPubDotum",
+          "style": "Light",
+          "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Light.ttf",
+          "source_sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+          "native_path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d/KoPubDotum-Light.ttf",
+          "native_sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+        },
+        {
+          "family": "KoPubDotum",
+          "style": "Medium",
+          "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Medium.ttf",
+          "source_sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+          "native_path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7/KoPubDotum-Medium.ttf",
+          "native_sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7"
+        },
+        {
+          "family": "KoPubDotum",
+          "style": "Bold",
+          "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Bold.ttf",
+          "source_sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+          "native_path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275/KoPubDotum-Bold.ttf",
+          "native_sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275"
+        },
+        {
+          "family": "HCR Batang",
+          "style": "Regular",
+          "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+          "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+          "native_path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/HANBatang.woff.ttf",
+          "native_sha256": "386e80a9183ee852f7909a2c31ca22c420c4d4a428ab4551904d24427dcf2328"
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+          "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6"
+        },
+        "pdf": {
+          "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+          "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e"
+        },
+        "git_head": "e4aefbcce7bf3db783ec39f3223e79b53082fbc1",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/usr/bin/python3.12",
+          "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+          "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+          "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+          "version": "153.0.7999.0",
+          "wrapper_version": "5.13.0",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "output/pr-review/issue8687/base-rhwp",
+          "path": "output/pr-review/issue8687/base-rhwp",
+          "sha256": "6ae877ba5c123cc285bd9bc12fdd3eee85ca2adfbf99466e33af13bdd40991f4"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+          "mappings": {
+            "굴림체": "D2Coding",
+            "맑은 고딕": "Pretendard-Regular",
+            "HY그래픽": "NotoSansKR-Regular",
+            "HY그래픽M": "NotoSansKR-Regular",
+            "-윤고딕120": "NotoSansKR-Regular",
+            "한양견고딕": "NotoSansKR-Regular",
+            "휴먼명조": "NotoSansKR-Regular",
+            "Times New Roman": "NotoSansKR-Regular",
+            "한양중고딕": "NotoSansKR-Regular",
+            "HCI Poppy": "NotoSerifKRExtraLight-Regular",
+            "Dinbol": "NotoSansKR-Regular",
+            "신명 세명조": "NotoSerifKRExtraLight-Regular",
+            "한양신명조": "NotoSansKR-Regular",
+            "#태고딕": "NotoSansKR-Regular",
+            "신명 신명조": "NotoSerifKRExtraLight-Regular",
+            "명조": "NotoSerifKRExtraLight-Bold"
+          },
+          "document_glyph_fallbacks": [
+            {
+              "languageSlot": 0,
+              "fontId": 10,
+              "source": "KoPub돋움체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 0,
+              "fontId": 11,
+              "source": "KoPub돋움체 Light",
+              "faces": [
+                "Noto Sans KR ExtraLight",
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 0,
+              "fontId": 12,
+              "source": "KoPub돋움체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 0,
+              "fontId": 13,
+              "source": "KoPub바탕체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 0,
+              "fontId": 14,
+              "source": "KoPub바탕체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 0,
+              "fontId": 15,
+              "source": "KoPub바탕체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 1,
+              "fontId": 11,
+              "source": "KoPub돋움체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 1,
+              "fontId": 12,
+              "source": "KoPub돋움체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 1,
+              "fontId": 13,
+              "source": "KoPub돋움체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 1,
+              "fontId": 14,
+              "source": "KoPub바탕체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 1,
+              "fontId": 15,
+              "source": "KoPub바탕체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 1,
+              "fontId": 16,
+              "source": "KoPub바탕체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 3,
+              "fontId": 10,
+              "source": "KoPub돋움체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 3,
+              "fontId": 11,
+              "source": "KoPub돋움체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 3,
+              "fontId": 12,
+              "source": "KoPub돋움체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 3,
+              "fontId": 13,
+              "source": "KoPub바탕체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 3,
+              "fontId": 14,
+              "source": "KoPub바탕체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 3,
+              "fontId": 15,
+              "source": "KoPub바탕체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 4,
+              "fontId": 7,
+              "source": "KoPub돋움체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 4,
+              "fontId": 8,
+              "source": "KoPub돋움체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 4,
+              "fontId": 9,
+              "source": "KoPub돋움체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 4,
+              "fontId": 10,
+              "source": "KoPub바탕체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 4,
+              "fontId": 11,
+              "source": "KoPub바탕체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 4,
+              "fontId": 12,
+              "source": "KoPub바탕체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 5,
+              "fontId": 9,
+              "source": "KoPub돋움체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 5,
+              "fontId": 10,
+              "source": "KoPub돋움체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 5,
+              "fontId": 11,
+              "source": "KoPub돋움체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 5,
+              "fontId": 12,
+              "source": "KoPub바탕체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 5,
+              "fontId": 13,
+              "source": "KoPub바탕체 Light",
+              "faces": [
+                "Noto Serif",
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 5,
+              "fontId": 14,
+              "source": "KoPub바탕체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 6,
+              "fontId": 7,
+              "source": "KoPub돋움체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 6,
+              "fontId": 8,
+              "source": "KoPub돋움체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 6,
+              "fontId": 9,
+              "source": "KoPub돋움체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 6,
+              "fontId": 10,
+              "source": "KoPub바탕체 Bold",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 6,
+              "fontId": 11,
+              "source": "KoPub바탕체 Light",
+              "faces": [
+                "HCRBatang"
+              ]
+            },
+            {
+              "languageSlot": 6,
+              "fontId": 12,
+              "source": "KoPub바탕체 Medium",
+              "faces": [
+                "HCRBatang"
+              ]
+            }
+          ],
+          "unmapped_sources": [
+            "#태고딕",
+            "-윤고딕120",
+            "-윤명조120",
+            "-윤명조140",
+            "Dinbol",
+            "Times New Roman",
+            "Yoon가변 윤명조 120_TT",
+            "정부상징 부처명_16040911",
+            "한양견고딕",
+            "한양신명조",
+            "휴먼명조"
+          ],
+          "local_document_substitutes": [
+            "-윤명조120",
+            "-윤명조140",
+            "Yoon가변 윤명조 120_TT",
+            "정부상징 부처명_16040911"
+          ],
+          "resources": [
+            {
+              "url": "fonts/D2Coding-Regular.woff2",
+              "source_sha256": "4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8",
+              "native_path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8/native.ttf",
+              "native_sha256": "eff6c925baf453fcb7a48057f3db4ad755837cebe2134b7861e84912cc79414b",
+              "native_face": "D2Coding"
+            },
+            {
+              "url": "fonts/Pretendard-Regular.woff2",
+              "source_sha256": "fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63",
+              "native_path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63/native.ttf",
+              "native_sha256": "40ab320577e96b54e8322e4792f64a539c02a4df8986e2f486f514d711f44c90",
+              "native_face": "Pretendard-Regular"
+            },
+            {
+              "url": "fonts/NotoSansKR-Regular.woff2",
+              "source_sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+              "native_path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "native_sha256": "1bba3497e8e479611306abbaedc75607d2ff0ca8a7a00ecbec91c70e2cbe7bee",
+              "native_face": "NotoSansKR-Regular"
+            },
+            {
+              "url": "fonts/NotoSerifKR-Regular.woff2",
+              "source_sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+              "native_path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "native_sha256": "972b3a1e4532d1362cc43a359ba1b5738068ec62594dc2eb714d10a75db4ad2f",
+              "native_face": "NotoSerifKRExtraLight-Regular"
+            },
+            {
+              "url": "fonts/NotoSerifKR-Bold.woff2",
+              "source_sha256": "504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941",
+              "native_path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941/native.ttf",
+              "native_sha256": "9a75195143483eb8a9471a565fa2a1a3c85f81d31961909e5d9c4fbcf5eb5235",
+              "native_face": "NotoSerifKRExtraLight-Bold"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+              "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+              "native_path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/HANBatang.woff.ttf",
+              "native_sha256": "386e80a9183ee852f7909a2c31ca22c420c4d4a428ab4551904d24427dcf2328",
+              "native_face": "HCRBatang"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/google/fonts@2fe1e8c6b137fb13041a7cfca6fdcd8a910ea4dc/ofl/notoserif/NotoSerif%5Bwdth,wght%5D.ttf",
+              "source_sha256": "4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713",
+              "native_path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713/source.ttf",
+              "native_sha256": "4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713",
+              "native_face": "NotoSerif-Regular"
+            }
+          ],
+          "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+        "layout_generation": "2024",
+        "font_environment": {
+          "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/617628f54547afc8a0ee38c76ae6bc233d7097312da715f3e5f5db2aafeb7779.json",
+          "sha256": "617628f54547afc8a0ee38c76ae6bc233d7097312da715f3e5f5db2aafeb7779"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "explicit",
+          "files": [
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713/source.ttf",
+              "sha256": "4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f/KoPubBatang-Light.ttf",
+              "sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4/KoPubBatang-Medium.ttf",
+              "sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b/KoPubBatang-Bold.ttf",
+              "sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d/KoPubDotum-Light.ttf",
+              "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7/KoPubDotum-Medium.ttf",
+              "sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275/KoPubDotum-Bold.ttf",
+              "sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/HANBatang.woff",
+              "sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/handbook-8153-webfont-cache/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/HANBatang.woff.ttf",
+              "sha256": "386e80a9183ee852f7909a2c31ca22c420c4d4a428ab4551904d24427dcf2328"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8/native.ttf",
+              "sha256": "7b3ed84051902dbc0e370bea30ef8a3b77581ea9740c3b88bc172ab80c636018"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8/source.woff2",
+              "sha256": "4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63/native.ttf",
+              "sha256": "40ab320577e96b54e8322e4792f64a539c02a4df8986e2f486f514d711f44c90"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63/source.woff2",
+              "sha256": "fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "sha256": "1bba3497e8e479611306abbaedc75607d2ff0ca8a7a00ecbec91c70e2cbe7bee"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/source.woff2",
+              "sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "sha256": "845709e6255507a97d63e7cf3b28ac017131adc5fea3cb8690d61df8cab08804"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+              "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941/native.ttf",
+              "sha256": "227f2ed2532687483fad0d44d51f88d357abb580c08982350a8af1943eaef0b7"
+            },
+            {
+              "path": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941/source.woff2",
+              "sha256": "504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "baseCandidateByteIdenticalPngPages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138,
+    139,
+    140,
+    141,
+    142,
+    143,
+    144,
+    145,
+    146,
+    147,
+    148,
+    149,
+    150,
+    151,
+    152,
+    153,
+    154,
+    155,
+    156,
+    157,
+    158,
+    159,
+    160,
+    161,
+    162,
+    163,
+    164,
+    165,
+    166,
+    167,
+    168,
+    169,
+    170,
+    171,
+    172,
+    173,
+    174,
+    175,
+    176,
+    177,
+    178,
+    179,
+    180,
+    181,
+    182,
+    183,
+    184,
+    185,
+    186,
+    187,
+    188,
+    189,
+    190,
+    191,
+    192,
+    193,
+    194,
+    195,
+    196,
+    197,
+    198,
+    199,
+    200,
+    201,
+    202,
+    203,
+    204,
+    205,
+    206,
+    207,
+    208,
+    209,
+    210,
+    211,
+    212,
+    213,
+    214,
+    215,
+    216,
+    217,
+    218,
+    219,
+    220,
+    221,
+    222,
+    223,
+    224,
+    225,
+    226,
+    227,
+    228,
+    229,
+    230,
+    231,
+    232,
+    233,
+    234,
+    235,
+    236,
+    237,
+    238,
+    239,
+    240,
+    241,
+    242,
+    243,
+    244,
+    245,
+    246,
+    247,
+    248,
+    249,
+    250,
+    251,
+    252,
+    253,
+    254,
+    255,
+    256,
+    257,
+    258,
+    259,
+    260,
+    261,
+    262,
+    263,
+    264,
+    265,
+    266,
+    267,
+    268,
+    269,
+    270,
+    271,
+    272,
+    273,
+    274,
+    275,
+    276,
+    277,
+    278,
+    279,
+    280,
+    281,
+    282,
+    283,
+    284,
+    285,
+    286,
+    287,
+    288,
+    289,
+    290,
+    291,
+    292,
+    293,
+    294,
+    295,
+    296,
+    297,
+    298,
+    299,
+    300,
+    301,
+    302,
+    303,
+    304,
+    305,
+    306,
+    307,
+    308,
+    309,
+    310,
+    311,
+    312,
+    313,
+    314,
+    315,
+    316,
+    317,
+    318,
+    319,
+    320,
+    321,
+    322,
+    323,
+    324,
+    325,
+    326,
+    327,
+    328,
+    329,
+    330,
+    331,
+    332,
+    333,
+    334,
+    335,
+    336,
+    337,
+    338,
+    339,
+    340,
+    341,
+    342,
+    343,
+    344,
+    345,
+    346,
+    347,
+    348,
+    349,
+    350,
+    351,
+    352,
+    353,
+    354,
+    355,
+    356,
+    357,
+    358,
+    359,
+    360,
+    361,
+    362,
+    363,
+    364,
+    365,
+    366,
+    367,
+    368,
+    369,
+    370,
+    371,
+    372,
+    373,
+    374,
+    375,
+    376,
+    377,
+    378,
+    379,
+    380,
+    381,
+    382,
+    383
+  ],
+  "baselineChanged": false,
+  "fontPathsExplicitlySupplied": false,
+  "minimumFontNamespace": true,
+  "page130HumanDecision": {
+    "status": "pass",
+    "authority": "explicit user instruction",
+    "instruction": "130쪽은 해결불가능임. pass",
+    "recordedAt": "2026-11-06T20:31:21.719719+09:00",
+    "rawUnchanged": 99.96465,
+    "scope": "accept remaining pre-existing page 130 difference; continue issue 8687 validation without extra page 130 correction",
+    "baselineChanged": false
+  }
+}

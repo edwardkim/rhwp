@@ -1,0 +1,746 @@
+{
+  "sourceSha": "e4aefbcce7bf3db783ec39f3223e79b53082fbc1",
+  "records": [
+    {
+      "label": "used",
+      "file": "pdf/issue8687/font_list_name_used_fallback.hwpx",
+      "inputSha256": "cafee169b69eec6dc8595d5f98e5f03ca724ddf169c333b022b3a8874ed7c930",
+      "hostFontSha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+      "browser": "Chrome/156.0.8078.79",
+      "loaded": {
+        "pageCount": 1,
+        "documentLoadAndInitialRenderMs": 3780.2000000476837
+      },
+      "diagnostics": {
+        "actualBackend": "canvas2d",
+        "fallback": null,
+        "dpr": 1,
+        "zoom": 1,
+        "canvas": {
+          "width": 794,
+          "height": 1123
+        },
+        "clip": {
+          "x": 253.15625,
+          "y": 150,
+          "width": 793.6875,
+          "height": 1122.5
+        },
+        "chains": [
+          [
+            "함초롬돋움"
+          ]
+        ],
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:6ab509b24aad522a74cbd301bbbb9e6cd0bbcfda9aa5b41e574fa3588a09fdc3",
+          "decisionKey": "blake3:6ab509b24aad522a74cbd301bbbb9e6cd0bbcfda9aa5b41e574fa3588a09fdc3|revision:3|profile:screen|resources:3|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvaskit": null
+      },
+      "wasmResponses": {
+        "verifiedByInitializationObserver": true,
+        "expectedSha256": "15f62bf019f0f1ae845dd2f9e58893246c0a2127e8f65fa3094286351050e455"
+      },
+      "initializationArtifacts": [
+        {
+          "url": "http://127.0.0.1:7867/@fs/home/tsjang/rhwp/pkg/rhwp.js",
+          "status": 200,
+          "mimeType": "text/javascript",
+          "bytes": 3133479,
+          "sha256": "3d322af6670cef4f88ad31b8ba56e177a9789bc00b70c8a8bc2153d47964e5e2",
+          "mapSources": [
+            "rhwp.js"
+          ],
+          "originalSourceHashes": [
+            "df44f64f031b4be86061e19958c2821f331c950c0e6d18acb285a46fb89a895e"
+          ],
+          "viteWasmUrlRewriteCounts": [
+            1
+          ],
+          "normalizedOriginalSourceHashes": [
+            "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+          ]
+        },
+        {
+          "url": "http://127.0.0.1:7867/@fs/home/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "mimeType": "application/wasm",
+          "bytes": 26572330,
+          "sha256": "15f62bf019f0f1ae845dd2f9e58893246c0a2127e8f65fa3094286351050e455"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "label": "used",
+      "file": "pdf/issue8687/font_list_name_used_fallback.hwpx",
+      "inputSha256": "cafee169b69eec6dc8595d5f98e5f03ca724ddf169c333b022b3a8874ed7c930",
+      "hostFontSha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+      "browser": "Chrome/156.0.8078.79",
+      "loaded": {
+        "pageCount": 1,
+        "documentLoadAndInitialRenderMs": 3532.399999856949
+      },
+      "diagnostics": {
+        "actualBackend": "canvaskit",
+        "fallback": null,
+        "dpr": 1,
+        "zoom": 1,
+        "canvas": {
+          "width": 794,
+          "height": 1123
+        },
+        "clip": {
+          "x": 253.15625,
+          "y": 150,
+          "width": 793.6875,
+          "height": 1122.5
+        },
+        "chains": [
+          [
+            "함초롬돋움"
+          ]
+        ],
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:6ab509b24aad522a74cbd301bbbb9e6cd0bbcfda9aa5b41e574fa3588a09fdc3",
+          "decisionKey": "blake3:6ab509b24aad522a74cbd301bbbb9e6cd0bbcfda9aa5b41e574fa3588a09fdc3|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvaskit": {
+          "surfaceCreated": 1,
+          "surfaceReused": 0,
+          "staticPictureCacheEntries": 8,
+          "staticPictureCacheBytes": 6564,
+          "staticPictureCacheHits": 0,
+          "staticPictureCacheMisses": 8,
+          "staticPictureCacheEvictions": 0,
+          "textBlobCacheEntries": 13,
+          "textBlobCacheBytes": 4934,
+          "textBlobCacheHits": 4,
+          "textBlobCacheMisses": 13,
+          "fallbackFamilyCacheEntries": 12,
+          "paragraphFontEntries": 5,
+          "paragraphFontBytes": 34292172,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "default",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 368.40000009536743,
+          "renderCount": 1,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 1,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 1,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        },
+        "surface": {
+          "created": 1,
+          "reused": 0,
+          "backend": "software",
+          "preference": "software",
+          "fallbackReason": null
+        }
+      },
+      "wasmResponses": {
+        "verifiedByInitializationObserver": true,
+        "expectedSha256": "15f62bf019f0f1ae845dd2f9e58893246c0a2127e8f65fa3094286351050e455"
+      },
+      "initializationArtifacts": [
+        {
+          "url": "http://127.0.0.1:7867/@fs/home/tsjang/rhwp/pkg/rhwp.js",
+          "status": 200,
+          "mimeType": "text/javascript",
+          "bytes": 3133479,
+          "sha256": "3d322af6670cef4f88ad31b8ba56e177a9789bc00b70c8a8bc2153d47964e5e2",
+          "mapSources": [
+            "rhwp.js"
+          ],
+          "originalSourceHashes": [
+            "df44f64f031b4be86061e19958c2821f331c950c0e6d18acb285a46fb89a895e"
+          ],
+          "viteWasmUrlRewriteCounts": [
+            1
+          ],
+          "normalizedOriginalSourceHashes": [
+            "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+          ]
+        },
+        {
+          "url": "http://127.0.0.1:7867/@fs/home/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "mimeType": "application/wasm",
+          "bytes": 26572330,
+          "sha256": "15f62bf019f0f1ae845dd2f9e58893246c0a2127e8f65fa3094286351050e455"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "label": "repro",
+      "file": "pdf/issue8687/font_list_name_fallback.hwpx",
+      "inputSha256": "b84f9c8815b9093135a1e3e630dd8b55aac62916275edac0dc0e8fc61520120e",
+      "hostFontSha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+      "browser": "Chrome/156.0.8078.79",
+      "loaded": {
+        "pageCount": 1,
+        "documentLoadAndInitialRenderMs": 3594.7000000476837
+      },
+      "diagnostics": {
+        "actualBackend": "canvas2d",
+        "fallback": null,
+        "dpr": 1,
+        "zoom": 1,
+        "canvas": {
+          "width": 794,
+          "height": 1123
+        },
+        "clip": {
+          "x": 253.15625,
+          "y": 150,
+          "width": 793.6875,
+          "height": 1122.5
+        },
+        "chains": [
+          [
+            "함초롬돋움"
+          ]
+        ],
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:ec836419728dc12596a28936af3b7d0bc4f412ce246e03be3b28627648ed7ad1",
+          "decisionKey": "blake3:ec836419728dc12596a28936af3b7d0bc4f412ce246e03be3b28627648ed7ad1|revision:3|profile:screen|resources:3|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvaskit": null
+      },
+      "wasmResponses": {
+        "verifiedByInitializationObserver": true,
+        "expectedSha256": "15f62bf019f0f1ae845dd2f9e58893246c0a2127e8f65fa3094286351050e455"
+      },
+      "initializationArtifacts": [
+        {
+          "url": "http://127.0.0.1:7867/@fs/home/tsjang/rhwp/pkg/rhwp.js",
+          "status": 200,
+          "mimeType": "text/javascript",
+          "bytes": 3133479,
+          "sha256": "3d322af6670cef4f88ad31b8ba56e177a9789bc00b70c8a8bc2153d47964e5e2",
+          "mapSources": [
+            "rhwp.js"
+          ],
+          "originalSourceHashes": [
+            "df44f64f031b4be86061e19958c2821f331c950c0e6d18acb285a46fb89a895e"
+          ],
+          "viteWasmUrlRewriteCounts": [
+            1
+          ],
+          "normalizedOriginalSourceHashes": [
+            "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+          ]
+        },
+        {
+          "url": "http://127.0.0.1:7867/@fs/home/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "mimeType": "application/wasm",
+          "bytes": 26572330,
+          "sha256": "15f62bf019f0f1ae845dd2f9e58893246c0a2127e8f65fa3094286351050e455"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "label": "repro",
+      "file": "pdf/issue8687/font_list_name_fallback.hwpx",
+      "inputSha256": "b84f9c8815b9093135a1e3e630dd8b55aac62916275edac0dc0e8fc61520120e",
+      "hostFontSha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+      "browser": "Chrome/156.0.8078.79",
+      "loaded": {
+        "pageCount": 1,
+        "documentLoadAndInitialRenderMs": 2378.699999809265
+      },
+      "diagnostics": {
+        "actualBackend": "canvaskit",
+        "fallback": null,
+        "dpr": 1,
+        "zoom": 1,
+        "canvas": {
+          "width": 794,
+          "height": 1123
+        },
+        "clip": {
+          "x": 253.15625,
+          "y": 150,
+          "width": 793.6875,
+          "height": 1122.5
+        },
+        "chains": [
+          [
+            "함초롬돋움"
+          ]
+        ],
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:ec836419728dc12596a28936af3b7d0bc4f412ce246e03be3b28627648ed7ad1",
+          "decisionKey": "blake3:ec836419728dc12596a28936af3b7d0bc4f412ce246e03be3b28627648ed7ad1|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvaskit": {
+          "surfaceCreated": 1,
+          "surfaceReused": 0,
+          "staticPictureCacheEntries": 8,
+          "staticPictureCacheBytes": 6564,
+          "staticPictureCacheHits": 0,
+          "staticPictureCacheMisses": 8,
+          "staticPictureCacheEvictions": 0,
+          "textBlobCacheEntries": 13,
+          "textBlobCacheBytes": 4934,
+          "textBlobCacheHits": 4,
+          "textBlobCacheMisses": 13,
+          "fallbackFamilyCacheEntries": 12,
+          "paragraphFontEntries": 5,
+          "paragraphFontBytes": 34292172,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "default",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 234.5,
+          "renderCount": 1,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 1,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 1,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        },
+        "surface": {
+          "created": 1,
+          "reused": 0,
+          "backend": "software",
+          "preference": "software",
+          "fallbackReason": null
+        }
+      },
+      "wasmResponses": {
+        "verifiedByInitializationObserver": true,
+        "expectedSha256": "15f62bf019f0f1ae845dd2f9e58893246c0a2127e8f65fa3094286351050e455"
+      },
+      "initializationArtifacts": [
+        {
+          "url": "http://127.0.0.1:7867/@fs/home/tsjang/rhwp/pkg/rhwp.js",
+          "status": 200,
+          "mimeType": "text/javascript",
+          "bytes": 3133479,
+          "sha256": "3d322af6670cef4f88ad31b8ba56e177a9789bc00b70c8a8bc2153d47964e5e2",
+          "mapSources": [
+            "rhwp.js"
+          ],
+          "originalSourceHashes": [
+            "df44f64f031b4be86061e19958c2821f331c950c0e6d18acb285a46fb89a895e"
+          ],
+          "viteWasmUrlRewriteCounts": [
+            1
+          ],
+          "normalizedOriginalSourceHashes": [
+            "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+          ]
+        },
+        {
+          "url": "http://127.0.0.1:7867/@fs/home/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "mimeType": "application/wasm",
+          "bytes": 26572330,
+          "sha256": "15f62bf019f0f1ae845dd2f9e58893246c0a2127e8f65fa3094286351050e455"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "label": "control",
+      "file": "samples/header-footer-paper-frame.hwpx",
+      "inputSha256": "8589147dc4a70140d9ccd0c83b899932432541c9db9e714cc59cfdd4c16c67b6",
+      "hostFontSha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+      "browser": "Chrome/156.0.8078.79",
+      "loaded": {
+        "pageCount": 1,
+        "documentLoadAndInitialRenderMs": 502.80000019073486
+      },
+      "diagnostics": {
+        "actualBackend": "canvas2d",
+        "fallback": null,
+        "dpr": 1,
+        "zoom": 1,
+        "canvas": {
+          "width": 794,
+          "height": 1123
+        },
+        "clip": {
+          "x": 253.15625,
+          "y": 150,
+          "width": 793.6875,
+          "height": 1122.5
+        },
+        "chains": [
+          [
+            "KoPub돋움체 Light"
+          ]
+        ],
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:3dbb346868902978e67667abdfb700a5fa680cc3833a97003ee5e66d8536ae8b",
+          "decisionKey": "blake3:3dbb346868902978e67667abdfb700a5fa680cc3833a97003ee5e66d8536ae8b|revision:3|profile:screen|resources:3|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvaskit": null
+      },
+      "wasmResponses": {
+        "verifiedByInitializationObserver": true,
+        "expectedSha256": "15f62bf019f0f1ae845dd2f9e58893246c0a2127e8f65fa3094286351050e455"
+      },
+      "initializationArtifacts": [
+        {
+          "url": "http://127.0.0.1:7867/@fs/home/tsjang/rhwp/pkg/rhwp.js",
+          "status": 200,
+          "mimeType": "text/javascript",
+          "bytes": 3133479,
+          "sha256": "3d322af6670cef4f88ad31b8ba56e177a9789bc00b70c8a8bc2153d47964e5e2",
+          "mapSources": [
+            "rhwp.js"
+          ],
+          "originalSourceHashes": [
+            "df44f64f031b4be86061e19958c2821f331c950c0e6d18acb285a46fb89a895e"
+          ],
+          "viteWasmUrlRewriteCounts": [
+            1
+          ],
+          "normalizedOriginalSourceHashes": [
+            "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+          ]
+        },
+        {
+          "url": "http://127.0.0.1:7867/@fs/home/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "mimeType": "application/wasm",
+          "bytes": 26572330,
+          "sha256": "15f62bf019f0f1ae845dd2f9e58893246c0a2127e8f65fa3094286351050e455"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "label": "control",
+      "file": "samples/header-footer-paper-frame.hwpx",
+      "inputSha256": "8589147dc4a70140d9ccd0c83b899932432541c9db9e714cc59cfdd4c16c67b6",
+      "hostFontSha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+      "browser": "Chrome/156.0.8078.79",
+      "loaded": {
+        "pageCount": 1,
+        "documentLoadAndInitialRenderMs": 1420.7999999523163
+      },
+      "diagnostics": {
+        "actualBackend": "canvaskit",
+        "fallback": null,
+        "dpr": 1,
+        "zoom": 1,
+        "canvas": {
+          "width": 794,
+          "height": 1123
+        },
+        "clip": {
+          "x": 253.15625,
+          "y": 150,
+          "width": 793.6875,
+          "height": 1122.5
+        },
+        "chains": [
+          [
+            "KoPub돋움체 Light"
+          ]
+        ],
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:3dbb346868902978e67667abdfb700a5fa680cc3833a97003ee5e66d8536ae8b",
+          "decisionKey": "blake3:3dbb346868902978e67667abdfb700a5fa680cc3833a97003ee5e66d8536ae8b|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvaskit": {
+          "surfaceCreated": 1,
+          "surfaceReused": 0,
+          "staticPictureCacheEntries": 8,
+          "staticPictureCacheBytes": 6564,
+          "staticPictureCacheHits": 0,
+          "staticPictureCacheMisses": 8,
+          "staticPictureCacheEvictions": 0,
+          "textBlobCacheEntries": 13,
+          "textBlobCacheBytes": 4934,
+          "textBlobCacheHits": 4,
+          "textBlobCacheMisses": 13,
+          "fallbackFamilyCacheEntries": 12,
+          "paragraphFontEntries": 4,
+          "paragraphFontBytes": 5406648,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "default",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 239.09999990463257,
+          "renderCount": 1,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 0,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 1,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        },
+        "surface": {
+          "created": 1,
+          "reused": 0,
+          "backend": "software",
+          "preference": "software",
+          "fallbackReason": null
+        }
+      },
+      "wasmResponses": {
+        "verifiedByInitializationObserver": true,
+        "expectedSha256": "15f62bf019f0f1ae845dd2f9e58893246c0a2127e8f65fa3094286351050e455"
+      },
+      "initializationArtifacts": [
+        {
+          "url": "http://127.0.0.1:7867/@fs/home/tsjang/rhwp/pkg/rhwp.js",
+          "status": 200,
+          "mimeType": "text/javascript",
+          "bytes": 3133479,
+          "sha256": "3d322af6670cef4f88ad31b8ba56e177a9789bc00b70c8a8bc2153d47964e5e2",
+          "mapSources": [
+            "rhwp.js"
+          ],
+          "originalSourceHashes": [
+            "df44f64f031b4be86061e19958c2821f331c950c0e6d18acb285a46fb89a895e"
+          ],
+          "viteWasmUrlRewriteCounts": [
+            1
+          ],
+          "normalizedOriginalSourceHashes": [
+            "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+          ]
+        },
+        {
+          "url": "http://127.0.0.1:7867/@fs/home/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "mimeType": "application/wasm",
+          "bytes": 26572330,
+          "sha256": "15f62bf019f0f1ae845dd2f9e58893246c0a2127e8f65fa3094286351050e455"
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

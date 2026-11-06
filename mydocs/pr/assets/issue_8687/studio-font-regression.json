@@ -1,0 +1,31 @@
+{
+  "sourceSha": "e4aefbcce7bf3db783ec39f3223e79b53082fbc1",
+  "testSource": "rhwp-studio/e2e/canvaskit-font-preparation-issue7688.test.mjs",
+  "testSourceSha256": "b6cf922a19624e67ffc5c49ac3e42144870a61d7a6c3dd970a04ec70de9ad978",
+  "testSourceUnchanged": true,
+  "runCommand": [
+    "node",
+    "--import",
+    "./output/pr-review/issue8687/choose-webfont-fallback.mjs",
+    "rhwp-studio/e2e/canvaskit-font-preparation-issue7688.test.mjs",
+    "--mode=headless"
+  ],
+  "setup": "Only click the visible 대체 글꼴로 보기 button in the fresh-browser Local Font Access dialog; leave all regression assertions unchanged",
+  "wasmExpectedSha256": "15f62bf019f0f1ae845dd2f9e58893246c0a2127e8f65fa3094286351050e455",
+  "observedInitialWasmMatches": 3,
+  "exitCode": 0,
+  "passedAssertions": [
+    "real CanvasKit must render the original page",
+    "document fonts and both style load orders consume the actual supplied outlines",
+    "ordinary pictographs preserve surrounding Hangul and consume the declared fallback program",
+    "document fallback and available primary consume the same independently supplied serif program",
+    "later local-font refresh consumes the document substitute and preserves the document",
+    "incomplete preflight must fall back without exporting any page trees",
+    "transform and resource preparation share one pass of document font declarations",
+    "a new preflight decision must collect fresh declarations",
+    "sharing declarations must still prepare document fonts",
+    "failed document font preparation must preserve the page through Canvas2D",
+    "resource failure must be diagnosed instead of silently painting a wrong default face"
+  ],
+  "firstAttempt": "timed out at a visible local-font choice dialog; not a passed test"
+}

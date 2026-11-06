@@ -129,3 +129,18 @@ TextStyle.font_family → Native declared_family_candidates / Canvas·SVG 표시
 `local_validation.md` 4.3의 전체 회귀·Rust lint 묶음·Native Skia 3종·최적화 fresh WASM,
 전체 페이지 시각 증적·독립 Print 확대 판독·편람 Native gate를 완료한 뒤 준비 완료로 보고한다.
 원격 push·PR 생성은 아직 승인된 범위에 포함하지 않는다.
+
+## 최종 검증과 rebase
+
+필수 검증은 source `e4aefbcce7bf3db783ec39f3223e79b53082fbc1`에서 모두 통과했다.
+전체 nextest 12,758건, Native Skia lib 4,040건·placeholder 2건·직접 PDF 22건과
+fmt·Native/WASM/all-target Clippy·workspace build·manifest를 완료했다.
+편람 Native는 기준·후보 모두 383쪽, 최저 raw 99.96465%, strict gate 통과다.
+130쪽의 남은 차이는 작업지시자가 PASS로 수용했다.
+
+최신 devel `45684640be5eddcf5972b063260250345b34d928` 위로 충돌 없이 rebase했고
+두 patch의 range-diff가 모두 동일하다. 최종 제품 head는
+`87c073fa7094603f6915c43851da7ed66697565b`다. 명시 지시에 따라 기존 검증 자료를 재사용한다.
+별도 기준 WASM 빌드를 추가하지 않으며 기존 결과의 실제 source SHA를 유지한다.
+[최종 보고서](../report/task_m100_8687_report.md)와
+[재사용 근거](../pr/assets/issue_8687/rebase-reuse.json)에 결과와 범위를 기록했다.
