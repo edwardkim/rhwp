@@ -162,3 +162,46 @@ artifact. Real macOS/Windows SDK compilation, Flutter texture import/presentatio
 OS accessibility/IME, GPU loss, and consumer retirement qualification remain
 platform work. No shared `SkCanvas*`, private engine ABI, zero-copy claim, or
 successful GPU sampling claim follows from these tests.
+
+## Linux integration entry point
+
+`test/support/linux_texture_probe.dart` is an executable entry point for a
+disposable Linux Flutter runner, not an automatically discovered unit test.
+Create a runner outside this package (`flutter create --platforms=linux`), add
+`rhwp_native_reference` as a path dependency and `ffi: ^2.1.4` as a direct
+dependency, and copy that entry point to the runner's `lib/main.dart`. Keep the
+plugin's existing Linux CMake files; do not generate a runner over them. Build
+the owner dispatcher with `tool/build_dispatcher.py --output <absolute-path>` and
+build the runner with `flutter build linux --debug`.
+
+Run the resulting bundle executable with
+`RHWP_PROBE_NATIVE_LIBRARY=<canonical-absolute-native-library>` and
+`RHWP_PROBE_OWNER_LIBRARY=<absolute-dispatcher-library>`. The native library must
+enable the P89 worker snapshots and P90 GL presenter. The probe exercises an
+initial Texture paint before capture, owner-thread new/edit/capture, actual
+platform submit/publication, metadata verification, close, and disappearance of
+the transferred snapshot ID. Its bounded JSON receipt starts with
+`RHWP_LINUX_GPU_PROBE`. No document pixels travel through the method channel.
+
+When `presentation.fullStampChecks` is present it requires `snapshotCheck` after
+publication. A pre-P93 artifact instead reports `fullStampChecks: false` and
+checks document/revision/font with raw `snapshotInfo` solely to qualify the
+backend. This exception exists only in the test entry point; production
+`NativeTextureController` still fails closed without full stamp checks. For an
+ES 2 negative probe, select a renderer able to start on ES 2 and set
+`RHWP_PROBE_EXPECT_UNSUPPORTED=1`. The probe requires explicit unsupported,
+zero submitted frames, and normal close.
+
+The actual Flutter 3.47.9 Linux runner exposed an EGL context with no current
+`GdkGLContext`. P99's EGL/GLES correction is required: its desktop-only original
+registered the texture but rejected its callback. With that correction, software
+Mesa/llvmpipe replay and close succeeded on the default Impeller backend at GLES
+3.0/3.2, and on the public Skia selection at GLES 3.2. Native strict-image/loader
+artifact SHA-256 `26e81f691c34448e21c455107307aaf60e70e8e4dff8a2aab31574af2e97a56e`
+was used for the final default-backend checks. Each rendered one edited document
+frame, with zero whole-frame readbacks/release failures, no remaining raster
+slots, `cleanupComplete: true`, and `registered: false`. A separate RAM-only GL
+observer reported error zero before/after replay, after state restoration, and
+on close; production code contains no GL-error drain. ES 2 was explicitly
+rejected. Final pixel comparison and real GPU hardware qualification remain
+separate from these results.
