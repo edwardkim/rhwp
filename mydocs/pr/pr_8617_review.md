@@ -23,9 +23,9 @@ fix(visual-sweep): 글꼴 catalog family 이름의 앞뒤 공백을 Native 와 �
 ## 회귀·입력 확인
 
 
-통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 검증 뒤 현재까지 root 변경은 문서뿐이다.
+통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 검증 뒤 제품·테스트 코드는 변경하지 않았다. 검증 원본·Print 기준의 추가와 문서 기록을 구분한다.
 
-Native Skia 전용 검사·전쪽 Native/fresh WASM·쪽수·확대 판독·lint는 별도 완료 조건이며, 기본 feature 통과로 대신하지 않는다.
+Native Skia 공식 3종(라이브러리 4,040건 및 통합 24건)과 이번 PR의 추가 5개 모듈 14건이 모두 통과했다. 라이브러리의 기존 ignored는 12건이며, focused 실행에서 제외된 다른 테스트를 실패나 ignored로 합산하지 않는다. 전쪽 Native/fresh WASM·쪽수·확대 판독·lint는 별도 완료 조건이며, 회귀 통과로 대신하지 않는다.
 
 ## 적용과 보정 계획
 
@@ -38,3 +38,5 @@ Native Skia 전용 검사·전쪽 Native/fresh WASM·쪽수·확대 판독·lint
 - 실제 검사: 처음/캐시 공급의 primaryFamily·별칭 앞뒤 공백 제거, 가운데 공백 보존, PostScript 이름 무변경, 예전 공백 포함 cache의 무효화·재생성.
 - 테스트 글꼴은 저장소의 `tests/fixtures/native_inline_placeholder/placeholder-contract.ttf`를 사용했고 name table family만 앞뒤 공백을 가진 값으로 바꿨다. 설치 글꼴이 없어도 실행되는 관계 검사다.
 - 실행 로그·중간 JSON은 ignored output에만 보존했다. 이 결과를 `interview.hwp`의 실제 Native/fresh WASM 2쪽 시각 검증이나 최종 승인으로 확대하지 않는다.
+
+PNG 공급·catalogue 검사 `scripts.tests.test_visual_sweep_png`는 40건 통과했다. 앞서 기록한 base 2건 assertion 실패 → 후보 2건 통과의 음성 대조와 별개로 전체 모듈을 실행했다. 실제 interview fresh WASM 검증은 남아 있다.

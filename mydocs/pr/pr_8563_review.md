@@ -24,9 +24,9 @@ fix(typeset): 빈 host 자리차지 표 뒤 다음 문단이 빈 자리차지 �
 
 - [tests/cases/issue_8560_textless_float_host_successor.rs](../../tests/cases/issue_8560_textless_float_host_successor.rs)
 
-통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 검증 뒤 현재까지 root 변경은 문서뿐이다.
+통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 검증 뒤 제품·테스트 코드는 변경하지 않았다. 검증 원본·Print 기준의 추가와 문서 기록을 구분한다.
 
-Native Skia 전용 검사·전쪽 Native/fresh WASM·쪽수·확대 판독·lint는 별도 완료 조건이며, 기본 feature 통과로 대신하지 않는다.
+Native Skia 공식 3종(라이브러리 4,040건 및 통합 24건)과 이번 PR의 추가 5개 모듈 14건이 모두 통과했다. 라이브러리의 기존 ignored는 12건이며, focused 실행에서 제외된 다른 테스트를 실패나 ignored로 합산하지 않는다. 전쪽 Native/fresh WASM·쪽수·확대 판독·lint는 별도 완료 조건이며, 회귀 통과로 대신하지 않는다.
 
 ## 적용과 보정 계획
 
