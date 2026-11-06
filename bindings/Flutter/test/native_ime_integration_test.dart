@@ -166,7 +166,10 @@ void main() {
         document.info!.selection!['focus'],
         containsPair('scalarOffset', 1),
       );
-      final before = await document.request('imeEditContext');
+      final beforeReply = await document.request('imeEditContext');
+      expect(beforeReply['ok'], isTrue);
+      expect(beforeReply['kind'], 'imeEditContext');
+      final before = Map<String, Object?>.from(beforeReply['context']! as Map);
       final valueBefore = editor.value;
       final invalid = valueBefore.copyWith(
         selection: const TextSelection.collapsed(offset: 2),
@@ -175,7 +178,12 @@ void main() {
         Future<void>.sync(() => editor.setEditingValue(invalid)),
         throwsFormatException,
       );
-      expect(await document.request('imeEditContext'), before);
+      // RPC correlation IDs advance on each query; the full Native editing
+      // context, including its revision/selection/composition, must not change.
+      final afterReply = await document.request('imeEditContext');
+      expect(afterReply['ok'], isTrue);
+      expect(afterReply['kind'], 'imeEditContext');
+      expect(afterReply['context'], before);
       expect(document.info!.revision, appendedRevision);
       expect(editor.value, valueBefore);
 
