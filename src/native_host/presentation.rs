@@ -873,7 +873,7 @@ impl NativePresentationRegistry {
                 ColorSpace::new_srgb(),
             );
             {
-                let surface = surfaces::wrap_pixels(&image_info, &mut bytes, stride, None)
+                let mut surface = surfaces::wrap_pixels(&image_info, &mut bytes, stride, None)
                     .ok_or_else(|| {
                         NativeHostError::Unsupported(
                             "could not borrow the CPU presentation pixels".into(),
