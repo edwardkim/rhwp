@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rhwp_native_reference/src/native_document.dart';
+import 'package:rhwp_native_reference/src/native_ffi.dart';
 import 'package:rhwp_native_reference/src/native_texture_view.dart';
 import 'package:rhwp_native_reference/src/native_viewport.dart';
 
@@ -45,7 +47,245 @@ Widget view(NativeTextureController controller, {double width = 300}) =>
       ),
     );
 
+class RetiringTexturePlugin extends FakeTexturePlugin {
+  RetiringTexturePlugin(super.platform);
+  bool closeRequested = false, ownerFinished = false, registered = true;
+
+  @override
+  Map<String, Object?> status() => {
+    ...super.status(),
+    'closing': closeRequested,
+    'closed': closeRequested,
+    'cleanupComplete': ownerFinished,
+    'ownerFinished': ownerFinished,
+    'registered': registered,
+    'unregistered': !registered,
+    'textureUnregisteredNotification': !registered,
+    // Registration/producer completion never returns these immutable credits.
+    'limits': {'outstandingFrames': 4, 'consumerRetirement': false},
+  };
+
+  @override
+  Future<Object?> handle(MethodCall call) async {
+    if (call.method == 'close') {
+      calls.add(call.method);
+      closeRequested = true;
+      return status();
+    }
+    return super.handle(call);
+  }
+
+  void finishOwner() {
+    ownerFinished = true;
+    releasedByPlugin.addAll(owned);
+    owned.clear();
+  }
+}
+
+Future<void> cleanUpTexture(
+  WidgetTester tester,
+  NativeTextureController controller,
+  NativeDocument document,
+  RetiringTexturePlugin plugin,
+) async {
+  plugin.finishOwner();
+  plugin.registered = false;
+  final closing = controller.close();
+  await tester.pump(const Duration(milliseconds: 20));
+  await closing;
+  await tester.pumpWidget(const SizedBox.shrink());
+  controller.dispose();
+  await document.dispose();
+  plugin.uninstall();
+}
+
 void main() {
+  testWidgets(
+    'close keeps Linux Texture painted until cleanup and unregister both finish',
+    (tester) async {
+      final metadata = FakePresentation();
+      final plugin = RetiringTexturePlugin(NativeTexturePlatform.linux)
+        ..install();
+      final document = await opened(tester, GpuTransport());
+      final controller = NativeTextureController(
+        document: document,
+        presentation: metadata,
+        platform: NativeTexturePlatform.linux,
+        pollInterval: const Duration(milliseconds: 10),
+      );
+      try {
+        await tester.pumpWidget(view(controller));
+        await pumpUntil(tester, () => controller.canDisplay);
+        var closed = false;
+        final request = controller.close();
+        expect(identical(controller.close(), request), isTrue);
+        final closing = request.then((_) => closed = true);
+        await tester.pump(const Duration(milliseconds: 20));
+        expect(controller.phase.name, 'closing');
+        expect(closed, isFalse);
+        expect(find.byType(Texture), findsOneWidget);
+        final cover = tester.widget<ColoredBox>(
+          find
+              .descendant(
+                of: find.byKey(const ValueKey('rhwp-native-texture-cover')),
+                matching: find.byType(ColoredBox),
+              )
+              .first,
+        );
+        expect(cover.color.a, 1.0);
+        plugin.finishOwner();
+        await tester.pump(const Duration(milliseconds: 20));
+        expect(
+          closed,
+          isFalse,
+          reason: 'Registered Texture still needs its callback.',
+        );
+        expect(find.byType(Texture), findsOneWidget);
+        plugin.registered = false;
+        await pumpUntil(tester, () => closed);
+        await closing;
+        await tester.pump();
+        expect(controller.phase.name, 'closed');
+        expect(controller.retirementPending, isFalse);
+        expect(find.byType(Texture), findsNothing);
+        expect(metadata.released, isEmpty);
+        expect(plugin.releasedByPlugin, {101});
+        expect(plugin.calls.where((call) => call == 'close').length, 1);
+        expect(plugin.status()['limits'], {
+          'outstandingFrames': 4,
+          'consumerRetirement': false,
+        });
+      } finally {
+        await cleanUpTexture(tester, controller, document, plugin);
+      }
+    },
+  );
+  testWidgets(
+    'retirement timeout is bounded without refunding plugin ownership',
+    (tester) async {
+      final metadata = FakePresentation();
+      final plugin = RetiringTexturePlugin(NativeTexturePlatform.linux)
+        ..install();
+      final document = await opened(tester, GpuTransport());
+      final controller = NativeTextureController(
+        document: document,
+        presentation: metadata,
+        platform: NativeTexturePlatform.linux,
+        pollInterval: const Duration(milliseconds: 10),
+        operationTimeout: const Duration(milliseconds: 100),
+      );
+      try {
+        await tester.pumpWidget(view(controller));
+        await pumpUntil(tester, () => controller.canDisplay);
+        var closed = false;
+        final request = controller.close();
+        final closing = request.then((_) => closed = true);
+        await pumpUntil(tester, () => closed);
+        await closing;
+        expect(controller.phase.name, 'retirePending');
+        expect(controller.retirementPending, isTrue);
+        expect(
+          controller.retirementDiagnostic,
+          isA<NativeCallException>().having(
+            (error) => error.code,
+            'code',
+            'retirePending',
+          ),
+        );
+        expect(find.byType(Texture), findsOneWidget);
+        expect(metadata.released, isEmpty);
+        expect(plugin.owned, {101});
+        final calls = plugin.calls.length;
+        expect(identical(controller.close(), request), isTrue);
+        await tester.pump(const Duration(seconds: 1));
+        expect(
+          plugin.calls.length,
+          calls,
+          reason: 'No unbounded status/retry loop.',
+        );
+        expect(plugin.calls.where((call) => call == 'close').length, 1);
+      } finally {
+        await cleanUpTexture(tester, controller, document, plugin);
+      }
+    },
+  );
+  testWidgets('unmount before retirement reports bounded pending cleanup', (
+    tester,
+  ) async {
+    final plugin = RetiringTexturePlugin(NativeTexturePlatform.linux)
+      ..install();
+    final document = await opened(tester, GpuTransport());
+    final controller = NativeTextureController(
+      document: document,
+      presentation: FakePresentation(),
+      platform: NativeTexturePlatform.linux,
+      pollInterval: const Duration(milliseconds: 10),
+      operationTimeout: const Duration(milliseconds: 100),
+    );
+    try {
+      await tester.pumpWidget(view(controller));
+      await pumpUntil(tester, () => controller.canDisplay);
+      await tester.pumpWidget(const SizedBox.shrink());
+      var closed = false;
+      final closing = controller.close().then((_) => closed = true);
+      await pumpUntil(tester, () => closed);
+      await closing;
+      expect(controller.phase.name, 'retirePending');
+      expect(controller.retirementPending, isTrue);
+      expect(
+        controller.retirementDiagnostic,
+        isA<NativeCallException>().having(
+          (error) => error.code,
+          'code',
+          'textureUnmounted',
+        ),
+      );
+      expect(plugin.owned, {101});
+    } finally {
+      await cleanUpTexture(tester, controller, document, plugin);
+    }
+  });
+  for (final platform in [
+    NativeTexturePlatform.macos,
+    NativeTexturePlatform.windows,
+  ]) {
+    testWidgets(
+      '${platform.name} close needs owner completion and retains immutable frames',
+      (tester) async {
+        final plugin = RetiringTexturePlugin(platform)..install();
+        final document = await opened(tester, GpuTransport());
+        final controller = NativeTextureController(
+          document: document,
+          presentation: FakePresentation(),
+          platform: platform,
+          pollInterval: const Duration(milliseconds: 10),
+        );
+        try {
+          await tester.pumpWidget(view(controller));
+          await pumpUntil(tester, () => controller.canDisplay);
+          var closed = false;
+          final closing = controller.close().then((_) => closed = true);
+          plugin.registered = false;
+          await tester.pump(const Duration(milliseconds: 20));
+          await tester.pump();
+          expect(closed, isFalse);
+          expect(controller.phase.name, 'closing');
+          expect(find.byType(Texture), findsNothing);
+          plugin.finishOwner();
+          await pumpUntil(tester, () => closed);
+          await closing;
+          expect(controller.retirementPending, isFalse);
+          expect(controller.phase.name, 'closed');
+          expect(plugin.status()['limits'], {
+            'outstandingFrames': 4,
+            'consumerRetirement': false,
+          });
+        } finally {
+          await cleanUpTexture(tester, controller, document, plugin);
+        }
+      },
+    );
+  }
   testWidgets(
     'pending Texture stays painted under an opaque CPU cover until publication',
     (tester) async {

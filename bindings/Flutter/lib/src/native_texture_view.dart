@@ -31,6 +31,8 @@ enum NativeTexturePhase {
   visible,
   fallback,
   failed,
+  closing,
+  retirePending,
   closed,
 }
 
@@ -244,6 +246,14 @@ class NativeTextureController extends ChangeNotifier {
   Object? _configurationKey;
   Future<void>? _closeFuture;
   Future<void>? _platformCloseFuture;
+  bool _platformCloseActive = false,
+      _platformCloseSent = false,
+      _createAttempted = false,
+      _platformUnregistered = false,
+      _nativeCloseComplete = false,
+      _retirementPending = false;
+  int _attachedViews = 0;
+  Object? _retirementDiagnostic;
   Timer? _frameTimeout;
   final _releases = <Future<void>>{};
   static int get retainedOwnedSnapshots => _OwnedSnapshot.retained.length;
@@ -251,6 +261,27 @@ class NativeTextureController extends ChangeNotifier {
   bool get canDisplay =>
       _phase == NativeTexturePhase.visible && _localCurrent(_frame);
   bool get needsCpuFallback => _phase == NativeTexturePhase.fallback;
+
+  /// Tracks owner/registration close only, not immutable consumer GPU credits.
+  bool get retirementPending => _retirementPending;
+  Object? get retirementDiagnostic => _retirementDiagnostic;
+  bool get shouldPaintTexture =>
+      textureId != null &&
+      !_platformUnregistered &&
+      _phase != NativeTexturePhase.closed;
+
+  void _attachView() => ++_attachedViews;
+
+  void _detachView() {
+    if (_attachedViews > 0) --_attachedViews;
+    if (_attachedViews == 0 && textureId != null && !_nativeCloseComplete) {
+      _retirementPending = true;
+      _retirementDiagnostic ??= const NativeCallException(
+        'textureUnmounted',
+        'Texture unmounted before native retirement; bounded native retire/quarantine may remain.',
+      );
+    }
+  }
 
   bool _localCurrent(_OwnedSnapshot? snapshot) {
     final stamp = snapshot?.stamp, info = document.info;
@@ -356,7 +387,9 @@ class NativeTextureController extends ChangeNotifier {
         --_rpc;
         --_globalRpc;
         received?.call(value);
-        if ((_closing || _stopped) && method != 'close') {
+        if ((_closing || _stopped) &&
+            method != 'close' &&
+            !_platformCloseActive) {
           unawaited(_closePlatform());
         }
         return value;
@@ -365,7 +398,9 @@ class NativeTextureController extends ChangeNotifier {
         --_rpc;
         --_globalRpc;
         failed?.call(error);
-        if ((_closing || _stopped) && method != 'close') {
+        if ((_closing || _stopped) &&
+            method != 'close' &&
+            !_platformCloseActive) {
           unawaited(_closePlatform());
         }
         Error.throwWithStackTrace(error, stack);
@@ -463,6 +498,7 @@ class NativeTextureController extends ChangeNotifier {
         );
       }
       if (textureId == null) {
+        _createAttempted = true;
         await _invoke(
           'create',
           {'libraryPath': presentation.libraryPath},
@@ -477,6 +513,9 @@ class NativeTextureController extends ChangeNotifier {
                 _signal();
               }
             }
+          },
+          failed: (error) {
+            if (_definiteRejection(error)) _createAttempted = false;
           },
         );
         if (textureId == null || _device == 0) {
@@ -765,38 +804,146 @@ class NativeTextureController extends ChangeNotifier {
     }
   }
 
-  Future<void> _closePlatform() async {
-    final id = textureId;
-    if (id == null || _rpc >= 3 || _globalRpc >= 8) return;
-    await (_platformCloseFuture ??= () async {
-      try {
-        await _invoke('close', {'textureId': id});
-      } catch (_) {
-        /* Public plugins retain bounded retire/quarantine state. */
+  bool _observeCloseStatus(Map<String, Object?> status) {
+    final unregistered =
+        status['registered'] == false ||
+        status['unregistered'] == true ||
+        status['textureUnregisteredNotification'] == true;
+    final registrationChanged = unregistered && !_platformUnregistered;
+    if (unregistered) _platformUnregistered = true;
+    final complete = switch (platform) {
+      NativeTexturePlatform.linux =>
+        status['cleanupComplete'] == true && status['registered'] == false,
+      NativeTexturePlatform.macos || NativeTexturePlatform.windows =>
+        status['ownerFinished'] == true && unregistered,
+    };
+    if (complete) {
+      // Owner/registration completion is not consumer GPU completion or a
+      // refund of immutable/quarantined frame credits on any platform.
+      _nativeCloseComplete = true;
+      _retirementPending = false;
+      _retirementDiagnostic = null;
+      if (_closing) _phase = NativeTexturePhase.closed;
+      _signal();
+    } else if (registrationChanged) {
+      _signal();
+    }
+    return complete;
+  }
+
+  void _retirementUnconfirmed(Object error) {
+    _retirementPending = true;
+    _retirementDiagnostic ??= error;
+    if (_closing) _phase = NativeTexturePhase.retirePending;
+    _signal();
+  }
+
+  Future<void> _closePlatform() {
+    final existing = _platformCloseFuture;
+    if (existing != null) return existing;
+    final done = Completer<void>();
+    _platformCloseFuture = done.future;
+    _platformCloseActive = true;
+    Timer? poll, deadline;
+    var invoking = false;
+    void finish({Object? error}) {
+      if (done.isCompleted) return;
+      poll?.cancel();
+      deadline?.cancel();
+      _platformCloseActive = false;
+      if (error != null) {
+        _retirementUnconfirmed(error);
+        // A create/credit can arrive after this bounded wait. Its existing
+        // ownership observer may start the one native close once the ID is known.
+        if (!_platformCloseSent) _platformCloseFuture = null;
       }
-    }());
+      done.complete();
+    }
+
+    void received(Map<String, Object?> status) {
+      if (_observeCloseStatus(status)) finish();
+    }
+
+    Future<void> attempt() async {
+      if (done.isCompleted || invoking) return;
+      final id = textureId;
+      if (id == null) {
+        if (!_createAttempted && !_working) {
+          _nativeCloseComplete =
+              true; // No native texture handle was transferred.
+          _retirementPending = false;
+          _retirementDiagnostic = null;
+          if (_closing) _phase = NativeTexturePhase.closed;
+          _signal();
+          finish();
+        }
+        return;
+      }
+      if (_rpc >= 3 || _globalRpc >= 8) return;
+      invoking = true;
+      try {
+        final method = _platformCloseSent ? 'status' : 'close';
+        _platformCloseSent = true;
+        await _invoke(method, {'textureId': id}, received: received);
+      } catch (error) {
+        // Native close/status is never retried beyond this single deadline.
+        // Late original replies still observe real cleanup and release RPC credit.
+        finish(error: error);
+      } finally {
+        invoking = false;
+      }
+    }
+
+    deadline = Timer(operationTimeout, () {
+      finish(
+        error: const NativeCallException(
+          'retirePending',
+          'Native texture retirement was not confirmed before the deadline; bounded native retire/quarantine may remain.',
+        ),
+      );
+    });
+    poll = Timer.periodic(pollInterval, (_) => unawaited(attempt()));
+    unawaited(attempt());
+    return done.future;
   }
 
   Future<void> close() {
     if (_closeFuture != null) return _closeFuture!;
+    final done = Completer<void>();
+    _closeFuture =
+        done.future; // Publish idempotency before notifying listeners.
     _closing = true;
     _stopped = true;
     ++_generation;
     _wanted = false;
-    _phase = NativeTexturePhase.closed;
+    _phase = NativeTexturePhase.closing;
+    _retirementPending = textureId != null || _createAttempted;
     _timer.cancel();
     _frameTimeout?.cancel();
     _signal();
     unawaited(_infoChanges.cancel());
     unawaited(_invalidations.cancel());
-    _closeFuture = () async {
+    unawaited(() async {
       await _closePlatform();
+      if (_nativeCloseComplete) {
+        _phase = NativeTexturePhase.closed;
+        _signal();
+      } else {
+        _retirementUnconfirmed(
+          _retirementDiagnostic ??
+              const NativeCallException(
+                'retirePending',
+                'Native texture retirement remains unconfirmed.',
+              ),
+        );
+      }
       if (_releases.isNotEmpty) {
         try {
           await Future.wait(_releases.toList()).timeout(operationTimeout);
         } catch (_) {}
       }
-    }();
+      done.complete();
+    }());
     return _closeFuture!;
   }
 
@@ -834,6 +981,7 @@ class _NativeTextureViewState extends State<NativeTextureView> {
   @override
   void initState() {
     super.initState();
+    widget.controller._attachView();
     widget.controller.addListener(_changed);
   }
 
@@ -862,7 +1010,9 @@ class _NativeTextureViewState extends State<NativeTextureView> {
     super.didUpdateWidget(oldWidget);
     if (!identical(oldWidget.controller, widget.controller)) {
       oldWidget.controller.removeListener(_changed);
+      oldWidget.controller._detachView();
       unawaited(oldWidget.controller.close());
+      widget.controller._attachView();
       widget.controller.addListener(_changed);
     }
     _configure();
@@ -875,8 +1025,7 @@ class _NativeTextureViewState extends State<NativeTextureView> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (controller.textureId != null &&
-            controller.phase != NativeTexturePhase.closed)
+        if (controller.shouldPaintTexture)
           IgnorePointer(
             child: Texture(
               textureId: controller.textureId!,
@@ -900,6 +1049,7 @@ class _NativeTextureViewState extends State<NativeTextureView> {
   @override
   void dispose() {
     widget.controller.removeListener(_changed);
+    widget.controller._detachView();
     unawaited(widget.controller.close());
     super.dispose();
   }

@@ -121,3 +121,26 @@ poll이 결과를 받는 경우에도 release callback을 실행하므로 이 ca
 `viewGeneration`과 GPU의 `presentationGeneration`을 분리하며, 다른 viewport가 presentation을
 획득하면 이전 뷰는 재획득 경쟁 없이 중단한다. snapshotInfo.current만으로 view/device 유효성을
 추정하지 않고 전체 stamp를 확인해야 한다.
+
+## Texture 종료와 등록 해제
+
+`NativeTextureController.close()`는 같은 Future를 반환한다. 종료를 시작하면 `closing` 상태로
+전환하고 이전 문서 픽셀을 불투명 cover로 가린다. **`NativeTextureView`를 mount한 상태로
+close를 기다린 뒤 제거한다.** cover 아래 Texture는 계속 paint된다. Linux의 자기 Texture
+populate callback이 native GL 정리를 수행하고, 그 뒤 GTK에서 등록을 해제하기 때문이다.
+`Offstage`, `Opacity(0)`, widget 제거를 먼저 적용하면 이 정상 정리 경로를 사용할 수 없다.
+
+Linux는 `cleanupComplete:true`와 `registered:false`를 모두 확인한 뒤 `closed`가 된다.
+macOS는 `ownerFinished`와 `textureUnregisteredNotification`, Windows는 `ownerFinished`와
+`unregistered`를 확인한다. 명시적인 `registered:false`도 등록 해제 증거로 소비한다.
+이 완료는 producer/등록 수명의 종료다. macOS/Windows의 immutable·quarantined GPU 프레임은
+계속 보유될 수 있으며, consumer GPU 완료나 프레임 credit 환급을 뜻하지 않는다.
+
+close/status 확인은 기존 controller별 3개·isolate 전체 8개 RPC 한도와 `operationTimeout`의
+단일 deadline을 지킨다. 시간 초과나 먼저 unmount한 경우에는 `retirePending` 상태,
+`retirementPending`, `retirementDiagnostic`으로 미확정 정리를 알린다. close Future는 bounded
+대기를 마치지만 정리 완료를 보증하지 않는다. 자동 무한 status polling이나 수동 native retire는
+수행하지 않으며 native의 bounded retire/quarantine 정책을 유지한다. 늦은 원래 RPC는 실제 응답까지
+credit을 보유한다. 늦게 도착한 create ID는 기존 소유권 observer에서 bounded close를 진행할 수 있다.
+등록 해제가 확인되지 않은 Texture는 여전히 cover 아래 paint할 수 있으며, 이미 등록이 해제된 것은
+제거한다. snapshot 전달·미수령 reply의 별도 해제 observer도 계속 유효하다.
