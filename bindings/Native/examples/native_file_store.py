@@ -173,6 +173,54 @@ def publish_document(path, data, expected=None):
         raise PublicationError(path) from error
 
 
+def _validate_recovery_header(header):
+    integer = lambda value: isinstance(value, int) and not isinstance(value, bool)
+    if (not isinstance(header, dict) or not integer(header.get("version"))
+            or header["version"] != 1 or header.get("format") != "hwpx"):
+        raise ValueError("unsupported recovery metadata")
+    if (not integer(header.get("revision")) or header["revision"] < 0
+            or not integer(header.get("byteLength")) or header["byteLength"] < 0):
+        raise ValueError("invalid recovery revision or byte length")
+    report = header.get("report")
+    if not isinstance(report, dict) or not integer(report.get("count")) or report["count"] < 0:
+        raise ValueError("invalid recovery content-loss report")
+    source, stamp = header.get("sourcePath"), header.get("sourceStamp")
+    if (source is None) != (stamp is None):
+        raise ValueError("recovery source path and stamp must be paired")
+    if source is not None and (not isinstance(source, str) or not isinstance(stamp, dict)):
+        raise ValueError("invalid recovery source metadata")
+
+
+def publish_recovery(path, data, revision, report, source_path=None, source_stamp=None):
+    """Publish one recovery artifact; never read, replace or delete its source.
+
+    The source path/stamp are opaque provenance captured when the document was
+    opened. The artifact is always a new file. Its metadata and HWPX payload have
+    separate bounds, so the header does not reduce the document byte allowance.
+    """
+    if len(data) > MAX_BYTES:
+        raise ValueError("recovery document exceeds the byte limit")
+    header = {"version": 1, "format": "hwpx", "revision": revision,
+              "sourcePath": str(source_path) if source_path is not None else None,
+              "sourceStamp": asdict(source_stamp) if source_stamp is not None else None,
+              "digest": hashlib.sha256(data).hexdigest(), "byteLength": len(data),
+              "report": report}
+    _validate_recovery_header(header)
+    encoded = json.dumps(header, ensure_ascii=False, allow_nan=False).encode("utf-8")
+    if len(encoded) > MAX_RECOVERY_HEADER:
+        raise ValueError("recovery metadata exceeds the byte limit")
+    path = Path(path)
+    path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    _write_staged(path, MAGIC + struct.pack("<I", len(encoded)) + encoded + data, None)
+    try:
+        stored_header, stored_data = read_recovery(path)
+        if stored_header != header or stored_data != data:
+            raise ExternalFileChanged("recovery changed after file publication")
+        return path
+    except Exception as error:
+        raise PublicationError(path) from error
+
+
 class NativeFileStore:
     """Same-thread adapter; the application owns its session and destination paths."""
 
@@ -236,23 +284,12 @@ class NativeFileStore:
             return None
         if self._autosave_time is not None and now - self._autosave_time < interval:
             return None
-        directory = Path(directory)
-        directory.mkdir(mode=0o700, parents=True, exist_ok=True)
         prepared = self.host.request(self.handle, op="prepareSave", format="hwpx")
         try:
             data = self.host.copy_buffer(prepared)
-            if len(data) > MAX_BYTES:
-                raise ValueError("recovery document exceeds the byte limit")
-            header = {"version": 1, "format": "hwpx", "revision": prepared["revision"],
-                      "sourcePath": str(self.source_path) if self.source_path else None,
-                      "sourceStamp": asdict(self.source_stamp) if self.source_stamp else None,
-                      "digest": hashlib.sha256(data).hexdigest(), "byteLength": len(data),
-                      "report": prepared["report"]}
-            encoded = json.dumps(header, ensure_ascii=False).encode("utf-8")
-            if len(encoded) > MAX_RECOVERY_HEADER:
-                raise ValueError("recovery metadata exceeds the byte limit")
-            path = directory / (uuid.uuid4().hex + ".rhwp-recovery")
-            _write_staged(path, MAGIC + struct.pack("<I", len(encoded)) + encoded + data, None)
+            path = Path(directory) / (uuid.uuid4().hex + ".rhwp-recovery")
+            publish_recovery(path, data, prepared["revision"], prepared["report"],
+                             self.source_path, self.source_stamp)
             self._autosave_revision, self._autosave_time = prepared["revision"], now
             return path
         finally:
@@ -275,10 +312,12 @@ def read_recovery(path):
         size, = struct.unpack("<I", size_bytes)
         if size > MAX_RECOVERY_HEADER:
             raise ValueError("recovery metadata exceeds the byte limit")
-        header = json.loads(source.read(size).decode("utf-8"))
+        encoded = source.read(size)
+        if len(encoded) != size:
+            raise ValueError("truncated recovery metadata")
+        header = json.loads(encoded.decode("utf-8"))
         data = source.read(MAX_BYTES + 1)
-    if not isinstance(header, dict) or header.get("version") != 1 or header.get("format") != "hwpx":
-        raise ValueError("unsupported recovery metadata")
+    _validate_recovery_header(header)
     if len(data) > MAX_BYTES or len(data) != header.get("byteLength"):
         raise ValueError("recovery document length mismatch")
     if hashlib.sha256(data).hexdigest() != header.get("digest"):

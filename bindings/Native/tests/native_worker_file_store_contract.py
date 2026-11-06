@@ -18,7 +18,7 @@ import native_file_store as files
 from native_worker_file_store import NativeWorkerFileStore
 
 
-class WorkerFileStoreContracts(unittest.TestCase):
+class WorkerFileStoreFixture:
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory(prefix="rhwp-worker-file-")
         self.addCleanup(self.directory.cleanup)
@@ -62,6 +62,8 @@ class WorkerFileStoreContracts(unittest.TestCase):
         self.adapter = NativeWorkerFileStore(5, self.path, stamp)
         return stamp
 
+
+class WorkerFileStoreContracts(WorkerFileStoreFixture, unittest.TestCase):
     def test_commands_and_bytes_are_bound_to_the_prepared_document(self):
         operation = self.begin()
         self.assertEqual(operation.prepare_command,
@@ -390,6 +392,236 @@ class WorkerFileStoreContracts(unittest.TestCase):
         self.assertFalse(new_document.busy)
 
 
+class WorkerRecoveryContracts(WorkerFileStoreFixture, unittest.TestCase):
+    def recovery(self, *, now=100, target=None, report=None):
+        operation = self.adapter.begin_recovery(
+            target or self.target, self.path.parent / "recovery", is_dirty=True, now=now)
+        self.assertIsNotNone(operation)
+        operation.receive_prepared(self.response(
+            revision=operation.revision, report=self.report if report is None else report),
+            self.copy_buffer)
+        return operation
+
+    def cleanup(self, current_revision=3, saved_revision=0, **changes):
+        dirty = current_revision != saved_revision
+        return {"ok": True, "kind": "saveStatus", "documentId": 5, "isDirty": dirty,
+                "status": {"revision": current_revision, "savedRevision": saved_revision,
+                           "dirty": dirty}, **changes}
+
+    def finish_recovery(self, operation, **changes):
+        operation.publish()
+        result = operation.recovery_completed(self.cleanup(**changes))
+        return result
+
+    def rewrite_recovery(self, path, header, data):
+        encoded = json.dumps(header).encode("utf-8")
+        path.write_bytes(files.MAGIC + files.struct.pack("<I", len(encoded)) + encoded + data)
+
+    def test_recovery_cancels_without_ack_or_source_adoption(self):
+        original_stamp = self.opened()
+        operation = self.recovery()
+        self.assertEqual(operation.format, "hwpx")
+        operation.publish()
+        self.assertTrue(self.adapter.busy)
+        with self.assertRaises(RuntimeError):
+            _ = operation.acknowledge_command
+        with self.assertRaises(RuntimeError):
+            operation.acknowledged(self.acknowledgement())
+        self.assertEqual(operation.cancel_command,
+                         {"op": "cancelSave", "documentId": 5, "token": 7})
+        result = operation.recovery_completed(self.cleanup())
+        self.assertTrue(result["recovery"])
+        self.assertTrue(result["isDirty"])
+        self.assertEqual(result["revision"], 3)
+        self.assertEqual(self.path.read_bytes(), b"original")
+        self.assertEqual(self.adapter.source_path, self.path)
+        self.assertEqual(self.adapter.source_stamp, original_stamp)
+        self.assertFalse(self.adapter.busy)
+
+    def test_normal_save_and_recovery_share_the_same_active_slot(self):
+        operation = self.begin()
+        self.assertIsNone(self.adapter.begin_recovery(
+            self.target, self.path.parent, is_dirty=True, now=100))
+        operation.cancelled()
+        operation = self.recovery()
+        with self.assertRaises(RuntimeError):
+            self.begin()
+        self.finish_recovery(operation)
+        self.begin()
+
+    def test_clean_document_and_invalid_clock_do_not_prepare_a_snapshot(self):
+        self.assertIsNone(self.adapter.begin_recovery(
+            self.target, self.path.parent, is_dirty=False, now=100))
+        for arguments in ({"now": float("nan")}, {"now": float("inf")},
+                          {"interval": 0}, {"interval": -1}, {"interval": float("inf")}):
+            with self.subTest(arguments=arguments):
+                with self.assertRaises(ValueError):
+                    self.adapter.begin_recovery(self.target, self.path.parent, is_dirty=True, **arguments)
+        with self.assertRaises(ValueError):
+            self.adapter.begin_recovery(self.target, self.path.parent, is_dirty=1)
+        self.assertFalse(self.adapter.busy)
+        self.assertFalse(list(self.path.parent.glob("*.rhwp-recovery")))
+
+    def test_duplicate_revision_and_minimum_interval_are_enforced(self):
+        self.finish_recovery(self.recovery(now=100))
+        self.assertIsNone(self.adapter.begin_recovery(
+            self.target, self.path.parent, is_dirty=True, now=1000))
+        newer = dict(self.target, revision=4)
+        self.assertIsNone(self.adapter.begin_recovery(
+            newer, self.path.parent, is_dirty=True, now=129.9))
+        operation = self.recovery(now=130, target=newer)
+        self.finish_recovery(operation, current_revision=4)
+        self.assertEqual(self.adapter._autosave_revision, 4)
+        self.assertEqual(self.adapter._autosave_time, 130)
+
+    def test_recovery_keeps_exact_prepared_bytes_and_loss_report_without_a_dialog(self):
+        report = {"count": 1, "losses": [{"kind": "unsupportedObject"}]}
+        expected_report = deepcopy(report)
+        operation = self.recovery(report=report)
+        self.assertFalse(operation.requires_loss_acceptance)
+        expected_bytes = bytes(self.data)
+        self.data[:] = b"a later revision"
+        report["losses"].clear()
+        operation.publish()
+        header, data = files.read_recovery(operation.path)
+        self.assertEqual(data, expected_bytes)
+        self.assertEqual(header["report"], expected_report)
+        result = operation.recovery_completed(self.cleanup(current_revision=4))
+        self.assertEqual(result["report"], expected_report)
+        self.assertEqual(result["currentRevision"], 4)
+        self.assertTrue(result["isDirty"])
+
+    def test_source_fingerprint_stays_bound_to_opened_bytes_after_external_changes(self):
+        opened_stamp = self.opened()
+        operation = self.recovery()
+        self.path.write_bytes(b"external source edit")
+        real_read = files.read_document
+
+        def do_not_read_source(path):
+            self.assertNotEqual(Path(path), self.path)
+            return real_read(path)
+
+        with patch.object(files, "read_document", side_effect=do_not_read_source):
+            operation.publish()
+        header, data = files.read_recovery(operation.path)
+        self.assertEqual(header["sourcePath"], str(self.path))
+        self.assertEqual(header["sourceStamp"], files.asdict(opened_stamp))
+        self.assertEqual(self.path.read_bytes(), b"external source edit")
+        self.assertEqual(data, self.data)
+        operation.recovery_completed(self.cleanup())
+
+    def test_stale_cleanup_preserves_artifact_and_leaves_new_document_untouched(self):
+        operation = self.recovery()
+        operation.publish()
+        new_document = NativeWorkerFileStore(99)
+        with self.assertRaises(files.PublicationError):
+            operation.recovery_completed({"ok": False, "code": "staleDocument", "error": "replaced"})
+        self.assertTrue(self.adapter.busy)
+        self.assertEqual(files.read_recovery(operation.path)[1], self.data)
+        operation.cancelled()
+        self.assertFalse(self.adapter.busy)
+        self.assertIsNone(self.adapter.begin_recovery(
+            self.target, self.path.parent, is_dirty=True, now=1000))
+        self.assertFalse(new_document.busy)
+        self.assertIsNone(new_document.source_path)
+        self.assertIsNone(new_document.source_stamp)
+
+    def test_cleanup_rejects_mismatched_document_or_checkpoint_status(self):
+        for reply in (self.cleanup(documentId=99), self.cleanup(isDirty=False),
+                      self.cleanup(saved_revision=4), self.cleanup(current_revision=2)):
+            with self.subTest(reply=reply):
+                self.adapter = NativeWorkerFileStore(5)
+                operation = self.recovery()
+                operation.publish()
+                with self.assertRaises(files.PublicationError):
+                    operation.recovery_completed(reply)
+                self.assertTrue(operation.path.exists())
+                operation.cancelled()
+
+    def test_cleanup_cannot_complete_before_a_verified_publication(self):
+        operation = self.recovery()
+        with self.assertRaises(RuntimeError):
+            operation.recovery_completed(self.cleanup())
+        operation.cancelled()
+        self.assertIsNone(self.adapter._autosave_revision)
+        self.assertFalse(operation.path.exists())
+
+    def test_failed_publication_does_not_advance_duplicate_or_interval_state(self):
+        operation = self.recovery()
+        with patch.object(files.os, "fsync", side_effect=OSError("disk full")):
+            with self.assertRaises(OSError):
+                operation.publish()
+        self.assertEqual(operation.cancel_command["token"], 7)
+        operation.cancelled()
+        self.assertFalse(operation.path.exists())
+        self.assertIsNone(self.adapter._autosave_revision)
+        self.assertIsNotNone(self.adapter.begin_recovery(
+            self.target, self.path.parent, is_dirty=True, now=100))
+
+    def test_header_limit_does_not_reduce_the_document_payload_allowance(self):
+        operation = self.recovery()
+        with patch.object(files, "MAX_BYTES", len(self.data)):
+            operation.publish()
+            self.assertEqual(files.read_recovery(operation.path)[1], self.data)
+        self.assertGreater(operation.path.stat().st_size, len(self.data))
+        operation.recovery_completed(self.cleanup())
+
+    def test_oversized_recovery_metadata_is_rejected_before_creating_an_artifact(self):
+        operation = self.recovery(report={"count": 1, "losses": ["x" * files.MAX_RECOVERY_HEADER]})
+        with self.assertRaises(ValueError):
+            operation.publish()
+        self.assertFalse(operation.path.exists())
+        self.assertEqual(operation.cancel_command["token"], 7)
+        operation.cancelled()
+
+    def test_recovery_publication_is_exclusive_and_never_overwrites_existing_files(self):
+        operation = self.recovery()
+        operation.path.parent.mkdir(parents=True)
+        operation.path.write_bytes(b"existing artifact")
+        with self.assertRaises(FileExistsError):
+            operation.publish()
+        self.assertEqual(operation.path.read_bytes(), b"existing artifact")
+        operation.cancelled()
+
+    def test_corrupt_truncated_and_unsupported_recovery_is_rejected(self):
+        operation = self.recovery()
+        operation.publish()
+        valid = operation.path.read_bytes()
+        header, payload = files.read_recovery(operation.path)
+        broken = (b"", b"bad signature", files.MAGIC + b"\0",
+                  files.MAGIC + files.struct.pack("<I", files.MAX_RECOVERY_HEADER + 1),
+                  valid[:-1], valid + b"extra", valid[:len(files.MAGIC) + 5])
+        for data in broken:
+            with self.subTest(data=data[:20]):
+                operation.path.write_bytes(data)
+                with self.assertRaises(ValueError):
+                    files.read_recovery(operation.path)
+        changes = ({"version": 2}, {"version": True}, {"format": "hwp"},
+                   {"revision": -1}, {"byteLength": True}, {"digest": "wrong"},
+                   {"report": None}, {"sourcePath": "unexpected", "sourceStamp": None})
+        for change in changes:
+            with self.subTest(change=change):
+                self.rewrite_recovery(operation.path, dict(header, **change), payload)
+                with self.assertRaises(ValueError):
+                    files.read_recovery(operation.path)
+
+    def test_recovery_metadata_paths_are_only_returned_and_never_followed(self):
+        operation = self.recovery()
+        operation.publish()
+        header, payload = files.read_recovery(operation.path)
+        other = self.path.with_name("must-not-change.hwpx")
+        other.write_bytes(b"private source")
+        header["sourcePath"] = str(other)
+        header["sourceStamp"] = {"digest": "untrusted metadata"}
+        self.rewrite_recovery(operation.path, header, payload)
+        with patch.object(files, "read_document", side_effect=AssertionError("source followed")):
+            actual_header, actual_data = files.read_recovery(operation.path)
+        self.assertEqual(actual_header["sourcePath"], str(other))
+        self.assertEqual(actual_data, payload)
+        self.assertEqual(other.read_bytes(), b"private source")
+        self.assertTrue(other.exists())
+
+
 def native_roundtrip(library):
     """Exercise the same stages with real worker completions and owned buffers."""
     from native_worker import NativeWorker
@@ -467,9 +699,77 @@ def native_roundtrip(library):
             current = accepted(worker, {"op": "info"})["info"]
             if current != fresh or not stale_path.exists() or adapter.busy:
                 raise AssertionError("stale acknowledgement changed the new document or lost its output")
+
+            source_bytes, source_stamp = files.read_document(stale_path)
+            opened = worker.wait(worker.open_bytes(source_bytes, replace={
+                "documentId": fresh["documentId"], "revision": fresh["revision"]}))
+            if not opened.get("ok"):
+                raise AssertionError(opened)
+            info = opened["info"]
+            target = {"documentId": info["documentId"], "revision": info["revision"]}
+            accepted(worker, {"op": "beginEdit", "target": target,
+                              "selection": {"anchor": position, "focus": position}})
+            edited = accepted(worker, {"op": "replace", "target": target, "text": "복구 "})
+            target["revision"] = edited["outcome"]["revision"]
+            adapter = NativeWorkerFileStore(target["documentId"], stale_path, source_stamp)
+            before = accepted(worker, {"op": "info"})["info"]
+            recovery = adapter.begin_recovery(target, Path(directory) / "recovery",
+                                               is_dirty=before["isDirty"], now=100)
+            if recovery is None:
+                raise AssertionError("dirty document did not prepare recovery")
+            recovery.receive_prepared(accepted(worker, recovery.prepare_command), worker.copy_buffer)
+            io.submit(recovery.publish).result(timeout=10)
+            cleanup = accepted(worker, recovery.cancel_command)
+            recovery.recovery_completed(cleanup)
+            if cleanup["status"]["savedRevision"] != info["revision"]:
+                raise AssertionError("recovery advanced the original save checkpoint")
+            if accepted(worker, {"op": "info"})["info"] != before:
+                raise AssertionError("recovery changed the dirty document state")
+            if stale_path.read_bytes() != source_bytes:
+                raise AssertionError("recovery overwrote its source")
+            header, recovered_bytes = files.read_recovery(recovery.path)
+            if header["sourceStamp"] != files.asdict(source_stamp):
+                raise AssertionError("recovery did not retain the opened source fingerprint")
+            if adapter.begin_recovery(target, recovery.path.parent, is_dirty=True, now=200) is not None:
+                raise AssertionError("unchanged revision created duplicate recovery")
+
+            with NativeWorker(library) as restored:
+                reopened = restored.wait(restored.open_bytes(recovered_bytes))
+                if not reopened.get("ok"):
+                    raise AssertionError(reopened)
+                restored_info = reopened["info"]
+                restored_target = {"documentId": restored_info["documentId"],
+                                   "revision": restored_info["revision"]}
+                restored_store = NativeWorkerFileStore(restored_target["documentId"])
+                restored_path = Path(directory) / "explicitly-restored.hwpx"
+                saved = restored_store.begin_save(restored_target, restored_path)
+                saved.receive_prepared(accepted(restored, saved.prepare_command), restored.copy_buffer)
+                io.submit(saved.publish).result(timeout=10)
+                saved.acknowledged(accepted(restored, saved.acknowledge_command))
+                if restored.host.read_text(restored_path).strip() != "복구 가나다 이후 편집":
+                    raise AssertionError("worker recovery reopened different document content")
+
+            edited = accepted(worker, {"op": "replace", "target": target, "text": "추가 "})
+            target["revision"] = edited["outcome"]["revision"]
+            stale_recovery = adapter.begin_recovery(target, recovery.path.parent, is_dirty=True, now=131)
+            stale_recovery.receive_prepared(accepted(worker, stale_recovery.prepare_command), worker.copy_buffer)
+            io.submit(stale_recovery.publish).result(timeout=10)
+            fresh = accepted(worker, {"op": "new", "replace": target})["info"]
+            cleanup = worker.wait(worker.submit(stale_recovery.cancel_command))
+            try:
+                stale_recovery.recovery_completed(cleanup)
+            except files.PublicationError:
+                stale_recovery.cancelled()
+            else:
+                raise AssertionError("stale recovery cleanup was accepted")
+            if accepted(worker, {"op": "info"})["info"] != fresh or adapter.busy:
+                raise AssertionError("old recovery cleanup changed the new document")
+            files.read_recovery(stale_recovery.path)
     print(json.dumps({"ok": True, "nativeWorkerSave": True, "savedRevisionBytes": True,
                       "laterEditDirty": True, "hwpHwpxReopen": True,
-                      "externalConflict": True, "staleDocumentPublicationPreserved": True}))
+                      "externalConflict": True, "staleDocumentPublicationPreserved": True,
+                      "workerRecoveryReopen": True, "recoveryPreservedDirtyCheckpoint": True,
+                      "staleRecoveryPublicationPreserved": True}))
 
 
 if __name__ == "__main__":
