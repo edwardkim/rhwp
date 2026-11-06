@@ -172,8 +172,8 @@
     },
     {
       "path": "prior-scope-page-comparison.tsv",
-      "sha256": "804fe91b4cad1fa6cfee181671e2a1cceeaf688cb2887fb7ffddd37c50236672",
-      "bytes": 210576
+      "sha256": "babecb8e5b6af8dc6e51f7bae599fe83715c16b8a10154ee05aa3f5a179178cf",
+      "bytes": 209743
     },
     {
       "path": "prior-scope-summary.json",

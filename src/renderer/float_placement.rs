@@ -9580,7 +9580,9 @@ pub(crate) fn horizontal_range(
         width_px,
         common.horz_align,
         h_offset,
-    );
+    ) + overlay_outer_frame::overlay_outer_margin_left_hu(common)
+        .map(|margin| hwpunit_to_px(margin, dpi))
+        .unwrap_or(0.0);
     (x, x + width_px.max(0.0))
 }
 

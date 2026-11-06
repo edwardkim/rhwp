@@ -6798,16 +6798,30 @@ impl LayoutEngine {
                             col_area.x * 2.0 + col_area.width
                         }
                     });
-                    (0.0, paper_w)
+                    // 용지/쪽 기준 글앞·글뒤 표도 오프셋은 바깥여백 상자의
+                    // 원점이다. 측정의 horizontal_range와 같은 여백을 한 번
+                    // 소비하고, 표 자체의 저장 폭과 세로 절대 배치는 보존한다.
+                    let om_l =
+                        crate::renderer::float_placement::overlay_table_outer_margin_left_hu(table)
+                            .filter(|_| !topbottom_outer_margin_already_applied)
+                            .map(|hu| hwpunit_to_px(hu, self.dpi))
+                            .unwrap_or(0.0);
+                    (om_l, paper_w - om_l)
                 }
                 HorzRelTo::Page => {
                     // Task #347: 본문 영역(body_area) 기준. 미설정 시 col_area 폴백.
                     let body = self.current_body_area.get();
-                    if body.2 > 0.0 {
+                    let (ref_x, ref_w) = if body.2 > 0.0 {
                         (body.0, body.2)
                     } else {
                         (col_area.x, col_area.width)
-                    }
+                    };
+                    let om_l =
+                        crate::renderer::float_placement::overlay_table_outer_margin_left_hu(table)
+                            .filter(|_| !topbottom_outer_margin_already_applied)
+                            .map(|hu| hwpunit_to_px(hu, self.dpi))
+                            .unwrap_or(0.0);
+                    (ref_x + om_l, ref_w - om_l)
                 }
                 HorzRelTo::Para => {
                     // [#7063] 왼쪽 정렬 자리차지 표의 저장 `horzOffset` 은 **바깥

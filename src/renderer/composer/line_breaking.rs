@@ -308,7 +308,7 @@ fn break_before_text_token(
 /// 같은 폭의 U+00B7·ASCII 마침표는 라틴 낱말을 유지한다. 글꼴 슬롯과
 /// 줄 경계는 별도 계약이며, 이미 분리한 기호 토큰의 끝을 공통 소비한다.
 fn can_break_after_text_token(ch: char, korean_break_unit: u8) -> bool {
-    if is_hangul(ch) {
+    if is_hangul(ch) || ch.is_ascii_digit() {
         korean_break_unit == 1
     } else {
         is_cjk_ideograph(ch) || matches!(ch, '\u{2024}' | '\u{2027}')
@@ -369,6 +369,22 @@ fn is_latin(ch: char) -> bool {
 /// 곡선·아래 따옴표는 종전처럼 낱말을 끊는다.
 fn stays_in_latin_word(ch: char) -> bool {
     is_lang_neutral(ch) || matches!(ch, '\u{00A1}'..='\u{00BF}')
+}
+
+/// 한글 글자 단위 조판에서 비라틴 줄머리 금칙 앞의 숫자는 영문 낱말이 아니다.
+/// 독립 한컴 Print는 `140℃`를 `14|0℃`로 나누지만 `140%`와 `ABC℃`는
+/// 낱말째 이월한다. 마지막 숫자와 금칙 문자는 기존 글자 토큰의 흡수 규칙이
+/// 함께 소유한다. 글꼴 슬롯이나 숫자의 실제 전진폭은 바꾸지 않는다.
+fn numeric_run_before_non_latin_closer(chars: &[char], start: usize) -> Option<usize> {
+    let end = start
+        + chars[start..]
+            .iter()
+            .take_while(|ch| ch.is_ascii_digit())
+            .count();
+    chars
+        .get(end)
+        .filter(|ch| is_line_start_forbidden(**ch) && !is_latin(**ch) && !stays_in_latin_word(**ch))
+        .map(|_| end)
 }
 
 /// CJK 문자 여부 (한자/일본어 — 개별 분할 대상)
@@ -538,6 +554,8 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
         .with_space_metric(space_metric)
         .with_literal_figure_spaces(literal_figure_spaces);
     let mut current_lang: usize = 0;
+    // 같은 숫자열의 끝은 한 번만 찾는다. 긴 숫자열을 글자마다 재탐색하지 않는다.
+    let mut numeric_closer_end = 0;
 
     while i < text_len {
         storage.reserve(&mut tokens, 1)?;
@@ -649,7 +667,12 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
         // 어절 단위 — 스키마 명목과 반대 (한컴 통제 실측 3중 확증: #2169
         // kbu 사다리, 80168 r10, #2185 giant-cell LINE_SEG [0,44,84,122]
         // 보존 대조). 종전 == 1 어절 분기는 역해석 (0da18bbc 회귀).
-        if is_hangul(ch) {
+        if korean_break_unit == 1 && ch.is_ascii_digit() && i >= numeric_closer_end {
+            numeric_closer_end = numeric_run_before_non_latin_closer(text_chars, i).unwrap_or(i);
+        }
+        let numeric_closer =
+            korean_break_unit == 1 && ch.is_ascii_digit() && i < numeric_closer_end;
+        if is_hangul(ch) || numeric_closer {
             if korean_break_unit == 0 {
                 // 어절 모드: 연속 한글 + 후행 금칙 문자를 하나의 토큰으로
                 let start = i;
