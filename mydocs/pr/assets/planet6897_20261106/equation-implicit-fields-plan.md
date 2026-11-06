@@ -375,3 +375,21 @@ fresh WASM·보호17문서1770쪽·전체 회귀·필수 lint·최종 브라우�
 ignored output의 `implicit-r25-full-native-comparison.json`, producer/source
 receipt와 `implicit-r25-native-full/{report-628,report-838,stored-band}`에 실제
 명령·TSV·입력/PDF/실행 파일 해시를 보존했다.
+
+### R25 전306쪽/backend 완료와 최종 CanvasKit 소비 확인
+
+R25 Native/fresh WASM 전306쪽/backend가 모두 독립 Print와 쪽수 일치·90%이상이며,
+R11 표시값 하락은0쪽이다. report-628 최저92.99/96.06%, report-838 최저94.99/94.94%,
+저장 밴드 전2쪽은 양쪽100%다. 123~125쪽의 양쪽 review/overlay에서 표4-12~4-14와
+뒤 본문·각주72~74의 같은 쪽 소속을 직접 판독했다. 정식 증거는
+[전쪽 TSV와 입력·PDF provenance](pr8642/r25/input-provenance.json)에 보존한다.
+
+R26c fresh WASM의 실제 보고서18쪽 layoutBox를 실제 Chromium의 CanvasKitLayerRenderer에
+공급해 선언된 분할 한글 프로그램과 레거시 수식 프로그램을 준비했다. 원래 좌표·기준선·기울임을
+유지하고 SVG 우회를 제거한 직접 layout replay가 성공했다. 초기 진단은 Vite의 자동 재탐색·
+잘못된 readFace 인수 및 누락된 레거시 host 프로그램 때문에 실패했다. 진단 환경을 고친 뒤
+제품 코드 변경 없이 성공한 결과이며, 그 실패를 정상 소비 경로의 회귀로 분류하지 않는다.
+[실제 실행·글꼴 프로그램 해시·WASM 해시](pr8642/r25/canvaskit-equation-consumer.json)와
+[실제 수식 소비 PNG](pr8642/r25/canvaskit-equation-consumer-p018.png)를 보존한다.
+이 PNG는 수식 소비 경로 진단이며 독립 Print의 전쪽 비교 PNG를 대신하지 않는다.
+설치 글꼴 파일은 정식 자산에 복사하거나 배포하지 않았다.

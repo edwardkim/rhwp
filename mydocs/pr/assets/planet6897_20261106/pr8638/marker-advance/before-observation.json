@@ -1,0 +1,53 @@
+{
+  "input_path": "mydocs/pr/assets/planet6897_20261106/pr8638/evaluation-original.hwp",
+  "input_sha256": "a89b8d63ec93e34281c8dbe22f6ef89804a97130855432bda5416a2a3e1ad5ec",
+  "pdf_path": "pdf/planet6897-20261106/pr8638/evaluation-original-2020.pdf",
+  "pdf_sha256": "10866c14fdf960ad41407ee8c12629c2f60e73e2817e1891e1081f3da71cfc3e",
+  "source_paragraphs": [
+    {
+      "stream": "BodyText/Section0",
+      "ordinal": 28,
+      "level": 2,
+      "header_offset": 3414,
+      "para_shape_id": 27,
+      "text": "∙정책연구용역 목적과의 부합성\r",
+      "segments": []
+    },
+    {
+      "stream": "BodyText/Section0",
+      "ordinal": 31,
+      "level": 2,
+      "header_offset": 3708,
+      "para_shape_id": 28,
+      "text": "∙용역 추진방법의 적절성\r",
+      "segments": []
+    },
+    {
+      "stream": "BodyText/Section0",
+      "ordinal": 34,
+      "level": 2,
+      "header_offset": 3998,
+      "para_shape_id": 28,
+      "text": "∙계약 내용에의 충실성\r",
+      "segments": []
+    },
+    {
+      "stream": "BodyText/Section0",
+      "ordinal": 38,
+      "level": 2,
+      "header_offset": 4402,
+      "para_shape_id": 28,
+      "text": "∙연구결과의 활용가능성\r",
+      "segments": []
+    }
+  ],
+  "print_marker_x_pt": 180.38224,
+  "print_following_hangul_x_pt": 193.33522,
+  "print_font_size_pt": 12.94941520690918,
+  "native_marker_x_csspx": 240.72,
+  "native_following_hangul_x_csspx": 249.38666666666666,
+  "native_font_size_csspx": 17.333333333333332,
+  "observation": "원문에는 ∙ 다음 공백이 없다. Print 첫 두 문자 원점 차이는 약1em, Native는0.5em이다. 저장 LineSeg 없는 원본과 한컴 진단 저장의 첫 줄 horzpos0은 원점 보존과 일치한다. 들여쓰기 이동으로 고칠 문제가 아니다.",
+  "hancom_save_job_id": "c9965825-dc65-4dfe-b153-bc2d03f9f200",
+  "role": "수정 전 독립 Print·원본·실제 Native 진단. 미해결 원인 분석이며 최종 승인 증거 아님."
+}

@@ -73,7 +73,9 @@ R26c fresh WASM도 같은 원본의 전3쪽에서 **99.87%·100.00%·100.00%**�
 NARS2019 전1쪽과 정상5885 전7쪽은 Native/fresh WASM 모두100%를 유지했다.
 [대조군 입력·PDF·TSV](assets/planet6897_20261106/pr8615/r26/control-provenance.json)를 따른다.
 
-새 automatic_break_boundary의3건은 공개 글꼴5개만 노출한 최소 환경에서 모두 통과했다.
+새 automatic_break_boundary의3건은 시스템 글꼴0개 노출 환경에서도 모두 통과했다.
+최소 환경 설정의 이전 worktree 경로를 교정하고, 공개5개만 실제 노출되는 것을 확인한 뒤
+전체 nextest의 실행에서 같은 검사를 다시 확인한다.
 독립 Print의 열린 컷·실제 종료선·내용 소속, 두 형식의 실제 저장 후 재파싱,
 기존 BackSlash와 중심선 비트 계약을 보호한다. 기대값 완화·글꼴 설치 분기·skip은 없다.
 최종 통합 전쪽 비교·전체 회귀·lint가 끝나기 전에는 최종 승인을 선언하지 않는다.
