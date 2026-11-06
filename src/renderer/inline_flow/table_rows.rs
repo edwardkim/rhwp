@@ -92,9 +92,11 @@ pub(crate) fn supports_table_text_rows_with_storage<S: crate::storage::Storage>(
                 // they do not consume a separate slot in the host text stream.
                 t.caption.is_none()
                     && !t.cells.iter().any(|cell| {
-                        cell.paragraphs
-                            .iter()
-                            .any(|p| p.controls.iter().any(|c| matches!(c, Control::Footnote(_))))
+                        cell.paragraphs.iter().any(|p| {
+                            p.controls
+                                .iter()
+                                .any(|c| matches!(c, Control::Footnote(_)))
+                        })
                     })
                     && (t.common.treat_as_char
                         || (matches!(
