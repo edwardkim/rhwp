@@ -1,0 +1,111 @@
+{
+  "role": "R11 완료 측정과 직접 판독. 통합 최종 head 판정은 별도.",
+  "inspected_at": "2026-11-06T21:16:59.518957+00:00",
+  "rows": [
+    {
+      "key": "sample16",
+      "backend": "native",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5.hwp",
+        "sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+      },
+      "pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-hwp-2024.pdf",
+        "sha256": "ba4b10dee6e35e9c5ee71dd8c8004528ad3dd72b47ef5dd0cd859e0431aae381"
+      },
+      "source_head": "048f44da99d83e186f3a9e139563d20545c8bdb4",
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "path": "output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "sha256": "dcc537203eba3fab75d592380c1b584310a97e1a2ec48a48e2e10898411386a4"
+      },
+      "dpi": 96,
+      "raw_method": "unreconciled-2px-content-silhouette",
+      "layout_generation": "2024",
+      "comparison_profile": "print",
+      "files": [
+        {
+          "path": "native.tsv",
+          "sha256": "3be964234c31bda90e97d6c889e5321308d3fc3846746c79c93d393170721a8e"
+        },
+        {
+          "path": "native-review-020.png",
+          "sha256": "c77dbdabe80b5cad4601ddede411dcd7480991cd6b265984c55b5cada2d69120"
+        },
+        {
+          "path": "native-overlay-020.png",
+          "sha256": "4e40f79f129e32c705d8a289ed9b23d253af1435e1b939f7bc0094b13865dade"
+        },
+        {
+          "path": "native-review-041.png",
+          "sha256": "237b98654c4ebebf028dcfdcade014d050d8ca2984547ad3fc53adaefdeacb4e"
+        },
+        {
+          "path": "native-overlay-041.png",
+          "sha256": "d382f2f15af66677d32850b6e035403593c2b449db6cb4ea9f744e46a767bfde"
+        }
+      ]
+    },
+    {
+      "key": "sample16",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5.hwp",
+        "sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+      },
+      "pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-hwp-2024.pdf",
+        "sha256": "ba4b10dee6e35e9c5ee71dd8c8004528ad3dd72b47ef5dd0cd859e0431aae381"
+      },
+      "source_head": "048f44da99d83e186f3a9e139563d20545c8bdb4",
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "path": "output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "sha256": "dcc537203eba3fab75d592380c1b584310a97e1a2ec48a48e2e10898411386a4"
+      },
+      "dpi": 96,
+      "raw_method": "unreconciled-2px-content-silhouette",
+      "layout_generation": "2024",
+      "comparison_profile": "print",
+      "files": [
+        {
+          "path": "wasm.tsv",
+          "sha256": "dc99da7980670a1faaf80aa9b89a120ae854e0e7ecdb4a60b77d79d9500e52c4"
+        },
+        {
+          "path": "wasm-review-020.png",
+          "sha256": "fe4cb5e05a102b1c8d3b387feba2240183eacf6fa97d7d37c1d277ddb6121a5e"
+        },
+        {
+          "path": "wasm-overlay-020.png",
+          "sha256": "0b7d1513be0bc9260fab13a73933dd964bcadd7a1ab5f2ed18d7172829752907"
+        },
+        {
+          "path": "wasm-review-041.png",
+          "sha256": "fe509a03dc952ca243cfbefc3d049301fc8dfbac16e1f3bc2ed9c0d41f6b954c"
+        },
+        {
+          "path": "wasm-overlay-041.png",
+          "sha256": "6d538ea627051db28095c72860a8ff2f988182fa1ef5d9be26e5f683279ec895"
+        }
+      ],
+      "wasm": {
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-common-fixes-r11/rhwp.js",
+            "sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-common-fixes-r11/rhwp_bg.wasm",
+            "sha256": "fb98b69311bc3ceeebfaa1052ed2098092aacb22f237ea7651cf4b7b6fe5ce5d"
+          }
+        ],
+        "exporter_sha256": "2d4cc3fbbdf4b4f528aa683649434221a783300e821fe68aaa2ae1e1b63220ee",
+        "font_registration_sha256": "5259038f8caad1f1c1a0dd9c2106589350a7d41ef8c5916c0108a1675951f9fe",
+        "comparison_profile": "print",
+        "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+        "render_tree": "WASM getPageRenderTree"
+      }
+    }
+  ]
+}
