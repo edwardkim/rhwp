@@ -25,7 +25,10 @@
   "canonical_recovery": {
     "reference": "mydocs/pr/assets/semanticist21-20261105/handbook-font-profile-correction.json",
     "command": "visual_sweep.py --handbook-gate; no explicit --font-path and unset RHWP_FONT_PATH",
-    "status": "running",
-    "baseline_changed": false
+    "status": "passed",
+    "baseline_changed": false,
+    "pages": 383,
+    "minimum_raw": 99.96465,
+    "regressions": 0
   }
 }
