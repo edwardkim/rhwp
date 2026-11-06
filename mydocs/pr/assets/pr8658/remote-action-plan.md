@@ -18,4 +18,4 @@
 7. [검토 문서의 댓글 계획](../../archives/pr_8658_review.md#merge-후-contributor-pr-comment-계획)에 따라 원 주장 3입력의 전 4쪽 review·overlay와 실제 지표·정본 링크를 넣은 감사 댓글을 게시한다. 실제 merge SHA의 raw 이미지 형식·bytes·해시를 먼저 확인하고 게시 후 본문과 이미지 표시를 검증한다.
 8. local·remote 검토 branch, worktree와 검토 전용 target을 정본의 실제 사용 판정 뒤 정리한다. 종료 시 루트 `output/` 전체와 사용이 끝난 기본 `target/pr-review/debug`를 삭제하고 잔여 여부를 확인한다. 현재와 무관한 worktree/WIP와 원 fork branch는 보존한다.
 
-원격 작업은 사용자 승인 뒤 실행했다. 이 운영 기록 반영·최종 devel 동기화 다음에 이슈/PR 댓글과 정리를 완료한다.
+원격 작업은 사용자 승인 뒤 실행했다. 운영 기록 반영·최종 devel 동기화 뒤 이슈/PR 댓글과 실제 화면 확인을 완료했다. 마지막 종료 정리는 사용 판정과 삭제 로그를 남겨 완료한다.

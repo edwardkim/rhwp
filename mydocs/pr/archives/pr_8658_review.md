@@ -93,7 +93,7 @@
 
 ## Merge 후 contributor PR comment 계획
 
-수용 PR #8694의 merge와 원 PR의 간접 MERGED를 확인했다. 원 fork/branch와 원 기여 SHA는 보존했다. 개정된 post-merge 순서로 이 archive·assets·오늘할일 운영 기록을 반영하고 최종 devel을 동기화한 뒤 아래 계획대로 댓글을 게시한다. 이 운영 기록 작성 시점에는 감사 댓글을 아직 게시하지 않았다.
+수용 PR #8694의 merge와 원 PR의 간접 MERGED를 확인했다. 원 fork/branch와 원 기여 SHA는 보존했다. 개정된 post-merge 순서로 이 archive·assets·오늘할일 운영 기록을 반영하고 최종 devel을 동기화한 뒤 아래 계획대로 댓글을 게시한다. 첫 운영 기록 반영·devel 동기화 뒤 [감사 댓글](https://github.com/edwardkim/rhwp/pull/8658#issuecomment-6684200684)을 게시했고 [API·실제 화면](../assets/pr8658/github-contributor-comment-display.json)의 16개 이미지를 확인했다.
 
 첫 댓글부터 원 주장 3입력의 p1/p1/p1–2에 대응하는 실제 review·overlay를 넣는다. 아래 각 `corrected-wasm` 자산을 실제 asset을 포함한 merge SHA의 raw URL로 고정하며, Native 전쪽 TSV와 위 실제 보조 지표 표도 연결한다.
 
@@ -106,7 +106,7 @@
 - split p2 review: [review](../assets/pr8658/final/corrected-wasm/primary/split/review/review_002.png)
 - split p2 overlay: [overlay](../assets/pr8658/final/corrected-wasm/primary/split/overlay/overlay_002.png)
 
-[Visual Sweep의 merge comment 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)을 direct link로 남기고, 위 실제 후보 수·pixel match·visual_accuracy_proxy·raw를 구분한다. 수치는 자동 보조값이고 사람의 최종 판정 정확도가 아님을 밝힌다. 원 기여의 그림 쌓기·분할 복원 성과를 먼저 인정하고 메인테이너 선언 높이 보정의 이유를 존댓말로 설명한다. 게시 전 raw 이미지 형식·bytes·SHA-256, 게시 후 API 본문·이미지 표시를 확인한다. 원격 승인과 실제 merge SHA는 확정됐다. 운영 기록 반영·최종 devel 동기화 뒤 이 계획대로 게시한다.
+[Visual Sweep의 merge comment 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)을 direct link로 남기고, 위 실제 후보 수·pixel match·visual_accuracy_proxy·raw를 구분한다. 수치는 자동 보조값이고 사람의 최종 판정 정확도가 아님을 밝힌다. 원 기여의 그림 쌓기·분할 복원 성과를 먼저 인정하고 메인테이너 선언 높이 보정의 이유를 존댓말로 설명한다. 게시 전 raw 이미지 형식·bytes·SHA-256, 게시 후 API 본문·이미지 표시를 확인한다. 원격 승인과 실제 merge SHA는 확정됐다. 운영 기록 반영·최종 devel 동기화 뒤 이 계획대로 게시하고 실제 화면까지 확인했다.
 
 
 ## 최종 GitHub 검증·승인된 보안 분류
