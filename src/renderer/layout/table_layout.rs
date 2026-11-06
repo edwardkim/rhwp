@@ -12172,9 +12172,11 @@ impl LayoutEngine {
                                 }
                                 crate::renderer::float_placement::stored_host_exclusion_bottom(
                                     p,
+                                    &paragraphs[pidx + 1..],
                                     nested,
                                     ci,
                                     para_top - spacing_before,
+                                    para_top,
                                     self.nested_table_body_height(nested, styles),
                                     self.dpi,
                                 )
