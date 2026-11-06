@@ -4371,6 +4371,40 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 띄운 그림을 다른 문단·셀 문단으로 옮겨 붙인다 (다른 쪽으로 끌어 놓기).
+    /// 셀 경로 JSON 이 `[]` 이면 본문 문단이다.
+    #[wasm_bindgen(js_name = relocateFloatingPicture)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn relocate_floating_picture(
+        &mut self,
+        src_section: u32,
+        src_para: u32,
+        src_cell_path_json: &str,
+        src_control: u32,
+        dst_section: u32,
+        dst_para: u32,
+        dst_char_offset: u32,
+        dst_cell_path_json: &str,
+        horz_offset: i32,
+        vert_offset: i32,
+    ) -> Result<String, JsValue> {
+        let src_path = DocumentCore::parse_cell_path(src_cell_path_json).map_err(JsValue::from)?;
+        let dst_path = DocumentCore::parse_cell_path(dst_cell_path_json).map_err(JsValue::from)?;
+        self.relocate_floating_picture_native(
+            src_section as usize,
+            src_para as usize,
+            &src_path,
+            src_control as usize,
+            dst_section as usize,
+            dst_para as usize,
+            dst_char_offset as usize,
+            &dst_path,
+            horz_offset,
+            vert_offset,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 커서 위치에 그림을 삽입한다 (확장, options object — #1413).
     ///
     /// positional `insertPicture` 와 동일 동작의 얇은 어댑터. 이미지 바이너리는 별도

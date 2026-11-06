@@ -2479,6 +2479,16 @@ export class WasmBridge {
     ));
   }
 
+  /** 띄운 그림을 다른 문단·셀 문단으로 옮겨 붙인다 (다른 쪽으로 끌어 놓기). 셀 경로 `[]` 는 본문. */
+  relocateFloatingPicture(srcSec: number, srcPara: number, srcCellPathJson: string, srcControl: number,
+                          dstSec: number, dstPara: number, dstCharOffset: number, dstCellPathJson: string,
+                          horzOffset: number, vertOffset: number): { ok: boolean; sec: number; paraIdx: number; controlIdx: number } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).relocateFloatingPicture(
+      srcSec, srcPara, srcCellPathJson, srcControl, dstSec, dstPara, dstCharOffset, dstCellPathJson,
+      horzOffset, vertOffset));
+  }
+
   /**
    * 표 셀 안 문단에 그림을 넣는다 — 서명·도장처럼 셀과 함께 움직여야 하는 그림.
    * insertPicture 의 셀 분기(표 밖 본문 문단에 띄움)와 달리 cellPath 가 가리키는
