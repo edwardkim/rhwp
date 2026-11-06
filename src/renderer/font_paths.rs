@@ -233,6 +233,46 @@ pub fn bundled_font_dirs() -> Vec<PathBuf> {
     vec![PathBuf::from(BUNDLED_OPENSOURCE_DIR)]
 }
 
+/// fontdb가 ID 16 우선으로 생략한 ID 1·21의 실제 가족 이름을 보존한다.
+/// 기존 face·스타일·우선순위는 그대로 두고 같은 source/index를 가리키는
+/// 이름 뷰만 추가한다. Full Name(ID 4)·PostScript(ID 6)는 가족으로 승격하지 않는다.
+pub(crate) fn retain_fontdb_family_aliases(database: &mut usvg::fontdb::Database) {
+    let aliases: Vec<_> = database
+        .faces()
+        .filter_map(|info| {
+            let families = database.with_face_data(info.id, |bytes, index| {
+                let face = ttf_parser::Face::parse(bytes, index).ok()?;
+                let mut families = Vec::new();
+                for record in face.names() {
+                    if !matches!(
+                        record.name_id,
+                        ttf_parser::name_id::FAMILY | ttf_parser::name_id::WWS_FAMILY
+                    ) {
+                        continue;
+                    }
+                    let Some(name) = record.to_string() else {
+                        continue;
+                    };
+                    let name = name.trim();
+                    if !name.is_empty()
+                        && !info.families.iter().any(|(known, _)| known == name)
+                        && !families.iter().any(|(known, _)| known == name)
+                    {
+                        families.push((name.to_owned(), record.language()));
+                    }
+                }
+                (!families.is_empty()).then_some(families)
+            })??;
+            let mut alias = info.clone();
+            alias.families = families;
+            Some(alias)
+        })
+        .collect();
+    for alias in aliases {
+        database.push_face_info(alias);
+    }
+}
+
 /// `fontdb` 에 조달 순서대로 폰트를 적재한다.
 ///
 /// 시스템 폰트는 `load_system_fonts()` 가 담당하므로 여기서는 호출자 지정 →
@@ -275,6 +315,42 @@ mod tests {
     /// 병렬로 돌면 set 과 read 사이에 다른 테스트의 remove_var 가 끼어들어
     /// 간헐 실패한다(실측 플레이크).
     static ENV_LOCK: Mutex<()> = Mutex::new(());
+
+    #[test]
+    fn fontdb_retains_declared_family_aliases_without_promoting_full_names() {
+        use usvg::fontdb::{Family, Query};
+        let mut database = usvg::fontdb::Database::new();
+        database.load_font_data(
+            include_bytes!("../../tests/fixtures/native_font_family_names/family-contract.ttf")
+                .to_vec(),
+        );
+        let query = |database: &usvg::fontdb::Database, name: &str| {
+            database.query(&Query {
+                families: &[Family::Name(name)],
+                ..Query::default()
+            })
+        };
+        let original = query(&database, "검사용 표기 가족").unwrap();
+        assert!(query(&database, "검사용 가족 이름").is_none());
+        retain_fontdb_family_aliases(&mut database);
+        assert_eq!(query(&database, "검사용 표기 가족"), Some(original));
+        for name in [
+            "Rhwp Family Contract",
+            "검사용 가족 이름",
+            "검사용 WWS 가족",
+        ] {
+            let alias = query(&database, name).expect("프로그램이 선언한 실제 가족 이름");
+            assert_eq!(
+                database.face(alias).unwrap().index,
+                database.face(original).unwrap().index
+            );
+            let bytes = |id| database.with_face_data(id, |bytes, index| (bytes.to_vec(), index));
+            assert_eq!(bytes(alias), bytes(original), "이름이 달라도 같은 프로그램");
+        }
+        assert!(query(&database, "검사용 전체 얼굴 이름").is_none());
+        assert!(query(&database, "RhwpFamilyContract-Regular").is_none());
+        assert!(query(&database, "설치되지 않은 가족").is_none());
+    }
 
     #[test]
     fn env_font_paths_parses_and_filters() {

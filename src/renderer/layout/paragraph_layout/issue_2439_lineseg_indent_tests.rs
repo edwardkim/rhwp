@@ -87,6 +87,7 @@ fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTr
         section_tab_width_bits: Default::default(),
         source_hwp3_native: false,
         source_program_projection_slots: Default::default(),
+        unsubstituted_font_slots: Default::default(),
         isolated_jamo_font: None,
         script_metrics: Default::default(),
         native_pua_fonts: Default::default(),

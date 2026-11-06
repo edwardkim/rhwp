@@ -322,6 +322,7 @@ pub fn prepare(doc_info: &DocInfo, paths: &[PathBuf]) -> Result<NativeWebfontSup
             let _ = database.load_font_file(path);
         }
     }
+    super::font_paths::retain_fontdb_family_aliases(&mut database);
     let present = |name: &str| {
         let target = normalized(name);
         if database.faces().any(|face| {

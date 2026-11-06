@@ -423,6 +423,7 @@ fn recover_installed_system_typeface(
                     database.load_fonts_dir(directory);
                 }
             }
+            crate::renderer::font_paths::retain_fontdb_family_aliases(&mut database);
             database
         });
         query_database_typeface(database, font_mgr, family, style)

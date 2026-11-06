@@ -619,10 +619,13 @@ impl FontEnvironment {
         }
         let mut database = usvg::fontdb::Database::new();
         for directory in super::font_paths::search_dirs(font_paths) {
-            if directory.exists() {
+            if directory.is_dir() {
                 database.load_fonts_dir(directory);
+            } else if directory.is_file() {
+                let _ = database.load_font_file(directory);
             }
         }
+        super::font_paths::retain_fontdb_family_aliases(&mut database);
         Self::from_document_lookup(
             doc_info,
             |query| {

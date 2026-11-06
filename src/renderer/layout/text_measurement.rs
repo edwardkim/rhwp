@@ -977,7 +977,7 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
                     cs.font_family_for_lang(lang_index),
                     cs.bold,
                     cs.italic,
-                    cs.source_ttf_for_lang(lang_index),
+                    styles.requests_original_truetype(char_style_id, lang_index),
                 )
             })
             .flatten(),
@@ -1093,7 +1093,7 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
                                 cs.font_family_for_lang(1),
                                 cs.bold,
                                 cs.italic,
-                                cs.source_ttf_for_lang(1),
+                                styles.requests_original_truetype(char_style_id, 1),
                             )
                         })
                         .flatten(),
@@ -2566,7 +2566,8 @@ fn char_width_decision_with_hft_tracking<'a>(
     };
     // 등록된 원본 TrueType의 자연 전진은 폭 표가 없는 추정 글리프에만 쓴다.
     // 확인된 원본 폭, HFT 계약, 공백·대시 규칙은 바꾸지 않는다.
-    let ttf_advance = if source_ttf
+    let ttf_advance = if (source_ttf
+        || otf_metrics.is_some_and(|font| font.uses_original_truetype()))
         && cluster_len[i] <= 1
         && !dash_leader
         && !c.is_whitespace()

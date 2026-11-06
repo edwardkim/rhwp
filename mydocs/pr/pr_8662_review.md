@@ -27,10 +27,29 @@ fix: 저장 줄 없는 HWP5 TAC 표 행 높이·넘친 공백 줄 끝·변경 �
 - [tests/cases/issue_8639_trackchange_stored_rows.rs](../../tests/cases/issue_8639_trackchange_stored_rows.rs)
 - [tests/cases/issue_8639_trailing_space_overflow.rs](../../tests/cases/issue_8639_trailing_space_overflow.rs)
 
-통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 검증 뒤 제품·테스트 코드는 변경하지 않았다. 검증 원본·Print 기준의 추가와 문서 기록을 구분한다.
+통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 이는 최초 통합 source의 결과다. 이후 메인터너 보정으로 제품·테스트 코드가 바뀌었으므로 보정 후 head의 회귀 통과로 재사용하지 않는다. 새 보정본의 검증 결과와 원본·Print 추가를 구분한다.
 
 Native Skia 공식 3종(라이브러리 4,040건 및 통합 24건)과 이번 PR의 추가 5개 모듈 14건이 모두 통과했다. 라이브러리의 기존 ignored는 12건이며, focused 실행에서 제외된 다른 테스트를 실패나 ignored로 합산하지 않는다. 전쪽 Native/fresh WASM·쪽수·확대 판독·lint는 별도 완료 조건이며, 회귀 통과로 대신하지 않는다.
 
 ## 적용과 보정 계획
 
 [이 PR 구현 계획](pr_8662_review_impl.md) · [전체 순서·게이트](assets/planet6897_20261106/integration-plan.md).
+
+## 메인터너 보정 중간 검증
+
+표지판 관리대장의 원본 서울서체 프로그램을 실제로 선택하도록 공통 글꼴 이름 조회와
+미분류 원본 TrueType의 메트릭 공급을 보정했다.
+[원인·실제 producer·조건](assets/planet6897_20261106/pr8662/sign-board-analysis.md)을 따른다.
+
+| 독립 기준과 범위 | 보정 전 Native | 보정 후 Native | 증거 |
+| --- | ---: | ---: | --- |
+| 한컴 2020 Print, 전체 1쪽 | 33.10% | 100.00% | [전쪽 TSV](assets/planet6897_20261106/pr8662/sign-board-2020-native.tsv), [같은 쪽 review](assets/planet6897_20261106/pr8662/sign-board-2020-native-review.png), [overlay](assets/planet6897_20261106/pr8662/sign-board-2020-native-overlay.png) |
+
+전체 시스템 글꼴을 사용하며 특정 글꼴 경로나 대체 환경을 지정하지 않은 자동 선택 결과다.
+실제 crate의 Cargo 라이브러리 경로에서 `font_paths.rs` 검사 6건을 최소 글꼴 환경으로
+실행해 모두 통과·경고 0건·exit 0을 확인했다. 단독 파일 컴파일의 미사용 항목 경고를
+제품 코드에서 억제하지 않고 실제 소비 모듈을 포함해 검증했다.
+실제 가족 이름은 같은 프로그램을 가리키고 Full Name·PostScript 이름을 가족으로
+승격하지 않는 반례를 함께 확인했다. 원본 언어 슬롯의 표시 family 공유 반례 1건도 정식 Cargo 경로에서 통과했다.
+이 7건의 집중 검사는 전체 Cargo 회귀·lint·fresh WASM을 대신하지 않는다.
+2022 Print 대조군은 그 출력의 실제 Haansoft Batang 대체 환경과 구분해 검사한다.

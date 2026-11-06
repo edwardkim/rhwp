@@ -12,7 +12,8 @@ pub struct NativePuaFontRequest {
     pub paint_families: Vec<String>,
     pub bold: bool,
     pub italic: bool,
-    /// 원본 슬롯이 명시적 TTF일 때 같은 family의 HFT와 구분한다.
+    /// 같은 이름의 원본 TrueType 프로그램만 허용하는 공급 요청이다.
+    /// 파일의 미분류 글꼴 비트를 TTF 선언으로 바꾸는 필드가 아니다.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub source_ttf: bool,
     /// 리터럴 공백의 프로그램은 PUA 기호 fallback과 별도로 선택한다.
@@ -26,7 +27,9 @@ impl DocumentCore {
         let mut requests = BTreeMap::new();
         for (style_id, style) in self.styles.char_styles.iter().enumerate() {
             for lang in 0..crate::renderer::style_resolver::LANG_COUNT {
-                let source_ttf = style.source_ttf_for_lang(lang);
+                let source_ttf = self
+                    .styles
+                    .requests_original_truetype(style_id as u32, lang);
                 if !self.styles.allows_native_otf_metrics(style_id as u32, lang) {
                     continue;
                 }

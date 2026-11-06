@@ -54,6 +54,7 @@ pub struct NativePuaMetrics {
 #[derive(Debug)]
 pub struct NativeOtfMetrics {
     programs: Vec<NativeOtfProgram>,
+    original_truetype: bool,
     advances: std::sync::Mutex<BTreeMap<char, Option<(f64, bool, bool)>>>,
     ttf_advances: std::sync::Mutex<BTreeMap<char, Option<f64>>>,
     coverage: std::sync::Mutex<BTreeMap<char, bool>>,
@@ -71,7 +72,8 @@ struct NativeOtfProgram {
 
 impl PartialEq for NativeOtfMetrics {
     fn eq(&self, other: &Self) -> bool {
-        self.programs.len() == other.programs.len()
+        self.original_truetype == other.original_truetype
+            && self.programs.len() == other.programs.len()
             && self.programs.iter().zip(&other.programs).all(|(a, b)| {
                 a.digest == b.digest && a.face_index == b.face_index && a.faux_bold == b.faux_bold
             })
@@ -79,6 +81,10 @@ impl PartialEq for NativeOtfMetrics {
 }
 
 impl NativeOtfMetrics {
+    /// 실제 공급을 마친 동일 family TrueType 요청의 전진만 허용한다.
+    pub fn uses_original_truetype(&self) -> bool {
+        self.original_truetype
+    }
     /// 첫 글리프 공급자가 TrueType일 때 그 프로그램의 자연 전진을 읽는다.
     /// 원본 폭이 확인되지 않은 명시적 TrueType 슬롯에서만 호출한다.
     pub fn source_ttf_advance_em(&self, character: char) -> Option<f64> {
@@ -296,6 +302,7 @@ impl NativePuaFonts {
                 (bold, italic, source_ttf),
                 Arc::new(NativeOtfMetrics {
                     programs,
+                    original_truetype: source_ttf && !cff,
                     advances: Default::default(),
                     ttf_advances: Default::default(),
                     coverage: Default::default(),

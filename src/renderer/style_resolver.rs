@@ -21,6 +21,7 @@ pub const LANG_COUNT: usize = 7;
 mod ascii_punctuation;
 mod document_font_chain;
 mod missing_fonts;
+mod original_font_slots;
 pub(crate) use missing_fonts::{missing_char_table, missing_latin_default};
 mod page_number;
 mod resolved;
@@ -72,6 +73,7 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
         styles.char_overlap_size_bounds = Some((-8, 2));
     }
     super::legacy_font_advances::select_native_programs(document, &mut styles);
+    original_font_slots::refresh(&lookup, &mut styles, storage)?;
     // [#7051] 계보 신호가 없는 저장본의 HFT ASCII 반각 판정은 로드 시 한 번 내려 출처에 둔다.
     styles.hft_ascii_halfwidth |= document.provenance.hft_ascii_halfwidth_witnessed;
     if profile.hwpx_stored_layout() {
@@ -383,6 +385,10 @@ pub(crate) fn resolve_styles_with_environment(
         }
         styles.display_only_otf_slots = std::sync::Arc::new(display_only_slots);
     }
+    match original_font_slots::refresh(&document.doc_info, &mut styles, &storage::Unbounded) {
+        Ok(()) => (),
+        Err(never) => match never {},
+    }
     match refresh_source_program_projection_slots_with_storage(
         &document.doc_info,
         &mut styles,
@@ -462,6 +468,7 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
         script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
         display_only_otf_slots: Default::default(),
+        unsubstituted_font_slots: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: {
             storage.bytes(
@@ -504,6 +511,7 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
         horizontal_shaping_context: None,
         supplemental_metrics: None,
     };
+    original_font_slots::refresh(doc_info, &mut styles, storage)?;
     refresh_source_program_projection_slots_with_storage(doc_info, &mut styles, storage)?;
     Ok(styles)
 }
