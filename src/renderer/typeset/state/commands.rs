@@ -328,6 +328,23 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn mark_pre_emitted_host(&mut self, index: usize) {
         self.data.pre_emitted_host_paras.insert(index);
     }
+    /// 같은 호출이 이 쪽에 낸 호스트 글줄을 거둘 때 그 기록을 함께 지운다(#8652).
+    pub(in crate::renderer::typeset) fn retract_pre_emitted_host(&mut self, index: usize) {
+        self.data.pre_emitted_host_paras.remove(&index);
+        self.data.pre_emitted_host_heights.remove(&index);
+        self.data.pre_emitted_host_content_heights.remove(&index);
+    }
+    pub(in crate::renderer::typeset) fn request_block_table_restart(&mut self, index: usize) {
+        self.data.restart_block_table_para = Some(index);
+    }
+    pub(in crate::renderer::typeset) fn take_block_table_restart(&mut self, index: usize) -> bool {
+        if self.data.restart_block_table_para == Some(index) {
+            self.data.restart_block_table_para = None;
+            true
+        } else {
+            false
+        }
+    }
     pub(in crate::renderer::typeset) fn record_pre_emitted_host_height(
         &mut self,
         index: usize,

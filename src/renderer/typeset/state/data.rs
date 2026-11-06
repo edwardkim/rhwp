@@ -231,6 +231,8 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [Task #1755] 이월 전 쪽에 host 텍스트 줄을 PartialParagraph 로 pre-emit 한 문단 —
     /// layout 의 마지막 fragment 뒤 host 렌더 억제 신호(PaginationResult 로 전달).
     pub(in crate::renderer::typeset) pre_emitted_host_paras: std::collections::HashSet<usize>,
+    /// [#8652] 호스트 글줄을 거두고 다음 쪽으로 넘긴 뒤 새 쪽에서 다시 준비할 표 문단.
+    pub(in crate::renderer::typeset) restart_block_table_para: Option<usize>,
     /// [#2015] pre-emit 한 host 텍스트의 실제 높이(px). vert_offset(para_start 기준)를
     /// current_height(=para_start+host_h) 기준으로 환산할 때 감액분으로 쓴다. typeset 예산과
     /// layout(table_partial.rs) 배치가 동일 감액을 적용해 정합한다.
