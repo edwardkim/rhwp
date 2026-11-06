@@ -232,3 +232,7 @@ issue5679/10857_delegation_rules.hwp	1
 # 차지한다(+4.4px). 한컴 2022 Print PDF 10쪽도 같은 글줄 잉크가 y=1009 까지 내려가 rhwp 와 같다
 # (pdf/issue8596_policy_committee_agenda-2020.pdf, 10쪽 raw Native 97.85 / WASM 99.95).
 issue8596/policy_committee_agenda.hwp	1
+
+# #8677 신규 공개 샘플(연구용역 최종보고서 1411000-201000007, 111쪽): 수정 전(devel 5716a226b5)과 수정 후의
+# 값이 같다 — 85쪽 표(Table0)가 본문 바닥 아래로 9.3px 넘치는 기존 형상이며 이 PR(89쪽 셀 유일 문단 표) 범위 밖이다.
+issue8677/1411000-201000007_final_report.hwp	1

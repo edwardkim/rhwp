@@ -72,7 +72,15 @@ fn terminal_table_before_host_frame(
         return None;
     }
     let para = paragraphs.get(para_index)?;
-    let previous = paragraphs.get(para_index.checked_sub(1)?)?;
+    // [#8677] 셀의 유일한 문단이면 앞 줄 대신 셀 내용 위(0)가 표 바깥 상자의 시작이다
+    // (docs#762 89쪽: 표만 담은 셀 문단, 호스트 줄 vpos 26096 = 표 바깥 상자 끝).
+    let previous = para_index
+        .checked_sub(1)
+        .map(|index| paragraphs.get(index))
+        .unwrap_or(None);
+    if para_index != 0 && previous.is_none() {
+        return None;
+    }
     let [host] = para.line_segs.as_slice() else {
         return None;
     };
@@ -92,26 +100,30 @@ fn terminal_table_before_host_frame(
         || !para.text.trim().is_empty()
         || control_index != 0
         || !matches!(para.controls.as_slice(), [Control::Table(_)])
-        || !previous.controls.is_empty()
+        || previous.is_some_and(|previous| !previous.controls.is_empty())
         || !original_lines(para)
-        || !original_lines(previous)
+        || previous.is_some_and(|previous| !original_lines(previous))
     {
         return None;
     }
-    let last = previous.line_segs.last()?;
-    let previous_style = styles.para_styles.get(previous.para_shape_id as usize)?;
     let style = styles.para_styles.get(para.para_shape_id as usize)?;
     let offset = hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
     let top = hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
     let bottom = hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi);
     let outer = offset + top + table_height + bottom;
-    let preceding = hwpunit_to_px(
-        last.vertical_pos
-            .checked_add(last.line_height)?
-            .checked_add(last.line_spacing)?,
-        dpi,
-    ) + previous_style.spacing_after
-        + style.spacing_before;
+    let preceding = match previous {
+        Some(previous) => {
+            let last = previous.line_segs.last()?;
+            let previous_style = styles.para_styles.get(previous.para_shape_id as usize)?;
+            hwpunit_to_px(
+                last.vertical_pos
+                    .checked_add(last.line_height)?
+                    .checked_add(last.line_spacing)?,
+                dpi,
+            ) + previous_style.spacing_after
+        }
+        None => 0.0,
+    } + style.spacing_before;
     let epsilon = hwpunit_to_px(2, dpi);
     if (table_height - hwpunit_to_px(table.common.height as i32, dpi)).abs() > epsilon
         || (preceding + outer - hwpunit_to_px(host.vertical_pos, dpi)).abs() > epsilon
