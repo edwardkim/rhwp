@@ -1,12 +1,12 @@
 # PR #8608 메인터너 검토 — 짧은 선언 행과 모순 열 경계
 
-현재 판정: **로컬 필수 검증 중·제출 보류**. 원 head CI 성공을 보정 후보의 CI 성공으로 대신하지 않는다.
+현재 판정: **메인터너 보정 후 수용 가능**. 로컬 필수 검증은 완료했다. 원격 처리 승인과 통합 후보의 새 head CI는 별도다.
 
 - 원 PR: https://github.com/edwardkim/rhwp/pull/8608
 - 기여자: `hyunmyungJaneLee`, fork `kidsnote/rhwp`.
 - 관련 이슈: #8584.
 - source head: `5554b6f93c5d105b305d30802ed5bd2436b83b21`.
-- 기준 devel: `170b886f167b705b6e630c5b34bb638d92fae0a9`.
+- 기준 devel: `5716a226b562b7300193dd0b573ded9cd71ac890`. 처음 기준 `170b886f`에서 최신 #8659를 충돌 없이 반영했다.
 - 오래된 순서의 누적 적용: #8515 → #8599 → #8608 → #8631 → #8656.
 - 이 PR을 보존한 로컬 merge: `44d9827c1b7ba0ff1485d7553016eea1e9bc9f9c`. 충돌 없음. 별도 PR에 의존한다고 단정하지 않는다.
 - reviewer `edwardkim` 지정을 API로 확인했다. 기존 #8585 수용 이력과 GitHub FIRST_TIME_CONTRIBUTOR 표시는 구분했다.
@@ -20,8 +20,18 @@
 
 ## 시각·회귀 증거
 
-원 입력 6개 7쪽, 공개 경계 2개 3쪽, 기존 #8585·#8122 정상 대조군 2쪽을 구분한다. 원본 저장 제품에 맞는 2020/2024 데스크톱 Print를 새로 확보했다. Native·최적화 fresh WASM의 최종 전체 TSV·직접 확대 판독·Rust 집중/전체 회귀·Native 공식 3종·lint·새 sample 보안·383쪽 편람의 실제 완료 결과를 이 절에 연결한다. 작성자의 자체 코퍼스 집계는 독립 검증으로 올리지 않는다.
+[최종 로컬 검증](assets/hyunmyungjanelee-20261106/final-validation.md), [전체 실행과 보안 재사용 집계](assets/hyunmyungjanelee-20261106/required-validation-completion.json), [실제 소비 경로](assets/hyunmyungjanelee-20261106/consumer-path-review.md)를 확인했다. 검증 src tree는 `c1ea19fbc94dd6aac77d4368755b6da5a9544e42`다. 원 사례 전체 7쪽의 최저는 Native 99.91617%·fresh optimized WASM 99.91621%이고, 경계·정상까지 각각 12쪽이 모두 90% 이상이다. 각 원 PR의 입력·쪽별 raw와 직접 판독용 review/overlay는 아래 계획에 연결한다.
+
+집중 27개·전체 12,752개·Native 공식 3종 4,064개와 모든 lint가 통과했다. 원본 8개를 실제 전달한 보안 코퍼스 6개는 같은 전체 회귀의 통과 결과로 확인했다. 최종 편람 383쪽은 99.96465% 이상·기준 하락 0쪽이다. #8659의 Native 55쪽은 같은 조건의 base/후보 PNG가 모두 같으며 fresh WASM 55쪽도 전부 90% 이상이다. 시각 글꼴 보정과 처음 실패한 보조 드라이버는 성공 결과와 구분해 보존했다. 작성자의 자체 코퍼스 집계는 독립 검증으로 올리지 않았다.
+
+## Merge 후 contributor PR comment 계획
+
+[댓글 초안](assets/hyunmyungjanelee-20261106/comment-pr-8608-draft.md)과 [7쪽·양쪽 출력 경로의 대응 manifest](assets/hyunmyungjanelee-20261106/comment-visual-manifest.json)를 따른다. 첫 게시부터 이 원 PR의 실제 재현물·각 페이지에 맞는 Native/WASM review와 overlay를 포함한다. 다른 PR이나 추가 경계의 대표 이미지로 대체하지 않는다.
+
+원격 승인·새 head CI·실제 self-review·merge·운영 기록 반영·devel sync 뒤에만 게시한다. `integration_pr`와 `merge_sha`를 실제 확정값으로 치환하고 고정 raw 응답의 MIME·SHA-256을 로컬 asset과 대조한다. 원 기여 성과를 먼저 인정하고 메인터너 보정과 남은 범위를 명확히 적는다. 게시 뒤 API 본문·이미지 표시를 확인한다. 아직 게시하거나 merge하지 않았다.
 
 ## 원격 범위
 
 현재 사용자 승인은 이 기여자 PR의 묶음 처리다. reviewer 지정 외의 공개 댓글·push·새 PR·merge는 아직 수행하지 않았다. 로컬 결과와 원 PR별 판정이 확정되면 구체적인 통합/후속 댓글 범위를 승인 대상으로 제시한다.
+
+최종 제출·후속 범위는 [원격 처리안](assets/hyunmyungjanelee-20261106/remote-action-plan.md)에 기록했다. 원 fork에는 push 권한이 없어 원 기여 SHA를 보존하는 upstream 통합 PR 경로를 제안한다.

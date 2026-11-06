@@ -1,0 +1,387 @@
+[
+  {
+    "key": "api-8526-inserted-style-hwp",
+    "page": 1,
+    "base_sha256": "23e50f2f61e2c623a632c1810b16bcbf771cde38bbbcf48e5a08435e39965a77",
+    "candidate_sha256": "23e50f2f61e2c623a632c1810b16bcbf771cde38bbbcf48e5a08435e39965a77",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8527-levels-hwp-2022",
+    "page": 1,
+    "base_sha256": "89f2892f2624c8eef9dee01ec06fd0027379b8e9f3cbbd330cac18f8d8731491",
+    "candidate_sha256": "89f2892f2624c8eef9dee01ec06fd0027379b8e9f3cbbd330cac18f8d8731491",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8528-follow-end-20pt-hwp-2022",
+    "page": 1,
+    "base_sha256": "ad3d72a66947020bbdb974fce2e39e8102d82d28b2e062c0c0db24a044992a8a",
+    "candidate_sha256": "ad3d72a66947020bbdb974fce2e39e8102d82d28b2e062c0c0db24a044992a8a",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 1,
+    "base_sha256": "33fc44c35923976587383b1bfdfd43b666b1e1f7242ee1a65e123dd8fc372e9f",
+    "candidate_sha256": "33fc44c35923976587383b1bfdfd43b666b1e1f7242ee1a65e123dd8fc372e9f",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 2,
+    "base_sha256": "e76ad554be291493efa3b23a57550cc1d15dd2a3dcbc67e87ca35ebf30aeaf77",
+    "candidate_sha256": "e76ad554be291493efa3b23a57550cc1d15dd2a3dcbc67e87ca35ebf30aeaf77",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 3,
+    "base_sha256": "b3cc892c9bac82aa31d71a636cfecaad942c5b8320f5f736f235b0844c5c1867",
+    "candidate_sha256": "b3cc892c9bac82aa31d71a636cfecaad942c5b8320f5f736f235b0844c5c1867",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 4,
+    "base_sha256": "c4b5f7be175ab696925abf0dcedab39c4c97836cfdcacd44bb07e704081ce211",
+    "candidate_sha256": "c4b5f7be175ab696925abf0dcedab39c4c97836cfdcacd44bb07e704081ce211",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 5,
+    "base_sha256": "b5a1fa68e8d12a349b556d6b6be866833b2c04f3c17d76d035eaaba2bcb39311",
+    "candidate_sha256": "b5a1fa68e8d12a349b556d6b6be866833b2c04f3c17d76d035eaaba2bcb39311",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 6,
+    "base_sha256": "ba94d263fb17f617c9354a4a533f6307a040a9588b1bea5f486e42a874d9814c",
+    "candidate_sha256": "ba94d263fb17f617c9354a4a533f6307a040a9588b1bea5f486e42a874d9814c",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 7,
+    "base_sha256": "25d7c457995066ca92e74f41bb185eada2f4e30dc4cedc7bb5d64667b7f6c532",
+    "candidate_sha256": "25d7c457995066ca92e74f41bb185eada2f4e30dc4cedc7bb5d64667b7f6c532",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 8,
+    "base_sha256": "b739bd86b28db87a0cafb74f3472d0d5dcdc13012beb8b6bba4f2a7cd0bfee8c",
+    "candidate_sha256": "b739bd86b28db87a0cafb74f3472d0d5dcdc13012beb8b6bba4f2a7cd0bfee8c",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 9,
+    "base_sha256": "02d89161a2868580afcd4174c6631608a1f67591e556a7033c6ce63da51d29cd",
+    "candidate_sha256": "02d89161a2868580afcd4174c6631608a1f67591e556a7033c6ce63da51d29cd",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 10,
+    "base_sha256": "2bddc5613488003ea08b9b54e0050dd3345698f50974c2de39fdb3c533fa3aa0",
+    "candidate_sha256": "2bddc5613488003ea08b9b54e0050dd3345698f50974c2de39fdb3c533fa3aa0",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 11,
+    "base_sha256": "46ef8c6b1d8e9ba4c754557834502fec7455c858e8c65f0a5a9acea6eec0228d",
+    "candidate_sha256": "46ef8c6b1d8e9ba4c754557834502fec7455c858e8c65f0a5a9acea6eec0228d",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 12,
+    "base_sha256": "eec69cbffe9dbde91c8a69fdccaedfc8ea584c734ef59367680f32cd129e86e7",
+    "candidate_sha256": "eec69cbffe9dbde91c8a69fdccaedfc8ea584c734ef59367680f32cd129e86e7",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 13,
+    "base_sha256": "18f99e9e4dbe2009de05398451edfbde92da2b8fa2503c74e47fa1cb1fd0970a",
+    "candidate_sha256": "18f99e9e4dbe2009de05398451edfbde92da2b8fa2503c74e47fa1cb1fd0970a",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 14,
+    "base_sha256": "0ac27fa9da8df9831d8c58e878a4e4c40d6585cbff4d9b59e973a01471515aeb",
+    "candidate_sha256": "0ac27fa9da8df9831d8c58e878a4e4c40d6585cbff4d9b59e973a01471515aeb",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 15,
+    "base_sha256": "6940d0d1cfc82fab836b7f0ea61b56ae094b7b84e944cf30fbd257a298782feb",
+    "candidate_sha256": "6940d0d1cfc82fab836b7f0ea61b56ae094b7b84e944cf30fbd257a298782feb",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 16,
+    "base_sha256": "8a4c925db2cd8b12b2f3a497a8934356f7a372a71c2ce038529018ca99f19330",
+    "candidate_sha256": "8a4c925db2cd8b12b2f3a497a8934356f7a372a71c2ce038529018ca99f19330",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 17,
+    "base_sha256": "3e972f2d38c59c3bb9a6fd8c20978edb558af204b30948967895f19672fbe1b2",
+    "candidate_sha256": "3e972f2d38c59c3bb9a6fd8c20978edb558af204b30948967895f19672fbe1b2",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 18,
+    "base_sha256": "ec5594175d133dfedb17562b982701c9c46d0b1beb87249fe1fb264d58cc0ae2",
+    "candidate_sha256": "ec5594175d133dfedb17562b982701c9c46d0b1beb87249fe1fb264d58cc0ae2",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8536-note-formats-hwp-2022",
+    "page": 19,
+    "base_sha256": "d330de55f8e3e30c5c364eaf4e4eb0233e51b7041e1d5718374fad5e3c2e8bec",
+    "candidate_sha256": "d330de55f8e3e30c5c364eaf4e4eb0233e51b7041e1d5718374fad5e3c2e8bec",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8538-shape-hwp-2022",
+    "page": 1,
+    "base_sha256": "152ee3289150e53dfb19f7bab1c14e90f3e86f98773d55387f5de8afcbc293d8",
+    "candidate_sha256": "152ee3289150e53dfb19f7bab1c14e90f3e86f98773d55387f5de8afcbc293d8",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8538-shape-hwp-2022",
+    "page": 2,
+    "base_sha256": "609f57daf32ba92098c72bd789a530c272e0670a0da693f66837a2d22f8fe914",
+    "candidate_sha256": "609f57daf32ba92098c72bd789a530c272e0670a0da693f66837a2d22f8fe914",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8538-shape-hwp-2022",
+    "page": 3,
+    "base_sha256": "57440a7fdba83cf94479776462aa34367ec68e233924e1b58f62fbc8eb2b2045",
+    "candidate_sha256": "57440a7fdba83cf94479776462aa34367ec68e233924e1b58f62fbc8eb2b2045",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8538-shape-hwp-2022",
+    "page": 4,
+    "base_sha256": "b39e087b1f8815d97205965adbc6f23569a734807d7466d97ec7b8c95fed8bc5",
+    "candidate_sha256": "b39e087b1f8815d97205965adbc6f23569a734807d7466d97ec7b8c95fed8bc5",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8538-shape-hwp-2022",
+    "page": 5,
+    "base_sha256": "beee10693a535f68e7d24184c7b9904c83f92cade0cb25abbfdc203c62b2eb6c",
+    "candidate_sha256": "beee10693a535f68e7d24184c7b9904c83f92cade0cb25abbfdc203c62b2eb6c",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8538-shape-hwp-2022",
+    "page": 6,
+    "base_sha256": "45bcc04940951435025f30b65f2b50a63be1ac2c00ce4be86be65310c18c4f53",
+    "candidate_sha256": "45bcc04940951435025f30b65f2b50a63be1ac2c00ce4be86be65310c18c4f53",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8538-shape-hwp-2022",
+    "page": 7,
+    "base_sha256": "0d030e266cc31d17e1451c56ddebf28d07ecc43c7a905dbf024dba05b284b38c",
+    "candidate_sha256": "0d030e266cc31d17e1451c56ddebf28d07ecc43c7a905dbf024dba05b284b38c",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8541-hancom-two-sections-hwp-2022",
+    "page": 1,
+    "base_sha256": "0184f6c0e3a8284c1e6a725a13417a76fb28e60cd458ae9ee71f50ccacb70b79",
+    "candidate_sha256": "0184f6c0e3a8284c1e6a725a13417a76fb28e60cd458ae9ee71f50ccacb70b79",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8541-hancom-two-sections-hwp-2022",
+    "page": 2,
+    "base_sha256": "f497bbe09fc9cef1e7226aaab1b6e80bd7d212a2962f49be02e87c056dd5a34b",
+    "candidate_sha256": "f497bbe09fc9cef1e7226aaab1b6e80bd7d212a2962f49be02e87c056dd5a34b",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8549-rhwp-after-hwp-2022",
+    "page": 1,
+    "base_sha256": "e6327d7aade0c70b8e2ac036c43a7e5a9cd339e26998db44fdfa3c6412c3d18b",
+    "candidate_sha256": "e6327d7aade0c70b8e2ac036c43a7e5a9cd339e26998db44fdfa3c6412c3d18b",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "api-8558-actual-r3-character-bullet-hwp",
+    "page": 1,
+    "base_sha256": "37c10825647d5979521ab329abe3a6f50638e01549edebfdc455a902b244f50b",
+    "candidate_sha256": "37c10825647d5979521ab329abe3a6f50638e01549edebfdc455a902b244f50b",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8564-.result.9d14e579-4810-4dc8-b9db-a0cf0bb4bd23.partial-hwp-2022",
+    "page": 1,
+    "base_sha256": "5bf9ca9173bd19ba27197ae92edb17d9dead24b7ff8155dba827d902e8798eb5",
+    "candidate_sha256": "5bf9ca9173bd19ba27197ae92edb17d9dead24b7ff8155dba827d902e8798eb5",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "api-8570-non-inline-cell-table-hwp",
+    "page": 1,
+    "base_sha256": "f081983d0bb41dcde26904de238675df45301846ffd5b0a6e66296a3bb9abc76",
+    "candidate_sha256": "f081983d0bb41dcde26904de238675df45301846ffd5b0a6e66296a3bb9abc76",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "api-8571-header-table-hwp",
+    "page": 1,
+    "base_sha256": "c4d84758823ca4e3dea910e3550fd4c378813193d2caad27ce8b1892d9098299",
+    "candidate_sha256": "c4d84758823ca4e3dea910e3550fd4c378813193d2caad27ce8b1892d9098299",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8572-fix-typed-hwp-2022",
+    "page": 1,
+    "base_sha256": "abf0900bcdcad9847a795f64d37de1118148b661fbad518641a4be1b47288d06",
+    "candidate_sha256": "abf0900bcdcad9847a795f64d37de1118148b661fbad518641a4be1b47288d06",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8572-fix-typed-hwp-2022",
+    "page": 2,
+    "base_sha256": "fd76cb97b644b615e4c5c2dbd1face4ca3af3f36e138135740b741c5f21510ad",
+    "candidate_sha256": "fd76cb97b644b615e4c5c2dbd1face4ca3af3f36e138135740b741c5f21510ad",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8572-fix-typed-hwp-2022",
+    "page": 3,
+    "base_sha256": "e074d1242e1c79a9390b750dfb3ab8f44ad012c52a750c5bb281867b10ad1042",
+    "candidate_sha256": "e074d1242e1c79a9390b750dfb3ab8f44ad012c52a750c5bb281867b10ad1042",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8572-fix-typed-hwp-2022",
+    "page": 4,
+    "base_sha256": "f14b38905422faa396f0fcdb45e55d82f0ba9321eb6545b795997a540f1747f9",
+    "candidate_sha256": "f14b38905422faa396f0fcdb45e55d82f0ba9321eb6545b795997a540f1747f9",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8572-fix-typed-hwp-2022",
+    "page": 5,
+    "base_sha256": "7f1c1329079caa507dce01ff32cc4a5a3d6e3f9097f78bc8371bfcf1558178f3",
+    "candidate_sha256": "7f1c1329079caa507dce01ff32cc4a5a3d6e3f9097f78bc8371bfcf1558178f3",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8572-fix-typed-hwp-2022",
+    "page": 6,
+    "base_sha256": "d824903731cae8cbe2455c33bc70cc356f34f7fb050da289977e8702785d29c1",
+    "candidate_sha256": "d824903731cae8cbe2455c33bc70cc356f34f7fb050da289977e8702785d29c1",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8572-fix-typed-hwp-2022",
+    "page": 7,
+    "base_sha256": "5e652738679c92a3be0c76bd4a079eb8e284f7253f1ccb47aa86c277eeab8d7f",
+    "candidate_sha256": "5e652738679c92a3be0c76bd4a079eb8e284f7253f1ccb47aa86c277eeab8d7f",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8577-hancom-page-number-top-hwpx-2022",
+    "page": 1,
+    "base_sha256": "9aef75ac51b0fc45df83e36da284cd08bb9e97395c66258348affa2abce506fa",
+    "candidate_sha256": "9aef75ac51b0fc45df83e36da284cd08bb9e97395c66258348affa2abce506fa",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8577-hancom-page-number-top-hwpx-2022",
+    "page": 2,
+    "base_sha256": "b8ea8559aca95037af04b59887ca67fb733b7e6c15391e1fbc678d65b1f87125",
+    "candidate_sha256": "b8ea8559aca95037af04b59887ca67fb733b7e6c15391e1fbc678d65b1f87125",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8586-hancom-page-number-mid-hwpx-2022",
+    "page": 1,
+    "base_sha256": "c19b05bf9a68e5c9b4c765a0c885424c635bbc946b24fe1393a9ba45a1f20d92",
+    "candidate_sha256": "c19b05bf9a68e5c9b4c765a0c885424c635bbc946b24fe1393a9ba45a1f20d92",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8586-hancom-page-number-mid-hwpx-2022",
+    "page": 2,
+    "base_sha256": "2198405f9becd9d2ae397b7ca66ec4624e141acc3ee050116cd537acaae8a2b4",
+    "candidate_sha256": "2198405f9becd9d2ae397b7ca66ec4624e141acc3ee050116cd537acaae8a2b4",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8586-hancom-page-number-mid-hwpx-2022",
+    "page": 3,
+    "base_sha256": "b13d4b640b60d2f7de1679d628fbe43a1512f71fd0f72eaea9e550b17937b885",
+    "candidate_sha256": "b13d4b640b60d2f7de1679d628fbe43a1512f71fd0f72eaea9e550b17937b885",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8586-hancom-page-number-mid-hwpx-2022",
+    "page": 4,
+    "base_sha256": "09214149dda7619b70a197912ad991fe08f6175edef1a76a2648b239d603470d",
+    "candidate_sha256": "09214149dda7619b70a197912ad991fe08f6175edef1a76a2648b239d603470d",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8586-hancom-page-number-mid-hwpx-2022",
+    "page": 5,
+    "base_sha256": "90ac7ed9bcfab07020443eb1be21318a98845965a06c7438a77472bdc9467577",
+    "candidate_sha256": "90ac7ed9bcfab07020443eb1be21318a98845965a06c7438a77472bdc9467577",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8586-hancom-page-number-mid-hwpx-2022",
+    "page": 6,
+    "base_sha256": "114d90bdaad4283094f513ddebc29495e21790afdc4b26933de49634db895908",
+    "candidate_sha256": "114d90bdaad4283094f513ddebc29495e21790afdc4b26933de49634db895908",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8602-rhwp-after-hwp-2022",
+    "page": 1,
+    "base_sha256": "e3824ac9a8058c8c8a655f923538753527ae43a4437da3e7fa90bc63bac066aa",
+    "candidate_sha256": "e3824ac9a8058c8c8a655f923538753527ae43a4437da3e7fa90bc63bac066aa",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8616-existing-caret-false-hwp",
+    "page": 1,
+    "base_sha256": "3634dfa2e69fba4299c8f9cd942d7ae9ac441996b8cc38823f9214560371fe82",
+    "candidate_sha256": "3634dfa2e69fba4299c8f9cd942d7ae9ac441996b8cc38823f9214560371fe82",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8629-hancom-mac-200-b5-hwp-2022",
+    "page": 1,
+    "base_sha256": "9f05970f96c20fcf8bffc9bc030173f9a00987d70705c1314c0b6e9555b7776e",
+    "candidate_sha256": "9f05970f96c20fcf8bffc9bc030173f9a00987d70705c1314c0b6e9555b7776e",
+    "same_as_latest_devel": true
+  },
+  {
+    "key": "8616-hancom-mac-dutmal-hwp-2022",
+    "page": 1,
+    "base_sha256": "eac9eabb9e14e197062564f3a5475cd01c6f64d8fcca72989fe39f05edeb8873",
+    "candidate_sha256": "eac9eabb9e14e197062564f3a5475cd01c6f64d8fcca72989fe39f05edeb8873",
+    "same_as_latest_devel": true
+  }
+]

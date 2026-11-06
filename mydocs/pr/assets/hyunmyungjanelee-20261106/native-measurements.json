@@ -1,6 +1,26 @@
 [
   {
     "key": "textbox_floating_table_offset",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/textbox_floating_table_offset/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/textbox_floating_table_offset/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "1d2e8b404d5f68d83fb1b710d6511f472cd99e000ca6d03b6af4b1659d4717d0",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/textbox_floating_table_offset/pdf_png/pdf-001.png",
+        "pdf_sha256": "2a2a351973f342e6db52df3a2b248b712e078f8c05f4962174e40dc2d26aae5e"
+      }
+    ],
     "metrics": [
       {
         "page": 1,
@@ -13,12 +33,26 @@
         "tolerant_content_match_percent": 100.0
       }
     ],
-    "page_counts": {
-      "rhwp": 1,
-      "pdf": 1
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
     },
-    "run_state": "complete",
-    "missing_pages": [],
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
     "provenance": {
       "hwp": {
         "path": "samples/issue8513/textbox_floating_table_offset.hwpx",
@@ -28,7 +62,7 @@
         "path": "pdf/issue8513/textbox_floating_table_offset-2020.pdf",
         "sha256": "92157894ff185371aad34d06b48f279a0eeee8d4ec903aa80941294dbbe9c923"
       },
-      "git_head": "d0170dc946d8be7f9ab1f9729ad71a75717c95dc",
+      "git_head": "99a1085a9cfb63aafdfcf7274740694d52bdeed9",
       "sweep_script": {
         "path": "scripts/visual_sweep.py",
         "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
@@ -64,9 +98,9 @@
       },
       "comparison_profile": "print",
       "rhwp_binary": {
-        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "sha256": "ceb9dd13969f20610f5965407b885401d0441f5f70f12469f14c3486c06e82c4"
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
       },
       "native_webfont_fallback": {
         "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
@@ -110,10 +144,40 @@
           }
         ]
       }
-    }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/textbox_floating_table_offset/silhouette-checkpoint.json"
   },
   {
     "key": "partial_table_control_only_para",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1,
+      2
+    ],
+    "completed_pages": [
+      1,
+      2
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/partial_table_control_only_para/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/partial_table_control_only_para/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "034f5432bcdf713e589f877941e738fba92fded5619f1d31b733de203a761396",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/partial_table_control_only_para/pdf_png/pdf-001.png",
+        "pdf_sha256": "29808ebe269a0687d110321fc621db8ed121cf1f8a58ba0a5e347d9374b59a13"
+      },
+      {
+        "page": 2,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/partial_table_control_only_para/rhwp_png/rhwp_002.png",
+        "rhwp_sha256": "7751121fb3c2d21857edc74983e78971179a312eea139c5b542f4a0720a36008",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/partial_table_control_only_para/pdf_png/pdf-002.png",
+        "pdf_sha256": "fa031a1f0e380d2489c4e2d4bb124e116a6334609fe8b6c52368e6b08f4ccd99"
+      }
+    ],
     "metrics": [
       {
         "page": 1,
@@ -136,12 +200,26 @@
         "tolerant_content_match_percent": 100.0
       }
     ],
-    "page_counts": {
-      "rhwp": 2,
-      "pdf": 2
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
     },
-    "run_state": "complete",
-    "missing_pages": [],
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
     "provenance": {
       "hwp": {
         "path": "samples/issue8579/partial_table_control_only_para.hwp",
@@ -151,7 +229,7 @@
         "path": "pdf/issue8579/partial_table_control_only_para-2020.pdf",
         "sha256": "3fe4a9c5496864ffafc76d97ae1f99027b8c8d91275090d082c79447996866ab"
       },
-      "git_head": "d0170dc946d8be7f9ab1f9729ad71a75717c95dc",
+      "git_head": "99a1085a9cfb63aafdfcf7274740694d52bdeed9",
       "sweep_script": {
         "path": "scripts/visual_sweep.py",
         "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
@@ -187,9 +265,9 @@
       },
       "comparison_profile": "print",
       "rhwp_binary": {
-        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "sha256": "ceb9dd13969f20610f5965407b885401d0441f5f70f12469f14c3486c06e82c4"
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
       },
       "native_webfont_fallback": {
         "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
@@ -233,10 +311,31 @@
           }
         ]
       }
-    }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/partial_table_control_only_para/silhouette-checkpoint.json"
   },
   {
     "key": "bindata_link_shift",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/bindata_link_shift/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/bindata_link_shift/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "08c789213059496d41f32a8d6683e9842eee42497f6b8ced898f84caca0736f7",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/bindata_link_shift/pdf_png/pdf-001.png",
+        "pdf_sha256": "06cc06844b97cef453d163fea6b0c804d340d15692d392df92ac260e1de23ae1"
+      }
+    ],
     "metrics": [
       {
         "page": 1,
@@ -249,12 +348,26 @@
         "tolerant_content_match_percent": 100.0
       }
     ],
-    "page_counts": {
-      "rhwp": 1,
-      "pdf": 1
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
     },
-    "run_state": "complete",
-    "missing_pages": [],
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
     "provenance": {
       "hwp": {
         "path": "samples/issue8594/bindata_link_shift.hwp",
@@ -264,7 +377,7 @@
         "path": "pdf/issue8594/bindata_link_shift-2020.pdf",
         "sha256": "663ab919c9440b6397d16931cf69b29c32c34e740aebd932634886e440a23ca3"
       },
-      "git_head": "d0170dc946d8be7f9ab1f9729ad71a75717c95dc",
+      "git_head": "99a1085a9cfb63aafdfcf7274740694d52bdeed9",
       "sweep_script": {
         "path": "scripts/visual_sweep.py",
         "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
@@ -300,9 +413,9 @@
       },
       "comparison_profile": "print",
       "rhwp_binary": {
-        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "sha256": "ceb9dd13969f20610f5965407b885401d0441f5f70f12469f14c3486c06e82c4"
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
       },
       "native_webfont_fallback": {
         "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
@@ -346,10 +459,31 @@
           }
         ]
       }
-    }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/bindata_link_shift/silhouette-checkpoint.json"
   },
   {
     "key": "picture_soft_edge",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/picture_soft_edge/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/picture_soft_edge/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "08c789213059496d41f32a8d6683e9842eee42497f6b8ced898f84caca0736f7",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/picture_soft_edge/pdf_png/pdf-001.png",
+        "pdf_sha256": "944380488b9178bf227e4363e126ec24e5efc89a0689232e583ae09f27a9e4d1"
+      }
+    ],
     "metrics": [
       {
         "page": 1,
@@ -362,12 +496,26 @@
         "tolerant_content_match_percent": 99.93503
       }
     ],
-    "page_counts": {
-      "rhwp": 1,
-      "pdf": 1
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
     },
-    "run_state": "complete",
-    "missing_pages": [],
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
     "provenance": {
       "hwp": {
         "path": "samples/issue8593/picture_soft_edge.hwp",
@@ -377,7 +525,7 @@
         "path": "pdf/issue8593/picture_soft_edge-2020.pdf",
         "sha256": "dd26aebb46d3bfb52e03828dc8a56a94a9047ade8322b3de8aeb1bf053782b45"
       },
-      "git_head": "d0170dc946d8be7f9ab1f9729ad71a75717c95dc",
+      "git_head": "99a1085a9cfb63aafdfcf7274740694d52bdeed9",
       "sweep_script": {
         "path": "scripts/visual_sweep.py",
         "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
@@ -413,9 +561,9 @@
       },
       "comparison_profile": "print",
       "rhwp_binary": {
-        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "sha256": "ceb9dd13969f20610f5965407b885401d0441f5f70f12469f14c3486c06e82c4"
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
       },
       "native_webfont_fallback": {
         "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
@@ -459,10 +607,31 @@
           }
         ]
       }
-    }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/picture_soft_edge/silhouette-checkpoint.json"
   },
   {
     "key": "textbox_floating_table_following_control",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/textbox_floating_table_following_control/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/textbox_floating_table_following_control/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "e816a1ce88f10874835a0ab80f56b47cece46d140ae5133207371428c48a9214",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/textbox_floating_table_following_control/pdf_png/pdf-001.png",
+        "pdf_sha256": "599e76a2a0bd1caa26fdccc91d87272684b25a93193d5353818316a84b123e6e"
+      }
+    ],
     "metrics": [
       {
         "page": 1,
@@ -475,12 +644,26 @@
         "tolerant_content_match_percent": 100.0
       }
     ],
-    "page_counts": {
-      "rhwp": 1,
-      "pdf": 1
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
     },
-    "run_state": "complete",
-    "missing_pages": [],
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
     "provenance": {
       "hwp": {
         "path": "samples/issue8513/textbox_floating_table_following_control.hwpx",
@@ -490,7 +673,7 @@
         "path": "pdf/issue8513/textbox_floating_table_following_control-2020.pdf",
         "sha256": "55afab8d0ba1233cff6a39cebe0cdea9d99ee5a7fdcbf8b28d6b2648a29e9bce"
       },
-      "git_head": "d0170dc946d8be7f9ab1f9729ad71a75717c95dc",
+      "git_head": "99a1085a9cfb63aafdfcf7274740694d52bdeed9",
       "sweep_script": {
         "path": "scripts/visual_sweep.py",
         "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
@@ -526,9 +709,9 @@
       },
       "comparison_profile": "print",
       "rhwp_binary": {
-        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "sha256": "ceb9dd13969f20610f5965407b885401d0441f5f70f12469f14c3486c06e82c4"
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
       },
       "native_webfont_fallback": {
         "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
@@ -572,10 +755,40 @@
           }
         ]
       }
-    }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/textbox_floating_table_following_control/silhouette-checkpoint.json"
   },
   {
     "key": "partial_table_following_text",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1,
+      2
+    ],
+    "completed_pages": [
+      1,
+      2
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/partial_table_following_text/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/partial_table_following_text/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "41fdb818295256ef39f8f263079392d3844c7c21209f364161369a7909ad5549",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/partial_table_following_text/pdf_png/pdf-001.png",
+        "pdf_sha256": "2e4ba331bb646c9159fa640925916652c6aa73eff8a8033ffd1e3b72e11fc421"
+      },
+      {
+        "page": 2,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/partial_table_following_text/rhwp_png/rhwp_002.png",
+        "rhwp_sha256": "7751121fb3c2d21857edc74983e78971179a312eea139c5b542f4a0720a36008",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/partial_table_following_text/pdf_png/pdf-002.png",
+        "pdf_sha256": "fa031a1f0e380d2489c4e2d4bb124e116a6334609fe8b6c52368e6b08f4ccd99"
+      }
+    ],
     "metrics": [
       {
         "page": 1,
@@ -598,12 +811,26 @@
         "tolerant_content_match_percent": 100.0
       }
     ],
-    "page_counts": {
-      "rhwp": 2,
-      "pdf": 2
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
     },
-    "run_state": "complete",
-    "missing_pages": [],
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
     "provenance": {
       "hwp": {
         "path": "samples/issue8579/partial_table_following_text.hwpx",
@@ -613,7 +840,7 @@
         "path": "pdf/issue8579/partial_table_following_text-2020.pdf",
         "sha256": "5ef2c2a803e1154daf331b8c658c2e49b8b4f4e67a12b91eba567fd0e583c383"
       },
-      "git_head": "d0170dc946d8be7f9ab1f9729ad71a75717c95dc",
+      "git_head": "99a1085a9cfb63aafdfcf7274740694d52bdeed9",
       "sweep_script": {
         "path": "scripts/visual_sweep.py",
         "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
@@ -649,9 +876,9 @@
       },
       "comparison_profile": "print",
       "rhwp_binary": {
-        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "sha256": "ceb9dd13969f20610f5965407b885401d0441f5f70f12469f14c3486c06e82c4"
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
       },
       "native_webfont_fallback": {
         "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
@@ -695,10 +922,31 @@
           }
         ]
       }
-    }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/partial_table_following_text/silhouette-checkpoint.json"
   },
   {
     "key": "textbox_tac_picture_rows",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/textbox_tac_picture_rows/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/textbox_tac_picture_rows/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "25215fd41c2971cc3db45899863fcbdb510a8f5060402b1e1c9d1c1ebf41e5cb",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/textbox_tac_picture_rows/pdf_png/pdf-001.png",
+        "pdf_sha256": "b2e10535e86a4cc63a9d1831e233444595df28819cfa0f4fb04011d57631ac8a"
+      }
+    ],
     "metrics": [
       {
         "page": 1,
@@ -711,12 +959,26 @@
         "tolerant_content_match_percent": 99.95893
       }
     ],
-    "page_counts": {
-      "rhwp": 1,
-      "pdf": 1
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
     },
-    "run_state": "complete",
-    "missing_pages": [],
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
     "provenance": {
       "hwp": {
         "path": "samples/issue7524/textbox_tac_picture_rows.hwp",
@@ -726,7 +988,7 @@
         "path": "pdf/issue7524/textbox_tac_picture_rows-webhwp-print.pdf",
         "sha256": "212f1c608c99a1a427aa5302046d8479afb0a16fecc19c2fcf62afb7212653a5"
       },
-      "git_head": "d0170dc946d8be7f9ab1f9729ad71a75717c95dc",
+      "git_head": "99a1085a9cfb63aafdfcf7274740694d52bdeed9",
       "sweep_script": {
         "path": "scripts/visual_sweep.py",
         "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
@@ -762,9 +1024,9 @@
       },
       "comparison_profile": "print",
       "rhwp_binary": {
-        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "sha256": "ceb9dd13969f20610f5965407b885401d0441f5f70f12469f14c3486c06e82c4"
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
       },
       "native_webfont_fallback": {
         "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
@@ -783,7 +1045,7 @@
             "url": "fonts/NotoSerifKR-Regular.woff2",
             "source_sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
             "native_path": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
-            "native_sha256": "6896795baf9ded3e4bdbec4e0c32e2ae1f33795f02a1656adce9c07d4580383c",
+            "native_sha256": "7cafeafba52a9da2534585d3b04e549e41da87a0533c77c09a95ed621c2f3d7f",
             "native_face": "NotoSerifKRExtraLight-Regular"
           }
         ],
@@ -822,7 +1084,7 @@
           },
           {
             "path": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
-            "sha256": "6896795baf9ded3e4bdbec4e0c32e2ae1f33795f02a1656adce9c07d4580383c"
+            "sha256": "7cafeafba52a9da2534585d3b04e549e41da87a0533c77c09a95ed621c2f3d7f"
           },
           {
             "path": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
@@ -830,10 +1092,31 @@
           }
         ]
       }
-    }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/textbox_tac_picture_rows/silhouette-checkpoint.json"
   },
   {
     "key": "textbox_valign_no_lineseg",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/textbox_valign_no_lineseg/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/textbox_valign_no_lineseg/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "17735ca87e7b047199288943032cdc1a58092ecd5b1a5ee873b4e293a47e3e2a",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/textbox_valign_no_lineseg/pdf_png/pdf-001.png",
+        "pdf_sha256": "4b33907bc5e7be7f10169c50b62b282d1cd17aabea546ffc8c5f0cbbf5b07e05"
+      }
+    ],
     "metrics": [
       {
         "page": 1,
@@ -846,12 +1129,26 @@
         "tolerant_content_match_percent": 99.55124
       }
     ],
-    "page_counts": {
-      "rhwp": 1,
-      "pdf": 1
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
     },
-    "run_state": "complete",
-    "missing_pages": [],
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
     "provenance": {
       "hwp": {
         "path": "samples/issue8122/textbox_valign_no_lineseg.hwp",
@@ -861,7 +1158,7 @@
         "path": "pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf",
         "sha256": "0cfca5740c6fc9aaadf9db814e6e0503850d1f56013eb4bdda895bbc80dd0023"
       },
-      "git_head": "d0170dc946d8be7f9ab1f9729ad71a75717c95dc",
+      "git_head": "99a1085a9cfb63aafdfcf7274740694d52bdeed9",
       "sweep_script": {
         "path": "scripts/visual_sweep.py",
         "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
@@ -897,9 +1194,9 @@
       },
       "comparison_profile": "print",
       "rhwp_binary": {
-        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "sha256": "ceb9dd13969f20610f5965407b885401d0441f5f70f12469f14c3486c06e82c4"
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
       },
       "native_webfont_fallback": {
         "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
@@ -918,7 +1215,7 @@
             "url": "fonts/NotoSerifKR-Regular.woff2",
             "source_sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
             "native_path": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
-            "native_sha256": "520c77b9055d52acb0dd18150ae0de97325a59c6eac312c0a261c9dbfbd33493",
+            "native_sha256": "e0acd5e353fd49d8215a0ee8c15ab72cd1869b03723fabd77ddab235377486d3",
             "native_face": "NotoSerifKRExtraLight-Regular"
           }
         ],
@@ -957,7 +1254,7 @@
           },
           {
             "path": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
-            "sha256": "520c77b9055d52acb0dd18150ae0de97325a59c6eac312c0a261c9dbfbd33493"
+            "sha256": "e0acd5e353fd49d8215a0ee8c15ab72cd1869b03723fabd77ddab235377486d3"
           },
           {
             "path": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
@@ -965,10 +1262,31 @@
           }
         ]
       }
-    }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2022/textbox_valign_no_lineseg/silhouette-checkpoint.json"
   },
   {
     "key": "short_row_grid_r21",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2024/short_row_grid_r21/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2024/short_row_grid_r21/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "9f617c113ca28e32f450e623dfd2889204d3e67fd5b13500bbf046ab8dc37352",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2024/short_row_grid_r21/pdf_png/pdf-001.png",
+        "pdf_sha256": "ad7b562037f1ade270792c6a8d34c3124ee598e39dc7fd69496efa2652d85cb8"
+      }
+    ],
     "metrics": [
       {
         "page": 1,
@@ -981,12 +1299,26 @@
         "tolerant_content_match_percent": 99.9903
       }
     ],
-    "page_counts": {
-      "rhwp": 1,
-      "pdf": 1
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
     },
-    "run_state": "complete",
-    "missing_pages": [],
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
     "provenance": {
       "hwp": {
         "path": "samples/issue8584/short_row_grid_r21.hwpx",
@@ -996,7 +1328,7 @@
         "path": "pdf/issue8584/short_row_grid_r21-2024.pdf",
         "sha256": "3278cc0724d15dea4053be64bd58235cb833b4034eb1efd60cc5c8bafbaebb04"
       },
-      "git_head": "d0170dc946d8be7f9ab1f9729ad71a75717c95dc",
+      "git_head": "99a1085a9cfb63aafdfcf7274740694d52bdeed9",
       "sweep_script": {
         "path": "scripts/visual_sweep.py",
         "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
@@ -1032,9 +1364,9 @@
       },
       "comparison_profile": "print",
       "rhwp_binary": {
-        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "sha256": "ceb9dd13969f20610f5965407b885401d0441f5f70f12469f14c3486c06e82c4"
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
       },
       "native_webfont_fallback": {
         "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
@@ -1078,10 +1410,31 @@
           }
         ]
       }
-    }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2024/short_row_grid_r21/silhouette-checkpoint.json"
   },
   {
     "key": "short_row_grid_r4",
+    "mode": "silhouette_only",
+    "run_state": "complete",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "tsv": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2024/short_row_grid_r4/silhouette.tsv",
+    "radius_px": 2,
+    "inputs": [
+      {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2024/short_row_grid_r4/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "d0905d2e792ec8fd9efa01020fb959a9f782dec71f669d194658a536007b3227",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2024/short_row_grid_r4/pdf_png/pdf-001.png",
+        "pdf_sha256": "3ff28108c8205ffe9ba46a977c877e76e29a5cc51984c1d2109db5068d8ac6f0"
+      }
+    ],
     "metrics": [
       {
         "page": 1,
@@ -1094,12 +1447,26 @@
         "tolerant_content_match_percent": 99.99207
       }
     ],
-    "page_counts": {
-      "rhwp": 1,
-      "pdf": 1
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
     },
-    "run_state": "complete",
-    "missing_pages": [],
+    "color_tolerance": 32,
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
     "provenance": {
       "hwp": {
         "path": "samples/issue8584/short_row_grid_r4.hwpx",
@@ -1109,7 +1476,7 @@
         "path": "pdf/issue8584/short_row_grid_r4-2024.pdf",
         "sha256": "7c6d186aa60cac58bd34aa22dff15a0e9cf18b69634bf8b7738d66537fc9a142"
       },
-      "git_head": "d0170dc946d8be7f9ab1f9729ad71a75717c95dc",
+      "git_head": "99a1085a9cfb63aafdfcf7274740694d52bdeed9",
       "sweep_script": {
         "path": "scripts/visual_sweep.py",
         "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
@@ -1145,9 +1512,9 @@
       },
       "comparison_profile": "print",
       "rhwp_binary": {
-        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/final-rhwp",
-        "sha256": "ceb9dd13969f20610f5965407b885401d0441f5f70f12469f14c3486c06e82c4"
+        "configured": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/bin/latest-rhwp",
+        "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
       },
       "native_webfont_fallback": {
         "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
@@ -1191,6 +1558,7 @@
           }
         ]
       }
-    }
+    },
+    "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-native-main-2024/short_row_grid_r4/silhouette-checkpoint.json"
   }
 ]

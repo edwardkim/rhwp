@@ -1,0 +1,282 @@
+[
+  {
+    "path": "samples/issue8513/textbox_floating_table_offset.hwpx",
+    "sha256": "fb714bedfc3adaf2a36106d21f956aadf9538dcfcd9478a2c488a97cb013b0a6",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/issue8513/textbox_floating_table_offset-2020.pdf",
+    "sha256": "92157894ff185371aad34d06b48f279a0eeee8d4ec903aa80941294dbbe9c923",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "samples/issue8579/partial_table_control_only_para.hwp",
+    "sha256": "1d11a900d41c073dfd0432e37ae73dc0d24ead99f028c475be8c5e275550bff9",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/issue8579/partial_table_control_only_para-2020.pdf",
+    "sha256": "3fe4a9c5496864ffafc76d97ae1f99027b8c8d91275090d082c79447996866ab",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "samples/issue8584/short_row_grid_r21.hwpx",
+    "sha256": "4e4108d50e0da44245b79b17458be7ecdb7d6a39ea2a44c7e0813c292885221f",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/issue8584/short_row_grid_r21-2024.pdf",
+    "sha256": "3278cc0724d15dea4053be64bd58235cb833b4034eb1efd60cc5c8bafbaebb04",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "samples/issue8584/short_row_grid_r4.hwpx",
+    "sha256": "21ea9a9277b95ae606847b835c8c7233144dad443744b11bbc57323bb69d3981",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/issue8584/short_row_grid_r4-2024.pdf",
+    "sha256": "7c6d186aa60cac58bd34aa22dff15a0e9cf18b69634bf8b7738d66537fc9a142",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "samples/issue8594/bindata_link_shift.hwp",
+    "sha256": "04f067517a604e75fd3a6b75130226af4fd7c65a27dab5859bdba87cb50856ff",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/issue8594/bindata_link_shift-2020.pdf",
+    "sha256": "663ab919c9440b6397d16931cf69b29c32c34e740aebd932634886e440a23ca3",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "samples/issue8593/picture_soft_edge.hwp",
+    "sha256": "fb71457b094a0b534fe8ea2092ecc3a642bc1e5ea0ffe99c2915e426b6c629f4",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/issue8593/picture_soft_edge-2020.pdf",
+    "sha256": "dd26aebb46d3bfb52e03828dc8a56a94a9047ade8322b3de8aeb1bf053782b45",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "samples/issue8513/textbox_floating_table_following_control.hwpx",
+    "sha256": "f891ac02a635a34d02d8d3649f5a4757350e5a15a4725a1c5760ece75bc15d71",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/issue8513/textbox_floating_table_following_control-2020.pdf",
+    "sha256": "55afab8d0ba1233cff6a39cebe0cdea9d99ee5a7fdcbf8b28d6b2648a29e9bce",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "samples/issue8579/partial_table_following_text.hwpx",
+    "sha256": "393646e7cd3efbfaf00f40fe20e3126a2414c08d64291e59f69c0ea6bcbe5fc6",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/issue8579/partial_table_following_text-2020.pdf",
+    "sha256": "5ef2c2a803e1154daf331b8c658c2e49b8b4f4e67a12b91eba567fd0e583c383",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "samples/issue7524/textbox_tac_picture_rows.hwp",
+    "sha256": "ffc0a66e92b10ec2ea10167bca2a2721c68a4207aed4acf5b381ab5e7ca18d36",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/issue7524/textbox_tac_picture_rows-webhwp-print.pdf",
+    "sha256": "212f1c608c99a1a427aa5302046d8479afb0a16fecc19c2fcf62afb7212653a5",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "samples/issue8122/textbox_valign_no_lineseg.hwp",
+    "sha256": "de374075cfc2c1ef945d3795bba194b90dc42d759caf8b478c603d4777cfb8ff",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf",
+    "sha256": "0cfca5740c6fc9aaadf9db814e6e0503850d1f56013eb4bdda895bbc80dd0023",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "tests/fixtures/semanticist21_integration_review/pr8526/inserted-style.hwp",
+    "sha256": "4d5a670618405940c4eba1c122ca7bd079bbbdbe3cfb2f04c7a02ffc6c8555b9",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/semanticist21-20261105/pr8526/inserted-style-hwp-2020.pdf",
+    "sha256": "a8e1c0cd34b51f99dc584cf34c79ff4af926ae6b8dc464085e7ac1eb16e6085e",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "tests/fixtures/numbering_levels/levels.hwp",
+    "sha256": "55746c0211f05ef27ef293ad352e94d946d99b2f0251594faeb60a5e4cf31866",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/semanticist21-20261105/pr8527/levels-hwp-2020.pdf",
+    "sha256": "26e7f539286cb882eaef7b35ede404eeafff309188ecd33ad236cb5d0384bd1e",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "tests/fixtures/numbering_char_shape/follow-end-20pt.hwp",
+    "sha256": "01e60730a99a9e0a42db787dc8f9a0143d168af6a51f788796c6ac82b5c1ceaa",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/semanticist21-20261105/pr8528/follow-end-20pt-hwp-2020.pdf",
+    "sha256": "f181b12cb9934c9573a8f5c162e704ca62780cce75f2776c1d3c3267145553c3",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "tests/fixtures/number_shapes/note-formats.hwp",
+    "sha256": "c0150356a4f44e15a8100549f0f1e15172f0f95836a6988392703f7e4febdb77",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/number_shapes/note-formats-hancom-mac-12.30.pdf",
+    "sha256": "433cf379642dbbca3de6a2e299ef36d096c2505f96a9424d6f5d8de37d11b892",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "tests/fixtures/footnote_drawing/shape.hwp",
+    "sha256": "2ebcb057709da85d59f5f5eb29a997763e19324ab47eef3fbf30c6792d27bb91",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/footnote_drawing/shape-hancom-mac-12.30.pdf",
+    "sha256": "2dd3906646849b23b50e57ab55659e9cc223bc776d754dba968a144a4ce08aae",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "tests/fixtures/section_split/hancom-two-sections.hwp",
+    "sha256": "e604c47d11a788340b8117c3d1e727130b2cf56fa54f16dae770c198b7306424",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/semanticist21-20261105/pr8541/hancom-two-sections-hwp-2020.pdf",
+    "sha256": "b27247993ae78e223627737cf2c371008e78ed31d3f617f1211bd2dd7a1ba05a",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "mydocs/pr/assets/line-seg-start-outside-control/rhwp-after.hwp",
+    "sha256": "ed1df84780c47a24d45cfa463ea9c74de59da5d8781cd33192e4b4ef0e1c1013",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/semanticist21-20261105/pr8549/rhwp-after-hwp-2020.pdf",
+    "sha256": "4355a8010f2ef1b052e005a89c8bb4fe9b6871fe93ef0301b37e4608688dc8bc",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "tests/fixtures/semanticist21_integration_review/pr8558/actual-api-character-bullet.hwp",
+    "sha256": "0c3f81df01c542b62a47e7668400cf3fccffeb5bda7aac1a9dbc0e899f13319b",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/semanticist21-20261105/pr8558/actual-r3-character-bullet-hwp-2020.pdf",
+    "sha256": "c8434e0f21b278fd19683bb1e8722369ad416a20f4f0481c88f7d7d6048d919d",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "tests/fixtures/semanticist21_integration_review/pr8564/date-path-context-before.hwp",
+    "sha256": "9a2edc8583033f54037722111827ffffb2496047b9c9a168086f61f029d09a7b",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/semanticist21-20261105/pr8564/date-path-context-before-2020.pdf",
+    "sha256": "3ffbc8328d91a0a3121efaf324e63cb7cd2e9dcf3b9b4a4c78b40d380239db17",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "tests/fixtures/semanticist21_integration_review/pr8570/non-inline-cell-table.hwp",
+    "sha256": "83b5439fe48b5c7667bdddd0893ddd3dbdc66c3eb70a234cf16455659d64e093",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/semanticist21-20261105/pr8570/current-d3e6-non-inline-cell-table-hwp-2020.pdf",
+    "sha256": "2d927c1221da8fe294b10144b46ef22aec6d75740652b71705530a588bb536f4",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "tests/fixtures/semanticist21_integration_review/pr8571/header-table.hwp",
+    "sha256": "7dfe60e9fea1d24f1b9f2ca5919b3d341581a593bf7e2f28c902f77ba9f8c6a7",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/semanticist21-20261105/pr8571/current-d3e6-header-table-hwp-2020.pdf",
+    "sha256": "2ac3b352297f522863216427cb54bfa57998eabb817e7077282d70786be52a58",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "mydocs/pr/assets/tac-host-row-cell-growth/fix-typed.hwp",
+    "sha256": "bc5a8bcdc54ed7e28e5f57e669cb022be80dfac10ea5da20627bd20c81d70004",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/semanticist21-20261105/pr8572/fix-typed-hwp-2020.pdf",
+    "sha256": "93409e6622bf8895b92049a8380ed7b95a94eef6d689af6620ceb5e821b0de13",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "tests/fixtures/page_number_position/hancom-page-number-top.hwpx",
+    "sha256": "4411fc1d14dea62152f72801a26aa1849966adb0acf635d26d7195c7d0e77bc0",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/semanticist21-20261105/pr8577/hancom-page-number-top-hwpx-2020.pdf",
+    "sha256": "6fe2ac36d39f82b7d09da6c10740d599aa2ad6620270e0735e3fb18ec3a5ae33",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "tests/fixtures/page_number_position/hancom-page-number-mid.hwpx",
+    "sha256": "d49cfee4fffd6107bd51ea0f307fae17f63b8ef7f37840a04f79f43c38c7b3cf",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/semanticist21-20261105/pr8586/hancom-page-number-mid-hwpx-2020.pdf",
+    "sha256": "970707d4004ad1d1cf208b5613297aa2c97af3da9f693fb5784785ffcffa4e4c",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "mydocs/pr/assets/emptied-paragraph-para-text/rhwp-after.hwp",
+    "sha256": "a2ec7d4fe6dcb4520a113693dd615ac654fc7a8ff47c63c1d3d7bd9cc37c3cf5",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/semanticist21-20261105/pr8602/rhwp-after-hwp-2020.pdf",
+    "sha256": "9b1aea6ce4e44f11f834f678ce51ba36b85293555b22e80f4673dd6c5abb4f79",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "tests/fixtures/char_overlap_caret_axis/nonbmp-endnote-false.hwp",
+    "sha256": "159b91e4500e8916594c93fcde8cda6ad7efbdb1ea13fea7a17a37a08c580d1c",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "pdf/issue7819_char_overlap_caret_axis/nonbmp-endnote-false-hwp-2020.pdf",
+    "sha256": "d8cfa09f468ecca56497d4f9c212c9abefce4d9ab116cc29e95faf7c54de3c03",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "tests/fixtures/wonggoji/hancom-mac-200-b5.hwp",
+    "sha256": "aee3057cbc9571400ca9c741ad5210ce2320faa0c2056da9b9773f0d7abb814c",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "tests/fixtures/wonggoji/hancom-mac-200-b5.pdf",
+    "sha256": "8a640b6011721f3507c34798a3d196567a5106dcbbeeeafb4b71315147393456",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "samples/dutmal/hancom-mac-dutmal.hwp",
+    "sha256": "b5c6eb1fc1edde6b69fb6a6bc7d6bdfb9edfb829158d8844a0eceb93b27fa063",
+    "matches_tracked_commit": true
+  },
+  {
+    "path": "samples/dutmal/hancom-mac-dutmal.pdf",
+    "sha256": "3fa2e668e84836118efea8f13ca5e7f59154aeba8657e2f6a39b1eb0e1c77bb7",
+    "matches_tracked_commit": true
+  }
+]

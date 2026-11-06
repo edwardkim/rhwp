@@ -1,0 +1,49 @@
+{
+  "pr": 8629,
+  "sourceSha": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+  "wasmSha256": "251c54c1194265e74e7a76863c5645da74330e12044b7f877e9c2fe14405a98f",
+  "runtime": "지정한 제품 SHA의 실제 WASM 공개 API",
+  "observations": {
+    "section": {
+      "pageNum": 0,
+      "pageNumType": 0,
+      "pictureNum": 0,
+      "tableNum": 0,
+      "equationNum": 0,
+      "columnSpacing": 1134,
+      "defaultTabSpacing": 8000,
+      "hideHeader": false,
+      "hideFooter": false,
+      "hideMasterPage": false,
+      "hideBorder": false,
+      "hideFill": false,
+      "hideEmptyLine": false,
+      "outlineNumberingId": 1,
+      "lineGrid": 3968,
+      "charGrid": 2863,
+      "wonggojiFormat": true
+    },
+    "reappliedSection": {
+      "pageNum": 0,
+      "pageNumType": 0,
+      "pictureNum": 0,
+      "tableNum": 0,
+      "equationNum": 0,
+      "columnSpacing": 1134,
+      "defaultTabSpacing": 8000,
+      "hideHeader": false,
+      "hideFooter": false,
+      "hideMasterPage": false,
+      "hideBorder": false,
+      "hideFill": false,
+      "hideEmptyLine": false,
+      "outlineNumberingId": 1,
+      "lineGrid": 3968,
+      "charGrid": 2863,
+      "wonggojiFormat": true
+    },
+    "manuscript-roundtrip_hwp": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-8659-api/pr8629/manuscript-roundtrip.hwp",
+    "manuscript-roundtrip_hwpx": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-8659-api/pr8629/manuscript-roundtrip.hwpx"
+  },
+  "status": "passed"
+}

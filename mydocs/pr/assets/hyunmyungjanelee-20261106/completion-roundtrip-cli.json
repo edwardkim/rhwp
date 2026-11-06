@@ -1,0 +1,130 @@
+[
+  {
+    "key": "textbox_floating_table_offset",
+    "format": "hwp",
+    "exit": 0,
+    "stdout": "{\"bytes\":6656,\"format\":\"hwp5\",\"output\":\"/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/textbox_floating_table_offset.hwp\",\"passwordProtected\":false,\"schemaVersion\":\"1.0\",\"source\":\"/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8513/textbox_floating_table_offset.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"verifyPages\":{\"after\":1,\"before\":1,\"identical\":true},\"wasDistribution\":false}\n",
+    "stderr": "",
+    "sha256": "462863df1dc78b051b1caf077167775a76515dc78f76fa59c76f5d4c5026eedd"
+  },
+  {
+    "key": "textbox_floating_table_offset",
+    "format": "hwpx",
+    "exit": 0,
+    "stdout": "{\"bytes\":8064,\"format\":\"hwpx\",\"output\":\"/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/textbox_floating_table_offset.hwpx\",\"passwordProtected\":false,\"schemaVersion\":\"1.0\",\"source\":\"/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8513/textbox_floating_table_offset.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"verifyPages\":{\"after\":1,\"before\":1,\"identical\":true}}\n",
+    "stderr": "",
+    "sha256": "145d5712602a99e922705523eb2144a68c0969325cf2a020deed57638c1120f9"
+  },
+  {
+    "key": "partial_table_control_only_para",
+    "format": "hwp",
+    "exit": 0,
+    "stdout": "{\"bytes\":15360,\"format\":\"hwp5\",\"output\":\"/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/partial_table_control_only_para.hwp\",\"passwordProtected\":false,\"schemaVersion\":\"1.0\",\"source\":\"/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8579/partial_table_control_only_para.hwp\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"verifyPages\":{\"after\":2,\"before\":2,\"identical\":true},\"wasDistribution\":false}\n",
+    "stderr": "",
+    "sha256": "cfbc049a13db8a8df7e529486fe58dce985339f22802d30165ffa8ad2b857508"
+  },
+  {
+    "key": "partial_table_control_only_para",
+    "format": "hwpx",
+    "exit": 0,
+    "stdout": "{\"bytes\":12358,\"format\":\"hwpx\",\"output\":\"/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/partial_table_control_only_para.hwpx\",\"passwordProtected\":false,\"schemaVersion\":\"1.0\",\"source\":\"/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8579/partial_table_control_only_para.hwp\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"verifyPages\":{\"after\":2,\"before\":2,\"identical\":true}}\n",
+    "stderr": "",
+    "sha256": "28be550d6e9af47169a3e794cbd01b7b80c8d16ee3a58a605a4e300e9bad0a7a"
+  },
+  {
+    "key": "short_row_grid_r21",
+    "format": "hwp",
+    "exit": 0,
+    "stdout": "{\"bytes\":15360,\"format\":\"hwp5\",\"output\":\"/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/short_row_grid_r21.hwp\",\"passwordProtected\":false,\"schemaVersion\":\"1.0\",\"source\":\"/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8584/short_row_grid_r21.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"verifyPages\":{\"after\":1,\"before\":1,\"identical\":true},\"wasDistribution\":false}\n",
+    "stderr": "",
+    "sha256": "05354a3e1fdcec01f175ad0450b95e3fcb3c35fe930223c7afca7dd0b7ea9710"
+  },
+  {
+    "key": "short_row_grid_r21",
+    "format": "hwpx",
+    "exit": 0,
+    "stdout": "{\"bytes\":11674,\"format\":\"hwpx\",\"output\":\"/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/short_row_grid_r21.hwpx\",\"passwordProtected\":false,\"schemaVersion\":\"1.0\",\"source\":\"/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8584/short_row_grid_r21.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"verifyPages\":{\"after\":1,\"before\":1,\"identical\":true}}\n",
+    "stderr": "",
+    "sha256": "238225185dbb5f98a85ddae8d6a4119b236c356a5c89935f76ee17c88f98cad0"
+  },
+  {
+    "key": "short_row_grid_r4",
+    "format": "hwp",
+    "exit": 0,
+    "stdout": "{\"bytes\":14848,\"format\":\"hwp5\",\"output\":\"/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/short_row_grid_r4.hwp\",\"passwordProtected\":false,\"schemaVersion\":\"1.0\",\"source\":\"/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8584/short_row_grid_r4.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"verifyPages\":{\"after\":1,\"before\":1,\"identical\":true},\"wasDistribution\":false}\n",
+    "stderr": "",
+    "sha256": "c568f3dc81a75c53a20c00b1d6c57625f1c6d7929b9506efab3bf4687f1af295"
+  },
+  {
+    "key": "short_row_grid_r4",
+    "format": "hwpx",
+    "exit": 0,
+    "stdout": "{\"bytes\":10750,\"format\":\"hwpx\",\"output\":\"/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/short_row_grid_r4.hwpx\",\"passwordProtected\":false,\"schemaVersion\":\"1.0\",\"source\":\"/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8584/short_row_grid_r4.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"verifyPages\":{\"after\":1,\"before\":1,\"identical\":true}}\n",
+    "stderr": "",
+    "sha256": "f398cbb07504036660ae3372be46d4bfc792d990f82851eebdc354e0b91e5a68"
+  },
+  {
+    "key": "bindata_link_shift",
+    "format": "hwp",
+    "exit": 0,
+    "stdout": "{\"bytes\":343040,\"format\":\"hwp5\",\"output\":\"/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/bindata_link_shift.hwp\",\"passwordProtected\":false,\"schemaVersion\":\"1.0\",\"source\":\"/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8594/bindata_link_shift.hwp\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"verifyPages\":{\"after\":1,\"before\":1,\"identical\":true},\"wasDistribution\":false}\n",
+    "stderr": "",
+    "sha256": "8ff620a1304a7c2331cb93ef9a964666bf680b7ba1ec0584d398ffedead0a5d2"
+  },
+  {
+    "key": "bindata_link_shift",
+    "format": "hwpx",
+    "exit": 0,
+    "stdout": "{\"bytes\":280836,\"format\":\"hwpx\",\"output\":\"/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/bindata_link_shift.hwpx\",\"passwordProtected\":false,\"schemaVersion\":\"1.0\",\"source\":\"/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8594/bindata_link_shift.hwp\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"verifyPages\":{\"after\":1,\"before\":1,\"identical\":true}}\n",
+    "stderr": "",
+    "sha256": "7141a2b01a079f9b5585ec7f3ddceb8987e0c7d0e8c0f2f867a84ccdb3689769"
+  },
+  {
+    "key": "picture_soft_edge",
+    "format": "hwp",
+    "exit": 0,
+    "stdout": "{\"bytes\":343040,\"format\":\"hwp5\",\"output\":\"/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/picture_soft_edge.hwp\",\"passwordProtected\":false,\"schemaVersion\":\"1.0\",\"source\":\"/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8593/picture_soft_edge.hwp\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"verifyPages\":{\"after\":1,\"before\":1,\"identical\":true},\"wasDistribution\":false}\n",
+    "stderr": "",
+    "sha256": "7e560d608b576a5c75295cce136fca44c9acb10ac79da92949d3f0ff7bc5f82d"
+  },
+  {
+    "key": "picture_soft_edge",
+    "format": "hwpx",
+    "exit": 0,
+    "stdout": "{\"bytes\":280812,\"format\":\"hwpx\",\"output\":\"/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/picture_soft_edge.hwpx\",\"passwordProtected\":false,\"schemaVersion\":\"1.0\",\"source\":\"/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8593/picture_soft_edge.hwp\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"verifyPages\":{\"after\":1,\"before\":1,\"identical\":true}}\n",
+    "stderr": "",
+    "sha256": "bb3b0acde9f9e2cc6c560a3501ffdcd82c1da8157ccdf774382c1db30512a014"
+  },
+  {
+    "key": "textbox_floating_table_following_control",
+    "format": "hwp",
+    "exit": 0,
+    "stdout": "{\"bytes\":7168,\"format\":\"hwp5\",\"output\":\"/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/textbox_floating_table_following_control.hwp\",\"passwordProtected\":false,\"schemaVersion\":\"1.0\",\"source\":\"/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8513/textbox_floating_table_following_control.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"verifyPages\":{\"after\":1,\"before\":1,\"identical\":true},\"wasDistribution\":false}\n",
+    "stderr": "",
+    "sha256": "b4e86a566d1d8c5221f571280a2308dd57ccb57db8e046472b2a8cbd85d25190"
+  },
+  {
+    "key": "textbox_floating_table_following_control",
+    "format": "hwpx",
+    "exit": 0,
+    "stdout": "{\"bytes\":8107,\"format\":\"hwpx\",\"output\":\"/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/textbox_floating_table_following_control.hwpx\",\"passwordProtected\":false,\"schemaVersion\":\"1.0\",\"source\":\"/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8513/textbox_floating_table_following_control.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"verifyPages\":{\"after\":1,\"before\":1,\"identical\":true}}\n",
+    "stderr": "",
+    "sha256": "c31377d6cff3eb0a3f3c6ad53a2e69f1f36f7c7d3d8450d371b105d0b401c983"
+  },
+  {
+    "key": "partial_table_following_text",
+    "format": "hwp",
+    "exit": 0,
+    "stdout": "{\"bytes\":10240,\"format\":\"hwp5\",\"output\":\"/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/partial_table_following_text.hwp\",\"passwordProtected\":false,\"schemaVersion\":\"1.0\",\"source\":\"/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8579/partial_table_following_text.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"verifyPages\":{\"after\":2,\"before\":2,\"identical\":true},\"wasDistribution\":false}\n",
+    "stderr": "",
+    "sha256": "6041b38222b4821b5cdb8222026464437aa9422d21c64c1516ce94615970f5ab"
+  },
+  {
+    "key": "partial_table_following_text",
+    "format": "hwpx",
+    "exit": 0,
+    "stdout": "{\"bytes\":12441,\"format\":\"hwpx\",\"output\":\"/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-roundtrip-inputs/partial_table_following_text.hwpx\",\"passwordProtected\":false,\"schemaVersion\":\"1.0\",\"source\":\"/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-hyunmyungjanelee/samples/issue8579/partial_table_following_text.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"verifyPages\":{\"after\":2,\"before\":2,\"identical\":true}}\n",
+    "stderr": "",
+    "sha256": "dec45356400b8c8cb554b06a365a781582f7f848d8d47b5a18fc4fc803a6fd77"
+  }
+]
