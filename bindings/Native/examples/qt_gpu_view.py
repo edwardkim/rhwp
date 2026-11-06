@@ -69,10 +69,12 @@ class GpuViewportController:
         source = self.source_key()
         if source != self.source:
             self.source = source
+            self.last_frame = None
             previous, self.snapshots = self.snapshots, {}
             for snapshot in previous.values():
                 self.release(snapshot)
             self.failed_key = None
+            self.window.canvas.update()
         visible = set(self.visible_pages())
         for page in tuple(self.snapshots):
             if page not in visible:
@@ -91,6 +93,7 @@ class GpuViewportController:
         if key != self.view_key:
             self.view_key = key
             self.view_generation += 1
+            self.last_frame = None
         return {"documentId": self.source[1], "revision": self.source[2],
                 "fontGeneration": self.source[3], "viewGeneration": self.view_generation,
                 "deviceGeneration": self.device_generation, "deviceScale": dpr}
@@ -105,6 +108,8 @@ class GpuViewportController:
     def diagnose(self, error):
         response = response_of(error)
         self.failed_key = self.view_key
+        self.last_frame = None
+        self.window.canvas.update()
         if transient(response):
             # The worker may already be ahead of the last GUI info completion.
             # One FIFO info barrier refreshes that source; no busy retry loop.
@@ -174,13 +179,16 @@ class GpuViewportController:
 
     def frame_arguments(self, target):
         if self.closed or self.window.loading_pages or not self.window.info or not self.window.view:
+            self.last_frame = None
             return None
         stamp = self.stamp(target)
         if self.failed_key == self.view_key:
+            self.last_frame = None
             return None
         self.configure(target)
         pages = self.visible_pages()
         if not pages or any(page not in self.snapshots for page in pages):
+            self.last_frame = None
             return None
         scale = self.window.state["config"]["zoom"] * stamp["deviceScale"]
         return stamp, [{"snapshot": self.snapshots[item["page"]], "scale": scale,
@@ -192,6 +200,7 @@ class GpuViewportController:
         if self.closed:
             return
         self.closed = True
+        self.last_frame = None
         previous, self.snapshots = self.snapshots, {}
         for snapshot in previous.values():
             self.release(snapshot)
@@ -199,7 +208,7 @@ class GpuViewportController:
 
 def create_gpu_canvas(window, input_mixin):
     """Import GL lazily so an old/CPU-only Native build remains usable."""
-    from PySide6.QtGui import QGuiApplication, QOpenGLContext, QPainter, QSurfaceFormat
+    from PySide6.QtGui import QColor, QGuiApplication, QOpenGLContext, QPainter, QSurfaceFormat
     from PySide6.QtOpenGLWidgets import QOpenGLWidget
     from PySide6.QtCore import QTimer
 
@@ -297,11 +306,11 @@ def create_gpu_canvas(window, input_mixin):
             return value.value
 
         def paintGL(self):
-            if self.disposed or self.failed_device or self.presenter is None:
-                return
             painter = QPainter(self)
             success = False
             try:
+                if self.disposed or self.failed_device or self.presenter is None:
+                    return
                 painter.beginNativePainting()
                 try:
                     if not self.matching_current(self.controller.context_id):
@@ -332,6 +341,12 @@ def create_gpu_canvas(window, input_mixin):
                 else:
                     self.controller.diagnose(error)
             finally:
+                if not success:
+                    # Native errors preserve its target atomically. The Qt
+                    # compositor must still hide that previous document/view
+                    # while input is pending or this presentation has failed.
+                    self.controller.last_frame = None
+                    painter.fillRect(self.rect(), QColor("#55575a"))
                 painter.end()
                 window.paint_count += 1
 

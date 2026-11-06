@@ -88,12 +88,14 @@ stamp를 얻은 뒤 교체 승인을 받고, 게시 직전에 같은 stamp인지
   되지 않으면 GL을 호출하지 않는 abandon을 사용한다. callback 객체와 Qt context는 native handle의
   수명 동안 wrapper에 보유한다. context 재생성은 새 device generation을 사용한다.
 - GPU frame은 strict replay를 scratch surface에서 마친 뒤 Qt FBO에 게시한다. 문서 이미지 decode·
-  font/text 계약·한도 오류는 진단하고 현재 FBO의 마지막 성공 화면을 유지한다. 이 오류를 CPU의
-  placeholder 경로로 바꾸지 않는다. Qt `PartialUpdate`로 같은 FBO의 내용을 보존하지만, resize나
-  context 소실로 폐기된 FBO의 픽셀까지 복원한다고 주장하지 않는다. stale frame은 최신 source/view를
-  기다리는 경로이며 device 오류와 구분한다.
+  font/text 계약·한도 오류는 진단하며 CPU의 placeholder 경로로 바꾸지 않는다. Native의 실패 시
+  target 보존과 별개로, Qt는 성공한 현재 frame이 없으면 FBO 전체를 불투명 배경으로 가린다.
+  문서·revision·font·view·target 세대가 바뀌거나 snapshot이 준비 중이면 이전 frame metadata를
+  폐기하며, strict 실패·종료 상태도 같은 배경을 표시한다. `PartialUpdate`가 보존한 이전 문서·
+  overlay 픽셀을 새 문서의 화면으로 노출하지 않는다. stale frame은 최신 source/view를 기다리는
+  경로이며 device 오류와 구분한다.
 - 정상 GL 경로에는 whole-frame CPU readback이 없다. Native `wholeFrameReadbacks` 계측으로 확인한다.
-  테스트의 선택적 `grabFramebuffer`는 검증용 readback이며 이 계측의 범위 밖이다. GL_VENDOR/RENDERER/
+  테스트의 대기·실패 화면 검사와 선택적 `grabFramebuffer`는 검증용 readback이며 이 계측의 범위 밖이다. GL_VENDOR/RENDERER/
   VERSION을 함께 보고하고 llvmpipe 등은 software로 표시한다. 그 외 드라이버도 하드웨어 실행이라고
   자동 확정하지 않는다. 이 예제는 외부 texture export나 Flutter texture registration을 구현하지 않는다.
 
@@ -138,7 +140,9 @@ QT_QPA_PLATFORM=offscreen .venv-qt/bin/python -B bindings/Native/tests/native_wi
 
 GL 실제 검사는 Native GL 기능을 포함한 라이브러리와 xcb/X 서버가 필요하다. headless 환경에서는
 별도로 실행한 Xvfb의 display를 지정한다. 아래 명령은 synthetic controller 검사 뒤 실제 GL 창에서
-snapshot 재사용·zoom·resize·편집과 readback 계측을 검사한다. `--diagnostic-readback`은 선택 사항이다.
+snapshot 재사용·zoom·resize·편집과 readback 계측을 검사한다. 새 문서의 export 완료를 지연한 화면과
+실제 손상 PNG의 strict 실패 화면도 배경으로 가려지는지 세 번의 검증용 readback으로 확인한다.
+추가 `--diagnostic-readback`은 선택 사항이다.
 
 ```bash
 DISPLAY=:99 QT_QPA_PLATFORM=xcb .venv-qt/bin/python -B \

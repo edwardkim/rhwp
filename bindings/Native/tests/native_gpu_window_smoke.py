@@ -2,6 +2,7 @@
 """Snapshot controller/Qt fallback checks; --library adds actual xcb GL flow."""
 import argparse
 from copy import deepcopy
+import io
 import json
 import os
 from pathlib import Path
@@ -9,6 +10,7 @@ import sys
 import time
 from types import SimpleNamespace
 import unittest
+import zipfile
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "examples"))
@@ -102,11 +104,13 @@ class SnapshotTests(unittest.TestCase):
     def test_view_and_new_fbo_reuse_snapshot_but_advance_frame_stamp(self):
         self.export()
         before = self.controller.frame_arguments(target())[0]
+        self.controller.last_frame = {"stamp": before}
         self.window.epoch += 1
         self.window.state["config"].update(deviceScale=2, zoom=2)
         self.window.view["visible"][0]["pageRect"]["y"] = -40
         after, placements = self.controller.frame_arguments(target(fbo=10, width=1000))
         self.assertGreater(after["viewGeneration"], before["viewGeneration"])
+        self.assertIsNone(self.controller.last_frame)
         self.assertEqual(placements[0]["snapshot"], 19)
         self.assertEqual(placements[0]["scale"], 4)
         self.controller.render_next()
@@ -126,6 +130,7 @@ class SnapshotTests(unittest.TestCase):
             with self.subTest(field=field):
                 self.setUp()
                 self.export()
+                self.controller.last_frame = {"sentinel": "previous document"}
                 if field == "document_generation":
                     self.window.document_generation += 1
                 else:
@@ -133,6 +138,7 @@ class SnapshotTests(unittest.TestCase):
                 self.controller.sync_source()
                 self.assertEqual(self.host.released, [19])
                 self.assertFalse(self.controller.snapshots)
+                self.assertIsNone(self.controller.last_frame)
 
     def test_offscreen_pages_release_but_overlap_reuses(self):
         self.export()
@@ -161,11 +167,13 @@ class SnapshotTests(unittest.TestCase):
         self.export()
         self.window.view["visible"].append({"page": 1, "pageRect": {"x": 0, "y": 100}})
         self.controller.render_next()
+        self.controller.last_frame = {"sentinel": "closed document"}
         self.controller.close()
         self.controller.close()
         self.window.requests[-1][1](snapshot_reply(20, page=1))
         self.assertEqual(self.host.released, [19, 20])
         self.assertIsNone(self.controller.frame_arguments(target()))
+        self.assertIsNone(self.controller.last_frame)
 
     def test_snapshot_metadata_failure_is_released_and_diagnostic(self):
         for changes in ({"revision": 2}, {"page": 1}, {"fontGeneration": 4},
@@ -204,15 +212,15 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(self.window.refreshes, 1)
         self.assertFalse(self.window.device_errors)
 
-    def test_strict_error_and_budget_limit_keep_previous_frame(self):
+    def test_strict_error_and_budget_limit_hide_previous_frame_without_cpu_fallback(self):
         for code in ("documentError", "limitExceeded", "invalidArgument"):
             with self.subTest(code=code):
                 self.setUp()
                 self.export()
                 self.controller.frame_arguments(target())
-                previous = self.controller.last_frame = {"sentinel": "last good frame"}
+                self.controller.last_frame = {"sentinel": "last good frame"}
                 self.controller.diagnose(NativeCallError({"code": code, "error": "strict replay failed"}))
-                self.assertIs(self.controller.last_frame, previous)
+                self.assertIsNone(self.controller.last_frame)
                 self.assertIsNone(self.controller.frame_arguments(target()))
                 self.assertTrue(self.window.errors)
                 self.assertFalse(self.window.device_errors)
@@ -317,10 +325,75 @@ def pump(app, condition, timeout=30):
         time.sleep(0.002)
 
 
-def actual_smoke(library, diagnostic_readback=False):
+def framebuffer_is_covered(canvas):
+    """A deliberate host verification readback, outside normal presentation."""
+    from PySide6.QtGui import QImage
+    image = canvas.grabFramebuffer().convertToFormat(QImage.Format.Format_RGBA8888)
+    assert not image.isNull()
+    pixels = bytes(image.constBits()[:image.sizeInBytes()])
+    return pixels == bytes([0x55, 0x57, 0x5a, 255]) * (image.width() * image.height())
+
+
+def actual_pending_source_smoke(app, window):
+    """Hold a real new-document export completion while Qt repaints its FBO."""
+    previous = window.info["documentId"]
+    received = window.gpu.received
+    confirm = window.confirm_unsaved_changes
+    held = []
+    try:
+        def delayed(*arguments):
+            held.append(arguments)
+            window.timer.stop()
+        window.gpu.received = delayed
+        window.confirm_unsaved_changes = lambda: "discard"
+        window.new_document()
+        pump(app, lambda: bool(held) or bool(window.errors))
+        assert not window.errors, window.errors
+        assert window.info["documentId"] != previous and not window.gpu.snapshots
+        assert window.gpu.last_frame is None, "previous document metadata remained current"
+        assert framebuffer_is_covered(window.canvas), "pending new source exposed previous pixels"
+    finally:
+        window.gpu.received = received
+        window.confirm_unsaved_changes = confirm
+        for arguments in held:
+            received(*arguments)
+        window.timer.start(8)
+    pump(app, lambda: (window.gpu.last_frame is not None and
+        window.gpu.last_frame["stamp"]["documentId"] == window.info["documentId"]) or bool(window.errors))
+    assert not window.errors, window.errors
+    assert not framebuffer_is_covered(window.canvas), "ready source did not uncover its page"
+
+
+def actual_strict_failure_smoke(app, window, document):
+    output = io.BytesIO()
+    changed = 0
+    with zipfile.ZipFile(io.BytesIO(document.read_bytes())) as source, zipfile.ZipFile(output, "w") as target_zip:
+        for entry in source.infolist():
+            data = source.read(entry.filename)
+            if entry.filename.lower().startswith("bindata/") and entry.filename.lower().endswith(".png"):
+                assert data.startswith(b"\x89PNG\r\n\x1a\n") and data[12:16] == b"IHDR"
+                data = data[:33]  # Valid PNG header, no pixel stream: retain Image semantics.
+                changed += 1
+            target_zip.writestr(entry, data)
+    assert changed, "strict failure fixture must contain a PNG"
+    window.enqueue([lambda _: {"_open": output.getvalue()}], window.opened, replacement=True)
+    # This authored cell-picture fixture also has an initial inline-object
+    # caret affinity that the text editor rejects. Wait for the independent
+    # strict GPU replay diagnostic rather than that earlier input diagnostic.
+    pump(app, lambda: any("image decode failed" in error for error in window.errors))
+    assert any("image decode failed" in error for error in window.errors), window.errors
+    assert window.renderer == "gl" and not window.canvas.failed_device
+    assert window.gpu.last_frame is None
+    assert framebuffer_is_covered(window.canvas), "strict error exposed previous document pixels"
+    assert window.canvas.presenter.info()["wholeFrameReadbacks"] == 0
+
+
+def actual_smoke(library, diagnostic_readback=False, document=None):
     from PySide6.QtWidgets import QApplication
     from qt_native_host import NativeWindow
     app = QApplication.instance() or QApplication([])
+    document = document or (Path(__file__).resolve().parents[3]
+        / "tests/fixtures/pr8061_cell_picture_layer/bordered-page-picture.hwpx")
     if app.platformName() != "xcb":
         raise RuntimeError("actual GL check requires QT_QPA_PLATFORM=xcb and a running X server")
     window = NativeWindow(library, renderer="gl")
@@ -347,12 +420,17 @@ def actual_smoke(library, diagnostic_readback=False):
         window.command("pasteText", text="Native GL 한글 😀")
         pump(app, lambda: window.gpu.source[2] == window.info["revision"] and
              window.info["revision"] > 0 and window.gpu.exports > initial_exports and
+             window.gpu.last_frame is not None and
              window.gpu.last_frame["stamp"]["revision"] == window.info["revision"] or bool(window.errors))
         assert not window.errors, window.errors
         assert window.gpu.last_info["wholeFrameReadbacks"] == 0
+        actual_pending_source_smoke(app, window)
+        actual_strict_failure_smoke(app, window, document)
         print(json.dumps({"renderer": "gl", "driver": window.canvas.driver,
             "frames": window.frame_count, "exports": window.gpu.exports,
-            "wholeFrameReadbacks": 0, "diagnosticReadback": diagnostic_readback}, ensure_ascii=False))
+            "wholeFrameReadbacks": 0, "diagnosticReadback": diagnostic_readback,
+            "visibilityVerificationReadbacks": 3, "pendingSourceCovered": True,
+            "strictFailureCovered": True}, ensure_ascii=False))
     finally:
         window.shutdown_worker()
         pump(app, lambda: window.finished)
@@ -363,12 +441,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--library")
     parser.add_argument("--diagnostic-readback", action="store_true")
+    parser.add_argument("--document", type=Path, default=Path(__file__).resolve().parents[3]
+                        / "tests/fixtures/pr8061_cell_picture_layer/bordered-page-picture.hwpx")
     args = parser.parse_args()
     result = unittest.TextTestRunner().run(unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__]))
     if not result.wasSuccessful():
         return 1
     if args.library:
-        actual_smoke(args.library, args.diagnostic_readback)
+        actual_smoke(args.library, args.diagnostic_readback, args.document)
     return 0
 
 
