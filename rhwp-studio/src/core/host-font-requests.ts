@@ -1,5 +1,5 @@
 import type { LayerEquationLayoutBox, LayerNode, LayerTextStyle, PageLayerTree } from './types.ts';
-import { resolveRendererLocalFont, localFontFaceKey, type LocalFontRecord } from './local-fonts.ts';
+import { resolveRendererLocalFont, resolveRendererLocalFontCandidates, localFontFaceKey, type LocalFontRecord } from './local-fonts.ts';
 import { enclosedPua, enclosedPuaHasMetrics, enclosedPuaMetrics } from './enclosed-pua.ts';
 import { ordinaryTextFontFamilies, parseCssFontFamilyList } from './font-substitution.ts';
 
@@ -137,8 +137,11 @@ export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] 
     else for (const op of node.ops) {
       if (op.type === 'equation') {
         for (const family of hancomEquationFamilies(op.layoutBox)) {
-          const record = resolveRendererLocalFont(family, { weight: 400, slant: 'normal' });
-          if (record?.hostReference) selected.set(localFontFaceKey(record), record);
+          for (const candidate of parseCssFontFamilyList(family)) {
+            for (const record of resolveRendererLocalFontCandidates(candidate, { weight: 400, slant: 'normal' })) {
+              if (record.hostReference) selected.set(localFontFaceKey(record), record);
+            }
+          }
         }
         continue;
       }

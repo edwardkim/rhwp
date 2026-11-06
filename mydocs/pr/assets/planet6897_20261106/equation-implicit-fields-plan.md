@@ -279,3 +279,32 @@ ignored output의 implicit-equation-r23c-source.json과 native-producer.json에 
 소스 해시·실행 파일을 고정했다. 전195+109+2쪽 Native 비교를 시작했으며 아직 최종
 결과를 기다리고 있다. 평가결과서 Native 전2쪽은 최저97.02%를 유지했다. fresh WASM·
 전쪽 보호 PR·최종 회귀·lint는 완료 전이며, 새 렌더 회귀의 근거로 수치를 승격하지 않는다.
+
+### 브라우저 CanvasKit 소비 경로의 별도 확인
+
+새 구형 수식의 HancomGlyphs는 한양신명조 등의 선언 family chain과 scalar별
+고정 전진을 발행한다. Native는 문자 coverage를 확인하지만 CanvasKit의 기존
+분기는 family chain 전체로 한 face를 조회해 어느 한 글자가 없으면 런 전체를
+거절한다. host 준비도 chain 전체의 단일 이름을 조회해 분할 프로그램을 누락한다.
+Canvas2D Visual Sweep 통과만으로 이 CanvasKit 경로를 입증하지 않는다.
+
+공통 local-fonts의 resolveRendererLocalFontCandidates와 CSS family parser를
+준비·paint가 같이 사용한다. 같은 family/style의 실제 분할 프로그램을 준비하고
+scalar별 coverage를 사전 검사한 뒤 producer의 positions·baselineShift·shears를
+그대로 재생한다. 모든 문자가 준비되기 전에는 일부만 그리지 않으며 임의 기본
+글꼴·고정 좌표 보정을 추가하지 않는다. 이 경로의 portable mock 진단과 실제
+CanvasKit 브라우저 실행을 구분해 확인한다. 정식 렌더 회귀 추가는 전쪽 Native/
+fresh WASM 90% 선행 조건 이후 진행한다.
+
+브라우저 보정의 기본 확인: 기존 host-font-provider·declared FontGlyph Node 검사는
+exit0이며, tsc --noEmit는 nullable 보조 face를 걸러내는 보정 후 exit0이다.
+ignored output의 positioned-equation-contract-probe는 6/6건 통과했다. 첫 진단의
+provider mock에서 필수 subscribe를 빠뜨려 host가 활성화되지 않았던 오류를 고쳐
+재실행했다. 이는 제품의 오류로 분류하거나 기대값을 완화한 것이 아니다.
+
+실제 CanvasKit WASM 엔진에도 현재 시스템의 ENSMJ/HGSMJ/FLSMJ 프로그램을 공급해
+`보험자수x=1`을 실행했다. 첫 영문 프로그램에 한글 glyph ID0이 있음을 확인했고,
+동일한 위치 배열에서 한글·영문 프로그램 선택과 paint 성공·PNG 생성을 확인했다.
+이 설치 프로그램을 저장소에 복사하거나 배포하지 않는다. 이 진단은 실제 API 소비
+증거이며 독립 Print의 전쪽 시각 검증 또는 fresh rhwp WASM의 최종 브라우저 검증을
+대체하지 않는다. 새 정식 렌더 회귀는 선행 시각 조건 완료 후 등록한다.
