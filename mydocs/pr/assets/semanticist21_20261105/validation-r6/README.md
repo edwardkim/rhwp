@@ -49,7 +49,7 @@ PR #8564의 동적 파일명 재평가 차이는 직접 판독과 API 기록에 
 최소 공개 글꼴 5개에서 전체 Rust 12,740건 PASS·기존 ignored 45건, 실제 목록 누락·중복 0을 확인했다.
 후속 Studio 보정 `5feccb130e`는 Rust 생산 코드·Native/WASM bytes와 직접 exporter를 바꾸지 않는다.
 전체 Node 2,744건·production build·실제 Studio 12캡처는 새 소스에서 다시 통과했다.
-[실제 실행과 재사용 경계](runtime-checks.md)를 연결하며, 남은 Cargo 게이트는 완료 뒤 최종 기록에서 확정한다.
+[실제 실행과 재사용 경계](runtime-checks.md)를 연결하며, [최종 Cargo·전체 Rust·Studio 검증 기록](final-validation.md)에 실제 종료 결과를 보존했다.
 
 ## 보호 PR #8389·#8397
 
@@ -63,3 +63,5 @@ PR #8564의 동적 파일명 재평가 차이는 직접 판독과 API 기록에 
 직접 exporter의 결과를 Studio 화면으로 재표기하지 않았다. 자동 컬러 이모지와 반각 크기 차이를
 기존 전각 공급·공통 후보 병합에서 보정했고 실제 Canvas2D도 두 원본 모두 raw 100.00%를 확인했다.
 원시 실행 로그·metric/run JSON은 output의 로컬 검증 자료이며 제출하지 않는다.
+
+[최종 로컬 검증의 모든 명령·종료 코드·재사용 경계](final-validation.md)를 연결한다.

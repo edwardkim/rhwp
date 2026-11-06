@@ -83,4 +83,4 @@ Mac 네 원본의 전체 1쪽·내용 계약을 보완한 관련 6건 PASS, exit
 이전 R5 전체 12,735건을 새 실행으로 재표기하지 않았다.
 Rust 생산 코드 불변·추가 test 변경은 주석뿐인 조건으로 이후 Studio 보정 단계에서도 재사용한다.
 공식 편람 383쪽은 min 99.96%·공개 기준 하락 0·exit 0을 확인했다.
-남은 Cargo lint·Native Skia·release·doctest는 최종 검증 요약에서 실제 종료 뒤 확정한다.
+Cargo lint·Native Skia·release·doctest와 정책 검사도 모두 실제 exit 0이다. [최종 명령·전체 결과](final-validation.md)를 연결한다.
