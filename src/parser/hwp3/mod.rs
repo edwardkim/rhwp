@@ -1017,15 +1017,16 @@ const HWP3_SQUARE_WRAP_TEXT_GAP_HU: i32 = 640;
 
 fn hwp3_square_wrap_occupied_width(
     width: i32,
+    left: i32,
     right: i32,
     use_decrypted_layout_contract: bool,
 ) -> i32 {
     if use_decrypted_layout_contract {
         width
     } else {
-        // 배치 단계가 그림 왼쪽 바깥 여백을 원점에 반영한다. 여기서는
-        // 글줄을 막는 오른쪽 바깥 여백만 더해 중복 반영을 피한다.
-        width.saturating_add(right)
+        // 한컴의 HWP5·HWPX 변환본과 같이 저장 줄 시작은 그림의 왼쪽 바깥 여백,
+        // 폭, 오른쪽 바깥 여백을 모두 지난 자리다. 배치는 저장 줄을 그대로 쓴다.
+        width.saturating_add(left).saturating_add(right)
     }
 }
 
@@ -3593,6 +3594,7 @@ fn parse_paragraph_list_inner(
                     let h_off = pic.common.horizontal_offset as i32;
                     let pic_w = hwp3_square_wrap_occupied_width(
                         pic.common.width as i32,
+                        pic.common.margin.left as i32,
                         pic.common.margin.right as i32,
                         use_decrypted_layout_contract,
                     );
@@ -4198,6 +4200,7 @@ fn parse_paragraph_list_inner(
                         let h_off = cm.horizontal_offset as i32;
                         let pic_w = hwp3_square_wrap_occupied_width(
                             cm.width as i32,
+                            cm.margin.left as i32,
                             cm.margin.right as i32,
                             use_decrypted_layout_contract,
                         );

@@ -2481,11 +2481,8 @@ pub(crate) fn synthetic_wrap_column_width(
     let Some(anchor) = anchor.filter(|a| a.band_y_range.is_none() && a.anchor_sw > 0) else {
         return column_width;
     };
-    let start = hwpunit_to_px(anchor.anchor_cs + anchor.anchor_image_margin_right, dpi);
-    let width = hwpunit_to_px(
-        (anchor.anchor_sw - anchor.anchor_image_margin_right).max(0),
-        dpi,
-    );
+    let start = hwpunit_to_px(anchor.anchor_cs, dpi);
+    let width = hwpunit_to_px(anchor.anchor_sw.max(0), dpi);
     column_width.min(width + margin_left.min(start))
 }
 

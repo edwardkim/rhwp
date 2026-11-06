@@ -1404,14 +1404,14 @@ fn square_picture_wrap_anchor_for_para(
         return None;
     }
 
-    let anchor_image_margin_right = anchor_para.controls.iter().find_map(|ctrl| {
-        non_tac_square_picture_common(ctrl).map(|common| common.margin.right as i32)
-    })?;
+    anchor_para
+        .controls
+        .iter()
+        .find_map(non_tac_square_picture_common)?;
     Some(crate::renderer::pagination::WrapAnchorRef {
         anchor_para_index: st.wrap_around_table_para,
         anchor_cs: st.wrap_around_cs,
         anchor_sw: st.wrap_around_sw,
-        anchor_image_margin_right,
         band_y_range: None,
     })
 }

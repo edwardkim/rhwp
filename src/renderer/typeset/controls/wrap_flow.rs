@@ -57,7 +57,7 @@ pub(in crate::renderer::typeset) fn place(
                     paragraphs, para_idx,
                 );
             if anchor_is_picture || st.following_wrap_is_derived() || stored_empty_body_flow {
-                let anchor = wrap_match::picture_anchor(paragraphs, band);
+                let anchor = wrap_match::picture_anchor(band);
                 st.register_following_wrap_anchor(para_idx, anchor);
             } else {
                 // Table anchor: 어울림 문단을 표 옆에 기록 + height 소비 없음.
@@ -123,10 +123,7 @@ pub(in crate::renderer::typeset) fn place(
                             == 0
                     })
                 {
-                    st.register_following_wrap_anchor(
-                        para_idx,
-                        wrap_match::picture_anchor(paragraphs, band),
-                    );
+                    st.register_following_wrap_anchor(para_idx, wrap_match::picture_anchor(band));
                 }
                 // 이 문단은 첫 줄만 Square 띠에 있고 나머지는 표 아래 전폭으로
                 // 복귀한다. 일반 fit 전에 띠 바닥을 흐름 하한으로 반영하지 않으면
