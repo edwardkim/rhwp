@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use super::font_environment::FontEnvironment;
+use crate::error::HwpError;
 use crate::model::document::DocInfo;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -53,6 +54,79 @@ pub struct NativeWebfontResource {
 }
 
 impl NativeWebfontSupply {
+    /// 공급 결과를 문서 환경에 합쳐 쪽수·측정·paint가 쓸 환경 한 세대를 만든다.
+    ///
+    /// 공급 매핑이 덮어쓴 원본에는 문서 선택의 흔적(프로그램·문서 치환·선택 규칙)을
+    /// 남기지 않는다. 문자 대체는 원본과 다른 글꼴만 가리킨다.
+    pub fn merge_into_environment(
+        &self,
+        native: Option<FontEnvironment>,
+    ) -> Result<Option<FontEnvironment>, HwpError> {
+        let fallbacks = self.distinct_glyph_fallbacks();
+        if self.mappings.is_empty() && fallbacks.is_empty() {
+            return Ok(native);
+        }
+        let mut value =
+            serde_json::to_value(native).map_err(|e| HwpError::RenderError(e.to_string()))?;
+        if value.is_null() {
+            value = serde_json::json!({"id":"native-webfont-supply", "substitutions":{}, "preserveSourceMetrics":true});
+        }
+        let object = value
+            .as_object_mut()
+            .ok_or_else(|| HwpError::RenderError("글꼴 환경이 올바르지 않습니다".into()))?;
+        let mappings = object
+            .entry("substitutions")
+            .or_insert_with(|| serde_json::json!({}))
+            .as_object_mut()
+            .ok_or_else(|| HwpError::RenderError("글꼴 치환이 올바르지 않습니다".into()))?;
+        for (source, target) in &self.mappings {
+            mappings.insert(source.clone(), target.clone().into());
+        }
+        for field in ["selectedPrograms", "selectionRules"] {
+            if let Some(entries) = object.get_mut(field).and_then(|v| v.as_object_mut()) {
+                for source in self.mappings.keys() {
+                    entries.remove(source);
+                }
+            }
+        }
+        if let Some(entries) = object
+            .get_mut("documentSubstitutions")
+            .and_then(|v| v.as_array_mut())
+        {
+            entries.retain(|entry| {
+                !entry["source"]
+                    .as_str()
+                    .is_some_and(|source| self.mappings.contains_key(source))
+            });
+        }
+        if !fallbacks.is_empty() {
+            object.insert("documentGlyphFallbacks".into(), fallbacks.into());
+        }
+        let identity = serde_json::to_vec(&(&value, &self.resources))
+            .map_err(|e| HwpError::RenderError(e.to_string()))?;
+        let digest: String = Sha256::digest(identity)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect();
+        value["id"] = format!("native-webfont-{}", &digest[..24]).into();
+        FontEnvironment::from_json(&value.to_string()).map(Some)
+    }
+
+    /// 원본 자신은 대체가 아니다. 보조 공급이 문서 글꼴과 같은 프로그램이면
+    /// 해당 글꼴은 이미 원본으로 그려지므로 문자 대체 항목을 만들지 않는다.
+    fn distinct_glyph_fallbacks(&self) -> Vec<serde_json::Value> {
+        self.glyph_fallbacks
+            .iter()
+            .filter_map(|entry| {
+                let mut entry = entry.clone();
+                let source = entry["source"].as_str()?.to_owned();
+                let faces = entry["faces"].as_array_mut()?;
+                faces.retain(|face| face.as_str() != Some(source.as_str()));
+                (!faces.is_empty()).then_some(entry)
+            })
+            .collect()
+    }
+
     /// SVG를 여는 호스트에서도 같은 공급원을 읽도록 한다. 로컬 face가 우선한다.
     pub fn svg_style(&self) -> String {
         let mut css = String::new();
