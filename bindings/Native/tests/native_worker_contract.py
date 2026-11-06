@@ -158,6 +158,22 @@ def run(library):
         frame = accepted(viewer, {"op": "renderRegion", "target": target, "fontGeneration": 0,
                                   "page": 0, "region": {"x": 0, "y": 0, "width": 8, "height": 8},
                                   "scale": 1})
+        accepted(viewer, {"op": "setRasterCacheLimit", "target": target,
+                          "maxBytes": 8 * 1024 * 1024})
+        tiled = {"op": "renderTiledRegion", "target": target, "fontGeneration": 0,
+                 "page": 0, "region": {"x": -0.1, "y": 1.25, "width": 1.2, "height": 2.5},
+                 "scale": 8}
+        for _ in range(2):
+            viewport = accepted(viewer, tiled)
+            assert (viewport["originX"], viewport["originY"]) == (-1, 10), viewport
+            assert (viewport["width"], viewport["height"], viewport["stride"]) == (10, 20, 40), viewport
+            assert len(viewer.copy_buffer(viewport)) == 800
+        stats = accepted(viewer, {"op": "rasterCacheStats", "target": target})["stats"]
+        assert stats["tileHits"] > 0 and stats["retainedBytes"] <= 8 * 1024 * 1024, stats
+        stale = viewer.wait(viewer.submit(dict(tiled, fontGeneration=1)))
+        assert not stale["ok"] and stale["code"] == "invalidArgument", stale
+        stale = viewer.wait(viewer.submit(dict(tiled, target=dict(target, revision=1))))
+        assert not stale["ok"] and stale["code"] == "staleRevision", stale
         viewer.close()
         pixels = viewer.copy_buffer(frame)
         assert len(pixels) == frame["height"] * frame["stride"]

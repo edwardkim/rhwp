@@ -254,6 +254,62 @@ fn execute(
                 frame,
             })
         }
+        C::RenderTiledRegion {
+            target,
+            font_generation,
+            page,
+            region,
+            scale,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            if doc.session().font_generation() != font_generation {
+                return Err(invalid("stale font generation"));
+            }
+            let frame = doc.session().render_tiled_region(
+                page,
+                RasterRegion {
+                    x: region.x,
+                    y: region.y,
+                    width: region.width,
+                    height: region.height,
+                },
+                scale,
+            )?;
+            Ok(O::Frame {
+                document_id: doc.id,
+                frame,
+            })
+        }
+        C::SetRasterCacheLimit { target, max_bytes } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            #[cfg(feature = "native-skia")]
+            {
+                doc.session().set_region_cache_limit(max_bytes)?;
+                Ok(O::RasterCacheLimit { target, max_bytes })
+            }
+            #[cfg(not(feature = "native-skia"))]
+            {
+                let _ = max_bytes;
+                Err(NativeHostError::FeatureDisabled)
+            }
+        }
+        C::RasterCacheStats { target } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            #[cfg(feature = "native-skia")]
+            {
+                Ok(O::RasterCacheStats {
+                    target,
+                    stats: doc.session().region_cache_stats(),
+                })
+            }
+            #[cfg(not(feature = "native-skia"))]
+            {
+                Err(NativeHostError::FeatureDisabled)
+            }
+        }
         C::BeginEdit { target, selection } => {
             document(owner)?.check(target)?;
             if matches!(&document(owner)?.owner, DocumentOwner::Editor(_)) {

@@ -270,6 +270,10 @@ enum Request {
     },
     ClearCaches {},
     CacheStats {},
+    SetRasterCacheLimit {
+        max_bytes: usize,
+    },
+    RasterCacheStats {},
     PageSize {
         page: u32,
     },
@@ -278,6 +282,14 @@ enum Request {
         scale: f64,
     },
     RenderRegion {
+        page: u32,
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+        scale: f64,
+    },
+    RenderTiledRegion {
         page: u32,
         x: f64,
         y: f64,
@@ -531,6 +543,13 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
                 json!({"ok":true,"kind":"info","info":encoded})
             }
             NativeRuntimeOutput::DocumentClosed => json!({"ok":true,"kind":"documentClosed"}),
+            NativeRuntimeOutput::RasterCacheLimit { target, max_bytes } => {
+                json!({"ok":true,"kind":"rasterCacheLimit","target":target,"maxBytes":max_bytes})
+            }
+            #[cfg(feature = "native-skia")]
+            NativeRuntimeOutput::RasterCacheStats { target, stats } => {
+                json!({"ok":true,"kind":"rasterCacheStats","target":target,"stats":stats})
+            }
             NativeRuntimeOutput::PageSize { target, page, size } => {
                 json!({"ok":true,"kind":"pageSize","target":target,"page":page,"size":size})
             }
@@ -687,6 +706,7 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
     response(|| {
         Ok(
             json!({"ok":true,"abiVersion":1,"nativeSkia":cfg!(feature="native-skia"),
+        "renderTiledRegion":cfg!(feature="native-skia"),"rasterCacheControls":cfg!(feature="native-skia"),
         "worker":true,"maxWorkers":4,"hostRequests":true,"viewState":true,"accessibilitySnapshots":true,"threadAffine":true,"maxSessions":MAX_SESSIONS,"maxDocumentBytes":MAX_DOCUMENT_BYTES,
         "maxRequestBytes":MAX_REQUEST_BYTES,"maxBufferBytes":MAX_BUFFER_BYTES,
         "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"}),
@@ -826,6 +846,21 @@ pub unsafe extern "C" fn rhwp_session_request(
                     #[cfg(not(feature = "native-skia"))]
                     { Err(NativeHostError::FeatureDisabled) }
                 }
+                Request::SetRasterCacheLimit { max_bytes } => {
+                    #[cfg(feature = "native-skia")]
+                    {
+                        session.set_region_cache_limit(max_bytes)?;
+                        Ok(json!({"ok":true,"maxBytes":max_bytes}))
+                    }
+                    #[cfg(not(feature = "native-skia"))]
+                    { let _ = max_bytes; Err(NativeHostError::FeatureDisabled) }
+                }
+                Request::RasterCacheStats {} => {
+                    #[cfg(feature = "native-skia")]
+                    { Ok(json!({"ok":true,"stats":session.region_cache_stats()})) }
+                    #[cfg(not(feature = "native-skia"))]
+                    { Err(NativeHostError::FeatureDisabled) }
+                }
                 Request::Info {} => {
                     let (can_undo,can_redo,composition_id) = record.editing_info();
                     Ok(json!({"ok":true,"pageCount":session.document().page_count(),"revision":session.revision(),"fontGeneration":session.font_generation(),"canUndo":can_undo,"canRedo":can_redo,"compositionId":composition_id,"isDirty":session.is_dirty()}))
@@ -837,6 +872,11 @@ pub unsafe extern "C" fn rhwp_session_request(
                 }
                 Request::RenderRegion { page, x, y, width, height, scale } => {
                     let frame = session.render_region(page,
+                        rhwp_core::renderer::raster_pixels::RasterRegion { x, y, width, height }, scale)?;
+                    frame_result(&mut host, frame)
+                }
+                Request::RenderTiledRegion { page, x, y, width, height, scale } => {
+                    let frame = session.render_tiled_region(page,
                         rhwp_core::renderer::raster_pixels::RasterRegion { x, y, width, height }, scale)?;
                     frame_result(&mut host, frame)
                 }

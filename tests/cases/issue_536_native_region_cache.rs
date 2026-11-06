@@ -1443,3 +1443,138 @@ fn native_thin_page_tile_metadata_cap_evicts_even_below_the_byte_budget() {
     assert_eq!(returned.tile_evictions, 2);
     assert_eq!(returned.tile_entries, MAX_TILE_CACHE_ENTRIES);
 }
+
+// This existing Native CI case also exercises the worker transport; keep it
+// inline so the test-suite collector does not create another integration target.
+mod runtime_contracts {
+    use rhwp::native_host::runtime::{
+        NativeRuntime, NativeRuntimeCommand as Command, NativeRuntimeCompletion,
+        NativeRuntimeConfig, NativeRuntimeInfo, NativeRuntimeOutput as Output, NativeRuntimeRegion,
+        NativeRuntimeTarget,
+    };
+    use std::thread;
+    use std::time::{Duration, Instant};
+
+    fn runtime() -> NativeRuntime {
+        NativeRuntime::spawn(NativeRuntimeConfig::default()).unwrap()
+    }
+    fn next(runtime: &mut NativeRuntime) -> NativeRuntimeCompletion {
+        let deadline = Instant::now() + Duration::from_secs(30);
+        loop {
+            if let Some(completion) = runtime.try_recv().unwrap() {
+                return completion;
+            }
+            assert!(Instant::now() < deadline, "worker completion deadline");
+            thread::sleep(Duration::from_millis(2));
+        }
+    }
+    fn run(runtime: &mut NativeRuntime, command: Command) -> Output {
+        let id = runtime.try_submit(command).unwrap();
+        let completion = next(runtime);
+        assert_eq!(completion.request_id, id);
+        completion.result.unwrap()
+    }
+    fn new(runtime: &mut NativeRuntime) -> NativeRuntimeInfo {
+        let Output::Info(info) = run(runtime, Command::New { replace: None }) else {
+            panic!("expected document info");
+        };
+        info
+    }
+    fn render(target: NativeRuntimeTarget) -> Command {
+        Command::RenderRegion {
+            target,
+            font_generation: 0,
+            page: 0,
+            region: NativeRuntimeRegion {
+                x: 0.0,
+                y: 0.0,
+                width: 8.0,
+                height: 8.0,
+            },
+            scale: 1.0,
+        }
+    }
+    fn tiled(target: NativeRuntimeTarget) -> Command {
+        Command::RenderTiledRegion {
+            target,
+            font_generation: 0,
+            page: 0,
+            region: NativeRuntimeRegion {
+                x: -0.1,
+                y: 1.25,
+                width: 1.2,
+                height: 2.5,
+            },
+            scale: 8.0,
+        }
+    }
+
+    #[test]
+    fn tiled_runtime_uses_large_page_tiles_and_exposes_combined_raster_cache() {
+        let mut runtime = runtime();
+        let target = new(&mut runtime).target();
+        run(
+            &mut runtime,
+            Command::SetRasterCacheLimit {
+                target,
+                max_bytes: 8 * 1024 * 1024,
+            },
+        );
+        let Output::Frame { frame, .. } = run(&mut runtime, tiled(target)) else {
+            panic!("expected tiled frame");
+        };
+        assert_eq!((frame.origin_x, frame.origin_y), (-1, 10));
+        assert_eq!((frame.pixels.width, frame.pixels.height), (10, 20));
+        assert_eq!(frame.pixels.stride, 40);
+        assert_eq!(frame.pixels.bytes.len(), 800);
+        assert_eq!(frame.revision, target.revision);
+        let Output::RasterCacheStats { stats: cold, .. } =
+            run(&mut runtime, Command::RasterCacheStats { target })
+        else {
+            panic!("raster stats");
+        };
+        assert!(cold.tile_replays > 0);
+        assert!(cold.tile_entries > 0);
+        let Output::Frame { frame: warm, .. } = run(&mut runtime, tiled(target)) else {
+            panic!("warm tiled frame");
+        };
+        assert_eq!(frame.pixels, warm.pixels);
+        let Output::RasterCacheStats { stats: warm, .. } =
+            run(&mut runtime, Command::RasterCacheStats { target })
+        else {
+            panic!("raster stats");
+        };
+        assert_eq!(warm.tile_replays, cold.tile_replays);
+        assert!(warm.tile_hits > cold.tile_hits);
+        assert!(warm.retained_bytes <= 8 * 1024 * 1024);
+
+        // Exact crop still needs its independently bounded full-page raster.
+        let mut exact = render(target);
+        if let Command::RenderRegion { scale, .. } = &mut exact {
+            *scale = 8.0;
+        }
+        runtime.try_submit(exact).unwrap();
+        assert!(next(&mut runtime).result.is_err());
+        run(
+            &mut runtime,
+            Command::SetRasterCacheLimit {
+                target,
+                max_bytes: 0,
+            },
+        );
+        let Output::RasterCacheStats { stats, .. } =
+            run(&mut runtime, Command::RasterCacheStats { target })
+        else {
+            panic!("raster stats");
+        };
+        assert_eq!(stats.retained_bytes, 0);
+        assert_eq!(stats.entries + stats.tile_entries, 0);
+        runtime
+            .try_submit(Command::SetRasterCacheLimit {
+                target,
+                max_bytes: 64 * 1024 * 1024 + 1,
+            })
+            .unwrap();
+        assert_eq!(next(&mut runtime).result.unwrap_err().code, "limitExceeded");
+    }
+}

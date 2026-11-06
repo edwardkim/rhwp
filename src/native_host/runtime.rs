@@ -184,6 +184,22 @@ pub enum NativeRuntimeCommand {
         region: NativeRuntimeRegion,
         scale: f64,
     },
+    /// Fixed-grid tiles for interactive viewports; not the exact full-page crop API.
+    RenderTiledRegion {
+        target: NativeRuntimeTarget,
+        font_generation: u64,
+        page: u32,
+        region: NativeRuntimeRegion,
+        scale: f64,
+    },
+    /// Combined full-page and tile raster retention, separate from renderer resources.
+    SetRasterCacheLimit {
+        target: NativeRuntimeTarget,
+        max_bytes: usize,
+    },
+    RasterCacheStats {
+        target: NativeRuntimeTarget,
+    },
     BeginEdit {
         target: NativeRuntimeTarget,
         selection: NativeTextSelection,
@@ -241,7 +257,10 @@ impl fmt::Debug for NativeRuntimeCommand {
 
 impl NativeRuntimeCommand {
     fn is_render(&self) -> bool {
-        matches!(self, Self::RenderRegion { .. })
+        matches!(
+            self,
+            Self::RenderRegion { .. } | Self::RenderTiledRegion { .. }
+        )
     }
 
     fn byte_reservation(&self) -> Option<usize> {
@@ -269,7 +288,9 @@ impl NativeRuntimeCommand {
             Self::BeginEdit { selection, .. } | Self::SetSelection { selection, .. } => {
                 selection_bytes(selection)
             }
-            Self::RenderRegion { .. } => usize::try_from(MAX_FRAME_PIXELS).ok()?.checked_mul(4),
+            Self::RenderRegion { .. } | Self::RenderTiledRegion { .. } => {
+                usize::try_from(MAX_FRAME_PIXELS).ok()?.checked_mul(4)
+            }
             Self::CaretRect { position, .. } => position
                 .cell_path
                 .capacity()
@@ -361,6 +382,15 @@ pub enum NativeRuntimeOutput {
         snapshot: NativeAccessibilitySnapshot,
     },
     DocumentClosed,
+    RasterCacheLimit {
+        target: NativeRuntimeTarget,
+        max_bytes: usize,
+    },
+    #[cfg(feature = "native-skia")]
+    RasterCacheStats {
+        target: NativeRuntimeTarget,
+        stats: super::region_cache::NativeRegionCacheStats,
+    },
     PageSize {
         target: NativeRuntimeTarget,
         page: u32,
@@ -404,6 +434,9 @@ impl fmt::Debug for NativeRuntimeOutput {
             Self::Clipboard { .. } => "Clipboard",
             Self::Accessibility { .. } => "Accessibility",
             Self::DocumentClosed => "DocumentClosed",
+            Self::RasterCacheLimit { .. } => "RasterCacheLimit",
+            #[cfg(feature = "native-skia")]
+            Self::RasterCacheStats { .. } => "RasterCacheStats",
             Self::PageSize { .. } => "PageSize",
             Self::CaretRect { .. } => "CaretRect",
             Self::HitTest { .. } => "HitTest",

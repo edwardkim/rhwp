@@ -559,3 +559,85 @@ fn completed_frame_is_suppressed_after_a_document_replacement_finishes() {
     );
     assert_eq!(next(&mut runtime).request_id, barrier);
 }
+
+fn tiled(target: NativeRuntimeTarget) -> Command {
+    Command::RenderTiledRegion {
+        target,
+        font_generation: 0,
+        page: 0,
+        region: NativeRuntimeRegion {
+            x: -0.1,
+            y: 1.25,
+            width: 1.2,
+            height: 2.5,
+        },
+        scale: 8.0,
+    }
+}
+
+#[test]
+fn tiled_runtime_wire_preserves_target_and_rejects_unknown_fields() {
+    let target = NativeRuntimeTarget {
+        document_id: NativeRequestId::from_raw(17),
+        revision: 4,
+    };
+    let encoded = serde_json::to_value(tiled(target)).unwrap();
+    assert_eq!(encoded["op"], "renderTiledRegion");
+    assert_eq!(encoded["target"]["revision"], 4);
+    let Command::RenderTiledRegion { region, scale, .. } =
+        serde_json::from_value(encoded.clone()).unwrap()
+    else {
+        panic!("wrong command");
+    };
+    assert_eq!(region.x, -0.1);
+    assert_eq!(scale, 8.0);
+    let mut invalid = encoded;
+    invalid["unexpected"] = serde_json::json!(true);
+    assert!(serde_json::from_value::<Command>(invalid).is_err());
+}
+
+#[test]
+fn tiled_runtime_checks_revision_and_font_generation_before_rendering() {
+    let mut runtime = runtime();
+    let target = new(&mut runtime).target();
+    let mut command = tiled(target);
+    if let Command::RenderTiledRegion {
+        font_generation, ..
+    } = &mut command
+    {
+        *font_generation = 1;
+    }
+    runtime.try_submit(command).unwrap();
+    assert_eq!(
+        next(&mut runtime).result.unwrap_err().code,
+        "invalidArgument"
+    );
+    runtime
+        .try_submit(tiled(NativeRuntimeTarget {
+            revision: target.revision + 1,
+            ..target
+        }))
+        .unwrap();
+    assert_eq!(next(&mut runtime).result.unwrap_err().code, "staleRevision");
+}
+
+#[cfg(not(feature = "native-skia"))]
+#[test]
+fn tiled_runtime_and_raster_cache_controls_report_feature_disabled() {
+    let mut runtime = runtime();
+    let target = new(&mut runtime).target();
+    for command in [
+        tiled(target),
+        Command::RasterCacheStats { target },
+        Command::SetRasterCacheLimit {
+            target,
+            max_bytes: 0,
+        },
+    ] {
+        runtime.try_submit(command).unwrap();
+        assert_eq!(
+            next(&mut runtime).result.unwrap_err().code,
+            "featureDisabled"
+        );
+    }
+}
