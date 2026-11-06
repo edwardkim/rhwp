@@ -15,6 +15,7 @@ class NativeReferenceApp extends StatefulWidget {
 class _NativeReferenceAppState extends State<NativeReferenceApp> {
   final _path = TextEditingController();
   NativeDocument? _document;
+  NativeTextureController? _texture;
   String? _error;
   bool _busy = true;
 
@@ -26,6 +27,7 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
 
   Future<void> _connect() async {
     NativeDocument? document;
+    NativeTextureController? texture;
     try {
       final transport = await NativeOwnerTransport.connect(
         dispatcherLibrary: const String.fromEnvironment('RHWP_OWNER_LIBRARY'),
@@ -33,22 +35,50 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
       );
       document = await NativeDocument.connect(transport);
       await document.newDocument();
+      if (const bool.fromEnvironment('RHWP_GPU')) {
+        final platform = NativeTexturePlatform.current();
+        if (platform != null) {
+          final presentation = await NativePresentation.connect(
+            nativeLibrary: transport.nativeLibraryPath,
+          );
+          if (presentation.available) {
+            texture = NativeTextureController(
+              document: document,
+              presentation: presentation,
+              platform: platform,
+            );
+          }
+        }
+      }
       if (!mounted) {
-        await document.dispose();
+        await _closeDocument(document, texture);
         return;
       }
       setState(() {
         _document = document;
+        _texture = texture;
         _busy = false;
       });
     } catch (error) {
-      await document?.dispose();
+      await _closeDocument(document, texture);
       if (mounted) {
         setState(() {
           _error = '$error';
           _busy = false;
         });
       }
+    }
+  }
+
+  Future<void> _closeDocument(
+    NativeDocument? document,
+    NativeTextureController? texture,
+  ) async {
+    try {
+      await texture?.close();
+    } finally {
+      texture?.dispose();
+      await document?.dispose();
     }
   }
 
@@ -118,8 +148,19 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
           child: _document == null
               ? const SizedBox.shrink()
               : _document!.transport.capabilities['atomicImeEdits'] == true
-                  ? NativeEditorView(document: _document!)
-                  : NativeDocumentView(document: _document!),
+              ? NativeEditorView(
+                  document: _document!,
+                  viewportBuilder: _texture == null
+                      ? null
+                      : (context, document, page, viewport, cpuFallback) =>
+                            NativeTextureView(
+                              controller: _texture!,
+                              viewport: viewport,
+                              page: page,
+                              cpuFallback: cpuFallback,
+                            ),
+                )
+              : NativeDocumentView(document: _document!),
         ),
       ],
     ),
@@ -129,7 +170,7 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
   void dispose() {
     _path.dispose();
     final document = _document;
-    if (document != null) unawaited(document.dispose());
+    unawaited(_closeDocument(document, _texture));
     super.dispose();
   }
 }

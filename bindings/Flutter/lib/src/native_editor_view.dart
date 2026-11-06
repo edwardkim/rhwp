@@ -9,6 +9,14 @@ import 'native_document_view.dart';
 import 'native_editor_controller.dart';
 import 'native_viewport.dart';
 
+typedef NativeEditorViewportBuilder = Widget Function(
+  BuildContext context,
+  NativeDocument document,
+  int page,
+  NativePageViewport viewport,
+  WidgetBuilder cpuFallback,
+);
+
 /// A single-page input/semantics reference surface, over CPU or a caller's
 /// external-texture viewport. Real platform IME/AT qualification is separate.
 class NativeEditorView extends StatefulWidget {
@@ -20,7 +28,7 @@ class NativeEditorView extends StatefulWidget {
   });
   final NativeDocument document;
   final int page;
-  final Widget Function(BuildContext, NativeDocument, int)? viewportBuilder;
+  final NativeEditorViewportBuilder? viewportBuilder;
   @override
   State<NativeEditorView> createState() => _NativeEditorViewState();
 }
@@ -291,9 +299,12 @@ class _NativeEditorViewState extends State<NativeEditorView>
     builder: (context, constraints) {
       _size = Size(constraints.maxWidth, constraints.maxHeight);
       final page = _page;
-      _geometry = page == null || !_size.isFinite || _size.isEmpty
+      final geometry = page == null || !_size.isFinite || _size.isEmpty
           ? null
           : NativePageViewport.fit(page, _size);
+      _geometry = geometry;
+      Widget cpuFallback(BuildContext context) =>
+          NativeDocumentView(document: widget.document, page: widget.page);
       final editor = _editor;
       final semantics = editor?.semantics;
       final nodes = (semantics?['nodes'] as List?) ?? const [];
@@ -362,15 +373,16 @@ class _NativeEditorViewState extends State<NativeEditorView>
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    widget.viewportBuilder?.call(
-                          context,
-                          widget.document,
-                          widget.page,
-                        ) ??
-                        NativeDocumentView(
-                          document: widget.document,
-                          page: widget.page,
-                        ),
+                    if (geometry != null && widget.viewportBuilder != null)
+                      widget.viewportBuilder!(
+                        context,
+                        widget.document,
+                        widget.page,
+                        geometry,
+                        cpuFallback,
+                      )
+                    else
+                      cpuFallback(context),
                     if (_geometry != null && editor != null)
                       IgnorePointer(
                         child: CustomPaint(

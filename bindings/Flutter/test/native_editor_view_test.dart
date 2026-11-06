@@ -129,6 +129,50 @@ class ViewTransport extends FakeTransport {
 
 void main() {
   testWidgets(
+    'custom raster viewport receives the transform used for native hit testing',
+    (tester) async {
+      final transport = ViewTransport();
+      final document = await NativeDocument.connect(transport);
+      final opened = document.newDocument();
+      await pumpUntil(tester, () => document.info != null);
+      await opened;
+      NativePageViewport? viewport;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: NativeEditorView(
+            document: document,
+            viewportBuilder:
+                (context, boundDocument, page, geometry, cpuFallback) {
+                  expect(boundDocument, same(document));
+                  expect(page, 0);
+                  viewport = geometry;
+                  return cpuFallback(context);
+                },
+          ),
+        ),
+      );
+      await pumpUntil(tester, () => viewport != null);
+      final geometry = viewport!;
+      expect(geometry.viewport, tester.getSize(find.byType(NativeEditorView)));
+      final local = geometry.origin + const Offset(2, 3) * geometry.zoom;
+      await tester.tapAt(
+        tester.getTopLeft(find.byType(NativeEditorView)) + local,
+      );
+      await pumpUntil(
+        tester,
+        () => transport.requests.any((request) => request['op'] == 'hitTest'),
+      );
+      final hit = transport.requests.lastWhere(
+        (request) => request['op'] == 'hitTest',
+      );
+      expect(hit['x'], closeTo(2, 0.000001));
+      expect(hit['y'], closeTo(3, 0.000001));
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 20));
+      await tester.runAsync(document.dispose);
+    },
+  );
+  testWidgets(
     'reference editor connects input, native caret and semantic selection',
     (tester) async {
       final semantics = tester.ensureSemantics();

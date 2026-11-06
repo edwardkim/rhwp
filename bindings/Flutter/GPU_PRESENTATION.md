@@ -123,12 +123,18 @@ NativeTextureView(
 ```
 
 Check `NativeTexturePlatform.current()` for null before constructing this desktop
-view. Import `src/native_presentation.dart` and `src/native_texture_view.dart`
-within the reference package; the host integration can re-export them from
-`rhwp_native_flutter.dart`. The fallback builder belongs to the existing viewport
+view. `package:rhwp_native_reference/rhwp_native_flutter.dart` exports these
+adapters and `NativePageViewport`. The fallback builder belongs to the existing viewport
 owner. It should not construct a second input/IME/semantics owner. Overlays may
 remain outside the texture and need no raster invalidation when only selection
 or caret state changes.
+
+`NativeEditorView.viewportBuilder` receives `(context, document, page, viewport,
+cpuFallback)`. Pass that exact viewport and fallback to `NativeTextureView` so
+GPU pixels, pointer coordinates, caret overlays and IME candidate placement use
+one transform. The example opts into this path with
+`--dart-define=RHWP_GPU=true`; the default remains the CPU reference view. It
+creates one controller outside `build` and closes/disposes it before the document.
 
 Unmount closes the texture controller. Its creator must also call
 `controller.dispose()` when releasing the notifier, and may await
