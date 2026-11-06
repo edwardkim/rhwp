@@ -1,0 +1,343 @@
+{
+  "native-input": {
+    "pages": 1,
+    "flagged_pages": 0,
+    "metrics": {
+      "compared_pages": 1,
+      "average_silhouette_raw_match_percent": 100.0,
+      "worst_silhouette_raw_match_percent": 100.0,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.76269,
+      "worst_pixel_match_percent": 99.76269,
+      "average_ink_match_percent": 50.61844,
+      "worst_ink_match_percent": 50.61844,
+      "average_visual_accuracy_proxy_percent": 50.61844,
+      "worst_visual_accuracy_proxy_percent": 50.61844,
+      "average_tolerant_content_match_percent": 100.0,
+      "worst_tolerant_content_match_percent": 100.0,
+      "worst_pages": [
+        1
+      ]
+    },
+    "pr_review_gate": {
+      "status": "passed",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false
+    }
+  },
+  "native-saved": {
+    "pages": 1,
+    "flagged_pages": 0,
+    "metrics": {
+      "compared_pages": 1,
+      "average_silhouette_raw_match_percent": 100.0,
+      "worst_silhouette_raw_match_percent": 100.0,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.76269,
+      "worst_pixel_match_percent": 99.76269,
+      "average_ink_match_percent": 50.61844,
+      "worst_ink_match_percent": 50.61844,
+      "average_visual_accuracy_proxy_percent": 50.61844,
+      "worst_visual_accuracy_proxy_percent": 50.61844,
+      "average_tolerant_content_match_percent": 100.0,
+      "worst_tolerant_content_match_percent": 100.0,
+      "worst_pages": [
+        1
+      ]
+    },
+    "pr_review_gate": {
+      "status": "passed",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false
+    }
+  },
+  "wasm-input": {
+    "pages": 1,
+    "flagged_pages": 0,
+    "metrics": {
+      "compared_pages": 1,
+      "average_silhouette_raw_match_percent": 100.0,
+      "worst_silhouette_raw_match_percent": 100.0,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.76516,
+      "worst_pixel_match_percent": 99.76516,
+      "average_ink_match_percent": 51.10904,
+      "worst_ink_match_percent": 51.10904,
+      "average_visual_accuracy_proxy_percent": 51.10904,
+      "worst_visual_accuracy_proxy_percent": 51.10904,
+      "average_tolerant_content_match_percent": 100.0,
+      "worst_tolerant_content_match_percent": 100.0,
+      "worst_pages": [
+        1
+      ]
+    },
+    "pr_review_gate": {
+      "status": "passed",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false
+    }
+  },
+  "wasm-saved": {
+    "pages": 1,
+    "flagged_pages": 0,
+    "metrics": {
+      "compared_pages": 1,
+      "average_silhouette_raw_match_percent": 100.0,
+      "worst_silhouette_raw_match_percent": 100.0,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.76516,
+      "worst_pixel_match_percent": 99.76516,
+      "average_ink_match_percent": 51.10904,
+      "worst_ink_match_percent": 51.10904,
+      "average_visual_accuracy_proxy_percent": 51.10904,
+      "worst_visual_accuracy_proxy_percent": 51.10904,
+      "average_tolerant_content_match_percent": 100.0,
+      "worst_tolerant_content_match_percent": 100.0,
+      "worst_pages": [
+        1
+      ]
+    },
+    "pr_review_gate": {
+      "status": "passed",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false
+    }
+  },
+  "svg-input": {
+    "pages": 1,
+    "flagged_pages": 0,
+    "metrics": {
+      "compared_pages": 1,
+      "average_silhouette_raw_match_percent": 100.0,
+      "worst_silhouette_raw_match_percent": 100.0,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.74004,
+      "worst_pixel_match_percent": 99.74004,
+      "average_ink_match_percent": 46.25551,
+      "worst_ink_match_percent": 46.25551,
+      "average_visual_accuracy_proxy_percent": 46.25551,
+      "worst_visual_accuracy_proxy_percent": 46.25551,
+      "average_tolerant_content_match_percent": 100.0,
+      "worst_tolerant_content_match_percent": 100.0,
+      "worst_pages": [
+        1
+      ]
+    },
+    "pr_review_gate": {
+      "status": "passed",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false
+    }
+  },
+  "svg-saved": {
+    "pages": 1,
+    "flagged_pages": 0,
+    "metrics": {
+      "compared_pages": 1,
+      "average_silhouette_raw_match_percent": 100.0,
+      "worst_silhouette_raw_match_percent": 100.0,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.74004,
+      "worst_pixel_match_percent": 99.74004,
+      "average_ink_match_percent": 46.25551,
+      "worst_ink_match_percent": 46.25551,
+      "average_visual_accuracy_proxy_percent": 46.25551,
+      "worst_visual_accuracy_proxy_percent": 46.25551,
+      "average_tolerant_content_match_percent": 100.0,
+      "worst_tolerant_content_match_percent": 100.0,
+      "worst_pages": [
+        1
+      ]
+    },
+    "pr_review_gate": {
+      "status": "passed",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false
+    }
+  },
+  "base-native-skia-input": {
+    "pages": 1,
+    "mode": "silhouette_only",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 4285,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false,
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    }
+  },
+  "base-native-skia-saved": {
+    "pages": 1,
+    "mode": "silhouette_only",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 28.76946,
+        "silhouette_raw_unmatched_pixels": 3751,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 5266,
+        "tolerant_content_match_percent": 28.76946
+      }
+    ],
+    "pr_review_gate": {
+      "status": "re_review_required",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 1,
+          "silhouette_raw_match_percent": 28.76946
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false
+    }
+  },
+  "base-wasm-canvas2d-input": {
+    "pages": 1,
+    "mode": "full",
+    "metrics": {
+      "compared_pages": 1,
+      "average_silhouette_raw_match_percent": 100.0,
+      "worst_silhouette_raw_match_percent": 100.0,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.76516,
+      "worst_pixel_match_percent": 99.76516,
+      "average_ink_match_percent": 51.10904,
+      "worst_ink_match_percent": 51.10904,
+      "average_visual_accuracy_proxy_percent": 51.10904,
+      "worst_visual_accuracy_proxy_percent": 51.10904,
+      "average_tolerant_content_match_percent": 100.0,
+      "worst_tolerant_content_match_percent": 100.0,
+      "worst_pages": [
+        1
+      ]
+    },
+    "pr_review_gate": {
+      "status": "passed",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false
+    }
+  },
+  "base-wasm-canvas2d-saved": {
+    "pages": 1,
+    "mode": "full",
+    "metrics": {
+      "compared_pages": 1,
+      "average_silhouette_raw_match_percent": 28.74786,
+      "worst_silhouette_raw_match_percent": 28.74786,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.48153,
+      "worst_pixel_match_percent": 99.48153,
+      "average_ink_match_percent": 12.16036,
+      "worst_ink_match_percent": 12.16036,
+      "average_visual_accuracy_proxy_percent": 12.16036,
+      "worst_visual_accuracy_proxy_percent": 12.16036,
+      "average_tolerant_content_match_percent": 28.74786,
+      "worst_tolerant_content_match_percent": 28.74786,
+      "worst_pages": [
+        1
+      ]
+    },
+    "pr_review_gate": {
+      "status": "re_review_required",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 1,
+          "silhouette_raw_match_percent": 28.74786
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false
+    }
+  }
+}

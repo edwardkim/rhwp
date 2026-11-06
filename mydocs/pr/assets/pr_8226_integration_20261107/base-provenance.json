@@ -1,0 +1,428 @@
+{
+  "product_commit": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "native_sha256": "0269b332aaf532e5a446a4f89fa362d031b7aea29c44e6d7e015b3a31284fa6a",
+  "wasm_sha256": "941af4e51b82959bd4330943a306a45c568b8664d739e7133012b2c4b66ddaf3",
+  "note": "Base producers built from detached a7feb849; visual harness ran in integration checkout. Recorded harness HEAD does not identify producer source.",
+  "cases": {
+    "base-native-skia-input": {
+      "schema_version": 2,
+      "key": "input",
+      "provenance": {
+        "hwp": {
+          "path": "report-implicit-column.hwpx",
+          "sha256": "28768b01550ba2596c5e2bd182454a39a6700c8789fbe95e198d83c3898c4a40"
+        },
+        "pdf": {
+          "path": "report-implicit-column-hancom-print.pdf",
+          "sha256": "8e7af1fcc369dbc45405bd0073850d085122a9d3f9f637678f119b324831d0d7"
+        },
+        "git_head": "03300db4a94fac02ec1ccde857b97c96e9932567",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/opt/homebrew/Cellar/python@3.14/3.14.10/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+          "executable_sha256": "7827c8b0d2c63e841f04651d0a620e3f71991f68aaf72f42cbb3a16392ec3013",
+          "library": "libpdfium.dylib",
+          "library_sha256": "972cd7767410a33f5104450bcaa239897de8c36466c5c8e7e5436d4296c68a27",
+          "version": "159.0.8146.0@sourcebuild-toolchained",
+          "wrapper_version": "5.15.0",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "output/pr-review/pr8226-recheck/base/rhwp",
+          "path": "rhwp",
+          "sha256": "0269b332aaf532e5a446a4f89fa362d031b7aea29c44e6d7e015b3a31284fa6a"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+          "mappings": {
+            "함초롬돋움": "HCRDotum"
+          },
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [],
+          "local_document_substitutes": [],
+          "resources": [
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+              "source_sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+              "native_path": "native.ttf",
+              "native_sha256": "ef844a67c8abb4afeabcb2feacd923610cfd9169cdb9ceb7b9823efcebc635b4",
+              "native_face": "HCRDotum"
+            }
+          ],
+          "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+        "layout_generation": "2022",
+        "font_environment": {
+          "path": "d9db6822b67c9b3166774a261aa9e360bfb4902fb50058da7b7ec0e3e9cef7e3.json",
+          "sha256": "d9db6822b67c9b3166774a261aa9e360bfb4902fb50058da7b7ec0e3e9cef7e3"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "explicit",
+          "files": [
+            {
+              "path": "HANBatang.ttf",
+              "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104"
+            },
+            {
+              "path": "native.ttf",
+              "sha256": "ef844a67c8abb4afeabcb2feacd923610cfd9169cdb9ceb7b9823efcebc635b4"
+            },
+            {
+              "path": "source.woff",
+              "sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf"
+            }
+          ]
+        }
+      },
+      "dpi": 96,
+      "pixel_diff_threshold": 32,
+      "font_mismatch_evidence": null,
+      "requested_pages": [
+        1
+      ],
+      "requested_page_shards": [],
+      "run_state": "complete",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    },
+    "base-native-skia-saved": {
+      "schema_version": 2,
+      "key": "saved",
+      "provenance": {
+        "hwp": {
+          "path": "output/pr-review/pr8226-recheck/base/saved.hwp",
+          "sha256": "cb1fec65bf3e7621870c54c60700d0b89050430969f4562b296bb77ca8b8a386"
+        },
+        "pdf": {
+          "path": "report-implicit-column-hancom-print.pdf",
+          "sha256": "8e7af1fcc369dbc45405bd0073850d085122a9d3f9f637678f119b324831d0d7"
+        },
+        "git_head": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/opt/homebrew/Cellar/python@3.14/3.14.10/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+          "executable_sha256": "7827c8b0d2c63e841f04651d0a620e3f71991f68aaf72f42cbb3a16392ec3013",
+          "library": "libpdfium.dylib",
+          "library_sha256": "972cd7767410a33f5104450bcaa239897de8c36466c5c8e7e5436d4296c68a27",
+          "version": "159.0.8146.0@sourcebuild-toolchained",
+          "wrapper_version": "5.15.0",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "output/pr-review/pr8226-recheck/base/rhwp",
+          "path": "rhwp",
+          "sha256": "0269b332aaf532e5a446a4f89fa362d031b7aea29c44e6d7e015b3a31284fa6a"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+          "mappings": {
+            "함초롬돋움": "HCRDotum"
+          },
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [],
+          "local_document_substitutes": [],
+          "resources": [
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+              "source_sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+              "native_path": "native.ttf",
+              "native_sha256": "79657f1968d6322c00e8b97c7f1e54f19226855a99b009341b59fbd7befcb675",
+              "native_face": "HCRDotum"
+            }
+          ],
+          "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+        "layout_generation": "2022",
+        "font_environment": {
+          "path": "d9db6822b67c9b3166774a261aa9e360bfb4902fb50058da7b7ec0e3e9cef7e3.json",
+          "sha256": "d9db6822b67c9b3166774a261aa9e360bfb4902fb50058da7b7ec0e3e9cef7e3"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "explicit",
+          "files": [
+            {
+              "path": "HANBatang.ttf",
+              "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104"
+            },
+            {
+              "path": "native.ttf",
+              "sha256": "79657f1968d6322c00e8b97c7f1e54f19226855a99b009341b59fbd7befcb675"
+            },
+            {
+              "path": "source.woff",
+              "sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf"
+            }
+          ]
+        }
+      },
+      "dpi": 96,
+      "pixel_diff_threshold": 32,
+      "font_mismatch_evidence": null,
+      "requested_pages": [
+        1
+      ],
+      "requested_page_shards": [],
+      "run_state": "complete",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    },
+    "base-wasm-canvas2d-input": {
+      "schema_version": 2,
+      "key": "input",
+      "provenance": {
+        "hwp": {
+          "path": "mydocs/pr/assets/leading-definition-slots/input/report-implicit-column.hwpx",
+          "sha256": "28768b01550ba2596c5e2bd182454a39a6700c8789fbe95e198d83c3898c4a40"
+        },
+        "pdf": {
+          "path": "pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf",
+          "sha256": "8e7af1fcc369dbc45405bd0073850d085122a9d3f9f637678f119b324831d0d7"
+        },
+        "git_head": "effcb0d60241d41601fa3cc471c6e46050a60676",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/opt/homebrew/Cellar/python@3.14/3.14.10/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+          "executable_sha256": "7827c8b0d2c63e841f04651d0a620e3f71991f68aaf72f42cbb3a16392ec3013",
+          "library": "libpdfium.dylib",
+          "library_sha256": "972cd7767410a33f5104450bcaa239897de8c36466c5c8e7e5436d4296c68a27",
+          "version": "159.0.8146.0@sourcebuild-toolchained",
+          "wrapper_version": "5.15.0",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "rhwp",
+          "path": "rhwp",
+          "sha256": "0269b332aaf532e5a446a4f89fa362d031b7aea29c44e6d7e015b3a31284fa6a"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+        "layout_generation": "2022",
+        "wasm": {
+          "files": [
+            {
+              "path": "rhwp.js",
+              "sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+            },
+            {
+              "path": "rhwp_bg.wasm",
+              "sha256": "941af4e51b82959bd4330943a306a45c568b8664d739e7133012b2c4b66ddaf3"
+            }
+          ],
+          "exporter_sha256": "2d4cc3fbbdf4b4f528aa683649434221a783300e821fe68aaa2ae1e1b63220ee",
+          "font_registration_sha256": "5259038f8caad1f1c1a0dd9c2106589350a7d41ef8c5916c0108a1675951f9fe",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "explicit",
+          "files": [
+            {
+              "path": "HANBatang.ttf",
+              "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104"
+            }
+          ]
+        }
+      },
+      "dpi": 96,
+      "pixel_diff_threshold": 32,
+      "font_mismatch_evidence": null,
+      "requested_pages": [
+        1
+      ],
+      "requested_page_shards": [
+        [
+          1
+        ]
+      ],
+      "run_state": "complete",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    },
+    "base-wasm-canvas2d-saved": {
+      "schema_version": 2,
+      "key": "saved",
+      "provenance": {
+        "hwp": {
+          "path": "output/pr-review/pr8226-recheck/base/saved.hwp",
+          "sha256": "cb1fec65bf3e7621870c54c60700d0b89050430969f4562b296bb77ca8b8a386"
+        },
+        "pdf": {
+          "path": "pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf",
+          "sha256": "8e7af1fcc369dbc45405bd0073850d085122a9d3f9f637678f119b324831d0d7"
+        },
+        "git_head": "effcb0d60241d41601fa3cc471c6e46050a60676",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/opt/homebrew/Cellar/python@3.14/3.14.10/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+          "executable_sha256": "7827c8b0d2c63e841f04651d0a620e3f71991f68aaf72f42cbb3a16392ec3013",
+          "library": "libpdfium.dylib",
+          "library_sha256": "972cd7767410a33f5104450bcaa239897de8c36466c5c8e7e5436d4296c68a27",
+          "version": "159.0.8146.0@sourcebuild-toolchained",
+          "wrapper_version": "5.15.0",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "rhwp",
+          "path": "rhwp",
+          "sha256": "0269b332aaf532e5a446a4f89fa362d031b7aea29c44e6d7e015b3a31284fa6a"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+        "layout_generation": "2022",
+        "wasm": {
+          "files": [
+            {
+              "path": "rhwp.js",
+              "sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+            },
+            {
+              "path": "rhwp_bg.wasm",
+              "sha256": "941af4e51b82959bd4330943a306a45c568b8664d739e7133012b2c4b66ddaf3"
+            }
+          ],
+          "exporter_sha256": "2d4cc3fbbdf4b4f528aa683649434221a783300e821fe68aaa2ae1e1b63220ee",
+          "font_registration_sha256": "5259038f8caad1f1c1a0dd9c2106589350a7d41ef8c5916c0108a1675951f9fe",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "explicit",
+          "files": [
+            {
+              "path": "HANBatang.ttf",
+              "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104"
+            }
+          ]
+        }
+      },
+      "dpi": 96,
+      "pixel_diff_threshold": 32,
+      "font_mismatch_evidence": null,
+      "requested_pages": [
+        1
+      ],
+      "requested_page_shards": [
+        [
+          1
+        ]
+      ],
+      "run_state": "complete",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    }
+  }
+}
