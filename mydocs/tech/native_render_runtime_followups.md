@@ -54,3 +54,32 @@ runtime 검사는 작은 예산의 음수·소수 viewport, 다수 소형 요청
 요청의 대체 방지를 다룬다. Native feature 경로는 기존 CI가 실행하는
 `issue_536_native_region_cache`의 inline worker 검사와 FFI worker 계약에서 확인한다.
 새 integration target이나 CI 호출은 추가하지 않는다.
+
+## P77: 실행 중인 타일 viewport의 협력적 취소
+
+오래된 타일 render는 최신 render가 실제로 제출·수락되면 다음 타일 경계에서 중단한다.
+큐에 남은 요청을 취소하는 기존 동작에 더해, `workerCancel`은 실행 중인 `renderTiledRegion`도
+중단 요청을 받을 수 있다. `close`는 대기·완료 큐를 비우며 실행 중 타일 작업을 같은 경계에서
+멈춘다. 실행 중인 개별 Skia replay나 픽셀 읽기는 끝까지 수행한다. 원본 `renderRegion`,
+문서 열기·편집·저장 등의 동기 호출을 강제로 중단하지 않는다.
+
+Renderer는 출력 할당 전, 각 타일 전, 최종 frame 반환 전에 continuation callback을 검사한다.
+중단하면 `None`으로 전체 출력 버퍼를 폐기하므로 부분 frame을 반환하지 않는다. Native session의
+`render_tiled_region_cancellable`은 같은 callback 계약을 제공하며, callback에서 해당 세션의
+cache·renderer를 재진입하거나 변경해서는 안 된다. 완성된 immutable tile은 같은 revision과
+font generation의 합산 LRU에 남길 수 있다. Capabilities의 `cooperativeTiledCancellation`은
+이 동작의 지원 여부를 나타낸다.
+
+Worker는 명시 취소에 `cancelled`, 새 render에 의한 중단에 `skipped/supersededRender`를
+반환한다. 최종 phase 전환과 취소를 원자적으로 경합시켜 취소 성공 후 frame이 나오는 경우를
+막는다. 완료 전환이 먼저 끝났으면 기존 `tooLate`를 반환한다. 취소된 요청도 completion
+수신까지 기존 credit과 바이트 예약을 유지한다. FIFO 편집·저장 명령은 coalescing 대상에
+추가하지 않는다.
+
+`issue_536_native_region_cache`의 공개 callback 검사는 첫 타일 뒤의 중단, 부분·최종·off-page
+출력 폐기, 완성 타일 재사용과 정상 재실행의 픽셀 일치를 확인한다. 기존 worker 검사는 FIFO
+편집·저장, coalescing과 completion credit을 보호한다. FFI 검사는 취소가 성공하면 frame
+버퍼가 반환되지 않고, 완료가 앞서면 `tooLate`와 완성 frame을 반환하는 경합 결과를 확인한다.
+실제 worker를 특정 타일 경계에 강제로 멈추는 동시성 hook은 추가하지 않는다. 따라서 최신
+render·close가 실행 중 타일과 경합하는 모든 순서를 결정적으로 재현했다고 주장하지 않는다.
+Unit test support, 개수 한계와 integration target 정책은 변경하지 않는다.

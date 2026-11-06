@@ -1073,6 +1073,89 @@ fn assert_native_frame_matches(actual: &NativeFrame, expected: &NativeFrame) {
 }
 
 #[test]
+fn cooperative_tiled_cancellation_discards_partial_frames_and_retains_complete_tiles() {
+    let session = NativeDocumentSession::new_blank().unwrap();
+    let region = RasterRegion {
+        x: 0.0,
+        y: 0.0,
+        width: 1024.0,
+        height: 1024.0,
+    };
+    let mut boundaries = 0;
+    let cancelled = session
+        .render_tiled_region_cancellable(0, region, 1.0, || {
+            boundaries += 1;
+            boundaries < 3
+        })
+        .unwrap();
+    assert!(cancelled.is_none(), "a partial viewport must never escape");
+    assert_eq!(boundaries, 3);
+    let after_cancel = session.region_cache_stats();
+    assert_eq!(
+        after_cancel.tile_replays, 1,
+        "only the first tile completed"
+    );
+    assert_eq!(after_cancel.tile_entries, 1);
+    let warm_region = RasterRegion {
+        width: 8.0,
+        height: 8.0,
+        ..region
+    };
+    let warm = session.render_tiled_region(0, warm_region, 1.0).unwrap();
+    assert_eq!((warm.pixels.width, warm.pixels.height), (8, 8));
+    assert_eq!(
+        session.region_cache_stats().tile_replays,
+        after_cancel.tile_replays
+    );
+    assert_eq!(
+        session.region_cache_stats().tile_hits,
+        after_cancel.tile_hits + 1
+    );
+    let completed = session.render_tiled_region(0, region, 1.0).unwrap();
+    let reference = NativeDocumentSession::new_blank()
+        .unwrap()
+        .render_tiled_region(0, region, 1.0)
+        .unwrap();
+    assert_eq!(completed.pixels, reference.pixels);
+    assert_eq!(session.region_cache_stats().tile_replays, 4);
+
+    // Cancellation at the final boundary also drops a completely copied buffer.
+    // The completed immutable tile stays available, while no frame is returned.
+    let mut boundaries = 0;
+    assert!(session
+        .render_tiled_region_cancellable(0, warm_region, 1.0, || {
+            boundaries += 1;
+            boundaries < 3
+        })
+        .unwrap()
+        .is_none());
+    assert_eq!(boundaries, 3);
+    assert_eq!(session.region_cache_stats().tile_replays, 4);
+    let mut boundaries = 0;
+    assert!(session
+        .render_tiled_region_cancellable(
+            0,
+            RasterRegion {
+                x: -100.0,
+                y: -100.0,
+                ..warm_region
+            },
+            1.0,
+            || {
+                boundaries += 1;
+                boundaries < 2
+            }
+        )
+        .unwrap()
+        .is_none());
+    assert_eq!(
+        boundaries, 2,
+        "off-page windows still poll before returning output"
+    );
+    assert_eq!(session.region_cache_stats().tile_replays, 4);
+}
+
+#[test]
 fn native_tiled_warm_frames_keep_pixels_and_skip_replay() {
     let cached = session(false);
     let uncached = session(false);

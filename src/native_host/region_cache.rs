@@ -346,6 +346,26 @@ impl NativeDocumentSession {
         region: RasterRegion,
         scale: f64,
     ) -> Result<NativeFrame, NativeHostError> {
+        self.render_tiled_region_cancellable(page, region, scale, || true)?
+            .ok_or_else(|| {
+                NativeHostError::Core(crate::HwpError::RenderError(
+                    "uninterrupted tiled render stopped".into(),
+                ))
+            })
+    }
+
+    /// Cooperatively stop between complete tile operations. `None` never
+    /// contains a partial frame. Successful tiles can remain in the bounded LRU.
+    /// The callback must not reenter this session or mutate its renderer/cache.
+    pub fn render_tiled_region_cancellable(
+        &self,
+        page: u32,
+        region: RasterRegion,
+        scale: f64,
+        should_continue: impl FnMut() -> bool,
+    ) -> Result<Option<NativeFrame>, NativeHostError> {
+        self.check_page(page)?;
+        Self::check_scale(scale)?;
         let options = RasterRenderOptions {
             scale,
             max_pixels: MAX_FRAME_PIXELS,
@@ -367,17 +387,20 @@ impl NativeDocumentSession {
             scale: scale.to_bits(),
         };
         let renderer = self.renderer();
-        let output = self.renderer().render_tiled_region_with_provider(
-            &tree,
-            region,
-            options,
-            |bounds| {
-                cache.tile(key, bounds, plan.output_bytes(), || {
-                    renderer.prepare_tile(&tree, bounds, options)
-                })
-            },
-        )?;
-        Ok(self.region_frame(output))
+        let output = self
+            .renderer()
+            .render_tiled_region_with_provider_cancellable(
+                &tree,
+                region,
+                options,
+                |bounds| {
+                    cache.tile(key, bounds, plan.output_bytes(), || {
+                        renderer.prepare_tile(&tree, bounds, options)
+                    })
+                },
+                should_continue,
+            )?;
+        Ok(output.map(|output| self.region_frame(output)))
     }
 
     fn region_frame(&self, output: RasterRegionPixels) -> NativeFrame {

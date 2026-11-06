@@ -213,6 +213,8 @@ def run(host, expected_native_skia):
             f"wrong build artifact: expected nativeSkia={expected_native_skia}, got {caps['nativeSkia']}")
     require(caps["renderTiledRegion"] is expected_native_skia, "tiled capability mismatch")
     require(caps["rasterCacheControls"] is expected_native_skia, "raster cache capability mismatch")
+    require(caps["cooperativeTiledCancellation"] is expected_native_skia,
+            "cooperative tiled cancellation capability mismatch")
     rejected(host.call("open", None, 1, None, 0), "invalidArgument")
     rejected(host.call("open", None, caps["maxDocumentBytes"] + 1, None, 0), "limitExceeded")
     rejected(host.call("open", None, 0, None, 1), "invalidArgument")

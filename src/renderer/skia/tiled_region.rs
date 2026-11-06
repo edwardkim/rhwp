@@ -163,10 +163,34 @@ impl SkiaLayerRenderer {
         tree: &PageLayerTree,
         region: RasterRegion,
         options: RasterRenderOptions,
-        mut tile_provider: impl FnMut(SkiaTileBounds) -> LayerRenderResult<PreparedSkiaTile>,
+        tile_provider: impl FnMut(SkiaTileBounds) -> LayerRenderResult<PreparedSkiaTile>,
     ) -> LayerRenderResult<RasterRegionPixels> {
+        self.render_tiled_region_with_provider_cancellable(
+            tree,
+            region,
+            options,
+            tile_provider,
+            || true,
+        )?
+        .ok_or_else(|| HwpError::RenderError("uninterrupted tiled render stopped".into()))
+    }
+
+    /// Poll only between complete native tile operations. Returning false drops
+    /// the output window; immutable tiles already returned by the provider may
+    /// stay cached. An active Skia replay/read is never forcibly interrupted.
+    pub(crate) fn render_tiled_region_with_provider_cancellable(
+        &self,
+        tree: &PageLayerTree,
+        region: RasterRegion,
+        options: RasterRenderOptions,
+        mut tile_provider: impl FnMut(SkiaTileBounds) -> LayerRenderResult<PreparedSkiaTile>,
+        mut should_continue: impl FnMut() -> bool,
+    ) -> LayerRenderResult<Option<RasterRegionPixels>> {
         let tile_plan = SkiaTilePlan::new(tree.page_width, tree.page_height, region, options)?;
         let plan = tile_plan.region;
+        if !should_continue() {
+            return Ok(None);
+        }
         let clear = clear_color(options);
         let mut bytes = vec![0; plan.output_bytes()];
         if clear.a() != 0 {
@@ -178,6 +202,9 @@ impl SkiaLayerRenderer {
             for tile_y in top / SkiaTilePlan::TILE_SIZE..=(bottom - 1) / SkiaTilePlan::TILE_SIZE {
                 for tile_x in left / SkiaTilePlan::TILE_SIZE..=(right - 1) / SkiaTilePlan::TILE_SIZE
                 {
+                    if !should_continue() {
+                        return Ok(None);
+                    }
                     let x = tile_x * SkiaTilePlan::TILE_SIZE;
                     let y = tile_y * SkiaTilePlan::TILE_SIZE;
                     let tile_right = (x + SkiaTilePlan::TILE_SIZE).min(plan.page_width());
@@ -225,7 +252,10 @@ impl SkiaLayerRenderer {
                 }
             }
         }
-        Ok(RasterRegionPixels {
+        if !should_continue() {
+            return Ok(None);
+        }
+        Ok(Some(RasterRegionPixels {
             pixels: RasterPixels {
                 bytes,
                 width: plan.width(),
@@ -237,6 +267,6 @@ impl SkiaLayerRenderer {
             },
             origin_x: plan.origin_x(),
             origin_y: plan.origin_y(),
-        })
+        }))
     }
 }

@@ -9,8 +9,9 @@
 //! Limits cover outstanding request count and retained input/output byte buffers,
 //! not the expanded document, editor snapshots, serializer reports or Skia working
 //! memory. Hosts must also bound runtime count and their own received buffers.
-//! Cancellation succeeds only before the worker claims a request. `close`/Drop
-//! discard queued work and completions without joining: an active synchronous
+//! Cancellation covers queued commands and executing tiled renders at tile
+//! boundaries. `close`/Drop discard queued work and unread completions without
+//! joining, and stop tiled work at the next boundary. An active synchronous
 //! parse/serialization/Skia call finishes on its owner thread before its document
 //! and memory are released. No running native call is forcibly interrupted.
 
@@ -587,6 +588,7 @@ struct Request {
 }
 struct InFlight {
     render: bool,
+    tiled: bool,
     phase: Arc<AtomicU8>,
     reservation: usize,
 }
@@ -684,6 +686,7 @@ impl NativeRuntime {
         };
         let phase = Arc::new(AtomicU8::new(QUEUED));
         let render = command.is_render();
+        let tiled = matches!(command, NativeRuntimeCommand::RenderTiledRegion { .. });
         let request = Request {
             id,
             command,
@@ -699,6 +702,7 @@ impl NativeRuntime {
                     id,
                     InFlight {
                         render,
+                        tiled,
                         phase,
                         reservation,
                     },
@@ -735,6 +739,15 @@ impl NativeRuntime {
             .compare_exchange(QUEUED, CANCELLED, Ordering::AcqRel, Ordering::Acquire)
         {
             Ok(_) | Err(CANCELLED) => NativeRuntimeCancelOutcome::Cancelled,
+            Err(CLAIMED) if request.tiled => match request.phase.compare_exchange(
+                CLAIMED,
+                CANCELLED,
+                Ordering::AcqRel,
+                Ordering::Acquire,
+            ) {
+                Ok(_) | Err(CANCELLED) => NativeRuntimeCancelOutcome::Cancelled,
+                Err(_) => NativeRuntimeCancelOutcome::TooLate,
+            },
             Err(_) => NativeRuntimeCancelOutcome::TooLate,
         }
     }
@@ -796,8 +809,9 @@ impl NativeRuntime {
         }
     }
 
-    /// Cancel queued work and discard unread outputs. Does not persist edits,
-    /// acknowledge saves, join, or interrupt an executing engine call.
+    /// Cancel queued work, stop tiled work at its next tile boundary and discard
+    /// unread outputs. Does not persist edits, acknowledge saves, join, or
+    /// interrupt an executing native call.
     pub fn close(&mut self) {
         let _ = self.shared.lifecycle.compare_exchange(
             RUNNING,

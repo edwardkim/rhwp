@@ -102,6 +102,27 @@ def buffer_quota_contract(library):
         raise AssertionError("closed worker handle remained registered after release")
 
 
+def tiled_cancellation_contract(library):
+    with NativeWorker(library, {"maxOutstanding": 1}) as worker:
+        info = accepted(worker, {"op": "new", "replace": None})["info"]
+        target = {"documentId": info["documentId"], "revision": info["revision"]}
+        command = {"op": "renderTiledRegion", "target": target, "fontGeneration": 0,
+                   "page": 0, "region": {"x": 0, "y": 0, "width": 1024, "height": 1024},
+                   "scale": 1}
+        request = worker.submit(command)
+        outcome = worker.cancel(request)
+        assert outcome in ("cancelled", "tooLate"), outcome
+        completion = worker.wait(request)
+        assert completion["ok"], completion
+        if outcome == "cancelled":
+            assert completion["kind"] == "cancelled" and "buffer" not in completion, completion
+        else:
+            assert completion["kind"] == "frame", completion
+            worker.copy_buffer(completion)
+        assert worker.cancel(request) == "unknown"
+        assert accepted(worker, {"op": "info"})["info"]["revision"] == target["revision"]
+
+
 def viewport_budget_contract(library):
     for operation in ("renderRegion", "renderTiledRegion"):
         with NativeWorker(library, {"maxOutstanding": 4, "maxPendingBytes": 80}) as worker:
@@ -202,6 +223,7 @@ def run(library):
         viewer.wait_closed()
     buffer_quota_contract(library)
     viewport_budget_contract(library)
+    tiled_cancellation_contract(library)
     print('{"ok":true,"contract":"native-worker","queueCredit":true,"saveRevision":true,"threadOwnership":true,"saveBufferQuotaCleanup":true}')
 
 
