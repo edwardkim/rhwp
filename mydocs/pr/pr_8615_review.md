@@ -60,3 +60,20 @@ R11 source의 같은 원본·독립 Print를 두 경로 review/overlay로 직접
 3쪽 Native [review](assets/planet6897_20261106/pr8615/r26/native-review-003.png) · [overlay](assets/planet6897_20261106/pr8615/r26/native-overlay-003.png).
 
 새 fresh WASM·저장측 집중 검사·최종 전체 회귀·보호 PR 전쪽·lint·브라우저 검증은 진행 중이다. Native 중간 결과를 최종 승인으로 판정하지 않는다.
+
+## 별도 경계선의 fresh WASM·실제 저장 계약 확인
+
+R26c fresh WASM도 같은 원본의 전3쪽에서 **99.87%·100.00%·100.00%**다.
+[전쪽 WASM TSV](assets/planet6897_20261106/pr8615/r26/wasm.tsv) ·
+[1쪽 review](assets/planet6897_20261106/pr8615/r26/wasm-review-001.png) ·
+[overlay](assets/planet6897_20261106/pr8615/r26/wasm-overlay-001.png) ·
+[실제 source·package 근거](assets/planet6897_20261106/pr8615/r26/wasm-provenance.json).
+2·3쪽 PNG도 같은 폴더에 보존했다. 전3쪽을 직접 대조해 컷 선 제거, 실제 종료선,
+본문과 연락처의 보존을 확인했다. 독립 Print와 쪽수도 일치한다.
+NARS2019 전1쪽과 정상5885 전7쪽은 Native/fresh WASM 모두100%를 유지했다.
+[대조군 입력·PDF·TSV](assets/planet6897_20261106/pr8615/r26/control-provenance.json)를 따른다.
+
+새 automatic_break_boundary의3건은 공개 글꼴5개만 노출한 최소 환경에서 모두 통과했다.
+독립 Print의 열린 컷·실제 종료선·내용 소속, 두 형식의 실제 저장 후 재파싱,
+기존 BackSlash와 중심선 비트 계약을 보호한다. 기대값 완화·글꼴 설치 분기·skip은 없다.
+최종 통합 전쪽 비교·전체 회귀·lint가 끝나기 전에는 최종 승인을 선언하지 않는다.
