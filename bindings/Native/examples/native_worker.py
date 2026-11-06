@@ -35,6 +35,12 @@ class NativeWorker:
         return self.host.host_request(op="workerOpen", worker=self.worker,
                                       replace=replace, data=data)["requestId"]
 
+    def open_recovery_bytes(self, data, replace=None):
+        """Open explicit recovery bytes with no adopted user-save checkpoint."""
+        self._check_open()
+        return self.host.host_request(op="workerOpenRecovery", worker=self.worker,
+                                      replace=replace, data=data)["requestId"]
+
     def cancel(self, request_id):
         self._check_open()
         return self.host.host_request(op="workerCancel", worker=self.worker,

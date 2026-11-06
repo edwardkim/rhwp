@@ -63,6 +63,27 @@ class FileStoreContracts(unittest.TestCase):
         _, stamp = store.read_document(self.path)
         return store.NativeFileStore(self.host, 1, self.path, stamp)
 
+    def test_recovery_budget_preserves_existing_files_and_rejects_more(self):
+        directory = Path(self.directory.name)
+        for index in range(store.MAX_RECOVERY_FILES):
+            (directory / f"{index}.rhwp-recovery").write_bytes(b"keep")
+        destination = directory / "next.rhwp-recovery"
+        with self.assertRaisesRegex(ValueError, "budget"):
+            store.publish_recovery(destination, b"new", 1, {"count": 0})
+        self.assertFalse(destination.exists())
+        self.assertEqual(len(list(directory.iterdir())), store.MAX_RECOVERY_FILES)
+        self.assertTrue(all(p.read_bytes() == b"keep" for p in directory.iterdir()))
+
+    def test_recovery_byte_budget_and_scan_limit_are_bounded(self):
+        directory = Path(self.directory.name)
+        with patch.object(store, "MAX_RECOVERY_DIRECTORY_BYTES", 4):
+            with self.assertRaisesRegex(ValueError, "budget"):
+                store.publish_recovery(directory / "large.rhwp-recovery", b"payload", 1, {"count": 0})
+        for index in range(257):
+            (directory / str(index)).touch()
+        with self.assertRaisesRegex(ValueError, "too many entries"):
+            store.publish_recovery(directory / "next.rhwp-recovery", b"new", 1, {"count": 0})
+
     def test_new_save_is_published_before_ack(self):
         self.host.on_ack = lambda: self.assertEqual(self.path.read_bytes(), self.host.payload)
         result = store.NativeFileStore(self.host, 1).save(self.path)

@@ -40,6 +40,9 @@ class IdleWorker:
     def open_bytes(self, data, replace=None):
         self.requests.append({"op": "open", "data": data, "replace": replace})
         return len(self.requests)
+    def open_recovery_bytes(self, data, replace=None):
+        self.requests.append({"op": "openRecovery", "data": data, "replace": replace})
+        return len(self.requests)
     def copy_buffer(self, response):
         return b"serialized document"
 
@@ -106,6 +109,103 @@ class AdapterTests(unittest.TestCase):
         window.refresh = lambda: None
         window.update_document_ui()
         return window
+
+    def test_recovery_timer_skips_busy_ime_clean_and_backs_off_failed_attempts(self):
+        window = self.lifecycle_window()
+        window.recovery_dir = Path("recoveries")
+        calls = []
+        window._save_destination = lambda *args, **kwargs: calls.append((args, kwargs)) or True
+        window.info["compositionId"] = 4
+        self.assertFalse(window.maybe_recover(100))
+        window.info["compositionId"] = None
+        window.info["isDirty"] = False
+        self.assertFalse(window.maybe_recover(100))
+        window.info["isDirty"] = True
+        window.saving = True
+        self.assertFalse(window.maybe_recover(100))
+        window.saving = False
+        self.assertTrue(window.maybe_recover(100))
+        self.assertFalse(window.maybe_recover(101))
+        self.assertTrue(window.maybe_recover(130))
+        self.assertEqual(len(calls), 2)
+        self.assertTrue(calls[0][1]["recovery"])
+
+    def test_recovery_publishes_then_cancels_without_changing_dirty_or_source(self):
+        from native_worker_file_store import NativeWorkerFileStore
+        window = self.lifecycle_window()
+        source = window.source_path
+        window.file_store = NativeWorkerFileStore(7, source, self.stamp())
+        window.io.shutdown(wait=True)
+        window.io = io = DeferredIO()
+        self.assertTrue(window._save_destination("recoveries", recovery=True, recovery_now=100))
+        window.pump()
+        self.complete_step(window, token=17, buffer=99)
+        operation = window.save_operation
+        with patch("native_worker_file_store.publish_recovery", return_value=operation.path):
+            io.run(0)
+        window.tick()
+        self.assertEqual(window.worker.requests[-1]["op"], "cancelSave")
+        self.assertTrue(window.saving)
+        self.complete_step(window, kind="saveStatus", documentId=7,
+            status={"savedRevision": 1, "revision": 3, "dirty": True}, isDirty=True)
+        self.assertFalse(window.saving)
+        self.assertTrue(window.info["isDirty"])
+        self.assertEqual(window.source_path, source)
+        self.assertIsNone(window.saved_path)
+        self.assertEqual(window.recovery_path, operation.path)
+        self.assertEqual(window.file_store.source_stamp, self.stamp())
+        self.assertNotIn("acknowledgeSave", [r["op"] for r in window.worker.requests])
+
+    def test_recovery_cleanup_error_is_consumed_once_and_preserves_artifact(self):
+        window = self.lifecycle_window()
+        window.io.shutdown(wait=True)
+        window.io = io = DeferredIO()
+        window._save_destination("recoveries", recovery=True, recovery_now=100)
+        window.pump()
+        self.complete_step(window, token=17, buffer=99)
+        operation = window.save_operation
+        with patch("native_worker_file_store.publish_recovery", return_value=operation.path):
+            io.run(0)
+        window.tick()
+        self.assertEqual(window.worker.requests[-1]["op"], "cancelSave")
+        window.pending = None
+        window.step_done({"ok": False, "error": "old document closed"})
+        window.pump()
+        self.assertFalse(window.saving)
+        self.assertFalse(window.file_store.busy)
+        self.assertEqual([r["op"] for r in window.worker.requests].count("cancelSave"), 1)
+        self.assertTrue(any("destination preserved" in message for message in window.errors))
+
+    def test_recovery_open_uses_unsaved_native_path_and_never_adopts_source_metadata(self):
+        window = self.lifecycle_window(dirty=False)
+        window.io.shutdown(wait=True)
+        window.io = io = DeferredIO()
+        window.confirm_recovery = lambda header: True
+        window.open_recovery_path("chosen.rhwp-recovery")
+        window.pump()
+        self.complete_step(window, info=dict(window.info))
+        io.futures[0].set_result(({"sourcePath": "untrusted-original.hwpx", "report": {"count": 2}}, b"payload"))
+        window.tick()
+        self.complete_step(window, info=dict(window.info))
+        self.assertEqual(window.worker.requests[-1]["op"], "openRecovery")
+        self.complete_step(window, info={**window.info, "documentId": 8, "revision": 0, "isDirty": True})
+        self.assertTrue(window.info["isDirty"])
+        self.assertIsNone(window.source_path)
+        self.assertIsNone(window.file_store.source_path)
+
+    def test_corrupt_recovery_leaves_current_document_and_source_intact(self):
+        window = self.lifecycle_window(dirty=False)
+        window.io.shutdown(wait=True)
+        window.io = io = DeferredIO()
+        window.open_recovery_path("broken.rhwp-recovery")
+        window.pump()
+        self.complete_step(window, info=dict(window.info))
+        io.futures[0].set_exception(ValueError("bad checksum"))
+        window.tick()
+        self.assertIsNone(window.intent)
+        self.assertEqual(window.info["documentId"], 7)
+        self.assertEqual(window.source_path, Path("original.hwpx"))
+        self.assertFalse(any(r["op"] == "openRecovery" for r in window.worker.requests))
 
     def complete_step(self, window, **reply):
         self.assertIsNotNone(window.pending)

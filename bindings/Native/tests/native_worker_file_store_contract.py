@@ -734,10 +734,12 @@ def native_roundtrip(library):
                 raise AssertionError("unchanged revision created duplicate recovery")
 
             with NativeWorker(library) as restored:
-                reopened = restored.wait(restored.open_bytes(recovered_bytes))
+                reopened = restored.wait(restored.open_recovery_bytes(recovered_bytes))
                 if not reopened.get("ok"):
                     raise AssertionError(reopened)
                 restored_info = reopened["info"]
+                if not restored_info["isDirty"] or restored_info["revision"] != 0:
+                    raise AssertionError("recovery import falsely adopted a saved checkpoint")
                 restored_target = {"documentId": restored_info["documentId"],
                                    "revision": restored_info["revision"]}
                 restored_store = NativeWorkerFileStore(restored_target["documentId"])

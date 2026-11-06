@@ -15,6 +15,8 @@ import uuid
 
 MAX_BYTES = 128 * 1024 * 1024
 MAX_RECOVERY_HEADER = 64 * 1024
+MAX_RECOVERY_FILES = 32
+MAX_RECOVERY_DIRECTORY_BYTES = 256 * 1024 * 1024
 MAGIC = b"RHWP-R1\n"
 
 
@@ -211,6 +213,23 @@ def publish_recovery(path, data, revision, report, source_path=None, source_stam
         raise ValueError("recovery metadata exceeds the byte limit")
     path = Path(path)
     path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    # Bounded inspection and admission for the reference host's serial I/O
+    # executor. This is not an interprocess quota or an eviction policy: keep
+    # existing recovery files, including those created by another session.
+    count = total = 0
+    with os.scandir(path.parent) as entries:
+        for index, entry in enumerate(entries):
+            if index >= 256:
+                raise ValueError("recovery directory has too many entries; choose a dedicated directory")
+            if not entry.name.endswith(".rhwp-recovery"):
+                continue
+            observed = entry.stat(follow_symlinks=False)
+            if not stat.S_ISREG(observed.st_mode):
+                raise ValueError("recovery directory contains a non-regular recovery entry")
+            count += 1
+            total += observed.st_size
+    if count >= MAX_RECOVERY_FILES or total + len(encoded) + len(data) + len(MAGIC) + 4 > MAX_RECOVERY_DIRECTORY_BYTES:
+        raise ValueError("recovery directory budget reached; preserve or remove old recoveries explicitly")
     _write_staged(path, MAGIC + struct.pack("<I", len(encoded)) + encoded + data, None)
     try:
         stored_header, stored_data = read_recovery(path)

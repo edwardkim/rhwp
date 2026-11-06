@@ -9,13 +9,14 @@ from dataclasses import dataclass
 import math
 from pathlib import Path
 import sys
+import time
 
 from PySide6.QtCore import QEvent, QMimeData, QPointF, QRectF, Qt, QTimer
 from PySide6.QtGui import QAction, QColor, QImage, QKeySequence, QPainter, QPen
 from PySide6.QtWidgets import QApplication, QFileDialog, QGridLayout, QLabel, QMainWindow, QMessageBox, QScrollBar, QWidget
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from native_file_store import read_document
+from native_file_store import read_document, read_recovery
 from native_worker import NativeWorker
 from native_worker_file_store import NativeWorkerFileStore
 from native_viewport_tiles import NATIVE_CACHE_BYTES, TileImageCache, frame_byte_cost, plan_visible_tiles
@@ -232,10 +233,17 @@ class NativeWindow(QMainWindow):
         ("zoomOut", "축소", QKeySequence.StandardKey.ZoomOut, "view"),
     )
 
-    def __init__(self, library, input_path=None, output_path=None, worker=None, renderer="cpu"):
+    def __init__(self, library, input_path=None, output_path=None, worker=None, renderer="cpu",
+                 recovery_dir=None, recovery_interval=30.0):
         super().__init__()
         if renderer not in ("cpu", "auto", "gl"):
             raise ValueError("renderer must be cpu, auto or gl")
+        if not 1 <= recovery_interval <= 86400:
+            raise ValueError("recovery interval must be between 1 and 86400 seconds")
+        self.recovery_dir = Path(recovery_dir).absolute() if recovery_dir else None
+        self.recovery_interval = recovery_interval
+        self.next_recovery_attempt = 0.0
+        self.recovery_path = None
         self.worker = worker or NativeWorker(library)
         self.renderer_requested = renderer
         self.renderer = "cpu"
@@ -337,6 +345,11 @@ class NativeWindow(QMainWindow):
             if name in ("new", "open", "save", "undo", "redo", "zoomIn", "zoomOut"):
                 toolbar.addAction(action)
             self.document_actions[name] = action
+        recovery_action = QAction("복구 파일 열기", self)
+        recovery_action.triggered.connect(lambda _checked=False: self.invoke_action("recovery"))
+        menus["file"].addAction(recovery_action)
+        toolbar.addAction(recovery_action)
+        self.document_actions["recovery"] = recovery_action
         self.document_status = QLabel()
         self.statusBar().addPermanentWidget(self.document_status)
         self.raster_status = QLabel()
@@ -401,6 +414,7 @@ class NativeWindow(QMainWindow):
         available = not self.closing and self.intent is None
         self.document_actions["new"].setEnabled(available and not self.saving)
         self.document_actions["open"].setEnabled(available and not self.saving)
+        self.document_actions["recovery"].setEnabled(available and not self.saving)
         for name in ("save", "saveAs"):
             self.document_actions[name].setEnabled(available and bool(self.info) and not self.saving)
         for name, capability in (("undo", "canUndo"), ("redo", "canRedo")):
@@ -458,6 +472,7 @@ class NativeWindow(QMainWindow):
                 callback = self.pending[1]
                 self.pending = None
                 callback(result)
+            self.maybe_recover()
             self.pump()
             self.update_document_ui()
         except Exception as error:
@@ -474,6 +489,9 @@ class NativeWindow(QMainWindow):
         request = dict(request)
         if "_open" in request:
             request_id = self.worker.open_bytes(request["_open"], replace=self.target() if self.info else None)
+        elif "_openRecovery" in request:
+            request_id = self.worker.open_recovery_bytes(request["_openRecovery"],
+                replace=self.target() if self.info else None)
         else:
             if request["op"] not in ("new", "info", "acknowledgeSave", "cancelSave"):
                 request.setdefault("target", self.target())
@@ -550,7 +568,7 @@ class NativeWindow(QMainWindow):
             failed = self.job.failed
             self.job = None
             if failed:
-                failed(result)
+                failed({**result, "_completionReceived": True})
             return
         self.absorb(result)
         if self.job.replacement:
@@ -563,6 +581,7 @@ class NativeWindow(QMainWindow):
         self.reset_tiles()
         self.source_path = Path(path) if path is not None else None
         self.saved_path = None
+        self.recovery_path = None
         self.file_store = NativeWorkerFileStore(self.info["documentId"],
             self.source_path if source_stamp is not None else None, source_stamp)
         # Actions were accepted for the previous document, including those whose
@@ -1038,6 +1057,7 @@ class NativeWindow(QMainWindow):
                 return False
         handlers = {
             "new": self.new_document, "open": self.open_dialog,
+            "recovery": self.open_recovery_dialog,
             "save": lambda: getattr(self, "save_document", self.save_dialog)(),
             "saveAs": self.save_dialog,
             "undo": lambda: self.command("undo"), "redo": lambda: self.command("redo"),
@@ -1262,12 +1282,20 @@ class NativeWindow(QMainWindow):
                 if self.intent is not intent:
                     return
                 try:
-                    data, intent["source_stamp"] = future.result()
+                    first, second = future.result()
+                    if intent["operation"] == "recovery":
+                        intent["recovery_header"], data = first, second
+                        if not self.confirm_recovery(intent["recovery_header"]):
+                            self.abort_transition(intent)
+                            return
+                    else:
+                        data, intent["source_stamp"] = first, second
                 except Exception as error:
                     self.abort_transition(intent, str(error))
                     return
                 self.replace_document(intent, data)
-            self.io_jobs.append((self.io.submit(read_document, path), loaded))
+            reader = read_recovery if intent["operation"] == "recovery" else read_document
+            self.io_jobs.append((self.io.submit(reader, path), loaded))
 
     def replace_document(self, intent, data=None):
         def request(_):
@@ -1278,12 +1306,17 @@ class NativeWindow(QMainWindow):
                 self.abort_transition(intent, "대기 중 문서가 변경되어 문서 교체를 보류했습니다.")
                 return None
             self.transition_phase = "replacing"
-            return {"op": "new", "replace": current} if data is None else {"_open": data}
+            if data is None:
+                return {"op": "new", "replace": current}
+            return {"_openRecovery" if intent["operation"] == "recovery" else "_open": data}
         def replaced(result):
             if self.intent is intent:
                 self.intent = None
                 self.transition_phase = None
-                self.opened(result, intent["path"], intent.get("source_stamp"))
+                recovery = intent["operation"] == "recovery"
+                self.opened(result, None if recovery else intent["path"], intent.get("source_stamp"))
+                if recovery:
+                    self.statusBar().showMessage("복구 내용을 저장되지 않은 새 문서로 열었습니다.")
         # The read may have overlapped accepted programmatic edits. A fresh info
         # barrier makes that race visible instead of retargeting the replacement.
         steps = [lambda _: {"op": "info"}] if self.info else []
@@ -1301,6 +1334,37 @@ class NativeWindow(QMainWindow):
 
     def open_path(self, path):
         return self.request_transition("open", Path(path))
+
+    def open_recovery_dialog(self):
+        path, _ = QFileDialog.getOpenFileName(self, "복구 파일 열기", str(self.recovery_dir or ""),
+                                             "rhwp 복구 파일 (*.rhwp-recovery)")
+        if path:
+            return self.open_recovery_path(path)
+
+    def open_recovery_path(self, path):
+        return self.request_transition("recovery", Path(path))
+
+    def confirm_recovery(self, header):
+        report = header["report"]
+        dialog = QMessageBox(QMessageBox.Icon.Question, "복구 내용 확인",
+            f"복구한 내용을 새 문서로 열까요? 보존하지 못한 항목: {report['count']}개.\n"
+            "원본 파일은 복구 메타데이터만으로 덮어쓰지 않습니다.",
+            QMessageBox.StandardButton.Open | QMessageBox.StandardButton.Cancel, self)
+        dialog.setDefaultButton(QMessageBox.StandardButton.Cancel)
+        dialog.setDetailedText(json.dumps(header, ensure_ascii=False, indent=2)[:65536])
+        return dialog.exec() == QMessageBox.StandardButton.Open
+
+    def maybe_recover(self, now=None):
+        now = time.monotonic() if now is None else now
+        if (self.recovery_dir is None or now < self.next_recovery_attempt or not self.info
+                or self.closing or self.saving or self.intent is not None or self.io_jobs
+                or self.pending is not None or self.job is not None or self.actions
+                or self.info.get("compositionId") is not None or not self.info.get("isDirty")):
+            return False
+        # Back off failures as well as successes; never retry filesystem work at
+        # the 8 ms GUI poll frequency. Native store also deduplicates revisions.
+        self.next_recovery_attempt = now + self.recovery_interval
+        return self._save_destination(self.recovery_dir, recovery=True, recovery_now=now)
 
     def confirm_content_loss(self, report):
         dialog = QMessageBox(QMessageBox.Icon.Warning, "저장 내용 확인",
@@ -1373,7 +1437,8 @@ class NativeWindow(QMainWindow):
             return False
         return self._save_destination(path, on_saved=on_saved, on_failed=on_failed)
 
-    def _save_destination(self, path, *, destination_stamp=None, already_busy=False, on_saved=None, on_failed=None):
+    def _save_destination(self, path, *, destination_stamp=None, already_busy=False, on_saved=None, on_failed=None,
+                          recovery=False, recovery_now=None):
         if self.closing or (self.saving and not already_busy) or not self.info:
             return False
         self.saving = True
@@ -1389,20 +1454,25 @@ class NativeWindow(QMainWindow):
             if callback:
                 callback(error if error is not None else result)
 
-        def failed(error):
+        def failed(error, cleanup_received=False):
             if isinstance(error, dict):
                 error = RuntimeError(error.get("error", "native save request failed"))
             if operation is not None:
                 error = operation.failure(error)
             if error is not None and (not self.errors or self.errors[-1] != str(error)):
                 self.fail(error)
-            cleanup = operation.cancel_command if operation is not None else None
+            cleanup = operation.cancel_command if operation is not None and not cleanup_received else None
             def cleaned(_reply=None):
                 if operation is not None:
                     operation.cancelled()
                 finish(error or RuntimeError("저장을 취소했습니다."))
             if cleanup is not None:
-                if not self.enqueue([lambda _: cleanup], cleaned, failed=cleaned, save_control=True):
+                def cleanup_failed(reply):
+                    if reply.get("_completionReceived"):
+                        cleaned(reply)
+                    else:
+                        self.fail("저장 토큰 해제를 전송하지 못했습니다. 문서를 유지합니다.")
+                if not self.enqueue([lambda _: cleanup], cleaned, failed=cleanup_failed, save_control=True):
                     self.fail("저장 토큰 정리를 큐에 넣지 못했습니다. 문서를 유지합니다.")
             else:
                 cleaned()
@@ -1413,9 +1483,13 @@ class NativeWindow(QMainWindow):
                 self.file_store = NativeWorkerFileStore(self.info["documentId"])
             # This runs after previously accepted edits, so bind the completed
             # revision rather than the state observed when Save was clicked.
-            operation = self.file_store.begin_save(self.target(), path, destination_stamp=destination_stamp)
+            if recovery:
+                operation = self.file_store.begin_recovery(self.target(), path,
+                    is_dirty=bool(self.info.get("isDirty")), now=recovery_now, interval=self.recovery_interval)
+            else:
+                operation = self.file_store.begin_save(self.target(), path, destination_stamp=destination_stamp)
             self.save_operation = operation
-            return operation.prepare_command
+            return operation.prepare_command if operation is not None else None
 
         def prepare_failed(reply):
             if operation is not None:
@@ -1427,6 +1501,9 @@ class NativeWindow(QMainWindow):
             failed(reply)
 
         def prepared(reply):
+            if operation is None:
+                finish()
+                return
             try:
                 operation.receive_prepared(reply, self.worker.copy_buffer)
                 if operation.requires_loss_acceptance:
@@ -1442,19 +1519,24 @@ class NativeWindow(QMainWindow):
             def persisted(future):
                 try:
                     future.result()
-                    command = operation.acknowledge_command
+                    command = operation.cancel_command if recovery else operation.acknowledge_command
                 except Exception as error:
                     failed(error)
                     return
 
                 def acknowledged(reply):
                     try:
-                        result = operation.acknowledged(reply)
+                        result = operation.recovery_completed(reply) if recovery else operation.acknowledged(reply)
                     except Exception as error:
-                        failed(error)
+                        failed(error, cleanup_received=recovery)
                         return
                     if generation != self.document_generation or operation.document_id != self.info.get("documentId"):
                         finish(RuntimeError("이전 문서 파일은 저장했으며 현재 문서는 유지합니다."))
+                        return
+                    if recovery:
+                        self.recovery_path = operation.path
+                        self.statusBar().showMessage(f"자동 복구 파일: {operation.path}")
+                        finish(result=result)
                         return
                     self.saved_path = self.source_path = operation.path
                     self.info["isDirty"] = result["isDirty"]
@@ -1471,7 +1553,9 @@ class NativeWindow(QMainWindow):
                     if not self.enqueue([lambda _: {"op": "info"}], inspected, failed=inspect_failed):
                         inspect_failed("파일은 저장했으나 문서 상태 확인을 큐에 넣지 못했습니다.")
 
-                if not self.enqueue([lambda _: command], acknowledged, failed=failed, save_control=True):
+                def control_failed(reply):
+                    failed(reply, cleanup_received=recovery and reply.get("_completionReceived", False))
+                if not self.enqueue([lambda _: command], acknowledged, failed=control_failed, save_control=True):
                     failed(RuntimeError("저장 완료 확인을 큐에 넣지 못했습니다."))
             self.io_jobs.append((future, persisted))
 
@@ -1510,9 +1594,12 @@ def main():
     parser.add_argument("--input", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--renderer", choices=("cpu", "auto", "gl"), default="cpu")
+    parser.add_argument("--recovery-dir", type=Path, help="명시적으로 지정한 폴더에 자동 복구 파일 보관")
+    parser.add_argument("--recovery-interval", type=float, default=30.0)
     args = parser.parse_args()
     app = QApplication(sys.argv[:1])
-    window = NativeWindow(args.library, args.input, args.output, renderer=args.renderer)
+    window = NativeWindow(args.library, args.input, args.output, renderer=args.renderer,
+        recovery_dir=args.recovery_dir, recovery_interval=args.recovery_interval)
     window.show()
     return app.exec()
 

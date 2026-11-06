@@ -141,6 +141,10 @@ pub enum NativeRuntimeCommand {
         bytes: Vec<u8>,
         password: Option<Vec<u8>>,
     },
+    OpenRecovery {
+        replace: Option<NativeRuntimeTarget>,
+        bytes: Vec<u8>,
+    },
     Info {},
     ExecuteCommand {
         target: NativeRuntimeTarget,
@@ -322,6 +326,7 @@ impl NativeRuntimeCommand {
             } => bytes
                 .capacity()
                 .checked_add(password.as_ref().map_or(0, Vec::capacity)),
+            Self::OpenRecovery { bytes, .. } => Some(bytes.capacity()),
             Self::Replace { text, .. }
             | Self::UpdateComposition { text, .. }
             | Self::PasteText { text, .. } => Some(text.capacity()),

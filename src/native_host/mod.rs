@@ -182,6 +182,14 @@ impl NativeDocumentSession {
         Ok(session)
     }
 
+    /// Open an explicitly chosen recovery payload as an unsaved document.
+    /// The recovery artifact is not a user save checkpoint or a source path.
+    pub fn open_recovery_bytes(bytes: &[u8]) -> Result<Self, NativeHostError> {
+        let mut session = Self::open_bytes(bytes, None)?;
+        session.saved_revision = None;
+        Ok(session)
+    }
+
     pub fn document(&self) -> &DocumentCore {
         &self.core
     }

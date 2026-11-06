@@ -131,6 +131,15 @@ fn execute(
             });
             Ok(O::Info(document(owner)?.info()))
         }
+        C::OpenRecovery { replace, bytes } => {
+            replacement(owner, replace)?;
+            let session = NativeDocumentSession::open_recovery_bytes(&bytes)?;
+            *owner = Some(OwnedDocument {
+                id,
+                owner: DocumentOwner::Viewer(Box::new(session)),
+            });
+            Ok(O::Info(document(owner)?.info()))
+        }
         C::Info {} => Ok(O::Info(document(owner)?.info())),
         C::ExecuteCommand { target, command } => {
             let doc = document(owner)?;

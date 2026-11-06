@@ -338,6 +338,10 @@ enum HostRequest {
         replace: Option<NativeRuntimeTarget>,
         password: Option<Vec<u8>>,
     },
+    WorkerOpenRecovery {
+        worker: u64,
+        replace: Option<NativeRuntimeTarget>,
+    },
     WorkerPoll {
         worker: u64,
     },
@@ -405,7 +409,7 @@ enum ViewCommand {
     },
 }
 
-/// Platform-neutral host operations. Only workerOpen consumes binary document bytes.
+/// Platform-neutral host operations. The worker open operations consume binary document bytes.
 /// # Safety
 /// Each nonempty span must be readable for its declared length during the call.
 #[no_mangle]
@@ -420,7 +424,11 @@ pub unsafe extern "C" fn rhwp_native_host_request(
         let data = unsafe { input(data, data_len, MAX_DOCUMENT_BYTES)? };
         let request: HostRequest = serde_json::from_slice(request)
             .map_err(|_| NativeHostError::InvalidArgument("invalid host request JSON".into()))?;
-        if !matches!(&request, HostRequest::WorkerOpen { .. }) && !data.is_empty() {
+        if !matches!(
+            &request,
+            HostRequest::WorkerOpen { .. } | HostRequest::WorkerOpenRecovery { .. }
+        ) && !data.is_empty()
+        {
             return Err(NativeHostError::InvalidArgument(
                 "this request does not accept binary data".into(),
             ));
@@ -443,6 +451,11 @@ pub unsafe extern "C" fn rhwp_native_host_request(
                 let mut host=host.borrow_mut();
                 let runtime=host.workers.get_mut(&worker).ok_or_else(invalid_handle)?;
                 Ok(worker_submit_result(runtime.try_submit(NativeRuntimeCommand::Open {replace,bytes:data.to_vec(),password})))
+            }),
+            HostRequest::WorkerOpenRecovery { worker,replace } => HOST.with(|host| {
+                let mut host=host.borrow_mut();
+                let runtime=host.workers.get_mut(&worker).ok_or_else(invalid_handle)?;
+                Ok(worker_submit_result(runtime.try_submit(NativeRuntimeCommand::OpenRecovery {replace,bytes:data.to_vec()})))
             }),
             HostRequest::WorkerPoll { worker } => HOST.with(|host| {
                 let mut host=host.borrow_mut();
@@ -777,6 +790,7 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
             json!({"ok":true,"abiVersion":1,"nativeSkia":cfg!(feature="native-skia"),
         "renderTiledRegion":cfg!(feature="native-skia"),"rasterCacheControls":cfg!(feature="native-skia"),
         "cooperativeTiledCancellation":cfg!(feature="native-skia"),"presentation":crate::presentation::capabilities(),"gpuGl":crate::gpu_gl::capabilities(),
+        "recoveryOpen":true,
         "worker":true,"maxWorkers":4,"hostRequests":true,"viewState":true,"accessibilitySnapshots":true,"threadAffine":true,"maxSessions":MAX_SESSIONS,"maxDocumentBytes":MAX_DOCUMENT_BYTES,
         "maxRequestBytes":MAX_REQUEST_BYTES,"maxBufferBytes":MAX_BUFFER_BYTES,
         "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"}),

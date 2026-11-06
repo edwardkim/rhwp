@@ -195,3 +195,15 @@ render 취소 중 편집 FIFO 유지가 포함된다. 실제 native 스모크에
 근거: [QInputMethodEvent](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QInputMethodEvent.html),
 [QImage](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QImage.html),
 [QWidget](https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QWidget.html).
+
+## 자동 복구
+
+`--recovery-dir <전용 폴더>`로 자동 복구를 활성화한다. 기본 간격은 30초이며
+`--recovery-interval`로 1초~24시간 범위에서 바꿀 수 있다. 조합·입력·저장·파일 I/O 중에는
+시작하지 않고 같은 revision은 중복 보관하지 않는다. 복구 파일을 생성해도 원본 문서의
+수정 상태와 저장 checkpoint는 유지한다.
+
+툴바의 ‘복구 파일 열기’는 확인한 payload를 저장되지 않은 새 문서로 연다.
+복구 metadata의 원본 경로는 자동 저장 위치로 사용하지 않는다.
+보관 한도에 도달하면 기존 파일을 삭제하지 않고 새 보관을 중단한다.
+세부 계약과 남은 OS qualification은 `mydocs/tech/native_worker_recovery.md`를 따른다.
