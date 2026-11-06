@@ -357,6 +357,17 @@ impl EqLayout {
             baseline = total_h * percent / 100.0;
             n_box.y = nb - n_box.baseline;
             d_box.y = total_h - dh + db - d_box.baseline;
+            if self.legacy_math_face {
+                // 논리 행의 84% 기준선과 원본 글리프의 80% 자연 기준선을
+                // 구분한다. 루트의 단일 원본 글줄과 같은 프레임을 분자·분모도
+                // 소비하며, 첨자나 대체 face가 섞인 피연산자는 접지 않는다.
+                if super::super::legacy_glyphs::is_line(&n_box, fs) {
+                    n_box.y -= fs * 1.2 * (0.84 - 0.8);
+                }
+                if super::super::legacy_glyphs::is_line(&d_box, fs) {
+                    d_box.y -= fs * 1.2 * (0.84 - 0.8);
+                }
+            }
             // The first logical line closes at the fraction rule. The common
             // axis is consumed unchanged by SVG, Canvas and Native paint.
             axis = baseline - line_height - above;

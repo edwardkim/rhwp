@@ -121,6 +121,9 @@ impl EqLayout {
 impl EqLayout {
     fn layout_legacy_paren(&self, left: &str, right: &str, body: &EqNode, fs: f64) -> LayoutBox {
         let b = self.layout_node(body, fs);
+        if let Some(value) = self.original_fraction_delimiters(left, right, &b, fs) {
+            return value;
+        }
         let use_stretch_round = b.height > fs * 1.2 && matches!((left, right), ("(", ")"));
         let legacy_delimiters = self.legacy_hft_metrics
             && legacy_delimiter_width(left, fs).is_some()

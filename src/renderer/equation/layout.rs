@@ -21,6 +21,7 @@ mod integral_placement;
 mod ladder_geometry;
 mod left_script_geometry;
 mod legacy;
+mod legacy_original_geometry;
 mod limit_geometry;
 mod literal_text;
 mod long_div_geometry;
@@ -244,7 +245,7 @@ impl EqLayout {
             let inset = if standalone_cjk_fraction_owns_inset(node) {
                 0.0
             } else {
-                self.font_size * 0.22
+                self.original_group_unit().unwrap_or(self.font_size * 0.22)
             };
             body.x = inset;
             body.y = baseline - body.baseline;
@@ -328,7 +329,10 @@ impl EqLayout {
         }
         match node {
             EqNode::Row(children) => self.layout_row(children, fs),
-            EqNode::Group(body) => self.layout_node(body, fs),
+            EqNode::Group(body) => {
+                let value = self.layout_node(body, fs);
+                self.original_group_frame(value, matches!(body.as_ref(), EqNode::Empty))
+            }
             EqNode::Text(s) => self.layout_text(s, fs),
             EqNode::Number(s) => self.layout_number(s, fs),
             EqNode::Symbol(s) => self.layout_symbol(s, fs),
@@ -443,13 +447,23 @@ impl EqLayout {
             .fold(0.0f64, f64::max);
         let total_height = max_ascent + max_descent;
 
-        let mut x = 0.0;
+        let mut x = if self.legacy_hft_metrics && !self.legacy_equation {
+            source_nodes
+                .first()
+                .map_or(0.0, |node| self.original_opening_inset(node))
+        } else {
+            0.0
+        };
         for index in 0..boxes.len() {
             // 복합 경로의 row_children이 이미 생산한 연산자 여백을 다시 더하지 않는다.
             if self.legacy_hft_metrics && !self.legacy_equation && index > 0 {
                 // Glyph projection changes paint data, not the AST operator's
                 // logical slot or the source-owned contextual spacing.
-                x += legacy_operator_gap(source_nodes[index - 1], source_nodes[index], fs);
+                x += self
+                    .original_group_boundary_gap(source_nodes[index - 1], source_nodes[index])
+                    .unwrap_or_else(|| {
+                        legacy_operator_gap(source_nodes[index - 1], source_nodes[index], fs)
+                    });
             }
             let b = &mut boxes[index];
             b.x = x;

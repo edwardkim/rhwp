@@ -1,0 +1,612 @@
+{
+  "status": "원본 전197쪽98% 충족; 부모 대비12쪽0.206%p 하락 보정 중, PR 보류",
+  "base": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "parent_head": "971086b752f9d5e869bdfcc18ff992541bf8276d",
+  "runtime_source_matches_frozen_build": true,
+  "runtime_source_sha256": {
+    "src/renderer/equation/hancom_glyphs.rs": "a1062b05dfb03f11735517a3eba696913668417a21be9ff098d568d9b1e4b370",
+    "src/renderer/equation/layout.rs": "8ee1855992adb89a80c9e31c05207e010470cef9c29c7f054207ae32dcd7f22c",
+    "src/renderer/equation/layout/fraction_geometry.rs": "e997d6385e9ebee057a6a5b74f976a3401c6036be6d5e4520ef65b8294f98ca0",
+    "src/renderer/equation/layout/paren_geometry.rs": "485e9c9b7e25aaa63ca24d20e4392c7cfc1fcb93a5bec536819a6a380e5d08a8",
+    "src/renderer/equation/layout/script_geometry.rs": "e69ddc2159e25f69866395f40274156ca0fa6ec0037ae7958a25c5f47c5469c1",
+    "src/renderer/equation/layout/source_glyph_runs.rs": "88f92d8d94ed79cebda7aa7a09b2492edb9191463bd2064b6db767dce6b51616",
+    "src/renderer/equation/legacy_coordinate_plan.rs": "091467ab63d998083e50c37e49a0e7cbeab3491b1e6630cfef3ef2e2ea2690d0",
+    "src/renderer/equation/legacy_coordinate_plane.rs": "a170831880f56192bc6ec345bf88c4ab07927736f1c7a86468568e68a7752893",
+    "src/renderer/equation/legacy_glyphs.rs": "3ebebde03220ef1179e503b0cd465fcaf4c3cf06387c70bb64ed9fd9560bffed",
+    "src/renderer/equation/parser_atoms.rs": "be55db9a12b8b6a8c62b42276899cb1859df5d2b2483ccee8d29e0643ecce66c",
+    "src/renderer/equation/parser_attached_scripts.rs": "343d175a4b8de6aabfb5b867825ca3126c8ad22d4b37eb40a77edc420c4c8ffa",
+    "src/renderer/equation/parser_groups.rs": "3640c71f9e6a14557470e2a00e883e7a2f1eb72590952cdc70afed28c137ffe1",
+    "src/renderer/equation/parser_script_operand.rs": "a379e7a676b2abd084328a410e51cb9a4155b2077456490d9fb0423c4cf99db5",
+    "src/renderer/equation/layout/legacy_original_geometry.rs": "943ae79d28ce32d39b50e7e29599a0cc23ab5b014f3ed6f245c3bde4a47c8680"
+  },
+  "input": {
+    "path": "mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/saved-split-1x2.hwp",
+    "sha256": "4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9"
+  },
+  "pdf": {
+    "path": "pdf/issue4138-ascii-split-20261016-2024.pdf",
+    "sha256": "5a82290de1571c692c7246fe6b57ae136602ae52c2068f2568fffc6c91bfd571"
+  },
+  "font": {
+    "role": "로컬 공급 원본 glyph 85개 프로필. 최소 글꼴 환경 주장 아님. 글꼴 바이너리 미제출.",
+    "sha256": "50f0d82eb516bfb19c80f8c985bd1f615b3c0ebd68fb9bdb437735f6982f8a22"
+  },
+  "native_binary": {
+    "path": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/rhwp-candidate-native",
+    "sha256": "2d98eeb9796aef1f263d590dc9502552f7ac034980b97dff834e051ff4f4b26b"
+  },
+  "wasm_package_files": {
+    "rhwp.js": "370ddff0fd1a1cf6f889edb1b2a42f420fac62f7f57df4b9cff19829e60cdd5f",
+    "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+    "rhwp_bg.wasm.d.ts": "f868fb9ffdd202661e5dbbc78ee9d0a2d08ecdffd8bfc5afd51c6fbe080c2433",
+    "README.md": "ad35a0f1fbf601b33f5a969103656e220e75031ceee42bb7fc2d95ed32ed25aa",
+    "rhwp_bg.wasm": "2aaf1fa7baf95ae2c1736a4e9edfc6857cb385797cd98ae2ee30d421c22b44ed",
+    ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+    "package.json": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+    "rhwp.d.ts": "cc34e17e4bbcfe1d0c015c04169cb1d0046250fbd671807941fb02499834c3d7"
+  },
+  "wasm_kind": "Mac locked wrapper --target web --out-dir pkg --no-opt 로컬 대체 빌드. Docker 최적화 아님.",
+  "whole_results": [
+    {
+      "phase": "before",
+      "backend": "native",
+      "pages": 197,
+      "minimum": 95.74902,
+      "below98": [
+        129,
+        130
+      ],
+      "tsv": "before-native-silhouette.tsv",
+      "tsv_sha256": "db199d437ba1c452f57b1357f33327ea647624bed787a028c5c64f3099669550"
+    },
+    {
+      "phase": "before",
+      "backend": "wasm",
+      "pages": 197,
+      "minimum": 95.80661,
+      "below98": [
+        129,
+        130
+      ],
+      "tsv": "before-wasm-silhouette.tsv",
+      "tsv_sha256": "6ca0e7566da2307595003dc9a53febe57c98aae442733a707a7e7b02d2eb183e"
+    },
+    {
+      "phase": "after",
+      "backend": "native",
+      "pages": 197,
+      "minimum": 98.47416,
+      "below98": [],
+      "tsv": "after-native-silhouette.tsv",
+      "tsv_sha256": "2bf1b530e4daaf76cabfa2bf4de91f1993d1002a95d1135c87e4960a2acbc131"
+    },
+    {
+      "phase": "after",
+      "backend": "wasm",
+      "pages": 197,
+      "minimum": 98.50155,
+      "below98": [],
+      "tsv": "after-wasm-silhouette.tsv",
+      "tsv_sha256": "c2a2e98ac442375a597ed7604df5326f12576b347329de44e2bbb1316f152baa"
+    }
+  ],
+  "parent_comparison": [
+    {
+      "backend": "native",
+      "changes": [
+        {
+          "page": 10,
+          "before": 99.3313,
+          "after": 99.23962,
+          "delta": -0.09168
+        },
+        {
+          "page": 12,
+          "before": 99.22763,
+          "after": 99.02184,
+          "delta": -0.20579
+        },
+        {
+          "page": 40,
+          "before": 99.91712,
+          "after": 99.92403,
+          "delta": 0.00691
+        },
+        {
+          "page": 44,
+          "before": 98.15528,
+          "after": 99.28343,
+          "delta": 1.12815
+        },
+        {
+          "page": 45,
+          "before": 99.07101,
+          "after": 99.9295,
+          "delta": 0.85849
+        },
+        {
+          "page": 129,
+          "before": 95.74902,
+          "after": 98.47416,
+          "delta": 2.72514
+        },
+        {
+          "page": 130,
+          "before": 96.26119,
+          "after": 98.73703,
+          "delta": 2.47584
+        }
+      ],
+      "drops_over_point1": [
+        {
+          "page": 12,
+          "before": 99.22763,
+          "after": 99.02184,
+          "delta": -0.20579
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "changes": [
+        {
+          "page": 10,
+          "before": 99.5003,
+          "after": 99.40925,
+          "delta": -0.09105
+        },
+        {
+          "page": 12,
+          "before": 99.38781,
+          "after": 99.18145,
+          "delta": -0.20636
+        },
+        {
+          "page": 40,
+          "before": 99.91923,
+          "after": 99.92595,
+          "delta": 0.00672
+        },
+        {
+          "page": 44,
+          "before": 98.15661,
+          "after": 99.27924,
+          "delta": 1.12263
+        },
+        {
+          "page": 45,
+          "before": 99.08486,
+          "after": 99.93022,
+          "delta": 0.84536
+        },
+        {
+          "page": 129,
+          "before": 95.80661,
+          "after": 98.50155,
+          "delta": 2.69494
+        },
+        {
+          "page": 130,
+          "before": 96.31125,
+          "after": 98.71245,
+          "delta": 2.4012
+        }
+      ],
+      "drops_over_point1": [
+        {
+          "page": 12,
+          "before": 99.38781,
+          "after": 99.18145,
+          "delta": -0.20636
+        }
+      ]
+    }
+  ],
+  "new_tests": [
+    {
+      "phase": "before-original",
+      "exit_code": 101,
+      "summary": [
+        "test result: FAILED. 1 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.82s"
+      ],
+      "compile_command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/Users/tsjang/rhwp/tests/cases/issue_4138_original_equation_character_ownership.rs",
+        "--extern",
+        "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/librhwp-candidate.rlib",
+        "-L",
+        "dependency=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps",
+        "-L",
+        "native=/Users/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+        "-o",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/formal-ownership-before-original",
+        "--extern",
+        "serde_json=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libserde_json-67d6313cceeae34f.rlib",
+        "--extern",
+        "ttf_parser=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libttf_parser-29a0d332d5024b81.rlib",
+        "--extern",
+        "sha2=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libsha2-1677794bdf3da50a.rlib",
+        "--extern",
+        "roxmltree=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libroxmltree-2f7c87df9404699d.rlib"
+      ]
+    },
+    {
+      "phase": "before-decimal",
+      "exit_code": 101,
+      "summary": [
+        "test result: FAILED. 3 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.77s"
+      ],
+      "compile_command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/Users/tsjang/rhwp/tests/cases/issue_4138_original_equation_character_ownership.rs",
+        "--extern",
+        "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-fraction-delimiter-repair/librhwp-candidate.rlib",
+        "-L",
+        "dependency=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-fraction-delimiter-repair/candidate-native-deps",
+        "-L",
+        "native=/Users/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+        "-o",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/formal-ownership-before-decimal",
+        "--extern",
+        "serde_json=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-fraction-delimiter-repair/candidate-native-deps/libserde_json-67d6313cceeae34f.rlib",
+        "--extern",
+        "ttf_parser=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-fraction-delimiter-repair/candidate-native-deps/libttf_parser-29a0d332d5024b81.rlib",
+        "--extern",
+        "sha2=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-fraction-delimiter-repair/candidate-native-deps/libsha2-1677794bdf3da50a.rlib",
+        "--extern",
+        "roxmltree=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-fraction-delimiter-repair/candidate-native-deps/libroxmltree-2f7c87df9404699d.rlib"
+      ]
+    },
+    {
+      "phase": "after",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.48s"
+      ],
+      "compile_command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/Users/tsjang/rhwp/tests/cases/issue_4138_original_equation_character_ownership.rs",
+        "--extern",
+        "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/librhwp-candidate.rlib",
+        "-L",
+        "dependency=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps",
+        "-L",
+        "native=/Users/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+        "-o",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/formal-ownership-after",
+        "--extern",
+        "serde_json=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps/libserde_json-67d6313cceeae34f.rlib",
+        "--extern",
+        "ttf_parser=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps/libttf_parser-29a0d332d5024b81.rlib",
+        "--extern",
+        "sha2=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps/libsha2-1677794bdf3da50a.rlib",
+        "--extern",
+        "roxmltree=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps/libroxmltree-2f7c87df9404699d.rlib"
+      ]
+    }
+  ],
+  "focused": [
+    {
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 130 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.51s"
+      ]
+    }
+  ],
+  "legacy_consumers": [
+    {
+      "phase": "before",
+      "command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/legacy-consumers.rs",
+        "--extern",
+        "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/librhwp-candidate.rlib",
+        "-L",
+        "dependency=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps",
+        "-L",
+        "native=/Users/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+        "-o",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/legacy-consumers-before",
+        "--extern",
+        "serde_json=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libserde_json-67d6313cceeae34f.rlib",
+        "--extern",
+        "ttf_parser=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libttf_parser-29a0d332d5024b81.rlib",
+        "--extern",
+        "sha2=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libsha2-1677794bdf3da50a.rlib",
+        "--extern",
+        "roxmltree=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/original-equation-svg-supplied-family-repair/candidate-native-deps/libroxmltree-2f7c87df9404699d.rlib"
+      ],
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.33s"
+      ],
+      "failures": []
+    },
+    {
+      "phase": "after",
+      "command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/legacy-consumers.rs",
+        "--extern",
+        "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/librhwp-candidate.rlib",
+        "-L",
+        "dependency=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps",
+        "-L",
+        "native=/Users/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+        "-o",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/legacy-consumers-after",
+        "--extern",
+        "serde_json=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps/libserde_json-67d6313cceeae34f.rlib",
+        "--extern",
+        "ttf_parser=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps/libttf_parser-29a0d332d5024b81.rlib",
+        "--extern",
+        "sha2=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps/libsha2-1677794bdf3da50a.rlib",
+        "--extern",
+        "roxmltree=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps/libroxmltree-2f7c87df9404699d.rlib"
+      ],
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.47s"
+      ],
+      "failures": []
+    }
+  ],
+  "svg_consumers": {
+    "compile_command": [
+      "rustc",
+      "--edition=2021",
+      "--test",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/svg-consumer-packet.rs",
+      "--extern",
+      "rhwp=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/librhwp-candidate.rlib",
+      "-L",
+      "dependency=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps",
+      "-L",
+      "native=/Users/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-da957d5e229acca3/out/skia",
+      "-o",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/svg-consumer-packet",
+      "--extern",
+      "serde_json=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps/libserde_json-67d6313cceeae34f.rlib",
+      "--extern",
+      "ttf_parser=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps/libttf_parser-29a0d332d5024b81.rlib",
+      "--extern",
+      "sha2=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps/libsha2-1677794bdf3da50a.rlib",
+      "--extern",
+      "roxmltree=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps/libroxmltree-2f7c87df9404699d.rlib",
+      "--cfg",
+      "feature=\"native-skia\"",
+      "--extern",
+      "image=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps/libimage-041e8b6b4e50ab80.rlib",
+      "--extern",
+      "base64=/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/candidate-native-deps/libbase64-8aba6b423e1d5b7e.rlib"
+    ],
+    "env_keys": {
+      "CARGO_BIN_EXE_rhwp": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/rhwp-candidate-native"
+    },
+    "exit_code": 0,
+    "summary": [
+      "test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.46s"
+    ]
+  },
+  "gates": {
+    "pid": 11998,
+    "complete": true,
+    "success": false,
+    "current": "failed",
+    "steps": [
+      {
+        "name": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/prepare.log",
+        "exit_code": 0,
+        "seconds": 23.545
+      },
+      {
+        "name": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/fmt.log",
+        "exit_code": 0,
+        "seconds": 37.604
+      },
+      {
+        "name": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/fmt-check.log",
+        "exit_code": 0,
+        "seconds": 31.918
+      },
+      {
+        "name": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/native-clippy.log",
+        "exit_code": 0,
+        "seconds": 39.535
+      },
+      {
+        "name": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/wasm-clippy.log",
+        "exit_code": 0,
+        "seconds": 22.401
+      },
+      {
+        "name": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review"
+        ],
+        "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/workspace-build.log",
+        "exit_code": 0,
+        "seconds": 45.923
+      },
+      {
+        "name": "all-target-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/all-target-clippy.log",
+        "exit_code": 0,
+        "seconds": 41.101
+      },
+      {
+        "name": "native-skia-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--features",
+          "native-skia",
+          "--lib",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/native-skia-clippy.log",
+        "exit_code": 0,
+        "seconds": 23.177
+      },
+      {
+        "name": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+        ],
+        "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-decimal-delimiter-repair/manifest.log",
+        "exit_code": 1,
+        "seconds": 1.65
+      }
+    ]
+  },
+  "manifest_recovery": [
+    {
+      "name": "prepare-after-fmt",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 1.434
+    },
+    {
+      "name": "manifest-after-fmt",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+      ],
+      "exit_code": 0,
+      "seconds": 0.618
+    },
+    {
+      "name": "unit-tiers",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+      ],
+      "exit_code": 0,
+      "seconds": 15.507
+    }
+  ],
+  "pending": [
+    "부모 대비12쪽 raw 하락 원인 보정",
+    "나머지 대상 문서98% 보정",
+    "최종 전체 nextest 및 범위 게이트",
+    "최종 편람383쪽 및 actual 소비 검증"
+  ],
+  "final_source_manifest": [
+    {
+      "name": "prepare-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "manifest-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "stage_gates_effective_passed": true,
+  "whole_branch_validation_complete": false,
+  "test_source_sha256": "3dbf33b082fbce60d326a39817442389af14a5abe2ae47fc2b6479e1f066cc0c"
+}

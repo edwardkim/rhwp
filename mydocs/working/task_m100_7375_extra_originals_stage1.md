@@ -230,3 +230,17 @@ Native 최저95.77112% /fresh WASM95.77492%,98% 미달129·130쪽의 복합 수�
 [전후 TSV·review/overlay·producer와 검사 근거](../pr/assets/issue4138/original-equation-print-paper-20261107/README.md).
 독립 자연 저장235조건과 추가 그룹170조건에서 논리 전진·그룹 프레임을 구분하는 조사를
 이어가며, 폰트 바이너리·글꼴 복원 표본·진단 스크립트는 ignored output에만 보존한다.
+
+## 원본 수식의 문자·논리 전진 소유 보정
+
+2026-11-07, 부모971086에서 일반 괄호의 CHAR 소유, 원본 이탤릭 논리 전진, 그룹·첨자 여백과
+소수점 Number role의 글꼴 선택을 공통 배치에서 보정했다. LEFT/RIGHT 두 줄 분수도 같은
+원본 글리프와 자연 기준선을 소비한다. 같은 로컬85 glyph 공급으로 Native/fresh WASM 전197쪽을
+다시 산출하여 최저98.47416%/98.50155%, 98% 미달·누락 각0쪽을 확인했다. 새5건은
+이전1 PASS·4 FAIL→5 PASS이며 관계형4건·독립 PDF192DPI ±2px 고정형1건이다. 기존
+집중130 PASS(진단1 포함), 기존 소비22 PASS, SVG 소비31 PASS와 범위 Clippy/build를 확인했다.
+
+부모 대비12쪽은0.20579/0.20636%p 하락하여 제출 보류를 유지한다. 독립16조건은 근호 인자의
+중괄호가 실제 공간을 예약함을 입증했으므로, 이를 삭제하지 않고 근호 표시 폭·호스트 원점을
+추가 대조한다. 다른 대상 문서98%·최종 전체 nextest·편람·actual 소비 검증 완료가 아니다.
+[전쪽 TSV·review/overlay·검사·출처](../pr/assets/issue4138/original-character-ownership-20261107/README.md).

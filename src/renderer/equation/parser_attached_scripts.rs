@@ -87,12 +87,12 @@ impl EqParser {
                 || matches!(
                     self.current_type(),
                     TokenType::RBrace
-                        | TokenType::RParen
                         | TokenType::RBracket
                         | TokenType::Whitespace
                         | TokenType::Subscript
                         | TokenType::Superscript
-                ))
+                )
+                || (!self.legacy_display && self.current_type() == TokenType::RParen))
         {
             self.stopped_document_input = true;
             true

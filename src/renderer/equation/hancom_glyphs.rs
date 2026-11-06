@@ -298,6 +298,11 @@ pub(crate) fn used_font_families(
             LayoutKind::HancomGlyphs(run) => {
                 families.insert(run.font_family);
             }
+            LayoutKind::FontGlyph { font_family, .. }
+                if *font_family == super::legacy_glyphs::FONT_FAMILY =>
+            {
+                families.insert(*font_family);
+            }
             LayoutKind::Row(children) => pending.extend(children),
             LayoutKind::Fraction { numer, denom, .. } => {
                 pending.push(numer);

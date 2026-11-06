@@ -29,12 +29,15 @@ impl EqLayout {
         } else {
             self.layout_node(base, fs)
         };
+        if self.legacy_math_face {
+            return self.original_script_base(value, base);
+        }
         value.width += self.script_base_operator_gap(base, fs);
         value
     }
 
     fn script_uppercase_gap(&self, base: &EqNode, fs: f64) -> f64 {
-        if self.hancom_math_face && ends_with_uppercase_letter(base) {
+        if self.hancom_math_face && !self.legacy_math_face && ends_with_uppercase_letter(base) {
             fs * 0.15
         } else {
             0.0

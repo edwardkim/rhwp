@@ -1,0 +1,146 @@
+{
+  "purpose": "독립 자연 저장의 논리 face와 root 그룹 여백. glyph 프로그램·글꼴 바이트 없음.",
+  "ascii": {
+    "input_sha256": "7c245f3c16f652d4b4685169770da20606f64bfd0a3b1a3828aa5ed51e06ee17",
+    "pdf_sha256": "72c2dd04609f7eeb3fee4233c90c331ddf0dc7e11a8778599dac890811475339",
+    "font_sha256": "67a247373a286fabaec4608c3fd7809728c78a1204b7fc71be0ac4d1df4ca18a",
+    "family": "Susik",
+    "subfamily": "Italic",
+    "cases": 260,
+    "mismatches": 0,
+    "preliminary_floor_also_fit_initial_cases": true
+  },
+  "noninteger": {
+    "cases": 56,
+    "nearest_mismatches": 0,
+    "floor_mismatches": 16,
+    "resolved_rule": "round(BaseUnit/75), then round(hmtx/UPM * integer screen pixels) *75 HU"
+  },
+  "groups": {
+    "tests": [
+      {
+        "base_unit": 600,
+        "left": "A_i",
+        "right": "{A}_i",
+        "expected_source_delta_hu": 266,
+        "actual_delta_hu": 266.6666666666668,
+        "passed": true
+      },
+      {
+        "base_unit": 600,
+        "left": "A_i",
+        "right": "A_{i}",
+        "expected_source_delta_hu": 133,
+        "actual_delta_hu": 133.3333333333334,
+        "passed": true
+      },
+      {
+        "base_unit": 600,
+        "left": "M C_L",
+        "right": "M {C}_{L}",
+        "expected_source_delta_hu": 366,
+        "actual_delta_hu": 366.6666666666667,
+        "passed": true
+      },
+      {
+        "base_unit": 900,
+        "left": "A_i",
+        "right": "{A}_i",
+        "expected_source_delta_hu": 400,
+        "actual_delta_hu": 399.9999999999999,
+        "passed": true
+      },
+      {
+        "base_unit": 900,
+        "left": "A_i",
+        "right": "A_{i}",
+        "expected_source_delta_hu": 200,
+        "actual_delta_hu": 200.00000000000009,
+        "passed": true
+      },
+      {
+        "base_unit": 900,
+        "left": "M C_L",
+        "right": "M {C}_{L}",
+        "expected_source_delta_hu": 550,
+        "actual_delta_hu": 549.9999999999994,
+        "passed": true
+      },
+      {
+        "base_unit": 1000,
+        "left": "A_i",
+        "right": "{A}_i",
+        "expected_source_delta_hu": 466,
+        "actual_delta_hu": 466.66666666666663,
+        "passed": true
+      },
+      {
+        "base_unit": 1000,
+        "left": "A_i",
+        "right": "A_{i}",
+        "expected_source_delta_hu": 233,
+        "actual_delta_hu": 233.33333333333303,
+        "passed": true
+      },
+      {
+        "base_unit": 1000,
+        "left": "M C_L",
+        "right": "M {C}_{L}",
+        "expected_source_delta_hu": 641,
+        "actual_delta_hu": 641.6666666666667,
+        "passed": true
+      },
+      {
+        "base_unit": 1200,
+        "left": "A_i",
+        "right": "{A}_i",
+        "expected_source_delta_hu": 534,
+        "actual_delta_hu": 533.3333333333336,
+        "passed": true
+      },
+      {
+        "base_unit": 1200,
+        "left": "A_i",
+        "right": "A_{i}",
+        "expected_source_delta_hu": 267,
+        "actual_delta_hu": 266.6666666666668,
+        "passed": true
+      },
+      {
+        "base_unit": 1200,
+        "left": "M C_L",
+        "right": "M {C}_{L}",
+        "expected_source_delta_hu": 734,
+        "actual_delta_hu": 733.3333333333334,
+        "passed": true
+      },
+      {
+        "base_unit": 1800,
+        "left": "A_i",
+        "right": "{A}_i",
+        "expected_source_delta_hu": 800,
+        "actual_delta_hu": 799.9999999999998,
+        "passed": true
+      },
+      {
+        "base_unit": 1800,
+        "left": "A_i",
+        "right": "A_{i}",
+        "expected_source_delta_hu": 400,
+        "actual_delta_hu": 400.00000000000017,
+        "passed": true
+      },
+      {
+        "base_unit": 1800,
+        "left": "M C_L",
+        "right": "M {C}_{L}",
+        "expected_source_delta_hu": 1100,
+        "actual_delta_hu": 1099.9999999999989,
+        "passed": true
+      }
+    ],
+    "passed": 15,
+    "failed": 0
+  },
+  "display": "논리 face와 별개로 원본 Regular 프로그램·shear를 보존한다."
+}
