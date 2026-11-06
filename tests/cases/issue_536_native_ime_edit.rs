@@ -524,3 +524,42 @@ fn native_ime_selection_only_delta_changes_no_document_or_history() {
         .apply_ime_edit(0, &context, commit(replace(0, 0, "x")))
         .is_err());
 }
+
+#[test]
+fn atomic_ime_worker_rejects_retained_input_capacity_before_execution() {
+    use rhwp::native_host::runtime::{
+        NativeRequestId, NativeRuntime, NativeRuntimeCommand, NativeRuntimeConfig,
+        NativeRuntimeError, NativeRuntimeTarget,
+    };
+    let editor =
+        NativeEditor::new(NativeDocumentSession::new_blank().unwrap(), selected(0, 0)).unwrap();
+    let mut expected = editor.ime_edit_context(0).unwrap();
+    expected.context.text = String::with_capacity(8192);
+    let mut runtime = NativeRuntime::spawn(NativeRuntimeConfig {
+        max_pending_bytes: 4096,
+        ..Default::default()
+    })
+    .unwrap();
+    let command = NativeRuntimeCommand::ApplyImeEdit {
+        target: NativeRuntimeTarget {
+            document_id: NativeRequestId::from_raw(1),
+            revision: 0,
+        },
+        expected: Box::new(expected),
+        edit: NativeImeEdit::Commit {
+            replacement: NativeImeReplacement {
+                range: NativeImeUtf16Range { start: 0, end: 0 },
+                text: String::new(),
+            },
+            selection: None,
+            preedit: None,
+        },
+    };
+    assert!(matches!(
+        runtime.try_submit(command),
+        Err(NativeRuntimeError::ByteCapacity)
+    ));
+    assert!(runtime
+        .try_submit(NativeRuntimeCommand::New { replace: None })
+        .is_ok());
+}

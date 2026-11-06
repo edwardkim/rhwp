@@ -69,3 +69,15 @@ stream 자체의 transaction 보장으로 해석하지 않는다. 호스트는 �
 코드 검토 범위다. 내부 Core 오류를 강제로 주입하는 production hook이나 새 source unit test는
 추가하지 않는다. 이 경로를 실제 실행한 검증으로 표시하지 않는다. 실물 입력기 후보창·Flutter/Qt
 event mapping·transport 검증은 각 호스트 연결 단계에서 수행한다.
+
+## Worker와 C ABI
+
+worker `imeEditContext {target}`는 `kind: imeEditContext`와 원자적 편집의
+`context`를 돌려준다. `applyImeEdit {target, expected, edit}`는 그 context 전체와
+`NativeImeEdit` JSON을 받고 `kind: edited` 결과를 반환한다. 두 요청 모두 기존 FIFO·문서
+identity·revision 검사를 적용한다. `expected`와 replacement/preedit의 모든 문자열·cell path
+capacity를 큐 byte credit에 포함하며 context 출력도 64 KiB credit으로 제한한다.
+
+기존 session 요청에도 `imeEditContext`/`applyImeEdit`와 `expectedRevision`을 제공한다.
+capabilities의 `atomicImeEdits`로 지원을 확인한다. worker 또는 session owner 밖에서
+legacy ABI를 호출해도 된다는 의미는 아니다. Flutter는 owner-thread dispatcher를 사용한다.

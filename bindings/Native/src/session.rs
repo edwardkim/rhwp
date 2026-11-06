@@ -10,6 +10,7 @@ use rhwp_core::document_core::native_interaction::{
     NativeTextPosition, NativeTextSelection, NativeVerticalDirection,
 };
 use rhwp_core::native_host::accessibility::NativeAccessibilityRequest;
+use rhwp_core::native_host::editor::ime_edit::{NativeImeEdit, NativeImeEditContext};
 use rhwp_core::native_host::editor::{NativeCompositionFocusLoss, NativeEditOutcome, NativeEditor};
 use rhwp_core::native_host::presentation::{NativePresentationId, NativePresentationStamp};
 use rhwp_core::native_host::runtime::{
@@ -189,6 +190,14 @@ enum Request {
     },
     ImeContext {
         expected_revision: u64,
+    },
+    ImeEditContext {
+        expected_revision: u64,
+    },
+    ApplyImeEdit {
+        expected_revision: u64,
+        expected: Box<NativeImeEditContext>,
+        edit: NativeImeEdit,
     },
     CopySelection {
         expected_revision: u64,
@@ -583,6 +592,9 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
             NativeRuntimeOutput::ImeContext(context) => {
                 json!({"ok":true,"kind":"imeContext","context":context})
             }
+            NativeRuntimeOutput::ImeEditContext(context) => {
+                json!({"ok":true,"kind":"imeEditContext","context":context})
+            }
             NativeRuntimeOutput::Clipboard { payload, outcome } => {
                 json!({"ok":true,"kind":"clipboard","payload":payload,"outcome":outcome})
             }
@@ -791,6 +803,7 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "renderTiledRegion":cfg!(feature="native-skia"),"rasterCacheControls":cfg!(feature="native-skia"),
         "cooperativeTiledCancellation":cfg!(feature="native-skia"),"presentation":crate::presentation::capabilities(),"gpuGl":crate::gpu_gl::capabilities(),
         "recoveryOpen":true,
+        "atomicImeEdits":true,
         "worker":true,"maxWorkers":4,"hostRequests":true,"viewState":true,"accessibilitySnapshots":true,"threadAffine":true,"maxSessions":MAX_SESSIONS,"maxDocumentBytes":MAX_DOCUMENT_BYTES,
         "maxRequestBytes":MAX_REQUEST_BYTES,"maxBufferBytes":MAX_BUFFER_BYTES,
         "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"}),
@@ -869,6 +882,8 @@ pub unsafe extern "C" fn rhwp_session_request(
                 }
                 Request::ExecuteCommand {command,expected_revision}=>{let result=record.editor_mut()?.execute_command(expected_revision,command)?;Ok(json!({"ok":true,"outcome":result.outcome,"preferredX":result.preferred_x}))},
                 Request::ImeContext {expected_revision}=>Ok(json!({"ok":true,"context":record.editor_mut()?.ime_context(expected_revision)?})),
+                Request::ImeEditContext {expected_revision}=>Ok(json!({"ok":true,"context":record.editor_mut()?.ime_edit_context(expected_revision)?})),
+                Request::ApplyImeEdit {expected_revision, expected, edit}=>Ok(edit_result(record.editor_mut()?.apply_ime_edit(expected_revision,&expected,edit)?)),
                 Request::CopySelection {expected_revision}=>Ok(json!({"ok":true,"kind":"clipboard","payload":record.editor_mut()?.copy_selection(expected_revision)?,"outcome":null})),
                 Request::CutSelection {expected_revision}=>{
                     let (payload,outcome)=record.editor_mut()?.cut_selection(expected_revision)?;

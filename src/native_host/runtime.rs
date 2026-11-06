@@ -27,6 +27,7 @@ use serde::{Deserialize, Serialize};
 use super::accessibility::{NativeAccessibilityRequest, NativeAccessibilitySnapshot};
 use super::clipboard::{NativeClipboardPayload, MAX_CLIPBOARD_BYTES};
 use super::commands::{NativeCommandOutcome, NativeEditCommand, NativeImeContext};
+use super::editor::ime_edit::{NativeImeEdit, NativeImeEditContext};
 use super::editor::{NativeEditOutcome, NativeEditor};
 use super::render_snapshot::{NativeRenderSnapshot, NativeRenderSnapshotLimits};
 use super::save::NativeSaveCaretPolicy;
@@ -152,6 +153,14 @@ pub enum NativeRuntimeCommand {
     },
     ImeContext {
         target: NativeRuntimeTarget,
+    },
+    ImeEditContext {
+        target: NativeRuntimeTarget,
+    },
+    ApplyImeEdit {
+        target: NativeRuntimeTarget,
+        expected: Box<NativeImeEditContext>,
+        edit: NativeImeEdit,
     },
     CopySelection {
         target: NativeRuntimeTarget,
@@ -345,7 +354,39 @@ impl NativeRuntimeCommand {
                 selection_bytes(selection).map(|input| input.max(1024 * 1024))
             }
             Self::PrepareSave { .. } => Some(MAX_DOCUMENT_BYTES),
-            Self::ImeContext { .. } => Some(64 * 1024),
+            Self::ImeContext { .. } | Self::ImeEditContext { .. } => Some(64 * 1024),
+            Self::ApplyImeEdit { expected, edit, .. } => {
+                let replacement_bytes = match edit {
+                    NativeImeEdit::Continue { replacement, .. } => {
+                        Some(replacement.text.capacity())
+                    }
+                    NativeImeEdit::Commit {
+                        replacement,
+                        preedit,
+                        ..
+                    } => replacement.text.capacity().checked_add(
+                        preedit
+                            .as_ref()
+                            .map_or(0, |preview| preview.replacement.text.capacity()),
+                    ),
+                };
+                expected
+                    .context
+                    .text
+                    .capacity()
+                    .checked_add(expected.context.selected_text.capacity())
+                    .and_then(|bytes| bytes.checked_add(selection_bytes(&expected.selection)?))
+                    .and_then(|bytes| {
+                        bytes.checked_add(
+                            expected.context.position.cell_path.capacity().checked_mul(
+                                std::mem::size_of::<
+                                    crate::document_core::native_interaction::NativeCellPathEntry,
+                                >(),
+                            )?,
+                        )
+                    })
+                    .and_then(|bytes| bytes.checked_add(replacement_bytes?))
+            }
             Self::Accessibility { .. } => Some(ACCESSIBILITY_RESERVATION_BYTES),
             _ => Some(0),
         };
@@ -438,6 +479,7 @@ pub enum NativeRuntimeOutput {
     Info(NativeRuntimeInfo),
     CommandExecuted(NativeCommandOutcome),
     ImeContext(NativeImeContext),
+    ImeEditContext(Box<NativeImeEditContext>),
     Clipboard {
         payload: NativeClipboardPayload,
         outcome: Option<NativeEditOutcome>,
@@ -500,6 +542,7 @@ impl fmt::Debug for NativeRuntimeOutput {
             Self::Info(_) => "Info",
             Self::CommandExecuted(_) => "CommandExecuted",
             Self::ImeContext(_) => "ImeContext",
+            Self::ImeEditContext(_) => "ImeEditContext",
             Self::Clipboard { .. } => "Clipboard",
             Self::Accessibility { .. } => "Accessibility",
             Self::RenderSnapshot { .. } => "RenderSnapshot",

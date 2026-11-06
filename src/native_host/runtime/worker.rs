@@ -155,6 +155,24 @@ fn execute(
                 .ime_context(target.revision)
                 .map(O::ImeContext)
         }
+        C::ImeEditContext { target } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            doc.editor()?
+                .ime_edit_context(target.revision)
+                .map(|context| O::ImeEditContext(Box::new(context)))
+        }
+        C::ApplyImeEdit {
+            target,
+            expected,
+            edit,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            doc.editor()?
+                .apply_ime_edit(target.revision, &expected, edit)
+                .map(O::Edited)
+        }
         C::CopySelection { target } => {
             let doc = document(owner)?;
             doc.check(target)?;
@@ -580,6 +598,11 @@ pub(super) fn worker_loop(
         };
         shared.set_current(owner.as_ref().map(OwnedDocument::stamp));
         let retained = match &result {
+            Ok(NativeRuntimeOutput::ImeEditContext(context)) => context
+                .context
+                .text
+                .capacity()
+                .saturating_add(context.context.selected_text.capacity()),
             Ok(NativeRuntimeOutput::Frame { frame, .. }) => frame.pixels.bytes.capacity(),
             Ok(NativeRuntimeOutput::PreparedSave { prepared, .. }) => prepared.bytes.len(),
             Ok(NativeRuntimeOutput::SelectionRects { rects, .. }) => rects
