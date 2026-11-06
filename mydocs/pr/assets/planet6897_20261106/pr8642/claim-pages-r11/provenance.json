@@ -1,0 +1,158 @@
+{
+  "recorded_at": "2026-11-06T16:10:20.020822+00:00",
+  "role": "PR #8642 원 주장 페이지의 R11 실제 출력 재사용. R12 실패 후보·진단 입력을 대신 제출하지 않음.",
+  "product_commit": "048f44da99d83e186f3a9e139563d20545c8bdb4",
+  "measured_product_changes": [
+    {
+      "path": "src/renderer/layout/shape_layout.rs",
+      "sha256": "4751ca6feab6ed396ac3c9498a17c2651972717c0db872f455abcd6a072c28d7"
+    },
+    {
+      "path": "src/renderer/pagination.rs",
+      "sha256": "b6d192db0872c2d1d65cef5a0a759408a098ce0c79c7b19e0c5c825f5e1eda19"
+    }
+  ],
+  "measurement_date": "2026-11-07 KST",
+  "panel_date": "2026-11-07 KST",
+  "dpi": 96,
+  "compat": "2022",
+  "profile": "print",
+  "renderer_note": "Native Skia 및 최적화 fresh WASM Canvas. 패널은 해당 실행의 원본 PNG에서 생성했으며 다시 렌더하지 않았다.",
+  "font_note": "실제 설치된 전체 시스템 글꼴과 각 원본의 정식 웹 글꼴 공급 경로. 최소 글꼴 환경은 이 시각 측정에 사용하지 않음.",
+  "full_tsv_reuse": "mydocs/pr/assets/planet6897_20261106/shape-header-r11/{native,wasm}/{report-628,report-838}.tsv",
+  "direct_reading": "report-838 91쪽은 본문·각주 표·각주 번호·뒤 글줄에 겹침/누락을 발견하지 않음. report-628 95·96쪽은 각주 표와 이어받은 글줄/후속 본문 보존을 확인함. 제목 1. 개요 및 1) 법적근거에 의한 보장의 글꼴 폭·문자 간격 차이는 남아 있어 완전 일치로 판정하지 않음.",
+  "images": [
+    {
+      "backend": "native",
+      "document": "report-838",
+      "page": 91,
+      "kind": "review",
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8642/claim-pages-r11/native/report-838-review-091.png",
+      "sha256": "f1fd6587475ab8ad84c9be9e2709e78e45b8d386f8825a0dd5f55c9a2cc9fe84",
+      "source_png_sha256": "c4ffba84b017099340a1c6226199bf5962bcc970d6aec2ec866285a679a88ebc",
+      "independent_pdf_png_sha256": "b5dea80a3fd49b93dce3fa619266fe121a55c60e6f791b89224d1c1f941f6448",
+      "raw": 99.99681
+    },
+    {
+      "backend": "native",
+      "document": "report-838",
+      "page": 91,
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8642/claim-pages-r11/native/report-838-overlay-091.png",
+      "sha256": "19c1a0b3c78c7a8e7c8359c3416516db8f9d94a2699e92d281a3aed71314f01d",
+      "source_png_sha256": "c4ffba84b017099340a1c6226199bf5962bcc970d6aec2ec866285a679a88ebc",
+      "independent_pdf_png_sha256": "b5dea80a3fd49b93dce3fa619266fe121a55c60e6f791b89224d1c1f941f6448",
+      "raw": 99.99681
+    },
+    {
+      "backend": "native",
+      "document": "report-628",
+      "page": 95,
+      "kind": "review",
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8642/claim-pages-r11/native/report-628-review-095.png",
+      "sha256": "f3ba523907f5dc68f8f6658cd52ec6c6aae855db9aec4f8e048b9aa335a46ff8",
+      "source_png_sha256": "339bff796a37c5cec090214b418a7b68296b03da7aa0e5510e956adaaea3a8d8",
+      "independent_pdf_png_sha256": "9439b3050d26ee4b81a3cabfc24b8bc9b02a5e7a3ede11f3a784ec7b1708fba1",
+      "raw": 99.20314
+    },
+    {
+      "backend": "native",
+      "document": "report-628",
+      "page": 95,
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8642/claim-pages-r11/native/report-628-overlay-095.png",
+      "sha256": "70fcef6eafea718df711e5ba9ed66778b01b317c13a2af4cfaf2e525913918b4",
+      "source_png_sha256": "339bff796a37c5cec090214b418a7b68296b03da7aa0e5510e956adaaea3a8d8",
+      "independent_pdf_png_sha256": "9439b3050d26ee4b81a3cabfc24b8bc9b02a5e7a3ede11f3a784ec7b1708fba1",
+      "raw": 99.20314
+    },
+    {
+      "backend": "native",
+      "document": "report-628",
+      "page": 96,
+      "kind": "review",
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8642/claim-pages-r11/native/report-628-review-096.png",
+      "sha256": "1668b84e53b0d66d27b0bf1d3fdc948afed96f008dcf8c3ff4ff328a8a1842c5",
+      "source_png_sha256": "21cb2718741b0fbeec1c765c49a9a1f56b1ad4bedf82b23c5ae48207f7700faa",
+      "independent_pdf_png_sha256": "08c7c013e8e2a2c327874c28346be0a53e9dead5f2887abb8f977898698e952d",
+      "raw": 99.26111
+    },
+    {
+      "backend": "native",
+      "document": "report-628",
+      "page": 96,
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8642/claim-pages-r11/native/report-628-overlay-096.png",
+      "sha256": "979b2fee5bd6d74d0e55f73f26ac2fb399600ba198a4367e703e9988747d6653",
+      "source_png_sha256": "21cb2718741b0fbeec1c765c49a9a1f56b1ad4bedf82b23c5ae48207f7700faa",
+      "independent_pdf_png_sha256": "08c7c013e8e2a2c327874c28346be0a53e9dead5f2887abb8f977898698e952d",
+      "raw": 99.26111
+    },
+    {
+      "backend": "wasm",
+      "document": "report-838",
+      "page": 91,
+      "kind": "review",
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8642/claim-pages-r11/wasm/report-838-review-091.png",
+      "sha256": "10169ccd51684f42984b3a394e6880a9077f803979d2037f7425a1ab59004a45",
+      "source_png_sha256": "869096abca33ac895de7210b84fa5198d3a8c37306a1373bd77c4838e3bb5d9d",
+      "independent_pdf_png_sha256": "b5dea80a3fd49b93dce3fa619266fe121a55c60e6f791b89224d1c1f941f6448",
+      "raw": 99.9967
+    },
+    {
+      "backend": "wasm",
+      "document": "report-838",
+      "page": 91,
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8642/claim-pages-r11/wasm/report-838-overlay-091.png",
+      "sha256": "173582ce85894034a13e2801a6c944d289176bb3274b931d34bda46f74870eb3",
+      "source_png_sha256": "869096abca33ac895de7210b84fa5198d3a8c37306a1373bd77c4838e3bb5d9d",
+      "independent_pdf_png_sha256": "b5dea80a3fd49b93dce3fa619266fe121a55c60e6f791b89224d1c1f941f6448",
+      "raw": 99.9967
+    },
+    {
+      "backend": "wasm",
+      "document": "report-628",
+      "page": 95,
+      "kind": "review",
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8642/claim-pages-r11/wasm/report-628-review-095.png",
+      "sha256": "4c4c1a9ee117f2e8c1187255bdf7e09a23ec5ab34a53bc6f799a1ec49495573a",
+      "source_png_sha256": "74ed22a3a35086c7d1f16e9a42424735d54e7f6470249a4b06a24ad168a82a33",
+      "independent_pdf_png_sha256": "9439b3050d26ee4b81a3cabfc24b8bc9b02a5e7a3ede11f3a784ec7b1708fba1",
+      "raw": 99.20365
+    },
+    {
+      "backend": "wasm",
+      "document": "report-628",
+      "page": 95,
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8642/claim-pages-r11/wasm/report-628-overlay-095.png",
+      "sha256": "42af05cf92b9ac660e88e716221667740c37274637412bb5f5f992e97d652b09",
+      "source_png_sha256": "74ed22a3a35086c7d1f16e9a42424735d54e7f6470249a4b06a24ad168a82a33",
+      "independent_pdf_png_sha256": "9439b3050d26ee4b81a3cabfc24b8bc9b02a5e7a3ede11f3a784ec7b1708fba1",
+      "raw": 99.20365
+    },
+    {
+      "backend": "wasm",
+      "document": "report-628",
+      "page": 96,
+      "kind": "review",
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8642/claim-pages-r11/wasm/report-628-review-096.png",
+      "sha256": "bbd24bf8445057e115b972e86885d6829554a7d05b8d0aff08bbb6066ac3fcd9",
+      "source_png_sha256": "da4a28d3f5acf53dd7ceb0e8de890004067c4b7849a8ee77519e044d450cfdce",
+      "independent_pdf_png_sha256": "08c7c013e8e2a2c327874c28346be0a53e9dead5f2887abb8f977898698e952d",
+      "raw": 99.24426
+    },
+    {
+      "backend": "wasm",
+      "document": "report-628",
+      "page": 96,
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8642/claim-pages-r11/wasm/report-628-overlay-096.png",
+      "sha256": "b16f282003cb201fd8bca60e394df4359b28d2a1487ee300ffcac228f1b8159d",
+      "source_png_sha256": "da4a28d3f5acf53dd7ceb0e8de890004067c4b7849a8ee77519e044d450cfdce",
+      "independent_pdf_png_sha256": "08c7c013e8e2a2c327874c28346be0a53e9dead5f2887abb8f977898698e952d",
+      "raw": 99.24426
+    }
+  ]
+}
