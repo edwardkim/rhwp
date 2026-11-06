@@ -6,9 +6,9 @@
 [공통 계획](assets/planet6897_20261106/integration-plan.md)의 27건 누적 순서를 따른다.
 원 PR별 입력·주장·회귀와 공통 보정을 분리하고, 원 기여 SHA와 적용 SHA를 아래에 기록한다.
 
-| 원 commit | 접수 시 적용 계획 | 제목 |
+| 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `0fd746a87d28cd70fe7297149882cacd84074475` | pending | fix(visual-sweep): 글꼴 catalog family 이름의 앞뒤 공백을 Native 와 같이 정규화 (#8612) |
+| `0fd746a87d28cd70fe7297149882cacd84074475` | `7d13bc661d81bc1e7c00aad85b5d39958a13e2cc` | fix(visual-sweep): 글꼴 catalog family 이름의 앞뒤 공백을 Native 와 같이 정규화 (#8612) |
 
 ## 완료 조건
 

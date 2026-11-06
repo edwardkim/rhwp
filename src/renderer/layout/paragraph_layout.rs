@@ -3000,7 +3000,8 @@ impl LayoutEngine {
         inline_tables.iter().find_map(|(owner_ci, owner)| {
             (*owner_ci != ctrl_idx
                 && super::control_line_seg_index(para, *owner_ci) == Some(line)
-                && Self::tac_stored_band_is_outer_box(para, owner)).then(|| {
+                && Self::tac_stored_band_is_outer_box(para, owner))
+            .then(|| {
                 (
                     hwpunit_to_px(owner.common.height as i32, self.dpi),
                     hwpunit_to_px(owner.outer_margin_top as i32, self.dpi),

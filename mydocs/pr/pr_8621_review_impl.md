@@ -6,11 +6,11 @@
 [공통 계획](assets/planet6897_20261106/integration-plan.md)의 27건 누적 순서를 따른다.
 원 PR별 입력·주장·회귀와 공통 보정을 분리하고, 원 기여 SHA와 적용 SHA를 아래에 기록한다.
 
-| 원 commit | 접수 시 적용 계획 | 제목 |
+| 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `afab535863b77d59b1f8686d1ca8a85852dae2ec` | pending | fix(renderer): 각주 안에서 줄을 통째로 차지하는 TAC 표를 소유 줄에 그린다 (#8551) |
-| `da01e3a73a29a3bc03f1e8ac403f95f1d4792210` | pending | docs: #8551 각주 캡션 표 paint 시각 증적 |
-| `7057aaccfaa0a5bd9bc80304d4ccdd07f220beff` | pending | docs: #8551 최신 devel rebase head 재측정 기록 |
+| `afab535863b77d59b1f8686d1ca8a85852dae2ec` | `02ca8a52c4a620e8048d0b575a34b5cbdab272a4` (충돌 보정) | fix(renderer): 각주 안에서 줄을 통째로 차지하는 TAC 표를 소유 줄에 그린다 (#8551) |
+| `da01e3a73a29a3bc03f1e8ac403f95f1d4792210` | `4163ac99582686fed86143a238f050672620daa3` | docs: #8551 각주 캡션 표 paint 시각 증적 |
+| `7057aaccfaa0a5bd9bc80304d4ccdd07f220beff` | `2d5560a3d966fdbd0ed7ff98e120c232363671a0` | docs: #8551 최신 devel rebase head 재측정 기록 |
 
 ## 완료 조건
 

@@ -6,10 +6,10 @@
 [공통 계획](assets/planet6897_20261106/integration-plan.md)의 27건 누적 순서를 따른다.
 원 PR별 입력·주장·회귀와 공통 보정을 분리하고, 원 기여 SHA와 적용 SHA를 아래에 기록한다.
 
-| 원 commit | 접수 시 적용 계획 | 제목 |
+| 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `5554a192b7a62836fc7f9a460623b5da205cf151` | pending | fix(renderer): Dotum U+2024 은 Haansoft Dotum 이 공급 (#8619) |
-| `71bd8abf48dbad4afa09d66803f6011546add734` | pending | docs: #8619 rebase 뒤 Native/fresh WASM sweep 증거 갱신 |
+| `5554a192b7a62836fc7f9a460623b5da205cf151` | `84045b2d916c88992ce5128b1514b42fab7b00dc` | fix(renderer): Dotum U+2024 은 Haansoft Dotum 이 공급 (#8619) |
+| `71bd8abf48dbad4afa09d66803f6011546add734` | `52c8563500280fa53eb68c8a2c69baae280431e8` | docs: #8619 rebase 뒤 Native/fresh WASM sweep 증거 갱신 |
 
 ## 완료 조건
 

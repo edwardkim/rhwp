@@ -6,10 +6,10 @@
 [공통 계획](assets/planet6897_20261106/integration-plan.md)의 27건 누적 순서를 따른다.
 원 PR별 입력·주장·회귀와 공통 보정을 분리하고, 원 기여 SHA와 적용 SHA를 아래에 기록한다.
 
-| 원 commit | 접수 시 적용 계획 | 제목 |
+| 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `2be042208ee670b545a4c55dc9f0b667e9dcf7fb` | pending | fix(layout): 쪽·용지 기준 자리차지 표 띠에 밀린 빈 host 줄은 줄높이와 줄간격을 모두 전진 (#8554) |
-| `efa20ac2eafe1137b370d270f459eac54109b5ca` | pending | docs: #8554 i39 Native 한자 누락 원인 문구를 #8590 확인 결과로 정정 |
+| `2be042208ee670b545a4c55dc9f0b667e9dcf7fb` | `20e4a8937140dd479b627e84a0923fe64bb66ac5` | fix(layout): 쪽·용지 기준 자리차지 표 띠에 밀린 빈 host 줄은 줄높이와 줄간격을 모두 전진 (#8554) |
+| `efa20ac2eafe1137b370d270f459eac54109b5ca` | `5e0d83466a2b2f3ef9d246dca9001a8e87c6d213` | docs: #8554 i39 Native 한자 누락 원인 문구를 #8590 확인 결과로 정정 |
 
 ## 완료 조건
 

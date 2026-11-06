@@ -6,10 +6,10 @@
 [공통 계획](assets/planet6897_20261106/integration-plan.md)의 27건 누적 순서를 따른다.
 원 PR별 입력·주장·회귀와 공통 보정을 분리하고, 원 기여 SHA와 적용 SHA를 아래에 기록한다.
 
-| 원 commit | 접수 시 적용 계획 | 제목 |
+| 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `84aa570a64e3cc5265fab5dd08b2e7fefa5d35d5` | pending | fix(renderer): Native 경로 글꼴을 매핑으로 공유해 64MiB 넘는 파일도 싣기 (#8597) |
-| `0cbe6a9ae5ee4ef8d994d21c170682f95f4bf236` | pending | fix(font): 환경 이름 계약을 어기는 원본 글꼴 이름은 관측 대체 요청에서 뺀다 (#8597) |
+| `84aa570a64e3cc5265fab5dd08b2e7fefa5d35d5` | `a2a5a18c30890dae7df5af43348d88efbb170359` | fix(renderer): Native 경로 글꼴을 매핑으로 공유해 64MiB 넘는 파일도 싣기 (#8597) |
+| `0cbe6a9ae5ee4ef8d994d21c170682f95f4bf236` | `520b3e439b3a93e43eae56aab0041a635c82c3a7` | fix(font): 환경 이름 계약을 어기는 원본 글꼴 이름은 관측 대체 요청에서 뺀다 (#8597) |
 
 ## 완료 조건
 

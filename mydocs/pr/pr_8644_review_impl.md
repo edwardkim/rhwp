@@ -6,10 +6,10 @@
 [공통 계획](assets/planet6897_20261106/integration-plan.md)의 27건 누적 순서를 따른다.
 원 PR별 입력·주장·회귀와 공통 보정을 분리하고, 원 기여 SHA와 적용 SHA를 아래에 기록한다.
 
-| 원 commit | 접수 시 적용 계획 | 제목 |
+| 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `ab4cddea86fde59dbfdea3122d1eb579888951bc` | pending | fix(composer): 다음 문단 저장 vpos 가 간격 전량을 닫으면 TAC 표 줄 뒤 간격을 전량 남긴다 (#8544) |
-| `1ea144e29c04613c5e7170fc74e622bb03fbd9a0` | pending | test: #8544 측정 근거와 Native·fresh WASM TSV·코퍼스 A/B·대표 PNG 증적 |
+| `ab4cddea86fde59dbfdea3122d1eb579888951bc` | `ff4c54c5d17ff6b0f38dfe724b5c921dee2ca799` | fix(composer): 다음 문단 저장 vpos 가 간격 전량을 닫으면 TAC 표 줄 뒤 간격을 전량 남긴다 (#8544) |
+| `1ea144e29c04613c5e7170fc74e622bb03fbd9a0` | `a9168a306dd79dc843f936f6edbf9bc1b45158a0` | test: #8544 측정 근거와 Native·fresh WASM TSV·코퍼스 A/B·대표 PNG 증적 |
 
 ## 완료 조건
 

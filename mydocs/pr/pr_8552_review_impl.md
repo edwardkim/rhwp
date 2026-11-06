@@ -6,9 +6,9 @@
 [공통 계획](assets/planet6897_20261106/integration-plan.md)의 27건 누적 순서를 따른다.
 원 PR별 입력·주장·회귀와 공통 보정을 분리하고, 원 기여 SHA와 적용 SHA를 아래에 기록한다.
 
-| 원 commit | 접수 시 적용 계획 | 제목 |
+| 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `423b369e9d81cbfd6f31ec527d53cbea5d43d5e1` | pending | feat(edit): 글자 서식 props 에 글꼴 이름 fontName 을 받는다 |
+| `423b369e9d81cbfd6f31ec527d53cbea5d43d5e1` | `4f58013682b0aa5c4ef8b0b5442a8ac9a32976b7` | feat(edit): 글자 서식 props 에 글꼴 이름 fontName 을 받는다 |
 
 ## 완료 조건
 

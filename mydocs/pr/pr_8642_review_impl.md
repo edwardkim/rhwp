@@ -6,14 +6,14 @@
 [공통 계획](assets/planet6897_20261106/integration-plan.md)의 27건 누적 순서를 따른다.
 원 PR별 입력·주장·회귀와 공통 보정을 분리하고, 원 기여 SHA와 적용 SHA를 아래에 기록한다.
 
-| 원 commit | 접수 시 적용 계획 | 제목 |
+| 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `aceb89c6d3f47c8790c22929e2615b75c3ef3465` | pending | fix(typeset): 다 들어가지 않는 각주는 들어가는 앞 조각만 비용으로 잡고 넘어온 각주를 이어받는 쪽 예산에서 뺀다 (#8468) |
-| `8ece4b20852a56cf2523faebb87ea24d7339a5ac` | pending | test: #8468 앞부분만 들어간 각주의 표 줄 — 뒤 본문 줄이 각주 글 줄 위를 채운다 |
-| `595099ca975b231117f86bd2e9794ba05c1ce0e8` | pending | test: #8468 T20 측정 주석을 실제 값으로 채우고 fmt 적용 |
-| `d9b846cafab496a3d72f9953a743be17e23a7071` | pending | fix(typeset): 블록 표가 든 각주의 조각 높이를 paint 조각 측정으로 잰다 (#8468) |
-| `2211d9e95698007c53788aadd15e9cd3d17df6ab` | pending | test: #8468 후속 측정 근거와 Native·fresh WASM TSV·대표 PNG 증적 |
-| `7d40345bc014f3cb4eca4235783afcfb670899f9` | pending | ci: #8642 CI 재실행 (runner 디스크 부족으로 실패한 adapter inter-diff·prop roundtrip) |
+| `aceb89c6d3f47c8790c22929e2615b75c3ef3465` | `6adc5712cdc7974267b9dabc4f83b5cb8a2d170f` | fix(typeset): 다 들어가지 않는 각주는 들어가는 앞 조각만 비용으로 잡고 넘어온 각주를 이어받는 쪽 예산에서 뺀다 (#8468) |
+| `8ece4b20852a56cf2523faebb87ea24d7339a5ac` | `b083768dcc917c8a152e08c89d8620b7db0be189` | test: #8468 앞부분만 들어간 각주의 표 줄 — 뒤 본문 줄이 각주 글 줄 위를 채운다 |
+| `595099ca975b231117f86bd2e9794ba05c1ce0e8` | `48716c318bd65a5302b564c1ee5e862cddcf94b4` | test: #8468 T20 측정 주석을 실제 값으로 채우고 fmt 적용 |
+| `d9b846cafab496a3d72f9953a743be17e23a7071` | `2b097d1ce7a378e239499c1f641dd2790a660b4f` | fix(typeset): 블록 표가 든 각주의 조각 높이를 paint 조각 측정으로 잰다 (#8468) |
+| `2211d9e95698007c53788aadd15e9cd3d17df6ab` | `d6201e63aa737ad7358495d0d94ecacba302e830` | test: #8468 후속 측정 근거와 Native·fresh WASM TSV·대표 PNG 증적 |
+| `7d40345bc014f3cb4eca4235783afcfb670899f9` | `8f87271d1c39139a79c8f4e1a5a42a8c90de8788` | ci: #8642 CI 재실행 (runner 디스크 부족으로 실패한 adapter inter-diff·prop roundtrip) |
 
 ## 완료 조건
 

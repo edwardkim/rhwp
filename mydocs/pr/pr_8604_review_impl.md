@@ -6,11 +6,11 @@
 [공통 계획](assets/planet6897_20261106/integration-plan.md)의 27건 누적 순서를 따른다.
 원 PR별 입력·주장·회귀와 공통 보정을 분리하고, 원 기여 SHA와 적용 SHA를 아래에 기록한다.
 
-| 원 commit | 접수 시 적용 계획 | 제목 |
+| 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `032dcb80e3de44b3ed4a7ca09549a197b6a18067` | pending | fix(typeset): #8596 앞 TAC 표 host 줄 안에 저장된 자리차지 표 프레임은 다음 쪽에서 시작한다 |
-| `e74368c345437ca63591ea064c4b972ade999ee7` | pending | docs(#8596): 필수 편람 Native 383쪽 TSV — devel 7fdd5441ff 와 바이트 동일 |
-| `013459bff4ff5313af53ece5646e79c48647a3aa` | pending | docs(#8596): 최신 devel rebase head 재측정 — base·head 전쪽 TSV, 대표 PNG, 편람 gate |
+| `032dcb80e3de44b3ed4a7ca09549a197b6a18067` | `0430969a1e00388fabb21efdf6ec0c5f120b8260` | fix(typeset): #8596 앞 TAC 표 host 줄 안에 저장된 자리차지 표 프레임은 다음 쪽에서 시작한다 |
+| `e74368c345437ca63591ea064c4b972ade999ee7` | `f19c42854af9e6f75e7dd81bf03bebb419369c97` | docs(#8596): 필수 편람 Native 383쪽 TSV — devel 7fdd5441ff 와 바이트 동일 |
+| `013459bff4ff5313af53ece5646e79c48647a3aa` | `cad4a9728b8d264f1b155dbce3f9a43ac288aa02` | docs(#8596): 최신 devel rebase head 재측정 — base·head 전쪽 TSV, 대표 PNG, 편람 gate |
 
 ## 완료 조건
 

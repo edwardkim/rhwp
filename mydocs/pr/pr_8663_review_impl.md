@@ -6,11 +6,11 @@
 [공통 계획](assets/planet6897_20261106/integration-plan.md)의 27건 누적 순서를 따른다.
 원 PR별 입력·주장·회귀와 공통 보정을 분리하고, 원 기여 SHA와 적용 SHA를 아래에 기록한다.
 
-| 원 commit | 접수 시 적용 계획 | 제목 |
+| 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `e3db55a6f16b57c2ef73a3aaaf22f5298ccc8bfc` | pending | fix(typeset): 저장 vpos 가 되감긴 보이는 호스트 글줄을 표와 함께 다음 쪽에서 시작한다 (#8652) |
-| `fbcdbf58e0d1b55bdfec9bb6623b3f0a773b9c20` | pending | fix(footnote): 각주 번호와 같은 문단의 글자처럼 취급 표를 번호 뒤에 그린다 (#8657) |
-| `a0f7203d788415f378f3ea61d3679a9107983666` | pending | docs: #8652·#8657 Visual Sweep TSV 와 대표 review·overlay PNG |
+| `e3db55a6f16b57c2ef73a3aaaf22f5298ccc8bfc` | `2a1b3a5527ea30312d5bef8b22394d7e80b2f50e` | fix(typeset): 저장 vpos 가 되감긴 보이는 호스트 글줄을 표와 함께 다음 쪽에서 시작한다 (#8652) |
+| `fbcdbf58e0d1b55bdfec9bb6623b3f0a773b9c20` | `fb7b01d265ade7227e4c05b23fe8fbcaaeb7dcd6` (충돌 보정) | fix(footnote): 각주 번호와 같은 문단의 글자처럼 취급 표를 번호 뒤에 그린다 (#8657) |
+| `a0f7203d788415f378f3ea61d3679a9107983666` | `c3831bc198207ea03d5a139cf3a5b314aa98ffb4` | docs: #8652·#8657 Visual Sweep TSV 와 대표 review·overlay PNG |
 
 ## 완료 조건
 

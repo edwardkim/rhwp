@@ -6,10 +6,10 @@
 [공통 계획](assets/planet6897_20261106/integration-plan.md)의 27건 누적 순서를 따른다.
 원 PR별 입력·주장·회귀와 공통 보정을 분리하고, 원 기여 SHA와 적용 SHA를 아래에 기록한다.
 
-| 원 commit | 접수 시 적용 계획 | 제목 |
+| 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `5fdbd2b17faef122ada2f7aecedda5e3894678f3` | pending | fix(layout): 칸 안의 쪽 기준 글 앞으로 표를 칸 흐름에 쌓지 않는다 (#8648) |
-| `c546460f55cd9cf94d8106cde271750e0a131c0c` | pending | test(#8648): 축소본·코퍼스 Native·fresh WASM TSV와 대표 PNG |
+| `5fdbd2b17faef122ada2f7aecedda5e3894678f3` | `04416e216df13f5152b93620a4de215bb48d8e96` | fix(layout): 칸 안의 쪽 기준 글 앞으로 표를 칸 흐름에 쌓지 않는다 (#8648) |
+| `c546460f55cd9cf94d8106cde271750e0a131c0c` | `c981fbaadbe97148631cf4dbf18c142ea4d4cc4d` | test(#8648): 축소본·코퍼스 Native·fresh WASM TSV와 대표 PNG |
 
 ## 완료 조건
 

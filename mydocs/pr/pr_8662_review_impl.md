@@ -6,13 +6,13 @@
 [공통 계획](assets/planet6897_20261106/integration-plan.md)의 27건 누적 순서를 따른다.
 원 PR별 입력·주장·회귀와 공통 보정을 분리하고, 원 기여 SHA와 적용 SHA를 아래에 기록한다.
 
-| 원 commit | 접수 시 적용 계획 | 제목 |
+| 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `faaf09008aa5e835676275eb6badc0593552ccde` | duplicate-patch | fix(renderer): Dotum U+2024 은 Haansoft Dotum 이 공급 (#8619) |
-| `3d870c1410aa8c4b1387385413a0e846c6112298` | duplicate-patch | docs: #8619 rebase 뒤 Native/fresh WASM sweep 증거 갱신 |
-| `cb1ab1d5af6ce0a4614365c6ca7d6a8b5fc0ba77` | pending | fix(renderer): 저장 줄 없는 HWP5 TAC 표의 행 높이와 넘친 공백의 줄 끝 처리 (#8639) |
-| `c1db11718bbc5319ac78507e7cabb8cc0fe3f8b3` | pending | fix(renderer): 변경 추적 0x08 문서는 원본 프로그램으로 저장 줄을 다시 짜지 않는다 (#8639) |
-| `f84e0f3ffe3b154d286bc878fc90facdb7ced153` | pending | docs: #8639 Native/fresh WASM sweep 증거 (행 높이·끝 공백·변경 추적 0x08) |
+| `faaf09008aa5e835676275eb6badc0593552ccde` | duplicate-patch → `5554a192b7a62836fc7f9a460623b5da205cf151`와 동일 patch | fix(renderer): Dotum U+2024 은 Haansoft Dotum 이 공급 (#8619) |
+| `3d870c1410aa8c4b1387385413a0e846c6112298` | duplicate-patch → `71bd8abf48dbad4afa09d66803f6011546add734`와 동일 patch | docs: #8619 rebase 뒤 Native/fresh WASM sweep 증거 갱신 |
+| `cb1ab1d5af6ce0a4614365c6ca7d6a8b5fc0ba77` | `c9b7d7039fc62f91b87e2e8448b76eff72c8cab7` | fix(renderer): 저장 줄 없는 HWP5 TAC 표의 행 높이와 넘친 공백의 줄 끝 처리 (#8639) |
+| `c1db11718bbc5319ac78507e7cabb8cc0fe3f8b3` | `953c9e16af35be4a0809e3b401e06b060dd01222` | fix(renderer): 변경 추적 0x08 문서는 원본 프로그램으로 저장 줄을 다시 짜지 않는다 (#8639) |
+| `f84e0f3ffe3b154d286bc878fc90facdb7ced153` | `59773ec580b1f7d3000aee6bc7afa56fd5b3dd95` | docs: #8639 Native/fresh WASM sweep 증거 (행 높이·끝 공백·변경 추적 0x08) |
 
 ## 완료 조건
 
