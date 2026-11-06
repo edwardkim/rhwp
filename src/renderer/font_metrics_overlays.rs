@@ -40,6 +40,18 @@ struct OriginalGlyphMetric {
 // 슬래시 네 군데의 /Widths와 CharProc d1이 모두 605/1000이다.
 // 표시 폴백 Palatino의 656/2048은 원본 HFT 글리프의 폭이 아니다.
 static ORIGINAL_GLYPH_METRICS: &[OriginalGlyphMetric] = &[
+    // 독립 한컴2024 Print issue4138-ascii-split의21쪽 T4(U+2264):
+    // FontMatrix.001, Widths와 CharProc d1이 모두1000이다. 같은 원본 HFT를
+    // 영문 family 별칭으로 공급해도 표시 face의 반각 추정으로 바꾸지 않는다.
+    // 원본 선언을 확인한 경로만 소비하며 동명 대체 TTF에는 적용하지 않는다.
+    OriginalGlyphMetric {
+        face: "한양신명조",
+        bold: false,
+        italic: false,
+        character: '≤',
+        advance_units: 1000,
+        em_units: 1000,
+    },
     // 80168 구판 HWPX의 한컴2020 Print 30쪽 T10(Type3, xref348):
     // ToUnicode1630의 code79→00B7, Widths1629=384, FontMatrix.001.
     // 대체 TTF가 실제 선택되지 않은 type1도 이 원본 기호 폭을 유지한다.
