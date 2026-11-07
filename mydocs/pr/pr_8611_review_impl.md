@@ -184,3 +184,28 @@ fill+stroke 소비 경로에 제공한다. 전진·원점·장평·굵기 합성
 미등록·결측 glyph, 명시적 기울임, 옛한글 전용 face 및 Screen은 기존 선택을 유지한다.
 먼저 작은 실제 Canvas 반례와 40·51쪽을 확인하고, 전체 WASM과 기존 보호 기준을 다시
 대조한다. 아래 보정의 실제 통과와 최종 판정은 후속 검증 결과로 기록한다.
+
+
+### 원 해결 이력의 Git 대조 정정
+
+[PR #8397](https://github.com/edwardkim/rhwp/pull/8397)의 실제 통합은
+`99a176b7cb34fde54454c03433baa1382b2de9fa`다. 그 안의 선행 commit
+`730759eb2c`(합성 굵기에서 분리 OTF 글리프 보존)는 **Native Skia font_lookup**에서
+합성 굵기의 후보 face를 유지한 수정이다. 현재도 같은 경로가 남아 있다. 그 수정을
+WASM CFF 굵기 소비까지 구현한 것으로 설명하지 않는다.
+
+후속 [PR #8583](https://github.com/edwardkim/rhwp/pull/8583)의 `96827b3acc`는
+Print TTF 대체 윤곽 보관소를 추가했고, [이슈 #8430](https://github.com/edwardkim/rhwp/issues/8430)의
+해결 commit `14ae66657fdc6aed96c3b3b31367f4765688bb88`는 이 보관소를 사용하는
+WASM 합성 굵기 path를 추가했다. 후자의 실제 diff와 설명은 보통 굵기 TTF의 선택·윤곽과
+0.02em fill+stroke를 근거로 한다. 원 HFT CFF의 보통 글자용 윤곽 보관소와는 다르다.
+
+따라서 현재 보정은 원 PR #8397의 Native OTF 선택을 되돌리는 수정이 아니다. 이미 공급된
+원 CFF가 굵은 글자에서도 기존 fill+stroke 경로에 도달하도록 누락된 소비를 연결한다.
+새 반례는 수정 전 R33 WASM에서 실제 굵기 해석·원 CFF 등록을 확인한 뒤 glyph painter
+되돌아감으로 실패했다. 새 제품 결과는 실제 WASM 빌드와 원본 40·51쪽으로 별도 확인한다.
+
+R34의 첫 사전 fmt 검사는 아직 suite에 등록되지 않은 새 회귀 파일의 서식을 발견했다.
+저장소 루트의 cargo fmt만으로 해당 원본 파일이 포맷되었다고 판단한 것이 잘못이었다.
+원본을 rustfmt로 직접 보정하고 준비된 검증 suite에서 fmt를 재검증한다. 제품 보정의
+실행 결과와 서식 보정을 구분하며 이 단계에서 통과하지 않은 gate를 완료로 표시하지 않는다.
