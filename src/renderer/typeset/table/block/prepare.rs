@@ -1311,7 +1311,23 @@ impl TypesetEngine {
             matches!(
                 para.controls.get(ci),
                 Some(Control::Table(t)) if is_para_topbottom_float(&t.common)
-            )
+            ) && st
+                .paragraph_float_placements
+                .get(&(para_idx, ci))
+                // 자기 세로 오프셋이 앞 형제의 점유 끝 아래이면 이 표는 밀려 내려온 것이
+                // 아니라 자기 자리에 놓인다. 한/글은 그 자리에서 첫 조각을 시작한다
+                // (대전광역시 사무위임 조례 [별표 1]: 머리 표 바닥 4604HU, 본표 오프셋 6646HU).
+                .is_none_or(|previous| {
+                    previous.occupied_bottom
+                        > previous.anchor_y
+                            + hwpunit_to_px(
+                                crate::renderer::float_placement::signed_hwpunit(
+                                    table.common.vertical_offset,
+                                ),
+                                self.dpi,
+                            )
+                            + 0.5
+                })
         });
         if row_count > 1 && preceded_by_same_para_float {
             let remaining_now =
