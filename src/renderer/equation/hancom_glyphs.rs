@@ -129,6 +129,61 @@ fn glyph(ch: char, role: Role) -> Option<(char, u16)> {
     Some((char::from_u32(code)?, advance))
 }
 
+/// Decode this producer's private font codes only when the original face is
+/// unavailable. Reuse `glyph` so painter fallbacks cannot invent another code
+/// table. Uppercase italic runs already carry their shear; lowercase PUA glyphs
+/// contain intrinsic italic outlines and need an italic fallback face instead.
+#[cfg(feature = "native-skia")]
+pub(crate) fn semantic_fallback_glyph(family: &str, encoded: char) -> Option<(char, bool)> {
+    use std::collections::BTreeMap;
+    use std::sync::OnceLock;
+    type Mappings = BTreeMap<char, (char, bool)>;
+    static MAPPINGS: OnceLock<(Mappings, Mappings)> = OnceLock::new();
+    if !(0xe000..=0xf8ff).contains(&(encoded as u32)) {
+        return None;
+    }
+    let hancom_eqn = family.eq_ignore_ascii_case("HancomEQN");
+    if !hancom_eqn && !family.eq_ignore_ascii_case(FONT_FAMILY) {
+        return None;
+    }
+    let maps = MAPPINGS.get_or_init(|| {
+        let build = |extended: bool| {
+            let mut map = Mappings::new();
+            let characters = ('A'..='Z').chain('a'..='z').chain('0'..='9').chain(
+                "+-= :<>×÷≤≥∴∵,()αβγδεζηθικλμνξοπρστυφχψωΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ∑∏△․%".chars(),
+            );
+            for character in characters {
+                for role in [
+                    Role::Variable { italic: false },
+                    Role::Variable { italic: true },
+                    Role::Number,
+                    Role::Operator,
+                    Role::Greek,
+                    Role::BigOperator,
+                    Role::SmallOperator,
+                    Role::LegacyLiteral,
+                ] {
+                    if !extended && matches!(role, Role::Greek | Role::BigOperator) {
+                        continue;
+                    }
+                    if let Some((code, _)) = glyph(character, role) {
+                        if (0xe000..=0xf8ff).contains(&(code as u32)) {
+                            let intrinsic_italic = matches!(role, Role::Variable { italic: true })
+                                && character.is_ascii_lowercase();
+                            map.insert(code, (character, intrinsic_italic));
+                        }
+                    }
+                }
+            }
+            map
+        };
+        (build(false), build(true))
+    });
+    (if hancom_eqn { &maps.1 } else { &maps.0 })
+        .get(&encoded)
+        .copied()
+}
+
 pub(super) fn measure(
     text: &str,
     role: Role,

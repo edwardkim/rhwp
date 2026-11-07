@@ -11,6 +11,10 @@ use std::path::{Path, PathBuf};
 
 use rhwp_core::wasm_api::HwpDocument;
 
+mod gpu_d3d;
+mod gpu_gl;
+mod gpu_metal;
+mod presentation;
 mod session;
 
 const ALL_PAGES: i32 = -1;
@@ -84,7 +88,8 @@ pub extern "C" fn rhwp_read_text(input_path: *const c_char, page: i32) -> *mut c
 ///
 /// # Safety
 ///
-/// `ptr`은 이 라이브러리의 export/read 또는 `rhwp_session_*` 함수가 반환한 JSON
+/// `ptr`은 이 라이브러리의 export/read, `rhwp_session_*`, `rhwp_presentation_*`,
+/// `rhwp_gl_presenter_*`가 반환한 JSON
 /// 문자열 포인터이거나 널이어야 한다. 다른 할당자에서 온 포인터를 넘기거나 같은
 /// 포인터를 두 번 넘기면 정의되지 않은 동작이다.
 ///

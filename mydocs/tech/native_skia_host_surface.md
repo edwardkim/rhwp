@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/tech/native_skia_host_surface.md
-last_verified: 2026-10-20
+last_verified: 2026-11-07
 ---
 
 # Host-owned Skia Canvas / Surface replay
@@ -91,6 +91,39 @@ arguments leave the GPU target unchanged. Only the probe host flushes and reads
 pixels back for verification. Missing Vulkan 1.1 support/context creation is an
 error, not a passing skip.
 
+The probe pins `skia-safe` to `0.156.0`, matching the root lock file. Its
+standalone lock file must be updated together with this pin when the root Skia
+dependency changes: enabling GPU features on a different Skia package does not
+enable them on the renderer's package, and borrowed `Surface` types from two
+versions cannot be passed between them. Flush/submit errors are propagated
+before pixel verification, including errors from the preservation check.
+
+The locked bindgen parser and formatter must also agree: bindgen `0.73.2`
+uses Syn `3`, so its `prettyplease` formatter is locked to `0.3.0`, as in the
+root workspace. Retaining `prettyplease 0.2` would introduce Syn `2` at that
+boundary and fail compilation before the GPU probe can run.
+
+On success it emits a single JSON object with `schemaVersion: 1`. In addition
+to the device name and `softwareDevice`, the report records the packed Vulkan
+API/driver version and vendor/device identifiers. `deviceInitializationMicros`
+and `measurements.timingsMicros` are monotonic host wall times for device/context
+initialization, target allocation, replay recording, flush/submit with a CPU
+wait, and the two verification readbacks. The flush duration can include work
+queued before replay and is not a GPU timestamp. The probe renders one small
+synthetic frame; these measurements are diagnostics, not FPS, warm-cache
+performance, document latency, or a presentation benchmark.
+
+`measurements.hostTransfers` counts the probe's two explicit `read_pixels`
+calls and their destination bytes. It does not instrument hidden driver
+transfers or promise that future host adapters perform no readback.
+`measurements.skiaResourceCache` exposes Skia's resource count, retained bytes,
+and configured limit after verification; those values are not total VRAM,
+process memory, or a cross-backend cache budget. `presentationVerified` and
+`hardwareAccelerationVerified` remain false: successful offscreen checks do
+not establish window presentation, external texture sharing, or hardware
+qualification. Context creation/submission/readback failures return a nonzero
+exit status rather than a successful skip.
+
 Use an explicit local Cargo target selected under the workspace build rules.
 The probe's GPU feature variant can download a different Skia binary cache and
 rebuild dependencies; inspect disk space before running it. Generating its lock
@@ -110,8 +143,8 @@ establish hardware acceleration. Hardware/Metal/Windows validation remains a
 separate host/platform task.
 
 The host setup follows the upstream
-[`graphite_offscreen_vulkan` example](https://github.com/rust-skia/rust-skia/blob/0.153.3/skia-safe/examples/graphite_offscreen_vulkan.rs)
+[`graphite_offscreen_vulkan` example](https://github.com/rust-skia/rust-skia/blob/0.156.0/skia-safe/examples/graphite_offscreen_vulkan.rs)
 for instance/device/queue/resolver lifetime, and uses Ganesh
-[`make_vulkan`](https://github.com/rust-skia/rust-skia/blob/0.153.3/skia-safe/src/gpu/ganesh/vk/vk_direct_context.rs)
-and [`render_target`](https://github.com/rust-skia/rust-skia/blob/0.153.3/skia-safe/src/gpu/ganesh/surface_ganesh.rs)
+[`make_vulkan`](https://github.com/rust-skia/rust-skia/blob/0.156.0/skia-safe/src/gpu/ganesh/vk/vk_direct_context.rs)
+and [`render_target`](https://github.com/rust-skia/rust-skia/blob/0.156.0/skia-safe/src/gpu/ganesh/surface_ganesh.rs)
 for the actual borrowed GPU surface.

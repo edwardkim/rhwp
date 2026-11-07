@@ -25,7 +25,10 @@ SOURCE_FILES = {
     **{
         f"examples/{name}": f"bindings/Native/examples/{name}"
         for name in (
-            "native_host.py", "native_worker.py", "native_file_store.py",
+            "native_host.py", "native_worker.py", "native_file_store.py", "native_worker_file_store.py",
+            "native_viewport_tiles.py",
+            "native_gl.py", "qt_gpu_view.py",
+            "native_accessibility.py",
             "qt_native_host.py", "qt-requirements.txt",
         )
     },
@@ -70,7 +73,14 @@ def main():
     parser.add_argument("mode", choices=("headless", "window"))
     parser.add_argument("--input", type=Path)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--renderer", choices=("cpu", "auto", "gl"))
+    parser.add_argument("--recovery-dir", type=Path)
+    parser.add_argument("--recovery-interval", type=float)
     args = parser.parse_args()
+    if args.renderer is not None and args.mode != "window":
+        parser.error("--renderer requires window mode")
+    if (args.recovery_dir is not None or args.recovery_interval is not None) and args.mode != "window":
+        parser.error("recovery options require window mode")
     if args.mode == "headless" and args.output is None:
         parser.error("headless mode requires --output (a new HWPX file)")
     root = Path(__file__).resolve().parent
@@ -118,6 +128,12 @@ def main():
             command.extend(["--input", str(args.input)])
         if args.output is not None:
             command.extend(["--output", str(args.output)])
+        if args.renderer is not None:
+            command.extend(["--renderer", args.renderer])
+        if args.recovery_dir is not None:
+            command.extend(["--recovery-dir", str(args.recovery_dir)])
+        if args.recovery_interval is not None:
+            command.extend(["--recovery-interval", str(args.recovery_interval)])
         return subprocess.run(command, check=False).returncode
     except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
         print("native host package: " + str(error), file=sys.stderr)

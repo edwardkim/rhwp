@@ -1,0 +1,238 @@
+{
+  "recorded_at": "2026-11-07T06:26:44.595690+00:00",
+  "builds": {
+    "equation-native-after-build": {
+      "source_head": "cda7c8cb33bb7ded970d033ed1543aabb49c63a2",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--bin",
+        "rhwp",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T04:45:11.943198+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T04:50:49.762640+00:00",
+      "artifact": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/after-equation-native/rhwp",
+        "sha256": "00be37771759ff243bc3d52ff4abe8b4f2566217cb0ca08d7edbdd5a31db0932"
+      }
+    },
+    "base-native-build": {
+      "name": "base-native",
+      "source_head": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--bin",
+        "rhwp",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T05:22:32.216580+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T05:31:37.722717+00:00",
+      "artifact_sha256": "28f1f2d348edd49affe5e537e097eb5ac94bb6ce3fe4480933e357b60558fb2e"
+    },
+    "fresh-wasm-build": {
+      "name": "fresh-wasm",
+      "source_head": "cda7c8cb33bb7ded970d033ed1543aabb49c63a2",
+      "command": [
+        "docker",
+        "compose",
+        "--env-file",
+        ".env.docker",
+        "-f",
+        "docker-compose.yml",
+        "-f",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/compose-wasm-tools.yml",
+        "run",
+        "--rm",
+        "--user",
+        "1002:1002",
+        "--env",
+        "HOST_UID=1002",
+        "--env",
+        "HOST_GID=1002",
+        "--env",
+        "CARGO_TARGET_DIR=/review-target",
+        "--env",
+        "CARGO_BUILD_JOBS=4",
+        "--env",
+        "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16",
+        "--env",
+        "BINARYEN_CORES=4",
+        "--env",
+        "CARGO_NET_OFFLINE=true",
+        "--env",
+        "RUSTUP_TOOLCHAIN=1.93.1",
+        "--volume",
+        "/home/edward/mygithub/rhwp/target/pr-review:/review-target",
+        "wasm"
+      ],
+      "route": "Docker shared-target read/write/hardlink verified; Rust 1.93.1 tool image",
+      "status": "passed",
+      "started_at": "2026-11-07T04:58:17.702228+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T05:22:29.483236+00:00",
+      "artifacts": {
+        "pkg/rhwp.js": "0099b8a6e00f750e1dbddb3a89bf42874f24effcf8bf4dc5eb328d69e691606b",
+        "pkg/rhwp_bg.wasm": "afc54e9d8140e9e9a9949516b53ce57615050026ad9df268e8b689ac40ca62ed",
+        "rhwp-studio/public/rhwp.js": "0099b8a6e00f750e1dbddb3a89bf42874f24effcf8bf4dc5eb328d69e691606b",
+        "rhwp-studio/public/rhwp_bg.wasm": "afc54e9d8140e9e9a9949516b53ce57615050026ad9df268e8b689ac40ca62ed"
+      }
+    },
+    "base-wasm-build": {
+      "name": "base-wasm",
+      "source_head": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+      "command": [
+        "docker",
+        "compose",
+        "--env-file",
+        ".env.docker",
+        "-f",
+        "docker-compose.yml",
+        "-f",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/compose-wasm-tools.yml",
+        "run",
+        "--rm",
+        "--user",
+        "1002:1002",
+        "--env",
+        "HOST_UID=1002",
+        "--env",
+        "HOST_GID=1002",
+        "--env",
+        "CARGO_TARGET_DIR=/review-target",
+        "--env",
+        "CARGO_BUILD_JOBS=4",
+        "--env",
+        "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16",
+        "--env",
+        "BINARYEN_CORES=4",
+        "--env",
+        "CARGO_NET_OFFLINE=true",
+        "--env",
+        "RUSTUP_TOOLCHAIN=1.93.1",
+        "--volume",
+        "/home/edward/mygithub/rhwp/target/pr-review:/review-target",
+        "wasm",
+        "sh",
+        "-ec",
+        "scripts/wasm-pack-locked.sh --target web --out-dir output/pr-review/seo-rii-20261107/base-pkg"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T05:31:39.129526+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T05:44:08.379597+00:00",
+      "artifacts": {
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/base-pkg/rhwp.js": "0099b8a6e00f750e1dbddb3a89bf42874f24effcf8bf4dc5eb328d69e691606b",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/base-pkg/rhwp_bg.wasm": "f3d5470f7da0e5f1b19223ce4c37e9ac225dff3d602a2e13a857a8ae2b460c22"
+      }
+    },
+    "studio-build-final": {
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "npm",
+        "--prefix",
+        "rhwp-studio",
+        "run",
+        "build"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T05:26:18.930754+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T05:26:30.402859+00:00"
+    }
+  },
+  "environment": {
+    "rust": "1.93.1",
+    "native_profile": "release-test: opt-level 3, codegen-units 16",
+    "wasm": "wasm-pack locked web release + wasm-opt; Docker shared-target same host mount",
+    "browser": "Chromium linux-1660786",
+    "comparison": "96 DPI, compat 2022, Print; 5 public baseline faces + bounded 6-program local supply; no private font programs committed"
+  },
+  "input_reference_hashes": [
+    {
+      "key": "radial",
+      "input": "tests/fixtures/gradient/radial-corner-print-contract.hwpx",
+      "pdf": "tests/fixtures/gradient/radial-corner-print-contract-2020.pdf",
+      "input_sha256": "01884d8ea148e21fdb68194dd23c353c635903e4fc19d8b242e1efbe1d0aaf0d",
+      "pdf_sha256": "1f0a7707198e81b8bd9a93efe9e5e6a35fe3ffd9e0131ebb4851c71e9ec2d1a8"
+    },
+    {
+      "key": "eq-01",
+      "input": "samples/eq-01.hwp",
+      "pdf": "pdf/eq-01-hwp-2020.pdf",
+      "input_sha256": "d4b5e4730da12395c953d16c026c979adfdf3235eee4be605cef0ab758a7e5ec",
+      "pdf_sha256": "ee030acffaa0e06194a1409d507b05b12c4a9f8760eeaf9771efbe9c0235296b"
+    },
+    {
+      "key": "shape-group",
+      "input": "samples/shape-group-02.hwp",
+      "pdf": "pdf/shape-group-02-hwp-2020.pdf",
+      "input_sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "pdf_sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7"
+    },
+    {
+      "key": "picture-crop",
+      "input": "samples/pic-crop-01.hwp",
+      "pdf": "pdf/pic-crop-01-2022.pdf",
+      "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "pdf_sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3"
+    },
+    {
+      "key": "leading-definition",
+      "input": "mydocs/pr/assets/leading-definition-slots/input/report-implicit-column.hwpx",
+      "pdf": "pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf",
+      "input_sha256": "28768b01550ba2596c5e2bd182454a39a6700c8789fbe95e198d83c3898c4a40",
+      "pdf_sha256": "8e7af1fcc369dbc45405bd0073850d085122a9d3f9f637678f119b324831d0d7"
+    },
+    {
+      "key": "recent-8555",
+      "input": "samples/issue8555/21868765_cell_text_edit.hwp",
+      "pdf": "pdf/issue8555/21868765_cell_text_edit-hwp-mac-12.30.pdf",
+      "environment": "mydocs/pr/assets/kang-t-20261106/print-reference-font-environment.json",
+      "input_sha256": "bbf1f72951b6ff5de258f806c5d2569214538b76a867ecebce10f9da8718ff9e",
+      "pdf_sha256": "aa6a2bf0fb12525a5108fab7a812e7ba81f8b879e9a50651b5128dc36f722c93"
+    },
+    {
+      "key": "recent-8556",
+      "input": "samples/issue8556/21868765_cell_picture_insert.hwp",
+      "pdf": "pdf/issue8556/21868765_cell_picture_insert-hwp-mac-12.30.pdf",
+      "environment": "mydocs/pr/assets/kang-t-20261106/print-reference-font-environment.json",
+      "input_sha256": "507362e6c73d6db4db73fe4b42ae8110c945747ec4b7564e9b83044cb9ceb074",
+      "pdf_sha256": "bf19f16e555477bdbe63862bb196a0ad35e65942b77a3d11d41e65a1e3b1a57a"
+    },
+    {
+      "key": "recent-8557",
+      "input": "samples/issue8557/21868765_relocated_picture.hwp",
+      "pdf": "pdf/issue8557/21868765_relocated_picture-hwp-mac-12.30.pdf",
+      "environment": "mydocs/pr/assets/kang-t-20261106/print-reference-font-environment.json",
+      "input_sha256": "0d7cfc1df9f86da46cb12ebe5aa1eb0fbd9e660d4302f7a6facee8296ee09001",
+      "pdf_sha256": "568d2037f8b132c25b70c4a26b3bca0f13168b92d755ad1a13891ddc2e929107"
+    }
+  ],
+  "font_supply_provenance": "font-supply-provenance.json",
+  "input8337": {
+    "input": "samples/issue7593/repro-equation-issue7593.hwpx",
+    "reference": "pdf/issue7593/repro-equation-issue7593-hwpx-2020.pdf",
+    "input_sha256": "88a3683c34e92f8887e54b9b379f8c399a8ec844e46e127793c6486cba8d31ec",
+    "reference_sha256": "206b9fc127a8f40e63fc49ba86ebd455f7d4e651e1f32dbf68d3915052d9f8db"
+  }
+}

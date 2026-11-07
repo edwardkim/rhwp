@@ -1,0 +1,132 @@
+{
+  "base": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+  "candidate": "cda7c8cb33bb7ded970d033ed1543aabb49c63a2",
+  "same_reference_raster": true,
+  "conditions": "96 DPI Print compat2022; 5 public fonts + same body subset supply, original HyhwpEQ absent",
+  "base_result": "AB/CD/4/3 absent in direct reading",
+  "candidate_result": "AB/CD/4/3 restored in direct reading",
+  "rows": [
+    {
+      "label": "base",
+      "raw": 93.8448,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/base-equation-missing-face-sweep/issue8337-no-equation-face/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/base-equation-missing-face-sweep/issue8337-no-equation-face/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/issue8337-latest-base-review/base/overlay_001.png",
+        "width": 971,
+        "height": 1375,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 1335125,
+        "diff_pixels": 9795,
+        "diff_ratio": 0.00733639,
+        "pixel_match_percent": 99.26636,
+        "ink_union_pixels": 14768,
+        "ink_diff_pixels": 9795,
+        "ink_diff_ratio": 0.6632584,
+        "ink_match_percent": 33.67416,
+        "visual_accuracy_proxy_percent": 33.67416,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 93.8448,
+        "silhouette_raw_unmatched_pixels": 909,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 14768,
+        "tolerant_content_match_percent": 93.8448,
+        "mean_abs_channel_delta": 0.717,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          75,
+          132,
+          485,
+          1300
+        ]
+      },
+      "png_sha256": "a5a51555b4b7faec2670ee661050d79c8b63a7be568624b7cab483173cb07a6c"
+    },
+    {
+      "label": "candidate",
+      "raw": 99.6345,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/after-equation-native-sweep/issue8337-body-only/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/after-equation-native-sweep/issue8337-body-only/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/issue8337-latest-base-review/candidate/overlay_001.png",
+        "width": 971,
+        "height": 1375,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 1335125,
+        "diff_pixels": 9867,
+        "diff_ratio": 0.00739032,
+        "pixel_match_percent": 99.26097,
+        "ink_union_pixels": 15048,
+        "ink_diff_pixels": 9867,
+        "ink_diff_ratio": 0.65570175,
+        "ink_match_percent": 34.42982,
+        "visual_accuracy_proxy_percent": 34.42982,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.6345,
+        "silhouette_raw_unmatched_pixels": 55,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 15048,
+        "tolerant_content_match_percent": 99.6345,
+        "mean_abs_channel_delta": 0.716,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          75,
+          132,
+          485,
+          1300
+        ]
+      },
+      "png_sha256": "e3a5ce6ab9265bb7ba0c55034f5f37ca98e7ef993c129875ec28cb4c9f9da6d9"
+    }
+  ],
+  "base_execution": {
+    "source_head": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+    "command": [
+      "python3",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont-base.py",
+      "/home/edward/mygithub/rhwp/venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--silhouette-only",
+      "--hwp",
+      "samples/issue7593/repro-equation-issue7593.hwpx",
+      "--pdf",
+      "pdf/issue7593/repro-equation-issue7593-hwpx-2020.pdf",
+      "--key",
+      "issue8337-no-equation-face",
+      "--rhwp-bin",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/base-native/rhwp",
+      "--compat",
+      "2022",
+      "--dpi",
+      "96",
+      "--font-path",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/visual-body-subsets",
+      "--page-workers",
+      "1",
+      "--out",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/base-equation-missing-face-sweep"
+    ],
+    "status": "passed",
+    "started_at": "2026-11-07T06:37:43.883330+00:00",
+    "returncode": 0,
+    "finished_at": "2026-11-07T06:38:55.998553+00:00"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "recorded_at": "2026-11-07T03:57:44.191404+00:00",
+  "source": "explicit user reply in current session",
+  "pr": 8726,
+  "decision": "limited experimental foundation acceptance exception",
+  "scope": [
+    "native-skia-metal remains opt-in/default-disabled",
+    "portable lifetime and disabled ABI checks still required and executed",
+    "macOS Apple SDK compile/link and physical Metal execution remain unverified",
+    "continuousPresentationSupported stays false; existing immutable/quarantine frame and byte caps preserved",
+    "no claim of completed macOS support or continuous GPU qualification"
+  ],
+  "not_authorized": [
+    "remote push",
+    "new PR",
+    "public comment",
+    "merge",
+    "workflow rerun"
+  ]
+}

@@ -211,6 +211,10 @@ def run(host, expected_native_skia):
     require(caps["abiVersion"] == 1, "expected native ABI v1")
     require(caps["nativeSkia"] is expected_native_skia,
             f"wrong build artifact: expected nativeSkia={expected_native_skia}, got {caps['nativeSkia']}")
+    require(caps["renderTiledRegion"] is expected_native_skia, "tiled capability mismatch")
+    require(caps["rasterCacheControls"] is expected_native_skia, "raster cache capability mismatch")
+    require(caps["cooperativeTiledCancellation"] is expected_native_skia,
+            "cooperative tiled cancellation capability mismatch")
     rejected(host.call("open", None, 1, None, 0), "invalidArgument")
     rejected(host.call("open", None, caps["maxDocumentBytes"] + 1, None, 0), "limitExceeded")
     rejected(host.call("open", None, 0, None, 1), "invalidArgument")
@@ -249,9 +253,33 @@ def run(host, expected_native_skia):
             cropped = accepted(host.request(a, **region))
             copy_buffer_contract(host, cropped)
             release_buffer_contract(host, cropped)
+            accepted(host.request(a, op="setRasterCacheLimit", maxBytes=8 * 1024 * 1024))
+            tiled = dict(region, op="renderTiledRegion", x=-0.1, y=1.25,
+                         width=1.2, height=2.5, scale=8)
+            for _ in range(2):
+                viewport = accepted(host.request(a, **tiled))
+                require((viewport["originX"], viewport["originY"]) == (-1, 10),
+                        "tiled frame lost enclosing device origin")
+                require((viewport["width"], viewport["height"], viewport["stride"],
+                         viewport["byteLength"]) == (10, 20, 40, 800), "tiled extent mismatch")
+                copy_buffer_contract(host, viewport)
+                release_buffer_contract(host, viewport)
+            stats = accepted(host.request(a, op="rasterCacheStats"))["stats"]
+            require(stats["tileHits"] > 0 and stats["tileEntries"] > 0, "tiles were not reused")
+            require(stats["retainedBytes"] <= 8 * 1024 * 1024, "combined raster limit exceeded")
+            require("tileHits" not in accepted(host.request(a, op="cacheStats"))["stats"],
+                    "renderer resources and raster stats were conflated")
+            rejected(host.request(a, op="setRasterCacheLimit", maxBytes=64 * 1024 * 1024 + 1),
+                     "limitExceeded")
+            accepted(host.request(a, op="setRasterCacheLimit", maxBytes=0))
+            require(accepted(host.request(a, op="rasterCacheStats"))["stats"]["retainedBytes"] == 0,
+                    "zero raster budget did not clear retention")
         else:
             rejected(frame, "featureDisabled")
             rejected(host.request(a, **region), "featureDisabled")
+            rejected(host.request(a, **dict(region, op="renderTiledRegion")), "featureDisabled")
+            rejected(host.request(a, op="rasterCacheStats"), "featureDisabled")
+            rejected(host.request(a, op="setRasterCacheLimit", maxBytes=0), "featureDisabled")
             before = accepted(host.request(a, op="fontState"))
             rejected(host.request(a, op="setFonts", paths=["rhwp-probe-absent-font.ttf"]), "featureDisabled")
             require(accepted(host.request(a, op="fontState")) == before, "disabled font update changed state")

@@ -106,12 +106,13 @@ impl NativeDocumentSession {
             let generation = self.font_generation.checked_add(1).ok_or_else(|| {
                 NativeHostError::LimitExceeded("font generation exhausted".into())
             })?;
+            let font_data: std::sync::Arc<[Vec<u8>]> = bytes.into();
             let renderer = crate::renderer::skia::SkiaLayerRenderer::new()
                 .with_cache_limits(
                     super::MAX_RENDER_CACHE_ENTRIES,
                     super::MAX_RENDER_CACHE_BYTES,
                 )
-                .try_with_font_data(&bytes)?;
+                .try_with_font_data(&font_data)?;
 
             // Validation and renderer construction finish before the core can
             // change. set_font_environment checks batch/validation errors before
@@ -120,6 +121,7 @@ impl NativeDocumentSession {
             renderer.prepare_native_otf_fonts(&mut self.core)?;
             self.renderer = std::cell::OnceCell::from(renderer);
             self.fonts = next;
+            self.font_data = font_data;
             self.font_generation = generation;
             self.region_cache.get_mut().invalidate();
             Ok(true)

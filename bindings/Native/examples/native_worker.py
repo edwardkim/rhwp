@@ -35,6 +35,12 @@ class NativeWorker:
         return self.host.host_request(op="workerOpen", worker=self.worker,
                                       replace=replace, data=data)["requestId"]
 
+    def open_recovery_bytes(self, data, replace=None):
+        """Open explicit recovery bytes with no adopted user-save checkpoint."""
+        self._check_open()
+        return self.host.host_request(op="workerOpenRecovery", worker=self.worker,
+                                      replace=replace, data=data)["requestId"]
+
     def cancel(self, request_id):
         self._check_open()
         return self.host.host_request(op="workerCancel", worker=self.worker,
@@ -80,6 +86,8 @@ class NativeWorker:
             for result in self._deferred:
                 if "buffer" in result:
                     self.host.call("buffer_release", result["buffer"])
+                if result.get("kind") == "renderSnapshot" and "snapshot" in result:
+                    self.host.presentation_request(op="snapshotRelease", snapshot=result["snapshot"])
             self._deferred.clear()
             result = self.host.host_request(op="workerClose", worker=self.worker)
             self._closed = True

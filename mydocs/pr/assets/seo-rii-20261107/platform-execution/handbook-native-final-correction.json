@@ -1,0 +1,14 @@
+{
+  "source_head": "cda7c8cb33bb7ded970d033ed1543aabb49c63a2",
+  "status": "passed",
+  "pages": 383,
+  "minimum_raw": "99.96",
+  "baseline_regressions": 0,
+  "baseline": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/handbook-hwpx-native.tsv",
+  "tsv": "handbook-native-final-correction.tsv",
+  "backend": "native-skia",
+  "metric": "silhouette_raw_match_percent",
+  "dpi": 96,
+  "minimal_system_families": 5,
+  "fonts": "canonical handbook public KoPub/HAN supply; original hashes retained in existing handbook environment record"
+}

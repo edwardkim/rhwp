@@ -1,0 +1,18 @@
+{
+  "candidate": {
+    "source_head": "cda7c8cb33bb7ded970d033ed1543aabb49c63a2",
+    "radial_shading_dictionaries": 6,
+    "image_xobjects": 0,
+    "bytes": 69146
+  },
+  "base": {
+    "source_head": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+    "exit": 1,
+    "exists": false,
+    "radial_shading_dictionaries": 0,
+    "image_xobjects": 0,
+    "bytes": 0,
+    "actual_error": "direct PDF page 1 cannot replay rectangle without visual loss: non-linear gradient fill; use the svg backend"
+  },
+  "method": "literal PDF dictionary markers /ShadingType 3 and /Subtype /Image"
+}

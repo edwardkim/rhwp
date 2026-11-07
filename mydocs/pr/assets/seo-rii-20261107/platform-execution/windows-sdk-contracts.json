@@ -1,0 +1,21 @@
+{
+  "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+  "executed_at": "2026-11-07T03:38:38.881971+00:00",
+  "platform": "actual Windows PE through WSL interop",
+  "results": [
+    {
+      "test": "public_texture_contract.exe",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "",
+      "sha256": "d867c449f33105498c863a3940c2d188b346e291c8d5f619c087f10ff61f5765"
+    },
+    {
+      "test": "frame_lifetime_contract.exe",
+      "returncode": 0,
+      "stdout": "Windows bridge portable: 8 cases, 51 checks passed\n",
+      "stderr": "",
+      "sha256": "c3a057f9f19b56796264370af80fe6242f83462a9d6c167160e7c9018926b0cb"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "native_exe": "target/pr-review/release/rhwp.exe",
+  "native_sha256": "2284ff6defecbd40754af052d47d6bd63c2b2ab56a28b3ee3276552b8b5e15ec",
+  "wasm_sha256": "9a54d8e810e09e0a2e26de9a9f27ee10591765f350777408414a4dc3f5d7eb49",
+  "build_command": "cargo build --locked --release --features native-skia --bin rhwp",
+  "build_exit": 0,
+  "scores_exit": 0,
+  "review_exit": 0,
+  "command_script": "mydocs/pr/assets/issue_8733/visual-commands.md",
+  "manual_inspection": "All seven full-page Native review images directly inspected; imported raw0 compare also inspected.",
+  "limitations": [
+    "Hancom Print 100% horizontal and vertical scaling not independently confirmed; canonical baseline approval withheld.",
+    "Installed Xpdf pdftotext lacks -bbox-layout: exit 99, PDF question-marker analysis skipped.",
+    "Raw silhouette 100% does not detect missing hatch lines; imported raw0 is a visual mismatch in both backends."
+  ],
+  "results": [
+    {
+      "key": "cell-new-solid-hwp",
+      "run_state": "complete",
+      "pages": [
+        1
+      ],
+      "raw_silhouette_percent": 100.0,
+      "pixel_match_percent": 99.74575,
+      "numeric_gate": "passed",
+      "manual_review": "solid fill and position match with minor edge raster differences; not pixel-identical",
+      "review": "mydocs/pr/assets/issue_8733/native/cell-new-solid-hwp-review.png",
+      "pdf": "pdf/issue_8733/observed_prints/cell-new-solid-hwp-2020.pdf"
+    },
+    {
+      "key": "cell-new-solid-hwpx",
+      "run_state": "complete",
+      "pages": [
+        1
+      ],
+      "raw_silhouette_percent": 100.0,
+      "pixel_match_percent": 99.74575,
+      "numeric_gate": "passed",
+      "manual_review": "solid fill and position match with minor edge raster differences; not pixel-identical",
+      "review": "mydocs/pr/assets/issue_8733/native/cell-new-solid-hwpx-review.png",
+      "pdf": "pdf/issue_8733/observed_prints/cell-new-solid-hwpx-2020.pdf"
+    },
+    {
+      "key": "table-new-solid-hwpx",
+      "run_state": "complete",
+      "pages": [
+        1
+      ],
+      "raw_silhouette_percent": 100.0,
+      "pixel_match_percent": 99.74564,
+      "numeric_gate": "passed",
+      "manual_review": "solid fill and position match with minor edge raster differences; not pixel-identical",
+      "review": "mydocs/pr/assets/issue_8733/native/table-new-solid-hwpx-review.png",
+      "pdf": "pdf/issue_8733/observed_prints/table-new-solid-hwpx-2020.pdf"
+    },
+    {
+      "key": "imported-raw-zero-hwp",
+      "run_state": "complete",
+      "pages": [
+        1
+      ],
+      "raw_silhouette_percent": 100.0,
+      "pixel_match_percent": 99.62082,
+      "numeric_gate": "passed",
+      "manual_review": "hatch_mismatch: Hancom has two interior horizontal lines; Native is solid, as also observed in WASM",
+      "review": "mydocs/pr/assets/issue_8733/native/imported-raw-zero-hwp-review.png",
+      "pdf": "pdf/issue_8733/observed_prints/imported-raw-zero-hwp-2020.pdf"
+    },
+    {
+      "key": "cell-cleared-zero-hwp",
+      "run_state": "complete",
+      "pages": [
+        1
+      ],
+      "raw_silhouette_percent": 100.0,
+      "pixel_match_percent": 99.74575,
+      "numeric_gate": "passed",
+      "manual_review": "solid fill and position match with minor edge raster differences; not pixel-identical",
+      "review": "mydocs/pr/assets/issue_8733/native/cell-cleared-zero-hwp-review.png",
+      "pdf": "pdf/issue_8733/observed_prints/cell-cleared-zero-hwp-2020.pdf"
+    },
+    {
+      "key": "table-cleared-zero-hwp",
+      "run_state": "complete",
+      "pages": [
+        1
+      ],
+      "raw_silhouette_percent": 100.0,
+      "pixel_match_percent": 99.74553,
+      "numeric_gate": "passed",
+      "manual_review": "solid fill and position match with minor edge raster differences; not pixel-identical",
+      "review": "mydocs/pr/assets/issue_8733/native/table-cleared-zero-hwp-review.png",
+      "pdf": "pdf/issue_8733/observed_prints/table-cleared-zero-hwp-2020.pdf"
+    },
+    {
+      "key": "table-new-solid-hwp",
+      "run_state": "complete",
+      "pages": [
+        1
+      ],
+      "raw_silhouette_percent": 100.0,
+      "pixel_match_percent": 99.74564,
+      "numeric_gate": "passed",
+      "manual_review": "solid fill and position match with minor edge raster differences; not pixel-identical",
+      "review": "mydocs/pr/assets/issue_8733/native/table-new-solid-hwp-review.png",
+      "pdf": "pdf/issue_8733/observed_prints/table-new-solid-hwp-2020.pdf"
+    }
+  ]
+}

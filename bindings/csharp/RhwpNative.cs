@@ -74,6 +74,43 @@ public static class RhwpNative
     [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr rhwp_native_host_request(byte[] request, UIntPtr requestLength, byte[] data, UIntPtr dataLength);
 
+    // Presentation handles are the explicit cross-thread exception. A lease
+    // keeps its bytes valid until release; callers must serialize that release
+    // with every consumer of the borrowed pointer.
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_presentation_request(byte[] request, UIntPtr requestLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_presentation_lease_data(ulong lease, out UIntPtr length);
+
+    // GL callbacks and context belong to the creating OS thread. Their native
+    // addresses stay live through explicit presenter release/abandon.
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_gl_presenter_create(ulong contextId, ulong deviceGeneration, IntPtr getProcAddress, IntPtr isCurrent, IntPtr userData, byte[] config, UIntPtr configLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_gl_presenter_recreate(ulong presenter, ulong contextId, ulong deviceGeneration, IntPtr getProcAddress, IntPtr isCurrent, IntPtr userData, byte[] config, UIntPtr configLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_gl_presenter_request(ulong presenter, byte[] request, UIntPtr requestLength);
+
+    // Metal pointers stay typed at the C ABI and presenters stay on their
+    // producer OS thread. The native capability is false on other platforms.
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_metal_capabilities();
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_metal_presenter_create(IntPtr device, IntPtr commandQueue, ulong deviceGeneration, byte[] config, UIntPtr configLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_metal_presenter_render(ulong presenter, IntPtr texture, byte[] request, UIntPtr requestLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_metal_presenter_request(ulong presenter, byte[] request, UIntPtr requestLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_metal_frame_check(byte[] request, UIntPtr requestLength);
+
     public static string SessionClose(ulong handle) => TakeResultString(rhwp_session_close(handle));
 
     public static string SessionBufferCopy(ulong buffer, byte[] destination)
@@ -113,6 +150,23 @@ public static class RhwpNative
 
     [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr rhwp_read_text(byte[] inputPath, int page);
+
+    // Optional D3D12 producer ABI. COM pointers and metadata spans stay opaque;
+    // presenter handles belong to the creating producer OS thread.
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_d3d_capabilities();
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_d3d_presenter_create(IntPtr adapter, IntPtr device, IntPtr commandQueue, ulong deviceGeneration, IntPtr config, UIntPtr configLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_d3d_presenter_render(ulong presenter, IntPtr resource, IntPtr request, UIntPtr requestLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_d3d_presenter_request(ulong presenter, IntPtr request, UIntPtr requestLength);
+
+    [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr rhwp_d3d_frame_check(IntPtr request, UIntPtr requestLength);
 
     [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
     private static extern void rhwp_string_free(IntPtr value);

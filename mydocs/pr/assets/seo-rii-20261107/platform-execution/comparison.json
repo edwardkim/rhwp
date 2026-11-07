@@ -1,0 +1,56 @@
+{
+  "scope": "actual Flutter Impeller GLES/llvmpipe compositor texture vs Native CPU region, public image fixture, screen profile, DPR 1; not Hancom fidelity or physical GPU qualification",
+  "screenshot_size": [
+    1280,
+    720
+  ],
+  "viewport_crop": [
+    480,
+    240,
+    320,
+    240
+  ],
+  "exact_rgb_pixel_percent": 99.59895833333333,
+  "max_channel_delta": 58,
+  "mean_absolute_channel_delta": 0.009110243055555555,
+  "cpu_ink_pixels": 1640,
+  "changed_ink_pixels": 308,
+  "files": {
+    "flutter-window.png": "31de663ce8789ca8a08bf244859fb24bfca7037cc90b7b2c5345e9661f8f95f4",
+    "cpu.png": "9a20ba2c1796e73789e1f6da5054566437b68a23fef209aa81efa262002343b9",
+    "flutter-texture.png": "0de714b78af5ea57b884d3ee156018b0ae578b782b53b823615a63ad62378a9b"
+  },
+  "cpu_ink_bbox": [
+    45,
+    52,
+    85,
+    93
+  ],
+  "cpu_red_center_rgb": [
+    255,
+    0,
+    0
+  ],
+  "cpu_blue_edge_rgb": [
+    52,
+    37,
+    240
+  ],
+  "flutter_ink_bbox": [
+    45,
+    52,
+    85,
+    93
+  ],
+  "flutter_red_center_rgb": [
+    255,
+    0,
+    0
+  ],
+  "flutter_blue_edge_rgb": [
+    55,
+    39,
+    239
+  ],
+  "coverage_unmatched_beyond_2px": 0
+}

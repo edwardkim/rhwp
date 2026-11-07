@@ -7,18 +7,24 @@ use std::collections::VecDeque;
 use super::{NativeDocumentSession, NativeFrame, NativeHostError, MAX_FRAME_PIXELS};
 use crate::renderer::layer_renderer::RasterRenderOptions;
 use crate::renderer::raster_pixels::{RasterRegion, RasterRegionPixels};
-use crate::renderer::skia::{PreparedSkiaPage, SkiaRegionPlan, SkiaTilePlan};
+use crate::renderer::skia::{
+    PreparedSkiaPage, PreparedSkiaTile, SkiaRegionPlan, SkiaTileBounds, SkiaTilePlan,
+};
 
 pub const DEFAULT_REGION_CACHE_BYTES: usize = 8 * 1024 * 1024;
 pub const MAX_REGION_CACHE_BYTES: usize = 64 * 1024 * 1024;
 /// Bound metadata as well as pixel storage, including very small page rasters.
 pub const MAX_REGION_CACHE_ENTRIES: usize = 4;
+pub const MAX_TILE_CACHE_ENTRIES: usize = 64;
 
 /// Counters accumulate for the session lifetime, including across cache clears.
 /// `replays` counts successful full-page rasterizations for region requests.
 /// Hits count successful requests served by the matching retained snapshot;
 /// `off_page_requests` counts successful clear-only requests on a cold key.
-/// Gauges count all retained N32 images, excluding output buffers, renderer
+/// `entries` counts full-page snapshots; tile counters count individual tiles,
+/// including successful tiles from a request that later fails. Tile hits and
+/// misses count lookups. `retained_bytes` includes both kinds of N32 images.
+/// Gauges exclude output buffers, renderer
 /// resources, layout data and Skia intermediates. This is not an RSS estimate.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -32,6 +38,13 @@ pub struct NativeRegionCacheStats {
     pub invalidations: u64,
     pub bypassed_oversized: u64,
     pub off_page_requests: u64,
+    pub tile_entries: usize,
+    pub tile_retained_bytes: usize,
+    pub tile_hits: u64,
+    pub tile_misses: u64,
+    pub tile_replays: u64,
+    pub tile_evictions: u64,
+    pub tile_bypassed_oversized: u64,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -44,7 +57,31 @@ struct RegionKey {
 
 struct RegionEntry {
     key: RegionKey,
-    page: PreparedSkiaPage,
+    raster: RegionRaster,
+}
+
+enum RegionRaster {
+    Page(PreparedSkiaPage),
+    Tile {
+        origin: (i32, i32),
+        tile: PreparedSkiaTile,
+    },
+}
+
+impl RegionEntry {
+    fn page(&self) -> Option<&PreparedSkiaPage> {
+        match &self.raster {
+            RegionRaster::Page(page) => Some(page),
+            RegionRaster::Tile { .. } => None,
+        }
+    }
+
+    fn retained_bytes(&self) -> usize {
+        match &self.raster {
+            RegionRaster::Page(page) => page.retained_bytes(),
+            RegionRaster::Tile { tile, .. } => tile.retained_bytes(),
+        }
+    }
 }
 
 pub(super) struct NativeRegionCache {
@@ -65,10 +102,19 @@ impl Default for NativeRegionCache {
 }
 
 impl NativeRegionCache {
-    fn evict_oldest(&mut self) {
-        if self.entries.pop_front().is_some() {
-            self.stats.evictions = self.stats.evictions.saturating_add(1);
+    fn evict(&mut self, index: usize) {
+        if let Some(entry) = self.entries.remove(index) {
+            let counter = if entry.page().is_some() {
+                &mut self.stats.evictions
+            } else {
+                &mut self.stats.tile_evictions
+            };
+            *counter = counter.saturating_add(1);
         }
+    }
+
+    fn evict_oldest(&mut self) {
+        self.evict(0);
     }
 
     fn evict_all(&mut self) {
@@ -78,10 +124,45 @@ impl NativeRegionCache {
     }
 
     fn retained_bytes(&self) -> usize {
+        self.entries.iter().map(RegionEntry::retained_bytes).sum()
+    }
+
+    fn page_count(&self) -> usize {
         self.entries
             .iter()
-            .map(|entry| entry.page.retained_bytes())
-            .sum()
+            .filter(|entry| entry.page().is_some())
+            .count()
+    }
+
+    fn reserve(&mut self, bytes: usize, for_tile: bool, allocation_bytes: u64) {
+        if bytes > self.max_bytes {
+            // Preserve oversized full-page bypass and use the same policy for
+            // tiles. No old raster remains alive during the new allocation.
+            self.evict_all();
+        } else {
+            let count = if for_tile {
+                self.entries.len() - self.page_count()
+            } else {
+                self.page_count()
+            };
+            let cap = if for_tile {
+                MAX_TILE_CACHE_ENTRIES
+            } else {
+                MAX_REGION_CACHE_ENTRIES
+            };
+            if count >= cap {
+                let index = self
+                    .entries
+                    .iter()
+                    .position(|entry| entry.page().is_none() == for_tile)
+                    .expect("entry at kind limit");
+                self.evict(index);
+            }
+            while self.retained_bytes() + bytes > self.max_bytes {
+                self.evict_oldest();
+            }
+        }
+        self.evict_for_allocation(allocation_bytes);
     }
 
     fn evict_for_allocation(&mut self, allocation_bytes: u64) {
@@ -101,15 +182,62 @@ impl NativeRegionCache {
 
     fn stats(&self) -> NativeRegionCacheStats {
         let mut stats = self.stats;
-        stats.entries = self.entries.len();
+        stats.entries = self.page_count();
         stats.retained_bytes = self.retained_bytes();
+        stats.tile_entries = self.entries.len() - stats.entries;
+        stats.tile_retained_bytes = self
+            .entries
+            .iter()
+            .filter(|entry| entry.page().is_none())
+            .map(RegionEntry::retained_bytes)
+            .sum();
         stats
+    }
+
+    fn tile(
+        &mut self,
+        key: RegionKey,
+        bounds: SkiaTileBounds,
+        output_bytes: usize,
+        render: impl FnOnce() -> crate::renderer::layer_renderer::LayerRenderResult<PreparedSkiaTile>,
+    ) -> crate::renderer::layer_renderer::LayerRenderResult<PreparedSkiaTile> {
+        if let Some(index) = self.entries.iter().position(|entry| {
+            entry.key == key
+                && matches!(entry.raster, RegionRaster::Tile { origin, .. } if origin == bounds.origin)
+        }) {
+            let entry = self.entries.remove(index).expect("matching tile");
+            let RegionRaster::Tile { tile, .. } = &entry.raster else {
+                unreachable!("matching tile kind")
+            };
+            let tile = tile.clone();
+            self.entries.push_back(entry);
+            self.stats.tile_hits = self.stats.tile_hits.saturating_add(1);
+            return Ok(tile);
+        }
+        self.stats.tile_misses = self.stats.tile_misses.saturating_add(1);
+        let bytes = bounds.retained_bytes();
+        self.reserve(bytes, true, bytes as u64 + output_bytes as u64);
+        let tile = render()?;
+        self.stats.tile_replays = self.stats.tile_replays.saturating_add(1);
+        if tile.retained_bytes() <= self.max_bytes {
+            self.entries.push_back(RegionEntry {
+                key,
+                raster: RegionRaster::Tile {
+                    origin: bounds.origin,
+                    tile: tile.clone(),
+                },
+            });
+        } else {
+            self.stats.tile_bypassed_oversized =
+                self.stats.tile_bypassed_oversized.saturating_add(1);
+        }
+        Ok(tile)
     }
 }
 
 impl NativeDocumentSession {
-    /// Configure total retention for up to four completed CPU page/scale
-    /// snapshots, from zero (disabled) to 64 MiB. Changing the limit evicts all
+    /// Configure combined retention for up to four full-page snapshots and 64
+    /// fixed-grid tiles, from zero (disabled) to 64 MiB. Changing the limit evicts all
     /// entries before returning. Rejected values leave the existing limit,
     /// snapshots and counters intact.
     /// The per-request 128 MiB bitmap peak remains independent of this limit.
@@ -150,11 +278,18 @@ impl NativeDocumentSession {
             scale: scale.to_bits(),
         };
         let mut cache = self.region_cache.borrow_mut();
-        if let Some(index) = cache.entries.iter().position(|entry| entry.key == key) {
-            let plan = cache.entries[index].page.plan_region(region)?;
+        let find_page = |entry: &RegionEntry| entry.key == key && entry.page().is_some();
+        if let Some(index) = cache.entries.iter().position(find_page) {
+            let plan = cache.entries[index]
+                .page()
+                .expect("matching page")
+                .plan_region(region)?;
             cache.evict_for_allocation(plan.output_bytes() as u64);
-            if let Some(index) = cache.entries.iter().position(|entry| entry.key == key) {
-                let output = cache.entries[index].page.render_region(region)?;
+            if let Some(index) = cache.entries.iter().position(find_page) {
+                let output = cache.entries[index]
+                    .page()
+                    .expect("matching page")
+                    .render_region(region)?;
                 let entry = cache.entries.remove(index).expect("matching cache entry");
                 cache.entries.push_back(entry);
                 cache.stats.hits = cache.stats.hits.saturating_add(1);
@@ -166,7 +301,7 @@ impl NativeDocumentSession {
 
         let tree = self
             .core
-            .build_page_layer_tree_with_profile(page, crate::paint::RenderProfile::Screen)?;
+            .build_page_layer_tree_shared_with_profile(page, crate::paint::RenderProfile::Screen)?;
         let plan = SkiaRegionPlan::new(tree.page_width, tree.page_height, region, options)?;
         cache.stats.misses = cache.stats.misses.saturating_add(1);
         if plan.intersection().is_none() {
@@ -182,16 +317,11 @@ impl NativeDocumentSession {
         // Reserve room before creating the new surface. Its immutable snapshot
         // shares that allocation, so working_bytes is also its retention cost.
         // Preserve the existing oversized-page bypass: release all old images.
-        if plan.working_bytes() > cache.max_bytes as u64 {
-            cache.evict_all();
-        } else {
-            while cache.entries.len() >= MAX_REGION_CACHE_ENTRIES
-                || cache.retained_bytes() as u64 + plan.working_bytes() > cache.max_bytes as u64
-            {
-                cache.evict_oldest();
-            }
-        }
-        cache.evict_for_allocation(plan.peak_bitmap_bytes());
+        cache.reserve(
+            plan.working_bytes() as usize,
+            false,
+            plan.peak_bitmap_bytes(),
+        );
         let (output, prepared) = self
             .renderer()
             .prepare_page_for_region(&tree, region, options)?;
@@ -201,7 +331,7 @@ impl NativeDocumentSession {
             if prepared.retained_bytes() <= cache.max_bytes {
                 cache.entries.push_back(RegionEntry {
                     key,
-                    page: prepared,
+                    raster: RegionRaster::Page(prepared),
                 });
             } else {
                 cache.stats.bypassed_oversized = cache.stats.bypassed_oversized.saturating_add(1);
@@ -210,12 +340,32 @@ impl NativeDocumentSession {
         Ok(self.region_frame(output))
     }
 
-    pub(super) fn render_tiled_region_uncached(
+    pub(super) fn render_tiled_region_cached(
         &self,
         page: u32,
         region: RasterRegion,
         scale: f64,
     ) -> Result<NativeFrame, NativeHostError> {
+        self.render_tiled_region_cancellable(page, region, scale, || true)?
+            .ok_or_else(|| {
+                NativeHostError::Core(crate::HwpError::RenderError(
+                    "uninterrupted tiled render stopped".into(),
+                ))
+            })
+    }
+
+    /// Cooperatively stop between complete tile operations. `None` never
+    /// contains a partial frame. Successful tiles can remain in the bounded LRU.
+    /// The callback must not reenter this session or mutate its renderer/cache.
+    pub fn render_tiled_region_cancellable(
+        &self,
+        page: u32,
+        region: RasterRegion,
+        scale: f64,
+        should_continue: impl FnMut() -> bool,
+    ) -> Result<Option<NativeFrame>, NativeHostError> {
+        self.check_page(page)?;
+        Self::check_scale(scale)?;
         let options = RasterRenderOptions {
             scale,
             max_pixels: MAX_FRAME_PIXELS,
@@ -224,16 +374,33 @@ impl NativeDocumentSession {
         };
         let tree = self
             .core
-            .build_page_layer_tree_with_profile(page, crate::paint::RenderProfile::Screen)?;
+            .build_page_layer_tree_shared_with_profile(page, crate::paint::RenderProfile::Screen)?;
         let plan = SkiaTilePlan::new(tree.page_width, tree.page_height, region, options)?;
-        // Include retained full-page snapshots in the new request's bitmap peak.
-        self.region_cache
-            .borrow_mut()
-            .evict_for_allocation(plan.peak_bitmap_bytes());
+        // Reserve before the output, then before each new tile. Tile snapshots
+        // share the same byte budget and LRU as exact full-page snapshots.
+        let mut cache = self.region_cache.borrow_mut();
+        cache.evict_for_allocation(plan.peak_bitmap_bytes());
+        let key = RegionKey {
+            revision: self.revision,
+            font_generation: self.font_generation,
+            page,
+            scale: scale.to_bits(),
+        };
+        let renderer = self.renderer();
         let output = self
             .renderer()
-            .render_tiled_region_pixels_with_options(&tree, region, options)?;
-        Ok(self.region_frame(output))
+            .render_tiled_region_with_provider_cancellable(
+                &tree,
+                region,
+                options,
+                |bounds| {
+                    cache.tile(key, bounds, plan.output_bytes(), || {
+                        renderer.prepare_tile(&tree, bounds, options)
+                    })
+                },
+                should_continue,
+            )?;
+        Ok(output.map(|output| self.region_frame(output)))
     }
 
     fn region_frame(&self, output: RasterRegionPixels) -> NativeFrame {

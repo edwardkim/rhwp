@@ -1,0 +1,227 @@
+{
+  "issue": 8733,
+  "base": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+  "sourceHead": "e551fcc76e0794790e25a565f2509a4891eac6cb",
+  "rust": {
+    "passed": 12767,
+    "skipped": 45,
+    "exit": 0,
+    "nativeClippy": "pass",
+    "wasmClippy": "pass",
+    "workspaceClippy": "pass",
+    "workspaceBuild": "pass",
+    "fmt": "pass",
+    "manifest": "pass",
+    "unitTier": "pass"
+  },
+  "studio": {
+    "passed": 2754,
+    "skipped": 2,
+    "failed": 0,
+    "exit": 0,
+    "node": "24.22.1",
+    "typescript": "pass",
+    "windowsFixtureCorrection": "URL.pathname -> fileURLToPath"
+  },
+  "wasm": {
+    "profile": "release",
+    "optimization": "wasm-opt -O",
+    "exit": 0,
+    "browserVersion": "Chrome/155.0.8059.40",
+    "browserSuccess": true,
+    "browserErrors": [],
+    "artifacts": {
+      "rhwp.js": {
+        "sha256": "0099b8a6e00f750e1dbddb3a89bf42874f24effcf8bf4dc5eb328d69e691606b",
+        "bytes": 564033
+      },
+      "rhwp_bg.wasm": {
+        "sha256": "9a54d8e810e09e0a2e26de9a9f27ee10591765f350777408414a4dc3f5d7eb49",
+        "bytes": 28358993
+      }
+    },
+    "checks": [
+      "fresh WASM actually consumed",
+      "cell new no-pattern solid",
+      "cell Cancel and reopen preserve no pattern",
+      "cell solid hwp export and reopen",
+      "cell solid hwpx export and reopen",
+      "cell imported 0 survives unrelated UI edit",
+      "cell imported 0 HWP export and reopen",
+      "cell explicit no-pattern clears 0",
+      "cell real history undo and redo",
+      "cell cleared pattern HWP export and reopen",
+      "table new no-pattern solid",
+      "table Cancel and reopen preserve no pattern",
+      "table solid hwp export and reopen",
+      "table solid hwpx export and reopen",
+      "table imported 0 survives unrelated UI edit",
+      "table imported 0 HWP export and reopen",
+      "table explicit no-pattern clears 0",
+      "table real history undo and redo",
+      "table cleared pattern HWP export and reopen"
+    ]
+  },
+  "hancom": {
+    "status": "fill-and-hatch-appearance-confirmed",
+    "version": "2020 / 11.0.0.9166",
+    "producer": "Hancom PDF 1.3.0.550",
+    "requestedInputsObserved": 7,
+    "preservedPdfFiles": 7,
+    "manifest": "hancom-print-manifest.json",
+    "explicit100PercentScale": "confirmed-by-print-operator",
+    "quantitativeVisualGate": "Raw numeric threshold passed. Scoped storage/fill-authoring behavior accepted; existing raw-zero page hatch rendering mismatch remains outside the claimed fix.",
+    "originalTableHwpPdf": "Initial PDF overwritten; hash and raster retained. A verified HWP reprint is now included.",
+    "securityBypass": false,
+    "remoteUpload": false,
+    "printSettingsConfirmation": "hancom-print-manifest.json",
+    "printSettingsConfirmationField": "printSettingsConfirmation"
+  },
+  "files": [
+    {
+      "file": "cell-new-solid.hwp",
+      "bytes": 13312,
+      "sha256": "6974b10e5bcc8eb826f14868c7f0f16825c80399d704cbbf431394b0ad2cd689"
+    },
+    {
+      "file": "table-new-solid.hwp",
+      "bytes": 13312,
+      "sha256": "44a1b433fc3386a7b1c19534c09baae52087b1023dd24e0992cf373e82ccaf9e"
+    },
+    {
+      "file": "cell-new-solid.hwpx",
+      "bytes": 7802,
+      "sha256": "972f0ccb7cf56c574c1b26604f5b4cc152e41d2fb15039953e9ac0e86f6ed923"
+    },
+    {
+      "file": "table-new-solid.hwpx",
+      "bytes": 7810,
+      "sha256": "5fd43b84bb239b16edc5e7f8146942100c28b537f65900495ea7fcbfca26fa21"
+    },
+    {
+      "file": "imported-raw-zero.hwp",
+      "bytes": 13312,
+      "sha256": "d1bba89e9274ec51ded465c55491bfe977e2d461aefacf01420984b91a67c88e"
+    },
+    {
+      "file": "cell-cleared-zero.hwp",
+      "bytes": 13312,
+      "sha256": "7014e6beffb57daa9c403bc6c8c4600612fd32940f6efc37d41dd85c445c8766"
+    },
+    {
+      "file": "table-cleared-zero.hwp",
+      "bytes": 13312,
+      "sha256": "2fbd98b940dd0a40f58c5beb16438b762d1948b48fa1b4b68d76d05f387aecc8"
+    },
+    {
+      "file": "cell-new-solid-dialog.png",
+      "bytes": 69231,
+      "sha256": "c2dc73eb519999c6db1347b2d6741d52f45f3e8cc49f9c5d77de8b09f6dc7050"
+    },
+    {
+      "file": "table-new-solid-dialog.png",
+      "bytes": 69917,
+      "sha256": "c2022e136bc2747332d39d56d70252e18521d4086f6fd191feaf9fdb99e4f2b4"
+    },
+    {
+      "file": "table-imported-zero-dialog.png",
+      "bytes": 70188,
+      "sha256": "23379d380cd098e579ee9e50a7ae5e53c58235c2c76f12e5e85e58ad880a0fb9"
+    }
+  ],
+  "ci": {
+    "head": "0352c9deee13130f374cfc8015384512ecc6256c",
+    "checkedDateUtc": "2026-11-07",
+    "workflows": [
+      {
+        "name": "CI",
+        "run": 42349923309,
+        "conclusion": "success"
+      },
+      {
+        "name": "Render Diff",
+        "run": 42349923301,
+        "conclusion": "success"
+      },
+      {
+        "name": "CodeQL",
+        "run": 42349923254,
+        "conclusion": "success"
+      },
+      {
+        "name": "Adapter inter-diff",
+        "run": 42349923251,
+        "conclusion": "success"
+      },
+      {
+        "name": "Proptest roundtrip",
+        "run": 42349923283,
+        "conclusion": "success"
+      }
+    ]
+  },
+  "visual": {
+    "sourceHead": "0352c9deee13130f374cfc8015384512ecc6256c",
+    "dpi": 96,
+    "compat": "2022",
+    "profile": "print",
+    "radiusPx": 2,
+    "inputScalingOrMasking": false,
+    "native": {
+      "buildCommand": "cargo build --locked --release --features native-skia --bin rhwp",
+      "rust": "1.93.1",
+      "cargoTargetDir": "target/pr-review",
+      "jobs": 4,
+      "buildExit": 0,
+      "scoresExit": 0,
+      "reviewExit": 0,
+      "binarySha256": "2284ff6defecbd40754af052d47d6bd63c2b2ab56a28b3ee3276552b8b5e15ec",
+      "pages": 7,
+      "rawMinimumPercent": 100,
+      "below90": 0,
+      "inspection": "native/inspection.json"
+    },
+    "wasm": {
+      "pages": 7,
+      "rawMinimumPercent": 100,
+      "below90": 0,
+      "artifactSha256": "9a54d8e810e09e0a2e26de9a9f27ee10591765f350777408414a4dc3f5d7eb49",
+      "inspection": "wasm/inspection.json"
+    },
+    "manualReview": {
+      "newSolidAndExplicitNoneMatchesPerBackend": 6,
+      "mismatchedControl": "imported-raw-zero-hwp",
+      "remainingDifference": "Hancom horizontal hatch absent in Native and WASM page renderers",
+      "fullVisualAcceptance": false
+    },
+    "limitations": [
+      "Xpdf pdftotext 4.00 lacks -bbox-layout; marker extraction skipped with exit 99 on text-free synthetic inputs",
+      "Existing raw-zero renderer mismatch remains; numeric silhouette score is insufficient"
+    ],
+    "printSettingsEvidence": "Operator confirmed all seven outputs; see hancom-print-manifest.json"
+  },
+  "baseComparison": {
+    "historicalBase": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+    "historicalEvidence": "base/comparison.json",
+    "historicalPageBackendPairs": 14,
+    "historicalMaxDropPercentagePoints": "0.00",
+    "historicalAllRasterPixelsEqual": true,
+    "latestBase": "e4ffabea38062e716f6c333cc950fa31b42b4dd7",
+    "latestStatus": "pass",
+    "latestEvidence": "latest-base/comparison.json",
+    "latestPageBackendPairs": 14,
+    "latestMaxDropPercentagePoints": "0.00",
+    "latestDropOver2PercentagePoints": 0,
+    "latestAllRasterBytesAndPixelsEqual": true
+  },
+  "reviewScope": {
+    "decision": "approved for stated storage/fill-authoring scope",
+    "fullIssue8733Resolution": false,
+    "rawZeroPageRendererFixed": false,
+    "remainingRemoteConditions": [
+      "trailing-head CI",
+      "latest head/base and mergeability",
+      "normal ready and merge"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+name: rhwp_native_reference_example
+description: Minimal browser-free rhwp CPU viewport.
+publish_to: none
+version: 0.1.0
+environment:
+  sdk: '>=3.13.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  rhwp_native_reference:
+    path: ../
+flutter:
+  uses-material-design: true
