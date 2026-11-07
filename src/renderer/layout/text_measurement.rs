@@ -2508,13 +2508,11 @@ fn char_width_decision_with_hft_tracking<'a>(
     // share this eligibility decision; synthetic PUA boxes remain shapes.
     let dash_leader = is_dash_leader_run(chars, i);
     let source_ttf = latin.map_or(style.source_font_is_ttf, |slot| slot.source_font_is_ttf);
-    let trusted_source_ttf =
-        source_ttf && latin.map_or(style.font_metric_trusted, |slot| slot.font_metric_trusted);
-    // 원본 TTF의 검증된 폭 또는 명시적으로 선택한 자연 전진은 화면과 인쇄에서
-    // 동일하게 소비한다. 반복 하이픈이라는 이유로 다시 좁히면 저장 자간과 셀 맞춤의
-    // 배분이 달라진다. 원본 폭이 확인되지 않은 HFT·결측 글꼴의 leader 추정은 유지한다.
+    // 명시적으로 선택한 자연 전진은 화면과 인쇄에서 동일하게 소비한다.
+    // 선언된 TTF 유형과 폭 표의 hit만으로 기존 leader를 자연 전진으로 승격하지
+    // 않는다. 특히 유형 미상 원본을 HWPX로 저장해 TTF로 표기해도 폭은 같아야 한다.
     let clamp_dash_leader = dash_leader
-        && !((trusted_source_ttf || style.preserve_glyph_ink)
+        && !(style.preserve_glyph_ink
             && character_match == "hit"
             && width_source == "embeddedMetric");
     // Native paint와 동일한 OTF의 글리프를 우선 사용한다. 다만 독립 Print와

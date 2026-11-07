@@ -338,7 +338,8 @@ impl FontEnvironment {
                 let is_source_program = original_names.contains(&program.query);
                 ((program.true_type || program.open_type_cff)
                     && is_source_program
-                    && source.is_some_and(|font| !font.is_embedded))
+                    && source
+                        .is_some_and(|font| !font.is_embedded && font.native_program.is_none()))
                 .then_some((program, None))
             } else {
                 request

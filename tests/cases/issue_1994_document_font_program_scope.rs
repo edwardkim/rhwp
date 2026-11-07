@@ -1,6 +1,6 @@
 //! 관계형: 사용자 선택 원본의 자연 전진과 다른 원본의 저장 메트릭 소유를 구분한다.
 //! Native/fresh WASM 일치율: 비해당. 공개 API로 생성한 합성 문서의 프로그램 선택 계약이다.
-//! 주석 갱신: 2026-11-07 21:19 KST. 사설 글꼴 설치·실물 px 좌표에 의존하지 않는다.
+//! 주석 갱신: 2026-11-07 23:49:45 KST. 사설 글꼴 설치·실물 px 좌표에 의존하지 않는다.
 use rhwp::{
     model::style::Font,
     renderer::{
@@ -167,4 +167,53 @@ fn slot_selected_face_query_precedes_shared_family() {
         Some("슬롯의 실제 face"),
         "슬롯이 고른 프로그램 조회 이름을 family보다 먼저 보존한다"
     );
+}
+
+#[test]
+fn automatic_hft_program_identity_preserves_its_canonical_paint_alias() {
+    let mut core = selected_program_core();
+    let mut document = core.document().clone();
+    for fonts in &mut document.doc_info.font_faces {
+        *fonts = vec![Font {
+            name: "한양신명조".into(),
+            alt_type: 2,
+            ..Font::default()
+        }];
+    }
+    core.set_document(document);
+    let saved = core.export_hwp_native().unwrap();
+    let selected = core
+        .build_font_environment_from_available_programs(
+            &json!([{"query":"한양신명조", "family":"HY Sinmyeongjo",
+                "programId":"same-original-hft", "trueType":false, "openTypeCff":true}])
+            .to_string(),
+        )
+        .unwrap();
+    core.set_font_environment(Some(FontEnvironment::from_json(&selected).unwrap()))
+        .unwrap();
+    let tree = core.build_page_render_tree(0).unwrap();
+    let run = find(&tree.root, "프로그램 선택").unwrap();
+    assert_eq!(
+        run.style.font_family.split(',').next(),
+        Some("HY Sinmyeongjo"),
+        "자동 HFT 인증은 다른 프로그램에도 대응하는 원본 별칭을 재승격하지 않는다"
+    );
+    let mut explicit: Value = serde_json::from_str(&selected).unwrap();
+    explicit["preserveSourceMetrics"] = json!(false);
+    core.set_font_environment(Some(
+        FontEnvironment::from_json(&explicit.to_string()).unwrap(),
+    ))
+    .unwrap();
+    let tree = core.build_page_render_tree(0).unwrap();
+    assert_eq!(
+        find(&tree.root, "프로그램 선택")
+            .unwrap()
+            .style
+            .font_family
+            .split(',')
+            .next(),
+        Some("한양신명조"),
+        "명시적으로 원본 전진을 바꾼 선택은 실제 조회 이름을 보존한다"
+    );
+    assert_eq!(core.export_hwp_native().unwrap(), saved);
 }

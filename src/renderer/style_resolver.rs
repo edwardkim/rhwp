@@ -1396,7 +1396,8 @@ pub(crate) fn lookup_font_name_in_environment(
                 .map(|target| (env, target))
         }) {
             // 같은 주 프로그램의 신원 인증은 준비된 glyph fallback 체인을 바꾸지 않는다.
-            if decision.normalized_face.as_deref() != Some(target) {
+            let same_primary_family = decision.normalized_face.as_deref() == Some(target);
+            if !same_primary_family {
                 decision.normalized_face = Some(target.to_string());
                 decision.css_family_chain = vec![target.to_string()];
             }
@@ -1406,7 +1407,13 @@ pub(crate) fn lookup_font_name_in_environment(
             if let Some(query) = decision.requested_face.as_deref().and_then(|source| {
                 environment.selected_program_query_for(source, lang_index, font_id)
             }) {
-                if query != target {
+                // HFT의 원본 이름은 물리 face 이름이 아닌 조판 별칭일 수 있다.
+                // 같은 주 프로그램을 자동 인증할 때 이 별칭을 다시 선두에 넣으면
+                // 다른 설치 프로그램이 먼저 선택된다. 명시적 face 선택과 구분한다.
+                let preserves_hft_alias = decision.alt_type == Some(2)
+                    && decision.requested_face.as_deref() == Some(query)
+                    && environment.preserves_source_metrics_for(query);
+                if query != target && !preserves_hft_alias {
                     decision.css_family_chain.retain(|face| face != query);
                     decision.css_family_chain.insert(0, query.to_string());
                 }
