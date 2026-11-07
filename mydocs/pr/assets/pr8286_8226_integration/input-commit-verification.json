@@ -1,0 +1,110 @@
+{
+  "commit": "170dd2412206b48cfbf925c5f5a67dcf93437e81",
+  "inputs": [
+    {
+      "case": "source",
+      "kind": "input",
+      "path": "tests/fixtures/container_charts/container-charts.hwpx",
+      "sha256": "f1648ee13a230529b00acc815735bb57d70b39a6c3ab40d765d1745f7d4735e7",
+      "commitMatchesExecution": true
+    },
+    {
+      "case": "source",
+      "kind": "hancomHwp",
+      "path": "tests/fixtures/container_charts/inline-anchor/source-hancom.hwp",
+      "sha256": "279de30dd9380ba0dd46abba140a56c3524c58e2d83ecd0d6718f487486a3a49",
+      "commitMatchesExecution": true
+    },
+    {
+      "case": "source",
+      "kind": "pdf",
+      "path": "pdf/container-chart-inline-anchor/source-2020.pdf",
+      "sha256": "37d427c3cf4818f8f7423fcf271f47c8d0a7cc2265bd9f1a275cbe0c2f2669a8",
+      "commitMatchesExecution": true
+    },
+    {
+      "case": "zero-outer-margin",
+      "kind": "input",
+      "path": "tests/fixtures/container_charts/inline-anchor/zero-outer-margin.hwpx",
+      "sha256": "fc48c2fdc2560eb5de89607849ab534433e0aba7d972858fc8e08a6fcaaac7d5",
+      "commitMatchesExecution": true
+    },
+    {
+      "case": "zero-outer-margin",
+      "kind": "hancomHwp",
+      "path": "tests/fixtures/container_charts/inline-anchor/zero-outer-margin-hancom.hwp",
+      "sha256": "1dabeb5e8a3722f721a8eb310bad5d738dd70cae3a82df7e0df33b8a725c1a6f",
+      "commitMatchesExecution": true
+    },
+    {
+      "case": "zero-outer-margin",
+      "kind": "pdf",
+      "path": "pdf/container-chart-inline-anchor/zero-outer-margin-2020.pdf",
+      "sha256": "e61def3eb9496d77e46a63fe0b6a5165b02dad0313d7cbacb0cb5eaa22d7f30c",
+      "commitMatchesExecution": true
+    },
+    {
+      "case": "narrow-table",
+      "kind": "input",
+      "path": "tests/fixtures/container_charts/inline-anchor/narrow-table.hwpx",
+      "sha256": "3d2229a826e25eba7bed74760f7f5d6513620ef9af979676d93f321f3ec78526",
+      "commitMatchesExecution": true
+    },
+    {
+      "case": "narrow-table",
+      "kind": "hancomHwp",
+      "path": "tests/fixtures/container_charts/inline-anchor/narrow-table-hancom.hwp",
+      "sha256": "11d3bf828978a268509d45b1984bc24012803688b46426d21b4b4ac764e3b61c",
+      "commitMatchesExecution": true
+    },
+    {
+      "case": "narrow-table",
+      "kind": "pdf",
+      "path": "pdf/container-chart-inline-anchor/narrow-table-2020.pdf",
+      "sha256": "9b030c54d89b636d8e66f55acec8a8afb6b230c78f7f0f51475545266b64746f",
+      "commitMatchesExecution": true
+    },
+    {
+      "case": "no-header",
+      "kind": "input",
+      "path": "tests/fixtures/container_charts/inline-anchor/no-header.hwpx",
+      "sha256": "4e0c95cc4ab5f05242595c2cb7e8d951144482ac6476270cab786ab78394adfc",
+      "commitMatchesExecution": true
+    },
+    {
+      "case": "no-header",
+      "kind": "hancomHwp",
+      "path": "tests/fixtures/container_charts/inline-anchor/no-header-hancom.hwp",
+      "sha256": "1c5ad17a897aaafe3057baaaef54cf09029c2dd01fafe7a147c840dd4b86a529",
+      "commitMatchesExecution": true
+    },
+    {
+      "case": "no-header",
+      "kind": "pdf",
+      "path": "pdf/container-chart-inline-anchor/no-header-2020.pdf",
+      "sha256": "7c5ee5b6638b7a51abb793f7434435966f0f9f043997015ba66c47aaaf8e2b56",
+      "commitMatchesExecution": true
+    },
+    {
+      "case": "footer-anchor",
+      "kind": "input",
+      "path": "tests/fixtures/container_charts/inline-anchor/footer-anchor.hwpx",
+      "sha256": "23448e04ae6f84adef5444c959ff4d63b0cfdf66f84bc32ed4a2100304187a27",
+      "commitMatchesExecution": true
+    },
+    {
+      "case": "footer-anchor",
+      "kind": "hancomHwp",
+      "path": "tests/fixtures/container_charts/inline-anchor/footer-anchor-hancom.hwp",
+      "sha256": "da384674039b9c75b7d2c52c58c4b323e4e0ec7011e5d3c766fa889df02dd152",
+      "commitMatchesExecution": true
+    },
+    {
+      "case": "footer-anchor",
+      "kind": "pdf",
+      "path": "pdf/container-chart-inline-anchor/footer-anchor-2020.pdf",
+      "sha256": "d70e38cb69fda569ec276b04f63b6021e7bc1ab3c30268ea12d9e89bb1a66b46",
+      "commitMatchesExecution": true
+    }
+  ]
+}

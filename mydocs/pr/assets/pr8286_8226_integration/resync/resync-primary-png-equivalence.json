@@ -1,0 +1,87 @@
+{
+  "previousCodeHead": "170dd2412206b48cfbf925c5f5a67dcf93437e81",
+  "currentCodeHead": "ab1491d40b43c7d54941337b852f7e7f0a5eff5e",
+  "pairs": [
+    {
+      "backend": "native",
+      "label": "source",
+      "previous": "final-native/source/container-charts.png",
+      "current": "resync-native/source/container-charts.png",
+      "sameBytes": true,
+      "currentSha256": "9b0b6fb5bc2243ff330f52e95775b017c5b4d28b5096585339cf776cf0a7ccd2"
+    },
+    {
+      "backend": "native",
+      "label": "old-hwp",
+      "previous": "final-native/old-hwp/resaved.png",
+      "current": "resync-native/old-hwp/resaved.png",
+      "sameBytes": true,
+      "currentSha256": "b9998777e1b7483c7f36a780e3dd75ced338878fa44f0f603c8dd969103bdde0"
+    },
+    {
+      "backend": "native",
+      "label": "old-hwpx",
+      "previous": "final-native/old-hwpx/resaved.png",
+      "current": "resync-native/old-hwpx/resaved.png",
+      "sameBytes": true,
+      "currentSha256": "b9998777e1b7483c7f36a780e3dd75ced338878fa44f0f603c8dd969103bdde0"
+    },
+    {
+      "backend": "native",
+      "label": "current-hwp",
+      "previous": "final-native/current-hwp/resaved.png",
+      "current": "resync-native/current-hwp/resaved.png",
+      "sameBytes": true,
+      "currentSha256": "b9998777e1b7483c7f36a780e3dd75ced338878fa44f0f603c8dd969103bdde0"
+    },
+    {
+      "backend": "native",
+      "label": "current-hwpx",
+      "previous": "final-native/current-hwpx/resaved.png",
+      "current": "resync-native/current-hwpx/resaved.png",
+      "sameBytes": true,
+      "currentSha256": "b9998777e1b7483c7f36a780e3dd75ced338878fa44f0f603c8dd969103bdde0"
+    },
+    {
+      "backend": "wasm",
+      "label": "source",
+      "previous": "final-wasm/source/rhwp_png/rhwp_001.png",
+      "current": "resync-wasm/source/rhwp_png/rhwp_001.png",
+      "sameBytes": true,
+      "currentSha256": "8c2cdea23bd37b57d543f45ca0f725f4db5490e597cfa26a8e07186f74f8ee2e"
+    },
+    {
+      "backend": "wasm",
+      "label": "old-hwp",
+      "previous": "final-wasm/old-hwp/rhwp_png/rhwp_001.png",
+      "current": "resync-wasm/old-hwp/rhwp_png/rhwp_001.png",
+      "sameBytes": true,
+      "currentSha256": "8a6914619ca705b1a0f9e75f206523f3f7c5ee3eacf3b9f2f1f6c999c7a52565"
+    },
+    {
+      "backend": "wasm",
+      "label": "old-hwpx",
+      "previous": "final-wasm/old-hwpx/rhwp_png/rhwp_001.png",
+      "current": "resync-wasm/old-hwpx/rhwp_png/rhwp_001.png",
+      "sameBytes": true,
+      "currentSha256": "8a6914619ca705b1a0f9e75f206523f3f7c5ee3eacf3b9f2f1f6c999c7a52565"
+    },
+    {
+      "backend": "wasm",
+      "label": "current-hwp",
+      "previous": "final-wasm/current-hwp/rhwp_png/rhwp_001.png",
+      "current": "resync-wasm/current-hwp/rhwp_png/rhwp_001.png",
+      "sameBytes": true,
+      "currentSha256": "8a6914619ca705b1a0f9e75f206523f3f7c5ee3eacf3b9f2f1f6c999c7a52565"
+    },
+    {
+      "backend": "wasm",
+      "label": "current-hwpx",
+      "previous": "final-wasm/current-hwpx/rhwp_png/rhwp_001.png",
+      "current": "resync-wasm/current-hwpx/rhwp_png/rhwp_001.png",
+      "sameBytes": true,
+      "currentSha256": "8a6914619ca705b1a0f9e75f206523f3f7c5ee3eacf3b9f2f1f6c999c7a52565"
+    }
+  ],
+  "allEqual": true
+}

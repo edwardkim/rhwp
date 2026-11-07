@@ -1,0 +1,24 @@
+rustc 1.93.1 (01f6ddf75 2026-02-11)
+cargo-nextest 0.9.151 (6b3f99457 2026-11-02)
+release: 0.9.151
+commit-hash: 6b3f994577a98874a2e0ea5bef77fbbab3434044
+commit-date: 2026-11-02
+host: aarch64-unknown-linux-gnu
+/usr/share/fonts/truetype/liberation2/LiberationSerif-Regular.ttf
+/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf
+/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf
+/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf
+/usr/share/fonts/truetype/liberation2/LiberationMono-Regular.ttf
+/usr/share/fonts/truetype/liberation2/LiberationMono-Bold.ttf
+/usr/share/fonts/truetype/liberation2/LiberationMono-Italic.ttf
+/usr/share/fonts/truetype/liberation2/LiberationSerif-Bold.ttf
+/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
+/usr/share/fonts/truetype/liberation2/LiberationSerif-Italic.ttf
+/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf
+/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf
+/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf
+/usr/share/fonts/truetype/liberation2/LiberationMono-BoldItalic.ttf
+/usr/share/fonts/truetype/liberation2/LiberationSans-BoldItalic.ttf
+/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf
+/usr/share/fonts/truetype/liberation2/LiberationSans-Italic.ttf
+/usr/share/fonts/truetype/liberation2/LiberationSerif-BoldItalic.ttf

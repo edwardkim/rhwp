@@ -1,0 +1,41 @@
+{
+  "baseHead": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+  "runs": [
+    {
+      "extension": "hwp",
+      "backend": "native",
+      "inputSha256": "4f01f3a9275025971f26c17691ef23d580b86174415643b843d23aae1dbd6b86",
+      "exit": 0,
+      "pages": 1,
+      "silhouetteRawMatchPercent": 50.91,
+      "sweepExit": 1,
+      "pngSha256": "f4dda44af9b46a6a64e6935f80fa17b960a676b54f96f44d56cbbcf443efbece"
+    },
+    {
+      "extension": "hwp",
+      "backend": "wasm",
+      "inputSha256": "4f01f3a9275025971f26c17691ef23d580b86174415643b843d23aae1dbd6b86",
+      "exit": 0,
+      "pages": 1,
+      "silhouetteRawMatchPercent": 50.24,
+      "sweepExit": 1,
+      "pngSha256": "1cb563c9ed4eacdca264cb00d8aef634e0bf219bae75845f1a75c46ae10ee102"
+    },
+    {
+      "extension": "hwpx",
+      "backend": "native",
+      "inputSha256": "ba83298033ebb82be766453f2708d56a9114ee6edd732fd6437e9fe78c58eff6",
+      "exit": 101,
+      "status": "render failed; no score imputed",
+      "error": "partial paragraph line range exceeds composed lines"
+    },
+    {
+      "extension": "hwpx",
+      "backend": "wasm",
+      "inputSha256": "ba83298033ebb82be766453f2708d56a9114ee6edd732fd6437e9fe78c58eff6",
+      "exit": 1,
+      "status": "render failed; no score imputed",
+      "error": "WASM unreachable at layout"
+    }
+  ]
+}

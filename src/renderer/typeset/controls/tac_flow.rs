@@ -88,6 +88,24 @@ impl<'a> TacFlowQuery<'a> {
             }
         }
 
+        // 저장 줄이 없는 문단은 현재 줄 구성의 제어 소속을 따른다.
+        // 셀 내용으로 실제 표 높이가 커져도 선언 높이는 그대로일 수 있다.
+        if crate::renderer::para_has_no_stored_line_segs(para) {
+            if let (Some(comp), Some(control_index)) = (
+                fmt.host_composition.as_deref(),
+                para.controls.iter().position(|control| {
+                    matches!(control, crate::model::control::Control::Table(candidate)
+                        if std::ptr::eq(candidate.as_ref(), table))
+                }),
+            ) {
+                if let Some(owner) = comp.inline_controls.iter().find(|owner| {
+                    owner.control_index == control_index && owner.line_index < comp.lines.len()
+                }) {
+                    return Some(owner.line_index);
+                }
+            }
+        }
+
         let om_top = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
         let om_bot = hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
         let table_body_h = hwpunit_to_px(table.common.height as i32, self.dpi);

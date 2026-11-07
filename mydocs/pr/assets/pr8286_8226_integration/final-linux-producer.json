@@ -1,0 +1,57 @@
+{
+  "head": "170dd2412206b48cfbf925c5f5a67dcf93437e81",
+  "stages": [
+    {
+      "label": "build-native",
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "exit": 0,
+      "seconds": 382.49474661299973
+    },
+    {
+      "label": "handbook",
+      "argv": [
+        "/Volumes/T7/DeveloperArtifacts/rhwp/workspaces/pr8286-linux-integration/output/pr-review/final-linux-venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--handbook-gate",
+        "--silhouette-only",
+        "--rhwp-bin",
+        "/Volumes/T7/DeveloperArtifacts/rhwp/target/pr8286-linux-independent/aarch64-unknown-linux-gnu/release-test/rhwp",
+        "--page-workers",
+        "2",
+        "--out",
+        "/Volumes/T7/DeveloperArtifacts/rhwp/workspaces/pr8286-linux-integration/output/pr-review/final-linux/handbook"
+      ],
+      "exit": 1,
+      "seconds": 33.733699373000036
+    },
+    {
+      "label": "handbook-verified",
+      "argv": [
+        "output/pr-review/final-linux-venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--handbook-gate",
+        "--silhouette-only",
+        "--rhwp-bin",
+        "/Volumes/T7/DeveloperArtifacts/rhwp/workspaces/pr8286-linux-integration/output/pr-review/final-linux/rhwp",
+        "--page-workers",
+        "2",
+        "--out",
+        "/Volumes/T7/DeveloperArtifacts/rhwp/workspaces/pr8286-linux-integration/output/pr-review/final-linux/handbook-verified"
+      ],
+      "exit": 0,
+      "seconds": 194.784
+    }
+  ],
+  "binarySha256": "23acf43b1510f3e18f4e7884798ae861293481a513d42407af13d4283d726005",
+  "status": "passed after Git ownership environment repair"
+}

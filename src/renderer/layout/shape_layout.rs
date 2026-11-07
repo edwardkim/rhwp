@@ -1129,6 +1129,10 @@ impl LayoutEngine {
                 para_y,
                 alignment,
             );
+            let overlay_margin =
+                crate::renderer::float_placement::overlay_shape_margin_origin_hu(common);
+            x += hwpunit_to_px(overlay_margin.0, self.dpi);
+            y += hwpunit_to_px(overlay_margin.1, self.dpi);
             y += hwpunit_to_px(
                 crate::renderer::float_placement::topbottom_shape_top_margin_hu(common)
                     + crate::renderer::float_placement::beside_shape_top_margin_hu(common),
@@ -4321,8 +4325,20 @@ impl LayoutEngine {
                             } else {
                                 base_y
                             };
-                            (
+                            // 문단/단 기준은 글상자 테두리가 아니라 안 여백을
+                            // 제외한 텍스트 프레임에서 시작한다. 밴드 계산과
+                            // 실제 개체가 같은 가로 원점을 소비한다.
+                            let anchor_x = if matches!(
+                                child_common.horz_rel_to,
+                                crate::model::shape::HorzRelTo::Para
+                                    | crate::model::shape::HorzRelTo::Column
+                            ) {
+                                inner_area.x
+                            } else {
                                 base_x
+                            };
+                            (
+                                anchor_x
                                     + hwpunit_to_px(
                                         child_common.horizontal_offset as i32,
                                         self.dpi,

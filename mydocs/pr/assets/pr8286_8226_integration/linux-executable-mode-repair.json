@@ -1,0 +1,27 @@
+[
+  {
+    "path": "/Volumes/T7/DeveloperArtifacts/rhwp/target/pr8286-linux-independent/aarch64-unknown-linux-gnu/release-test/deps/issue_4969_shaping_shadow_context-11a290134122f770",
+    "before": "0o644",
+    "after": "0o755"
+  },
+  {
+    "path": "/Volumes/T7/DeveloperArtifacts/rhwp/target/pr8286-linux-independent/aarch64-unknown-linux-gnu/release-test/deps/issue_4969_shaping_paragraph_transaction-534d46f10db2917e",
+    "before": "0o644",
+    "after": "0o755"
+  },
+  {
+    "path": "/Volumes/T7/DeveloperArtifacts/rhwp/target/pr8286-linux-independent/aarch64-unknown-linux-gnu/release-test/deps/issue_2833_hml_adapter_row_sizes-973a92af984ace13",
+    "before": "0o644",
+    "after": "0o755"
+  },
+  {
+    "path": "/Volumes/T7/DeveloperArtifacts/rhwp/target/pr8286-linux-independent/aarch64-unknown-linux-gnu/release-test/deps/issue_4969_shaping_composition_handoff-4a04e0da505a0bfb",
+    "before": "0o644",
+    "after": "0o755"
+  },
+  {
+    "path": "/Volumes/T7/DeveloperArtifacts/rhwp/target/pr8286-linux-independent/aarch64-unknown-linux-gnu/release-test/deps/issue_4969_shaping_page_sidecar-9f9fc2b647364210",
+    "before": "0o644",
+    "after": "0o755"
+  }
+]

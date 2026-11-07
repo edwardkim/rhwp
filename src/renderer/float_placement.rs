@@ -1638,6 +1638,31 @@ pub(crate) fn beside_shape_top_margin_hu(common: &CommonObjAttr) -> i32 {
     }
 }
 
+/// 글 앞/뒤 도형도 위치 오프셋은 바깥 상자를 지정한다. 흐름을 깎지 않는
+/// 것과 잉크 원점의 안쪽 여백은 독립적이다 (한컴 Print container-charts).
+pub(crate) fn overlay_shape_margin_origin_hu(common: &CommonObjAttr) -> (i32, i32) {
+    if common.treat_as_char
+        || !matches!(
+            common.text_wrap,
+            TextWrap::InFrontOfText | TextWrap::BehindText
+        )
+    {
+        return (0, 0);
+    }
+    (
+        if matches!(common.horz_align, HorzAlign::Left | HorzAlign::Inside) {
+            i32::from(common.margin.left)
+        } else {
+            0
+        },
+        if matches!(common.vert_align, VertAlign::Top | VertAlign::Inside) {
+            i32::from(common.margin.top)
+        } else {
+            0
+        },
+    )
+}
+
 /// 원본 HWPX noAdjust 셀의 완전한 저장 줄 프레임이 점유하는 끝점.
 /// 여백을 이미 계상하는 중첩/TAC의 relaxed-pad 경로에서 줄 사이 저장 공간을
 /// 재사용한다. noAdjust 자체는 본문 표의 안 여백을 지울 근거가 아니다.

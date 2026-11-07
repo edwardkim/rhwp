@@ -1,0 +1,39 @@
+{
+  "head": "ab1491d40b43c7d54941337b852f7e7f0a5eff5e",
+  "stages": [
+    {
+      "label": "build-native",
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "exit": 0,
+      "seconds": 374.75516124600017
+    },
+    {
+      "label": "handbook",
+      "argv": [
+        "/Volumes/T7/DeveloperArtifacts/rhwp/workspaces/pr8286-linux-integration/output/pr-review/final-linux-venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--handbook-gate",
+        "--silhouette-only",
+        "--rhwp-bin",
+        "/Volumes/T7/DeveloperArtifacts/rhwp/target/pr8286-linux-independent/aarch64-unknown-linux-gnu/release-test/rhwp",
+        "--page-workers",
+        "2",
+        "--out",
+        "/Volumes/T7/DeveloperArtifacts/rhwp/workspaces/pr8286-linux-integration/output/pr-review/resync-linux/handbook"
+      ],
+      "exit": 0,
+      "seconds": 193.489114212
+    }
+  ],
+  "binarySha256": "891b0264934c4eb84e3305559cf61e604f1668b4700d3b534024645a88284180"
+}

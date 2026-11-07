@@ -1,0 +1,68 @@
+{
+  "purpose": "Independent Hancom anchor-slot and physical-row evidence; source input remains unchanged",
+  "cases": [
+    {
+      "label": "source",
+      "input": "tests/fixtures/container_charts/container-charts.hwpx",
+      "inputSha256": "f1648ee13a230529b00acc815735bb57d70b39a6c3ab40d765d1745f7d4735e7",
+      "hancomHwp": "tests/fixtures/container_charts/inline-anchor/source-hancom.hwp",
+      "hancomHwpSha256": "279de30dd9380ba0dd46abba140a56c3524c58e2d83ecd0d6718f487486a3a49",
+      "pdf": "pdf/container-chart-inline-anchor/source-2020.pdf",
+      "pdfSha256": "37d427c3cf4818f8f7423fcf271f47c8d0a7cc2265bd9f1a275cbe0c2f2669a8",
+      "hancomHwpJob": "ee020b62-2531-4048-8d05-3218ebf3ae8b",
+      "engine": "2020"
+    },
+    {
+      "label": "zero-outer-margin",
+      "input": "tests/fixtures/container_charts/inline-anchor/zero-outer-margin.hwpx",
+      "inputSha256": "fc48c2fdc2560eb5de89607849ab534433e0aba7d972858fc8e08a6fcaaac7d5",
+      "hancomHwp": "tests/fixtures/container_charts/inline-anchor/zero-outer-margin-hancom.hwp",
+      "hancomHwpSha256": "1dabeb5e8a3722f721a8eb310bad5d738dd70cae3a82df7e0df33b8a725c1a6f",
+      "pdf": "pdf/container-chart-inline-anchor/zero-outer-margin-2020.pdf",
+      "pdfSha256": "e61def3eb9496d77e46a63fe0b6a5165b02dad0313d7cbacb0cb5eaa22d7f30c",
+      "hancomHwpJob": "bd4e97cd-667d-4772-ab31-1ff4407b39e6",
+      "engine": "2020",
+      "pdfJob": "e01336b4-77ba-43a0-93be-4525988fbb19",
+      "pdfEngine": "2020"
+    },
+    {
+      "label": "narrow-table",
+      "input": "tests/fixtures/container_charts/inline-anchor/narrow-table.hwpx",
+      "inputSha256": "3d2229a826e25eba7bed74760f7f5d6513620ef9af979676d93f321f3ec78526",
+      "hancomHwp": "tests/fixtures/container_charts/inline-anchor/narrow-table-hancom.hwp",
+      "hancomHwpSha256": "11d3bf828978a268509d45b1984bc24012803688b46426d21b4b4ac764e3b61c",
+      "pdf": "pdf/container-chart-inline-anchor/narrow-table-2020.pdf",
+      "pdfSha256": "9b030c54d89b636d8e66f55acec8a8afb6b230c78f7f0f51475545266b64746f",
+      "hancomHwpJob": "5c226c6a-4397-4590-998d-432af4041914",
+      "engine": "2020",
+      "pdfJob": "606e548c-3a05-4e95-8525-8e511531c6e1",
+      "pdfEngine": "2020"
+    },
+    {
+      "label": "no-header",
+      "input": "tests/fixtures/container_charts/inline-anchor/no-header.hwpx",
+      "inputSha256": "4e0c95cc4ab5f05242595c2cb7e8d951144482ac6476270cab786ab78394adfc",
+      "hancomHwp": "tests/fixtures/container_charts/inline-anchor/no-header-hancom.hwp",
+      "hancomHwpSha256": "1c5ad17a897aaafe3057baaaef54cf09029c2dd01fafe7a147c840dd4b86a529",
+      "pdf": "pdf/container-chart-inline-anchor/no-header-2020.pdf",
+      "pdfSha256": "7c5ee5b6638b7a51abb793f7434435966f0f9f043997015ba66c47aaaf8e2b56",
+      "hancomHwpJob": "3f33b625-5d3b-44e1-abc2-a9c3b72faaa9",
+      "engine": "2020",
+      "pdfJob": "8bc659cf-8611-4837-ae0d-b133480b1fcd",
+      "pdfEngine": "2020"
+    },
+    {
+      "label": "footer-anchor",
+      "input": "tests/fixtures/container_charts/inline-anchor/footer-anchor.hwpx",
+      "inputSha256": "23448e04ae6f84adef5444c959ff4d63b0cfdf66f84bc32ed4a2100304187a27",
+      "hancomHwp": "tests/fixtures/container_charts/inline-anchor/footer-anchor-hancom.hwp",
+      "hancomHwpSha256": "da384674039b9c75b7d2c52c58c4b323e4e0ec7011e5d3c766fa889df02dd152",
+      "pdf": "pdf/container-chart-inline-anchor/footer-anchor-2020.pdf",
+      "pdfSha256": "d70e38cb69fda569ec276b04f63b6021e7bc1ab3c30268ea12d9e89bb1a66b46",
+      "hancomHwpJob": "1a48095b-952c-4008-91ad-0ba6e82d93f4",
+      "engine": "2020",
+      "pdfJob": "178a394e-193b-458d-a054-bb6bc432fb7c",
+      "pdfEngine": "2020"
+    }
+  ]
+}

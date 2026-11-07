@@ -6807,8 +6807,9 @@ impl LayoutEngine {
             // [#8399] 어울림 밴드 소유자가 낸 줄(합성 줄이라도) 중 문단 상자보다 깎인 줄은 개체 바깥
             // 상자로 확정한 줄 기하다 — 그 줄의 cs/sw 가 줄 상자다. 버리면 글이 개체 밑에 깔린다.
             // 출처는 줄 모양이 아니라 표지로 가린다 — 미주·목록 상자의 합성 줄도 본문 상자보다 좁다.
-            let synthetic_band_carved_row = cell_ctx.is_none()
-                && wrap_anchor.is_none()
+            // 셀의 어울림 밴드도 같은 줄 상자를 발행한다. 합성 줄이라는 이유로
+            // 셀 왼끝으로 되돌리면 이미 피한 개체 위에 글자가 다시 놓인다.
+            let synthetic_band_carved_row = wrap_anchor.is_none()
                 && para.is_some_and(|p| p.layout_float_band)
                 && crate::renderer::composer::row_is_carved_from_box(
                     comp_line.column_start,
