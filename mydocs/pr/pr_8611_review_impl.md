@@ -125,3 +125,38 @@ Native·Canvas·SVG의 현재 원점과 효과 pass다. Unicode U+2022 자체와
 기존 글꼴 경로를 유지한다. 원본의 크기·장평·색·양각을 그대로 소비하고 입력·PDF는 바꾸지 않는다.
 새 후보의 영향 쪽 직접 판독과 전쪽 TSV, 기존 정상 대조군 및 최소 글꼴 회귀로 검증한 뒤
 최종 판단한다. 이 절의 선행 분석만으로 보정 성공이나 승인을 주장하지 않는다.
+
+
+## R33 원 기호 소유 보정의 전쪽 검증과 회귀 고정
+
+제품 source `ef77d740e1da7c9eaeb908ac3bd653a9670b312a`에서 같은 고사성어 원본과
+기존 독립 한컴 2020 Print PDF를 전 94쪽 비교했다. 두 backend 모두 PDF와 쪽수가
+일치한다. Native 전쪽 최저는 99.98%, fresh WASM 전쪽 최저는 99.99%이며, 지적한
+5쪽은 각각 100.00%와 99.99%다. 같은 5쪽의 머리 기호·한자 제목·ASCII 괄호·다음
+본문을 확대 대조했다. 기호의 크기와 양각을 복원했으며 본문의 줄 소속·원점·내용 순서는
+유지된다. 획 두께와 서브픽셀 래스터 차이는 남아 있어 픽셀 동일로 표현하지 않는다.
+
+- [전체 Native TSV](assets/planet6897_20261106/pr8611/r33-source-symbol/native.tsv)
+- [전체 fresh WASM TSV](assets/planet6897_20261106/pr8611/r33-source-symbol/wasm.tsv)
+- [같은 5쪽 패널·overlay·입력/Print/producer SHA 및 재현 명령](assets/planet6897_20261106/pr8611/r33-source-symbol/README.md)
+
+실제 공유 결과의 소비 경로는 원 PUA 보존 → 암묵적 기호 프로그램의 전진·윤곽 →
+줄의 마커 배치 → Native Skia/SVG/Canvas의 실제 paint다. 같은 원본 5쪽의 실제 SVG를
+Chrome으로 그린 진단도 raw 100.00%였다. 이 결과는 Native/fresh WASM 직접 PNG의
+대체 증거로 사용하지 않는다. 글꼴 프로그램은 임시 output에서만 사용하고 재배포하지 않았다.
+
+회귀는 설치된 OTF에 의존하지 않는다. 원본을 읽는 공개 DocumentCore 관계 검사 3건은
+원 PUA·독립 메트릭 소유, 표시 대체 설정 불변성, 일반 Unicode bullet 대조군을 검사하며
+최소 공개 글꼴 환경에서 모두 통과했다. Native 공개 paint 모듈은 기존 5건과 새 원 기호
+검사 1건, 총 6건이 통과했다. 새 검사는 누락 face와 저장소 소유 fixture face, 두 크기·장평에서
+실제 잉크가 독립 Print의 em 윤곽을 따르는지 확인한다. 페이지 절대 배치 좌표를 고정하지 않는다.
+
+실제 fresh WASM·Chrome의 Canvas 회귀는 원본 기호의 source·전진과 실제 남색 잉크를
+대조한다. 새 검사는 수정 전 R31 WASM에서 원 PUA가 Unicode bullet로 바뀐 결함을
+검출해 실패했고, R33 WASM에서 통과했다. 기존 Canvas 글꼴 CI 집계의 import에 연결했으며
+workflow의 새 job이나 개별 호출은 추가하지 않았다. 같은 집계 14건이 모두 통과했다.
+검사 개발 중 드러난 상대 baseline 및 공개 JSON/HWPUNIT 양자화의 차이는 검사 좌표계를
+바로잡아 처리했고, 제품을 검사 기대값에 맞춰 변경하지 않았다.
+
+현재 단계는 원 기호 보정의 완료 증거다. 전 27건 최종 판정은 남은 전체 Rust·lint·원본 및
+보호 문서 Native/fresh WASM 검증과 새 base 보존 대조를 모두 완료한 뒤 별도로 갱신한다.

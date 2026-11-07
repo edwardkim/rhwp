@@ -1,4 +1,8 @@
 //! 관계형: 한자 뒤 ASCII 괄호도 원본 영문 슬롯을 소유하며 내용 순서와 전진을 보존한다.
+//! R33 근거 갱신 2026-11-07T13:58:21+09:00; 직전 파일 변경 f00d9a4895ada1212bfd23c0ea4e941024c847d0 (2026-11-07T11:03:07+09:00).
+//! 제품 ef77d740e1, 전94쪽 96 DPI·Print raw 최저 Native 99.98% / fresh WASM 99.99%.
+//! 검사5쪽은 각각100.00%/99.99%, 독립 PDF와94쪽 일치·직접 확대 판독 완료.
+//! 최신 증거: mydocs/pr/assets/planet6897_20261106/pr8611/r33-source-symbol/.
 //! 주석 작성: 2026-11-07 09:43:33 +0900. 새 파일이므로 직전 변경 커밋은 없다.
 //! 원본 samples/basic/sungeo.hwp, 독립 pdf/basic/sungeo-hwp-2020.pdf 전94쪽.
 //! 2026-11-07 R11, 96DPI·Print·보정 전2px raw 전쪽 최저 Native99.24%/fresh WASM99.32%.
