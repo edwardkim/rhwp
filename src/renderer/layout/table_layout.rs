@@ -10404,6 +10404,30 @@ impl LayoutEngine {
                                     .unwrap_or(0.0)
                                     .max(0.0)
                             };
+                            // 빈 host 의 글 위아래 블록 표가 밀어낸 흐름에서는 뒤 문단 앞 간격이
+                            // 표 띠에 흡수된다(`absorbed_block_host_successor_y`).
+                            // 조각을 넘는 host(이어받음·이어짐)는 이 조각에 흡수할 띠가 없다.
+                            let host_owned_here = self.cut_owns_whole_paragraph(
+                                cell,
+                                table,
+                                styles,
+                                fragment_cut_units,
+                                cp_idx,
+                            );
+                            if wrap_successor.is_none() && host_owned_here {
+                                if let Some((y, _)) = self.absorbed_block_host_successor_y(
+                                    para,
+                                    &composed.lines,
+                                    cp_idx,
+                                    composed_paras.len(),
+                                    styles,
+                                    para_y_before_compose,
+                                    para_y,
+                                    next_para,
+                                ) {
+                                    para_y = y;
+                                }
+                            }
                             para_y = para_y.max(next_vpos_y - next_spacing_before);
                         }
                     }
@@ -11516,6 +11540,92 @@ impl LayoutEngine {
 
     fn nested_table_is_overlay(&self, table: &crate::model::table::Table) -> bool {
         crate::renderer::float_placement::nested_table_is_overlay(table)
+    }
+
+    /// 셀 유닛 컷 `cut`(없으면 셀 전체)이 문단 `para_idx` 의 모든 유닛 — host 글줄과 중첩
+    /// 표의 모든 행 — 을 소유하는지. 앞 조각에서 이어받았거나 다음 조각으로 이어지는 host 는
+    /// 이 조각에 host 글줄 끝과 표 하단이 함께 있지 않다.
+    pub(super) fn cut_owns_whole_paragraph(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        cut: Option<(usize, usize)>,
+        para_idx: usize,
+    ) -> bool {
+        let Some((start, end)) = cut else {
+            return true;
+        };
+        let units = self.cell_units(cell, table, styles);
+        match (
+            units.iter().position(|unit| unit.para_idx == para_idx),
+            units.iter().rposition(|unit| unit.para_idx == para_idx),
+        ) {
+            (Some(first), Some(last)) => first >= start && last < end,
+            _ => false,
+        }
+    }
+
+    /// 빈 host 문단의 비-TAC 글 위아래(TopAndBottom) 블록 표가 흐름 커서를 host 글줄
+    /// 끝보다 아래(표 바깥 상자 하단)로 밀었으면, 뒤 문단의 앞 간격은 host 글줄 끝에서
+    /// 재며 표 띠 안에 겹친다. 한/글은 뒤 문단 첫 줄 top 을
+    /// `max(host 글줄 끝 + 앞 간격, 표 점유 하단)`에 둔다.
+    ///
+    /// 근거: 국회입법조사처 보도자료(docs#318) 큰 칸의 문단 0 = 빈 host(lh 600)+1×1 제목 표
+    /// (위아래 바깥여백 140, 높이 5372), 문단 1 앞 간격 900 의 저장 vpos 5652 = 표 바깥 상자
+    /// 하단이고 한/글 Print 의 문단 2 기준선도 그 사다리 위에 있다. 공무국외출장계획서
+    /// (docs#32)의 「※」 줄도 표 하단 바로 아래(앞 간격 500 미적용)에 인쇄된다.
+    ///
+    /// 반환: (compose 전 커서 — compose 가 앞 간격을 더한다, 흡수 판정에 쓴 앞 간격 px).
+    /// 저장 vpos 하한은 호출자가 이 앞 간격을 빼고 적용해 사다리를 보존한다.
+    #[allow(clippy::too_many_arguments)]
+    pub(super) fn absorbed_block_host_successor_y(
+        &self,
+        para: &Paragraph,
+        lines: &[crate::renderer::composer::ComposedLine],
+        para_index: usize,
+        para_count: usize,
+        styles: &ResolvedStyleSet,
+        para_y_before_compose: f64,
+        para_y: f64,
+        next_para: &Paragraph,
+    ) -> Option<(f64, f64)> {
+        let block_tables_only = !para.controls.is_empty()
+            && para.controls.iter().all(|control| {
+                matches!(control, Control::Table(table)
+                    if !table.common.treat_as_char
+                        && table.common.text_wrap == TextWrap::TopAndBottom
+                        && table.common.vert_rel_to == crate::model::shape::VertRelTo::Para
+                        && !self.nested_table_is_overlay(table))
+            });
+        let next_has_block_table = next_para
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::Table(t) if !t.common.treat_as_char));
+        if !block_tables_only || next_has_block_table || !para.text.trim().is_empty() {
+            return None;
+        }
+        let spacing_before = styles
+            .para_styles
+            .get(next_para.para_shape_id as usize)
+            .map_or(0.0, |style| style.spacing_before);
+        if spacing_before <= 0.0 {
+            return None;
+        }
+        let host_text_end = para_y_before_compose
+            + self.calc_para_lines_height(
+                lines,
+                para,
+                false,
+                true,
+                para_index,
+                para_count,
+                styles.para_styles.get(para.para_shape_id as usize),
+                styles,
+            );
+        // 표가 host 글줄보다 아래로 흐름을 밀지 않았으면 흡수할 띠가 없다.
+        (para_y > host_text_end + 0.5)
+            .then(|| (host_text_end.max(para_y - spacing_before), spacing_before))
     }
 
     /// 시각적 표 높이와 별개인 문단 흐름 전진량. 측정과 실제 배치가 공유한다.
