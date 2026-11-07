@@ -1,0 +1,595 @@
+{
+  "recorded_at": "2026-11-07T11:42:47.026081+09:00",
+  "base": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "parent": "07e07ed41cd801533cfa7ad32077eda03ef9c340",
+  "source_files": {
+    "src/renderer/bitmap_raster.rs": "c84352ff78c3945e8d9ff49aa9de69f3fd7dbf853015622718fd304645dcc59a",
+    "src/renderer/bitmap_raster/cropped_window.rs": "b526253e3f8fed8fe4f877caa4b6af0870e28283aadaa97a1915267caabde005",
+    "src/renderer/skia/image_conv.rs": "7cff1fc9bc1f524e2edb9914d031bc5f31f7c92864f35a0b5e88248eea3ad135",
+    "src/renderer/web_canvas.rs": "4f0194e666eb995ac593c2f40a24331b0cb8bbef47e9d7184e12cef84c77b62b",
+    "tests/cases/issue_7727_cropped_print_window.rs": "fec3df7fad2940c15a7ee6ce4aecbd409007c1b181112c74e43713a3cc4ca46a"
+  },
+  "source_guard": {
+    "guarded_files": 7159,
+    "changed_files": [],
+    "all_guarded_files_unchanged": true
+  },
+  "native": {
+    "sha256": "e8c5b0845293143227376d19c1dc41368ef8df716a0fefc9a845aa069670a71e",
+    "steps": [
+      {
+        "stage": "candidate",
+        "kind": "native",
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--lib",
+          "--bin",
+          "rhwp"
+        ],
+        "cwd": "/Users/tsjang/rhwp",
+        "target": "/Users/tsjang/rhwp/target/pr-review",
+        "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-window-integration-placement/candidate-native-build.log",
+        "started_at": "2026-11-07T02:21:45.267945+00:00",
+        "pid": 47395,
+        "exit_code": 0,
+        "seconds": 167.77,
+        "log_sha256": "ea729841bc51f9369a11d97e3c95824211db754994b9141d065a103f25db5147"
+      }
+    ]
+  },
+  "fresh_wasm": {
+    "kind": "Mac locked wrapper --target web --out-dir pkg --no-opt 로컬 대체 빌드. Docker 최적화 아님.",
+    "command": [
+      "/usr/bin/sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "exit_code": 0,
+    "package_files": {
+      "rhwp.js": "370ddff0fd1a1cf6f889edb1b2a42f420fac62f7f57df4b9cff19829e60cdd5f",
+      "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+      "rhwp_bg.wasm.d.ts": "6be5b94818e1303ac8a0760a6a6a8cc75ec7db461e89287188e641dfe46daeae",
+      "README.md": "ad35a0f1fbf601b33f5a969103656e220e75031ceee42bb7fc2d95ed32ed25aa",
+      "rhwp_bg.wasm": "fbf719fae74bf2a636553c8a733d587bf98093328f34612b4a99790fd49284ea",
+      ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+      "package.json": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+      "rhwp.d.ts": "785d2ac25427761253e4abcbd1442b76eaa2bfd1f7c4d204e1bc32b9518a1eb6"
+    },
+    "root_pkg_studio_public_same": true,
+    "actual_studio_initialization_checked": false
+  },
+  "formal_tests": {
+    "normal_pass": 4,
+    "minimal_font_pass": 4,
+    "minimal_font_command": [
+      "/usr/bin/sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_7727_cropped_print_window",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "8"
+    ]
+  },
+  "gates": [
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-window-integration-placement/fmt.log",
+      "exit_code": 0,
+      "seconds": 18.041
+    },
+    {
+      "name": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-window-integration-placement/prepare.log",
+      "exit_code": 0,
+      "seconds": 1.786
+    },
+    {
+      "name": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-window-integration-placement/fmt-check.log",
+      "exit_code": 0,
+      "seconds": 21.651
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-window-integration-placement/native-clippy.log",
+      "exit_code": 0,
+      "seconds": 2.089
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-window-integration-placement/wasm-clippy.log",
+      "exit_code": 0,
+      "seconds": 54.267
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review"
+      ],
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-window-integration-placement/workspace-build.log",
+      "exit_code": 0,
+      "seconds": 87.559
+    },
+    {
+      "name": "all-target-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-window-integration-placement/all-target-clippy.log",
+      "exit_code": 0,
+      "seconds": 23.825
+    },
+    {
+      "name": "native-skia-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-window-integration-placement/native-skia-clippy.log",
+      "exit_code": 0,
+      "seconds": 106.065
+    },
+    {
+      "name": "native-skia-unit",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads=8"
+      ],
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-window-integration-placement/native-skia-unit.log",
+      "exit_code": 0,
+      "seconds": 230.098
+    },
+    {
+      "name": "native-skia-png",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-window-integration-placement/native-skia-png.log",
+      "exit_code": 0,
+      "seconds": 199.134
+    },
+    {
+      "name": "native-skia-pdf",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-window-integration-placement/native-skia-pdf.log",
+      "exit_code": 0,
+      "seconds": 3.334
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+      ],
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-window-integration-placement/manifest.log",
+      "exit_code": 0,
+      "seconds": 0.798
+    },
+    {
+      "name": "unit-tiers",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+      ],
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-window-integration-placement/unit-tiers.log",
+      "exit_code": 0,
+      "seconds": 18.637
+    }
+  ],
+  "native_skia": {
+    "libraries_pass": 4039,
+    "libraries_ignored": 12,
+    "png_pass": 2,
+    "pdf_pass": 22
+  },
+  "whole_comparison": {
+    "complete": true,
+    "backends": [
+      {
+        "backend": "native",
+        "pages": 204,
+        "minimum": 96.23471,
+        "below98": [
+          {
+            "page": 96,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 97.06062,
+            "silhouette_raw_unmatched_pixels": 2357,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 80187,
+            "tolerant_content_match_percent": 97.06062
+          },
+          {
+            "page": 118,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 96.81844,
+            "silhouette_raw_unmatched_pixels": 2273,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 71443,
+            "tolerant_content_match_percent": 96.81844
+          },
+          {
+            "page": 162,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 96.34913,
+            "silhouette_raw_unmatched_pixels": 3271,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 89595,
+            "tolerant_content_match_percent": 96.34913
+          },
+          {
+            "page": 166,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 96.76253,
+            "silhouette_raw_unmatched_pixels": 3035,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 93746,
+            "tolerant_content_match_percent": 96.76253
+          },
+          {
+            "page": 176,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 97.45133,
+            "silhouette_raw_unmatched_pixels": 2621,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 102838,
+            "tolerant_content_match_percent": 97.45133
+          },
+          {
+            "page": 182,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 96.23471,
+            "silhouette_raw_unmatched_pixels": 3734,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 99169,
+            "tolerant_content_match_percent": 96.23471
+          }
+        ],
+        "below90": [],
+        "changed_pages": [
+          {
+            "page": 25,
+            "before": 99.93013,
+            "after": 99.93179,
+            "delta_pp": 0.00166
+          },
+          {
+            "page": 31,
+            "before": 97.80726,
+            "after": 98.71775,
+            "delta_pp": 0.91049
+          },
+          {
+            "page": 48,
+            "before": 92.33573,
+            "after": 99.92121,
+            "delta_pp": 7.58548
+          },
+          {
+            "page": 51,
+            "before": 97.54584,
+            "after": 99.02125,
+            "delta_pp": 1.47541
+          },
+          {
+            "page": 63,
+            "before": 99.36644,
+            "after": 99.92446,
+            "delta_pp": 0.55802
+          },
+          {
+            "page": 136,
+            "before": 99.77703,
+            "after": 99.94595,
+            "delta_pp": 0.16892
+          },
+          {
+            "page": 204,
+            "before": 99.83311,
+            "after": 99.91002,
+            "delta_pp": 0.07691
+          }
+        ],
+        "drops_over_0_1_pp": [],
+        "placement_png_differences": [],
+        "before_manifest": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-print-window-repair/before/native/cbta7727/silhouette_manifest.json",
+        "after_manifest": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-window-integration-placement/after/native/cbta7727/silhouette_manifest.json",
+        "before_tsv_sha256": "1001bd18bad755a78a8cecbc4dc23ea559f2007276c669962d78fda285d75a4f",
+        "after_tsv_sha256": "5096e67fdb59c51b71e12f9b8659ab9a71239279f665f03f8fba7ba65abec491",
+        "before_minimum": 92.33573
+      },
+      {
+        "backend": "wasm",
+        "pages": 204,
+        "minimum": 96.23239,
+        "below98": [
+          {
+            "page": 96,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 97.09909,
+            "silhouette_raw_unmatched_pixels": 2314,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 79768,
+            "tolerant_content_match_percent": 97.09909
+          },
+          {
+            "page": 118,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 96.8144,
+            "silhouette_raw_unmatched_pixels": 2272,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 71321,
+            "tolerant_content_match_percent": 96.8144
+          },
+          {
+            "page": 162,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 96.34599,
+            "silhouette_raw_unmatched_pixels": 3271,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 89518,
+            "tolerant_content_match_percent": 96.34599
+          },
+          {
+            "page": 166,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 96.75637,
+            "silhouette_raw_unmatched_pixels": 3035,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 93568,
+            "tolerant_content_match_percent": 96.75637
+          },
+          {
+            "page": 176,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 97.45629,
+            "silhouette_raw_unmatched_pixels": 2607,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 102488,
+            "tolerant_content_match_percent": 97.45629
+          },
+          {
+            "page": 182,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 96.23239,
+            "silhouette_raw_unmatched_pixels": 3734,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 99108,
+            "tolerant_content_match_percent": 96.23239
+          }
+        ],
+        "below90": [],
+        "changed_pages": [
+          {
+            "page": 12,
+            "before": 99.93767,
+            "after": 99.93788,
+            "delta_pp": 0.00021
+          },
+          {
+            "page": 25,
+            "before": 99.93079,
+            "after": 99.93166,
+            "delta_pp": 0.00087
+          },
+          {
+            "page": 31,
+            "before": 97.80753,
+            "after": 98.71785,
+            "delta_pp": 0.91032
+          },
+          {
+            "page": 32,
+            "before": 99.59588,
+            "after": 99.5977,
+            "delta_pp": 0.00182
+          },
+          {
+            "page": 48,
+            "before": 92.30842,
+            "after": 99.92877,
+            "delta_pp": 7.62035
+          },
+          {
+            "page": 51,
+            "before": 97.54507,
+            "after": 99.02681,
+            "delta_pp": 1.48174
+          },
+          {
+            "page": 63,
+            "before": 99.36593,
+            "after": 99.92441,
+            "delta_pp": 0.55848
+          },
+          {
+            "page": 136,
+            "before": 99.777,
+            "after": 99.94595,
+            "delta_pp": 0.16895
+          },
+          {
+            "page": 203,
+            "before": 99.82078,
+            "after": 99.93119,
+            "delta_pp": 0.11041
+          },
+          {
+            "page": 204,
+            "before": 99.83304,
+            "after": 99.90998,
+            "delta_pp": 0.07694
+          }
+        ],
+        "drops_over_0_1_pp": [],
+        "placement_png_differences": [],
+        "before_manifest": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-print-window-repair/before/wasm/cbta7727/silhouette_manifest.json",
+        "after_manifest": "output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/cbta-cropped-window-integration-placement/after/wasm/cbta7727/silhouette_manifest.json",
+        "before_tsv_sha256": "f76df6653e2236c70c5b222dddd2cd796cb014645c199dd78a8596829fea699c",
+        "after_tsv_sha256": "6566d32b6e96f0563807b663d49ad44fa91b977f715a60f5f746cd6a36317a0f",
+        "before_minimum": 92.30842
+      }
+    ]
+  },
+  "operation_equivalence": {
+    "operation": "opaque_window_downsample",
+    "identical_after_whitespace_normalization": true,
+    "normalized_body_sha256": "7c22e9a37bf8ccb0d66698bc68e98b2ddf8a808ad3dfaf191023b77f5284bd2e",
+    "note": "원본 창 면적 연산은 배치 변경 전후 동일하다. 실제 Native/WASM 출력 재검증을 대체하지 않는다."
+  },
+  "limits": [
+    "CBTA 6쪽 98% 미만. 전체 이슈 해결 또는 PR 준비 완료 아님.",
+    "최종 전체 nextest·전 코퍼스·편람 gate·실제 소비 검증은 별도로 남아 있다.",
+    "실제 지원 CanvasKit 검증으로 확대하지 않는다."
+  ]
+}

@@ -315,3 +315,12 @@ fmt·Native/WASM/전체target/Skia Clippy·workspace build·manifest·unit tier�
 
 [전후 전쪽 TSV·review/overlay·출처와 실제 결과](../pr/assets/issue7700/reset-span-slot-20261107/README.md).
 다른 미달 원본과 최종 전체 nextest·Skia 전체 unit·편람·실제 소비 검증·PR 제출은 아직 완료되지 않았다.
+
+
+## 잘린 비트맵 창의 공통 인쇄 축소
+
+2026-11-07, 부모 `07e07ed41c`에서 원본 crop 창의 면적 기여를 Native/WASM의 공통 인쇄 준비 경로에 연결했다. CBTA 31·48·51쪽이 각각 98% 이상으로 개선됐고 전 204쪽을 양쪽에서 다시 산출했다. 48쪽은 92.33573/92.30842%에서 99.92121/99.92877%가 됐다. 문서/쪽 분기와 원본/PDF 변경은 없다.
+
+신규 source cfg 검사 배치와 integration target 초과는 정책을 높이지 않고 기존 자동 suite include 방식으로 보정했다. 관계형 4개가 일반/최소 글꼴 환경에서 각각 통과했다. 새 Native/WASM 전 204쪽 PNG가 배치 변경 전후 바이트 동일하며 부모 대비 0.1%p 초과 하락은 없다. fmt·각 Clippy·workspace build·manifest·unit tier 및 Native Skia 라이브러리 4,039 PASS/12 ignored·PNG 2 PASS·PDF 22 PASS를 확인했다.
+
+[전쪽 TSV·전후 review/overlay·원본 및 프로그램 근거](../pr/assets/issue7727/cropped-print-window-20261107/README.md). CBTA의 96·118·162·166·176·182쪽은 여전히 98% 미만이다. 전체 nextest·편람 gate·실제 소비·PR 준비 완료로 확대하지 않고 보정을 계속한다.

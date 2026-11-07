@@ -3,8 +3,6 @@
 //! source/layout 좌표는 유지한다. 인쇄 paint의 장치 경계에서 준비한
 //! 픽셀을 fractional destination에서 다시 보간하지 않는다.
 
-use std::cell::RefCell;
-use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::io::Cursor;
 use std::sync::Arc;
@@ -13,29 +11,8 @@ use crate::paint::RenderProfile;
 
 use super::render_tree::BoundingBox;
 
-const MAX_PIXELS: u64 = 67_108_864;
-const CACHE_BYTES: usize = 16 * 1024 * 1024;
-const CACHE_ENTRIES: usize = 64;
-
-#[derive(Hash, PartialEq, Eq)]
-struct CacheKey {
-    source_hash: u64,
-    source_len: usize,
-    width: u32,
-    height: u32,
-    print: bool,
-    device_rect: [u64; 4],
-}
-
-#[derive(Default)]
-struct RasterCache {
-    entries: HashMap<CacheKey, Arc<Vec<u8>>>,
-    bytes: usize,
-}
-
-thread_local! {
-    static CACHE: RefCell<RasterCache> = RefCell::new(RasterCache::default());
-}
+mod cropped_window;
+use cropped_window::{CacheKey, CACHE, CACHE_BYTES, CACHE_ENTRIES, MAX_PIXELS};
 
 pub(crate) struct PreparedBitmap {
     pub bytes: Arc<Vec<u8>>,
@@ -181,6 +158,7 @@ pub(crate) fn prepare_bitmap(
         height,
         print,
         device_rect: device_rect.map(f64::to_bits),
+        source_window: None,
     };
     let png = CACHE.with(|cache| cache.borrow().entries.get(&key).cloned());
     let png = match png {
@@ -375,4 +353,79 @@ fn transparent_area_downsample(
         }
     }
     Some(output)
+}
+
+/// 잘린 원본 창도 최종 Print 장치 격자에서 한 번만 축소한다.
+/// 큰 축소의 불투명 bitmap만 받으며 crop 밖 표본·명시적 최근접·벡터는 재해석하지 않는다.
+pub(crate) fn prepare_cropped_bitmap(
+    bytes: &[u8],
+    bbox: BoundingBox,
+    matrix: [f64; 6],
+    profile: RenderProfile,
+    paper_grid: Option<PrintPaperGrid>,
+    source_window: [f64; 4],
+) -> Option<PreparedBitmap> {
+    let [a, b, c, d, e, f] = matrix;
+    let [sx, sy, sw, sh] = source_window;
+    if profile != RenderProfile::Print
+        || b != 0.0
+        || c != 0.0
+        || a <= 0.0
+        || d <= 0.0
+        || bbox.width <= 0.0
+        || bbox.height <= 0.0
+        || sx < 0.0
+        || sy < 0.0
+        || sw <= 0.0
+        || sh <= 0.0
+        || !matrix
+            .into_iter()
+            .chain(source_window)
+            .chain([bbox.x, bbox.y, bbox.width, bbox.height])
+            .all(f64::is_finite)
+        || super::image_resolver::png_sampling::metafile_surface(bytes)
+        || super::image_resolver::png_sampling::print_jpeg_transfer(bytes)
+        || super::image_resolver::png_sampling::print_bitmap_reconstruction(bytes)
+    {
+        return None;
+    }
+    let rectangle = [
+        a * bbox.x + e,
+        d * bbox.y + f,
+        a * bbox.width,
+        d * bbox.height,
+    ];
+    let [x, y, w, h] = paper_grid.map_or(rectangle, |grid| grid.project(rectangle));
+    let left = x.floor();
+    let top = y.floor();
+    let width = (x + w).floor() + 1.0 - left;
+    let height = (y + h).floor() + 1.0 - top;
+    // 선형 필터가 충분한 작은 축소와 확대는 기존 backend 경로가 소유한다.
+    if ![left, top, width, height].into_iter().all(f64::is_finite)
+        || width < 1.0
+        || height < 1.0
+        || width * height > MAX_PIXELS as f64
+        || width >= sw
+        || height >= sh
+        || (sw <= w * 2.0 && sh <= h * 2.0)
+    {
+        return None;
+    }
+    let (width, height) = (width as u32, height as u32);
+    let png = cropped_window::prepare(
+        bytes,
+        width,
+        height,
+        [x - left, y - top, w, h],
+        source_window,
+    )?;
+    Some(PreparedBitmap {
+        bytes: png,
+        bbox: BoundingBox::new(
+            (left - e) / a,
+            (top - f) / d,
+            f64::from(width) / a,
+            f64::from(height) / d,
+        ),
+    })
 }
