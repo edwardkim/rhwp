@@ -73,3 +73,15 @@ Native 최저 98.31507%, fresh WASM 최저 98.32714%.
 [최종 구현·검증·직접 판독 및 잔여](validation.md)
 
 실제 Native Skia PNG·Studio Canvas2D·지원 CanvasKit의 프로필별 원본은 [실제 소비 원장](actual.tsv)에 연결한다. SVG raster 비교와 구분한다. CanvasKit 항목은 지원 대조군만 포함하며 미지원 문서 fallback을 통과로 세지 않는다.
+
+[새 devel 보존 128조건의 입력·Print·실제 producer·manifest checkout·전쪽 TSV 원장](incoming-inputs.tsv). 고정 base를 출력할 때 사용한 checkout의 HEAD와 실행한 frozen producer source를 별도 열로 구분한다.
+
+## HFT 굵기 전진의 마지막 보존 보정
+
+#8418의 같은 입력·독립 Print 2쪽이다. Native 초기 후보63c39702의99.89494%에서50112773의99.99715%로 복원됐고 고정devel99.99715%와 같다. fresh WASM 후보도99.99715%다. 같은 새 출력 PNG를 사용해 직접 별지·제목·날짜·하단기관명과 닫는 괄호 간격을 대조했다. 현재 SVG/raster를 새로 실행한 결과로 바꾸어 쓰지 않는다.
+
+| producer | raw | review | overlay |
+| --- | --- | --- | --- |
+| before63c39702 Native | [raw](hft8418/before-native-p002-raw.png) | [review](hft8418/before-native-p002-review.png) | [overlay](hft8418/before-native-p002-overlay.png) |
+| current50112773 Native | [raw](hft8418/native-p002-raw.png) | [review](hft8418/native-p002-review.png) | [overlay](hft8418/native-p002-overlay.png) |
+| current50112773 fresh WASM | [raw](hft8418/wasm-p002-raw.png) | [review](hft8418/wasm-p002-review.png) | [overlay](hft8418/wasm-p002-overlay.png) |
