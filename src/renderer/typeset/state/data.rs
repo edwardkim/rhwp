@@ -406,6 +406,9 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) vpos_snapped_flow_start: Option<(usize, f64)>,
     /// 공통 vpos 질의가 현재 문단에서 거절한 저장 원점 `(문단, source HU)`.
     pub(in crate::renderer::typeset) rejected_stored_forward_origin: Option<(usize, i32)>,
+    /// 이 단에서 표 위 틈 판정으로 버린 저장 사다리 전방 이동의 합(HU). 저장 프레임에서
+    /// 표 원점을 잴 때 뒤 글줄과 같은 축을 쓰도록 뺀다.
+    pub(in crate::renderer::typeset) vpos_rejected_gap_hu: i32,
     pub(in crate::renderer::typeset) vpos_prev_layout_para: Option<usize>,
     pub(in crate::renderer::typeset) vpos_prev_partial_table: bool,
     /// 컬럼 시작 시점의 current_height (page_path anchor — 렌더러 col_anchor_y 대응).
