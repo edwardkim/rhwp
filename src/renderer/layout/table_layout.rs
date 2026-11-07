@@ -7472,6 +7472,8 @@ impl LayoutEngine {
         // 셀 내 문단 + 컨트롤 통합 레이아웃
         let mut para_y = text_y_start;
         let mut has_preceding_text = false;
+        // [#8686] 흐름을 전진시키지 않은 칸 안 자리차지 표의 바깥 상자 띠.
+        let mut cell_float_bands: Vec<std::ops::Range<f64>> = Vec::new();
         let sequential_nested_layout =
             self.sequential_nested_cell_layout(composed_paras, &cell.paragraphs, styles);
         let stored_block_flow = sequential_nested_layout
@@ -7700,6 +7702,20 @@ impl LayoutEngine {
                     }
                 }
             }
+            // [#8686] 앞 문단의 자리차지 표 띠는 흐름을 전진시키지 않는다. 이 문단의
+            // 첫 줄이 띠와 겹칠 때만 띠 끝으로 넘어간다.
+            if let Some(line) = para.line_segs.first() {
+                let before = styles
+                    .para_styles
+                    .get(para.para_shape_id as usize)
+                    .map_or(0.0, |style| style.spacing_before);
+                para_y = crate::renderer::float_placement::clear_topbottom_bands(
+                    &cell_float_bands,
+                    para_y,
+                    before,
+                    hwpunit_to_px(line.line_height, self.dpi),
+                );
+            }
 
             // [#6630] 세로 가운데/아래 셀의 첫 문단이 저장 앵커를 쓰지 않았으면 저장 vpos 를
             // 상한으로 한 위 여백을 더한다 — 내용 높이(`calc_para_lines_height`)에 같은 값이
@@ -7708,11 +7724,12 @@ impl LayoutEngine {
             // y 를 여기서 직접 옮기면 layout 쪽이 "단 맨 위가 아니다"로 보고 위 여백을 한 번 더
             // 더하므로, 대신 column-top 규칙(`spacing_before.min(저장 vpos)`, #853)을 이 문단에만
             // 허용한다(`suppress_column_top_vpos_fallback=false`).
+            // [#8686] 중첩 표가 있는 칸도 같다. 그 칸의 정렬 높이(`calc_nested_controls_bottom_height`)
+            // 는 저장 vpos 좌표(첫 줄 앞 여백 포함)로 재므로, 배치에서 이 여백을 빼면 흐름과 저장
+            // 좌표가 그만큼 어긋나 표 문단 뒤의 저장 vpos 하한이 뒤 문단을 다시 내린다.
             let first_para_lead_px = if cp_idx == 0
                 && !use_top_vpos_anchor
                 && !trust_stored_cell_flow
-                && (!has_nested_table
-                    || crate::renderer::composer::stored_first_tac_line(para).is_some())
                 && !snap_anchored_with_spacing_before
                 && (para_y - text_y_start).abs() < 1e-9
             {
@@ -10177,6 +10194,19 @@ impl LayoutEngine {
                                         ),
                                     ));
                                     para_y = lane_bottom.max(nested_y + advance);
+                                } else if let Some(frame) = stored_float_frame.filter(|frame| {
+                                    frame.flow == crate::renderer::float_placement::ParagraphFloatFlow::Exclusion
+                                        && matches!(nested_table.common.text_wrap, TextWrap::TopAndBottom)
+                                }) {
+                                    // [#8686] 인증된 자리차지 표는 본문 흐름에서 빠진 배제 띠다.
+                                    // 흐름은 호스트 문단의 글줄로만 전진하고, 띠는 뒤 글줄이
+                                    // 겹칠 때만 그 줄을 띠 끝으로 보낸다.
+                                    cell_float_bands.push(
+                                        frame.table_top
+                                            - hwpunit_to_px(nested_table.outer_margin_top as i32, self.dpi)
+                                            ..frame.occupied_bottom,
+                                    );
+                                    para_y = frame.paragraph_end(para_y, 0.0);
                                 } else {
                                     para_y = stored_float_frame
                                         .filter(|frame| matches!(frame.flow, crate::renderer::float_placement::ParagraphFloatFlow::NextLine))
@@ -11887,6 +11917,44 @@ impl LayoutEngine {
                         candidate.min(ladder_end)
                     } else {
                         candidate
+                    };
+                    // [#8686] 측정(`height_measurer`)과 같은 저장 호스트 배제 띠 끝.
+                    let bottom = if (self.profile.get().hwp5_stored_pagination_layout()
+                        || self.profile.get().hwpx_stored_layout())
+                        && !self.profile.get().session_edited()
+                    {
+                        let spacing_before = styles
+                            .para_styles
+                            .get(p.para_shape_id as usize)
+                            .map_or(0.0, |s| s.spacing_before);
+                        p.controls
+                            .iter()
+                            .enumerate()
+                            .filter_map(|(ci, ctrl)| {
+                                let Control::Table(nested) = ctrl else {
+                                    return None;
+                                };
+                                if self
+                                    .render_normalization
+                                    .borrow()
+                                    .table_text_reflowed(nested)
+                                {
+                                    return None;
+                                }
+                                crate::renderer::float_placement::stored_host_exclusion_bottom(
+                                    p,
+                                    &paragraphs[pidx + 1..],
+                                    nested,
+                                    ci,
+                                    para_top - spacing_before,
+                                    para_top,
+                                    self.nested_table_body_height(nested, styles),
+                                    self.dpi,
+                                )
+                            })
+                            .fold(bottom, f64::max)
+                    } else {
+                        bottom
                     };
                     prior_nested_end.set(prior_nested_end.get().max(bottom));
                     bottom
@@ -18159,6 +18227,7 @@ impl LayoutEngine {
                 units.push(band);
             }
         }
+        self.order_offset_space_followers_before_float_band(cell, table, styles, &mut units);
 
         if self.profile.get().hwp5_stored_pagination_layout()
             && !self.profile.get().session_edited()
@@ -24261,6 +24330,11 @@ impl LayoutEngine {
             )
         })
         .or_else(|| {
+            crate::renderer::float_placement::ParagraphFloatPlacement::from_stored_inner_host(
+                para, child, control, origin, body_height, self.dpi,
+            )
+        })
+        .or_else(|| {
             crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_stored_offset_host(
                 para, child, control, origin, body_height, self.dpi,
             )
@@ -24303,6 +24377,147 @@ impl LayoutEngine {
                 self.dpi,
             )
         })
+    }
+
+    /// [#8686] 칸 유닛은 세로 순서를 따른다. 글자 있는 호스트의 인증된 자리차지 표
+    /// (Exclusion)는 흐름을 전진시키지 않으므로, 저장 사다리가 띠 위 오프셋 공간에 둔
+    /// 뒤 문단은 표 예약 조각보다 앞선다. 그 문단 유닛을 호스트의 표 예약 조각 앞으로
+    /// 옮기고, 옮긴 높이만큼 조각 앞쪽(오프셋 빈 공간)을 줄여 띠 끝 위치를 보존한다.
+    fn order_offset_space_followers_before_float_band(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        units: &mut Vec<CellUnit>,
+    ) {
+        if self.profile.get().session_edited()
+            || !(self.profile.get().hwp5_stored_pagination_layout()
+                || self.profile.get().hwpx_stored_layout())
+            || self
+                .render_normalization
+                .borrow()
+                .cell_frame_reflowed(table, cell)
+        {
+            return;
+        }
+        let paragraphs = &cell.paragraphs;
+        for host_index in 0..paragraphs.len() {
+            let host = &paragraphs[host_index];
+            let Some(host_line) = host.line_segs.first() else {
+                continue;
+            };
+            if !host
+                .text
+                .chars()
+                .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{FFFC}')
+            {
+                continue;
+            }
+            let Some(frame) = host.controls.iter().enumerate().find_map(|(ci, control)| {
+                let Control::Table(child) = control else {
+                    return None;
+                };
+                self.stored_nested_float_placement(table, cell, host_index, child, ci, 0.0, styles)
+                    .filter(|frame| {
+                        frame.flow
+                            == crate::renderer::float_placement::ParagraphFloatFlow::Exclusion
+                            && matches!(child.common.text_wrap, TextWrap::TopAndBottom)
+                    })
+                    .map(|frame| {
+                        (
+                            frame,
+                            hwpunit_to_px(i32::from(child.outer_margin_top), self.dpi),
+                        )
+                    })
+            }) else {
+                continue;
+            };
+            let (frame, outer_top) = frame;
+            let band_start = frame.table_top - outer_top;
+            let host_before = styles
+                .para_styles
+                .get(host.para_shape_id as usize)
+                .map_or(0.0, |style| style.spacing_before);
+            // 띠 위 공간에 저장된 연속 뒤 문단(표를 품지 않은 글 문단).
+            let mut previous = host.line_segs.last().map_or(0, |line| line.vertical_pos);
+            let mut followers = 0usize;
+            for next in &paragraphs[host_index + 1..] {
+                let Some(first) = next.line_segs.first() else {
+                    break;
+                };
+                if first.vertical_pos < previous
+                    || !next
+                        .controls
+                        .iter()
+                        .all(crate::renderer::composer::control_is_width_neutral_marker)
+                {
+                    break;
+                }
+                let end = next
+                    .line_segs
+                    .iter()
+                    .map(|line| line.vertical_pos.saturating_add(line.line_height))
+                    .max()
+                    .unwrap_or(first.vertical_pos);
+                let bottom = host_before + hwpunit_to_px(end - host_line.vertical_pos, self.dpi);
+                if bottom > band_start + 0.5 {
+                    break;
+                }
+                previous = first.vertical_pos;
+                followers += 1;
+            }
+            if followers == 0 {
+                continue;
+            }
+            let follower_range = host_index + 1..host_index + 1 + followers;
+            let Some(band_first) = units
+                .iter()
+                .position(|unit| unit.para_idx == host_index && unit.mixed_nested_fragment)
+            else {
+                continue;
+            };
+            let band_end = units[band_first..]
+                .iter()
+                .position(|unit| !(unit.para_idx == host_index && unit.mixed_nested_fragment))
+                .map_or(units.len(), |offset| band_first + offset);
+            let follower_end = units[band_end..]
+                .iter()
+                .position(|unit| !follower_range.contains(&unit.para_idx))
+                .map_or(units.len(), |offset| band_end + offset);
+            // 호스트의 표 조각 바로 뒤에 뒤 문단 유닛이 이어질 때만 순서를 바꾼다.
+            if follower_end == band_end
+                || units[follower_end..]
+                    .iter()
+                    .any(|unit| follower_range.contains(&unit.para_idx))
+                || units[band_end].para_idx != host_index + 1
+            {
+                continue;
+            }
+            let moved_height: f64 = units[band_end..follower_end]
+                .iter()
+                .map(|unit| unit.height)
+                .sum();
+            let band_height: f64 = units[band_first..band_end]
+                .iter()
+                .map(|unit| unit.height)
+                .sum();
+            if moved_height > band_height + 0.5 {
+                continue;
+            }
+            let moved: Vec<CellUnit> = units.drain(band_end..follower_end).collect();
+            let mut remaining = moved_height;
+            for unit in &mut units[band_first..band_end] {
+                let take = remaining.min(unit.height);
+                unit.height -= take;
+                remaining -= take;
+                if remaining <= 0.0 {
+                    break;
+                }
+            }
+            for (offset, unit) in moved.into_iter().enumerate() {
+                units.insert(band_first + offset, unit);
+            }
+        }
     }
 
     /// 같은 문단 안의 저장 쪽 경계를 현재 행 컷이 소유하는지 확인한다.
