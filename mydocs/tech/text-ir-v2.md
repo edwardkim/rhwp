@@ -587,3 +587,12 @@ JSON tree 주입 API를 복원하지 않는다. schema-v1 sidecar와 v2 envelope
 normalizer/checked-export 계약으로 검증하고, Canvas2D 준비·선택·픽셀은 typed tree를 만드는
 Chromium `wasm-bindgen-test`로 검증한다. 두 입력 경로의 차이를 raw JSON API 호환으로
 표시하지 않는다.
+
+브라우저 회귀 실행은 `node scripts/run-web-canvas-outline-tests.mjs`를 사용한다. 이 runner는
+같은 test source를 별도 harness에서 컴파일하며 root의 host-only 테스트 의존성을 제외한다.
+해석된 모든 의존성의 name/version/source가 root `Cargo.lock`과 같은지 확인하고 `--locked
+--offline`으로 실행한다. 저장소의 Rust toolchain과 같은 버전의 `wasm-bindgen-test-runner`,
+실제 Chromium에 맞는 WebDriver가 필요하다. runner 경로는
+`CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER`, driver는 `CHROMEDRIVER`, Chromium의
+binary·인수는 `WASM_BINDGEN_TEST_WEBDRIVER_JSON`이 가리키는 capability JSON에 지정한다.
+`CARGO_TARGET_DIR`는 해당 물리적 source 전용 경로로 고정한다.
