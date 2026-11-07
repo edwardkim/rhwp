@@ -371,6 +371,12 @@ impl HftOutlineFonts {
             }
         }
         let selected = selected?;
+        // 복수 FontFace의 공급 정보가 생략된 앞 family를 건너뛰고 선택한
+        // 뒤 face는 실제 Canvas 선택의 증거가 아니다. 원 primary의 등록 CFF는
+        // 위에서 이미 해소했으며, 나머지는 실제 사다리를 아는 글자 painter에 맡긴다.
+        if !selected.predecessors_known {
+            return None;
+        }
         // 실제 기울임 face는 보관하지 않는다. 같은 family·굵기의 정체 윤곽으로 대신하지 않는다.
         if selected.slanted {
             return None;

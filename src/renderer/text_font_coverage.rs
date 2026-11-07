@@ -32,6 +32,9 @@ pub(crate) struct TextFontCoverage(Arc<Catalog>);
 pub(crate) struct PaintFace {
     pub family: String,
     pub slanted: bool,
+    /// 앞 family의 공급 정보가 없으면 뒤 face가 Canvas의 실제 선택이라고 확정할 수 없다.
+    #[cfg(target_arch = "wasm32")]
+    pub predecessors_known: bool,
     #[cfg(target_arch = "wasm32")]
     pub weight: u16,
 }
@@ -149,6 +152,8 @@ impl TextFontCoverage {
         }
         // Canvas/SVG에 전달한 CSS 체인의 인용·이스케이프는 family 이름이 아니다.
         // 내부의 비인용 목록 분리기를 재사용하면 적재된 face를 찾지 못한다.
+        #[cfg(target_arch = "wasm32")]
+        let mut predecessors_known = true;
         for family in svgtypes::parse_font_families(families).ok()? {
             let svgtypes::FontFamily::Named(family) = family else {
                 // 플랫폼 generic의 실제 선택은 이 세션의 등록 정보만으로 확정할 수 없다.
@@ -166,6 +171,17 @@ impl TextFontCoverage {
                 ..Default::default()
             });
             let Some(id) = id else {
+                #[cfg(target_arch = "wasm32")]
+                {
+                    // 미준비 예약 별칭은 원래 CSS 체인으로 이어지는 선택적 경로다.
+                    // 일반 family는 실제 FontFace가 적재됐으나 coverage가 생략된
+                    // 경우도 있으므로, 미등록을 글리프 부재로 해석하지 않는다.
+                    if !family.starts_with("__rhwp_ttf__")
+                        && !family.starts_with("__rhwp_intrinsic__")
+                    {
+                        predecessors_known = false;
+                    }
+                }
                 continue;
             };
             let ranges = self.0.coverage.get(&id)?;
@@ -183,6 +199,8 @@ impl TextFontCoverage {
                 return Some(PaintFace {
                     family,
                     slanted: self.0.db.face(id)?.style != Style::Normal,
+                    #[cfg(target_arch = "wasm32")]
+                    predecessors_known,
                     #[cfg(target_arch = "wasm32")]
                     weight: self.0.db.face(id)?.weight.0,
                 });

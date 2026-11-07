@@ -1,5 +1,5 @@
 // 관계형·고정형: 미등록 대비 등록 face의 paint API·잉크 관계, 인쇄 stroke 1.000px·화면 stroke=SVG 폭.
-// 주석 갱신: 2026-11-05T04:36:56+09:00 (신규 파일).
+// 주석 갱신: 2026-11-08T08:25:13.389497+09:00. 직전 파일 변경: 20a8ee978f7fdab92316e189ba072fa7450fab94 2026-11-08T07:03:03+09:00.
 // 합성 빈 문서(휴먼명조 굵게 '국민권익' + 보통 '가나', 24pt)의 실제 WASM·FontFace·Canvas paint
 // 계약이다. 한컴 문서의 시각 출력을 검증하지 않으므로 다른 원본의 raw 일치율을 이 검사의 측정값으로
 // 적지 않는다. 같은 변경의 30396 권고문 25쪽 Native/fresh WASM TSV와 대표 PNG는
@@ -105,6 +105,7 @@ test('합성 굵기는 등록한 실제 face의 윤곽 fill+stroke로 그리고 
     const fallback = {};
     for (const [name, prepare] of [
       ['variable', doc => doc.registerTextFontGlyphCoverage(family, variable, 0)],
+      ['untracked-primary', doc => doc.registerTextFontGlyphCoverage('Haansoft Batang', bytes, 0)],
       ['cleared', doc => { doc.registerTextFontGlyphCoverage(family, bytes, 0); doc.clearTextFontFamily(family); }],
     ]) {
       const doc = build();
