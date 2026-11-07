@@ -135,6 +135,17 @@ hot_render_boundaries! {
         profile: &str,
     ) -> Result<(), JsValue> = super::render_page_to_canvas_filtered_with_profile_impl;
 
+    // Explicit preview shares the same paint patch generation.
+    #[cfg(target_arch = "wasm32")]
+    exports ["renderPageToCanvasStrictOutlineWithProfile"]
+    fn render_page_to_canvas_strict_outline_with_profile(
+        document: &HwpDocument,
+        page_num: u32,
+        canvas: &HtmlCanvasElement,
+        scale: f64,
+        profile: &str,
+    ) -> Result<String, JsValue> = super::canvas2d_outline_preview::render;
+
     // 타이핑 중 부분 재도색. 같은 페인트 코드를 dirty rect 로만 다시 재생한다. 경계가 없으면
     // 전체 재도색만 새 코드로 그리고 그 뒤 키 입력마다 자기 줄을 옛 코드로 되돌린다 (#4577).
     #[cfg(target_arch = "wasm32")]
