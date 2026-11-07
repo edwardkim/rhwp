@@ -55,11 +55,11 @@ const AXIS_MARKER: &str = "META-INF/rhwp-hwp3-paragraph-axis";
 
 fn open(path: &str, password: Option<&str>) -> DocumentCore {
     let bytes = std::fs::read(path).unwrap_or_else(|e| panic!("{path} 읽기 실패: {e}"));
-    match password {
-        Some(p) => DocumentCore::from_bytes_with_password(&bytes, p.as_bytes()),
-        None => DocumentCore::from_bytes(&bytes),
-    }
-    .unwrap_or_else(|e| panic!("{path} 파싱 실패: {e}"))
+    // #8745: 인증 성공과 문서 조회를 분리한다. 기존 조판·저장 assertion은 유지한다.
+    let mut core = DocumentCore::new_empty();
+    core.load_bytes(&bytes, password.map(str::as_bytes))
+        .unwrap_or_else(|e| panic!("{path} 파싱 실패: {e}"));
+    core
 }
 
 fn resave_as_hwpx(core: &DocumentCore) -> DocumentCore {

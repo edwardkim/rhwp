@@ -378,7 +378,9 @@ fn password_reported_wasm_exports_keep_report_attached_to_each_encrypted_artifac
         format!("/BinData/BIN{resource_id:04X}.{extension}")
     );
     let hwp_bytes = hwp.take_bytes().expect("암호 HWP 바이트 가져오기");
-    let hwp_reloaded = DocumentCore::from_bytes_with_password(&hwp_bytes, password.as_bytes())
+    let mut hwp_reloaded = DocumentCore::new_empty();
+    hwp_reloaded
+        .load_bytes(&hwp_bytes, Some(password.as_bytes()))
         .expect("암호 HWP 재파싱");
     assert_nested_resource(&hwp_reloaded, resource_id, &topology);
 
@@ -394,7 +396,9 @@ fn password_reported_wasm_exports_keep_report_attached_to_each_encrypted_artifac
         format!("BinData/image{resource_id}.{extension}")
     );
     let hwpx_bytes = hwpx.take_bytes().expect("암호 HWPX 바이트 가져오기");
-    let hwpx_reloaded = DocumentCore::from_bytes_with_password(&hwpx_bytes, password.as_bytes())
+    let mut hwpx_reloaded = DocumentCore::new_empty();
+    hwpx_reloaded
+        .load_bytes(&hwpx_bytes, Some(password.as_bytes()))
         .expect("암호 HWPX 재파싱");
     assert_nested_resource(&hwpx_reloaded, resource_id, &topology);
 

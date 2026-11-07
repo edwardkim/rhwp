@@ -83,7 +83,11 @@ fn issue_8160_actual_encryptversion4_fixture_requires_the_password_and_preserves
     );
     assert_eq!(document.bin_data_content.len(), 7);
 
-    let hwp_document = HwpDocument::from_bytes_with_password(&bytes, FIXTURE_PASSWORD)
+    // #8745: 공개 인증 command로 열고 저장·조판은 성공 뒤 조회한다.
+    // 기존 constructor 호환은 issue_8745_password_boundary에서 별도로 검사한다.
+    let mut hwp_document = HwpDocument::from(rhwp::DocumentCore::new_empty());
+    hwp_document
+        .load_bytes(&bytes, Some(FIXTURE_PASSWORD))
         .expect("공개 HwpDocument API도 fixture를 열어야 함");
     assert_eq!(hwp_document.page_count(), 64);
 

@@ -13,7 +13,11 @@ last_verified: 2026-11-07
 분리하고 `OpenOptions`의 Debug 암호 값을 가렸다. 동일 로컬 CodeQL 2.27.4의 PR 범위에서
 logging 결과는 [수정 전 107건](base-logging-analysis.json) → [수정 후 0건](candidate-pr-analysis.json)이다.
 [추출 범위·경고 대조](analysis-coverage.json)도 같으며 기존 암호 벡터·형식 관련 18건은 유지한다.
-전체 Rust 범위·제품 검증은 [구현 기록](../../../working/task_m100_8745_implementation.md)에서 진행 상태를 구분한다.
+테스트·vendor를 포함한 전체 Rust 분석에서도 RHWP 경로의 logging 48→0을 확인했다.
+별도 vendor Python 경고 36건은 유지된다. 전후 소스 파일 집합·query 설정과 추출 warning
+115건이 같으며, 제품 회귀·Native·fresh WASM·브라우저 검증을 완료했다.
+[전체 결과 검토](full-result-review.md)와 [최종 분석 원장](full-codeql-validation.json)에서
+두 분석 범위와 남은 결과를 구분한다.
 
 반복 경고를 모두 암호 해제 테스트의 비밀 유출로 볼 수 없다. 최근 `rust/cleartext-logging`은
 암호를 받는 함수의 **반환된 문서 전체**를 민감값으로 추적한 경로가 대부분이다. 개별 sink를
@@ -103,5 +107,6 @@ Studio 경계가 범위다. 열린 #7754는 암호 HWPX의 쪽수·피델리티 
 
 [수행 계획](../../../plans/task_m100_8745.md)에서 새 이슈·구현 범위를 제안한다.
 조사·재현·계획 뒤 작업지시자가 이슈 등록과 구현을 승인했다. [#8745](https://github.com/edwardkim/rhwp/issues/8745)를
-등록·할당했으며 계획 커밋 뒤 승인된 구현·검증을 진행하고 있다. 위의 원인 조사는 수정 전 기준이며,
-구현 결과는 첫 단락과 구현 기록에서 구분한다. GitHub 경고 분류·분석 설정은 변경하지 않았다.
+등록·할당했으며 승인된 로컬 구현·검증을 완료했다. 위의 원인 조사는 수정 전 기준이며,
+구현 결과는 첫 단락과 [보고서](../../../report/task_m100_8745_report.md)에서 구분한다.
+GitHub 경고 분류·분석 설정은 변경하지 않았다. PR·push·병합과 원격 분석은 후속 승인 범위다.

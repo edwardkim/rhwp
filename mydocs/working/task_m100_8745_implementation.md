@@ -5,7 +5,7 @@
 - 이슈: [#8745](https://github.com/edwardkim/rhwp/issues/8745), 담당 edwardkim.
 - 기준: `e4ffabea38062e716f6c333cc950fa31b42b4dd7`.
 - 계획 커밋: `3e4e0c67b1`. 이슈 등록·구현·필수 로컬 검증을 승인받았다.
-- 현재 구현과 검증 중이다. 제품 보정의 CodeQL 통과·PR 준비 완료를 아직 선언하지 않는다.
+- 구현 커밋 `f922a759aa`와 제품 검증 뒤 전체 Rust 분석에서 테스트 호출 8개 파일을 추가 보정했다. 최종 제품 검사와 전체 분석을 완료했다. PR 범위 logging 107→0, 전체 범위의 RHWP logging 48→7→0이며 별도 vendor Python 36건은 유지된다. [최종 보고서](../report/task_m100_8745_report.md).
 
 ## 선행 검증과 구현 선택
 
@@ -25,7 +25,7 @@
 추가했다. 기존 공통 파서와 Core 생성 로직을 그대로 사용하고 완전히 생성된 뒤 `self`를 교체한다.
 오류 시 이전 문서를 보존하며, 성공 이후 기존 조회 API로 문서를 사용한다. CLI·서비스·MCP·Native
 host와 WASM 암호 constructor의 내부 호출을 이 경계에 연결한다. 외부 constructor의 시그니처와
-JS `openWithPassword`는 유지한다. 호환 wrapper와 전체 경로의 분석 효과는 아직 검증 중이다.
+JS `openWithPassword`는 유지한다. 호환 wrapper와 전체 경로의 분석 결과는 아래 최종 검증에 기록했다.
 
 WASM wrapper를 만드는 데 `createEmpty()`를 사용하면 불필요한 A4 문단 조판을 한 번 수행한다.
 이에 `From<DocumentCore>`로 이미 준비한 Core를 감싸도록 했으며 파싱·조판은 기존 열기 경로의
@@ -55,14 +55,15 @@ metadata 실패 시 0바이트 성공으로 처리하던 문제도 피한다. �
   `validate_file()` 검사는 성공했다. 상대 경로로 함수를 호출한 최초 진단 명령의 오류는 절대 경로로
   바로잡았으며 검사기를 변경하지 않았다.
 
-## 남은 검증
+## 검증 완료 확인
 
 - [x] 집중 회귀 6건: Debug·실패 보존·재시도·constructor 호환·CLI 저장 정보·PDF R2–R6 인증·HWP5 지연 이미지. 기존 분류 가드 5건을 포함해 최소 글꼴 환경에서 11건이 통과했다.
-- [ ] HWP3·HWP5·HWPX·PDF 기존 암호 회귀와 서비스·Native host 계약.
-- [ ] 고정 CodeQL의 변경 전후 SARIF, 목표 logging flow 제거와 실제 비밀 양성 대조 유지.
+- [x] HWP3·HWP5·HWPX·PDF 기존 암호 회귀와 서비스·Native host 계약.
+- [x] 같은 로컬 CodeQL의 PR 범위 전후 SARIF에서 logging 107→0과 실제 비밀 양성 대조 검출을 확인했다.
+- [x] 테스트를 포함한 전체 Rust CodeQL 평가 완료와 실제 결과 대조. RHWP logging 0건, vendor Python 36건 유지. 전후 대상 집합·추출 warning·설정 동일.
 - [x] 공개 벡터·작업 버퍼 16건 및 형식 관련 2건의 [개별 근거](../tech/investigations/issue-8745/crypto-result-review.md)를 정리했다. 분류 변경·알고리즘 변경은 하지 않았다.
-- [ ] 필수 전체 회귀·Rust lint·Native 해당 검사·fresh WASM·실제 브라우저 열기와 저장.
-- [ ] 현재 head의 결과·한계·호환 API 사용 가이드, 보고서·로컬 커밋.
+- [x] 전체 12,831건·Native 4,077건·Rust lint 묶음·최적화 fresh WASM·실제 브라우저 열기와 저장을 통과했다.
+- [x] 최종 소스의 결과·한계·호환 API 사용 가이드와 보고서 작성. 구현·분석 증적을 로컬 커밋으로 보존한다.
 
 PR 생성·원격 push·경고 재분류·merge는 이번 승인 범위에 포함하지 않는다.
 
@@ -180,3 +181,68 @@ fmt·root Clippy·WASM32 Clippy·workspace build·workspace all-target Clippy·s
 재부팅과 검증 하네스 두 문제의 실패 기록은 별도로 남기며 성공으로 덮지 않는다.
 제품·테스트 소스 해시는 고정한 값과 같다. 이 상태를 로컬 구현 커밋으로 보존하고,
 전체 CodeQL 결과와 새 최적화 WASM의 실제 브라우저 검증을 계속한다.
+
+## 최적화 WASM·실제 브라우저 검증 완료
+
+구현 커밋 `f922a759aa`로 `wasm-pack`과 `wasm-opt`를 포함한 빌드를 완료했다.
+WASM은 28,328,828바이트, SHA-256은
+`c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c`다.
+전용 Vite 7785·새 headless Chromium에서 HWP3/HWP5/HWPX 암호 열기, PDF Worker 인증,
+HWP/HWPX 평문·암호화 저장 재열기의 기존 E2E 3개 스크립트가 모두 종료 코드 0으로 통과했다.
+취소·오입력·재시도·기존 문서 유지·저장 실패·보호 의도·브라우저 storage 비노출을 함께 확인했다.
+[명령·산출물·브라우저 실제 수신 해시](../tech/investigations/issue-8745/wasm-browser-validation.json).
+
+초기화의 실제 WASM 응답은 모두 빌드 해시와 일치했다. PDF Worker도 별도 패키지의 같은
+불변 URL을 요청했고 실제 인증·게시를 통과했다. 초기화 CDP 응답 증거를 Worker 응답마다
+별도로 해시한 증거로 확대하지 않는다. 전용 서버와 브라우저는 종료했고 기존 Studio 산출물은 유지했다.
+전체 Rust CodeQL 평가의 완료와 결과 대조는 계속 진행 중이다.
+
+## 전체 분석의 로컬 자원 보정
+
+12,288 MiB 제한의 전체 분석은 타입 추론이 계속 진행됐지만 70분 이상 종료되지 않았다.
+평가 로그의 반복적인 VITAL array eviction과 프로세스 I/O(논리 읽기 약 800 GB, 쓰기 약 33 GB)를
+확인했다. 제품 빌드·브라우저가 모두 끝난 시점에 가용 메모리 28 GiB를 확인하고 로컬 evaluator를
+SIGINT로 종료했다(130). 이 실행은 분석 완료나 제품 실패로 분류하지 않는다.
+같은 DB·소스·query config와 완료된 쿼리 캐시를 유지한 채 RAM 24,576 MiB·8 threads로
+재개했다. GitHub workflow·탐지 설정·대상 파일은 변경하지 않았다. 메모리 상향의 실제 효과와
+분석 완료 여부는 새 실행 결과로 판단한다.
+
+
+## 전체 분석이 발견한 테스트 경로 보정
+
+첫 전체 분석은 22:37 KST에 종료 코드 0으로 끝났으나 logging 84건이 남았다.
+[전체 결과와 개별 분류](../tech/investigations/issue-8745/full-result-review.md)에 따라
+RHWP 테스트 constructor에서 조판 진단으로 이어지는 46곳과 fixture의 본문 출력 2곳을
+보정한다. 제품 코드·기대값은 유지하며 테스트 6개 파일의 인증 호출/실패 진단만 변경했다.
+첫 전체 결과를 0건으로 보고하거나 PR 범위 107건과 직접 증감 비교하지 않는다.
+
+같은 전체 소스 범위·query 설정으로 새 DB를 만들고 분석한다. 전체 회귀와 all-target Clippy도
+다시 실행하며, 제품 소스가 같은 Native·최적화 WASM·실제 브라우저 결과는 재사용한다.
+별도 vendor Python·qcms 결과를 이번 테스트 경계의 해결 완료에 포함하지 않는다.
+
+
+둘째 전체 분석은 종료 코드 0이지만 logging 43건 중 RHWP 경로 7곳이 남았다.
+HWP3 fixture와 차트 저장 검사의 다른 constructor 호출이 source였다. 남은 운영 목적의
+테스트 호출을 함께 점검해 8개 파일의 열기·저장·재열기 경계를 연결했다. 기존 공개 constructor의
+열기 자체와 feature-off 오류를 검사하는 세 호출은 유지한다. 기대값·제품 코드는 변경하지 않는다.
+[최종 변경 목록](../tech/investigations/issue-8745/test-boundary-completion.json).
+전체 회귀·lint와 전체 CodeQL을 다시 확인한 뒤 완료로 판정한다.
+
+2026-11-07 23:39 KST에 최종 8개 테스트 파일의 전체 회귀 12,831건·기존 45건 skip,
+fmt·workspace all-target Clippy·suite manifest 검사를 모두 통과했다. 해당 8개 파일의
+49개 테스트도 실행 로그에서 개별 PASS를 확인했다. 입력·기대값은 유지했으며 분석 snapshot과
+소스 해시가 같다. 제품·신규 #8745 회귀 소스도 기존 고정 해시와 같으므로 Native·WASM·브라우저
+검증은 재사용한다. [최종 테스트 검증 원장](../tech/investigations/issue-8745/test-boundary-completion.json).
+
+## 최종 분석 완료
+
+2026-11-07 23:48 KST에 세 번째 전체 CodeQL 실행의 성공을 확인했다. RHWP logging은
+48→7→0이며 별도 vendor Python logging 36건의 위치 집합은 그대로다. 하드코딩 결과
+126→121은 같은 공개 PDF 대조군 5개의 호출 경계 변경이며 합성 값·검사 입력은 유지했다.
+query·대상 파일·workflow·vendor 소스를 변경하거나 GitHub 경고를 재분류하지 않았다.
+
+[최종 SARIF](../tech/investigations/issue-8745/candidate-full-final-analysis.json)와
+[범위·실행 원장](../tech/investigations/issue-8745/full-codeql-validation.json)에 실제 결과를 보존했다.
+4,730개 소스 파일 집합, 정상 추출 4,610개·문제 보고 85개, warning 115개의 경로·내용·중복 수가
+전후 같았다. 기존 추출 한계와 별도 vendor·legacy 결과를 남긴 상태로 이번 로컬 작업을 완료한다.
+PR·원격 CI·병합·이슈 종료는 수행하지 않았다.

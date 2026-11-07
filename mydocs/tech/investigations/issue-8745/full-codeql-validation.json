@@ -1,0 +1,2587 @@
+{
+  "completed_at": "2026-11-07T23:48:17.458993+09:00",
+  "implementation_commit": "f922a759aa99ef84210df0451545bff87268c5dc",
+  "source_snapshot_manifest_sha256": "0e0d7c55e3f8da5887afc3e2d63c000e25c7ec0069db1b081171105a649be67d",
+  "source_files": 4730,
+  "same_source_file_set": true,
+  "source_hash_changes": [
+    "tests/cases/issue_7911_pdf_frontend.rs",
+    "tests/cases/issue_8160_hwp5_password.rs",
+    "tests/cases/issue_8303_hwp3_hwpx_textpos_idempotent.rs",
+    "tests/cases/issue_8304_hwp3_index_mark.rs",
+    "tests/generated/regression_suite_001.rs",
+    "tests/generated/regression_suite_002.rs",
+    "tests/generated/regression_suite_003.rs",
+    "tests/generated/regression_suite_004.rs",
+    "tests/generated/regression_suite_005.rs",
+    "tests/generated/regression_suite_006.rs",
+    "tests/generated/regression_suite_007.rs",
+    "tests/generated/regression_suite_008.rs",
+    "tests/generated/regression_suite_009.rs",
+    "tests/generated/regression_suite_010.rs",
+    "tests/generated/regression_suite_011.rs",
+    "tests/generated/regression_suite_012.rs",
+    "tests/generated/regression_suite_013.rs",
+    "tests/generated/regression_suite_014.rs",
+    "tests/generated/regression_suite_015.rs",
+    "tests/generated/regression_suite_016.rs",
+    "tests/generated/regression_suite_017.rs",
+    "tests/generated/regression_suite_018.rs",
+    "tests/generated/regression_suite_019.rs",
+    "tests/generated/regression_suite_020.rs",
+    "tests/generated/regression_suite_021.rs",
+    "tests/generated/regression_suite_022.rs",
+    "tests/generated/regression_suite_023.rs",
+    "tests/generated/regression_suite_024.rs",
+    "tests/generated/regression_suite_025.rs",
+    "tests/generated/regression_suite_026.rs",
+    "tests/generated/regression_suite_027.rs",
+    "tests/generated/regression_suite_028.rs",
+    "tests/hwp3_page_number_pos_fixture.rs",
+    "tests/hwp3_password_fixture.rs",
+    "tests/issue_3546_chart_preserved_on_save.rs",
+    "tests/issue_4430_export_content_loss.rs"
+  ],
+  "all_snapshot_hashes_match": true,
+  "initial_counts": {
+    "rust/access-invalid-pointer": 6,
+    "rust/hard-coded-cryptographic-value": 126,
+    "rust/cleartext-logging": 84,
+    "rust/weak-sensitive-data-hashing": 1,
+    "rust/weak-cryptographic-algorithm": 2
+  },
+  "final_counts": {
+    "rust/access-invalid-pointer": 6,
+    "rust/hard-coded-cryptographic-value": 121,
+    "rust/cleartext-logging": 36,
+    "rust/weak-sensitive-data-hashing": 1,
+    "rust/weak-cryptographic-algorithm": 2
+  },
+  "initial_root_logging": 48,
+  "final_root_logging": 0,
+  "vendor_logging_locations_unchanged": true,
+  "vendor_logging": 36,
+  "sarif_sha256": "39db6ad461d7673aa1fb5db834e3070a7f61647d1ec5f1be7a26e81cd7b8efb2",
+  "configuration": {
+    "path": ".github/codeql/rust-postmerge.yml",
+    "sha256": "642dc9f5379aa7d1ddcbce2550523d14e2680f911a05d0a79b7e3cab32cdd5c9",
+    "unchanged": true
+  },
+  "metrics": [
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 18.0,
+      "message": {
+        "text": "Number of files with extension toml"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 30495.0,
+      "message": {
+        "text": "Number of files with extension rs"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 129.0,
+      "message": {
+        "text": "Number of diagnostics with severity 20"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 115.0,
+      "message": {
+        "text": "Number of diagnostics with severity 30"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 0.0,
+      "message": {
+        "text": "Number of lines of code with extension toml"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 6755889.0,
+      "message": {
+        "text": "Number of lines of code with extension rs"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 30514.0,
+      "message": {
+        "text": "Number of files"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 6755889.0,
+      "message": {
+        "text": "Number of lines of code"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 86.62572402772918,
+      "message": {
+        "text": "Percentage of calls with call target"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 1235476.0,
+      "message": {
+        "text": "Number of calls with call target"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 84.41620282044161,
+      "message": {
+        "text": "Percentage of expressions with known type"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 85.16297086613416,
+      "message": {
+        "text": "Percentage of macro calls with call target"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 5878638.0,
+      "message": {
+        "text": "Number of expressions with known type"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 354404.0,
+      "message": {
+        "text": "Number of macro calls with call target"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 1085236.0,
+      "message": {
+        "text": "Number of expressions with unknown type"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 190747.0,
+      "message": {
+        "text": "Number of calls with missing call target"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 61744.0,
+      "message": {
+        "text": "Number of macro calls with missing call target"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/summary/number-of-successfully-extracted-files",
+        "index": 18
+      },
+      "ruleId": "rust/summary/number-of-successfully-extracted-files",
+      "ruleIndex": 18,
+      "value": 4610
+    },
+    {
+      "rule": {
+        "id": "rust/summary/lines-of-code",
+        "index": 19
+      },
+      "ruleId": "rust/summary/lines-of-code",
+      "ruleIndex": 19,
+      "value": 1608405
+    },
+    {
+      "rule": {
+        "id": "rust/summary/lines-of-user-code",
+        "index": 20
+      },
+      "ruleId": "rust/summary/lines-of-user-code",
+      "ruleIndex": 20,
+      "value": 1608405
+    },
+    {
+      "rule": {
+        "id": "rust/summary/nodes-at-type-path-length-limit",
+        "index": 21
+      },
+      "ruleId": "rust/summary/nodes-at-type-path-length-limit",
+      "ruleIndex": 21,
+      "value": 347
+    },
+    {
+      "rule": {
+        "id": "rust/summary/number-of-files-extracted-with-errors",
+        "index": 22
+      },
+      "ruleId": "rust/summary/number-of-files-extracted-with-errors",
+      "ruleIndex": 22,
+      "value": 85
+    }
+  ],
+  "initial_execution_history": [
+    {
+      "name": "candidate-full-create",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/tools/codeql/codeql",
+        "database",
+        "create",
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/candidate-full-db",
+        "--language=rust",
+        "--build-mode=none",
+        "--source-root=/home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source",
+        "--codescanning-config=/home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/.github/codeql/rust-postmerge.yml",
+        "--threads=4",
+        "--ram=8192"
+      ],
+      "start": "2026-11-07T20:18:15.862993+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T20:46:21.532127+09:00"
+    },
+    {
+      "name": "candidate-full-analyze",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/tools/codeql/codeql",
+        "database",
+        "analyze",
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/candidate-full-db",
+        "--format=sarif-latest",
+        "--output=/home/edward/mygithub/rhwp/output/codeql-password-investigation/candidate-full.sarif",
+        "--threads=4",
+        "--ram=12288"
+      ],
+      "start": "2026-11-07T20:46:21.578207+09:00",
+      "interrupted_by": "host reboot before 2026-11-07T21:00+09:00"
+    },
+    {
+      "name": "candidate-full-analyze",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/tools/codeql/codeql",
+        "database",
+        "analyze",
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/candidate-full-db",
+        "--format=sarif-latest",
+        "--output=/home/edward/mygithub/rhwp/output/codeql-password-investigation/candidate-full.sarif",
+        "--threads=4",
+        "--ram=12288"
+      ],
+      "start": "2026-11-07T21:08:46.065619+09:00",
+      "reuse_database": true,
+      "exit_code": 130,
+      "end": "2026-11-07T22:20:57.137989+09:00",
+      "interrupted_by": "local RAM tuning after product builds completed; cache churn observed",
+      "resource_observation": {
+        "pid": 4279,
+        "rchar": 800122350563,
+        "wchar": 33375436740,
+        "read_bytes": 3028889600,
+        "write_bytes": 34430459904,
+        "configured_ram_mib": 12288,
+        "free_available_memory_after_stop_gib": 28
+      }
+    },
+    {
+      "name": "candidate-full-analyze",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/tools/codeql/codeql",
+        "database",
+        "analyze",
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/candidate-full-db",
+        "--format=sarif-latest",
+        "--output=/home/edward/mygithub/rhwp/output/codeql-password-investigation/candidate-full.sarif",
+        "--threads=8",
+        "--ram=24576"
+      ],
+      "start": "2026-11-07T22:21:25.924528+09:00",
+      "reuse_database": true,
+      "reason": "same sources and query scope; larger RAM after build completion",
+      "exit_code": 0,
+      "end": "2026-11-07T22:36:43.713483+09:00"
+    }
+  ],
+  "final_execution_history": [
+    {
+      "name": "candidate-full-pass3-create",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/tools/codeql/codeql",
+        "database",
+        "create",
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/candidate-full-pass3-db",
+        "--language=rust",
+        "--build-mode=none",
+        "--source-root=/home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source",
+        "--codescanning-config=/home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/.github/codeql/rust-postmerge.yml",
+        "--threads=4",
+        "--ram=8192"
+      ],
+      "start": "2026-11-07T23:15:43.040339+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T23:32:57.433540+09:00"
+    },
+    {
+      "name": "candidate-full-pass3-analyze",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/tools/codeql/codeql",
+        "database",
+        "analyze",
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/candidate-full-pass3-db",
+        "--format=sarif-latest",
+        "--output=/home/edward/mygithub/rhwp/output/codeql-password-investigation/candidate-full-pass3.sarif",
+        "--threads=8",
+        "--ram=24576"
+      ],
+      "start": "2026-11-07T23:32:57.487570+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T23:48:11.377263+09:00"
+    }
+  ],
+  "vendor_source_unchanged_from_base": true,
+  "second_execution_history": [
+    {
+      "name": "candidate-full-final-create",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/tools/codeql/codeql",
+        "database",
+        "create",
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/candidate-full-final-db",
+        "--language=rust",
+        "--build-mode=none",
+        "--source-root=/home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source",
+        "--codescanning-config=/home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/.github/codeql/rust-postmerge.yml",
+        "--threads=4",
+        "--ram=8192"
+      ],
+      "start": "2026-11-07T22:39:09.176971+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T22:55:55.165668+09:00"
+    },
+    {
+      "name": "candidate-full-final-analyze",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/tools/codeql/codeql",
+        "database",
+        "analyze",
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/candidate-full-final-db",
+        "--format=sarif-latest",
+        "--output=/home/edward/mygithub/rhwp/output/codeql-password-investigation/candidate-full-final.sarif",
+        "--threads=8",
+        "--ram=24576"
+      ],
+      "start": "2026-11-07T22:55:55.166129+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T23:13:27.433904+09:00"
+    }
+  ],
+  "extraction_warnings": {
+    "initial_count": 115,
+    "final_count": 115,
+    "same_multiset": true,
+    "final": [
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-pdf-import-backend/src/lib.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 192
+              },
+              "region": {
+                "startLine": 144,
+                "endColumn": 14
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-pdf-import-backend/src/lib.rs with message Features `fips` and `legacy-crypto` are mutually exclusive. FIPS 140-3 forbids MD5 (pulled in by `legacy-crypto`). Build with: --no-default-features --features fips,icc"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-qcms/src/c_bindings.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 1
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-qcms/src/c_bindings.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-qcms/src/chain.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4257
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-qcms/src/chain.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-qcms/src/gtest.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 0
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-qcms/src/gtest.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-qcms/src/lib.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 195
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-qcms/src/lib.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-qcms/src/matrix.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4259
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-qcms/src/matrix.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-qcms/src/iccread.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4258
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-qcms/src/iccread.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-qcms/src/resource.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4260
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-qcms/src/resource.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-qcms/src/transform.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4261
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-qcms/src/transform.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-qcms/src/transform_avx.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4262
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-qcms/src/transform_avx.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-qcms/src/transform_neon.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4263
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-qcms/src/transform_neon.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-qcms/src/transform_sse2.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4264
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-qcms/src/transform_sse2.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-qcms/src/transform_util.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4265
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-qcms/src/transform_util.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "tools/rhwp-subsecond/build.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 161
+              },
+              "region": {
+                "startLine": 30,
+                "startColumn": 9,
+                "endLine": 33,
+                "endColumn": 148
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/tools/rhwp-subsecond/build.rs with message macro expansion failed for '$crate::format_args_nl'"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-codec-resource/src/lib.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 163
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-codec-resource/src/lib.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-ccitt/src/bit_reader.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 261
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-ccitt/src/bit_reader.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-ccitt/src/decode.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 262
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-ccitt/src/decode.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-ccitt/src/lib.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 164
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-ccitt/src/lib.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-ccitt/src/state_machine.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 263
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-ccitt/src/state_machine.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/arithmetic_decoder.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4223
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/arithmetic_decoder.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/bitmap.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4224
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/bitmap.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/decode/generic_refinement.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4226
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/decode/generic_refinement.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/decode/generic.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4225
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/decode/generic.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/decode/halftone.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4227
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/decode/halftone.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/decode/mod.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4228
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/decode/mod.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/decode/pattern.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4229
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/decode/pattern.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/decode/symbol.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4230
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/decode/symbol.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/decode/text.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4231
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/decode/text.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/error.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4232
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/error.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/file.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4233
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/file.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/gray_scale.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4234
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/gray_scale.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/huffman_table.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4235
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/huffman_table.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/integer_decoder.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4237
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/integer_decoder.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/integration.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4238
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/integration.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/huffman_tables_generated.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4236
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/huffman_tables_generated.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/lazy.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4239
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/lazy.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/page_info.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4240
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/page_info.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/lib.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 165
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/lib.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/reader.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4241
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/reader.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/segment.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4242
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/segment.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/simd.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4243
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/simd.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jbig2/src/symbol_id_decoder.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4244
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jbig2/src/symbol_id_decoder.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/error.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 197
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/error.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/integration.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 198
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/integration.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/j2c/arithmetic_decoder.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 199
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/j2c/arithmetic_decoder.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/j2c/bitplane.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 200
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/j2c/bitplane.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/j2c/build.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 201
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/j2c/build.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/j2c/codestream.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 202
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/j2c/codestream.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/j2c/decode.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 203
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/j2c/decode.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/j2c/mct.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 205
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/j2c/mct.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/j2c/idwt.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 204
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/j2c/idwt.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/j2c/mod.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 206
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/j2c/mod.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/j2c/progression.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 207
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/j2c/progression.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/j2c/rect.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 208
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/j2c/rect.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/j2c/segment.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 209
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/j2c/segment.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/j2c/tag_tree.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 210
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/j2c/tag_tree.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/jp2/box.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 212
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/jp2/box.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/jp2/cdef.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 213
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/jp2/cdef.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/jp2/cmap.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 214
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/jp2/cmap.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/jp2/colr.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 215
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/jp2/colr.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/jp2/icc.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 216
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/jp2/icc.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/j2c/tile.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 211
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/j2c/tile.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/jp2/mod.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 217
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/jp2/mod.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/jp2/pclr.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 218
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/jp2/pclr.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/lib.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 166
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/lib.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/log.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 219
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/log.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/math.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 220
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/math.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-hayro-jpeg2000/src/reader.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 221
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-hayro-jpeg2000/src/reader.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-jpeg-encoder/src/avx2/fdct.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4246
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-jpeg-encoder/src/avx2/fdct.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-jpeg-encoder/src/avx2/ycbcr.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4247
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-jpeg-encoder/src/avx2/ycbcr.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-jpeg-encoder/src/avx2.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4245
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-jpeg-encoder/src/avx2.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-jpeg-encoder/src/encoder/scans.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4249
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-jpeg-encoder/src/encoder/scans.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-jpeg-encoder/src/error.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4250
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-jpeg-encoder/src/error.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-jpeg-encoder/src/encoder.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4248
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-jpeg-encoder/src/encoder.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-jpeg-encoder/src/fdct.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4251
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-jpeg-encoder/src/fdct.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-jpeg-encoder/src/huffman.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4252
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-jpeg-encoder/src/huffman.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-jpeg-encoder/src/image_buffer.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4253
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-jpeg-encoder/src/image_buffer.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-jpeg-encoder/src/lib.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 168
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-jpeg-encoder/src/lib.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-jpeg-encoder/src/marker.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4254
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-jpeg-encoder/src/marker.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-jpeg-encoder/src/quantization.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4255
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-jpeg-encoder/src/quantization.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-jpeg-encoder/src/writer.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4256
+              },
+              "region": {
+                "startLine": 1,
+                "endColumn": 2
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-jpeg-encoder/src/writer.rs with message semantic analyzer unavailable (unable to load manifest)"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-pdf-import-backend/src/color/mod.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4335
+              },
+              "region": {
+                "startLine": 974,
+                "startColumn": 23,
+                "endColumn": 71
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-pdf-import-backend/src/color/mod.rs with message macro expansion failed for '$crate::panic::panic_2021'"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-pdf-import-backend/src/crypto/active.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 4372
+              },
+              "region": {
+                "startLine": 179,
+                "startColumn": 9,
+                "endColumn": 16
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-pdf-import-backend/src/crypto/active.rs with message macro expansion failed for '$crate::panic::panic_2021'"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "vendor/rhwp-pdf-import-backend/src/crypto/rust_provider.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 29
+              },
+              "region": {
+                "startLine": 635,
+                "startColumn": 9,
+                "endColumn": 16
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/vendor/rhwp-pdf-import-backend/src/crypto/rust_provider.rs with message macro expansion failed for '$crate::panic::panic_2021'"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 100,
+                "startColumn": 29,
+                "endColumn": 29
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected value parameter"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 100,
+                "startColumn": 29,
+                "endColumn": 29
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected R_PAREN"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 100,
+                "startColumn": 29,
+                "endColumn": 29
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected a block"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 101,
+                "startColumn": 5,
+                "endColumn": 5
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 101,
+                "startColumn": 8,
+                "endColumn": 8
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 101,
+                "startColumn": 10,
+                "endColumn": 10
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 101,
+                "startColumn": 11,
+                "endColumn": 11
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 101,
+                "startColumn": 18,
+                "endColumn": 18
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 101,
+                "startColumn": 18,
+                "endColumn": 18
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 101,
+                "startColumn": 19,
+                "endColumn": 19
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 102,
+                "startColumn": 12,
+                "endColumn": 12
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 102,
+                "startColumn": 12,
+                "endColumn": 12
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 102,
+                "startColumn": 14,
+                "endColumn": 14
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 102,
+                "startColumn": 20,
+                "endColumn": 20
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 102,
+                "startColumn": 20,
+                "endColumn": 20
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 102,
+                "startColumn": 27,
+                "endColumn": 27
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 102,
+                "startColumn": 27,
+                "endColumn": 27
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 102,
+                "startColumn": 28,
+                "endColumn": 28
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 103,
+                "startColumn": 10,
+                "endColumn": 10
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 103,
+                "startColumn": 10,
+                "endColumn": 10
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 103,
+                "startColumn": 12,
+                "endColumn": 12
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 103,
+                "startColumn": 16,
+                "endColumn": 16
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 103,
+                "startColumn": 16,
+                "endColumn": 16
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 104,
+                "endLine": 103,
+                "endColumn": 18
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 104,
+                "startColumn": 3,
+                "endColumn": 3
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected an item"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 110,
+                "startColumn": 14,
+                "endColumn": 14
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected expression"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 110,
+                "startColumn": 17,
+                "endColumn": 17
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected SEMICOLON"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 172,
+                "startColumn": 9,
+                "endColumn": 9
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected pattern"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 178,
+                "startColumn": 34,
+                "endColumn": 34
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected expression"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 202,
+                "startColumn": 23,
+                "endColumn": 23
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected expression"
+      },
+      {
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": {
+                "uri": "mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs",
+                "uriBaseId": "%SRCROOT%",
+                "index": 303
+              },
+              "region": {
+                "startLine": 204,
+                "startColumn": 45,
+                "endColumn": 45
+              }
+            }
+          }
+        ],
+        "message": "Extraction warning in /home/edward/mygithub/rhwp/output/codeql-password-investigation/full-source/mydocs/tech/investigations/issue-1113/probes/dump_odd_header_1113.rs with message expected expression"
+      }
+    ]
+  }
+}
