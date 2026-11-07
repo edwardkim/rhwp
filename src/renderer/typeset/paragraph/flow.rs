@@ -322,14 +322,7 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
             - fmt.line_advances_sum(0..line)
             - fmt.line_heights.get(line).copied().unwrap_or(0.0)
     });
-    let own_note_cost = note_levels.last().map_or(0.0, |level| {
-        if note_levels.iter().any(|level| level.blocks_later_lines) {
-            // 앞부분만 들어가는 각주 뒤 줄은 이 쪽에 들어가지 않는다 — 분할로 넘긴다.
-            f64::INFINITY
-        } else {
-            level.cost
-        }
-    });
+    let own_note_cost = note_levels.last().map_or(0.0, |level| level.cost);
     let whole_available = (available - own_note_cost).max(0.0);
     if std::env::var_os("RHWP_DIAG_OWN_NOTES").is_some() && own_note_cost > 0.0 {
         eprintln!(
@@ -455,9 +448,9 @@ fn collect_own_line_notes(
         else {
             continue;
         };
-        let content_height = measure
-            .block_content_height(st, footnote, None)
-            .unwrap_or_else(|| measure.content_height(st, footnote));
+        let block_content_height = measure.block_content_height(st, footnote, None);
+        let content_height =
+            block_content_height.unwrap_or_else(|| measure.content_height(st, footnote));
         let mut lines = Vec::new();
         for note_para in &footnote.paragraphs {
             let composed = crate::renderer::composer::compose_paragraph(note_para);
@@ -472,11 +465,51 @@ fn collect_own_line_notes(
                 )
             }));
         }
-        let stored_split =
+        let mut stored_split =
             crate::renderer::typeset::notes::footnotes::boundary::native_hwp5_footnote_reset_fragments(
                 footnote, engine.dpi,
             )
             .filter(|split| !split.force_next_page);
+        if block_content_height.is_some() {
+            // 각주 안의 블록 표는 표 host 줄의 줄 높이·줄간격 밖을 차지한다. 조각 높이를
+            // 줄 합이 아니라 paint 와 같은 조각 측정에서 받아 비용·배치·예약이 같은 상자를 쓴다
+            // (i628 95쪽 각주 56: 줄 합 219.1px, 저장 사다리·paint·한컴 280.1px).
+            let fragment_height = |start_line: usize, end_line: usize| {
+                measure.block_content_height(
+                    st,
+                    footnote,
+                    Some(crate::renderer::pagination::FootnoteFragment {
+                        start_line,
+                        end_line,
+                        draw_separator: true,
+                        draw_number: start_line == 0,
+                    }),
+                )
+            };
+            if let Some(split) = stored_split.as_mut() {
+                if let (Some(prefix), Some(suffix)) = (
+                    fragment_height(split.prefix.start_line, split.prefix.end_line),
+                    fragment_height(split.suffix.start_line, split.suffix.end_line),
+                ) {
+                    split.prefix_height = prefix;
+                    split.suffix_height = suffix;
+                }
+            }
+            // 줄 단위 앞 조각 `0..end` 의 높이가 paint 조각 측정과 같도록 각 줄 높이에
+            // 그 줄까지의 전진을 싣는다(줄간격은 저장값 유지).
+            let prefix_heights: Option<Vec<f64>> = (1..=lines.len())
+                .map(|end| fragment_height(0, end))
+                .collect();
+            if let Some(prefix_heights) = prefix_heights {
+                let mut previous_end = 0.0;
+                let mut previous_spacing = 0.0;
+                for (line, end_height) in lines.iter_mut().zip(prefix_heights) {
+                    line.0 = (end_height - previous_end - previous_spacing).max(0.0);
+                    previous_end = end_height;
+                    previous_spacing = line.1;
+                }
+            }
+        }
         notes.push(crate::renderer::typeset::OwnLineNote {
             para_index: para_idx,
             line,

@@ -229,7 +229,9 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
                     .max(0.0)
             }
         } else {
-            (base_available - reserve).max(0.0)
+            // 앞 쪽에서 넘어온 각주(쪽 전환 때 이 쪽 각주 영역에 먼저 놓인다)는
+            // 이어받은 본문 줄보다 먼저 쪽 아래를 차지한다.
+            (base_available - reserve - st.current_footnote_height).max(0.0)
         };
 
         let sp_b = if cursor_line == 0 {
@@ -374,10 +376,6 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
             let mut best: Option<(f64, split::SplitBoundary, bool)> = None;
             for level in 0..=note_levels.len() {
                 let previous = level.checked_sub(1).map(|index| note_levels[index]);
-                if previous.is_some_and(|previous| previous.blocks_later_lines) {
-                    // 앞부분만 들어간 각주가 쪽 나머지를 차지한다.
-                    break;
-                }
                 let cap = note_levels.get(level).map(|next| next.line + 1);
                 let level_avail =
                     (avail_for_lines - previous.map_or(0.0, |previous| previous.cost)).max(0.0);
