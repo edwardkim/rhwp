@@ -3802,6 +3802,20 @@ impl LayoutEngine {
 
         // 4. 각 요소의 폭 계산
         // 4a. 표 폭 계산
+        // [#7150] 같은 저장 줄의 다른 표가 줄 띠를 소유하면 이 표는 그 표와 기준선을 공유한다.
+        // 소유 표 하단이 `기준선 + 0.15×소유 높이` 이므로 표 위끝은
+        // `줄 위 + 소유 om_top + 0.85×(소유 높이 − 표 높이)` 다 (36383665 1쪽 결재표).
+        let shared_band_table_top = |ctrl_idx: usize, table_h: f64, line_top: f64| -> Option<f64> {
+            let line = super::control_line_seg_index(para, ctrl_idx)?;
+            let (_, owner) = inline_tables.iter().find(|(owner_idx, owner)| {
+                *owner_idx != ctrl_idx
+                    && super::control_line_seg_index(para, *owner_idx) == Some(line)
+                    && Self::tac_stored_band_is_outer_box(para, owner)
+            })?;
+            let owner_h = hwpunit_to_px(owner.common.height as i32, self.dpi);
+            let owner_om_top = hwpunit_to_px(owner.outer_margin_top as i32, self.dpi);
+            Some((line_top + owner_om_top + (owner_h - table_h) * 0.85).max(line_top))
+        };
         let table_widths: Vec<f64> = inline_tables
             .iter()
             .map(|(_, t)| {
@@ -4523,6 +4537,7 @@ impl LayoutEngine {
                 let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
                 let tbl_y = self
                     .tac_table_stored_outer_band_top(para, tbl, tbl_h, current_y)
+                    .or_else(|| shared_band_table_top(*ctrl_idx, tbl_h, current_y))
                     .unwrap_or_else(|| {
                         let raw = current_y + baseline_dist + om_bottom - tbl_h;
                         if raw < current_y {
@@ -4633,6 +4648,7 @@ impl LayoutEngine {
             let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
             let tbl_y = self
                 .tac_table_stored_outer_band_top(para, tbl, tbl_h, current_y)
+                .or_else(|| shared_band_table_top(*ctrl_idx, tbl_h, current_y))
                 .unwrap_or_else(|| (current_y + baseline_dist + om_bottom - tbl_h).max(current_y));
 
             let table_bottom = self.layout_table(
