@@ -2074,6 +2074,15 @@ fn trailing_reservation_after_final_source_owner(
     }
 }
 
+/// [#8715] 글 문단이 품은 `CELL` 분할 중첩 표의 행·칸별 컷 조각.
+struct NestedRowFragment {
+    row: usize,
+    cut: NestedTableUnitCut,
+    height: f64,
+    hard_break_before: bool,
+    stored_frame_break_before: bool,
+}
+
 /// [#4069] 중첩 표의 셀 흐름을 바깥 셀 컷 원장으로 투영한 한 조각.
 ///
 /// 기존 `(height, trailing, content_height)` 튜플은 내부 셀의 강제 쪽 경계를
@@ -13046,7 +13055,7 @@ impl LayoutEngine {
         &self,
         nt: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
-    ) -> Option<Vec<(usize, NestedTableUnitCut, f64)>> {
+    ) -> Option<Vec<NestedRowFragment>> {
         if nt.common.treat_as_char
             || nt.row_count < 2
             || !matches!(nt.layout_page_break(), TablePageBreak::RowBreak)
@@ -13083,6 +13092,21 @@ impl LayoutEngine {
                 .map(|cell| self.cell_units(cell, nt, styles))
                 .collect();
             let full_cut: RowCut = row_units.iter().map(|units| units.len()).collect();
+            // 칸 유닛의 저장 쪽 나눔(되감김) 표식을 그 유닛에서 시작하는 행 조각으로 옮긴다.
+            // 빈 호스트 행 유닛과 같이, 조각에서 내용을 시작하는 칸의 첫 유닛을 본다.
+            let breaks_at = |start: &RowCut, end: &RowCut| -> (bool, bool) {
+                let mut hard = false;
+                let mut frame = false;
+                for ((cell_units, s), e) in row_units.iter().zip(start).zip(end) {
+                    if e > s {
+                        if let Some(unit) = cell_units.get(*s) {
+                            hard |= unit.hard_break_before;
+                            frame |= unit.stored_frame_break_before;
+                        }
+                    }
+                }
+                (hard, frame)
+            };
             let row_gap = if ri + 1 < nrow { ncs } else { 0.0 };
             let driver = row_units
                 .iter()
@@ -13095,15 +13119,20 @@ impl LayoutEngine {
                 .map(|(index, _)| index)?;
             let driver_units = &row_units[driver];
             if driver_units.len() <= 1 || header_rows.contains(&ri) {
-                out.push((
-                    ri,
-                    NestedTableUnitCut {
-                        start_cut: vec![0; row_units.len()],
+                let start_cut = vec![0; row_units.len()];
+                let (hard_break_before, stored_frame_break_before) =
+                    breaks_at(&start_cut, &full_cut);
+                out.push(NestedRowFragment {
+                    row: ri,
+                    cut: NestedTableUnitCut {
+                        start_cut,
                         end_cut: full_cut,
                         terminal: true,
                     },
-                    *rh + row_gap,
-                ));
+                    height: *rh + row_gap,
+                    hard_break_before,
+                    stored_frame_break_before,
+                });
                 continue;
             }
             let driver_total: f64 = driver_units.iter().map(|unit| unit.height).sum();
@@ -13144,15 +13173,19 @@ impl LayoutEngine {
                 if last {
                     height += row_extra - row_extra * 0.5 + row_gap;
                 }
-                out.push((
-                    ri,
-                    NestedTableUnitCut {
-                        start_cut: cuts_at(driver_before),
+                let start_cut = cuts_at(driver_before);
+                let (hard, frame) = breaks_at(&start_cut, &end_cut);
+                out.push(NestedRowFragment {
+                    row: ri,
+                    cut: NestedTableUnitCut {
+                        start_cut,
                         end_cut,
                         terminal,
                     },
                     height,
-                ));
+                    hard_break_before: hard || driver_unit.hard_break_before,
+                    stored_frame_break_before: frame || driver_unit.stored_frame_break_before,
+                });
                 driver_before = driver_after;
             }
         }
@@ -18091,10 +18124,10 @@ impl LayoutEngine {
                             // 행 조각 합과 이 문단의 표 예약(`target_h`)의 차이는 호스트
                             // 글줄 끝에서 표 위끝까지의 오프셋과 아래 바깥여백이다. 앞 몫은
                             // 첫 행 조각이 소유한다(빈 호스트 행 유닛의 om_top 과 같은 자리).
-                            let rows_total: f64 = rows.iter().map(|(_, _, h)| *h).sum();
+                            let rows_total: f64 = rows.iter().map(|fragment| fragment.height).sum();
                             let lead = (target_h - rows_total).max(0.0);
                             if let Some(first) = rows.first_mut() {
-                                first.2 += lead;
+                                first.height += lead;
                             }
                             // 바깥여백을 뺀 나머지가 호스트 글줄 끝→표 위끝 오프셋이다.
                             let carried_lead = source_controls
@@ -18111,21 +18144,22 @@ impl LayoutEngine {
                                 })
                                 .unwrap_or(0.0)
                                 .max(0.0);
-                            for (index, (row, fragment, height)) in rows.into_iter().enumerate() {
+                            for (index, fragment) in rows.into_iter().enumerate() {
+                                let height = fragment.height;
                                 units.push(CellUnit {
                                     height,
                                     following_line_advance: 0.0,
                                     reflowed_line_slot: false,
-                                    hard_break_before: false,
-                                    stored_frame_break_before: false,
-                                    page_frame_reset_before: false,
+                                    hard_break_before: fragment.hard_break_before,
+                                    stored_frame_break_before: fragment.stored_frame_break_before,
+                                    page_frame_reset_before: fragment.hard_break_before,
                                     vpos_gap_before: false,
                                     para_idx: pi,
                                     vis_start: line_count,
                                     vis_end: line_count,
-                                    nested_row: Some(row),
+                                    nested_row: Some(fragment.row),
                                     nested_row_flow_edges: None,
-                                    nested_table_fragment: Some(fragment),
+                                    nested_table_fragment: Some(fragment.cut),
                                     mixed_nested_fragment: false,
                                     mixed_nested_trailing: false,
                                     mixed_nested_content_height: 0.0,
