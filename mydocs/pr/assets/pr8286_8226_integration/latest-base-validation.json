@@ -1,0 +1,39 @@
+{
+  "checkedAt": "2026-11-07T15:04:43.221458+00:00",
+  "head": "afc38f95dc0d874ace13d4c90b94cc7da5b2d8c6",
+  "latestBase": "1e16a19aede5ccb2657d35974940eb596286cdf1",
+  "previousValidatedBase": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+  "combinedTree": "60f720a2b6a2a78ce59fce8ddc66e77a915240fb",
+  "worktree": "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-8741-combined",
+  "mergeCommitted": true,
+  "productEdits": false,
+  "remoteWrites": false,
+  "checks": {
+    "mergeTree": "passed: no conflicts",
+    "overlappingChangedFiles": 0,
+    "diffCheck": "passed",
+    "manifest": "passed against origin/devel",
+    "focusedNextest": {
+      "profile": "release-test",
+      "passed": 22,
+      "failed": 0,
+      "filteredOut": 1517,
+      "logSha256": "84f38c9aec3de93dc229e29927d3a02a6b13af9070f5d0dcdcb76883eac7d02c",
+      "modules": [
+        "container_chart_partial_paragraph_lines",
+        "leading_definition_slots",
+        "issue_8733_solid_fill_pattern",
+        "issue_536_shared_layer_tree",
+        "issue_7606_tac_table_size_criterion"
+      ]
+    }
+  },
+  "notRepeated": [
+    "full nextest 12789",
+    "Native/WASM full visual corpus",
+    "Native handbook 383 pages"
+  ],
+  "ci": "Pending new-head CI after authorized push",
+  "remaining": "Latest-base combined CI/required-check confirmation and explicit merge approval",
+  "mergeCommit": "c95abf73d78fd2da2c83a59531fa02872f638e5d"
+}

@@ -50,6 +50,7 @@ pub(crate) struct PictureBandLayout {
     pub(crate) paragraph_range: Range<usize>,
     pub(crate) line_segs: Vec<Vec<LineSeg>>,
     pub(crate) space_metrics: Vec<Vec<(u32, SpaceMetric)>>,
+    pub(crate) preserved_stored: Vec<bool>,
 }
 
 /// How the frame resolved a paragraph's stored rows.
@@ -258,6 +259,17 @@ fn break_before_text_token(
         return false;
     }
     let previous = text_chars[start_idx - 1];
+    // UAX #14의 CB(OBJECT REPLACEMENT CHARACTER, LB20)는 개체 앞의
+    // 줄바꿈 기회를 갖는다. 이 경계를 빠뜨리면 넓은 인라인 표 앞의
+    // 이모지·라틴 글자까지 이전 공백으로 되감겨 빈 줄이 하나 더 생긴다.
+    // 여는 금칙 문자와 명시적인 줄바꿈 억제 문자는 기존 결합을 유지한다.
+    if text_chars[start_idx] == '\u{FFFC}'
+        && !previous.is_whitespace()
+        && !is_line_end_forbidden(previous)
+        && !matches!(previous, '\u{2060}' | '\u{FEFF}')
+    {
+        return true;
+    }
     // 수식 뒤 단위의 곱셈점도 낱말 경계다. 독립 Print의 `(kN․|m)`처럼
     // 앞쪽 단위가 물리 폭 안에 들면 공백/수식 앞까지 되감지 않는다.
     if matches!(previous, '\u{2024}' | '\u{2219}')
@@ -579,7 +591,11 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
         // 공백 (줄 바꿈 지점) — NonBreakingSpace(\u{00A0})는 제외
         // 개체 슬롯은 뒤 글자와 별개의 분할 불가 토큰이다. 글꼴 글리프의
         // 폭은 없으며 공통 측정 결과가 제공한 물리 폭만 소비한다.
-        if ch == '\u{FFFC}' && inline_width_px_at(inline_controls, i, styles) > 0.0 {
+        if ch == '\u{FFFC}'
+            && inline_controls
+                .iter()
+                .any(|control| control.char_position == i)
+        {
             let width = inline_width_px_at(inline_controls, i, styles);
             let style_id = find_active_char_shape(
                 char_shapes,
@@ -1262,7 +1278,13 @@ fn prepare_paragraph_projection(
         );
 
         let scalar_width = match character {
-            '\u{FFFC}' if inline_width_px_at(inline_controls, index, styles) > 0.0 => 0.0,
+            '\u{FFFC}'
+                if inline_controls
+                    .iter()
+                    .any(|control| control.char_position == index) =>
+            {
+                0.0
+            }
             '\t' | '\n' | '\r' => 0.0,
             ' ' => space_metric.space_advance(&text_style),
             _ => reflow_scalar_width(character, &text_style),
@@ -5470,6 +5492,47 @@ pub(crate) fn layout_picture_band(
     // [#6202] 용지 기준(`Paper`/`Page`) 어울림 개체를 재는 데 필요한 본문 상자의 용지 원점.
     paper_origin_px: (f64, f64),
 ) -> Option<PictureBandLayout> {
+    layout_picture_band_impl(
+        paragraphs,
+        host_index,
+        column_width_px,
+        styles,
+        dpi,
+        paper_origin_px,
+        false,
+    )
+}
+
+/// Container flows carry the actual exclusion geometry, so stored rows can be
+/// admitted against that frame instead of being treated as full-width text.
+pub(crate) fn layout_container_picture_band(
+    paragraphs: &[Paragraph],
+    host_index: usize,
+    column_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    admit_stored: bool,
+) -> Option<PictureBandLayout> {
+    layout_picture_band_impl(
+        paragraphs,
+        host_index,
+        column_width_px,
+        styles,
+        dpi,
+        (0.0, 0.0),
+        admit_stored,
+    )
+}
+
+fn layout_picture_band_impl(
+    paragraphs: &[Paragraph],
+    host_index: usize,
+    column_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    paper_origin_px: (f64, f64),
+    admit_stored: bool,
+) -> Option<PictureBandLayout> {
     let host = paragraphs.get(host_index)?;
     let column_horizontal = 0..px_to_hwpunit(column_width_px, dpi);
     let margins_for = |paragraph: &Paragraph| {
@@ -5573,6 +5636,7 @@ pub(crate) fn layout_picture_band(
     let mut frame = host_box.frame_with(0, exclusions);
     let mut line_segs = Vec::new();
     let mut space_metrics = Vec::new();
+    let mut preserved_stored = Vec::new();
 
     for (paragraph_index, paragraph) in paragraphs.iter().enumerate().skip(host_index) {
         if frame.top >= exclusion_end {
@@ -5600,11 +5664,33 @@ pub(crate) fn layout_picture_band(
         // even when the source paragraph had authentic cached rows. Clearing
         // the cache prevents row-local flags from leaking and keeps vpos ladder
         // repair from treating the fresh zero-origin row as a saved reset.
-        input.line_segs.clear();
         let first_row = frame.row_count();
-        let paragraph_lines = layout_paragraph_in_frame(&input, &mut frame, styles, dpi)?;
+        let preserved = if admit_stored && !crate::renderer::para_has_no_stored_line_segs(paragraph)
+        {
+            resolve_stored_line_segs_in_frame(
+                paragraph,
+                &mut frame,
+                styles,
+                dpi,
+                false,
+                StoredRowMissPolicy::Reflow,
+                paragraph.stored_text_partition_is_dirty(),
+                &[],
+                true,
+            )? == StoredRowResolution::Stored
+        } else {
+            input.line_segs.clear();
+            layout_paragraph_in_frame(&input, &mut frame, styles, dpi)?;
+            false
+        };
+        let paragraph_lines = if preserved {
+            paragraph.line_segs.clone()
+        } else {
+            frame.project_line_segs_since(first_row)
+        };
         space_metrics.push(frame.project_space_metrics_since(first_row));
         line_segs.push(paragraph_lines);
+        preserved_stored.push(preserved);
     }
 
     // 구역의 마지막 문단에서 끝난 밴드는 더 깎을 줄이 없다 — 남은 배제 높이는 흐름에 영향이
@@ -5629,6 +5715,7 @@ pub(crate) fn layout_picture_band(
         paragraph_range: host_index..host_index + line_segs.len(),
         line_segs,
         space_metrics,
+        preserved_stored,
     })
 }
 

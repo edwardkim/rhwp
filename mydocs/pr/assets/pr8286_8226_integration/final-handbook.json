@@ -1,0 +1,26 @@
+{
+  "sourceHead": "170dd2412206b48cfbf925c5f5a67dcf93437e81",
+  "binarySha256": "23acf43b1510f3e18f4e7884798ae861293481a513d42407af13d4283d726005",
+  "status": "passed",
+  "pages": 383,
+  "minimumRawMatch": 99.96,
+  "baselineRegressions": 0,
+  "baselineSha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+  "elapsedSeconds": 194.784,
+  "initialFailure": "Git dubious ownership in bind-mounted dedicated checkout; registered only this checkout in the validation container and repeated all 383 pages",
+  "input": "samples/2025 행정업무운영 편람(최종).hwpx",
+  "referencePdf": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+  "command": [
+    "scripts/visual_sweep.py",
+    "--handbook-gate",
+    "--silhouette-only",
+    "--rhwp-bin",
+    "/Volumes/T7/DeveloperArtifacts/rhwp/workspaces/pr8286-linux-integration/output/pr-review/final-linux/rhwp",
+    "--page-workers",
+    "2",
+    "--out",
+    "/Volumes/T7/DeveloperArtifacts/rhwp/workspaces/pr8286-linux-integration/output/pr-review/final-linux/handbook-verified"
+  ],
+  "inputSha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+  "referencePdfSha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e"
+}

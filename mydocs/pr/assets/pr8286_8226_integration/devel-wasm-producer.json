@@ -1,0 +1,146 @@
+{
+  "head": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "backend": "wasm",
+  "runs": [
+    {
+      "label": "source",
+      "argv": [
+        "node",
+        "scripts/export-wasm-png-for-sweep.mjs",
+        "--pkg",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-pkg",
+        "--input",
+        "tests/fixtures/container_charts/container-charts.hwpx",
+        "--out",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-wasm/source",
+        "--fonts",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/font-catalog.json",
+        "--options",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/wasm-options.json"
+      ],
+      "exit": 0,
+      "inputSha256": "f1648ee13a230529b00acc815735bb57d70b39a6c3ab40d765d1745f7d4735e7",
+      "sweepExit": 1,
+      "sweepArgv": [
+        "/Users/melee/Documents/Codex/2026-11-07/task-2/rhwp-review/output/pr-review/pr8226-recheck/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-wasm/source/comparison_png",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/reference/pdfium/source",
+        "--out",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-wasm/source/sweep"
+      ]
+    },
+    {
+      "label": "old-hwp",
+      "argv": [
+        "node",
+        "scripts/export-wasm-png-for-sweep.mjs",
+        "--pkg",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-pkg",
+        "--input",
+        "/Users/melee/Documents/Codex/2026-11-01/task/pr8286-transfer/inputs/resaved.hwp",
+        "--out",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-wasm/old-hwp",
+        "--fonts",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/font-catalog.json",
+        "--options",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/wasm-options.json"
+      ],
+      "exit": 0,
+      "inputSha256": "2584b91045a04f4ec666ff183c1981a2d5f8d542b740e2aa3602cf756a3003eb",
+      "sweepExit": 1,
+      "sweepArgv": [
+        "/Users/melee/Documents/Codex/2026-11-07/task-2/rhwp-review/output/pr-review/pr8226-recheck/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-wasm/old-hwp/comparison_png",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/reference/pdfium/hwp",
+        "--out",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-wasm/old-hwp/sweep"
+      ]
+    },
+    {
+      "label": "old-hwpx",
+      "argv": [
+        "node",
+        "scripts/export-wasm-png-for-sweep.mjs",
+        "--pkg",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-pkg",
+        "--input",
+        "/Users/melee/Documents/Codex/2026-11-01/task/pr8286-transfer/inputs/resaved.hwpx",
+        "--out",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-wasm/old-hwpx",
+        "--fonts",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/font-catalog.json",
+        "--options",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/wasm-options.json"
+      ],
+      "exit": 1,
+      "inputSha256": "8b0fa69e8174f0ff26ff9f8caac98728e499575b805b1f67f55479c6618e0c12"
+    },
+    {
+      "label": "current-hwp",
+      "argv": [
+        "node",
+        "scripts/export-wasm-png-for-sweep.mjs",
+        "--pkg",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-pkg",
+        "--input",
+        "output/pr-review/pr8286-resume/candidate-diagnostic/resaved.hwp",
+        "--out",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-wasm/current-hwp",
+        "--fonts",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/font-catalog.json",
+        "--options",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/wasm-options.json"
+      ],
+      "exit": 0,
+      "inputSha256": "4706677cdce14ca759edeaedff55f6241b7e05e2c760ed4b983455155f56923c",
+      "sweepExit": 1,
+      "sweepArgv": [
+        "/Users/melee/Documents/Codex/2026-11-07/task-2/rhwp-review/output/pr-review/pr8226-recheck/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-wasm/current-hwp/comparison_png",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/reference/pdfium/current-hwp",
+        "--out",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-wasm/current-hwp/sweep"
+      ]
+    },
+    {
+      "label": "current-hwpx",
+      "argv": [
+        "node",
+        "scripts/export-wasm-png-for-sweep.mjs",
+        "--pkg",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-pkg",
+        "--input",
+        "output/pr-review/pr8286-resume/candidate-diagnostic/resaved.hwpx",
+        "--out",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-wasm/current-hwpx",
+        "--fonts",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/font-catalog.json",
+        "--options",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/wasm-options.json"
+      ],
+      "exit": 0,
+      "inputSha256": "eb6d9f1e3308dd80589321fffd5d7fdfa97a2e3a5ccde0433733a4744aeaef10",
+      "sweepExit": 1,
+      "sweepArgv": [
+        "/Users/melee/Documents/Codex/2026-11-07/task-2/rhwp-review/output/pr-review/pr8226-recheck/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-wasm/current-hwpx/comparison_png",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/reference/pdfium/current-hwpx",
+        "--out",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/devel-wasm/current-hwpx/sweep"
+      ]
+    }
+  ],
+  "wasmSha256": "941af4e51b82959bd4330943a306a45c568b8664d739e7133012b2c4b66ddaf3"
+}

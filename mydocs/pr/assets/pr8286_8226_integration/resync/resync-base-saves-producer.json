@@ -1,0 +1,99 @@
+{
+  "head": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+  "binarySha256": "92492bd9ee55f2713c69dd1908b73a09da5fbe55361f40c006aa99b2540f54d4",
+  "wasmSha256": "13b94450fefad6dfb85f42c022c0d0a5b5fcbb8019761769b748e9e8646e41b9",
+  "runs": [
+    {
+      "extension": "hwp",
+      "backend": "native",
+      "inputSha256": "4f01f3a9275025971f26c17691ef23d580b86174415643b843d23aae1dbd6b86",
+      "argv": [
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/rhwp-resync-base",
+        "export-png",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/resync-documentcore/resaved.hwp",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--scale",
+        "1",
+        "--json",
+        "--font-path",
+        "/Volumes/T7/DeveloperArtifacts/rhwp/workspaces/pr8286-review-a30f3c22/output/pr-review/pr8286-mac/local-fonts",
+        "-o",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/resync-base-saves-native/hwp/render"
+      ],
+      "exit": 0,
+      "independentPdf": "approved exact bytes; independent PDF already generated"
+    },
+    {
+      "extension": "hwp",
+      "backend": "wasm",
+      "inputSha256": "4f01f3a9275025971f26c17691ef23d580b86174415643b843d23aae1dbd6b86",
+      "argv": [
+        "node",
+        "scripts/export-wasm-png-for-sweep.mjs",
+        "--pkg",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/resync-base-pkg",
+        "--input",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/resync-documentcore/resaved.hwp",
+        "--out",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/resync-base-saves-wasm/hwp/render",
+        "--fonts",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/font-catalog.json",
+        "--options",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/wasm-options.json"
+      ],
+      "exit": 0,
+      "independentPdf": "approved exact bytes; independent PDF already generated"
+    },
+    {
+      "extension": "hwpx",
+      "backend": "native",
+      "inputSha256": "ba83298033ebb82be766453f2708d56a9114ee6edd732fd6437e9fe78c58eff6",
+      "argv": [
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/rhwp-resync-base",
+        "export-png",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/resync-documentcore/resaved.hwpx",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--scale",
+        "1",
+        "--json",
+        "--font-path",
+        "/Volumes/T7/DeveloperArtifacts/rhwp/workspaces/pr8286-review-a30f3c22/output/pr-review/pr8286-mac/local-fonts",
+        "-o",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/resync-base-saves-native/hwpx/render"
+      ],
+      "exit": 101,
+      "independentPdf": "approved exact bytes; independent PDF already generated"
+    },
+    {
+      "extension": "hwpx",
+      "backend": "wasm",
+      "inputSha256": "ba83298033ebb82be766453f2708d56a9114ee6edd732fd6437e9fe78c58eff6",
+      "argv": [
+        "node",
+        "scripts/export-wasm-png-for-sweep.mjs",
+        "--pkg",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/resync-base-pkg",
+        "--input",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/resync-documentcore/resaved.hwpx",
+        "--out",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/resync-base-saves-wasm/hwpx/render",
+        "--fonts",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/font-catalog.json",
+        "--options",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/wasm-options.json"
+      ],
+      "exit": 1,
+      "independentPdf": "approved exact bytes; independent PDF already generated"
+    }
+  ]
+}

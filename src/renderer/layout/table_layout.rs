@@ -11271,6 +11271,12 @@ impl LayoutEngine {
             };
             let text_y_start = if use_top_vpos_anchor
                 && !has_nested_table
+                // 어울림 줄의 첫 여백은 글줄이 소비한다. 셀 원점에 더하면
+                // 그 셀에 붙은 개체도 같은 여백만큼 다시 내려간다.
+                && !cell
+                    .paragraphs
+                    .first()
+                    .is_some_and(|para| para.layout_float_band)
                 && first_line_vpos.filter(|&v| v > 0.0).is_some()
             {
                 // vpos는 셀 컨텐츠 상단(=cell_y+pad_top)으로부터의 첫 줄 top y 오프셋

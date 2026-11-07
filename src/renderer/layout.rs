@@ -12442,6 +12442,10 @@ impl LayoutEngine {
                         return (y_offset, false);
                     }
 
+                    let accepted_composition = ctx.host_compositions.get(para_index);
+                    let source_comp = accepted_composition
+                        .map(std::sync::Arc::as_ref)
+                        .or_else(|| composed.get(*para_index));
                     // TAC 블록 표 문단의 post-text PP: 텍스트가 공백만이면 건너뜀
                     // (Table PageItem에서 이미 y_offset이 결정됨)
                     if prev_tac_seg_applied {
@@ -12455,8 +12459,11 @@ impl LayoutEngine {
                                     t, seg_width, para))
                         });
                         if has_tac_block {
-                            let pp_text_only_ws = if let Some(comp) = composed.get(*para_index) {
-                                comp.lines[*start_line..*end_line].iter().all(|line| {
+                            let pp_text_only_ws = if let Some(comp) = source_comp {
+                                // 쪽 나눔이 정한 줄 범위가 현재 조합 줄 수보다 길 수 있다. 남은 줄만 본다.
+                                let end = (*end_line).min(comp.lines.len());
+                                let start = (*start_line).min(end);
+                                comp.lines[start..end].iter().all(|line| {
                                     line.runs.iter().all(|r| {
                                         r.text.chars().all(|c| {
                                             c.is_whitespace() || c <= '\u{001F}' || c == '\u{FFFC}'
@@ -12491,7 +12498,24 @@ impl LayoutEngine {
                                             })
                                     })
                                 });
-                            if pp_text_only_ws && !independent_stored_tail {
+                            // 저장 줄이 없는 host도 프레임이 표와 꼬리 기준 문자를
+                            // 서로 다른 물리 줄에 배정했으면 그 줄의 전진을 보존한다.
+                            // 같은 가시 char_start를 가진다는 이유로 표 줄과 합치지 않는다.
+                            let independent_composed_tail = accepted_composition.is_some_and(|comp| {
+                                comp.lines.get(*start_line..*end_line)
+                                    .is_some_and(|lines| !lines.is_empty() && lines.iter().all(|line| line.line_height > 0))
+                                    && comp.control_line_indices(para).is_some_and(|owners| {
+                                        para.controls.iter().enumerate().all(|(ci, control)| {
+                                            !matches!(control, Control::Table(table) if table.common.treat_as_char)
+                                                || (comp.frame_owns_inline_table(ci)
+                                                    && owners.get(ci).is_some_and(|owner| *owner < *start_line))
+                                        })
+                                    })
+                            });
+                            if pp_text_only_ws
+                                && !independent_stored_tail
+                                && !independent_composed_tail
+                            {
                                 // 같은 개체 줄의 공백 캐리어는 이미 소비한 표 높이를 더하지 않는다.
                                 return (y_offset, true);
                             }
@@ -12504,10 +12528,6 @@ impl LayoutEngine {
                         .para_styles
                         .get(para.para_shape_id as usize)
                         .is_some_and(|style| style.head_type == HeadType::Bullet);
-                    let accepted_composition = ctx.host_compositions.get(para_index);
-                    let source_comp = accepted_composition
-                        .map(std::sync::Arc::as_ref)
-                        .or_else(|| composed.get(*para_index));
                     let comp = if *start_line == 0 || continuation_bullet {
                         let numbered = self.apply_paragraph_numbering(
                             source_comp,

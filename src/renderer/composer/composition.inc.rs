@@ -256,6 +256,18 @@ fn try_compose_paragraph_scoped<S: crate::storage::Storage>(
     metric_styles: Option<&ResolvedStyleSet>,
     storage: &S,
 ) -> Result<ComposedParagraph, S::Error> {
+    try_compose_paragraph_scoped_with_frame_tables(
+        para, protect_metrics, metric_styles, &[], storage,
+    )
+}
+
+fn try_compose_paragraph_scoped_with_frame_tables<S: crate::storage::Storage>(
+    para: &Paragraph,
+    protect_metrics: bool,
+    metric_styles: Option<&ResolvedStyleSet>,
+    frame_tables: &[(usize, u32)],
+    storage: &S,
+) -> Result<ComposedParagraph, S::Error> {
     // [Task #991] HWP5 parser 의 inline marker 누락 보정 (rendering 전용)
     let synth_para = try_synthesize_marker_paragraph(para, storage)?;
     let para = synth_para.as_ref().unwrap_or(para);
@@ -295,9 +307,10 @@ fn try_compose_paragraph_scoped<S: crate::storage::Storage>(
                 Control::Form(f) if f.common.treat_as_char => Some((pos, f.width as i32, i)),
                 Control::Table(t)
                     if t.common.treat_as_char
-                        && super::height_measurer::is_tac_table_inline_in_para(
+                        && (frame_tables.iter().any(|&(owner, _)| owner == i)
+                        || super::height_measurer::is_tac_table_inline_in_para(
                             t, seg_width, para,
-                        ) =>
+                        )) =>
                 {
                     // [#5785 후속] 선언 폭 우선.
                     let table_width: u32 = t.flow_width_hu();

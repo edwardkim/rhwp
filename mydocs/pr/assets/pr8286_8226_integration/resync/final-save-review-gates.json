@@ -1,0 +1,28 @@
+{
+  "native": {
+    "status": "passed",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "page_count_mismatch": false
+  },
+  "wasm": {
+    "status": "passed",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "page_count_mismatch": false
+  }
+}

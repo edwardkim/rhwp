@@ -1,0 +1,1359 @@
+{
+  "base": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "candidate": "170dd2412206b48cfbf925c5f5a67dcf93437e81",
+  "rows": [
+    {
+      "backend": "native",
+      "document": "2319-native-height",
+      "page": "1",
+      "base": "99.91",
+      "candidate": "99.91",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "2319-native-height",
+      "page": "2",
+      "base": "99.55",
+      "candidate": "99.55",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "6737-trailing-spacing",
+      "page": "1",
+      "base": "97.94",
+      "candidate": "97.94",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "6737-trailing-spacing",
+      "page": "2",
+      "base": "99.02",
+      "candidate": "99.02",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-common-height-4838",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-mixed-child-storage",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-mixed-child-storage",
+      "page": "2",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-nested-explicit-break",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-nested-outer-margins",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-nested-same-line",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-nested-surrounding-text",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-nested-width-wrap",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-no-child-storage",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-no-child-storage",
+      "page": "2",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-page-height-28000",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-page-height-28000",
+      "page": "2",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-page-height-28000",
+      "page": "3",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-partial-nested-width-wrap",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-partial-nested-width-wrap",
+      "page": "2",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-partial-nested-wrapper",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-partial-nested-wrapper",
+      "page": "2",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-tac_nested_two_line_cell_no_lineseg",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7419-tac_two_line_cell_no_lineseg",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7679-after-text",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7679-after-text",
+      "page": "2",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7679-after-text",
+      "page": "3",
+      "base": "99.69",
+      "candidate": "99.69",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7872-nested",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "7872-original",
+      "page": "1",
+      "base": "99.88",
+      "candidate": "99.88",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8226-input",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8226-saved",
+      "page": "1",
+      "base": "52.66",
+      "candidate": "100.00",
+      "drop": "-47.34",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8399-A-hwp",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8399-A-hwpx",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8399-D-hwp",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8399-D-hwpx",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8399-E-hwp",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8399-E-hwpx",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8399-P-hwp",
+      "page": "1",
+      "base": "99.98",
+      "candidate": "99.98",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8399-P-hwpx",
+      "page": "1",
+      "base": "99.98",
+      "candidate": "99.98",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "1",
+      "base": "98.61",
+      "candidate": "98.61",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "2",
+      "base": "98.23",
+      "candidate": "98.23",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "3",
+      "base": "97.97",
+      "candidate": "97.97",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "4",
+      "base": "94.72",
+      "candidate": "94.72",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "5",
+      "base": "99.57",
+      "candidate": "99.57",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "6",
+      "base": "96.37",
+      "candidate": "96.37",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "7",
+      "base": "98.94",
+      "candidate": "98.94",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "8",
+      "base": "97.24",
+      "candidate": "97.24",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "9",
+      "base": "96.11",
+      "candidate": "96.11",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "10",
+      "base": "97.58",
+      "candidate": "97.58",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "11",
+      "base": "94.65",
+      "candidate": "94.65",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "12",
+      "base": "93.54",
+      "candidate": "93.54",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "13",
+      "base": "95.19",
+      "candidate": "95.19",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "14",
+      "base": "95.15",
+      "candidate": "95.15",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "15",
+      "base": "95.56",
+      "candidate": "95.56",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "16",
+      "base": "96.28",
+      "candidate": "96.28",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "17",
+      "base": "96.64",
+      "candidate": "96.64",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "18",
+      "base": "93.92",
+      "candidate": "93.92",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "19",
+      "base": "92.18",
+      "candidate": "92.18",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "20",
+      "base": "94.12",
+      "candidate": "94.12",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "21",
+      "base": "93.17",
+      "candidate": "93.17",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "22",
+      "base": "98.06",
+      "candidate": "98.06",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "23",
+      "base": "99.71",
+      "candidate": "99.71",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "24",
+      "base": "99.95",
+      "candidate": "99.95",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "25",
+      "base": "99.96",
+      "candidate": "99.96",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "26",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "27",
+      "base": "99.95",
+      "candidate": "99.95",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "28",
+      "base": "97.78",
+      "candidate": "97.78",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "29",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "30",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "31",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "32",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "33",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "34",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "35",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "36",
+      "base": "99.99",
+      "candidate": "99.99",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "native",
+      "document": "8418-trailing-spacing",
+      "page": "37",
+      "base": "99.81",
+      "candidate": "99.81",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "2319-native-height",
+      "page": "1",
+      "base": "99.70",
+      "candidate": "99.70",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "2319-native-height",
+      "page": "2",
+      "base": "99.47",
+      "candidate": "99.47",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "6737-trailing-spacing",
+      "page": "1",
+      "base": "98.27",
+      "candidate": "98.27",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "6737-trailing-spacing",
+      "page": "2",
+      "base": "99.86",
+      "candidate": "99.86",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-common-height-4838",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-mixed-child-storage",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-mixed-child-storage",
+      "page": "2",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-nested-explicit-break",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-nested-outer-margins",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-nested-same-line",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-nested-surrounding-text",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-nested-width-wrap",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-no-child-storage",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-no-child-storage",
+      "page": "2",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-page-height-28000",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-page-height-28000",
+      "page": "2",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-page-height-28000",
+      "page": "3",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-partial-nested-width-wrap",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-partial-nested-width-wrap",
+      "page": "2",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-partial-nested-wrapper",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-partial-nested-wrapper",
+      "page": "2",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-tac_nested_two_line_cell_no_lineseg",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7419-tac_two_line_cell_no_lineseg",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7679-after-text",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7679-after-text",
+      "page": "2",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7679-after-text",
+      "page": "3",
+      "base": "99.64",
+      "candidate": "99.64",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7872-nested",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "7872-original",
+      "page": "1",
+      "base": "99.91",
+      "candidate": "99.91",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8226-input",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8226-saved",
+      "page": "1",
+      "base": "52.66",
+      "candidate": "100.00",
+      "drop": "-47.34",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8399-A-hwp",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8399-A-hwpx",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8399-D-hwp",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8399-D-hwpx",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8399-E-hwp",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8399-E-hwpx",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8399-P-hwp",
+      "page": "1",
+      "base": "99.98",
+      "candidate": "99.98",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8399-P-hwpx",
+      "page": "1",
+      "base": "99.98",
+      "candidate": "99.98",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "1",
+      "base": "98.64",
+      "candidate": "98.64",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "2",
+      "base": "97.00",
+      "candidate": "97.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "3",
+      "base": "97.89",
+      "candidate": "97.89",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "4",
+      "base": "95.40",
+      "candidate": "95.40",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "5",
+      "base": "99.78",
+      "candidate": "99.78",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "6",
+      "base": "96.53",
+      "candidate": "96.53",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "7",
+      "base": "99.71",
+      "candidate": "99.71",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "8",
+      "base": "97.18",
+      "candidate": "97.18",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "9",
+      "base": "95.82",
+      "candidate": "95.82",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "10",
+      "base": "97.77",
+      "candidate": "97.77",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "11",
+      "base": "95.17",
+      "candidate": "95.17",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "12",
+      "base": "92.54",
+      "candidate": "92.54",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "13",
+      "base": "95.23",
+      "candidate": "95.23",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "14",
+      "base": "95.12",
+      "candidate": "95.12",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "15",
+      "base": "95.52",
+      "candidate": "95.52",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "16",
+      "base": "96.46",
+      "candidate": "96.46",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "17",
+      "base": "96.77",
+      "candidate": "96.77",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "18",
+      "base": "94.10",
+      "candidate": "94.10",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "19",
+      "base": "93.25",
+      "candidate": "93.25",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "20",
+      "base": "94.16",
+      "candidate": "94.16",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "21",
+      "base": "93.07",
+      "candidate": "93.07",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "22",
+      "base": "98.38",
+      "candidate": "98.38",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "23",
+      "base": "99.88",
+      "candidate": "99.88",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "24",
+      "base": "99.93",
+      "candidate": "99.93",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "25",
+      "base": "99.96",
+      "candidate": "99.96",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "26",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "27",
+      "base": "99.97",
+      "candidate": "99.97",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "28",
+      "base": "97.58",
+      "candidate": "97.58",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "29",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "30",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "31",
+      "base": "99.98",
+      "candidate": "99.98",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "32",
+      "base": "99.98",
+      "candidate": "99.98",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "33",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "34",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "35",
+      "base": "100.00",
+      "candidate": "100.00",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "36",
+      "base": "99.99",
+      "candidate": "99.99",
+      "drop": "0.00",
+      "reReview": false
+    },
+    {
+      "backend": "wasm",
+      "document": "8418-trailing-spacing",
+      "page": "37",
+      "base": "99.92",
+      "candidate": "99.92",
+      "drop": "0.00",
+      "reReview": false
+    }
+  ],
+  "errors": [],
+  "maximumDrop": "0.00",
+  "regressions": []
+}

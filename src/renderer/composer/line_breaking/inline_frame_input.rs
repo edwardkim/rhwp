@@ -29,10 +29,20 @@ pub(crate) fn project_with_storage<S: crate::storage::Storage>(
             .zip(source.try_control_text_positions(storage)?)
             .zip(source.control_utf16_positions_with_storage(storage)?)
         {
-            let Some((width, height)) =
-                inline_control_occupied_size_hwp_with_storage(control, styles, dpi, storage)?
-            else {
-                continue;
+            let (width, height) = match control {
+                // 머리말/꼬리말 내용은 별도 프레임이 그리지만 본문에 있는
+                // 8-unit 기준 문자는 폭 0인 줄 토큰이다. 넘친 TAC 개체 뒤의
+                // 기준 문자를 지우면 한/글이 남기는 다음 줄까지 사라진다.
+                Control::Header(_) | Control::Footer(_) => (0, 0),
+                _ => {
+                    let Some(size) = inline_control_occupied_size_hwp_with_storage(
+                        control, styles, dpi, storage,
+                    )?
+                    else {
+                        continue;
+                    };
+                    size
+                }
             };
             let position = if chars.is_empty() && source.char_offsets.is_empty() {
                 0

@@ -3847,6 +3847,7 @@ let body_height=match nested_body_heights
             .map(|height| hwpunit_to_px(height, self.dpi))
         };
         let mut row_heights = storage.filled(row_count, 0.0f64)?;
+        let mut has_reflowed_inline_table_frame = false;
         // 행별 **컨텐츠** 하한 — 2단계에서만 채워지며, 병합 선언이 행합보다 작을 때
         // (2-b 축소 규칙) 글자가 잘리지 않도록 축소 바닥으로 쓴다.
         let mut content_row_floor = storage.filled(row_count, 0.0f64)?;
@@ -3971,6 +3972,10 @@ let body_height=match nested_body_heights
                                     let measured = self.measure_table_impl_with_storage(nested, 0, 0, styles, depth + 1, stretch, storage)?;
     Ok(measured.total_height - measured.caption_height)
 }, storage)?;
+                            has_reflowed_inline_table_frame |= p.controls.iter().enumerate().any(
+                                |(index, control)| matches!(control, Control::Table(_))
+                                    && comp.frame_owns_inline_table(index),
+                            );
                             let frame_paragraph = comp.paragraph_with_frame_geometry_with_storage(p, storage)?;
                             if let std::borrow::Cow::Owned(ref paragraph) = frame_paragraph {
                                 if frame_paragraphs.is_none(){frame_paragraphs=Some(crate::storage::try_clone(&cell.paragraphs,storage)?);}
@@ -4999,6 +5004,10 @@ let body_height=match nested_body_heights
                                     let measured = self.measure_table_impl_with_storage(nested, 0, 0, styles, depth + 1, stretch, storage)?;
     Ok(measured.total_height - measured.caption_height)
 }, storage)?;
+                            has_reflowed_inline_table_frame |= p.controls.iter().enumerate().any(
+                                |(index, control)| matches!(control, Control::Table(_))
+                                    && comp.frame_owns_inline_table(index),
+                            );
                             let frame_paragraph = comp.paragraph_with_frame_geometry_with_storage(p, storage)?;
                             if let std::borrow::Cow::Owned(ref paragraph) = frame_paragraph {
                                 if frame_paragraphs.is_none(){frame_paragraphs=Some(crate::storage::try_clone(&cell.paragraphs,storage)?);}
@@ -5445,7 +5454,11 @@ let body_height=match nested_body_heights
         // 편집 세션은 실측을 신뢰한다.
         // 저장 글줄이 없는 셀은 현재 내용으로 재조판한다. 표/셀 선언의 수치 일치는
         // 내용 높이를 줄일 근거가 아니며 선언이 조금 달라도 같은 규칙을 적용한다.
-        let reflowed_cell_rows = !self.is_native_hwp5
+        // A current inline frame has already measured the nested table and
+        // its following text together. Its row is not a saved box that may be
+        // shrunk to common.height; doing so clips the frame's trailing line.
+        // Native HWP5 hosts without this ownership keep their existing policy.
+        let reflowed_cell_rows = (!self.is_native_hwp5 || has_reflowed_inline_table_frame)
             && crate::renderer::composer::table_cells_have_no_stored_lines(table);
         let table_height = if stored_rows.is_some() {
             raw_table_height

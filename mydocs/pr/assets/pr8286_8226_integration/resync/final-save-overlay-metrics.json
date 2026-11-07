@@ -1,0 +1,82 @@
+{
+  "native": {
+    "page": 1,
+    "rhwp_png": "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/resync-saves-native/hwp/render/resaved.png",
+    "pdf_png": "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/reference/final-hwp/png/page-001.png",
+    "overlay_png": "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/resync-review-native/overlay_001.png",
+    "width": 794,
+    "height": 1122,
+    "pixel_diff_threshold": 16,
+    "overlay_color_legend": {
+      "rhwp_only": "blue",
+      "pdf_only": "red",
+      "both_different": "orange",
+      "matching": "gray"
+    },
+    "total_pixels": 890868,
+    "diff_pixels": 6601,
+    "diff_ratio": 0.00740963,
+    "pixel_match_percent": 99.25904,
+    "ink_union_pixels": 8427,
+    "ink_diff_pixels": 6575,
+    "ink_diff_ratio": 0.78023021,
+    "ink_match_percent": 21.97698,
+    "visual_accuracy_proxy_percent": 21.97698,
+    "tolerant_content_match_radius_px": 2,
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "silhouette_raw_match_percent": 95.51442,
+    "silhouette_raw_unmatched_pixels": 378,
+    "silhouette_boundary_reconciled_pixels": 20,
+    "silhouette_color_tolerance": 32,
+    "silhouette_content_union_pixels": 8427,
+    "tolerant_content_match_percent": 95.75175,
+    "mean_abs_channel_delta": 0.413,
+    "max_channel_delta": 251,
+    "diff_bbox": [
+      114,
+      3,
+      678,
+      401
+    ]
+  },
+  "wasm": {
+    "page": 1,
+    "rhwp_png": "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/resync-saves-wasm/hwp/render/rhwp_png/rhwp_001.png",
+    "pdf_png": "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/reference/final-hwp/png/page-001.png",
+    "overlay_png": "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/resync-review-wasm/overlay_001.png",
+    "width": 794,
+    "height": 1122,
+    "pixel_diff_threshold": 16,
+    "overlay_color_legend": {
+      "rhwp_only": "blue",
+      "pdf_only": "red",
+      "both_different": "orange",
+      "matching": "gray"
+    },
+    "total_pixels": 890868,
+    "diff_pixels": 6790,
+    "diff_ratio": 0.00762178,
+    "pixel_match_percent": 99.23782,
+    "ink_union_pixels": 8612,
+    "ink_diff_pixels": 6753,
+    "ink_diff_ratio": 0.78413841,
+    "ink_match_percent": 21.58616,
+    "visual_accuracy_proxy_percent": 21.58616,
+    "tolerant_content_match_radius_px": 2,
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "silhouette_raw_match_percent": 99.55876,
+    "silhouette_raw_unmatched_pixels": 38,
+    "silhouette_boundary_reconciled_pixels": 8,
+    "silhouette_color_tolerance": 32,
+    "silhouette_content_union_pixels": 8612,
+    "tolerant_content_match_percent": 99.65165,
+    "mean_abs_channel_delta": 0.414,
+    "max_channel_delta": 243,
+    "diff_bbox": [
+      114,
+      3,
+      678,
+      401
+    ]
+  }
+}
