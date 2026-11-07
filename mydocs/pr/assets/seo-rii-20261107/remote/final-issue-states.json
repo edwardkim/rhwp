@@ -1,0 +1,20 @@
+[
+  {
+    "number": 8337,
+    "state": "closed",
+    "closed_at": "2026-11-07T09:31:50Z",
+    "url": "https://github.com/edwardkim/rhwp/issues/8337"
+  },
+  {
+    "number": 536,
+    "state": "open",
+    "closed_at": null,
+    "url": "https://github.com/edwardkim/rhwp/issues/536"
+  },
+  {
+    "number": 8701,
+    "state": "open",
+    "closed_at": null,
+    "url": "https://github.com/edwardkim/rhwp/issues/8701"
+  }
+]

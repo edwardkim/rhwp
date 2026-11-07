@@ -1,0 +1,16 @@
+[
+  {
+    "conclusion": "success",
+    "databaseId": 42359744176,
+    "name": "Close Issues on devel Push",
+    "status": "completed",
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/42359744176"
+  },
+  {
+    "conclusion": "success",
+    "databaseId": 42359744228,
+    "name": "Refresh nextest target duration data",
+    "status": "completed",
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/42359744228"
+  }
+]

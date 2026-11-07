@@ -12,3 +12,15 @@
 원 Ready PR 29건과 선행 Draft #8646은 GitHub에서 모두 간접 MERGED로 확인했다. 별도의 Draft 전환이나 수동 PR close는 하지 않았다. [상태 원장](original-prs-after-merge.json) · [merge SHA 고정 이미지 18개 검증](merge-raw-image-verification.json) · [게시한 self-review](https://github.com/edwardkim/rhwp/pull/8739#issuecomment-6705036349).
 
 병합 후 [소요시간 집계](https://github.com/edwardkim/rhwp/actions/runs/42359744228)는 성공했다. [실제 결과](duration-observation.json)를 확인했으며 검증 CI를 추가 실행하지 않았다.
+
+## 이슈·댓글 후속 처리 완료
+
+#8337은 devel 반영 뒤 완료 close했고 #536·#8701은 OPEN이다. 원 PR 29건과 이슈 1건의 댓글 30개를 게시해 API 본문을 일치 확인했다. [댓글 원장](posted-followups.json), [이슈 상태](final-issue-states.json). 시각 댓글 4개의 이미지 22회 표시(고유 18개)를 실제 GitHub 브라우저 화면에서 확인했다. [표시 결과](posted-image-display.json).
+
+작업 전용 branch·worktree·Windows 도구·Docker 이미지와 루트 output·공유 debug의 종료 정리를 이어 간다.
+
+## 종료 확인
+
+작업 전용 upstream/local branch·worktree·fetch ref 29개·Windows 임시 도구·Docker 이미지를 제거했다. 저장소 루트 `output/` 및 `target/pr-review/debug` 디렉터리 자체의 부재를 확인했다. WSL 파일시스템 여유 공간은 38.67 GiB 증가해 197.60 GiB가 됐다. [정리 로그](cleanup.json). 기본 Studio JS/WASM과 node_modules, 기존 Vite, 다른 worktree·Draft 및 contributor fork branch는 보존했다. 공유 release·release-test·WASM profile도 유지했다.
+
+필수 로컬 검증·동일 head GitHub CI·self-review·merge·운영 기록·이슈와 댓글·종료 정리를 모두 완료했다. 제품 CI 재실행 및 새 제품 코드 변경 없이 CodeQL 세 건의 승인된 분류와 자동 check 갱신으로 원격 절차를 마쳤다.
