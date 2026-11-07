@@ -1,0 +1,25 @@
+{
+  "baseCommit": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "productCommit": "24bb81d03",
+  "pages": 383,
+  "changedPages": [],
+  "minimum": 85.953,
+  "below90": [
+    {
+      "page": 27,
+      "base": 88.65101,
+      "candidate": 88.65101
+    },
+    {
+      "page": 183,
+      "base": 86.06407,
+      "candidate": 86.06407
+    },
+    {
+      "page": 277,
+      "base": 85.953,
+      "candidate": 85.953
+    }
+  ],
+  "status": "existing_failure_identical_on_base_and_candidate"
+}
