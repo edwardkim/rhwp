@@ -447,6 +447,44 @@ SVG 진단의 `wasm/raw_svg`에는 수정 전 WASM SVG, `render_tree`에는 WASM
 WASM의 쪽 수가 Native와 달라도 Native의 페이지 구성을 강제하지 않으며, 실제 WASM SVG와
 render tree 중 한 쪽이 누락되면 성공으로 처리하지 않는다. 패키지 빌드는 Sweep 실행 전에 완료한다.
 
+## 대체 글꼴 설정과 비교 조건
+
+원본 글꼴 공급과 다른 글꼴로의 대체를 구분한다. 문서의 실제 사용 언어 슬롯·글자 모양,
+설치된 family/PostScript 이름과 실제 선택 프로그램을 먼저 확인한다. 파일명이나
+`document.fonts.check()`만으로 원본 공급을 확정하지 않는다. 원본 프로그램이 없으면
+등록된 공개 웹폰트의 원본 동일성·실제 다운로드·적재를 확인한다.
+
+독립 한컴 Print PDF가 실제 대체 글꼴을 사용했다면 PDF 리소스·윤곽·전진폭 등의 근거를
+남기고, 그 비교에만 `--font-environment`를 지정한다. 점수가 오른다는 이유로 대체 글꼴을
+고르거나 문서·페이지별 제품 예외를 추가하지 않는다. PDF가 실제 Haansoft Batang을 썼다고
+확인된 경우의 설정 예시는 다음과 같다.
+
+```json
+{
+  "id": "independent-print-font-environment",
+  "substitutions": {"원본 요청 글꼴": "Haansoft Batang"},
+  "trueTypeFaces": ["Haansoft Batang"],
+  "preserveSourceMetrics": true
+}
+```
+
+`preserveSourceMetrics: true`는 표시 글꼴을 바꾸어도 원본 전진폭·줄 구성의 소유를 유지한다.
+Print가 대체 프로그램의 전진폭으로 재조판했다는 독립 근거가 있을 때만 `false`를 사용하고
+그 이유를 기록한다. `trueTypeFaces`는 선택 선언이며 설치·다운로드 명령이 아니다.
+`glyphFallbacks`도 필요한 문자별 프로그램을 확인한 경우에만 추가한다.
+
+검증된 파일은 `--embed-fonts full --font-path <경로>`로 공급한다. 같은 JSON을 base/후보와
+Native/fresh WASM에 적용하고 원본·PDF·설정·공급 파일 및 선택 프로그램의 해시,
+backend·DPI·compat, 전쪽 TSV와 대표 review/overlay를 함께 기록한다. 변경 전 조건은 보존하며
+명시적 비교 환경의 개선을 기본 환경의 자동 대체 개선으로 확대하지 않는다.
+
+대체 대상도 없으면 다른 가용 후보가 선택될 수 있다. Haansoft Batang 뒤에는 Batang·바탕·
+Nanum Myeongjo·AppleMyungjo·Noto Serif KR 등의 후보가 이어지지만 실제 선택은 호스트의
+공급 상태에 달려 있다. 명시적 비교 환경을 지정한 Native 출력은 일반 자동 웹폰트 준비를
+건너뛰므로 같은 대체 프로그램이 자동 공급된다고 가정하지 않는다. 누락 시 실제 선택을 확인하고
+전쪽을 다시 산출한다. 설치 환경의 98% 이상 결과를 미설치 환경의 통과로 재사용하지 않는다.
+시스템 글꼴 설치만을 전제로 회귀 검사를 건너뛰거나 글꼴 바이너리를 증적에 임의로 포함하지 않는다.
+
 ## 원 글꼴을 명시적으로 공급하는 진단
 
 로컬 글꼴 이름이 존재해도 Chrome이 실제로 같은 face를 사용하는지는 별도 확인한다.
