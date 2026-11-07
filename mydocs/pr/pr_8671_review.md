@@ -28,3 +28,7 @@
 ## Merge 후 contributor PR comment 계획
 
 아직 미실행인 시각 결과·이미지 URL은 만들지 않는다. 해당 PR의 실제 검증 범위·결과와 최종 통합 head가 확정되면 [Visual Sweep comment 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따른 대응 review/overlay·지표·잔여 한계를 이 절에 보완한다. devel 반영·merge SHA·API 및 실제 표시 확인 뒤 승인 범위에서 게시한다.
+
+## 실제 원 사례에서 발견한 미해결 경계
+
+#8337의 원 파일과 같은 기존 공개 입력에서 AB는 복원됐지만, 원 수식 글꼴이 없으면 전용 표시 코드 U+E037·U+E036이 원 숫자 4·3으로 대체되지 않는다. 본문 글꼴을 동일하게 공급한 대조의 raw가 99%대여도 직접 판독상 의미가 달라 **머지 보류**다. [실행 증거·제한 보정 계획](assets/seo-rii-20261107/positioned-equation-fallback-finding.md)을 따르며 메인테이너 보정 범위 결정을 기다린다.
