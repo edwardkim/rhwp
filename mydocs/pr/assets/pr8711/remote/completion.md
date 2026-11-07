@@ -19,3 +19,9 @@
 archive·오늘 할 일·이 운영 기록 push와 devel 동기화 뒤 #8226 대체 수용 댓글·close 및 #8711 감사 댓글을 게시한다. 댓글에는 실제 merge SHA의 대응 Native/fresh WASM review·overlay와 지표·직접 판독 결론을 포함하며 API 본문·인코딩·실제 표시를 확인한다. #8226의 상태를 MERGED로 오인하지 않고 대체 통합 완료로 구분한다. 기존 #4680·#4687은 CLOSED를 유지한다.
 
 마지막으로 이번 소유 local review branch/worktree/fetch ref, 루트 output 전체와 공유 debug를 실제 사용 종료 뒤 정리한다. 협업자 기존 upstream branch와 contributor fork, 외부 pr-8296 작업공간·사용자 Vite·다른 target profile은 보존한다. 최종 댓글·상태·정리 영수증을 이 기록에 보완한다.
+
+## 후속 처리·종료 완료
+
+[#8226 대체 수용 댓글](https://github.com/edwardkim/rhwp/pull/8226#issuecomment-6701260386)과 [#8711 감사 댓글](https://github.com/edwardkim/rhwp/pull/8711#issuecomment-6701260763)을 게시하고 실제 UTF-8 본문을 API로 대조했다. #8226은 CLOSED이며 자동 MERGED로 표시하지 않는다. #8711은 MERGED다. [상태 영수증](followup-states.json), [게시 본문](posted-followup-comments.json)을 보존했다. 공개 승인 리뷰의 4개와 두 댓글의 8개, 총 12개 대응 이미지를 각 게시물의 DOM 안에서 [실제 표시 확인](posted-image-display-verification.json)했다.
+
+소유 review worktree·local branch·PR fetch ref, 루트 output 디렉터리 전체와 공용 target/pr-review/debug를 제거했다. 실행 중인 빌드·파일 사용이 없음을 확인했고 보존용 백업·압축·이관을 만들지 않았다. 실제 여유 공간 증가 약 21.50 GiB, 정리 직후 여유 약 201.47 GiB다. 기존 협업자 upstream branch·contributor fork·외부 pr-8296 작업공간·사용자 Vite·다른 target profile을 보존했다. 기본 Studio의 JS/WASM 배포물은 교체하지 않았다. [삭제 경로·실제 사용·전후 공간](cleanup.json), [최종 영수증](final-receipt.json)을 따른다.

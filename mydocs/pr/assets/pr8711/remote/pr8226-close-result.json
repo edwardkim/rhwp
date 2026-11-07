@@ -1,0 +1,9 @@
+{
+  "number": 8226,
+  "state": "closed",
+  "merged": false,
+  "closed_at": "2026-11-07T02:50:54Z",
+  "html_url": "https://github.com/edwardkim/rhwp/pull/8226",
+  "head_sha": "b97b418a90d833af4ffbf2949f0e517ec15c61e0",
+  "reason": "superseded by merged #8711; source cherry-pick provenance preserved"
+}

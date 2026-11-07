@@ -77,7 +77,7 @@ CLI `--verify-pages`는 후보 1쪽으로 통과했다. 엄격한 `--verify`는 
 
 신규 회귀 파일 첫머리의 유형·시각·실측·증거 경로를 `4e5a8d1565`에서 보강했다. 원자료를 대조하다 잘못 옮긴 환경/래스터라이저 표기를 발견해 `929f0f5ca5`에서 추정 플랫폼을 제거하고 실제 `pypdfium2`로 정정했다. 제품과 테스트 본문·assertion·기대값·fixture는 같다. [보강 patch](../assets/pr8711/test-provenance-header.patch), [정정 전후 본문 해시·제품 source 동등성](../assets/pr8711/metadata-correction-equivalence.json)을 보존한다.
 
-전체 nextest와 Native 공식 실행의 정확한 head는 `4e5a8d1565`다. 최종 `929f0f5ca5`에서는 위 동등성을 입증하고 Rust lint와 영향 focused를 재실행했으며, 이전 실행을 새 SHA에서 실행했다고 표시하지 않는다. 초기에는 녹색 source head의 Full CI 재사용을 계획했지만 Rust test 주석 보강 후에는 그 GitHub 예외를 적용하지 않았다. 새 head의 GitHub required check는 push 뒤 별도로 확인해야 한다.
+전체 nextest와 Native 공식 실행의 정확한 head는 `4e5a8d1565`다. 최종 `929f0f5ca5`에서는 위 동등성을 입증하고 Rust lint와 영향 focused를 재실행했으며, 이전 실행을 새 SHA에서 실행했다고 표시하지 않는다. 초기에는 녹색 source head의 Full CI 재사용을 계획했지만 Rust test 주석 보강 후에는 그 GitHub 예외를 적용하지 않았다. 새 head의 GitHub required check는 push 뒤 아래 원격 최종 검증에서 별도로 확인했다.
 
 `svg_snapshot`은 전체 nextest에 포함돼 통과했으며 golden/기대값을 바꾸지 않았다. Studio UI·공개 API/type·npm/package·CI 정의는 변경하지 않아 해당 TypeScript/npm/CI 운영 보정 검사는 비해당이다. 실제 Rust API의 브라우저 저장과 Canvas·SVG 소비 경로는 위와 같이 실행했다.
 
@@ -98,3 +98,7 @@ CLI `--verify-pages`는 후보 1쪽으로 통과했다. 엄격한 `--verify`는 
 - #8711에는 postmelee의 최신 base·Storage·본문 줄 계획 통합/검증과 semanticist21의 원 기여에 감사한다. 메인테이너 보강이 주석임을 설명한다.
 - #8226에는 위 체리픽 대응을 설명하고 실제 통합 뒤 승인된 대체 수용 완료 댓글·close를 진행한다. 자동 MERGED를 가정하지 않는다. #4680·#4687은 현재 CLOSED이며 상태를 바꾸거나 이 PR로 전체 해결을 새로 주장하지 않는다.
 - archive·오늘할일·운영 증거를 반영하고 devel을 동기화한 뒤 게시한다. 협업자가 만든 기존 upstream head와 원 contributor fork는 보존한다. 이번 local review branch/worktree/fetch ref와 종료된 루트 `output/` 전체·공용 debug만 정본대로 정리한다. 기본 작업공간·사용자 Vite·외부 `pr-8296-seal-pua`는 보존한다.
+
+## 후속 처리 완료
+
+검토 기록과 운영 증거를 mydocs 전용 commit `5251501a63`으로 devel에 반영·동기화한 뒤 #8226 대체 수용 댓글·close와 #8711 감사 댓글을 완료했다. 기존 이슈 #4680·#4687의 CLOSED 상태와 기존 협업자 upstream head·원 fork를 보존했다. 공개 승인 리뷰·댓글의 대응 이미지 총 12개를 각 게시물 안에서 확인했다. 소유 worktree·local branch·fetch ref와 루트 output 전체·공용 debug도 실제 사용 종료 뒤 제거했다. 약 21.50 GiB를 확보했다. [최종 상태·댓글·정리 영수증](../assets/pr8711/remote/final-receipt.json)을 따른다.

@@ -150,9 +150,14 @@
     "sha256": "3a889bba171d14b60744be5c461897904568087fe73ec78cbb6b512afbf2666c"
   },
   {
+    "path": "remote/cleanup.json",
+    "bytes": 1448,
+    "sha256": "6a6cb0abe7a46843dddaa6b23ea3a0ac071a40833c8bab7cce663839266c6f31"
+  },
+  {
     "path": "remote/completion.md",
-    "bytes": 3506,
-    "sha256": "7304d2eca48395791fa0802bf3cad985b9536ad98675645d0bcc5fa67abcde93"
+    "bytes": 4815,
+    "sha256": "cad500535cbedeabaa4d275de84f986703d033d4de1e9168321d81eb46d045da"
   },
   {
     "path": "remote/duration-refresh.json",
@@ -170,6 +175,16 @@
     "sha256": "886d22121c3b25744f35e5fc80b03202f4e2bda8a0f0707f3b58aad058a2718e"
   },
   {
+    "path": "remote/final-receipt.json",
+    "bytes": 1766,
+    "sha256": "3428ac6780559b493bd638ff7d4104bd40df83026c14f4e9cbd50c3a38198e7c"
+  },
+  {
+    "path": "remote/followup-states.json",
+    "bytes": 1445,
+    "sha256": "1ce0176b9a2c7f2aacfca9d623aa596558cc83dbb7103813fd8c2fc7f0f53272"
+  },
+  {
     "path": "remote/head-raw-image-verification.json",
     "bytes": 1651,
     "sha256": "929d80efc12086a0aba2698261a44d6101c8c09d5559d175f6c8b43ca03cd1cc"
@@ -185,9 +200,24 @@
     "sha256": "7801e0c1ece44a507cb81b6614278d214addd52ecb5fb4b1f8439090bdc7915f"
   },
   {
+    "path": "remote/posted-followup-comments.json",
+    "bytes": 7199,
+    "sha256": "666e50615e14ab5e8157e37b8631dccb6babace857cb6ee736318128b77133dd"
+  },
+  {
+    "path": "remote/posted-image-display-verification.json",
+    "bytes": 5607,
+    "sha256": "567e8978924fdaaf8374bb613e1873115f2b21442213abc584e3844e59737aea"
+  },
+  {
     "path": "remote/pr-body-display-verification.json",
     "bytes": 2071,
     "sha256": "39353a602e2476125e3e4bf2ebe8ba4f119699ff34dbebb0c152bea380847579"
+  },
+  {
+    "path": "remote/pr8226-close-result.json",
+    "bytes": 302,
+    "sha256": "6cc0220f0a21205d0dca8d001612aa911ab62130a832f118984dbb84db8d9c6e"
   },
   {
     "path": "remote/premerge-proof.json",

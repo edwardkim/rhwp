@@ -1,0 +1,51 @@
+{
+  "time": "2026-11-07T02:52:08.921815+00:00",
+  "prs": {
+    "8711": {
+      "number": 8711,
+      "state": "closed",
+      "merged": true,
+      "merge_commit_sha": "e724c6caff896a9478dc537cab4e99a57cf879cf",
+      "closed_at": "2026-11-07T02:45:33Z",
+      "html_url": "https://github.com/edwardkim/rhwp/pull/8711",
+      "head_sha": "cbe5a6f4dfbc2775913af10ee42098137b27e088"
+    },
+    "8226": {
+      "number": 8226,
+      "state": "closed",
+      "merged": false,
+      "merge_commit_sha": null,
+      "closed_at": "2026-11-07T02:50:54Z",
+      "html_url": "https://github.com/edwardkim/rhwp/pull/8226",
+      "head_sha": "b97b418a90d833af4ffbf2949f0e517ec15c61e0"
+    }
+  },
+  "issues": {
+    "4680": {
+      "state": "closed",
+      "mutation": false
+    },
+    "4687": {
+      "state": "closed",
+      "mutation": false
+    }
+  },
+  "postmerge_runs": [
+    {
+      "id": 42330802911,
+      "name": "Close Issues on devel Push",
+      "head_sha": "e724c6caff896a9478dc537cab4e99a57cf879cf",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42330802911"
+    },
+    {
+      "id": 42330802884,
+      "name": "Refresh nextest target duration data",
+      "head_sha": "e724c6caff896a9478dc537cab4e99a57cf879cf",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42330802884"
+    }
+  ]
+}
