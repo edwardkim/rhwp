@@ -1,0 +1,124 @@
+{
+  "changeSetId": "issue-1994.hankyoreh-canvaskit",
+  "decisionPlane": "supply",
+  "evidenceRecords": [],
+  "expectedDelta": {
+    "activeRuleDelta": 2,
+    "projectionId": "canvaskit-sfnt",
+    "unchangedProjectionIds": [
+      "rust-layout-name",
+      "rust-layout-metric",
+      "canvas2d-paint",
+      "canvas2d-webfont"
+    ]
+  },
+  "issue": 1994,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "operationId": "operation.issue-1994.hankyoreh-canvaskit-0",
+      "rule": {
+        "conditions": {
+          "profile": "canvaskit-sfnt"
+        },
+        "decisionPlane": "supply",
+        "evidenceIds": [
+          "evidence.issue-1994.hankyoreh-original-webfont"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "canvaskit-sfnt",
+          "mode": "direct"
+        },
+        "projectionSequence": 162,
+        "relationType": "supply-source",
+        "ruleId": "rule.issue-1994.hankyoreh-canvaskit-0",
+        "sourceBoundaryId": "studio-supply.font-list",
+        "sourceFace": "한겨레결체",
+        "supply": {
+          "capabilityAgreement": false,
+          "declaredCapability": "unavailable",
+          "fontFamily": "한겨레결체",
+          "kind": "canvaskit-plan",
+          "offline": {
+            "sources": [],
+            "unavailableFonts": [
+              "한겨레결체"
+            ]
+          },
+          "online": {
+            "sources": [
+              {
+                "aliases": [
+                  "한겨레결체",
+                  "Hankc",
+                  "TSThgrgl"
+                ],
+                "url": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff"
+              }
+            ],
+            "unavailableFonts": []
+          },
+          "runtimePlanStatus": "planned"
+        },
+        "targetFaceOrPolicy": "unavailable: no offline CanvasKit SFNT source for 한겨레결체"
+      },
+      "type": "add-rule"
+    },
+    {
+      "operationId": "operation.issue-1994.hankyoreh-canvaskit-1",
+      "rule": {
+        "conditions": {
+          "profile": "canvaskit-sfnt"
+        },
+        "decisionPlane": "supply",
+        "evidenceIds": [
+          "evidence.issue-1994.hankyoreh-original-webfont"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "canvaskit-sfnt",
+          "mode": "direct"
+        },
+        "projectionSequence": 163,
+        "relationType": "supply-source",
+        "ruleId": "rule.issue-1994.hankyoreh-canvaskit-1",
+        "sourceBoundaryId": "studio-supply.font-list",
+        "sourceFace": "Hankc",
+        "supply": {
+          "capabilityAgreement": false,
+          "declaredCapability": "unavailable",
+          "fontFamily": "Hankc",
+          "kind": "canvaskit-plan",
+          "offline": {
+            "sources": [],
+            "unavailableFonts": [
+              "Hankc"
+            ]
+          },
+          "online": {
+            "sources": [
+              {
+                "aliases": [
+                  "한겨레결체",
+                  "Hankc",
+                  "TSThgrgl"
+                ],
+                "url": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff"
+              }
+            ],
+            "unavailableFonts": []
+          },
+          "runtimePlanStatus": "planned"
+        },
+        "targetFaceOrPolicy": "unavailable: no offline CanvasKit SFNT source for Hankc"
+      },
+      "type": "add-rule"
+    }
+  ],
+  "parentRegistrySha256": "30222cd599a8400c5ee23f79825e1de9f0f618fe35848088e21c12e275252fb7",
+  "schemaVersion": "2.0",
+  "sequence": 20
+}

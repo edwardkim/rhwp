@@ -1,0 +1,656 @@
+{
+  "kind": "font-supply-control-not-independent-pdf-fidelity",
+  "parentHead": "e6aac5b390540142d43f01555e7b9c6f5aa65a40",
+  "sourcePatchSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "native": {
+    "backend": "native-skia",
+    "comparisonProfile": "print",
+    "fontEnvironment": {
+      "id": "native-webfont-ae33d4f189e4577d6a34e1f3",
+      "preserveSourceMetrics": true,
+      "substitutions": {
+        "한겨레결체": "TSThgrgl"
+      }
+    },
+    "layoutGeneration": "2022",
+    "nativeFontSupply": {
+      "genericFallbacks": [],
+      "glyphFallbacks": [],
+      "mappings": {
+        "한겨레결체": "TSThgrgl"
+      },
+      "paths": [
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/rebase-20261107-121051/hankyoreh-cdn-validation/cache/c3203d7ed0acea6fb478f0f2544fb6fe2b9001b038d7bd70bb392202658cc645"
+      ],
+      "resources": [
+        {
+          "nativeBytes": 2147992,
+          "nativeSha256": "1aefff95d6c5057603a875d2dd1719d8e2997b0459bf4868690f66ae2789ea7d",
+          "sourceSha256": "985c795cc1e342c3091e6d217fd6f71155471f8a191fdce52180289662cf9db1",
+          "url": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff2"
+        }
+      ],
+      "unavailable": [],
+      "webFontStyles": {
+        "TSThgrgl": {
+          "italic": false,
+          "weight": 400,
+          "weightRange": null
+        }
+      },
+      "webFonts": {
+        "TSThgrgl": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff2"
+      }
+    },
+    "outputDir": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/rebase-20261107-121051/hankyoreh-cdn-validation/native-minimal",
+    "pageCount": 1,
+    "pages": [
+      {
+        "bytes": 24928,
+        "page": 0,
+        "path": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/rebase-20261107-121051/hankyoreh-cdn-validation/native-minimal/hankyoreh-original-control.png",
+        "renderTreePath": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/rebase-20261107-121051/hankyoreh-cdn-validation/native-minimal-trees/render_tree_001.json"
+      }
+    ],
+    "renderedCount": 1,
+    "schemaVersion": "1.0",
+    "source": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/rebase-20261107-121051/hankyoreh-cdn-validation/hankyoreh-original-control.hwpx",
+    "tool": "export-png",
+    "untrustedContent": true,
+    "untrustedFields": [
+      "nativeFontSupply",
+      "fontEnvironment"
+    ]
+  },
+  "wasm": {
+    "success": true,
+    "condition": "Mac minimal-font sandbox, actual Studio font loader, fresh WASM package",
+    "snapshot": {
+      "status": "loaded",
+      "canvasKitSfntPlanned": false,
+      "ruleIds": [
+        "rule.issue-1994.hankyoreh-webfont-0"
+      ]
+    },
+    "detectedOSFonts": [
+      "Apple SD Gothic Neo",
+      "AppleMyungjo",
+      "AppleGothic"
+    ],
+    "faces": [
+      {
+        "family": "한겨레결체",
+        "status": "loading"
+      },
+      {
+        "family": "한겨레결체",
+        "status": "loaded"
+      }
+    ],
+    "pageCount": 1,
+    "text": "\"한겨레결체 원본 글꼴 &#8212; 가나다라 ABC 0123456789\"",
+    "fontPlan": {
+      "embeddedFamilies": [],
+      "environmentId": null,
+      "requests": [
+        {
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        }
+      ],
+      "scopedRequests": [
+        {
+          "fontId": 0,
+          "languageSlot": 0,
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "fontId": 1,
+          "languageSlot": 0,
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "fontId": 0,
+          "languageSlot": 1,
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "fontId": 1,
+          "languageSlot": 1,
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "fontId": 0,
+          "languageSlot": 2,
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "fontId": 1,
+          "languageSlot": 2,
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "fontId": 0,
+          "languageSlot": 3,
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "fontId": 1,
+          "languageSlot": 3,
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "fontId": 0,
+          "languageSlot": 4,
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "fontId": 1,
+          "languageSlot": 4,
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "fontId": 0,
+          "languageSlot": 5,
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "fontId": 1,
+          "languageSlot": 5,
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "fontId": 0,
+          "languageSlot": 6,
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        },
+        {
+          "fontId": 1,
+          "languageSlot": 6,
+          "primary": [
+            "한겨레결체"
+          ],
+          "source": "한겨레결체",
+          "substitute": []
+        }
+      ]
+    },
+    "canvasKitPlan": {
+      "sources": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff",
+          "aliases": [
+            "한겨레결체",
+            "Hankc",
+            "TSThgrgl"
+          ]
+        }
+      ],
+      "unavailableFonts": []
+    },
+    "responses": [
+      {
+        "url": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff2",
+        "status": 200,
+        "bytes": 424748,
+        "sha256": "985c795cc1e342c3091e6d217fd6f71155471f8a191fdce52180289662cf9db1"
+      },
+      {
+        "url": "http://127.0.0.1:62211/rhwp.js",
+        "status": 200,
+        "bytes": 565185,
+        "sha256": "e1c2a4402be1060a666dda07d51e280ac08b3682d3a229495a630394249614b4"
+      },
+      {
+        "url": "http://127.0.0.1:62211/rhwp_bg.wasm",
+        "status": 200,
+        "bytes": 34071815,
+        "sha256": "4198567814d7f9202eecc1e0fc5405e7159090ec01f4239b73f26e6dc7ebc87e"
+      }
+    ],
+    "consoleLog": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "[FontLoader] OS 폰트 감지: Apple SD Gothic Neo, AppleMyungjo, AppleGothic",
+      "[FontLoader][debug] CDN 후보: 함초롬돋움, 함초롬바탕, RHWP Old Hangul, 한겨레결체",
+      "[FontLoader] 웹폰트 로드 시작: 4개 파일 (이미 요청함: 0개)",
+      "[FontLoader][debug] CDN 로드 시작: 함초롬돋움 <- https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+      "[FontLoader][debug] CDN 로드 시작: 함초롬바탕 <- https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+      "[FontLoader][debug] CDN 로드 시작: RHWP Old Hangul <- fonts/RHWPOldHangul-Regular.woff2",
+      "[FontLoader][debug] CDN 로드 시작: 한겨레결체 <- https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff2",
+      "[FontLoader][debug] CDN 로드 성공: RHWP Old Hangul <- fonts/RHWPOldHangul-Regular.woff2",
+      "[FontLoader][debug] CDN 로드 성공: 한겨레결체 <- https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff2",
+      "[FontLoader][debug] CDN 로드 성공: 함초롬돋움 <- https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+      "[FontLoader][debug] CDN 로드 성공: 함초롬바탕 <- https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+      "[FontLoader] 폰트 로드 완료: 4개 성공, 0개 실패 (총 4개 파일 요청)"
+    ]
+  },
+  "glyphAudit": [
+    {
+      "format": "woff2",
+      "bytes": 424748,
+      "sha256": "985c795cc1e342c3091e6d217fd6f71155471f8a191fdce52180289662cf9db1",
+      "cmap_count": 12443,
+      "source_cmap_count": 12443,
+      "shared": 12443,
+      "missing_source_characters": [],
+      "extra_characters": [],
+      "upem": [
+        1000,
+        1000
+      ],
+      "glyph_count": [
+        13010,
+        13010
+      ],
+      "outline_difference_count": 0,
+      "outline_differences": [],
+      "advance_difference_count": 0,
+      "advance_differences": [],
+      "names": [
+        [
+          1,
+          ""
+        ],
+        [
+          1,
+          "한겨레결체"
+        ],
+        [
+          2,
+          "Regular"
+        ],
+        [
+          4,
+          ""
+        ],
+        [
+          4,
+          "한겨레결체"
+        ],
+        [
+          6,
+          "TSThgrgl"
+        ]
+      ]
+    },
+    {
+      "format": "woff",
+      "bytes": 752040,
+      "sha256": "792ccf7d42ef50839bd9674c344f322afa9fe8fc04f57316b3c4e46c5b854357",
+      "cmap_count": 12443,
+      "source_cmap_count": 12443,
+      "shared": 12443,
+      "missing_source_characters": [],
+      "extra_characters": [],
+      "upem": [
+        1000,
+        1000
+      ],
+      "glyph_count": [
+        13010,
+        13010
+      ],
+      "outline_difference_count": 0,
+      "outline_differences": [],
+      "advance_difference_count": 0,
+      "advance_differences": [],
+      "names": [
+        [
+          1,
+          ""
+        ],
+        [
+          1,
+          "한겨레결체"
+        ],
+        [
+          2,
+          "Regular"
+        ],
+        [
+          4,
+          ""
+        ],
+        [
+          4,
+          "한겨레결체"
+        ],
+        [
+          6,
+          "TSThgrgl"
+        ]
+      ]
+    }
+  ],
+  "policyTests": {
+    "registryAndProjection": {
+      "passed": 42,
+      "failed": 0
+    },
+    "studioRuntime": {
+      "passed": 4,
+      "failed": 0
+    }
+  },
+  "producer": {
+    "native": {
+      "pid": 73378,
+      "parent_head": "e6aac5b390540142d43f01555e7b9c6f5aa65a40",
+      "current": "complete",
+      "success": true,
+      "started_at": "2026-11-07T06:10:41.854324+00:00",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--bin",
+        "rhwp",
+        "--message-format=json"
+      ],
+      "child_pid": 73501,
+      "exit_code": 0,
+      "seconds": 191.962,
+      "root_artifacts": [
+        {
+          "reason": "compiler-artifact",
+          "package_id": "path+file:///Users/tsjang/rhwp#0.9.0",
+          "manifest_path": "/Users/tsjang/rhwp/Cargo.toml",
+          "target": {
+            "kind": [
+              "rlib",
+              "cdylib"
+            ],
+            "crate_types": [
+              "rlib",
+              "cdylib"
+            ],
+            "name": "rhwp",
+            "src_path": "/Users/tsjang/rhwp/src/lib.rs",
+            "edition": "2021",
+            "doc": true,
+            "doctest": true,
+            "test": true
+          },
+          "profile": {
+            "opt_level": "3",
+            "debuginfo": 0,
+            "debug_assertions": false,
+            "overflow_checks": false,
+            "test": false
+          },
+          "features": [
+            "console_error_panic_hook",
+            "default",
+            "native-skia",
+            "pdf-icc",
+            "pdf-import",
+            "pdf-jbig2",
+            "pdf-jpeg2000",
+            "wasm-api"
+          ],
+          "filenames": [
+            "/Users/tsjang/rhwp/target/review-7375-rebase-20261107-121051/release-test/librhwp.rlib",
+            "/Users/tsjang/rhwp/target/review-7375-rebase-20261107-121051/release-test/librhwp.dylib"
+          ],
+          "executable": null,
+          "fresh": false
+        },
+        {
+          "reason": "compiler-artifact",
+          "package_id": "path+file:///Users/tsjang/rhwp#0.9.0",
+          "manifest_path": "/Users/tsjang/rhwp/Cargo.toml",
+          "target": {
+            "kind": [
+              "bin"
+            ],
+            "crate_types": [
+              "bin"
+            ],
+            "name": "rhwp",
+            "src_path": "/Users/tsjang/rhwp/src/main.rs",
+            "edition": "2021",
+            "required-features": [
+              "wasm-api"
+            ],
+            "doc": true,
+            "doctest": false,
+            "test": true
+          },
+          "profile": {
+            "opt_level": "3",
+            "debuginfo": 0,
+            "debug_assertions": false,
+            "overflow_checks": false,
+            "test": false
+          },
+          "features": [
+            "console_error_panic_hook",
+            "default",
+            "native-skia",
+            "pdf-icc",
+            "pdf-import",
+            "pdf-jbig2",
+            "pdf-jpeg2000",
+            "wasm-api"
+          ],
+          "filenames": [
+            "/Users/tsjang/rhwp/target/review-7375-rebase-20261107-121051/release-test/rhwp"
+          ],
+          "executable": "/Users/tsjang/rhwp/target/review-7375-rebase-20261107-121051/release-test/rhwp",
+          "fresh": false
+        }
+      ],
+      "rhwp-candidate-native": {
+        "path": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/rebase-20261107-121051/hankyoreh-cdn-validation/rhwp-candidate-native",
+        "sha256": "86199a26e5e6566d92d24d25e9622f26b35c5e53653a8d5cf31f1440658feb67"
+      },
+      "librhwp-candidate.rlib": {
+        "path": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/rebase-20261107-121051/hankyoreh-cdn-validation/librhwp-candidate.rlib",
+        "sha256": "dad6e78694e0c6fe54a52f69e876d7dc1d74f1e927a2846832431944fa0850e1"
+      },
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceFilesAudit": {
+        "count": 7166,
+        "canonicalSha256": "8d662019cf56256f335e6837448606499311a7025a7e60a3d8e8001cfc3debce",
+        "fullLocalRecord": "output/open-issues-oldest-20261105/rebase-20261107-121051/hankyoreh-cdn-validation/native-build-state.json"
+      }
+    },
+    "wasm": {
+      "pid": 86483,
+      "parent_head": "e6aac5b390540142d43f01555e7b9c6f5aa65a40",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "current": "complete",
+      "success": true,
+      "kind": "Mac locked wrapper --target web --out-dir pkg --no-opt 로컬 대체 빌드. Docker 최적화 아님.",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "child_pid": 88127,
+      "exit_code": 0,
+      "seconds": 148.761,
+      "package_files": {
+        "rhwp.js": "e1c2a4402be1060a666dda07d51e280ac08b3682d3a229495a630394249614b4",
+        "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+        "rhwp_bg.wasm.d.ts": "dd79cdc42971de695f021a3384984bab8dbfffa682ea68e95f85a2c4c09736c3",
+        "README.md": "ad35a0f1fbf601b33f5a969103656e220e75031ceee42bb7fc2d95ed32ed25aa",
+        "rhwp_bg.wasm": "4198567814d7f9202eecc1e0fc5405e7159090ec01f4239b73f26e6dc7ebc87e",
+        ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+        "package.json": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+        "rhwp.d.ts": "c61f18a9b54b93b320b924c983bbbdf8d526d6491a7d6489b67e10be456f88a6"
+      },
+      "root_public_js_wasm_hashes_equal": true,
+      "sourceFilesAudit": {
+        "count": 7166,
+        "canonicalSha256": "8d662019cf56256f335e6837448606499311a7025a7e60a3d8e8001cfc3debce",
+        "fullLocalRecord": "output/open-issues-oldest-20261105/rebase-20261107-121051/hankyoreh-cdn-validation/wasm-build-state.json"
+      }
+    }
+  },
+  "limitations": [
+    "가용성 대조군이며 독립 PDF 시각 일치율을 주장하지 않는다.",
+    "CanvasKit은 WOFF 공급 계획만 확인했으며 실제 해당 backend replay 완료로 세지 않는다.",
+    "원본 TTF의 Chrome FontFace 거부와 CDN WOFF2 성공을 구분한다."
+  ]
+}
