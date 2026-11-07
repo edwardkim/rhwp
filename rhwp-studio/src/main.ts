@@ -76,9 +76,7 @@ import { showLocalFontsModalIfNeeded } from '@/ui/local-fonts-modal';
 import { setDocumentFontSubstitutions } from '@/core/font-substitution';
 import {
   clearStoredLocalFonts,
-  changedLocalFontNames,
   detectLocalFonts,
-  getLocalFontRecords,
   getLocalFontState,
   localFontNamesIntersect,
   loadStoredLocalFonts,
@@ -1506,6 +1504,11 @@ async function initializeDocument(
   try {
     // 이미 승인된 snapshot을 권한 prompt 없이 준비한 뒤 프로그램을 선택한다.
     await loadStoredLocalFonts();
+    // 초기화 후 첫 문서 로드의 선택을 프로그램 공급·조판보다 먼저 확정한다.
+    // 감지 완료와 이전 대체 환경의 비동기 갱신이 경합하지 않게 한다.
+    if (!options.suppressDialogs && !options.suppressLocalFontPrompt) {
+      await promptLocalFontsIfNeeded(displayName);
+    }
     // 실제 프로그램을 먼저 확정한 뒤 같은 문서 정보로 공급과 view를 준비한다.
     await wasm.prepareDeclaredFontEnvironment(canvasView?.getRenderBackend());
     docInfo = wasm.getDocumentInfo();
@@ -1564,10 +1567,6 @@ async function initializeDocument(
       console.warn('[validation] 감지 실패 (치명적이지 않음):', e);
     }
 
-    if (!options.suppressDialogs && !options.suppressLocalFontPrompt) {
-      await promptLocalFontsIfNeeded(displayName);
-    }
-
     // 로컬 글꼴 감지 결과가 뷰를 갱신한 뒤에 캐럿을 연결해야 입력 포커스가 재설정과 경합하지 않는다.
     console.log('[initDoc] 8. inputHandler activateWithCaretPosition');
     await updateLoadProgress(96, '편집 상태 초기화 중...');
@@ -1594,10 +1593,8 @@ async function promptLocalFontsIfNeeded(displayName: string): Promise<void> {
     if (!report.shouldPromptLocalAccess) return;
     const choice = await showLocalFontsModalIfNeeded(report, extensionViewerSettings);
     if (choice !== 'detect') return;
-    const before = getLocalFontRecords({ includeRegistered: true });
-    const fonts = await detectLocalFonts({ force: true, candidateFamilies: candidates });
-    const changedNames = changedLocalFontNames(before, getLocalFontRecords({ includeRegistered: true }));
-    eventBus.emit('local-fonts-changed', { fonts, changedNames, source: 'document-font-prompt' });
+    // 호출한 문서 초기화가 이 결과로 공급·조판·뷰를 순서대로 준비한다.
+    await detectLocalFonts({ force: true, candidateFamilies: candidates });
   } catch (error) {
     console.warn(`[local-fonts] ${displayName} 글꼴 확인 실패:`, error);
   }

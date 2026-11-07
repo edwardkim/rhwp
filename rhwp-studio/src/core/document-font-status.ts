@@ -5,6 +5,7 @@ import {
   getLocalFontDetectionMethod,
   getLocalFontState,
   resolveLocalFont,
+  resolveLocalFontProgramCandidates,
   type LocalFontDetectionSource,
 } from './local-fonts.ts';
 
@@ -102,7 +103,8 @@ export function analyzeDocumentFonts(
 
   const fonts = normalizeDocumentFonts(docFonts).map((fontName): DocumentFontStatusItem => {
     const localRecord = options.localFonts === undefined ? resolveLocalFont(fontName) : null;
-    if (localSet.has(fontName) || localRecord) {
+    const localPrograms = options.localFonts === undefined ? resolveLocalFontProgramCandidates(fontName) : [];
+    if (localSet.has(fontName) || localRecord || localPrograms.length) {
       summary.available++;
       return { fontName, status: 'available', source: 'local', substituteFont: null };
     }

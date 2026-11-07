@@ -1,3 +1,5 @@
+// 관계형: 문서의 글꼴 선택·공급·첫 paint·입력 활성화의 순서를 검사한다.
+// 주석 갱신: 2026-11-07 20:13 KST. 글꼴 설치나 px 좌표에 의존하지 않는다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -37,11 +39,15 @@ function localFontsChangedHandlerSource(): string {
 test('문서 초기화는 로컬 글꼴 확인 후에만 입력 핸들러를 활성화한다', () => {
   const initializeDocument = initializeDocumentSource();
   const promptIndex = initializeDocument.indexOf('await promptLocalFontsIfNeeded(displayName);');
+  const programIndex = initializeDocument.indexOf('await wasm.prepareDeclaredFontEnvironment(');
+  const canvasIndex = initializeDocument.indexOf('await canvasView?.loadDocument();');
   const activateIndex = initializeDocument.indexOf('inputHandler?.activateWithCaretPosition();');
   const completeIndex = initializeDocument.indexOf("documentState.markClean('document-initialized');");
 
   assert.ok(promptIndex >= 0, '로컬 글꼴 확인 단계가 있어야 한다');
-  assert.ok(activateIndex > promptIndex, '로컬 글꼴 확인 뒤에 캐럿을 활성화해야 한다');
+  assert.ok(programIndex > promptIndex, '로컬/대체 선택을 확정한 뒤 실제 프로그램을 공급한다');
+  assert.ok(canvasIndex > programIndex, '선택한 글꼴 환경으로 첫 paint를 준비한다');
+  assert.ok(activateIndex > canvasIndex, '글꼴 선택과 첫 paint 준비 뒤에 캐럿을 활성화해야 한다');
   assert.ok(completeIndex > activateIndex, '편집 준비 뒤에 문서 초기화를 완료해야 한다');
   assert.doesNotMatch(
     initializeDocument,

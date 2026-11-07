@@ -147,6 +147,8 @@ let lastStorageError: string | null = null;
 const localFontBytesByPostscriptName = new Map<string, Promise<ArrayBuffer | null>>();
 const automaticallyCheckedProgramNames = new Set<string>();
 let grantedCatalogRefresh: Promise<void> | null = null;
+// 초기화 전에 시작한 비동기 조회가 나중에 감지 결과를 되살리지 못하게 한다.
+let catalogGeneration = 0;
 
 /** Local Font Access API 지원 여부 */
 export function isLocalFontAccessSupported(): boolean {
@@ -277,15 +279,20 @@ function resolveLocalFontFromLookup(fontName: string, lookup: LocalFontLookup): 
   if (!target) return null;
   const matches = lookup.aliases.get(target) ?? [];
   if (matches.length === 0) return null;
-
-  const uniqueMatch = (records: readonly LocalFontRecord[] | undefined): LocalFontRecord | null =>
-    records?.length === 1 ? records[0] : null;
+  // 같은 원본의 한글·영문 파일은 한 이름에 함께 대응할 수 있다. 이전 감지에서
+  // 추가된 단일 presence probe를 그 복수 원본보다 정확한 face로 취급하지 않는다.
+  const programs = matches.filter(record => record.detectionSource === 'local-font-access' && record.postscriptName);
+  const eligible = programs.length ? programs : matches;
+  const uniqueMatch = (records: readonly LocalFontRecord[] | undefined): LocalFontRecord | null => {
+    const candidates = records?.filter(record => eligible.includes(record)) ?? [];
+    return candidates.length === 1 ? candidates[0] : null;
+  };
   return uniqueMatch(lookup.postscriptNames.get(target))
     ?? uniqueMatch(lookup.fullNames.get(target))
     ?? uniqueMatch(lookup.familyStyles.get(target))
     // family만으로 여러 style face가 매칭되면 임의 face를 고르지 않는다.
     ?? uniqueMatch(lookup.families.get(target))
-    ?? (matches.length === 1 ? matches[0] : null);
+    ?? (eligible.length === 1 ? eligible[0] : null);
 }
 
 function emptySfntFontNames(): SfntFontNames {
@@ -522,7 +529,13 @@ function normalizeLocalFontRecords(
     const key = normalizeFontAlias(normalized.postscriptName || normalized.fullName || normalized.family);
     if (key && !records.has(key)) records.set(key, normalized);
   }
-  return Array.from(records.values()).sort((a, b) => a.displayName.localeCompare(b.displayName, 'ko'));
+  const values = Array.from(records.values());
+  const programAliases = new Set(values
+    .filter(record => record.detectionSource === 'local-font-access' && record.postscriptName)
+    .flatMap(record => record.aliases.map(normalizeFontAlias)));
+  return values.filter(record => record.detectionSource !== 'font-presence-probe'
+    || !programAliases.has(normalizeFontAlias(record.family)))
+    .sort((a, b) => a.displayName.localeCompare(b.displayName, 'ko'));
 }
 
 function recordsFromFamilies(
@@ -676,7 +689,8 @@ function unresolvedCandidateFamilies(
   const lookup = buildLocalFontLookup(records);
   return normalizeFamilies(candidateFamilies)
     .filter(family => !GENERIC_FONTS.has(family))
-    .filter(family => resolveLocalFontFromLookup(family, lookup) === null);
+    // 이름이 복수 face에 대응하는 것과 열거에서 이름 자체가 빠진 것은 다르다.
+    .filter(family => !lookup.aliases.get(normalizeFontAlias(family))?.length);
 }
 
 const GENERIC_FONTS = new Set(['serif', 'sans-serif', 'monospace']);
@@ -900,6 +914,8 @@ export async function loadStoredLocalFonts(): Promise<LocalFontSnapshot | null> 
 
 /** 저장된 로컬 글꼴 감지 결과와 런타임 캐시를 초기화한다. */
 export async function clearStoredLocalFonts(): Promise<void> {
+  catalogGeneration++;
+  grantedCatalogRefresh = null;
   cacheLocalFontSnapshot(null);
   storageLoaded = true;
   localFontBytesByPostscriptName.clear();
@@ -915,6 +931,7 @@ export async function clearStoredLocalFonts(): Promise<void> {
  * - 캐시/저장소 결과가 있으면 권한 프롬프트 없이 즉시 반환
  */
 export async function detectLocalFonts(options: DetectLocalFontsOptions = {}): Promise<string[]> {
+  const generation = catalogGeneration;
   if (!options.force) {
     if (cachedSnapshot) return getLocalFonts({ includeRegistered: options.includeRegistered });
     if (!storageLoaded) {
@@ -955,10 +972,13 @@ export async function detectLocalFonts(options: DetectLocalFontsOptions = {}): P
     });
   }
 
+  if (generation !== catalogGeneration) return getLocalFonts({ includeRegistered: options.includeRegistered });
   if (!snapshot) return [];
 
   localFontBytesByPostscriptName.clear();
   cacheLocalFontSnapshot(snapshot);
+  // 방금 전체 목록과 문서 후보를 확인했으므로 같은 갱신에서 다시 열거하지 않는다.
+  for (const name of checkedFamilies) automaticallyCheckedProgramNames.add(normalizeFontAlias(name));
   storageLoaded = true;
   await writeStoredSnapshot(snapshot);
   console.log(`[LocalFonts] ${cachedFontRecords.length}개 로컬 글꼴 감지됨 (${snapshot.source})`);
@@ -967,7 +987,9 @@ export async function detectLocalFonts(options: DetectLocalFontsOptions = {}): P
 
 /** 존재만 저장된 문서 원본은 이미 승인된 권한으로 실제 프로그램을 확인한다. */
 export async function prepareDocumentLocalFontPrograms(fontNames: readonly string[]): Promise<void> {
-  if (!isLocalFontAccessSupported()) return;
+  // 브라우저 권한과 앱에서 감지를 선택한 상태는 별개다. 초기화·대체 선택 후에는
+  // 권한이 남아 있더라도 새 감지 선택 없이 목록을 자동으로 복원하지 않는다.
+  if (!cachedSnapshot || !isLocalFontAccessSupported()) return;
   const missing = normalizeFontNames(fontNames).filter(name => {
     if (automaticallyCheckedProgramNames.has(normalizeFontAlias(name))) return false;
     const records = cachedFontLookup.aliases.get(normalizeFontAlias(name)) ?? [];
@@ -1041,7 +1063,10 @@ export function resolveLocalFontProgramCandidates(fontName: string): LocalFontRe
   const matches = (cachedFontLookup.aliases.get(normalizeFontAlias(fontName)) ?? [])
     .filter(record => record.detectionSource === 'local-font-access' && record.postscriptName);
   const exact = resolveLocalFont(fontName);
-  const reference = exact ?? matches.find(record =>
+  const exactProgram = exact && matches.includes(exact) ? exact : undefined;
+  // 서로 다른 family의 이름 충돌을 임의로 해소하지 않는다.
+  if (!exactProgram && new Set(matches.map(record => normalizeFontAlias(record.family))).size > 1) return [];
+  const reference = exactProgram ?? matches.find(record =>
     (!record.weightClass || record.weightClass === 400) && !record.italic
     && /^(regular|normal|book|roman|보통|일반)$/i.test(record.style.trim()));
   if (!reference) return [];

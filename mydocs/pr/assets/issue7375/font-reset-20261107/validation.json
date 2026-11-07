@@ -1,0 +1,110 @@
+{
+  "parent_head": "9b43682f77817170b968507c0b3bded0112b85f1",
+  "source_files": {
+    "rhwp-studio/src/main.ts": "52bdd906913b711483a4aaa5e83d61fe5d0d7b9344a2598f2db281f072bb677e",
+    "rhwp-studio/src/core/local-fonts.ts": "37f51713e87eece3bcee9fc63e683dfbc09b970dd114850fcf23a961cf726e39",
+    "rhwp-studio/src/core/document-font-status.ts": "c6547c37b307de6cf7677a81164b8443398e2b1ddcf0000b040779e2c5c4d7cc",
+    "rhwp-studio/src/core/declared-font-environment.ts": "4c050e6cf3a161107a28c9861ca48fad91e3f913c084885fba44d9027284d975"
+  },
+  "scope": "감지 결과 초기화·같은 family의 복수 원본 감지·문서 첫 로드의 글꼴 공급 순서",
+  "before": {
+    "reset": {
+      "tests": 4,
+      "pass": 3,
+      "fail": 1,
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/pr-final-20261107/font-reset-before.log"
+    },
+    "split": {
+      "tests": 1,
+      "pass": 0,
+      "fail": 1,
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/pr-final-20261107/font-split-before.log"
+    },
+    "real_catalog": {
+      "programs": 2,
+      "incorrect_presence_probes": 1,
+      "selected": "font-presence-probe",
+      "evidence": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/pr-final-20261107/local-font-split-before.json"
+    }
+  },
+  "after": {
+    "focused": {
+      "tests": 50,
+      "pass": 50,
+      "fail": 0,
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/pr-final-20261107/font-split-after.log"
+    },
+    "studio": {
+      "tests": 2762,
+      "pass": 2760,
+      "skip": 2,
+      "fail": 0,
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/pr-final-20261107/font-reset-studio-tests.log"
+    },
+    "e2e": {
+      "pass": true,
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/pr-final-20261107/font-reset-e2e.log"
+    },
+    "build": {
+      "pass": true,
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/pr-final-20261107/font-reset-build.log"
+    },
+    "real_mac_chrome": {
+      "pass": true,
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/pr-final-20261107/screen-reset-actual-current.log",
+      "reset": {
+        "stored": false,
+        "prompt": false
+      },
+      "programs": [
+        {
+          "family": "Corn",
+          "fullName": "옥수수",
+          "postscriptName": "Corn-ENCORN",
+          "style": "Regular",
+          "detectionSource": "local-font-access"
+        },
+        {
+          "family": "Corn",
+          "fullName": "옥수수",
+          "postscriptName": "Corn-HGCORN",
+          "style": "Regular",
+          "detectionSource": "local-font-access"
+        }
+      ],
+      "loaded": [
+        {
+          "family": "옥수수",
+          "status": "loaded"
+        },
+        {
+          "family": "옥수수",
+          "status": "loaded"
+        }
+      ],
+      "environmentId": "user-font-selection-b6ef4fd7fb0726405ea6de3ec99ff600c4f28f486653fdae290c6f93fd300d0b",
+      "actual_initialization_responses": [
+        {
+          "url": "http://localhost:7700/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "bytes": 26620448,
+          "sha256": "63cfb7457dbf5c529d706f84446e0fe790f35e1bd88b776715d5b268f4cade65"
+        }
+      ],
+      "profile": "사용자가 지정한 문서별 나눔고딕→Haansoft Batang 선택 유지",
+      "screen_render_scale": 1,
+      "pages_captured": [
+        1,
+        2
+      ],
+      "document_page_count": 4,
+      "errors": []
+    }
+  },
+  "limits": [
+    "검증 전용 Chrome에서 실제 Mac 글꼴 감지와 일반 파일 열기·초기화를 확인했다. 사용자 기존 탭을 직접 조작한 증거는 아니다.",
+    "Studio 화면 2/4쪽 집중 비교이며 새 head Native/fresh WASM 전쪽 수용 증거가 아니다.",
+    "Studio 화면 집중 비교 1쪽 97.86%, 2쪽 99.30%; 1쪽은 98% 미달로 남는다.",
+    "초기화 즉시 질문한 중간 후보와 본문 layer가 빠진 이전 PNG는 최종 증거에서 제외했다."
+  ]
+}

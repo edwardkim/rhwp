@@ -1,12 +1,12 @@
 // 관계형: 승인한 프로그램 바이트·원본 TTF 소유·표시 별칭의 관계를 검사한다.
-// 주석 갱신: 2026-11-07 19:00:32 KST. 관계형이며 설치된 사설 글꼴에 의존하지 않는다.
+// 주석 갱신: 2026-11-07 20:13 KST. 관계형이며 설치된 사설 글꼴에 의존하지 않는다.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { prepareDeclaredLocalPrograms, declaredOpenTypeProgram } from '../src/core/declared-font-environment.ts';
 import { getDetectedOSFonts, registerLoadedLocalFontFace, clearLoadedLocalFontFaces } from '../src/core/font-loader.ts';
 import { fontFamilyCandidatesForDisplay } from '../src/core/font-substitution.ts';
-import { detectLocalFonts, loadStoredLocalFonts, resetLocalFontsForTests } from '../src/core/local-fonts.ts';
+import { clearStoredLocalFonts, detectLocalFonts, loadStoredLocalFonts, resetLocalFontsForTests } from '../src/core/local-fonts.ts';
 
 test('선언 프로그램은 승인된 face를 선택하고 검증되지 않은 local() 이름을 공급하지 않는다', async () => {
   const keys = ['FontFace', 'document', 'queryLocalFonts', 'localStorage'] as const;
@@ -189,7 +189,7 @@ test('문서 열기는 이미 승인된 권한으로 존재만 확인한 원본 
   const bytes = readFileSync(new URL('../../tests/fixtures/fonts/RHWPHftOutline.otf', import.meta.url));
   let permission = 'granted';
   let queries = 0;
-  let stored = JSON.stringify({ version: 1, source: 'font-presence-probe',
+  let stored: string | null = JSON.stringify({ version: 1, source: 'font-presence-probe',
     detectedAt: '2026-11-07T09:00:00Z', families: [source] });
   class LoadedFace {
     status = 'loaded';
@@ -203,7 +203,7 @@ test('문서 열기는 이미 승인된 권한으로 존재만 확인한 원본 
     queryLocalFonts: async () => { queries++; return [{ family: 'API name',
       fullName: 'API name Regular', postscriptName: 'RHWPHftOutline-Regular', style: 'Regular',
       blob: async () => new Blob([bytes]) }]; },
-    localStorage: { getItem() { return stored; }, setItem(_key: string, value: string) { stored = value; }, removeItem() {} },
+    localStorage: { getItem() { return stored; }, setItem(_key: string, value: string) { stored = value; }, removeItem() { stored = null; } },
   };
   for (const key of keys) Object.defineProperty(globalThis, key, { configurable: true, value: values[key] });
   const plan = { environmentId: null, requests: [{ source, primary: [source], substitute: [] }] };
@@ -221,6 +221,14 @@ test('문서 열기는 이미 승인된 권한으로 존재만 확인한 원본 
       assert.deepEqual(await prepareDeclaredLocalPrograms(plan, () => true), []);
       assert.equal(queries, 0, '일반 열기에서 승인되지 않은 권한 창이나 조회를 만들지 않는다');
     }
+    permission = 'granted'; queries = 0;
+    await clearStoredLocalFonts();
+    assert.deepEqual(await prepareDeclaredLocalPrograms(plan, () => true), [],
+      '초기화 후 브라우저 권한이 남아 있어도 재선택 전에는 프로그램을 자동 공급하지 않는다');
+    assert.equal(queries, 0, '감지 초기화는 자동 재감지로 되돌리지 않는다');
+    await detectLocalFonts({ force: true, candidateFamilies: [source] });
+    assert.equal((await prepareDeclaredLocalPrograms(plan, () => true)).length, 1,
+      '사용자가 다시 감지를 선택하면 원본 프로그램 공급을 재개한다');
   } finally {
     resetLocalFontsForTests(); clearLoadedLocalFontFaces();
     for (const key of keys) {
