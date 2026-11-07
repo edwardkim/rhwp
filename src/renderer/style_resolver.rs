@@ -1432,19 +1432,20 @@ pub(crate) fn lookup_font_name_in_environment(
                 // 요청이 아니다. 원본 전진 보존 세션에서는 주 face만 바꾸고
                 // 뒤 공급 체인을 유지한다. 자연 프로그램을 직접 선택한 세션은
                 // 기존대로 새 주 프로그램에서 시작한다.
-                let source_fallbacks = decision
+                let source_fallbacks = if decision
                     .requested_face
                     .as_deref()
                     .is_some_and(|source| environment.preserves_source_metrics_for(source))
-                    .then(|| {
-                        decision
-                            .css_family_chain
-                            .iter()
-                            .skip(1)
-                            .cloned()
-                            .collect::<Vec<_>>()
-                    })
-                    .unwrap_or_default();
+                {
+                    decision
+                        .css_family_chain
+                        .iter()
+                        .skip(1)
+                        .cloned()
+                        .collect::<Vec<_>>()
+                } else {
+                    Vec::new()
+                };
                 decision.normalized_face = Some(target.to_string());
                 decision.css_family_chain = vec![target.to_string()];
                 for face in source_fallbacks {
