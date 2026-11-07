@@ -8,7 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def notice_files(root):
-    files = {root / "THIRD_PARTY_LICENSES.md"}
+    files = {root / "THIRD_PARTY_LICENSES.md",
+             root / "data/font-metrics/nimbus-roman/URW-FONT-NOTICE.txt"}
     for directory in ("licenses", "assets/licenses", "assets/fonts/licenses"):
         files.update(p for p in (root / directory).rglob("*") if p.is_file())
     for pattern in ("*-OFL.txt", "*-LICENSE.txt", "MANIFEST-*.txt"):

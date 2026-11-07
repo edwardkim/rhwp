@@ -50,7 +50,8 @@ class Release090PreparationTests(unittest.TestCase):
             destination = Path(directory)
             copied = prepare(destination)
             for name in ('THIRD_PARTY_LICENSES.md', 'assets/licenses/Unicode-3.0.txt',
-                         'licenses/pdfium/LICENSE', 'vendor/rhwp-qcms/COPYING',
+                         'licenses/pdfium/LICENSE', 'licenses/intel-mediasdk/LICENSE',
+                         'data/font-metrics/nimbus-roman/URW-FONT-NOTICE.txt', 'vendor/rhwp-qcms/COPYING',
                          'vendor/rhwp-pdf-import-backend/src/fonts/assets/LICENSE-DejaVu'):
                 self.assertIn(name, copied)
             for name in copied:

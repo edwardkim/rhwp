@@ -10,7 +10,7 @@ Copyright © 2024 Unicode, Inc.이며 [Unicode License v3](assets/licenses/Unico
 Print JPEG 인코더의 원래 라이선스·저작권 고지는 `vendor/rhwp-jpeg-encoder/LICENSE-*`에 있다.
 Print JPEG 디코더의 선택 변환은 공개 Intel MediaSDK 정수 IDCT(MIT)를 Rust로 번역하고,
 IJG 보간 규칙을 재표현한다. Intel 저작권·MIT 고지는
-`src/renderer/image_resolver/print_jpeg_idct.rs`, IJG 원문과 배포 조건은
+`src/renderer/image_resolver/print_jpeg_idct.rs`와 `licenses/intel-mediasdk/LICENSE`, IJG 원문과 배포 조건은
 `vendor/rhwp-zune-jpeg/README.ijg`, 해당 구현은 `vendor/rhwp-zune-jpeg/src/ijg_upsampler.rs`와
 최종 JPEG 재생의 `vendor/rhwp-zune-jpeg/src/ijg_replay.rs`,
 변경 설명은 `vendor/rhwp-zune-jpeg/RHWP_PATCHES.md`에 있다.
