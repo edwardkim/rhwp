@@ -377,13 +377,11 @@ fn canvas2d_outline_opt_in_never_enables_glyph_runs_or_skips_font_byte_proof() {
     );
     assert_eq!(emitted.emitted_glyph_runs, 1, "{emitted:?}");
     ops_mut(&mut tree).retain(|op| !matches!(op, PaintOp::GlyphOutline { .. }));
-    let supported = report(
-        &tree,
-        TextVariantSelectionOptions {
-            backend: VariantSelectionBackend::CanvasKitBrowser,
-            ..TextVariantSelectionOptions::canvaskit()
-        },
-    );
+    let browser_options = TextVariantSelectionOptions {
+        backend: VariantSelectionBackend::CanvasKitBrowser,
+        ..TextVariantSelectionOptions::canvaskit()
+    };
+    let supported = report(&tree, browser_options);
     assert_eq!(
         supported.selected_variant_kind,
         Some(TextVariantKind::GlyphRun),
@@ -394,5 +392,20 @@ fn canvas2d_outline_opt_in_never_enables_glyph_runs_or_skips_font_byte_proof() {
     *resources_without_bytes.font_resources_mut() = tree.resources.font_resources().clone();
     tree.resources = resources_without_bytes;
     assert_fallback(&tree, VariantRejectReason::BackendDoesNotSupportVariant);
-    assert_fallback(&tree, VariantRejectReason::FontBlobBytesMissing);
+    // Canvas2D never opens the GlyphRun lane. The supporting browser backend
+    // must still reject the same real face when its verified bytes disappear.
+    let missing_bytes = report(&tree, browser_options);
+    assert!(missing_bytes.fallback_required, "{missing_bytes:?}");
+    assert_eq!(
+        missing_bytes.selected_variant_kind,
+        Some(TextVariantKind::TextRun)
+    );
+    assert!(
+        missing_bytes.rejected_variants.iter().any(|rejected| {
+            rejected
+                .reasons
+                .contains(&VariantRejectReason::FontBlobBytesMissing)
+        }),
+        "{missing_bytes:?}"
+    );
 }
