@@ -26,7 +26,13 @@
         "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/final-saves-native/hwp/render"
       ],
       "exit": 0,
-      "independentPdf": "pending upload approval"
+      "independentPdf": {
+        "path": "pdf/container-chart-roundtrip/final-hwp-2020.pdf",
+        "sha256": "8ff6568eb73c1171c49233db4f828dbb2e425f86b10d6571208829c86ad29f85",
+        "jobId": "d3913f80-dc19-49b0-a6ed-0862757ea9ba",
+        "pages": 1,
+        "silhouetteRawMatchPercent": 95.51
+      }
     },
     {
       "extension": "hwp",
@@ -47,7 +53,13 @@
         "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/wasm-options.json"
       ],
       "exit": 0,
-      "independentPdf": "pending upload approval"
+      "independentPdf": {
+        "path": "pdf/container-chart-roundtrip/final-hwp-2020.pdf",
+        "sha256": "8ff6568eb73c1171c49233db4f828dbb2e425f86b10d6571208829c86ad29f85",
+        "jobId": "d3913f80-dc19-49b0-a6ed-0862757ea9ba",
+        "pages": 1,
+        "silhouetteRawMatchPercent": 99.56
+      }
     },
     {
       "extension": "hwpx",
@@ -72,7 +84,13 @@
         "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/final-saves-native/hwpx/render"
       ],
       "exit": 0,
-      "independentPdf": "pending upload approval"
+      "independentPdf": {
+        "path": "pdf/container-chart-roundtrip/final-hwpx-2020.pdf",
+        "sha256": "20e62305100b06fa60e4fc68466e1cd8e8dae6ffe5df298d68a95fe9ea6a7e17",
+        "jobId": "eaf6cf8e-a1af-41e0-9a8d-136e2f9f7ae9",
+        "pages": 1,
+        "silhouetteRawMatchPercent": 95.51
+      }
     },
     {
       "extension": "hwpx",
@@ -93,7 +111,13 @@
         "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/wasm-options.json"
       ],
       "exit": 0,
-      "independentPdf": "pending upload approval"
+      "independentPdf": {
+        "path": "pdf/container-chart-roundtrip/final-hwpx-2020.pdf",
+        "sha256": "20e62305100b06fa60e4fc68466e1cd8e8dae6ffe5df298d68a95fe9ea6a7e17",
+        "jobId": "eaf6cf8e-a1af-41e0-9a8d-136e2f9f7ae9",
+        "pages": 1,
+        "silhouetteRawMatchPercent": 99.56
+      }
     }
   ],
   "saveProducer": {

@@ -8,8 +8,8 @@ last_verified: 2026-11-07
 
 ## 최종 판정
 
-**머지 보류 — 최종 저장본 두 파일의 독립 한컴 PDF 검증을 위한 전송 승인 대기.**
-완료된 집중·Native Skia·lint·시각 검증은 아래에 구분한다. 원격 push, PR 생성, 승인, 병합은 수행하지 않았다. 최신 devel 재확인에서도 기준 SHA는 동일했다.
+**머지 보류 — 기존 검증 코드의 로컬 게이트는 완료했으나, #8711 병합 이후 최신 devel 통합·재검증이 필요하다.**
+완료된 집중·Native Skia·lint·시각 검증은 아래에 구분한다. 원격 push, PR 생성, 승인, 병합은 수행하지 않았다. 기존 결과의 검증 기준은 아래 고정 SHA이며, 최신 devel 결과로 대신하지 않는다.
 
 ## 접수와 통합 경로
 
@@ -21,10 +21,10 @@ last_verified: 2026-11-07
 - 로컬 브랜치: `review/integration-20261107-roundtrip-layout`.
 - 작업지시자가 두 PR의 통합과 추가 보정·전체 검증을 요청했으므로 체리픽 통합 경로를 사용한다.
   원 기여자 브랜치와 PR 본문은 수정하지 않았다.
-- 별도 로컬 검토에서 만든 [#8711](https://github.com/edwardkim/rhwp/pull/8711)의
-  `57f897a3bd844aadd883d7afb31def4904acb8ca`는 OPEN, MERGEABLE이며 2026-11-07 확인 시 CI 실패·대기가 없다.
-  그 PR의 #8226 보정과 회귀를 재사용했다. 기존 PR을 강제로 덮어쓰지 않고 두 원 PR을 함께 담는
-  통합안을 준비한다. #8711을 포함한 대체·close는 실제 통합 병합 뒤 별도 승인 범위다.
+- #8226은 별도 통합 [#8711](https://github.com/edwardkim/rhwp/pull/8711)로 이미 반영됐다.
+  #8711은 2026-11-07 02:45:33 UTC에 `e724c6caff896a9478dc537cab4e99a57cf879cf`로 병합됐고,
+  #8226은 같은 날 02:50:54 UTC에 대체 완료로 닫혔다. 이 작업은 그 원격 조치를 수행하지 않았다.
+  최신 devel `b8dd67c500` 위에서 #8286 보정과 이미 반영된 #8226 기능을 함께 검증하는 후속 통합 경로로 정리한다.
 
 ## 기여자 크레딧과 원 커밋 대응
 
@@ -129,13 +129,21 @@ DocumentCore의 원래 재저장 경로는 차트 OLE 그림을 보존하지 못
 출력과 로컬 출력에서 구분하며, 이 통합이 차트 보존 기능을 해결했다고 주장하지 않는다.
 CLI 직접 변환과 DocumentCore 저장 API는 별도 경로이므로 산출 바이트를 혼용하지 않았다.
 
+## 최종 저장본 독립 검증
+
+사용자가 정확한 최종 HWP/HWPX SHA의 동일 서버 전송을 승인한 뒤 한컴 2020
+11.0.0.9136 Print method 0으로 각각 1쪽 PDF를 생성했다. `font_scope=verified`다.
+이전 저장본 PDF를 재사용하지 않았다. 두 PDF와 입력 바이트의 SHA·작업 ID·전쪽 TSV는
+[최종 저장본 원장](../assets/pr8286_8226_integration/final-saves-verification.json)에 기록했다.
+Native는 두 파일 모두 **95.51%**, fresh WASM은 두 파일 모두 **99.56%**이며 쪽수도 일치한다.
+HWP/HWPX의 기준 PNG와 각 backend PNG는 각각 바이트가 같았다.
+[한컴](../assets/pr8286_8226_integration/final-save-reference.png),
+[Native](../assets/pr8286_8226_integration/final-save-native.png),
+[WASM](../assets/pr8286_8226_integration/final-save-wasm.png)을 직접 대조해 표 앞뒤 본문,
+셀의 흐름, 글상자·머리말 원점, 표 뒤 간격을 확인했다. 위 글리프·기존 차트 보존 한계는 그대로다.
+
 ## 남은 병합 전 조건
 
-1. 최종 DocumentCore 저장본 HWP/HWPX의 같은 한컴 서버 전송 승인, 독립 Print PDF 및 Native/fresh WASM 전쪽 검증.
-2. 최종 devel/head·입력 해시 재확인, 기록 확정, 사용자 승인 후 통합 PR push/등록과 해당 head CI.
-3. 실제 병합과 원 #8286·#8226 및 대체 #8711 후속 정리는 별도 승인 후 수행.
-
-새 파일 전송은 자동 승인 심사가 이전 파일에 한정된 승인 범위를 이유로 거절했다.
-대상은 `final-documentcore/resaved.hwp` SHA `4f01f3a9275025971f26c17691ef23d580b86174415643b843d23aae1dbd6b86`와
-`resaved.hwpx` SHA `ba83298033ebb82be766453f2708d56a9114ee6edd732fd6437e9fe78c58eff6`이며,
-기존 `hwp-convert-2024/env.local`의 동일 서버를 사용한다. 승인 전 전송하지 않았다.
+1. 이미 병합된 #8711/#8226 변경을 보존하면서 최신 devel에 통합하고 변경 범위의 필수 검증을 완료한다.
+2. 최종 devel/head·입력 해시 재확인과 기록 확정 뒤 사용자 승인 범위에 따라 통합 PR push/등록 및 해당 head CI를 확인한다.
+3. 실제 병합과 원 #8286 후속 정리는 별도 승인 후 수행한다. 이미 닫힌 #8226/#8711은 다시 닫지 않는다.
