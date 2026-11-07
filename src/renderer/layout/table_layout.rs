@@ -4310,6 +4310,14 @@ impl LayoutEngine {
             if header_end > 0 {
                 row_y[..=header_end].copy_from_slice(&header_y);
             }
+            // [#8715] 시작 행 안쪽에서 이어받으면 앞 쪽이 이미 보인 띠만큼 시작 행 상자가
+            // 줄고, 뒤 행은 상자째 그만큼 올라간다. 내용 오프셋은 시작 행 칸에만 준다.
+            if split.offset_within_start > 0.5 && er > sr {
+                let start_top = row_y[sr];
+                for y in row_y.iter_mut().take(row_count + 1).skip(sr + 1) {
+                    *y = (*y - split.offset_within_start).max(start_top);
+                }
+            }
             // end_row 이후의 모든 row_y를 캡하여 spanning 셀이 보이는 영역을 초과하지 않도록 함
             let cap_y = if split.visible_height > 0.0 {
                 split.visible_height.min(row_y[er])
@@ -10728,10 +10736,11 @@ impl LayoutEngine {
             } else {
                 raw_cell_h
             };
-            let content_cell_y = if row_filter.is_some() {
-                cell_y - split_y_offset
-            } else {
-                cell_y
+            // [#8715] 이미 보인 띠는 시작 행에만 있다. 뒤 행 칸은 상자 위치가 그 띠를
+            // 반영하므로 내용을 다시 올리지 않는다.
+            let content_cell_y = match row_filter {
+                Some((start_row, _)) if r <= start_row => cell_y - split_y_offset,
+                _ => cell_y,
             };
 
             // [#4698] 쪽 경계에 걸친 병합(rowspan) 라벨 셀은 한컴이 이미 문단을
