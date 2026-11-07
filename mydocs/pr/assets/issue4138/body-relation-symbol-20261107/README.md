@@ -2,7 +2,7 @@
 
 부모 `1c23f8e2b65977d376bd5cfa7cabe4f90bda0f1d`, base
 `a7feb849e11642b1438b7e9ee460ff4c8a7c946e`에 공통 글리프 폭 보정을 적용했다.
-제품 소스·회귀 파일·Native 실행 파일·fresh WASM 해시는 [validation.json](validation.json)에 있다.
+제품 소스·회귀 파일·Native 실행 파일·fresh WASM 해시는 validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue4138/body-relation-symbol-20261107/validation.json`)에 있다.
 
 입력은 `mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/saved-split-1x2.hwp`
 (SHA-256 `4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9`)이며,

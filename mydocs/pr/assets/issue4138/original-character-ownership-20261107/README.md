@@ -5,7 +5,7 @@
 ## 입력과 실행 조건
 
 - [분할 저장 원본](../../issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/saved-split-1x2.hwp), SHA-256 `4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9`.
-- [독립 한컴2024 Print PDF](../../../../../pdf/issue4138-ascii-split-20261016-2024.pdf), 197쪽. 파일 해시는 [validation.json](validation.json)에 고정했다.
+- [독립 한컴2024 Print PDF](../../../../../pdf/issue4138-ascii-split-20261016-2024.pdf), 197쪽. 파일 해시는 validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue4138/original-character-ownership-20261107/validation.json`)에 고정했다.
 - 현재 정본 `visual_sweep.py`, 192DPI, compat2024, PDFium, 2px 내용 실루엣, capture 총 8. 양쪽 모두 197쪽 완료, 누락 0.
 - 원본 glyph 85개를 확인한 로컬 공급 글꼴 프로필이다. 최소 글꼴 환경 통과를 주장하지 않으며 글꼴 바이너리·복원 표본·raw 프로그램은 제출하지 않는다.
 - fresh WASM은 Mac locked wrapper의 `--target web --out-dir pkg --no-opt` 로컬 대체 빌드다. Docker 최적화 빌드 결과가 아니다. root pkg/Studio public의 JS/WASM 파일 일치는 빌드 생산자 기록으로 확인했다. 실제 브라우저 초기화 응답 검증은 남아 있다.
@@ -14,7 +14,7 @@
 
 일반 괄호를 현대 문법의 구조 괄호로 묶어 원본의 무브레이스 첨자 소유가 바뀌었다. 구형 표시 세대의 일반 괄호는 CHAR로 보존하며 명시적 LEFT/RIGHT와 현대 공개 문법은 구분한다. 원본의 기본 이탤릭 논리 전진은 표시 Regular Type3의 d1과 다르므로, 독립 정상 저장의 ASCII 260개·비정수 크기 56개 전진으로 확인한 논리 face를 사용한다. 그룹·첨자 여백은 자식의 축소 표시 크기가 아니라 root 논리 단위를 소비한다.
 
-[독립 계약 감사](independent-contract-audit.json)는 초기 260조건에서 구분되지 않던 절삭/반올림을 별도 56조건으로 구분하고, root 그룹 관계 15개를 대조한다.
+독립 계약 감사 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue4138/original-character-ownership-20261107/independent-contract-audit.json`)는 초기 260조건에서 구분되지 않던 절삭/반올림을 별도 56조건으로 구분하고, root 그룹 관계 15개를 대조한다.
 
 소수점은 원본 d1·공급 글꼴 hmtx 모두 500/1000em이지만 Number role에서 빠져 `0.5`·`0.4` 전체가 일반 수학 글꼴로 대체됐다. 같은 원본 run으로 복구했다. 두 논리 글줄의 LEFT/RIGHT는 원본과 같은 괄호 프로그램의 Tf/Tz를 FontGlyph에 보존하고, 분자·분모의 논리 기준선과 자연 글리프 기준선을 구분한다. 공통 LayoutBox의 글꼴·좌표·크기를 SVG/Native/WASM이 소비한다. 현대 face·일반 문자 괄호·미확인 중첩 프레임에는 이 두 줄 구분자 분기를 적용하지 않는다.
 

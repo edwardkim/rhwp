@@ -3,7 +3,7 @@
 코드 HEAD `fa0436f4951db3bcafa2403c05e202cb425355fe`, base `45684640be5eddcf5972b063260250345b34d928`.
 2026-11-06 Mac에서 현행 Visual Sweep의 PDFium·96DPI·2022 compat·색상 경계 보정 전2px raw를 사용했다.
 원본은 `samples/basic/issue1994_behindtext_table_20200830.hwp`, 독립 기준은 기존 `samples/issue1994/issue_1994.pdf`다.
-전체 입력·PDF·실행 파일·WASM·변환기 해시와 페이지별 수치는 [validation.json](validation.json)에 보존한다.
+전체 입력·PDF·실행 파일·WASM·변환기 해시와 페이지별 수치는 validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue1994/reference-fonts-20261106/validation.json`)에 보존한다.
 
 | 경로 | base 3쪽 | 후보 3쪽 | 후보 전4쪽 최저 | 98% 미달 |
 | --- | --- | --- | --- | --- |
@@ -14,7 +14,7 @@
 
 원본은 `한겨레결체`·`나눔고딕`을 요청하지만 기준 PDF의 실제 fill/stroke 본문은 Haansoft Batang이다.
 PDF의 글리프 ID와 설치한 검증용 `HBATANG.TTF`의 정규화 윤곽을 비교해 전체486쌍 중471쌍이 일치했다.
-15개 특수기호 차이는 [font-program-evidence.json](font-program-evidence.json)에 남겼다. 전체 글꼴의 완전 일치라는 주장이 아니다.
+15개 특수기호 차이는 font-program-evidence.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue1994/reference-fonts-20261106/font-program-evidence.json`)에 남겼다. 전체 글꼴의 완전 일치라는 주장이 아니다.
 독립 한컴2020 Print(11.0.0.9136, Print 방식0, job `792978dc-aeb5-475e-83e1-e896b7cdeff0`)도 같은 대체를 재현했다.
 기존 PDF는 교체하지 않았다. 추출 글꼴 프로그램·윤곽 배열·원본 글꼴 바이너리는 로컬 검증에만 보존한다.
 

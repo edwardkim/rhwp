@@ -2,7 +2,7 @@
 
 Issue: #4138. 부모 `4441bf1ee33d6609576657facf9cd5df559ff1f0`, base
 `a7feb849e11642b1438b7e9ee460ff4c8a7c946e`에서 공통 줄 구성의 종료 컷을 보정했다.
-소스·실행 파일·WASM 해시와 실제 검사 결과는 [validation.json](validation.json)에 있다.
+소스·실행 파일·WASM 해시와 실제 검사 결과는 validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue4138/interword-space-20261107/validation.json`)에 있다.
 이 단계는 브랜치 전체 완료 또는 PR 제출 가능 판정이 아니다.
 
 ## 독립 근거와 수정
@@ -18,7 +18,7 @@ offset61이며, 원본의 저장 offset60과 다르다. 독립 Print도 `다음�
 맑은 고딕 TTF와 한양신명조 HFT의 독립 Print 36조건을 대조했다. 첫 구분 공백과 연속
 작성 공백을 구분하며, 나머지 작성 공백은 이어받은 줄에서 계속 전진한다. 줄 끝 공백을
 전부 제거하거나 일정 HU 공차를 늘리는 규칙은 이 대조군과 맞지 않는다.
-입력·PDF·원점 출처는 [fixture-provenance.json](fixture-provenance.json)에 보존했다.
+입력·PDF·원점 출처는 fixture-provenance.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue4138/interword-space-20261107/fixture-provenance.json`)에 보존했다.
 
 `fill_one_interval`의 기존 종료 컷을 적용하기 전에, 현재 줄의 실제 낱말 뒤 첫 ASCII
 공백·하나 이상의 추가 ASCII 공백·다음 실제 낱말이라는 연속 소유를 확인한다. 이 경우만

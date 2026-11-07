@@ -1,7 +1,7 @@
 # LPG 첫 저장 블록 상자와 다음 쪽의 소유
 
 입력과 독립 Print PDF의 SHA, runtime producer, Native/fresh WASM의 전 48쪽 수치,
-정식 검사 결과와 PNG 해시는 [검증 원장](validation.json)에 기록했다.
+정식 검사 결과와 PNG 해시는 검증 원장 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue8060/stored-block-opening-20261107/validation.json`)에 기록했다.
 96 DPI·2024 호환·색상 경계 보정 전 2px 실루엣으로 비교했다.
 
 | 출력 | 수정 전 2쪽 | 수정 후 2쪽 | 수정 후 3쪽 | 전 48쪽 최저 |

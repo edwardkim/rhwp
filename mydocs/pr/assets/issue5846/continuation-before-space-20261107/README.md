@@ -27,11 +27,11 @@
 
 ## 회귀 검사와 제한
 
-[정식 검사](../../../../../tests/cases/issue_5846_continuation_stored_before.rs)는 관계형1개와 고정형1개다. 관계형은 원본 앞 간격·뒤 문단의 같은 저장 원점·내용/순서/단일 소유를 확인한다. 고정형은 양 backend32쪽100%를 확인한 뒤 등록했고 [독립 PDF의 세 기준선](independent-pdf-baselines.json) 97.119995/123.519999/149.919993CSSpx에 ±2px를 적용한다. 후보 좌표에서 기대값을 복사하지 않았다.
+[정식 검사](../../../../../tests/cases/issue_5846_continuation_stored_before.rs)는 관계형1개와 고정형1개다. 관계형은 원본 앞 간격·뒤 문단의 같은 저장 원점·내용/순서/단일 소유를 확인한다. 고정형은 양 backend32쪽100%를 확인한 뒤 등록했고 독립 PDF의 세 기준선 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue5846/continuation-before-space-20261107/independent-pdf-baselines.json`) 97.119995/123.519999/149.919993CSSpx에 ±2px를 적용한다. 후보 좌표에서 기대값을 복사하지 않았다.
 
 실제 수정 전2 FAIL→수정 후2 PASS, 기존 #5846·#7700·#8060의15개도 PASS다. 중간 관계형1개 실행을 중복 집계하지 않아 집중 합계17 PASS다. 정식 자동 suite와 macOS 최소 글꼴 sandbox·threads8·Cargo 순차로 실행했다. Native/WASM/all-target Clippy·fmt·manifest·unit tier도 통과했다.
 
-픽셀 검사 등록 뒤 바뀐 것은 테스트 파일뿐이며 runtime·빌드·스크립트 source hash는 빌드 때와 같다. 현재 source의 전체 nextest·전 코퍼스·Skia 전체unit·최종 편람 gate·실제 소비를 모두 완료했다는 의미는 아니다. Mac fresh WASM은 locked wrapper `--target web --out-dir pkg --no-opt` 로컬 대체 빌드이며 Docker 최적화 결과가 아니다. root pkg/Studio public hash는 일치하고 실제 Studio 초기화 응답 확인은 남아 있다. 명령·해시·결과는 [validation.json](validation.json), 로그·임시 도구는 ignored output에 보존한다.
+픽셀 검사 등록 뒤 바뀐 것은 테스트 파일뿐이며 runtime·빌드·스크립트 source hash는 빌드 때와 같다. 현재 source의 전체 nextest·전 코퍼스·Skia 전체unit·최종 편람 gate·실제 소비를 모두 완료했다는 의미는 아니다. Mac fresh WASM은 locked wrapper `--target web --out-dir pkg --no-opt` 로컬 대체 빌드이며 Docker 최적화 결과가 아니다. root pkg/Studio public hash는 일치하고 실제 Studio 초기화 응답 확인은 남아 있다. 명령·해시·결과는 validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue5846/continuation-before-space-20261107/validation.json`), 로그·임시 도구는 ignored output에 보존한다.
 
 ## 대표 32쪽
 

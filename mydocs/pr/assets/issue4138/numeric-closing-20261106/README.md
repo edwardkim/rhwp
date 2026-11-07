@@ -3,7 +3,7 @@
 2026-11-06 코드 `fa0436f4951db3bcafa2403c05e202cb425355fe` / base `45684640be5eddcf5972b063260250345b34d928`.
 원본은 `mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/saved-split-1x2.hwp`,
 기준은 `pdf/issue4138-ascii-split-20261016-2024.pdf`다. 입력을 재생성하거나 기준 PDF를 교체하지 않았다.
-전체 SHA·변환기·실행 파일·페이지별 결과는 [validation.json](validation.json)에 기록했다.
+전체 SHA·변환기·실행 파일·페이지별 결과는 validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue4138/numeric-closing-20261106/validation.json`)에 기록했다.
 현행 Visual Sweep·PDFium·192DPI·2024 compat·색상 경계 보정 전2px raw다.
 
 | 경로 | 수정 전90쪽 | 후보90쪽 | 후보 전197쪽 최저 | 98% 미달 |

@@ -33,4 +33,4 @@ Native Skia 자동 suite 49개가 통과했다. 일반 화면 기본 나눔고�
 서로 다른 조건이며, 이 문서의 사용자 지정 설정과 일반 기본 출력도 구분한다.
 전체 nextest·Native/fresh WASM 전쪽·편람·backend 검증은 별도 최종 게이트다.
 
-상세 producer, 검사 및 로그 위치는 [검증 기록](validation.json)에 있다.
+상세 producer, 검사 및 로그 위치는 검증 기록 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue1994/installed-programs-20261107/validation.json`)에 있다.

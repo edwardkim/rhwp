@@ -1,7 +1,7 @@
 # #4138 한점 리더·한자 금칙의 공통 줄 소유
 
 2026-11-06 부모708256f1ba에 공통 토큰화 보정을 적용한 source다. 실제 생산 파일·diff·실행 파일·
-WASM·입력·독립 PDF 해시는 [validation.json](validation.json)으로 고정했다. 입력과 기준 PDF는
+WASM·입력·독립 PDF 해시는 validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue4138/closing-punctuation-20261106/validation.json`)으로 고정했다. 입력과 기준 PDF는
 앞 단계와 동일하며 새로 생성한 분할 저장본이나 새 정답 PDF로 바꾸지 않았다.
 현행 Visual Sweep의 PDFium·192DPI·2024 compat·색상 경계 보정 전2px raw다.
 

@@ -2,7 +2,7 @@
 
 2026-11-07. 부모 `dbf9b54beb419f26d1595b6bfe792f17cf4498b6`, upstream base
 `a7feb849e11642b1438b7e9ee460ff4c8a7c946e`. 이 증적과 함께 커밋한 runtime 파일의 SHA는
-[validation.json](validation.json)에 고정했다. 브랜치 전체 검증 완료나 PR 제출 가능 판정은 아니다.
+validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue4138/original-equation-print-paper-20261107/validation.json`)에 고정했다. 브랜치 전체 검증 완료나 PR 제출 가능 판정은 아니다.
 
 ## 원인과 공통 소비 경로
 

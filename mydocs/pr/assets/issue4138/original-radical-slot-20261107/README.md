@@ -6,7 +6,7 @@
 
 원본 `saved-split-1x2.hwp`의 기존 독립 한컴2024 Print 197쪽을 그대로 기준으로 썼다. 같은 입력을 재인쇄한 별도 대조에서도 10쪽 Q·12쪽 E 원점이 기존 PDF와 같았다. 재인쇄본은 기준 PDF를 교체하지 않으며, 다른 글꼴의 경고·전쪽 시각 수용과 구분한다. 독립 자연 저장 대조는 중괄호의 실제 공간 예약을 입증하므로 그 예약을 제거하지 않았다.
 
-[검증 기록](validation.json)에 입력/PDF·공개 근호 글꼴 해시, 실제 hmtx 833/1000, 재인쇄 원점과 생산자·검사 요약을 고정했다. 글꼴 바이너리·복원 표본·로그는 커밋하지 않았다. 같은 로컬 85 glyph 공급 조건이며 최소 글꼴 시각 검증으로 주장하지 않는다.
+검증 기록 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue4138/original-radical-slot-20261107/validation.json`)에 입력/PDF·공개 근호 글꼴 해시, 실제 hmtx 833/1000, 재인쇄 원점과 생산자·검사 요약을 고정했다. 글꼴 바이너리·복원 표본·로그는 커밋하지 않았다. 같은 로컬 85 glyph 공급 조건이며 최소 글꼴 시각 검증으로 주장하지 않는다.
 
 [정식 검사](../../../../../tests/cases/issue_4138_original_equation_character_ownership.rs)에 독립 PDF 12쪽 E 원점의 192DPI ±2px 고정형을 추가했다. 기존 4개 관계형·1개 고정형은 유지한다. 실제 부모 5 PASS/1 FAIL → 보정 6 PASS, 기존 집중 묶음 136 PASS(신규 6개와 출력용 진단 1개 포함)다. 합산 중복으로 검사 수를 부풀리지 않는다.
 

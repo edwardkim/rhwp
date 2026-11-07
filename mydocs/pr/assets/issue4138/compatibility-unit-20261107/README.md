@@ -1,7 +1,7 @@
 # #4138 CJK 호환 단위 뒤의 공통 줄 경계
 
 2026-11-07, 부모 `fc038e4d54b9edad6e09c0c92935440af01525da`에 줄 끝 후보 보정만 적용했다.
-[validation.json](validation.json)에 제품 파일·입력·독립 PDF·실행 파일·WASM·글꼴 공급·검사
+validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue4138/compatibility-unit-20261107/validation.json`)에 제품 파일·입력·독립 PDF·실행 파일·WASM·글꼴 공급·검사
 출처를 고정했다. Mac의 locked wrapper `--target web --out-dir pkg --no-opt` 로컬 대체 빌드다.
 Docker 최적화 빌드로 보고하지 않는다. 로그·임시 driver·글꼴 프로그램은 ignored output에만 둔다.
 

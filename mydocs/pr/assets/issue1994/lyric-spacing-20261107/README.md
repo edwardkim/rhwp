@@ -57,6 +57,6 @@ Docker 최적화 빌드 통과를 뜻하지 않는다.
 그 문서의 전쪽 PDF 수용을 주장하지 않는다.
 
 자동 suite 검사, 입력·PDF·프로필·producer 해시와 실행 로그 위치는
-[검증 원장](validation.json)에 기록한다. 최종 브랜치 전체 회귀·편람 전쪽·Studio 실제
+검증 원장 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue1994/lyric-spacing-20261107/validation.json`)에 기록한다. 최종 브랜치 전체 회귀·편람 전쪽·Studio 실제
 소비 검증은 이 집중 검증과 별도로 완료해야 한다. 글꼴 바이너리·임시 스크립트·로그는
 Git에서 제외된 output에만 보관한다.

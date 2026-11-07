@@ -12,7 +12,7 @@ Issue: #4138. 부모 `79ee0477b6`과 base `a7feb849e11642b1438b7e9ee460ff4c8a7c9
 별도 6·9·12·18pt, 40조건의 한컴2024 Print에서도 아래첨자 28개를 대조했다.
 본체와 아래첨자의 기준선 차이는 약 0.28em이고 자식 글자 크기는 본체의 약 0.64배다.
 실제 원본 44·129·130쪽의 문자별 원점도 같은 관계다.
-[독립 문자 원점·출처](independent-baselines.json)에는 글꼴 윤곽이나 프로그램을 넣지 않았다.
+독립 문자 원점·출처 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue4138/legacy-subscript-frame-20261107/independent-baselines.json`)에는 글꼴 윤곽이나 프로그램을 넣지 않았다.
 40조건 입력·PDF와 진단 스크립트는 ignored output에 남겼다.
 
 기존 구현은 구형 글리프의 0.8em ascent를 일반 수식 fallback에 적용해 아래첨자를
@@ -73,7 +73,7 @@ WASM의 전쪽 전후 공급 기록은 동일하다.
 45쪽: [Native review](after/native-p045-review.png) · [overlay](after/native-p045-overlay.png)
 · [WASM review](after/wasm-p045-review.png) · [overlay](after/wasm-p045-overlay.png).
 
-최종 소스·빌드·검사 출처는 [validation.json](validation.json)에 있다. WASM은 Mac의 locked
+최종 소스·빌드·검사 출처는 validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue4138/legacy-subscript-frame-20261107/validation.json`)에 있다. WASM은 Mac의 locked
 wrapper `--target web --out-dir pkg --no-opt` 로컬 대체 빌드다. Docker 최적화·최종
 전체 nextest·편람 게이트·실제 소비 경로 검증의 완료를 뜻하지 않는다. 다른 기존 미달
 문서와 Native 공백 대조군의 차이도 남아 있으며, 전체 조건 완료 전 PR 제출을 보류한다.

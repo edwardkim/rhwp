@@ -50,8 +50,8 @@
   `--target web --out-dir pkg --no-opt` 로컬 대체 빌드이며 Docker 최적화 통과가 아니다.
 
 이 문서는 이 단계의 증적이며 최종 전체 회귀·모든 대상 98%·실제 소비 경로 완료 보고가 아니다.
-전체 상태·producer hash·독립 입력/PDF hash는 [validation.json](validation.json), 단계 게이트는
-[gates.json](gates.json), 전후 전쪽 수치는 `before/after-*-197.tsv`에 보존했다.
+전체 상태·producer hash·독립 입력/PDF hash는 validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue4138/page-frame-coverage-20261107/validation.json`), 단계 게이트는
+gates.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue4138/page-frame-coverage-20261107/gates.json`), 전후 전쪽 수치는 `before/after-*-197.tsv`에 보존했다.
 
 ## 대표 그림
 

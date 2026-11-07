@@ -12,6 +12,6 @@ Native 1쪽 98.59756→99.86093%, fresh WASM 98.54350→99.83671%다. 2·3·4쪽
 
 설치한 Haansoft Batang을 사용하는 [명시적 Print 비교 설정](reference-font-environment.json)이다. PDF가 산돌이야기B·XB 요청 부분도 실제 Haansoft Batang으로 출력했음을 리소스·글리프와 대조했고, 해당 두 이름을 기존 한겨레결체·나눔고딕 비교 설정에 추가했다. 원본 Sandoll 글꼴이 확보됐다는 뜻은 아니다. glyphFallback Wingdings도 기존 조건을 보존한다.
 
-`preserveSourceMetrics: false`는 확인된 Print 대체 프로그램의 전진폭 조건을 재현한다. 기본 원본 측정 정책이나 제품의 전역 치환을 바꾸지 않는다. Haansoft Batang이 없는 환경에서는 다른 후보가 선택될 수 있어 이 결과를 재사용하지 않는다. 글꼴 바이너리와 PDF 추출 프로그램은 Git에 포함하지 않는다. [이전 글꼴 프로그램 감사](../reference-fonts-20261106/font-program-evidence.json), [한겨레결체 원본 CDN의 별도 공급 검증](../hankyoreh-cdn-20261107/README.md)을 구분한다.
+`preserveSourceMetrics: false`는 확인된 Print 대체 프로그램의 전진폭 조건을 재현한다. 기본 원본 측정 정책이나 제품의 전역 치환을 바꾸지 않는다. Haansoft Batang이 없는 환경에서는 다른 후보가 선택될 수 있어 이 결과를 재사용하지 않는다. 글꼴 바이너리와 PDF 추출 프로그램은 Git에 포함하지 않는다. 이전 글꼴 프로그램 감사 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue1994/reference-fonts-20261106/font-program-evidence.json`), [한겨레결체 원본 CDN의 별도 공급 검증](../hankyoreh-cdn-20261107/README.md)을 구분한다.
 
-전후 전쪽 TSV 4개·Native/fresh WASM의 1쪽 review/overlay 8개·[원장](validation.json)을 보존했다. Mac WASM은 locked wrapper `--target web --out-dir pkg --no-opt`의 로컬 대체 빌드이며 Docker 최적화 결과가 아니다.
+전후 전쪽 TSV 4개·Native/fresh WASM의 1쪽 review/overlay 8개·원장 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue1994/print-frame-20261107/validation.json`)을 보존했다. Mac WASM은 locked wrapper `--target web --out-dir pkg --no-opt`의 로컬 대체 빌드이며 Docker 최적화 결과가 아니다.
