@@ -154,13 +154,37 @@ impl TypesetEngine {
         budget: &FragmentBudget,
         scan: &BlockTableRowScan,
     ) -> Option<(f64, f64)> {
-        let height = budget.stored_partial_frame_height?;
+        let height = budget.stored_partial_frame_height.or_else(|| {
+            // 원본 셀 높이 0은 행의 하한을 증명하지 못한다. 그러나 실제 저장
+            // 쪽 재시작 컷과 호스트 앵커가 같은 첫 상자를 인증하면 그 상자는
+            // 이미 스캔이 예약한 프레임이다. 완결 행의 추정으로 대체하지 않는다.
+            scan.split_block_start?;
+            let (height, _) = budget.saved_first_fragment_source_frame?;
+            let source = input
+                .prepared
+                .layout_engine
+                .stored_block_opening_frame_height(
+                    input.source.row_geometry_table,
+                    input.source.paragraph,
+                    scan.end_row,
+                    &scan.split_end_cut,
+                    input.source.styles,
+                )?;
+            (height == source).then_some(height)
+        })?;
+        let roundoff = f64::EPSILON
+            * (height.abs() + scan.consumed.abs()).max(1.0)
+            * (input.prepared.row_count + 4) as f64;
         if input.start.is_continuation
             || input.start.cursor_row != 0
             || !input.start.start_cut.is_empty()
             || scan.end_row == 0
             || scan.end_row >= input.prepared.row_count
-            || height <= scan.consumed + budget.header_overhead + 0.5
+            || height + roundoff < scan.consumed + budget.header_overhead
+            // 블록은 스캔에서 원본 첫 상자를 이미 예약했어도 마지막 행의
+            // 배분을 paint에 넘겨야 한다. 일반 행의 기존 확장 조건은 유지한다.
+            || (scan.split_block_start.is_none()
+                && height <= scan.consumed + budget.header_overhead + 0.5)
         {
             return None;
         }
@@ -271,10 +295,10 @@ impl TypesetEngine {
         let engine = &input.prepared.layout_engine;
         let measured = input.source.measured_table;
         let (first, end, _) = measured.row_block_for(block_start);
-        if first != block_start || scan.end_row <= first || scan.end_row >= end {
+        if first != block_start || scan.end_row <= first || scan.end_row > end {
             return None;
         }
-        let source_height = engine.stored_complete_block_opening_frame_height(
+        let source_height = engine.stored_block_opening_frame_height(
             table,
             input.source.paragraph,
             scan.end_row,
@@ -287,7 +311,8 @@ impl TypesetEngine {
         // A block cut can encode a complete physical row without an empty
         // vector. Verify the exact measured-row owner used by paint; the unit
         // walk's consumed height alone does not include this row's blank band.
-        if !(0..scan.end_row).all(|row| {
+        let last = scan.end_row - 1;
+        if !(0..last).all(|row| {
             if row < first {
                 engine.whole_fragment_row_uses_measured_height(table, row)
             } else {
@@ -303,12 +328,42 @@ impl TypesetEngine {
         }) {
             return None;
         }
-        let last = scan.end_row - 1;
         let before = measured.row_heights.get(..last)?.iter().sum::<f64>()
             + measured.cell_spacing * last as f64;
-        let selected = scan
-            .end_row_height_override
-            .unwrap_or(*measured.row_heights.get(last)?);
+        let selected = if engine.row_block_cut_uses_measured_height(
+            table,
+            (first, end),
+            last,
+            &[],
+            &scan.split_end_cut,
+            styles,
+        ) {
+            scan.end_row_height_override
+                .unwrap_or(*measured.row_heights.get(last)?)
+        } else {
+            // 끝 행이 부분 내용이면 실제 저장 재시작 컷만 그 첫 상자를 소유한다.
+            // 뒤쪽 내용을 다시 예약하지 않고 같은 선택 유닛의 요구 높이를 하한으로 쓴다.
+            if !engine.row_block_cut_closes_original_text_frame(
+                table,
+                (first, end),
+                scan.end_row,
+                &[],
+                &scan.split_end_cut,
+                styles,
+            ) {
+                return None;
+            }
+            let content = engine.row_block_cut_row_content_height(
+                table,
+                first,
+                end,
+                last,
+                &[],
+                &scan.split_end_cut,
+                styles,
+            );
+            scan.end_row_height_override.unwrap_or(content).max(content)
+        };
         Some((before, selected))
     }
 

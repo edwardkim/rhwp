@@ -2173,6 +2173,12 @@ impl TypesetEngine {
             (cell.row as usize) < end_row
                 && cell.row as usize + (cell.row_span as usize).max(1) > end_row
         });
+        // 원본 쪽 프레임을 닫은 블록 컷의 끝 행 상자는 해당 쪽의 배분이다.
+        // 일반 행의 `선언 높이 - 이번 상자`로 되풀어 블록 시작 행에 넘기면,
+        // 이미 소비한 앞 행을 빈 띠로 다시 연다. 남은 내용과 병합 공간은
+        // 각각 원본 유닛 컷·걸침 칸 원장이 이어받는다.
+        let block_cut_owns_source_frame =
+            split_block_start.is_some() && stored_complete_extent.is_some();
         let next_start_row_height_override = source_opening_row_frame
             .as_ref().map(|(_, _, remaining)| *remaining)
             .or(empty_opening_next_height)
@@ -2451,7 +2457,7 @@ impl TypesetEngine {
             .filter(|_| nested_opening_extent.is_none() && !layout_engine.stored_heading_before_inline_frame_cut(
                 table, end_row.saturating_sub(1),
                 if end_row - 1 == cursor_row { start_cut } else { &[] }, &next_cut, styles,
-            ) && !closes_original_body_frame && !complete_source_row_frame && !first_fragment_blank_band && !source_frame_trailing_trim_applied && stored_row_frame.is_none()
+            ) && !closes_original_body_frame && !complete_source_row_frame && !first_fragment_blank_band && !block_cut_owns_source_frame && !source_frame_trailing_trim_applied && stored_row_frame.is_none()
                 && layout_engine.reflow_row_physical_minimum(table, end_row.saturating_sub(1), mt.row_heights[end_row.saturating_sub(1)], Some(&next_cut), styles).is_none()
                 && (!layout_engine.row_uses_reflow_physical_frame(table, end_row.saturating_sub(1))
                     || crossing_span_owns_tail))

@@ -7393,25 +7393,23 @@ impl LayoutEngine {
                     )
                 })
             });
-        let complete_block_opening_height = (start_row == 0
+        let block_opening_height = (start_row == 0
             && start_cut.is_empty()
             && is_block_split
             && end_row_height_override.is_some()
             && resolved_table_top.is_some())
         .then(|| {
             paragraphs.get(para_index).and_then(|host| {
-                self.stored_complete_block_opening_frame_height(
-                    table, host, end_row, end_cut, styles,
-                )
+                self.stored_block_opening_frame_height(table, host, end_row, end_cut, styles)
             })
         })
         .flatten();
-        // 선택한 완전한 블록 행은 선언된 첫 상자도 소유한다.
+        // 완결 행 또는 저장 쪽 재시작에서 끝난 블록 컷은 선언된 첫 상자도 소유한다.
         // 예약과 같은 원본 프레임 소유자를 소비한다. 사용하지 않은 띠는 정렬 공간이며,
         // 그린 뒤 접어야 할 끝 줄간격이 아니다.
         let align_saved_opening_frame = !is_continuation
             && enclosing_cell_ctx.is_none()
-            && complete_block_opening_height
+            && block_opening_height
                 .or(saved_opening_alignment_height.filter(|_| !is_block_split))
                 .is_some_and(|frame_height| (partial_table_height - frame_height).abs() <= 0.5);
 

@@ -30,7 +30,9 @@ impl LayoutEngine {
             .then_some(row_end)
     }
 
-    pub(crate) fn stored_complete_block_opening_frame_height(
+    /// 원본 첫 상자는 완결 행 경계 또는 실제 저장 쪽 재시작에서 끝난다.
+    /// 뒤쪽 유닛이 남아 있어도 인증한 컷이 소유하는 물리 상자는 동일하다.
+    pub(crate) fn stored_block_opening_frame_height(
         &self,
         table: &Table,
         host: &Paragraph,
@@ -47,7 +49,6 @@ impl LayoutEngine {
                 .render_normalization
                 .borrow()
                 .table_text_reflowed(table)
-            || !self.stored_row_boxes_exceed_first_frame(table)
             || table.common.height == 0
             || table.common.height > i32::MAX as u32
         {
@@ -55,8 +56,17 @@ impl LayoutEngine {
         }
         let block =
             super::super::table_partial::rowspan_block_range(table, row_end.checked_sub(1)?);
-        self.row_block_cut_owns_complete_prefix(table, block, row_end, cut, styles)
-            .then(|| crate::renderer::hwpunit_to_px(table.common.height as i32, self.dpi))
+        ((self.stored_row_boxes_exceed_first_frame(table)
+            && self.row_block_cut_owns_complete_prefix(table, block, row_end, cut, styles))
+            || self.row_block_cut_closes_original_text_frame(
+                table,
+                block,
+                row_end,
+                &[],
+                cut,
+                styles,
+            ))
+        .then(|| crate::renderer::hwpunit_to_px(table.common.height as i32, self.dpi))
     }
 
     pub(crate) fn row_block_cut_owns_complete_prefix(
