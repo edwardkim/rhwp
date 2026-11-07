@@ -1,0 +1,35 @@
+{
+  "key": "trailing-space-2020",
+  "backend": "native",
+  "state": "measured-not-final-review",
+  "prs": [
+    8581
+  ],
+  "input": "samples/issue8574/tac_trailing_space_nols.hwp",
+  "input_sha256": "e0b659801985d33949153c102e28c61d475487f55ff97c7f8b69b507b9d7a304",
+  "pdf": "pdf/issue8574/tac_trailing_space_nols-2020.pdf",
+  "pdf_sha256": "8a93de35902041a0215ebbb828821bc0c51f25b42a59d0d13259883a3a6258c5",
+  "pdf_pages": 1,
+  "compat": "2022",
+  "font_environment": null,
+  "linked_images": [],
+  "minimum": 100.0,
+  "below90": 0,
+  "full_tsv": "native/trailing-space-2020/full.tsv",
+  "full_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+  "measurement_log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/final-r28-native-primary-remaining/trailing-space-2020/run.log",
+  "producer": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-batch-corrections-r28",
+    "sha256": "3addcb1c0f4f15d1702cf9d2686a1946d5931f14e69eaa7d24131500fd399190"
+  },
+  "panels": [
+    {
+      "page": 1,
+      "raw": "100.00",
+      "actual_png_sha256": "e41ab4d60f130fba4dcb595cda72bf82f5d753d273e17eab831adac9568cccc1",
+      "pdf_png_sha256": "137b29111bacfb270aa02ea5030eddd3fda3e1ee397309deef5568d408c06295",
+      "review": "native/trailing-space-2020/review-001.png",
+      "overlay": "native/trailing-space-2020/overlay-001.png"
+    }
+  ]
+}

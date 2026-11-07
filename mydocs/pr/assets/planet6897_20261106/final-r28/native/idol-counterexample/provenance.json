@@ -1,0 +1,35 @@
+{
+  "key": "idol-counterexample",
+  "backend": "native",
+  "state": "measured-not-final-review",
+  "prs": [
+    8604
+  ],
+  "input": "samples/issue8596/idol_goods_trimmed.hwpx",
+  "input_sha256": "729d63c3bccf407b369ec3f63cdc703ad22c46e7eede7bacdb51b204c2344661",
+  "pdf": "pdf/issue8596_idol_goods_trimmed-2020.pdf",
+  "pdf_sha256": "145916d885426ead33bc5fc86c0e325bb294e275175aa5f42bdddeaa35717892",
+  "pdf_pages": 2,
+  "compat": "2022",
+  "font_environment": null,
+  "linked_images": [],
+  "minimum": 99.7,
+  "below90": 0,
+  "full_tsv": "native/idol-counterexample/full.tsv",
+  "full_tsv_sha256": "1141c60ddf32f484cf67abce2fd9363b7dfa452215955c7a713d5b122798cd86",
+  "measurement_log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/final-r28-native-primary-remaining/idol-counterexample/run.log",
+  "producer": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-batch-corrections-r28",
+    "sha256": "3addcb1c0f4f15d1702cf9d2686a1946d5931f14e69eaa7d24131500fd399190"
+  },
+  "panels": [
+    {
+      "page": 1,
+      "raw": "99.70",
+      "actual_png_sha256": "105092e2c7a5d041cd37b0728b2fccc91c82b262d27c2ac3c76794cad7dd18e9",
+      "pdf_png_sha256": "5845c962b0c9d8d9e5d611bbf3607d012a044c459b86d10accc929705638ecb1",
+      "review": "native/idol-counterexample/review-001.png",
+      "overlay": "native/idol-counterexample/overlay-001.png"
+    }
+  ]
+}

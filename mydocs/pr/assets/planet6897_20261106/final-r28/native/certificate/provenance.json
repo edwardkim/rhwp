@@ -1,0 +1,43 @@
+{
+  "key": "certificate",
+  "backend": "native",
+  "state": "measured-not-final-review",
+  "prs": [
+    8604
+  ],
+  "input": "samples/issue8596/certificate_table.hwpx",
+  "input_sha256": "3f89da6026e526c2b76d4a543f02376ae9e983b6d19cb006aae0a7f90a55363c",
+  "pdf": "pdf/issue8596_certificate_table-2020.pdf",
+  "pdf_sha256": "7de4159b20d62ee644bc9f4880b1332bb47f889f9f0fe6603010e8ff32dac6fe",
+  "pdf_pages": 9,
+  "compat": "2022",
+  "font_environment": null,
+  "linked_images": [],
+  "minimum": 99.93,
+  "below90": 0,
+  "full_tsv": "native/certificate/full.tsv",
+  "full_tsv_sha256": "48e320c62f426a03f413035154c8f2c7dd7ae1e2ec28b8869c889fdf5c369b36",
+  "measurement_log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/final-r28-native-primary-remaining/certificate/run.log",
+  "producer": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-batch-corrections-r28",
+    "sha256": "3addcb1c0f4f15d1702cf9d2686a1946d5931f14e69eaa7d24131500fd399190"
+  },
+  "panels": [
+    {
+      "page": 2,
+      "raw": "100.00",
+      "actual_png_sha256": "d9a050e06b3821e473c9502ad3cc943abcd86e2874c9f864b3a67d6536a61d38",
+      "pdf_png_sha256": "3b77ba8c634607fc53d439724acaf73b0aad2daaaef1580f51b1078e3a02bc9a",
+      "review": "native/certificate/review-002.png",
+      "overlay": "native/certificate/overlay-002.png"
+    },
+    {
+      "page": 3,
+      "raw": "100.00",
+      "actual_png_sha256": "5a0ca7e17ea7008f35667e54ff6aab7340511c4560d07207e5ec852dd3d89e41",
+      "pdf_png_sha256": "52c8661f9402bd5534cb41fdc5bb9a99d3845911f9b02b2f0bd0a1baaaa93bb9",
+      "review": "native/certificate/review-003.png",
+      "overlay": "native/certificate/overlay-003.png"
+    }
+  ]
+}
