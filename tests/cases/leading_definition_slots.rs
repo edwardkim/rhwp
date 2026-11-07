@@ -1,10 +1,10 @@
 //! 관계형·고정형 — 선행 정의 삽입의 슬롯 소유와 HWP 저장 재열기의 본문 보존을 검사한다.
-//! 주석 갱신: 2026-11-07T09:52:31+09:00; 직전 파일 변경: 2026-11-07T03:59:54+09:00
-//! (`effcb0d60241d41601fa3cc471c6e46050a60676`).
+//! 주석 갱신: 2026-11-07T10:55:27+09:00; 직전 파일 변경: 2026-11-07T09:52:50+09:00
+//! (`4e5a8d1565543daa999c776668d491fcc0beade5`).
 //! 합성 입력 세 검사는 제어 스트림의 슬롯·필드 소유·저장 읽기 전용 계약을 검사하므로 시각 측정은 해당하지 않는다.
 //! 실물 입력: `mydocs/pr/assets/leading-definition-slots/input/report-implicit-column.hwpx`.
 //! 독립 기준: `pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf` (Mac 한컴 Print, 1쪽).
-//! 2026-11-07 협업자 Linux 측정: raw 실루엣(2px 이웃, 96dpi, pdftoppm), 원본·HWP 저장 재열기
+//! 2026-11-07 협업자 측정: raw 실루엣(2px 이웃, 96dpi, pypdfium2), 원본·HWP 저장 재열기
 //! 각각 Native/fresh WASM 전 1쪽 100.00% / 100.00%; 양쪽 전쪽 최저도 각각 100.00%다.
 //! 근거: `mydocs/pr/assets/pr_8226_integration_20261107/repro-visual.tsv`,
 //! `mydocs/pr/assets/pr_8226_integration_20261107/repro-provenance.json`, `mydocs/pr/archives/pr_8226_review.md`.
