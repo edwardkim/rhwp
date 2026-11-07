@@ -242,6 +242,7 @@
         "assets/fonts/LatinModernMath-VariableOutline-subset.otf",
         "assets/fonts/MANIFEST-RHWP-LMM-VariableOutline.txt",
         "assets/fonts/licenses/**",
+        "assets/font-rules/font_rule_registry_v2.json",
         "data/font-metrics/nimbus-roman/**",
         "mydocs/manual/agent_knowledge_map.md",
         "mydocs/manual/agent_troubleshooting_guide.md",
