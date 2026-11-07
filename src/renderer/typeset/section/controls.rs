@@ -206,7 +206,9 @@ impl TypesetEngine {
                                 });
                                 continue;
                             }
-                            if let Some(placement) =
+                            // [#8732] 다음 쪽 저장 재시작 문단은 그림과 같은 쪽에서 시작한다.
+                            // 빈 문단의 되감김도 이 등식이 쪽 소유를 증명하므로 명시한다.
+                            if let Some((placement, following_body_para_index)) =
                                 crate::renderer::float_placement::stored_picture_next_page_placement(
                                     para,
                                     &paragraphs[para_idx + 1..],
@@ -215,11 +217,15 @@ impl TypesetEngine {
                                     st.available_height(),
                                     self.dpi,
                                 )
+                                .map(|(placement, reset)| (placement, Some(para_idx + 1 + reset)))
                                 .or_else(|| crate::renderer::float_placement::stored_background_picture_next_page_placement(
                                     para, &paragraphs[para_idx + 1..],
                                     st.vpos_page_base.unwrap_or(0), picture_host_origin.2,
-                                    st.available_height(), self.dpi))
+                                    st.available_height(), self.dpi).map(|placement| (placement, None)))
                             {
+                                if let Some(index) = following_body_para_index {
+                                    st.own_body_on_next_page(index);
+                                }
                                 st.defer_stored_frame(
                                     crate::renderer::typeset::DeferredStoredFrameControl {
                                         following_body_para_index: None,
