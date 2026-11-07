@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'vite';
+import { fileURLToPath } from 'node:url';
 import type { DocumentPosition } from '../src/core/types.ts';
 
 // 제품 CursorState/CommandHistory/DeleteSelectionCommand를 실행한다.
@@ -13,7 +14,7 @@ const entry = (cellParaIndex = 0) => ({ controlIndex: 2, cellIndex: 1, cellParaI
 
 await test('#8102 셀 선택과 삭제의 실제 제품 경로', async (t) => {
   const vite = await createServer({
-    root: new URL('..', import.meta.url).pathname, appType: 'custom',
+    root: fileURLToPath(new URL('..', import.meta.url)), appType: 'custom',
     logLevel: 'silent', server: { middlewareMode: true },
   });
   try {

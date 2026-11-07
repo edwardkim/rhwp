@@ -1,0 +1,2 @@
+# Preserve original TSV evidence bytes; CRLF is source data, not trailing whitespace.
+**/*-silhouette.tsv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

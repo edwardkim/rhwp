@@ -1,0 +1,95 @@
+{
+  "scope": "Seven confirmed source/PDF pairs; manually inspected review PNGs; 96 DPI; no input scaling or masking",
+  "limitations": [
+    "Print 100% axis scales not observed",
+    "Xpdf pdftotext 4.00 does not support -bbox-layout; marker extraction skipped",
+    "Silhouette alone misses internal hatch differences; Native results are recorded separately"
+  ],
+  "results": [
+    {
+      "key": "cell-cleared-zero-hwp",
+      "raw_silhouette_percent": 100.0,
+      "pixel_match_percent": 99.74575,
+      "numeric_gate": "passed",
+      "manual_review": "solid_fill_and_position_match_with_edge_raster_differences"
+    },
+    {
+      "key": "cell-new-solid-hwp",
+      "raw_silhouette_percent": 100.0,
+      "pixel_match_percent": 99.74575,
+      "numeric_gate": "passed",
+      "manual_review": "solid_fill_and_position_match_with_edge_raster_differences"
+    },
+    {
+      "key": "cell-new-solid-hwpx",
+      "raw_silhouette_percent": 100.0,
+      "pixel_match_percent": 99.74575,
+      "numeric_gate": "passed",
+      "manual_review": "solid_fill_and_position_match_with_edge_raster_differences"
+    },
+    {
+      "key": "imported-raw-zero-hwp",
+      "raw_silhouette_percent": 100.0,
+      "pixel_match_percent": 99.62082,
+      "numeric_gate": "passed",
+      "manual_review": "hatch_mismatch",
+      "diagnostic_only_dark_pixel_rows_in_cell_interior": {
+        "wasm": {
+          "137": 0,
+          "138": 0,
+          "139": 0,
+          "140": 0,
+          "141": 0,
+          "142": 0,
+          "143": 0,
+          "144": 0,
+          "145": 0,
+          "146": 0,
+          "147": 0,
+          "148": 0,
+          "149": 0,
+          "150": 0,
+          "151": 0
+        },
+        "hancom_pdf": {
+          "137": 0,
+          "138": 554,
+          "139": 0,
+          "140": 0,
+          "141": 0,
+          "142": 0,
+          "143": 0,
+          "144": 0,
+          "145": 0,
+          "146": 554,
+          "147": 0,
+          "148": 0,
+          "149": 0,
+          "150": 0,
+          "151": 0
+        }
+      }
+    },
+    {
+      "key": "table-cleared-zero-hwp",
+      "raw_silhouette_percent": 100.0,
+      "pixel_match_percent": 99.74553,
+      "numeric_gate": "passed",
+      "manual_review": "solid_fill_and_position_match_with_edge_raster_differences"
+    },
+    {
+      "key": "table-new-solid-hwpx",
+      "raw_silhouette_percent": 100.0,
+      "pixel_match_percent": 99.74564,
+      "numeric_gate": "passed",
+      "manual_review": "solid_fill_and_position_match_with_edge_raster_differences"
+    },
+    {
+      "key": "table-new-solid-hwp",
+      "raw_silhouette_percent": 100.0,
+      "pixel_match_percent": 99.74564,
+      "numeric_gate": "passed",
+      "manual_review": "solid_fill_and_position_match_with_edge_raster_differences"
+    }
+  ]
+}

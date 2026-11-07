@@ -1,0 +1,186 @@
+{
+  "issue": 8733,
+  "codeHead": "e551fcc76e0794790e25a565f2509a4891eac6cb",
+  "testedHead": "0352c9deee13130f374cfc8015384512ecc6256c",
+  "product": "Hancom Office 2020",
+  "version": "11.0.0.9166",
+  "producer": "Hancom PDF 1.3.0.550",
+  "os": "Windows",
+  "outputRoute": "Print PDF",
+  "explicit100PercentScale": "confirmed-by-print-operator",
+  "pageGeometryPoints": [
+    595,
+    841
+  ],
+  "backgroundRgb": [
+    170,
+    187,
+    204
+  ],
+  "scope": "Independent Print evidence for the stated fill/storage scope; operator confirmed print settings. Existing raw-zero renderer mismatch remains.",
+  "files": [
+    {
+      "input": "mydocs/pr/assets/issue_8733/cell-new-solid.hwp",
+      "inputSha256": "6974b10e5bcc8eb826f14868c7f0f16825c80399d704cbbf431394b0ad2cd689",
+      "inputBytes": 13312,
+      "inputLastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.2129"
+      },
+      "inputPageCount": 1,
+      "inputPrintMethod": null,
+      "inputPrintMethodImpliesNup": false,
+      "pdf": "pdf/issue_8733/observed_prints/cell-new-solid-hwp-2020.pdf",
+      "pdfSha256": "378ed748a0b21040d8768ead59ab5d0ee31884eed67ec99501dc1a467be343b5",
+      "pdfBytes": 6012,
+      "pdfPages": 1,
+      "printTimestampUtc": "2026-11-07T07:13:56.6272008Z",
+      "provenance": "tool-observed Print",
+      "observedHatch": false
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8733/cell-new-solid.hwpx",
+      "inputSha256": "972f0ccb7cf56c574c1b26604f5b4cc152e41d2fb15039953e9ac0e86f6ed923",
+      "inputBytes": 7802,
+      "inputLastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.3524"
+      },
+      "inputPageCount": 1,
+      "inputPrintMethod": null,
+      "inputPrintMethodImpliesNup": false,
+      "pdf": "pdf/issue_8733/observed_prints/cell-new-solid-hwpx-2020.pdf",
+      "pdfSha256": "0e423ebe45b6e40698ef95a19fcbb9ed1db658ae149b877f5b1bd9eed67d9c22",
+      "pdfBytes": 6012,
+      "pdfPages": 1,
+      "printTimestampUtc": "2026-11-07T07:22:22.6426748Z",
+      "provenance": "user-confirmed Print and HWPX source",
+      "observedHatch": false
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8733/table-new-solid.hwpx",
+      "inputSha256": "5fd43b84bb239b16edc5e7f8146942100c28b537f65900495ea7fcbfca26fa21",
+      "inputBytes": 7810,
+      "inputLastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.3524"
+      },
+      "inputPageCount": 1,
+      "inputPrintMethod": null,
+      "inputPrintMethodImpliesNup": false,
+      "pdf": "pdf/issue_8733/observed_prints/table-new-solid-hwpx-2020.pdf",
+      "pdfSha256": "fc8ccda77ffeb8845931d8bb6f846b2a6b385882f16f96fa0316a7f14d63efc3",
+      "pdfBytes": 6015,
+      "pdfPages": 1,
+      "printTimestampUtc": "2026-11-07T07:23:04.5767391Z",
+      "provenance": "user-confirmed Print and HWPX source",
+      "observedHatch": false
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8733/imported-raw-zero.hwp",
+      "inputSha256": "d1bba89e9274ec51ded465c55491bfe977e2d461aefacf01420984b91a67c88e",
+      "inputBytes": 13312,
+      "inputLastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.2129"
+      },
+      "inputPageCount": 1,
+      "inputPrintMethod": null,
+      "inputPrintMethodImpliesNup": false,
+      "pdf": "pdf/issue_8733/observed_prints/imported-raw-zero-hwp-2020.pdf",
+      "pdfSha256": "5f2ea1246522b1fed1e9ececcf76c8c433e19d55db917396c9baa5a83a60c893",
+      "pdfBytes": 6392,
+      "pdfPages": 1,
+      "printTimestampUtc": "2026-11-07T07:23:29.0025672Z",
+      "provenance": "user Print workflow and unique filename",
+      "observedHatch": true
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8733/cell-cleared-zero.hwp",
+      "inputSha256": "7014e6beffb57daa9c403bc6c8c4600612fd32940f6efc37d41dd85c445c8766",
+      "inputBytes": 13312,
+      "inputLastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.2129"
+      },
+      "inputPageCount": 1,
+      "inputPrintMethod": null,
+      "inputPrintMethodImpliesNup": false,
+      "pdf": "pdf/issue_8733/observed_prints/cell-cleared-zero-hwp-2020.pdf",
+      "pdfSha256": "7480a9aa785e2f41ba952ec1d75e917a0f325d6fb001dc58178442c8dea0f9ec",
+      "pdfBytes": 6421,
+      "pdfPages": 1,
+      "printTimestampUtc": "2026-11-07T07:23:47.3310564Z",
+      "provenance": "user Print workflow and unique filename",
+      "observedHatch": false
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8733/table-cleared-zero.hwp",
+      "inputSha256": "2fbd98b940dd0a40f58c5beb16438b762d1948b48fa1b4b68d76d05f387aecc8",
+      "inputBytes": 13312,
+      "inputLastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.2129"
+      },
+      "inputPageCount": 1,
+      "inputPrintMethod": null,
+      "inputPrintMethodImpliesNup": false,
+      "pdf": "pdf/issue_8733/observed_prints/table-cleared-zero-hwp-2020.pdf",
+      "pdfSha256": "e75164fa9c257027ffb91dd358d94ea4fa79cef385df0af6ca4887bcbd811c76",
+      "pdfBytes": 6015,
+      "pdfPages": 1,
+      "printTimestampUtc": "2026-11-07T07:24:07.9006764Z",
+      "provenance": "user Print workflow and unique filename",
+      "observedHatch": false
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8733/table-new-solid.hwp",
+      "inputSha256": "44a1b433fc3386a7b1c19534c09baae52087b1023dd24e0992cf373e82ccaf9e",
+      "inputBytes": 13312,
+      "inputLastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.2129"
+      },
+      "inputPageCount": 1,
+      "inputPrintMethod": null,
+      "inputPrintMethodImpliesNup": false,
+      "pdf": "pdf/issue_8733/observed_prints/table-new-solid-hwp-2020.pdf",
+      "pdfSha256": "0e62872f561e16c0c040dd499dea427a204bdb2d985dcb350c7906d1bcb06ff6",
+      "pdfBytes": 6015,
+      "pdfPages": 1,
+      "printTimestampUtc": "2026-11-07T07:34:16Z",
+      "provenance": "Tool-observed table HWP open and Print dialog, followed by user-completed Print",
+      "observedHatch": false
+    }
+  ],
+  "priorTableHwp": {
+    "input": "mydocs/pr/assets/issue_8733/table-new-solid.hwp",
+    "inputSha256": "44a1b433fc3386a7b1c19534c09baae52087b1023dd24e0992cf373e82ccaf9e",
+    "pdfSha256": "c7c651db16912d9a1753b285bd884f2277bbc799854bab71352be324a6ab9305",
+    "pdfBytes": 6015,
+    "pdfPages": 1,
+    "currentPdfBytesAvailable": false,
+    "reason": "Initial PDF overwritten during user printing; original raster retained. A later verified reprint is included separately in files.",
+    "retainedRaster": "mydocs/pr/assets/issue_8733/hancom-table-new-solid-hwp-120dpi.png",
+    "retainedRasterSha256": "e23df697cae1ae246e59e93a9c0cc40432f425f264f5fa126a882cc6530b33f9"
+  },
+  "printSettingsConfirmation": {
+    "dateUtc": "2026-11-07",
+    "evidence": "Explicit print-operator attestation in the user conversation",
+    "scope": "All seven files in files, including the preserved table HWP reprint",
+    "horizontalPercent": 100,
+    "verticalPercent": 100,
+    "paper": "original paper",
+    "pageRange": "all pages",
+    "pagesPerSheet": 1,
+    "directUiObservation": false,
+    "derivedFromPdfMetadata": false
+  }
+}
