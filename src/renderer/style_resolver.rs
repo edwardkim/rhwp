@@ -259,7 +259,12 @@ pub(crate) fn resolve_styles_with_environment(
                     }
                     // 명시적 프로그램 선택과 독립적으로 검증한 글리프 표가 모두 있어야
                     // TrueType 폭을 사용한다. 선언만으로 임의 face의 표를 신뢰하지 않는다.
-                    let target = primary_font_name(&style.font_families[lang]);
+                    // 실제 face 조회 이름과 환경의 논리 family를 구분한다. 프로그램
+                    // 메타데이터는 family에 묶고 paint는 선택한 face를 먼저 조회한다.
+                    let target = decision
+                        .normalized_face
+                        .as_deref()
+                        .unwrap_or_else(|| primary_font_name(&style.font_families[lang]));
                     let original = lookup_font_name_decision(&lookup, lang, shape.font_ids[lang]);
                     let preserve_source_metrics = environment.is_some_and(|env| {
                         original.requested_face.as_deref().map_or_else(
@@ -1394,6 +1399,17 @@ pub(crate) fn lookup_font_name_in_environment(
             if decision.normalized_face.as_deref() != Some(target) {
                 decision.normalized_face = Some(target.to_string());
                 decision.css_family_chain = vec![target.to_string()];
+            }
+            // 공급자가 선택한 face 이름을 family로 합치면 같은 계열의 다른
+            // 굵기·너비가 선택될 수 있다. 원본 주소의 실제 조회 이름을 보존하고,
+            // family와 글리프 fallback은 뒤에서 기존 계약대로 소비한다.
+            if let Some(query) = decision.requested_face.as_deref().and_then(|source| {
+                environment.selected_program_query_for(source, lang_index, font_id)
+            }) {
+                if query != target {
+                    decision.css_family_chain.retain(|face| face != query);
+                    decision.css_family_chain.insert(0, query.to_string());
+                }
             }
             let canonical_rule = decision.requested_face.as_deref().and_then(|source| {
                 environment.canonical_selection_rule_for(source, lang_index, font_id)

@@ -1,6 +1,6 @@
 //! 관계형: 사용자 선택 원본의 자연 전진과 다른 원본의 저장 메트릭 소유를 구분한다.
 //! Native/fresh WASM 일치율: 비해당. 공개 API로 생성한 합성 문서의 프로그램 선택 계약이다.
-//! 주석 갱신: 2026-11-07 20:36 KST. 사설 글꼴 설치·실물 px 좌표에 의존하지 않는다.
+//! 주석 갱신: 2026-11-07 21:19 KST. 사설 글꼴 설치·실물 px 좌표에 의존하지 않는다.
 use rhwp::{
     model::style::Font,
     renderer::{
@@ -104,4 +104,67 @@ fn source_metric_overrides_reject_unmapped_and_duplicate_sources() {
         value["replaceSourceMetricsFor"] = invalid;
         assert!(FontEnvironment::from_json(&value.to_string()).is_err());
     }
+}
+
+fn selected_program_core() -> DocumentCore {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "프로그램 선택").unwrap();
+    let mut document = core.document().clone();
+    for fonts in &mut document.doc_info.font_faces {
+        *fonts = vec![Font {
+            name: "선택 원본".into(),
+            alt_type: 1,
+            ..Font::default()
+        }];
+    }
+    document.doc_info.char_shapes[0].font_ids = [0; 7];
+    core.set_document(document);
+    core
+}
+
+#[test]
+fn supplied_face_query_precedes_shared_family_without_changing_source() {
+    let mut core = selected_program_core();
+    let saved = core.export_hwp_native().unwrap();
+    let selected = core
+        .build_font_environment_from_available_programs(
+            &json!([{"query":"선택 원본","family":"공유 계열", "programId":"specific-bold-face", "trueType":true}]).to_string(),
+        )
+        .unwrap();
+    core.set_font_environment(Some(FontEnvironment::from_json(&selected).unwrap()))
+        .unwrap();
+    let tree = core.build_page_render_tree(0).unwrap();
+    let run = find(&tree.root, "프로그램 선택").unwrap();
+    assert_eq!(
+        run.style.font_family.split(',').next(),
+        Some("선택 원본"),
+        "공유 family의 기본 굵기로 바꾸지 않고 공급한 face 조회 이름을 먼저 출력한다"
+    );
+    assert!(run
+        .style
+        .font_family
+        .split(',')
+        .any(|name| name == "공유 계열"));
+    assert_eq!(core.export_hwp_native().unwrap(), saved);
+}
+
+#[test]
+fn slot_selected_face_query_precedes_shared_family() {
+    let mut core = selected_program_core();
+    let environment = json!({"id":"slot-program", "substitutions":{}, "preserveSourceMetrics":true,
+        "trueTypeFaces":["공유 계열"],"documentSubstitutions":[{
+            "source":"선택 원본","languageSlot":0,"fontId":0,"target":"공유 계열",
+            "programId":"selected-slot-program","query":"슬롯의 실제 face"}]});
+    core.set_font_environment(Some(
+        FontEnvironment::from_json(&environment.to_string()).unwrap(),
+    ))
+    .unwrap();
+    let tree = core.build_page_render_tree(0).unwrap();
+    let run = find(&tree.root, "프로그램 선택").unwrap();
+    assert_eq!(
+        run.style.font_family.split(',').next(),
+        Some("슬롯의 실제 face"),
+        "슬롯이 고른 프로그램 조회 이름을 family보다 먼저 보존한다"
+    );
 }
