@@ -3818,6 +3818,11 @@ pub struct LayoutEngine {
     /// 이 문단은 셀-상단(is_column_top)이고 셀-상대 인덱스>0 이지만, 한컴은 앞 간격
     /// (spacing_before)을 유지하므로 column-top 트림을 우회해 전량 적용한다.
     keep_continuation_column_top_spacing_before: std::cell::Cell<bool>,
+    /// [#7282] 이 쪽에서 둘 이상의 단에 걸친 비-TAC 자리차지 개체들의 저장 틀 높이(HU,
+    /// 높이 + 바깥 위·아래 여백). 한/글은 이 틀이 지나가는 모든 단의 줄을 틀 아래로 밀어
+    /// 저장한다. 앵커가 다른 단에 있어도 문단 안 줄 사이의 저장 vpos 점프가 이 높이와
+    /// 같으면 그 문단의 줄을 저장 vpos 로 놓는다.
+    page_spanning_float_frames_hu: std::cell::RefCell<Vec<i32>>,
     /// [#5601] 셀 저장-앵커 스냅이 `para_y = anchored − spacing_before` 로 준비한
     /// 문단에서만 set. 스냅 계약은 composed 가 spacing_before 를 재가산하는 것인데,
     /// Center/Bottom 셀의 column-top 문단은 suppress 플래그가 그 재가산까지 막아
@@ -4046,6 +4051,7 @@ impl LayoutEngine {
                 crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
             )),
             keep_continuation_column_top_spacing_before: std::cell::Cell::new(false),
+            page_spanning_float_frames_hu: std::cell::RefCell::new(Vec::new()),
             reapply_snap_anchored_spacing_before: std::cell::Cell::new(false),
             page_top_float_caption_spacing_para: std::cell::Cell::new(None),
             page_top_axis_restart_spacing: std::cell::Cell::new(None),
@@ -6804,6 +6810,9 @@ impl LayoutEngine {
         } else {
             Vec::new()
         };
+
+        *self.page_spanning_float_frames_hu.borrow_mut() =
+            self.collect_page_spanning_float_frames_hu(paragraphs, page_content, layout);
 
         for (col_content_idx, col_content) in page_content.column_contents.iter().enumerate() {
             let zone_layout = col_content.zone_layout.as_ref().unwrap_or(layout);

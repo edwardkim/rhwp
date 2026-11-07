@@ -6249,8 +6249,27 @@ impl LayoutEngine {
             }
         };
         let mut endnote_line_vpos_base = endnote_line_vpos_base;
+        // [#7282] 다른 단에 앵커한 여러 단 걸침 자리차지 틀이 이 문단의 줄을 틀 아래로
+        // 밀었는지는 저장 사다리가 말해 준다: 줄 사이 점프(다음 vpos − (vpos + 줄 높이 +
+        // 줄 간격))가 이 쪽 걸침 틀의 높이(바깥 여백 포함)와 정확히 같다. 이때만 자기
+        // 앵커 개체가 있는 문단과 같은 저장 vpos 배치를 쓴다.
+        let has_spanning_float_frame_jump = cell_ctx.is_none()
+            && !has_para_topbottom_float
+            && para.is_some_and(|p| {
+                let frames = self.page_spanning_float_frames_hu.borrow();
+                !frames.is_empty()
+                    && p.line_segs.get(start_line..end).is_some_and(|range| {
+                        range.windows(2).any(|w| {
+                            w[0].vertical_pos
+                                .checked_add(w[0].line_height)
+                                .and_then(|v| v.checked_add(w[0].line_spacing))
+                                .and_then(|flow_end| w[1].vertical_pos.checked_sub(flow_end))
+                                .is_some_and(|jump| frames.contains(&jump))
+                        })
+                    })
+            });
         let para_topbottom_line_vpos_base: Option<(i32, f64)> = {
-            if cell_ctx.is_none() && has_para_topbottom_float {
+            if cell_ctx.is_none() && (has_para_topbottom_float || has_spanning_float_frame_jump) {
                 para.and_then(|p| {
                     if p.stored_text_partition_dirty {
                         return None;

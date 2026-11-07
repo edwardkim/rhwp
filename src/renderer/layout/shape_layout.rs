@@ -5240,6 +5240,92 @@ impl LayoutEngine {
 
     /// 다단 레이아웃에서 body_area 전체에 걸치는 TopAndBottom 개체의 예약 높이 계산
     /// 모든 단의 items를 순회하여 body_area 너비와 동일하거나 큰 개체만 반환
+    /// [#7282] 쪽의 모든 단 항목에서, 가로 범위가 둘 이상의 단에 걸치는 비-TAC
+    /// 자리차지(TopAndBottom) 개체의 틀 높이(높이 + 바깥 위·아래 여백, HU)를 모은다.
+    /// 앵커 단을 가리지 않는다 — 한/글은 이 틀이 지나는 모든 단의 줄을 틀 아래로 밀어
+    /// LINE_SEG.vertical_pos 에 저장한다. 문단 배치는 줄 사이 저장 점프가 이 높이와
+    /// 같을 때만 그 저장 위치를 쓴다.
+    pub(crate) fn collect_page_spanning_float_frames_hu(
+        &self,
+        paragraphs: &[Paragraph],
+        page_content: &super::super::pagination::PageContent,
+        layout: &super::super::page_layout::PageLayoutInfo,
+    ) -> Vec<i32> {
+        let mut frames = Vec::new();
+        for col_content in &page_content.column_contents {
+            let zone_layout = col_content.zone_layout.as_ref().unwrap_or(layout);
+            if zone_layout.column_areas.len() < 2 {
+                continue;
+            }
+            let col_idx = col_content.column_index as usize;
+            let Some(col_area) = zone_layout.column_areas.get(col_idx) else {
+                continue;
+            };
+            for item in &col_content.items {
+                let (para_index, control_index) = match item {
+                    PageItem::Shape {
+                        para_index,
+                        control_index,
+                    }
+                    | PageItem::Table {
+                        para_index,
+                        control_index,
+                    } => (*para_index, *control_index),
+                    _ => continue,
+                };
+                let Some(ctrl) = paragraphs
+                    .get(para_index)
+                    .and_then(|p| p.controls.get(control_index))
+                else {
+                    continue;
+                };
+                let (common, margin_top, margin_bottom) = match ctrl {
+                    Control::Table(t) => (
+                        &t.common,
+                        i32::from(t.outer_margin_top),
+                        i32::from(t.outer_margin_bottom),
+                    ),
+                    Control::Picture(p) => (
+                        &p.common,
+                        i32::from(p.common.margin.top),
+                        i32::from(p.common.margin.bottom),
+                    ),
+                    Control::Shape(s) => (
+                        s.common(),
+                        i32::from(s.common().margin.top),
+                        i32::from(s.common().margin.bottom),
+                    ),
+                    _ => continue,
+                };
+                if common.treat_as_char || common.text_wrap != TextWrap::TopAndBottom {
+                    continue;
+                }
+                let width_px = hwpunit_to_px(common.width as i32, self.dpi);
+                let ctx = crate::renderer::float_placement::FloatPlacementContext::new(*col_area)
+                    .with_body_area(zone_layout.body_area)
+                    .with_paper_width(layout.page_width);
+                let (left, right) = crate::renderer::float_placement::horizontal_range(
+                    common, width_px, ctx, self.dpi,
+                );
+                let spanned = zone_layout
+                    .column_areas
+                    .iter()
+                    .filter(|area| right > area.x + 0.5 && left < area.x + area.width - 0.5)
+                    .count();
+                if spanned < 2 {
+                    continue;
+                }
+                let frame = (common.height as i32)
+                    .saturating_add(margin_top)
+                    .saturating_add(margin_bottom);
+                if frame > 0 && !frames.contains(&frame) {
+                    frames.push(frame);
+                }
+            }
+        }
+        frames
+    }
+
     pub(crate) fn calculate_body_wide_shape_reserved(
         &self,
         paragraphs: &[Paragraph],
