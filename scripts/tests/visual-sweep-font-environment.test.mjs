@@ -139,11 +139,21 @@ test('CFF와 collection을 개별 TrueType 프로그램으로 오인하지 않�
   assert.equal(hasOpenTypeCffSignature(bytes([0, 1, 0, 0])), false);
 });
 
-test('같은 글꼴과 스타일의 CFF OTF를 TTF보다 먼저 선택한다', () => {
-  const plan = {requests: [{primary: ['휴먼명조'], substitute: []}], embeddedFamilies: []};
-  const ttf = {families: ['휴먼명조'], weight: 400, style: 'normal', openTypeCff: false};
-  const otf = {families: ['휴먼명조'], weight: 400, style: 'normal', openTypeCff: true};
-  assert.deepEqual(selectSweepProgramFaces(plan, [ttf, otf]), [{query: '휴먼명조', face: otf}]);
+// 관계형: 같은 원본·style 안의 실제 컨테이너 순서이며 페이지 px에 의존하지 않는다.
+// 주석 갱신: 2026-11-07 20:25 KST.
+test('같은 원본과 스타일은 TTF → TTC 일치 face → OTF 순서로 선택한다', () => {
+  const plan = {requests: [{primary: ['Original'], substitute: []}], embeddedFamilies: []};
+  const ttf = {families: ['Original'], weight: 400, style: 'normal', openTypeCff: false};
+  const ttc = {...ttf, collectionFace: true};
+  const otf = {...ttf, openTypeCff: true};
+  for (const candidates of [[otf, ttc, ttf], [ttf, otf, ttc]]) {
+    assert.deepEqual(selectSweepProgramFaces(plan, candidates), [{query: 'Original', face: ttf}]);
+  }
+  assert.deepEqual(selectSweepProgramFaces(plan, [otf, ttc]), [{query: 'Original', face: ttc}]);
+  assert.deepEqual(selectSweepProgramFaces(plan, [otf]), [{query: 'Original', face: otf}]);
+  const boldTtf = {...ttf, weight: 700};
+  assert.deepEqual(selectSweepProgramFaces(plan, [boldTtf, otf]), [{query: 'Original', face: otf}],
+    '원래 요청한 normal/400 스타일을 다른 스타일의 TTF로 바꾸지 않는다');
 });
 
 function programFixture({badHash = false, loadError = false, responseOk = true} = {}) {

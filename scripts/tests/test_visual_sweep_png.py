@@ -598,6 +598,7 @@ class EmbeddedFontCatalogueTests(unittest.TestCase):
             collection = TTCollection(copied, lazy=True)
             try:
                 for record in catalogue['faces']:
+                    self.assertTrue(record['collectionFace'], '추출한 TTF도 TTC 출처의 조회 순서를 유지한다')
                     original = collection.fonts[record['faceIndex']]
                     with TTFont(record['path'], lazy=True) as actual:
                         self.assertEqual(set(actual.reader.keys()), set(original.reader.keys()))

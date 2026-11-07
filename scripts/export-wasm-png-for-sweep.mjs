@@ -161,6 +161,7 @@ async function main() {
     ['/rhwp_bg.wasm', ['application/wasm', readFileSync(join(pkg, 'rhwp_bg.wasm'))]],
     ['/source', ['application/octet-stream', sourceBytes]],
     ['/font-registration.mjs', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-registration.mjs'))]],
+    ['/visual-sweep-font-registration.mjs', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-registration.mjs'))]],
     ['/sweep-font-environment.js', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-environment.mjs'))]],
     ['/canvas-metric-session.js', ['application/javascript', studioModule('canvas-metric-session.ts')]],
     ['/supplemental-text-metrics.ts', ['application/javascript', studioModule('supplemental-text-metrics.ts')]],
@@ -335,7 +336,7 @@ async function main() {
         }
         // 같은 문서의 필요한 face를 한 번만 공급한다. 데이터는 SVG/base64로 복제하지 않는다.
         const fontInfo = await page.evaluate(async ({pages, fonts, scale}) => {
-          const {installCanvasFont, selectSweepPaintFontFaces, collectSweepPaintFontRequests} = await import('/font-registration.mjs');
+          const {installCanvasFont, selectSweepPaintFontFaces, collectSweepPaintFontRequests, orderSweepFontPrograms} = await import('/font-registration.mjs');
           const doc = globalThis.sweepDocument, canvas = document.getElementById('page');
           for (const page of pages) doc.renderPageToCanvasFilteredWithProfile(page - 1, canvas, scale, 'all', 'print');
           // 이전 devel의 요청에는 실제 글자가 없는 SVG text 그룹도 있다.
@@ -400,8 +401,7 @@ async function main() {
             if (!requested.has(family.toLowerCase()) || seenFamilies.has(key)) continue;
             seenFamilies.add(key);
             const group = familyFaces.get(key) ?? [];
-            const cff = group.filter(candidate => candidate.openTypeCff);
-            const ordered = cff.length ? [...cff, ...group.filter(candidate => !candidate.openTypeCff)] : group.slice(0, 1);
+            const ordered = orderSweepFontPrograms(group);
             // CSS는 나중에 등록한 face를 먼저 검색하므로 후보 순서의 역순으로 적재한다.
             for (const candidate of [...ordered].reverse()) jobs.push({family, key, record: candidate, ordered});
           }

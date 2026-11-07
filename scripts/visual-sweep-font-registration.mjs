@@ -1,5 +1,12 @@
 import {installIntrinsicCanvasFont, sourceProgramFamilies} from '../rhwp-studio/src/core/canvas-intrinsic-font.mjs';
 
+// 같은 family·style의 실제 프로그램만 TTF → TTC 일치 face → OTF 순서로 공급한다.
+// 컬렉션에서 추출한 TTF도 원래 컨테이너의 조회 순서를 보존한다.
+export function orderSweepFontPrograms(records) {
+  const rank = record => record.openTypeCff ? 2 : record.collectionFace ? 1 : 0;
+  return records.toSorted((left, right) => rank(left) - rank(right));
+}
+
 // 페이지별 실제 paint 요구를 우선한다. 빈 쪽에 문서 전체 글꼴을 다시 적재하지 않는다.
 export function collectSweepPaintFontRequests(owner, pages) {
   if (typeof owner?.getPagePaintFontRequests === 'function') {
@@ -81,10 +88,8 @@ export async function selectTextEffectFontFaces(owner, fonts, requests, loadByte
       for (const key of selectMetafileFontFaces(fonts, [{...request, families: [family]}])) {
         const group = fonts.filter(face => face.families.some(name =>
           `${name.toLowerCase()}|${face.weight}|${face.style}` === key));
-        // 실제 Canvas 공급과 같은 후보·순서만 확인한다. CFF가 없는 경우
-        // 공급하지 않는 두 번째 TTF를 glyph 공급자로 판정하면 안 된다.
-        const cff = group.filter(face => face.openTypeCff);
-        const records = cff.length ? [...cff, ...group.filter(face => !face.openTypeCff)] : group.slice(0, 1);
+        // 실제 Canvas 공급과 같은 원본 프로그램·순서로 문자 소속을 확인한다.
+        const records = orderSweepFontPrograms(group);
         for (const record of records) {
           const bytes = await loadBytes(record);
           if (!bytes) continue;
@@ -160,10 +165,9 @@ export async function prepareHftOtfFonts(owner, fonts, loadBytes) {
     for (const key of selectedFaces) {
       const matches = fonts.filter(record => record.families.some(name =>
         `${name.toLowerCase()}|${record.weight}|${record.style}` === key));
-      const cff = matches.filter(record => record.openTypeCff);
       const records = request.source_ttf
-        ? matches.filter(record => !record.openTypeCff).slice(0, 1)
-        : (cff.length ? cff : matches.slice(0, 1));
+        ? orderSweepFontPrograms(matches).filter(record => !record.openTypeCff)
+        : orderSweepFontPrograms(matches);
       for (const record of records) {
         if (seen.has(record.sha256)) continue;
         seen.add(record.sha256);
@@ -172,7 +176,8 @@ export async function prepareHftOtfFonts(owner, fonts, loadBytes) {
         if (bytes.byteLength < 4 || bytes.byteLength > 32 * 1024 * 1024
             || selectedBytes + bytes.byteLength > 64 * 1024 * 1024) continue;
         const signature = new DataView(bytes).getUint32(0);
-        if (request.source_ttf ? ![0x00010000, 0x74727565].includes(signature) : signature !== 0x4f54544f) continue;
+        if (request.source_ttf ? ![0x00010000, 0x74727565].includes(signature)
+          : ![0x00010000, 0x74727565, 0x4f54544f].includes(signature)) continue;
         selected.push(new Uint8Array(bytes));
         selectedBytes += bytes.byteLength;
         proofs.push({family: request.family, bold: request.bold, italic: request.italic, sourceTtf: Boolean(request.source_ttf),
@@ -244,11 +249,7 @@ export async function prepareNativePuaFonts(owner, fonts, loadBytes) {
       for (const key of selected) {
         const matches = fonts.filter(font => font.families.some(name =>
           `${name.toLowerCase()}|${font.weight}|${font.style}` === key));
-        const cff = matches.filter(record => record.openTypeCff);
-        const ttf = matches.filter(record => !record.openTypeCff);
-        const records = request.source_ttf
-          ? [...ttf, ...cff]
-          : cff.length ? [...cff, ...ttf] : matches.slice(0, 1);
+        const records = orderSweepFontPrograms(matches);
         const seen = new Set();
         for (const record of records) {
           if (seen.has(record.sha256)) continue;
