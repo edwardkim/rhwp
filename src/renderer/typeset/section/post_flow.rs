@@ -388,18 +388,11 @@ impl TypesetEngine {
         // Paginator engine.rs:356-372 동일 시멘틱.
         // 후속 paragraph 가 동일 cs/sw 를 가지면 흡수.
         if has_table {
-            let has_tac_block = para
-                .controls
-                .iter()
-                .any(|c| matches!(c, Control::Table(t) if t.common.treat_as_char));
-            let has_non_tac_table = !has_tac_block;
-            if has_non_tac_table {
+            {
                 let is_wrap_around = para.controls.iter().any(|c| {
-                    if let Control::Table(t) = c {
-                        matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square)
-                    } else {
-                        false
-                    }
+                    matches!(c, Control::Table(t)
+                        if !t.common.treat_as_char
+                            && matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square))
                 });
                 if is_wrap_around {
                     // [Task #1745] 텍스트 혼합 anchor(첫 LINE_SEG 가 전폭 텍스트 줄)면

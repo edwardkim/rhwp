@@ -1003,6 +1003,7 @@ pub struct ColumnContent {
     pub float_pushed_line_spacings:
         std::collections::HashMap<usize, super::float_placement::FloatPushedFirstLine>,
     /// [#7696] 쪽·종이 기준 자리차지 그림·도형의 밴드가 밀어 확정한 문단 시작(단 상대 px).
+    /// [#8753] 어울림 표 옆 차선에서 흡수 문단 뒤를 잇는 문단의 시작도 같은 계약이다.
     /// 측정(typeset)이 확정하고 배치(layout)가 그 문단의 시작으로 소비한다.
     pub page_band_flow_starts: std::collections::HashMap<usize, f64>,
     /// #6812: 텍스트와 TAC 표가 공유하는 확정 줄 결과(단 상대 좌표).

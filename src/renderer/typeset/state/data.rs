@@ -85,6 +85,9 @@ pub(in crate::renderer::typeset) struct StateView {
     /// Square 배제 밴드의 흐름 기준 상단. 옆 문단의 저장 좌표를 현재 흐름 좌표계로
     /// 옮겨 밴드 바닥을 확장할 때만 사용한다.
     pub(in crate::renderer::typeset) square_band_top: Option<f64>,
+    /// Square 배제 밴드 옆에 흡수한 저장 문단의 끝(흐름 좌표). 저장 줄 없는 다음 문단은
+    /// 이 펜에서 차선을 이어 흐른다.
+    pub(in crate::renderer::typeset) square_band_source_pen: Option<f64>,
     pub(in crate::renderer::typeset) current_footnote_height: f64,
     pub(in crate::renderer::typeset) footnote_placement: crate::model::footnote::FootnotePlacement,
     pub(in crate::renderer::typeset) footnote_frames:

@@ -622,6 +622,9 @@ impl TypesetState {
         bottom: f64,
     ) {
         self.data.square_band_bottom = self.data.square_band_bottom.max(bottom);
+        if self.data.square_band_top != Some(source_origin) {
+            self.data.square_band_source_pen = None;
+        }
         self.data.square_band_top = Some(source_origin);
     }
     pub(in crate::renderer::typeset) fn record_ladder_band_table(&mut self, key: (usize, usize)) {
