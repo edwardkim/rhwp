@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-18
+last_verified: 2026-11-07
 ---
 
 # 로컬 사전 검증
@@ -129,6 +129,26 @@ Linux Snap 경로와 상세 절차는 [디스크 공간 정리](../dev_environme
 find "${rhwp_review_source_dir:?기본 작업공간 경로를 먼저 고정하세요}/target" -mindepth 1 -maxdepth 1 -type d -exec du -sh {} \;
 pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
 ~~~
+
+### 편람 130쪽의 WMF 렌더링 차이
+
+여기서 130쪽은 TSV의 `page=130`, 즉 PDF의 130번째 쪽이며 지면에 인쇄된 쪽 번호는
+122다. 2026-11-07 완료한 전쪽 검증(96 DPI, 색상 경계 보정 전 2px 실루엣)의 실제 값은
+다음과 같다.
+
+| 원본 | Native raw | fresh WASM raw | 경계 보정 후 보조값 |
+| --- | ---: | ---: | ---: |
+| 편람 HWP | 99.96% | 99.96% | 양쪽 99.97% |
+| 편람 HWPX | 99.96% | 99.96% | 양쪽 99.97% |
+
+HWP/HWPX의 Native·fresh WASM 네 결과 모두 **나머지 382쪽은 raw 100.00%**다.
+편람 검증에서는 이 382쪽의 100.00%를 유지하고, 130쪽은 위의 raw 99.96%를 기준으로
+하락 여부를 확인한다.
+
+행정업무운영 편람의 이 쪽에는 알려진 WMF 렌더링 차이가 있다. 이 WMF 영역을 독립 한컴
+Print와 100% 일치시키는 보정을 이번 PR 검증의 완료 조건으로 요구하지 않으며, 100%를
+강제하는 회귀 기대값도 추가하지 않는다. 130쪽은 전쪽 TSV에 포함하고 실제 raw와
+review·overlay에서 확인한 WMF 차이를 그대로 기록한다.
 
 ### 리베이스로 반영한 PR의 기능 보존 검증
 

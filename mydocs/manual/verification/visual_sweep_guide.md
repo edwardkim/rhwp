@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-10-23
+last_verified: 2026-11-07
 ---
 
 # PDF/PNG visual sweep 가이드
@@ -137,6 +137,11 @@ RHWP 조판 개선으로 바꾸어 보고하지 않는다. 실루엣 임계값·
 다른 대상 실행에 옵션을 추가하거나 해당 옵션만 지정해 별도로 실행할 수 있다.
 383쪽 전체의 90% 및 #8389 페이지별 기준 하락 검사를 적용하며 미실행·실패·누락·쪽수
 불일치이면 PR 제출을 보류한다. 실행 head·명령·결과와 TSV를 검증 기록에 남긴다.
+편람 PDF 130쪽(TSV `page=130`, 인쇄 쪽 번호 122)의 알려진 WMF 렌더링 차이는 100%
+일치 대상으로 삼지 않는다. 2026-11-07 실제 raw는 HWP/HWPX의 Native·fresh WASM 모두
+**99.96%**이며 경계 보정 후 보조값은 99.97%다. **나머지 382쪽은 네 결과 모두 raw
+100.00%이며 이를 유지한다.** 130쪽은 raw 99.96% 대비 하락 여부를 확인하고 실제
+raw·review·overlay를 보존한다. [130쪽 검토 범위](../pr_review/local_validation.md#편람-130쪽의-wmf-렌더링-차이)를 따른다.
 실행이 중단되면 같은 명령에 `--resume`을 추가해 이어간다. Native와 fresh WASM은
 완료한 쪽 묶음의 입력·실행 환경과 산출물 해시를 검사한 뒤 재사용하며, 완료되지 않은
 묶음만 다시 출력한다. `--png-pair`는 완료한 쪽의 PNG 해시와 계산 환경을 검사해
