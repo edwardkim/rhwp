@@ -198,7 +198,7 @@ fn delete_paragraph_boundary(
             }
         }
     }
-    paragraph.delete_text_at(start, end - start);
+    crate::document_core::queries::memo_query::delete_text_at_keeping_memos(paragraph, start, end - start);
 }
 
 /// flat·중첩 경로 모두 같은 문단 범위를 검증한 뒤 적용한다.
@@ -1181,12 +1181,22 @@ fn replace_paragraph_text(
             after_inline_control,
         );
     }
+    let replaced_memos = para.memos_within(char_offset, char_offset + delete_count);
     let deleted = if delete_count > 0 {
-        para.delete_text_at(char_offset, delete_count)
+        if text.is_empty() {
+            crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                para,
+                char_offset,
+                delete_count,
+            )
+        } else {
+            para.delete_text_at(char_offset, delete_count)
+        }
     } else {
         0
     };
-    para.insert_text_at_caret(char_offset, text, after_inline_control);
+    let inserted_at = para.insert_text_at_caret(char_offset, text, after_inline_control);
+    para.regrow_replaced_memos(&replaced_memos, inserted_at, text.chars().count());
     deleted
 }
 
@@ -1754,6 +1764,30 @@ impl DocumentCore {
         char_offset: usize,
         count: usize,
     ) -> Result<String, HwpError> {
+        self.delete_text_native_impl(section_idx, para_idx, char_offset, count, false)
+    }
+
+    /// Delete text for a replacement whose new text is not empty. A memo whose
+    /// whole anchor is replaced keeps its field; a following insert expands the
+    /// range over the replacement.
+    pub(crate) fn delete_text_native_preserving_memos(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        count: usize,
+    ) -> Result<String, HwpError> {
+        self.delete_text_native_impl(section_idx, para_idx, char_offset, count, true)
+    }
+
+    fn delete_text_native_impl(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        count: usize,
+        preserve_memos: bool,
+    ) -> Result<String, HwpError> {
         // 인덱스 범위 검증
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -1773,7 +1807,15 @@ impl DocumentCore {
 
         // 텍스트 삭제
         let apply_delete = |para: &mut Paragraph| {
-            para.delete_text_at(char_offset, count);
+            if preserve_memos {
+                para.delete_text_at(char_offset, count);
+            } else {
+                crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                    para,
+                    char_offset,
+                    count,
+                );
+            }
         };
         self.apply_body_text_edit(section_idx, para_idx, char_offset, &apply_delete)?;
 
@@ -1804,6 +1846,11 @@ impl DocumentCore {
         let normalized = normalize_text_newlines(text);
         let text = normalized.as_ref();
         self.validate_body_paragraph_index(section_idx, para_idx)?;
+        // An empty replacement is a deletion: a memo whose whole anchor text
+        // went away must go with it.
+        if text.is_empty() {
+            return self.delete_text_native_impl(section_idx, para_idx, char_offset, length, false);
+        }
         let new_chars_count = text.chars().count();
         let apply_replace = |para: &mut Paragraph| {
             para.replace_text_inheriting_char_shapes(char_offset, length, text);
@@ -2588,7 +2635,11 @@ impl DocumentCore {
             );
         let units_fp_before =
             crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(cell_para);
-        let deleted_count = cell_para.delete_text_at(char_offset, count);
+        let deleted_count = crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+            cell_para,
+            char_offset,
+            count,
+        );
 
         // 부모 컨트롤 dirty 마킹 (표 또는 글상자)
         self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
@@ -3777,8 +3828,7 @@ impl DocumentCore {
             return Ok(());
         }
         if selected.is_empty() {
-            self.document.sections[section_idx].paragraphs[para_idx]
-                .delete_text_at(start.0, end.0.saturating_sub(start.0));
+            crate::document_core::queries::memo_query::delete_text_at_keeping_memos(&mut self.document.sections[section_idx].paragraphs[para_idx], start.0, end.0.saturating_sub(start.0));
             return Ok(());
         }
         let reflowed = self.text_reflowed_table_control_indices_at(section_idx, para_idx);
@@ -6483,7 +6533,11 @@ impl DocumentCore {
         }
 
         let cell_para = self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?;
-        cell_para.delete_text_at(char_offset, count);
+        crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+            cell_para,
+            char_offset,
+            count,
+        );
 
         // [#2755] 깊이 ≥ 2 중첩 셀도 flat `delete_text_in_cell_native` 처럼 최내곽 셀 폭으로
         // 재래핑하고 vpos 를 재계산한다(깊이 1 은 위 위임 가드가 flat 경로로 처리).
