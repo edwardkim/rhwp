@@ -18046,6 +18046,24 @@ impl LayoutEngine {
                             )
                         })
                         .flatten();
+                    // 문단에 표가 하나뿐이고 그 표가 글 앞·뒤 개체일 때의 그리기 상자.
+                    let overlay_frame = match source_controls
+                        .iter()
+                        .filter_map(|control| match control {
+                            Control::Table(child) => Some(child.as_ref()),
+                            _ => None,
+                        })
+                        .collect::<Vec<_>>()
+                        .as_slice()
+                    {
+                        [child] => crate::renderer::float_placement::nested_overlay_outer_frame(
+                            child,
+                            0.0,
+                            self.calc_nested_table_height(child, styles),
+                            self.dpi,
+                        ),
+                        _ => None,
+                    };
                     let target_h = if let Some(frame) = stored_float_frame {
                         // 위에서 이미 계상한 호스트 줄과 float의 겹치는 예약을 뺀다.
                         // 이 원장과 paint가 동일한 앵커 줄 및 바깥 여백을 소비한다.
@@ -18055,6 +18073,10 @@ impl LayoutEngine {
                         // 표의 바깥 여백을 포함한 상자는 offset+nested_h에서 끝난다.
                         // 호스트 글줄 뒤에 표와 추정 간격을 다시 더하지 않는다.
                         hwpunit_to_px(offset, self.dpi) + nested_h - (unit_cum - before_host_units)
+                    } else if let Some(frame) = overlay_frame {
+                        // [#8715] 글 앞·뒤 중첩 표는 그리기와 같은 문단 원점 + 세로 오프셋에
+                        // 놓이고, 칸은 그 상자 끝까지 내용을 담는다. 이미 계상한 호스트 줄을 뺀다.
+                        (frame.end - (unit_cum - before_host_units)).max(0.0)
                     } else if has_internal_line_reset {
                         (nested_h + 4.0 - line_core_height).max(0.0)
                     } else {
@@ -23463,6 +23485,9 @@ impl LayoutEngine {
         {
             return Some(extra);
         }
+        if let Some(extra) = self.stored_child_first_fragment_frame_extra(table, cut, styles) {
+            return Some(extra);
+        }
         // A first object box can end at a rowspan's authenticated source
         // frame even though the span continues. Its blank closing band is
         // physical space, not another source line to consume.
@@ -23553,6 +23578,57 @@ impl LayoutEngine {
         let minimum = hwpunit_to_px(cell.height as i32, self.dpi);
         let content = self.row_cut_content_height(table, row, start, end, styles);
         (minimum > content).then_some(minimum)
+    }
+
+    /// [#8715] 쪽에서 나뉜 자식 표의 첫 조각은 저장 개체 높이(`sz.height`)를 물리 상자로
+    /// 갖는다. 한/글은 첫 조각 상자를 그 높이와 가용 공간 중 작은 값으로 그리며, 이어받는
+    /// 조각과 마지막 조각은 내용 높이로 그린다. 저장 높이가 컷의 물리 높이보다 큰 몫을
+    /// 돌려주고, 가용 공간 제한은 호출부가 적용한다.
+    fn stored_child_first_fragment_frame_extra(
+        &self,
+        table: &crate::model::table::Table,
+        cut: &NestedTableCut,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        let profile = self.profile.get();
+        if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            || profile.session_edited()
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+            || table.common.treat_as_char
+            || table.layout_page_break() != TablePageBreak::RowBreak
+            || table.common.height == 0
+            || table.common.height > i32::MAX as u32
+            || cut.is_block_split
+            || cut.start_cut_is_block
+            || cut.start_row != 0
+            || cut.start_cut.iter().any(|unit| *unit > 0)
+            || cut.end_row == 0
+            || cut.end_row > usize::from(table.row_count)
+        {
+            return None;
+        }
+        let last = cut.end_row - 1;
+        let continues = cut.end_row < usize::from(table.row_count)
+            || (!cut.end_cut.is_empty()
+                && self
+                    .indexed_row_cut_cell_order(table, last)
+                    .into_iter()
+                    .zip(&cut.end_cut)
+                    .any(|(index, &end)| {
+                        table
+                            .cells
+                            .get(index)
+                            .is_some_and(|cell| end < self.cell_units(cell, table, styles).len())
+                    }));
+        if !continues {
+            return None;
+        }
+        let frame = hwpunit_to_px(table.common.height as i32, self.dpi);
+        let physical = self.nested_cut_physical_height(table, cut, styles);
+        (frame > physical + 0.5).then_some(frame - physical)
     }
 
     /// Return whether a row records an in-paragraph return from a positive
