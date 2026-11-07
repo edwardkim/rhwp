@@ -80,8 +80,15 @@ try {
       if (url.includes('/viewer.html?')) return candidate;
     }
   }, 'auto-open viewer');
-  await until(() => viewer.evaluate(() =>
-    document.querySelector('textarea') && document.body.innerText.includes('1페이지')),
+  // #1328/#1454 asks the user before checking installed fonts. Select the real
+  // fallback button instead of bypassing consent; status text is now "1 / 1 쪽".
+  await until(() => viewer.evaluate(expectedFilename => {
+    const button = [...document.querySelectorAll('.modal-overlay button')].find(button =>
+      /^(대체 글꼴로 보기|View with substitute fonts)$/.test(button.textContent.trim()));
+    button?.click();
+    return document.querySelector('textarea')
+      && document.getElementById('sb-message')?.textContent.includes(expectedFilename);
+  }, filename),
   'loaded fixture');
   const getDownloads = () => viewer.evaluate(() => browser.downloads.search({}));
   async function assertDownloadAndTabs(count) {
