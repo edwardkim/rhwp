@@ -81,6 +81,14 @@ impl DocumentCore {
         fonts.clear_otf();
         for request in self.native_otf_font_requests() {
             for (bytes, index) in provider(&request) {
+                // 표시용 full name·별칭으로 적재한 fallback을 원본 family의
+                // 자연 전진으로 인증하지 않는다. Native와 WASM 공급자에 같은
+                // 경계를 적용하며, HFT 표시 프로그램의 대체 계약은 유지한다.
+                if request.source_ttf
+                    && !original_program_owns_family(&bytes, index, &request.family)
+                {
+                    continue;
+                }
                 // 범위를 넘거나 읽을 수 없는 face는 원본 HFT 경로를 유지한다.
                 let _ = fonts.register_otf_for_source(
                     &request.family,
@@ -307,4 +315,23 @@ impl DocumentCore {
         self.overflow_links_cache.borrow_mut().clear();
         self.paginate_if_needed();
     }
+}
+
+fn original_program_owns_family(bytes: &[u8], index: u32, family: &str) -> bool {
+    let primary = family.split(',').next().unwrap_or("").trim();
+    let Ok(face) = ttf_parser::Face::parse(bytes, index) else {
+        return false;
+    };
+    !primary.is_empty()
+        && face.names().into_iter().any(|name| {
+            matches!(
+                name.name_id,
+                ttf_parser::name_id::FAMILY
+                    | ttf_parser::name_id::TYPOGRAPHIC_FAMILY
+                    | ttf_parser::name_id::WWS_FAMILY
+                    | ttf_parser::name_id::POST_SCRIPT_NAME
+            ) && name
+                .to_string()
+                .is_some_and(|name| name.trim().eq_ignore_ascii_case(primary))
+        })
 }

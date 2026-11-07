@@ -1,5 +1,5 @@
 //! 관계형: 글꼴 소유자 등록과 해제의 세션 프로토콜 계약.
-//! 주석 갱신: 2026-11-07T02:47:53+09:00; 직전 파일 커밋: 2026-11-04T12:13:59+09:00 (5551091085418c17d8321c0fee2626365911481b).
+//! 주석 갱신: 2026-11-08T06:46:04+09:00; 직전 파일 커밋: 2026-11-08T01:15:32+09:00 (a860abe23679257f7d4c8d9b84f0f2d95df89e99).
 //! 근거: tests/fixtures/fonts/RHWPHostFixture.LICENSE.md, tests/fixtures/fonts/RHWPEquationFonts.LICENSE.md.
 //! 글꼴 등록·해제 전후의 세션 소유 관계 검사이며 페이지별 raw 측정은 대상이 아니다.
 //! 실제 글꼴 요청 이름과 명시 exact 소유자의 세션 프로토콜 계약.
@@ -611,6 +611,40 @@ use rhwp::renderer::native_pua_fonts::NativePuaFonts;
 const REGULAR: &[u8] = include_bytes!("../../tests/fixtures/fonts/RHWPEquationLatinOnly.ttf");
 const LIGHT: &[u8] = include_bytes!("../../tests/fixtures/fonts/RHWPEquationCJKLight.ttf");
 const NO_DIGIT: &[u8] = include_bytes!("../../tests/fixtures/fonts/RHWPHftOutline.otf");
+
+#[test]
+fn original_truetype_provider_requires_program_family_ownership() {
+    use rhwp::model::style::Font;
+
+    let prepare = |family: &str, alt_type: u8| {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        let mut document = core.document().clone();
+        for fonts in &mut document.doc_info.font_faces {
+            fonts[0] = Font {
+                name: family.into(),
+                alt_type,
+                ..Default::default()
+            };
+        }
+        for shape in &mut document.doc_info.char_shapes {
+            shape.font_ids = [0; 7];
+        }
+        core.set_document(document);
+        core.prepare_native_otf_fonts_with(|_| Some((REGULAR.to_vec(), 0)))
+            .unwrap()
+    };
+
+    // 공개 fixture의 name ID 1과 6은 같은 원본 프로그램을 식별한다.
+    assert!(prepare("RHWP Equation Contract", 1));
+    assert!(prepare("RHWPEquationContract-LatinOnly", 1));
+    // ID 4는 표시용 full name이며 다른 family의 원본 전진을 인증하지 않는다.
+    assert!(!prepare("RHWP Equation Contract LatinOnly", 1));
+    assert!(!prepare("Missing Source", 1));
+    assert!(!prepare("Missing Source,RHWP Equation Contract", 1));
+    // HFT의 표시용 대체 프로그램은 원본 TrueType 전진 요청과 구분한다.
+    assert!(prepare("Missing Source", 2));
+}
 
 #[test]
 fn compact_truetype_retains_unicode_coverage_and_natural_advances() {

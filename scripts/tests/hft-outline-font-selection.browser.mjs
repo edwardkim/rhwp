@@ -1,6 +1,6 @@
 // 관계형: 실제 WASM·FontFace·Canvas의 공급 프로그램 선택을 검사한다. 실물 raw 측정과 구분한다.
-// 주석 갱신: 2026-11-07T15:30:57+09:00. 직전 변경 71ce4b7ae5a3008c92ff1fbe51136dc72487f558
-// (2026-11-07T15:14:19+09:00).
+// 주석 갱신: 2026-11-08T06:46:04+09:00. 직전 변경 df72efbd1211d3d6717c3ba3517f12aac0b84046
+// (Git 커밋 시각 2026-11-08T01:16:58+09:00).
 // 저장소 소유 CFF·OFL TTF를 직접 공급하며 시스템 글꼴 설치나 상용 프로그램 배포에 의존하지 않는다.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -98,7 +98,26 @@ test('HFT·TTF 선언의 합성 굵기가 실제 CFF를 쓰고 공급된 TTF는 
           doc.registerHftOutlineFont(family, bytes, 0);
           trueTypeAliasWins = before === paint();
         }
-        results.push({sourceType, bold: runs.length === 1 && runs[0].paintStyle.bold, fauxBold: fauxStroke > 0, registered, rows, trueTypeAliasWins});
+        let missingGlyphControl = null;
+        if (sourceType === 'hft') {
+          // 분리 CFF에 없는 숫자는 같은 family의 TTF 동반 face가 소유한다.
+          // 불완전한 coverage에서 뒤 family를 고른 결과로 이를 덮어쓰면 안 된다.
+          const ttf = new Uint8Array(await (await fetch('/source.ttf')).arrayBuffer());
+          const companion = new FontFace(family, ttf); await companion.load(); document.fonts.add(companion);
+          const preferred = new FontFace(family, bytes); await preferred.load(); document.fonts.add(preferred);
+          for (const fallback of ['Haansoft Batang', 'HYMyeongJo-Extra', 'HY견명조', 'HCR Batang']) {
+            const font = new FontFace(fallback, ttf); await font.load(); document.fonts.add(font);
+            doc.registerTextFontGlyphCoverage(fallback, ttf, 0);
+          }
+          doc.insertText(0, 0, 1, '0');
+          doc.applyCharFormat(0, 0, 1, 2, JSON.stringify({bold: true}));
+          const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+          const texts = [], fillText = ctx.fillText.bind(ctx);
+          ctx.fillText = (text, ...args) => { texts.push(text); return fillText(text, ...args); };
+          doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', 'print');
+          missingGlyphControl = {texts};
+        }
+        results.push({sourceType, bold: runs.length === 1 && runs[0].paintStyle.bold, fauxBold: fauxStroke > 0, registered, rows, trueTypeAliasWins, missingGlyphControl});
       } finally { doc.free(); }
     }
     return results;
@@ -109,6 +128,12 @@ test('HFT·TTF 선언의 합성 굵기가 실제 CFF를 쓰고 공급된 TTF는 
     assert.equal(result.registered, true);
     if (result.sourceType === 'ttf') {
       assert.equal(result.trueTypeAliasWins, true, '실제 TTF 원 프로그램이 있으면 CFF 등록으로 덮어쓰지 않는다');
+    }
+    if (result.missingGlyphControl) {
+      assert.equal(result.missingGlyphControl.texts.includes('0'), true,
+        '분리 CFF의 누락 글리프는 동반 face를 아는 Canvas에 맡겨야 한다');
+      assert.equal(result.missingGlyphControl.texts.includes('가'), false,
+        '실제로 CFF가 소유하는 글자는 계속 원 윤곽으로 그려야 한다');
     }
     for (const row of result.rows) {
       assert.equal(row.texts.includes('가'), row.profile === 'screen',
