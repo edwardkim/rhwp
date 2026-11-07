@@ -1,8 +1,8 @@
 use resvg::{tiny_skia, usvg};
 use skia_safe::{
-    canvas::SrcRectConstraint, color_filters, image::RequiredProperties, Color, ColorSpace,
-    CubicResampler, Data, FilterMode, IRect, Image, Matrix, MipmapMode, Paint, Rect,
-    SamplingOptions, TileMode,
+    canvas::SrcRectConstraint, codec, color_filters, image::RequiredProperties, AlphaType, Codec,
+    Color, ColorSpace, ColorType, CubicResampler, Data, FilterMode, IRect, Image, ImageInfo,
+    Matrix, MipmapMode, Paint, Rect, SamplingOptions, TileMode,
 };
 use std::sync::{Arc, OnceLock};
 
@@ -28,6 +28,7 @@ pub struct ImageSampling {
     profile: crate::paint::RenderProfile,
     paper_grid: Option<crate::renderer::bitmap_raster::PrintPaperGrid>,
     print_page: Option<[u64; 3]>,
+    strict_resource_failures: bool,
 }
 
 impl ImageSampling {
@@ -38,6 +39,7 @@ impl ImageSampling {
             profile: crate::paint::RenderProfile::Screen,
             paper_grid: None,
             print_page: None,
+            strict_resource_failures: false,
         }
     }
 
@@ -48,6 +50,7 @@ impl ImageSampling {
             profile: crate::paint::RenderProfile::Screen,
             paper_grid: None,
             print_page: None,
+            strict_resource_failures: false,
         }
     }
 
@@ -58,6 +61,7 @@ impl ImageSampling {
             profile: crate::paint::RenderProfile::Screen,
             paper_grid: None,
             print_page: None,
+            strict_resource_failures: false,
         }
     }
 
@@ -70,6 +74,11 @@ impl ImageSampling {
 
     pub(super) fn with_profile(mut self, profile: crate::paint::RenderProfile) -> Self {
         self.profile = profile;
+        self
+    }
+
+    pub(super) fn with_strict_resources(mut self, strict: bool) -> Self {
+        self.strict_resource_failures = strict;
         self
     }
 
@@ -89,6 +98,62 @@ impl ImageSampling {
         self.print_page = page.map(|(w, h, scale)| [w.to_bits(), h.to_bits(), scale.to_bits()]);
         self
     }
+}
+
+/// SkImage::from_encoded only creates a lazy image: even invalid/incomplete
+/// compressed pixels can pass that header check and later disappear at draw.
+/// Decode this image resource, not the destination surface, and accept only a
+/// complete codec success. Skia remains the format/color-profile authority.
+fn full_image_decode_succeeds(encoded: &Data) -> bool {
+    use crate::renderer::image_header::{
+        CANVASKIT_MAX_IMAGE_DIMENSION, CANVASKIT_MAX_IMAGE_PIXELS,
+    };
+
+    let Some(mut codec) = Codec::from_data(encoded.clone()) else {
+        return false;
+    };
+    let source = codec.info();
+    let (Ok(width), Ok(height)) = (
+        u32::try_from(source.width()),
+        u32::try_from(source.height()),
+    ) else {
+        return false;
+    };
+    let pixels = u64::from(width) * u64::from(height);
+    if width == 0
+        || height == 0
+        || width > CANVASKIT_MAX_IMAGE_DIMENSION
+        || height > CANVASKIT_MAX_IMAGE_DIMENSION
+        || pixels > CANVASKIT_MAX_IMAGE_PIXELS
+    {
+        return false;
+    }
+    let info = ImageInfo::new(
+        (source.width(), source.height()),
+        ColorType::RGBA8888,
+        AlphaType::Premul,
+        source.color_space(),
+    );
+    let row_bytes = info.min_row_bytes();
+    let Some(byte_len) = row_bytes.checked_mul(height as usize) else {
+        return false;
+    };
+    let max_decode_memory = (CANVASKIT_MAX_IMAGE_PIXELS * 4) as usize;
+    if byte_len > max_decode_memory {
+        return false;
+    }
+    let mut decoded = Vec::new();
+    if decoded.try_reserve_exact(byte_len).is_err() {
+        return false;
+    }
+    decoded.resize(byte_len, 0);
+    let options = codec::Options {
+        zero_initialized: codec::ZeroInitialized::Yes,
+        max_decode_memory: Some(max_decode_memory),
+        ..Default::default()
+    };
+    codec.get_pixels_with_options(&info, &mut decoded, row_bytes, Some(&options))
+        == codec::Result::Success
 }
 
 pub(super) fn draw_svg_fragment(
@@ -259,6 +324,12 @@ pub(super) fn draw_image_bytes(
     if !is_valid_destination_rect(x, y, width, height) {
         return false;
     }
+    // Check the original span before JPEG normalization, tone/effect expansion
+    // and print fast paths. The normalized span is checked again below.
+    if sampling.strict_resource_failures && bytes.len() > crate::model::bin_data::MAX_BIN_DATA_BYTES
+    {
+        return false;
+    }
     if effect == ImageEffect::RealPic
         && brightness == 0
         && contrast == 0
@@ -327,7 +398,13 @@ pub(super) fn draw_image_bytes(
     let key = byte_key(
         b"decoded-image",
         bytes,
-        &(svg_size, svg_device_window, binary_effect, tone),
+        &(
+            svg_size,
+            svg_device_window,
+            binary_effect,
+            tone,
+            sampling.strict_resource_failures,
+        ),
     );
     let cached = cache.get(key, binary_effect.is_some());
     let (image, binary_preprocessed, encoded) = if let Some(CachedImageResource::Decoded {
@@ -381,9 +458,19 @@ pub(super) fn draw_image_bytes(
         // raster-specific dither cannot leak to a differently sized placement.
         let binary_png = binary_effect.and_then(|effect| binary_effect_png(encoded_bytes, effect));
         let encoded_bytes = binary_png.as_deref().unwrap_or(encoded_bytes);
+        if sampling.strict_resource_failures
+            && encoded_bytes.len() > crate::model::bin_data::MAX_BIN_DATA_BYTES
+        {
+            return false;
+        }
         // 디코더와 캐시가 같은 immutable Data를 공유한다. 캐시 hit도 실제
         // 정규화·전처리된 바이트를 전달해 원본/색조 전 바이트로 되돌리지 않는다.
         let encoded = Data::new_copy(encoded_bytes);
+        // Strict cache entries are inserted only after a successful full
+        // decode. Their policy key cannot reuse an unvalidated CPU lazy image.
+        if sampling.strict_resource_failures && !full_image_decode_succeeds(&encoded) {
+            return false;
+        }
         let Some(image) = Image::from_encoded(encoded.clone()) else {
             if binary_effect.is_some() {
                 cache.record_preprocessing(None);

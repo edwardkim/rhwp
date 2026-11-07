@@ -103,6 +103,8 @@ fn execute(
     owner: &mut Option<OwnedDocument>,
     id: NativeRequestId,
     command: NativeRuntimeCommand,
+    shared: &Shared,
+    phase: &AtomicU8,
 ) -> Result<NativeRuntimeOutput, NativeHostError> {
     use NativeRuntimeCommand as C;
     use NativeRuntimeOutput as O;
@@ -129,6 +131,15 @@ fn execute(
             });
             Ok(O::Info(document(owner)?.info()))
         }
+        C::OpenRecovery { replace, bytes } => {
+            replacement(owner, replace)?;
+            let session = NativeDocumentSession::open_recovery_bytes(&bytes)?;
+            *owner = Some(OwnedDocument {
+                id,
+                owner: DocumentOwner::Viewer(Box::new(session)),
+            });
+            Ok(O::Info(document(owner)?.info()))
+        }
         C::Info {} => Ok(O::Info(document(owner)?.info())),
         C::ExecuteCommand { target, command } => {
             let doc = document(owner)?;
@@ -143,6 +154,24 @@ fn execute(
             doc.editor()?
                 .ime_context(target.revision)
                 .map(O::ImeContext)
+        }
+        C::ImeEditContext { target } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            doc.editor()?
+                .ime_edit_context(target.revision)
+                .map(|context| O::ImeEditContext(Box::new(context)))
+        }
+        C::ApplyImeEdit {
+            target,
+            expected,
+            edit,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            doc.editor()?
+                .apply_ime_edit(target.revision, &expected, edit)
+                .map(O::Edited)
         }
         C::CopySelection { target } => {
             let doc = document(owner)?;
@@ -227,6 +256,27 @@ fn execute(
                 snapshot: doc.session().accessibility_snapshot(&request, selection)?,
             })
         }
+        C::ExportRenderSnapshot {
+            target,
+            font_generation,
+            page,
+            profile,
+            mut limits,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            if doc.session().font_generation() != font_generation {
+                return Err(invalid("stale font generation"));
+            }
+            limits.max_payload_bytes = limits.max_payload_bytes.min(shared.budget.max_bytes);
+            let snapshot = doc
+                .session()
+                .render_snapshot_with_limits(page, profile, limits)?;
+            Ok(O::RenderSnapshot {
+                document_id: doc.id,
+                snapshot: Arc::new(snapshot),
+            })
+        }
         C::RenderRegion {
             target,
             font_generation,
@@ -239,20 +289,79 @@ fn execute(
             if doc.session().font_generation() != font_generation {
                 return Err(invalid("stale font generation"));
             }
-            let frame = doc.session().render_region(
-                page,
-                RasterRegion {
-                    x: region.x,
-                    y: region.y,
-                    width: region.width,
-                    height: region.height,
-                },
-                scale,
-            )?;
+            let frame = doc.session().render_region(page, region.into(), scale)?;
             Ok(O::Frame {
                 document_id: doc.id,
                 frame,
             })
+        }
+        C::RenderTiledRegion {
+            target,
+            font_generation,
+            page,
+            region,
+            scale,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            if doc.session().font_generation() != font_generation {
+                return Err(invalid("stale font generation"));
+            }
+            #[cfg(feature = "native-skia")]
+            {
+                let frame = doc.session().render_tiled_region_cancellable(
+                    page,
+                    region.into(),
+                    scale,
+                    || {
+                        phase.load(Ordering::Acquire) != CANCELLED
+                            && shared.lifecycle.load(Ordering::Acquire) == RUNNING
+                            && !shared.superseded(id)
+                    },
+                )?;
+                match frame {
+                    Some(frame) => Ok(O::Frame {
+                        document_id: doc.id,
+                        frame,
+                    }),
+                    None if phase.load(Ordering::Acquire) == CANCELLED => Ok(O::Cancelled),
+                    None => Ok(O::Skipped(NativeRuntimeSkipReason::SupersededRender)),
+                }
+            }
+            #[cfg(not(feature = "native-skia"))]
+            {
+                let _ = (region, scale, shared, phase);
+                Err(NativeHostError::FeatureDisabled)
+            }
+        }
+        C::SetRasterCacheLimit { target, max_bytes } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            #[cfg(feature = "native-skia")]
+            {
+                doc.session().set_region_cache_limit(max_bytes)?;
+                Ok(O::RasterCacheLimit { target, max_bytes })
+            }
+            #[cfg(not(feature = "native-skia"))]
+            {
+                let _ = max_bytes;
+                Err(NativeHostError::FeatureDisabled)
+            }
+        }
+        C::RasterCacheStats { target } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            #[cfg(feature = "native-skia")]
+            {
+                Ok(O::RasterCacheStats {
+                    target,
+                    stats: doc.session().region_cache_stats(),
+                })
+            }
+            #[cfg(not(feature = "native-skia"))]
+            {
+                Err(NativeHostError::FeatureDisabled)
+            }
         }
         C::BeginEdit { target, selection } => {
             document(owner)?.check(target)?;
@@ -463,6 +572,10 @@ pub(super) fn worker_loop(
             break;
         }
         let render = request.command.is_render();
+        let exports_snapshot = matches!(
+            &request.command,
+            NativeRuntimeCommand::ExportRenderSnapshot { .. }
+        );
         let mut result = if request
             .phase
             .compare_exchange(QUEUED, CLAIMED, Ordering::AcqRel, Ordering::Acquire)
@@ -474,10 +587,22 @@ pub(super) fn worker_loop(
                 NativeRuntimeSkipReason::SupersededRender,
             ))
         } else {
-            execute(&mut owner, request.id, request.command).map_err(NativeRuntimeFailure::from)
+            execute(
+                &mut owner,
+                request.id,
+                request.command,
+                shared,
+                &request.phase,
+            )
+            .map_err(NativeRuntimeFailure::from)
         };
         shared.set_current(owner.as_ref().map(OwnedDocument::stamp));
         let retained = match &result {
+            Ok(NativeRuntimeOutput::ImeEditContext(context)) => context
+                .context
+                .text
+                .capacity()
+                .saturating_add(context.context.selected_text.capacity()),
             Ok(NativeRuntimeOutput::Frame { frame, .. }) => frame.pixels.bytes.capacity(),
             Ok(NativeRuntimeOutput::PreparedSave { prepared, .. }) => prepared.bytes.len(),
             Ok(NativeRuntimeOutput::SelectionRects { rects, .. }) => rects
@@ -487,9 +612,17 @@ pub(super) fn worker_loop(
             Ok(NativeRuntimeOutput::Accessibility { snapshot, .. }) => {
                 accessibility_retained_bytes(snapshot)
             }
+            Ok(NativeRuntimeOutput::RenderSnapshot { snapshot, .. }) => {
+                snapshot.usage().estimated_bytes
+            }
             _ => 0,
         };
-        if retained > request.reservation {
+        let covered = if exports_snapshot {
+            request.reservation.grow_to(retained)
+        } else {
+            request.reservation.covers(retained)
+        };
+        if !covered {
             discard_prepared(&mut owner, &result);
             result = Err(NativeHostError::LimitExceeded(
                 "runtime output exceeds its reserved byte limit".into(),
@@ -503,7 +636,11 @@ pub(super) fn worker_loop(
                 NativeRuntimeSkipReason::SupersededRender,
             ));
         }
-        request.phase.store(COMPLETED, Ordering::Release);
+        // A running tiled cancellation either wins before this transition and
+        // receives Cancelled, or observes COMPLETED and reports TooLate.
+        if request.phase.swap(COMPLETED, Ordering::AcqRel) == CANCELLED {
+            result = Ok(NativeRuntimeOutput::Cancelled);
+        }
         if shared.lifecycle.load(Ordering::Acquire) != RUNNING {
             discard_prepared(&mut owner, &result);
             break;

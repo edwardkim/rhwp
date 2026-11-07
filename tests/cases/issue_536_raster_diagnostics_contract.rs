@@ -19,12 +19,17 @@ fn raster_diagnostics_default_is_an_unmeasured_empty_snapshot() {
             backend: None,
             render_profile: None,
             variant_selections: Vec::new(),
+            #[cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]
+            native_glyph_rejections: Vec::new(),
+            #[cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]
+            native_glyph_rejections_dropped: 0,
             shaped_measurements: Vec::new(),
             shaped_measurement_lines: Vec::new(),
             line_break_shadows: Vec::new(),
             shaped_measurement_paragraphs: Vec::new(),
             shaped_measurement_pages: Vec::new(),
             layer_nodes_replayed: 0,
+            layer_nodes_culled: 0,
             paint_ops_replayed: 0,
             tile_fallback_cap_hits: 0,
             image_effect_preprocess_failures: 0,

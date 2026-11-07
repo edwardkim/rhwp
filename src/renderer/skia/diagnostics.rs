@@ -10,6 +10,76 @@ use crate::renderer::layer_renderer::{
 
 use super::cache::NativeSkiaCacheStats;
 use super::image_cache::ImageReplayCounters;
+use super::renderer::{
+    NativeGlyphPreparationFailure, NativeGlyphReplayRejectReport, NativeGlyphRunReplayProofReason,
+};
+
+const MAX_NATIVE_REJECTIONS: usize = 256;
+const MAX_NATIVE_IDENTIFIER_BYTES: usize = 256;
+
+fn bounded_identifier(value: &str) -> String {
+    let mut end = value.len().min(MAX_NATIVE_IDENTIFIER_BYTES);
+    while !value.is_char_boundary(end) {
+        end -= 1;
+    }
+    value[..end].to_owned()
+}
+
+fn shared_reject_reasons(failure: &NativeGlyphPreparationFailure) -> Vec<VariantRejectReason> {
+    use NativeGlyphRunReplayProofReason as Native;
+    use VariantRejectReason as Shared;
+    let NativeGlyphPreparationFailure::GlyphRunRejected(proof) = failure else {
+        return vec![match failure {
+            NativeGlyphPreparationFailure::UnsupportedOutlinePayload => {
+                Shared::UnsupportedOutlinePayload
+            }
+            NativeGlyphPreparationFailure::VariantPartsIncomplete => Shared::VariantPartsIncomplete,
+            _ => Shared::BackendDoesNotSupportVariant,
+        }];
+    };
+    let mut reasons = proof
+        .reasons
+        .iter()
+        .map(|reason| match reason {
+            Native::EmptyGlyphIds => Shared::EmptyGlyphRun,
+            Native::GlyphPositionCountMismatch => Shared::GlyphPositionCountMismatch,
+            Native::AdvanceCountMismatch => Shared::GlyphAdvanceCountMismatch,
+            Native::GlyphTransformUnsupported => Shared::GlyphTransformAuthorityPending,
+            Native::VerticalOrientationUnsupported | Native::VerticalAuthorityUnsupported => {
+                Shared::VerticalGlyphOrientationAuthorityPending
+            }
+            Native::StrictVisualIneligible => Shared::StrictVisualIneligible,
+            Native::MissingGlyph => Shared::MissingGlyph,
+            Native::ClusterMismatch => Shared::ClusterMismatch,
+            Native::PositionAdjustedResidualTooLarge => Shared::PositionAdjustedResidualTooLarge,
+            Native::ReplayEligibilityNotPortable | Native::FontBlobNotPortable => {
+                Shared::FontBlobNotPortable
+            }
+            Native::UnsupportedPaintEffect => Shared::UnsupportedPaintEffect,
+            Native::GlyphIdOutOfRange => Shared::GlyphIdOutOfRange,
+            Native::PlacementNotFinite => Shared::PlacementNotFinite,
+            Native::PositionNotFinite => Shared::PositionNotFinite,
+            Native::FontFaceMissing => Shared::FontFaceMissing,
+            Native::FontBlobMissing => Shared::FontBlobMissing,
+            Native::FontBlobBytesMissing => Shared::FontBlobBytesMissing,
+            Native::FontBlobDataRefMismatch => Shared::FontBlobDataRefMismatch,
+            Native::FontBlobDigestMismatch => Shared::FontBlobDigestMismatch,
+            Native::FaceIndexUnsupported => Shared::FaceIndexUnsupported,
+            Native::FontVariationUnsupported => Shared::VariationUnsupported,
+            Native::FontInstanceInvalid => Shared::FontInstanceInvalid,
+            Native::GlyphRunTooLarge => Shared::GlyphRunTooLarge,
+            Native::FontResourceTooLarge => Shared::FontBlobTooLarge,
+            Native::DirectionUnsupported => Shared::BidiDirectionAuthorityPending,
+            _ => Shared::BackendDoesNotSupportVariant,
+        })
+        .collect::<Vec<_>>();
+    reasons.sort();
+    reasons.dedup();
+    if reasons.is_empty() {
+        reasons.push(Shared::BackendDoesNotSupportVariant);
+    }
+    reasons
+}
 
 pub(super) struct ReplayDiagnostics {
     pub output: LayerRenderDiagnostics,
@@ -58,7 +128,7 @@ impl ReplayDiagnostics {
         group: &str,
         selected: Option<(&str, TextVariantKind)>,
         fallback: bool,
-        rejected: &[(String, TextVariantKind)],
+        rejected: &[(String, TextVariantKind, NativeGlyphPreparationFailure)],
     ) {
         let mut report = self
             .selection_indices
@@ -95,7 +165,13 @@ impl ReplayDiagnostics {
             .iter()
             .map(|candidate| candidate.variant_id.clone())
             .collect::<HashSet<_>>();
-        for (id, kind) in rejected {
+        for (id, kind, failure) in rejected {
+            self.apply_native_rejection(NativeGlyphReplayRejectReport {
+                equivalence_group: bounded_identifier(group),
+                variant_id: bounded_identifier(id),
+                variant_kind: *kind,
+                failure: failure.clone(),
+            });
             if rejected_ids.insert(id.clone()) {
                 // Actual native preparation includes shared contract checks,
                 // resource construction and budget checks. Do not report a
@@ -103,11 +179,22 @@ impl ReplayDiagnostics {
                 report.rejected_variants.push(TextVariantRejectReport {
                     variant_id: id.clone(),
                     variant_kind: *kind,
-                    reasons: vec![VariantRejectReason::BackendDoesNotSupportVariant],
+                    reasons: shared_reject_reasons(failure),
                 });
             }
         }
         self.apply_selection(report);
+    }
+
+    pub fn apply_native_rejection(&mut self, report: NativeGlyphReplayRejectReport) {
+        if self.output.native_glyph_rejections.len() < MAX_NATIVE_REJECTIONS {
+            self.output.native_glyph_rejections.push(report);
+        } else {
+            self.output.native_glyph_rejections_dropped = self
+                .output
+                .native_glyph_rejections_dropped
+                .saturating_add(1);
+        }
     }
 
     pub fn finish_caches(

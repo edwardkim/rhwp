@@ -8,7 +8,8 @@ use rhwp::paint::*;
 use rhwp::renderer::layer_renderer::LayerRasterRenderer;
 use rhwp::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
 use rhwp::renderer::skia::{
-    native_skia_glyph_run_replay_proof, NativeGlyphRunReplayProofReason, SkiaLayerRenderer,
+    native_skia_glyph_run_replay_proof, NativeGlyphPreparationFailure,
+    NativeGlyphRunReplayProofReason, SkiaLayerRenderer,
 };
 use rhwp::renderer::{PathCommand, TextStyle};
 
@@ -666,4 +667,494 @@ fn native_glyph_replay_renders_resolved_colrv0_layers_in_order() {
         .unwrap()
         .rgba[0] = f32::NAN;
     assert_same_pixels(render(&tree), render(&fallback_tree()));
+}
+
+#[test]
+fn native_glyph_preparation_reports_exact_proof_with_and_without_picture_cache() {
+    use rhwp::renderer::layer_renderer::{RasterRenderOptions, VariantRejectReason};
+    for case in 0..4 {
+        let mut tree = glyph_tree(TTF, 0, 'A');
+        let expected_reason = match case {
+            0 => {
+                tree.resources.font_resources_mut().blobs[0]
+                    .digest
+                    .as_mut()
+                    .unwrap()
+                    .value = "wrong".into();
+                NativeGlyphRunReplayProofReason::FontBlobDigestMismatch
+            }
+            1 => {
+                tree.resources.font_resources_mut().faces[0].face_index = 99;
+                NativeGlyphRunReplayProofReason::ExactFaceUnavailable
+            }
+            2 => {
+                glyph_mut(&mut tree).diagnostics.cluster_mismatch_count = 1;
+                NativeGlyphRunReplayProofReason::ClusterMismatch
+            }
+            _ => {
+                glyph_mut(&mut tree).shape_key.font_instance.face_key.0 = "missing".into();
+                NativeGlyphRunReplayProofReason::FontFaceMissing
+            }
+        };
+        let expected_proof = proof(&tree);
+        assert!(expected_proof.reasons.contains(&expected_reason));
+        tree.root = LayerNode::group(
+            tree.root.bounds,
+            None,
+            vec![tree.root.clone()],
+            CacheHint::StaticSubtree,
+            GroupKind::Generic,
+        );
+        let cached = SkiaLayerRenderer::new();
+        let cold = cached
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .unwrap();
+        let warm = cached
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .unwrap();
+        let uncached = SkiaLayerRenderer::new()
+            .with_cache_limits(0, 0)
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .unwrap();
+        assert!(warm.diagnostics.static_picture_cache_hits > 0);
+        for output in [&cold, &warm, &uncached] {
+            let rejected = &output.diagnostics.native_glyph_rejections;
+            assert_eq!(rejected.len(), 1, "case {case}");
+            assert_eq!(
+                rejected[0].failure,
+                NativeGlyphPreparationFailure::GlyphRunRejected(expected_proof.clone())
+            );
+            assert_eq!(output.diagnostics.native_glyph_rejections_dropped, 0);
+            assert!(output.diagnostics.variant_selections[0].fallback_required);
+            if case == 0 {
+                assert_eq!(
+                    output.diagnostics.variant_selections[0].rejected_variants[0].reasons,
+                    vec![VariantRejectReason::FontBlobDigestMismatch]
+                );
+            }
+            assert_same_pixels(
+                image::load_from_memory(&output.bytes).unwrap().to_rgba8(),
+                render(&fallback_tree()),
+            );
+        }
+        assert_eq!(
+            cold.diagnostics.variant_selections,
+            warm.diagnostics.variant_selections
+        );
+        assert_eq!(
+            cold.diagnostics.variant_selections,
+            uncached.diagnostics.variant_selections
+        );
+    }
+}
+
+#[test]
+fn native_outline_preparation_reports_payload_failure_and_retains_fallback() {
+    use rhwp::renderer::layer_renderer::RasterRenderOptions;
+    let mut tree = outline_tree();
+    outline_mut(&mut tree).paint_style.font_size = 0.0;
+    let output = SkiaLayerRenderer::new()
+        .render_raster_with_options(&tree, RasterRenderOptions::default())
+        .unwrap();
+    assert_eq!(
+        output.diagnostics.native_glyph_rejections[0].failure,
+        NativeGlyphPreparationFailure::UnsupportedOutlinePayload
+    );
+    assert_same_pixels(
+        image::load_from_memory(&output.bytes).unwrap().to_rgba8(),
+        render(&fallback_tree()),
+    );
+}
+
+#[test]
+fn native_preparation_reports_bound_count_and_unicode_identifiers_on_public_replay() {
+    use rhwp::renderer::layer_renderer::RasterRenderOptions;
+    let mut tree = glyph_tree(TTF, 0, 'A');
+    tree.resources.font_resources_mut().blobs[0]
+        .digest
+        .as_mut()
+        .unwrap()
+        .value = "wrong".into();
+    let candidate = ops_mut(&mut tree).pop().unwrap();
+    let identifier = "한".repeat(256);
+    for index in 0..259 {
+        let mut candidate = candidate.clone();
+        let PaintOp::GlyphRun { run, .. } = &mut candidate else {
+            unreachable!()
+        };
+        run.variant.equivalence_group = identifier.clone();
+        run.variant.anchor_op_id = Some(identifier.clone());
+        run.variant.variant_id = format!("{identifier}-{index}");
+        ops_mut(&mut tree).push(candidate);
+    }
+    tree.root = LayerNode::group(
+        tree.root.bounds,
+        None,
+        vec![tree.root.clone()],
+        CacheHint::StaticSubtree,
+        GroupKind::Generic,
+    );
+    let renderer = SkiaLayerRenderer::new();
+    let cold = renderer
+        .render_raster_with_options(&tree, RasterRenderOptions::default())
+        .unwrap();
+    let warm = renderer
+        .render_raster_with_options(&tree, RasterRenderOptions::default())
+        .unwrap();
+    let uncached = SkiaLayerRenderer::new()
+        .with_cache_limits(0, 0)
+        .render_raster_with_options(&tree, RasterRenderOptions::default())
+        .unwrap();
+    assert!(warm.diagnostics.static_picture_cache_hits > 0);
+    let expected = "한".repeat(85);
+    for output in [&cold, &warm, &uncached] {
+        assert_eq!(output.diagnostics.native_glyph_rejections.len(), 256);
+        assert_eq!(output.diagnostics.native_glyph_rejections_dropped, 3);
+        for report in &output.diagnostics.native_glyph_rejections {
+            assert_eq!(report.equivalence_group, expected);
+            assert_eq!(report.variant_id, expected);
+            assert!(report.equivalence_group.len() <= 256 && report.variant_id.len() <= 256);
+            assert!(matches!(&report.failure,
+                NativeGlyphPreparationFailure::GlyphRunRejected(proof)
+                if proof.reasons == vec![NativeGlyphRunReplayProofReason::FontBlobDigestMismatch]));
+        }
+        assert_same_pixels(
+            image::load_from_memory(&output.bytes).unwrap().to_rgba8(),
+            render(&fallback_tree()),
+        );
+    }
+    assert_eq!(
+        cold.diagnostics.native_glyph_rejections,
+        warm.diagnostics.native_glyph_rejections
+    );
+    assert_eq!(
+        cold.diagnostics.native_glyph_rejections,
+        uncached.diagnostics.native_glyph_rejections
+    );
+}
+
+#[test]
+fn native_picture_diagnostics_do_not_retain_a_previous_siblings_report_cap() {
+    use rhwp::renderer::layer_renderer::RasterRenderOptions;
+
+    let mut first = glyph_tree(TTF, 0, 'A');
+    first.resources.font_resources_mut().blobs[0]
+        .digest
+        .as_mut()
+        .unwrap()
+        .value = "wrong".into();
+    let mut second = first.root.clone();
+    let LayerNodeKind::Leaf { ops: second_ops } = &mut second.kind else {
+        unreachable!()
+    };
+    let PaintOp::TextRun {
+        source: Some(source),
+        ..
+    } = &mut second_ops[0]
+    else {
+        unreachable!()
+    };
+    source.id = TextSourceId(1);
+    let PaintOp::GlyphRun { run, .. } = &mut second_ops[1] else {
+        unreachable!()
+    };
+    run.source.id = TextSourceId(1);
+    run.variant.equivalence_group = "text-1".into();
+    run.variant.anchor_op_id = Some("text-1".into());
+    let candidate = ops_mut(&mut first).pop().unwrap();
+    for index in 0..256 {
+        let mut candidate = candidate.clone();
+        let PaintOp::GlyphRun { run, .. } = &mut candidate else {
+            unreachable!()
+        };
+        run.variant.variant_id = format!("prefix-{index}");
+        ops_mut(&mut first).push(candidate);
+    }
+    let bounds = first.root.bounds;
+    let mut tree = PageLayerTree::new(
+        first.page_width,
+        first.page_height,
+        LayerNode::group(
+            bounds,
+            None,
+            vec![
+                first.root,
+                LayerNode::group(
+                    bounds,
+                    None,
+                    vec![second],
+                    CacheHint::StaticSubtree,
+                    GroupKind::Generic,
+                ),
+            ],
+            CacheHint::None,
+            GroupKind::Generic,
+        ),
+    );
+    tree.resources = first.resources;
+    let renderer = SkiaLayerRenderer::new();
+    let initial = renderer
+        .render_raster_with_options(&tree, RasterRenderOptions::default())
+        .unwrap();
+    assert_eq!(initial.diagnostics.native_glyph_rejections.len(), 256);
+    assert_eq!(initial.diagnostics.native_glyph_rejections_dropped, 1);
+
+    // Keep the same fallback/source count and the identical cached group, but
+    // remove the earlier sibling's rejected alternatives. Its diagnostics must
+    // not remain charged against the unchanged group's next replay.
+    let LayerNodeKind::Group { children, .. } = &mut tree.root.kind else {
+        unreachable!()
+    };
+    let LayerNodeKind::Leaf { ops } = &mut children[0].kind else {
+        unreachable!()
+    };
+    ops.retain(|op| matches!(op, PaintOp::TextRun { .. }));
+    let expected = SkiaLayerRenderer::new()
+        .with_cache_limits(0, 0)
+        .render_raster_with_options(&tree, RasterRenderOptions::default())
+        .unwrap();
+    assert_eq!(expected.diagnostics.native_glyph_rejections.len(), 1);
+    assert_eq!(expected.diagnostics.native_glyph_rejections_dropped, 0);
+    for _ in 0..2 {
+        let actual = renderer
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .unwrap();
+        assert_eq!(
+            actual.diagnostics.native_glyph_rejections,
+            expected.diagnostics.native_glyph_rejections
+        );
+        assert_eq!(actual.diagnostics.native_glyph_rejections_dropped, 0);
+        assert_same_pixels(
+            image::load_from_memory(&actual.bytes).unwrap().to_rgba8(),
+            image::load_from_memory(&expected.bytes).unwrap().to_rgba8(),
+        );
+    }
+    assert!(renderer.cache_stats().pictures.hits > 0);
+}
+
+fn bounded_vertical_glyph_tree() -> PageLayerTree {
+    bounded_vertical_glyph_tree_with_font(TTF, 'A')
+}
+
+fn bounded_vertical_glyph_tree_with_font(bytes: &[u8], character: char) -> PageLayerTree {
+    let mut tree = glyph_tree(bytes, 0, character);
+    let run = glyph_mut(&mut tree);
+    run.variant.variant_id = "verticalGlyphRun".into();
+    run.variant.requires = vec![
+        "fontResources".into(),
+        "text.glyphRun".into(),
+        "text.glyphRun.verticalUpright".into(),
+    ];
+    run.shape_key.writing_mode = WritingMode::VerticalRl;
+    run.shape_key.shaping_engine.0 = "rustybuzz-q4-vertical-v1".into();
+    run.writing_mode = WritingMode::VerticalRl;
+    run.orientation = GlyphRunOrientation::VerticalUpright;
+    run.placement.run_to_page = LayerAffineTransform {
+        a: 1.0,
+        b: 0.0,
+        c: 0.0,
+        d: 1.0,
+        e: 0.0,
+        f: 0.0,
+    };
+    run.placement.baseline_y = 0.0;
+    run.positions = vec![LayerPoint { x: 10.0, y: 42.0 }];
+    run.advances = Some(vec![LayerVector { dx: 0.0, dy: 32.0 }]);
+    run.clusters[0].flags = vec![GlyphClusterFlag::FallbackBoundary];
+    run.diagnostics.reason = Some("boundedVerticalHwp5TableCellV1".into());
+    tree
+}
+
+#[test]
+fn bounded_vertical_replay_checks_source_scalars_before_a_cached_glyph_is_selected() {
+    use rhwp::renderer::layer_renderer::RasterRenderOptions;
+    const SUPPLEMENTARY: &[u8] = include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf");
+
+    let rebind = |tree: &mut PageLayerTree, text: &str| {
+        let PaintOp::TextRun { run, source, .. } = &mut ops_mut(tree)[0] else {
+            unreachable!()
+        };
+        run.text = text.into();
+        let rebound = TextSourceSpan::for_text_run(0, run);
+        *source = Some(rebound.clone());
+        let run = glyph_mut(tree);
+        run.source = rebound.clone();
+        run.clusters[0].source_range_utf8 = rebound.utf8_range;
+        run.clusters[0].source_range_utf16 = Some(rebound.utf16_range);
+        run.clusters[0].text_range_utf8 = Some(rebound.utf8_range);
+        tree.text_sources = TextSourceTable::from_layer_node(&tree.root);
+    };
+    let mut supplementary = bounded_vertical_glyph_tree_with_font(SUPPLEMENTARY, '😀');
+    rebind(&mut supplementary, "😀");
+    assert!(proof(&supplementary).typeface_constructible);
+    assert_selected(&supplementary);
+    let renderer = SkiaLayerRenderer::new();
+    let positive = renderer
+        .render_raster_with_options(&supplementary, RasterRenderOptions::default())
+        .unwrap();
+    assert_eq!(
+        positive.diagnostics.variant_selections[0]
+            .selected_variant_id
+            .as_deref(),
+        Some("verticalGlyphRun")
+    );
+    assert!(positive.diagnostics.native_glyph_rejections.is_empty());
+
+    let mut multiple = supplementary.clone();
+    rebind(&mut multiple, "éé");
+    // The resource/run declaration is unchanged: both strings occupy four
+    // UTF-8 bytes and two UTF-16 units. Only the actual source distinguishes
+    // this malformed bounded claim from the supplementary-scalar control.
+    assert!(proof(&multiple).typeface_constructible);
+    let mut fallback = multiple.clone();
+    ops_mut(&mut fallback).retain(|op| matches!(op, PaintOp::TextRun { .. }));
+    let expected = render(&fallback);
+    let uncached = SkiaLayerRenderer::new().with_cache_limits(0, 0);
+    for renderer in [&renderer, &uncached] {
+        for _ in 0..2 {
+            let output = renderer
+                .render_raster_with_options(&multiple, RasterRenderOptions::default())
+                .unwrap();
+            assert_eq!(
+                output.diagnostics.variant_selections[0]
+                    .selected_variant_id
+                    .as_deref(),
+                Some("textRun")
+            );
+            assert!(matches!(
+                &output.diagnostics.native_glyph_rejections[0].failure,
+                NativeGlyphPreparationFailure::GlyphRunRejected(proof)
+                    if proof.reasons == vec![NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported]
+            ));
+            assert_same_pixels(
+                image::load_from_memory(&output.bytes).unwrap().to_rgba8(),
+                expected.clone(),
+            );
+        }
+    }
+}
+
+#[test]
+fn native_bounded_vertical_replay_uses_exact_upright_glyph_at_producer_origin() {
+    use rhwp::renderer::layer_renderer::RasterRenderOptions;
+    let tree = bounded_vertical_glyph_tree();
+    assert!(proof(&tree).typeface_constructible);
+    // The same unrotated glyph at the same origin is an independent control
+    // for consuming page-space vertical placement without applying a 90° turn.
+    assert_same_pixels(
+        assert_selected(&tree),
+        assert_selected(&glyph_tree(TTF, 0, 'A')),
+    );
+    let renderer = SkiaLayerRenderer::new();
+    for _ in 0..2 {
+        let output = renderer
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .unwrap();
+        assert_eq!(
+            output.diagnostics.variant_selections[0]
+                .selected_variant_id
+                .as_deref(),
+            Some("verticalGlyphRun")
+        );
+        assert!(!output.diagnostics.variant_selections[0].fallback_required);
+        assert!(output.diagnostics.native_glyph_rejections.is_empty());
+    }
+    assert!(renderer.cache_stats().glyphs.hits > 0);
+}
+
+#[test]
+fn native_vertical_replay_keeps_fallback_for_unproven_modes_and_malformed_bounded_claims() {
+    let base = bounded_vertical_glyph_tree();
+    let fallback = render(&fallback_tree());
+    for case in 0..18 {
+        let mut tree = base.clone();
+        let run = glyph_mut(&mut tree);
+        let expected = match case {
+            0 => {
+                run.diagnostics.reason = None;
+                NativeGlyphRunReplayProofReason::DirectionUnsupported
+            }
+            1 => {
+                run.diagnostics.reason = Some("boundedVerticalHwpxTableCellV1".into());
+                NativeGlyphRunReplayProofReason::VerticalOrientationUnsupported
+            }
+            2 => {
+                run.orientation = GlyphRunOrientation::VerticalSideways;
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            3 => {
+                run.orientation = GlyphRunOrientation::MixedPerGlyph;
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            4 => {
+                run.shape_key.shaping_engine.0 = "unproven".into();
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            5 => {
+                run.variant.requires.pop();
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            6 => {
+                run.clusters[0].source_range_utf8.end = 2;
+                NativeGlyphRunReplayProofReason::ClusterMismatch
+            }
+            7 => {
+                run.clusters[0].flags.clear();
+                NativeGlyphRunReplayProofReason::ClusterMismatch
+            }
+            8 => {
+                run.advances = None;
+                NativeGlyphRunReplayProofReason::AdvanceCountMismatch
+            }
+            9 => {
+                run.placement.run_to_page.e = 1.0;
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            10 => {
+                run.positions[0].y = f64::NAN;
+                NativeGlyphRunReplayProofReason::PositionNotFinite
+            }
+            11 => {
+                run.shape_key.font_instance.synthetic_bold = true;
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            12 => {
+                run.diagnostics.quality = TextVariantQuality::PositionAdjusted;
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            13 => {
+                run.paint_style.shadow_type = 1;
+                NativeGlyphRunReplayProofReason::UnsupportedPaintEffect
+            }
+            14 => {
+                run.writing_mode = WritingMode::HorizontalTb;
+                run.shape_key.writing_mode = WritingMode::HorizontalTb;
+                run.orientation = GlyphRunOrientation::Horizontal;
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            15 => {
+                run.paint_style.font_size += 1.0;
+                NativeGlyphRunReplayProofReason::VerticalAuthorityUnsupported
+            }
+            16 => {
+                tree.resources.font_resources_mut().blobs[0]
+                    .digest
+                    .as_mut()
+                    .unwrap()
+                    .value = "wrong".into();
+                NativeGlyphRunReplayProofReason::FontBlobDigestMismatch
+            }
+            _ => {
+                tree.resources.font_resources_mut().faces[0].face_index = 99;
+                NativeGlyphRunReplayProofReason::ExactFaceUnavailable
+            }
+        };
+        let rejected = proof(&tree);
+        assert!(!rejected.typeface_constructible, "case {case}");
+        assert!(
+            rejected.reasons.contains(&expected),
+            "case {case}: {rejected:?}"
+        );
+        assert_same_pixels(render(&tree), fallback.clone());
+    }
 }

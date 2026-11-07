@@ -21,7 +21,9 @@ use crate::paint::{
 use crate::renderer::render_tree::BoundingBox;
 use crate::renderer::{svg_arc_to_beziers, PathCommand};
 
-use super::renderer::{colorref_to_skia, NativeGlyphRunReplayProofReason as FontFailure};
+use super::renderer::{
+    colorref_to_skia, NativeGlyphPreparationFailure, NativeGlyphRunReplayProofReason as FontFailure,
+};
 
 pub(super) const MAX_PREPARED_GLYPH_BYTES: usize = 64 * 1024 * 1024;
 const MAX_PATH_COMMANDS: usize = 100_000;
@@ -49,13 +51,13 @@ impl GlyphPreparationBudget {
     pub fn prepare<T: std::borrow::Borrow<PreparedGlyph>>(
         &mut self,
         minimum_bytes: usize,
-        prepare: impl FnOnce() -> Option<T>,
-    ) -> Option<T> {
+        prepare: impl FnOnce() -> Result<T, NativeGlyphPreparationFailure>,
+    ) -> Result<T, NativeGlyphPreparationFailure> {
         if self.remaining_entries == 0
             || self.remaining_bytes == 0
             || minimum_bytes > self.remaining_bytes
         {
-            return None;
+            return Err(NativeGlyphPreparationFailure::PreparationBudgetExceeded);
         }
         // Charge before parsing/copying. A failed candidate must not restore
         // the work allowance and repeatedly prepare the same large resource.
@@ -67,10 +69,10 @@ impl GlyphPreparationBudget {
             // Outline costs are known only after preparation. Stop further
             // preparation if this candidate exhausted the remaining allowance.
             self.remaining_bytes = 0;
-            return None;
+            return Err(NativeGlyphPreparationFailure::PreparationBudgetExceeded);
         };
         self.remaining_bytes = remaining;
-        Some(prepared)
+        Ok(prepared)
     }
 }
 

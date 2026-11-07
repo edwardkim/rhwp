@@ -75,6 +75,8 @@ python3 /moved/rhwp-native-host/run.py headless \
 # 선택 사항: 별도 가상환경에서 Qt 의존성을 설치한 뒤 창 예제를 실행한다.
 python3 -m pip install -r /moved/rhwp-native-host/examples/qt-requirements.txt
 python3 /moved/rhwp-native-host/run.py window --input /documents/source.hwp
+python3 /moved/rhwp-native-host/run.py window --renderer auto
+python3 /moved/rhwp-native-host/run.py window --recovery-dir /documents/recovery
 ```
 
 headless의 `--output`은 필수이며 새 HWPX 파일이어야 한다. window의 `--input`과

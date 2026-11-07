@@ -14,6 +14,9 @@ use crate::DocumentCore;
 
 use super::{NativeDocumentSession, NativeHostError};
 
+#[path = "ime_edit.rs"]
+pub mod ime_edit;
+
 const DEFAULT_HISTORY_CAPACITY: usize = 16;
 
 /// The host must choose what losing input focus does to an active composition.
@@ -49,6 +52,9 @@ struct Composition {
     id: u64,
     before: u32,
     selection_before: NativeTextSelection,
+    /// The replaced span can differ from the user's undo/cancel selection when
+    /// an atomic IME event supplies an explicit surrounding-text range.
+    replacement_range: NativeTextSelection,
     original_text: String,
     preview_text: Option<String>,
     changed: bool,
@@ -321,6 +327,7 @@ impl NativeEditor {
             id: self.next_composition_id,
             before,
             selection_before: self.selection.clone(),
+            replacement_range: self.selection.clone(),
             original_text,
             preview_text: None,
             changed: false,
@@ -343,7 +350,7 @@ impl NativeEditor {
         if composition.preview_text.as_deref() == Some(text) {
             return Ok(self.outcome(false, false));
         }
-        let selection_before = composition.selection_before.clone();
+        let selection_before = composition.replacement_range.clone();
         let selection_after = Self::replacement_end(&selection_before, text)?;
         let before = composition.before;
         let changed = text != composition.original_text;

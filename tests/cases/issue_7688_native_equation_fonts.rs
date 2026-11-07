@@ -144,3 +144,150 @@ fn explicit_font_substitution_rejects_missing_supply_and_empty_requests() {
         .with_font_family_alias(" ", "RHWP Equation Contract")
         .is_err());
 }
+
+fn check_positioned_hancom_fallback(family: &'static str, text: &str, expect_primary: bool) {
+    use rhwp::renderer::equation::hancom_glyphs::GlyphRun;
+    use rhwp::renderer::equation::layout::{LayoutBox, LayoutKind};
+    use rhwp::renderer::render_tree::{BoundingBox, EquationNode};
+    use skia_safe::{
+        font, surfaces, AlphaType, Color, ColorType, Data, Font, FontMgr, ImageInfo, Paint,
+    };
+
+    const PRIMARY: &[u8] = include_bytes!("../fixtures/fonts/RHWPExactKerningSmoke.ttf");
+    const FALLBACK: &[u8] = include_bytes!("../fixtures/fonts/RHWPEquationCJKRegular.ttf");
+    let font_mgr = FontMgr::default();
+    let original = font_mgr
+        .new_from_data(Data::new_copy(PRIMARY), Some(0))
+        .unwrap();
+    let fallback = font_mgr
+        .new_from_data(Data::new_copy(FALLBACK), Some(0))
+        .unwrap();
+    assert_ne!(original.unichar_to_glyph('A' as i32), 0);
+    assert_eq!(original.unichar_to_glyph('평' as i32), 0);
+    let run = GlyphRun {
+        font_family: family,
+        glyphs: text.into(),
+        positions: vec![3.0, 70.0, 121.0],
+        shears: vec![0.3, -0.2, 0.5],
+        // Natural fallback advances deliberately differ from the source positions.
+        width: 191.0,
+        baseline_shift: 7.0,
+    };
+    let layout = LayoutBox {
+        font_size: 32.0,
+        x: 11.0,
+        y: 4.0,
+        width: run.width,
+        height: 70.0,
+        baseline: 41.0,
+        kind: LayoutKind::HancomGlyphs(run.clone()),
+    };
+    let equation = EquationNode {
+        svg_content: String::new(),
+        layout_box: layout,
+        color_str: "#000000".into(),
+        color: 0,
+        font_size: 32.0,
+        script: String::new(),
+        section_index: None,
+        para_index: None,
+        control_index: None,
+        cell_index: None,
+        cell_para_index: None,
+        note_ref: None,
+    };
+    let renderer = SkiaLayerRenderer::new()
+        .try_with_font_data(&[PRIMARY.to_vec(), FALLBACK.to_vec()])
+        .unwrap()
+        .with_font_family_alias("RHWP Original Equation", &original.family_name())
+        .unwrap()
+        .with_font_family_alias("Haansoft Batang", &fallback.family_name())
+        .unwrap()
+        .with_font_family_alias("Latin Modern Math", &fallback.family_name())
+        .unwrap();
+    let reference = |use_primary: bool| {
+        let mut surface = surfaces::raster_n32_premul((240, 100)).unwrap();
+        let canvas = surface.canvas();
+        canvas.clear(Color::TRANSPARENT);
+        let mut paint = Paint::default();
+        paint.set_anti_alias(true);
+        paint.set_color(Color::BLACK);
+        for ((ch, offset), shear) in run.glyphs.chars().zip(&run.positions).zip(&run.shears) {
+            let face = if use_primary && original.unichar_to_glyph(ch as i32) != 0 {
+                &original
+            } else {
+                &fallback
+            };
+            assert_ne!(face.unichar_to_glyph(ch as i32), 0, "fixture lacks {ch}");
+            let mut font = Font::new(face.clone(), 32.0);
+            font.set_edging(font::Edging::AntiAlias);
+            font.set_hinting(skia_safe::FontHinting::None);
+            font.set_subpixel(true);
+            font.set_skew_x(-(*shear as f32));
+            canvas.draw_str(
+                ch.to_string(),
+                ((24.0 + offset) as f32, 58.0),
+                &font,
+                &paint,
+            );
+        }
+        let image = surface.image_snapshot();
+        let info = ImageInfo::new((240, 100), ColorType::RGBA8888, AlphaType::Unpremul, None);
+        let mut pixels = vec![0u8; 240 * 100 * 4];
+        assert!(image.read_pixels(
+            &info,
+            &mut pixels,
+            240 * 4,
+            (0, 0),
+            skia_safe::image::CachingHint::Disallow
+        ));
+        image::RgbaImage::from_raw(240, 100, pixels).unwrap()
+    };
+    for profile in [RenderProfile::Screen, RenderProfile::Print] {
+        let tree = PageLayerTree::with_profile(
+            240.0,
+            100.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 240.0, 100.0),
+                None,
+                vec![PaintOp::equation(
+                    BoundingBox::new(13.0, 6.0, 210.0, 80.0),
+                    equation.clone(),
+                )],
+            ),
+            profile,
+        );
+        let actual = image::load_from_memory(&renderer.render_png(&tree).unwrap())
+            .unwrap()
+            .to_rgba8();
+        assert!(
+            actual.pixels().any(|pixel| pixel[3] > 0),
+            "fallback must paint ink"
+        );
+        assert!(
+            actual == reference(expect_primary),
+            "fallback moved source positions, baseline or shear ({profile:?})"
+        );
+        if expect_primary {
+            assert!(
+                actual != reference(false),
+                "available original outlines must remain selected"
+            );
+        }
+    }
+}
+
+#[test]
+fn missing_hancom_family_uses_character_fallback_at_source_positions() {
+    check_positioned_hancom_fallback("RHWP Missing Hancom Equation Fixture", "A평A", false);
+}
+
+#[test]
+fn partial_hancom_face_falls_back_only_for_the_missing_character() {
+    check_positioned_hancom_fallback("RHWP Original Equation", "A평A", true);
+}
+
+#[test]
+fn complete_hancom_face_retains_original_outlines_and_placement() {
+    check_positioned_hancom_fallback("RHWP Original Equation", "AAA", true);
+}

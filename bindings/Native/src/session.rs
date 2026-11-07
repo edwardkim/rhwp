@@ -10,7 +10,9 @@ use rhwp_core::document_core::native_interaction::{
     NativeTextPosition, NativeTextSelection, NativeVerticalDirection,
 };
 use rhwp_core::native_host::accessibility::NativeAccessibilityRequest;
+use rhwp_core::native_host::editor::ime_edit::{NativeImeEdit, NativeImeEditContext};
 use rhwp_core::native_host::editor::{NativeCompositionFocusLoss, NativeEditOutcome, NativeEditor};
+use rhwp_core::native_host::presentation::{NativePresentationId, NativePresentationStamp};
 use rhwp_core::native_host::runtime::{
     NativeRequestId, NativeRuntime, NativeRuntimeCommand, NativeRuntimeConfig, NativeRuntimeOutput,
     NativeRuntimeTarget,
@@ -35,8 +37,25 @@ static NEXT_HANDLE: AtomicU64 = AtomicU64::new(1);
 struct Host {
     sessions: HashMap<u64, ManagedSession>,
     workers: HashMap<u64, NativeRuntime>,
+    presentation_sources: HashMap<u64, NativePresentationId>,
     buffers: HashMap<u64, Vec<u8>>,
     buffer_bytes: usize,
+}
+
+impl Host {
+    fn close_presentation_sources(&mut self) {
+        for (_, source) in self.presentation_sources.drain() {
+            let _ = crate::presentation::registry().close_source(source);
+        }
+    }
+}
+
+impl Drop for Host {
+    fn drop(&mut self) {
+        // Global source handles must not outlive a disappearing TLS owner.
+        // Already transferred snapshots/leases retain their independent data.
+        self.close_presentation_sources();
+    }
 }
 
 enum ManagedSession {
@@ -172,6 +191,14 @@ enum Request {
     ImeContext {
         expected_revision: u64,
     },
+    ImeEditContext {
+        expected_revision: u64,
+    },
+    ApplyImeEdit {
+        expected_revision: u64,
+        expected: Box<NativeImeEditContext>,
+        edit: NativeImeEdit,
+    },
     CopySelection {
         expected_revision: u64,
     },
@@ -270,6 +297,10 @@ enum Request {
     },
     ClearCaches {},
     CacheStats {},
+    SetRasterCacheLimit {
+        max_bytes: usize,
+    },
+    RasterCacheStats {},
     PageSize {
         page: u32,
     },
@@ -278,6 +309,14 @@ enum Request {
         scale: f64,
     },
     RenderRegion {
+        page: u32,
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+        scale: f64,
+    },
+    RenderTiledRegion {
         page: u32,
         x: f64,
         y: f64,
@@ -308,6 +347,10 @@ enum HostRequest {
         replace: Option<NativeRuntimeTarget>,
         password: Option<Vec<u8>>,
     },
+    WorkerOpenRecovery {
+        worker: u64,
+        replace: Option<NativeRuntimeTarget>,
+    },
     WorkerPoll {
         worker: u64,
     },
@@ -323,6 +366,10 @@ enum HostRequest {
     },
     WorkerRelease {
         worker: u64,
+    },
+    PresentationConfigure {
+        worker: u64,
+        stamp: NativePresentationStamp,
     },
     View {
         state: NativeViewState,
@@ -371,7 +418,7 @@ enum ViewCommand {
     },
 }
 
-/// Platform-neutral host operations. Only workerOpen consumes binary document bytes.
+/// Platform-neutral host operations. The worker open operations consume binary document bytes.
 /// # Safety
 /// Each nonempty span must be readable for its declared length during the call.
 #[no_mangle]
@@ -386,7 +433,11 @@ pub unsafe extern "C" fn rhwp_native_host_request(
         let data = unsafe { input(data, data_len, MAX_DOCUMENT_BYTES)? };
         let request: HostRequest = serde_json::from_slice(request)
             .map_err(|_| NativeHostError::InvalidArgument("invalid host request JSON".into()))?;
-        if !matches!(&request, HostRequest::WorkerOpen { .. }) && !data.is_empty() {
+        if !matches!(
+            &request,
+            HostRequest::WorkerOpen { .. } | HostRequest::WorkerOpenRecovery { .. }
+        ) && !data.is_empty()
+        {
             return Err(NativeHostError::InvalidArgument(
                 "this request does not accept binary data".into(),
             ));
@@ -409,6 +460,11 @@ pub unsafe extern "C" fn rhwp_native_host_request(
                 let mut host=host.borrow_mut();
                 let runtime=host.workers.get_mut(&worker).ok_or_else(invalid_handle)?;
                 Ok(worker_submit_result(runtime.try_submit(NativeRuntimeCommand::Open {replace,bytes:data.to_vec(),password})))
+            }),
+            HostRequest::WorkerOpenRecovery { worker,replace } => HOST.with(|host| {
+                let mut host=host.borrow_mut();
+                let runtime=host.workers.get_mut(&worker).ok_or_else(invalid_handle)?;
+                Ok(worker_submit_result(runtime.try_submit(NativeRuntimeCommand::OpenRecovery {replace,bytes:data.to_vec()})))
             }),
             HostRequest::WorkerPoll { worker } => HOST.with(|host| {
                 let mut host=host.borrow_mut();
@@ -435,7 +491,11 @@ pub unsafe extern "C" fn rhwp_native_host_request(
                 let mut host=host.borrow_mut();
                 let runtime=host.workers.get_mut(&worker).ok_or_else(invalid_handle)?;
                 runtime.close();
-                Ok(json!({"ok":true,"isFinished":runtime.is_finished()}))
+                let finished = runtime.is_finished();
+                if let Some(source) = host.presentation_sources.remove(&worker) {
+                    let _ = crate::presentation::registry().close_source(source);
+                }
+                Ok(json!({"ok":true,"isFinished":finished}))
             }),
             HostRequest::WorkerStatus { worker } => HOST.with(|host| {
                 let host=host.borrow();
@@ -446,11 +506,28 @@ pub unsafe extern "C" fn rhwp_native_host_request(
                 let mut host=host.borrow_mut();
                 if !host.workers.get(&worker).ok_or_else(invalid_handle)?.is_finished() {return Err(NativeHostError::InvalidArgument("close worker and wait for isFinished before releasing it or unloading the library".into()));}
                 let mut runtime=host.workers.remove(&worker).ok_or_else(invalid_handle)?;
+                if let Some(source) = host.presentation_sources.remove(&worker) {
+                    let _ = crate::presentation::registry().close_source(source);
+                }
                 match runtime.try_join() {
                     Ok(true)=>Ok(json!({"ok":true})),
                     Ok(false)=>unreachable!("finished worker can join"),
                     Err(error)=>Ok(json!({"ok":false,"code":error.code(),"error":error.to_string()})),
                 }
+            }),
+            HostRequest::PresentationConfigure { worker, stamp } => HOST.with(|host| {
+                let mut host = host.borrow_mut();
+                let runtime = host.workers.get(&worker).ok_or_else(invalid_handle)?;
+                let registry = crate::presentation::registry();
+                let source = if let Some(source) = host.presentation_sources.get(&worker).copied() {
+                    registry.configure_source(source, stamp)?;
+                    source
+                } else {
+                    let source = registry.create_source(runtime.observer(), stamp)?;
+                    host.presentation_sources.insert(worker, source);
+                    source
+                };
+                Ok(json!({"ok":true,"source":source,"stamp":stamp}))
             }),
             HostRequest::View { state, command } => {
                 let mut view = NativeView::try_from(state)?;
@@ -515,11 +592,39 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
             NativeRuntimeOutput::ImeContext(context) => {
                 json!({"ok":true,"kind":"imeContext","context":context})
             }
+            NativeRuntimeOutput::ImeEditContext(context) => {
+                json!({"ok":true,"kind":"imeEditContext","context":context})
+            }
             NativeRuntimeOutput::Clipboard { payload, outcome } => {
                 json!({"ok":true,"kind":"clipboard","payload":payload,"outcome":outcome})
             }
             NativeRuntimeOutput::Accessibility { target, snapshot } => {
                 json!({"ok":true,"kind":"accessibility","target":target,"snapshot":snapshot})
+            }
+            NativeRuntimeOutput::RenderSnapshot {
+                document_id,
+                snapshot,
+            } => {
+                let source = host
+                    .presentation_sources
+                    .get(&worker)
+                    .copied()
+                    .ok_or_else(|| {
+                        NativeHostError::InvalidArgument(
+                            "configure the worker presentation source before exporting a snapshot"
+                                .into(),
+                        )
+                    })?;
+                let registry = crate::presentation::registry();
+                let handle = registry.retain_snapshot(source, document_id.as_u64(), snapshot)?;
+                let info = match registry.snapshot_info(handle) {
+                    Ok(info) => info,
+                    Err(error) => {
+                        let _ = registry.release_snapshot(handle);
+                        return Err(error);
+                    }
+                };
+                json!({"ok":true,"kind":"renderSnapshot","snapshot":handle,"documentId":document_id,"info":info})
             }
             NativeRuntimeOutput::Info(info) => {
                 let mut encoded = json!(info);
@@ -531,6 +636,13 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
                 json!({"ok":true,"kind":"info","info":encoded})
             }
             NativeRuntimeOutput::DocumentClosed => json!({"ok":true,"kind":"documentClosed"}),
+            NativeRuntimeOutput::RasterCacheLimit { target, max_bytes } => {
+                json!({"ok":true,"kind":"rasterCacheLimit","target":target,"maxBytes":max_bytes})
+            }
+            #[cfg(feature = "native-skia")]
+            NativeRuntimeOutput::RasterCacheStats { target, stats } => {
+                json!({"ok":true,"kind":"rasterCacheStats","target":target,"stats":stats})
+            }
             NativeRuntimeOutput::PageSize { target, page, size } => {
                 json!({"ok":true,"kind":"pageSize","target":target,"page":page,"size":size})
             }
@@ -616,6 +728,7 @@ pub(crate) fn response(f: impl FnOnce() -> Result<Value, NativeHostError>) -> *m
                 for worker in host.workers.values_mut() {
                     worker.close();
                 }
+                host.close_presentation_sources();
             });
             json!({"ok":false,"code":"panic","error":"native host panicked; sessions and buffers invalidated, workers closing; wait for workerStatus and workerRelease before unloading"})
         }
@@ -687,6 +800,10 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
     response(|| {
         Ok(
             json!({"ok":true,"abiVersion":1,"nativeSkia":cfg!(feature="native-skia"),
+        "renderTiledRegion":cfg!(feature="native-skia"),"rasterCacheControls":cfg!(feature="native-skia"),
+        "cooperativeTiledCancellation":cfg!(feature="native-skia"),"presentation":crate::presentation::capabilities(),"gpuGl":crate::gpu_gl::capabilities(),
+        "recoveryOpen":true,
+        "atomicImeEdits":true,
         "worker":true,"maxWorkers":4,"hostRequests":true,"viewState":true,"accessibilitySnapshots":true,"threadAffine":true,"maxSessions":MAX_SESSIONS,"maxDocumentBytes":MAX_DOCUMENT_BYTES,
         "maxRequestBytes":MAX_REQUEST_BYTES,"maxBufferBytes":MAX_BUFFER_BYTES,
         "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"}),
@@ -765,6 +882,8 @@ pub unsafe extern "C" fn rhwp_session_request(
                 }
                 Request::ExecuteCommand {command,expected_revision}=>{let result=record.editor_mut()?.execute_command(expected_revision,command)?;Ok(json!({"ok":true,"outcome":result.outcome,"preferredX":result.preferred_x}))},
                 Request::ImeContext {expected_revision}=>Ok(json!({"ok":true,"context":record.editor_mut()?.ime_context(expected_revision)?})),
+                Request::ImeEditContext {expected_revision}=>Ok(json!({"ok":true,"context":record.editor_mut()?.ime_edit_context(expected_revision)?})),
+                Request::ApplyImeEdit {expected_revision, expected, edit}=>Ok(edit_result(record.editor_mut()?.apply_ime_edit(expected_revision,&expected,edit)?)),
                 Request::CopySelection {expected_revision}=>Ok(json!({"ok":true,"kind":"clipboard","payload":record.editor_mut()?.copy_selection(expected_revision)?,"outcome":null})),
                 Request::CutSelection {expected_revision}=>{
                     let (payload,outcome)=record.editor_mut()?.cut_selection(expected_revision)?;
@@ -826,6 +945,21 @@ pub unsafe extern "C" fn rhwp_session_request(
                     #[cfg(not(feature = "native-skia"))]
                     { Err(NativeHostError::FeatureDisabled) }
                 }
+                Request::SetRasterCacheLimit { max_bytes } => {
+                    #[cfg(feature = "native-skia")]
+                    {
+                        session.set_region_cache_limit(max_bytes)?;
+                        Ok(json!({"ok":true,"maxBytes":max_bytes}))
+                    }
+                    #[cfg(not(feature = "native-skia"))]
+                    { let _ = max_bytes; Err(NativeHostError::FeatureDisabled) }
+                }
+                Request::RasterCacheStats {} => {
+                    #[cfg(feature = "native-skia")]
+                    { Ok(json!({"ok":true,"stats":session.region_cache_stats()})) }
+                    #[cfg(not(feature = "native-skia"))]
+                    { Err(NativeHostError::FeatureDisabled) }
+                }
                 Request::Info {} => {
                     let (can_undo,can_redo,composition_id) = record.editing_info();
                     Ok(json!({"ok":true,"pageCount":session.document().page_count(),"revision":session.revision(),"fontGeneration":session.font_generation(),"canUndo":can_undo,"canRedo":can_redo,"compositionId":composition_id,"isDirty":session.is_dirty()}))
@@ -837,6 +971,11 @@ pub unsafe extern "C" fn rhwp_session_request(
                 }
                 Request::RenderRegion { page, x, y, width, height, scale } => {
                     let frame = session.render_region(page,
+                        rhwp_core::renderer::raster_pixels::RasterRegion { x, y, width, height }, scale)?;
+                    frame_result(&mut host, frame)
+                }
+                Request::RenderTiledRegion { page, x, y, width, height, scale } => {
+                    let frame = session.render_tiled_region(page,
                         rhwp_core::renderer::raster_pixels::RasterRegion { x, y, width, height }, scale)?;
                     frame_result(&mut host, frame)
                 }

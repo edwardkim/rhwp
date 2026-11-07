@@ -329,10 +329,13 @@ fn grapheme_span(text: &str, offset: u32, backward: bool) -> (u32, u32) {
     (start, start)
 }
 
+/// The surrounding-text window and selected-text cap share this scalar limit.
+pub const NATIVE_IME_CONTEXT_SCALARS: usize = 4096;
+
 /// Bounded surrounding text for an OS adapter. Cursor/anchor are scalar offsets
 /// inside `text`; the OS adapter converts them to UTF-16 where required.
-#[derive(Clone, Debug, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct NativeImeContext {
     pub text: String,
     pub cursor_scalar: u32,
@@ -355,8 +358,8 @@ impl NativeEditor {
         let paragraph =
             &document.sections[focus.section as usize].paragraphs[focus.paragraph as usize];
         let length = paragraph.text.chars().count();
-        let start = (focus.scalar_offset as usize).saturating_sub(2048);
-        let end = length.min(start.saturating_add(4096));
+        let start = (focus.scalar_offset as usize).saturating_sub(NATIVE_IME_CONTEXT_SCALARS / 2);
+        let end = length.min(start.saturating_add(NATIVE_IME_CONTEXT_SCALARS));
         let text = paragraph
             .text
             .chars()
@@ -374,7 +377,7 @@ impl NativeEditor {
         let mut truncated = false;
         'paragraphs: for index in from.paragraph..=to.paragraph {
             if index > from.paragraph {
-                if count == 4096 {
+                if count == NATIVE_IME_CONTEXT_SCALARS {
                     truncated = true;
                     break;
                 }
@@ -393,7 +396,7 @@ impl NativeEditor {
                 text.chars().count()
             };
             for ch in text.chars().skip(left).take(right - left) {
-                if count == 4096 {
+                if count == NATIVE_IME_CONTEXT_SCALARS {
                     truncated = true;
                     break 'paragraphs;
                 }
