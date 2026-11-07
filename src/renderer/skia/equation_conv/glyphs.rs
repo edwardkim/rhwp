@@ -176,19 +176,43 @@ pub(super) fn draw_hancom_glyphs(
             source: "hancomEquation",
         })
         .collect::<Vec<_>>();
-    let mut fallbacks = None;
+    let mut fallbacks = [None, None];
+    let mut semantic_text = None;
     let mut paint = Paint::default();
     paint.set_anti_alias(true);
     paint.set_color(color);
     for ((character, offset), shear) in run.glyphs.chars().zip(&run.positions).zip(&run.shears) {
-        let selected = if let Some(original) = select_typeface_for_character(&primary, character) {
-            Some(original)
-        } else {
-            let chain = fallbacks.get_or_insert_with(|| {
-                equation_typeface_chain(fonts, &run.glyphs, false, false, None)
-            });
-            select_typeface_for_character(chain, character).or_else(|| chain.first())
-        };
+        let (draw_character, selected, intrinsic_italic) =
+            if let Some(original) = select_typeface_for_character(&primary, character) {
+                (character, Some(original), false)
+            } else {
+                let (semantic, intrinsic_italic) =
+                    crate::renderer::equation::hancom_glyphs::semantic_fallback_glyph(
+                        run.font_family,
+                        character,
+                    )
+                    .unwrap_or((character, false));
+                let text = semantic_text.get_or_insert_with(|| {
+                    run.glyphs
+                        .chars()
+                        .map(|ch| {
+                            crate::renderer::equation::hancom_glyphs::semantic_fallback_glyph(
+                                run.font_family,
+                                ch,
+                            )
+                            .map_or(ch, |(semantic, _)| semantic)
+                        })
+                        .collect::<String>()
+                });
+                let chain = fallbacks[usize::from(intrinsic_italic)].get_or_insert_with(|| {
+                    equation_typeface_chain(fonts, text, intrinsic_italic, false, None)
+                });
+                (
+                    semantic,
+                    select_typeface_for_character(chain, semantic).or_else(|| chain.first()),
+                    intrinsic_italic,
+                )
+            };
         let mut font = selected
             .map(|candidate| Font::new(candidate.typeface.clone(), font_size as f32))
             .unwrap_or_default();
@@ -196,11 +220,17 @@ pub(super) fn draw_hancom_glyphs(
         font.set_edging(font::Edging::AntiAlias);
         font.set_hinting(skia_safe::FontHinting::None);
         font.set_subpixel(true);
-        font.set_skew_x(-(*shear as f32));
+        let intrinsic_skew =
+            if intrinsic_italic && selected.is_some_and(|face| !face.typeface.is_italic()) {
+                crate::renderer::text_transform::SYNTHETIC_ITALIC_SKEW as f32
+            } else {
+                0.0
+            };
+        font.set_skew_x(-(*shear as f32) + intrinsic_skew);
         // No measure_str or accumulated fallback advances: these are the
         // producer's original origins, baseline and per-character shear.
         canvas.draw_str(
-            character.to_string(),
+            draw_character.to_string(),
             ((x + offset) as f32, baseline_y as f32),
             &font,
             &paint,
