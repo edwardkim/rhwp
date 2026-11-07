@@ -79,3 +79,7 @@ P84–P98의 문서 교체·저장 손실 승인·외부 변경 충돌·snapshot
 ### E. 원격 판단과 후속
 
 원 PR마다 검증한 source/통합 head와 판정을 갱신하고 공통 증거는 원장으로 공유한다. 승인 가능한 범위·보정/미완료 범위·Draft P73 간접 수용 효과를 명시한 구체적인 원격 처리안과 댓글을 준비한 뒤 별도 승인을 요청한다. 승인 뒤에만 push·Open PR·새 head CI·self-review·merge·원 PR/관련 이슈 후속·기록/devel 동기화·종료 정리를 수행한다. #536·#8701은 추적 이슈의 전체 남은 범위까지 확인하고 임의 close하지 않는다. 최종 종료 시 전용 branch/worktree/ref·루트 output 전체·공유 debug를 정본에 따라 정리한다.
+
+## 2026-11-07 플랫폼 검증 범위 결정
+
+작업지시자는 Windows 11 호스트 자원의 사용을 지시했고 실제 MSVC·Windows SDK 검증을 진행했다. #8726은 추가 답변 “Metal 실험 기반에 한정해 예외 수용”에 따라 default-disabled 실험 기반으로만 제한 수용한다. macOS SDK·실물 Metal 검증 미실행과 연속 표시 차단을 숨기지 않으며, portable/비활성 ABI·공통 필수 검증은 계속한다. [결정 원장](assets/seo-rii-20261107/metal-maintainer-decision.json)을 따른다. 이는 원격 처리 승인이 아니다.

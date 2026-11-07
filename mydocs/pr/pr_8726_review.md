@@ -28,3 +28,7 @@
 ## Merge 후 contributor PR comment 계획
 
 아직 미실행인 시각 결과·이미지 URL은 만들지 않는다. 해당 PR의 실제 검증 범위·결과와 최종 통합 head가 확정되면 [Visual Sweep comment 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따른 대응 review/overlay·지표·잔여 한계를 이 절에 보완한다. devel 반영·merge SHA·API 및 실제 표시 확인 뒤 승인 범위에서 게시한다.
+
+## 메인테이너의 제한 수용 결정
+
+2026-11-07 작업지시자가 “Metal 실험 기반에 한정해 예외 수용”을 명시했다. 기본 비활성 `native-skia-metal`의 실험용 기반에 한정한다. 실제 macOS SDK compile/link·Metal 기기 실행은 미검증이며, macOS 지원 완료·연속 GPU 표시 완료로 보고하지 않는다. portable 수명·비활성 ABI와 공통 필수 검증은 면제하지 않는다. `continuousPresentationSupported:false`와 기존 불변 frame/quarantine 예산을 보존한다. [결정 원장](assets/seo-rii-20261107/metal-maintainer-decision.json). 원격 조치 승인은 별도로 확인한다.
