@@ -10,6 +10,23 @@ use super::WebCanvasRenderer;
 use crate::renderer::{PathCommand, TextStyle};
 use web_sys::DomMatrix;
 
+/// 원 윤곽과 Canvas 글자 경로가 같은 출력 profile의 장치 선 굵기를 소비한다.
+pub(super) fn width_for_profile(width: f64, space: &DomMatrix, print: bool) -> f64 {
+    if print {
+        crate::renderer::raster_stroke::width(
+            width,
+            crate::renderer::raster_stroke::minimum_width([
+                space.a(),
+                space.b(),
+                space.c(),
+                space.d(),
+            ]),
+        )
+    } else {
+        width
+    }
+}
+
 impl WebCanvasRenderer {
     /// `stroke_space`는 장평·맞춤·기울임을 적용하기 전의 변환이다. 선 굵기는 PDF처럼
     /// 그 공간에서 등방으로 적용한다. 윤곽을 확정할 수 없으면 false로 기존 경로에 맡긴다.
@@ -84,19 +101,7 @@ impl WebCanvasRenderer {
         );
         // 인쇄 래스터는 선과 같은 PDFium 최소 장치 폭 규칙을 따른다(raster_stroke).
         // 기준 PDF의 `2 Tr` stroke도 PDFium이 한 장치 픽셀보다 가늘게 그리지 않는다.
-        let width = if self.print_stroke_adjustment {
-            crate::renderer::raster_stroke::width(
-                width,
-                crate::renderer::raster_stroke::minimum_width([
-                    stroke_space.a(),
-                    stroke_space.b(),
-                    stroke_space.c(),
-                    stroke_space.d(),
-                ]),
-            )
-        } else {
-            width
-        };
+        let width = width_for_profile(width, stroke_space, self.print_stroke_adjustment);
         self.ctx.set_stroke_style_str(color);
         self.ctx.set_line_width(width);
         self.ctx.set_line_join("miter");

@@ -1,5 +1,5 @@
-// 관계형·고정형: 미등록 대비 등록 face의 paint API·잉크 관계, 인쇄 stroke 1.000px·화면 stroke=SVG 폭.
-// 주석 갱신: 2026-11-08T08:25:13.389497+09:00. 직전 파일 변경: 20a8ee978f7fdab92316e189ba072fa7450fab94 2026-11-08T07:03:03+09:00.
+// 관계형·고정형: 등록·미등록 경로가 같은 profile별 stroke를 소비한다. Print 장치 1px·Screen SVG 폭.
+// 주석 갱신: 2026-11-08T08:53:24.813454+09:00. 직전 파일 변경: cbe1f41507cf783f433acbbf62cefb8a9b0fe669 2026-11-08T08:25:14+09:00.
 // 합성 빈 문서(휴먼명조 굵게 '국민권익' + 보통 '가나', 24pt)의 실제 WASM·FontFace·Canvas paint
 // 계약이다. 한컴 문서의 시각 출력을 검증하지 않으므로 다른 원본의 raw 일치율을 이 검사의 측정값으로
 // 적지 않는다. 같은 변경의 30396 권고문 25쪽 Native/fresh WASM TSV와 대표 PNG는
@@ -133,6 +133,8 @@ test('합성 굵기는 등록한 실제 face의 윤곽 fill+stroke로 그리고 
     // 보통 굵기 대조군은 계속 fillText만 사용한다.
     assert.ok(after.plain.length > 0 && after.plain.every(call => call.name === 'fillText'), JSON.stringify(after.plain));
     const widths = [...new Set(after.pathStroke.map(width => width.toFixed(3)))];
+    const fallbackWidths = [...new Set(before.bold.filter(call => call.name === 'strokeText').map(call => call.lineWidth.toFixed(3)))];
+    assert.deepEqual(fallbackWidths, widths, `${profile}: 원 프로그램 미확인 경로도 같은 장치 선 굵기를 소비한다`);
     if (profile === 'print') {
       // 인쇄 래스터는 선과 같은 PDFium 최소 한 장치 픽셀 규칙(raster_stroke)을 따른다.
       assert.deepEqual(widths, ['1.000'], JSON.stringify(after.pathStroke));

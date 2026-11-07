@@ -157,3 +157,21 @@ producer·범위·실제 종료 코드를 보존했다.
 명시적 `if/else`로 정리했다. 조건·평가 순서·true일 때의 체인 복사·false일 때의 빈 Vec는
 같으며 동작이나 기대값을 바꾸지 않는다. 위 결과는 정리 전의 실제 기능 검증으로 보존한다.
 최종 전체 Rust·lint 및 Native/fresh WASM producer와 전쪽 TSV는 정리 후 소스로 실행한다.
+
+### 100.00% 뒤 확대 판독에서 확인한 합성 굵기
+
+법령 보고서 WASM 10쪽의 실제 review·overlay와 같은 영역 확대를 대조했다.
+괄호 모양은 복원됐지만, 주 프로그램 정보가 미확인인 경우의 일반 Canvas 글자 경로가
+인쇄용 최소 장치 선 굵기를 적용하지 않아 제목이 얇았다. 2px 실루엣 100.00%를
+모양·굵기 일치로 대신하지 않았다. 진단 영역은 실제 PNG의 동일 좌표이며 공식 overlay와
+함께 `r46-legislation-restored-wasm-panels`에 보존했다.
+
+공개 FontFace의 등록·미등록 경로가 같은 Print stroke를 소비해야 한다는 실제 브라우저
+반례를 추가했다. 수정 전 실제 값은 0.640, 독립 Print 장치 규칙을 소비하는 윤곽 경로는
+1.000이었다. `logs/r46-fallback-weight-before.log`의 종료 코드는 1이다. 실물 원점의 px
+핀을 추가한 검사가 아니라 공개 글꼴과 Canvas profile의 선 굵기 계약이다.
+
+`faux_bold_outline::width_for_profile`을 공통 계산으로 두고 윤곽 경로와 일반 글자·효과
+경로가 같은 규칙을 소비하도록 보정한다. 저장 폭·줄 구성·글자 원점은 바꾸지 않는다.
+실제 outline을 모르는 주 글꼴을 뒤 family로 바꾸지 않으며 Screen의 원래 0.02em도
+보존한다. 새 최적화 WASM에서 브라우저 반례와 실물 제목의 굵기를 다시 확인한다.

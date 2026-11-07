@@ -2984,6 +2984,7 @@ impl Renderer for WebCanvasRenderer {
                                 y,
                                 style,
                                 font_size,
+                                self.print_stroke_adjustment,
                             );
                         } else {
                             let _ = self.ctx.fill_text(cluster_str, char_x, y);
@@ -3036,6 +3037,7 @@ impl Renderer for WebCanvasRenderer {
                                 0.0,
                                 style,
                                 font_size,
+                                self.print_stroke_adjustment,
                             );
                         }
                         self.ctx.restore();
@@ -3089,7 +3091,13 @@ impl Renderer for WebCanvasRenderer {
                             });
                         if !painted {
                             Self::fill_positioned_text(
-                                &self.ctx, glyph_text, 0.0, 0.0, style, font_size,
+                                &self.ctx,
+                                glyph_text,
+                                0.0,
+                                0.0,
+                                style,
+                                font_size,
+                                self.print_stroke_adjustment,
                             );
                         }
                         self.ctx.restore();
@@ -3669,6 +3677,7 @@ impl WebCanvasRenderer {
         y: f64,
         style: &TextStyle,
         font_size: f64,
+        print_stroke_adjustment: bool,
     ) {
         if let Some(explicit) = style.text_paint {
             ctx.save();
@@ -3700,6 +3709,9 @@ impl WebCanvasRenderer {
         }
         let _ = ctx.fill_text(text, x, y);
         if let Some(width) = super::faux_bold_stroke_width(style, font_size) {
+            let width = ctx.get_transform().ok().map_or(width, |space| {
+                faux_bold_outline::width_for_profile(width, &space, print_stroke_adjustment)
+            });
             ctx.save();
             ctx.set_stroke_style_str(&color_to_css(style.color));
             ctx.set_line_width(width);
@@ -3742,7 +3754,14 @@ impl WebCanvasRenderer {
                 ctx.set_line_width(if stroke {
                     line_width
                 } else {
-                    faux_width.unwrap_or(0.0)
+                    let width = faux_width.unwrap_or(0.0);
+                    ctx.get_transform().ok().map_or(width, |space| {
+                        faux_bold_outline::width_for_profile(
+                            width,
+                            &space,
+                            self.print_stroke_adjustment,
+                        )
+                    })
                 });
             }
             for (char_idx, cluster_str) in clusters {
