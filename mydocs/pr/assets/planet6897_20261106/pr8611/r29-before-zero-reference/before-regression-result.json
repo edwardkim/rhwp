@@ -1,0 +1,17 @@
+{
+  "product_commit": "91109ff833dd5e29e120bb960b7410f15dae1e8f",
+  "test_file": "tests/cases/marker_zero_style_ownership.rs",
+  "environment": "공개 글꼴5개만 노출한 최소 환경, Cargo jobs8, release-test, target/pr-review",
+  "tests": 3,
+  "passed": 1,
+  "failed": 2,
+  "exit_code": 100,
+  "failures": [
+    "zero_is_a_valid_source_style_with_its_own_size_color_and_emboss",
+    "aliasing_the_same_source_style_does_not_move_marker_or_body"
+  ],
+  "normal_control": "explicit_no_reference_still_inherits_the_paragraph_style",
+  "log": "output/pr-review/planet6897-integration-20261106/logs/r30-zero-reference-before.log",
+  "note": "보정 전 제품에 새 검사만 추가해 실행. 검사 본문은 보정본과 동일하며 주석 작성 시각만 실제 시각으로 정정했다.",
+  "current_assertion_body_sha256": "0ca744efbcf3880f827f859ff389f1ee0ceec221f1b5a258457e4f4e08a92994"
+}

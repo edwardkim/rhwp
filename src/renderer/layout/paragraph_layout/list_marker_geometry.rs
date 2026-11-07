@@ -119,8 +119,7 @@ pub(super) fn nominal_marker_size(
     end_id: u32,
     fallback_size: f64,
 ) -> f64 {
-    let id = if head.char_shape_id != 0
-        && head.char_shape_id != u32::MAX
+    let id = if head.char_shape_id != u32::MAX
         && (head.char_shape_id as usize) < styles.char_styles.len()
     {
         if follows_body_size(styles, head.char_shape_id) {

@@ -1,0 +1,45 @@
+{
+  "role": "R29 수정 전 실패 증거. 전쪽90% 하한은 만족하지만 base 대비0.1%p 조건은 미달하며 최종 승인 자료가 아님.",
+  "product_commit": "91109ff833dd5e29e120bb960b7410f15dae1e8f",
+  "input": "samples/basic/sungeo.hwp",
+  "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+  "pdf": "pdf/basic/sungeo-hwp-2020.pdf",
+  "pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+  "dpi": 96,
+  "metric": "색상 경계 보정 전2px raw",
+  "rows": [
+    {
+      "backend": "native",
+      "pages": 94,
+      "minimum": 98.93,
+      "page": 5,
+      "page_raw": 98.92924,
+      "pdf_png_sha256": "3fa1cbe0c22d5d04339e7e833b5e90d4e62bff3233d2a812b2616c404f0ce79f",
+      "tsv_sha256": "65c74d3949dee4c667e7157a87f36f603efffe0470ad5e3e00ab700994d4881d",
+      "measurement_log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r29-direction-native/sungeo/run.log",
+      "producer": {
+        "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-batch-corrections-r29",
+        "sha256": "c79fa22ef3367042121a0d4c20f8ca06e3916b9e760d0410e7c823ceeb7d2962"
+      },
+      "actual_png_sha256": "9ea585bef889842bc7b384be42d5eccee11579a93fe29c739dd8ca4a4966dac4"
+    },
+    {
+      "backend": "wasm",
+      "pages": 94,
+      "minimum": 98.93,
+      "page": 5,
+      "page_raw": 98.95551,
+      "pdf_png_sha256": "3fa1cbe0c22d5d04339e7e833b5e90d4e62bff3233d2a812b2616c404f0ce79f",
+      "tsv_sha256": "ce6e31807b88b226aee1a4aff5bb78f41aaf6afea1a7dcaf56743d9bf554ab63",
+      "measurement_log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r29-direction-wasm/sungeo/run.log",
+      "producer": {
+        "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-batch-corrections-r29",
+        "sha256": {
+          "rhwp.js": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+          "rhwp_bg.wasm": "df84f095cc3e4f10a4009b45c7e2afe728bc7eb4743410462df220a2c5a9cf09"
+        }
+      },
+      "actual_png_sha256": "e6e17f1a4ac90d6742eb4387f130f55f22ac30ff61b493107f71b2f76ede12d5"
+    }
+  ]
+}

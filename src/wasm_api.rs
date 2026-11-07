@@ -8577,6 +8577,11 @@ impl HwpDocument {
             attr: 1 << 3,
             ..Default::default()
         }; // a,b,c
+
+        // 합성 기본 목록은 문서의 0번 모양을 참조하지 않고 본문을 따른다.
+        for head in &mut n.heads {
+            head.char_shape_id = u32::MAX;
+        }
         self.core.document.doc_info.numberings.push(n);
         // 새 번호 정의는 DocInfo 원본 스트림에 없어 HWP 저장이 모델에서 다시 쓰게 한다.
         self.core.document.doc_info.raw_stream_dirty = true;
@@ -8641,6 +8646,9 @@ impl HwpDocument {
 
         n.start_number = json_i32(json, "startNumber").unwrap_or(1) as u16;
         n.level_start_numbers = [n.start_number as u32; crate::model::style::NUMBERING_LEVELS];
+        for head in &mut n.heads {
+            head.char_shape_id = u32::MAX;
+        }
         self.core.document.doc_info.numberings.push(n);
         // 새 번호 정의는 DocInfo 원본 스트림에 없어 HWP 저장이 모델에서 다시 쓰게 한다.
         self.core.document.doc_info.raw_stream_dirty = true;
@@ -8708,6 +8716,7 @@ impl HwpDocument {
             bullet_char: bullet_ch,
             attr: 1 << 3, // 자동 내어쓰기 (한/글 기본 머리 모양)
             text_distance: 50,
+            char_shape_id: u32::MAX,
             ..Default::default()
         };
         self.core.document.doc_info.bullets.push(b);

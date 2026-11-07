@@ -5545,6 +5545,8 @@ fn ensure_hwp3_default_outline_numbering(
     for (head, number_format) in numbering.heads.iter_mut().zip(formats) {
         *head = NumberingHead {
             number_format,
+            // HWP3 기본 개요는 문단 글자 모양을 따르며 문서의 0번을 참조하지 않는다.
+            char_shape_id: u32::MAX,
             ..Default::default()
         };
     }

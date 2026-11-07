@@ -30,7 +30,7 @@ fn collect<'a>(node: &'a RenderNode, runs: &mut Vec<(&'a RenderNode, &'a TextRun
 fn original_parenthesis_uses_the_latin_owner_instead_of_the_preceding_hanja_program() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
     let core = DocumentCore::from_bytes(
-        &std::fs::read(root.join("samples/basic/sungeo.hwp")).expect("정식 선거 문서"),
+        &std::fs::read(root.join("samples/basic/sungeo.hwp")).expect("정식 고사성어 원본"),
     )
     .unwrap();
     let source = &core.document().sections[1].paragraphs[63];

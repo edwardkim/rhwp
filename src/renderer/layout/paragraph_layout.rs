@@ -885,8 +885,8 @@ pub(crate) fn list_marker_geometry(
 /// `pr-1674.hwp` 글머리표 1(Wingdings `U+F06C`, 글자 모양 26 = 10pt, 거리 30%)의 문단 본문은
 /// 14pt 다. 한/글 2024 PDF 12쪽의 마커는 9.96pt 로 그려지고 영역은 1296 HWPUNIT
 /// (= 1000 + 30% × 1000)이다 — 본문 글자 모양으로 재면 1820 이 되어 한 줄 문단이 두 줄로 넘친다.
-/// `u32::MAX` 는 참조 없음이다. 0 도 참조 없음으로 본다 — 편집기·HWP3 가 만드는 기본 머리 모양이
-/// 글자 모양 필드를 0 으로 두며, 문서의 0번 글자 모양은 본문 기본 모양이라 첫 글자 모양과 같은 자리다.
+/// `u32::MAX`는 참조 없음이다. 0번도 유효한 문서 글자 모양이므로 본문과 구분한다.
+/// 별도 모양을 참조하지 않는 편집기·HWP3의 합성 머리는 생성 단계에서 센티널을 명시한다.
 /// 참조한 글자 모양의 기준 크기가 0 이면(한/글 '본문 글자 크기 따름') 문단 끝 글자 모양 `end_id` 의
 /// 크기로 그린다([`paragraph_end_char_shape_id`]).
 fn marker_char_style(
@@ -896,7 +896,7 @@ fn marker_char_style(
     end_id: u32,
 ) -> Option<TextStyle> {
     let id = head.char_shape_id;
-    if id == u32::MAX || id == 0 || (id as usize) >= styles.char_styles.len() {
+    if id == u32::MAX || (id as usize) >= styles.char_styles.len() {
         return None;
     }
     Some(head_marker_text_style(styles, id, end_id, text))
