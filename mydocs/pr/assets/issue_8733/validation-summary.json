@@ -63,9 +63,15 @@
     ]
   },
   "hancom": {
-    "status": "blocked",
+    "status": "fill-and-hatch-appearance-confirmed",
     "version": "2020 / 11.0.0.9166",
-    "reason": "Application launch approval timed out; no document was opened and no Print PDF was created.",
+    "producer": "Hancom PDF 1.3.0.550",
+    "requestedInputsObserved": 7,
+    "preservedPdfFiles": 7,
+    "manifest": "hancom-print-manifest.json",
+    "explicit100PercentScale": "unverified",
+    "quantitativeVisualGate": "Numeric threshold passed; overall visual acceptance withheld for raw-zero hatch mismatch and unverified Print scale",
+    "originalTableHwpPdf": "Initial PDF overwritten; hash and raster retained. A verified HWP reprint is now included.",
     "securityBypass": false,
     "remoteUpload": false
   },
@@ -120,5 +126,76 @@
       "bytes": 70188,
       "sha256": "23379d380cd098e579ee9e50a7ae5e53c58235c2c76f12e5e85e58ad880a0fb9"
     }
-  ]
+  ],
+  "ci": {
+    "head": "0352c9deee13130f374cfc8015384512ecc6256c",
+    "checkedDateUtc": "2026-11-07",
+    "workflows": [
+      {
+        "name": "CI",
+        "run": 42349923309,
+        "conclusion": "success"
+      },
+      {
+        "name": "Render Diff",
+        "run": 42349923301,
+        "conclusion": "success"
+      },
+      {
+        "name": "CodeQL",
+        "run": 42349923254,
+        "conclusion": "success"
+      },
+      {
+        "name": "Adapter inter-diff",
+        "run": 42349923251,
+        "conclusion": "success"
+      },
+      {
+        "name": "Proptest roundtrip",
+        "run": 42349923283,
+        "conclusion": "success"
+      }
+    ]
+  },
+  "visual": {
+    "sourceHead": "0352c9deee13130f374cfc8015384512ecc6256c",
+    "dpi": 96,
+    "compat": "2022",
+    "profile": "print",
+    "radiusPx": 2,
+    "inputScalingOrMasking": false,
+    "native": {
+      "buildCommand": "cargo build --locked --release --features native-skia --bin rhwp",
+      "rust": "1.93.1",
+      "cargoTargetDir": "target/pr-review",
+      "jobs": 4,
+      "buildExit": 0,
+      "scoresExit": 0,
+      "reviewExit": 0,
+      "binarySha256": "2284ff6defecbd40754af052d47d6bd63c2b2ab56a28b3ee3276552b8b5e15ec",
+      "pages": 7,
+      "rawMinimumPercent": 100,
+      "below90": 0,
+      "inspection": "native/inspection.json"
+    },
+    "wasm": {
+      "pages": 7,
+      "rawMinimumPercent": 100,
+      "below90": 0,
+      "artifactSha256": "9a54d8e810e09e0a2e26de9a9f27ee10591765f350777408414a4dc3f5d7eb49",
+      "inspection": "wasm/inspection.json"
+    },
+    "manualReview": {
+      "newSolidAndExplicitNoneMatchesPerBackend": 6,
+      "mismatchedControl": "imported-raw-zero-hwp",
+      "remainingDifference": "Hancom horizontal hatch absent in Native and WASM page renderers",
+      "fullVisualAcceptance": false
+    },
+    "limitations": [
+      "Explicit 100% Print scales not observed",
+      "Xpdf pdftotext 4.00 lacks -bbox-layout; marker extraction skipped with exit 99 on text-free synthetic inputs",
+      "Existing raw-zero renderer mismatch remains; numeric silhouette score is insufficient"
+    ]
+  }
 }

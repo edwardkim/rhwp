@@ -40,13 +40,38 @@ https://github.com/edwardkim/rhwp/pull/7608
 - workspace build: 통과(exit 0, 4분 20초). workspace all-target Clippy: 통과(exit 0, 3분 20초).
 - 전체 release-test: 55개 바이너리, 12,767건 통과, 45건 skip, exit 0. 명령 전체 40분 33초(컴파일 15분 12초 포함).
 
-새 Rust 검사는 HWP DocInfo의 BorderFill 원시 바이트와 HWP/HWPX 재열기 결과를 검증한다. 기존 가로 무늬 0 및 양수 무늬의 HWP 저장 보존, 배경색만 바꾸는 편집, 무늬만 없애는 편집을 포함한다. 한컴 2020(11.0.0.9166)은 설치되어 있으나 지원 도구의 앱 실행 승인이 시간 초과되어 문서를 열거나 직접 인쇄하지 못했다. 승인 우회나 원격 업로드는 하지 않았다. 전체 양수 무늬 형식 간 대응도 이번 수정 범위가 아니다.
+새 Rust 검사는 HWP DocInfo의 BorderFill 원시 바이트와 HWP/HWPX 재열기 결과를 검증한다. 기존 가로 무늬 0 및 양수 무늬의 HWP 저장 보존, 배경색만 바꾸는 편집, 무늬만 없애는 편집을 포함한다. 후속 사용자 승인으로 한컴 2020(11.0.0.9166) 실행과 실제 Print 확인을 완료했다. 새 단색 HWP/HWPX 및 명시적 무늬 제거 결과는 단색이고, 기존 무늬 0은 가로 무늬를 유지했다. 승인 우회나 원격 업로드는 하지 않았다. 전체 양수 무늬 형식 간 대응도 이번 수정 범위가 아니다.
 
 ## 제출 후보와 증적
 
 사용자가 남은 검증과 PR 제출을 승인한 후 최종 optimized WASM 및 Studio 전체 검증을 완료했다. 코드 commit은 `cf88d4c70`, Windows 테스트 경로 보정은 `e551fcc76`이며, Rust 전체 검증 이후 제품·Rust 테스트 소스는 동일하다. 이후 추가되는 파일은 보고서와 검증 입력뿐이다.
 
 - 공개 가능한 합성 HWP/HWPX, 대화상자 PNG, 파일 해시와 검증 집계: [검증 입력](../pr/assets/issue_8733/README.md).
-- 한컴 직접 인쇄는 앱 실행 승인 시간 초과로 미검증이다. 이를 통과했다고 표시하지 않으며, 양수 무늬 번호 전체 매핑이나 기존 손상 문서 자동 복구도 주장하지 않는다.
+- [한컴 Print PDF](../pr/assets/issue_8733/hancom-print.md)와 [입력·출력 해시 및 대응 근거](../pr/assets/issue_8733/hancom-print-manifest.json)를 보존한다. 명시적 100% 인쇄 배율은 미확인이고 최초 표 HWP PDF는 덮어쓰기되어 원본 래스터와 해시만 남았다. 이를 canonical 조판 기준 또는 전체 시각 gate 통과로 주장하지 않는다.
 - 생성된 `rhwp-studio/public/` WASM glue와 WASM 바이너리는 제출에서 제외한다.
 - 이 보고서는 제출 후보의 로컬 검증 기록이다. 원격 CI 결과는 PR의 정확한 head에서 별도로 확인하며 merge는 사용자 승인 없이 수행하지 않는다.
+
+## 후속 독립 Print 확인
+
+2026-11-07에 실제 한글 2020과 Hancom PDF 1.3.0.550 Print 경로로 요청한 7개 합성 입력의 채움·무늬 동작을 확인했다. 현재 보존된 PDF는 후속 표 HWP 재인쇄를 포함해 7개이며 모두 A4 1쪽이다. 두 HWPX 출력의 원본 확장자는 출력자가 직접 확인했다.
+
+- 새 단색 셀·표 HWP/HWPX: 배경 RGB(170,187,204), 가로 무늬 없음.
+- imported-raw-zero.hwp: 가로 무늬가 유지됨.
+- cell-cleared-zero.hwp와 table-cleared-zero.hwp: 명시적 무늬 제거 후 단색 유지.
+- 새 셀 HWP와 HWPX Print의 240 DPI 래스터가 바이트 단위로 동일함. 다른 파일 간 완전한 픽셀 일치는 주장하지 않음.
+- 최초 표 HWP PDF는 뒤의 HWPX 수동 인쇄 중 덮어쓰기되었으며, 최초 원본 래스터와 SHA 기록은 남아 있음. 07:34:16 UTC에 실제 HWP를 다시 인쇄한 별도 PDF도 보존함. HWPX PDF는 덮어쓰기 전에 별도 사본으로 보존함.
+- 최초 셀 인쇄의 전체 페이지·기본 인쇄·한 쪽 도식은 관찰했으나 명시적 가로·세로 100% 배율은 확인하지 못함. 배율 확인 시 창이 닫혀 있었고, 이후 HWP 재인쇄 때도 확장 탭 활성화 실패로 배율을 확인하지 못했음. 과거 설정은 추정하지 않음.
+
+Native/fresh WASM 시각 측정은 보조값·직접 판독·인쇄 조건을 구분해 보고한다. 현재 확정 7쌍의 fresh optimized WASM 전체 1쪽 raw silhouette는 모두 100.00%이며 누락·unmatched pixel은 0이다. `silhouette_only` 결과의 gate는 `not_evaluated`이므로 이 값만으로 시각 검증 완료를 선언하지 않는다. WASM 대표 이미지 판독에서는 새 단색·명시적 제거 6개는 채움·배치가 일치하고 raw0 대조군 1개는 내부 가로 무늬 누락이 확인됐다. Native 스키아 빌드·7개 측정·전체 리뷰도 exit 0으로 완료했다. Native 각 1쪽의 raw silhouette 역시 모두 100.00%이고, 직접 판독에서는 같은 raw0 가로 무늬 누락이 확인됐다. 다른 6개는 채움·배치가 일치하고 경계 래스터 차이는 남는다.
+
+## 원격 CI
+
+제출 head `0352c9deee13130f374cfc8015384512ecc6256c`에서 [메인 CI](https://github.com/edwardkim/rhwp/actions/runs/42349923309), CodeQL, Adapter inter-diff, Proptest roundtrip이 성공했다. 별도 Render Diff도 성공해 5개 workflow가 모두 성공했다. 후속 증적 commit은 코드 변경 없이 만들고 해당 head 상태를 별도로 확인한다. Draft PR #8738은 병합하지 않았다.
+
+## 기존 렌더링 차이의 범위
+
+고정 devel의 `src/renderer/style_resolver.rs`는 `pattern_type > 0`에서만 패턴을 생성하므로 0은 단색이다. `web_canvas.rs`는 1~6, `skia/fill_shader.rs`는 0~5 번호로 패턴을 그린다. 이 파일들은 현재 PR과 고정 base 사이에 diff가 없다. 이 저장 수정이 렌더러의 전체 무늬 매핑을 고쳤다고 주장하지 않는다. 기존 raw0는 값과 한컴 출력에서 보존되지만 rhwp의 페이지 표시에서는 해치가 누락된다.
+
+[Native/WASM 원본 TSV와 직접 판독 자료](../pr/assets/issue_8733/README.md#페이지-시각-비교)를 보존했다. 이 잔여 차이 및 인쇄 배율 미확인 때문에 전체 시각 검증 완료나 병합 준비 완료로 표시하지 않는다.
+
+Native 빌드는 Rust 1.93.1의 locked release native-skia 기능으로 완료했고 재연결 후 재개 빌드는 23분 30초였다. 실행 파일 SHA-256은 2284ff6defecbd40754af052d47d6bd63c2b2ab56a28b3ee3276552b8b5e15ec이다. pdftotext의 bbox 추출은 설치된 Xpdf 버전의 옵션 미지원으로 생략됐으며, 글자 없는 합성 셀의 PNG/PDFium 비교와 직접 판독을 수행했다.
