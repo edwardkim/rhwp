@@ -9,4 +9,4 @@
 검증 Chrome의 실제 메뉴를 열어 모든 글꼴 1,391개, 현재 1개, 문서 34개, 대표 4개,
 시스템 1,364개를 조사했으며 언어 그룹 및 그룹 내 역순은 0건이었다.
 
-[메뉴 화면](system-font-menu.png) · [범주별 결과](browser-audit.json)
+[메뉴 화면](system-font-menu.png) · 범주별 결과 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7375/font-menu-order-20261107/browser-audit.json`)

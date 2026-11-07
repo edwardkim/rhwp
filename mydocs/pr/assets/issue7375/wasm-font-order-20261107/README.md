@@ -22,4 +22,4 @@ FontFace 등록은 CSS 우선순위에 맞춰 역순으로 수행한다. 원본 
 - LPG 5쪽: [review](lpg71352-p005-review.png) · [overlay](lpg71352-p005-overlay.png)
 
 8쪽의 정부개입 단락과 대안 표, 11쪽 및 LPG 5쪽의 글줄 소속·문장부호·앞뒤 내용을 직접 확인한다.
-[producer·source hash·로그 위치](validation.json)를 보존한다. 글꼴 파일 바이너리는 포함하지 않는다.
+producer·source hash·로그 위치 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7375/wasm-font-order-20261107/validation.json`)를 보존한다. 글꼴 파일 바이너리는 포함하지 않는다.

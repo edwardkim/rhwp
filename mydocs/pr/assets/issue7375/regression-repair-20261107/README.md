@@ -3,7 +3,7 @@
 2026-11-07. 기존 `f1800c2e03` 전체 nextest는 12,888건 중 12,882 PASS,
 6 FAIL, 45 skip이었다. 같은 현재 검사 원본을 고정 base `b8dd67c5`와 후보
 라이브러리·CLI에 연결한 대조에서 base는 6 PASS, 후보는 6 FAIL이었다.
-검사 기대값·허용폭·입력은 변경하지 않았다. [검증 원장](validation.json)을 따른다.
+검사 기대값·허용폭·입력은 변경하지 않았다. 검증 원장 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7375/regression-repair-20261107/validation.json`)을 따른다.
 
 | 기존 실패 | 원인과 공통 보정 | 독립 계약 |
 | --- | --- | --- |

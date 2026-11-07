@@ -1,7 +1,7 @@
 # 용지 기준 글상자의 내용 하한과 아래 정렬
 
 2026-11-06, 부모 `4b03792e56be4115145e3a20160da14378b3ab7c`에 두 제품 파일의 보정을
-적용했다. [validation.json](validation.json)에 source 파일·입력·독립 PDF·실행 파일·WASM·
+적용했다. validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7375/paper-textbox-minimum-20261106/validation.json`)에 source 파일·입력·독립 PDF·실행 파일·WASM·
 글꼴 공급과 테스트의 SHA-256을 고정했다. 로그와 임시 driver는 ignored output에만 둔다.
 실행은 Mac이며 fresh WASM은 locked wrapper의 `--target web --out-dir pkg --no-opt`
 로컬 대체 빌드다. Docker 최적화 빌드의 결과가 아니다.

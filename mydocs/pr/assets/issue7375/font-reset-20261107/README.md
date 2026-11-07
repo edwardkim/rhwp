@@ -45,7 +45,7 @@
 [2쪽 실제 화면](studio-p002.png) ·
 [2쪽 review](studio-p002-review.png) · [2쪽 overlay](studio-p002-overlay.png)
 
-[실행·source hash·로그 위치](validation.json)와
+실행·source hash·로그 위치 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7375/font-reset-20261107/validation.json`)와
 [Studio 집중 비교 TSV](studio-focus-silhouette.tsv)를 보존한다.
 Studio 화면 renderScale 1의 2/4쪽 집중 비교는 1쪽 97.86%, 2쪽 99.30%다.
 1쪽은 98% 미달이며 새 head Native/fresh WASM 전쪽 수용으로 주장하지 않는다.

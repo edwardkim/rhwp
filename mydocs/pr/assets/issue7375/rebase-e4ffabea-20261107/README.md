@@ -9,7 +9,7 @@
 
 tests/cases/skia_native_glyph_replay.rs에서 새 devel의 glyph proof·cache·vertical 검사 추가와 이 브랜치의 #7640 시스템 프로그램 모듈 추가가 같은 파일 끝에서 충돌했다.
 upstream의 기존 함수 35개를 모두 유지하고 로컬 모듈의 함수 4개(검사 2개 포함)를 추가했다. 양쪽 변경을 보존했으며 기대값·허용폭·CI 진입점을 변경하지 않았다. 상단 설명에도 두 검사 범위를 함께 기술했다.
-함수 소유 대조는 [충돌 보존 기록](conflict-preservation.json)에 있다.
+함수 소유 대조는 충돌 보존 기록 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7375/rebase-e4ffabea-20261107/conflict-preservation.json`)에 있다.
 
 진행 중 Git 상태 조회와 겹칠 수 있는 index.lock 경합이 한 차례 발생했다. 잠금이 사라진 뒤 파일 삭제 없이 재개했고 커밋 누락·중복은 없다. 이후 변경 중 상태 조회를 겹치지 않는다.
 

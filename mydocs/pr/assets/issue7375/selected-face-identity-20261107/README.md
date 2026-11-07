@@ -33,7 +33,7 @@ last_verified: 2026-11-07
 지우고 감지 질문을 띄우지 않았다. 기존에 장시간 열린 사용자 Chrome의 글꼴 목록이
 자동 갱신됐다고 주장하지 않는다. 설치 글꼴 바이너리는 제출하지 않는다.
 
-[소스·생성기·검사 결과](validation.json)에 실제 확인한 범위를 기록했다.
+소스·생성기·검사 결과 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7375/selected-face-identity-20261107/validation.json`)에 실제 확인한 범위를 기록했다.
 후보 전체 Native/fresh WASM·전체 회귀·실제 소비 경로 결과는 최종 검증에서 별도로 판정한다.
 
 ## 기존 반환값 검사 검토
