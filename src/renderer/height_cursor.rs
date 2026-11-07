@@ -2915,6 +2915,52 @@ impl HeightCursor {
     }
 }
 
+/// [#4613 · #4599 밴드-플로우] 낡은 사다리의 전방 스냅을 기각하고 줄을 자리차지 표 위 틈에
+/// 남기는가. 측정과 배치가 이 판정 하나를 소비한다.
+///
+/// 한글 2022 는 자리차지 표 위 틈에 들어가는 줄을 틈에 두는데, 구세대 한글이 저장한 사다리는
+/// 그 줄을 표 아래에 둔 채다(36477266 p2: pi5 저장 Δv=259px = 표 아래, PDF y=369 = 표 위 틈).
+/// 순차 흐름에서 줄 전체가 표 위에 들어가는 단일 줄 문단을 사다리가 밴드 안/아래로 보내면 스냅을
+/// 버린다. 빈 줄도 틈에 남는다 — 36483048 5쪽은 표 앞 빈 줄과 「□ 제출양식」 줄을 모두 표 위
+/// 틈에 둔다. 빈 줄을 빼면 그 줄이 표 아래로 점프하고 뒤 줄까지 끌려간다.
+///
+/// 틈이 비어 있다는 증거로 직전 항목이 밴드 소유 문단의 줄이어야 한다. 쪽 위처럼 틈을 이미 다른
+/// 항목이 차지한 형상에서 기각하면 줄이 그 위에 겹친다(36425171 p4 pi17).
+///
+/// `bands` 는 본문을 막는 밴드의 `(소유 문단, 위끝)` 이고 `previous_line_owner` 는 직전 글줄
+/// 항목의 문단이다. 좌표는 `flow_y`·`snapped_y`·`bands` 가 같은 축이면 된다.
+pub(crate) fn stale_snap_stays_above_band(
+    para: &Paragraph,
+    item_para: usize,
+    flow_y: f64,
+    snapped_y: f64,
+    bands: impl Iterator<Item = (usize, f64)>,
+    previous_line_owner: Option<usize>,
+    dpi: f64,
+) -> bool {
+    /// 이 값 이하의 스냅은 사다리 재동기화이지 밴드 건너뛰기가 아니다.
+    const MIN_FORWARD_SNAP_PX: f64 = 8.0;
+    if snapped_y <= flow_y + MIN_FORWARD_SNAP_PX {
+        return false;
+    }
+    let [line] = para.line_segs.as_slice() else {
+        return false;
+    };
+    if line.line_height <= 0 {
+        return false;
+    }
+    let line_height = hwpunit_to_px(line.line_height, dpi);
+    let Some(previous_line_owner) = previous_line_owner else {
+        return false;
+    };
+    bands.into_iter().any(|(owner, top)| {
+        owner < item_para
+            && owner == previous_line_owner
+            && flow_y + line_height <= top + 0.5
+            && snapped_y + 0.5 >= top
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
