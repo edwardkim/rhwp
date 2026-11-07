@@ -1,12 +1,12 @@
 // 관계형: 승인한 프로그램 바이트·원본 TTF 소유·표시 별칭의 관계를 검사한다.
-// 주석 갱신: 2026-11-04 15:18 KST. 합성 공급자 계약이며 실물 px 핀이 아니다.
+// 주석 갱신: 2026-11-07 20:13 KST. 관계형이며 설치된 사설 글꼴에 의존하지 않는다.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { prepareDeclaredLocalPrograms, declaredOpenTypeProgram } from '../src/core/declared-font-environment.ts';
-import { getDetectedOSFonts } from '../src/core/font-loader.ts';
+import { getDetectedOSFonts, registerLoadedLocalFontFace, clearLoadedLocalFontFaces } from '../src/core/font-loader.ts';
 import { fontFamilyCandidatesForDisplay } from '../src/core/font-substitution.ts';
-import { detectLocalFonts, resetLocalFontsForTests } from '../src/core/local-fonts.ts';
+import { clearStoredLocalFonts, detectLocalFonts, loadStoredLocalFonts, resetLocalFontsForTests } from '../src/core/local-fonts.ts';
 
 test('선언 프로그램은 승인된 face를 선택하고 검증되지 않은 local() 이름을 공급하지 않는다', async () => {
   const keys = ['FontFace', 'document', 'queryLocalFonts', 'localStorage'] as const;
@@ -147,6 +147,90 @@ test('승인된 SFNT의 같은 glyph 프로그램을 정규화한 뒤 선언 환
     }
   } finally {
     resetLocalFontsForTests();
+    for (const key of keys) {
+      const descriptor = previous.get(key);
+      if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+      else Reflect.deleteProperty(globalThis, key);
+    }
+  }
+});
+
+// 관계형: 실제 로드한 프로그램과 OS 이름 probe를 최종 표시 후보에서 구별한다.
+// 주석 갱신: 2026-11-07T18:10:00+09:00. 같은 family의 분할 cmap도 원본 이름을 유지한다.
+test('실제 로드한 원본 family는 단일 OS face로 확정되지 않아도 호환 대체보다 앞선다', () => {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'document');
+  const fonts = new Set<FontFace>();
+  Object.defineProperty(globalThis, 'document', { configurable: true, value: { fonts } });
+  const family = '옥수수';
+  const alreadyDetected = (getDetectedOSFonts() as Set<string>).has(family);
+  const face = { family, status: 'loaded' } as FontFace;
+  try {
+    assert.notEqual(fontFamilyCandidatesForDisplay(family)[0], family, '존재 이름만으로 공급 완료를 주장하지 않는다');
+    registerLoadedLocalFontFace(face);
+    assert.equal(fontFamilyCandidatesForDisplay(family)[0], family, '실제 원본 프로그램을 돋움으로 다시 치환하지 않는다');
+    assert.notEqual(fontFamilyCandidatesForDisplay(family, 0, 0, { confirmedLocalFonts: [] })[0], family,
+      '명시한 검증 목록은 이전 세션의 전역 프로그램보다 우선한다');
+    fonts.delete(face);
+    assert.notEqual(fontFamilyCandidatesForDisplay(family)[0], family, '등록 해제한 프로그램을 공급 중으로 오인하지 않는다');
+  } finally {
+    clearLoadedLocalFontFaces();
+    if (alreadyDetected) (getDetectedOSFonts() as Set<string>).add(family);
+    if (previous) Object.defineProperty(globalThis, 'document', previous);
+    else Reflect.deleteProperty(globalThis, 'document');
+  }
+});
+
+// 관계형: 존재 probe만 저장된 일반 문서 열기에서도 승인된 원본 프로그램을 조회한다.
+// 주석 갱신: 2026-11-07 18:32 KST. 공개 OTF fixture를 사용하며 설치 글꼴은 필요 없다.
+test('문서 열기는 이미 승인된 권한으로 존재만 확인한 원본 프로그램을 준비한다', async () => {
+  const keys = ['FontFace', 'document', 'queryLocalFonts', 'localStorage', 'navigator'] as const;
+  const previous = new Map(keys.map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+  const source = 'RHWP HFT Outline Fixture';
+  const bytes = readFileSync(new URL('../../tests/fixtures/fonts/RHWPHftOutline.otf', import.meta.url));
+  let permission = 'granted';
+  let queries = 0;
+  let stored: string | null = JSON.stringify({ version: 1, source: 'font-presence-probe',
+    detectedAt: '2026-11-07T09:00:00Z', families: [source] });
+  class LoadedFace {
+    status = 'loaded';
+    family: string; source: unknown;
+    constructor(family: string, source: unknown) { this.family = family; this.source = source; }
+    async load() { if (typeof this.source === 'string') throw new Error('이름만으로는 프로그램을 증명하지 않는다'); return this; }
+  }
+  const values = {
+    FontFace: LoadedFace, document: { fonts: new Set() },
+    navigator: { permissions: { query: async () => ({ state: permission }) } },
+    queryLocalFonts: async () => { queries++; return [{ family: 'API name',
+      fullName: 'API name Regular', postscriptName: 'RHWPHftOutline-Regular', style: 'Regular',
+      blob: async () => new Blob([bytes]) }]; },
+    localStorage: { getItem() { return stored; }, setItem(_key: string, value: string) { stored = value; }, removeItem() { stored = null; } },
+  };
+  for (const key of keys) Object.defineProperty(globalThis, key, { configurable: true, value: values[key] });
+  const plan = { environmentId: null, requests: [{ source, primary: [source], substitute: [] }] };
+  try {
+    resetLocalFontsForTests();
+    await loadStoredLocalFonts();
+    const programs = await prepareDeclaredLocalPrograms(plan, () => true);
+    assert.equal(programs.length, 1, '재감지 버튼 없이 저장된 존재 확인을 실제 승인 프로그램으로 연결한다');
+    assert.equal(programs[0].openTypeCff, true);
+    assert.ok(queries > 0);
+    for (const state of ['prompt', 'denied']) {
+      permission = state; queries = 0;
+      stored = JSON.stringify({ version: 1, source: 'font-presence-probe', detectedAt: '2026-11-07T09:00:00Z', families: [source] });
+      resetLocalFontsForTests(); await loadStoredLocalFonts();
+      assert.deepEqual(await prepareDeclaredLocalPrograms(plan, () => true), []);
+      assert.equal(queries, 0, '일반 열기에서 승인되지 않은 권한 창이나 조회를 만들지 않는다');
+    }
+    permission = 'granted'; queries = 0;
+    await clearStoredLocalFonts();
+    assert.deepEqual(await prepareDeclaredLocalPrograms(plan, () => true), [],
+      '초기화 후 브라우저 권한이 남아 있어도 재선택 전에는 프로그램을 자동 공급하지 않는다');
+    assert.equal(queries, 0, '감지 초기화는 자동 재감지로 되돌리지 않는다');
+    await detectLocalFonts({ force: true, candidateFamilies: [source] });
+    assert.equal((await prepareDeclaredLocalPrograms(plan, () => true)).length, 1,
+      '사용자가 다시 감지를 선택하면 원본 프로그램 공급을 재개한다');
+  } finally {
+    resetLocalFontsForTests(); clearLoadedLocalFontFaces();
     for (const key of keys) {
       const descriptor = previous.get(key);
       if (descriptor) Object.defineProperty(globalThis, key, descriptor);

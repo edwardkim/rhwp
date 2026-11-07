@@ -7,6 +7,17 @@ use crate::renderer::{
     style_resolver::ResolvedStyleSet,
 };
 
+pub(super) fn image_reference(styles: &ResolvedStyleSet, para_style_id: usize) -> Option<u16> {
+    let style = styles.para_styles.get(para_style_id)?;
+    if style.head_type != HeadType::Bullet {
+        return None;
+    }
+    styles
+        .bullets
+        .get(usize::from(style.numbering_id.checked_sub(1)?))?
+        .image_reference()
+}
+
 pub(super) fn image(
     styles: &ResolvedStyleSet,
     para_style_id: usize,
@@ -15,15 +26,10 @@ pub(super) fn image(
     para_index: usize,
     cell: Option<&CellContext>,
 ) -> Option<ImageNode> {
-    let style = styles.para_styles.get(para_style_id)?;
-    if style.head_type != HeadType::Bullet {
-        return None;
-    }
-    let bullet = styles
-        .bullets
-        .get(usize::from(style.numbering_id.checked_sub(1)?))?;
-    let id = bullet.image_reference()?;
-    let bytes = find_bin_data_bytes(data?, id)?;
+    let id = image_reference(styles, para_style_id)?;
+    let style = &styles.para_styles[para_style_id];
+    let bullet = &styles.bullets[usize::from(style.numbering_id) - 1];
+    let bytes = find_bin_data_bytes(data?, id).filter(|bytes| !bytes.is_empty())?;
     let mut image = ImageNode::new(id, Some(bytes));
     image.section_index = Some(section_index);
     image.para_index = Some(cell.map_or(para_index, |context| context.parent_para_index));

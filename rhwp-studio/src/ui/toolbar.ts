@@ -1,3 +1,4 @@
+import { compareFontNames } from '../core/font-name-order.ts';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { EventBus } from '@/core/event-bus';
 import type { CharProperties, ParaProperties } from '@/core/types';
@@ -561,7 +562,7 @@ export class Toolbar {
   /** 문서 로드 시 글꼴 드롭다운을 초기화한다 (기본 글꼴 + 문서 글꼴 + 대표/로컬) */
   initFontDropdown(docFonts?: string[]): void {
     this.lastFontFamilies = docFonts ? [...docFonts] : undefined;
-    this.fontMenuDocumentFonts = this.normalizeFontNames(docFonts ?? []);
+    this.fontMenuDocumentFonts = this.normalizeFontNames(docFonts ?? []).sort(compareFontNames);
     this.fontMenuCategory = this.fontMenuDocumentFonts.length > 0 ? 'document' : 'current';
     this.closeFontMenu();
     this.fontName.replaceChildren();
@@ -729,7 +730,7 @@ export class Toolbar {
 
   /** 대표 글꼴 optgroup을 #font-name 드롭다운에 추가 */
   private populateFontSetOptions(): void {
-    const fontSets = userSettings.getAllFontSets();
+    const fontSets = userSettings.getAllFontSets().sort((left, right) => compareFontNames(left.name, right.name));
     if (fontSets.length === 0) return;
 
     // 기존 optgroup 제거 (재호출 대비)
@@ -854,7 +855,8 @@ export class Toolbar {
     const list = menu.querySelector<HTMLElement>('[data-role="list"]');
     if (!heading || !list) return;
     const category = FONT_MENU_CATEGORIES.find(item => item.id === this.fontMenuCategory)!;
-    const entries = this.getFontMenuEntries(this.fontMenuCategory);
+    const entries = this.getFontMenuEntries(this.fontMenuCategory)
+      .sort((left, right) => compareFontNames(left.label, right.label));
     heading.textContent = `${category.label} (${entries.length})`;
     for (const button of menu.querySelectorAll<HTMLButtonElement>('.font-picker-category')) {
       const active = button.dataset.category === this.fontMenuCategory;

@@ -23,18 +23,20 @@ impl ReflowHostCutOwnership {
 }
 
 impl LayoutEngine {
-    /// 셀 내부의 재귀 컷은 새 물리 viewport를 연다. 행 사이 컷과 블록 슬롯은
-    /// 이 계약이 아니므로 부모 호스트의 첫·끝 여백 소유를 그대로 사용한다.
+    /// 셀 내부 컷과 이미 소비한 행 뒤의 이어받기는 새 물리 viewport를 연다.
+    /// 행 커서를 가진 새 조각도 같은 위·아래 바깥 프레임을 소유한다.
+    /// 걸침 블록 슬롯은 별도 원장을 사용한다.
     pub(in crate::renderer::layout) fn reflow_cut_opens_outer_frame(
         cut: &super::NestedTableCut,
     ) -> bool {
         !cut.is_block_split
             && !cut.start_cut_is_block
-            && cut
-                .start_cut
-                .iter()
-                .chain(&cut.end_cut)
-                .any(|&unit| unit > 0)
+            && (cut.start_row > 0
+                || cut
+                    .start_cut
+                    .iter()
+                    .chain(&cut.end_cut)
+                    .any(|&unit| unit > 0))
     }
 
     /// 행 범위로 접힌 컷도 원본 유닛의 셀 내부 viewport 소유를 보존한다.

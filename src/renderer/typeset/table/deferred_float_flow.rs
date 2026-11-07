@@ -75,7 +75,7 @@ impl TypesetEngine {
     }
 
     /// 저장 사다리가 없는 빈 호스트도 자신의 글줄을 현재 쪽에 남긴다.
-    /// 부모 셀의 원자 밴드로 실제 이월이 확정된 호출 경로에서만 사용한다.
+    /// 부모 셀의 원자 밴드 또는 계산된 자리차지 표의 첫 내용이 실제 이월되는 경로에서만 사용한다.
     #[allow(clippy::too_many_arguments)]
     pub(in crate::renderer::typeset) fn prefill_computed_deferred_float(
         &self,

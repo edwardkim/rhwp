@@ -30,8 +30,17 @@ pub struct FontEnvironment {
     true_type_faces: Vec<String>,
     /// 자동 공급 선택은 표시 프로그램만 보완한다. 검증된 원본 HFT의
     /// 조판 폭까지 대체 프로그램의 폭으로 바꾸는 명시적 요청과 구분한다.
-    #[serde(default, skip_serializing_if = "is_false")]
-    preserve_source_metrics: bool,
+    /// 생략은 기존 메트릭 선언이며, 명시 false만 자연 윤곽의 선택으로 기록한다.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_source_metric_policy"
+    )]
+    preserve_source_metrics: Option<bool>,
+    /// 사용자가 자연 프로그램 전진을 명시적으로 선택한 원본만 예외로 둔다.
+    /// 다른 원본의 자동 공급·저장 메트릭은 같은 세션에서도 유지한다.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    replace_source_metrics_for: Vec<String>,
     /// 호출자가 공급을 확인한 글리프 폴백. 키는 치환 후의 최종 face이며,
     /// 기본 face가 없는 글자만 이 순서로 측정·출력한다. IR에는 저장하지 않는다.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
@@ -93,6 +102,9 @@ pub struct AvailableFontProgram {
     /// 실제 바이트에서 확인한 OpenType CFF 프로그램이다.
     #[serde(default)]
     pub open_type_cff: bool,
+    /// TTC의 선택 face를 단독 TTF와 구분한다.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub collection_face: bool,
 }
 
 /// 실제 프로그램 공급과 존재 확인은 서로 다른 증거다. 이름만 확인된
@@ -153,6 +165,14 @@ fn may_select_hft_program(font: &crate::model::style::Font, language: usize) -> 
                 .is_some()))
 }
 
+// 생략은 기존 메트릭 계약을 유지한다. 명시 false는 자연 프로그램 선택이며,
+// null·문자열·숫자는 기존 bool JSON 계약과 같이 거부한다.
+fn deserialize_source_metric_policy<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<bool>, D::Error> {
+    bool::deserialize(deserializer).map(Some)
+}
+
 impl FontEnvironment {
     pub(crate) fn with_observed_substitutions(
         base: Option<&Self>,
@@ -167,7 +187,8 @@ impl FontEnvironment {
             selected_programs: BTreeMap::new(),
             selection_rules: BTreeMap::new(),
             true_type_faces: Vec::new(),
-            preserve_source_metrics: false,
+            preserve_source_metrics: None,
+            replace_source_metrics_for: Vec::new(),
             document_substitutions: Vec::new(),
             glyph_fallbacks: BTreeMap::new(),
             document_glyph_fallbacks: Vec::new(),
@@ -247,11 +268,9 @@ impl FontEnvironment {
                 let Ok(font_id) = u16::try_from(index) else {
                     continue;
                 };
-                let mut primary_names = if may_select_hft_program(font, language) {
-                    program_names(&font.name)
-                } else {
-                    Vec::new()
-                };
+                // 문서의 TTF/HFT 표시는 설치 프로그램의 형식이 아니다.
+                // 호환 대체 이름보다 원래 선언과 실제 설치 별칭을 먼저 조회한다.
+                let mut primary_names = program_names(&font.name);
                 for name in program_names(primary) {
                     if !primary_names.contains(&name) {
                         primary_names.push(name);
@@ -306,7 +325,21 @@ impl FontEnvironment {
         let embedded = Self::embedded_program_names(doc_info);
         let mut slot_candidates = Vec::new();
         for (language_slot, font_id, request) in Self::document_requests_with_slots(doc_info) {
-            let primary = request.primary.iter().find_map(|name| resolve(name));
+            let original_names = program_names(&request.source);
+            // 원 프로그램의 설치 별칭 안에서만 TTF → CFF OpenType 순서를 적용한다.
+            // 대체 family의 TTF가 원 family의 OTF를 앞서면 안 된다.
+            let primary = original_names
+                .iter()
+                .filter_map(|name| resolve(name))
+                .filter(|program| program.true_type || program.open_type_cff)
+                .min_by_key(|program| {
+                    if program.true_type {
+                        u8::from(program.collection_face)
+                    } else {
+                        3
+                    }
+                })
+                .or_else(|| request.primary.iter().find_map(|name| resolve(name)));
             let candidate = if let Some(program) = primary {
                 // 원본 선언은 HFT지만 실제로 준비된 동일 주 프로그램은 TTF일 수 있다.
                 // 존재 확인으로 끝내지 않고 프로그램 신원을 공통 스타일 해소에 전달한다.
@@ -315,11 +348,11 @@ impl FontEnvironment {
                     .font_faces
                     .get(language_slot)
                     .and_then(|faces| faces.get(font_id as usize));
-                let is_source_program = program.query == request.source
-                    || request.source.strip_prefix('#') == Some(program.query.as_str());
+                let is_source_program = original_names.contains(&program.query);
                 ((program.true_type || program.open_type_cff)
                     && is_source_program
-                    && source.is_some_and(|font| may_select_hft_program(font, language_slot)))
+                    && source
+                        .is_some_and(|font| !font.is_embedded && font.native_program.is_none()))
                 .then_some((program, None))
             } else {
                 request
@@ -498,7 +531,8 @@ impl FontEnvironment {
             selected_programs,
             selection_rules,
             true_type_faces: true_type_faces.into_iter().collect(),
-            preserve_source_metrics: true,
+            preserve_source_metrics: Some(true),
+            replace_source_metrics_for: Vec::new(),
             glyph_fallbacks: BTreeMap::new(),
             document_glyph_fallbacks: Vec::new(),
             document_substitutions,
@@ -569,16 +603,13 @@ impl FontEnvironment {
         font_paths: &[std::path::PathBuf],
     ) -> Result<Option<Self>, HwpError> {
         use sha2::{Digest, Sha256};
-        let needs_primary_program_identity =
-            doc_info
-                .font_faces
-                .iter()
-                .enumerate()
-                .any(|(language, fonts)| {
-                    fonts
-                        .iter()
-                        .any(|font| !font.is_embedded && may_select_hft_program(font, language))
-                });
+        // 문서의 TTF/HFT 지정과 관계없이 실제 설치 프로그램 형식을 확인한다.
+        // TTF로 기록된 원본 face가 OTF/TTC로 설치된 경우도 같은 조회 경로다.
+        let needs_primary_program_identity = doc_info
+            .font_faces
+            .iter()
+            .flatten()
+            .any(|font| !font.is_embedded);
         if !needs_primary_program_identity
             && !Self::document_requests(doc_info).iter().any(|request| {
                 !request.substitute.is_empty() || !request.public_fallback.is_empty()
@@ -602,7 +633,7 @@ impl FontEnvironment {
                     })
                     .and_then(|id| database.face(id))
                     .or_else(|| database.faces().find(|face| face.post_script_name == query))?;
-                // 같은 family와 스타일의 설치본 중 CFF OpenType을 먼저 사용한다.
+                // 같은 family와 스타일의 설치본은 TTF → CFF OpenType 순서다.
                 // PostScript 이름을 직접 지정한 조회는 다른 face로 바꾸지 않는다.
                 let face = if face.post_script_name == query
                     && !face.families.iter().any(|(name, _)| name == query)
@@ -611,18 +642,30 @@ impl FontEnvironment {
                 } else {
                     database
                         .faces()
-                        .find(|candidate| {
+                        .filter(|candidate| {
                             candidate.style == face.style
                                 && candidate.weight == face.weight
                                 && candidate.stretch == face.stretch
                                 && candidate.families.iter().any(|(name, _)| {
                                     face.families.iter().any(|(original, _)| original == name)
                                 })
-                                && database
-                                    .with_face_data(candidate.id, |bytes, _| {
-                                        bytes.get(..4) == Some(b"OTTO")
+                        })
+                        .min_by_key(|candidate| {
+                            database
+                                .with_face_data(candidate.id, |bytes, index| {
+                                    ttf_parser::Face::parse(bytes, index).map_or(2, |face| {
+                                        if face.tables().glyf.is_some() {
+                                            u8::from(bytes.get(..4) == Some(b"ttcf"))
+                                        } else if face.tables().cff.is_some()
+                                            || face.tables().cff2.is_some()
+                                        {
+                                            2
+                                        } else {
+                                            3
+                                        }
                                     })
-                                    .unwrap_or(false)
+                                })
+                                .unwrap_or(2)
                         })
                         .unwrap_or(face)
                 };
@@ -647,6 +690,7 @@ impl FontEnvironment {
                         family,
                         true_type,
                         open_type_cff,
+                        collection_face: bytes.get(..4) == Some(b"ttcf"),
                         program_id: digest
                             .finalize()
                             .iter()
@@ -677,6 +721,17 @@ impl FontEnvironment {
 
     pub(crate) fn validate(&self) -> Result<(), HwpError> {
         if !Self::valid_name(&self.id)
+            || self.replace_source_metrics_for.len() > 256
+            || self
+                .replace_source_metrics_for
+                .iter()
+                .any(|source| !Self::valid_name(source) || !self.has_source_selection(source))
+            || self
+                .replace_source_metrics_for
+                .iter()
+                .collect::<std::collections::BTreeSet<_>>()
+                .len()
+                != self.replace_source_metrics_for.len()
             || self.true_type_faces.len() > 256
             || self
                 .true_type_faces
@@ -798,7 +853,24 @@ impl FontEnvironment {
     }
 
     pub(crate) fn preserves_source_metrics(&self) -> bool {
-        self.preserve_source_metrics
+        self.preserve_source_metrics.unwrap_or(false)
+    }
+
+    /// 생략된 기존 설정은 자연 프로그램 전진을 선택한 요청이 아니다.
+    pub(crate) fn selects_natural_program_for(&self, source: &str) -> bool {
+        self.preserve_source_metrics == Some(false)
+            || self
+                .replace_source_metrics_for
+                .iter()
+                .any(|selected| selected == source)
+    }
+
+    pub(crate) fn preserves_source_metrics_for(&self, source: &str) -> bool {
+        self.preserves_source_metrics()
+            && !self
+                .replace_source_metrics_for
+                .iter()
+                .any(|selected| selected == source)
     }
 
     pub(crate) fn replacement(&self, face: &str) -> Option<&str> {

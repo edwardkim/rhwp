@@ -168,11 +168,13 @@ pub(crate) fn resolve_styles_with_environment(
         // 원본 전진 보존 시 표시용 치환을 원본 TTF 프로그램으로 승격하지 않는다.
         // 원본의 별칭과 명시적으로 선택한 TrueType 프로그램은 자연 전진을 소유한다.
         let display_only_fonts: std::collections::HashSet<_> = environment
-            .filter(|env| env.preserves_source_metrics())
             .map(|env| {
                 font_requests
                     .iter()
                     .filter_map(|(lang, id, request)| {
+                        if !env.preserves_source_metrics_for(&request.source) {
+                            return None;
+                        }
                         let target = env.replacement_for(&request.source, *lang, *id)?;
                         let original = request
                             .primary
@@ -257,8 +259,19 @@ pub(crate) fn resolve_styles_with_environment(
                     }
                     // 명시적 프로그램 선택과 독립적으로 검증한 글리프 표가 모두 있어야
                     // TrueType 폭을 사용한다. 선언만으로 임의 face의 표를 신뢰하지 않는다.
-                    let target = primary_font_name(&style.font_families[lang]);
+                    // 실제 face 조회 이름과 환경의 논리 family를 구분한다. 프로그램
+                    // 메타데이터는 family에 묶고 paint는 선택한 face를 먼저 조회한다.
+                    let target = decision
+                        .normalized_face
+                        .as_deref()
+                        .unwrap_or_else(|| primary_font_name(&style.font_families[lang]));
                     let original = lookup_font_name_decision(&lookup, lang, shape.font_ids[lang]);
+                    let preserve_source_metrics = environment.is_some_and(|env| {
+                        original.requested_face.as_deref().map_or_else(
+                            || env.preserves_source_metrics(),
+                            |source| env.preserves_source_metrics_for(source),
+                        )
+                    });
                     // 같은 이름의 실제 주 TrueType 프로그램은 표시용 대체가 아니다.
                     // 검증된 폭과 실제 선택을 확인한 경우 그 프로그램이 전진을 소유한다.
                     // 원 HFT 프로그램 출처가 있거나 치환 경계를 건넌 대체 face는 보존한다.
@@ -276,7 +289,7 @@ pub(crate) fn resolve_styles_with_environment(
                             || matches!(target, "휴먼명조" | "HumanMyeongJo"));
                     // 자동 표시용 선택은 저장된 원본 HFT 메트릭의 변경이 아니다.
                     let keep_source_metrics = !primary_true_type_program
-                        && environment.is_some_and(|env| env.preserves_source_metrics())
+                        && preserve_source_metrics
                         && (original.alt_type == Some(2)
                             || style.font_families_source_hft[lang])
                         && original.embedded != Some(true)
@@ -312,7 +325,13 @@ pub(crate) fn resolve_styles_with_environment(
                     // 원 프로그램의 자연 윤곽은 그 메트릭까지 선택한 세션만 보존한다.
                     style.font_families_preserve_glyph_ink[lang] = (explicit_true_type
                         || explicit_replacement)
-                        && environment.is_some_and(|env| !env.preserves_source_metrics());
+                        && !preserve_source_metrics
+                        && environment.is_some_and(|env| {
+                            original
+                                .requested_face
+                                .as_deref()
+                                .is_some_and(|source| env.selects_natural_program_for(source))
+                        });
                     // 프로그램·메트릭을 직접 선택한 자연 잉크에 이전 슬롯의
                     // HFT 종이 프레임을 상속하지 않는다. 원본 메트릭을 유지하는
                     // 자동 표시용 공급은 기존 인쇄 프레임을 그대로 소비한다.
@@ -333,9 +352,7 @@ pub(crate) fn resolve_styles_with_environment(
                         // 같은 주 프로그램의 가용성 인증은 저장 HFT의 물리 Print
                         // 종이 프레임을 바꾸는 요청이 아니다. 전진 프로그램과
                         // source가 소유한 paint 프레임을 별개로 보존한다.
-                        if !primary_true_type_program
-                            || !environment.is_some_and(|env| env.preserves_source_metrics())
-                        {
+                        if !primary_true_type_program || !preserve_source_metrics {
                             style.font_families_hft_print_frame[lang] = false;
                         }
                         style.font_families_original_glyph_metric_face[lang] = None;
@@ -535,7 +552,10 @@ fn refresh_source_program_projection_slots_with_storage<S: storage::Storage>(
             if font.alt_type != 1
                 || font.is_embedded
                 || font.native_program.is_some()
-                || primary != font.name.trim()
+                // 같은 SFNT의 name 6 조회 이름으로 바뀐 것은 다른 원본을
+                // 선택한 것이 아니다. 굵기별 설치 별칭의 동일성만 허용한다.
+                || (primary != font.name.trim()
+                    && !super::installed_font_program_aliases(font.name.trim()).contains(&primary))
                 || !font.subst_font.as_ref().is_some_and(|substitute| {
                     substitute.font_type == 1
                         && !substitute.face.trim().is_empty()
@@ -1386,9 +1406,27 @@ pub(crate) fn lookup_font_name_in_environment(
                 .map(|target| (env, target))
         }) {
             // 같은 주 프로그램의 신원 인증은 준비된 glyph fallback 체인을 바꾸지 않는다.
-            if decision.normalized_face.as_deref() != Some(target) {
+            let same_primary_family = decision.normalized_face.as_deref() == Some(target);
+            if !same_primary_family {
                 decision.normalized_face = Some(target.to_string());
                 decision.css_family_chain = vec![target.to_string()];
+            }
+            // 공급자가 선택한 face 이름을 family로 합치면 같은 계열의 다른
+            // 굵기·너비가 선택될 수 있다. 원본 주소의 실제 조회 이름을 보존하고,
+            // family와 글리프 fallback은 뒤에서 기존 계약대로 소비한다.
+            if let Some(query) = decision.requested_face.as_deref().and_then(|source| {
+                environment.selected_program_query_for(source, lang_index, font_id)
+            }) {
+                // HFT의 원본 이름은 물리 face 이름이 아닌 조판 별칭일 수 있다.
+                // 같은 주 프로그램을 자동 인증할 때 이 별칭을 다시 선두에 넣으면
+                // 다른 설치 프로그램이 먼저 선택된다. 명시적 face 선택과 구분한다.
+                let preserves_hft_alias = decision.alt_type == Some(2)
+                    && decision.requested_face.as_deref() == Some(query)
+                    && environment.preserves_source_metrics_for(query);
+                if query != target && !preserves_hft_alias {
+                    decision.css_family_chain.retain(|face| face != query);
+                    decision.css_family_chain.insert(0, query.to_string());
+                }
             }
             let canonical_rule = decision.requested_face.as_deref().and_then(|source| {
                 environment.canonical_selection_rule_for(source, lang_index, font_id)

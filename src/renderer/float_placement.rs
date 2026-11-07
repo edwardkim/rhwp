@@ -220,6 +220,18 @@ pub(crate) fn stored_plain_cell_ink_height(cell: &crate::model::table::Cell) -> 
 /// 호출자는 실제 표의 재조판 여부를 확인한다. 다른 문단의 편집 여부는
 /// 이 표의 완전한 열 구획을 무효화하는 근거가 아니다.
 pub(crate) fn stored_complete_column_frame(table: &Table) -> bool {
+    complete_declared_column_grid(table)
+        && table.cells.iter().all(|cell| {
+            cell.paragraphs
+                .iter()
+                .all(|paragraph| !super::para_has_no_stored_line_segs(paragraph))
+        })
+}
+
+/// 원본 셀의 열 소속과 선언 폭이 모든 행에서 같은 그리드를 닫는가.
+/// 글줄 캐시는 문자 배치의 근거이며, 그 결측은 원본 열 너비를 축소할 명령이 아니다.
+/// 저장 글줄까지 필요한 세로 프레임 소비자는 위의 별도 인증을 유지한다.
+pub(crate) fn complete_declared_column_grid(table: &Table) -> bool {
     let rows = usize::from(table.row_count);
     let cols = usize::from(table.col_count);
     if rows == 0 || cols == 0 || table.common.width == 0 {
@@ -238,11 +250,10 @@ pub(crate) fn stored_complete_column_frame(table: &Table) -> bool {
             || c + cs > cols
             || cell.dirty_flag
             || cell.paragraphs.is_empty()
-            || cell.paragraphs.iter().any(|p| {
-                p.stored_text_partition_is_dirty()
-                    || p.cell_format_vpos_dirty
-                    || super::para_has_no_stored_line_segs(p)
-            })
+            || cell
+                .paragraphs
+                .iter()
+                .any(|p| p.stored_text_partition_is_dirty() || p.cell_format_vpos_dirty)
         {
             return false;
         }
@@ -9569,7 +9580,9 @@ pub(crate) fn horizontal_range(
         width_px,
         common.horz_align,
         h_offset,
-    );
+    ) + overlay_outer_frame::overlay_outer_margin_left_hu(common)
+        .map(|margin| hwpunit_to_px(margin, dpi))
+        .unwrap_or(0.0);
     (x, x + width_px.max(0.0))
 }
 

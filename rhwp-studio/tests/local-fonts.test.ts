@@ -1,5 +1,10 @@
+// 관계형: 로컬 face 식별·SFNT 이름/형식·복수 프로그램·초기화와 승인 상태를 검사한다.
+// Native/fresh WASM 일치율: 비해당. 설치 글꼴이나 문서의 px 배치를 고정하지 않는다.
+// 주석 갱신: 2026-11-07 20:13 KST.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { normalizeFontFaceData } from '../src/core/sfnt-face.ts';
 
 import {
   clearStoredLocalFonts,
@@ -17,6 +22,7 @@ import {
   loadStoredLocalFonts,
   resetLocalFontsForTests,
   resolveLocalFont,
+  resolveLocalFontProgramCandidates,
   type LocalFontSnapshot,
 } from '../src/core/local-fonts.ts';
 import { analyzeDocumentFonts } from '../src/core/document-font-status.ts';
@@ -55,10 +61,10 @@ test('같은 PostScript 이름의 프로그램 중 CFF와 TrueType 바이트를 
     value: async () => values.map(signature => ({ ...record, blob: async () => new Blob([sfnt(signature)]) })) });
   try {
     let selected = await loadPreferredLocalFontBytes(record);
-    assert.equal(new DataView(selected!).getUint32(0), 0x4f54544f);
-    values = [0x00010000];
-    selected = await loadPreferredLocalFontBytes(record);
     assert.equal(new DataView(selected!).getUint32(0), 0x00010000);
+    values = [0x4f54544f];
+    selected = await loadPreferredLocalFontBytes(record);
+    assert.equal(new DataView(selected!).getUint32(0), 0x4f54544f);
   } finally {
     if (previous) Object.defineProperty(globalThis, 'queryLocalFonts', previous);
     else Reflect.deleteProperty(globalThis, 'queryLocalFonts');
@@ -1137,5 +1143,102 @@ test('Local Font Access가 문서 face를 누락하면 미해소 후보만 probe
     await clearStoredLocalFonts();
     resetLocalFontsForTests();
     restoreGlobals(originals);
+  }
+});
+
+// 관계형: TTC의 선택 face 신원·컨테이너 우선순위. px 고정 검사가 아니다.
+// 주석 갱신: 2026-11-07T17:45:00+09:00.
+test('TTF가 없으면 TTC의 이름이 일치하는 두 번째 face를 OTF보다 먼저 고른다', async () => {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'queryLocalFonts');
+  const raw = readFileSync(new URL('../../tests/fixtures/fonts/RHWPExactFaceSmoke.ttc', import.meta.url));
+  const collection = raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength);
+  const expected = normalizeFontFaceData(collection, 1)!;
+  const record = { family: 'RHWP Exact Face One', fullName: 'RHWP Exact Face One Regular',
+    postscriptName: 'RHWPExactFaceOne-Regular', style: 'Regular', displayName: 'One',
+    aliases: ['RHWP Exact Face One'], detectionSource: 'local-font-access' as const };
+  const otf = new ArrayBuffer(4); new DataView(otf).setUint32(0, 0x4f54544f);
+  let values = [otf, collection];
+  Object.defineProperty(globalThis, 'queryLocalFonts', { configurable: true,
+    value: async () => values.map(bytes => ({ ...record, blob: async () => new Blob([bytes]) })) });
+  try {
+    assert.deepEqual(new Uint8Array((await loadPreferredLocalFontBytes(record))!), new Uint8Array(expected));
+    values = [otf, collection, expected];
+    assert.deepEqual(new Uint8Array((await loadPreferredLocalFontBytes(record))!), new Uint8Array(expected));
+    const missing = { ...record, postscriptName: 'Missing-Face' };
+    values = [collection];
+    assert.equal(await loadPreferredLocalFontBytes(missing), null, '다른 face나 첫 face를 대입하지 않는다');
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'queryLocalFonts', previous);
+    else Reflect.deleteProperty(globalThis, 'queryLocalFonts');
+  }
+});
+
+// 관계형: 초기화 전 조회의 늦은 응답은 새 사용자 선택을 대신하지 않는다.
+// 주석 갱신: 2026-11-07 19:55 KST. 설치 글꼴·좌표 고정 없이 비동기 상태를 검사한다.
+test('초기화 전에 시작한 감지 응답은 저장된 목록을 되살리지 않는다', async () => {
+  const g = globalThis as TestGlobals;
+  const originals = { browser: g.browser, chrome: g.chrome,
+    document: g.document, localStorage: g.localStorage, queryLocalFonts: g.queryLocalFonts };
+  let finish!: (fonts: Array<{ family: string; fullName: string; postscriptName: string; style: string }>) => void;
+  const pending = new Promise<Array<{ family: string; fullName: string; postscriptName: string; style: string }>>(resolve => { finish = resolve; });
+  const storage = createStorage();
+  resetLocalFontsForTests();
+  g.browser = undefined; g.chrome = undefined; g.document = undefined;
+  g.localStorage = storage;
+  g.queryLocalFonts = () => pending;
+  try {
+    const detecting = detectLocalFonts({ force: true, includeRegistered: true });
+    await clearStoredLocalFonts();
+    finish([{ family: '초기화 전 글꼴', fullName: 'Old Regular', postscriptName: 'Old-Regular', style: 'Regular' }]);
+    assert.deepEqual(await detecting, []);
+    assert.equal(getLocalFontState().stored, false);
+    assert.equal(storage.getItem(STORAGE_KEY), null);
+    assert.deepEqual(getDetectedLocalFonts(), []);
+  } finally {
+    await clearStoredLocalFonts(); resetLocalFontsForTests(); restoreGlobals(originals);
+  }
+});
+
+// 관계형: 같은 family의 분할 프로그램은 이름 하나를 공유해도 둘 다 원본이다.
+// 주석 갱신: 2026-11-07 20:08 KST. 사설 글꼴 없이 공개 SFNT 이름 표 fixture로 검사한다.
+test('분할 원본의 공통 한글 이름에 presence probe를 덧붙여 실제 프로그램을 가리지 않는다', async () => {
+  const g = globalThis as TestGlobals;
+  const originals = { browser: g.browser, chrome: g.chrome, document: g.document,
+    localStorage: g.localStorage, queryLocalFonts: g.queryLocalFonts };
+  const source = '분할 원본';
+  const storage = createStorage();
+  resetLocalFontsForTests();
+  g.browser = undefined; g.chrome = undefined; g.localStorage = storage;
+  g.document = createProbeDocument([source]);
+  g.queryLocalFonts = async () => ['Latin', 'Hangul'].map(part => ({
+    family: 'Split Original', fullName: source, postscriptName: `SplitOriginal-${part}`, style: 'Regular',
+    blob: async () => new Blob([createSfntWithNameRecords([
+      { nameId: 1, value: source }, { nameId: 2, value: 'Regular' },
+      { nameId: 4, value: source }, { nameId: 6, value: `SplitOriginal-${part}` },
+    ])]),
+  }));
+  try {
+    await detectLocalFonts({ force: true, candidateFamilies: [source] });
+    const records = getLocalFontRecords({ includeRegistered: true });
+    assert.equal(records.length, 2, '같은 별칭의 복수 원본은 미감지가 아니므로 가짜 단일 probe를 추가하지 않는다');
+    assert.ok(records.every(record => record.detectionSource === 'local-font-access'));
+    assert.equal(resolveLocalFont(source), null, '단일 face인 것처럼 임의로 확정하지 않는다');
+    const expected = ['SplitOriginal-Hangul', 'SplitOriginal-Latin'];
+    assert.deepEqual(resolveLocalFontProgramCandidates(source).map(record => record.postscriptName).sort(), expected,
+      '같은 family·style의 한글/영문 프로그램을 함께 공급한다');
+    assert.equal(analyzeDocumentFonts([source]).fonts[0].status, 'available',
+      '같은 family의 복수 프로그램을 미감지·대체 상태로 표시하지 않는다');
+    const snapshot = JSON.parse(storage.getItem(STORAGE_KEY)!) as LocalFontSnapshot;
+    snapshot.fontRecords!.push({ family: source, fullName: source, postscriptName: '', style: '',
+      displayName: source, aliases: [source], detectionSource: 'font-presence-probe' });
+    storage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+    await loadStoredLocalFonts();
+    assert.equal(getLocalFontRecords({ includeRegistered: true }).length, 2,
+      '실제 프로그램이 확인된 예전 snapshot의 중복 probe도 감지 목록에서 정리한다');
+    assert.equal(resolveLocalFont(source), null, '예전 snapshot의 probe도 실제 복수 face의 우선권을 빼앗지 않는다');
+    assert.deepEqual(resolveLocalFontProgramCandidates(source).map(record => record.postscriptName).sort(), expected,
+      '이미 저장된 잘못된 probe가 있어도 원본 프로그램을 선택한다');
+  } finally {
+    await clearStoredLocalFonts(); resetLocalFontsForTests(); restoreGlobals(originals);
   }
 });

@@ -1,3 +1,5 @@
+import {orderSweepFontPrograms} from './visual-sweep-font-registration.mjs';
+
 // 호스트는 실제 공급만 증명한다. 원 face/대체 face의 선택은 Rust 공통 API가 소유한다.
 export async function applySweepFontEnvironment(doc, environmentJson, preparePrograms) {
   if (environmentJson !== null) {
@@ -40,9 +42,23 @@ export async function applySweepFontEnvironment(doc, environmentJson, preparePro
     return {source: 'noDeclaredSubstitutions', environment: null, programs: [], loaded: []};
   }
   const prepared = await preparePrograms(plan);
-  const environment = JSON.parse(doc.buildFontEnvironmentFromAvailablePrograms(JSON.stringify(prepared.programs)));
+  let environment, legacyCollectionFaceProtocol = false;
+  try {
+    environment = JSON.parse(doc.buildFontEnvironmentFromAvailablePrograms(JSON.stringify(prepared.programs)));
+  } catch (error) {
+    // 고정 base의 이전 API는 TTC 컨테이너 metadata를 받지 않는다. 이 명시적인
+    // 필드 오류에만 같은 선택 프로그램의 신원·형식을 그대로 전달한다.
+    const message = String(error);
+    const oldSchemaRejection = (message.includes('unknown field') && message.includes('collectionFace'))
+      || message.includes('invalid font program snapshot: data did not match any variant of untagged enum AvailableFontProgramInput');
+    if (!prepared.programs.some(program => program.collectionFace) || !oldSchemaRejection) throw error;
+    const legacy = prepared.programs.map(({collectionFace, ...program}) => program);
+    environment = JSON.parse(doc.buildFontEnvironmentFromAvailablePrograms(JSON.stringify(legacy)));
+    legacyCollectionFaceProtocol = true;
+  }
   if (environment !== null) doc.setFontEnvironment(JSON.stringify(environment));
-  return {source: 'preparedPrograms', environment, programs: prepared.programs, loaded: prepared.loaded || []};
+  return {source: 'preparedPrograms', environment, programs: prepared.programs, loaded: prepared.loaded || [],
+    ...(legacyCollectionFaceProtocol ? {collectionFaceProtocol: 'legacy-without-container-metadata'} : {})};
 }
 
 export function selectSweepProgramFaces(plan, fonts) {
@@ -56,8 +72,8 @@ export function selectSweepProgramFaces(plan, fonts) {
     // 어느 것을 사용할지는 여기서 결정하지 않고 실제 준비된 후보만 반환한다.
     const candidates = fonts.filter(face => face.families.some(name => name.toLowerCase() === query.toLowerCase())
       && !face.families.some(name => embedded.has(name.toLowerCase())));
-    const face = candidates.toSorted((a, b) => rank(a) - rank(b)
-      || Number(Boolean(b.openTypeCff)) - Number(Boolean(a.openTypeCff)))[0];
+    const bestStyle = Math.min(...candidates.map(rank));
+    const face = orderSweepFontPrograms(candidates.filter(candidate => rank(candidate) === bestStyle))[0];
     return face ? [{query, face}] : [];
   });
 }
@@ -107,7 +123,8 @@ export async function loadSweepFontPrograms(plan, fonts, host = globalThis, sour
     }
     programs.push({query, family, programId: `sweep-${resource.sha256}`,
       trueType: hasTrueTypeSfntSignature(resource.bytes),
-      openTypeCff: hasOpenTypeCffSignature(resource.bytes)});
+      openTypeCff: hasOpenTypeCffSignature(resource.bytes),
+      ...(record.collectionFace ? {collectionFace: true} : {})});
   }
   await host.document.fonts.ready;
   return {programs, loaded};

@@ -212,7 +212,10 @@ impl EqLayout {
         let pad = fs * SQRT_PAD;
         // 수식 face의 논리 전진폭. HYhwpEQ의 수학 radical은 1em,
         // 배포 Latin Modern Math의 U+221A는 833/1000em이다.
-        let sign_w = if self.hancom_math_face {
+        // 원본 HFT는 공통 공개 근호 윤곽을 사용한다. 현대 TTF 수식의
+        // 1em 논리 슬롯을 강제하면 실제 윤곽의 833/1000em 전진과
+        // 그룹 인자 원점이 어긋난다. 현대 표시 세대의 슬롯은 유지한다.
+        let sign_w = if self.hancom_math_face && !self.legacy_math_face {
             super::source_roman_advance::em_advance(fs, self.dpi).unwrap_or(fs)
         } else {
             fs * 0.833
@@ -357,6 +360,17 @@ impl EqLayout {
             baseline = total_h * percent / 100.0;
             n_box.y = nb - n_box.baseline;
             d_box.y = total_h - dh + db - d_box.baseline;
+            if self.legacy_math_face {
+                // 논리 행의 84% 기준선과 원본 글리프의 80% 자연 기준선을
+                // 구분한다. 루트의 단일 원본 글줄과 같은 프레임을 분자·분모도
+                // 소비하며, 첨자나 대체 face가 섞인 피연산자는 접지 않는다.
+                if super::super::legacy_glyphs::is_line(&n_box, fs) {
+                    n_box.y -= fs * 1.2 * (0.84 - 0.8);
+                }
+                if super::super::legacy_glyphs::is_line(&d_box, fs) {
+                    d_box.y -= fs * 1.2 * (0.84 - 0.8);
+                }
+            }
             // The first logical line closes at the fraction rule. The common
             // axis is consumed unchanged by SVG, Canvas and Native paint.
             axis = baseline - line_height - above;

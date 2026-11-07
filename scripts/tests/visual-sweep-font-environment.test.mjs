@@ -139,11 +139,21 @@ test('CFF와 collection을 개별 TrueType 프로그램으로 오인하지 않�
   assert.equal(hasOpenTypeCffSignature(bytes([0, 1, 0, 0])), false);
 });
 
-test('같은 글꼴과 스타일의 CFF OTF를 TTF보다 먼저 선택한다', () => {
-  const plan = {requests: [{primary: ['휴먼명조'], substitute: []}], embeddedFamilies: []};
-  const ttf = {families: ['휴먼명조'], weight: 400, style: 'normal', openTypeCff: false};
-  const otf = {families: ['휴먼명조'], weight: 400, style: 'normal', openTypeCff: true};
-  assert.deepEqual(selectSweepProgramFaces(plan, [ttf, otf]), [{query: '휴먼명조', face: otf}]);
+// 관계형: 같은 원본·style 안의 실제 컨테이너 순서이며 페이지 px에 의존하지 않는다.
+// 주석 갱신: 2026-11-07 20:25 KST.
+test('같은 원본과 스타일은 TTF → TTC 일치 face → OTF 순서로 선택한다', () => {
+  const plan = {requests: [{primary: ['Original'], substitute: []}], embeddedFamilies: []};
+  const ttf = {families: ['Original'], weight: 400, style: 'normal', openTypeCff: false};
+  const ttc = {...ttf, collectionFace: true};
+  const otf = {...ttf, openTypeCff: true};
+  for (const candidates of [[otf, ttc, ttf], [ttf, otf, ttc]]) {
+    assert.deepEqual(selectSweepProgramFaces(plan, candidates), [{query: 'Original', face: ttf}]);
+  }
+  assert.deepEqual(selectSweepProgramFaces(plan, [otf, ttc]), [{query: 'Original', face: ttc}]);
+  assert.deepEqual(selectSweepProgramFaces(plan, [otf]), [{query: 'Original', face: otf}]);
+  const boldTtf = {...ttf, weight: 700};
+  assert.deepEqual(selectSweepProgramFaces(plan, [boldTtf, otf]), [{query: 'Original', face: otf}],
+    '원래 요청한 normal/400 스타일을 다른 스타일의 TTF로 바꾸지 않는다');
 });
 
 function programFixture({badHash = false, loadError = false, responseOk = true} = {}) {
@@ -223,4 +233,35 @@ test('공개 fallback도 실제 공급 후보에 포함하며 내장 프로그�
   const plan = {requests: [{primary: ['Missing'], substitute: [], publicFallback: ['RHWP Public Batang']}]};
   assert.deepEqual(selectSweepProgramFaces(plan, [publicFace]), [{query: 'RHWP Public Batang', face: publicFace}]);
   assert.deepEqual(selectSweepProgramFaces({...plan, embeddedFamilies: ['RHWP Public Batang']}, [publicFace]), []);
+});
+
+// 관계형: 고정 base의 이전 API에만 새 컨테이너 metadata를 제외하며 프로그램 신원은 보존한다.
+// 주석 갱신: 2026-11-07 20:43 KST.
+test('이전 base API의 collectionFace 필드 거부는 같은 프로그램으로만 호환한다', async () => {
+  const program = {query: 'Original', family: 'Original', programId: 'same-ttc-face', trueType: true, collectionFace: true};
+  const calls = [];
+  const doc = {
+    getDocumentFontSelectionPlan: () => JSON.stringify({environmentId: null, requests: [{primary: ['Original'], substitute: []}]}),
+    buildFontEnvironmentFromAvailablePrograms: raw => {
+      const programs = JSON.parse(raw); calls.push(programs);
+      if (programs.some(program => 'collectionFace' in program)) throw Error('unknown field `collectionFace`');
+      return JSON.stringify({id: 'base', substitutions: {Original: 'Original'}});
+    },
+    setFontEnvironment: () => {},
+  };
+  const result = await applySweepFontEnvironment(doc, null, async () => ({programs: [program]}));
+  assert.deepEqual(calls[0], [program]);
+  assert.deepEqual(calls[1], [{query: 'Original', family: 'Original', programId: 'same-ttc-face', trueType: true}]);
+  assert.equal(result.collectionFaceProtocol, 'legacy-without-container-metadata');
+  doc.buildFontEnvironmentFromAvailablePrograms = raw => {
+    if (JSON.parse(raw).some(program => 'collectionFace' in program)) {
+      throw Error('invalid font program snapshot: data did not match any variant of untagged enum AvailableFontProgramInput');
+    }
+    return 'null';
+  };
+  assert.equal((await applySweepFontEnvironment(doc, null, async () => ({programs: [program]})))
+    .collectionFaceProtocol, 'legacy-without-container-metadata');
+  doc.buildFontEnvironmentFromAvailablePrograms = () => { throw Error('selected program hash does not match'); };
+  await assert.rejects(applySweepFontEnvironment(doc, null, async () => ({programs: [program]})), /hash does not match/,
+    '실제 프로그램 오류를 호환 처리로 숨기지 않는다');
 });

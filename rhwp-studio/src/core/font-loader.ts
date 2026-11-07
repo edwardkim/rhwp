@@ -265,6 +265,14 @@ const detectedOSFonts = new Set<string>();
 const detectedOSFontFamilies = new Set<string>();
 const resettableLocalFaces = new Set<FontFace>();
 
+/** 실제 바이트를 로드해 등록한 face다. 이름 probe나 OS 목록과 구분한다. */
+export function hasLoadedLocalFontFamily(name: string): boolean {
+  const requested = normalizeFontFamily(name);
+  return [...resettableLocalFaces].some(face => face.status === 'loaded'
+    && normalizeFontFamily(face.family.replace(/^['"]|['"]$/g, '')) === requested
+    && (typeof document.fonts.has !== 'function' || document.fonts.has(face)));
+}
+
 /** 실제 local() 프로그램 로드가 끝난 face만 공급하고 CDN 덮어쓰기를 막는다. */
 export function registerLoadedLocalFontFace(face: FontFace, resettable = true): void {
   if (face.status !== 'loaded') throw new Error('로컬 글꼴 프로그램이 로드되지 않았습니다');

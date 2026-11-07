@@ -339,6 +339,8 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
     for record in records:
         with Path(record['path']).open('rb') as program:
             record['openTypeCff'] = program.read(4) == b'OTTO'
+        with Path(record['source']).open('rb') as source_program:
+            record['collectionFace'] = source_program.read(4) == b'ttcf'
     path = base / 'font-catalog.json'
     vs.write_json_atomic(path, {'faces': records})
     return path

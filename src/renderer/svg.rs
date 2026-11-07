@@ -332,6 +332,17 @@ impl SvgRenderer {
         self.begin_page(width, height);
     }
 
+    /// 공통 그룹의 좌표계만 직렬화한다. 자식의 논리 bbox는 다시 배치하지 않는다.
+    pub(super) fn begin_layer_transform(&mut self, [a, b, c, d, e, f]: [f64; 6]) {
+        self.output.push_str(&format!(
+            "<g transform=\"matrix({a} {b} {c} {d} {e} {f})\">\n"
+        ));
+    }
+
+    pub(super) fn end_layer_transform(&mut self) {
+        self.output.push_str("</g>\n");
+    }
+
     /// Closes the SVG document consumed by direct `PageLayerTree` replay.
     pub(super) fn end_layer_page(&mut self) {
         self.end_page();
@@ -1079,22 +1090,24 @@ impl SvgRenderer {
                         if let Some(start) = segment.rfind('>') {
                             let text = &segment[start + 1..];
                             let header = &segment[..start];
-                            let family =
-                                if header
-                                    .rsplit("<text ")
-                                    .next()
-                                    .is_some_and(|attrs| attrs.contains("font-family=\"HyhwpEQ\""))
-                                {
-                                    super::equation::hancom_glyphs::FONT_FAMILY
-                                } else if header.rsplit("<text ").next().is_some_and(|attrs| {
-                                    attrs.contains("font-family=\"HancomEQN\"")
-                                }) {
-                                    "HancomEQN"
-                                } else if super::equation::text_has_cjk(text) {
-                                    "Haansoft Batang"
-                                } else {
-                                    "Latin Modern Math"
-                                };
+                            // 표시 조각이 선언한 실제 face를 공급한다. 구형 원본
+                            // glyph를 영문이라는 이유로 다른 수학 face로 추정하지 않는다.
+                            let family = header
+                                .rsplit("<text")
+                                .next()
+                                .and_then(|attrs| {
+                                    super::svg_fragment::find_svg_attr_value(attrs, "font-family")
+                                })
+                                .and_then(|families| families.split(',').next())
+                                .map(|face| face.trim().trim_matches(['\'', '"']))
+                                .filter(|face| !face.is_empty())
+                                .unwrap_or_else(|| {
+                                    if super::equation::text_has_cjk(text) {
+                                        "Haansoft Batang"
+                                    } else {
+                                        "Latin Modern Math"
+                                    }
+                                });
                             self.font_codepoints
                                 .entry(family.to_string())
                                 .or_default()

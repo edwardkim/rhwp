@@ -1,0 +1,97 @@
+{
+  "changeSetId": "issue-1994.hankyoreh-webfont",
+  "decisionPlane": "supply",
+  "evidenceRecords": [
+    {
+      "evidenceId": "evidence.issue-1994.hankyoreh-original-webfont",
+      "kind": "public-source",
+      "licenseOrProvenance": "사용자 지정 @noonnu/hankc 0.1.0. 한겨레의 공식 배포 원본과 12443 cmap 문자별 윤곽·전진폭 동일. 원본 출처·사용 조건을 유지하며 바이너리는 포함하지 않는다.",
+      "parentEvidenceIds": [],
+      "sha256": "f80c23a7c898b623fba9b8ceb92e1871ded1b2036783b3a4d85a68c6a1126f15",
+      "source": "assets/font-rules/evidence/issue-1994-hankyoreh-original-webfont.json"
+    }
+  ],
+  "expectedDelta": {
+    "activeRuleDelta": 2,
+    "projectionId": "canvas2d-webfont",
+    "unchangedProjectionIds": [
+      "rust-layout-name",
+      "rust-layout-metric",
+      "canvas2d-paint",
+      "canvaskit-sfnt"
+    ]
+  },
+  "issue": 1994,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "operationId": "operation.issue-1994.hankyoreh-webfont-0",
+      "rule": {
+        "conditions": {
+          "profile": "canvas2d-css-woff2"
+        },
+        "decisionPlane": "supply",
+        "evidenceIds": [
+          "evidence.issue-1994.hankyoreh-original-webfont"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "canvas2d-webfont",
+          "mode": "direct"
+        },
+        "projectionSequence": 157,
+        "relationType": "supply-source",
+        "ruleId": "rule.issue-1994.hankyoreh-webfont-0",
+        "sourceBoundaryId": "studio-supply.font-list",
+        "sourceFace": "한겨레결체",
+        "supply": {
+          "external": true,
+          "fontFamily": "한겨레결체",
+          "format": "woff2",
+          "kind": "canvas2d-webfont",
+          "sourceUrl": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff2",
+          "unicodeRange": null
+        },
+        "targetFaceOrPolicy": "CDN_HANKC_400"
+      },
+      "type": "add-rule"
+    },
+    {
+      "operationId": "operation.issue-1994.hankyoreh-webfont-1",
+      "rule": {
+        "conditions": {
+          "profile": "canvas2d-css-woff2"
+        },
+        "decisionPlane": "supply",
+        "evidenceIds": [
+          "evidence.issue-1994.hankyoreh-original-webfont"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "canvas2d-webfont",
+          "mode": "direct"
+        },
+        "projectionSequence": 158,
+        "relationType": "supply-source",
+        "ruleId": "rule.issue-1994.hankyoreh-webfont-1",
+        "sourceBoundaryId": "studio-supply.font-list",
+        "sourceFace": "Hankc",
+        "supply": {
+          "external": true,
+          "fontFamily": "Hankc",
+          "format": "woff2",
+          "kind": "canvas2d-webfont",
+          "sourceUrl": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff2",
+          "unicodeRange": null
+        },
+        "targetFaceOrPolicy": "CDN_HANKC_400"
+      },
+      "type": "add-rule"
+    }
+  ],
+  "parentRegistrySha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+  "schemaVersion": "2.0",
+  "sequence": 19
+}

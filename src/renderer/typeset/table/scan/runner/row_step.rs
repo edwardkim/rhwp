@@ -170,7 +170,17 @@ impl TypesetEngine {
                     cut_row_h[r]
                 };
                 let h = row_query.required_height(base, consumed, cs_before);
-                if r == cursor_row || consumed + cs_before + h <= avail_for_rows {
+                let required = consumed + cs_before + h;
+                // 블록 스캔과 같은 물리 상자를 행별로 더해도 합산 순서의 끝자리 오차가
+                // 생긴다. HU/px 여유를 더하지 않고 누적 연산 규모의 f64 오차만 구분한다.
+                let roundoff = f64::EPSILON
+                    * (required.abs() + avail_for_rows.abs()).max(1.0)
+                    * (r - cursor_row + 3) as f64;
+                let fits = required <= avail_for_rows
+                    || (required.is_finite()
+                        && avail_for_rows.is_finite()
+                        && required - avail_for_rows <= roundoff);
+                if r == cursor_row || fits {
                     consumed += cs_before + h;
                     r += 1;
                     end_row = r;
@@ -1373,7 +1383,10 @@ impl TypesetEngine {
             let source_blank_band = layout_engine
                 .stored_nested_plain_cut_frame_extra(table, r, row_start_cut, &res.end_cut, styles)
                 .map(|extra| {
-                    (split_total + extra).min((avail_for_rows - consumed - cs_before).max(0.0))
+                    (split_total + extra).min(
+                        (v.blank_row_available_height().min(avail_for_rows) - consumed - cs_before)
+                            .max(0.0),
+                    )
                 })
                 .filter(|height| *height > split_total);
             let split_total = source_blank_band.unwrap_or(split_total);

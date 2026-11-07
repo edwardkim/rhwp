@@ -113,6 +113,11 @@ impl EqParser {
     /// 현재 토큰이 LParen 이라는 전제. 사전계산된 `paren_match` 로 O(1) 조회한다
     /// (원래는 매 호출 O(n) 전방 스캔 → 괄호 많은 입력에서 O(n^2) 행 유발).
     pub(super) fn paren_then_script(&self) -> bool {
+        // 원본 HFT의 일반 괄호는 CHAR 문자다. 뒤 첨자는 닫는 문자에
+        // 붙으며 LEFT/RIGHT만 구조 괄호를 만든다. 현대 표시 계약은 유지한다.
+        if self.legacy_display {
+            return false;
+        }
         let close = self
             .paren_match
             .get(self.pos)

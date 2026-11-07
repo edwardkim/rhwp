@@ -1833,6 +1833,26 @@ impl TypesetEngine {
                 restart_frame_closes_body: source_restart_frame_closes_body,
             },
         );
+        // 선언된 첫 개체 상자와 현재 수용한 격자 프레임이 닫히면,
+        // 그 안에서 선택한 글줄은 원본 세로 정렬을 소유한다. 남은 본문 전체의
+        // 높이나 임의 용량 컷을 현재 프레임으로 대신하지 않는다.
+        let source_object_opening_frame = !is_continuation
+            && cursor_row == 0
+            && start_cut.is_empty()
+            && !split_end_cut.is_empty()
+            && end_row_height_override.is_some()
+            && table.col_count > 1
+            && table.common.height > 0
+            && table.common.height <= i32::MAX as u32
+            && !st.profile.session_edited()
+            && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+            && !self
+                .render_normalization
+                .table_frame_reflowed_without_cell_scope(table)
+            && table.cells.iter().all(|cell| !cell.dirty_flag)
+            && (partial_height - hwpunit_to_px(table.common.height as i32, self.dpi)).abs()
+                <= hwpunit_to_px(1, self.dpi)
+                    + f64::EPSILON * partial_height.abs().max(1.0) * (row_count + 1) as f64;
         st.append_item(PageItem::PartialTable {
             para_index: para_idx,
             control_index: ctrl_idx,
@@ -1857,6 +1877,7 @@ impl TypesetEngine {
             // 걸침 칸·나뉜 행의 몫으로 쪽 끝 띠까지 수용한 끝 행 상자도 원본 프레임이다.
             // 배치는 이 상자를 끝 줄간격 접기로 다시 줄이지 않는다.
             end_row_owns_stored_frame: source_frame_band > 0.0
+                || source_object_opening_frame
                 || first_fragment_blank_band
                 || original_single_cell_opening_frame
                 || source_single_cell_band.is_some()
@@ -2152,6 +2173,13 @@ impl TypesetEngine {
             (cell.row as usize) < end_row
                 && cell.row as usize + (cell.row_span as usize).max(1) > end_row
         });
+        // 원본 쪽 프레임을 닫은 블록 컷의 끝 행 상자는 해당 쪽의 배분이다.
+        // 일반 행의 `선언 높이 - 이번 상자`로 되풀어 블록 시작 행에 넘기면,
+        // 이미 소비한 앞 행을 빈 띠로 다시 연다. 남은 내용과 병합 공간은
+        // 각각 원본 유닛 컷·걸침 칸 원장이 이어받는다.
+        let block_cut_owns_source_frame = split_block_start
+            .is_some_and(|first| first + 1 < end_row)
+            && stored_complete_extent.is_some();
         let next_start_row_height_override = source_opening_row_frame
             .as_ref().map(|(_, _, remaining)| *remaining)
             .or(empty_opening_next_height)
@@ -2430,7 +2458,7 @@ impl TypesetEngine {
             .filter(|_| nested_opening_extent.is_none() && !layout_engine.stored_heading_before_inline_frame_cut(
                 table, end_row.saturating_sub(1),
                 if end_row - 1 == cursor_row { start_cut } else { &[] }, &next_cut, styles,
-            ) && !closes_original_body_frame && !complete_source_row_frame && !first_fragment_blank_band && !source_frame_trailing_trim_applied && stored_row_frame.is_none()
+            ) && !closes_original_body_frame && !complete_source_row_frame && !first_fragment_blank_band && !block_cut_owns_source_frame && !source_frame_trailing_trim_applied && stored_row_frame.is_none()
                 && layout_engine.reflow_row_physical_minimum(table, end_row.saturating_sub(1), mt.row_heights[end_row.saturating_sub(1)], Some(&next_cut), styles).is_none()
                 && (!layout_engine.row_uses_reflow_physical_frame(table, end_row.saturating_sub(1))
                     || crossing_span_owns_tail))

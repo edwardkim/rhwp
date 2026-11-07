@@ -1,3 +1,4 @@
+import { compareFontNames } from '../core/font-name-order.ts';
 /**
  * 글자 모양 대화상자 (CharShapeDialog)
  * HWP Alt+L 대화상자에 해당하는 글자 속성 설정 UI
@@ -38,7 +39,7 @@ const LANG_NAMES = [i18nText('dialog.charShape.label'), i18nText('dialog.charSha
 
 /** 웹폰트 + 로컬 글꼴을 합친 목록 (정렬됨) */
 function buildFontList(): string[] {
-  const fonts = Array.from(REGISTERED_FONTS).sort((a, b) => a.localeCompare(b, 'ko'));
+  const fonts = Array.from(REGISTERED_FONTS).sort(compareFontNames);
   return fonts;
 }
 
@@ -334,7 +335,7 @@ export class CharShapeDialog {
     this.fontSelect.appendChild(webGroup);
 
     // 로컬 글꼴 optgroup (감지된 경우에만)
-    const localFonts = getLocalFonts();
+    const localFonts = getLocalFonts().sort(compareFontNames);
     if (localFonts.length > 0) {
       const localGroup = document.createElement('optgroup');
       localGroup.label = '로컬 글꼴';

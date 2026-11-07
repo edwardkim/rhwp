@@ -1367,6 +1367,8 @@ struct RunEmitVars<'a> {
     object_baseline: f64,
     /// 저장 줄 중심과 문자 기준선이 다른 인라인 표 줄이다.
     centered_inline_table_baseline: bool,
+    /// 가운데 정렬 문단의 저장 정렬점. 문자와 수식은 각 논리 상자를 이 점에 맞춘다.
+    stored_equation_center: Option<f64>,
     raw_lh: f64,
     alignment: crate::model::style::Alignment,
     auto_tab_right: bool,
@@ -6609,7 +6611,33 @@ impl LayoutEngine {
                             matches!(p.controls.get(*ci), Some(Control::Table(t)) if t.common.treat_as_char)
                         })
                 });
-            let baseline = if centered_inline_table_baseline {
+            // 문단 세로 정렬이 가운데이면 저장 BL은 TH/2의 정렬점이다(HWP5 표 44).
+            // 수식과 글자가 같은 줄에서 이 점을 곧바로 문자 기준선으로 쓰면
+            // 큰 수식 줄의 글자가 올라간다. 온전한 저장 줄과 같은 소유 구간인
+            // 수식 전용 TAC 줄만 해석하고, 재구성·다른 개체의 프레임은 유지한다.
+            let stored_equation_center = (!runs_all_whitespace
+                && !has_tac_shape
+                && !source_metrics_reflowed
+                && max_fs > 0.0
+                && para_style.is_some_and(|style| style.vertical_alignment == 2)
+                && !line_tac_offsets_for_width.is_empty()
+                && para.is_some_and(|p| {
+                    !crate::renderer::composer::line_metrics_regenerated(p, line_idx)
+                        && p.line_segs.get(line_idx).is_some_and(|source| {
+                            source.text_height > 0
+                                && source.baseline_distance == source.text_height / 2
+                                && source.line_height == comp_line.line_height
+                                && source.baseline_distance == comp_line.baseline_distance
+                        })
+                        && line_tac_offsets_for_width.iter().all(|(_, _, ci)| {
+                            matches!(p.controls.get(*ci), Some(Control::Equation(e)) if e.common.treat_as_char)
+                        })
+                }))
+            .then_some(hwpunit_to_px(comp_line.baseline_distance, self.dpi));
+            let baseline = if let Some(center) = stored_equation_center {
+                // 최소 글꼴 기준선으로 clamp한 값이 아닌 원래 정렬점을 소비한다.
+                center + max_fs * (0.85 - 0.5)
+            } else if centered_inline_table_baseline {
                 baseline + max_fs * (0.85 - 0.5)
             } else {
                 baseline
@@ -7945,7 +7973,7 @@ impl LayoutEngine {
                         para_index,
                         cell_ctx.as_ref(),
                     ) {
-                        RenderNode::new(
+                        Some(RenderNode::new(
                             num_id,
                             RenderNodeType::Image(image),
                             BoundingBox::new(
@@ -7955,9 +7983,17 @@ impl LayoutEngine {
                                 num_style.font_size,
                                 num_style.font_size,
                             ),
-                        )
+                        ))
+                    } else if picture_bullet::image_reference(
+                        styles,
+                        composed.para_style_id as usize,
+                    )
+                    .is_some()
+                    {
+                        // 외부 Link의 빈 슬롯은 참조를 보존하되 그림·문자 마커를 출력하지 않는다.
+                        None
                     } else {
-                        RenderNode::new(
+                        Some(RenderNode::new(
                             num_id,
                             RenderNodeType::TextRun(TextRunNode {
                                 text: num_text.clone(),
@@ -7980,9 +8016,11 @@ impl LayoutEngine {
                                 display_text: None,
                             }),
                             BoundingBox::new(marker_x, text_y, num_width, line_height),
-                        )
+                        ))
                     };
-                    line_node.children.push(num_node);
+                    if let Some(num_node) = num_node {
+                        line_node.children.push(num_node);
+                    }
                 }
             }
 
@@ -8076,6 +8114,7 @@ impl LayoutEngine {
                     baseline,
                     object_baseline,
                     centered_inline_table_baseline,
+                    stored_equation_center,
                     raw_lh,
                     alignment,
                     auto_tab_right,
@@ -8874,6 +8913,7 @@ impl LayoutEngine {
             baseline,
             object_baseline,
             centered_inline_table_baseline,
+            stored_equation_center,
             raw_lh,
             alignment,
             auto_tab_right,
@@ -10203,7 +10243,13 @@ impl LayoutEngine {
                             );
                             // 측정한 기준선 거리로 원점을 정한다. 저장 상자 안의 빈 높이도
                             // 기준선의 일부이므로 줄 상단 clamp로 다시 덮어쓰지 않는다.
-                            let eq_y = text_y + baseline - eq_baseline;
+                            let eq_y = if let Some(center) = stored_equation_center {
+                                // 글자의 ascent와 수식 baseline 비율은 다르다.
+                                // 수식은 같은 저장 정렬점에 자기 논리 상자의 중심을 맞춘다.
+                                text_y + center - eq_h * 0.5
+                            } else {
+                                text_y + baseline - eq_baseline
+                            };
                             let inline_metrics =
                                 crate::renderer::equation::inline_box::horizontal_metrics(eq);
                             let content_x = inline_metrics.content_origin_x(x, self.dpi);

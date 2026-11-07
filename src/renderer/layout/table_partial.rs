@@ -3083,7 +3083,12 @@ impl LayoutEngine {
                             && nested_tables_px > 0.0
                             && target_top - current_top >= nested_tables_px - 24.0;
                         table_host_has_stored_origin = has_table_ctrl && !post_table_host_line;
-                        if cp_idx == 0
+                        // 인증된 이어받기 프레임의 첫 원본 문단도 선차감한 앞 간격을
+                        // 소유한다. 셀 전체의 문단 0과 현재 프레임의 첫 문단을 혼동하면
+                        // 저장 스냅이 뺀 간격을 column-top trim에서 다시 잃는다.
+                        let owns_resumed_stored_entry =
+                            resumed_stored_frame_origin.is_some() && !has_preceding_text;
+                        if (cp_idx == 0 || owns_resumed_stored_entry)
                             && start_line == 0
                             && !has_table_ctrl
                             && target_top >= current_top
@@ -5021,6 +5026,59 @@ impl LayoutEngine {
                                                 })
                                             })
                                             .flatten();
+                                        // 물리 여유와 실제 paint가 같은 최종 원점을 소비한다.
+                                        // 저장/재조판 경로의 위쪽 바깥 띠를 뒤에서 다시 더하지 않는다.
+                                        let resolved_nested_table_top = reflow_block_origin
+                                                    .map(|origin| origin.1)
+                                                    .or_else(|| source_frame_height
+                                                    .map(|_| {
+                                                        nested_y
+                                                            + hwpunit_to_px(
+                                                                nested_table.outer_margin_top
+                                                                    as i32,
+                                                                self.dpi,
+                                                            )
+                                                    })
+                                                    .or_else(|| {
+                                                        stored_float_frame
+                                                            .map(|f| f.table_top)
+                                                            .or_else(|| overlay_frame.as_ref().map(|frame| {
+                                                                frame.start + hwpunit_to_px(nested_table.outer_margin_top as i32, self.dpi)
+                                                            }))
+                                                            .or_else(|| {
+                                                                self.stored_hwpx_cut_owns_outer_frame(para, nested_table).then(|| nested_y + hwpunit_to_px(nested_table.outer_margin_top as i32, self.dpi))
+                                                            })
+                                                            .or_else(|| {
+                                                                self.reflow_nested_table_origin(
+                                                                    para,
+                                                                    styles,
+                                                                    nested_table,
+                                                                    &ctrl_area,
+                                                                    nested_w,
+                                                                    nested_y,
+                                                                    opens_reflow_outer_frame,
+                                                                )
+                                                                .map(|(_, y)| y)
+                                                            })
+                                                            .or_else(|| {
+                                                                self.stored_wrapper_opening_frame(
+                                                                    table, start_cut, end_cut, styles,
+                                                                )
+                                                                .map(|frame| cell_y + frame.child_top)
+                                                            })
+                                                    })
+                                                    .or_else(|| {
+                                                        // 투영된 첫 행 유닛은 이 위쪽 바깥 띠를
+                                                        // 이미 예약한다. 이어받는 하위 표의 커서는
+                                                        // 그 띠를 다시 예약하지 않는다.
+                                                        (recursive_cut.start_row == 0
+                                                            && recursive_cut.start_cut.iter().all(|cut| *cut == 0))
+                                                        .then(|| nested_y + hwpunit_to_px(
+                                                            nested_table.outer_margin_top as i32, self.dpi))
+                                                        .or_else(|| self.nested_row_continuation_outer_top(
+                                                            nested_table, recursive_cut,
+                                                        ).map(|top| nested_y + top))
+                                                    }));
                                         let plain_source_height = recursive_cut
                                             .end_row
                                             .checked_sub(1)
@@ -5045,7 +5103,12 @@ impl LayoutEngine {
                                                 );
                                                 let spare = (cell_y + cell_h
                                                     - pad_bottom
-                                                    - nested_y
+                                                    - resolved_nested_table_top
+                                                        .unwrap_or(nested_y)
+                                                    - hwpunit_to_px(
+                                                        i32::from(nested_table.outer_margin_bottom),
+                                                        self.dpi,
+                                                    )
                                                     - self.nested_cut_physical_height(
                                                         nested_table,
                                                         recursive_cut,
@@ -5090,75 +5153,16 @@ impl LayoutEngine {
                                                 predecessor_flow_bottom: None,
                                                 resolved_table_left: reflow_block_origin
                                                     .and_then(|origin| origin.0)
-                                                    .or(stored_inline_left).or_else(
-                                                    || {
+                                                    .or(stored_inline_left)
+                                                    .or_else(|| {
                                                         stored_float_frame
                                                             .and_then(|f| f.table_left)
-                                                    },
-                                                ),
+                                                    }),
                                                 end_row_owns_stored_frame: false,
                                                 computed_fragment_frame: false,
                                                 // 같은 원본 프레임의 바깥여백은 부모 흐름에 예약했다.
                                                 // 실제 표 원점에서는 위 여백만 한 번 소비한다.
-                                                resolved_table_top: reflow_block_origin
-                                                    .map(|origin| origin.1)
-                                                    .or_else(|| source_frame_height
-                                                    .map(|_| {
-                                                        nested_y
-                                                            + hwpunit_to_px(
-                                                                nested_table.outer_margin_top
-                                                                    as i32,
-                                                                self.dpi,
-                                                            )
-                                                    })
-                                                    .or_else(|| {
-                                                        stored_float_frame
-                                                            .map(|f| f.table_top)
-                                                            .or_else(|| overlay_frame.as_ref().map(|frame| {
-                                                                frame.start + hwpunit_to_px(nested_table.outer_margin_top as i32, self.dpi)
-                                                            }))
-                                                            .or_else(|| {
-                                                                self.stored_hwpx_cut_owns_outer_frame(para, nested_table).then(|| nested_y + hwpunit_to_px(nested_table.outer_margin_top as i32, self.dpi))
-                                                            })
-                                                            .or_else(|| {
-                                                                self.reflow_nested_table_origin(
-                                                                    para,
-                                                                    styles,
-                                                                    nested_table,
-                                                                    &ctrl_area,
-                                                                    nested_w,
-                                                                    nested_y,
-                                                                    opens_reflow_outer_frame,
-                                                                )
-                                                                .map(|(_, y)| y)
-                                                            })
-                                                            .or_else(|| {
-                                                                self.stored_wrapper_opening_frame(
-                                                                    table, start_cut, end_cut, styles,
-                                                                )
-                                                                .map(|frame| cell_y + frame.child_top)
-                                                            })
-                                                    })
-                                                    .or_else(|| {
-                                                        // 투영된 첫 행 유닛은 이 위쪽 바깥 띠를
-                                                        // 이미 예약한다. 이어받는 하위 표의 커서는
-                                                        // 그 띠를 다시 예약하지 않는다.
-                                                        ((recursive_cut.start_row == 0
-                                                            && recursive_cut
-                                                                .start_cut
-                                                                .iter()
-                                                                .all(|cut| *cut == 0))
-                                                            || (!nested_table.common.treat_as_char
-                                                                && recursive_cut.start_row > 0))
-                                                        .then(|| {
-                                                            nested_y
-                                                                + hwpunit_to_px(
-                                                                    nested_table.outer_margin_top
-                                                                        as i32,
-                                                                    self.dpi,
-                                                                )
-                                                        })
-                                                    })),
+                                                resolved_table_top: resolved_nested_table_top,
                                             },
                                             section_index,
                                             styles,
@@ -5183,7 +5187,11 @@ impl LayoutEngine {
                                                 .filter(|_| !recursive_cut.end_cut.is_empty())
                                                 .or(joint_opening_height)
                                                 .or(plain_source_height)
-                                                .or_else(|| reflow_closing_band.as_ref().map(|band| band.last_row_height)),
+                                                .or_else(|| {
+                                                    reflow_closing_band
+                                                        .as_ref()
+                                                        .map(|band| band.last_row_height)
+                                                }),
                                             source_frame_height
                                                 .filter(|_| !recursive_cut.start_cut.is_empty()),
                                             &[],
@@ -6767,7 +6775,13 @@ impl LayoutEngine {
                         .map(|r| row_heights.get(r).copied().unwrap_or(0.0))
                         .sum();
                     if target > cur + 0.5 {
-                        if let Some(last) = (bs..be_painted).next_back() {
+                        // 컷 범위 끝에 미수용 일반 행이 남을 수 있다. 그 0높이
+                        // 행에 부족분을 싣으면 원문 내용 없는 빈 행이 새로 그려진다.
+                        // 실제 물리 행이 있으면 그 마지막 행이 병합 슬롯을 소유한다.
+                        let last = (bs..be_painted)
+                            .rfind(|&row| row_heights[row] > 0.0)
+                            .or_else(|| (bs..be_painted).next_back());
+                        if let Some(last) = last {
                             row_heights[last] += target - cur;
                         }
                     }
@@ -7379,25 +7393,23 @@ impl LayoutEngine {
                     )
                 })
             });
-        let complete_block_opening_height = (start_row == 0
+        let block_opening_height = (start_row == 0
             && start_cut.is_empty()
             && is_block_split
             && end_row_height_override.is_some()
             && resolved_table_top.is_some())
         .then(|| {
             paragraphs.get(para_index).and_then(|host| {
-                self.stored_complete_block_opening_frame_height(
-                    table, host, end_row, end_cut, styles,
-                )
+                self.stored_block_opening_frame_height(table, host, end_row, end_cut, styles)
             })
         })
         .flatten();
-        // 선택한 완전한 블록 행은 선언된 첫 상자도 소유한다.
+        // 완결 행 또는 저장 쪽 재시작에서 끝난 블록 컷은 선언된 첫 상자도 소유한다.
         // 예약과 같은 원본 프레임 소유자를 소비한다. 사용하지 않은 띠는 정렬 공간이며,
         // 그린 뒤 접어야 할 끝 줄간격이 아니다.
         let align_saved_opening_frame = !is_continuation
             && enclosing_cell_ctx.is_none()
-            && complete_block_opening_height
+            && block_opening_height
                 .or(saved_opening_alignment_height.filter(|_| !is_block_split))
                 .is_some_and(|frame_height| (partial_table_height - frame_height).abs() <= 0.5);
 
@@ -7670,11 +7682,28 @@ impl LayoutEngine {
         // 조각에서 상자가 내용 아래로 내려간다. ②만 빼면 내용이 적은 선언 높이 행이 무너진다.
         if let Some(fold_row) = fold_last_row {
             let mut trail: f64 = 0.0;
+            // 수용과 물리 높이가 함께 소유한 원본 병합 슬롯은 줄 뒤 여분이
+            // 아니다. 마지막 paint 접기에서도 같은 컷의 소유 판정을 소비한다.
+            // 실제 쪽 상한 초과분(cap_fold)은 아래에서 별도로 처리한다.
+            let owns_closing_slot = is_block_split && {
+                let (first, end) = rowspan_block_range(table, fold_row);
+                table.cells.iter().any(|cell| {
+                    let first_row = usize::from(cell.row);
+                    first_row <= fold_row
+                        && fold_row < first_row + usize::from(cell.row_span)
+                        && block_cut_index(table, first, end, cell)
+                            .and_then(|index| end_cut.get(index))
+                            .is_some_and(|&end| {
+                                let units = self.cell_units(cell, table, styles);
+                                self.stored_reset_span_owns_closing_slot(table, cell, &units, end)
+                            })
+                })
+            };
             let (su, eu) = (
                 start_cut.first().copied().unwrap_or(0),
                 end_cut.first().copied().unwrap_or(0),
             );
-            if eu > 0 {
+            if eu > 0 && !owns_closing_slot {
                 for cell in table.cells.iter().filter(|c| c.row as usize == fold_row) {
                     let ranges = self.cell_line_ranges_from_cut(cell, table, styles, su, eu);
                     let Some(pi2) = ranges

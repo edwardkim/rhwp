@@ -574,7 +574,11 @@ export const insertCommands: CommandDef[] = [
         // `Control::Picture` 만 받아 거부하므로 도형 삭제로 보낸다. 키보드 Delete 경로
         // (`deleteObjectControl`)와 같은 종류 집합이다.
         if (ref.type === 'shape' || ref.type === 'line' || ref.type === 'group' || ref.type === 'ole') {
-          wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
+          if (ref.cellPath && ref.cellPath.length > 0) {
+            wasm.deleteCellShapeControlByPath(ref.sec, ref.ppi, ref.cellPath, ref.ci);
+          } else {
+            wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
+          }
         } else if (ref.type === 'equation') {
           wasm.deleteEquationControl(ref.sec, ref.ppi, ref.ci);
         } else if (ref.cellPath && ref.cellPath.length > 0) {

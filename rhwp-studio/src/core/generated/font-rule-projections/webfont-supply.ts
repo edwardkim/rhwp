@@ -25,10 +25,10 @@ export type GeneratedFontRuleProjection = Readonly<{
 export const FONT_RULE_CANVAS2D_WEBFONT_META = Object.freeze({
   "schemaVersion": "1.0",
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
-  "inputSha256": "86c89fb5d8e95586abe3db49bc15baecc02e77e7a507901d3aa79781251f9101",
+  "inputSha256": "59bb65f77dc9a5de57db115c05ac56c7902af0be516a14839455e10e9ee33c6c",
   "projectionId": "canvas2d-webfont",
-  "projectionSha256": "b651cbac2c5296b7f6ce3d83d1b94a1711da0b6fa2493c2ab981869a58e24736",
-  "ruleCount": 157
+  "projectionSha256": "3a4759c7b701be8ee9552cf89ab7660abd6812df8990445a4548aa60bc87ad1c",
+  "ruleCount": 159
 });
 
 export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProjection[] = Object.freeze([
@@ -3483,6 +3483,50 @@ export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProject
       "format": "woff2",
       "kind": "canvas2d-webfont",
       "sourceUrl": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff2",
+      "unicodeRange": null
+    }
+  },
+  {
+    "ruleId": "rule.issue-1994.hankyoreh-webfont-0",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "한겨레결체",
+    "targetFaceOrPolicy": "CDN_HANKC_400",
+    "conditions": {
+      "profile": "canvas2d-css-woff2"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "external": true,
+      "fontFamily": "한겨레결체",
+      "format": "woff2",
+      "kind": "canvas2d-webfont",
+      "sourceUrl": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff2",
+      "unicodeRange": null
+    }
+  },
+  {
+    "ruleId": "rule.issue-1994.hankyoreh-webfont-1",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "Hankc",
+    "targetFaceOrPolicy": "CDN_HANKC_400",
+    "conditions": {
+      "profile": "canvas2d-css-woff2"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "external": true,
+      "fontFamily": "Hankc",
+      "format": "woff2",
+      "kind": "canvas2d-webfont",
+      "sourceUrl": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff2",
       "unicodeRange": null
     }
   }

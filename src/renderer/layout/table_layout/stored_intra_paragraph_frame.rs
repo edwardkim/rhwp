@@ -25,14 +25,16 @@ impl LayoutEngine {
                 .render_normalization
                 .borrow()
                 .cell_frame_reflowed(table, cell)
-                && units
-                    .iter()
-                    .any(|unit| Self::stored_in_paragraph_unit_is_original_restart(cell, unit))
+                && units.iter().any(|unit| {
+                    self.stored_in_paragraph_unit_is_original_restart(table, cell, unit)
+                })
         })
     }
 
     /// 행 분해와 상위 투영은 동일한 원본 줄의 재시작을 판별한다.
     pub(super) fn stored_in_paragraph_unit_is_original_restart(
+        &self,
+        table: &Table,
         cell: &Cell,
         unit: &CellUnit,
     ) -> bool {
@@ -48,7 +50,7 @@ impl LayoutEngine {
         };
         if paragraph.stored_text_partition_is_dirty()
             || paragraph.cell_format_vpos_dirty
-            || !paragraph.controls.is_empty()
+            || !crate::renderer::cell_paragraph_has_only_text_metadata(paragraph)
         {
             return false;
         }
@@ -61,7 +63,15 @@ impl LayoutEngine {
         let synthetic = crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
         previous.tag & synthetic == 0
             && current.tag & synthetic == 0
-            && previous.vertical_pos > 0
+            && (previous.vertical_pos > 0
+                || (previous.vertical_pos == 0
+                    && unit.stored_frame_break_before
+                    && matches!(
+                        self.stored_zero_origin_text_frame_break_witness(
+                            table, cell, previous, current,
+                        ),
+                        Some(super::stored_zero_origin::SavedZeroOriginWitness::OpeningFrame)
+                    )))
             && current.vertical_pos == 0
             && previous.line_height > 0
             && current.line_height > 0
@@ -81,6 +91,10 @@ impl LayoutEngine {
         // 첫 행의 원점도 0으로 정규화한다. 원본 줄과 같은 물리 상자를
         // 인증하는 조건은 아래에서 뒤 행과 동일하게 적용한다.
         if !self.stored_plain_text_cell_frame(table, cell)
+            || self
+                .render_normalization
+                .borrow()
+                .nested_table_has_reflowed_host(table)
             || table.common.height == 0
             || table.common.height > i32::MAX as u32
         {
@@ -187,7 +201,19 @@ impl LayoutEngine {
             }
             let line = paragraph.line_segs.get(unit.vis_start)?;
             if let Some(before) = previous {
-                if line.vertical_pos == 0 && before.vertical_pos > 0 {
+                if line.vertical_pos == 0
+                    && (before.vertical_pos > 0
+                        || (unit.stored_frame_break_before
+                            && units[index - 1].para_idx == unit.para_idx
+                            && matches!(
+                                self.stored_zero_origin_text_frame_break_witness(
+                                    table, cell, before, line,
+                                ),
+                                Some(
+                                    super::stored_zero_origin::SavedZeroOriginWitness::OpeningFrame
+                                )
+                            )))
+                {
                     let ink = hwpunit_to_px(
                         before.vertical_pos.checked_add(before.line_height)?,
                         self.dpi,

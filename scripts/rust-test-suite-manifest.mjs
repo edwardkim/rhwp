@@ -27,6 +27,19 @@ const CARGO_BLOCK_START = '# BEGIN RHWP GENERATED TEST TARGETS';
 const CARGO_BLOCK_END = '# END RHWP GENERATED TEST TARGETS';
 const RUST_MODULE_NAME = /^[a-z][a-z0-9_]*$/;
 
+// 같은 suite에 모인 검사들이 같은 helper 파일을 중복 mod로 읽지 않게 한다.
+// 소비 검사가 서로 다른 suite로 재배정돼도 각 harness가 자기 helper를 한 번 공급한다.
+const SHARED_SUPPORT_MODULES = [
+  {
+    module: 'symbol_font_program',
+    source: 'tests/common/symbol_font_program.rs',
+    consumers: [
+      'tests/cases/issue_8153_symbol_coverage.rs',
+      'tests/cases/issue_8153_symbol_fallback.rs',
+    ],
+  },
+];
+
 function assertRecord(value, label) {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error(`${label}은 객체여야 합니다.`);
@@ -683,6 +696,14 @@ export function deriveManifest(root = ROOT) {
 }
 
 export function renderHarness(suite, sources) {
+  const sourceSet = new Set(sources);
+  const sharedModules = SHARED_SUPPORT_MODULES
+    .filter(({ consumers }) => consumers.some((source) => sourceSet.has(source)))
+    .map(({ module, source }) => {
+      const modulePath = path.posix.relative(GENERATED_TEST_DIRECTORY, source);
+      return `#[path = "${modulePath}"]\nmod ${module};`;
+    })
+    .join('\n\n');
   const modules = [...sources]
     .sort((left, right) => left.localeCompare(right))
     .map((source) => {
@@ -697,6 +718,7 @@ export function renderHarness(suite, sources) {
     '//! 직접 수정하지 말고 suite manifest 생성기를 사용한다.',
     `//! suite: ${suite}`,
     '',
+    ...(sharedModules ? [sharedModules, ''] : []),
     modules,
     '',
   ].join('\n');

@@ -297,7 +297,10 @@ impl TypefaceCatalog {
 
 /// CSS/Skia matches width, then slant, then weight (including 400..=500).
 /// This is the same ordering as SkFontStyleSet::matchStyleCSS3.
-fn supplied_style_rank(requested: FontStyle, actual: FontStyle) -> ((i32, i32), usize, (i32, i32)) {
+pub(super) fn supplied_style_rank(
+    requested: FontStyle,
+    actual: FontStyle,
+) -> ((i32, i32), usize, (i32, i32)) {
     let rw = *requested.width();
     let cw = *actual.width();
     let width = if rw <= 5 {

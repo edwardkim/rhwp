@@ -1223,7 +1223,24 @@ impl TypesetEngine {
                 || remaining_on_page_for_first_unit < min_content
                 || multirow_clean_defer
             {
-                if atomic_host_band_h.is_some() {
+                // 첫 내용이 실제로 이월되는 계산된 빈 호스트는 원자 셀 밴드와
+                // 마찬가지로 자기 글줄과 들어가는 후속 본문을 원래 쪽에 남긴다.
+                // 표와 함께 본문 cursor까지 넘기면 앞 쪽에 들어간 빈 줄을 뒤 쪽에
+                // 다시 예약한다. 저장 원점·음수 offset·어울림 개체는 기존 계약을 유지한다.
+                let computed_empty_float = is_para_topbottom_float(&table.common)
+                    && table.common.flow_with_text
+                    && crate::renderer::float_placement::signed_hwpunit(
+                        table.common.vertical_offset,
+                    ) >= 0
+                    && unconstrained_host_placement.is_some_and(|placement| {
+                        matches!(
+                            placement.flow,
+                            crate::renderer::float_placement::ParagraphFloatFlow::ComputedEmptyHost {
+                                ..
+                            }
+                        )
+                    });
+                if atomic_host_band_h.is_some() || computed_empty_float {
                     self.prefill_computed_deferred_float(
                         st,
                         para_idx,

@@ -1,12 +1,13 @@
 import { clearLoadedLocalFontFaces, registerLoadedLocalFontFace } from './font-loader.ts';
 import { FONT_RULE_WEBFONT_ENTRIES } from './font-rule-runtime.ts';
-import { loadPreferredLocalFontBytes, resolveLocalFontProgramCandidates } from './local-fonts.ts';
+import { loadPreferredLocalFontBytes, localFontProgramOrder, prepareDocumentLocalFontPrograms, resolveLocalFontProgramCandidates } from './local-fonts.ts';
 import { normalizeFontFaceData } from './sfnt-face.ts';
 import { fontSymbolDescriptors, type FontSymbolInspector } from './font-symbol-coverage.ts';
 import { sourceProgramFamilies } from './canvas-intrinsic-font.mjs';
 
 export interface DocumentFontSelectionPlan {
   environmentId: string | null;
+  supportsSourceMetricOverrides?: boolean;
   embeddedFamilies?: string[];
   requests: Array<{ source: string; primary: string[]; substitute: string[]; publicFallback?: string[] }>;
 }
@@ -19,9 +20,13 @@ interface LoadedProgram {
   face: FontFace;
   trueType: boolean;
   openTypeCff: boolean;
+  collectionFace?: boolean;
 }
 
 const loadedPrograms = new Map<string, LoadedProgram>();
+// 같은 family의 한글·영문 프로그램을 모두 보존한다. 첫 face의 cmap 결측을
+// 곧바로 다른 family로 넘기지 않는다.
+const loadedProgramSets = new Map<string, LoadedProgram[]>();
 const suppliedAliases = new Map<string, string>();
 
 /** 이미 승인·적재한 같은 family의 실제 프로그램만 조판에 공급한다. */
@@ -39,6 +44,7 @@ export function declaredOpenTypeProgram(family: string, sourceTtf = false): Uint
 export function clearDeclaredLocalPrograms(): void {
   clearLoadedLocalFontFaces();
   loadedPrograms.clear();
+  loadedProgramSets.clear();
   suppliedAliases.clear();
 }
 
@@ -50,34 +56,36 @@ async function loadLocalProgram(query: string, inspect?: FontSymbolInspector): P
   if (!records.length) return null;
   try {
     // 원본 API face의 바이트를 직접 로드한다. 읽기/형식 실패는 공급 완료가 아니다.
-    let original: ArrayBuffer | null = null;
+    const prepared: LoadedProgram[] = [];
     for (const record of records) {
       const candidate = await loadPreferredLocalFontBytes(record);
       if (!candidate || candidate.byteLength < 4) continue;
-      const signature = new DataView(candidate).getUint32(0);
-      if (signature === 0x4f54544f) { original = candidate; break; }
-      if (!original && signature !== 0x74746366) original = candidate;
+      if (new DataView(candidate).getUint32(0) === 0x74746366) continue;
+      const bytes = normalizeFontFaceData(candidate, 0);
+      if (!bytes) continue;
+      const digest = await crypto.subtle.digest('SHA-256', bytes);
+      const programId = `browser-local-${[...new Uint8Array(digest)]
+        .map(byte => byte.toString(16).padStart(2, '0')).join('')}`;
+      if (prepared.some(program => program.programId === programId)) continue;
+      const cached = loadedProgramSets.get(query)?.find(program => program.programId === programId);
+      if (cached) { prepared.push(cached); continue; }
+      const face = new FontFace(query, bytes, fontSymbolDescriptors(bytes, {}, inspect));
+      try { await face.load(); } catch { continue; }
+      const signature = new DataView(bytes).getUint32(0);
+      prepared.push({ query, family: query, bytes, programId, face,
+        trueType: signature === 0x00010000 || signature === 0x74727565,
+        openTypeCff: signature === 0x4f54544f,
+        ...(localFontProgramOrder(candidate) === 1 ? { collectionFace: true } : {}) });
     }
-    // The approved API returns bytes for the matched face. A native local()
-    // cascade can silently replace missing glyphs with LastResort. Let the
-    // browser consume that same program directly, including its cmap.
-    if (!original || (original.byteLength >= 4 && new DataView(original).getUint32(0) === 0x74746366)) return null;
-    // FontFace와 CanvasKit의 기존 공통 SFNT 준비를 쓴다. 원본의 glyph/hmtx는
-    // 유지하며 디렉터리·cmap 등 브라우저가 거부하는 메타데이터만 같은 방식으로 준비한다.
-    const bytes = normalizeFontFaceData(original, 0);
-    if (!bytes) return null;
-    const digest = await crypto.subtle.digest('SHA-256', bytes);
-    const programId = `browser-local-${[...new Uint8Array(digest)]
-      .map(byte => byte.toString(16).padStart(2, '0')).join('')}`;
-    const cached = loadedPrograms.get(query);
-    if (cached?.programId === programId) return cached;
-    const face = new FontFace(query, bytes, fontSymbolDescriptors(bytes, {}, inspect));
-    await face.load();
-    if (cached) document.fonts.delete(cached.face);
-    const signature = bytes.byteLength >= 4 ? new DataView(bytes).getUint32(0) : 0;
-    const trueType = signature === 0x00010000 || signature === 0x74727565;
-    const openTypeCff = signature === 0x4f54544f;
-    const program = { query, family: query, bytes, programId, face, trueType, openTypeCff };
+    // 같은 원 family·style 안에서 TTF → OTF 순서다. 유효한 OTF를 건너뛰거나
+    // 다른 family의 TTF를 먼저 고르지 않는다.
+    prepared.sort((left, right) => (left.trueType ? Number(!!left.collectionFace) : 2) - (right.trueType ? Number(!!right.collectionFace) : 2));
+    const program = prepared[0];
+    if (!program) return null;
+    for (const previous of loadedProgramSets.get(query) ?? []) {
+      if (!prepared.some(current => current.programId === previous.programId)) document.fonts.delete(previous.face);
+    }
+    loadedProgramSets.set(query, prepared);
     loadedPrograms.set(query, program);
     return program;
   } catch {
@@ -92,6 +100,7 @@ export interface DeclaredFontProgram {
   programId: string;
   trueType: boolean;
   openTypeCff: boolean;
+  collectionFace?: boolean;
 }
 
 export interface DeclaredFontProgramSnapshot {
@@ -155,6 +164,9 @@ export async function prepareDeclaredFontPrograms(
   const empty = (): DeclaredFontProgramSnapshot => ({ programs: [], publicFallbackBlockedSources: [] });
   const names = [...new Set(plan.requests.flatMap(request => [...request.primary, ...request.substitute]))];
   if (names.length > 1024 || typeof FontFace === 'undefined') return empty();
+  if (!isCurrent()) return empty();
+  await prepareDocumentLocalFontPrograms(plan.requests.map(request => request.source));
+  if (!isCurrent()) return empty();
   const programs = new Map<string, LoadedProgram>();
   const embedded = new Set(plan.embeddedFamilies ?? []);
   for (const name of names) {
@@ -200,21 +212,30 @@ export async function prepareDeclaredFontPrograms(
       if (!requested) continue;
       const selected = candidates.map(candidate => programs.get(candidate)).find(Boolean);
       if (!selected) continue;
-      if (!embedded.has(selected.family)) registerLoadedLocalFontFace(selected.face);
-      if (embedded.has(requested) || requested === selected.query || suppliedAliases.get(requested) === selected.programId) continue;
-      const alias = new FontFace(requested, selected.bytes, fontSymbolDescriptors(selected.bytes, {}, inspect));
-      try {
-        await alias.load();
-        if (!isCurrent()) return empty();
-        registerLoadedLocalFontFace(alias);
-        suppliedAliases.set(requested, selected.programId);
-      } catch {
-        // 프로그램 조회 뒤 설치 상태가 달라지면 alias 공급을 완료로 세지 않는다.
+      const localPrograms = loadedProgramSets.get(selected.query);
+      const companions = localPrograms?.some(program => program.programId === selected.programId)
+        ? localPrograms : [selected];
+      // CSS의 같은 family 후보는 나중에 등록한 face가 우선한다. 원 cmap을
+      // 유지하며 OTF를 먼저, TTF를 나중에 등록해 문자별 결측도 같은 family에서 찾는다.
+      if (!embedded.has(selected.family)) {
+        for (const program of [...companions].reverse()) registerLoadedLocalFontFace(program.face);
       }
+      const identity = companions.map(program => program.programId).join('|');
+      if (embedded.has(requested) || requested === selected.query || suppliedAliases.get(requested) === identity) continue;
+      let complete = true;
+      for (const program of [...companions].reverse()) {
+        const alias = new FontFace(requested, program.bytes, fontSymbolDescriptors(program.bytes, {}, inspect));
+        try {
+          await alias.load();
+          if (!isCurrent()) return empty();
+          registerLoadedLocalFontFace(alias);
+        } catch { complete = false; }
+      }
+      if (complete) suppliedAliases.set(requested, identity);
     }
   }
   return {
-    programs: [...programs.values()].map(({ query, family, programId, trueType, openTypeCff }) => ({ query, family, programId, trueType, openTypeCff })),
+    programs: [...programs.values()].map(({ query, family, programId, trueType, openTypeCff, collectionFace }) => ({ query, family, programId, trueType, openTypeCff, ...(collectionFace ? { collectionFace } : {}) })),
     publicFallbackBlockedSources: [...blocked],
   };
 }

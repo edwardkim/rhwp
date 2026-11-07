@@ -91,6 +91,7 @@ fn try_refresh_rows<S: crate::storage::Storage>(
         let mut changed = false;
         let mut has_equation = false;
         let mut has_form = false;
+        let mut all_current_simple_frames = true;
         let mut supported = true;
         for (control_index, (control, position)) in para.controls.iter().zip(&positions).enumerate()
         {
@@ -107,6 +108,13 @@ fn try_refresh_rows<S: crate::storage::Storage>(
                 Control::Equation(equation) if equation.common.treat_as_char => {
                     has_equation = true;
                     let old_height = equation.common.height as i32;
+                    all_current_simple_frames &=
+                        para.line_segs.get(line_index).is_some_and(|source| {
+                            source.line_height > old_height
+                                && crate::renderer::equation::has_current_simple_math_frame(
+                                    equation,
+                                )
+                        });
                     let old_baseline =
                         old_height.saturating_mul(i32::from(equation.baseline)) / 100;
                     let (_, height, baseline) =
@@ -189,7 +197,6 @@ fn try_refresh_rows<S: crate::storage::Storage>(
             continue;
         }
         // 실제 텍스트가 있는 줄은 텍스트의 어센트·하강부도 같은 합집합에 포함한다.
-        // 빈 run의 존재만으로 보이지 않는 텍스트 strut를 새로 추가하지 않는다.
         let text_height = line
             .runs
             .iter()
@@ -198,6 +205,29 @@ fn try_refresh_rows<S: crate::storage::Storage>(
             .map(|style| px_to_hwpunit(style.font_size, dpi))
             .max()
             .unwrap_or(0);
+        // 글리프가 없어도 저장 TH·기준선과 원본 글자 크기가 같은 줄 상자는
+        // 수식과 별도로 점유를 소유한다. 빈 run의 존재만으로 상자를 만들거나
+        // 과거 수식 높이를 복원하지 않고, 온전한 저장 줄의 글자 소유를 확인한다.
+        let stored_text_strut_height = para
+            .line_segs
+            .get(line_index)
+            .filter(|source| {
+                !para.stored_text_partition_is_dirty()
+                    && line_count == para.line_segs.len()
+                    && source.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                        == 0
+                    && source.text_height > 0
+                    && source.baseline_distance
+                        == (f64::from(source.text_height) * 0.85).round() as i32
+                    && para
+                        .char_shape_id_at(line.char_start)
+                        .and_then(|id| styles.char_styles.get(id as usize))
+                        .is_some_and(|style| {
+                            px_to_hwpunit(style.font_size, dpi) == source.text_height
+                        })
+            })
+            .map_or(0, |source| source.text_height);
+        let text_height = text_height.max(stored_text_strut_height);
         let text_ascent = (f64::from(text_height) * 0.85).round() as i32;
         let text_descent = text_height - text_ascent;
         if !has_equation && !has_form && text_height == 0 {
@@ -208,6 +238,7 @@ fn try_refresh_rows<S: crate::storage::Storage>(
         new_logical_height = new_logical_height.max(text_height);
         new_ascent = new_ascent.max(text_ascent);
         new_descent = new_descent.max(text_descent);
+        let current_simple_row = has_equation && !has_form && all_current_simple_frames;
         // 같은 저장 예약 구간의 뒤 인라인 개체가 큰 높이를 실제 소유해야 한다.
         // 일반 텍스트 줄이나 저장 컷 앞 줄도 뒤 개체의 점유를 중복하지 않는다.
         let following_inline_box_was_reserved = stored_pair.is_some_and(|(source, next)| {
@@ -216,14 +247,17 @@ fn try_refresh_rows<S: crate::storage::Storage>(
                 && line_count == para.line_segs.len()
                 && source.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                 && next.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                && source.text_height == old_logical_height
+                && ((source.text_height == old_logical_height
+                    && (source.baseline_distance - old_ascent).abs() <= 1)
+                    // 개체만 현재 프레임으로 재저장돼도 뒤 개체의 실제 소유와
+                    // 저장 사다리가 이전 예약 구간을 증명하면 같은 줄을 재발행한다.
+                    || (current_simple_row && source.text_height > old_logical_height))
                 && source.line_height > old_logical_height
                 && following_box_height == Some(source.line_height)
-                && (source.baseline_distance - old_ascent).abs() <= 1
                 && source.vertical_pos >= 0
                 && (source
                     .vertical_pos
-                    .checked_add(old_logical_height)
+                    .checked_add(source.text_height)
                     .and_then(|end| end.checked_add(source.line_spacing))
                     == Some(next.vertical_pos)
                     || next.vertical_pos < source.vertical_pos)
@@ -235,6 +269,18 @@ fn try_refresh_rows<S: crate::storage::Storage>(
         // 소비한다. 본문 유무로 수식·양식의 점유·기준선을 제외하지 않는다.
         let owned_inline_row = (has_equation || has_form)
             && (generated_row || regenerated || para.line_segs.is_empty());
+        // 재저장으로 개체 상자만 현재 논리 프레임이 된 경우에도 호스트 줄이
+        // 과거 상자의 높이를 따로 소유하지 않는다. 모든 수식이 같은 현재
+        // 프레임 계약을 따르고, 그 밖의 텍스트/개체가 예약 높이를 소유하지
+        // 않는 온전한 저장 줄에서만 실제 기준선 합집합을 재발행한다.
+        let stale_current_math_row = current_simple_row
+            && !para.stored_text_partition_is_dirty()
+            && line_count == para.line_segs.len()
+            && para.line_segs.get(line_index).is_some_and(|source| {
+                source.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    && source.line_height == source.text_height
+                    && source.line_height > old_logical_height
+            });
         // 저장 줄이 이 개체 합집합에서 나온 경우만 메트릭을 다시 발행한다.
         // 별도 줄 높이·수직 정렬 계약을 실제 상자의 대용으로 덮어쓰지 않는다.
         if (changed
@@ -242,6 +288,7 @@ fn try_refresh_rows<S: crate::storage::Storage>(
             && (line.baseline_distance - old_ascent).abs() <= 1)
             || following_inline_box_was_reserved
             || owned_inline_row
+            || stale_current_math_row
         {
             let occupied_height = new_ascent + new_descent;
             let leading = if owned_inline_row {

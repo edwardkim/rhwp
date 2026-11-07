@@ -1821,6 +1821,24 @@ impl DocumentCore {
         )
     }
 
+    /// 표 셀·글상자 안의 도형을 소유 경로로 삭제한다. 본문의 같은 번호를 지우지 않는다.
+    pub fn delete_cell_shape_control_by_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        cell_path_json: &str,
+        inner_control_idx: usize,
+    ) -> Result<String, HwpError> {
+        self.delete_cell_control_by_path_native(
+            section_idx,
+            parent_para_idx,
+            cell_path_json,
+            inner_control_idx,
+            |c| matches!(c, Control::Shape(_)),
+            "도형이",
+        )
+    }
+
     /// [#6771] 표 셀/글상자 **내부 표** 삭제 (cell_path 기반).
     ///
     /// 공공 양식은 작성 안내문을 셀 안 1×1 표(점선 상자)로 넣어 두고 본문에 "안내 박스는
@@ -1845,7 +1863,7 @@ impl DocumentCore {
         )
     }
 
-    /// 셀·글상자 안 컨트롤 하나를 지우는 공통 몸통 — 그림·표가 같은 절차를 쓴다.
+    /// 셀·글상자 안 컨트롤 하나를 지우는 공통 몸통 — 그림·도형·표가 같은 절차를 쓴다.
     ///
     /// `accepts` 가 지목한 컨트롤 종류를 검사하고, 그 컨트롤이 본문에서 차지하던 8바이트
     /// 자리를 걷어낸 뒤 문단을 다시 흘린다. `kind_label` 은 오류 문구의 조사까지 담는다
@@ -1938,9 +1956,7 @@ impl DocumentCore {
         if caption_changed {
             crate::parser::assign_auto_numbers(&mut self.document);
         }
-        let section = &mut self.document.sections[section_idx];
-        section.raw_stream = None;
-        self.recompose_section(section_idx);
+        self.finish_loaded_source_cache_after_object_edit(section_idx);
         self.paginate_if_needed();
         self.invalidate_page_tree_cache();
         let outer_table_ctrl = path.first().unwrap().0;

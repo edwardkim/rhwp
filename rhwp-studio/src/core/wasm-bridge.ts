@@ -327,6 +327,7 @@ function installCanvasFontSubstitution(): void {
 }
 
 import { declaredOpenTypeProgram, prepareDeclaredFontPrograms, type DocumentFontSelectionPlan } from './declared-font-environment';
+import { documentFontPreferences, applyDocumentFontPreferences } from './document-font-preferences.ts';
 
 interface DocumentFontEnvironmentApi {
   getDocumentFontSelectionPlan(): string;
@@ -1065,15 +1066,25 @@ export class WasmBridge {
     if (plan.environmentId !== null && plan.environmentId !== owned) return false;
     const programs = await prepareDeclaredFontPrograms(plan, current, inspectFontSymbols);
     if (!current()) return false;
+    const preferences = documentFontPreferences(this._documentDigest);
+    const preferredPrograms = Object.keys(preferences).length
+      ? await prepareDeclaredFontPrograms({ environmentId: null,
+        requests: [...new Set(Object.values(preferences))].map(target => ({ source: target, primary: [target], substitute: [] })),
+      }, current, inspectFontSymbols) : { programs: [] };
+    if (!current()) return false;
     try {
       const latest = JSON.parse(api.getDocumentFontSelectionPlan()) as DocumentFontSelectionPlan;
       if (latest.environmentId !== plan.environmentId) return false;
       // 같은 이름의 글꼴 파일이 바뀌어도 문서가 실제 조회하는 프로그램은 갱신한다.
-      const fingerprint = JSON.stringify(programs.programs.map(program => [program.query, program.programId])
+      const fingerprint = JSON.stringify([...programs.programs, ...preferredPrograms.programs].map(program => [program.query, program.programId])
         .sort((left, right) => left[0].localeCompare(right[0])));
       const programsChanged = this.automaticFontPrograms?.generation === generation
         && this.automaticFontPrograms.fingerprint !== fingerprint;
-      const environment = api.buildFontEnvironmentFromAvailablePrograms(JSON.stringify(programs));
+      const automatic = api.buildFontEnvironmentFromAvailablePrograms(JSON.stringify(programs));
+      const preferenceId = 'user-font-selection-' + bytesToHex(blake3(new TextEncoder().encode(
+        JSON.stringify({ preferences, fingerprint }))));
+      const environment = applyDocumentFontPreferences(automatic, preferences, preferredPrograms.programs,
+        preferenceId, plan.supportsSourceMetricOverrides === true);
       const parsed = environment === 'null' ? null : JSON.parse(environment) as { id: string };
       const changed = parsed ? api.setFontEnvironment(environment)
         : owned !== null ? api.setFontEnvironment(undefined) : false;
@@ -2733,6 +2744,19 @@ export class WasmBridge {
         sec, parentPara, JSON.stringify(cellPath), innerControlIdx,
       )
     );
+  }
+
+  /** 표 셀·글상자 안의 도형을 전체 소유 경로로 삭제한다. */
+  deleteCellShapeControlByPath(
+    sec: number,
+    parentPara: number,
+    cellPath: CellPathLike,
+    innerControlIdx: number,
+  ): { ok: boolean } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).deleteCellShapeControlByPath(
+      sec, parentPara, JSON.stringify(cellPath), innerControlIdx,
+    ));
   }
 
   createShapeControl(params: Record<string, unknown>): { ok: boolean; paraIdx: number; controlIdx: number } {

@@ -640,31 +640,48 @@ pub(super) fn draw_image_bytes(
         let transform = canvas.local_to_device_as_3x3();
         // SVG는 위에서 이미 실제 장치 크기로 raster했다. 이를 다시 bitmap
         // 축소 경로에 넣으면 벡터의 가는 선까지 두 번 필터링하게 된다.
-        let prepared = (src.is_none()
-            && svg_size.is_none()
+        let prepared = (svg_size.is_none()
             && !binary_preprocessed
             && !matrix.has_perspective()
             && sampling.filter_mode != FilterMode::Nearest)
             .then(|| {
-                crate::renderer::bitmap_raster::prepare_bitmap(
-                    encoded.as_bytes(),
-                    crate::renderer::render_tree::BoundingBox::new(
-                        dst.x() as f64,
-                        dst.y() as f64,
-                        dst.width() as f64,
-                        dst.height() as f64,
-                    ),
-                    [
-                        transform.scale_x() as f64,
-                        transform.skew_y() as f64,
-                        transform.skew_x() as f64,
-                        transform.scale_y() as f64,
-                        transform.translate_x() as f64,
-                        transform.translate_y() as f64,
-                    ],
-                    sampling.profile,
-                    sampling.paper_grid,
-                )
+                let bbox = crate::renderer::render_tree::BoundingBox::new(
+                    dst.x() as f64,
+                    dst.y() as f64,
+                    dst.width() as f64,
+                    dst.height() as f64,
+                );
+                let matrix = [
+                    transform.scale_x() as f64,
+                    transform.skew_y() as f64,
+                    transform.skew_x() as f64,
+                    transform.scale_y() as f64,
+                    transform.translate_x() as f64,
+                    transform.translate_y() as f64,
+                ];
+                if let Some(source) = src {
+                    crate::renderer::bitmap_raster::prepare_cropped_bitmap(
+                        encoded.as_bytes(),
+                        bbox,
+                        matrix,
+                        sampling.profile,
+                        sampling.paper_grid,
+                        [
+                            source.x() as f64,
+                            source.y() as f64,
+                            source.width() as f64,
+                            source.height() as f64,
+                        ],
+                    )
+                } else {
+                    crate::renderer::bitmap_raster::prepare_bitmap(
+                        encoded.as_bytes(),
+                        bbox,
+                        matrix,
+                        sampling.profile,
+                        sampling.paper_grid,
+                    )
+                }
             })
             .flatten();
         let filtered = prepared
@@ -723,7 +740,7 @@ pub(super) fn draw_image_bytes(
         } else {
             sampling.options()
         };
-        if let Some(src) = src.as_ref() {
+        if let Some(src) = src.as_ref().filter(|_| filtered.is_none()) {
             canvas.draw_image_rect_with_sampling_options(
                 actual_image,
                 Some((src, SrcRectConstraint::Strict)),

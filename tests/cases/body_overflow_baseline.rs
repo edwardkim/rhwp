@@ -1,3 +1,8 @@
+//! 고정형: 기존 본문 넘침 원장 상한. #7727은 전쪽 수용한 CBTA 입력의 검사 범위만 복원한다.
+//! 주석 갱신: 2026-11-06T08:29:51+09:00; 직전 파일 커밋: 2026-10-27T12:59:19+09:00 (bd0a42c14949).
+//! 복원 입력 2026-11-06 측정: 96DPI·compat2022·PDFium·2px raw 전204쪽,
+//! 최저 Native 92.05232% / fresh WASM 92.16419%; 나머지 입력·원장 상한은 변경하지 않는다.
+//! 근거: mydocs/pr/assets/issue7727/verification-20261106/README.md.
 //! 본문 바닥 넘김(`layout-anomaly` overflow 의 `over_bottom` 축) 원장 게이트 — samples 전수 래칫.
 //!
 //! # 왜 필요한가 (`#6976` 단계 0)
@@ -120,7 +125,6 @@ const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
     "issue6031/3249937_asset_management_rules.hwpx",
     "hwpctl_API_v2.4.hwp",
     "task2097/75544_pii_bunseok.hwpx",
-    "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
     "issue6023/30269_reform_recommendation.hwp",
     "issue6844/30269-anticorruption-recommendation-toc.hwp",
     "issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",

@@ -1333,6 +1333,7 @@ export interface LayerLineStyle {
   lineType?: string;
   /** A decomposed multiple/overpainted stroke keeps its parent's subpixel geometry. */
   compoundComponent?: boolean;
+  preserveFractionalPosition?: boolean;
   startArrow?: string;
   endArrow?: string;
   startArrowSize?: number;

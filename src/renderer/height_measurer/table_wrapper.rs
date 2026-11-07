@@ -115,6 +115,53 @@ pub(crate) fn sole_nested_table_in_paragraph(
     child
 }
 
+/// 저장 줄 없는 단일 TAC 호스트의 기본 글자 줄이 자식 상자와 같은 원점을 소유하는지 확인한다.
+/// 부모 선언 높이가 자식 본체·바깥 여백·부모 안 여백의 합과 정확히 닫히면 별도 빈 줄은 없다.
+/// 누름틀 같은 폭 없는 마커는 이 상자를 늘리지 않는다. 실제 저장 줄·본문·다른 개체나
+/// 독립 세로 정렬 공간이 있으면 기존 줄 점유를 유지한다. 선언 높이로 성장한 내용을 자르지 않는다.
+pub(crate) fn unstored_tac_wrapper_shares_anchor_line(
+    table: &Table,
+    cell: &crate::model::table::Cell,
+) -> bool {
+    let [paragraph] = cell.paragraphs.as_slice() else {
+        return false;
+    };
+    let Some(child) = sole_nested_table_in_paragraph(paragraph) else {
+        return false;
+    };
+    if table.row_count != 1
+        || table.col_count != 1
+        || table.cells.len() != 1
+        || cell.row != 0
+        || cell.col != 0
+        || cell.row_span != 1
+        || cell.col_span != 1
+        || cell.text_direction != 0
+        || cell.vertical_align != crate::model::table::VerticalAlign::Top
+        || !paragraph.text.is_empty()
+        || !crate::renderer::para_has_no_stored_line_segs(paragraph)
+        || paragraph.stored_text_partition_is_dirty()
+        || paragraph.cell_format_vpos_dirty
+        || !child.common.treat_as_char
+        || table.caption.is_some()
+        || child.caption.is_some()
+    {
+        return false;
+    }
+    let padding = cell.effective_padding(&table.padding);
+    let components = [
+        signed_hwpunit(child.common.height),
+        i32::from(child.outer_margin_top),
+        i32::from(child.outer_margin_bottom),
+        i32::from(padding.top),
+        i32::from(padding.bottom),
+    ];
+    components[0] > 0
+        && components.iter().all(|&height| height >= 0)
+        && i64::from(signed_hwpunit(table.common.height))
+            == components.into_iter().map(i64::from).sum::<i64>()
+}
+
 /// 흐름 제한이 없는 문단 기준 표는 셀 안여백·세로 정렬과 독립된 개체다.
 /// 저장된 빈 앵커 줄은 부모의 높이를 소유하며, 자식은 그 부모 원점을 참조한다.
 pub(crate) fn unrestricted_wrapper_frame(table: &Table, nested: &Table, dpi: f64) -> Option<f64> {

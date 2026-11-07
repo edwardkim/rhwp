@@ -36,6 +36,16 @@ test('장치 이동·반전·직교 회전은 같은 법선 배율의 최소 폭
     [3, 9.5, 27, 9.5, 1]);
 });
 
+test('용지 프레임은 원래 분수 좌표를 유지하면서 최소 장치 폭을 소비한다', () => {
+  const frame = { ...line, style: { ...line.style, preserveFractionalPosition: true } };
+  for (const scale of [1, 2, 3]) {
+    const resolved = geometry(frame, [scale, 0, 0, 0, scale, 0.25, 0, 0, 1], 'print');
+    assert.deepEqual(resolved.slice(0, 4), [frame.x1, frame.y1, frame.x2, frame.y2]);
+    const expectedDeviceWidth = Math.max((frame.style.width ?? 1) * scale, 1);
+    assert.ok(Math.abs(resolved[4] * scale - expectedDeviceWidth) < 1e-10);
+  }
+});
+
 test('화면·굵은 선·복합선·화살표·그림자·사선은 원래 paint 좌표와 폭을 유지한다', () => {
   const original = [3, 10, 27, 10, 0.48];
   assert.deepEqual(geometry(line, identity, 'screen'), original);

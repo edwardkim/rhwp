@@ -78,6 +78,18 @@ pub(super) fn match_supplied_family(
 pub(super) struct TypefaceCandidate {
     pub(super) typeface: Typeface,
     pub(super) source: &'static str,
+    family_order: usize,
+}
+
+impl TypefaceCandidate {
+    /// 독립적인 원본 face는 그 요청의 첫 family다. 내부 정렬 키를 호출자가 복제하지 않는다.
+    pub(super) fn primary(typeface: Typeface, source: &'static str) -> Self {
+        Self {
+            typeface,
+            source,
+            family_order: 0,
+        }
+    }
 }
 
 /// A supplied face has one Skia primary name, but its SFNT naming table may
@@ -257,18 +269,22 @@ fn typeface_candidates_for_families_for_source(
 ) -> Vec<TypefaceCandidate> {
     let mut chain = Vec::new();
     let mut seen = HashSet::new();
-    let mut push = |typeface: Typeface, source: &'static str| {
+    let mut push = |typeface: Typeface, source: &'static str, family_order: usize| {
         if is_placeholder_typeface(&typeface) {
             return;
         }
         let key = typeface.unique_id();
         if seen.insert(key) {
-            chain.push(TypefaceCandidate { typeface, source });
+            chain.push(TypefaceCandidate {
+                typeface,
+                source,
+                family_order,
+            });
         }
     };
-    for family in families {
+    for (family_order, family) in families.iter().enumerate() {
         for typeface in custom_typefaces.candidates(family, style) {
-            push(typeface, "custom");
+            push(typeface, "custom", family_order);
         }
         // 원 face의 system 프로그램보다 뒤 face의 custom 프로그램을 먼저
         // 고르면 선언 순서를 뒤집는다. 공급 출처는 각 face 내부에서 우선한다.
@@ -280,7 +296,7 @@ fn typeface_candidates_for_families_for_source(
         .flatten()
         {
             if source_ttf && has_system_family(system_families, family) {
-                // 기존 match_system_family_style은 HFT용 CFF 우선 결과를 반환한다.
+                // 명시 TrueType 원본은 OS가 선택한 같은 스타일의 face도 확인한다.
                 // 명시 TTF에서는 먼저 OS 원래 선택을 확인하고, 그것이 CFF이면
                 // 같은 스타일의 설치 TTF를 찾는다. 없는 경우 기존 사다리를 유지한다.
                 let original = font_mgr.match_family_style(family, style);
@@ -292,11 +308,11 @@ fn typeface_candidates_for_families_for_source(
                             .find(typeface_is_truetype)
                     });
                 if let Some(ttf) = ttf {
-                    push(ttf, "system");
+                    push(ttf, "system", family_order);
                 }
             }
             // 같은 family와 스타일이라도 한글·영문 OTF와 TTF가 서로 다른
-            // 글리프를 담을 수 있다. 원 family의 CFF를 먼저 찾고, 없는
+            // 글리프를 담을 수 있다. 원 family의 모든 프로그램을 먼저 찾고, 없는
             // 글리프는 같은 family의 다른 프로그램을 대체 family보다 앞에 둔다.
             if has_system_family(system_families, family) {
                 // fontconfig의 합성 Bold는 매칭 결과의 스타일만 바꾼다.
@@ -306,18 +322,25 @@ fn typeface_candidates_for_families_for_source(
                     super::synthetic_typeface::unemboldened_typeface(font_mgr, &typeface)
                         .map_or_else(|| typeface.font_style(), |face| face.font_style());
                 for candidate in matching_system_programs(font_mgr, family, program_style) {
-                    push(candidate, "system");
+                    push(candidate, "system", family_order);
                 }
             }
-            push(typeface, "system");
+            push(typeface, "system", family_order);
         }
         for typeface in bundled_typefaces.candidates(family, style) {
-            push(typeface, "bundled");
+            push(typeface, "bundled", family_order);
         }
     }
     if let Some(typeface) = legacy_typeface_for_style(font_mgr, style) {
-        push(typeface, "legacy");
+        push(typeface, "legacy", families.len());
     }
+    chain.sort_by_key(|candidate| {
+        (
+            candidate.family_order,
+            super::font_catalog::supplied_style_rank(style, candidate.typeface.font_style()),
+            typeface_program_order(&candidate.typeface),
+        )
+    });
     chain
 }
 
@@ -504,6 +527,19 @@ fn typeface_is_truetype(typeface: &Typeface) -> bool {
         .is_some_and(|(bytes, index)| has_glyf(&bytes, index))
 }
 
+/// 파일 확장자 대신 실제 SFNT/collection의 선택 face를 확인한다.
+fn typeface_program_order(face: &Typeface) -> u8 {
+    if typeface_is_truetype(face) {
+        face.to_existing_font_data().map_or(0, |(bytes, _)| {
+            u8::from(bytes.as_bytes().get(..4) == Some(b"ttcf"))
+        })
+    } else if typeface_is_cff(face) {
+        2
+    } else {
+        3
+    }
+}
+
 fn matching_system_programs(font_mgr: &FontMgr, family: &str, style: FontStyle) -> Vec<Typeface> {
     let key = FontLookupKey {
         family: family.to_owned(),
@@ -524,12 +560,8 @@ fn matching_system_programs(font_mgr: &FontMgr, family: &str, style: FontStyle) 
                 Some((candidate, cff))
             })
             .collect();
-        // 여러 TTF의 선택 정책은 이 경로에서 바꾸지 않는다. CFF가 있을 때만
-        // 그 뒤에 같은 스타일의 TTF를 글리프 fallback 후보로 연결한다.
-        if !found.iter().any(|(_, cff)| *cff) {
-            found.clear();
-        }
-        found.sort_by_key(|(_, cff)| !cff);
+        // 같은 family의 TTF → TTC face → OTF를 모두 다른 family보다 앞에 둔다.
+        found.sort_by_key(|(candidate, _)| typeface_program_order(candidate));
         let found: Vec<_> = found.into_iter().map(|(candidate, _)| candidate).collect();
         cache.borrow_mut().insert(key, found.clone());
         found
@@ -579,7 +611,7 @@ pub(super) fn match_system_family_style(
         })
         .filter(|typeface| !is_placeholder_typeface(typeface))
         .or_else(|| recover_installed_system_typeface(font_mgr, family, style));
-        // 같은 family와 같은 스타일의 설치본이 여러 형식이면 OTF를 먼저
+        // 같은 family와 같은 스타일의 설치본이 여러 형식이면 TrueType을 먼저
         // 표시한다. PostScript 지정과 서로 다른 스타일은 바꾸지 않는다.
         let matched = if system_family {
             matched.map(|original| {
@@ -591,7 +623,7 @@ pub(super) fn match_system_family_style(
                         return None;
                     }
                     let candidate = set.new_typeface(index)?;
-                    typeface_is_cff(&candidate).then_some(candidate)
+                    typeface_is_truetype(&candidate).then_some(candidate)
                 });
                 selected.unwrap_or(original)
             })
@@ -662,10 +694,7 @@ mod tests {
                 .match_family_style(".LastResort", FontStyle::normal())
                 .expect("macOS의 내장 LastResort 프로그램");
             assert_ne!(placeholder.unichar_to_glyph('나' as i32), 0);
-            let chain = [TypefaceCandidate {
-                typeface: placeholder,
-                source: "system",
-            }];
+            let chain = [TypefaceCandidate::primary(placeholder, "system")];
             assert!(
                 select_typeface_for_character(&chain, '나').is_none(),
                 "블록 대용 글리프를 실제 한글 coverage로 사용하지 않음"

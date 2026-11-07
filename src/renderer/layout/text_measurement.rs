@@ -1240,7 +1240,13 @@ static KOPUB_DOTUM_LATIN_0: [u16; 95] = [
 /// KoPub Dotum Light의 전진은 독립 Print와 TTF에서 확인했다(#7765).
 /// 글꼴의 모든 문자를 인증하지 않으며 검증된 범위만 별도로 확인한다.
 pub(crate) fn verified_source_projection_face(face: &str, bold: bool, italic: bool) -> bool {
-    !bold && !italic && matches!(face.trim(), "KoPub돋움체 Light" | "KoPub Dotum Light")
+    let face = face.trim();
+    !bold
+        && !italic
+        && (matches!(face, "KoPub돋움체 Light" | "KoPubDotum Light" | "KoPub Dotum Light")
+            // 같은 Light 프로그램의 설치 조회 이름도 동일한 검증 범위를 쓴다.
+            // Medium/Bold·World와 계열 이름만 같은 프로그램은 인증하지 않는다.
+            || super::super::installed_font_program_aliases("KoPub돋움체 Light").contains(&face))
 }
 
 pub(crate) fn verified_source_projection_text(
@@ -2507,6 +2513,25 @@ fn char_width_decision_with_hft_tracking<'a>(
     // authentic DB glyph advances or explicit HWP rules. Collection and layout
     // share this eligibility decision; synthetic PUA boxes remain shapes.
     let dash_leader = is_dash_leader_run(chars, i);
+    let source_ttf = latin.map_or(style.source_font_is_ttf, |slot| slot.source_font_is_ttf);
+    // 원본 폭 표가 없는 HFT 전각 글자의 굵기 전진은 표시용 OTF의
+    // intrinsic 전진과 별개다. 공급 뒤 width_source가 nativeOtf로 바뀌어도
+    // 공급 전의 꾸밈 소유를 보존한다. 자연 전진을 직접 선택한 세션과
+    // 원본 family 주소가 없는 합성 스타일은 이 소유를 추정하지 않는다.
+    let inferred_hft_fullwidth = !style.preserve_glyph_ink
+        && !source_ttf
+        && latin.map_or(style.source_font_is_hft, |slot| slot.source_font_is_hft)
+        && latin.map_or(!style.font_family.trim().is_empty(), |slot| {
+            !slot.font_family.trim().is_empty()
+        })
+        && width_source == "heuristicFullwidth";
+    // 명시적으로 선택한 자연 전진은 화면과 인쇄에서 동일하게 소비한다.
+    // 선언된 TTF 유형과 폭 표의 hit만으로 기존 leader를 자연 전진으로 승격하지
+    // 않는다. 특히 유형 미상 원본을 HWPX로 저장해 TTF로 표기해도 폭은 같아야 한다.
+    let clamp_dash_leader = dash_leader
+        && !(style.preserve_glyph_ink
+            && character_match == "hit"
+            && width_source == "embeddedMetric");
     // Native paint와 동일한 OTF의 글리프를 우선 사용한다. 다만 독립 Print와
     // 원본 HFT로 확인한 전진은 표시용 프로그램의 hmtx와 별도의 조판 계약이다.
     let verified_source_advance = matches!(
@@ -2521,7 +2546,6 @@ fn char_width_decision_with_hft_tracking<'a>(
     let otf_metrics = latin.map_or(style.native_otf_metrics.as_ref(), |slot| {
         slot.native_otf_metrics.as_ref()
     });
-    let source_ttf = latin.map_or(style.source_font_is_ttf, |slot| slot.source_font_is_ttf);
     let otf_advance = if !source_ttf
             && cluster_len[i] <= 1
             && !dash_leader
@@ -2577,7 +2601,7 @@ fn char_width_decision_with_hft_tracking<'a>(
     let (base_width_raw, width_source) = supplement
         .map(|entry| (entry.natural_advance_px(), entry.width_source()))
         .unwrap_or((base_width_raw, width_source));
-    let base_width_px = if dash_leader {
+    let base_width_px = if clamp_dash_leader {
         base_width_raw.min(font_size * 0.3)
     } else {
         base_width_raw
@@ -2597,7 +2621,11 @@ fn char_width_decision_with_hft_tracking<'a>(
                         });
                     let verified_program = verified_source
                         && otf_metrics.is_some_and(|font| font.has_verified_hft_bold_tracking(c));
-                    if style.source_hwp3_hft_bold || source_hft_metric || verified_program {
+                    if style.source_hwp3_hft_bold
+                        || source_hft_metric
+                        || verified_program
+                        || inferred_hft_fullwidth
+                    {
                         font_size * 0.05
                     } else {
                         let original_face = latin
@@ -2636,7 +2664,7 @@ fn char_width_decision_with_hft_tracking<'a>(
         advanced + glyph_letter_spacing(letter_spacing, advanced, font_size)
     } else {
         let em_fraction = match em_exact {
-            Some(em) if !dash_leader => em,
+            Some(em) if !clamp_dash_leader => em,
             _ if font_size > 0.0 => base_width_px / font_size,
             _ => 0.0,
         };
@@ -2719,7 +2747,7 @@ fn char_width_decision_with_hft_tracking<'a>(
         applied_letter_spacing_px,
         metric,
         character_match,
-        dash_leader,
+        dash_leader: clamp_dash_leader,
         negative_spacing_clamped,
     }
 }

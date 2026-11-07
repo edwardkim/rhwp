@@ -1,9 +1,10 @@
-//! #7445/#7642: 원본 글줄·분수 셀·후속 표가 같은 저장 프레임을 소비한다.
-//! 독립 Hancom2020 재저장이 보존한 원본 줄/표와 Print 전4쪽 대조를 근거로 한다.
-//! 전4쪽 최저 Native96.14438% / fresh WASM96.06833%, 쪽수4/4.
-//! Stage20 repair772/775 TSV와 3·4쪽 review/overlay를 직접 판독했다.
-//! 절대 px를 고정하지 않고 줄/셀 포함, 문단 소유와 원본 상대 간격을 검사한다.
-//! 완료 페이지의 별도 px 검사는 각 함수에 독립 Print 근거를 기록한다.
+//! 검사 유형: 관계형(줄·셀·글자 상자의 소유·포함·원본 간격), 고정형(독립 쪽수·완료 쪽의 ±2px).
+//! 주석 갱신: 2026-11-06 03:10:59 KST.
+//! 직전 파일 변경: 2026-10-24 15:11:35 KST, 6097253468 (#8191).
+//! exam_science.hwp의 독립 한컴 2020 Print 전4쪽: 새 보정 후 Native97.11295% / WASM96.91722%.
+//! 4쪽의 빈 수식 호스트는 원본 글자 크기·TH·기준선이 별도 글줄 상자를 소유함을 관계로 검사한다.
+//! 새 전쪽·전후 판독: mydocs/pr/assets/issue_7640/verification-20261106/character-strut/README.md.
+//! 기존 완료 쪽의 고정 좌표 검사는 각 함수에 독립 Print와 해당 쪽의 98% 이상 근거를 기록한다.
 use rhwp::{
     renderer::render_tree::{RenderNode, RenderNodeType},
     DocumentCore,
@@ -33,6 +34,54 @@ fn equal_ratio(actual: f64, expected: f64) {
         (actual - expected).abs() <= roundoff,
         "actual={actual}, source={expected}"
     );
+}
+
+#[test]
+fn empty_equation_host_preserves_its_independent_character_strut() {
+    use rhwp::model::control::Control;
+
+    let core = load();
+    let document = core.document();
+    let source = &document.sections[0].paragraphs[117];
+    assert!(source.text.is_empty(), "글리프가 없는 원본 수식 문단");
+    let [saved] = source.line_segs.as_slice() else {
+        panic!("원본의 한 줄 저장 프레임");
+    };
+    let shape = &document.doc_info.char_shapes[source
+        .char_shapes
+        .first()
+        .expect("원본 글자 모양")
+        .char_shape_id as usize];
+    assert_eq!(saved.line_height, shape.base_size);
+    assert_eq!(saved.text_height, shape.base_size);
+    assert_eq!(
+        saved.baseline_distance,
+        (f64::from(shape.base_size) * 0.85).round() as i32,
+        "저장 기준선도 원본 글자 상자가 소유한다"
+    );
+    let [Control::Equation(equation)] = source.controls.as_slice() else {
+        panic!("원본의 단독 인라인 수식");
+    };
+    assert!(equation.common.treat_as_char);
+    assert!(
+        equation.common.height < shape.base_size as u32,
+        "수식 상자가 별도 글자 상자를 대체할 수 없는 반례"
+    );
+
+    let tree = core.build_page_render_tree(3).unwrap();
+    let mut nodes = Vec::new();
+    visit(&tree.root, &mut nodes);
+    let lines: Vec<_> = nodes
+        .into_iter()
+        .filter(|node| {
+            matches!(&node.node_type, RenderNodeType::TextLine(line)
+                if line.para_index == Some(117) && line.line_index == Some(0))
+        })
+        .collect();
+    assert_eq!(lines.len(), 1, "원본 글줄의 소유·누락·중복");
+    assert!(text(lines[0]).is_empty());
+    let declared_height = rhwp::renderer::hwpunit_to_px(shape.base_size, 96.0);
+    equal_ratio(lines[0].bbox.height / declared_height, 1.0);
 }
 
 #[test]
@@ -173,7 +222,7 @@ fn following_table_and_text_keep_the_preceding_multicolumn_source_gap() {
     );
 }
 
-/// 완료 2쪽 Native98.97662% / fresh WASM98.91532%, 양쪽 review/overlay 판독.
+/// 현재 완료 2쪽 Native98.87323% / fresh WASM98.89846%, 양쪽 review/overlay 판독.
 /// 독립 Print PDF(1c828fef29d7761d8ef46c8da50cc59936a95128920453ca5cc0d6440ac82d14)
 /// 2쪽의 실제 구분선 연산: (422.88,249.172)→(570.72,249.172)pt,
 /// MediaBox 높이1116pt. CSS96으로 변환한 값이며 후보 bbox에서 얻지 않았다.

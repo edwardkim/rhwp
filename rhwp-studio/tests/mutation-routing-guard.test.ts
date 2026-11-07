@@ -1,3 +1,5 @@
+// 관계형: 공개 뮤테이터와 Undo 기록 경로의 배선을 대조한다. 실물 px 고정 검사가 아니다.
+// 주석 갱신: 2026-11-05 18:52 KST. API·배선 계약이며 Native/fresh WASM 시각 수치는 비대상이다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -270,7 +272,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   'src/engine/input-handler-connector.ts': 1,
   'src/engine/input-handler-keyboard.ts': 21,
   'src/engine/input-handler-mouse.ts': 3,
-  'src/engine/input-handler-picture.ts': 12, // +1: 다른 쪽으로 끌어 놓은 그림의 relocateFloatingPicture 는 relocatePicture snapshot 안에서 호출(undo 기록됨)
+  'src/engine/input-handler-picture.ts': 13, // #7375 셀 도형 삭제 + #8557 그림 재배치: 각각 기존 snapshot 안의 독립 호출 1개를 유지
   'src/engine/input-handler-table.ts': 10, // +1 [#7189]: 중첩 표 확정이 resizeTableCellsByPath 로 갈라진다 (같은 executeOperation snapshot 안, 평면 호출과 배타) / -2: 한컴 3모드 셀 크기 조절의 직접 WASM 호출을 executeOperation snapshot 경로로 이관 (undo 기록됨) / +2 [#7442]: applyKeyboardResize·resizeTableProportional 도 중첩 ctx 에서 resizeTableCellsByPath 로 갈라진다 (같은 snapshot 안, 평면 호출과 배타)
   'src/engine/input-handler-hyperlink-delete.ts': 3, // #6963: removeHyperlink + 본문/셀 deleteText는 모두 deleteHyperlink snapshot 안에서 실행. 실제 WASM runner가 원자 복구·undo/redo를 검증한다.
   'src/engine/input-handler-text.ts': 13, // 개체 뒤 조합은 논리 삽입·텍스트 삭제 후 완료 명령으로 기록한다.

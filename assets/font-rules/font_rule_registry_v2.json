@@ -89,6 +89,16 @@
       "changeSetId": "issue-8533.rokg-canvaskit",
       "path": "assets/font-rules/changes/issue-8533-rokg-canvaskit.json",
       "sha256": "f897a23e2b99b3c490d2f1e8d7d4e3d450c62f161f4334580d3b5403919f8b39"
+    },
+    {
+      "changeSetId": "issue-1994.hankyoreh-webfont",
+      "path": "assets/font-rules/changes/issue-1994-hankyoreh-webfont.json",
+      "sha256": "eff5d6daf40f45c854c55bd1d2eb99bbdecb4a4be83acd3bcd30903997f8efcb"
+    },
+    {
+      "changeSetId": "issue-1994.hankyoreh-canvaskit",
+      "path": "assets/font-rules/changes/issue-1994-hankyoreh-canvaskit.json",
+      "sha256": "66c893efa5293bb74850b9c8da6be63f0ba34ecb64c1ec1cad5e8cc67531c0c7"
     }
   ],
   "evidenceRecords": [
@@ -205,6 +215,14 @@
       "parentEvidenceIds": [],
       "sha256": "e5747d577c9b4f19b7f3c6180f245738bed5f4cad39bad580b81d55719853f8e",
       "source": "assets/font-rules/evidence/issue-8533-rokg-source.json"
+    },
+    {
+      "evidenceId": "evidence.issue-1994.hankyoreh-original-webfont",
+      "kind": "public-source",
+      "licenseOrProvenance": "사용자 지정 @noonnu/hankc 0.1.0. 한겨레의 공식 배포 원본과 12443 cmap 문자별 윤곽·전진폭 동일. 원본 출처·사용 조건을 유지하며 바이너리는 포함하지 않는다.",
+      "parentEvidenceIds": [],
+      "sha256": "f80c23a7c898b623fba9b8ceb92e1871ded1b2036783b3a4d85a68c6a1126f15",
+      "source": "assets/font-rules/evidence/issue-1994-hankyoreh-original-webfont.json"
     }
   ],
   "issue": 5955,
@@ -44680,9 +44698,213 @@
         "runtimePlanStatus": "planned"
       },
       "targetFaceOrPolicy": "unavailable: no offline CanvasKit SFNT source for ROKG"
+    },
+    {
+      "conditions": {
+        "profile": "canvas2d-css-woff2"
+      },
+      "decisionPlane": "supply",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-1994.hankyoreh-original-webfont"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-1994.hankyoreh-webfont",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 157,
+      "projections": [
+        {
+          "id": "canvas2d-webfont",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "supply-source",
+      "ruleId": "rule.issue-1994.hankyoreh-webfont-0",
+      "selectionTupleSha256": "f911410b97987cdad669a45302c2c645b46f91ce592e3420ea9752d2f05fd4be",
+      "sourceBoundaryId": "studio-supply.font-list",
+      "sourceFace": "한겨레결체",
+      "status": "active",
+      "supply": {
+        "external": true,
+        "fontFamily": "한겨레결체",
+        "format": "woff2",
+        "kind": "canvas2d-webfont",
+        "sourceUrl": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff2",
+        "unicodeRange": null
+      },
+      "targetFaceOrPolicy": "CDN_HANKC_400"
+    },
+    {
+      "conditions": {
+        "profile": "canvas2d-css-woff2"
+      },
+      "decisionPlane": "supply",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-1994.hankyoreh-original-webfont"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-1994.hankyoreh-webfont",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 158,
+      "projections": [
+        {
+          "id": "canvas2d-webfont",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "supply-source",
+      "ruleId": "rule.issue-1994.hankyoreh-webfont-1",
+      "selectionTupleSha256": "feaba7df6fff2766712944cda378bb4019d0517094c47dff301df02948b2f5c7",
+      "sourceBoundaryId": "studio-supply.font-list",
+      "sourceFace": "Hankc",
+      "status": "active",
+      "supply": {
+        "external": true,
+        "fontFamily": "Hankc",
+        "format": "woff2",
+        "kind": "canvas2d-webfont",
+        "sourceUrl": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff2",
+        "unicodeRange": null
+      },
+      "targetFaceOrPolicy": "CDN_HANKC_400"
+    },
+    {
+      "conditions": {
+        "profile": "canvaskit-sfnt"
+      },
+      "decisionPlane": "supply",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-1994.hankyoreh-original-webfont"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-1994.hankyoreh-canvaskit",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 162,
+      "projections": [
+        {
+          "id": "canvaskit-sfnt",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "supply-source",
+      "ruleId": "rule.issue-1994.hankyoreh-canvaskit-0",
+      "selectionTupleSha256": "bb59c1dc0e4585b8dd3e284394f0be4cfac0d84a6ebc39cec5a1d7bcb09c5d1c",
+      "sourceBoundaryId": "studio-supply.font-list",
+      "sourceFace": "한겨레결체",
+      "status": "active",
+      "supply": {
+        "capabilityAgreement": false,
+        "declaredCapability": "unavailable",
+        "fontFamily": "한겨레결체",
+        "kind": "canvaskit-plan",
+        "offline": {
+          "sources": [],
+          "unavailableFonts": [
+            "한겨레결체"
+          ]
+        },
+        "online": {
+          "sources": [
+            {
+              "aliases": [
+                "한겨레결체",
+                "Hankc",
+                "TSThgrgl"
+              ],
+              "url": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff"
+            }
+          ],
+          "unavailableFonts": []
+        },
+        "runtimePlanStatus": "planned"
+      },
+      "targetFaceOrPolicy": "unavailable: no offline CanvasKit SFNT source for 한겨레결체"
+    },
+    {
+      "conditions": {
+        "profile": "canvaskit-sfnt"
+      },
+      "decisionPlane": "supply",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-1994.hankyoreh-original-webfont"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-1994.hankyoreh-canvaskit",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 163,
+      "projections": [
+        {
+          "id": "canvaskit-sfnt",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "supply-source",
+      "ruleId": "rule.issue-1994.hankyoreh-canvaskit-1",
+      "selectionTupleSha256": "db5075527ec3e585b0fdcc13fdab5eaec7a03c8cd9c56f509de0390f8cd2c4d5",
+      "sourceBoundaryId": "studio-supply.font-list",
+      "sourceFace": "Hankc",
+      "status": "active",
+      "supply": {
+        "capabilityAgreement": false,
+        "declaredCapability": "unavailable",
+        "fontFamily": "Hankc",
+        "kind": "canvaskit-plan",
+        "offline": {
+          "sources": [],
+          "unavailableFonts": [
+            "Hankc"
+          ]
+        },
+        "online": {
+          "sources": [
+            {
+              "aliases": [
+                "한겨레결체",
+                "Hankc",
+                "TSThgrgl"
+              ],
+              "url": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff"
+            }
+          ],
+          "unavailableFonts": []
+        },
+        "runtimePlanStatus": "planned"
+      },
+      "targetFaceOrPolicy": "unavailable: no offline CanvasKit SFNT source for Hankc"
     }
   ],
-  "rulesSha256": "5d5f022b80f86d90d642e99cd2c7b3bb80f3083a65c4b44e005606f3c84d05ca",
+  "rulesSha256": "f6e59e2c458c84cda4dbbe6feafcf1eed898f05b1811262fec10773f54b3b029",
   "schema": {
     "path": "assets/font-rules/font_rule_registry_v2.schema.json",
     "sha256": "e3412357b2943c00c8a5d2fbb5b0371a8c8c9721157c67e5e38d68ae40a7d7b3"
@@ -44694,15 +44916,15 @@
   },
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
   "summary": {
-    "activeRuleCount": 850,
+    "activeRuleCount": 854,
     "countsByProjection": {
       "canvas2d-paint": 281,
-      "canvas2d-webfont": 157,
-      "canvaskit-sfnt": 162,
+      "canvas2d-webfont": 159,
+      "canvaskit-sfnt": 164,
       "rust-layout-metric": 71,
       "rust-layout-name": 179
     },
     "retiredRuleCount": 8,
-    "ruleCount": 858
+    "ruleCount": 862
   }
 }

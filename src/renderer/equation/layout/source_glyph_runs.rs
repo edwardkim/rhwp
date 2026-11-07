@@ -40,7 +40,7 @@ impl EqLayout {
             if self.variable_bold {
                 return None;
             }
-            let run = super::super::legacy_glyphs::measure(text, role, fs, pad)?;
+            let run = super::super::legacy_glyphs::measure(text, role, fs, self.dpi, pad)?;
             return Some(LayoutBox {
                 font_size: fs,
                 x: 0.0,

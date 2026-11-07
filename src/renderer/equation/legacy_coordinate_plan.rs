@@ -19,6 +19,44 @@ enum Operator {
     Binary,
 }
 
+fn group_edge_gap(left_group: bool, right_group: bool) -> Option<f64> {
+    if left_group {
+        Some(0.5)
+    } else if right_group {
+        Some(-0.25)
+    } else {
+        None
+    }
+}
+
+/// 부착 첨자도 왼쪽의 기저 그룹 소유를 잃지 않는다. 명시적 공백은
+/// 인접한 내용 경계가 아니므로 자동 그룹 간격을 추가하지 않는다.
+pub(super) fn group_boundary_gap(left: &EqNode, right: &EqNode) -> Option<f64> {
+    fn edge(node: &EqNode, first: bool) -> bool {
+        match node {
+            EqNode::Group(_) => true,
+            EqNode::FontStyle { body, .. } | EqNode::Color { body, .. } => edge(body, first),
+            EqNode::Row(items) => {
+                (if first { items.first() } else { items.last() }).is_some_and(|n| edge(n, first))
+            }
+            EqNode::Subscript { base, .. }
+            | EqNode::Superscript { base, .. }
+            | EqNode::SubSup { base, .. }
+                if first =>
+            {
+                edge(base, first)
+            }
+            _ => false,
+        }
+    }
+    if matches!(left, EqNode::Space(_) | EqNode::Empty)
+        || matches!(right, EqNode::Space(_) | EqNode::Empty)
+    {
+        return None;
+    }
+    group_edge_gap(edge(left, false), edge(right, true))
+}
+
 impl Operator {
     fn before(self) -> f64 {
         match self {
@@ -100,15 +138,19 @@ impl Plan {
                 let mut row = Self::empty();
                 for item in items {
                     let child = Self::source(item)?;
-                    let gap = match (row.last, child.first) {
-                        (Some(Edge::Group), Some(_)) => 0.5,
-                        // 독립 그룹/연산자 반례9개: 그룹 경계가 자동 여백보다
-                        // 우선한다. 두 여백을 합산하면 같은 원점이 이중 이동한다.
-                        (Some(_), Some(Edge::Group)) => -0.25,
+                    let gap = if row.last.is_some() && child.first.is_some() {
+                        group_edge_gap(
+                            row.last == Some(Edge::Group),
+                            child.first == Some(Edge::Group),
+                        )
+                    } else {
+                        None
+                    }
+                    .unwrap_or_else(|| match (row.last, child.first) {
                         (Some(Edge::Operator(operator)), Some(_)) => operator.after(),
                         (Some(_), Some(Edge::Operator(operator))) => operator.before(),
                         _ => 0.0,
-                    };
+                    });
                     row.width += gap;
                     row.glyphs.extend(
                         child

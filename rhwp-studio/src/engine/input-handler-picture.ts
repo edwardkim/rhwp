@@ -577,7 +577,11 @@ export function isObjectSizeProtected(this: any, ref: PictureObjectRef | null | 
 /** 개체를 타입에 따라 삭제한다. */
 export function deleteObjectControl(this: any, ref: PictureObjectRef): void {
   if (ref.type === 'shape' || ref.type === 'group' || ref.type === 'line' || ref.type === 'ole') {
-    this.wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
+    if (hasCellPath(ref)) {
+      this.wasm.deleteCellShapeControlByPath(ref.sec, ref.ppi, ref.cellPath, ref.ci);
+    } else {
+      this.wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
+    }
   } else if (ref.type === 'equation') {
     this.wasm.deleteEquationControl(ref.sec, ref.ppi, ref.ci);
   } else {

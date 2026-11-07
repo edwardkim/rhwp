@@ -203,6 +203,9 @@ pub(crate) fn is_line_start_forbidden(ch: char) -> bool {
             | '\u{3001}'
             | '\u{3002}'
             | '\u{2026}'
+            // ONE DOT LEADER도 앞 글자와 줄을 함께 소유한다. UAX #14 IN/LB22와
+            // 독립 한컴 Print의 `흡|기․냉각수`처럼 점만 다음 줄 머리로 보내지 않는다.
+            | '\u{2024}'
             | '\u{00B7}'
             // ‧ HYPHENATION POINT — 한컴 저장 조판 실측: 줄머리 0건 · 줄끝 2건.
             // `·`(U+00B7)는 이미 있는데 이것만 빠져 있어 줄 머리로 내려갔다.
@@ -308,10 +311,14 @@ fn break_before_text_token(
 /// 같은 폭의 U+00B7·ASCII 마침표는 라틴 낱말을 유지한다. 글꼴 슬롯과
 /// 줄 경계는 별도 계약이며, 이미 분리한 기호 토큰의 끝을 공통 소비한다.
 fn can_break_after_text_token(ch: char, korean_break_unit: u8) -> bool {
-    if is_hangul(ch) {
+    if is_hangul(ch) || ch.is_ascii_digit() {
         korean_break_unit == 1
     } else {
-        is_cjk_ideograph(ch) || matches!(ch, '\u{2024}' | '\u{2027}')
+        // CJK 호환 단위도 한자로 된 낱글자처럼 줄 끝 후보를 소유한다.
+        // Unicode Line_Break의 3300..33FF는 모두 ID다. 독립 한컴 Print의
+        // `0.5㎥|/kg`에서 단위 뒤 후보를 잃고 앞 공백까지 되감지 않는다.
+        // 원문 슬롯·전진폭과 후행 문자의 기존 금칙 판정은 바꾸지 않는다.
+        is_cjk_ideograph(ch) || matches!(ch, '\u{3300}'..='\u{33FF}' | '\u{2024}' | '\u{2027}')
     }
 }
 
@@ -369,6 +376,22 @@ fn is_latin(ch: char) -> bool {
 /// 곡선·아래 따옴표는 종전처럼 낱말을 끊는다.
 fn stays_in_latin_word(ch: char) -> bool {
     is_lang_neutral(ch) || matches!(ch, '\u{00A1}'..='\u{00BF}')
+}
+
+/// 한글 글자 단위 조판에서 비라틴 줄머리 금칙 앞의 숫자는 영문 낱말이 아니다.
+/// 독립 한컴 Print는 `140℃`를 `14|0℃`로 나누지만 `140%`와 `ABC℃`는
+/// 낱말째 이월한다. 마지막 숫자와 금칙 문자는 기존 글자 토큰의 흡수 규칙이
+/// 함께 소유한다. 글꼴 슬롯이나 숫자의 실제 전진폭은 바꾸지 않는다.
+fn numeric_run_before_non_latin_closer(chars: &[char], start: usize) -> Option<usize> {
+    let end = start
+        + chars[start..]
+            .iter()
+            .take_while(|ch| ch.is_ascii_digit())
+            .count();
+    chars
+        .get(end)
+        .filter(|ch| is_line_start_forbidden(**ch) && !is_latin(**ch) && !stays_in_latin_word(**ch))
+        .map(|_| end)
 }
 
 /// CJK 문자 여부 (한자/일본어 — 개별 분할 대상)
@@ -538,6 +561,8 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
         .with_space_metric(space_metric)
         .with_literal_figure_spaces(literal_figure_spaces);
     let mut current_lang: usize = 0;
+    // 같은 숫자열의 끝은 한 번만 찾는다. 긴 숫자열을 글자마다 재탐색하지 않는다.
+    let mut numeric_closer_end = 0;
 
     while i < text_len {
         storage.reserve(&mut tokens, 1)?;
@@ -649,8 +674,13 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
         // 어절 단위 — 스키마 명목과 반대 (한컴 통제 실측 3중 확증: #2169
         // kbu 사다리, 80168 r10, #2185 giant-cell LINE_SEG [0,44,84,122]
         // 보존 대조). 종전 == 1 어절 분기는 역해석 (0da18bbc 회귀).
-        if is_hangul(ch) {
-            if korean_break_unit == 0 {
+        if korean_break_unit == 1 && ch.is_ascii_digit() && i >= numeric_closer_end {
+            numeric_closer_end = numeric_run_before_non_latin_closer(text_chars, i).unwrap_or(i);
+        }
+        let numeric_closer =
+            korean_break_unit == 1 && ch.is_ascii_digit() && i < numeric_closer_end;
+        if is_hangul(ch) || is_cjk_ideograph(ch) || numeric_closer {
+            if korean_break_unit == 0 && is_hangul(ch) {
                 // 어절 모드: 연속 한글 + 후행 금칙 문자를 하나의 토큰으로
                 let start = i;
                 let mut max_fs = 0.0f64;
@@ -761,7 +791,8 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
                 }
                 continue;
             } else {
-                // 글자 모드: 한글 개별 분할
+                // 글자 모드: 한글·CJK의 한 글자와 뒤따르는 줄머리 금칙을 함께 소유한다.
+                // CJK도 독립 Print의 `滴下|物)`처럼 닫는 괄호를 앞 글자와 묶는다.
                 let utf16_pos = if i < char_offsets.len() {
                     char_offsets[i]
                 } else {
@@ -966,34 +997,6 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
                 i += 1;
                 continue;
             }
-        }
-
-        // CJK 한자/일본어: 항상 개별 토큰
-        if is_cjk_ideograph(ch) {
-            let utf16_pos = if i < char_offsets.len() {
-                char_offsets[i]
-            } else {
-                i as u32
-            };
-            let style_id = find_active_char_shape(char_shapes, utf16_pos);
-            current_lang = detect_lang_category(ch);
-            let ts = metric_scope.try_style(styles, style_id, current_lang, i, storage)?;
-            let fs = token_line_font_size(styles, style_id);
-            let w = reflow_scalar_width(ch, &ts) + inline_width_px_at(inline_controls, i, styles);
-            storage.push(
-                &mut tokens,
-                BreakToken::Text {
-                    start_idx: i,
-                    end_idx: i + 1,
-                    base_width: w,
-                    width: w,
-                    max_font_size: fs,
-                    base_char_widths: vec![],
-                    char_widths: vec![],
-                },
-            )?;
-            i += 1;
-            continue;
         }
 
         // 기타 문자 (기호, NonBreakingSpace 등): 개별 Text 토큰
@@ -1605,6 +1608,61 @@ pub(crate) fn condense_space_savings_px(space_width_px: f64, percent: u8, dpi: f
 
 fn condensed_line_width_hwp(width_hwp: i32, space_savings_hwp: i32) -> i32 {
     width_hwp - space_savings_hwp
+}
+
+/// 낱말 사이 첫 구분 공백은 뒤의 작성 공백과 같은 종료 컷이 아니다.
+/// 독립 한컴 Print의 맑은 고딕/HFT 대조에서는 첫 구분 공백이 넘쳐도
+/// 다음 공백까지 앞줄에 걸고, 나머지 작성 공백만 다음 줄에서 전진한다.
+/// 문단 끝·명시적 개행·앞줄에서 이월된 공백과 개체 슬롯은 기존 계약을 유지한다.
+fn first_interword_separator(
+    tokens: &[BreakToken],
+    token_index: usize,
+    text_chars: &[char],
+    line_start: usize,
+) -> bool {
+    let Some(BreakToken::Space {
+        idx, inline_width, ..
+    }) = tokens.get(token_index)
+    else {
+        return false;
+    };
+    if *idx <= line_start
+        || *inline_width != 0.0
+        || text_chars.get(*idx) != Some(&' ')
+        || !text_chars
+            .get(idx - 1)
+            .is_some_and(|ch| !ch.is_whitespace() && !ch.is_control() && *ch != '\u{FFFC}')
+    {
+        return false;
+    }
+    let mut next_index = idx + 1;
+    let mut additional_space = false;
+    for token in tokens.iter().skip(token_index + 1) {
+        match token {
+            BreakToken::Space {
+                idx, inline_width, ..
+            } if *idx == next_index
+                && *inline_width == 0.0
+                && text_chars.get(*idx) == Some(&' ') =>
+            {
+                additional_space = true;
+                next_index += 1;
+            }
+            BreakToken::Text {
+                start_idx,
+                end_idx,
+                width,
+                ..
+            } => {
+                return additional_space
+                    && *start_idx == next_index
+                    && end_idx > start_idx
+                    && *width > 0.0;
+            }
+            _ => return false,
+        }
+    }
+    false
 }
 
 /// Hancom absorbs the first overflowing blank at the end of the row, then
@@ -2413,7 +2471,10 @@ fn fill_one_interval(
                     eff_w(cursor.is_first_line),
                     (*inline_width > 0.0)
                         .then(|| (cursor.lw + to_hwp(*inline_width), cursor.line_space_savings)),
-                ) {
+                )
+                .filter(|_| {
+                    !first_interword_separator(tokens, ti, text_chars, cursor.line_start_idx)
+                }) {
                     let absorbed = cut > *idx;
                     // [#7418] 줄 끝에 건 공백이 문단의 마지막 글자면 문단이 여기서 끝난다 —
                     // 종전에는 글자 없는 빈 행을 하나 더 게시했다. 한/글은 넘친 공백 **하나**만
@@ -3663,7 +3724,8 @@ pub(crate) fn control_is_float_shape_beside_text(control: &Control) -> bool {
         if crate::renderer::float_placement::shape_wraps_beside_text(shape.common()))
 }
 
-/// 대체 메트릭으로 폭이 바뀐 수식의 첫 소유 줄만 저장 캐시 경계로 삼는다.
+/// 글자 전진폭을 다시 측정한 수식의 첫 소유 줄만 저장 캐시 경계로 삼는다.
+/// 상자 높이가 이미 현재 값이어도 같은 재측정 증거를 소비하며 저장 폭은 보존한다.
 /// 앞쪽의 정상 줄과 각주 앵커까지 함께 재조판하면 무관한 문단 배치가 바뀐다.
 pub(super) fn remeasured_equation_start_row(para: &Paragraph) -> Option<usize> {
     let positions = super::find_render_inline_control_positions(para);
@@ -3675,7 +3737,10 @@ pub(super) fn remeasured_equation_start_row(para: &Paragraph) -> Option<usize> {
                 return None;
             };
             if !equation.common.treat_as_char
-                || crate::renderer::equation::flow_width_hwp(equation) == equation.common.width
+                || (crate::renderer::equation::flow_width_hwp(equation) == equation.common.width
+                    && !crate::renderer::equation::current_simple_math_advance_was_remeasured(
+                        equation,
+                    ))
             {
                 return None;
             }

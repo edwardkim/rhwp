@@ -12,6 +12,10 @@ use super::symbols::FontStyleKind;
 #[path = "legacy_coordinate_plan.rs"]
 mod plan;
 
+pub(super) fn group_boundary_gap(left: &EqNode, right: &EqNode) -> Option<f64> {
+    plan::group_boundary_gap(left, right)
+}
+
 // 독립 Print에서 얻은 root 여백 대비 논리 전진. 생성 근거와 교차 대조는
 // task_semanticist21_20261024_legacy_equation_paint.md의 2931·2932·2959에 있다.
 const UPPER: [f64; 26] = [

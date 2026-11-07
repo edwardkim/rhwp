@@ -180,6 +180,7 @@ impl EqParser {
             TokenType::Text => self.styled_literal(EqNode::Text(val), roman_literal),
             TokenType::Quoted => literal_font(EqNode::Quoted(val), roman_literal),
             TokenType::Symbol => EqNode::Symbol(val),
+            TokenType::LParen | TokenType::RParen if self.legacy_display => EqNode::Symbol(val),
             // [#7873] 공백 명령이 단일 인자 자리에 오면 글자가 아니라 간격이다.
             TokenType::Whitespace => whitespace_node(&val),
             _ => self.styled_literal(EqNode::Text(val), false),

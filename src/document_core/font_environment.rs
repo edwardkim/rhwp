@@ -18,6 +18,7 @@ impl DocumentCore {
                 })
                 .collect();
         serde_json::json!({
+            "supportsSourceMetricOverrides": true,
             "requests": FontEnvironment::document_requests(&self.document.doc_info),
             "scopedRequests": scoped_requests,
             "environmentId": self.font_environment.as_ref().map(FontEnvironment::id),

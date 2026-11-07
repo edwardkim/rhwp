@@ -1,93 +1,173 @@
-//! [Issue #6764] 문단-기준 **자리차지(TopAndBottom)** 표가 남긴 배제 밴드를,
-//! 뒤따르는 **블록 표**가 짚지 않고 그냥 통과했다.
-//!
-//! `apply_visible_float_exclusions` 는 흐름이 밴드 **안에서 시작할 때만**(`starts_in_zone`)
-//! 바닥으로 끌어올린다. 겹침 프로브(`overlaps_zone`)는 HWPX 저장 프로파일 전용이라,
-//! 네이티브 HWP5 에서 `vertical_offset` 이 앵커와 표 상단 사이를 벌려 놓으면 그 틈에서
-//! 시작하는 후속 항목은 두 술어 어느 쪽도 못 맞춘다.
-//!
-//! `1613000-202200037` (항공교통관제사 CBTA 최종보고서) 182쪽 실측:
-//!
-//! ```text
-//!   pi=1 cur_h= 94.0    ← 자리차지 표 배치, 밴드 184.2 .. 960.6
-//!   pi=4 cur_h=150.0    ← 46x3 표가 틈 안에서 시작 → 밴드를 통과
-//!   DIAG_SPLITSCAN pi=4 cursor=0 end_row=23 consumed=791.8 avail=817.6
-//! ```
-//!
-//! 계상은 예산 817.6px 으로 23행을 같은 쪽에 잘라 넣었지만 페인트는 밴드 아래
-//! `y = 1216 .. 2008` — 용지(1122.5px) 밖 **885.6px**. 그 23행이 인쇄·PDF 어디에도
-//! 남지 않아 「과목 2: 인적 요소」 장 전체가 사라졌다.
-//!
-//! ⭐ 표는 한 덩어리라 어긋남이 **쪽 규모**로 드러난다. 그래서 수정은 문단 흐름이
-//! 아니라 **블록 표 배치 직전**으로 좁혔다 — `apply_float_band_before_block_table`.
-//! 같은 문단이 만든 밴드는 건드리지 않는다(co-anchored float 스택, `#1510`).
-//!
-//! ⚠ 문단 흐름 쪽은 남는다 — 같은 쪽 `pi=2 / pi=3` 두 줄은 여전히 밴드 위에 계상돼
-//! 본문 하한 아래(`+61.5px`)에 그려진다. 밴드 상단을 앵커까지 내려 그 두 줄까지
-//! 잡으려 했더니 `#5701`(후속 문단이 1쪽에 남아야 한다)·`#5941`(202쪽 핀)이 깨졌다.
-//!
-//! 실측(`layout-anomaly`): 용지밖 6 → 5건, **표 최대 초과 885.6 → 13.4px**,
-//! 넘침 63 → 62, 쪽수 200 → **201** (한/글 2024 = 204쪽 — 방향이 맞다).
-//!
-//! 재현 원본은 samples/issue6764/에 정식 등록했다. 파일 부재는 실패다.
-
+//! 관계형·고정형: #7727 CBTA 원문의 표 소유·내용 보존과 독립 Print 쪽수·±2px 경계.
+//! 주석 갱신: 2026-11-06T08:29:51+09:00; 직전 파일 커밋: 2026-09-05T20:44:19+09:00 (902a208b51).
+//! 2026-11-06 측정: canonical 96DPI·compat2022·PDFium·2px raw, 원본 전204쪽.
+//! 전쪽 최저 Native 92.05232% / fresh WASM 92.16419%(11쪽), 90% 미만·쪽 누락 0.
+//! px 대상 186쪽 N/W 99.93606/99.93833%, 187쪽 99.93137/99.93362%.
+//! 185쪽의 29×3 표 N/W 99.92888/99.93373%; 이 표와 후속 46×3 표의 원문155셀을 대조한다.
+//! 고정 base 170b886f / code head fc378076: 전204쪽 각 backend의 base/후보 PNG 동일, raw 하락0.
+//! 근거: mydocs/pr/assets/issue7727/verification-20261106/README.md.
+//! PDF: pdf/issue7727/cbta-original-hancom2020-print-20261106.pdf, SHA-256 0db1eb55eda0f1a4985eeaf187656c23499616b7dccddcbb7c874c0937e1b2e0.
+//! 원 해결 d87b3037e5·29194a603f·c547a52b2a는 모두 base 조상이다. renderer는 이번에 바꾸지 않는다.
+//! 기존 전쪽 최대 초과<100px는 다른 표도 섞은 임시 값이었다. 원문 소속·실제 용지·내용 보존으로 교정한다.
+//! 과거 200/201/202쪽 관측을 고정하지 않고 같은 원문의 독립 한컴2020 Print 204쪽을 사용한다.
 #![cfg(not(target_arch = "wasm32"))]
 
-use std::path::PathBuf;
+use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+
+mod deferred_scope {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/deferred_visual_regression_scope.rs"
+    ));
+}
 
 const SAMPLE: &str = "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp";
 
-/// 작업 디렉터리나 비공개 환경 변수와 무관한 정식 회귀 입력.
-fn document_path() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)
+fn open_sample() -> DocumentCore {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("CBTA 원문 읽기");
+    DocumentCore::from_bytes(&bytes).expect("CBTA 원문 파싱")
 }
 
-fn paper_bottom(node: &RenderNode) -> f64 {
-    node.bbox.y + node.bbox.height
+fn table(node: &RenderNode, paragraph: usize) -> Option<&RenderNode> {
+    if matches!(&node.node_type, RenderNodeType::Table(t)
+        if t.section_index == Some(2) && t.para_index == Some(paragraph)
+            && t.control_index == Some(0) && t.cell_context.is_none())
+    {
+        return Some(node);
+    }
+    node.children
+        .iter()
+        .find_map(|child| table(child, paragraph))
 }
 
-/// 이 쪽에서 용지 아래로 가장 많이 삐져나간 `Table` 의 초과폭.
-fn worst_table_overhang(node: &RenderNode, paper_bottom: f64) -> f64 {
-    let mut worst = 0.0f64;
-    if matches!(node.node_type, RenderNodeType::Table { .. }) {
-        worst = worst.max(node.bbox.y + node.bbox.height - paper_bottom);
+fn text(node: &RenderNode, out: &mut String) {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        out.push_str(&run.text);
     }
     for child in &node.children {
-        worst = worst.max(worst_table_overhang(child, paper_bottom));
+        text(child, out);
     }
-    worst
 }
 
-/// 어떤 쪽에서도 표가 용지 아래로 **쪽 규모**로 나가면 안 된다.
-///
-/// 수정 전: 182쪽 46x3 표의 첫 조각이 `y = 1216 .. 2008` (용지 1122.5) — `+885.6px`.
-/// 남아 있는 최대 초과는 다른 축(#6764 밖)의 `13.4px` 다.
+fn normalized(text: &str) -> String {
+    text.chars()
+        .filter(|c| !c.is_whitespace() && !c.is_control())
+        .collect()
+}
+
+fn assert_on_paper(node: &RenderNode, paper: &RenderNode) {
+    let bottom = paper.bbox.y + paper.bbox.height;
+    assert!(node.bbox.y >= paper.bbox.y && node.bbox.y + node.bbox.height <= bottom);
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        assert!(
+            node.bbox.y + run.baseline <= bottom,
+            "표 안의 글자도 실제 용지 안에 그린다"
+        );
+    }
+    for child in &node.children {
+        assert_on_paper(child, paper);
+    }
+}
+
 #[test]
 fn para_float_band_keeps_the_next_table_fragment_on_paper() {
-    let path = document_path();
-    let bytes = std::fs::read(&path).expect("#6764 정식 회귀 sample 읽기");
-    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
-
-    let mut worst = 0.0f64;
-    let mut worst_page = 0u32;
-    for page in 0..core.page_count() {
-        let tree = core
-            .build_page_render_tree(page as u32)
-            .expect("render tree");
-        let bottom = paper_bottom(&tree.root);
-        let overhang = worst_table_overhang(&tree.root, bottom);
-        if overhang > worst {
-            worst = overhang;
-            worst_page = page as u32 + 1;
+    for input in [
+        SAMPLE,
+        "mydocs/pr/assets/issue7445/1613000-202200037-air-traffic-controller-cbta.hwp",
+    ] {
+        for axis in [
+            "body",
+            "off_canvas",
+            "oracle",
+            "overflow_cell",
+            "render_page",
+            "text_overlap",
+        ] {
+            assert!(
+                !deferred_scope::is_deferred(Path::new(input), axis),
+                "전쪽 수용한 CBTA 원문은 기존 {axis} 코퍼스에서도 검사해야 한다: {input}"
+            );
         }
     }
+    let core = open_sample();
+    assert_eq!(core.page_count(), 204, "독립 한컴2020 Print의 전체 쪽수");
+    let pages: Vec<_> = (0..core.page_count())
+        .map(|p| core.build_page_render_tree(p as u32).expect("전쪽 트리"))
+        .collect();
+    // 원문 소속으로 선택한다. landscape 182쪽의 다른 247×7 표는 대상이 아니다.
+    for (paragraph, rows, expected_pages) in [(1, 29, [185, 186]), (4, 46, [186, 187])] {
+        let source = match &core.document().sections[2].paragraphs[paragraph].controls[0] {
+            Control::Table(t) => t,
+            _ => panic!("원문 자리차지/후속 블록 표"),
+        };
+        assert_eq!((source.row_count, source.col_count), (rows, 3));
+        let mut actual = vec![String::new(); source.cells.len()];
+        let mut occurrences = vec![0usize; source.cells.len()];
+        let mut owners = Vec::new();
+        for (page, tree) in pages.iter().enumerate() {
+            let Some(grid) = table(&tree.root, paragraph) else {
+                continue;
+            };
+            owners.push(page + 1);
+            assert_on_paper(grid, &tree.root);
+            for child in &grid.children {
+                let RenderNodeType::TableCell(cell) = &child.node_type else {
+                    continue;
+                };
+                let index = cell.model_cell_index.expect("원문 셀 소유 번호") as usize;
+                let original = source.cells.get(index).expect("유효한 원문 셀");
+                assert_eq!((cell.row, cell.col), (original.row, original.col));
+                occurrences[index] += 1;
+                text(child, &mut actual[index]);
+            }
+        }
+        assert_eq!(owners, expected_pages, "독립 Print의 표 조각 쪽 소유");
+        for (index, original) in source.cells.iter().enumerate() {
+            assert!(
+                occurrences[index] > 0,
+                "원문 셀 {paragraph}/{index} 누락 금지"
+            );
+            let expected: String = original
+                .paragraphs
+                .iter()
+                .map(|p| p.text.as_str())
+                .collect();
+            assert_eq!(
+                normalized(&actual[index]),
+                normalized(&expected),
+                "원문 셀 {paragraph}/{index}: 합법적 계속 조각을 합쳐 글자 순서·누락·중복 검사"
+            );
+        }
+        // 46×3 표는 전체 행 경계에서 나뉜다. 빈 셀도 중복 배치하지 않는다.
+        if paragraph == 4 {
+            assert!(occurrences.iter().all(|n| *n == 1));
+        }
+    }
+}
 
+fn pdf_px(actual: f64, expected: f64, label: &str) {
     assert!(
-        worst < 100.0,
-        "표가 용지 밖으로 쪽 규모로 나가면 안 된다 — #6764 회귀          \
-         (최대 초과 {worst:.1}px @ {worst_page}쪽; 수정 전 +885.6px @ 182쪽)"
+        (actual - expected).abs() <= 2.0,
+        "독립 한컴2020 Print ±2px: {label}, actual={actual}, expected={expected}"
     );
+}
+
+#[test]
+fn issue_7727_following_table_keeps_independent_print_edges() {
+    let core = open_sample();
+    // 독립 PDF 벡터의 가로 괘선 중심을 96/72로 환산했다. rhwp bbox에서 역산하지 않는다.
+    for (page, top, bottom) in [
+        (185, 309.26131185, 1034.54800415),
+        (186, 79.27335612, 945.04667155),
+    ] {
+        let tree = core.build_page_render_tree(page).unwrap();
+        let grid = table(&tree.root, 4).expect("원문 구역2 문단4의 46×3 표");
+        pdf_px(grid.bbox.y, top, "후속 표 상단");
+        pdf_px(grid.bbox.y + grid.bbox.height, bottom, "후속 표 하단");
+    }
 }

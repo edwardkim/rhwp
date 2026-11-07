@@ -1,3 +1,5 @@
+// 관계형: 클립보드 완료·취소와 객체 소유 주소를 검사하며 실물 px 좌표는 고정하지 않는다.
+// 주석 갱신: 2026-11-05 18:52 KST. 합성 API 계약이며 Native/fresh WASM 시각 수치는 비대상이다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -85,6 +87,7 @@ function fixture(keyboard: any, picture: any, tableObjectClipboardTarget: any, m
       deleteEquationControl: deleting('equation'),
       deletePictureControl: deleting('image'),
       deleteCellPictureControlByPath: deleting('cell-image'),
+      deleteCellShapeControlByPath: deleting('cell-shape'),
       deleteTableControl: deleting('table'),
       discardDeleteFragment: noop,
     },
@@ -455,6 +458,17 @@ test('공개 개체 잘라내기는 클립보드 기록을 기다리고 같은 �
     }
 
     const cellPath = [{ controlIndex: 1, cellIndex: 4, cellParaIndex: 2 }];
+    await t.test('#7375 셀 번호 도형: rich 기록 뒤 같은 셀 주소만 삭제한다', async () => {
+      const f = make('picture');
+      f.state.ref = { sec: 2, ppi: 8, ci: 3, type: 'shape', cellPath };
+      f.cut();
+      assertNoDeletion(f);
+      assert.deepEqual(f.copyCalls, [[2, 8, 3, JSON.stringify(cellPath)]]);
+      f.primary[0].resolve();
+      await settle();
+      assert.deepEqual(f.deleteCalls, [{ name: 'cell-shape', args: [2, 8, cellPath, 3] }]);
+      assert.equal(f.calls.filter(call => call === 'history').length, 1);
+    });
     await t.test('셀 그림: 기존 이미지 rich 기록과 셀 삭제 주소를 보존한다', async () => {
       const f = make('picture');
       f.state.ref = { sec: 2, ppi: 8, ci: 3, type: 'image', cellPath };

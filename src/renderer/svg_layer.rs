@@ -246,9 +246,28 @@ impl SvgLayerRenderer {
         }
         let active_layer = Self::active_layer(node, inherited_layer);
         match &node.kind {
-            LayerNodeKind::Group { children, .. } => {
+            LayerNodeKind::Group {
+                children,
+                group_kind,
+                ..
+            } => {
+                let matrix = match group_kind {
+                    crate::paint::GroupKind::Group(group) => group.paint_transform,
+                    _ => None,
+                };
+                if let Some(matrix) = matrix {
+                    if !matrix.iter().all(|value| value.is_finite()) {
+                        return Err(HwpError::RenderError(
+                            "invalid PageLayerTree group affine".into(),
+                        ));
+                    }
+                    self.renderer.begin_layer_transform(matrix);
+                }
                 for child in children {
                     self.render_node(child, active_layer, plane)?;
+                }
+                if matrix.is_some() {
+                    self.renderer.end_layer_transform();
                 }
             }
             LayerNodeKind::ClipPath { paths, child } => {

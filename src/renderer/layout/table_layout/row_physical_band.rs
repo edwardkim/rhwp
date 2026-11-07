@@ -45,6 +45,36 @@ impl<'a> RowCutCapacity<'a> {
 }
 
 impl LayoutEngine {
+    /// 원본 병합 칸의 같은 문단이 저장 쪽 프레임에서 재시작하면 앞 슬롯은
+    /// 수용과 물리 출력이 함께 소유한다. 마지막 테두리 접기도 같은 계약을 쓴다.
+    pub(in crate::renderer::layout) fn stored_reset_span_owns_closing_slot(
+        &self,
+        table: &Table,
+        cell: &Cell,
+        units: &[CellUnit],
+        end: usize,
+    ) -> bool {
+        let Some((last, next)) = end
+            .checked_sub(1)
+            .and_then(|last| units.get(last).zip(units.get(end)))
+        else {
+            return false;
+        };
+        !last.reflowed_line_slot
+            && last.para_idx == next.para_idx
+            && next.page_frame_reset_before
+            && self.stored_span_cut_preserves_line_slots(table, cell)
+            && cell.paragraphs.get(last.para_idx).is_some_and(|para| {
+                !para.stored_text_partition_is_dirty()
+                    && !para.cell_format_vpos_dirty
+                    && last.vis_end.checked_sub(1).is_some_and(|line| {
+                        para.line_segs
+                            .get(line)
+                            .is_some_and(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+                    })
+            })
+    }
+
     /// 독립 선언 최소 안의 마지막 저장 슬롯은 완결 수용량에 포함한다.
     /// 받아들인 컷의 잉크·안여백은 기존 Occupied 경로가 그대로 측정한다.
     /// 원본 유닛 높이를 늘려 이어받기 쪽에 종료 전진을 다시 더하지 않는다.
@@ -364,6 +394,12 @@ impl LayoutEngine {
                     })
             });
         let paragraph_end = last.para_idx != units[end].para_idx;
+        // 원본 병합 칸의 같은 문단이 저장 쪽 프레임에서 재시작하면,
+        // 앞 조각은 수용할 때 예약한 마지막 줄 슬롯도 실제로 소유한다.
+        // 그 줄간격을 잉크 끝 trim으로 회수하면 예약과 paint의 하단이 달라진다.
+        if self.stored_reset_span_owns_closing_slot(table, cell, units, end) {
+            return (0.0, 0.0);
+        }
         let following = self.stored_span_line_tail_spacing(last);
         // 문단 끝 유닛에는 줄간격과 문단 뒤 간격이 함께 들어 있다.
         // 다음 문단이 다른 조각에 속하면 두 간격 모두 그 소유자에게 넘긴다.

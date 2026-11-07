@@ -6,6 +6,98 @@ use crate::renderer::hwpunit_to_px;
 use super::{CellUnit, LayoutEngine, ResolvedStyleSet};
 
 impl LayoutEngine {
+    /// 완료한 병합 라벨의 전체 행합과 일반 칸의 첫 저장 조각은 별도 상자다.
+    /// 미완료 칸의 실제 쪽 재시작과 더 작은 셀 선언이 함께 인증한 경우만
+    /// 그 첫 물리 상자를 보존한다. 뒤 조각의 내용 컷이나 전체 행합을 차감하지 않는다.
+    pub(crate) fn stored_block_opening_cell_rows(
+        &self,
+        table: &Table,
+        range: (usize, usize),
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<Vec<f64>> {
+        let (first, end) = range;
+        if end <= first + 1
+            || table.cell_spacing != 0
+            || table.layout_page_break() != TablePageBreak::RowBreak
+        {
+            return None;
+        }
+        let mut cells = Self::row_block_cells(table, first, end);
+        cells.sort_by_key(|cell| (cell.row, cell.col));
+        if cells.is_empty()
+            || cells.len() != end_cut.len()
+            || cells
+                .iter()
+                .any(|cell| !self.stored_body_text_cell_frame(table, cell))
+        {
+            return None;
+        }
+        let mut rows: Vec<u32> = (first..end)
+            .map(|row| {
+                cells
+                    .iter()
+                    .filter(|cell| usize::from(cell.row) == row && cell.row_span == 1)
+                    .map(|cell| cell.height)
+                    .max()
+                    .filter(|height| *height > 0 && *height <= i32::MAX as u32)
+            })
+            .collect::<Option<_>>()?;
+        let mut spanning = false;
+        let mut opening = None;
+        for (cell, &cut) in cells.into_iter().zip(end_cut) {
+            let units = self.cell_units(cell, table, styles);
+            if cut == 0 || cut > units.len() {
+                return None;
+            }
+            let offset = usize::from(cell.row).checked_sub(first)?;
+            if cell.row_span > 1 {
+                let covered = rows.get(offset..offset + usize::from(cell.row_span))?;
+                if cut != units.len()
+                    || covered.iter().map(|&height| u64::from(height)).sum::<u64>()
+                        != u64::from(cell.height)
+                    || !self.stored_block_cell_frames_fit(table, cell, styles)
+                {
+                    return None;
+                }
+                spanning = true;
+            } else {
+                if !self.stored_block_cell_frames_fit_in_height(table, cell, styles, rows[offset]) {
+                    return None;
+                }
+                if cut < units.len() {
+                    if offset + 1 != rows.len()
+                        || !units[cut].page_frame_reset_before
+                        || cell.height == 0
+                        || cell.height >= rows[offset]
+                        || opening.is_some_and(|height| height != cell.height)
+                    {
+                        return None;
+                    }
+                    opening = Some(cell.height);
+                } else if cell.height != rows[offset] {
+                    return None;
+                }
+            }
+        }
+        if !spanning {
+            return None;
+        }
+        *rows.last_mut()? = opening?;
+        let physical: Vec<_> = rows
+            .into_iter()
+            .map(|height| hwpunit_to_px(height as i32, self.dpi))
+            .collect();
+        for (row, &height) in (first..end).zip(&physical) {
+            if self.row_block_cut_row_content_height(table, first, end, row, &[], end_cut, styles)
+                > height
+            {
+                return None;
+            }
+        }
+        Some(physical)
+    }
+
     /// 병합 블록의 실제 컷이 원본 일반 글줄의 다음 쪽 프레임을 여는가.
     /// 블록 뒤의 미수용 행은 컷 0을 유지한다. 완료한 걸침 칸은 다음 줄의
     /// 소유자가 아니며, 미완료 칸은 모두 같은 저장 쪽 경계에서 끝나야 한다.
@@ -354,6 +446,16 @@ impl LayoutEngine {
         cell: &crate::model::table::Cell,
         styles: &ResolvedStyleSet,
     ) -> bool {
+        self.stored_block_cell_frames_fit_in_height(table, cell, styles, cell.height)
+    }
+
+    fn stored_block_cell_frames_fit_in_height(
+        &self,
+        table: &Table,
+        cell: &crate::model::table::Cell,
+        styles: &ResolvedStyleSet,
+        height: u32,
+    ) -> bool {
         let padding = cell.effective_padding(&table.padding);
         if padding.top < 0 || padding.bottom < 0 {
             return false;
@@ -379,8 +481,7 @@ impl LayoutEngine {
                     return false;
                 }
                 let end = top + i64::from(line.line_height);
-                if end + i64::from(padding.top) + i64::from(padding.bottom) > i64::from(cell.height)
-                {
+                if end + i64::from(padding.top) + i64::from(padding.bottom) > i64::from(height) {
                     return false;
                 }
                 previous_end = Some(end);

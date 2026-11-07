@@ -116,7 +116,7 @@ impl TypesetEngine {
             && !self.render_normalization.table_text_reflowed(table)
             && !(para_has_visible_text(para) && rowbreak_table_has_internal_saved_vpos_reset(table))
         {
-            if let Some((placement, following_body)) =
+            if let Some((placement, following_body, host_precedes_inline)) =
                 crate::renderer::float_placement::stored_table_next_page_placement(
                     para,
                     &paragraphs_all[para_idx + 1..],
@@ -128,7 +128,7 @@ impl TypesetEngine {
                     st.available_height(),
                     self.dpi,
                 )
-                .map(|placement| (placement, None))
+                .map(|placement| (placement, None, false))
                 .or_else(|| {
                     crate::renderer::float_placement::stored_whole_header_next_page_placement(
                         para,
@@ -140,18 +140,15 @@ impl TypesetEngine {
                         st.available_height(),
                         self.dpi,
                     )
+                    .map(|(placement, following)| (placement, following, true))
                 })
             {
-                // 가시 호스트는 현재 쪽에서 한 번 소비하고 표만 다음 쪽으로 넘긴다.
+                // 저장 사다리가 뒤 inline 표의 시작을 호스트 줄 다음으로 인증하면,
+                // 빈 호스트도 현재 쪽의 점유다. 문자가 없다고 줄 높이까지 이월하지 않는다.
+                // 가시 호스트도 현재 쪽에서 한 번 소비하고 표만 다음 쪽으로 넘긴다.
                 // 기존 소비 표시를 사용해 출력 단계의 호스트 중복을 막는다.
-                if !para_has_visible_text(para)
-                    || self.pre_emit_visible_rowbreak_host_text(
-                        st,
-                        para_idx,
-                        para,
-                        composed_all,
-                        styles,
-                    )
+                if (!para_has_visible_text(para) && !host_precedes_inline)
+                    || self.pre_emit_deferred_host_lines(st, para_idx, para, composed_all, styles)
                 {
                     st.defer_stored_frame(crate::renderer::typeset::DeferredStoredFrameControl {
                         kind: crate::renderer::typeset::DeferredStoredFrameKind::Table,

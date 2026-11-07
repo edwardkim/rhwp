@@ -3228,6 +3228,9 @@ fn write_line_style(buf: &mut String, style: &LineStyle) {
     if style.compound_component {
         buf.push_str(",\"compoundComponent\":true");
     }
+    if style.preserve_fractional_position {
+        buf.push_str(",\"preserveFractionalPosition\":true");
+    }
     if let Some(shadow) = &style.shadow {
         buf.push_str(",\"shadow\":");
         write_shadow_style(buf, shadow);

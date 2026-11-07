@@ -7,7 +7,8 @@ mod reflow_cell_frames;
 mod rowspan_block;
 mod table_wrapper;
 pub(crate) use table_wrapper::{
-    sole_nested_table_in_paragraph, unrestricted_wrapper_frame, whole_table_frame_height,
+    sole_nested_table_in_paragraph, unrestricted_wrapper_frame,
+    unstored_tac_wrapper_shares_anchor_line, whole_table_frame_height,
     wrapper_owns_paint_or_horizontal_frame, TableWrapperVerticalFrame,
 };
 
@@ -4381,7 +4382,15 @@ let body_height=match nested_body_heights
                         depth,
                         storage,
                     )?;
-                    text_height + nested_sum + outgrown
+                    if !self.session_edited
+                        && (self.is_native_hwp5 || self.hwpx_stored_layout)
+                        && !self.render_normalization.cell_frame_reflowed(table, cell)
+                        && table_wrapper::unstored_tac_wrapper_shares_anchor_line(table, cell)
+                    {
+                        text_height.max(nested_sum + outgrown)
+                    } else {
+                        text_height + nested_sum + outgrown
+                    }
                 } else if has_nested_table_in_cell {
                     // 마지막 문단의 마지막 LINE_SEG의 vpos + line_height
                     let last_seg_end: i32 = cell
@@ -5358,7 +5367,7 @@ let body_height=match nested_body_heights
         }
 
         if let Some(heights) =
-            crate::renderer::layout::LayoutEngine::resolve_reflow_span_requirements(
+            crate::renderer::layout::LayoutEngine::resolve_span_content_requirements(
                 table,
                 &span_content_requirements,
                 &initial_span_rows,
@@ -6004,6 +6013,26 @@ let mut tables=p.controls.iter().filter_map(|c| match c{Control::Table(t)=>Some(
                     self.cell_stored_block_flow_with_storage(cell, styles, depth, storage)?
                 {
                     flow.bottom
+                } else if !self.session_edited
+                    && (self.is_native_hwp5 || self.hwpx_stored_layout)
+                    && !self.render_normalization.cell_frame_reflowed(table, cell)
+                    && table_wrapper::unstored_tac_wrapper_shares_anchor_line(table, cell)
+                {
+                    // 행 높이와 상세 컷 원장 모두 같은 원점의 합집합을 소비한다.
+                    // 실제 저장 줄과 다음 문단을 삭제하거나 선언 높이에 맞춰 자르지 않는다.
+                    mc.total_content_height.max(
+                        self.unabsorbed_nested_tables_height_with_storage(
+                            frame_paragraphs,
+                            styles,
+                            depth,
+                            storage,
+                        )? + self.outgrown_absorbed_nested_tables_height_with_storage(
+                            frame_paragraphs,
+                            styles,
+                            depth,
+                            storage,
+                        )?,
+                    )
                 } else if reflow_block_hosts {
                     mc.total_content_height
                 } else if ladder_collapsed || all_no_ls {

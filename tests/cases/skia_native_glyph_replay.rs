@@ -1,10 +1,11 @@
 //! 관계형: 합성 TextRun·공개 fixture 글꼴의 glyph coverage·replay와 typed 실패를 검사한다.
-//! 주석 갱신: 2026-11-07T16:41:01+09:00; 직전 파일 커밋: 2026-11-06T18:08:11+09:00 (a0b8824f5fb54b33af6ecc694e7c962f8d4f182a).
+//! 주석 갱신: 2026-11-07T19:17:16+09:00; e4ffabea 리베이스에서 양쪽 회귀 범위를 함께 보존했다.
 //! 입력은 파일 내부 합성 문서·PageLayerTree 또는 저장소의 허가된 글꼴 fixture다.
 //! API·소유·자원/합성 paint 계약이며 실물 문서 페이지의 조판 위치를 고정하지 않는다.
 //! 이 assertion의 독립 한컴 PDF 대비 Native/fresh WASM raw 측정값은 비해당이다.
 //! 별도 실물 시각·플랫폼 실행 근거: mydocs/pr/assets/seo-rii-20261107/validation-scope.md.
-//! Strict Native Skia alternatives must paint exact resources or retain TextRun.
+//! 엄격한 Native Skia 대안은 정확한 자원을 그리거나 원래 TextRun을 보존한다.
+//! #7640: 시스템 face의 조회·paint 프로그램 일치와 명시 공급 스타일의 윤곽 소유도 검사한다.
 
 #![cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]
 
@@ -1162,5 +1163,141 @@ fn native_vertical_replay_keeps_fallback_for_unproven_modes_and_malformed_bounde
             "case {case}: {rejected:?}"
         );
         assert_same_pixels(render(&tree), fallback.clone());
+    }
+}
+
+// 기존 Native CI 진입점에서 함께 실행한다. 개인 글꼴은 필수가 아니며,
+// 읽을 수 있는 OS face를 대조하고 별도 OFL 명시 공급 검사는 항상 실행한다.
+mod issue_7640_system_program {
+    use rhwp::paint::{LayerNode, PageLayerTree, PaintOp, RenderProfile};
+    use rhwp::renderer::layer_renderer::LayerRasterRenderer;
+    use rhwp::renderer::render_tree::{BoundingBox, TextRunNode};
+    use rhwp::renderer::skia::SkiaLayerRenderer;
+    use rhwp::renderer::TextStyle;
+    use skia_safe::{FontMgr, FontStyle};
+
+    fn tree(family: &str, text: &str, bold: bool) -> PageLayerTree {
+        let bbox = BoundingBox::new(10.0, 10.0, 450.0, 60.0);
+        let run = TextRunNode {
+            text: text.into(),
+            style: TextStyle {
+                font_family: family.into(),
+                font_size: 32.0,
+                bold,
+                source_font_is_ttf: true,
+                shade_color: 0x00ff_ffff,
+                ..Default::default()
+            },
+            char_shape_id: None,
+            para_shape_id: None,
+            section_index: None,
+            para_index: None,
+            char_start: None,
+            cell_context: None,
+            is_para_end: false,
+            is_line_break_end: false,
+            rotation: 0.0,
+            is_vertical: false,
+            char_overlap: None,
+            border_fill_id: 0,
+            baseline: 40.0,
+            field_marker: Default::default(),
+            layout_positions: None,
+            display_text: None,
+        };
+        PageLayerTree::with_profile(
+            480.0,
+            90.0,
+            LayerNode::leaf(bbox, None, vec![PaintOp::text_run(bbox, run)]),
+            RenderProfile::Print,
+        )
+    }
+
+    fn pixels(renderer: &SkiaLayerRenderer, tree: &PageLayerTree) -> image::RgbaImage {
+        image::load_from_memory(&renderer.render_png(tree).unwrap())
+            .unwrap()
+            .to_rgba8()
+    }
+
+    #[test]
+    fn available_system_faces_match_their_actual_program_snapshot() {
+        let manager = FontMgr::default();
+        let names: std::collections::HashSet<_> = manager.family_names().collect();
+        let mut checked = 0;
+        for family in [
+            "Helvetica",
+            "Arial",
+            "DejaVu Sans",
+            "Liberation Sans",
+            "한컴돋움",
+        ] {
+            if !names.contains(family) {
+                continue;
+            }
+            for bold in [false, true] {
+                let style = if bold {
+                    FontStyle::bold()
+                } else {
+                    FontStyle::normal()
+                };
+                let Some(face) = manager.match_family_style(family, style) else {
+                    continue;
+                };
+                let Some((bytes, index)) = face.to_font_bytes() else {
+                    continue;
+                };
+                // 이 대조는 정적 단일 프로그램 범위다. 컬렉션·가변 글꼴은 기존 별도 계약에서 검사한다.
+                if index != 0
+                    || ttf_parser::fonts_in_collection(&bytes).is_some()
+                    || bytes.len() > 32 * 1024 * 1024
+                    || face
+                        .variation_design_position()
+                        .is_some_and(|v| !v.is_empty())
+                {
+                    continue;
+                }
+                let parsed = ttf_parser::Face::parse(&bytes, 0).unwrap();
+                let text = if "좌표공간의점글"
+                    .chars()
+                    .all(|c| parsed.glyph_index(c).is_some())
+                {
+                    "좌표공간의 점 글꼴"
+                } else {
+                    "AWM glyph program"
+                };
+                let page = tree(family, text, bold);
+                let explicit = SkiaLayerRenderer::new()
+                    .try_with_font_data(&[bytes])
+                    .unwrap();
+                assert!(
+                    pixels(&SkiaLayerRenderer::new(), &page) == pixels(&explicit, &page),
+                    "시스템 조회와 실제 프로그램의 glyph 소유가 같다: {family}, bold={bold}"
+                );
+                checked += 1;
+            }
+        }
+        eprintln!("#7640 읽을 수 있는 정적 OS 프로그램 대조: {checked}");
+    }
+
+    #[test]
+    fn explicit_regular_and_bold_programs_keep_their_own_outlines() {
+        const REGULAR: &[u8] =
+            include_bytes!("../fixtures/native_font_styles/RHWPSuppliedStyle-Regular.ttf");
+        const BOLD: &[u8] =
+            include_bytes!("../fixtures/native_font_styles/RHWPSuppliedStyle-Bold.ttf");
+        let regular = SkiaLayerRenderer::new()
+            .try_with_font_data(&[REGULAR.to_vec()])
+            .unwrap();
+        let bold = SkiaLayerRenderer::new()
+            .try_with_font_data(&[BOLD.to_vec()])
+            .unwrap();
+        let mixed = SkiaLayerRenderer::new()
+            .try_with_font_data(&[REGULAR.to_vec(), BOLD.to_vec()])
+            .unwrap();
+        let normal_page = tree("RHWP Supplied Style Contract", "AW 총투자", false);
+        let bold_page = tree("RHWP Supplied Style Contract", "AW 총투자", true);
+        assert_ne!(pixels(&regular, &normal_page), pixels(&bold, &bold_page));
+        assert_eq!(pixels(&regular, &normal_page), pixels(&mixed, &normal_page));
+        assert_eq!(pixels(&bold, &bold_page), pixels(&mixed, &bold_page));
     }
 }

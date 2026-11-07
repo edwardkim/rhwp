@@ -29,12 +29,15 @@ impl EqLayout {
         } else {
             self.layout_node(base, fs)
         };
+        if self.legacy_math_face {
+            return self.original_script_base(value, base);
+        }
         value.width += self.script_base_operator_gap(base, fs);
         value
     }
 
     fn script_uppercase_gap(&self, base: &EqNode, fs: f64) -> f64 {
-        if self.hancom_math_face && ends_with_uppercase_letter(base) {
+        if self.hancom_math_face && !self.legacy_math_face && ends_with_uppercase_letter(base) {
             fs * 0.15
         } else {
             0.0
@@ -62,6 +65,17 @@ impl EqLayout {
         sub: &LayoutBox,
         fs: f64,
     ) -> (f64, f64) {
+        if self.legacy_math_face
+            && super::super::legacy_glyphs::is_line(base, fs)
+            && super::super::legacy_glyphs::is_line(sub, fs * 0.64)
+        {
+            // 독립 한컴2024 Print의 6/9/12/18pt·40조건에서 구형 아래첨자의
+            // 기준선은 본체보다 약 0.28em 낮다. 자식 ascent의 비율로 원점을
+            // 정하면 0.032em만 내려가므로, 두 글줄의 기준선 관계를 소비한다.
+            // 현대 HYhwpEQ/HancomEQN과 복합 본체의 기존 경로는 보존한다.
+            let y = base.baseline + fs * 0.28 - sub.baseline;
+            return (y, base.height.max(y + sub.height));
+        }
         if self.hancom_eqn
             && super::super::logical_font_frame::font_line(base, fs)
             && super::super::logical_font_frame::font_line(sub, sub.font_size)

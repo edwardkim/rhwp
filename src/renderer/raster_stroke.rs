@@ -68,6 +68,9 @@ pub(crate) fn raster_line_geometry(
     if ![px, py, ex, ey].into_iter().all(f64::is_finite) {
         return original;
     }
+    if style.preserve_fractional_position {
+        return (line.x1, line.y1, line.x2, line.y2, raster_width);
+    }
     let (shift_x, shift_y) = if ex != 0.0 && ey == 0.0 {
         (0.0, py.floor() + 0.5 - py)
     } else if ex == 0.0 && ey != 0.0 {

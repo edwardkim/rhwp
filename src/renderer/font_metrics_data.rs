@@ -214,6 +214,10 @@ pub(crate) fn verified_missing_glyph_supplier(
         // 근린생활시설 표의 독립 Print는 HBATANG의 0.173em 글리프로 출력하며,
         // HBATANG.TTF의 hmtx 178/1024도 같은 자연 전진을 확인한다.
         ("DotumChe", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
+        // 같은 gulim.TTC의 GulimChe도 이 글리프가 없다. 위임전결규정의
+        // 독립2020 Print44·86쪽은 HBATANG178/1024em과 같은 윤곽으로 공급한다.
+        // 폭 표에 없는 문자를 고정폭1em으로 추정하지 않는다. 다른 기호는 유지한다.
+        ("GulimChe", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
         // [#8419] batang.ttc(SHA 51d9a8d4…c9d8)의 Batang cmap에도 U+2024가 없다.
         // 10645 운영지침의 독립 한컴2022 Print는 바탕 사이의 `․`만 Haansoft Batang
         // CID 글꼴로 출력한다. U+2027과 다른 weight/style은 확인하지 않아 바꾸지 않는다.

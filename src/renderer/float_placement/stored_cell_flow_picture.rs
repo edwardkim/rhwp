@@ -12,8 +12,8 @@ pub(crate) struct StoredCellFlowPictureFrame {
     pub bottom_hu: i32,
 }
 
-/// 앞 내용이 있는 실제 저장 셀에서 문단 기준 자리차지 그림은 같은 줄 원점을 쓴다.
-/// 첫 그림이 밀어낸 빈 앵커, 재조판 줄, 저장 리셋과 캡션은 이 계약의 근거가 아니다.
+/// 앞 내용 또는 다음 저장 글줄이 닫는 실제 셀 그림은 같은 흐름 원점을 쓴다.
+/// 그림이 밀어낸 빈 앵커, 재조판 줄, 저장 리셋과 캡션은 이 계약의 근거가 아니다.
 pub(crate) fn stored_cell_flow_picture_frame(
     paragraphs: &[Paragraph],
     index: usize,
@@ -23,7 +23,6 @@ pub(crate) fn stored_cell_flow_picture_frame(
     let para = paragraphs.get(index)?;
     let common = &picture.common;
     if !stored_layout
-        || index == 0
         || picture.caption.is_some()
         || common.treat_as_char
         || !common.flow_with_text
@@ -43,7 +42,29 @@ pub(crate) fn stored_cell_flow_picture_frame(
             pair[1].line_segs[0].vertical_pos
                 < pair[0].line_segs.last().expect("저장 줄 확인").vertical_pos
         })
-        || !paragraphs[..index].iter().any(|p| {
+    {
+        return None;
+    }
+    // 첫 빈 호스트의 다음 본문이 그림의 물리 바닥에서 시작하면 그림과 본문이
+    // 하나의 저장 흐름을 소유한다. 그림만 셀 중앙에 다시 정렬하면 뒤 글줄 높이의
+    // 절반만큼 그림이 내려간다. 음수 offset은 이 비겹침 흐름의 앞 공간이 아니다.
+    let height_hu = i32::try_from(common.height).ok()?;
+    let first_closed_frame = index == 0
+        && para.text.trim().is_empty()
+        && para.controls.len() == 1
+        && para.line_segs[0].vertical_pos == 0
+        && !common.allow_overlap
+        && common.vert_align == crate::model::shape::VertAlign::Top
+        && common.margin.top == 0
+        && common.margin.bottom == 0
+        && paragraphs.get(1).is_some_and(|next| {
+            !next.text.trim().is_empty()
+                && next.controls.is_empty()
+                && super::topbottom_flow_vertical_offset_hu(common).checked_add(height_hu)
+                    == Some(next.line_segs[0].vertical_pos)
+        });
+    if !first_closed_frame
+        && !paragraphs[..index].iter().any(|p| {
             !p.text.trim().is_empty()
                 || p.controls
                     .iter()
@@ -52,10 +73,13 @@ pub(crate) fn stored_cell_flow_picture_frame(
     {
         return None;
     }
-    let top_hu = para.line_segs[0]
-        .vertical_pos
-        .checked_add(super::signed_hwpunit(common.vertical_offset))?;
-    let bottom_hu = top_hu.checked_add(i32::try_from(common.height).ok()?)?;
+    let offset = if first_closed_frame {
+        super::topbottom_flow_vertical_offset_hu(common)
+    } else {
+        super::signed_hwpunit(common.vertical_offset)
+    };
+    let top_hu = para.line_segs[0].vertical_pos.checked_add(offset)?;
+    let bottom_hu = top_hu.checked_add(height_hu)?;
     if top_hu < 0 || bottom_hu <= top_hu {
         return None;
     }

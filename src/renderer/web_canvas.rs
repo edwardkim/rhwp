@@ -3503,6 +3503,38 @@ impl WebCanvasRenderer {
             }
         }
         let _sampling = self.image_sampling_scope(data, Some((sw, sh)), dw, dh);
+        // 잘린 창도 같은 Print 장치 격자에서 준비한다. 전체 그림 경로에
+        // 다시 넘길 때 원본 crop을 재적용하거나 두 번 축소하지 않는다.
+        if self.high_quality_images && self.ctx.image_smoothing_enabled() {
+            let prepared = self.ctx.get_transform().ok().and_then(|matrix| {
+                super::bitmap_raster::prepare_cropped_bitmap(
+                    data,
+                    BoundingBox::new(dx, dy, dw, dh),
+                    [
+                        matrix.a(),
+                        matrix.b(),
+                        matrix.c(),
+                        matrix.d(),
+                        matrix.e(),
+                        matrix.f(),
+                    ],
+                    self.render_profile,
+                    self.bitmap_paper_grid,
+                    [sx, sy, sw, sh],
+                )
+            });
+            if let Some(prepared) = prepared {
+                let bbox = prepared.bbox;
+                self.draw_image(
+                    prepared.bytes.as_slice(),
+                    bbox.x,
+                    bbox.y,
+                    bbox.width,
+                    bbox.height,
+                );
+                return;
+            }
+        }
         // 선택한 원본 창을 유지한 채 전체 그림과 같은 축소 품질을 사용한다.
         let quality_context = self.ctx.clone();
         let _quality =

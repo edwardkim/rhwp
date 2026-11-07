@@ -1,3 +1,4 @@
+import { compareFontNames } from '../core/font-name-order.ts';
 import { getLocalFontRecords } from '@/core/local-fonts';
 import { t } from '../i18n/index.ts';
 import { ModalDialog } from './dialog';
@@ -40,7 +41,8 @@ export class LocalFontListDialog extends ModalDialog {
     table.append(head, rows);
     list.appendChild(table);
     const records = getLocalFontRecords({ includeRegistered: true })
-      .sort((a, b) => a.displayName.localeCompare(b.displayName));
+      .sort((a, b) => compareFontNames(a.family, b.family)
+        || compareFontNames(a.displayName, b.displayName));
     const render = (): void => {
       const query = search.value.trim().toLocaleLowerCase();
       const selected = records.filter(record =>

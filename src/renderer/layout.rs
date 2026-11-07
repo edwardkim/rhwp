@@ -5826,9 +5826,6 @@ impl LayoutEngine {
 
                 let top_nodes =
                     create_border_line_nodes(tree.frame_mut(), &borders[2], bx, by, bx + bw, by);
-                for n in top_nodes {
-                    tree.root.children.push(n);
-                }
                 let bottom_nodes = create_border_line_nodes(
                     tree.frame_mut(),
                     &borders[3],
@@ -5837,14 +5834,8 @@ impl LayoutEngine {
                     bx + bw,
                     by + bh,
                 );
-                for n in bottom_nodes {
-                    tree.root.children.push(n);
-                }
                 let left_nodes =
                     create_border_line_nodes(tree.frame_mut(), &borders[0], bx, by, bx, by + bh);
-                for n in left_nodes {
-                    tree.root.children.push(n);
-                }
                 let right_nodes = create_border_line_nodes(
                     tree.frame_mut(),
                     &borders[1],
@@ -5853,7 +5844,18 @@ impl LayoutEngine {
                     bx + bw,
                     by + bh,
                 );
-                for n in right_nodes {
+                for mut n in top_nodes
+                    .into_iter()
+                    .chain(bottom_nodes)
+                    .chain(left_nodes)
+                    .chain(right_nodes)
+                {
+                    if let RenderNodeType::Line(line) = &mut n.node_type {
+                        // 독립 Print의 용지 테두리는 최소 한 장치 픽셀의
+                        // 폭을 유지하면서 원래 분수 좌표에 coverage를 나눈다.
+                        // 표 격자·일반 도형의 기존 화소 중심 정렬과 구분한다.
+                        line.style.preserve_fractional_position = true;
+                    }
                     tree.root.children.push(n);
                 }
             }
