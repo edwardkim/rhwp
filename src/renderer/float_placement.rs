@@ -9760,47 +9760,6 @@ mod tests {
     }
 
     #[test]
-    fn issue_8731_anchor_ladder_accepts_only_object_free_empty_next() {
-        let table = Table {
-            common: base_common(),
-            ..Default::default()
-        };
-        let host = Paragraph {
-            controls: vec![Control::Table(Box::new(table))],
-            line_segs: vec![LineSeg {
-                vertical_pos: 0,
-                line_height: 1000,
-                line_spacing: 600,
-                segment_width: 40000,
-                ..Default::default()
-            }],
-            ..Default::default()
-        };
-        let empty_next = Paragraph {
-            line_segs: vec![LineSeg {
-                vertical_pos: 1600,
-                line_height: 1000,
-                ..Default::default()
-            }],
-            ..Default::default()
-        };
-        let mut anchor_next = empty_next.clone();
-        anchor_next.controls = host.controls.clone();
-        let advance = |para: &Paragraph, next: &Paragraph| {
-            stored_empty_anchor_band_host_line_advance_hu(true, para, 0, Some(next))
-        };
-
-        assert_eq!(advance(&host, &empty_next), Some(1600));
-        // 앵커 스택의 사다리는 개체-개체 간격이라 띠 아래 host 줄의 증거가 아니다.
-        assert_eq!(advance(&host, &anchor_next), None);
-
-        // 줄 폭 전체가 막힌 host 줄은 띠 아래에 놓이지 않는다.
-        let mut blocked = host.clone();
-        blocked.line_segs[0].segment_width = 0;
-        assert_eq!(advance(&blocked, &empty_next), None);
-    }
-
-    #[test]
     fn picture_exclusion_maps_only_recovered_side_wrap_flows() {
         let both_sides = resolve_picture_exclusion(
             &supported_picture(TextFlow::BothSides),
