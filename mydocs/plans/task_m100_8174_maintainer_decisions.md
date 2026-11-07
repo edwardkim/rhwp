@@ -2,7 +2,7 @@
 kind: decision
 status: active
 canonical: mydocs/plans/task_m100_8174_maintainer_decisions.md
-last_verified: 2026-10-29
+last_verified: 2026-11-08
 ---
 
 # #8174 메인테이너 결정과 구현 범위
@@ -11,7 +11,7 @@ last_verified: 2026-10-29
 - 관련 문서: [수행 계획](crates_io_preparation_20261023.md), [구현 계획](task_m100_8174_impl.md),
   [1단계 조사](../working/task_m100_8174_stage1.md), [보안 제한 현황](../manual/security_feature_limits.md).
 - 검토 기준: `f69fda8219996449caad21be955675befb351c83`. 제품 source 기준은 `def947c2149df5bc812d801e6e79be19a403b4d1`이다.
-- 상태: **MD01–MD09 정책과 T01–T09의 로컬 구현·통합 검증을 완료했다. 최신 devel의 고유 14개 actual archive·독립 Rust/CLI/WASM 소비·보안/수명/복구·전쪽 검증을 확인했다. 승인된 Open PR·exact-head CI·self-review·merge를 진행한다. 실제 registry 게시·owner 확보·제품 릴리즈는 별도다.**
+- 상태: **MD01–MD09 정책과 T01–T09의 로컬 구현·통합 검증을 완료했다. 최신 devel의 고유 14개 actual archive·독립 Rust/CLI/WASM 소비·보안/수명/복구·전쪽 검증을 확인했다. 승인된 Open PR·exact-head CI·self-review·merge를 진행한다. 2026-11-08 결정으로 crates.io 초회 게시를 0.9.0 릴리즈에 포함한다. 실제 게시·owner 확인·공개 registry 소비 검증은 릴리즈 실행 단계에서 완료한다.**
 - 재개 기준: 2026-10-24 `upstream/devel` `3536e72819e165dbe959ee42cfd4e4cf8db33ce7`.
   [재개 점검 결과](../working/task_m100_8174_stage2_corrections.md#2026-10-24-재개--코덱-opt-in-이후의-게시-후보)를 따른다.
 
@@ -94,7 +94,7 @@ MD02–MD04의 패키지·API·빌드 계약, MD08–MD09의 운영 책임과 �
 
 | ID | 결정할 사항 | 상태 | 선택·조건 | 결정자·날짜·발언 근거 |
 | --- | --- | --- | --- | --- |
-| MD01 | 0.9.0에서 crates.io 게시를 목표로 할지 | 확정 | crates.io 게시 일정은 제품 0.9.0과 별도로 결정한다. 실제 registry 게시 승인과 구분한다 | 메인테이너, 2026-10-25: 「crates.io 게시 일정은 0.9.0과 별도로 결정」 |
+| MD01 | 0.9.0에서 crates.io 게시를 목표로 할지 | 2026-11-08 갱신 | **0.9.0부터 crates.io 배포를 시작한다.** 초회 게시·owner 확인·공개 registry 소비 검증을 0.9.0 릴리즈 범위에 포함한다. MD02·MD04·MD08·MD09의 14개 패키지·Rust 1.93.1·책임자·초회 수동 방식은 유지한다 | 메인테이너, 2026-11-08: 「이번 0.9.0 부터는 creates.io 쪽 배포도 시작됩니다.」. 2026-10-25의 별도 일정 결정은 이 지시로 대체 |
 | MD02 | 게시 패키지 구성·이름·버전 | 계약·T09 실제 14개 소비 완료 | 현행 14개·본체 0.9.0·내부/resource 0.1.0·fork 보정 버전의 A 권고를 채택했다. A01의 기존 8개 경계·registry 버전 병기·rhwp-svg2pdf 연결은 완료했다. #8183의 4개, #8191의 JPEG encoder, 로컬 S02의 qcms를 더한 현행 source 후보는 14개다. S05에서 14개 실제 Cargo 포장·독립 소비를 검증했다. 2026-10-25 권고안 채택으로 최종 graph 정책·본체 목표 버전·책임은 확정했고 T07에서 0.9.0 실제 포장·독립 소비와 당시 14개 이름 미등록을 확인했다. 이름 예약·owner 확보는 실제 첫 게시와 구분 | 메인테이너, 2026-10-23: 수정 지점과 우선순위 착수 승인. 2026-10-24 재개·S02에서 반영 사실과 source 검사를 대조 |
 | MD03 | 공식 Rust API와 0.9.x 호환성 | 공식 계약·독립 소비 검증 완료 | A 권고의 핵심 parser/IR/DocumentCore/service·저장 소비 계약을 채택했다. A02·A03의 오류 연동·기존 parser/IR/service/core 안내를 보완하고 T07의 실제 0.9.0 소비로 확인했다. 전체 pub 표면을 공식 계약으로 확대하지 않음 | 메인테이너, 2026-10-23: 수정 지점과 우선순위 착수 승인 |
 | MD04 | MSRV·feature·지원 target | Rust 1.93.1·대상/feature 검증 완료 | A 권고의 Rust 1.93.1과 실제 검증한 feature/target을 우선 지원한다. 미검증 하위 MSRV·OS/target은 약속하지 않는다. Rust 1.93.1 검증과 설치 bin 구분을 유지한다. MD06 결정으로 표준 배포의 F01–F08 기본 제공을 목표로 변경한다. 새 경량 feature·하위 MSRV·미검증 추가 OS/target 지원은 이번 공식 약속에 포함하지 않음 | 메인테이너, 2026-10-23: 기술 보완 착수 승인. 2026-10-24: F01–F08 기본 탑재 지시 |
@@ -105,6 +105,10 @@ MD02–MD04의 패키지·API·빌드 계약, MD08–MD09의 운영 책임과 �
 | MD09 | 초회 게시 방식과 자동화 | 수동 절차·preflight 검증 완료 | 초회는 exact source/version/digest·의존 순서에 따른 수동 게시 절차 준비. OIDC 자동 활성화·실제 게시/태그는 별도 | 메인테이너, 2026-10-25: 「책임 일원화·초회 수동 절차 채택」 |
 
 ### MD01 — 제품 릴리즈와 crates.io 게시 시점
+
+**현행 결정(2026-11-08):** crates.io 초회 게시를 0.9.0 릴리즈에 포함한다. 다음 A/B 문단은
+2026-10-23 검토 당시의 선택지이며, 2026-10-25의 별도 일정 결정도 이 최신 지시로 대체됐다.
+최종 source·패키지별 checksum·공개 소비 검증을 갖춘 수동 게시 절차는 유지한다.
 
 - **A (권고):** 0.9.0을 crates.io 초회 게시 후보로 준비한다. 필수 검증과 보안 조건을 충족하지
   못하면 crates.io 게시는 보류하고, 기존 제품 릴리즈와의 결합 여부를 별도로 판단한다.

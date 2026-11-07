@@ -27,14 +27,16 @@ GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollba
 | Chrome Web Store | rhwp-chrome | 수동 업로드 | 확장 릴리즈 |
 | Microsoft Edge Add-ons | rhwp-chrome | 수동 업로드 | 확장 릴리즈 |
 | Firefox AMO | rhwp-firefox | 수동 업로드 | 확장 릴리즈 |
+| crates.io | rhwp와 내부·보정 의존성 13개 | 의존 순서에 따른 초회 수동 게시 | 0.9.0부터 |
 
 ---
 
 ## crates.io 준비와 수동 게시
 
 본체 0.9.0과 13개 내부·보정 의존 패키지의 준비·소비 계약·초회 수동 절차는
-[crates.io 가이드](crates_io_guide.md)를 따른다. 실제 게시 일정은 0.9.0 제품 릴리즈와
-별도로 결정한다. 현재 tag workflow의 네 채널에 crates.io를 자동 연결하지 않는다.
+[crates.io 가이드](crates_io_guide.md)를 따른다. **0.9.0부터 crates.io 배포를 시작한다.**
+초회 게시와 공개 registry의 Rust·CLI·WASM 소비 확인을 이번 릴리즈의 완료 조건에 포함한다.
+현재 tag workflow의 네 채널에 crates.io를 자동 연결하지 않는다.
 게시·보안 업데이트·부분 실패 복구 책임자는 edwardkim이다. 토큰 준비 여부와 실제 업로드
 승인은 구분하며, 아래 기존 npm/확장 배포 절차로 Cargo 게시를 실행하지 않는다.
 
@@ -291,6 +293,16 @@ source zip은 확장 재빌드에 필요한 경로만 포함한다.
 | `chrome-{version}_kor.md` | Chrome Web Store 한국어 설명/변경사항 |
 | `chrome-{version}_eng.md` | Chrome Web Store 영어 설명/변경사항 |
 | `edge-{version}_reviewer_notes.md` | Microsoft Edge Add-ons 심사 노트 |
+| `firefox-{version}_amo_notes.md` | Firefox AMO 패키지·source ZIP·재빌드·심사 안내 |
+
+0.9.0 제출 후보: [Chrome 한국어](../feedback/chrome-0.9.0_kor.md),
+[Chrome 영어](../feedback/chrome-0.9.0_eng.md), [Edge](../feedback/edge-0.9.0_reviewer_notes.md),
+[Firefox AMO](../feedback/firefox-0.9.0_amo_notes.md).
+이전 버전 제출 기록을 덮어쓰지 않고 이번 버전의 파일을 사용한다.
+
+사용자·개발자 안내, CHANGELOG, 기여자 명단, 스토어 제출 초안은 **main 승격 전에 devel에
+반영**한다. 승격 후에는 실제 게시일·버전 URL·채널별 결과처럼 실행 후 확정되는 값만 기록한다.
+crates.io를 포함한 채널별 실제 게시와 소비 결과가 남아 있으면 해당 채널을 완료로 표시하지 않는다.
 
 Edge reviewer note에는 다음을 반드시 포함한다.
 
@@ -307,10 +319,10 @@ Firefox AMO에는 확장 zip과 source zip을 함께 업로드한다. source zip
 
 **MINOR 릴리즈** (조판 개선, 새 기능):
 ```
-Cargo.toml:                  0.7.3 → 0.8.0
-rhwp-vscode/package.json:    0.7.3 → 0.8.0
-npm/editor/package.json:     0.7.3 → 0.8.0
-rhwp-studio/package.json:    0.7.3 → 0.8.0
+Cargo.toml:                  0.8.7 → 0.9.0
+rhwp-vscode/package.json:    0.8.7 → 0.9.0
+npm/editor/package.json:     0.8.7 → 0.9.0
+rhwp-studio/package.json:    0.8.7 → 0.9.0
 ```
 
 **PATCH 릴리즈** (npm README 수정 등):
@@ -352,24 +364,24 @@ CHROME_CDP=http://localhost:19222 node e2e/edit-pipeline.test.mjs --mode=host
 
 **Cargo.toml** (Rust 패키지 + npm @rhwp/core 버전 원본):
 ```toml
-version = "0.8.0"
+version = "0.9.0"
 ```
 
 **rhwp-vscode/package.json**:
 ```json
-"version": "0.8.0"
+"version": "0.9.0"
 ```
 
 **rhwp-vscode/CHANGELOG.md** 새 버전 항목 추가.
 
 **npm/editor/package.json**:
 ```json
-"version": "0.8.0"
+"version": "0.9.0"
 ```
 
 **rhwp-studio/package.json** (제품정보 대화창 버전 자동 주입):
 ```json
-"version": "0.8.0"
+"version": "0.9.0"
 ```
 
 ### 3단계: README 점검
@@ -389,7 +401,7 @@ version = "0.8.0"
 ```bash
 # release 준비 변경은 작업 브랜치에서 커밋하고 devel 대상 PR로 통합
 git add -A
-git commit -m "v0.7.3 릴리즈 준비"
+git commit -m "v0.9.0 릴리즈 준비"
 
 # merge된 최신 devel 검증
 git fetch upstream

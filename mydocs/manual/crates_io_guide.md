@@ -2,14 +2,15 @@
 kind: guide
 status: active
 canonical: mydocs/manual/publish_guide.md
-last_verified: 2026-10-28
+last_verified: 2026-11-08
 ---
 
 # crates.io 소비 계약과 초회 수동 게시
 
 이 문서는 #8174의 확정된 MD01–MD09를 실행 가능한 계약으로 정리한다.
-본체의 준비 버전은 **0.9.0**, 최소 Rust는 **1.93.1**이며 실제 registry 게시 일정은
-제품 릴리즈와 별도로 결정한다. 현재 게시 완료를 뜻하지 않는다. 게시·보안 업데이트·부분 실패
+본체의 준비 버전은 **0.9.0**, 최소 Rust는 **1.93.1**이다. 2026-11-08 메인테이너는
+**0.9.0부터 crates.io 배포를 시작**하도록 MD01을 갱신했다. 초회 게시와 공개 registry 소비
+확인을 이번 릴리즈의 완료 조건에 포함한다. 현재 게시 완료를 뜻하지 않는다. 게시·보안 업데이트·부분 실패
 복구 책임자는 **edwardkim**이다. 기존 Release Binary의 npm·VS Code·Open VSX 네 채널은
 그대로 유지하며 crates.io를 tag workflow에 자동 연결하지 않는다.
 
@@ -117,8 +118,9 @@ HEAD가 원장 source와 다르거나 dirty면 재포장한다. digest·version�
 
 ## 실제 게시 승인 뒤 수동 실행
 
-1. 메인테이너가 게시 일정·source SHA·14개 버전/digest·계정 권한을 확정한다. 기존 네 채널
-   릴리즈와 독립된 승인이다. 토큰 값은 명령 인자·문서·로그로 전달하지 않는다. 제한된 권한의
+1. 0.9.0 최종 릴리즈 source SHA·14개 버전/digest·계정 권한과 실행 순서를 확정한다.
+   이번 릴리즈 범위에 포함된 수동 게시 단계이며, 기존 네 채널의 tag 자동화가 대신 실행하지 않는다.
+   토큰 값은 명령 인자·문서·로그로 전달하지 않는다. 제한된 권한의
    Cargo credential provider/환경을 사용하며 스크립트로 credentials 파일을 읽어 출력하지 않는다.
 2. 깨끗한 승인 source에서 실제 crates.io 설정으로 다시 포장·독립 소비·위 사전 점검을 완료한다.
    loopback source replacement를 제거했는지 확인한다. 최신 공개 index에 자식이 보인 뒤에만

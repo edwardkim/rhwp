@@ -49,7 +49,10 @@ Import PDF into editable HWP/HWPX through the CLI, Rust, WASM and Studio. Defaul
 JBIG2, JPEG 2000 and ICC, with password authentication, resource profiles and cancellable page progress.
 Follow the [PDF quick start](mydocs/manual/pdf_developer_onboarding_EN.md) for builds, conversion and Worker hosting.
 See [0.9.0 release notes and credits](mydocs/release/release_notes_v0.9.0_EN.md). This is release preparation;
-initial crates.io publication has a separate schedule.
+**crates.io distribution starts with 0.9.0** for Rust library and CLI users. Once published, add
+`rhwp = "0.9.0"` or run `cargo install rhwp --version 0.9.0 --locked --bin rhwp`.
+See the [Rust API, features and CLI guide](packaging/crates-io/README_PACKAGE.md).
+Add `--features native-skia` for PNG/PDF export, Sixel or Kitty graphics.
 
 ## Roadmap
 
