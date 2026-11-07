@@ -468,9 +468,10 @@ git status --short --branch
 
 ## 4.2 merge simulation
 
-새 PR 제출 후보는 최신 base와의 병합뿐 아니라 **본인 계정의 기존 열린 PR 전체와의 병합도
-생성 전에 시뮬레이션한다.** Draft·리뷰어 지정 여부와 관계없이 각 PR의 최신 head를 fetch해
-고정하고 후보와 개별 비교한다. 함께 통합할 PR은 예정 순서의 누적 결과도 확인한다.
+새 PR 제출 후보는 최신 base와의 병합뿐 아니라 **리뷰어가 지정되지 않은 본인 계정의 기존
+열린 PR 전체와의 병합도 생성 전에 시뮬레이션한다.** 이미 리뷰어가 지정된 PR은 작업 중이므로
+제외하고 근거를 기록한다. 리뷰어 미지정 Draft는 포함하며 각 대상 PR의 최신 head를 fetch해
+고정하고 후보와 개별 비교한다. 함께 통합할 대상 PR은 예정 순서의 누적 결과도 확인한다.
 대상 조회·갱신·제출 보류 조건은
 [제출 전 병합 시뮬레이션](../codex/docs_and_git_workflow.md#4-제출-후보와-본인-열린-pr의-병합-시뮬레이션)을 따른다.
 
@@ -486,7 +487,7 @@ git merge-tree --write-tree \
   "${rhwp_review_candidate_sha:?제출 후보 SHA를 먼저 고정하세요}" \
   > "$rhwp_merge_log_dir/candidate-base-merge-tree.log" 2>&1
 
-# 본인의 기존 열린 PR마다 반복한다. 각 실행의 종료 코드를 확인하고 기록한다.
+# 본인의 리뷰어 미지정 열린 PR마다 반복한다. 각 실행의 종료 코드를 확인하고 기록한다.
 git merge-tree --write-tree \
   "$rhwp_review_candidate_sha" \
   "${rhwp_existing_pr_head_sha:?기존 PR 최신 head SHA를 먼저 고정하세요}" \
