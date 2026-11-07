@@ -1,0 +1,367 @@
+{
+  "parentHead": "583f5cec1aba4661085cd8251e8bfebd5b7a3c74",
+  "inputs": {
+    "input": {
+      "path": "samples/basic/issue1994_behindtext_table_20200830.hwp",
+      "sha256": "8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f"
+    },
+    "pdf": {
+      "path": "pdf/semanticist21-20261008/basic-issue1994_behindtext_table_20200830-8e7a95cf5919-2020.pdf",
+      "sha256": "901d842b033e30be1e9b4a7da8109be9e165af96af61fc4f175809ffbecc88a8"
+    },
+    "font_environment": {
+      "path": "mydocs/pr/assets/issue1994/print-frame-20261107/reference-font-environment.json",
+      "sha256": "159af73bc536ff0d44b932d65973d67ac4be8e3e4d319983cfde07a9ce5521cb"
+    }
+  },
+  "comparison": {
+    "canonical": "scripts/visual_sweep.py",
+    "dpi": 96,
+    "compat": 2022,
+    "pdf_rasterizer": "PDFium",
+    "raw_tolerance_px": 2,
+    "page_workers": 8,
+    "boundary_reconciled_pixels": 0
+  },
+  "cause": "A selected natural glyph-advance program was overridden by the generic 0.3em repeated-hyphen clamp, preventing the later cell-fit calculation. Preserve known embedded metric hits only when preserve_glyph_ink is selected; retain legacy and unknown fallback contracts.",
+  "producers": {
+    "native": {
+      "parent_head": "583f5cec1aba4661085cd8251e8bfebd5b7a3c74",
+      "patch_sha256": "4f0edc9b813d8dc790187a0ad62bce68d9e721d10d4ae1f6f774d0c2208e473a",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--bin",
+        "rhwp",
+        "--message-format=json"
+      ],
+      "exit_code": 0,
+      "seconds": 187.145,
+      "source_file_count": 7204,
+      "source_manifest_sha256": "9dc2ee98d80b06b1de336ad0ba05d4d8431d6db6f09aeaa0325a00a7e2788e80",
+      "source_manifest_local": "output/open-issues-oldest-20261105/rebase-20261107-121051/clip5587-lyric-spacing/native-build-state.json",
+      "runtime_sha256": "533227a4b32e7903807d7d4fde334c85a5d80ea1b46838d091a8110e40b55c5a",
+      "binary": {
+        "path": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/rebase-20261107-121051/clip5587-lyric-spacing/rhwp-candidate-native",
+        "sha256": "3b3b6bf3ccaca1b5287d0a568be8c534536e93547769b3b0d523de0d52ae92ce"
+      }
+    },
+    "wasm": {
+      "parent_head": "583f5cec1aba4661085cd8251e8bfebd5b7a3c74",
+      "patch_sha256": "4f0edc9b813d8dc790187a0ad62bce68d9e721d10d4ae1f6f774d0c2208e473a",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit_code": 0,
+      "seconds": 153.708,
+      "source_file_count": 7204,
+      "source_manifest_sha256": "9dc2ee98d80b06b1de336ad0ba05d4d8431d6db6f09aeaa0325a00a7e2788e80",
+      "source_manifest_local": "output/open-issues-oldest-20261105/rebase-20261107-121051/clip5587-lyric-spacing/wasm-build-state.json",
+      "runtime_sha256": "533227a4b32e7903807d7d4fde334c85a5d80ea1b46838d091a8110e40b55c5a",
+      "package_files": {
+        "rhwp.js": "e1c2a4402be1060a666dda07d51e280ac08b3682d3a229495a630394249614b4",
+        "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+        "rhwp_bg.wasm.d.ts": "73574294f2d72f0f491ec22d39aaf0c2ecc6648367417c88962d7ceafc817f46",
+        "README.md": "ad35a0f1fbf601b33f5a969103656e220e75031ceee42bb7fc2d95ed32ed25aa",
+        "rhwp_bg.wasm": "a7be673171968b7499d9cf924b5a93f01104ffd41abc0ecf8c0151ff8817c3df",
+        ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+        "package.json": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+        "rhwp.d.ts": "ec72e594c95e38469a5a792b314b3a779a68db6c99714e576f1ac5667503fa94"
+      },
+      "root_public_js_wasm_hashes_equal": true,
+      "kind": "Mac locked wrapper --target web --out-dir pkg --no-opt local alternative; not Docker optimized build"
+    }
+  },
+  "results": {
+    "native": {
+      "page_count": 4,
+      "missing_pages": [],
+      "pages": [
+        {
+          "page": 1,
+          "before": 99.86093,
+          "after": 99.96356,
+          "delta_pp": 0.10263
+        },
+        {
+          "page": 2,
+          "before": 99.7265,
+          "after": 99.7265,
+          "delta_pp": 0.0
+        },
+        {
+          "page": 3,
+          "before": 98.75606,
+          "after": 98.75606,
+          "delta_pp": 0.0
+        },
+        {
+          "page": 4,
+          "before": 99.94357,
+          "after": 99.94357,
+          "delta_pp": 0.0
+        }
+      ],
+      "minimum": 98.75606,
+      "all_at_least_98": true
+    },
+    "wasm": {
+      "page_count": 4,
+      "missing_pages": [],
+      "pages": [
+        {
+          "page": 1,
+          "before": 99.83671,
+          "after": 99.96269,
+          "delta_pp": 0.12598
+        },
+        {
+          "page": 2,
+          "before": 99.73012,
+          "after": 99.73012,
+          "delta_pp": 0.0
+        },
+        {
+          "page": 3,
+          "before": 98.62409,
+          "after": 98.62409,
+          "delta_pp": 0.0
+        },
+        {
+          "page": 4,
+          "before": 99.83503,
+          "after": 99.83503,
+          "delta_pp": 0.0
+        }
+      ],
+      "minimum": 98.62409,
+      "all_at_least_98": true
+    }
+  },
+  "focused_tests": {
+    "status": "pass",
+    "initial": {
+      "passed": 43,
+      "failed": 1,
+      "failure": "issue_4966_font_rule_projection::sealed_v1_semantics_change_only_by_recorded_replacement",
+      "reason": "Earlier Hankyoreh supply addition was absent from the expected semantic ledger; 850 vs actual854. No runtime failure."
+    },
+    "final": {
+      "current": "complete",
+      "success": true,
+      "cases": [
+        "issue_1994_first_picture_lyric_frame",
+        "issue_1994_print_overlay_positions",
+        "issue_1994_paper_overlay_outer_origin",
+        "issue_1994_print_lyric_dash_spacing",
+        "issue_1994_natural_program_dash_contract",
+        "issue_7084_supplemental_metrics",
+        "issue_7084_canvas_metric_session",
+        "issue_4966_font_rule_projection"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_1994_first_picture_lyric_frame",
+          "target": "regression_suite_020",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_1994_print_overlay_positions",
+          "target": "regression_suite_001",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_1994_paper_overlay_outer_origin",
+          "target": "regression_suite_010",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_1994_print_lyric_dash_spacing",
+          "target": "regression_suite_015",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_1994_natural_program_dash_contract",
+          "target": "regression_suite_001",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_7084_supplemental_metrics",
+          "target": "regression_suite_018",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_7084_canvas_metric_session",
+          "target": "regression_suite_008",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_4966_font_rule_projection",
+          "target": "regression_suite_002",
+          "grouped": true
+        }
+      ],
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_002",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_015",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_020",
+        "-E",
+        "test(/(^|::)issue_1994_first_picture_lyric_frame::/) | test(/(^|::)issue_1994_print_overlay_positions::/) | test(/(^|::)issue_1994_paper_overlay_outer_origin::/) | test(/(^|::)issue_1994_print_lyric_dash_spacing::/) | test(/(^|::)issue_1994_natural_program_dash_contract::/) | test(/(^|::)issue_7084_supplemental_metrics::/) | test(/(^|::)issue_7084_canvas_metric_session::/) | test(/(^|::)issue_4966_font_rule_projection::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "runtime_sha256": {
+        "src/renderer/layout/text_measurement.rs": "533227a4b32e7903807d7d4fde334c85a5d80ea1b46838d091a8110e40b55c5a"
+      },
+      "exit_code": 0,
+      "seconds": 60.085,
+      "passed": 44,
+      "failed": 0,
+      "unselected": 2141,
+      "scope": "Automatic minimal-font macOS Native Skia focused suites; not full regression."
+    },
+    "order_correction": "Replay Hankyoreh additions after ROKG changes, in recorded sequence19/20. Compare full semantics and projection order without relaxing assertions."
+  },
+  "formal_fixed_tests": {
+    "before": {
+      "passed": 0,
+      "failed": 2
+    },
+    "after": {
+      "passed": 2,
+      "failed": 0
+    },
+    "tolerance_px": 2,
+    "reference": "independent PDF character origins"
+  },
+  "natural_program_contract": {
+    "before": {
+      "passed": 2,
+      "failed": 1
+    },
+    "after": {
+      "passed": 3,
+      "failed": 0
+    },
+    "classification": "relational"
+  },
+  "original_task352": {
+    "commit": "61db5d61e7ff3e9d4fc363b3efd33ce99ef9c885",
+    "preservation": {
+      "before": {
+        "bytes": 138919,
+        "sha256": "f6073855805e2bff5ab86d939cc64848001eacc8122e13607e1d8018bed429d8"
+      },
+      "after": {
+        "bytes": 138919,
+        "sha256": "f6073855805e2bff5ab86d939cc64848001eacc8122e13607e1d8018bed429d8"
+      },
+      "scope": "Task352 원본 exam_eng.hwp 5쪽의 렌더 트리·모든 문자 전진. 전쪽 PDF 수용을 주장하지 않는다."
+    }
+  },
+  "direct_review": {
+    "native_page1": true,
+    "fresh_wasm_page1": true,
+    "residual": "Glyph edge and ink-density differences remain. This is not final branch full-regression/handbook/Studio/CanvasKit acceptance."
+  },
+  "local_logs": "output/open-issues-oldest-20261105/rebase-20261107-121051/clip5587-lyric-spacing",
+  "artifacts": {
+    "README.md": {
+      "bytes": 4385,
+      "sha256": "6d8ba1e48d8a27f70d9c4397571b40fae9ab2c2784045b77db09cd0d15fd4acc"
+    },
+    "after-native-p001-overlay.png": {
+      "bytes": 298987,
+      "sha256": "6704c31296328ba8c9c9e6c79222956b98f46cee4206ef270df683f732103179"
+    },
+    "after-native-p001-review.png": {
+      "bytes": 990907,
+      "sha256": "43ed3db1a37e5cb15ce5c11c3eb59227593fe67e165e84b93dfc949680d55833"
+    },
+    "after-native.tsv": {
+      "bytes": 184,
+      "sha256": "a388df331e57c4f8cea85040934cec69608b8d8714c6c173e3059bab7f30895d"
+    },
+    "after-wasm-p001-overlay.png": {
+      "bytes": 281177,
+      "sha256": "357ab75b6365667de818537ee23e754cf3857a302a762571240596bac05e205e"
+    },
+    "after-wasm-p001-review.png": {
+      "bytes": 967474,
+      "sha256": "bf58db15ee98410b509fa9cc700c479eee6eda89457d77c3af2547b3a3687879"
+    },
+    "after-wasm.tsv": {
+      "bytes": 184,
+      "sha256": "7080680fffbb66870995c5da819df81c0c2d95b9e8e67953df597704941a61bb"
+    },
+    "before-native-p001-overlay.png": {
+      "bytes": 299416,
+      "sha256": "215da82ecda468f80e8aa003ff68163fb1027e9457a70627aee9c2fe987928c9"
+    },
+    "before-native-p001-review.png": {
+      "bytes": 991216,
+      "sha256": "58254b9cca959fa13eafa1b5a174f84c68a07c85a5e56060bec7a1900c013b0f"
+    },
+    "before-native.tsv": {
+      "bytes": 184,
+      "sha256": "3200335e26800c69baf815782b22b1db432b2bcf50471244fa7386729d386557"
+    },
+    "before-wasm-p001-overlay.png": {
+      "bytes": 281466,
+      "sha256": "6db40617e32fcb2b4738690fccf00443337bac68f5baa53d834bfca80d1dd4ac"
+    },
+    "before-wasm-p001-review.png": {
+      "bytes": 968002,
+      "sha256": "dcccc587c43bbc2535b158db3385a236dedc21a2540c5860bdebc028247f953d"
+    },
+    "before-wasm.tsv": {
+      "bytes": 184,
+      "sha256": "e73f550fbc0c8b24995cb029ca8123bc5b08c66a660198b5ce297489fed2ff7f"
+    }
+  },
+  "test_source_sha256": {
+    "tests/cases/issue_1994_print_lyric_dash_spacing.rs": "aed1a4611c092e7663edba09b2c13cb747f7390cf01715ba267a3dc9d1f6e268",
+    "tests/cases/issue_1994_natural_program_dash_contract.rs": "6f026a1cedd0df5d8f80caea1beed3821b9d3d62f3c2b61ca0d349df6dada261",
+    "tests/cases/issue_4966_font_rule_projection.rs": "8a22e831e6eeca017578a52c1a1ab978f9640d8d5bd863d6506a91329e0d921c"
+  }
+}

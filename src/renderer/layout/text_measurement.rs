@@ -2507,6 +2507,13 @@ fn char_width_decision_with_hft_tracking<'a>(
     // authentic DB glyph advances or explicit HWP rules. Collection and layout
     // share this eligibility decision; synthetic PUA boxes remain shapes.
     let dash_leader = is_dash_leader_run(chars, i);
+    // 호출자가 자연 잉크·전진 프로그램을 선택했고 그 프로그램의 실제 문자 폭이
+    // 있으면 반복 하이픈도 그 폭으로 측정한다. 임의의 좁은 폭을 적용하면 뒤의
+    // 셀 맞춤이 실행되지 않아 한글 자간과 하이픈 구간의 배분이 서로 어긋난다.
+    let clamp_dash_leader = dash_leader
+        && !(style.preserve_glyph_ink
+            && character_match == "hit"
+            && width_source == "embeddedMetric");
     // Native paint와 동일한 OTF의 글리프를 우선 사용한다. 다만 독립 Print와
     // 원본 HFT로 확인한 전진은 표시용 프로그램의 hmtx와 별도의 조판 계약이다.
     let verified_source_advance = matches!(
@@ -2577,7 +2584,7 @@ fn char_width_decision_with_hft_tracking<'a>(
     let (base_width_raw, width_source) = supplement
         .map(|entry| (entry.natural_advance_px(), entry.width_source()))
         .unwrap_or((base_width_raw, width_source));
-    let base_width_px = if dash_leader {
+    let base_width_px = if clamp_dash_leader {
         base_width_raw.min(font_size * 0.3)
     } else {
         base_width_raw
@@ -2636,7 +2643,7 @@ fn char_width_decision_with_hft_tracking<'a>(
         advanced + glyph_letter_spacing(letter_spacing, advanced, font_size)
     } else {
         let em_fraction = match em_exact {
-            Some(em) if !dash_leader => em,
+            Some(em) if !clamp_dash_leader => em,
             _ if font_size > 0.0 => base_width_px / font_size,
             _ => 0.0,
         };
@@ -2719,7 +2726,7 @@ fn char_width_decision_with_hft_tracking<'a>(
         applied_letter_spacing_px,
         metric,
         character_match,
-        dash_leader,
+        dash_leader: clamp_dash_leader,
         negative_spacing_clamped,
     }
 }
