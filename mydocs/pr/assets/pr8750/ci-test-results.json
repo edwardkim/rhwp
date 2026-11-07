@@ -1,0 +1,147 @@
+{
+  "observed_at": "2026-11-08T00:35:03.850755+09:00",
+  "head": "a373208ba5538646cee0027b101393f6bd845f3f",
+  "run": "https://github.com/edwardkim/rhwp/actions/runs/42383939527",
+  "run_status": "completed",
+  "run_conclusion": "success",
+  "jobs": [
+    {
+      "id": 128437294366,
+      "name": "Native Skia tests",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42383939527/job/128437294366",
+      "log_sha256": "0906d36b4ab1f095c7b5e2ccbd36adcc7807dbcb9de72e3573c8d2815b0a901b",
+      "summaries": [
+        "2026-11-07T15:13:23.6507143Z test result: ok. 58 passed; 0 failed; 0 ignored; 0 measured; 3812 filtered out; finished in 0.40s",
+        "2026-11-07T15:13:23.6614569Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.00s",
+        "2026-11-07T15:13:23.6628613Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 165 filtered out; finished in 0.00s",
+        "2026-11-07T15:13:23.6640335Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s",
+        "2026-11-07T15:20:12.6092692Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.74s",
+        "2026-11-07T15:20:15.2260968Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+        "2026-11-07T15:20:40.0945135Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 302 filtered out; finished in 0.73s",
+        "2026-11-07T15:21:02.4134414Z test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 294 filtered out; finished in 0.65s",
+        "2026-11-07T15:21:24.6527177Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 323 filtered out; finished in 0.56s",
+        "2026-11-07T15:21:49.6742629Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 307 filtered out; finished in 0.13s",
+        "2026-11-07T15:22:10.1082058Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 322 filtered out; finished in 0.10s",
+        "2026-11-07T15:22:37.8961494Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 294 filtered out; finished in 0.96s",
+        "2026-11-07T15:22:59.4078651Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 309 filtered out; finished in 0.03s",
+        "2026-11-07T15:23:21.4033243Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 312 filtered out; finished in 0.03s",
+        "2026-11-07T15:23:44.6127311Z test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 307 filtered out; finished in 0.84s",
+        "2026-11-07T15:24:13.2239493Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 297 filtered out; finished in 5.19s",
+        "2026-11-07T15:24:34.4465773Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 310 filtered out; finished in 0.76s",
+        "2026-11-07T15:24:59.0421658Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 314 filtered out; finished in 0.21s",
+        "2026-11-07T15:25:22.6636832Z test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 313 filtered out; finished in 0.43s",
+        "2026-11-07T15:25:53.3706950Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 312 filtered out; finished in 7.24s",
+        "2026-11-07T15:25:54.1543424Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 315 filtered out; finished in 0.05s",
+        "2026-11-07T15:25:54.9746619Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 319 filtered out; finished in 0.09s",
+        "2026-11-07T15:25:56.0985766Z test result: ok. 39 passed; 0 failed; 0 ignored; 0 measured; 284 filtered out; finished in 0.39s",
+        "2026-11-07T15:26:19.3155847Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 305 filtered out; finished in 0.01s",
+        "2026-11-07T15:26:20.0856538Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 295 filtered out; finished in 0.03s"
+      ]
+    },
+    {
+      "id": 128437294480,
+      "name": "Frontend package gates",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42383939527/job/128437294480",
+      "log_sha256": "a42da5945184c1bd855c4fcecb0b9f3cd4033d66c955c95a238a3cf847a3cefa",
+      "summaries": [
+        "2026-11-07T15:03:09.5000272Z # tests 3",
+        "2026-11-07T15:03:09.5000854Z # pass 3",
+        "2026-11-07T15:03:09.5001080Z # fail 0",
+        "2026-11-07T15:03:09.5001544Z # skipped 0",
+        "2026-11-07T15:03:26.6528873Z # tests 16",
+        "2026-11-07T15:03:26.6529301Z # pass 16",
+        "2026-11-07T15:03:26.6533184Z # fail 0",
+        "2026-11-07T15:03:26.6533639Z # skipped 0",
+        "2026-11-07T15:03:27.9519780Z # tests 7",
+        "2026-11-07T15:03:27.9520154Z # pass 7",
+        "2026-11-07T15:03:27.9523425Z # fail 0",
+        "2026-11-07T15:03:27.9539938Z # skipped 0",
+        "2026-11-07T15:03:36.2538384Z # tests 36",
+        "2026-11-07T15:03:36.2538604Z # pass 36",
+        "2026-11-07T15:03:36.2538717Z # fail 0",
+        "2026-11-07T15:03:36.2538940Z # skipped 0",
+        "2026-11-07T15:03:36.6331993Z # tests 205",
+        "2026-11-07T15:03:36.6332333Z # pass 205",
+        "2026-11-07T15:03:36.6332497Z # fail 0",
+        "2026-11-07T15:03:36.6332823Z # skipped 0",
+        "2026-11-07T15:03:36.7315453Z # tests 4",
+        "2026-11-07T15:03:36.7316006Z # pass 4",
+        "2026-11-07T15:03:36.7316250Z # fail 0",
+        "2026-11-07T15:03:36.7316749Z # skipped 0",
+        "2026-11-07T15:04:11.5781557Z # tests 2756",
+        "2026-11-07T15:04:11.5781719Z # pass 2754",
+        "2026-11-07T15:04:11.5781790Z # fail 0",
+        "2026-11-07T15:04:11.5781951Z # skipped 2",
+        "2026-11-07T15:04:58.0338924Z # tests 13",
+        "2026-11-07T15:04:58.0339291Z # pass 13",
+        "2026-11-07T15:04:58.0339465Z # fail 0",
+        "2026-11-07T15:04:58.0339836Z # skipped 0",
+        "2026-11-07T15:08:55.1185500Z === 결과: 2666 passed, 0 failed ===",
+        "2026-11-07T15:09:05.1057841Z # tests 3",
+        "2026-11-07T15:09:05.1058427Z # pass 3",
+        "2026-11-07T15:09:05.1058698Z # fail 0",
+        "2026-11-07T15:09:05.1059204Z # skipped 0",
+        "2026-11-07T15:09:16.6328303Z # tests 6",
+        "2026-11-07T15:09:16.6328623Z # pass 6",
+        "2026-11-07T15:09:16.6328807Z # fail 0",
+        "2026-11-07T15:09:16.6333530Z # skipped 0",
+        "2026-11-07T15:09:17.1676677Z # tests 8",
+        "2026-11-07T15:09:17.1677062Z # pass 8",
+        "2026-11-07T15:09:17.1683480Z # fail 0",
+        "2026-11-07T15:09:17.1683872Z # skipped 0"
+      ]
+    },
+    {
+      "id": 128440911188,
+      "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42383939527/job/128440911188",
+      "log_sha256": "75852a81ce7a06a0eddb56b6ddd971e9e9d7f44cffca80d21d95df2b79942e42",
+      "summaries": [
+        "2026-11-07T15:14:54.4434399Z      Summary [  26.484s] 3801 tests run: 3801 passed, 12 skipped"
+      ]
+    },
+    {
+      "id": 128441210855,
+      "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42383939527/job/128441210855",
+      "log_sha256": "3ef5544a05d0cac704d6e34e5ac5f2c45bb13d06ce8c8d6b22d6bc1a0db80182",
+      "summaries": [
+        "2026-11-07T15:18:11.4918054Z      Summary [ 143.951s] 1805 tests run: 1805 passed, 14 skipped"
+      ]
+    },
+    {
+      "id": 128441212693,
+      "name": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42383939527/job/128441212693",
+      "log_sha256": "d1614bff26056b3b26fa30d3175f7afc8b6ddcf48ebae3010b332c5f769e0729",
+      "summaries": [
+        "2026-11-07T15:23:23.3353551Z      Summary [ 293.207s] 2024 tests run: 2024 passed (1 slow), 1 skipped"
+      ]
+    },
+    {
+      "id": 128442215690,
+      "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42383939527/job/128442215690",
+      "log_sha256": "b5bc6de6ff093efc712acae440b540f6093e3899ab71c698ee07b6f71a18e9b2",
+      "summaries": [
+        "2026-11-07T15:24:53.4972652Z      Summary [ 262.007s] 2539 tests run: 2539 passed, 12 skipped"
+      ]
+    },
+    {
+      "id": 128444581817,
+      "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42383939527/job/128444581817",
+      "log_sha256": "92c85aed37974c2de5050277154ec1b780f3e3c1d4761e003b96d2e8e0afccd3",
+      "summaries": [
+        "2026-11-07T15:33:49.8956533Z      Summary [ 249.945s] 2471 tests run: 2471 passed (1 slow), 6 skipped"
+      ]
+    }
+  ]
+}

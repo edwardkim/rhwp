@@ -1,0 +1,41 @@
+{
+  "observed_at": "2026-11-08T00:25:24.365242+09:00",
+  "code_head": "a373208ba5538646cee0027b101393f6bd845f3f",
+  "analysis": {
+    "ref": "refs/pull/8750/merge",
+    "commit_sha": "7fda4c8e8fb03eb47e3713695592006a113a1dc5",
+    "analysis_key": ".github/workflows/codeql.yml:analyze",
+    "environment": "{\"language\":\"rust\"}",
+    "category": ".github/workflows/codeql.yml:analyze/language:rust",
+    "error": "",
+    "created_at": "2026-11-07T15:17:39Z",
+    "results_count": 0,
+    "rules_count": 23,
+    "id": 2118500108,
+    "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/analyses/2118500108",
+    "sarif_id": "5e3e6076-dabe-11f1-87b0-f7a2ccdfb239",
+    "tool": {
+      "name": "CodeQL",
+      "guid": null,
+      "version": "2.27.4"
+    },
+    "deletable": true,
+    "warning": ""
+  },
+  "sarif_api_sha256": "320248c3edc0781601e765df5662f8cbd368798abedb8b94fb83f9c296553754",
+  "sarif_api_results": 0,
+  "sarif_api_is_subset": true,
+  "api_reference": "https://docs.github.com/en/rest/code-scanning/code-scanning#get-a-code-scanning-analysis-for-a-repository",
+  "logging_query_executed": true,
+  "normal_extraction_files": 1604,
+  "files_with_extraction_errors": 181,
+  "log_sha256": "5ed490324860715d26db4d098a53b38d5d49d49ebb352990285cc3c04952738b",
+  "limitations": [
+    "API SARIF는 업로드된 분석 자료의 부분집합이며 runner 원본 전체 SARIF와 구분한다.",
+    "로컬 같은 설정의 원본 결과 107→0과 전체 RHWP 48→0을 함께 사용한다.",
+    "기존 vendor·legacy·공개 벡터의 결과 해소나 protected branch full scan 완료를 주장하지 않는다."
+  ],
+  "alert_metadata_mutations": 0,
+  "workflow_reruns": 0,
+  "workflow_cancellations": 0
+}

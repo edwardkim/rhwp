@@ -1,0 +1,8 @@
+{
+  "conclusion": "success",
+  "databaseId": 42387007746,
+  "event": "workflow_run",
+  "headSha": "1a76570e833917d15817415a53c09ad61ab3203f",
+  "status": "completed",
+  "url": "https://github.com/edwardkim/rhwp/actions/runs/42387007746"
+}

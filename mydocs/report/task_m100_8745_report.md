@@ -5,7 +5,11 @@
 [이슈 #8745](https://github.com/edwardkim/rhwp/issues/8745)의 로컬 구현·제품 검증·전체 Rust CodeQL 분석을 완료했다.
 구현 커밋은 `f922a759aa`, 기준 devel은 `e4ffabea38062e716f6c333cc950fa31b42b4dd7`이다.
 전체 분석에서 발견한 기존 테스트 8개 파일의 호출·진단도 보정하고 2026-11-07 23:48 KST에
-최종 분석을 확인했다. **승인된 로컬 작업은 완료했으며 다음 단계는 원격 PR 처리 승인이다.**
+최종 분석을 확인했다. 이후 작업지시자가 PR 제출·CI 성공 후 self-review·머지를 승인했다.
+[PR #8750](https://github.com/edwardkim/rhwp/pull/8750)의 code head
+`a373208ba5538646cee0027b101393f6bd845f3f`에서 GitHub CI와 최종 정책 감사가 모두 성공했다.
+[self-review 기록](../pr/archives/pr_8750_review.md)은 승인이다. 문서-only trailing head의 최종
+검사를 확인한 뒤 머지하는 단계이며, 아직 머지 완료로 기록하지 않는다.
 
 `OpenOptions`의 자동 Debug가 암호를 출력할 수 있던 결함을 명시적인 가림 처리로 보완했다.
 운영 로그에서 실제 유출이 관측됐다는 주장과는 구분한다. 열기는 인증 command와 문서 조회를
@@ -50,7 +54,7 @@ qcms 포인터 테스트 6건, 공개 벡터·작업 배열·형식 관련 나�
 전체 분석의 정상 추출 4,610개·문제 보고 85개는 전후 동일하다. 추출·타입 해석 한계가 있으므로
 저장소 전체의 모든 보안 결함이 없다는 판정으로 확대하지 않는다.
 
-PR·push·경고 재분류·merge는 이번 구현 승인 범위와 구분한다.
+PR·push·self-review·merge는 후속 사용자 승인에 따라 진행한다. 경고 재분류는 수행하지 않았다.
 이슈 종료에 필요한 protected branch full scan은 GitHub 운영 규칙의
 명시적인 후속 승인과 실행 결과를 따라 판단하며 자동 실행하거나 완료로 간주하지 않는다.
 
