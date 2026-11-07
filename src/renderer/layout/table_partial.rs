@@ -5160,6 +5160,7 @@ impl LayoutEngine {
                                                     &recursive_cut.end_cut,
                                                     styles,
                                                 );
+                                                // 자식 표의 아래 바깥여백도 칸 내용 영역 안에 남는다.
                                                 let spare = (cell_y + cell_h
                                                     - pad_bottom
                                                     - resolved_nested_table_top
