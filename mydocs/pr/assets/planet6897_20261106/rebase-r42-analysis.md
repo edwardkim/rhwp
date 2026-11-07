@@ -36,8 +36,11 @@ skip·amend하지 않았다. 코드 충돌 해결을 위해 한쪽 구현을 버
 ## 새 base에서 반영한 기능과 후속 검증
 
 [PR #8738](https://github.com/edwardkim/rhwp/pull/8738)의 표·셀 단색 배경 저장 보존과
-Windows Vite fixture 경로 보정이 반영됐다. 제품 변경은 HTML 표 가져오기와 Studio의 두
-배경 설정 dialog이며, 새 저장 계약 Rust/Studio 검사와 기존 `issue_7606` 대조 검사가 함께 들어왔다.
+Windows Vite fixture 경로 보정이 반영됐다. Rust 제품 변경은 `html_table_import.rs`에 있는
+공통 `create_border_fill_from_json`이다. 파일 이름과 달리 HTML 가져오기 전용이 아니며,
+표·셀·문단·머리말/꼬리말·각주의 속성 편집 경로가 공유한다. 기존 채움의 색상·무늬를 부분
+편집에서 보존하고 새 단색의 무늬 없음은 `-1`로 만든다. Studio의 두 배경 설정 대화상자도
+같은 sentinel을 사용한다. 새 저장 계약 Rust/Studio 검사와 기존 `issue_7606` 대조 검사가 함께 들어왔다.
 해당 PR의 원본·독립 Print 7개 조합 및 기존 증적을 먼저 재사용하고, 새 base와 후보의 실제
 저장·다시 열기·출력을 대조한다. 기존 통합의 개선과 [PR #8389](https://github.com/edwardkim/rhwp/pull/8389)·
 [PR #8397](https://github.com/edwardkim/rhwp/pull/8397)의 표시값 무하락 조건도 유지한다.
@@ -46,6 +49,12 @@ Windows Vite fixture 경로 보정이 반영됐다. 제품 변경은 HTML 표 �
 `851e4074514935e4c6a7377f71a97f0cca454191`에 대한 실행이다. 이 로그나 과거 Native/WASM
 결과를 R42의 새 head를 실행한 결과로 바꿔 적지 않는다. 영향 분석·필수 검증·개별 최종
 리뷰를 완료한 뒤 PR을 제출한다.
+
+새 대화상자의 실제 메서드·속성 전달과 셀 편집 대상 경계는
+`node --test tests/issue-8733-solid-fill-pattern.test.ts tests/cell-target-issue8102.test.ts`로
+검사해 **21건 통과, 실패·skip 0건**을 확인했다. 실제 WASM 저장과 전쪽 시각 검증의 대체
+증거로 사용하지 않으며, 실행 로그는
+`output/pr-review/planet6897-integration-20261106/logs/r42-studio-new-base-contracts.log`에 있다.
 
 ## 실제 로그
 
