@@ -196,10 +196,6 @@ fn command_tokens(field: &Field) -> Vec<&str> {
     field.command.split('/').collect()
 }
 
-fn memo_shape_ref(field: &Field) -> &str {
-    command_tokens(field).get(1).copied().unwrap_or("65535")
-}
-
 fn memo_author(field: &Field) -> String {
     parameter_string(field, "Author")
         .or_else(|| command_tokens(field).get(5).map(|s| (*s).to_string()))
@@ -209,7 +205,9 @@ fn memo_author(field: &Field) -> String {
 }
 
 fn memo_date(field: &Field) -> Option<String> {
-    parameter_string(field, "CreateDateTime").or_else(|| parameter_string(field, "Date"))
+    parameter_string(field, "CreateDateTime")
+        .or_else(|| parameter_string(field, "Date"))
+        .or_else(|| crate::model::memo_time::date(&field.command))
 }
 
 fn parameter_string(field: &Field, name: &str) -> Option<String> {
@@ -232,11 +230,14 @@ fn memo_text(field: &Field) -> String {
         .join("\n")
 }
 
-/// Rewrite a memo's command after an identity change. The shape and author are
-/// kept; the number and the two instance ids are new.
+/// Only the list number changes on copy. Preserve the source FILETIME and other tokens.
 fn rewritten_memo_command(field: &Field, number: u32) -> String {
-    let shape = memo_shape_ref(field).parse().unwrap_or(65535);
-    memo_command(shape, number, field.field_id, &memo_author(field))
+    let mut parts: Vec<_> = field.command.split('/').collect();
+    let number = number.to_string();
+    if parts.first() == Some(&"MEMO") && parts.len() >= 3 {
+        parts[2] = &number;
+    }
+    parts.join("/")
 }
 
 /// Carry a new memo number into the HWPX parameters. The HWPX writer prefers
@@ -1669,18 +1670,6 @@ fn check_text_size(text: &str) -> Result<(), MemoError> {
     Ok(())
 }
 
-/// `MEMO/<memoShapeIDRef>/<Number>/<id1>/<id2>/<Author>/\;;`
-pub(crate) fn memo_command(shape_ref: u32, number: u32, field_id: u32, author: &str) -> String {
-    let id2 = field_id
-        .wrapping_mul(2_654_435_761)
-        .wrapping_add(number)
-        .max(1);
-    format!(
-        "MEMO/{}/{}/{}/{}/{}/\\;;",
-        shape_ref, number, field_id, id2, author
-    )
-}
-
 fn new_memo_field(
     field_id: u32,
     number: u32,
@@ -1689,9 +1678,14 @@ fn new_memo_field(
     text: &str,
     template: &Paragraph,
 ) -> Result<Field, MemoError> {
+    let time = crate::model::memo_time::now();
     Ok(Field {
         field_type: FieldType::Memo,
-        command: memo_command(shape_ref, number, field_id, author),
+        command: format!(
+            "MEMO/{shape_ref}/{number}/{}/{}/{author}/\\;;",
+            time as u32,
+            time >> 32
+        ),
         properties: 0x8001,
         extra_properties: 0,
         field_id,

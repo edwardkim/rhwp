@@ -198,7 +198,11 @@ fn delete_paragraph_boundary(
             }
         }
     }
-    crate::document_core::queries::memo_query::delete_text_at_keeping_memos(paragraph, start, end - start);
+    crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+        paragraph,
+        start,
+        end - start,
+    );
 }
 
 /// flat·중첩 경로 모두 같은 문단 범위를 검증한 뒤 적용한다.
@@ -3828,7 +3832,11 @@ impl DocumentCore {
             return Ok(());
         }
         if selected.is_empty() {
-            crate::document_core::queries::memo_query::delete_text_at_keeping_memos(&mut self.document.sections[section_idx].paragraphs[para_idx], start.0, end.0.saturating_sub(start.0));
+            crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                &mut self.document.sections[section_idx].paragraphs[para_idx],
+                start.0,
+                end.0.saturating_sub(start.0),
+            );
             return Ok(());
         }
         let reflowed = self.text_reflowed_table_control_indices_at(section_idx, para_idx);

@@ -174,7 +174,14 @@ where
     let mut section_bytes_list = Vec::new();
     let mut viewtext_history = Vec::new();
     let mut form_id_allocator = None;
-    for section in &doc.sections {
+    let memos =
+        crate::model::section_tail::collect(&doc.sections, storage).map_err(storage_error)?;
+    for (section_idx, section) in doc.sections.iter().enumerate() {
+        let tail: &[_] = if section_idx + 1 == doc.sections.len() {
+            &memos
+        } else {
+            &[]
+        };
         let split_starts: Vec<usize> =
             if !split_multi_sec_pr || section.raw_provenance_permits_reuse() {
                 Vec::new()
@@ -199,6 +206,7 @@ where
             let bytes = super::body_text::try_serialize_section_for_version(
                 &prepared,
                 output_version,
+                tail,
                 storage,
             )
             .map_err(storage_error)?;
@@ -254,6 +262,7 @@ where
                 super::body_text::try_serialize_section_for_version(
                     &prepared,
                     output_version,
+                    if k + 1 == starts.len() { tail } else { &[] },
                     storage,
                 )
                 .map_err(storage_error)?,

@@ -85,6 +85,13 @@ impl std::error::Error for BodyTextError {}
 ///
 /// data: 압축 해제된(배포용은 복호화+해제된) 레코드 바이트 스트림
 pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
+    parse_section_with_previous(data, &mut [])
+}
+
+pub(super) fn parse_section_with_previous(
+    data: &[u8],
+    previous: &mut [Section],
+) -> Result<Section, BodyTextError> {
     let records = Record::read_all(data).map_err(|e| BodyTextError::RecordError(e.to_string()))?;
     drawing_text_structure::validate(&records)?;
 
@@ -137,37 +144,36 @@ pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
     if let Some(start) = tail_start {
         let tail = &records[start..];
         let (memo_lists, master_records) = split_tail_lists(tail);
-        for (number, paragraphs) in &memo_lists {
-            let mut body = Some(paragraphs.clone());
-            let _ = assign_memo_paragraphs(&mut section.paragraphs, *number, &mut body);
+        let has_memos = !memo_lists.is_empty();
+        for (number, paragraphs) in memo_lists {
+            let mut body = Some(paragraphs);
+            for owner in previous.iter_mut().chain(std::iter::once(&mut section)) {
+                if assign_memo_paragraphs(&mut owner.paragraphs, number, &mut body) {
+                    break;
+                }
+            }
         }
-        if !master_records.is_empty() {
-            section.section_def.master_pages.extend(
-                master_page_scope::parse_extended_master_pages(&master_records),
-            );
-        }
-        // When the tail holds memo bodies, keep the model (not the raw tail):
-        // editing a memo must reach the written file. A document without memos
-        // keeps the old byte-preserving tail path.
-        if memo_lists.is_empty() {
-            let tail: Vec<RawRecord> = tail
-                .iter()
-                .map(|r| RawRecord {
-                    tag_id: r.tag_id,
-                    level: r.level,
-                    data: r.data.clone(),
-                })
-                .collect();
-            // 화면의 기존 의미 투영은 유지하고, 저장 소유는 플래그와 독립적으로 보존한다.
-            section
-                .section_def
-                .master_pages
-                .extend(master_page_scope::parse_extended_master_pages(&tail));
-            section.trailing_lists = Some(crate::model::section_tail::SectionTail {
-                records: tail,
-                projection_seal: None,
-            });
-        }
+        section
+            .section_def
+            .master_pages
+            .extend(master_page_scope::parse_extended_master_pages(
+                &master_records,
+            ));
+        section.trailing_lists = Some(crate::model::section_tail::SectionTail {
+            records: if has_memos {
+                master_records
+            } else {
+                tail.iter()
+                    .map(|r| RawRecord {
+                        tag_id: r.tag_id,
+                        level: r.level,
+                        data: r.data.clone(),
+                    })
+                    .collect()
+            },
+            memo_seal: has_memos.then_some([0; 32]),
+            projection_seal: None,
+        });
     }
 
     Ok(section)

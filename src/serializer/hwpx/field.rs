@@ -139,9 +139,8 @@ pub fn write_field_end_full<W: Write>(
 
 /// [#5866] HWP5 출처 메모 필드(command `MEMO/…`)의 fieldBegin 자식 XML.
 ///
-/// 한글 2024 SaveAs HWPX 실측(07868)을 미러한다 — 파라미터 7종 중 IR 에 없는
-/// `CreateDateTime` 만 생략하고, 나머지는 전부 command 토큰에서 유도한다:
-/// `MEMO/<MemoShapeIDRef>/<Number>/<id>/<id>/<Author>/\;;`. 빈 subList(문단 1개,
+/// 한글 2024 SaveAs HWPX와 같이 명령의 FILETIME에서 생성일을 복원한다.
+/// `MEMO/<MemoShapeIDRef>/<Number>/<FILETIME low>/<FILETIME high>/<Author>/\;;`. 빈 subList(문단 1개,
 /// run 만)는 필수다 — 이슈 실측에서 subList 없이 type 만 바꾸면 한글이 파일을
 /// 열지 못했다. `memoShape` 정의는 정답에도 없다(IDRef=65535 = 없음).
 ///
@@ -159,16 +158,17 @@ pub fn memo_field_children_xml(field: &Field) -> Option<String> {
     let memo_shape_id_ref = tokens.get(1).copied().unwrap_or("65535");
     let number = tokens.get(2).copied().unwrap_or("1");
     let author = tokens.get(5).copied().unwrap_or("");
+    let date = crate::model::memo_time::date(&field.command);
     Some(format!(
         concat!(
-            r#"<hp:parameters cnt="6" name="">"#,
+            r#"<hp:parameters cnt="{count}" name="">"#,
             r#"<hp:integerParam name="Prop">0</hp:integerParam>"#,
             r#"<hp:stringParam name="Command">{command}</hp:stringParam>"#,
             r#"<hp:stringParam name="ID">memo{number}</hp:stringParam>"#,
             r#"<hp:integerParam name="Number">{number}</hp:integerParam>"#,
             r#"<hp:stringParam name="Author">{author}</hp:stringParam>"#,
             r#"<hp:stringParam name="MemoShapeIDRef">{shape}</hp:stringParam>"#,
-            r#"</hp:parameters>"#,
+            r#"{date}</hp:parameters>"#,
             r#"<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" "#,
             r#"linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" "#,
             r#"hasTextRef="0" hasNumRef="0">"#,
@@ -179,6 +179,10 @@ pub fn memo_field_children_xml(field: &Field) -> Option<String> {
             r#"flags="393216"/></hp:linesegarray>"#,
             r#"</hp:p></hp:subList>"#,
         ),
+        count = if date.is_some() { 7 } else { 6 },
+        date = date
+            .map(|d| format!(r#"<hp:stringParam name="CreateDateTime">{d}</hp:stringParam>"#))
+            .unwrap_or_default(),
         command = xml_escape_attr(&field.command),
         number = xml_escape_attr(number),
         author = xml_escape_attr(author),

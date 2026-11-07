@@ -1848,7 +1848,8 @@ impl Paragraph {
                 && (fr.start_char_idx < fr.end_char_idx
                     || matches!(self.controls.get(fr.control_idx),
                         Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink));
-            let is_caret_memo = fr.start_char_idx == fr.end_char_idx && is_memo_control(self.controls.get(fr.control_idx));
+            let is_caret_memo = fr.start_char_idx == fr.end_char_idx
+                && is_memo_control(self.controls.get(fr.control_idx));
             if fr.start_char_idx > char_offset
                 || (outside
                     && fr.start_char_idx == char_offset
@@ -1856,7 +1857,9 @@ impl Paragraph {
             {
                 fr.start_char_idx += inserted_len;
             }
-            if fr.end_char_idx > char_offset || (fr.end_char_idx == char_offset && !outside && !is_caret_memo) {
+            if fr.end_char_idx > char_offset
+                || (fr.end_char_idx == char_offset && !outside && !is_caret_memo)
+            {
                 fr.end_char_idx += inserted_len;
             }
         }

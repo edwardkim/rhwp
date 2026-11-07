@@ -72,6 +72,64 @@ fn edit(bytes: &[u8], section: usize, text: &str) -> Vec<u8> {
 }
 
 #[test]
+fn master_only_tail_projects_each_source_list_once() {
+    let source = sample("samples/exam_math_8.hwp");
+    let expected = tail(&source, 0)
+        .iter()
+        .filter(|r| r.0 == 72 && r.1 == 1)
+        .count();
+    assert_eq!(expected, 1);
+    for bytes in [&source, &edit(&source, 0, "A")] {
+        let doc = rhwp::parser::parse_hwp(bytes).unwrap();
+        assert_eq!(
+            doc.sections[0]
+                .section_def
+                .master_pages
+                .iter()
+                .filter(|p| p.is_extension)
+                .count(),
+            expected
+        );
+    }
+}
+
+#[test]
+fn memo_in_first_section_owns_body_in_final_section() {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "first anchor. next section")
+        .unwrap();
+    core.split_section_native(0, 0, 13).unwrap();
+    core.insert_memo_at(0, 0, 6, 12, "Reviewer", "first note")
+        .unwrap();
+    let mut bytes = core.export_hwp_native().unwrap();
+    for expected in ["first note", "edited note"] {
+        assert!(!section_records(&bytes, 0).iter().any(|r| r.0 == 93));
+        assert_eq!(tail(&bytes, 1).iter().filter(|r| r.0 == 93).count(), 1);
+        let mut reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        let list: serde_json::Value = serde_json::from_str(&reopened.get_memo_list_json()).unwrap();
+        assert_eq!(list[0]["text"], expected);
+        assert_eq!(list[0]["sectionIndex"], 0);
+        assert_eq!(list[0]["startCharIdx"], 6);
+        assert_eq!(list[0]["endCharIdx"], 12);
+        let id = list[0]["id"].as_u64().unwrap() as u32;
+        if expected == "first note" {
+            reopened.set_memo_text(id, "edited note").unwrap();
+        } else {
+            reopened.remove_memo(id).unwrap();
+        }
+        bytes = reopened.export_hwp_native().unwrap();
+    }
+    assert!(!section_records(&bytes, 1).iter().any(|r| r.0 == 93));
+    assert_eq!(
+        DocumentCore::from_bytes(&bytes)
+            .unwrap()
+            .get_memo_list_json(),
+        "[]"
+    );
+}
+
+#[test]
 fn direct_hwp_parser_preserves_tail_without_core_load_fixups() {
     for name in [
         "samples/exam_math_8.hwp",

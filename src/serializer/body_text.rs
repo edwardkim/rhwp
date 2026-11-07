@@ -66,7 +66,7 @@ pub(crate) fn serialize_section_for_version(section: &Section, version: u32) -> 
 }
 
 fn serialize_section_inner(section: &Section, version: Option<u32>) -> Vec<u8> {
-    match try_serialize_section_inner(section, version, &crate::storage::Unbounded) {
+    match try_serialize_section_inner(section, version, None, &crate::storage::Unbounded) {
         Ok(bytes) => bytes,
         Err(never) => match never {},
     }
@@ -75,14 +75,16 @@ fn serialize_section_inner(section: &Section, version: Option<u32>) -> Vec<u8> {
 pub(crate) fn try_serialize_section_for_version<S: crate::storage::Storage>(
     section: &Section,
     version: u32,
+    memos: &[(u32, &[Paragraph])],
     storage: &S,
 ) -> Result<Vec<u8>, S::Error> {
-    try_serialize_section_inner(section, Some(version), storage)
+    try_serialize_section_inner(section, Some(version), Some(memos), storage)
 }
 
 fn try_serialize_section_inner<S: crate::storage::Storage>(
     section: &Section,
     version: Option<u32>,
+    document_memos: Option<&[(u32, &[Paragraph])]>,
     storage: &S,
 ) -> Result<Vec<u8>, S::Error> {
     // 원본 스트림이 있으면 그대로 반환 (완벽한 라운드트립).
@@ -91,7 +93,25 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
     // 파싱(+로드 픽스업) 시점에 봉인한 (모델, raw) 다이제스트 쌍과 현재 상태가
     // 둘 다 일치할 때만 통과한다 — 불일치·raw 교체는 아래 모델 writer 로
     // 재생성한다. 봉인 계약은 model::raw_provenance 참조.
-    if section.raw_provenance_permits_reuse() {
+    let local;
+    let memo_lists = match document_memos {
+        Some(lists) => lists,
+        None => {
+            local = crate::model::section_tail::collect(std::slice::from_ref(section), storage)?;
+            &local
+        }
+    };
+    let memo_raw_matches = match section
+        .trailing_lists
+        .as_ref()
+        .and_then(|tail| tail.memo_seal)
+    {
+        Some(seal) => {
+            !memo_lists.is_empty() && seal == crate::model::section_tail::memo_digest(memo_lists)
+        }
+        None => memo_lists.is_empty(),
+    };
+    if memo_raw_matches && section.raw_provenance_permits_reuse() {
         if let Some(ref raw) = section.raw_stream {
             return storage.copy_slice(raw);
         }
@@ -105,7 +125,6 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
     super::control::reset_form_order_counter();
 
     let mut records = Vec::new();
-    let memo_lists = try_collect_memo_lists(section, storage)?;
     let has_memo_tail = !memo_lists.is_empty();
     let para_count = section.paragraphs.len();
     // [Issue #1915] IR 계약 폴백: 첫 문단에 Control::SectionDef 가 없는 IR(HWP3 파서
@@ -181,6 +200,9 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
         };
         try_serialize_paragraph_with_msb(para_ref, 0, is_last, &mut records, storage)?;
     }
+    if has_memo_tail {
+        try_serialize_memo_tail(memo_lists, &mut records, storage)?;
+    }
     if let Some(tail) = &section.trailing_lists {
         // 본문 재작성과 별개로 저장 소유를 유지한다. 모델 목록을 중복 생성하지 않는다.
         for raw in &tail.records {
@@ -195,9 +217,6 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
             )?;
         }
     } else {
-        if has_memo_tail {
-            serialize_memo_tail(&memo_lists, &mut records);
-        }
         try_serialize_master_page_tail(section, &mut records, storage)?;
     }
     // 변경추적 병합 문단 여부(UINT16)는 5.0.3.2부터 존재한다. 재귀로 생성한
@@ -244,103 +263,63 @@ fn try_serialize_master_page_tail<S: crate::storage::Storage>(
     Ok(())
 }
 
-pub(super) fn try_collect_memo_lists<'a, S: crate::storage::Storage>(section: &'a Section, storage: &S) -> Result<Vec<(u32, &'a [Paragraph])>, S::Error> {
-    fn collect<'a, S: crate::storage::Storage>(paragraphs: &'a [Paragraph], lists: &mut Vec<(u32, &'a [Paragraph])>, storage: &S) -> Result<(), S::Error> {
-        for para in paragraphs {
-            for ctrl in &para.controls {
-                match ctrl {
-                    Control::Field(field)
-                        if (field.field_type == crate::model::control::FieldType::Memo
-                            || field.command.starts_with("MEMO/"))
-                            && !field.memo_paragraphs.is_empty() =>
-                    {
-                        // The tail is keyed by the memo number; a field that kept
-                        // only its command (HWPX conversion) must still match.
-                        storage.push(lists, (memo_field_index(field), field.memo_paragraphs.as_slice()))?;
-                    }
-                    Control::Table(table) => {
-                        for cell in &table.cells {
-                            collect(&cell.paragraphs, lists, storage)?;
-                        }
-                    }
-                    Control::Shape(shape) => collect_shape_memos(shape, lists, storage)?,
-                    Control::Header(header) => collect(&header.paragraphs, lists, storage)?,
-                    Control::Footer(footer) => collect(&footer.paragraphs, lists, storage)?,
-                    Control::Footnote(note) => collect(&note.paragraphs, lists, storage)?,
-                    Control::Endnote(note) => collect(&note.paragraphs, lists, storage)?,
-                    _ => {}
-                }
-            }
-        }
-        Ok(())
-    }
-
-    fn collect_shape_memos<'a, S: crate::storage::Storage>(
-        shape: &'a crate::model::shape::ShapeObject,
-        lists: &mut Vec<(u32, &'a [Paragraph])>, storage: &S,
-    ) -> Result<(), S::Error> {
-        if let Some(drawing) = shape.drawing() {
-            if let Some(text_box) = &drawing.text_box {
-                collect(&text_box.paragraphs, lists, storage)?;
-            }
-        }
-        if let crate::model::shape::ShapeObject::Group(group) = shape {
-            for child in &group.children {
-                collect_shape_memos(child, lists, storage)?;
-            }
-        }
-        Ok(())
-    }
-
-    let mut memo_lists = storage.vec(0)?;
-    collect(&section.paragraphs, &mut memo_lists, storage)?;
-    Ok(memo_lists)
-}
-
-fn serialize_memo_tail(memo_lists: &[(u32, &[Paragraph])], records: &mut Vec<Record>) {
-    if memo_lists.is_empty() {
-        return;
-    }
-
+fn try_serialize_memo_tail<S: crate::storage::Storage>(
+    memo_lists: &[(u32, &[Paragraph])],
+    records: &mut Vec<Record>,
+    storage: &S,
+) -> Result<(), S::Error> {
     // HWP5 spec: 메모 관련 정보는 마지막 구역 끝에 문단 리스트 형태로 저장된다.
     // 한컴 저장본은 진짜 마지막 본문 문단(마지막 문단 비트 유지) 바로 뒤에
     // level 1 MEMO_LIST, LIST_HEADER, 메모 본문 문단을 순서대로 둔다. 빈 root
     // 문단을 만들면 파서가 그것을 본문 문단으로 읽어 저장할 때마다 문단이 는다.
     for (memo_index, paragraphs) in memo_lists {
-        records.push(Record {
-            tag_id: tags::HWPTAG_MEMO_LIST,
-            level: 1,
-            size: 4,
-            data: memo_index.to_le_bytes().to_vec(),
-        });
+        storage.push(
+            records,
+            Record {
+                tag_id: tags::HWPTAG_MEMO_LIST,
+                level: 1,
+                size: 4,
+                data: storage.copy_slice(&memo_index.to_le_bytes())?,
+            },
+        )?;
 
-        let mut list_header = Vec::with_capacity(16);
+        let mut list_header = storage.vec(16)?;
         list_header.extend_from_slice(&(paragraphs.len() as u32).to_le_bytes());
         list_header.extend_from_slice(&[0; 12]);
-        records.push(Record {
-            tag_id: tags::HWPTAG_LIST_HEADER,
-            level: 1,
-            size: list_header.len() as u32,
-            data: list_header,
-        });
+        storage.push(
+            records,
+            Record {
+                tag_id: tags::HWPTAG_LIST_HEADER,
+                level: 1,
+                size: list_header.len() as u32,
+                data: list_header,
+            },
+        )?;
 
-        let mut memo_paragraphs = paragraphs.to_vec();
-        for para in &mut memo_paragraphs {
+        for (i, original) in paragraphs.iter().enumerate() {
+            let mut para = storage.clone_paragraph(original)?;
             // A body read from an HWP5 memo list keeps its own header tail
             // (instance id and, from 5.0.3.2, the change-tracking word).
             // Only a paragraph without one (HWPX subList, a new memo) gets
             // the zero tail Hancom writes.
             if para.raw_header_extra.len() < 10 {
-                para.raw_header_extra = vec![0; 12];
+                para.raw_header_extra = storage.copy_slice(&[0; 12])?;
             }
             // Hancom writes memo body paragraphs under MEMO_LIST without
             // PARA_LINE_SEG records. HWPX subList parsing may synthesize a
             // default line segment, but keeping it here breaks the HWP5 memo
             // container contract.
             para.line_segs.clear();
+            try_serialize_paragraph_with_msb(
+                &para,
+                1,
+                i + 1 == paragraphs.len(),
+                records,
+                storage,
+            )?;
         }
-        serialize_paragraph_list(&memo_paragraphs, 1, records);
     }
+    Ok(())
 }
 
 /// 문단 목록을 레코드로 직렬화 (재귀용: 셀, 머리말/꼬리말, 각주/미주 내부)
@@ -1071,6 +1050,7 @@ fn try_serialize_para_text_with_slots<S: crate::storage::Storage>(
                 FieldEndMarker {
                     ctrl_id: ofe.begin_ctrl_id,
                     memo_index: ofe.memo_index,
+                    ..Default::default()
                 },
                 storage,
             )?;
@@ -1354,6 +1334,7 @@ fn try_serialize_para_text_with_slots<S: crate::storage::Storage>(
             FieldEndMarker {
                 ctrl_id: ofe.begin_ctrl_id,
                 memo_index: ofe.memo_index,
+                ..Default::default()
             },
             storage,
         )?;
@@ -1591,7 +1572,7 @@ fn field_end_marker(ctrl: &Control) -> FieldEndMarker {
         {
             FieldEndMarker {
                 ctrl_id: tags::FIELD_MEMO,
-                memo_index: memo_field_index(field),
+                memo_index: field.memo_index_from_command(),
                 trace_index: None,
             }
         }
@@ -1602,17 +1583,6 @@ fn field_end_marker(ctrl: &Control) -> FieldEndMarker {
         },
         _ => FieldEndMarker::default(),
     }
-}
-
-fn memo_field_index(field: &crate::model::control::Field) -> u32 {
-    if field.memo_index != 0 {
-        return field.memo_index;
-    }
-    parse_memo_index_from_command(&field.command).unwrap_or(0)
-}
-
-fn parse_memo_index_from_command(command: &str) -> Option<u32> {
-    command.split('/').nth(2)?.parse().ok()
 }
 
 fn push_field_end_ctrl(code_units: &mut Vec<u16>, marker: FieldEndMarker) {
@@ -2554,7 +2524,7 @@ mod tests {
         let memo_lists = [(1, paragraphs.as_slice())];
         let mut records = Vec::new();
 
-        serialize_memo_tail(&memo_lists, &mut records);
+        try_serialize_memo_tail(&memo_lists, &mut records, &crate::storage::Unbounded).unwrap();
 
         assert_eq!(records[0].tag_id, tags::HWPTAG_MEMO_LIST);
         assert!(

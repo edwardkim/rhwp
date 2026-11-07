@@ -456,9 +456,26 @@ impl crate::model::document::Document {
             .iter()
             .any(|s| s.trailing_lists.is_some())
             .then(|| crate::model::section_tail::projection_digest(self));
+        let memo_digest = self
+            .sections
+            .iter()
+            .any(|s| {
+                s.trailing_lists
+                    .as_ref()
+                    .is_some_and(|t| t.memo_seal.is_some())
+            })
+            .then(|| {
+                let lists =
+                    crate::model::section_tail::collect(&self.sections, &crate::storage::Unbounded)
+                        .unwrap();
+                crate::model::section_tail::memo_digest(&lists)
+            });
         for section in &mut self.sections {
             if let Some(tail) = &mut section.trailing_lists {
                 tail.projection_seal = tail_digest;
+                if tail.memo_seal.is_some() {
+                    tail.memo_seal = memo_digest;
+                }
             }
         }
     }

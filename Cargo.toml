@@ -272,6 +272,7 @@ path = "tests/overflow_cell_baseline.rs"
 # END RHWP GENERATED TEST TARGETS
 
 [dependencies]
+chrono = "0.4"
 rhwp-contracts = { path = "crates/rhwp-contracts", version = "0.1.0" }
 rhwp-ooxml-chart = { path = "crates/rhwp-ooxml-chart", version = "0.1.0" }
 rhwp-password-crypto = { path = "crates/rhwp-password-crypto", version = "0.1.0" }

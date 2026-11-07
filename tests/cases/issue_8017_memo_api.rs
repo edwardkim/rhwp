@@ -107,8 +107,9 @@ fn author_drops_command_separators_and_is_limited_to_64_units() {
 }
 
 #[test]
-fn the_memo_command_carries_shape_number_ids_and_author() {
+fn the_memo_command_carries_shape_number_creation_time_and_author() {
     let mut core = core_with("anchor");
+    let before = std::time::SystemTime::now();
     core.insert_memo_at(0, 0, 0, 6, "hancom", "body").unwrap();
     let list = memo_list(&core);
     let field = memo_fields(std::slice::from_ref(first_para(&core)))[0];
@@ -125,8 +126,15 @@ fn the_memo_command_carries_shape_number_ids_and_author() {
         }
     );
     assert_eq!(tokens[2], list[0]["index"].to_string());
-    assert_eq!(tokens[3], field.field_id.to_string());
-    assert_ne!(tokens[4].parse::<u32>().unwrap(), 0);
+    let ticks = u64::from(tokens[3].parse::<u32>().unwrap())
+        | (u64::from(tokens[4].parse::<u32>().unwrap()) << 32);
+    let actual = std::time::UNIX_EPOCH
+        + std::time::Duration::from_nanos((ticks - 116_444_736_000_000_000) * 100);
+    assert!(
+        actual + std::time::Duration::from_nanos(99) >= before
+            && actual <= std::time::SystemTime::now()
+    );
+    assert!(list[0]["date"].is_string());
     assert_eq!(tokens[5], "hancom");
     assert_eq!(tokens[6], "\\;;");
     assert_eq!(list[0]["author"], "hancom");
@@ -379,6 +387,11 @@ fn a_pasted_hwpx_memo_is_written_with_its_new_number() {
             memo["paraIndex"].as_u64().unwrap() as usize,
         )
     };
+    let source_command = memo_fields(std::slice::from_ref(
+        &core.document().sections[section].paragraphs[para],
+    ))[0]
+        .command
+        .clone();
     let para_len = core.document().sections[section].paragraphs[para]
         .text
         .chars()
@@ -412,6 +425,16 @@ fn a_pasted_hwpx_memo_is_written_with_its_new_number() {
         pasted.len(),
         1,
         "the written HWPX carries number {next} once"
+    );
+    assert_eq!(
+        pasted[0].command.split('/').skip(3).collect::<Vec<_>>(),
+        source_command.split('/').skip(3).collect::<Vec<_>>(),
+        "복사해도 원래 생성 시각과 작성자가 보존된다"
+    );
+    assert!(before[0]["date"].is_string());
+    assert_eq!(
+        string_param(pasted[0], "CreateDateTime").as_deref(),
+        before[0]["date"].as_str()
     );
     assert_eq!(string_param(pasted[0], "ID"), Some(format!("memo{next}")));
     assert_eq!(
