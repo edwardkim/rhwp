@@ -8480,6 +8480,30 @@ pub(crate) fn absolute_table_vertical_geometry(
     (top, top + height + bottom_margin)
 }
 
+/// [#8554] 쪽·용지 기준 자리차지(비-TAC) 표의 띠 아래끝(px, 바깥 아래 여백 포함).
+/// 본문 흐름이 이 표의 host 에 이르렀을 때 띠 아래로 점프하는 기준(`calculate_shape_reserved_heights`)과
+/// 같은 높이·좌표식이다. 문단 기준 표·다른 배치는 `None`.
+pub(crate) fn absolute_topbottom_table_band_bottom_px(
+    table: &Table,
+    body_y: f64,
+    body_height: f64,
+    page_height: f64,
+    dpi: f64,
+) -> Option<f64> {
+    if table.common.treat_as_char || table.common.text_wrap != TextWrap::TopAndBottom {
+        return None;
+    }
+    let (ref_y, ref_h) = match table.common.vert_rel_to {
+        VertRelTo::Page => (body_y, body_height),
+        VertRelTo::Paper => (0.0, page_height),
+        VertRelTo::Para => return None,
+    };
+    let height_hu =
+        stored_square_top_band::table_reserved_height_hu(table).max(table.common.height);
+    let height = hwpunit_to_px(height_hu.min(i32::MAX as u32) as i32, dpi);
+    Some(absolute_table_vertical_geometry(table, ref_y, ref_h, height, dpi).1)
+}
+
 /// A positive-offset empty host float whose next, generated body paragraph has
 /// no stored line-segment anchor. Hancom consumes the empty host's physical row,
 /// lays that body paragraph in the remaining gap above the float, then resumes
