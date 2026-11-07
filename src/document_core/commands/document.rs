@@ -170,6 +170,18 @@ impl DocumentCore {
         Self::from_bytes_inner(data, None)
     }
 
+    /// 문서를 열어 현재 Core를 원자적으로 교체한다.
+    ///
+    /// 성공 결과에는 문서·암호·metadata를 싣지 않는다. 암호의 보관 수명은
+    /// 각 파서의 계약을 따른다(HWP5 지연 이미지 복호화 등).
+    /// 성공 뒤 기존 조회 API로 완성된 문서를 사용한다. 인증·파싱에 실패하면 현재
+    /// 문서와 편집 상태를 그대로 유지한다. 성공하면 새 문서의 초기 상태로 교체한다.
+    pub fn load_bytes(&mut self, data: &[u8], password: Option<&[u8]>) -> Result<(), HwpError> {
+        let replacement = Self::from_bytes_inner(data, password)?;
+        *self = replacement;
+        Ok(())
+    }
+
     /// 비밀번호로 보호된 HWP/HWPX 파일을 비밀번호와 함께 로드한다.
     ///
     /// HWP5 EncryptVersion 4, 압축 HWP3 및 ODF AES-256-CBC HWPX 비밀번호 암호 문서를 연다.

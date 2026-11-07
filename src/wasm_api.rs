@@ -491,6 +491,12 @@ impl std::ops::DerefMut for HwpDocument {
     }
 }
 
+impl From<DocumentCore> for HwpDocument {
+    fn from(core: DocumentCore) -> Self {
+        Self { core }
+    }
+}
+
 /// 네이티브(비-WASM) 환경용 래퍼 메서드.
 ///
 /// 테스트 및 CLI 환경에서 `HwpDocument::from_bytes()` 등을 직접 호출할 수 있도록 한다.
@@ -501,6 +507,12 @@ impl HwpDocument {
 
     pub fn from_bytes_with_password(data: &[u8], password: &[u8]) -> Result<HwpDocument, HwpError> {
         DocumentCore::from_bytes_with_password(data, password).map(|core| HwpDocument { core })
+    }
+
+    /// 인증 성공 뒤에만 문서를 교체하는 Native/Rust command. 기존 constructor는
+    /// 호환용으로 유지하며, 암호 처리와 문서 조회를 분리할 때 이 경로를 사용한다.
+    pub fn load_bytes(&mut self, data: &[u8], password: Option<&[u8]>) -> Result<(), HwpError> {
+        self.core.load_bytes(data, password)
     }
 
     pub fn find_initial_column_def(paragraphs: &[Paragraph]) -> ColumnDef {
@@ -767,7 +779,9 @@ impl HwpDocument {
     /// 암호화되지 않은 일반 문서에 비밀번호를 전달해도 정상 로드된다.
     #[wasm_bindgen(js_name = openWithPassword)]
     pub fn open_with_password(data: &[u8], password: &str) -> Result<HwpDocument, JsValue> {
-        Self::from_bytes_with_password(data, password.as_bytes()).map_err(|e| e.into())
+        let mut document = Self::from(DocumentCore::new_empty());
+        document.load_bytes(data, Some(password.as_bytes()))?;
+        Ok(document)
     }
 
     /// 빈 문서 생성 (테스트/미리보기용)

@@ -177,10 +177,8 @@ impl NativeDocumentSession {
                 "document or password exceeds limit".into(),
             ));
         }
-        let core = match password {
-            Some(password) => DocumentCore::from_bytes_with_password(bytes, password)?,
-            None => DocumentCore::from_bytes(bytes)?,
-        };
+        let mut core = DocumentCore::new_empty();
+        core.load_bytes(bytes, password)?;
         let mut session = Self::from_core(core);
         session.saved_revision = Some(0);
         Ok(session)

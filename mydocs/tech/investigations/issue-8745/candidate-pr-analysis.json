@@ -1,0 +1,1059 @@
+{
+  "normalized_at": "2026-11-07T20:04:35.633370+09:00",
+  "sarif_sha256": "26c127b4c1b1cb5a02b5cbfba8041ac749dc089910af133b7f9af7bcacb5a2d3",
+  "tool": null,
+  "execution_successful": [
+    true
+  ],
+  "counts": {
+    "rust/hard-coded-cryptographic-value": 16,
+    "rust/weak-sensitive-data-hashing": 1,
+    "rust/weak-cryptographic-algorithm": 1
+  },
+  "metrics": [
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 41.0,
+      "message": {
+        "text": "Number of diagnostics with severity 20"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 831.0,
+      "message": {
+        "text": "Number of diagnostics with severity 30"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 2.0,
+      "message": {
+        "text": "Number of files with extension toml"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 18558.0,
+      "message": {
+        "text": "Number of files with extension rs"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 0.0,
+      "message": {
+        "text": "Number of lines of code with extension toml"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 4290070.0,
+      "message": {
+        "text": "Number of lines of code with extension rs"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 84.6141419449213,
+      "message": {
+        "text": "Percentage of calls with call target"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 86.2505472438571,
+      "message": {
+        "text": "Percentage of expressions with known type"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 18561.0,
+      "message": {
+        "text": "Number of files"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 4290070.0,
+      "message": {
+        "text": "Number of lines of code"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 476634.0,
+      "message": {
+        "text": "Number of calls with call target"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 74.07176386492257,
+      "message": {
+        "text": "Percentage of macro calls with call target"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 2632070.0,
+      "message": {
+        "text": "Number of expressions with known type"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 162689.0,
+      "message": {
+        "text": "Number of macro calls with call target"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 419586.0,
+      "message": {
+        "text": "Number of expressions with unknown type"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 86669.0,
+      "message": {
+        "text": "Number of calls with missing call target"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/telemetry/extraction-information",
+        "index": 17
+      },
+      "ruleId": "rust/telemetry/extraction-information",
+      "ruleIndex": 17,
+      "value": 56948.0,
+      "message": {
+        "text": "Number of macro calls with missing call target"
+      }
+    },
+    {
+      "rule": {
+        "id": "rust/summary/number-of-successfully-extracted-files",
+        "index": 18
+      },
+      "ruleId": "rust/summary/number-of-successfully-extracted-files",
+      "ruleIndex": 18,
+      "value": 1604
+    },
+    {
+      "rule": {
+        "id": "rust/summary/lines-of-code",
+        "index": 19
+      },
+      "ruleId": "rust/summary/lines-of-code",
+      "ruleIndex": 19,
+      "value": 798357
+    },
+    {
+      "rule": {
+        "id": "rust/summary/lines-of-user-code",
+        "index": 20
+      },
+      "ruleId": "rust/summary/lines-of-user-code",
+      "ruleIndex": 20,
+      "value": 798357
+    },
+    {
+      "rule": {
+        "id": "rust/summary/nodes-at-type-path-length-limit",
+        "index": 21
+      },
+      "ruleId": "rust/summary/nodes-at-type-path-length-limit",
+      "ruleIndex": 21,
+      "value": 236
+    },
+    {
+      "rule": {
+        "id": "rust/summary/number-of-files-extracted-with-errors",
+        "index": 22
+      },
+      "ruleId": "rust/summary/number-of-files-extracted-with-errors",
+      "ruleIndex": 22,
+      "value": 181
+    }
+  ],
+  "results": [
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "message": "This hard-coded value is used as [a password](1).\nThis hard-coded value is used as [a password](2).",
+      "sinks": [
+        {
+          "path": "src/parser/mod.rs",
+          "region": {
+            "startLine": 3578,
+            "startColumn": 33,
+            "endColumn": 61
+          },
+          "message": ""
+        }
+      ],
+      "flows": [
+        {
+          "locations": [
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3578,
+                "startColumn": 33,
+                "endColumn": 61
+              },
+              "message": "\"한글-password\".as_bytes()"
+            },
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3635,
+                "startColumn": 72,
+                "endColumn": 80
+              },
+              "message": "PASSWORD"
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3578,
+                "startColumn": 33,
+                "endColumn": 61
+              },
+              "message": "\"한글-password\".as_bytes()"
+            },
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3647,
+                "startColumn": 54,
+                "endColumn": 62
+              },
+              "message": "PASSWORD"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "message": "This hard-coded value is used as [a password](1).",
+      "sinks": [
+        {
+          "path": "crates/rhwp-password-crypto/src/lib.rs",
+          "region": {
+            "startLine": 1054,
+            "startColumn": 61,
+            "endColumn": 72
+          },
+          "message": ""
+        }
+      ],
+      "flows": []
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "message": "This hard-coded value is used as [a password](1).",
+      "sinks": [
+        {
+          "path": "crates/rhwp-password-crypto/src/lib.rs",
+          "region": {
+            "startLine": 1056,
+            "startColumn": 57,
+            "endColumn": 68
+          },
+          "message": ""
+        }
+      ],
+      "flows": []
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "message": "This hard-coded value is used as [a password](1).",
+      "sinks": [
+        {
+          "path": "crates/rhwp-password-crypto/src/lib.rs",
+          "region": {
+            "startLine": 1064,
+            "startColumn": 46,
+            "endColumn": 59
+          },
+          "message": ""
+        }
+      ],
+      "flows": []
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "message": "This hard-coded value is used as [a password](1).",
+      "sinks": [
+        {
+          "path": "src/parser/crypto.rs",
+          "region": {
+            "startLine": 293,
+            "startColumn": 83,
+            "endColumn": 88
+          },
+          "message": ""
+        }
+      ],
+      "flows": []
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "message": "This hard-coded value is used as [a password](1).",
+      "sinks": [
+        {
+          "path": "src/parser/crypto.rs",
+          "region": {
+            "startLine": 295,
+            "startColumn": 60,
+            "endColumn": 65
+          },
+          "message": ""
+        }
+      ],
+      "flows": []
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "message": "This hard-coded value is used as [a password](1).\nThis hard-coded value is used as [a password](2).\nThis hard-coded value is used as [a password](3).",
+      "sinks": [
+        {
+          "path": "src/parser/mod.rs",
+          "region": {
+            "startLine": 3338,
+            "startColumn": 33,
+            "endColumn": 51
+          },
+          "message": ""
+        }
+      ],
+      "flows": [
+        {
+          "locations": [
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3338,
+                "startColumn": 33,
+                "endColumn": 51
+              },
+              "message": "b\"e2e-open-budget\""
+            },
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3343,
+                "startColumn": 63,
+                "endColumn": 71
+              },
+              "message": "PASSWORD"
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3338,
+                "startColumn": 33,
+                "endColumn": 51
+              },
+              "message": "b\"e2e-open-budget\""
+            },
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3345,
+                "startColumn": 54,
+                "endColumn": 62
+              },
+              "message": "PASSWORD"
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3338,
+                "startColumn": 33,
+                "endColumn": 51
+              },
+              "message": "b\"e2e-open-budget\""
+            },
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3352,
+                "startColumn": 57,
+                "endColumn": 65
+              },
+              "message": "PASSWORD"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "message": "This hard-coded value is used as [a password](1).",
+      "sinks": [
+        {
+          "path": "src/parser/mod.rs",
+          "region": {
+            "startLine": 3499,
+            "startColumn": 64,
+            "endColumn": 79
+          },
+          "message": ""
+        }
+      ],
+      "flows": []
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "message": "This hard-coded value is used as [a password](1).",
+      "sinks": [
+        {
+          "path": "src/parser/mod.rs",
+          "region": {
+            "startLine": 3512,
+            "startColumn": 53,
+            "endColumn": 64
+          },
+          "message": ""
+        }
+      ],
+      "flows": []
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "message": "This hard-coded value is used as [a password](1).\nThis hard-coded value is used as [a password](2).\nThis hard-coded value is used as [a password](3).",
+      "sinks": [
+        {
+          "path": "src/parser/mod.rs",
+          "region": {
+            "startLine": 3521,
+            "startColumn": 33,
+            "endColumn": 52
+          },
+          "message": ""
+        }
+      ],
+      "flows": [
+        {
+          "locations": [
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3521,
+                "startColumn": 33,
+                "endColumn": 52
+              },
+              "message": "b\"bounded-password\""
+            },
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3524,
+                "startColumn": 79,
+                "endColumn": 87
+              },
+              "message": "PASSWORD"
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3521,
+                "startColumn": 33,
+                "endColumn": 52
+              },
+              "message": "b\"bounded-password\""
+            },
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3527,
+                "startColumn": 57,
+                "endColumn": 65
+              },
+              "message": "PASSWORD"
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3521,
+                "startColumn": 33,
+                "endColumn": 52
+              },
+              "message": "b\"bounded-password\""
+            },
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3531,
+                "startColumn": 57,
+                "endColumn": 65
+              },
+              "message": "PASSWORD"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "message": "This hard-coded value is used as [a password](1).\nThis hard-coded value is used as [a password](2).",
+      "sinks": [
+        {
+          "path": "src/parser/mod.rs",
+          "region": {
+            "startLine": 3538,
+            "startColumn": 33,
+            "endColumn": 57
+          },
+          "message": ""
+        }
+      ],
+      "flows": [
+        {
+          "locations": [
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3538,
+                "startColumn": 33,
+                "endColumn": 57
+              },
+              "message": "b\"uncompressed-password\""
+            },
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3560,
+                "startColumn": 69,
+                "endColumn": 77
+              },
+              "message": "PASSWORD"
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3538,
+                "startColumn": 33,
+                "endColumn": 57
+              },
+              "message": "b\"uncompressed-password\""
+            },
+            {
+              "path": "src/parser/mod.rs",
+              "region": {
+                "startLine": 3567,
+                "startColumn": 54,
+                "endColumn": 62
+              },
+              "message": "PASSWORD"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "message": "This hard-coded value is used as [a password](1).",
+      "sinks": [
+        {
+          "path": "src/parser/mod.rs",
+          "region": {
+            "startLine": 3563,
+            "startColumn": 54,
+            "endColumn": 71
+          },
+          "message": ""
+        }
+      ],
+      "flows": []
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "message": "This hard-coded value is used as [a password](1).",
+      "sinks": [
+        {
+          "path": "src/parser/mod.rs",
+          "region": {
+            "startLine": 3642,
+            "startColumn": 54,
+            "endColumn": 71
+          },
+          "message": ""
+        }
+      ],
+      "flows": []
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "message": "This hard-coded value is used as [a key](1).",
+      "sinks": [
+        {
+          "path": "crates/rhwp-password-crypto/src/lib.rs",
+          "region": {
+            "startLine": 133,
+            "startColumn": 19,
+            "endColumn": 29
+          },
+          "message": ""
+        }
+      ],
+      "flows": [
+        {
+          "locations": [
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 133,
+                "startColumn": 19,
+                "endColumn": 29
+              },
+              "message": "[0_u8; 16]"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 133,
+                "startColumn": 9,
+                "endColumn": 16
+              },
+              "message": "mut key"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 121,
+                "startColumn": 49,
+                "endLine": 136,
+                "endColumn": 2
+              },
+              "message": "{ ... }"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 172,
+                "startColumn": 42,
+                "endColumn": 67
+              },
+              "message": "derive_hwp5_key(...)"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 172,
+                "startColumn": 41,
+                "endColumn": 67
+              },
+              "message": "&... [&ref]"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 172,
+                "startColumn": 41,
+                "endColumn": 67
+              },
+              "message": "&..."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "message": "This hard-coded value is used as [a key](1).",
+      "sinks": [
+        {
+          "path": "crates/rhwp-password-crypto/src/lib.rs",
+          "region": {
+            "startLine": 273,
+            "startColumn": 19,
+            "endColumn": 28
+          },
+          "message": ""
+        }
+      ],
+      "flows": [
+        {
+          "locations": [
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 273,
+                "startColumn": 19,
+                "endColumn": 28
+              },
+              "message": "[0_u8; 8]"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 273,
+                "startColumn": 9,
+                "endColumn": 16
+              },
+              "message": "mut key"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 263,
+                "startColumn": 62,
+                "endLine": 280,
+                "endColumn": 2
+              },
+              "message": "{ ... }"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 377,
+                "startColumn": 33,
+                "endColumn": 69
+              },
+              "message": "derive_hwp3_legacy_des_key(...)"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 377,
+                "startColumn": 32,
+                "endColumn": 69
+              },
+              "message": "&... [&ref]"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 282,
+                "startColumn": 37,
+                "endColumn": 50
+              },
+              "message": "...: ... [&ref]"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 283,
+                "startColumn": 38,
+                "endColumn": 41
+              },
+              "message": "key"
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 273,
+                "startColumn": 19,
+                "endColumn": 28
+              },
+              "message": "[0_u8; 8]"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 273,
+                "startColumn": 9,
+                "endColumn": 16
+              },
+              "message": "mut key"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 263,
+                "startColumn": 62,
+                "endLine": 280,
+                "endColumn": 2
+              },
+              "message": "{ ... }"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 426,
+                "startColumn": 33,
+                "endColumn": 69
+              },
+              "message": "derive_hwp3_legacy_des_key(...)"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 426,
+                "startColumn": 32,
+                "endColumn": 69
+              },
+              "message": "&... [&ref]"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 282,
+                "startColumn": 37,
+                "endColumn": 50
+              },
+              "message": "...: ... [&ref]"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 283,
+                "startColumn": 38,
+                "endColumn": 41
+              },
+              "message": "key"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "message": "This hard-coded value is used as [a key](1).",
+      "sinks": [
+        {
+          "path": "src/parser/crypto.rs",
+          "region": {
+            "startLine": 267,
+            "startColumn": 19,
+            "endLine": 270,
+            "endColumn": 10
+          },
+          "message": ""
+        }
+      ],
+      "flows": [
+        {
+          "locations": [
+            {
+              "path": "src/parser/crypto.rs",
+              "region": {
+                "startLine": 267,
+                "startColumn": 19,
+                "endLine": 270,
+                "endColumn": 10
+              },
+              "message": "[...]"
+            },
+            {
+              "path": "src/parser/crypto.rs",
+              "region": {
+                "startLine": 267,
+                "startColumn": 13,
+                "endColumn": 16
+              },
+              "message": "key"
+            },
+            {
+              "path": "src/parser/crypto.rs",
+              "region": {
+                "startLine": 276,
+                "startColumn": 43,
+                "endColumn": 46
+              },
+              "message": "key"
+            },
+            {
+              "path": "src/parser/crypto.rs",
+              "region": {
+                "startLine": 276,
+                "startColumn": 42,
+                "endColumn": 46
+              },
+              "message": "&key [&ref]"
+            },
+            {
+              "path": "src/parser/crypto.rs",
+              "region": {
+                "startLine": 116,
+                "startColumn": 33,
+                "endColumn": 47
+              },
+              "message": "...: ... [&ref]"
+            },
+            {
+              "path": "src/parser/crypto.rs",
+              "region": {
+                "startLine": 117,
+                "startColumn": 41,
+                "endColumn": 44
+              },
+              "message": "key"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rule": "rust/weak-sensitive-data-hashing",
+      "message": "[Sensitive data (password)](1) is used in a hashing algorithm (SHA256) that is insecure for password hashing, since it is not a computationally expensive hash function.",
+      "sinks": [
+        {
+          "path": "crates/rhwp-password-crypto/src/lib.rs",
+          "region": {
+            "startLine": 572,
+            "startColumn": 36,
+            "endColumn": 44
+          },
+          "message": ""
+        }
+      ],
+      "flows": [
+        {
+          "locations": [
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 572,
+                "startColumn": 36,
+                "endColumn": 44
+              },
+              "message": "password"
+            },
+            {
+              "path": "crates/rhwp-password-crypto/src/lib.rs",
+              "region": {
+                "startLine": 572,
+                "startColumn": 36,
+                "endColumn": 44
+              },
+              "message": "password"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rule": "rust/weak-cryptographic-algorithm",
+      "message": "[The cryptographic algorithm DES](1) is broken or weak, and should not be used.",
+      "sinks": [
+        {
+          "path": "crates/rhwp-password-crypto/src/lib.rs",
+          "region": {
+            "startLine": 283,
+            "startColumn": 18,
+            "endColumn": 42
+          },
+          "message": ""
+        }
+      ],
+      "flows": []
+    }
+  ]
+}

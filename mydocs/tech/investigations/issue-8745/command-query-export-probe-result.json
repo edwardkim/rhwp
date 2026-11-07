@@ -1,0 +1,23 @@
+{
+  "scope": "isolated synthetic model, not encryption implementation or product-wide result",
+  "codeql": "2.27.4",
+  "results": [
+    {
+      "rule": "rust/cleartext-logging",
+      "line": 20
+    },
+    {
+      "rule": "rust/cleartext-logging",
+      "line": 29
+    },
+    {
+      "rule": "rust/cleartext-logging",
+      "line": 59
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "line": 46
+    }
+  ],
+  "sarif_sha256": "a71099e7f08a43a67adaef2d0158e0da5377d6c7e65e86113d1083e1c34267f3"
+}

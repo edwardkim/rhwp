@@ -1,0 +1,64 @@
+{
+  "timestamp": "2026-11-07T20:10:14.682382+09:00",
+  "base": "e4ffabea38062e716f6c333cc950fa31b42b4dd7",
+  "source_sha256": {
+    "src/cli/commands/conversion.rs": "fd7ae12d8ce29143eb8b76eb69d385028337f0dbff7c0d96b3fb7dd0fd310867",
+    "src/cli/document_io.rs": "588e6a0a9a3a6ce6719a82201367edb56d553564f4896615d52d3c3a67f4d2eb",
+    "src/document_core/commands/document.rs": "65ab39be17bbbfc0f98829dbf56a8dc30d5b31a59cfb47ab92185a374d61b752",
+    "src/mcp_serve.rs": "2d62d3d328b941444688ba8284736f1bc458eb510bbd8c49e5770f3991f8781c",
+    "src/native_host/mod.rs": "7b2384855b65aed110c603da7e077444498eb23a2f8418cd1209e9ae2fbcd13e",
+    "src/service/open.rs": "4bdfdaa7c3a56facb7c28040ef448a1cb442b595e5edbbe343965f2aae61d776",
+    "src/wasm_api.rs": "28e8d218eec6e1d56835846f00756baa4aa24557ec3f6a6083e6027ef80ace5d",
+    "tests/common/passthrough_exemptions.rs": "e713c7d1fbfcdc9dd40f3c69ca4feacfd4fbca802881650e220530ecb08cdd16",
+    "tests/cases/issue_8745_password_boundary.rs": "e025fb158c0d794cd99c3c0544ff95b6c7925cef99a744db6e79f97ee350517d"
+  },
+  "focused": {
+    "passed": 11,
+    "issue8745": 6,
+    "existing_passthrough_guard": 5,
+    "log_sha256": "727d288aa17db533cdd98efd9dc90607841757efb9ce70fcc248b25a18cb08b0"
+  },
+  "first_full": {
+    "passed": 12829,
+    "failed": 1,
+    "skipped": 45,
+    "failure": "issue_2724_passthrough_invalidation_guard::classification_drift_is_blocked",
+    "correction": "WholeDocument inventory entry for atomic load_bytes; no weakened guard",
+    "log_sha256": "bb876a4e0b3a5f2b421caabf60b8d61b20a99968078afd049942e6e617b18be9"
+  },
+  "reboot_resume": {
+    "observed": "2026-11-07T21:08:15+09:00",
+    "source_drift": [],
+    "full_regressions": {
+      "exit_code": 0,
+      "passed": 12831,
+      "skipped": 45,
+      "end": "2026-11-07T20:53:54.845559+09:00"
+    },
+    "interrupted": [
+      "native-lib compilation",
+      "candidate-full-analyze"
+    ],
+    "database_creation_reused": true
+  },
+  "native_validation": {
+    "library_and_workspace_units": 4040,
+    "placeholder": 2,
+    "direct_pdf": 35,
+    "total": 4077,
+    "minimal_fonts": 5,
+    "all_passed": true
+  },
+  "lint_completed": [
+    "fmt",
+    "clippy-root",
+    "clippy-wasm"
+  ],
+  "generated_harness_refresh": {
+    "source_count": 2112,
+    "source_paths_identical": true,
+    "before_manifest_sha256": "53f3726f0b9548319ba6629be704568fa4ab1e126005b6e90d6ddfd1aa1e4368",
+    "after_manifest_sha256": "3667409438a7a40cd9d394fe43fc15704ed63efbf8f2d65d92fbee1288ab0bf3",
+    "cause": "Generated suite distribution predates final test source length; source coverage and test source bytes unchanged."
+  }
+}

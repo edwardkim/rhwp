@@ -1,6 +1,7 @@
 //! Document format conversion command adapters.
 
 use std::fs;
+use std::io::Write;
 use std::process;
 
 use rhwp::provenance;
@@ -10,6 +11,14 @@ use crate::{
     atomic_file, cli_output_password, load_document, load_document_core, paths_refer_to_same_file,
     verification_exit_code, ConversionVerifyOptions, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE,
 };
+
+/// 저장 완료 정보는 암호화 버퍼 대신 실제로 쓴 파일에서 얻는다. 같은 열린
+/// 핸들을 조회해 경로 재조회 경쟁을 피하고, metadata 실패를 0바이트 성공으로 숨기지 않는다.
+fn write_document_export(path: &std::path::Path, bytes: &[u8]) -> std::io::Result<usize> {
+    let mut output = fs::File::create(path)?;
+    output.write_all(bytes)?;
+    Ok(output.metadata()?.len() as usize)
+}
 
 fn parse_conversion_verify_args(
     args: &[String],
@@ -308,14 +317,8 @@ pub(crate) fn convert_hwp(args: &[String]) -> i32 {
         None => export_snapshot.serialize(),
     };
     match serialized {
-        Ok(bytes) => match fs::write(output_path, &bytes) {
-            Ok(_) => {
-                // Report the persisted artifact, never a value derived from the
-                // password-bearing serialization buffer. A successful write
-                // makes this metadata the authoritative public byte count.
-                let persisted_bytes_len = fs::metadata(output_path)
-                    .map(|metadata| metadata.len() as usize)
-                    .unwrap_or_default();
+        Ok(bytes) => match write_document_export(std::path::Path::new(output_path), &bytes) {
+            Ok(persisted_bytes_len) => {
                 if !json_mode {
                     println!(
                         "저장 완료: {} ({}KB)",
@@ -327,15 +330,12 @@ pub(crate) fn convert_hwp(args: &[String]) -> i32 {
                 let mut verify_pages_report = serde_json::Value::Null;
                 let mut exit_code = EXIT_OK;
                 if verify_options.enabled() {
-                    let reloaded = match output_password.as_deref() {
-                        Some(password) => rhwp::wasm_api::HwpDocument::from_bytes_with_password(
-                            &bytes,
-                            password.as_bytes(),
-                        ),
-                        None => rhwp::wasm_api::HwpDocument::from_bytes(&bytes),
-                    };
-                    let reloaded = match reloaded {
-                        Ok(d) => d,
+                    let mut reloaded =
+                        rhwp::wasm_api::HwpDocument::from(rhwp::DocumentCore::new_empty());
+                    let opened =
+                        reloaded.load_bytes(&bytes, output_password.as_deref().map(str::as_bytes));
+                    match opened {
+                        Ok(()) => {}
                         Err(e) => {
                             eprintln!("검증 실패: 저장된 HWP 재파싱 실패 - {}", e);
                             process::exit(verify_reparse_failed_exit_code(verify_options));
@@ -518,28 +518,25 @@ pub(crate) fn export_hwpx(args: &[String]) -> i32 {
         None => doc.export_hwpx_native(),
     };
     match serialized {
-        Ok(bytes) => match fs::write(&output_path, &bytes) {
-            Ok(_) => {
+        Ok(bytes) => match write_document_export(&output_path, &bytes) {
+            Ok(persisted_bytes_len) => {
                 if !json_mode {
                     println!(
                         "저장 완료: {} ({}KB)",
                         output_path.display(),
-                        bytes.len() / 1024
+                        persisted_bytes_len / 1024
                     );
                 }
                 let mut verify_report = serde_json::Value::Null;
                 let mut verify_pages_report = serde_json::Value::Null;
                 let mut exit_code = EXIT_OK;
                 if verify_options.enabled() {
-                    let reloaded = match output_password.as_deref() {
-                        Some(password) => rhwp::wasm_api::HwpDocument::from_bytes_with_password(
-                            &bytes,
-                            password.as_bytes(),
-                        ),
-                        None => rhwp::wasm_api::HwpDocument::from_bytes(&bytes),
-                    };
-                    let reloaded = match reloaded {
-                        Ok(d) => d,
+                    let mut reloaded =
+                        rhwp::wasm_api::HwpDocument::from(rhwp::DocumentCore::new_empty());
+                    let opened =
+                        reloaded.load_bytes(&bytes, output_password.as_deref().map(str::as_bytes));
+                    match opened {
+                        Ok(()) => {}
                         Err(e) => {
                             // 재파싱 실패는 판정 불가 — JSON 모드에서도 stdout 을 비운다.
                             eprintln!("검증 실패: 저장된 HWPX 재파싱 실패 - {}", e);
@@ -626,7 +623,7 @@ pub(crate) fn export_hwpx(args: &[String]) -> i32 {
                     }
                 }
                 if json_mode {
-                    emit_envelope(bytes.len(), verify_report, verify_pages_report);
+                    emit_envelope(persisted_bytes_len, verify_report, verify_pages_report);
                 }
                 if exit_code != EXIT_OK {
                     process::exit(exit_code);

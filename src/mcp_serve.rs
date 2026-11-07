@@ -1514,14 +1514,10 @@ fn session_open(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
         Ok(password) => password,
         Err(message) => return tool_error(message),
     };
-    let document_result = match password.as_deref() {
-        Some(password) => HwpDocument::from_bytes_with_password(&data, password.as_bytes()),
-        None => HwpDocument::from_bytes(&data),
-    };
-    let doc = match document_result {
-        Ok(d) => d,
-        Err(e) => return tool_error(format!("{path} 파싱 실패: {e}")),
-    };
+    let mut doc = HwpDocument::from(rhwp::DocumentCore::new_empty());
+    if let Err(e) = doc.load_bytes(&data, password.as_deref().map(str::as_bytes)) {
+        return tool_error(format!("{path} 파싱 실패: {e}"));
+    }
     // [#3598] save 의 형식 보존을 위해 원본 형식을 핸들에 함께 기억한다.
     let detected_format = rhwp::parser::detect_format(&data);
     let source_is_hwpx = matches!(detected_format, rhwp::parser::FileFormat::Hwpx);

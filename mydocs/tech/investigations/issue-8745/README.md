@@ -9,11 +9,17 @@ last_verified: 2026-11-07
 
 ## 결론과 증거의 범위
 
+[#8745](https://github.com/edwardkim/rhwp/issues/8745) 작업 브랜치에서 열기 command와 문서 조회를
+분리하고 `OpenOptions`의 Debug 암호 값을 가렸다. 동일 로컬 CodeQL 2.27.4의 PR 범위에서
+logging 결과는 [수정 전 107건](base-logging-analysis.json) → [수정 후 0건](candidate-pr-analysis.json)이다.
+[추출 범위·경고 대조](analysis-coverage.json)도 같으며 기존 암호 벡터·형식 관련 18건은 유지한다.
+전체 Rust 범위·제품 검증은 [구현 기록](../../../working/task_m100_8745_implementation.md)에서 진행 상태를 구분한다.
+
 반복 경고를 모두 암호 해제 테스트의 비밀 유출로 볼 수 없다. 최근 `rust/cleartext-logging`은
 암호를 받는 함수의 **반환된 문서 전체**를 민감값으로 추적한 경로가 대부분이다. 개별 sink를
 삭제하거나 경고를 분류한 뒤에도 이 source가 남아 다른 조판 진단에서 다시 보고됐다.
 
-별도로 실제 보완 대상도 발견했다. `service::OpenOptions`의 자동 `Debug`는 `password` 필드를
+별도로 실제 보완 대상도 발견했다. 수정 전 `service::OpenOptions`의 자동 `Debug`는 `password` 필드를
 가리지 않는다. 이는 문자열 표현으로 암호가 노출될 수 있는 API 결함이며, 운영 로그에서 실제
 유출이 발생했다는 증거와는 구분한다. 기존 `PdfImportOptions`와 `NativeRuntimeCommand`는
 명시적 `Debug`로 해당 값을 가린다.
@@ -97,4 +103,5 @@ Studio 경계가 범위다. 열린 #7754는 암호 HWPX의 쪽수·피델리티 
 
 [수행 계획](../../../plans/task_m100_8745.md)에서 새 이슈·구현 범위를 제안한다.
 조사·재현·계획 뒤 작업지시자가 이슈 등록과 구현을 승인했다. [#8745](https://github.com/edwardkim/rhwp/issues/8745)를
-등록·할당했으며 계획 커밋 뒤 구현에 착수한다. 이 조사 시점에는 제품 코드·경고 분류·GitHub 설정을 변경하지 않았다.
+등록·할당했으며 계획 커밋 뒤 승인된 구현·검증을 진행하고 있다. 위의 원인 조사는 수정 전 기준이며,
+구현 결과는 첫 단락과 구현 기록에서 구분한다. GitHub 경고 분류·분석 설정은 변경하지 않았다.
