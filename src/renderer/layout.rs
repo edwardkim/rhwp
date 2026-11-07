@@ -9178,7 +9178,8 @@ impl LayoutEngine {
             // [#7696] 쪽·종이 기준 자리차지 그림·도형의 밴드가 민 문단은 측정이 확정한 시작
             // (밴드 하단)에서 그린다. 배치는 밴드를 따로 판정하지 않는다 — 측정과 배치가 같은
             // 줄 시작을 써야 쪽 넘김과 그리기가 갈라지지 않는다.
-            if item_is_paragraph {
+            // 표 문단도 측정(`prepare_table_paragraph_column`)이 같은 밴드로 시작을 확정한다.
+            if item_is_paragraph || matches!(item, PageItem::Table { .. }) {
                 if let Some(&start) = col_content.page_band_flow_starts.get(&item_para) {
                     let band_start = col_area.y + start;
                     if band_start > y_offset + 0.5 {

@@ -432,6 +432,15 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
             {
                 return Ok(());
             }
+            if cursor_line == 0 {
+                // 첫 줄을 새 쪽으로 넘겼으면 그 쪽의 자기 개체 밴드로 시작을 다시 짚는다.
+                st.register_own_page_anchored_topbottom_bands(para_idx, para);
+                st.apply_visible_float_exclusions_absorbing(
+                    fit::exclusion_probe_height(fmt),
+                    page_band_absorbed_spacing_before(st, para, fmt),
+                    Some(para_idx),
+                );
+            }
             on_entry_page = false;
             continue;
         };
@@ -1109,6 +1118,15 @@ pub(super) fn place_after_failed_fit_with_storage<S: crate::storage::Storage>(
         if try_absorb_empty_page_start_with_storage(st, para_idx, para, storage)? {
             return Ok(());
         }
+        // 새 쪽에서도 자기 쪽·종이 기준 자리차지 개체의 밴드가 첫 줄을 민다. 넘기기 전 판정은
+        // 떠나는 쪽 흐름 위치로 했으므로 새 쪽 시작에서 다시 짚는다(6500000-201700118 부록
+        // 271쪽: 앵커 빈 문단 저장 vpos 57964 = 그림 밴드 아래끝).
+        st.register_own_page_anchored_topbottom_bands(para_idx, para);
+        st.apply_visible_float_exclusions_absorbing(
+            fit::exclusion_probe_height(fmt),
+            page_band_absorbed_spacing_before(st, para, fmt),
+            Some(para_idx),
+        );
         safety.entry = safety.continuation;
     }
 
@@ -1132,6 +1150,22 @@ pub(super) fn place_after_failed_fit_with_storage<S: crate::storage::Storage>(
     )?;
 
     Ok(())
+}
+
+/// 띠 아래로 보낸 첫 줄이 띠 안에서 흡수하는 앞 간격. fit 예산과 쪽 넘김 뒤 재판정이
+/// 같은 조건을 쓴다.
+fn page_band_absorbed_spacing_before(
+    st: &TypesetState,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+) -> f64 {
+    if st.profile.hwp5_stored_pagination_layout()
+        || crate::renderer::para_has_no_stored_line_segs(para)
+    {
+        fmt.spacing_before.max(0.0)
+    } else {
+        0.0
+    }
 }
 
 /// 문단 진입 조정과 1회성 fit 예산 소비 결과. 실제 분할 경계는 이후에 계산한다.
@@ -1251,13 +1285,8 @@ pub(super) fn prepare_fit_budget_with_storage<S: crate::storage::Storage>(
     // [#7687] 띠 아래로 보낸 첫 줄은 앞 간격을 띠 안에서 흡수한다 — 저장 사다리가 있는 HWP5
     // (#6761 90/90)와 저장 줄이 없어 재조판하는 문단(합성 H6 정본). 저장 줄이 있는 HWPX 는
     // 생성기별로 갈려 종전(미흡수)을 유지한다. 배치 `band_absorbed_spacing_before` 와 같은 조건.
-    let absorbed_spacing_before = if st.profile.hwp5_stored_pagination_layout()
-        || crate::renderer::para_has_no_stored_line_segs(para)
-    {
-        fmt.spacing_before.max(0.0)
-    } else {
-        0.0
-    };
+    let absorbed_spacing_before = page_band_absorbed_spacing_before(st, para, fmt);
+    st.register_own_page_anchored_topbottom_bands(para_idx, para);
     st.apply_visible_float_exclusions_absorbing(
         exclusion_probe_height,
         absorbed_spacing_before,

@@ -133,7 +133,7 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
         .map_or(0.0, |line| {
             crate::renderer::hwpunit_to_px(line.line_height.max(0), engine.dpi)
         });
-    let host_col_w = st.prepare_table_paragraph_column(tac_line_probe);
+    let host_col_w = st.prepare_table_paragraph_column(tac_line_probe, para_idx);
     if st.place_mixed_host_line(para_idx, para, styles, measured_tables, engine.dpi) {
         return Ok(());
     }
