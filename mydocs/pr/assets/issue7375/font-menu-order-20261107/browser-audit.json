@@ -1,0 +1,107 @@
+[
+  {
+    "category": "all",
+    "count": 1391,
+    "groups": [
+      {
+        "group": 0,
+        "count": 618,
+        "first": "(1) 양평군체 L"
+      },
+      {
+        "group": 1,
+        "count": 687,
+        "first": "60sSTRIPE"
+      },
+      {
+        "group": 2,
+        "count": 86,
+        "first": "簡宋 粗體"
+      }
+    ],
+    "violations": []
+  },
+  {
+    "category": "current",
+    "count": 1,
+    "groups": [
+      {
+        "group": 0,
+        "count": 1,
+        "first": "한양신명조"
+      },
+      {
+        "group": 1,
+        "count": 0
+      },
+      {
+        "group": 2,
+        "count": 0
+      }
+    ],
+    "violations": []
+  },
+  {
+    "category": "document",
+    "count": 34,
+    "groups": [
+      {
+        "group": 0,
+        "count": 27,
+        "first": "08서울한강체 M"
+      },
+      {
+        "group": 1,
+        "count": 7,
+        "first": "Arial Unicode MS"
+      },
+      {
+        "group": 2,
+        "count": 0
+      }
+    ],
+    "violations": []
+  },
+  {
+    "category": "fontSets",
+    "count": 4,
+    "groups": [
+      {
+        "group": 0,
+        "count": 4,
+        "first": "◆ 맑은 고딕"
+      },
+      {
+        "group": 1,
+        "count": 0
+      },
+      {
+        "group": 2,
+        "count": 0
+      }
+    ],
+    "violations": []
+  },
+  {
+    "category": "system",
+    "count": 1364,
+    "groups": [
+      {
+        "group": 0,
+        "count": 597,
+        "first": "(1) 양평군체 L"
+      },
+      {
+        "group": 1,
+        "count": 681,
+        "first": "60sSTRIPE"
+      },
+      {
+        "group": 2,
+        "count": 86,
+        "first": "簡宋 粗體"
+      }
+    ],
+    "violations": []
+  }
+]
