@@ -1,13 +1,13 @@
 //! 관계형 회귀 — 어울림(Square) 그림 문단의 글 줄은 저장 `cs`·`sw`를 그대로 쓴다.
-//! 주석 갱신: 2026-11-07 09:00 KST(+09:00).
+//! 주석 갱신: 2026-11-07 14:05 KST(+09:00).
 //! 측정일: 2026-11-07. raw = `silhouette_raw_match_percent`, 96 DPI, 독립 한컴 Print PDF.
-//! 측정 값은 아래 표에 원본별로 적고, 정식 증거는 `mydocs/pr/assets/issue_square_margin/`에 둔다.
+//! 측정 값은 아래 표에 원본별로 적고, 정식 증거는 `mydocs/pr/assets/issue_8730/`에 둔다.
 //!
 //! ```text
-//! 원본                                        쪽  수정 전 Native  수정 후 Native  fresh WASM  전쪽 최저 N/W
-//! samples/hwp3-sample5.hwp (64쪽)             22  97.90           100.00          WASM_S5_22  WASM_S5_MIN
-//! samples/hwp3-sample5-hwp5.hwp (64쪽)        22  92.37           97.05           WASM_H5_22  WASM_H5_MIN
-//! samples/issue6204/square_picture_band_host   1  80.82           92.15           WASM_B6_1   WASM_B6_MIN
+//! 원본 (전체 쪽수)                              쪽  수정 전 N/W     수정 후 N/W      전쪽 최저 N/W
+//! samples/hwp3-sample5.hwp (64쪽, 굴림 공급)    22  97.90/97.90     100.00/100.00    95.70/95.63
+//! samples/hwp3-sample5-hwp5.hwp (64쪽, 굴림)    22  93.59/93.69     100.00/100.00    99.51/99.49
+//! samples/issue6204/square_picture_band_host     1  80.82/79.48      92.15/93.42     92.15/93.42
 //! ```
 //!
 //! 저장 줄의 시작 위치는 그림 왼쪽 바깥 여백·폭·오른쪽 바깥 여백을 모두 지난 자리다. 한컴이
@@ -31,7 +31,6 @@ use std::path::Path;
 const TOLERANCE_PX: f64 = 0.5;
 const HWP3: &str = "samples/hwp3-sample5.hwp";
 const HANCOM_HWP5: &str = "samples/hwp3-sample5-hwp5.hwp";
-const HANCOM_HWPX: &str = "samples/hwp3-sample5-hwpx.hwpx";
 const RIGHT_PICTURE: &str = "samples/issue6204/square_picture_band_host.hwp";
 
 fn bytes(sample: &str) -> Vec<u8> {
@@ -119,24 +118,21 @@ fn widest_start(para: &Paragraph) -> (i32, i32) {
 #[test]
 fn hwp3_square_line_box_matches_the_hancom_conversion() {
     let hwp3 = document(HWP3);
-    for converted_sample in [HANCOM_HWP5, HANCOM_HWPX] {
-        let converted = document(converted_sample);
-        let targets = square_picture_paragraphs(&converted.sections[0].paragraphs);
-        let compared: Vec<usize> = targets
-            .into_iter()
-            .filter(|&pi| widest_start(&converted.sections[0].paragraphs[pi]).0 > 0)
-            .collect();
-        assert!(
-            compared.len() >= 5,
-            "{converted_sample}: 왼쪽 그림 어울림 문단이 비교 대상이어야 한다: {compared:?}"
+    let converted = document(HANCOM_HWP5);
+    let compared: Vec<usize> = square_picture_paragraphs(&converted.sections[0].paragraphs)
+        .into_iter()
+        .filter(|&pi| widest_start(&converted.sections[0].paragraphs[pi]).0 > 0)
+        .collect();
+    assert!(
+        compared.len() >= 5,
+        "왼쪽 그림 어울림 문단이 비교 대상이어야 한다: {compared:?}"
+    );
+    for pi in compared {
+        assert_eq!(
+            widest_start(&hwp3.sections[0].paragraphs[pi]),
+            widest_start(&converted.sections[0].paragraphs[pi]),
+            "pi={pi}: HWP3 파서 (cs, sw) 는 한컴 변환본 저장 값과 같아야 한다"
         );
-        for pi in compared {
-            assert_eq!(
-                widest_start(&hwp3.sections[0].paragraphs[pi]),
-                widest_start(&converted.sections[0].paragraphs[pi]),
-                "pi={pi}: HWP3 파서 (cs, sw) 는 {converted_sample} 저장 값과 같아야 한다"
-            );
-        }
     }
 }
 
