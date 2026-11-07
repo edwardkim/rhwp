@@ -10225,6 +10225,79 @@ pub(crate) fn para_offset_consumed_by_page_break(
     anchor_top + hwpunit_to_px(offset, dpi) + entry_need >= available_height
 }
 
+/// [#8737] 셀 내용의 저장 끝(마지막 문단 마지막 줄의 vpos + 줄 높이, HWPUNIT).
+/// 한/글은 셀 세로 정렬을 이 내용 묶음(자리차지 그림 + 그에 밀린 줄 포함)에 적용한다.
+pub(crate) fn stored_cell_content_extent_hu(paragraphs: &[Paragraph]) -> Option<i32> {
+    let last = paragraphs.last()?.line_segs.last()?;
+    last.vertical_pos.checked_add(last.line_height)
+}
+
+/// [#8737] 셀 세로 정렬이 저장 내용 묶음을 옮기는 양(px).
+pub(crate) fn stored_cell_block_align_shift(
+    align: crate::model::table::VerticalAlign,
+    inner_height: f64,
+    paragraphs: &[Paragraph],
+    dpi: f64,
+) -> f64 {
+    use crate::model::table::VerticalAlign;
+    let Some(extent) = stored_cell_content_extent_hu(paragraphs) else {
+        return 0.0;
+    };
+    let free = (inner_height - hwpunit_to_px(extent, dpi)).max(0.0);
+    match align {
+        VerticalAlign::Top => 0.0,
+        VerticalAlign::Center => free / 2.0,
+        VerticalAlign::Bottom => free,
+    }
+}
+
+/// [#8737] 셀 문단의 자리차지 그림(세로 기준 문단)이 **자기 앵커 줄을 아래로 민** 저장 형상이면
+/// 그림 원점(문단 시작, HWPUNIT, 셀 내용 기준)을 돌려준다.
+///
+/// 한/글은 이 그림을 문단 맨 위에 두고 첫 줄을 그림 틀 아래로 밀어 저장한다. 그래서 첫 줄
+/// vpos 가 「문단 시작 + 그림 틀(높이 + 위아래 바깥 여백 + 양수 세로 오프셋)」과 정확히 같다
+/// (1311000-201100031 33쪽: 0 + 12615 = 12615). 이 등식이 없으면(줄이 그림에 밀리지 않은
+/// #5734 의 쌓인 그림 등) `None` 이고, 호출자는 종전대로 저장 줄 vpos 를 원점으로 쓴다.
+pub(crate) fn stored_cell_picture_pushed_line_origin_hu(
+    paragraphs: &[Paragraph],
+    para_index: usize,
+    common: &CommonObjAttr,
+) -> Option<i32> {
+    use crate::model::paragraph::LineSeg;
+    let para = paragraphs.get(para_index)?;
+    let first = para.line_segs.first()?;
+    let offset = signed_hwpunit(common.vertical_offset);
+    if common.treat_as_char
+        || common.text_wrap != TextWrap::TopAndBottom
+        || common.vert_rel_to != VertRelTo::Para
+        || common.vert_align != VertAlign::Top
+        || !common.flow_with_text
+        || offset < 0
+        || para.stored_text_partition_is_dirty()
+        || first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+    {
+        return None;
+    }
+    let para_start = if para_index == 0 {
+        0
+    } else {
+        let previous = paragraphs[para_index - 1].line_segs.last()?;
+        if previous.line_spacing < 0 || previous.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
+            return None;
+        }
+        previous
+            .vertical_pos
+            .checked_add(previous.line_height)?
+            .checked_add(previous.line_spacing)?
+    };
+    let frame = i32::try_from(common.height)
+        .ok()?
+        .checked_add(i32::from(common.margin.top))?
+        .checked_add(i32::from(common.margin.bottom))?
+        .checked_add(offset)?;
+    (frame > 0 && first.vertical_pos == para_start.checked_add(frame)?).then_some(para_start)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

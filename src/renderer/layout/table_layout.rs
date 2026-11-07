@@ -8852,7 +8852,26 @@ impl LayoutEngine {
                                     .then(|| para.line_segs.first())
                                     .flatten()
                                     .filter(|seg| seg.vertical_pos > 0)
-                                    .map(|seg| hwpunit_to_px(seg.vertical_pos, self.dpi));
+                                    .map(|seg| {
+                                        // [#8737] 자기 앵커 줄을 민 그림은 밀린 줄이 아니라
+                                        // 문단 시작이 원점이다.
+                                        crate::renderer::float_placement::stored_cell_picture_pushed_line_origin_hu(
+                                            &cell.paragraphs, cp_idx, &pic.common,
+                                        )
+                                        .map_or(
+                                            hwpunit_to_px(seg.vertical_pos, self.dpi),
+                                            |origin| {
+                                                // 셀 세로 정렬은 그림과 밀린 줄을 담은 저장
+                                                // 내용 묶음 전체에 적용된다.
+                                                crate::renderer::float_placement::stored_cell_block_align_shift(
+                                                    effective_valign,
+                                                    inner_height,
+                                                    &cell.paragraphs,
+                                                    self.dpi,
+                                                ) + hwpunit_to_px(origin, self.dpi)
+                                            },
+                                        )
+                                    });
                                 // [#5833] 문단마다 float 그림이 하나씩 놓인 **다문단** 셀은
                                 // 한글이 그림을 흐름으로 직렬 적층하고 셀 valign 은 블록
                                 // 전체에 적용한다. 기저를 (센터링이 반영된) text_y_start 로
