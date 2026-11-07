@@ -46,7 +46,7 @@ pub(crate) fn stored_square_top_band(
     let hu = |px| super::super::px_to_hwpunit(px, dpi);
     // 저장 원점의 비교도 원본 HWPUNIT로 한다. 같은 경계의 px 합산 오차를
     // 빈 공간 또는 줄 소유의 차이로 오인하지 않는다.
-    if hu(top) > hu(body.y) || hu(bottom) <= hu(body.y) || line.vertical_pos < hu(bottom - body.y) {
+    if hu(bottom) <= hu(body.y) || line.vertical_pos < hu(bottom - body.y) {
         return None;
     }
     let context = FloatPlacementContext::new(*body).with_body_area(*body);
