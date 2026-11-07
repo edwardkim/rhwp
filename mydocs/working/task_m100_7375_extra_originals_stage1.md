@@ -278,3 +278,18 @@ Native51쪽94.75432→99.51311%, fresh WASM94.75587→99.51281%다. 각 전103�
 7 PASS, 공통 수식·글상자·저장 프레임·중첩 표 묶음153 PASS(정식7개·진단1개 포함)다.
 fmt·Native/WASM/전체target/Skia Clippy·workspace build·manifest·unit tier를 통과했다.
 [전후 TSV·review/overlay·검사·수용 예산과 출처](../pr/assets/issue7700/opening-cell-frame-20261107/README.md).
+
+## 2026-11-07 굴림체 U+2024의 실제 공급자와 자연 전진
+
+부모f68e81f85에서 GulimChe regular cmap의 U+2024 결측을 기존 공통 공급 경로에 연결했다.
+원본 글자 모양32의 일곱 슬롯은 모두굴림체 TrueType이다. 독립2020 Print44·86쪽은
+해당 문자만HBATANG178/1024em으로 그리며 기존 로컬2020 프로그램과 윤곽·전진이 같다.
+선행#8419→제출PR8428→통합PR8622·반영6d81fb84ed의 공급 방식과 현재 원본을 대조했다.
+문서·쪽 분기, 폭 맞춤 상수, 새 글꼴 배열·바이너리나 사용자 글꼴 재설치는 추가하지 않았다.
+
+전103쪽을 Native/fresh WASM으로 재출력했다. 9쪽99.86222/99.86214%,44·51쪽각100%,
+86쪽99.70650/99.70611%다. 양쪽62쪽의 수치/PNG가 바뀌고41쪽은 바이트 동일하며,
+0.1%p 초과 하락0이다. 26쪽만96.65328/96.65155%로 남아 표 하단의 저장 슬롯 점유를
+계속 확인한다. 실제 정식7 PASS/2 FAIL→9 PASS, 기존 정책·기호·분할 묶음160 PASS다.
+fmt·Native/WASM/전체target/Skia Clippy·workspace build·manifest·unit tier도 통과했다.
+[전쪽 TSV·전후 review/overlay·공급 프로그램과 원점 근거](../pr/assets/issue7700/one-dot-program-20261107/README.md).

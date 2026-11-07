@@ -1,0 +1,867 @@
+{
+  "parent": "f68e81f858ed09dd66ca224716dc2208c3059d7a",
+  "base": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "scope": "원본 굴림체 regular U+2024 결측의 검증된 공급. 다른 문자·weight·HFT 계약을 추측해 확장하지 않음.",
+  "source_sha256": "de43607f05072840097b19a294b4455905210402cc42823545125e03567df881",
+  "pdf_sha256": "90eda86b2b4dfeabc601cd9b583408c6528a9efabf4e626fd6f2e28e3bcb2b97",
+  "runtime_hashes": {
+    "src/renderer/font_metrics_data.rs": "f4a7f588252738a1526792e9205b15a34346110692f2a4ec6b2c2b91ea1b7cac",
+    "src/renderer/font_metrics_technical_symbols.rs": "b6d82f6daa28b8eac9eb2243608632db4d8735c5dab64f364ef399a0ca780816"
+  },
+  "formal_test_sha256": "a36bd1613201e781ea1f2334100cd1fbb9ef7b0d1a834820353c8607af4f5bcf",
+  "independent_program_audit": {
+    "source_face": "굴림체",
+    "source_declared_type": 1,
+    "source_program": "gulim.TTC/GulimChe",
+    "source_sha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+    "source_missing_codepoint": "U+2024",
+    "supplier": "Haansoft Batang",
+    "supplier_path": "/Users/tsjang/Library/Fonts/issue8160/system-fonts/hancom-office-2020/All/HBATANG.TTF",
+    "supplier_sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+    "supplier_upem": 1024,
+    "supplier_advance": 178,
+    "pdf_font_xref": 312,
+    "pdf_glyph": 3,
+    "pdf_glyph_outline_identical": true,
+    "pdf_glyph_advance_identical": true,
+    "pdf_sha256": "90eda86b2b4dfeabc601cd9b583408c6528a9efabf4e626fd6f2e28e3bcb2b97",
+    "scope": "독립 위임전결규정44·86쪽의 실제 기호 공급, U+2024 regular 한정. 글꼴 바이너리·윤곽 데이터 커밋 안 함.",
+    "existing_root_font": "root HBATANG bef63718은 hmtx는 같지만 윤곽에 미세한 버전 차이가 있다. 복사/등록 변경 없음."
+  },
+  "independent_glyph_origins": [
+    {
+      "c": "교",
+      "x": 264.63999430338544,
+      "y": 436.8000081380208,
+      "font": "GulimChe"
+    },
+    {
+      "c": "육",
+      "x": 277.9200032552083,
+      "y": 436.8000081380208,
+      "font": "GulimChe"
+    },
+    {
+      "c": "․",
+      "x": 291.1999918619792,
+      "y": 436.8000081380208,
+      "font": "Haansoft Batang"
+    },
+    {
+      "c": "홍",
+      "x": 293.59999593098956,
+      "y": 436.8000081380208,
+      "font": "GulimChe"
+    },
+    {
+      "c": "보",
+      "x": 306.87998453776044,
+      "y": 436.8000081380208,
+      "font": "GulimChe"
+    }
+  ],
+  "lineage": {
+    "issue": 8419,
+    "original_pr": 8428,
+    "integration_pr": 8622,
+    "integration_merge": {
+      "oid": "6e1de406209ba9a58032f6ca6de45b18aa687d1c"
+    },
+    "actual_precedent_commit": "6d81fb84ed"
+  },
+  "native_artifact": {
+    "path": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/delegation-one-dot-program-repair/rhwp-candidate-native",
+    "sha256": "728b26992ac06019b1cf02f3505caf36b528980eb7de594d400ff4eb19b9ccc5"
+  },
+  "native_build": [
+    {
+      "kind": "native",
+      "exit_code": 0,
+      "seconds": 168.143,
+      "log_sha256": "ea729841bc51f9369a11d97e3c95824211db754994b9141d065a103f25db5147"
+    }
+  ],
+  "wasm_build": {
+    "exit_code": 0,
+    "seconds": 153.7,
+    "package_files": {
+      "rhwp.js": "370ddff0fd1a1cf6f889edb1b2a42f420fac62f7f57df4b9cff19829e60cdd5f",
+      "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+      "rhwp_bg.wasm.d.ts": "37a9316fba88d70f191e03cab3320666158d44a51caf6e0ca154a515429342c1",
+      "README.md": "ad35a0f1fbf601b33f5a969103656e220e75031ceee42bb7fc2d95ed32ed25aa",
+      "rhwp_bg.wasm": "e8a2b05bdc90cb13d387d497985234f86f2d3f90a7ed483ea12ae995c7304314",
+      ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+      "package.json": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+      "rhwp.d.ts": "dc841b66e6dc159aa397db01c4a1d11b8e4231d0c5918538cf80de28467d2298"
+    },
+    "kind": "Mac locked wrapper --target web --out-dir pkg --no-opt 로컬 대체 빌드. Docker 최적화 아님."
+  },
+  "formal": [
+    {
+      "name": "formal-before",
+      "exit_code": 101,
+      "summary": [
+        "test result: FAILED. 7 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.59s"
+      ],
+      "log_sha256": "bbd64a2eded9e0c28a9bc16d641e48a29bfb1cc7338256272a09765ff112f176"
+    },
+    {
+      "name": "formal-after",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s"
+      ],
+      "log_sha256": "0e37398c08e20aaf3493c43200275e07689d3173176799105e9abc9672b987dc"
+    },
+    {
+      "name": "focused-font-and-table",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 160 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 19.57s"
+      ],
+      "log_sha256": "303a9f87cf2a912d7192781ecd75ee58b06e7529076327318a059e9821728476"
+    }
+  ],
+  "focused_packet_correction": "초기 추가 모듈2개가 기존 묶음에 있음을 확인하여 중복 등록을 제거하고 해당 묶음만 다시 실행했다. 정식 검사나 assertion 제거 없음.",
+  "gates": [
+    {
+      "name": "fmt",
+      "exit_code": 0,
+      "seconds": 21.104,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "prepare",
+      "exit_code": 0,
+      "seconds": 1.878,
+      "log_sha256": "62837c6c3bd5acb2a5ff2874f1719f5aa0e7654e05093ff4be4871c95ae1af64"
+    },
+    {
+      "name": "fmt-check",
+      "exit_code": 0,
+      "seconds": 12.664,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "native-clippy",
+      "exit_code": 0,
+      "seconds": 25.376,
+      "log_sha256": "fac9a3150611dc5ca1304c44c751f3cfca2072d039a9f7e9f9e2da000813c160"
+    },
+    {
+      "name": "wasm-clippy",
+      "exit_code": 0,
+      "seconds": 22.649,
+      "log_sha256": "4ba50072926e016869830612086732e5f18689b633eefd482385229798bc90bf"
+    },
+    {
+      "name": "workspace-build",
+      "exit_code": 0,
+      "seconds": 38.433,
+      "log_sha256": "a0d5720721f1af037bc3e4547238fcd0620438eb17576ed03b3d304268d9e9a4"
+    },
+    {
+      "name": "all-target-clippy",
+      "exit_code": 0,
+      "seconds": 42.013,
+      "log_sha256": "b000a55911d64f74a61cbbe20f7779f3fe3f24e79b0b9ea00dd69ca453c974d1"
+    },
+    {
+      "name": "native-skia-clippy",
+      "exit_code": 0,
+      "seconds": 21.203,
+      "log_sha256": "2721c0a902ff7c020f174e9e3677322abc7d326ff317d598c23b65c8dade3323"
+    },
+    {
+      "name": "manifest",
+      "exit_code": 0,
+      "seconds": 1.494,
+      "log_sha256": "f26bace6cd280e334d078da5994145676e064e17f5ef806b805124bc35cad32d"
+    },
+    {
+      "name": "unit-tiers",
+      "exit_code": 0,
+      "seconds": 17.765,
+      "log_sha256": "2c6dbaab2093a94c2fa3ec11190f384180b922a10025e3466a44f53c6611685c"
+    }
+  ],
+  "whole_comparison": [
+    {
+      "backend": "native",
+      "minimum": 96.65328,
+      "changed_pages": [
+        {
+          "page": 7,
+          "before": 99.87216,
+          "after": 99.884
+        },
+        {
+          "page": 8,
+          "before": 99.43968,
+          "after": 100.0
+        },
+        {
+          "page": 9,
+          "before": 97.91001,
+          "after": 99.86222
+        },
+        {
+          "page": 10,
+          "before": 99.48041,
+          "after": 99.93023
+        },
+        {
+          "page": 11,
+          "before": 99.82667,
+          "after": 100.0
+        },
+        {
+          "page": 12,
+          "before": 99.80491,
+          "after": 100.0
+        },
+        {
+          "page": 15,
+          "before": 99.33913,
+          "after": 100.0
+        },
+        {
+          "page": 16,
+          "before": 99.31131,
+          "after": 99.91582
+        },
+        {
+          "page": 17,
+          "before": 99.70945,
+          "after": 100.0
+        },
+        {
+          "page": 22,
+          "before": 98.86711,
+          "after": 100.0
+        },
+        {
+          "page": 24,
+          "before": 99.67798,
+          "after": 100.0
+        },
+        {
+          "page": 25,
+          "before": 99.39152,
+          "after": 100.0
+        },
+        {
+          "page": 26,
+          "before": 96.64273,
+          "after": 96.65328
+        },
+        {
+          "page": 27,
+          "before": 98.40958,
+          "after": 99.21307
+        },
+        {
+          "page": 30,
+          "before": 99.36627,
+          "after": 100.0
+        },
+        {
+          "page": 31,
+          "before": 99.60282,
+          "after": 100.0
+        },
+        {
+          "page": 34,
+          "before": 98.6294,
+          "after": 100.0
+        },
+        {
+          "page": 35,
+          "before": 98.94018,
+          "after": 100.0
+        },
+        {
+          "page": 37,
+          "before": 99.23682,
+          "after": 100.0
+        },
+        {
+          "page": 38,
+          "before": 98.78918,
+          "after": 100.0
+        },
+        {
+          "page": 40,
+          "before": 99.1158,
+          "after": 99.99124
+        },
+        {
+          "page": 41,
+          "before": 99.38886,
+          "after": 100.0
+        },
+        {
+          "page": 42,
+          "before": 98.93142,
+          "after": 100.0
+        },
+        {
+          "page": 43,
+          "before": 99.84856,
+          "after": 100.0
+        },
+        {
+          "page": 44,
+          "before": 97.75656,
+          "after": 100.0
+        },
+        {
+          "page": 50,
+          "before": 99.83478,
+          "after": 100.0
+        },
+        {
+          "page": 51,
+          "before": 99.51311,
+          "after": 100.0
+        },
+        {
+          "page": 52,
+          "before": 98.20655,
+          "after": 100.0
+        },
+        {
+          "page": 54,
+          "before": 98.41642,
+          "after": 100.0
+        },
+        {
+          "page": 55,
+          "before": 99.60243,
+          "after": 100.0
+        },
+        {
+          "page": 56,
+          "before": 99.126,
+          "after": 100.0
+        },
+        {
+          "page": 57,
+          "before": 98.27506,
+          "after": 100.0
+        },
+        {
+          "page": 58,
+          "before": 99.60079,
+          "after": 100.0
+        },
+        {
+          "page": 59,
+          "before": 98.08843,
+          "after": 99.99896
+        },
+        {
+          "page": 60,
+          "before": 98.19293,
+          "after": 100.0
+        },
+        {
+          "page": 61,
+          "before": 99.07739,
+          "after": 100.0
+        },
+        {
+          "page": 62,
+          "before": 99.08219,
+          "after": 100.0
+        },
+        {
+          "page": 63,
+          "before": 98.40858,
+          "after": 100.0
+        },
+        {
+          "page": 64,
+          "before": 99.08384,
+          "after": 100.0
+        },
+        {
+          "page": 65,
+          "before": 99.63965,
+          "after": 100.0
+        },
+        {
+          "page": 66,
+          "before": 99.86823,
+          "after": 100.0
+        },
+        {
+          "page": 69,
+          "before": 99.42714,
+          "after": 99.84025
+        },
+        {
+          "page": 70,
+          "before": 99.55597,
+          "after": 99.9975
+        },
+        {
+          "page": 71,
+          "before": 99.76528,
+          "after": 99.84412
+        },
+        {
+          "page": 72,
+          "before": 99.55124,
+          "after": 99.99751
+        },
+        {
+          "page": 74,
+          "before": 99.44852,
+          "after": 100.0
+        },
+        {
+          "page": 75,
+          "before": 99.05091,
+          "after": 100.0
+        },
+        {
+          "page": 76,
+          "before": 99.57115,
+          "after": 100.0
+        },
+        {
+          "page": 77,
+          "before": 98.54356,
+          "after": 100.0
+        },
+        {
+          "page": 78,
+          "before": 99.72377,
+          "after": 99.97433
+        },
+        {
+          "page": 80,
+          "before": 98.92465,
+          "after": 100.0
+        },
+        {
+          "page": 82,
+          "before": 99.82046,
+          "after": 100.0
+        },
+        {
+          "page": 83,
+          "before": 99.49356,
+          "after": 99.99178
+        },
+        {
+          "page": 84,
+          "before": 99.66052,
+          "after": 100.0
+        },
+        {
+          "page": 86,
+          "before": 96.6876,
+          "after": 99.7065
+        },
+        {
+          "page": 87,
+          "before": 99.1547,
+          "after": 99.997
+        },
+        {
+          "page": 88,
+          "before": 99.44821,
+          "after": 100.0
+        },
+        {
+          "page": 90,
+          "before": 99.75871,
+          "after": 100.0
+        },
+        {
+          "page": 96,
+          "before": 99.63426,
+          "after": 99.9322
+        },
+        {
+          "page": 97,
+          "before": 99.69754,
+          "after": 99.98515
+        },
+        {
+          "page": 98,
+          "before": 99.67771,
+          "after": 100.0
+        },
+        {
+          "page": 101,
+          "before": 99.76833,
+          "after": 100.0
+        }
+      ],
+      "identical_png_pages": 41,
+      "drops_over_point1": []
+    },
+    {
+      "backend": "wasm",
+      "minimum": 96.65155,
+      "changed_pages": [
+        {
+          "page": 7,
+          "before": 99.86601,
+          "after": 99.88449
+        },
+        {
+          "page": 8,
+          "before": 99.43076,
+          "after": 100.0
+        },
+        {
+          "page": 9,
+          "before": 97.90146,
+          "after": 99.86214
+        },
+        {
+          "page": 10,
+          "before": 99.4799,
+          "after": 99.93923
+        },
+        {
+          "page": 11,
+          "before": 99.81696,
+          "after": 100.0
+        },
+        {
+          "page": 12,
+          "before": 99.79609,
+          "after": 100.0
+        },
+        {
+          "page": 15,
+          "before": 99.33886,
+          "after": 100.0
+        },
+        {
+          "page": 16,
+          "before": 99.31097,
+          "after": 99.91577
+        },
+        {
+          "page": 17,
+          "before": 99.70932,
+          "after": 100.0
+        },
+        {
+          "page": 22,
+          "before": 98.8662,
+          "after": 100.0
+        },
+        {
+          "page": 24,
+          "before": 99.67756,
+          "after": 100.0
+        },
+        {
+          "page": 25,
+          "before": 99.38292,
+          "after": 99.99279
+        },
+        {
+          "page": 26,
+          "before": 96.64099,
+          "after": 96.65155
+        },
+        {
+          "page": 27,
+          "before": 98.40462,
+          "after": 99.21221
+        },
+        {
+          "page": 30,
+          "before": 99.36595,
+          "after": 100.0
+        },
+        {
+          "page": 31,
+          "before": 99.60264,
+          "after": 100.0
+        },
+        {
+          "page": 34,
+          "before": 98.62868,
+          "after": 100.0
+        },
+        {
+          "page": 35,
+          "before": 98.93752,
+          "after": 100.0
+        },
+        {
+          "page": 37,
+          "before": 99.2363,
+          "after": 100.0
+        },
+        {
+          "page": 38,
+          "before": 98.78858,
+          "after": 100.0
+        },
+        {
+          "page": 40,
+          "before": 99.12308,
+          "after": 100.0
+        },
+        {
+          "page": 41,
+          "before": 99.3885,
+          "after": 100.0
+        },
+        {
+          "page": 42,
+          "before": 98.93221,
+          "after": 100.0
+        },
+        {
+          "page": 43,
+          "before": 99.8485,
+          "after": 100.0
+        },
+        {
+          "page": 44,
+          "before": 97.75547,
+          "after": 100.0
+        },
+        {
+          "page": 50,
+          "before": 99.83448,
+          "after": 100.0
+        },
+        {
+          "page": 51,
+          "before": 99.51281,
+          "after": 100.0
+        },
+        {
+          "page": 52,
+          "before": 98.20776,
+          "after": 100.0
+        },
+        {
+          "page": 54,
+          "before": 98.41345,
+          "after": 100.0
+        },
+        {
+          "page": 55,
+          "before": 99.60223,
+          "after": 100.0
+        },
+        {
+          "page": 56,
+          "before": 99.12749,
+          "after": 100.0
+        },
+        {
+          "page": 57,
+          "before": 98.27351,
+          "after": 100.0
+        },
+        {
+          "page": 58,
+          "before": 99.52706,
+          "after": 99.92641
+        },
+        {
+          "page": 59,
+          "before": 98.00256,
+          "after": 99.91535
+        },
+        {
+          "page": 60,
+          "before": 98.19323,
+          "after": 100.0
+        },
+        {
+          "page": 61,
+          "before": 99.07786,
+          "after": 100.0
+        },
+        {
+          "page": 62,
+          "before": 99.08158,
+          "after": 100.0
+        },
+        {
+          "page": 63,
+          "before": 98.40677,
+          "after": 100.0
+        },
+        {
+          "page": 64,
+          "before": 99.0816,
+          "after": 100.0
+        },
+        {
+          "page": 65,
+          "before": 99.64053,
+          "after": 100.0
+        },
+        {
+          "page": 66,
+          "before": 99.86946,
+          "after": 100.0
+        },
+        {
+          "page": 69,
+          "before": 99.42683,
+          "after": 99.84016
+        },
+        {
+          "page": 70,
+          "before": 99.55564,
+          "after": 99.9975
+        },
+        {
+          "page": 71,
+          "before": 99.76516,
+          "after": 99.84404
+        },
+        {
+          "page": 72,
+          "before": 99.55098,
+          "after": 99.99751
+        },
+        {
+          "page": 74,
+          "before": 99.44873,
+          "after": 100.0
+        },
+        {
+          "page": 75,
+          "before": 99.05027,
+          "after": 100.0
+        },
+        {
+          "page": 76,
+          "before": 99.57141,
+          "after": 100.0
+        },
+        {
+          "page": 77,
+          "before": 98.54304,
+          "after": 100.0
+        },
+        {
+          "page": 78,
+          "before": 99.74156,
+          "after": 99.99147
+        },
+        {
+          "page": 80,
+          "before": 98.93126,
+          "after": 100.0
+        },
+        {
+          "page": 82,
+          "before": 99.8205,
+          "after": 100.0
+        },
+        {
+          "page": 83,
+          "before": 99.50154,
+          "after": 100.0
+        },
+        {
+          "page": 84,
+          "before": 99.66033,
+          "after": 100.0
+        },
+        {
+          "page": 86,
+          "before": 96.68846,
+          "after": 99.70611
+        },
+        {
+          "page": 87,
+          "before": 99.15604,
+          "after": 99.9985
+        },
+        {
+          "page": 88,
+          "before": 99.44797,
+          "after": 100.0
+        },
+        {
+          "page": 90,
+          "before": 99.75813,
+          "after": 100.0
+        },
+        {
+          "page": 96,
+          "before": 99.63409,
+          "after": 99.93217
+        },
+        {
+          "page": 97,
+          "before": 99.69744,
+          "after": 99.98514
+        },
+        {
+          "page": 98,
+          "before": 99.67758,
+          "after": 100.0
+        },
+        {
+          "page": 101,
+          "before": 99.76815,
+          "after": 100.0
+        }
+      ],
+      "identical_png_pages": 41,
+      "drops_over_point1": []
+    }
+  ],
+  "remaining": "전103쪽 중26쪽만98% 미달. 이슈 전체·PR 완료 아님.",
+  "visual_profile": "로컬 공급 글꼴, PDFium96DPI compat2022·2px raw. 의미 검사 macOS최소 글꼴sandbox9/160PASS와 구분.",
+  "full_branch_validation_complete": false,
+  "assets": {
+    "before-wasm-p051-overlay.png": "5477e1b3ad3bd11a4594185ba615b7b2b648bb1a90ae5596f4da93b4eb893d1c",
+    "after-wasm-silhouette.tsv": "8f6e7eba82ce447d4dd4d1b98aa955eff36905e2a5206fc40bf6ac5befbc2e29",
+    "after-native-p009-overlay.png": "64c96e00294c26c3037977c3fa513a3b857baaf6110fce62e074ef5d4ae93c79",
+    "before-wasm-p044-overlay.png": "703f65b16a1d55764e7b73926c9a73a18805f3a31bc64d383de66b8677cae79a",
+    "before-native-p009-overlay.png": "b4cd532d328df0b814c5a031cc22e9ff0237831fd752702949b317d9268c08eb",
+    "before-native-p051-review.png": "deb05a94c12e71e767e79070a9095220294728918c29399c687f777b7fa13497",
+    "before-native-p009-review.png": "49082e97c68632ad5b0c551b2d45b614d967f2bad4ce61e9d325822afded7675",
+    "before-wasm-p044-review.png": "3bf38a68ae68f22ac437634be279e72850237626de9ddb3c64bcfa674e1a70c7",
+    "after-native-p051-overlay.png": "910f8907a57acbac4e86d2c5187b119f5dd1c21a0e8e3682e3ebfee8c6f2ee29",
+    "after-wasm-p086-overlay.png": "12f29fd2bf780b64726faf0d7d082424045e31c183d7c1dd2682355eb3cb46e7",
+    "after-native-p051-review.png": "b450ef6acd27d7b9cdd52bfc4e7f332e0cb6cced5bb6e3ec62043cb22b33cafd",
+    "before-wasm-p009-overlay.png": "2fbe441ca24a44fc70582e4056acee51d3b029fff701318495825b9952f0a903",
+    "before-wasm-p086-review.png": "bf1ce379dfe676768cf11df2095733775cfb7afaa5ddf432a781c3dbf61a3cf7",
+    "after-native-p009-review.png": "1bce1763128e0a3a9c04849da94bb029b084f93e5826b1eaa4973cc9068987a0",
+    "after-native-p044-overlay.png": "d5258dfb1b21282894ddd8aa8fcbc75ba07a1337819abf492e7a45e508532e28",
+    "after-wasm-p009-review.png": "9c1f727cfed25da2f800c17c3f0e0e196cb95fa67ae459451fc1511d4d43de54",
+    "after-native-silhouette.tsv": "5e355648069f7a81b2ccec18fefb82cbe3402107a12cbbdab6a62d7036126417",
+    "before-native-p051-overlay.png": "167527ce3dd0cda0acd65765f629a4c0c2b2ee6f2f0415ab3e550ffb968ea120",
+    "after-wasm-p051-review.png": "89df7c44cd65119c07abcbb2bae1d10acd54b6c05c592b9c0ca451d465ab3443",
+    "before-native-p044-overlay.png": "ce08e479da882d225c2e624d917f1f2779abb759375fcb097a39227b377597c1",
+    "after-wasm-p009-overlay.png": "259881c7327989340d13f9646ca06b358ac4abc68e412277c98a60dbf9ae22cc",
+    "before-wasm-p086-overlay.png": "a96c8f45e5682d6d1643d86134e9499e99c4959373c481460f87794e2857f667",
+    "after-wasm-p086-review.png": "79798cf71746bb1f8ae05cf18b5f7070429961c709b14f6c0e4ca57d6be4c37e",
+    "before-native-p044-review.png": "84c0cf15527d7f750414ca56fa9e6131cec1bdc280c1e103173565ce5ccb0b98",
+    "before-wasm-p009-review.png": "14d79e3a370180b59341064b55cb0141957c1ed7d2f18ee4f18a1aca54ca6552",
+    "before-native-silhouette.tsv": "502f90ea0c84db596e4bdb319f4aca846c86b33b0e6f90a7267eec443605faae",
+    "after-native-p086-review.png": "58b95e33591909b248aee910caf58aaab89f3b8b1f62e5f9f4c7add06e897c5e",
+    "before-wasm-p051-review.png": "8e89ca11a50bbff74207f1df2ee9408e0acb5bbca0fba37510c13691ce27d232",
+    "after-native-p044-review.png": "f40d5fff0f6ebc8ace009e5481d0803897f92be82205ac0219436656f22cf8d3",
+    "after-native-p086-overlay.png": "cdcd3588ff5773d30f1e0cd440fbe023388890385d2b3c1b33f41eabc11342a5",
+    "after-wasm-p051-overlay.png": "d6aba5bfaca1a3ca196e5ff571ca2cd5358cf6ab3ec3ae71074abe702161bac3",
+    "before-native-p086-review.png": "db41a1412f45b230e8943c7c96d50947ac1f4ec5de11dfc1a9d02bca6659a3c2",
+    "after-wasm-p044-overlay.png": "1d0592792b2e044ecb816bf198dbc3b4ce18c7cf9ef58dcddc7f9db9112df5c2",
+    "before-wasm-silhouette.tsv": "3f13d217d720b72d67234f827e5dc803dc79e0d45ab30289e221b31fe6396856",
+    "before-native-p086-overlay.png": "4d523493b43a6fb5574e07e8cbe632712b32c6047f139f29d73b86a34d33d1c6",
+    "after-wasm-p044-review.png": "84488942657a715d3099135f516a53c298715045beeabcd6341546c455b029af"
+  }
+}

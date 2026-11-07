@@ -1,20 +1,20 @@
-//! 검사 유형: 고정형 4개(독립 Print ±2px), 관계형 3개(내용 소속·보존·자연 전진).
-//! 주석 갱신: 2026-11-07 09:27:46 KST.
-//! 고정형(px): nested_span_growth / continuation_replanning / deferred_float / first_partial_ordinary_cell의 독립 Print ±2px.
-//! 관계형: fitting_final_row / merged_labels / justified_trailing_spaces의 원문 소유·보존·자연 전진.
-//! 독립 전103쪽 수는 범위 검사이며 절대 페이지 좌표 핀과 구분한다.
-//! 현재 측정: parent0a7adeef5 + 저장 블록 프레임 공통2파일; 2026-11-07 전103쪽 재출력.
-//! canonical 96DPI·compat2022·PDFium exact physical DPI·2px raw; 양쪽 103쪽·누락0·90% 미만0.
-//! 전쪽 최저 Native 96.64273% / fresh WASM 96.64099%(양쪽 26쪽).
-//! 새 px 대상 51쪽 Native 99.51311% / fresh WASM 99.51281%; 실제 이전6 PASS·1 FAIL→7 PASS.
-//! px 대상 19쪽 N/W 100/100%, 30쪽 99.36627/99.36595%, 76쪽 99.57115/99.57141%.
-//! 관계형 대상 25쪽 99.39152/99.38292%, 26쪽 96.64273/96.64099%, 27쪽 98.40958/98.40462%.
-//! 말미 공백 대상 11쪽 99.82667/99.81696%; 기존 451.8px·8/14px 허용값을 복원하지 않는다.
-//! 독립 Print SHA 90eda86b2b4d, 한컴2020 PrintMethod0 one-up, job 6bef4e6b-8a06-463e-8c09-539211ad7a25.
-//! 임시 동일 본문 검증: 보정 전 2PASS4FAIL → 보정 후 6PASS; 조각 하한 미보정 중간본의 해당 검사 1FAIL.
-//! 첫 초안의 (58,2) 합법적 병합 계속을 오인한 부분을 원문 단일행 열7로 정정한 결과다.
-//! 증적: mydocs/pr/assets/issue7700/opening-cell-frame-20261107/README.md.
+//! 검사 유형: 고정형 5개(독립 Print ±2px), 관계형 4개(내용 소속·보존·실제 기호 공급 전진).
+//! 주석 갱신: 2026-11-07 09:56:35 KST.
+//! 2026-11-07 측정: canonical PDFium96DPI·compat2022·2px 색상 경계 보정 전 내용 실루엣 raw.
+//! 원본 samples/issue5679/10857_delegation_rules.hwp / 독립 한컴2020 Print 전103쪽.
+//! 전103쪽 최저 Native 96.65328% / fresh WASM 96.65155% (26쪽).
+//! 19쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 30쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 44쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 51쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 76쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 86쪽 Native 99.70650% / fresh WASM 99.70611%.
+//! 굴림체 U+2024의 실제 결측 공급 전진은 관계형, 44쪽 앞뒤 문자 원점은 독립 PDF 고정형이다.
+//! 이번 기호 보정의 실제 이전7 PASS·2 FAIL→9 PASS; 글꼴 바이너리는 필요/포함하지 않는다.
+//! 근거: mydocs/pr/assets/issue7700/one-dot-program-20261107/README.md.
+//! 첫 저장 조각: mydocs/pr/assets/issue7700/opening-cell-frame-20261107/README.md.
 //! 기존6건의 선행 근거: mydocs/pr/assets/issue7700/repair-20261106/phase2/README.md.
+//! 전체 이슈98% 완료가 아니다. 원래451.8px·8/14px 허용 핀이나 잘못된105쪽 기대값은 복원하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -365,4 +365,45 @@ fn issue_7700_first_partial_ordinary_cell_preserves_its_saved_frame_inside_the_c
     lines(cell(next_table, 28, 3), &mut b);
     assert_eq!(a.len(), 1);
     assert_eq!(b.len(), 2);
+}
+
+#[test]
+fn issue_7700_missing_monospace_dot_uses_the_independently_verified_supplier_advance() {
+    let core = core();
+    let page = core.build_page_render_tree(43).unwrap();
+    let grid = table(&page.root, 87).unwrap();
+    let owner = cell(grid, 7, 2);
+    let (run, _, _) = run_context(owner, "교육", None, None).unwrap();
+    let RenderNodeType::TextRun(r) = &run.node_type else {
+        panic!("원본 교육 라벨")
+    };
+    let mut provider = r.style.clone();
+    provider.font_family = "Haansoft Batang".into();
+    let measured = EmbeddedTextMeasurer.estimate_text_width("․", &r.style);
+    let natural = EmbeddedTextMeasurer.estimate_text_width("․", &provider);
+    assert!(
+        (measured - natural).abs() < 1e-9,
+        "원 프로그램 cmap 결측의 독립 공급자 전진 actual={measured}, provider={natural}"
+    );
+    assert!(measured < EmbeddedTextMeasurer.estimate_text_width("가", &r.style));
+}
+#[test]
+fn issue_7700_centered_missing_dot_keeps_both_neighbor_origins_at_the_independent_print_positions()
+{
+    let core = core();
+    let page = core.build_page_render_tree(43).unwrap();
+    let grid = table(&page.root, 87).unwrap();
+    let owner = cell(grid, 7, 2);
+    let (a, _, _) = run_context(owner, "교육", None, None).unwrap();
+    let (b, _, _) = run_context(owner, "홍보", None, None).unwrap();
+    pdf_px(
+        a.bbox.x,
+        264.63999430338544,
+        "44쪽 교육․홍보의 앞 글자 원점",
+    );
+    pdf_px(
+        b.bbox.x,
+        293.59999593098956,
+        "44쪽 교육․홍보의 뒤 글자 원점",
+    );
 }
