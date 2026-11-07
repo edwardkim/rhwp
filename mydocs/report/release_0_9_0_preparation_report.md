@@ -82,11 +82,16 @@ GitHub 계정을 대조했다. 사람 **33명**, 별도 bot **1개(Dependabot)**
 Cargo 소비 빌드를 이번에 다시 완료했다는 뜻은 아니다. crates.io 검사는 source archive 검사이며
 실제 registry 게시·Cargo registry 소비 검증과 구분한다.
 
-## 남은 원격 절차
+## 원격 처리와 남은 절차
 
-1. 승인 후 준비 branch를 push하고 **devel 대상 Open PR**을 만든다. 해당 head의 필수 CI·self-review를
-   완료하고 merge commit으로 통합한다. 본 작업은 CI workflow/실행 증거 정책을 변경하므로 후속
-   기록은 [post-merge 옵션 2](../manual/pr_review/post_merge.md)의 별도 기록 PR로 처리한다.
+1. **devel 준비 PR 완료:** [#8757](https://github.com/edwardkim/rhwp/pull/8757)의 head
+   `d778ab7bfd28c858c638d7f2c38238bea5a58412`에서 필수 CI와 self-review를 완료하고
+   `0e6cfe91df7aabb886319346f78af568def25a64` merge commit으로 통합했다.
+   Native의 checkout 시간 초과는 사용자 승인에 따라 해당 job·종속 집계만 1회 재실행해 해소했다.
+   전체 회귀 12,777건·CI 선택 Native 237건·Studio 2,769건이 통과했다. 최신 #8269까지의 제품 소스를
+   그대로 보존한 병합과 main ancestry를 확인했다. [최종 검토](../pr/archives/pr_8757_review.md),
+   [CI 증거](../pr/assets/pr8757/ci-results.json)를 별도 기록 후보로 준비했다.
+   CI 정의 변경의 [옵션 2](../manual/pr_review/post_merge.md)에 따른 이 기록 PR의 원격 반영은 남았다.
 2. 통합된 devel의 exact SHA로 [승격 preflight](../manual/github_operations.md#76-workflow-promotion-preflight)를
    실행한다. 원격 full CI/CodeQL, direct/adapter 실행과 5플랫폼 Release Binary·WASM·VSIX verify-only
    결과를 확인한다. `#8745`의 보호 브랜치 전체 보안 분석도 여기서 실제 결과를 확인해야 한다.
