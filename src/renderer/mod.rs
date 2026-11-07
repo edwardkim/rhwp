@@ -2757,6 +2757,45 @@ pub(crate) fn tac_object_stack_line_metrics_with_storage<S: crate::storage::Stor
     Ok((!lines.is_empty()).then_some(lines))
 }
 
+/// 저장 줄이 없는 문단의 텍스트가 줄을 따로 만들지 않는지 — 비었거나, 줄 머리의 글자처럼
+/// 취급 표 하나 **뒤의 공백뿐**이다.
+///
+/// 한/글은 말미 공백에 줄상자를 주지 않는다(#7500·#7160 `absorb_whitespace_only_rows`).
+/// 표가 줄 머리에서 줄을 소유하고 그 뒤 공백은 표 줄 끝에 걸리므로, 텍스트가 빈 문단과
+/// 같은 표 줄 하나만 남는다. 공백 줄을 따로 두면 표 아래에 em 줄 하나가 더 생겨 뒤 내용을
+/// 그만큼 밀어낸다(`samples/issue8574`: 한/글 저장본은 표 줄 하나만
+/// 저장하고, 줄을 지운 파일도 한/글 2020·2024 Print 가 같은 자리에 뒤 문단을 둔다).
+/// 표 앞에 공백이 있거나, 가시 글자나 다른 글자처럼 취급 개체가 있으면 줄 구성이 달라지므로
+/// 대상이 아니다 — 그 줄들은 줄 나눔이 정한다.
+pub(crate) fn tac_table_host_text_is_line_tail(para: &crate::model::paragraph::Paragraph) -> bool {
+    use crate::model::control::Control;
+    if para.text.is_empty() {
+        return true;
+    }
+    if !para
+        .text
+        .chars()
+        .all(|c| matches!(c, ' ' | '\t' | '\u{3000}'))
+    {
+        return false;
+    }
+    let mut inline_objects = para
+        .controls
+        .iter()
+        .zip(para.control_text_positions())
+        .filter(|(control, _)| match control {
+            Control::Table(t) => t.common.treat_as_char,
+            Control::Picture(p) => p.common.treat_as_char,
+            Control::Shape(s) => s.common().treat_as_char,
+            Control::Equation(_) | Control::Form(_) => true,
+            _ => false,
+        });
+    matches!(
+        (inline_objects.next(), inline_objects.next()),
+        (Some((Control::Table(_), 0)), None)
+    )
+}
+
 /// [#7418] 저장 줄 없는 문단의 글자처럼 취급 **표** 줄 — `(표 높이, 줄 뒤 leading)`.
 ///
 /// 조성기는 글자 없이 표 하나만 든 문단에 줄을 만들지 않는다. 표 높이는 표 배치
@@ -2773,7 +2812,7 @@ pub(crate) fn tac_table_host_line_metrics(
     para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
 ) -> Option<(f64, f64)> {
     use crate::model::control::Control;
-    if !para_has_no_stored_line_segs(para) || !para.text.is_empty() {
+    if !para_has_no_stored_line_segs(para) || !tac_table_host_text_is_line_tail(para) {
         return None;
     }
     let height = para
