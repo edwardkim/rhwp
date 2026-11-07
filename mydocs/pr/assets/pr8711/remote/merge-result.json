@@ -1,0 +1,1 @@
+{"headRefOid":"cbe5a6f4dfbc2775913af10ee42098137b27e088","mergeCommit":{"oid":"e724c6caff896a9478dc537cab4e99a57cf879cf"},"mergedAt":"2026-11-07T02:45:33Z","number":8711,"state":"MERGED","title":"fix(serializer): 선행 정의 슬롯 보존 및 HWP 재열기 본문 잘림 보정","url":"https://github.com/edwardkim/rhwp/pull/8711"}

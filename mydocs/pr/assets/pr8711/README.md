@@ -1,6 +1,6 @@
 # PR #8711 메인테이너 검증 증거
 
-검토 원 head는 `57f897a3bd844aadd883d7afb31def4904acb8ca`, 최신 base는 `13775409e57a9550cfb31866d40bdf319ab54bac`다. 제품 검증은 clean merge `a657ac0936e324f9648ab628862062b5b9fddbd8`에서 실행했다. 이후 `4e5a8d1565`에서 테스트 첫머리의 측정 근거 주석을 보완하고, `929f0f5ca5`에서 원자료대로 환경 추정과 래스터라이저 표기를 정정했다. 제품 source와 테스트 본문·assertion·기대값은 같다. [동등성](comment-only-product-equivalence.json), [입력·producer·글꼴 원장](manifest.json)을 따른다. **로컬 필수 검증 완료, 원격 처리 승인 대기.** 전체 12,782건·Native 공식 4,064건·집중 76건이 통과했다. 마지막 주석 정정 후 모든 Rust lint와 해당 집중 4건도 다시 통과했다. [명령·결과](rust-validation-summary.json), [정정 전후 동일성](metadata-correction-equivalence.json)을 따른다. 기존 source head의 GitHub 성공을 새 head의 성공으로 표시하지 않는다.
+검토 원 head는 `57f897a3bd844aadd883d7afb31def4904acb8ca`, 최신 base는 `13775409e57a9550cfb31866d40bdf319ab54bac`다. 제품 검증은 clean merge `a657ac0936e324f9648ab628862062b5b9fddbd8`에서 실행했다. 이후 `4e5a8d1565`에서 테스트 첫머리의 측정 근거 주석을 보완하고, `929f0f5ca5`에서 원자료대로 환경 추정과 래스터라이저 표기를 정정했다. 제품 source와 테스트 본문·assertion·기대값은 같다. [동등성](comment-only-product-equivalence.json), [입력·producer·글꼴 원장](manifest.json)을 따른다. **새 head CI·self-review 후 #8711 MERGED.** [원격 수용·후속 기록](remote/completion.md)을 따른다. 전체 12,782건·Native 공식 4,064건·집중 76건이 통과했다. 마지막 주석 정정 후 모든 Rust lint와 해당 집중 4건도 다시 통과했다. [명령·결과](rust-validation-summary.json), [정정 전후 동일성](metadata-correction-equivalence.json)을 따른다. 기존 source head의 GitHub 성공을 새 head의 성공으로 표시하지 않는다.
 
 ## 실제 출력 결과
 

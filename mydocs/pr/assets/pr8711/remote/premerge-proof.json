@@ -1,0 +1,10 @@
+{
+  "time": "2026-11-07T02:45:07.981650+00:00",
+  "head": "cbe5a6f4dfbc2775913af10ee42098137b27e088",
+  "base": "13775409e57a9550cfb31866d40bdf319ab54bac",
+  "merge_tree": "adf85e7bed4899fdb69033b90e8da977ba3ba5e5",
+  "checks_all_complete": true,
+  "policy_run": 42330675981,
+  "mergeable": "MERGEABLE",
+  "merge_state": "CLEAN"
+}

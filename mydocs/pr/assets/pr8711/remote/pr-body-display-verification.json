@@ -1,0 +1,53 @@
+[
+  {
+    "url": "https://github.com/edwardkim/rhwp/pull/8711",
+    "status": 200,
+    "title": "fix(serializer): 선행 정의 슬롯 보존 및 HWP 재열기 본문 잘림 보정 by postmelee · Pull Request #8711 · edwardkim/rhwp · GitHub",
+    "images": [
+      {
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/cbe5a6f4dfbc2775913af10ee42098137b27e088/mydocs/pr/assets/pr8711/figures/candidate-native-saved-review.png",
+        "alt": "저장 재열기 Native review",
+        "width": 2416,
+        "height": 1209,
+        "complete": true,
+        "renderedWidth": 381.984375,
+        "renderedHeight": 191.15625,
+        "display": "inline",
+        "visibility": "visible"
+      },
+      {
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/cbe5a6f4dfbc2775913af10ee42098137b27e088/mydocs/pr/assets/pr8711/figures/candidate-native-saved-overlay.png",
+        "alt": "저장 재열기 Native overlay",
+        "width": 794,
+        "height": 1209,
+        "complete": true,
+        "renderedWidth": 381.984375,
+        "renderedHeight": 581.65625,
+        "display": "inline",
+        "visibility": "visible"
+      },
+      {
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/cbe5a6f4dfbc2775913af10ee42098137b27e088/mydocs/pr/assets/pr8711/figures/candidate-wasm-saved-review.png",
+        "alt": "저장 재열기 fresh WASM review",
+        "width": 2416,
+        "height": 1209,
+        "complete": true,
+        "renderedWidth": 381.984375,
+        "renderedHeight": 191.15625,
+        "display": "inline",
+        "visibility": "visible"
+      },
+      {
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/cbe5a6f4dfbc2775913af10ee42098137b27e088/mydocs/pr/assets/pr8711/figures/candidate-wasm-saved-overlay.png",
+        "alt": "저장 재열기 fresh WASM overlay",
+        "width": 794,
+        "height": 1209,
+        "complete": true,
+        "renderedWidth": 381.984375,
+        "renderedHeight": 581.65625,
+        "display": "inline",
+        "visibility": "visible"
+      }
+    ]
+  }
+]
