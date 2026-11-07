@@ -1,6 +1,8 @@
 //! #7445 설치한 동일 프로그램의 전체 이름과 PostScript 이름을 함께 조회한다.
 //! KoPub/KoPubWorld 각 6개 SFNT의 name1/4/6/16/17과 독립 Print 공급을 대조했다.
-//! 프로그램 선택 API 계약이며 실물 미달 페이지의 좌표나 모양을 고정하지 않는다.
+//! 관계형: 프로그램 선택 API 계약이며 실물 페이지의 좌표나 모양을 고정하지 않는다.
+//! Native/fresh WASM 일치율: 비해당. 합성 공급 snapshot이며 설치 글꼴을 요구하지 않는다.
+//! 주석 갱신: 2026-11-07 21:45 KST. 원본 프로그램 인증 계약에 맞게 반환값 검사를 보정한다.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::{renderer::font_environment::FontEnvironment, DocumentCore};
 use serde_json::json;
@@ -33,9 +35,18 @@ fn supplied_style_program_precedes_the_document_substitute() {
                         });
                     }
                     let supplied = json!([{"query":postscript,"family":format!("{prefix}{kind}"),"programId":format!("same-{prefix}-{kind}-{weight}-font-program"),"trueType":true},{"query":"HCR Batang","family":"HCR Batang","programId":"fallback-program","trueType":true},{ "query":"Haansoft Batang","family":"Haansoft Batang","programId":"document-fallback-program","trueType":true}]);
-                    if FontEnvironment::from_available_programs(&d.doc_info, &supplied.to_string())
-                        .unwrap()
-                        .is_some()
+                    let selected = FontEnvironment::from_available_programs(
+                        &d.doc_info,
+                        &supplied.to_string(),
+                    )
+                    .unwrap()
+                    .expect("설치한 원본 프로그램의 신원을 인증한다");
+                    let selected = serde_json::to_value(selected).unwrap();
+                    if selected["selectedPrograms"][&name]["query"] != postscript
+                        || selected["selectedPrograms"][&name]["programId"]
+                            != format!("same-{prefix}-{kind}-{weight}-font-program")
+                        || selected["substitutions"][&name] != format!("{prefix}{kind}")
+                        || !selected["selectionRules"].is_null()
                     {
                         errors.push(name.clone());
                     }
