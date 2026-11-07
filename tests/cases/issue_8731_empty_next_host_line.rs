@@ -1,5 +1,14 @@
-//! 관계형.
-//! 주석 갱신: MEASURE_PLACEHOLDER
+//! 검사 유형: 관계형(띠 아래끝·host 줄·빈 문단 줄·첫 본문 줄의 상대 간격과 쪽 소속); 절대 페이지 좌표 핀 없음.
+//! 주석 갱신: 2026-11-07T19:10:32+09:00.
+//! 측정 source: d4f6c8f1c7(기준 upstream/devel b8dd67c500). 2026-11-07 측정, 96 DPI·Print·PDFium·2px raw 실루엣.
+//! 측정 실행: 2026-11-07T18:33:42+09:00 ~ 18:35:44+09:00. 기준 PDF는 한컴 2020 Print.
+//! 156641865_press_release_band.hwpx: 1쪽 Native 99.83% / fresh WASM 99.82%; 전2쪽 최저 99.83% / 99.82%; 누락 없음.
+//!   같은 조건의 수정 전 Native 1쪽 42.87%.
+//! 156713639_press_release_band.hwp: 1쪽 Native 99.43% / fresh WASM 99.43%; 전2쪽 최저 99.43% / 99.43%; 누락 없음.
+//!   같은 조건의 수정 전 Native 1쪽 54.32%.
+//! 증거: mydocs/pr/assets/issue_8731/{native,wasm,base-native}/<문서>_silhouette.tsv,
+//!   pdf/issue8731/<문서>-2020.pdf. 합성 변형 검사 3건(control-float.hwp 변형)은 한컴 저장본이 아니라
+//!   시각 일치 측정 대상이 아니며, 알고리즘 경계만 잠근다.
 //!
 //! [Issue #8731] 자리차지 개체를 매단 빈 앵커 문단 뒤가 **개체 없는 빈 문단**이면 띠 아래
 //! host 줄이 흐름에서 빠져 뒤 본문 전체가 그 줄만큼 위로 붙는다. 저장 사다리
