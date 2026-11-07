@@ -34,7 +34,7 @@ Native/fresh WASM 모두 독립 PDF와 64쪽이 일치한다. 기존 보호 TSV�
 원 기호·제목·밑줄과 뒤 표·본문을 같은 배율로 대조한다. 51쪽은 PDF 인쇄 쪽 번호49에
 해당한다. 글꼴 프로그램을 포함하지 않으며 기존 OTF의 CFF 윤곽을 실제 paint에서 소비한다.
 
-[40쪽 review](wasm-review-040.png) · [40쪽 overlay](wasm-overlay-040.png)  
+[40쪽 review](wasm-review-040.png) · [40쪽 overlay](wasm-overlay-040.png)
 [51쪽 review](wasm-review-051.png) · [51쪽 overlay](wasm-overlay-051.png)
 
 raw 100.00%는 2px 이웃 실루엣의 표시값이다. 기존 선·획의 서브픽셀 래스터 차이가 있으므로
