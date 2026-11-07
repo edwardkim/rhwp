@@ -13670,6 +13670,16 @@ impl LayoutEngine {
             }
             let mut table_visual_shift = 0.0;
             let mut table_y_end = y_offset;
+            // 어울림 표 옆 차선에서 뒤 문단이 시작하면 흐름은 표 높이로 전진하지 않는다.
+            // 조판(typeset)과 같은 저장 차선 판정을 소비한다.
+            let successor_starts_beside_table =
+                crate::renderer::float_placement::square_successor_starts_beside_table(
+                    para,
+                    paragraphs
+                        .get(para_index + 1)
+                        .and_then(crate::renderer::float_placement::stored_line_lane_probe),
+                    t,
+                );
             if renders_outside_body {
                 let tmp_id = tree.next_id();
                 let mut tmp_node = RenderNode::new(
@@ -14369,13 +14379,7 @@ impl LayoutEngine {
                     flow_y
                 } else if paper_page_square_empty_top.is_some() {
                     table_y_before
-                } else if crate::renderer::float_placement::square_successor_starts_beside_table(
-                    para,
-                    paragraphs
-                        .get(para_index + 1)
-                        .and_then(crate::renderer::float_placement::stored_line_lane_probe),
-                    t,
-                ) {
+                } else if successor_starts_beside_table {
                     // 표 원점 이동은 개체의 배타 영역이다. 표 옆 후속 줄의 흐름을
                     // 표 높이로 덮어쓰기 전에 같은 저장 차선 결과를 소비한다.
                     table_y_before
@@ -14863,7 +14867,12 @@ impl LayoutEngine {
                     para_index,
                     wrap_around_paras,
                     table_y_before,
-                    y_offset,
+                    // 표 옆 차선의 흐름 커서는 표 위끝에 머문다. 옆 문단 범위는 표 아래끝이다.
+                    if successor_starts_beside_table {
+                        y_offset.max(table_y_end)
+                    } else {
+                        y_offset
+                    },
                     wrap_text_x,
                     wrap_text_width,
                     strip_x,

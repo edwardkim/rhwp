@@ -131,6 +131,19 @@ pub(in crate::renderer::typeset) fn place(
                 st.end_following_wrap();
                 // fall through → 일반 paragraph 배치
             }
+        } else if let Some(pen) = unstored_lane_text(para, is_empty_para)
+            .then(|| st.square_band_lane_pen())
+            .flatten()
+        {
+            // 저장 줄 없이 rhwp 가 전폭으로 합성한 줄만 가진 문단은 차선 증거가 없다.
+            // 한/글은 이 문단을 표 옆 차선에서 이어 흘린다(36458608 pi=10~13: 뒤 저장
+            // 문단 pi=14 의 vpos 가 차선 높이를 그대로 누적한다). 앞 흡수 문단의 끝에서
+            // 시작해 자기 높이를 소비하고, 밴드는 닫지 않는다.
+            st.start_paragraph_at_band_pen(para_idx, pen);
+            st.register_following_wrap_anchor(
+                para_idx,
+                wrap_match::picture_anchor(paragraphs, band),
+            );
         } else {
             // 매칭 실패 → wrap zone 종료, 정상 처리 진행
             st.end_following_wrap();
@@ -151,4 +164,15 @@ pub(in crate::renderer::typeset) fn place(
         }
     }
     false
+}
+
+/// 합성 줄만 가진(저장 줄이 없는) 개체 없는 본문 문단인가.
+fn unstored_lane_text(para: &Paragraph, is_empty_para: bool) -> bool {
+    !is_empty_para
+        && para.controls.is_empty()
+        && !para.line_segs.is_empty()
+        && para
+            .line_segs
+            .iter()
+            .all(crate::renderer::typeset::is_synthetic_line_seg)
 }

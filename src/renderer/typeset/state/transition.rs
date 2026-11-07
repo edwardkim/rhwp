@@ -39,6 +39,7 @@ impl TypesetState {
                 section_index,
                 square_band_bottom: 0.0,
                 square_band_top: None,
+                square_band_source_pen: None,
                 current_footnote_height: 0.0,
                 footnote_placement: Default::default(),
                 footnote_frames: Vec::new(),
@@ -290,6 +291,7 @@ impl TypesetState {
             self.data.current_height = self.data.current_height.max(self.data.square_band_bottom);
             self.data.square_band_bottom = 0.0;
             self.data.square_band_top = None;
+            self.data.square_band_source_pen = None;
         }
     }
 
