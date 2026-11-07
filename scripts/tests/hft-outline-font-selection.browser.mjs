@@ -1,6 +1,7 @@
-// 관계형: 실제 WASM·FontFace·Canvas의 font-only 계약. 실물 문서 정확도 증거로 사용하지 않는다.
-// 주석 갱신: 2026-11-07T14:39:41+09:00. 직전 변경 0fc490410dcd9b4754966874876829c5f98985e3
-// (2026-11-07T14:22:41+09:00). 저장소 소유 합성 CFF와 공개 편집 API만 사용한다.
+// 관계형: 실제 WASM·FontFace·Canvas의 공급 프로그램 선택을 검사한다. 실물 raw 측정과 구분한다.
+// 주석 갱신: 2026-11-07T15:30:57+09:00. 직전 변경 71ce4b7ae5a3008c92ff1fbe51136dc72487f558
+// (2026-11-07T15:14:19+09:00).
+// 저장소 소유 CFF·OFL TTF를 직접 공급하며 시스템 글꼴 설치나 상용 프로그램 배포에 의존하지 않는다.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {readFileSync, rmSync} from 'node:fs';
@@ -46,7 +47,7 @@ test('HFT·TTF 선언의 합성 굵기가 실제 CFF를 쓰고 공급된 TTF는 
     const face = new FontFace(family, bytes); await face.load(); document.fonts.add(face);
     const languages = ['Hangul', 'Latin', 'Hanja', 'Japanese', 'Other', 'Symbol', 'User'];
     const results = [];
-    for (const sourceType of ['hft', 'ttf']) {
+    for (const sourceType of ['hft', 'ttf', 'unknown']) {
       const source = new TextEncoder().encode(`<?xml version="1.0" encoding="UTF-8"?>
         <HWPML Version="2.91"><HEAD SecCnt="1"><MAPPINGTABLE><FACENAMELIST>
         ${languages.map(lang => `<FONTFACE Count="1" Lang="${lang}"><FONT Id="0" Name="${family}" Type="${lang === 'Hangul' ? sourceType : 'hft'}"/></FONTFACE>`).join('')}

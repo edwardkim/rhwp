@@ -346,15 +346,16 @@ impl HftOutlineFonts {
             false,
             style.italic,
         );
-        // TTF 선언과 실제 공급 프로그램은 다를 수 있다. 실제 원 TTF 별칭이 이 글자를
-        // 소유하면 그대로 두고, 그 별칭 없이 같은 family의 CFF가 공급된 경우만 잇는다.
+        // 선언 또는 HWP5의 미정의 유형 비트와 실제 공급 프로그램은 다를 수 있다.
+        // 실제 원 TTF 별칭이 이 글자를 소유하면 유지하고, 그렇지 않으면 등록된
+        // 같은 family의 CFF를 소비한다. 원본 유형·측정 프로그램을 다시 추정하지 않는다.
         let source_ttf_selected = selected
             .as_ref()
             .is_some_and(|face| face.family.starts_with("__rhwp_ttf__"));
         // Print는 등록된 원 HFT CFF도 같은 fill+stroke 경로에서 소비한다.
         // Screen·실제 기울임·옛한글 전용 face의 선택은 바꾸지 않는다.
         if allow_hft_outline
-            && (style.source_font_is_hft || (style.source_font_is_ttf && !source_ttf_selected))
+            && !source_ttf_selected
             && !style.italic
             && !super::contains_old_hangul_jamo(&character.to_string())
         {

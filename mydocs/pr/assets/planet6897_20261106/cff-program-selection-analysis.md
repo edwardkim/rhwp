@@ -23,11 +23,13 @@
 T9는 모두 U+25CB를 HFT328에 연결하며, 글리프의 같은 cubic 윤곽과 `20 w B`를 보존한다.
 현재 같은 영역의 Native는 기준을 충족하고 WASM의 두 원 기호만 크게 그려진다.
 
-공개 저장 API로 확인한 2022 파일은 기호 슬롯의 한양신명조를 TTF로 선언하고, 2024는
-HFT로 선언한다. 현재 시스템의 해당 family 후보 7개는 모두 CFF이며 원 TTF 별칭을
-공급하지 못한다. 실제 CFF 등록은 두 문서 모두 성공한다. 따라서 선언만 검사하는
-`source_font_is_hft` 조건 때문에 2022는 같은 공급 윤곽을 소비하지 못하고 Canvas
-글꼴 래스터로 되돌아간다. TTF 선언을 HFT로 바꾸거나 원본을 수정해서 해결하지 않는다.
+2022 원본의 기호 슬롯 한양신명조 FACE_NAME 원시 attr은 `0x81`, 2024는 `0x62`다.
+HWPX 저장 API는 앞쪽 값을 TTF로 내보내지만, 이것을 원본의 유효한 TTF 프로그램 선언으로
+단정하면 안 된다. 현재 시스템의 해당 family 후보 7개는 모두 CFF이며 원 TTF 별칭을
+공급하지 못한다. 실제 CFF 등록은 두 문서 모두 성공한다. 기존 `f70a8c937d3dd56ac942d019dfca40c851e0a6a3`은 HWP5 사양 표 20에 유형으로
+정의되지 않은 하위 비트로 TTF를 확정하지 않도록 `source_font_is_ttf`도 해제한다.
+따라서 이 정상 정책에서 HFT/TTF 플래그가 모두 false일 수 있다. 실제 등록 프로그램 대신
+이 두 플래그만으로 CFF 소비를 제한하면 같은 윤곽을 사용하지 못하고 Canvas 래스터로 되돌아간다. TTF 선언을 HFT로 바꾸거나 원본을 수정해서 해결하지 않는다.
 
 소비 경로는 실제 FontFace 공급 → 등록된 CFF/원 TTF 별칭과 cmap →
 `HftOutlineFonts::faux_bold_glyph` → `draw_faux_bold_outline_with_color`의 동일한
@@ -41,3 +43,20 @@ Screen·실제 기울임·옛한글 우선 face·기존 전진폭은 유지한�
 반대 대조군은 OFL Noto Sans KR을 원 TTF 별칭으로 직접 공급해 CFF 등록 전후의 실제
 출력을 비교한다. 이 합성 검사는 실제 문서의 전쪽 TSV와 직접 판독을 대체하지 않는다.
 최종 통과 수치와 원 PR별 판정은 실제 보정 후 재검증을 완료한 뒤 추가한다.
+
+
+## R35 실물 실패를 통한 범위 보완
+
+R35 제품 `71ce4b7ae5`의 실제 최적화 WASM은 HFT·TTF 합성 대조와 실제 TTF 별칭 우선권,
+Screen·옛한글 집중 검사 3건을 통과했다. 그러나 실물 2022 HWP 51쪽은 여전히 99.90%였다.
+HWPX 저장 타입만 보고 TTF 선언으로 단정한 분석을 원본 바이트·공개 `getFontDecisionTrace`·
+위 선행 Git 커밋으로 바로잡았다. 문서의 FACE_NAME attr은 0x81이고 공개 trace의
+layoutMetric은 원 HFT 메트릭을 유지한다. 이 미확정 상태는 잘못된 리베이스가 아니라 기존 정책이다.
+
+미확정 source 타입을 사용하는 저장소 소유 CFF 대조군도 R35에서 실제 FAIL했다.
+정상 HFT/명시 TTF와 구분하여 이 반례를 추가한다. 후속 보정은 이미 실제 FontFace와
+연결된 CFF 프로그램을 조회하며 원본 유형을 다시 추정하지 않는다. 실제 원 TTF 별칭이
+해당 glyph를 소유하는 경우의 우선권은 유지한다. 원본 바이트·글꼴 출처·조판 폭은 바꾸지 않는다.
+`native_pua_host_font_protocol::unassigned_hwp5_font_bits_allow_source_probe_without_truetype_declaration`
+정책 검사도 그대로 유지한다. 합성 반례의 통과를 실물 문서 통과로 표현하지 않으며,
+새 제품의 실제 문제 쪽·2024 대조군·전쪽 TSV가 완료된 뒤 최종 수치를 기록한다.
