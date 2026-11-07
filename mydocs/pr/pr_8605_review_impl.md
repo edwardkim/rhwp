@@ -35,10 +35,16 @@ source family에 연결하고 실제 공개 편집 API로 굵기를 설정한다
 구분한다. 전체 27개 PR 최종 판정은 남은 전체 WASM·Rust·lint 완료 후 갱신한다.
 
 
-## R35 TTF 선언과 실제 CFF 프로그램의 불일치
+## R35·R36 원본 유형과 실제 CFF 프로그램의 불일치
 
-2022 HWP의 남은 51쪽 하락도 같은 공개 API와 독립 PDF로 재현했다. 기호 슬롯이 TTF로
-선언됐지만 실제 해당 family에는 CFF만 공급되어 HFT 선언 조건을 통과하지 못했다.
-원 TTF 별칭의 실제 글리프 소유를 우선 보존하고, 해당 TTF가 없을 때 등록된 CFF를
-소비하도록 보정했다. [원 PR·통합 커밋·PDF 윤곽·수정 전 실패와 반대 대조군](assets/planet6897_20261106/cff-program-selection-analysis.md).
-최적화 fresh WASM의 실제 문제 쪽과 전쪽 검증은 완료 뒤 기록한다.
+2022 HWP의 51쪽 하락을 같은 공개 API와 독립 PDF로 재현했다. HWPX 저장 타입만으로
+원본을 TTF 프로그램이라고 판단하지 않는다. 기존 `f70a8c937d3`은 HWP5 미정의 비트로
+TTF를 확정하지 않는 정상 정책이며 유지했다. 실제 등록된 CFF를 소비하고 원 TTF 별칭의
+글리프 소유를 우선 보존하도록 공통 paint 경계를 보정했다.
+[원 PR·통합 커밋·원본 바이트·독립 PDF 윤곽·수정 전 실패와 반대 대조군](assets/planet6897_20261106/cff-program-selection-analysis.md).
+
+R36 제품 `3f2a7c96ee`의 실제 2022 HWP 51쪽은 **100.00%**이며 이전 99.90% 하락을
+복구했다. [같은 쪽의 TSV·review/overlay·직접 판독](assets/planet6897_20261106/protected-r36/sample16-hwp2022/README.md).
+실제 HFT/TTF/미확정 CFF 소비, 실제 TTF 별칭, Screen·옛한글을 포함한 집중 브라우저
+3건이 통과했다. 원 PR의 30396 권고문과는 구분한 추가 보호 대조군이다.
+전체 27개 PR의 전쪽 검증·최종 Rust·lint와 2024 대조군은 실제 완료 뒤 갱신한다.

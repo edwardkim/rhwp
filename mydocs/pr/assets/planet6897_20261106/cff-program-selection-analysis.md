@@ -60,3 +60,17 @@ layoutMetric은 원 HFT 메트릭을 유지한다. 이 미확정 상태는 잘�
 `native_pua_host_font_protocol::unassigned_hwp5_font_bits_allow_source_probe_without_truetype_declaration`
 정책 검사도 그대로 유지한다. 합성 반례의 통과를 실물 문서 통과로 표현하지 않으며,
 새 제품의 실제 문제 쪽·2024 대조군·전쪽 TSV가 완료된 뒤 최종 수치를 기록한다.
+
+
+## R36 실제 문제 쪽 복구 확인
+
+`3f2a7c96ee1ec86128b6ca1c3a6b700aa2eaeb3b`의 새 최적화 WASM에서 원본 그대로의
+2022 HWP 51쪽은 **99.90% → 100.00%**로 복구됐다. 같은 독립 Print·글꼴 환경을
+유지했다. 원 기호 두 개의 윤곽·기준선과 제목·밑줄, 뒤 표·본문을 실제 같은 쪽의
+review/overlay에서 직접 판독했다. [실제 51쪽 TSV·PNG·재현 조건](protected-r36/sample16-hwp2022/README.md).
+
+실제 브라우저의 3개 집중 검사도 모두 통과했다. HFT·명시 TTF·미확정 타입 3조건에서
+등록된 CFF 소비를 확인하고, 실제 원 TTF 별칭이 있을 때의 출력 보존과 Screen·옛한글
+대조군도 유지한다. 조건별 반복을 별개의 테스트 함수 수로 합산하지 않는다.
+이는 아직 진행 중인 2024 대조군·전쪽 Native/fresh WASM·기본 전체 Rust·lint의
+최종 통과를 의미하지 않는다.
