@@ -40,8 +40,8 @@ const Value& field(const Map& values, const char* name) {
 }
 uint64_t integer(const Value& value) {
   int64_t result;
-  if (auto* number = std::get_if<int64_t>(&value)) result = *number;
-  else if (auto* number = std::get_if<int32_t>(&value)) result = *number;
+  if (auto* wide = std::get_if<int64_t>(&value)) result = *wide;
+  else if (auto* narrow = std::get_if<int32_t>(&value)) result = *narrow;
   else throw MethodError("invalidArgument", "expected integer");
   if (result < 0) throw MethodError("invalidArgument", "negative integer");
   return uint64_t(result);
@@ -56,8 +56,8 @@ double number(const Map& values, const char* name) {
   const auto& value = field(values, name);
   double result;
   if (const auto* real = std::get_if<double>(&value)) result = *real;
-  else if (const auto* whole = std::get_if<int64_t>(&value)) result = double(*whole);
-  else if (const auto* whole = std::get_if<int32_t>(&value)) result = double(*whole);
+  else if (const auto* wide = std::get_if<int64_t>(&value)) result = double(*wide);
+  else if (const auto* narrow = std::get_if<int32_t>(&value)) result = double(*narrow);
   else throw MethodError("invalidArgument", "expected numeric value");
   if (!std::isfinite(result)) throw MethodError("invalidArgument", "nonfinite numeric value");
   return result;
@@ -145,8 +145,9 @@ std::shared_ptr<Job> parse_job(const Map& args) {
 
 class RhwpD3dPlugin final : public flutter::Plugin {
  public:
-  explicit RhwpD3dPlugin(flutter::PluginRegistrarWindows* registrar) : registrar_(registrar),
-      texture_registrar_(FlutterDesktopRegistrarGetTextureRegistrar(registrar->registrar())) {
+  RhwpD3dPlugin(flutter::PluginRegistrarWindows* registrar,
+      FlutterDesktopTextureRegistrarRef texture_registrar) : registrar_(registrar),
+      texture_registrar_(texture_registrar) {
     channel_ = std::make_unique<flutter::MethodChannel<Value>>(registrar->messenger(), "rhwp_native/texture_windows",
         &flutter::StandardMethodCodec::GetInstance());
     channel_->SetMethodCallHandler([this](const auto& call, auto result) {
@@ -236,7 +237,7 @@ class RhwpD3dPlugin final : public flutter::Plugin {
       }
       auto job = parse_job(args);
       if (!api->current(job->check_json)) throw MethodError("staleFrame", "source/view/device stamp is stale");
-      List ids; for (auto id : job->ids) ids.emplace_back(unsigned_value(id));
+      List ids; for (auto snapshot : job->ids) ids.emplace_back(unsigned_value(snapshot));
       Map receipt{{Value("accepted"), Value(true)}, {Value("acceptedSerial"), Value(int64_t(0))},
           {Value("acceptedStamp"), Value(stamp_value(job->stamp))}, {Value("acceptedSnapshots"), Value(ids)},
           {Value("limits"), limits()}};
@@ -257,5 +258,8 @@ void RhwpD3dPluginRegisterWithRegistrar(FlutterDesktopPluginRegistrarRef registr
   if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_PIN,
       reinterpret_cast<LPCWSTR>(&RhwpD3dPluginRegisterWithRegistrar), &module)) return;
   auto* wrapper = flutter::PluginRegistrarManager::GetInstance()->GetRegistrar<flutter::PluginRegistrarWindows>(registrar);
-  wrapper->AddPlugin(std::make_unique<rhwp::d3d::RhwpD3dPlugin>(wrapper));
+  // The C registration entry owns the public raw registrar. The C++ wrapper's
+  // registrar() accessor is protected and is not a plugin-facing API.
+  auto* texture_registrar = FlutterDesktopRegistrarGetTextureRegistrar(registrar);
+  wrapper->AddPlugin(std::make_unique<rhwp::d3d::RhwpD3dPlugin>(wrapper, texture_registrar));
 }

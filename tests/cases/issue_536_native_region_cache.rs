@@ -1,5 +1,5 @@
 //! 관계형·고정형: 합성 PageLayerTree와 new_blank 문서의 crop 동등성, 고정 타일 겹침, LRU 용량·무효화 계약.
-//! 주석 갱신: 2026-10-31T06:04:03+09:00; 직전 파일 커밋: 2026-10-30T23:30:13+09:00 (f3a57f2e6b7d6c59172cd76b5a597ae9c1439ff7).
+//! 주석 갱신: 2026-11-07T12:39:55+09:00; 직전 파일 커밋: 2026-11-06T18:07:14+09:00 (0d70e975806ef52eca1506b960f80a23dd0f9aa5).
 //! 실물 페이지의 조판 좌표를 고정하는 검사가 아니므로 이 assertion의 raw 시각 측정값은 비해당이다.
 //! 합성 알고리즘 계약과 별도의 Native/fresh WASM 실물 검증을 구분한다.
 //! 근거: mydocs/pr/assets/seo_rii_20261030/README.md.
@@ -1742,8 +1742,36 @@ fn native_tiled_off_page_clear_preserves_retained_snapshots_without_replay() {
 
 #[test]
 fn native_tiles_keep_page_and_exact_scale_keys_separate() {
-    let cached = session(true);
-    let uncached = session(true);
+    // This cache-key contract needs visibly different pages, independent of
+    // installed fonts. Supply the repository's MIT-licensed synthetic face.
+    let fixture_session = || {
+        let mut session = session(true);
+        let substitutions: std::collections::BTreeMap<_, _> = session
+            .document()
+            .document()
+            .doc_info
+            .font_faces
+            .iter()
+            .flatten()
+            .map(|font| (font.name.clone(), "RHWP Host Fixture".to_owned()))
+            .collect();
+        let environment = FontEnvironment::from_json(
+            &serde_json::json!({
+                "id": "native-tile-key-fixture",
+                "substitutions": substitutions,
+            })
+            .to_string(),
+        )
+        .unwrap();
+        let font = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/fonts/RHWPHostFixture-Regular.ttf");
+        session
+            .set_font_sources(&[font], Some(environment))
+            .unwrap();
+        session
+    };
+    let cached = fixture_session();
+    let uncached = fixture_session();
     uncached.set_region_cache_limit(0).unwrap();
     let region = RasterRegion {
         x: 30.0,

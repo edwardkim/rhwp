@@ -29,10 +29,10 @@ bool NativeApi::current(const std::string& frame_check) const {
 }
 void NativeApi::release_snapshot(uint64_t snapshot) const noexcept {
   try {
-    char request[96];
-    const auto length = std::snprintf(request, sizeof(request), "{\"op\":\"snapshotRelease\",\"snapshot\":%llu}",
+    char payload[96];
+    const auto length = std::snprintf(payload, sizeof(payload), "{\"op\":\"snapshotRelease\",\"snapshot\":%llu}",
         static_cast<unsigned long long>(snapshot));
-    auto result = read(presentation(reinterpret_cast<const uint8_t*>(request), size_t(length)));
+    auto result = read(presentation(reinterpret_cast<const uint8_t*>(payload), size_t(length)));
     (void)result;
   } catch (...) { /* Process P89 quotas still bound a failed registry release. */ }
 }
