@@ -1,7 +1,7 @@
 //! [#8715] 관계형·고정형 회귀 — 글 문단이 품은 `CELL` 분할 중첩 표가 쪽 경계에서 행 안을
 //! 나눌 때, 칸마다 자기 글줄 경계에서 끊고 이어받는 쪽은 앞 쪽이 그리지 않은 줄부터 그린다.
 //!
-//! 주석 갱신: 2026-11-07 (KST) — 측정값은 아래 표(측정 전 자리표시 아님, 제출 전 갱신)
+//! 주석 갱신: 2026-11-07 17:30 (KST, UTC+9)
 //!
 //! - 입력: `samples/issue8715/nested_row_cell_cuts.hwp` — 공개 규제영향분석서(농업기계화
 //!   촉진법 시행규칙 일부개정령안, HWPX)에서 비교표 1×1 표가 든 문단만 남기고, 일본어 원문
@@ -16,15 +16,16 @@
 //!   행 10 의 앞 두 줄이 어느 쪽에도 없었다. 3쪽 뒤 행의 칸 내용도 시작 행 오프셋만큼 위로
 //!   올라가 칸 상자 위에 그려졌다.
 //!
-//! 측정(`scripts/visual_sweep.py --silhouette-only --dpi 96`, 판정값
-//! `silhouette_raw_match_percent` = 색상 경계 보정 전 2px 이웃 내용 실루엣): 아래 표는 제출
-//! head 에서 갱신한다.
+//! 측정: 2026-11-07 17:16(Native)·17:19(fresh WASM) KST, 코드 head 4c4f9e5150,
+//! `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`, 판정값
+//! `silhouette_raw_match_percent` = 색상 경계 보정 전 2px 이웃 내용 실루엣. 전쪽 최저값은
+//! Native 94.76(1쪽), fresh WASM 91.09(1쪽).
 //!
 //! | 입력 | 전체 쪽수(한컴=rhwp) | 쪽 | Native | fresh WASM | 수정 전 Native |
 //! |---|---|---|---|---|---|
-//! | nested_row_cell_cuts | 3 | 1 | TBD | TBD | 94.31 |
-//! | | | 2 | TBD | TBD | 93.78 |
-//! | | | 3 | TBD | TBD | 39.58 |
+//! | nested_row_cell_cuts | 3 | 1 | 94.76 | 91.09 | 94.31 |
+//! | | | 2 | 99.35 | 99.46 | 93.78 |
+//! | | | 3 | 98.36 | 98.37 | 39.58 |
 //!
 //! 증거: `mydocs/pr/assets/issue_8715/{native,native_base,wasm}/nested_row_cell_cuts_silhouette.tsv`.
 //! 검사는 행 10 칸의 저장 되감김 위치(전제), 칸별 줄의 쪽 소속·순서·누락·중복(관계형),
