@@ -27,6 +27,9 @@ cargo build --locked --release --bin rhwp --features native-skia
 ./target/release/rhwp info output.hwpx --json
 ```
 
+`export-png -o` takes a directory for per-page PNG files; `export-pdf -o` takes a file.
+
+
 PDF import, JBIG2, JPEG 2000, ICC conversion and bounded xref recovery are enabled by default.
 `native-skia` adds PNG, direct PDF, Sixel and Kitty output. Supply document fonts with `--font-path`
 when rendering. A terminal font does not supply fonts to the renderer. Do not redistribute fonts without permission.

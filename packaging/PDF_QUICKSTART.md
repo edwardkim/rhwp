@@ -21,7 +21,7 @@ PDF를 편집 가능한 문서로 가져옵니다. 원본 배치를 우선하는
 # Linux/macOS: 열기 암호는 명령줄 인자가 아닌 표준 입력으로 전달합니다.
 ./rhwp import-pdf protected.pdf opened.hwpx --password-stdin < password.txt
 # 실제 문서 글꼴이 설치된 디렉터리를 지정해 결과를 확인합니다.
-./rhwp export-png output.hwpx -p 0 -o preview.png --font-path /path/to/fonts --profile print
+./rhwp export-png output.hwpx -p 0 -o preview-png --font-path /path/to/fonts --profile print
 ./rhwp export-pdf output.hwpx -o preview.pdf --font-path /path/to/fonts
 ```
 
@@ -44,3 +44,5 @@ JS·WASM·Worker·Studio는 같은 릴리즈로 맞춥니다. `@rhwp/core`에는
 [CLI 전체 명령](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/cli_commands.md) ·
 [보안과 지원 경계](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/security_feature_limits.md) ·
 [릴리즈·기여자](https://github.com/edwardkim/rhwp/releases/tag/v0.9.0)
+
+서드파티 고지는 `notices/THIRD_PARTY_LICENSES.md`와 `notices/` 아래 원문 파일에서 확인합니다.

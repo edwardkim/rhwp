@@ -49,9 +49,11 @@ rhwp import-pdf input.pdf editable.hwpx --layout editable --json
 # 열기 암호: 명령줄 인자나 로그에 암호를 쓰지 않는다.
 rhwp import-pdf protected.pdf opened.hwpx --password-stdin < password.txt
 # 가져온 결과를 확인한다. 소유·사용 권한이 있는 실제 글꼴을 공급한다.
-rhwp export-png output.hwpx -p 0 -o preview.png --font-path /path/to/fonts --profile print
+rhwp export-png output.hwpx -p 0 -o preview-png --font-path /path/to/fonts --profile print
 rhwp export-pdf output.hwpx -o preview.pdf --font-path /path/to/fonts
 ```
+
+`export-png -o`는 디렉터리를 받으며 그 안에 쪽별 PNG를 만듭니다. `export-pdf -o`는 파일을 받습니다.
 
 `password.txt`는 사용자가 안전하게 관리하는 로컬 입력이며 소스·배포물에 넣지 않는다.
 Standard Security R2–R6를 인증하며 빈 열기 암호이면 자동으로 연다. 인증된 사용자/소유자

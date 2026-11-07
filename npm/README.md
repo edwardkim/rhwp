@@ -362,3 +362,5 @@ rhwp가 SVG에 적용하는 자동 폴백 체인:
 ## License
 
 MIT
+
+서드파티 고지는 `notices/THIRD_PARTY_LICENSES.md`와 `notices/` 아래 원문 파일에서 확인합니다.

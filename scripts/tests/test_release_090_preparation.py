@@ -4,6 +4,9 @@ from pathlib import Path
 import re
 import tomllib
 import unittest
+import tempfile
+
+from scripts.prepare_release_notices import prepare
 
 ROOT = Path(__file__).resolve().parents[2]
 RECORDS = ('CHANGELOG.md', 'CHANGELOG_EN.md', 'mydocs/release/release_notes_v0.9.0.md',
@@ -41,6 +44,28 @@ class Release090PreparationTests(unittest.TestCase):
 
     def test_editor_package_retains_project_license_notice(self):
         self.assertEqual((ROOT / "npm/editor/LICENSE").read_bytes(), (ROOT / "LICENSE").read_bytes())
+
+    def test_binary_and_wasm_notices_preserve_originals_without_font_programs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            destination = Path(directory)
+            copied = prepare(destination)
+            for name in ('THIRD_PARTY_LICENSES.md', 'assets/licenses/Unicode-3.0.txt',
+                         'licenses/pdfium/LICENSE', 'vendor/rhwp-qcms/COPYING',
+                         'vendor/rhwp-pdf-import-backend/src/fonts/assets/LICENSE-DejaVu'):
+                self.assertIn(name, copied)
+            for name in copied:
+                self.assertEqual((destination / name).read_bytes(), (ROOT / name).read_bytes())
+                self.assertNotIn(Path(name).suffix.lower(), {'.ttf', '.otf', '.woff', '.woff2', '.rs'})
+
+    def test_notice_symlink_cannot_read_outside_source_tree(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / 'source'
+            root.mkdir()
+            private = Path(directory) / 'private.txt'
+            private.write_text('local-only')
+            (root / 'THIRD_PARTY_LICENSES.md').symlink_to(private)
+            with self.assertRaisesRegex(ValueError, 'outside'):
+                prepare(Path(directory) / 'package', root)
 
     def test_product_manifests_and_lock_roots_match(self):
         cargo = tomllib.loads((ROOT / 'Cargo.toml').read_text())

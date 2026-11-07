@@ -24,7 +24,8 @@ cat > "${PKG_DIR}/package.json" << EOF
     "rhwp.d.ts",
     "rhwp_bg.wasm.d.ts",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "notices/**"
   ],
   "keywords": [
     "hwp",
@@ -59,5 +60,6 @@ EOF
 
 # npm 패키지용 README 복사
 cp "$(dirname "$0")/../npm/README.md" "${PKG_DIR}/README.md"
+python3 "$(dirname "$0")/prepare_release_notices.py" "${PKG_DIR}/notices"
 
 echo "✅ 완료: ${PKG_DIR}/package.json + README.md"

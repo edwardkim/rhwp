@@ -13,7 +13,7 @@ Run from the extracted directory, or add `rhwp` to PATH. On Windows use `.\rhwp.
 ./rhwp import-pdf input.pdf editable.hwpx --layout editable --json
 # Linux/macOS: supply the opening password through stdin, never command arguments.
 ./rhwp import-pdf protected.pdf opened.hwpx --password-stdin < password.txt
-./rhwp export-png output.hwpx -p 0 -o preview.png --font-path /path/to/fonts --profile print
+./rhwp export-png output.hwpx -p 0 -o preview-png --font-path /path/to/fonts --profile print
 ./rhwp export-pdf output.hwpx -o preview.pdf --font-path /path/to/fonts
 ```
 
@@ -37,3 +37,5 @@ included in `@rhwp/core`; `@rhwp/editor` requires a separately hosted Studio.
 [CLI reference](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/cli_commands.md) ·
 [Support boundaries](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/security_feature_limits.md) ·
 [Release and contributors](https://github.com/edwardkim/rhwp/releases/tag/v0.9.0)
+
+Third-party notices: `notices/THIRD_PARTY_LICENSES.md` and the original notice files under `notices/`.
