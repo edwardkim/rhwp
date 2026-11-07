@@ -3579,6 +3579,65 @@ pub(crate) fn para_has_overlay_shape(para: &Paragraph) -> bool {
     })
 }
 
+/// 표를 가진 문단의 표 가로 원점에 쓰는 host 왼쪽 여백(px).
+///
+/// 문단 기준 자리차지 표의 원점은 문단 상자(왼쪽 여백)이다. 첫 줄 들여쓰기·내어쓰기는
+/// 표가 글줄에 참여할 때(글자처럼 취급) 그 표가 소유한 글줄에만 적용한다. 저장 LINE_SEG 의
+/// `TAG_INDENTATION`(bit 20)이 꺼진 첫 줄에는 들여쓰기를 얹지 않으며(#6190), 줄 상자에
+/// 들여쓰기를 얹을 자리가 모자라면 한/글은 들여쓰기를 버린다(#7816).
+/// 온전한 표와 쪽을 넘어 나뉜 표의 조각이 같은 값을 소비한다(#8748).
+pub(crate) fn table_host_margin_left(
+    para: &Paragraph,
+    control_index: usize,
+    table: &crate::model::table::Table,
+    composed: Option<&ComposedParagraph>,
+    (margin_left, indent, margin_right): (f64, f64, f64),
+    col_width: f64,
+    dpi: f64,
+) -> f64 {
+    if !table.common.treat_as_char {
+        return margin_left;
+    }
+    let stored_first_seg_denies_indent = para.line_segs.first().is_some_and(|seg| {
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && seg.tag & crate::model::paragraph::LineSeg::TAG_INDENTATION == 0
+    });
+    let table_owner_line = composed.and_then(|comp| {
+        para.control_text_positions()
+            .get(control_index)
+            .and_then(|position| {
+                comp.lines
+                    .iter()
+                    .rposition(|line| line.char_start <= *position)
+            })
+            .map(|index| (index, comp.lines.len()))
+    });
+    let line_box_width = col_width - margin_left - margin_right;
+    if let Some((index, count)) = table_owner_line {
+        // 표도 자신이 속한 글줄의 들여쓰기·내어쓰기와 저장 플래그를 소비한다.
+        margin_left
+            + crate::renderer::equation_tac_flow::paragraph_line_indent_for_source(
+                indent,
+                index,
+                Some(para),
+                count,
+                true,
+                line_box_width,
+                dpi,
+            )
+    } else if indent > 0.0
+        && !stored_first_seg_denies_indent
+        && crate::renderer::equation_tac_flow::indent_leaves_line_room_hwp(
+            crate::renderer::px_to_hwpunit(indent, dpi),
+            crate::renderer::px_to_hwpunit(line_box_width, dpi),
+        )
+    {
+        margin_left + indent
+    } else {
+        margin_left
+    }
+}
+
 /// [#2019] 문단이 "부동 개체 전용 빈 앵커"인지 — 텍스트가 없고 모든 컨트롤이 부동
 /// (자리차지 아님, tac=false) Shape/Picture/Table 인 경우.
 ///
@@ -12983,52 +13042,16 @@ impl LayoutEngine {
             let alignment = para_style.map(|s| s.alignment).unwrap_or(Alignment::Left);
             let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
             let indent = para_style.map(|s| s.indent).unwrap_or(0.0);
-            // [Issue #6190] 저장 LINE_SEG 의 `TAG_INDENTATION`(bit 20)이 꺼진 첫 줄에는
-            // 들여쓰기를 얹지 않는다 — `paragraph_layout` 의 본문 줄과 같은 계약이다.
-            // 이 계약이 없으면 표 호스트 문단이 들여쓰기만큼 밀려 표가 용지 밖으로
-            // 나간다(156458354 3쪽: 표 우변 829.8, 용지 793.7).
-            let stored_first_seg_denies_indent = para.line_segs.first().is_some_and(|seg| {
-                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                    && seg.tag & crate::model::paragraph::LineSeg::TAG_INDENTATION == 0
-            });
-            let table_owner_line = composed.get(para_index).and_then(|comp| {
-                para.control_text_positions()
-                    .get(control_index)
-                    .and_then(|position| {
-                        comp.lines
-                            .iter()
-                            .rposition(|line| line.char_start <= *position)
-                    })
-                    .map(|index| (index, comp.lines.len()))
-            });
             let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-            // [#7816] 줄 상자에 들여쓰기를 얹을 자리가 모자라면 한/글은 들여쓰기를 버린다.
-            let line_box_width = col_area.width - margin_left - margin_right;
-            let effective_margin =
-                if let Some((index, count)) = table_owner_line.filter(|_| t.common.treat_as_char) {
-                    // 표도 자신이 속한 글줄의 들여쓰기·내어쓰기와 저장 플래그를 소비한다.
-                    margin_left
-                        + crate::renderer::equation_tac_flow::paragraph_line_indent_for_source(
-                            indent,
-                            index,
-                            Some(para),
-                            count,
-                            true,
-                            line_box_width,
-                            self.dpi,
-                        )
-                } else if t.common.treat_as_char
-                    && indent > 0.0
-                    && !stored_first_seg_denies_indent
-                    && crate::renderer::equation_tac_flow::indent_leaves_line_room_hwp(
-                        crate::renderer::px_to_hwpunit(indent, self.dpi),
-                        crate::renderer::px_to_hwpunit(line_box_width, self.dpi),
-                    )
-                {
-                    margin_left + indent
-                } else {
-                    margin_left
-                };
+            let effective_margin = table_host_margin_left(
+                para,
+                control_index,
+                t,
+                composed.get(para_index),
+                (margin_left, indent, margin_right),
+                col_area.width,
+                self.dpi,
+            );
             // 여백·이동이 반영된 표 원점과 원래 문단 앵커를 구분한다.
             let _host_scope =
                 self.reflow_block_host_scope(true, col_area.x + effective_margin, para_y_for_table);
@@ -16602,7 +16625,21 @@ impl LayoutEngine {
             let ml = ps.map(|s| s.margin_left).unwrap_or(0.0);
             let ind = ps.map(|s| s.indent).unwrap_or(0.0);
             let mr = ps.map(|s| s.margin_right).unwrap_or(0.0);
-            (if ind > 0.0 { ml + ind } else { ml }, mr)
+            // 나뉜 조각도 온전한 표와 같은 host 여백을 쓴다. 문단 기준 자리차지 표의
+            // 원점은 문단 상자이며 첫 줄 들여쓰기는 표가 소유한 글줄에만 적용된다.
+            let ml = match para.controls.get(control_index) {
+                Some(Control::Table(table)) => table_host_margin_left(
+                    para,
+                    control_index,
+                    table,
+                    composed.get(para_index),
+                    (ml, ind, mr),
+                    col_area.width,
+                    self.dpi,
+                ),
+                _ => tac_picture_effective_margin_left(ml, ind),
+            };
+            (ml, mr)
         } else {
             (0.0, 0.0)
         };
