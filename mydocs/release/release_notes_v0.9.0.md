@@ -36,7 +36,7 @@ PDF는 원저작 문서 구조를 완벽히 복원하지 않으며 스캔 글자
 
 ### 기여자
 
-v0.8.7 이후 기능 기준 `ffc391d272e92f2019657e0a6beb947de49ba804`의 4,833개 커밋에서 저자·공동 저자·원 PR·cherry-pick 출처를 대조했습니다. 사람 33명, bot 1개(Dependabot)를 분리했으며 사람 identity와 번호 판정의 미해결은 0건입니다. 조회 불가한 cherry-pick 원본 9개는 통합된 커밋 저자로 보완하고 원장에 한계를 남겼습니다. 최종 승격 SHA가 바뀌면 명단을 갱신합니다.
+v0.8.7 이후 기능 기준 `5077b216cbc51d2046da07350de562f6f521a7c1`의 4,852개 커밋에서 저자·공동 저자·원 PR·cherry-pick 출처를 대조했습니다. 사람 33명, bot 1개(Dependabot)를 분리했으며 사람 identity와 번호 판정의 미해결은 0건입니다. 조회 불가한 cherry-pick 원본 9개는 통합된 커밋 저자로 보완하고 원장에 한계를 남겼습니다. 최종 승격 SHA가 바뀌면 명단을 갱신합니다.
 
 [기여자 감사 원장](https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/investigations/release-v0.9.0/contributor-ledger.json) · [별칭·판정 근거](https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/investigations/release-v0.9.0/contributor-overrides.json)
 
@@ -76,4 +76,4 @@ v0.8.7 이후 기능 기준 `ffc391d272e92f2019657e0a6beb947de49ba804`의 4,833�
 - @wook8170
 <!-- release-contributors:v0.9.0:end -->
 
-[Full change range](https://github.com/edwardkim/rhwp/compare/v0.8.7...ffc391d272e92f2019657e0a6beb947de49ba804)
+[Full change range](https://github.com/edwardkim/rhwp/compare/v0.8.7...5077b216cbc51d2046da07350de562f6f521a7c1)

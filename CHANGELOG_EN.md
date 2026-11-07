@@ -42,7 +42,7 @@ Other editors may render RHWP text-paint extensions or transparent PNGs differen
 
 ### Contributors
 
-The audit covers 4,833 commits after v0.8.7 through functional source `ffc391d272e92f2019657e0a6beb947de49ba804`, including authors, co-authors, original PRs and cherry-pick origins. It identifies 33 people and one separately credited bot (Dependabot), with zero unresolved human identities or reference dispositions. Nine unavailable cherry-pick source objects are disclosed; integrated commit authors remain included. Refresh credits if the final promotion SHA changes.
+The audit covers 4,852 commits after v0.8.7 through functional source `5077b216cbc51d2046da07350de562f6f521a7c1`, including authors, co-authors, original PRs and cherry-pick origins. It identifies 33 people and one separately credited bot (Dependabot), with zero unresolved human identities or reference dispositions. Nine unavailable cherry-pick source objects are disclosed; integrated commit authors remain included. Refresh credits if the final promotion SHA changes.
 
 [Contributor ledger](mydocs/tech/investigations/release-v0.9.0/contributor-ledger.json) · [Identity evidence](mydocs/tech/investigations/release-v0.9.0/contributor-overrides.json)
 

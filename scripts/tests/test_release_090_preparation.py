@@ -35,6 +35,8 @@ class Release090PreparationTests(unittest.TestCase):
         for name in RECORDS:
             with self.subTest(name=name):
                 text = (ROOT / name).read_text()
+                self.assertIn(ledger['range']['headSha'], text)
+                self.assertIn(f"{ledger['range']['commitCount']:,}", text)
                 start = '<!-- release-contributors:v0.9.0:start -->'
                 end = '<!-- release-contributors:v0.9.0:end -->'
                 self.assertEqual(text.count(start), 1)
