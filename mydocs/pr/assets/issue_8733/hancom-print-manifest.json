@@ -7,7 +7,7 @@
   "producer": "Hancom PDF 1.3.0.550",
   "os": "Windows",
   "outputRoute": "Print PDF",
-  "explicit100PercentScale": "unverified",
+  "explicit100PercentScale": "confirmed-by-print-operator",
   "pageGeometryPoints": [
     595,
     841
@@ -17,7 +17,7 @@
     187,
     204
   ],
-  "scope": "Observed fill/hatch appearance; not approved canonical layout baselines",
+  "scope": "Independent Print evidence for the stated fill/storage scope; operator confirmed print settings. Existing raw-zero renderer mismatch remains.",
   "files": [
     {
       "input": "mydocs/pr/assets/issue_8733/cell-new-solid.hwp",
@@ -170,5 +170,17 @@
     "reason": "Initial PDF overwritten during user printing; original raster retained. A later verified reprint is included separately in files.",
     "retainedRaster": "mydocs/pr/assets/issue_8733/hancom-table-new-solid-hwp-120dpi.png",
     "retainedRasterSha256": "e23df697cae1ae246e59e93a9c0cc40432f425f264f5fa126a882cc6530b33f9"
+  },
+  "printSettingsConfirmation": {
+    "dateUtc": "2026-11-07",
+    "evidence": "Explicit print-operator attestation in the user conversation",
+    "scope": "All seven files in files, including the preserved table HWP reprint",
+    "horizontalPercent": 100,
+    "verticalPercent": 100,
+    "paper": "original paper",
+    "pageRange": "all pages",
+    "pagesPerSheet": 1,
+    "directUiObservation": false,
+    "derivedFromPdfMetadata": false
   }
 }

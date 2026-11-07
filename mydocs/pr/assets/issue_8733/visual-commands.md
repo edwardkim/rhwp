@@ -45,4 +45,9 @@ WASM 실행 당시의 보조 CLI 경로는 위의 debug/rhwp.exe였다. 페이�
 
 ## 판정 제한
 
-각 backend 7쪽의 raw silhouette는 100.00%지만, raw0 대조군에는 양쪽 모두 가로 해치 누락이 있다. [Native 판독](native/inspection.json)과 [WASM 판독](wasm/inspection.json)을 함께 확인한다. 명시적 Print 100% 배율은 미확인이며 canonical 조판 baseline으로 승인하지 않았다. 설치된 Xpdf pdftotext 4.00의 `-bbox-layout` 미지원으로 marker 추출은 exit 99로 생략됐다. 글자가 없는 합성 셀의 PNG/PDFium 측정과 직접 판독은 수행했다.
+각 backend 7쪽의 raw silhouette는 100.00%지만, raw0 대조군에는 양쪽 모두 가로 해치 누락이 있다. [Native 판독](native/inspection.json)과 [WASM 판독](wasm/inspection.json)을 함께 확인한다. 이후 출력자가 7개 모두의 가로·세로 100%, 원래 용지, 전체 페이지, 한 쪽씩 설정을 확인했다. 설정의 근거는 출력자 확인이며 PDF metadata나 UI 직접 관찰이 아니다. 이 PR의 저장·채움 범위 증거이며 raw0의 전체 시각 일치를 뜻하지 않는다. 설치된 Xpdf pdftotext 4.00의 `-bbox-layout` 미지원으로 marker 추출은 exit 99로 생략됐다. 글자가 없는 합성 셀의 PNG/PDFium 측정과 직접 판독은 수행했다.
+
+
+## 최신 devel 기준 갱신
+
+후속 원격 branch 확인의 devel e4ffabea에 대해 [별도 빌드·전쪽 비교 명령](latest-base/REPRODUCE.md)을 실행했다. [최신 비교](latest-base/comparison.json)는 Native default dev/native-skia와 optimized release WASM/codegen16/-O의 실제 producer 해시, 후보 profile과의 차이, 같은 입력/PDF/글꼴/backend/DPI 조건 및 전체 PNG 동일성을 기록한다. 과거 b8dd 기준 결과를 최신 기준으로 바꾸어 표시하지 않는다.

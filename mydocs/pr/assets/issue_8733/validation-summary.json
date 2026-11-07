@@ -69,11 +69,13 @@
     "requestedInputsObserved": 7,
     "preservedPdfFiles": 7,
     "manifest": "hancom-print-manifest.json",
-    "explicit100PercentScale": "unverified",
-    "quantitativeVisualGate": "Numeric threshold passed; overall visual acceptance withheld for raw-zero hatch mismatch and unverified Print scale",
+    "explicit100PercentScale": "confirmed-by-print-operator",
+    "quantitativeVisualGate": "Raw numeric threshold passed. Scoped storage/fill-authoring behavior accepted; existing raw-zero page hatch rendering mismatch remains outside the claimed fix.",
     "originalTableHwpPdf": "Initial PDF overwritten; hash and raster retained. A verified HWP reprint is now included.",
     "securityBypass": false,
-    "remoteUpload": false
+    "remoteUpload": false,
+    "printSettingsConfirmation": "hancom-print-manifest.json",
+    "printSettingsConfirmationField": "printSettingsConfirmation"
   },
   "files": [
     {
@@ -193,9 +195,33 @@
       "fullVisualAcceptance": false
     },
     "limitations": [
-      "Explicit 100% Print scales not observed",
       "Xpdf pdftotext 4.00 lacks -bbox-layout; marker extraction skipped with exit 99 on text-free synthetic inputs",
       "Existing raw-zero renderer mismatch remains; numeric silhouette score is insufficient"
+    ],
+    "printSettingsEvidence": "Operator confirmed all seven outputs; see hancom-print-manifest.json"
+  },
+  "baseComparison": {
+    "historicalBase": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+    "historicalEvidence": "base/comparison.json",
+    "historicalPageBackendPairs": 14,
+    "historicalMaxDropPercentagePoints": "0.00",
+    "historicalAllRasterPixelsEqual": true,
+    "latestBase": "e4ffabea38062e716f6c333cc950fa31b42b4dd7",
+    "latestStatus": "pass",
+    "latestEvidence": "latest-base/comparison.json",
+    "latestPageBackendPairs": 14,
+    "latestMaxDropPercentagePoints": "0.00",
+    "latestDropOver2PercentagePoints": 0,
+    "latestAllRasterBytesAndPixelsEqual": true
+  },
+  "reviewScope": {
+    "decision": "approved for stated storage/fill-authoring scope",
+    "fullIssue8733Resolution": false,
+    "rawZeroPageRendererFixed": false,
+    "remainingRemoteConditions": [
+      "trailing-head CI",
+      "latest head/base and mergeability",
+      "normal ready and merge"
     ]
   }
 }

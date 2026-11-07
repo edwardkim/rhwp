@@ -2,7 +2,7 @@
 
 이 디렉터리는 합성 문서, Studio 대화상자, 한컴 Print 관찰 증적이다. 신고자의 원 문서를 재배포하지 않는다. Print PDF는 [정식 PDF 경로](hancom-print.md)에 보존한다.
 
-- 기준 devel: `b8dd67c5001dfb0410e9e192528676396cdd6a4e`
+- 최초 기준 devel: `b8dd67c5001dfb0410e9e192528676396cdd6a4e`
 - 검증한 소스: `e551fcc76e0794790e25a565f2509a4891eac6cb`
 - 브라우저: Chrome 155, Rust 1.93.1 / wasm-pack 0.15.0의 optimized release WASM(`wasm-opt -O`). 실제 응답 WASM 해시를 산출물과 대조했다.
 - 전체 결과와 파일별 SHA-256: [validation-summary.json](validation-summary.json)
@@ -18,7 +18,7 @@
 
 수정 대상은 편집 속성의 기본값·부분 변경 보존과 직렬화 계약이다. compositor, 크기 계산, 페이지 배치, paint backend는 변경하지 않았다. HWP 원시 BorderFill 바이트와 HWP/HWPX roundtrip을 별도 Rust 회귀로 확인했다.
 
-후속 사용자 승인으로 로컬 한컴 2020(11.0.0.9166)을 실행했고, 요청한 7개 입력의 채움·무늬 동작을 실제 화면과 Print PDF에서 확인했다. 새 단색 HWP/HWPX와 명시적 무늬 제거는 무늬가 없고, 기존 무늬 0은 가로 무늬를 유지한다. [원본 대응·해시](hancom-print-manifest.json)와 [Print 관찰 범위·제한](hancom-print.md)을 확인한다. 최초 표 HWP PDF는 수동 출력 중 덮어쓰기되었으나 후속 HWP 재인쇄를 고유 파일로 보존해 현재 7개 입력 모두 PDF가 있다. 명시적 100% 배율은 미확인이다. 보안 우회나 원격 업로드는 하지 않았다.
+후속 사용자 승인으로 로컬 한컴 2020(11.0.0.9166)을 실행했고, 요청한 7개 입력의 채움·무늬 동작을 실제 화면과 Print PDF에서 확인했다. 새 단색 HWP/HWPX와 명시적 무늬 제거는 무늬가 없고, 기존 무늬 0은 가로 무늬를 유지한다. [원본 대응·해시](hancom-print-manifest.json)와 [Print 관찰 범위·제한](hancom-print.md)을 확인한다. 최초 표 HWP PDF는 수동 출력 중 덮어쓰기되었으나 후속 HWP 재인쇄를 고유 파일로 보존해 현재 7개 입력 모두 PDF가 있다. 출력자가 이후 7개 모두의 가로·세로 100%, 원래 용지, 전체 페이지, 한 쪽씩 설정을 확인했다. 이는 출력자 확인이며 UI 직접 관찰과 구분한다. 보안 우회나 원격 업로드는 하지 않았다.
 
 양수 무늬 번호의 전면 매핑 변경과 이미 잘못 저장된 문서의 자동 복구는 포함하지 않는다. 너비·줄 간격 문제의 기존 #7608 수정은 유지하고 #7606 회귀 3건을 재검증했다.
 
@@ -35,3 +35,10 @@
 Native 명령은 "cargo build --locked --release --features native-skia --bin rhwp"이며 Rust 1.93.1, target/pr-review, 작업수 4를 사용했다. 실행 파일·WASM 해시, 고정 소스 SHA, 측정 집계는 [validation-summary.json](validation-summary.json)에 기록했다. TSV는 원본 바이트를 보존하며 개행 자동 변환을 비활성화했다.
 
 정확한 측정 조건과 공개 입력 재현 명령은 [visual-commands.md](visual-commands.md)에 있다.
+
+
+## 최신 devel과 무회귀 비교
+
+최신 고정 devel e4ffabea38062e716f6c333cc950fa31b42b4dd7과 후보를 같은 7개 입력/PDF·Print profile·Windows 글꼴·96 DPI·compat 2022로 비교했다. Native/fresh WASM 전체 14개 page/backend 쌍의 raw는 모두 100.00%, Decimal 최대 하락은 0.00%p다. 실제 렌더 PNG 14개가 바이트·RGB 픽셀 모두 같고 대표 compare/overlay/review 18개도 같다.
+
+[최신 비교 JSON·원본 TSV·이미지 목록](latest-base/comparison.json) · [빌드와 재현 명령](latest-base/REPRODUCE.md). 최초 b8dd67c5의 [역사적 비교](base/comparison.json)도 별도로 보존한다. Native profile과 WASM codegen partition의 기록 차이는 숨기지 않으며 실제 producer 해시와 출력 동일성을 확인했다. 기존 raw0 해치 누락은 최신 기준에도 존재하고 저장·편집 수정의 수용 범위와 구분한다.

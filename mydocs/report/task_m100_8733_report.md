@@ -1,6 +1,6 @@
 # #8733 한컴 표 배경 저장 수정
 
-- 기준: devel b8dd67c5001dfb0410e9e192528676396cdd6a4e
+- 최초 기준: devel b8dd67c5001dfb0410e9e192528676396cdd6a4e
 - 작업 브랜치: task/8733-solid-fill-hancom
 - 확인일: 2026-11-07 UTC
 - 대상: https://github.com/edwardkim/rhwp/issues/8733
@@ -47,7 +47,7 @@ https://github.com/edwardkim/rhwp/pull/7608
 사용자가 남은 검증과 PR 제출을 승인한 후 최종 optimized WASM 및 Studio 전체 검증을 완료했다. 코드 commit은 `cf88d4c70`, Windows 테스트 경로 보정은 `e551fcc76`이며, Rust 전체 검증 이후 제품·Rust 테스트 소스는 동일하다. 이후 추가되는 파일은 보고서와 검증 입력뿐이다.
 
 - 공개 가능한 합성 HWP/HWPX, 대화상자 PNG, 파일 해시와 검증 집계: [검증 입력](../pr/assets/issue_8733/README.md).
-- [한컴 Print PDF](../pr/assets/issue_8733/hancom-print.md)와 [입력·출력 해시 및 대응 근거](../pr/assets/issue_8733/hancom-print-manifest.json)를 보존한다. 명시적 100% 인쇄 배율은 미확인이고 최초 표 HWP PDF는 덮어쓰기되어 원본 래스터와 해시만 남았다. 이를 canonical 조판 기준 또는 전체 시각 gate 통과로 주장하지 않는다.
+- [한컴 Print PDF](../pr/assets/issue_8733/hancom-print.md)와 [입력·출력 해시 및 대응 근거](../pr/assets/issue_8733/hancom-print-manifest.json)를 보존한다. 초기에는 명시적 100% 인쇄 배율이 미확인이었으나 이후 출력자가 7개 모두의 100%·원래 용지·전체 페이지·한 쪽씩 설정을 확인했다. 최초 표 HWP PDF는 덮어쓰기되었으며 재인쇄본을 별도로 보존했다. 이를 전체 시각 일치로 주장하지 않는다.
 - 생성된 `rhwp-studio/public/` WASM glue와 WASM 바이너리는 제출에서 제외한다.
 - 이 보고서는 제출 후보의 로컬 검증 기록이다. 원격 CI 결과는 PR의 정확한 head에서 별도로 확인하며 merge는 사용자 승인 없이 수행하지 않는다.
 
@@ -72,6 +72,17 @@ Native/fresh WASM 시각 측정은 보조값·직접 판독·인쇄 조건을 �
 
 고정 devel의 `src/renderer/style_resolver.rs`는 `pattern_type > 0`에서만 패턴을 생성하므로 0은 단색이다. `web_canvas.rs`는 1~6, `skia/fill_shader.rs`는 0~5 번호로 패턴을 그린다. 이 파일들은 현재 PR과 고정 base 사이에 diff가 없다. 이 저장 수정이 렌더러의 전체 무늬 매핑을 고쳤다고 주장하지 않는다. 기존 raw0는 값과 한컴 출력에서 보존되지만 rhwp의 페이지 표시에서는 해치가 누락된다.
 
-[Native/WASM 원본 TSV와 직접 판독 자료](../pr/assets/issue_8733/README.md#페이지-시각-비교)를 보존했다. 이 잔여 차이 및 인쇄 배율 미확인 때문에 전체 시각 검증 완료나 병합 준비 완료로 표시하지 않는다.
+[Native/WASM 원본 TSV와 직접 판독 자료](../pr/assets/issue_8733/README.md#페이지-시각-비교)를 보존했다. 이 잔여 차이 때문에 7개 모두의 시각 일치로 표시하지 않는다. 이후 출력자가 인쇄 조건을 확인했으며, 고정 base 비교와 self-review의 범위별 판정은 [PR 검토](../pr/archives/pr_8738_review.md)에 기록한다.
 
 Native 빌드는 Rust 1.93.1의 locked release native-skia 기능으로 완료했고 재연결 후 재개 빌드는 23분 30초였다. 실행 파일 SHA-256은 2284ff6defecbd40754af052d47d6bd63c2b2ab56a28b3ee3276552b8b5e15ec이다. pdftotext의 bbox 추출은 설치된 Xpdf 버전의 옵션 미지원으로 생략됐으며, 글자 없는 합성 셀의 PNG/PDFium 비교와 직접 판독을 수행했다.
+
+## 인쇄 조건 후속 확인
+
+출력자가 2026-11-07에 보존된 7개 PDF 모두의 인쇄 당시 가로·세로 100%, 원래 용지, 전체 페이지, 한 쪽씩 설정을 명시적으로 확인했다. 최초 도구 관찰의 미확인을 이 출력자 확인으로 보완했다. UI 직접 관찰이나 PDF metadata로 입증한 것으로 표현하지 않으며, 파일을 다시 인쇄하거나 대체하지 않았다. raw0 렌더링 잔여 차이와 base 비교는 별도 판정한다.
+
+
+## Self-review 후속 비교
+
+최초 b8dd67c5뿐 아니라 최신 devel e4ffabea38062e716f6c333cc950fa31b42b4dd7의 Native/fresh WASM 비교를 완료했다. 같은 7개 입력의 전체 14개 page/backend 쌍에서 raw 100.00%, Decimal 최대 하락 0.00%p, 실제 렌더 PNG 바이트·RGB 픽셀 동일을 확인했다. 대표 compare/overlay/review 18개도 후보와 바이트 단위로 같았다. [최신 비교](../pr/assets/issue_8733/latest-base/comparison.json)와 [실제 명령](../pr/assets/issue_8733/latest-base/REPRODUCE.md)을 보존한다.
+
+이 결과와 출력자의 Print 조건 확인으로 저장·단색 채움·부분 편집 보존 범위의 self-review를 승인했다. 기존 raw0 페이지 해치 누락, 전체 무늬 매핑과 이미 손상된 원 문서의 너비·간격 복구는 완료 주장에 포함하지 않는다. Native 기본 dev와 후보 release, WASM codegen 기록 차이는 실제 producer 정보에 명시했으며 동일 옵션이라고 주장하지 않는다. 원격 ready·merge는 문서 trailing head CI 및 최신 상태 확인 뒤 진행한다.
