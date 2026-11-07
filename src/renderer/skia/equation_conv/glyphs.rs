@@ -1,8 +1,8 @@
 //! 수식 Skia의 실제 face 선택·텍스트 표시와 늘인 괄호 표시.
 use super::super::font_lookup::{
     declared_family_candidates, match_supplied_family, match_system_family_style,
-    select_typeface_for_character,
-    text_family_candidates, typeface_candidates_for_families, TypefaceCandidate,
+    select_typeface_for_character, text_family_candidates, typeface_candidates_for_families,
+    TypefaceCandidate,
 };
 use super::{stroke_paint, EquationFonts, EQ_FONT_FAMILY};
 use skia_safe::{font, paint, Canvas, Color, Font, FontStyle, Paint, PathBuilder};
