@@ -436,9 +436,15 @@ fn try_refresh_single_tac_host_row<S: crate::storage::Storage>(
     Ok(())
 }
 
-/// 실제 재조판 뒤 텍스트와 수식 줄을 composition과 같은 메트릭으로 저장한다.
-/// 단일/여러 수식의 실제 줄 소속은 기존 composition이 결정한다.
+/// 실제 재조판 뒤 텍스트와 수식 줄을 composition과 같은 메트릭으로 저장하고,
+/// 마지막으로 문단 세로 정렬점의 저장 기준선을 발행한다.
 pub(super) fn publish_regenerated_rows(para: &mut Paragraph, styles: &ResolvedStyleSet) {
+    publish_equation_rows(para, styles);
+    super::line_breaking::publish_vertical_alignment_baselines(para, styles);
+}
+
+/// 단일/여러 수식의 실제 줄 소속은 기존 composition이 결정한다.
+fn publish_equation_rows(para: &mut Paragraph, styles: &ResolvedStyleSet) {
     let mut has_inline_equation = false;
     let supported = para.controls.iter().all(|control| match control {
         Control::Equation(equation) if equation.common.treat_as_char => {

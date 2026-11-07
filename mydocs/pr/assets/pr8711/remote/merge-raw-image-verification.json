@@ -1,0 +1,34 @@
+[
+  {
+    "url": "https://raw.githubusercontent.com/edwardkim/rhwp/e724c6caff896a9478dc537cab4e99a57cf879cf/mydocs/pr/assets/pr8711/figures/candidate-native-saved-review.png",
+    "path": "mydocs/pr/assets/pr8711/figures/candidate-native-saved-review.png",
+    "status": 200,
+    "content_type": "image/png",
+    "bytes": 60579,
+    "sha256": "9b9cce470e93fe5c0fc12ccff44a7035db0ca5365ceb22197e53eda568babe59"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/edwardkim/rhwp/e724c6caff896a9478dc537cab4e99a57cf879cf/mydocs/pr/assets/pr8711/figures/candidate-native-saved-overlay.png",
+    "path": "mydocs/pr/assets/pr8711/figures/candidate-native-saved-overlay.png",
+    "status": 200,
+    "content_type": "image/png",
+    "bytes": 34504,
+    "sha256": "dc44efbfc8d4aca536d287bda77b9a870bc7cd65340a6fc9f4391b45500d10a0"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/edwardkim/rhwp/e724c6caff896a9478dc537cab4e99a57cf879cf/mydocs/pr/assets/pr8711/figures/candidate-wasm-saved-review.png",
+    "path": "mydocs/pr/assets/pr8711/figures/candidate-wasm-saved-review.png",
+    "status": 200,
+    "content_type": "image/png",
+    "bytes": 59890,
+    "sha256": "eca396c70d420c08b07c19deea7b2fc69c801d0893a7d321f150b12c4089716a"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/edwardkim/rhwp/e724c6caff896a9478dc537cab4e99a57cf879cf/mydocs/pr/assets/pr8711/figures/candidate-wasm-saved-overlay.png",
+    "path": "mydocs/pr/assets/pr8711/figures/candidate-wasm-saved-overlay.png",
+    "status": 200,
+    "content_type": "image/png",
+    "bytes": 34756,
+    "sha256": "1c606e7c28ef3bbc7777d4a3847bf0937afd8f360f7f98c890a46a7a3fe800ed"
+  }
+]

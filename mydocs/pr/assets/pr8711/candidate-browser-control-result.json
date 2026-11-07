@@ -1,0 +1,71 @@
+{
+  "producer": "candidate",
+  "executedWasmSha256": "f5bf3679c57cc2aac28e78a587c9b7ab31afe705cad363f644c462ce5d5b65bd",
+  "packageWasmSha256": "f5bf3679c57cc2aac28e78a587c9b7ab31afe705cad363f644c462ce5d5b65bd",
+  "wasmResponseBytes": 28350189,
+  "beforePages": 4,
+  "reopenedPages": 4,
+  "loss": {
+    "schemaVersion": 1,
+    "outputFormat": "hwp",
+    "count": 0,
+    "losses": []
+  },
+  "prepared": {
+    "source": "preparedPrograms",
+    "environment": null,
+    "programs": [
+      {
+        "query": "함초롬바탕",
+        "family": "함초롬바탕",
+        "programId": "sweep-0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+        "trueType": true,
+        "openTypeCff": false
+      }
+    ],
+    "loaded": [
+      {
+        "family": "함초롬바탕",
+        "registeredFamily": "함초롬바탕",
+        "sourceSha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+        "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+        "faceIndex": 0,
+        "weight": 400,
+        "style": "normal",
+        "sourceKind": "external"
+      }
+    ]
+  },
+  "saves": {
+    "direct": {
+      "bytes": 57344,
+      "sha256": "6d87b3553f936421f9a75370d692d5e9143ee87d298ad224b89d7ab2c7561307"
+    },
+    "reportBytes": {
+      "bytes": 57344,
+      "sha256": "6d87b3553f936421f9a75370d692d5e9143ee87d298ad224b89d7ab2c7561307"
+    },
+    "afterFont": {
+      "bytes": 57344,
+      "sha256": "6d87b3553f936421f9a75370d692d5e9143ee87d298ad224b89d7ab2c7561307"
+    },
+    "twice": {
+      "bytes": 57344,
+      "sha256": "6d87b3553f936421f9a75370d692d5e9143ee87d298ad224b89d7ab2c7561307"
+    }
+  },
+  "operations": {
+    "insert": {
+      "ok": true,
+      "charOffset": 1
+    },
+    "delete": {
+      "ok": true,
+      "charOffset": 0
+    }
+  },
+  "textUnchanged": true,
+  "textCharacters": 4442,
+  "beforeTextSha256": "72a2881819b93fde0cf3f9126e97dde9e59c6f391491f02d9bca870b4b8e3218",
+  "afterTextSha256": "72a2881819b93fde0cf3f9126e97dde9e59c6f391491f02d9bca870b4b8e3218"
+}

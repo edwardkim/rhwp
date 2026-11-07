@@ -1,0 +1,2159 @@
+[
+  {
+    "id": 128266544354,
+    "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:07:42Z",
+    "completed_at": "2026-11-07T02:07:48Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128266544354",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:07:43Z",
+        "completed_at": "2026-11-07T02:07:44Z"
+      },
+      {
+        "name": "Default to full verification",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:07:44Z",
+        "completed_at": "2026-11-07T02:07:44Z"
+      },
+      {
+        "name": "Capture PR merge-tree evidence",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:07:44Z",
+        "completed_at": "2026-11-07T02:07:45Z"
+      },
+      {
+        "name": "Upload PR merge-tree evidence",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-11-07T02:07:45Z",
+        "completed_at": "2026-11-07T02:07:47Z"
+      },
+      {
+        "name": "Resolve trusted source base parent",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 5,
+        "started_at": "2026-11-07T02:07:47Z",
+        "completed_at": "2026-11-07T02:07:47Z"
+      },
+      {
+        "name": "Checkout trusted verifier",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 6,
+        "started_at": "2026-11-07T02:07:47Z",
+        "completed_at": "2026-11-07T02:07:47Z"
+      },
+      {
+        "name": "Evaluate exact PR workflow evidence",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 7,
+        "started_at": "2026-11-07T02:07:47Z",
+        "completed_at": "2026-11-07T02:07:47Z"
+      },
+      {
+        "name": "Publish validated Archive B duration measurement",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 8,
+        "started_at": "2026-11-07T02:07:47Z",
+        "completed_at": "2026-11-07T02:07:47Z"
+      },
+      {
+        "name": "Publish validated Archive C duration measurement",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 9,
+        "started_at": "2026-11-07T02:07:47Z",
+        "completed_at": "2026-11-07T02:07:47Z"
+      },
+      {
+        "name": "Publish validated Archive D duration measurement",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 10,
+        "started_at": "2026-11-07T02:07:47Z",
+        "completed_at": "2026-11-07T02:07:47Z"
+      },
+      {
+        "name": "Publish validated Archive E duration measurement",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 11,
+        "started_at": "2026-11-07T02:07:47Z",
+        "completed_at": "2026-11-07T02:07:47Z"
+      },
+      {
+        "name": "Finalize reuse after validated evidence publication",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12,
+        "started_at": "2026-11-07T02:07:47Z",
+        "completed_at": "2026-11-07T02:07:47Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 13,
+        "started_at": "2026-11-07T02:07:47Z",
+        "completed_at": "2026-11-07T02:07:47Z"
+      }
+    ]
+  },
+  {
+    "id": 128266545664,
+    "name": "WASM Build",
+    "status": "completed",
+    "conclusion": "skipped",
+    "started_at": "2026-11-07T02:07:40Z",
+    "completed_at": "2026-11-07T02:07:39Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128266545664",
+    "steps": []
+  },
+  {
+    "id": 128266587233,
+    "name": "CI preflight",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:07:51Z",
+    "completed_at": "2026-11-07T02:08:45Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128266587233",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:07:52Z",
+        "completed_at": "2026-11-07T02:07:52Z"
+      },
+      {
+        "name": "Select test profile policy",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:07:52Z",
+        "completed_at": "2026-11-07T02:07:53Z"
+      },
+      {
+        "name": "Detect review-only fast pass",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:07:53Z",
+        "completed_at": "2026-11-07T02:08:40Z"
+      },
+      {
+        "name": "Check out current-base merge tree inputs",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 4,
+        "started_at": "2026-11-07T02:08:40Z",
+        "completed_at": "2026-11-07T02:08:40Z"
+      },
+      {
+        "name": "Verify current-base merge tree",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 5,
+        "started_at": "2026-11-07T02:08:40Z",
+        "completed_at": "2026-11-07T02:08:40Z"
+      },
+      {
+        "name": "Finalize review-only fast pass",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-11-07T02:08:40Z",
+        "completed_at": "2026-11-07T02:08:40Z"
+      },
+      {
+        "name": "Check out trusted CI impact classifier",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-11-07T02:08:40Z",
+        "completed_at": "2026-11-07T02:08:42Z"
+      },
+      {
+        "name": "Collect CI impact input",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-11-07T02:08:42Z",
+        "completed_at": "2026-11-07T02:08:43Z"
+      },
+      {
+        "name": "Classify CI impact",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9,
+        "started_at": "2026-11-07T02:08:43Z",
+        "completed_at": "2026-11-07T02:08:44Z"
+      },
+      {
+        "name": "Summarize CI impact classification",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10,
+        "started_at": "2026-11-07T02:08:44Z",
+        "completed_at": "2026-11-07T02:08:44Z"
+      },
+      {
+        "name": "Post Check out trusted CI impact classifier",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 20,
+        "started_at": "2026-11-07T02:08:44Z",
+        "completed_at": "2026-11-07T02:08:44Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 21,
+        "started_at": "2026-11-07T02:08:44Z",
+        "completed_at": "2026-11-07T02:08:44Z"
+      }
+    ]
+  },
+  {
+    "id": 128266844300,
+    "name": "Lint (fmt, clippy, WASM check)",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:08:48Z",
+    "completed_at": "2026-11-07T02:24:56Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128266844300",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:08:49Z",
+        "completed_at": "2026-11-07T02:08:50Z"
+      },
+      {
+        "name": "Disk space before checkout",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:08:50Z",
+        "completed_at": "2026-11-07T02:08:50Z"
+      },
+      {
+        "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:08:50Z",
+        "completed_at": "2026-11-07T02:12:05Z"
+      },
+      {
+        "name": "Disk space after checkout",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-11-07T02:12:05Z",
+        "completed_at": "2026-11-07T02:12:05Z"
+      },
+      {
+        "name": "Install Rust toolchain",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-11-07T02:12:05Z",
+        "completed_at": "2026-11-07T02:12:16Z"
+      },
+      {
+        "name": "Disk space after Rust toolchain installation",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-11-07T02:12:16Z",
+        "completed_at": "2026-11-07T02:12:16Z"
+      },
+      {
+        "name": "Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-11-07T02:12:16Z",
+        "completed_at": "2026-11-07T02:12:21Z"
+      },
+      {
+        "name": "Disk space after Rust build cache restore",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-11-07T02:12:21Z",
+        "completed_at": "2026-11-07T02:12:21Z"
+      },
+      {
+        "name": "Prepare derived Rust test suites",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9,
+        "started_at": "2026-11-07T02:12:21Z",
+        "completed_at": "2026-11-07T02:12:22Z"
+      },
+      {
+        "name": "Format check",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10,
+        "started_at": "2026-11-07T02:12:22Z",
+        "completed_at": "2026-11-07T02:12:42Z"
+      },
+      {
+        "name": "Validate Visual Sweep PNG contracts",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11,
+        "started_at": "2026-11-07T02:12:42Z",
+        "completed_at": "2026-11-07T02:13:26Z"
+      },
+      {
+        "name": "Validate CI impact classifier",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12,
+        "started_at": "2026-11-07T02:13:26Z",
+        "completed_at": "2026-11-07T02:13:33Z"
+      },
+      {
+        "name": "Validate Rust test suite manifest",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 13,
+        "started_at": "2026-11-07T02:13:33Z",
+        "completed_at": "2026-11-07T02:13:47Z"
+      },
+      {
+        "name": "Test internal Rust crates",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 14,
+        "started_at": "2026-11-07T02:13:47Z",
+        "completed_at": "2026-11-07T02:14:00Z"
+      },
+      {
+        "name": "Validate LLM verifier tool contracts",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 15,
+        "started_at": "2026-11-07T02:14:00Z",
+        "completed_at": "2026-11-07T02:14:21Z"
+      },
+      {
+        "name": "Validate Visual Sweep PNG server",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 16,
+        "started_at": "2026-11-07T02:14:21Z",
+        "completed_at": "2026-11-07T02:14:21Z"
+      },
+      {
+        "name": "Validate Render Diff trigger policy",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 17,
+        "started_at": "2026-11-07T02:14:21Z",
+        "completed_at": "2026-11-07T02:14:22Z"
+      },
+      {
+        "name": "Validate canvaskit-parity batch map",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 18,
+        "started_at": "2026-11-07T02:14:22Z",
+        "completed_at": "2026-11-07T02:14:22Z"
+      },
+      {
+        "name": "Validate workflow contracts",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 19,
+        "started_at": "2026-11-07T02:14:22Z",
+        "completed_at": "2026-11-07T02:14:41Z"
+      },
+      {
+        "name": "Validate adoption spine contract",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 20,
+        "started_at": "2026-11-07T02:14:41Z",
+        "completed_at": "2026-11-07T02:14:42Z"
+      },
+      {
+        "name": "Validate planner templates",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 21,
+        "started_at": "2026-11-07T02:14:42Z",
+        "completed_at": "2026-11-07T02:14:42Z"
+      },
+      {
+        "name": "Validate agent org contract",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 22,
+        "started_at": "2026-11-07T02:14:42Z",
+        "completed_at": "2026-11-07T02:14:42Z"
+      },
+      {
+        "name": "Validate agent frame contract",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 23,
+        "started_at": "2026-11-07T02:14:42Z",
+        "completed_at": "2026-11-07T02:14:42Z"
+      },
+      {
+        "name": "Validate external reality check contract",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 24,
+        "started_at": "2026-11-07T02:14:42Z",
+        "completed_at": "2026-11-07T02:14:42Z"
+      },
+      {
+        "name": "Clippy",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 25,
+        "started_at": "2026-11-07T02:14:42Z",
+        "completed_at": "2026-11-07T02:16:47Z"
+      },
+      {
+        "name": "Clippy (WASM32)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 26,
+        "started_at": "2026-11-07T02:16:47Z",
+        "completed_at": "2026-11-07T02:18:40Z"
+      },
+      {
+        "name": "Check workspace members (FFI bindings, tools)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 27,
+        "started_at": "2026-11-07T02:18:40Z",
+        "completed_at": "2026-11-07T02:24:05Z"
+      },
+      {
+        "name": "Agent preflight (failure-path sweep + undeclared-command detection)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 28,
+        "started_at": "2026-11-07T02:24:05Z",
+        "completed_at": "2026-11-07T02:24:08Z"
+      },
+      {
+        "name": "Check WASM target",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 29,
+        "started_at": "2026-11-07T02:24:08Z",
+        "completed_at": "2026-11-07T02:24:52Z"
+      },
+      {
+        "name": "Post Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 57,
+        "started_at": "2026-11-07T02:24:52Z",
+        "completed_at": "2026-11-07T02:24:53Z"
+      },
+      {
+        "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 58,
+        "started_at": "2026-11-07T02:24:53Z",
+        "completed_at": "2026-11-07T02:24:53Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 59,
+        "started_at": "2026-11-07T02:24:53Z",
+        "completed_at": "2026-11-07T02:24:53Z"
+      }
+    ]
+  },
+  {
+    "id": 128266844304,
+    "name": "Resolve nextest target duration policy",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:08:48Z",
+    "completed_at": "2026-11-07T02:08:52Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128266844304",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:08:49Z",
+        "completed_at": "2026-11-07T02:08:50Z"
+      },
+      {
+        "name": "Run set -euo pipefail",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:08:50Z",
+        "completed_at": "2026-11-07T02:08:50Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:08:50Z",
+        "completed_at": "2026-11-07T02:08:50Z"
+      }
+    ]
+  },
+  {
+    "id": 128266844343,
+    "name": "Frontend package gates",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:08:48Z",
+    "completed_at": "2026-11-07T02:20:23Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128266844343",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:08:49Z",
+        "completed_at": "2026-11-07T02:08:50Z"
+      },
+      {
+        "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:08:50Z",
+        "completed_at": "2026-11-07T02:11:21Z"
+      },
+      {
+        "name": "Free disk space (remove unused pre-installed toolchains)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:11:21Z",
+        "completed_at": "2026-11-07T02:11:22Z"
+      },
+      {
+        "name": "Install Rust toolchain",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-11-07T02:11:22Z",
+        "completed_at": "2026-11-07T02:11:30Z"
+      },
+      {
+        "name": "Install wasm-pack",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-11-07T02:11:30Z",
+        "completed_at": "2026-11-07T02:11:30Z"
+      },
+      {
+        "name": "Restore frontend WASM cargo cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-11-07T02:11:30Z",
+        "completed_at": "2026-11-07T02:11:47Z"
+      },
+      {
+        "name": "Build fresh WASM package for frontend gates",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-11-07T02:11:47Z",
+        "completed_at": "2026-11-07T02:14:07Z"
+      },
+      {
+        "name": "Set up Node.js",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-11-07T02:14:07Z",
+        "completed_at": "2026-11-07T02:14:08Z"
+      },
+      {
+        "name": "Install frontend package dependencies",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9,
+        "started_at": "2026-11-07T02:14:08Z",
+        "completed_at": "2026-11-07T02:14:18Z"
+      },
+      {
+        "name": "Verify WASM bindings and editor embed contract",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10,
+        "started_at": "2026-11-07T02:14:18Z",
+        "completed_at": "2026-11-07T02:14:36Z"
+      },
+      {
+        "name": "Verify build dependency compatibility",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11,
+        "started_at": "2026-11-07T02:14:36Z",
+        "completed_at": "2026-11-07T02:14:45Z"
+      },
+      {
+        "name": "Run editor package tests when declared",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12,
+        "started_at": "2026-11-07T02:14:45Z",
+        "completed_at": "2026-11-07T02:14:45Z"
+      },
+      {
+        "name": "Run shared and extension service worker tests",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 13,
+        "started_at": "2026-11-07T02:14:45Z",
+        "completed_at": "2026-11-07T02:14:45Z"
+      },
+      {
+        "name": "Run Chrome extension options UI tests",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 14,
+        "started_at": "2026-11-07T02:14:45Z",
+        "completed_at": "2026-11-07T02:14:45Z"
+      },
+      {
+        "name": "Run Studio unit tests",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 15,
+        "started_at": "2026-11-07T02:14:45Z",
+        "completed_at": "2026-11-07T02:15:18Z"
+      },
+      {
+        "name": "Install headless Chrome",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 16,
+        "started_at": "2026-11-07T02:15:18Z",
+        "completed_at": "2026-11-07T02:15:18Z"
+      },
+      {
+        "name": "Validate Visual Sweep Canvas font binding",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 17,
+        "started_at": "2026-11-07T02:15:18Z",
+        "completed_at": "2026-11-07T02:15:58Z"
+      },
+      {
+        "name": "Run undo depth measurement gate (#5769)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 18,
+        "started_at": "2026-11-07T02:15:58Z",
+        "completed_at": "2026-11-07T02:17:40Z"
+      },
+      {
+        "name": "Run Studio responsive toolbar gate (#6118,",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 19,
+        "started_at": "2026-11-07T02:17:40Z",
+        "completed_at": "2026-11-07T02:19:58Z"
+      },
+      {
+        "name": "Build Studio",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 20,
+        "started_at": "2026-11-07T02:19:58Z",
+        "completed_at": "2026-11-07T02:20:02Z"
+      },
+      {
+        "name": "Build browser extensions",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 21,
+        "started_at": "2026-11-07T02:20:02Z",
+        "completed_at": "2026-11-07T02:20:08Z"
+      },
+      {
+        "name": "Verify extension distributions",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 22,
+        "started_at": "2026-11-07T02:20:08Z",
+        "completed_at": "2026-11-07T02:20:08Z"
+      },
+      {
+        "name": "Compile VS Code extension",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 23,
+        "started_at": "2026-11-07T02:20:08Z",
+        "completed_at": "2026-11-07T02:20:19Z"
+      },
+      {
+        "name": "Verify VS Code webview outline keyboard contract",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 24,
+        "started_at": "2026-11-07T02:20:19Z",
+        "completed_at": "2026-11-07T02:20:20Z"
+      },
+      {
+        "name": "Verify font asset contracts",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 25,
+        "started_at": "2026-11-07T02:20:20Z",
+        "completed_at": "2026-11-07T02:20:20Z"
+      },
+      {
+        "name": "Save frontend WASM cargo cache",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 26,
+        "started_at": "2026-11-07T02:20:20Z",
+        "completed_at": "2026-11-07T02:20:20Z"
+      },
+      {
+        "name": "Post Set up Node.js",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 51,
+        "started_at": "2026-11-07T02:20:20Z",
+        "completed_at": "2026-11-07T02:20:21Z"
+      },
+      {
+        "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 52,
+        "started_at": "2026-11-07T02:20:21Z",
+        "completed_at": "2026-11-07T02:20:21Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 53,
+        "started_at": "2026-11-07T02:20:21Z",
+        "completed_at": "2026-11-07T02:20:21Z"
+      }
+    ]
+  },
+  {
+    "id": 128266844344,
+    "name": "Native Skia tests",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:08:49Z",
+    "completed_at": "2026-11-07T02:32:34Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128266844344",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:08:49Z",
+        "completed_at": "2026-11-07T02:08:51Z"
+      },
+      {
+        "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:08:51Z",
+        "completed_at": "2026-11-07T02:12:09Z"
+      },
+      {
+        "name": "Free disk space (remove unused pre-installed toolchains)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:12:09Z",
+        "completed_at": "2026-11-07T02:12:10Z"
+      },
+      {
+        "name": "Install Rust toolchain",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-11-07T02:12:10Z",
+        "completed_at": "2026-11-07T02:12:19Z"
+      },
+      {
+        "name": "Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-11-07T02:12:19Z",
+        "completed_at": "2026-11-07T02:12:27Z"
+      },
+      {
+        "name": "Install native Skia runtime packages",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-11-07T02:12:27Z",
+        "completed_at": "2026-11-07T02:12:36Z"
+      },
+      {
+        "name": "Prepare derived Rust test suites",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-11-07T02:12:36Z",
+        "completed_at": "2026-11-07T02:12:38Z"
+      },
+      {
+        "name": "Native Skia tests",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-11-07T02:12:38Z",
+        "completed_at": "2026-11-07T02:32:30Z"
+      },
+      {
+        "name": "Post Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 15,
+        "started_at": "2026-11-07T02:32:30Z",
+        "completed_at": "2026-11-07T02:32:30Z"
+      },
+      {
+        "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 16,
+        "started_at": "2026-11-07T02:32:30Z",
+        "completed_at": "2026-11-07T02:32:30Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 17,
+        "started_at": "2026-11-07T02:32:30Z",
+        "completed_at": "2026-11-07T02:32:30Z"
+      }
+    ]
+  },
+  {
+    "id": 128266844390,
+    "name": "build-test-archive-a / Build test archive (a)",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:08:48Z",
+    "completed_at": "2026-11-07T02:23:50Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128266844390",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:08:49Z",
+        "completed_at": "2026-11-07T02:08:50Z"
+      },
+      {
+        "name": "Validate test archive policy",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:08:50Z",
+        "completed_at": "2026-11-07T02:08:50Z"
+      },
+      {
+        "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:08:50Z",
+        "completed_at": "2026-11-07T02:11:37Z"
+      },
+      {
+        "name": "Free disk space (remove unused pre-installed toolchains)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-11-07T02:11:37Z",
+        "completed_at": "2026-11-07T02:11:37Z"
+      },
+      {
+        "name": "Install Rust toolchain",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-11-07T02:11:37Z",
+        "completed_at": "2026-11-07T02:11:45Z"
+      },
+      {
+        "name": "Install cargo-nextest",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-11-07T02:11:45Z",
+        "completed_at": "2026-11-07T02:11:46Z"
+      },
+      {
+        "name": "Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-11-07T02:11:46Z",
+        "completed_at": "2026-11-07T02:11:54Z"
+      },
+      {
+        "name": "Inspect disk space after Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-11-07T02:11:54Z",
+        "completed_at": "2026-11-07T02:11:54Z"
+      },
+      {
+        "name": "Summarize test archive policy",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9,
+        "started_at": "2026-11-07T02:11:54Z",
+        "completed_at": "2026-11-07T02:11:54Z"
+      },
+      {
+        "name": "Build default-feature test archive",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10,
+        "started_at": "2026-11-07T02:11:54Z",
+        "completed_at": "2026-11-07T02:23:46Z"
+      },
+      {
+        "name": "Upload test archive",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11,
+        "started_at": "2026-11-07T02:23:46Z",
+        "completed_at": "2026-11-07T02:23:47Z"
+      },
+      {
+        "name": "Upload archive expected count",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12,
+        "started_at": "2026-11-07T02:23:47Z",
+        "completed_at": "2026-11-07T02:23:48Z"
+      },
+      {
+        "name": "Post Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 23,
+        "started_at": "2026-11-07T02:23:48Z",
+        "completed_at": "2026-11-07T02:23:48Z"
+      },
+      {
+        "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 24,
+        "started_at": "2026-11-07T02:23:48Z",
+        "completed_at": "2026-11-07T02:23:48Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 25,
+        "started_at": "2026-11-07T02:23:48Z",
+        "completed_at": "2026-11-07T02:23:48Z"
+      }
+    ]
+  },
+  {
+    "id": 128266845450,
+    "name": "Workflow promotion preflight",
+    "status": "completed",
+    "conclusion": "skipped",
+    "started_at": "2026-11-07T02:08:46Z",
+    "completed_at": "2026-11-07T02:08:46Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128266845450",
+    "steps": []
+  },
+  {
+    "id": 128266845506,
+    "name": "native-host-package",
+    "status": "completed",
+    "conclusion": "skipped",
+    "started_at": "2026-11-07T02:08:46Z",
+    "completed_at": "2026-11-07T02:08:46Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128266845506",
+    "steps": []
+  },
+  {
+    "id": 128266845572,
+    "name": "release-operations-contracts",
+    "status": "completed",
+    "conclusion": "skipped",
+    "started_at": "2026-11-07T02:08:46Z",
+    "completed_at": "2026-11-07T02:08:46Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128266845572",
+    "steps": []
+  },
+  {
+    "id": 128266846351,
+    "name": "Frontend unit gates",
+    "status": "completed",
+    "conclusion": "skipped",
+    "started_at": "2026-11-07T02:08:46Z",
+    "completed_at": "2026-11-07T02:08:46Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128266846351",
+    "steps": []
+  },
+  {
+    "id": 128266875579,
+    "name": "build-test-archive-c / Build test archive (c)",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:08:56Z",
+    "completed_at": "2026-11-07T02:20:46Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128266875579",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:08:57Z",
+        "completed_at": "2026-11-07T02:08:59Z"
+      },
+      {
+        "name": "Validate test archive policy",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:08:59Z",
+        "completed_at": "2026-11-07T02:08:59Z"
+      },
+      {
+        "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:08:59Z",
+        "completed_at": "2026-11-07T02:11:26Z"
+      },
+      {
+        "name": "Free disk space (remove unused pre-installed toolchains)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-11-07T02:11:26Z",
+        "completed_at": "2026-11-07T02:11:26Z"
+      },
+      {
+        "name": "Install Rust toolchain",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-11-07T02:11:26Z",
+        "completed_at": "2026-11-07T02:11:34Z"
+      },
+      {
+        "name": "Install cargo-nextest",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-11-07T02:11:34Z",
+        "completed_at": "2026-11-07T02:11:34Z"
+      },
+      {
+        "name": "Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-11-07T02:11:34Z",
+        "completed_at": "2026-11-07T02:11:39Z"
+      },
+      {
+        "name": "Inspect disk space after Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-11-07T02:11:39Z",
+        "completed_at": "2026-11-07T02:11:39Z"
+      },
+      {
+        "name": "Summarize test archive policy",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9,
+        "started_at": "2026-11-07T02:11:39Z",
+        "completed_at": "2026-11-07T02:11:40Z"
+      },
+      {
+        "name": "Build default-feature test archive",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10,
+        "started_at": "2026-11-07T02:11:40Z",
+        "completed_at": "2026-11-07T02:20:37Z"
+      },
+      {
+        "name": "Upload test archive",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11,
+        "started_at": "2026-11-07T02:20:37Z",
+        "completed_at": "2026-11-07T02:20:42Z"
+      },
+      {
+        "name": "Upload archive expected count",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12,
+        "started_at": "2026-11-07T02:20:42Z",
+        "completed_at": "2026-11-07T02:20:43Z"
+      },
+      {
+        "name": "Post Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 23,
+        "started_at": "2026-11-07T02:20:43Z",
+        "completed_at": "2026-11-07T02:20:43Z"
+      },
+      {
+        "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 24,
+        "started_at": "2026-11-07T02:20:43Z",
+        "completed_at": "2026-11-07T02:20:44Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 25,
+        "started_at": "2026-11-07T02:20:44Z",
+        "completed_at": "2026-11-07T02:20:44Z"
+      }
+    ]
+  },
+  {
+    "id": 128266875597,
+    "name": "build-test-archive-d / Build test archive (d)",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:08:55Z",
+    "completed_at": "2026-11-07T02:25:01Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128266875597",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:08:56Z",
+        "completed_at": "2026-11-07T02:08:57Z"
+      },
+      {
+        "name": "Validate test archive policy",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:08:57Z",
+        "completed_at": "2026-11-07T02:08:57Z"
+      },
+      {
+        "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:08:57Z",
+        "completed_at": "2026-11-07T02:11:15Z"
+      },
+      {
+        "name": "Free disk space (remove unused pre-installed toolchains)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-11-07T02:11:15Z",
+        "completed_at": "2026-11-07T02:11:15Z"
+      },
+      {
+        "name": "Install Rust toolchain",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-11-07T02:11:15Z",
+        "completed_at": "2026-11-07T02:11:23Z"
+      },
+      {
+        "name": "Install cargo-nextest",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-11-07T02:11:23Z",
+        "completed_at": "2026-11-07T02:11:24Z"
+      },
+      {
+        "name": "Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-11-07T02:11:24Z",
+        "completed_at": "2026-11-07T02:11:32Z"
+      },
+      {
+        "name": "Inspect disk space after Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-11-07T02:11:32Z",
+        "completed_at": "2026-11-07T02:11:32Z"
+      },
+      {
+        "name": "Summarize test archive policy",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9,
+        "started_at": "2026-11-07T02:11:32Z",
+        "completed_at": "2026-11-07T02:11:32Z"
+      },
+      {
+        "name": "Build default-feature test archive",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10,
+        "started_at": "2026-11-07T02:11:32Z",
+        "completed_at": "2026-11-07T02:24:56Z"
+      },
+      {
+        "name": "Upload test archive",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11,
+        "started_at": "2026-11-07T02:24:56Z",
+        "completed_at": "2026-11-07T02:24:59Z"
+      },
+      {
+        "name": "Upload archive expected count",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12,
+        "started_at": "2026-11-07T02:24:59Z",
+        "completed_at": "2026-11-07T02:25:00Z"
+      },
+      {
+        "name": "Post Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 23,
+        "started_at": "2026-11-07T02:25:00Z",
+        "completed_at": "2026-11-07T02:25:00Z"
+      },
+      {
+        "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 24,
+        "started_at": "2026-11-07T02:25:00Z",
+        "completed_at": "2026-11-07T02:25:00Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 25,
+        "started_at": "2026-11-07T02:25:00Z",
+        "completed_at": "2026-11-07T02:25:00Z"
+      }
+    ]
+  },
+  {
+    "id": 128266875674,
+    "name": "build-test-archive-b / Build test archive (b)",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:08:55Z",
+    "completed_at": "2026-11-07T02:25:39Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128266875674",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:08:56Z",
+        "completed_at": "2026-11-07T02:08:58Z"
+      },
+      {
+        "name": "Validate test archive policy",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:08:58Z",
+        "completed_at": "2026-11-07T02:08:58Z"
+      },
+      {
+        "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:08:58Z",
+        "completed_at": "2026-11-07T02:12:21Z"
+      },
+      {
+        "name": "Free disk space (remove unused pre-installed toolchains)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-11-07T02:12:21Z",
+        "completed_at": "2026-11-07T02:12:21Z"
+      },
+      {
+        "name": "Install Rust toolchain",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-11-07T02:12:21Z",
+        "completed_at": "2026-11-07T02:12:29Z"
+      },
+      {
+        "name": "Install cargo-nextest",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-11-07T02:12:29Z",
+        "completed_at": "2026-11-07T02:12:29Z"
+      },
+      {
+        "name": "Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-11-07T02:12:29Z",
+        "completed_at": "2026-11-07T02:12:38Z"
+      },
+      {
+        "name": "Inspect disk space after Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-11-07T02:12:38Z",
+        "completed_at": "2026-11-07T02:12:38Z"
+      },
+      {
+        "name": "Summarize test archive policy",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9,
+        "started_at": "2026-11-07T02:12:38Z",
+        "completed_at": "2026-11-07T02:12:38Z"
+      },
+      {
+        "name": "Build default-feature test archive",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10,
+        "started_at": "2026-11-07T02:12:38Z",
+        "completed_at": "2026-11-07T02:25:30Z"
+      },
+      {
+        "name": "Upload test archive",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11,
+        "started_at": "2026-11-07T02:25:30Z",
+        "completed_at": "2026-11-07T02:25:34Z"
+      },
+      {
+        "name": "Upload archive expected count",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12,
+        "started_at": "2026-11-07T02:25:34Z",
+        "completed_at": "2026-11-07T02:25:36Z"
+      },
+      {
+        "name": "Post Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 23,
+        "started_at": "2026-11-07T02:25:36Z",
+        "completed_at": "2026-11-07T02:25:36Z"
+      },
+      {
+        "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 24,
+        "started_at": "2026-11-07T02:25:36Z",
+        "completed_at": "2026-11-07T02:25:36Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 25,
+        "started_at": "2026-11-07T02:25:36Z",
+        "completed_at": "2026-11-07T02:25:36Z"
+      }
+    ]
+  },
+  {
+    "id": 128266875887,
+    "name": "build-test-archive-e / Build test archive (e)",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:08:55Z",
+    "completed_at": "2026-11-07T02:23:26Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128266875887",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:08:56Z",
+        "completed_at": "2026-11-07T02:08:58Z"
+      },
+      {
+        "name": "Validate test archive policy",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:08:58Z",
+        "completed_at": "2026-11-07T02:08:58Z"
+      },
+      {
+        "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:08:58Z",
+        "completed_at": "2026-11-07T02:11:49Z"
+      },
+      {
+        "name": "Free disk space (remove unused pre-installed toolchains)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-11-07T02:11:49Z",
+        "completed_at": "2026-11-07T02:11:49Z"
+      },
+      {
+        "name": "Install Rust toolchain",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-11-07T02:11:49Z",
+        "completed_at": "2026-11-07T02:11:58Z"
+      },
+      {
+        "name": "Install cargo-nextest",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-11-07T02:11:58Z",
+        "completed_at": "2026-11-07T02:11:58Z"
+      },
+      {
+        "name": "Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-11-07T02:11:58Z",
+        "completed_at": "2026-11-07T02:12:06Z"
+      },
+      {
+        "name": "Inspect disk space after Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-11-07T02:12:06Z",
+        "completed_at": "2026-11-07T02:12:06Z"
+      },
+      {
+        "name": "Summarize test archive policy",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9,
+        "started_at": "2026-11-07T02:12:06Z",
+        "completed_at": "2026-11-07T02:12:06Z"
+      },
+      {
+        "name": "Build default-feature test archive",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10,
+        "started_at": "2026-11-07T02:12:06Z",
+        "completed_at": "2026-11-07T02:23:19Z"
+      },
+      {
+        "name": "Upload test archive",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11,
+        "started_at": "2026-11-07T02:23:19Z",
+        "completed_at": "2026-11-07T02:23:22Z"
+      },
+      {
+        "name": "Upload archive expected count",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12,
+        "started_at": "2026-11-07T02:23:22Z",
+        "completed_at": "2026-11-07T02:23:23Z"
+      },
+      {
+        "name": "Post Rust build cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 23,
+        "started_at": "2026-11-07T02:23:23Z",
+        "completed_at": "2026-11-07T02:23:23Z"
+      },
+      {
+        "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 24,
+        "started_at": "2026-11-07T02:23:23Z",
+        "completed_at": "2026-11-07T02:23:24Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 25,
+        "started_at": "2026-11-07T02:23:24Z",
+        "completed_at": "2026-11-07T02:23:24Z"
+      }
+    ]
+  },
+  {
+    "id": 128270179793,
+    "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:20:49Z",
+    "completed_at": "2026-11-07T02:26:53Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128270179793",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:20:49Z",
+        "completed_at": "2026-11-07T02:20:51Z"
+      },
+      {
+        "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:20:51Z",
+        "completed_at": "2026-11-07T02:23:20Z"
+      },
+      {
+        "name": "Install Rust toolchain",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:23:20Z",
+        "completed_at": "2026-11-07T02:23:29Z"
+      },
+      {
+        "name": "Install cargo-nextest",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-11-07T02:23:29Z",
+        "completed_at": "2026-11-07T02:23:29Z"
+      },
+      {
+        "name": "Download shared test archive",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-11-07T02:23:29Z",
+        "completed_at": "2026-11-07T02:23:39Z"
+      },
+      {
+        "name": "Run Archive C",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-11-07T02:23:39Z",
+        "completed_at": "2026-11-07T02:26:49Z"
+      },
+      {
+        "name": "Upload Archive C count",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-11-07T02:26:49Z",
+        "completed_at": "2026-11-07T02:26:50Z"
+      },
+      {
+        "name": "Upload upstream PR B/C/D/E target durations",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-11-07T02:26:50Z",
+        "completed_at": "2026-11-07T02:26:51Z"
+      },
+      {
+        "name": "Upload devel B/C/D/E target durations",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 9,
+        "started_at": "2026-11-07T02:26:51Z",
+        "completed_at": "2026-11-07T02:26:51Z"
+      },
+      {
+        "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 18,
+        "started_at": "2026-11-07T02:26:51Z",
+        "completed_at": "2026-11-07T02:26:51Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 19,
+        "started_at": "2026-11-07T02:26:51Z",
+        "completed_at": "2026-11-07T02:26:51Z"
+      }
+    ]
+  },
+  {
+    "id": 128270934214,
+    "name": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:23:29Z",
+    "completed_at": "2026-11-07T02:31:22Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128270934214",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:23:30Z",
+        "completed_at": "2026-11-07T02:23:32Z"
+      },
+      {
+        "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:23:32Z",
+        "completed_at": "2026-11-07T02:26:26Z"
+      },
+      {
+        "name": "Install Rust toolchain",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:26:26Z",
+        "completed_at": "2026-11-07T02:26:35Z"
+      },
+      {
+        "name": "Install cargo-nextest",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-11-07T02:26:35Z",
+        "completed_at": "2026-11-07T02:26:35Z"
+      },
+      {
+        "name": "Download shared test archive",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-11-07T02:26:35Z",
+        "completed_at": "2026-11-07T02:26:48Z"
+      },
+      {
+        "name": "Run Archive E",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-11-07T02:26:48Z",
+        "completed_at": "2026-11-07T02:31:16Z"
+      },
+      {
+        "name": "Upload Archive E count",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-11-07T02:31:16Z",
+        "completed_at": "2026-11-07T02:31:18Z"
+      },
+      {
+        "name": "Upload upstream PR B/C/D/E target durations",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-11-07T02:31:18Z",
+        "completed_at": "2026-11-07T02:31:20Z"
+      },
+      {
+        "name": "Upload devel B/C/D/E target durations",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 9,
+        "started_at": "2026-11-07T02:31:20Z",
+        "completed_at": "2026-11-07T02:31:20Z"
+      },
+      {
+        "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 18,
+        "started_at": "2026-11-07T02:31:20Z",
+        "completed_at": "2026-11-07T02:31:20Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 19,
+        "started_at": "2026-11-07T02:31:20Z",
+        "completed_at": "2026-11-07T02:31:20Z"
+      }
+    ]
+  },
+  {
+    "id": 128271046591,
+    "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:23:52Z",
+    "completed_at": "2026-11-07T02:43:41Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128271046591",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:23:53Z",
+        "completed_at": "2026-11-07T02:23:55Z"
+      },
+      {
+        "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:23:55Z",
+        "completed_at": "2026-11-07T02:42:54Z"
+      },
+      {
+        "name": "Install Rust toolchain",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:42:54Z",
+        "completed_at": "2026-11-07T02:43:04Z"
+      },
+      {
+        "name": "Install cargo-nextest",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-11-07T02:43:04Z",
+        "completed_at": "2026-11-07T02:43:05Z"
+      },
+      {
+        "name": "Download shared test archive",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-11-07T02:43:05Z",
+        "completed_at": "2026-11-07T02:43:06Z"
+      },
+      {
+        "name": "Run Archive A",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-11-07T02:43:06Z",
+        "completed_at": "2026-11-07T02:43:38Z"
+      },
+      {
+        "name": "Upload Archive A count",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-11-07T02:43:38Z",
+        "completed_at": "2026-11-07T02:43:39Z"
+      },
+      {
+        "name": "Upload upstream PR B/C/D/E target durations",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 8,
+        "started_at": "2026-11-07T02:43:39Z",
+        "completed_at": "2026-11-07T02:43:39Z"
+      },
+      {
+        "name": "Upload devel B/C/D/E target durations",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 9,
+        "started_at": "2026-11-07T02:43:39Z",
+        "completed_at": "2026-11-07T02:43:39Z"
+      },
+      {
+        "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 18,
+        "started_at": "2026-11-07T02:43:39Z",
+        "completed_at": "2026-11-07T02:43:39Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 19,
+        "started_at": "2026-11-07T02:43:39Z",
+        "completed_at": "2026-11-07T02:43:39Z"
+      }
+    ]
+  },
+  {
+    "id": 128271368121,
+    "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:25:04Z",
+    "completed_at": "2026-11-07T02:32:47Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128271368121",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:25:05Z",
+        "completed_at": "2026-11-07T02:25:07Z"
+      },
+      {
+        "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:25:07Z",
+        "completed_at": "2026-11-07T02:28:00Z"
+      },
+      {
+        "name": "Install Rust toolchain",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:28:00Z",
+        "completed_at": "2026-11-07T02:28:08Z"
+      },
+      {
+        "name": "Install cargo-nextest",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-11-07T02:28:08Z",
+        "completed_at": "2026-11-07T02:28:09Z"
+      },
+      {
+        "name": "Download shared test archive",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-11-07T02:28:09Z",
+        "completed_at": "2026-11-07T02:28:15Z"
+      },
+      {
+        "name": "Run Archive D",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-11-07T02:28:15Z",
+        "completed_at": "2026-11-07T02:32:43Z"
+      },
+      {
+        "name": "Upload Archive D count",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-11-07T02:32:43Z",
+        "completed_at": "2026-11-07T02:32:44Z"
+      },
+      {
+        "name": "Upload upstream PR B/C/D/E target durations",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-11-07T02:32:44Z",
+        "completed_at": "2026-11-07T02:32:45Z"
+      },
+      {
+        "name": "Upload devel B/C/D/E target durations",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 9,
+        "started_at": "2026-11-07T02:32:45Z",
+        "completed_at": "2026-11-07T02:32:45Z"
+      },
+      {
+        "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 18,
+        "started_at": "2026-11-07T02:32:45Z",
+        "completed_at": "2026-11-07T02:32:45Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 19,
+        "started_at": "2026-11-07T02:32:45Z",
+        "completed_at": "2026-11-07T02:32:45Z"
+      }
+    ]
+  },
+  {
+    "id": 128271544375,
+    "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:25:42Z",
+    "completed_at": "2026-11-07T02:33:32Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128271544375",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:25:43Z",
+        "completed_at": "2026-11-07T02:25:44Z"
+      },
+      {
+        "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:25:44Z",
+        "completed_at": "2026-11-07T02:28:30Z"
+      },
+      {
+        "name": "Install Rust toolchain",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:28:30Z",
+        "completed_at": "2026-11-07T02:28:38Z"
+      },
+      {
+        "name": "Install cargo-nextest",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-11-07T02:28:38Z",
+        "completed_at": "2026-11-07T02:28:39Z"
+      },
+      {
+        "name": "Download shared test archive",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-11-07T02:28:39Z",
+        "completed_at": "2026-11-07T02:28:44Z"
+      },
+      {
+        "name": "Run Archive B",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-11-07T02:28:44Z",
+        "completed_at": "2026-11-07T02:33:28Z"
+      },
+      {
+        "name": "Upload Archive B count",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-11-07T02:33:28Z",
+        "completed_at": "2026-11-07T02:33:29Z"
+      },
+      {
+        "name": "Upload upstream PR B/C/D/E target durations",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-11-07T02:33:29Z",
+        "completed_at": "2026-11-07T02:33:30Z"
+      },
+      {
+        "name": "Upload devel B/C/D/E target durations",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 9,
+        "started_at": "2026-11-07T02:33:30Z",
+        "completed_at": "2026-11-07T02:33:30Z"
+      },
+      {
+        "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 18,
+        "started_at": "2026-11-07T02:33:30Z",
+        "completed_at": "2026-11-07T02:33:30Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 19,
+        "started_at": "2026-11-07T02:33:31Z",
+        "completed_at": "2026-11-07T02:33:31Z"
+      }
+    ]
+  },
+  {
+    "id": 128276163742,
+    "name": "Build & Test",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-11-07T02:43:44Z",
+    "completed_at": "2026-11-07T02:43:56Z",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42327643464/job/128276163742",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-07T02:43:45Z",
+        "completed_at": "2026-11-07T02:43:46Z"
+      },
+      {
+        "name": "Download archive A expected count",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-07T02:43:46Z",
+        "completed_at": "2026-11-07T02:43:47Z"
+      },
+      {
+        "name": "Download archive B expected count",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-07T02:43:47Z",
+        "completed_at": "2026-11-07T02:43:49Z"
+      },
+      {
+        "name": "Download archive C expected count",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-11-07T02:43:49Z",
+        "completed_at": "2026-11-07T02:43:50Z"
+      },
+      {
+        "name": "Download archive D expected count",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-11-07T02:43:50Z",
+        "completed_at": "2026-11-07T02:43:51Z"
+      },
+      {
+        "name": "Download archive E expected count",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-11-07T02:43:51Z",
+        "completed_at": "2026-11-07T02:43:52Z"
+      },
+      {
+        "name": "Download shard counts",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-11-07T02:43:52Z",
+        "completed_at": "2026-11-07T02:43:53Z"
+      },
+      {
+        "name": "Verify archive shard totals",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-11-07T02:43:53Z",
+        "completed_at": "2026-11-07T02:43:53Z"
+      },
+      {
+        "name": "Check Build & Test worker results",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9,
+        "started_at": "2026-11-07T02:43:53Z",
+        "completed_at": "2026-11-07T02:43:53Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10,
+        "started_at": "2026-11-07T02:43:53Z",
+        "completed_at": "2026-11-07T02:43:53Z"
+      }
+    ]
+  }
+]

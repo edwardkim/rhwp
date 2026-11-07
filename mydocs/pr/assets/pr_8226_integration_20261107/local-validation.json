@@ -1,0 +1,216 @@
+{
+  "sourceHead": "effcb0d60241d41601fa3cc471c6e46050a60676",
+  "status": "passed",
+  "stages": [
+    {
+      "name": "native-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib"
+      ],
+      "startedUtc": "2026-11-06T19:06:27.195803+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 16.15
+    },
+    {
+      "name": "native-placeholder",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia"
+      ],
+      "startedUtc": "2026-11-06T19:06:43.076001+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 36.047
+    },
+    {
+      "name": "native-direct-pdf",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia"
+      ],
+      "startedUtc": "2026-11-06T19:07:18.739285+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 35.018
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "startedUtc": "2026-11-06T19:07:53.173184+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 20.208
+    },
+    {
+      "name": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "startedUtc": "2026-11-06T19:08:13.107315+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 188.801
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "startedUtc": "2026-11-06T19:11:20.149826+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 142.485
+    },
+    {
+      "name": "build-workspace",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "startedUtc": "2026-11-06T19:13:41.380884+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 832.666
+    },
+    {
+      "name": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "startedUtc": "2026-11-06T19:27:26.460126+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 187.275
+    },
+    {
+      "name": "full-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--no-fail-fast"
+      ],
+      "startedUtc": "2026-11-06T20:05:21.815503+00:00",
+      "status": "passed",
+      "log": "linux-full-nextest-retry.log",
+      "exitCode": 0,
+      "seconds": 730.325
+    }
+  ],
+  "fullNextestAttempts": [
+    {
+      "name": "full-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--no-fail-fast"
+      ],
+      "startedUtc": "2026-11-06T19:30:31.951538+00:00",
+      "status": "failed",
+      "exitCode": 100,
+      "seconds": 2049.948,
+      "log": "linux-full-nextest-incomplete-checkout.log",
+      "reason": "Missing dynamically constructed fixture directories in sparse checkout; original tracked files restored without product/test changes.",
+      "result": {
+        "passed": 12754,
+        "failed": 16,
+        "skipped": 45,
+        "reason": "Tracked fixture directories missing from sparse checkout; restored before complete retry."
+      }
+    }
+  ],
+  "fullNextestResult": {
+    "passed": 12770,
+    "failed": 0,
+    "skipped": 45,
+    "slow": 2,
+    "testSeconds": 723.936
+  },
+  "environment": {
+    "platform": "linux/aarch64",
+    "rust": "1.93.1",
+    "node": "22.23.4",
+    "nextest": "0.9.151",
+    "cpu": 4,
+    "memoryGiB": 8,
+    "swapGiB": 8,
+    "fonts": "OS DejaVu/Liberation plus explicit repository fixture fonts; no host font mount"
+  },
+  "logSha256": {
+    "linux-handbook.log": "2fc8c36f4d80f149bf6c1cc03775177b67c430195a84545181d2ca4d8f7ccff0",
+    "linux-clippy-workspace.log": "d5d5d6712f27db70fb8fab622aecbd9d5b344087555c7666361bd6dea60e1016",
+    "linux-python-setup.log": "faa20698bcc02feca60b3efb90dadd469e855df25759cfa462cef28441dfd0f8",
+    "linux-clippy-wasm.log": "a2e8a1897331c9e957244b835775ef028824f9a18db734ce91c5fdfa5eeb6f3a",
+    "linux-full-nextest.log": "2406b174455fb4d3d0f23d431da1ffa187dd01f4b2e657108affd4d604f86647",
+    "linux-native-placeholder.log": "98e5e047690b0ffcee744e9a8ab3aed44991f4199d62eb6147714488896302ad",
+    "linux-manifest-prepare.log": "ac3c7bcfc03f9aa47fdb996ef06114e7b2b4d45b83966a210f106e0cb8ba458f",
+    "linux-native-lib.log": "2db350cd346af2e539264b7e16040215c8cb2cf19c3bb1c005513a7a0fe703aa",
+    "linux-full-nextest-incomplete-checkout.log": "2406b174455fb4d3d0f23d431da1ffa187dd01f4b2e657108affd4d604f86647",
+    "linux-native-direct-pdf.log": "23a5ad7f3d0cd3a39da32acabb496967c4db990e369cceecb9dca7de2c4cb279",
+    "linux-build-workspace.log": "de247657b27226aeb671e00bd1ef5793ff6df8af76c538859eddb0f72f9bcc59",
+    "linux-full-nextest-retry.log": "9cc4b9c2e0bff95bd6e7a2ec498df6f4616642ad65b5b97190c7ad065f1359ec",
+    "linux-focused.log": "4f550cecf618f4489f7a6006c8b00837db428af41d88216601aa29898a7a3218",
+    "linux-clippy-native.log": "80425c9553b7925a28b5f3598e3ec1a90ed7b138b09b6f46cad4bda9277fbfcf",
+    "linux-fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux-native-lib-incomplete-checkout.log": "b05d4fad9fe0098182e15cfe689b3ea730b9a796d2c2a1760a1c6687eb45415b"
+  }
+}

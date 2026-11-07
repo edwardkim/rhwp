@@ -1,0 +1,61 @@
+{
+  "summary": {
+    "compared_pages": 1,
+    "average_silhouette_raw_match_percent": 99.09683,
+    "worst_silhouette_raw_match_percent": 99.09683,
+    "pixel_diff_threshold": 18,
+    "average_pixel_match_percent": 92.03286,
+    "worst_pixel_match_percent": 92.03286,
+    "average_ink_match_percent": 10.07477,
+    "worst_ink_match_percent": 10.07477,
+    "average_visual_accuracy_proxy_percent": 10.07477,
+    "worst_visual_accuracy_proxy_percent": 10.07477,
+    "average_tolerant_content_match_percent": 99.09683,
+    "worst_tolerant_content_match_percent": 99.09683,
+    "worst_pages": [
+      1
+    ]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/candidate-latest-print-font-wasm/issue8555/rhwp_png/rhwp_001.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/candidate-latest-print-font-wasm/issue8555/pdf_png/pdf-001.png",
+      "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/candidate-latest-figures/issue8555/wasm/p1/overlay_001.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 18,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 891662,
+      "diff_pixels": 71040,
+      "diff_ratio": 0.07967145,
+      "pixel_match_percent": 92.03286,
+      "ink_union_pixels": 77173,
+      "ink_diff_pixels": 69398,
+      "ink_diff_ratio": 0.89925233,
+      "ink_match_percent": 10.07477,
+      "visual_accuracy_proxy_percent": 10.07477,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.09683,
+      "silhouette_raw_unmatched_pixels": 697,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 77173,
+      "tolerant_content_match_percent": 99.09683,
+      "mean_abs_channel_delta": 8.116,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        76,
+        106,
+        712,
+        1024
+      ]
+    }
+  ]
+}

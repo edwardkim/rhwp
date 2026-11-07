@@ -1,0 +1,23 @@
+{
+  "path": {
+    "section": 0,
+    "body_para": 4,
+    "table_control": 0,
+    "cell": 5,
+    "cell_para": 0
+  },
+  "operation": "insertTextInCell at0 then deleteTextInCell at0 count1; original content preserved; exportHwp and read saved LINE_SEG",
+  "alignment": 2,
+  "text_height_hu": 1200,
+  "independent_original_stored_baseline_hu": 600,
+  "latest_devel_saved_baseline_hu": 1020,
+  "candidate_saved_baseline_hu": 600,
+  "all_alignment2_stored_lines": 111,
+  "latest_devel_matching_original_half_height": 110,
+  "candidate_matching_original_half_height": 111,
+  "input_generated_diagnostics_only": true,
+  "generated_hwp_committed": false,
+  "rendering_note": "renderer clamps baseline, so saved-file correction and visual output are verified separately",
+  "base-latest_saved_sha256": "b130fc283596b966f3aac85e9ad5c064d5ba5ff6864553e16422db2bde86490f",
+  "candidate_saved_sha256": "6d87b3553f936421f9a75370d692d5e9143ee87d298ad224b89d7ab2c7561307"
+}

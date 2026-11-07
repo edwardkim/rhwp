@@ -1,0 +1,63 @@
+{
+  "state": "complete",
+  "source": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "native": {
+    "exit_code": 0,
+    "finished": "2026-11-06T16:16:13.568987+00:00"
+  },
+  "wasm": {
+    "exit_code": 0,
+    "finished": "2026-11-06T16:29:27.861778+00:00"
+  },
+  "runs": [
+    {
+      "name": "native-default",
+      "exit_code": 0
+    },
+    {
+      "name": "native-print-font",
+      "exit_code": 0
+    },
+    {
+      "name": "wasm-default",
+      "exit_code": 0
+    },
+    {
+      "name": "wasm-print-font",
+      "exit_code": 0
+    },
+    {
+      "name": "controls-False",
+      "exit_code": 0
+    },
+    {
+      "name": "controls-True",
+      "exit_code": 0
+    },
+    {
+      "name": "issue8687-control-native",
+      "exit_code": 0
+    },
+    {
+      "name": "issue8687-control-wasm",
+      "exit_code": 0
+    },
+    {
+      "name": "issue8687-repro-native",
+      "exit_code": 0
+    },
+    {
+      "name": "issue8687-repro-wasm",
+      "exit_code": 0
+    },
+    {
+      "name": "issue8687-used-native",
+      "exit_code": 0
+    },
+    {
+      "name": "issue8687-used-wasm",
+      "exit_code": 0
+    }
+  ],
+  "finished": "2026-11-06T16:35:46.788521+00:00"
+}

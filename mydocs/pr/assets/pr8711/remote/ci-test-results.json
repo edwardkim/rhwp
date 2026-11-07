@@ -1,0 +1,82 @@
+{
+  "head": "cbe5a6f4dfbc2775913af10ee42098137b27e088",
+  "time": "2026-11-07T02:43:35.142247+00:00",
+  "archives": [
+    {
+      "shard": "a",
+      "job_id": 128271046591,
+      "run": 3801,
+      "passed": 3801,
+      "skipped": 12,
+      "summary": "2026-11-07T02:43:38.0227686Z      Summary [  27.620s] 3801 tests run: 3801 passed, 12 skipped",
+      "log_sha256": "ef2e822beac20ba029daf1169350efaeb15bc419a85955948b7b32831afc9199"
+    },
+    {
+      "shard": "b",
+      "run": 1892,
+      "passed": 1892,
+      "skipped": 12,
+      "summary": "2026-11-07T02:33:28.2084287Z      Summary [ 280.007s] 1892 tests run: 1892 passed (1 slow), 12 skipped",
+      "log_sha256": "1194673eea33e66266f4ab07ee3cc81e3906141943b8fd02979e3477a480308f"
+    },
+    {
+      "shard": "c",
+      "run": 2314,
+      "passed": 2314,
+      "skipped": 9,
+      "summary": "2026-11-07T02:26:48.9177751Z      Summary [ 185.512s] 2314 tests run: 2314 passed, 9 skipped",
+      "log_sha256": "27de6a5e37ff6852e7a37b5e72b0387664c722e4a3261a84245c65852b75bbb5"
+    },
+    {
+      "shard": "d",
+      "run": 2449,
+      "passed": 2449,
+      "skipped": 8,
+      "summary": "2026-11-07T02:32:42.7982032Z      Summary [ 263.900s] 2449 tests run: 2449 passed, 8 skipped",
+      "log_sha256": "162b91804005f0939fdf330633d4a9407300eb5f1ec215f585cc4ec87a0c6e03"
+    },
+    {
+      "shard": "e",
+      "run": 2132,
+      "passed": 2132,
+      "skipped": 4,
+      "summary": "2026-11-07T02:31:16.6049990Z      Summary [ 264.203s] 2132 tests run: 2132 passed, 4 skipped",
+      "log_sha256": "cc9c49c0cd58dc8bf7a8b6e07b6ce6e017ff31f89d732017e81df38af9a4cd34"
+    }
+  ],
+  "native": {
+    "summaries": [
+      "2026-11-07T02:22:45.8482220Z test result: ok. 58 passed; 0 failed; 0 ignored; 0 measured; 3812 filtered out; finished in 0.59s",
+      "2026-11-07T02:22:45.8560514Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.00s",
+      "2026-11-07T02:22:45.8576646Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 165 filtered out; finished in 0.00s",
+      "2026-11-07T02:22:45.8593235Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s",
+      "2026-11-07T02:28:05.3678701Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.24s",
+      "2026-11-07T02:28:07.6911547Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+      "2026-11-07T02:28:27.6502371Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 322 filtered out; finished in 0.93s",
+      "2026-11-07T02:28:44.9089181Z test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.48s",
+      "2026-11-07T02:29:02.4538846Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 296 filtered out; finished in 0.50s",
+      "2026-11-07T02:29:21.1087657Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 320 filtered out; finished in 0.11s",
+      "2026-11-07T02:29:41.2942999Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 317 filtered out; finished in 0.08s",
+      "2026-11-07T02:29:59.0141369Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 320 filtered out; finished in 0.80s",
+      "2026-11-07T02:29:59.6512906Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 294 filtered out; finished in 0.03s",
+      "2026-11-07T02:30:15.4461356Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 276 filtered out; finished in 0.03s",
+      "2026-11-07T02:30:36.3261217Z test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 286 filtered out; finished in 0.73s",
+      "2026-11-07T02:31:02.5672943Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 302 filtered out; finished in 5.25s",
+      "2026-11-07T02:31:20.0476198Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 290 filtered out; finished in 0.64s",
+      "2026-11-07T02:31:35.6882659Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 310 filtered out; finished in 0.18s",
+      "2026-11-07T02:31:36.3984238Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 290 filtered out; finished in 0.10s",
+      "2026-11-07T02:31:57.2547264Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 306 filtered out; finished in 5.19s",
+      "2026-11-07T02:31:57.9392129Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.06s",
+      "2026-11-07T02:32:11.3816602Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 327 filtered out; finished in 0.08s",
+      "2026-11-07T02:32:28.8482029Z test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 274 filtered out; finished in 0.27s",
+      "2026-11-07T02:32:29.4602284Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 291 filtered out; finished in 0.01s",
+      "2026-11-07T02:32:30.0750561Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 289 filtered out; finished in 0.02s"
+    ],
+    "passed": 192,
+    "log_sha256": "0af6acb50a04ed44a006388ea2b9d18c6afd7e87974d0e459d3797860dcdd2ca",
+    "note": "CI selected Native gates; separate from local official 4064 checks"
+  },
+  "passed_total": 12588,
+  "skipped_total": 45,
+  "all_success": true
+}

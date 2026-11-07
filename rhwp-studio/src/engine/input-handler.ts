@@ -502,6 +502,8 @@ export class InputHandler {
     origVertOffset: number;
     startPageX: number;
     startPageY: number;
+    grabOffsetX: number;
+    grabOffsetY: number;
     lastPageX: number;
     lastPageY: number;
     totalDeltaH: number;

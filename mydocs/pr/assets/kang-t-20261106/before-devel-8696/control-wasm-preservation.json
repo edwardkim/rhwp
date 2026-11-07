@@ -1,0 +1,76 @@
+{
+  "pages": 10,
+  "all_identical": true,
+  "rows": [
+    {
+      "key": "overlap",
+      "page": 1,
+      "same": true,
+      "base_sha256": "14ac0b739d1bd9d6d8ba69bd3f578c2dca561646e48e881a1767a79dd05ebdfa",
+      "candidate_sha256": "14ac0b739d1bd9d6d8ba69bd3f578c2dca561646e48e881a1767a79dd05ebdfa"
+    },
+    {
+      "key": "side",
+      "page": 1,
+      "same": true,
+      "base_sha256": "5bcaa4489446ccdb150b8814c2e9406f5e791208f9a2cb2157143d9c171a77d5",
+      "candidate_sha256": "5bcaa4489446ccdb150b8814c2e9406f5e791208f9a2cb2157143d9c171a77d5"
+    },
+    {
+      "key": "exact-fit",
+      "page": 1,
+      "same": true,
+      "base_sha256": "5d78af86dd3710c21810204dd0fa7b35b06146505d5d34946efcc5b6f525f3bf",
+      "candidate_sha256": "5d78af86dd3710c21810204dd0fa7b35b06146505d5d34946efcc5b6f525f3bf"
+    },
+    {
+      "key": "small",
+      "page": 1,
+      "same": true,
+      "base_sha256": "00acf2258f6c06b081bfcdffd31f15e90a0e1ef2177b9f4797a19c4daae5f0f1",
+      "candidate_sha256": "00acf2258f6c06b081bfcdffd31f15e90a0e1ef2177b9f4797a19c4daae5f0f1"
+    },
+    {
+      "key": "large",
+      "page": 1,
+      "same": true,
+      "base_sha256": "88727e756e6b2ae4393a70e6c41ca7654987969c31d6abbd926eb4fc162fef72",
+      "candidate_sha256": "88727e756e6b2ae4393a70e6c41ca7654987969c31d6abbd926eb4fc162fef72"
+    },
+    {
+      "key": "split",
+      "page": 1,
+      "same": true,
+      "base_sha256": "f6fdd3a0ebc33412636a1b8e5ab9347a78a4f3c781811effdaf8cc9ca4fcbab1",
+      "candidate_sha256": "f6fdd3a0ebc33412636a1b8e5ab9347a78a4f3c781811effdaf8cc9ca4fcbab1"
+    },
+    {
+      "key": "split",
+      "page": 2,
+      "same": true,
+      "base_sha256": "e98b6e58cd3f67ad90423a046bcb475b7d5c10f7c9e1e227dc65711c4bfadc16",
+      "candidate_sha256": "e98b6e58cd3f67ad90423a046bcb475b7d5c10f7c9e1e227dc65711c4bfadc16"
+    },
+    {
+      "key": "center",
+      "page": 1,
+      "same": true,
+      "base_sha256": "02b512a06e8cfff54e36065d9b01f1638904faa8877cd6866fc7b75939aa518a",
+      "candidate_sha256": "02b512a06e8cfff54e36065d9b01f1638904faa8877cd6866fc7b75939aa518a"
+    },
+    {
+      "key": "budget",
+      "page": 1,
+      "same": true,
+      "base_sha256": "d403d4f61f0693ddc13a08336457d62ca1283ff95d552f00743e2776478a25ee",
+      "candidate_sha256": "d403d4f61f0693ddc13a08336457d62ca1283ff95d552f00743e2776478a25ee"
+    },
+    {
+      "key": "budget",
+      "page": 2,
+      "same": true,
+      "base_sha256": "88727e756e6b2ae4393a70e6c41ca7654987969c31d6abbd926eb4fc162fef72",
+      "candidate_sha256": "88727e756e6b2ae4393a70e6c41ca7654987969c31d6abbd926eb4fc162fef72"
+    }
+  ]
+}

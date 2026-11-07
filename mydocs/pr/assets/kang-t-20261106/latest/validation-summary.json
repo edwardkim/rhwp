@@ -1,0 +1,83 @@
+{
+  "status": "all_required_local_validation_passed",
+  "validated_product_head": "63236b9cc5fcbbbbe6fbce5691e81aaf6e406c1e",
+  "base_sha": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "rust_build_source": "226f0d487cc8d72305979ceb8ab46832017634d0",
+  "wasm_sha256": "46ef070e9e5b656598a42bdfe9e8ddcb81955cbff77623ccaf572238ec9f160e",
+  "rust_gates": {
+    "receipt": "rust-validation.json",
+    "passed": 11,
+    "failed": 0,
+    "full_nextest_passed": 12778,
+    "full_nextest_existing_skipped": 45,
+    "native_lib_passed": 4040,
+    "native_placeholder_passed": 2,
+    "native_direct_pdf_passed": 22,
+    "focused_passed": 34,
+    "legacy_private_windows_fixture_6494_executed": false
+  },
+  "studio": {
+    "unit_passed": 2745,
+    "unit_existing_skipped": 2,
+    "typecheck": "passed",
+    "build": "passed",
+    "actual_finish_drag_unit_passed": 3
+  },
+  "visual": {
+    "primary_pages_per_backend": 13,
+    "primary_print_font_native_min": 99.13472,
+    "primary_print_font_wasm_min": 99.09683,
+    "primary_default_native_min": 96.17274,
+    "primary_default_wasm_min": 98.68436,
+    "below_90": 0,
+    "missing_pages": 0,
+    "primary_comparison": "latest-base-candidate-primary-comparison.json",
+    "normal_control_pages_per_backend": 10,
+    "normal_control_png_pairs_identical": 20,
+    "normal_control_raw_min": 100,
+    "new_base_font_png_pairs_identical": 6,
+    "new_base_font_raw_min": 91.09617,
+    "svg_pages": 13,
+    "svg_raw_min": 97.76105,
+    "handbook_pages": 383,
+    "handbook_regressions": 0,
+    "handbook_receipt": "handbook-gate.json"
+  },
+  "cdp": {
+    "port": 19222,
+    "receipt": "cdp/scope.json",
+    "covered": [
+      "backward and forward cross-page mouse drag",
+      "same-page move",
+      "cell to body actual pointer position",
+      "actual cell render-tree containment",
+      "actual remapped selection owner",
+      "keyboard Undo/Redo",
+      "HWP save and reopen",
+      "snapshot cell insertion with warm cache"
+    ],
+    "latest_base_original_bug_reproduced": true,
+    "latest_base_negative_receipt": "cdp/base-latest-negative.json"
+  },
+  "recovered_diagnostics": [
+    {
+      "name": "handbook setup",
+      "original": "candidate-visual-results.json",
+      "reason": "minimal-font sandbox hid fontTools and WSL DNS target",
+      "resolution": "visual-only read-only Python library and DNS bindings; same five licensed fonts; actual canonical 383-page gate passed"
+    },
+    {
+      "name": "forward cell pointer assertion",
+      "original": "candidate-visual-results.json",
+      "reason": "removing the source paragraph reflows the cell, so pointer containment is not a cell ownership invariant",
+      "resolution": "final actual cell render-tree containment and owner identity assertions passed; body drop separately requires actual pointer containment"
+    },
+    {
+      "name": "additional latest-base CDP negative control",
+      "reason": "Windows Chrome test window was off screen and hidden; requestAnimationFrame and default readiness polling stopped",
+      "resolution": "timer-based harness waits and only the owned test window brought onto screen; same real mouse input and frozen WASM artifact; original source page retained as expected"
+    }
+  ],
+  "remote_mutations_performed": false,
+  "remote_approval_required": true
+}

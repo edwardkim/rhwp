@@ -1,0 +1,11 @@
+{
+  "id": 42316269280,
+  "name": "Refresh nextest target duration data",
+  "head_sha": "331521a3b1fb5de5dfa39b0707c0b295b90f9dc4",
+  "event": "push",
+  "status": "completed",
+  "conclusion": "success",
+  "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42316269280",
+  "created_at": "2026-11-07T00:07:30Z",
+  "updated_at": "2026-11-07T00:10:34Z"
+}

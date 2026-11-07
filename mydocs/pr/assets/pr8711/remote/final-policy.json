@@ -1,0 +1,10 @@
+{
+  "id": 42330675981,
+  "name": "CI Impact Policy Controller",
+  "head_sha": "1a76570e833917d15817415a53c09ad61ab3203f",
+  "status": "completed",
+  "conclusion": "success",
+  "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42330675981",
+  "created_at": "2026-11-07T02:43:59Z",
+  "updated_at": "2026-11-07T02:44:26Z"
+}

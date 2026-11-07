@@ -1,0 +1,53 @@
+{
+  "head": "07510f602a6081d90c94397fe29613420f3e7f63",
+  "run": 42308262394,
+  "workers": [
+    {
+      "archive": "A",
+      "job": 128217953564,
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42308262394/job/128217953564",
+      "executed": 3801,
+      "passed": 3801,
+      "skipped": 12,
+      "summary": "2026-11-06T23:47:44.1825478Z      Summary [  47.684s] 3801 tests run: 3801 passed, 12 skipped"
+    },
+    {
+      "archive": "D",
+      "job": 128222798406,
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42308262394/job/128222798406",
+      "executed": 2152,
+      "passed": 2152,
+      "skipped": 12,
+      "summary": "2026-11-06T23:54:00.3653649Z      Summary [ 185.427s] 2152 tests run: 2152 passed, 12 skipped"
+    },
+    {
+      "archive": "C",
+      "job": 128223101378,
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42308262394/job/128223101378",
+      "executed": 2314,
+      "passed": 2314,
+      "skipped": 5,
+      "summary": "2026-11-06T23:57:12.1913892Z      Summary [ 270.244s] 2314 tests run: 2314 passed (1 slow), 5 skipped"
+    },
+    {
+      "archive": "E",
+      "job": 128224588276,
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42308262394/job/128224588276",
+      "executed": 2245,
+      "passed": 2245,
+      "skipped": 8,
+      "summary": "2026-11-07T00:00:26.1302020Z      Summary [ 194.884s] 2245 tests run: 2245 passed, 8 skipped"
+    },
+    {
+      "archive": "B",
+      "job": 128225575500,
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42308262394/job/128225575500",
+      "executed": 2072,
+      "passed": 2072,
+      "skipped": 8,
+      "summary": "2026-11-07T00:04:11.8194087Z      Summary [ 251.394s] 2072 tests run: 2072 passed (1 slow), 8 skipped"
+    }
+  ],
+  "passed": 12584,
+  "skipped": 45
+}

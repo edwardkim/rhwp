@@ -1,0 +1,59 @@
+{
+  "source_sha": "ad64d93156ee8ab9d74cc853932c9dda86ea300d",
+  "source_dir": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-kang-t-picture-editing",
+  "source_digest": "8a646506a15243c7bbfc0824bdbcd829c0e56364a75bfeac3df898614b5ff637",
+  "mode": "wasm",
+  "profile": "release",
+  "command": [
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--out-dir",
+    "pkg"
+  ],
+  "started": "2026-11-06T13:52:21.853001+00:00",
+  "success": true,
+  "status": "passed",
+  "environment": {
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_TARGET_DIR": "/home/edward/mygithub/rhwp/target/pr-review",
+    "CARGO_PROFILE_RELEASE_CODEGEN_UNITS": "16",
+    "BINARYEN_CORES": "16",
+    "RUSTFLAGS": null
+  },
+  "optimized": true,
+  "reuse_compiled_source_digest": "8a646506a15243c7bbfc0824bdbcd829c0e56364a75bfeac3df898614b5ff637",
+  "exit_code": 0,
+  "finished": "2026-11-06T13:59:40.630488+00:00",
+  "artifacts": {
+    "rhwp.js": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/candidate-producer/pkg/rhwp.js",
+      "bytes": 564033,
+      "sha256": "0099b8a6e00f750e1dbddb3a89bf42874f24effcf8bf4dc5eb328d69e691606b",
+      "public_sha256": "0099b8a6e00f750e1dbddb3a89bf42874f24effcf8bf4dc5eb328d69e691606b"
+    },
+    "rhwp_bg.wasm": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/candidate-producer/pkg/rhwp_bg.wasm",
+      "bytes": 28385649,
+      "sha256": "3da651d3cb678375e9d883df4c81d0f642658776223a2ec6f0076a6d0b4c184c",
+      "public_sha256": "3da651d3cb678375e9d883df4c81d0f642658776223a2ec6f0076a6d0b4c184c"
+    },
+    "rhwp.d.ts": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/candidate-producer/pkg/rhwp.d.ts",
+      "bytes": 226447,
+      "sha256": "727cdd5e429524176d3e881416c5c5945b88d6a66b2864f55d417a51ae8127d2",
+      "public_sha256": "3b13b78ffee6847681d4d9a8ba4acd5359d9c22dbec1eafdcb4c8541f2a5340c"
+    },
+    "rhwp_bg.wasm.d.ts": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/candidate-producer/pkg/rhwp_bg.wasm.d.ts",
+      "bytes": 78514,
+      "sha256": "b36e67e946a93c70c03f0f634d65a35490b16b2277ef3611baf29d7674931f8f",
+      "public_sha256": "fb02e9d0706c033df6dbce1699d2ae065f9f50bbeff128d966be3ebef9a294c5"
+    },
+    "package.json": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/candidate-producer/pkg/package.json",
+      "bytes": 429,
+      "sha256": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19"
+    }
+  }
+}

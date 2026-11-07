@@ -1835,6 +1835,15 @@ export class HwpDocument {
      */
     insertPictureEx(options_json: string, image_data: Uint8Array): string;
     /**
+     * 표 셀 안 문단에 그림을 넣는다 — 서명·도장처럼 셀과 함께 움직여야 하는 그림.
+     *
+     * `insertPicture` 의 셀 분기는 그림을 표 밖 본문 문단에 띄운다. 이 API 는 그림을
+     * `cell_path_json` 이 가리키는 셀 문단의 컨트롤로 넣는다(가로 기준 단, 세로 기준 문단,
+     * 한컴 저장본과 같은 구조). `offset_x_hu`/`offset_y_hu` 는 그 기준의 HWPUNIT(음수 허용).
+     * 반환 `controlIdx` 는 셀 문단 안 번호다 — 속성은 `setCellPicturePropertiesByPath` 로 바꾼다.
+     */
+    insertPictureInCell(section_idx: number, para_idx: number, char_offset: number, cell_path_json: string, image_data: Uint8Array, width: number, height: number, natural_width_px: number, natural_height_px: number, extension: string, description: string, offset_x_hu?: number | null, offset_y_hu?: number | null): string;
+    /**
      * 덧말 넣기. `char_offset`은 원문 축 글자 자리다.
      * `json`: `{"mainText","rubyText","below":bool,"styleId":number|null}`.
      */
@@ -2183,6 +2192,11 @@ export class HwpDocument {
     registerNativePuaFont(family: string, bold: boolean, italic: boolean, bytes: Uint8Array, face_index: number): boolean;
     registerNativePuaFontForSource(family: string, bold: boolean, italic: boolean, source_ttf: boolean, bytes: Uint8Array, face_index: number): boolean;
     registerTextFontGlyphCoverage(family: string, bytes: Uint8Array, face_index: number): boolean;
+    /**
+     * 띄운 그림을 다른 문단·셀 문단으로 옮겨 붙인다 (다른 쪽으로 끌어 놓기).
+     * 셀 경로 JSON 이 `[]` 이면 본문 문단이다.
+     */
+    relocateFloatingPicture(src_section: number, src_para: number, src_cell_path_json: string, src_control: number, dst_section: number, dst_para: number, dst_char_offset: number, dst_cell_path_json: string, horz_offset: number, vert_offset: number): string;
     /**
      * [#5959] 이번 apply 가 push 한 BorderFill 꼬리 항목을 절단한다.
      *
@@ -2985,9 +2999,6 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
-    readonly version: () => [number, number];
-    readonly init_panic_hook: () => void;
-    readonly fontSymbolUnicodeRange: (a: number, b: number, c: number) => [number, number];
     readonly isPrintMetafile: (a: number, b: number) => number;
     readonly mapPrintBitmapClip: (a: number, b: number, c: number, d: number) => any;
     readonly mapPrintBitmapImage: (a: number, b: number, c: number, d: number) => any;
@@ -2997,8 +3008,6 @@ export interface InitOutput {
     readonly rasterizePrintMetafile: (a: number, b: number, c: number, d: number, e: any) => [number, number];
     readonly resamplePrintBitmapRgba: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number];
     readonly resamplePrintFrameRgba: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number];
-    readonly prepareBitmapRaster: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => any;
-    readonly printPicturePenWidth: (a: number, b: number, c: number, d: number) => [number, number];
     readonly __wbg_documentexport_free: (a: number, b: number) => void;
     readonly __wbg_hwpdocument_free: (a: number, b: number) => void;
     readonly __wbg_hwpviewer_free: (a: number, b: number) => void;
@@ -3250,24 +3259,6 @@ export interface InitOutput {
     readonly hwpdocument_getPageHide: (a: number, b: number, c: number) => [number, number, number, number];
     readonly hwpdocument_getPageInfo: (a: number, b: number) => [number, number, number, number];
     readonly hwpdocument_getPageLayerTree: (a: number, b: number) => [number, number, number, number];
-    readonly hwpdocument_getPageLayerTreeV2Compat: (a: number, b: number) => [number, number, number, number];
-    readonly hwpdocument_getPageLayerTreeV2CompatWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number, number];
-    readonly hwpdocument_getPageLayerTreeV2StrictGlyphOutline: (a: number, b: number) => [number, number, number, number];
-    readonly hwpdocument_getPageLayerTreeV2StrictGlyphOutlineWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number, number];
-    readonly hwpdocument_getPageLayerTreeV2StrictGlyphRun: (a: number, b: number) => [number, number, number, number];
-    readonly hwpdocument_getPageLayerTreeV2StrictGlyphRunWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number, number];
-    readonly hwpdocument_getPageLayerTreeValue: (a: number, b: number) => [number, number, number];
-    readonly hwpdocument_getPageLayerTreeValueV2Compat: (a: number, b: number) => [number, number, number];
-    readonly hwpdocument_getPageLayerTreeValueV2CompatWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number];
-    readonly hwpdocument_getPageLayerTreeValueV2CompatWithProfileAndResourceKeys: (a: number, b: number, c: number, d: number, e: any, f: any) => [number, number, number];
-    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphOutline: (a: number, b: number) => [number, number, number];
-    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphOutlineWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number];
-    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphOutlineWithProfileAndResourceKeys: (a: number, b: number, c: number, d: number, e: any, f: any) => [number, number, number];
-    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphRun: (a: number, b: number) => [number, number, number];
-    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphRunWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number];
-    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphRunWithProfileAndResourceKeys: (a: number, b: number, c: number, d: number, e: any, f: any) => [number, number, number];
-    readonly hwpdocument_getPageLayerTreeValueWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number];
-    readonly hwpdocument_getPageLayerTreeValueWithProfileAndResourceKeys: (a: number, b: number, c: number, d: number, e: any, f: any, g: number, h: number) => [number, number, number];
     readonly hwpdocument_getPageLayerTreeWithProfile: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
     readonly hwpdocument_getPageNumberPosition: (a: number, b: number) => [number, number, number, number];
     readonly hwpdocument_getPageOfPosition: (a: number, b: number, c: number) => [number, number, number, number];
@@ -3370,6 +3361,7 @@ export interface InitOutput {
     readonly hwpdocument_insertParagraph: (a: number, b: number, c: number) => [number, number, number, number];
     readonly hwpdocument_insertPicture: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number) => [number, number, number, number];
     readonly hwpdocument_insertPictureEx: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
+    readonly hwpdocument_insertPictureInCell: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number) => [number, number, number, number];
     readonly hwpdocument_insertRuby: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
     readonly hwpdocument_insertRubyByPath: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
     readonly hwpdocument_insertRubyInFootnote: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
@@ -3438,6 +3430,7 @@ export interface InitOutput {
     readonly hwpdocument_registerNativePuaFont: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number];
     readonly hwpdocument_registerNativePuaFontForSource: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number];
     readonly hwpdocument_registerTextFontGlyphCoverage: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
+    readonly hwpdocument_relocateFloatingPicture: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number) => [number, number, number, number];
     readonly hwpdocument_removeBorderFillTails: (a: number, b: number, c: number) => [number, number, number, number];
     readonly hwpdocument_removeFieldAt: (a: number, b: number, c: number, d: number) => [number, number];
     readonly hwpdocument_removeFieldAtInCell: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number];
@@ -3591,9 +3584,32 @@ export interface InitOutput {
     readonly pdfimportrequest_renderPageSvgLimited: (a: number, b: number, c: number) => [number, number, number, number];
     readonly pdfimportrequest_reserveInput: (a: number, b: number) => [number, number];
     readonly pdfimportrequest_reserveResponseCopy: (a: number, b: number) => [number, number];
-    readonly prepareStaticSvgRaster: (a: number, b: number, c: number, d: number) => any;
     readonly hwpviewer_pageCount: (a: number) => number;
     readonly hwpviewer_setAnnotateMetricFont: (a: number, b: number) => void;
+    readonly prepareBitmapRaster: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => any;
+    readonly prepareStaticSvgRaster: (a: number, b: number, c: number, d: number) => any;
+    readonly printPicturePenWidth: (a: number, b: number, c: number, d: number) => [number, number];
+    readonly version: () => [number, number];
+    readonly init_panic_hook: () => void;
+    readonly fontSymbolUnicodeRange: (a: number, b: number, c: number) => [number, number];
+    readonly hwpdocument_getPageLayerTreeV2Compat: (a: number, b: number) => [number, number, number, number];
+    readonly hwpdocument_getPageLayerTreeV2CompatWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly hwpdocument_getPageLayerTreeV2StrictGlyphOutline: (a: number, b: number) => [number, number, number, number];
+    readonly hwpdocument_getPageLayerTreeV2StrictGlyphOutlineWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly hwpdocument_getPageLayerTreeV2StrictGlyphRun: (a: number, b: number) => [number, number, number, number];
+    readonly hwpdocument_getPageLayerTreeV2StrictGlyphRunWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly hwpdocument_getPageLayerTreeValue: (a: number, b: number) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2Compat: (a: number, b: number) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2CompatWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2CompatWithProfileAndResourceKeys: (a: number, b: number, c: number, d: number, e: any, f: any) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphOutline: (a: number, b: number) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphOutlineWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphOutlineWithProfileAndResourceKeys: (a: number, b: number, c: number, d: number, e: any, f: any) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphRun: (a: number, b: number) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphRunWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphRunWithProfileAndResourceKeys: (a: number, b: number, c: number, d: number, e: any, f: any) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueWithProfileAndResourceKeys: (a: number, b: number, c: number, d: number, e: any, f: any, g: number, h: number) => [number, number, number];
     readonly qcms_enable_iccv4: () => void;
     readonly qcms_profile_precache_output_transform: (a: number) => void;
     readonly qcms_transform_data_bgra_out_lut: (a: number, b: number, c: number, d: number) => void;

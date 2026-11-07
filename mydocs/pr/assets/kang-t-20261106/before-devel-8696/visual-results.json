@@ -1,0 +1,486 @@
+[
+  {
+    "run": "base-native",
+    "key": "issue8555",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "raw": [
+      96.17274,
+      98.13936,
+      96.97602,
+      97.73639
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "base-native",
+    "key": "issue8556",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 5,
+      "pdf": 5
+    },
+    "raw": [
+      94.39274,
+      65.31399,
+      69.80386,
+      70.84804,
+      70.50023
+    ],
+    "complete": "complete",
+    "below90": [
+      {
+        "page": 2,
+        "silhouette_raw_match_percent": 65.31399
+      },
+      {
+        "page": 3,
+        "silhouette_raw_match_percent": 69.80386
+      },
+      {
+        "page": 4,
+        "silhouette_raw_match_percent": 70.84804
+      },
+      {
+        "page": 5,
+        "silhouette_raw_match_percent": 70.50023
+      }
+    ]
+  },
+  {
+    "run": "base-native",
+    "key": "issue8557",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "raw": [
+      96.24179,
+      98.13936,
+      97.0555,
+      97.73639
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "base-wasm",
+    "key": "issue8555",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "raw": [
+      98.69132,
+      99.69223,
+      98.82676,
+      99.32886
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "base-wasm",
+    "key": "issue8556",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 5,
+      "pdf": 5
+    },
+    "raw": [
+      96.45269,
+      66.02719,
+      70.17677,
+      71.15598,
+      69.52157
+    ],
+    "complete": "complete",
+    "below90": [
+      {
+        "page": 2,
+        "silhouette_raw_match_percent": 66.02719
+      },
+      {
+        "page": 3,
+        "silhouette_raw_match_percent": 70.17677
+      },
+      {
+        "page": 4,
+        "silhouette_raw_match_percent": 71.15598
+      },
+      {
+        "page": 5,
+        "silhouette_raw_match_percent": 69.52157
+      }
+    ]
+  },
+  {
+    "run": "base-wasm",
+    "key": "issue8557",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "raw": [
+      98.68436,
+      99.69223,
+      98.87108,
+      99.32886
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "base-print-font-native",
+    "key": "issue8555",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "raw": [
+      99.13472,
+      99.86263,
+      99.64851,
+      99.46493
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "base-print-font-native",
+    "key": "issue8556",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 5,
+      "pdf": 5
+    },
+    "raw": [
+      96.5733,
+      66.84323,
+      70.27466,
+      71.53949,
+      70.10769
+    ],
+    "complete": "complete",
+    "below90": [
+      {
+        "page": 2,
+        "silhouette_raw_match_percent": 66.84323
+      },
+      {
+        "page": 3,
+        "silhouette_raw_match_percent": 70.27466
+      },
+      {
+        "page": 4,
+        "silhouette_raw_match_percent": 71.53949
+      },
+      {
+        "page": 5,
+        "silhouette_raw_match_percent": 70.10769
+      }
+    ]
+  },
+  {
+    "run": "base-print-font-native",
+    "key": "issue8557",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "raw": [
+      99.23183,
+      99.86263,
+      99.64563,
+      99.46493
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "base-print-font-wasm",
+    "key": "issue8555",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "raw": [
+      99.09683,
+      99.86833,
+      99.63818,
+      99.46663
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "base-print-font-wasm",
+    "key": "issue8556",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 5,
+      "pdf": 5
+    },
+    "raw": [
+      96.58315,
+      66.45711,
+      69.98075,
+      71.07224,
+      69.97373
+    ],
+    "complete": "complete",
+    "below90": [
+      {
+        "page": 2,
+        "silhouette_raw_match_percent": 66.45711
+      },
+      {
+        "page": 3,
+        "silhouette_raw_match_percent": 69.98075
+      },
+      {
+        "page": 4,
+        "silhouette_raw_match_percent": 71.07224
+      },
+      {
+        "page": 5,
+        "silhouette_raw_match_percent": 69.97373
+      }
+    ]
+  },
+  {
+    "run": "base-print-font-wasm",
+    "key": "issue8557",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "raw": [
+      99.19892,
+      99.86833,
+      99.64128,
+      99.46663
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "candidate-native",
+    "key": "issue8555",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "raw": [
+      96.17274,
+      98.13936,
+      96.97602,
+      97.73639
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "candidate-native",
+    "key": "issue8556",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 5,
+      "pdf": 5
+    },
+    "raw": [
+      96.53824,
+      97.89354,
+      96.88663,
+      97.40282,
+      99.84792
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "candidate-native",
+    "key": "issue8557",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "raw": [
+      96.24179,
+      98.13936,
+      97.0555,
+      97.73639
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "candidate-wasm",
+    "key": "issue8555",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "raw": [
+      98.69132,
+      99.69223,
+      98.82676,
+      99.32886
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "candidate-wasm",
+    "key": "issue8556",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 5,
+      "pdf": 5
+    },
+    "raw": [
+      98.85168,
+      99.61232,
+      98.78853,
+      99.22345,
+      100.0
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "candidate-wasm",
+    "key": "issue8557",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "raw": [
+      98.68436,
+      99.69223,
+      98.87108,
+      99.32886
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "candidate-print-font-native",
+    "key": "issue8555",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "raw": [
+      99.13472,
+      99.86263,
+      99.64851,
+      99.46493
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "candidate-print-font-native",
+    "key": "issue8556",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 5,
+      "pdf": 5
+    },
+    "raw": [
+      99.31803,
+      99.70284,
+      99.6236,
+      99.46282,
+      100.0
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "candidate-print-font-native",
+    "key": "issue8557",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "raw": [
+      99.23183,
+      99.86263,
+      99.64563,
+      99.46493
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "candidate-print-font-wasm",
+    "key": "issue8555",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "raw": [
+      99.09683,
+      99.86833,
+      99.63818,
+      99.46663
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "candidate-print-font-wasm",
+    "key": "issue8556",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 5,
+      "pdf": 5
+    },
+    "raw": [
+      99.2609,
+      99.72369,
+      99.62866,
+      99.47152,
+      100.0
+    ],
+    "complete": "complete",
+    "below90": []
+  },
+  {
+    "run": "candidate-print-font-wasm",
+    "key": "issue8557",
+    "source": "45684640be5eddcf5972b063260250345b34d928",
+    "pages": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "raw": [
+      99.19892,
+      99.86833,
+      99.64128,
+      99.46663
+    ],
+    "complete": "complete",
+    "below90": []
+  }
+]

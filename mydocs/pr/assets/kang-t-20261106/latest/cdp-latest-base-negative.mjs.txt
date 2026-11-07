@@ -1,0 +1,66 @@
+import { createRequire } from 'node:module';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import assert from 'node:assert/strict';
+const root='/home/edward/mygithub/rhwp';
+const wt='/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-kang-t-picture-editing';
+const label=process.argv[2] || 'candidate-before-corrections';
+const out=`${root}/output/pr-review/kang-t-20261106`;
+const fixture=process.argv[3] || 'drag-before-table';
+const targetY=Number(process.env.DROP_Y || 250);
+const dest=`${out}/cdp-${label}-${fixture}${process.env.RUN_TAG ? '-'+process.env.RUN_TAG : ''}`; mkdirSync(dest,{recursive:true});
+process.env.VITE_URL=process.env.VITE_URL || 'http://127.0.0.1:7793';
+process.env.RHWP_WASM_BUILD_MANIFEST=`${out}/${label}-producer/wasm-build.json`;
+const require=createRequire(`${wt}/rhwp-studio/package.json`);
+const puppeteer=require('puppeteer-core');
+const {loadApp}=await import(`${wt}/rhwp-studio/e2e/helpers.mjs`);
+const browser=await puppeteer.connect({browserURL:'http://127.0.0.1:19222',defaultViewport:null});
+const context=await browser.createBrowserContext();
+const page=await context.newPage(); await page.bringToFront(); const originalWaitForFunction=page.waitForFunction.bind(page); page.waitForFunction=(fn,options,...args)=>originalWaitForFunction(fn,{polling:100,...options},...args); await page.setViewport({width:1440,height:1400,deviceScaleFactor:1});
+const result={label, browser:await browser.version(), ownTarget:page.target()._targetId, assertions:[], warnings:[]};
+const log=()=>writeFileSync(`${dest}/result.json`,JSON.stringify(result,null,2)+'\n');
+page.on('console',m=>{if(m.type()==='warn'||m.type()==='error')result.warnings.push(m.text());});
+// Windows Chrome may mark the dedicated test tab hidden; rAF is then suspended.
+// Keep product mouse handling unchanged and wait on a timer between synchronous layout reads.
+const settle=()=>page.evaluate(()=>new Promise(r=>setTimeout(r,250)));
+const images=()=>page.evaluate(()=>{
+ const w=window.__wasm; const a=[];
+ for(let p=0;p<w.pageCount;p++)for(const c of w.getPageControlLayout(p).controls)if(c.type==='image')a.push({page:p,...c});
+ return a;
+});
+try{
+ await loadApp(page,'?renderer=canvas2d');
+ const bytes=Array.from(readFileSync(`${out}/${fixture}.hwp`));
+ result.load=await page.evaluate(async bytes=>{
+  const info=window.__wasm.loadDocument(new Uint8Array(bytes),'drag-before-table.hwp');
+  const {loadWebFonts}=await import('/src/core/font-loader.ts');
+  await loadWebFonts(info.fontsUsed??[]); await document.fonts.ready;
+  await window.__canvasView.loadDocument(); return info;
+ },bytes);
+ await page.evaluate(()=>{window.__inputHandler.viewportManager.setZoom(.25);document.querySelector('#scroll-container').scrollTop=0;});
+ await settle();
+ result.before=await images(); log();
+ assert.equal(result.before.length,1,'one initial picture');
+ assert.ok(result.before[0].page>=0,'source picture has a page');
+ const source=result.before[0];
+ await page.evaluate(source=>{
+  const ih=window.__inputHandler;
+  ih.cursor.enterPictureObjectSelectionDirect(source.secIdx,source.paraIdx,source.controlIdx,'image',undefined,undefined,undefined,undefined,source.cellPath,undefined);
+  ih.renderPictureObjectSelection();
+  ih.eventBus.emit('picture-object-selection-changed',true);
+ },source);
+ await settle();await new Promise(r=>setTimeout(r,400));
+ result.setup=await page.evaluate(source=>{
+  const ih=window.__inputHandler,w=window.__wasm,sc=ih.container.querySelector('#scroll-content');
+  ih.cursor.enterPictureObjectSelectionDirect(source.secIdx,source.paraIdx,source.controlIdx,'image',undefined,undefined,undefined,undefined,source.cellPath,undefined);
+  ih.renderPictureObjectSelection();
+  const r=sc.getBoundingClientRect(),z=ih.viewportManager.getZoom(),vs=ih.virtualScroll;
+  const coords=(pi,x,y)=>({x:r.left+vs.getPageLeftResolved(pi,sc.clientWidth)+x*z,y:r.top+vs.getPageOffset(pi)+y*z});
+  const to={page:1,x:500,y:source.targetY}; const hit=w.hitTest(to.page,to.x,to.y);
+  return {from:coords(source.page,source.x+source.w/2,source.y+source.h/2),to:coords(to.page,to.x,to.y),hit,selected:ih.cursor.getSelectedPictureRef()};
+ },{...source,targetY});
+ assert.ok(result.setup.hit.cellPath?.length,'drop point is a table cell');
+ await page.mouse.move(result.setup.from.x,result.setup.from.y);await page.mouse.down();await page.mouse.move(result.setup.to.x,result.setup.to.y,{steps:18});result.dragState=await page.evaluate(()=>window.__inputHandler.pictureMoveState);await page.mouse.up();await settle();await new Promise(r=>setTimeout(r,400));result.after=await images();result.sourceAnchorStillExists=await page.evaluate(source=>{try{return !!window.__wasm.getPictureProperties(source.secIdx,source.paraIdx,source.controlIdx)}catch{return false}},source);await page.screenshot({path:`${dest}/negative.png`});result.reproduced=result.sourceAnchorStillExists && !result.after.some(i=>i.page===1);assert.ok(result.reproduced,'latest devel still keeps the old anchor instead of moving to the destination');result.success=true;log();
+}catch(error){result.success=false;result.error=String(error.stack||error);log();console.error(error);process.exitCode=1;}
+finally{await context.close();browser.disconnect();}
+console.log(JSON.stringify({success:result.success,reproduced:result.reproduced,before:result.before,after:result.after,error:result.error}));

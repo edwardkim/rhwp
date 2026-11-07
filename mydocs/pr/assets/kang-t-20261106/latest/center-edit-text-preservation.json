@@ -1,0 +1,16 @@
+[
+  {
+    "label": "base-latest",
+    "unchanged": true,
+    "before_sha256": "72a2881819b93fde0cf3f9126e97dde9e59c6f391491f02d9bca870b4b8e3218",
+    "after_sha256": "72a2881819b93fde0cf3f9126e97dde9e59c6f391491f02d9bca870b4b8e3218",
+    "characters": 4442
+  },
+  {
+    "label": "candidate",
+    "unchanged": true,
+    "before_sha256": "72a2881819b93fde0cf3f9126e97dde9e59c6f391491f02d9bca870b4b8e3218",
+    "after_sha256": "72a2881819b93fde0cf3f9126e97dde9e59c6f391491f02d9bca870b4b8e3218",
+    "characters": 4442
+  }
+]
