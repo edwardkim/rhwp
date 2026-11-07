@@ -54,3 +54,9 @@
 검증 source `263b1e753c`에서 [17개 필수 묶음](local-gates.json)이 모두 통과했다. 전체 nextest 12,825 pass / 45 skip, Native 집중 194 pass, Native 공식 3종 4,077 pass(lib 4,040 + placeholder 2 + Direct PDF 35, lib ignore 12), doctest 8 pass / 3 ignore, Studio 2,745 pass / 2 skip이다. 각 명령의 범위가 겹치므로 고유 검사 수로 합산하지 않는다.
 
 검증 종료 후 11개 API·수명·합성 래스터 테스트 파일의 첫머리 module documentation에 검사 유형·정확한 갱신 시각·직전 파일 commit·비해당 이유·정식 근거를 보완했다. [파일별 body hash](test-header-metadata-receipt.json)를 실제 Git source와 다시 대조해 첫머리를 제외한 파일 본문이 바이트 단위로 같고 제품·assertion·fixture 변경이 없음을 확인했다. 기존 실행 source를 새로 실행한 것처럼 표시하지 않는다. 보완 후 fmt·diff·현재 자동 수집 48/48과 변경 문서 검사를 통과했다.
+
+## 원격 승인·실행 확정
+
+[통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)의 head `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`에서 필수 CI·self-review를 완료했고, 원 기여 이력을 보존하는 merge `f5f0fbee95b5fb0e32e99f8f639d228ae55389dd`로 수용했다. 작업지시자는 기존 eq-01 본문 굵기·수식 간격/분수 모양 및 picture-crop 가는 테두리 차이에 한정한 예외와 Draft #8646의 간접 MERGED 효과를 승인했다. 새 숫자 오류·회귀·필수 검사 실패는 예외에 포함하지 않았다. #536·#8701은 OPEN을 유지하며 #8337 완료·원 PR별 후속 댓글·정리는 정본 순서에 따라 이어 간다.
+
+위의 승인 대기·미수행 표현은 당시 로컬 단계의 기록이며 현재 상태는 [최종 운영 기록](remote/completion.md)을 따른다.

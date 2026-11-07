@@ -54,3 +54,9 @@ fresh WASM 전 1쪽 raw 99.48%와 원 숫자·AB의 확대 판독도 완료했�
 같은 본문 글꼴 subset과 원 수식 face 부재 조건으로 최신 devel `b8dd67c500`의 보관된 Native 바이너리도 실행했다. 실제 1쪽에서 AB·CD·4·3이 빠지고 raw 93.84%였다. 최종 보정 `cda7c8cb33`에서는 모두 표시되며 raw 99.63%다. 같은 독립 PDF raster의 hash도 확인했다. [실행·수치](issue8337/latest-base-missing-face-comparison.json), [devel review](issue8337/missing-face-base-review.png)·[overlay](issue8337/missing-face-base-overlay.png), [보정 review](issue8337/missing-face-candidate-review.png)·[overlay](issue8337/missing-face-candidate-overlay.png)를 따른다.
 
 이 비교는 원 이슈의 글꼴 부재 경계다. 원 face를 공급한 48개 base/후보 PNG의 동일성 결과와 조건을 섞지 않는다. 원 기여 P79에서 남은 잘못된 숫자와 최신 devel에서 아직 빠지는 문자도 구분한다.
+
+## 원격 승인·실행 확정
+
+[통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)의 head `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`에서 필수 CI·self-review를 완료했고, 원 기여 이력을 보존하는 merge `f5f0fbee95b5fb0e32e99f8f639d228ae55389dd`로 수용했다. 작업지시자는 기존 eq-01 본문 굵기·수식 간격/분수 모양 및 picture-crop 가는 테두리 차이에 한정한 예외와 Draft #8646의 간접 MERGED 효과를 승인했다. 새 숫자 오류·회귀·필수 검사 실패는 예외에 포함하지 않았다. #536·#8701은 OPEN을 유지하며 #8337 완료·원 PR별 후속 댓글·정리는 정본 순서에 따라 이어 간다.
+
+위의 승인 대기·미수행 표현은 당시 로컬 단계의 기록이며 현재 상태는 [최종 운영 기록](remote/completion.md)을 따른다.

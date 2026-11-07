@@ -1,0 +1,19 @@
+{
+  "at": "2026-11-07T07:59:38.121600+00:00",
+  "candidate": "0d2548fd88ea76b10e53eec841376b4bcbecbc4a",
+  "approved": true,
+  "answer": "기존 차이·Draft 효과 포함 원격 처리 승인 (권장)",
+  "scope": [
+    "narrow existing eq01/picture-crop differences",
+    "Draft8646 indirect MERGED effect",
+    "push and Open PR",
+    "exact head CI and self review",
+    "merge",
+    "original Ready29 followups and issue8337 completion",
+    "operating records devel sync and cleanup"
+  ],
+  "leave_open": [
+    536,
+    8701
+  ]
+}

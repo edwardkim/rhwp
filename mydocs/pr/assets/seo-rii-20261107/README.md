@@ -1,6 +1,6 @@
 # seo-rii 2026-11-07 검토 증거
 
-[접수 원장](intake.json) · [수행 계획](../../seo_rii_20261107_review_impl.md). Ready 29건의 원 SHA를 보존하는 로컬 통합 검토다. 원격 push·새 PR·댓글·merge는 아직 승인받거나 수행하지 않았다.
+[접수 원장](intake.json) · [수행 계획](../../archives/seo_rii_20261107_review_impl.md). Ready 29건의 원 SHA를 보존하는 로컬 통합 검토다. 원격 수용과 두 예외를 승인받았으며 통합 PR #8739의 CI·self-review·merge를 완료했다.
 
 ## 현재 완료한 범위
 
@@ -23,3 +23,9 @@
 원 PR별 판정은 **메인터너 보정 후 수용 가능 / 필수 로컬 검증 완료**로 갱신했다. 기존 대조군 차이의 한정 예외와 Draft #8646의 선행 P73 두 commit이 간접 MERGED로 표시될 수 있는 효과를 원격 수용안에 명시했다. 이 결정과 push·Open PR·새 head CI·self-review·merge·후속 처리의 승인을 기다린다. #536·#8701 전체 로드맵은 OPEN을 유지한다.
 
 [제출 전 원격 상태](pre-submission-state.json)에서 devel·원 head 29개·reviewer가 그대로임을 확인했다. 별도 사용자 작업 Draft #8738은 실패 check가 없어 변경하지 않았다.
+
+## 최종 수용
+
+[통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)의 head `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`에서 필수 CI·self-review를 완료했고, 원 기여 이력을 보존하는 merge `f5f0fbee95b5fb0e32e99f8f639d228ae55389dd`로 수용했다. 작업지시자는 기존 eq-01 본문 굵기·수식 간격/분수 모양 및 picture-crop 가는 테두리 차이에 한정한 예외와 Draft #8646의 간접 MERGED 효과를 승인했다. 새 숫자 오류·회귀·필수 검사 실패는 예외에 포함하지 않았다. #536·#8701은 OPEN을 유지하며 #8337 완료·원 PR별 후속 댓글·정리는 정본 순서에 따라 이어 간다.
+
+[운영 기록](remote/completion.md).

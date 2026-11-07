@@ -31,3 +31,9 @@ Metal은 이미 승인한 default-disabled 실험 기반 예외만 사용한다.
 - 로컬 보정·필수 검증: 완료. source `263b1e753c`와 최종 제품 `cda7c8cb33`, source 동등성·actual SDK/runtime·전쪽 시각 증거를 보존했다.
 - 위 원격 수용·기존 차이 예외·Draft 간접 수용 효과: 아직 승인 전.
 - 최종 제출 SHA·필수 로컬 검증·GitHub PR 번호·CI run·merge SHA: 실제 완료 뒤에만 기록한다.
+
+## 원격 승인·실행 확정
+
+[통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)의 head `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`에서 필수 CI·self-review를 완료했고, 원 기여 이력을 보존하는 merge `f5f0fbee95b5fb0e32e99f8f639d228ae55389dd`로 수용했다. 작업지시자는 기존 eq-01 본문 굵기·수식 간격/분수 모양 및 picture-crop 가는 테두리 차이에 한정한 예외와 Draft #8646의 간접 MERGED 효과를 승인했다. 새 숫자 오류·회귀·필수 검사 실패는 예외에 포함하지 않았다. #536·#8701은 OPEN을 유지하며 #8337 완료·원 PR별 후속 댓글·정리는 정본 순서에 따라 이어 간다.
+
+위의 승인 대기·미수행 표현은 당시 로컬 단계의 기록이며 현재 상태는 [최종 운영 기록](remote/completion.md)을 따른다.
