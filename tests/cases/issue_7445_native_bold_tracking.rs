@@ -1,6 +1,8 @@
 //! 관계형·고정형: 원문 소유·순서·자연 글리프와 독립 Print의 완료 페이지 좌표를 보호한다.
-//! 주석 갱신: 2026-11-07T15:21:40+09:00.
-//! 직전 변경: 1ab72b32062a5d694d1ad4e981434eaed365e731 (2026-11-05T13:04:12+09:00).
+//! 주석 갱신: 2026-11-07T16:50:35+09:00.
+//! 직전 변경: ce9e186c04304733ee7658b1355d8c6139eeef8d (2026-11-07T15:23:20+09:00).
+//! R38은 과도한 ASCII 슬롯 변경을 보정한다. 원 HWP3의 제목 괄호 소유 검사를 복원하며
+//! 아래 R36 측정 이력과 보정 후 검증을 구분한다. 독립 좌표·자연 글리프 단언은 유지한다.
 //! 2026-11-07 측정: 원본 issue_265.hwp의 한컴 2020 Print, compat 2022, 96 DPI, 보정 전 2px raw.
 //! 원본 전 16쪽 최저 Native 99.59% / fresh WASM 99.51%; 원본 Print 대비 실제 저장 보존 대조는
 //! HWP 전 16쪽 99.58% / 99.50%, HWPX 전 16쪽 99.59% / 99.51%다. 저장본의 재인쇄는 아니다.
@@ -324,33 +326,22 @@ fn assert_title(core: &DocumentCore, completed_saved_print: bool) {
         .iter()
         .filter(|node| text(node).char_start == Some(12))
         .collect();
-    let opening: Vec<_> = nodes
-        .iter()
-        .filter(|node| text(node).char_start == Some(11))
-        .collect();
     assert_eq!(korean.len(), 1);
-    assert_eq!(opening.len(), 1, "여는 괄호의 독립 원문 소유");
     assert_eq!(english.len(), 1);
-    let (korean, opening, english) = (korean[0], opening[0], english[0]);
-    assert_eq!(text(korean).text, "작업 할당 방식");
-    assert_eq!(text(opening).text, "(");
+    let (korean, english) = (korean[0], english[0]);
+    assert_eq!(text(korean).text, "작업 할당 방식(");
     assert_eq!(text(english).text, "Scheduling Algorithms)");
-    assert!(text(korean).style.bold && text(opening).style.bold && text(english).style.bold);
+    assert!(text(korean).style.bold && text(english).style.bold);
     assert_eq!(
         text(korean).style.font_family,
         text(english).style.font_family
     );
     assert_eq!(text(korean).style.letter_spacing, 0.0);
     assert_eq!(text(english).style.letter_spacing, 0.0);
-    assert!(korean.bbox.x < opening.bbox.x && opening.bbox.x < english.bbox.x);
-    assert!((korean.bbox.x + korean.bbox.width - opening.bbox.x).abs() < 0.1);
-    assert!((opening.bbox.x + opening.bbox.width - english.bbox.x).abs() < 0.1);
+    assert!(korean.bbox.x < english.bbox.x);
+    assert!((korean.bbox.x + korean.bbox.width - english.bbox.x).abs() < 0.1);
     assert!(
         (korean.bbox.y + text(korean).baseline - english.bbox.y - text(english).baseline).abs()
-            < 0.1
-    );
-    assert!(
-        (opening.bbox.y + text(opening).baseline - english.bbox.y - text(english).baseline).abs()
             < 0.1
     );
     // 독립 Print72pt→96CSSpx. 원문 문단·scalar로 식별하며 좌표 영역으로 고르지 않는다.

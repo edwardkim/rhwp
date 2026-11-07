@@ -1431,7 +1431,19 @@ fn captioned_closed_empty_host_frame_preserves_rows_and_caption_when_budget_requ
     ) {
         if let RenderNodeType::TextLine(line) = &node.node_type {
             let pi = line.para_index.expect("셀 문단 원본 소유");
-            out.entry((row, col, pi)).or_default().push_str(&text(node));
+            // 비교 대상은 원본 IR 문단의 문자다. 자동 마커는 char_start=None인
+            // 별도 paint 소유이므로 표시 Unicode(•/PUA)를 지워 구분하지 않는다.
+            fn source_text(node: &RenderNode, output: &mut String) {
+                if let RenderNodeType::TextRun(run) = &node.node_type {
+                    if run.char_start.is_some() {
+                        output.push_str(&run.text);
+                    }
+                }
+                for child in &node.children {
+                    source_text(child, output);
+                }
+            }
+            source_text(node, out.entry((row, col, pi)).or_default());
             return;
         }
         for child in &node.children {
