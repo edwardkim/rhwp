@@ -1251,7 +1251,7 @@ fn tac_column_top_stored_vpos_px(para: &Paragraph, spacing_before: f64, dpi: f64
     (vpos_px <= spacing_before + 0.5).then_some(vpos_px)
 }
 
-fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
+pub(crate) fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
     para.text
         .chars()
         .any(|c| c > '\u{001F}' && c != '\u{FFFC}' && !c.is_whitespace())
@@ -9658,60 +9658,34 @@ impl LayoutEngine {
             }
 
             if item_is_paragraph && !visible_float_exclusions.is_empty() {
-                // [#4613 · #4599 밴드-플로우] 낡은 사다리 전방 스냅 기각 — 한글 2022 는
-                // TopAndBottom 자리차지 표 위 틈에 들어가는 줄을 틈에 배치하는데,
-                // 구세대 한글이 저장한 사다리는 그 줄을 표 아래에 둔 채였다
-                // (36477266 p2: pi5 'ㅇ 사업명' 저장 Δv=259px = 표 아래, 한글 2022
-                // PDF 실측 y=369 = 표 위 틈). 순차 흐름 위치에서 줄 전체가 활성
-                // exclusion 밴드 위에 들어가는 단일 줄 문단을 저장 사다리가 밴드
-                // 안/아래로 보내면, 그 전방 스냅을 기각하고 사다리 base 를 역보정해
-                // 후속 문단의 상대 간격을 유지한다. 서명-한정: hwpx stored layout,
-                // 선행 문단 소유 zone, 단일 저장 seg, 8px 초과 전방 스냅만.
-                if self.profile.get().hwpx_stored_layout() && y_offset > y_before_vpos_adjust + 8.0
-                {
-                    // 잉크 있는(비공백 텍스트) 단일 줄만 — 공백 줄의 밴드 배치는
-                    // PDF 로 관측 불가한 데다, 전화친절도 6460000-202600001 p58 실측
-                    // 에서 공백 줄 기각이 후속 흐름을 −25px 어긋내는 반증이 나왔다.
-                    let single_line_probe = paragraphs.get(item_para).and_then(|p| {
-                        (p.line_segs.len() == 1 && para_has_non_whitespace_text(p))
-                            .then(|| {
-                                p.line_segs
-                                    .first()
-                                    .map(|seg| hwpunit_to_px(seg.line_height, self.dpi))
-                            })
-                            .flatten()
+                // 측정과 같은 판정으로 낡은 사다리의 전방 스냅을 버린다.
+                let previous_line_owner = item_ordinal
+                    .checked_sub(1)
+                    .and_then(|idx| col_content.items.get(idx))
+                    .and_then(|prev_item| match prev_item {
+                        PageItem::FullParagraph { para_index }
+                        | PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
+                        _ => None,
                     });
-                    // 틈이 실제로 비어 있다는 증거 — 직전 렌더 아이템이 zone 소유
-                    // 문단의 줄(호스트 제목/줄)이어야 한다. 페이지/단 상단처럼 틈을
-                    // 이미 다른 항목(호스트 줄 미방출 상태의 표 상단 영역)이 차지한
-                    // 형상에서 기각하면 줄이 그 위에 겹친다(36425171 p4 pi17 실측:
-                    // 정당한 96→297 스냅을 기각해 +24.9px 악화 — 귀책 격리로 좁힘).
-                    let prev_item_is_owner_line = |owner: usize| {
-                        item_ordinal
-                            .checked_sub(1)
-                            .and_then(|idx| col_content.items.get(idx))
-                            .is_some_and(|prev_item| {
-                                matches!(prev_item,
-                                    PageItem::FullParagraph { para_index }
-                                    | PageItem::PartialParagraph { para_index, .. }
-                                        if *para_index == owner)
-                            })
-                    };
-                    if let Some(probe) = single_line_probe {
-                        if probe > 0.0
-                            && visible_float_exclusions.iter().any(|zone| {
-                                zone.blocks_text
-                                    && zone.owner_para < item_para
-                                    && prev_item_is_owner_line(zone.owner_para)
-                                    && y_before_vpos_adjust + probe <= zone.top + 0.5
-                                    && y_offset + 0.5 >= zone.top
-                            })
-                        {
-                            let delta = y_offset - y_before_vpos_adjust;
-                            y_offset = y_before_vpos_adjust;
-                            hcursor.shift_vpos_base_for_rendered_backtrack(delta);
-                        }
-                    }
+                if self.profile.get().hwpx_stored_layout()
+                    && paragraphs.get(item_para).is_some_and(|para| {
+                        crate::renderer::height_cursor::stale_snap_stays_above_band(
+                            para,
+                            item_para,
+                            y_before_vpos_adjust,
+                            y_offset,
+                            visible_float_exclusions
+                                .iter()
+                                .filter(|zone| zone.blocks_text)
+                                .map(|zone| (zone.owner_para, zone.top)),
+                            previous_line_owner,
+                            self.dpi,
+                        )
+                    })
+                {
+                    let delta = y_offset - y_before_vpos_adjust;
+                    y_offset = y_before_vpos_adjust;
+                    hcursor.shift_vpos_base_for_rendered_backtrack(delta);
                 }
                 visible_float_exclusions
                     .retain(|zone| zone.fixed_textbox || y_offset < zone.bottom - 0.5);

@@ -1847,7 +1847,7 @@ impl TypesetEngine {
                         para.line_segs
                             .first()?
                             .vertical_pos
-                            .checked_sub(frame_origin)?,
+                            .checked_sub(frame_origin.checked_add(st.vpos_rejected_gap_hu)?)?,
                         self.dpi,
                     ),
             ))

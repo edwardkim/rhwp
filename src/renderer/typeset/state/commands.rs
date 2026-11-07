@@ -453,6 +453,9 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn record_vpos_lazy_origin(&mut self, value: Option<i32>) {
         self.data.vpos_lazy_base = value;
     }
+    pub(in crate::renderer::typeset) fn record_rejected_gap_snap(&mut self, value: i32) {
+        self.data.vpos_rejected_gap_hu = self.data.vpos_rejected_gap_hu.saturating_add(value);
+    }
     pub(in crate::renderer::typeset) fn record_rejected_stored_forward_origin(
         &mut self,
         value: Option<(usize, i32)>,
