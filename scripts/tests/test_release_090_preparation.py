@@ -39,6 +39,9 @@ class Release090PreparationTests(unittest.TestCase):
                 block = text.split(start)[1].split(end)[0]
                 self.assertEqual(re.findall(r'^- @([^\s]+)$', block, re.M), handles)
 
+    def test_editor_package_retains_project_license_notice(self):
+        self.assertEqual((ROOT / "npm/editor/LICENSE").read_bytes(), (ROOT / "LICENSE").read_bytes())
+
     def test_product_manifests_and_lock_roots_match(self):
         cargo = tomllib.loads((ROOT / 'Cargo.toml').read_text())
         self.assertEqual(cargo['package']['version'], '0.9.0')
