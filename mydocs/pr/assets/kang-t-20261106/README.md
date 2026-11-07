@@ -56,4 +56,4 @@ Windows Chrome 155의 테스트 전용 context/tab을 사용하고 기존 사용
 
 편람의 초기 실행은 최소 글꼴 sandbox에서 Python 모듈/DNS 경로를 숨겨 실패했으며, 실행 환경만 보완하고 동일한 5개 공개 글꼴·동일한 gate로 전 383쪽을 통과했다. 최초 forward CDP의 포인터 포함 assertion은 원 문단 제거로 이동한 칸에도 본문 불변식을 적용한 것이어서 실제 칸 내부 포함·동일 소유를 검사하도록 진단을 바로잡았다. 이 최초 실패 기록은 지우지 않고 최종 재실행과 구분했다.
 
-최종 로컬 결과는 [집계](latest/validation-summary.json)에 고정했다. 아직 push·PR 생성·공개 댓글·merge를 수행하지 않았다. 원격 절차는 별도 승인 뒤 새 제출 head CI·self-review로 진행한다.
+최종 로컬 결과는 [집계](latest/validation-summary.json)에 고정했다. 이후 작업지시자 승인으로 통합 PR #8725를 생성하고 정확한 head CI·self-review 뒤 merge했다. [실제 원격 수용 기록](remote/completion.md)에 원 3개 PR의 MERGED, 이슈 종료와 후속 처리 결과를 구분한다.

@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**메인테이너 보정 후 수용 가능.** 승인된 충돌·경계 보정과 필수 로컬 검증을 완료했다. 최신 devel `a7feb849e1`을 별도로 fresh 빌드해 같은 조건으로 대조했으며 기능과 정상 출력을 보존했다. 원 기여 head의 CI, 보정 후보의 로컬 검증, 앞으로 수행할 원격 제출 head의 CI를 구분한다. 원격 push·통합 PR·merge는 별도 승인 전이다.
+**승인 — 메인테이너 보정을 포함한 통합 head.** 승인된 충돌·경계 보정과 필수 로컬 검증을 완료했다. 최신 devel `a7feb849e1`을 별도로 fresh 빌드해 같은 조건으로 대조했으며 기능과 정상 출력을 보존했다. 원 기여 head의 CI, 보정 후보의 로컬 검증, 수용한 원격 제출 head의 CI를 구분한다. 작업지시자가 원격 처리를 승인했으며, 통합 PR #8725를 exact-head CI·self-review 후 merge했다.
 
 ## 접수 정보
 
@@ -19,7 +19,7 @@
 | reviewer | edwardkim, API 재확인 완료 |
 | 경로 | maintainer_general + intake_and_review/local_validation/visual_fixture_evidence/multi_pr_update_branch/first_time_contributor/post_merge |
 
-기존 merged PR이 없는 첫 기여자다. 원 SHA와 원 fork branch를 보존하며 PR별 판정·증거를 분리한다. 이 세션의 승인 범위는 로컬 접수·검토다. 원격 push·댓글·새 PR·merge와 workflow 취소·재실행은 수행하지 않는다.
+기존 merged PR이 없는 첫 기여자다. 원 SHA와 원 fork branch를 보존하며 PR별 판정·증거를 분리한다. 최초 승인은 로컬 접수·검토였고 이후 작업지시자가 통합 PR의 push·CI·self-review·merge·후속 처리를 승인했다. workflow 취소·재실행은 수행하지 않았다.
 
 ## 변경과 검토 범위
 
@@ -27,7 +27,7 @@
 
 ## 검증 입력과 결과
 
-원 head의 CI는 모두 success였다. 별도로 최신 통합 후보에서 전체 회귀 12,778건, Native 공식 3종, Studio 2,745건·타입·build, 원 13쪽의 Native/fresh optimized WASM과 실제 CDP를 실행했다. 후보의 실제 수치와 출처는 [공통 검증 증거](assets/kang-t-20261106/README.md)에 연결한다. workspace build·all-target Clippy를 포함한 필수 검사를 모두 통과했고, 최신 base와의 같은 조건 대조도 완료했다. [최종 집계](assets/kang-t-20261106/latest/validation-summary.json)에 수치·실행 출처·보완 후 재실행을 구분했다. 원격 제출은 아직 승인 전이다.
+원 head의 CI는 모두 success였다. 별도로 최신 통합 후보에서 전체 회귀 12,778건, Native 공식 3종, Studio 2,745건·타입·build, 원 13쪽의 Native/fresh optimized WASM과 실제 CDP를 실행했다. 후보의 실제 수치와 출처는 [공통 검증 증거](../assets/kang-t-20261106/README.md)에 연결한다. workspace build·all-target Clippy를 포함한 필수 검사를 모두 통과했고, 최신 base와의 같은 조건 대조도 완료했다. [최종 집계](../assets/kang-t-20261106/latest/validation-summary.json)에 수치·실행 출처·보완 후 재실행을 구분했다. 승인된 원격 절차로 PR #8725의 최신 head CI·최종 정책·self-review를 완료한 뒤 merge했다.
 
 ## Merge 후 contributor PR comment 계획
 
@@ -36,7 +36,7 @@
 
 ## 누적 통합 상태
 
-[공통 검토·보정 계획](kang_t_20261106_review_plan.md#누적-통합에서-확인한-보정-방침--승인-완료)에 따라 작업지시자가 두 기능 보존·메인테이너 보정과 필수 로컬 검증을 승인했다. 누적 통합 `46af1d5d22e4fd2fd567a893bd36ce43f12d2ab6`에서 WASM API와 mutation registry에 두 API를 모두 보존했고 세 원 head의 ancestry를 확인했다. 같은 Rust source digest의 Native/fresh optimized WASM과 이후 Studio-only 보정을 실제 검증했다. 원 기여 ancestry는 그대로이며 원격 작업은 아직 승인 전이다.
+[공통 검토·보정 계획](../kang_t_20261106_review_plan.md#누적-통합에서-확인한-보정-방침--승인-완료)에 따라 작업지시자가 두 기능 보존·메인테이너 보정과 필수 로컬 검증을 승인했다. 누적 통합 `46af1d5d22e4fd2fd567a893bd36ce43f12d2ab6`에서 WASM API와 mutation registry에 두 API를 모두 보존했고 세 원 head의 ancestry를 확인했다. 같은 Rust source digest의 Native/fresh optimized WASM과 이후 Studio-only 보정을 실제 검증했다. 원 기여 ancestry를 보존했고 승인된 원격 절차로 수용했다.
 
 ## 공통 편집 규칙 검토 — 실행 전 추적
 
@@ -54,8 +54,14 @@
 
 보정 `63236b9cc5`와 실제 제품 종료 함수를 실행하는 단위 검사 3건을 기록했다. 옛 hit 경로와 preview 위치를 쓰는 최소 잘못된 구현은 각각 실패한다. 뒤에 기록한 최종 fresh WASM의 실제 포인터·소유·이력 재실행을 완료 판정에 사용했다. Native/WASM 빌드의 Rust source `226f0d487c`와 이후 Studio-only 보정을 구분한다.
 
-최종 optimized WASM `46ef070e9e5b656598a42bdfe9e8ddcb81955cbff77623ccaf572238ec9f160e`에서 포인터 보정 뒤 실제 앞/뒤 페이지·같은 쪽·칸→본문 이동, Undo/Redo·저장 재열기를 다시 확인했다. 본문 도착은 처음 잡은 점과 놓은 점이 일치하고, 칸 도착은 source 제거에 따른 본문 재조판 뒤에도 선택한 칸의 정체성과 실제 render tree의 내부 포함을 지킨다. [실행 결과](assets/kang-t-20261106/latest/cdp/scope.json).
+최종 optimized WASM `46ef070e9e5b656598a42bdfe9e8ddcb81955cbff77623ccaf572238ec9f160e`에서 포인터 보정 뒤 실제 앞/뒤 페이지·같은 쪽·칸→본문 이동, Undo/Redo·저장 재열기를 다시 확인했다. 본문 도착은 처음 잡은 점과 놓은 점이 일치하고, 칸 도착은 source 제거에 따른 본문 재조판 뒤에도 선택한 칸의 정체성과 실제 render tree의 내부 포함을 지킨다. [실행 결과](../assets/kang-t-20261106/latest/cdp/scope.json).
 
-최신 devel #8696의 글꼴 수정은 원 입력 3종·Native/WASM 6쌍의 PNG가 같으며, 그림 배치 정상 대조군 10쪽씩도 20쌍이 같다. 필수 검증의 미해결 항목이나 시각 예외는 없다. [최신 글꼴 보존](assets/kang-t-20261106/latest/latest-issue8687-preservation.json)·[배치 보존](assets/kang-t-20261106/latest/latest-control-preservation.json).
+최신 devel #8696의 글꼴 수정은 원 입력 3종·Native/WASM 6쌍의 PNG가 같으며, 그림 배치 정상 대조군 10쪽씩도 20쌍이 같다. 필수 검증의 미해결 항목이나 시각 예외는 없다. [최신 글꼴 보존](../assets/kang-t-20261106/latest/latest-issue8687-preservation.json)·[배치 보존](../assets/kang-t-20261106/latest/latest-control-preservation.json).
 
-최신 기준의 실제 mouse 음성 대조에서도 4쪽 그림은 원 앵커에 남았다. [최신 devel 재현](assets/kang-t-20261106/latest/cdp/base-latest-negative.json)과 [후보의 실제 앞/뒤 이동·이력](assets/kang-t-20261106/latest/cdp/scope.json)을 분리해 보존했다.
+최신 기준의 실제 mouse 음성 대조에서도 4쪽 그림은 원 앵커에 남았다. [최신 devel 재현](../assets/kang-t-20261106/latest/cdp/base-latest-negative.json)과 [후보의 실제 앞/뒤 이동·이력](../assets/kang-t-20261106/latest/cdp/scope.json)을 분리해 보존했다.
+
+## 원격 수용 결과 — 2026-11-07
+
+[통합 PR #8725](https://github.com/edwardkim/rhwp/pull/8725)의 검증 head `07510f602a6081d90c94397fe29613420f3e7f63`, merge `331521a3b1fb5de5dfa39b0707c0b295b90f9dc4`를 확인했다. 원 PR도 자동 MERGED이며 원 기여 SHA와 fork branch를 보존했다. [실제 CI·운영 기록](../assets/kang-t-20261106/remote/completion.md)에 전체 결과와 순서를 연결한다. 기존 CodeQL #478·#483·#484는 생성일과 불변 blob을 대조했고 분류를 유지했다.
+
+이 운영 기록 뒤 최종 devel sync·연결 이슈 후속 근거 댓글·원 PR별 감사 댓글·종료 정리를 수행한다. 실제 댓글과 정리 결과는 아래 원격 기록의 최종 영수증으로 보완한다.

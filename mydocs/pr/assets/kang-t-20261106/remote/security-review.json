@@ -1,0 +1,55 @@
+{
+  "observed_utc": "2026-11-06T23:48:06.587105+00:00",
+  "head": "07510f602a6081d90c94397fe29613420f3e7f63",
+  "new_alerts": 0,
+  "unchanged_existing_alerts": [
+    {
+      "number": 478,
+      "created_at": "2026-10-31T11:15:27Z",
+      "rule": "rust/cleartext-logging",
+      "location": {
+        "path": "src/renderer/typeset/table/scan/runner.rs",
+        "start_line": 120,
+        "end_line": 121,
+        "start_column": 33,
+        "end_column": 49
+      },
+      "base_blob": "11d4373d5a5510efb92e29b49b0670f15dad3181",
+      "candidate_blob": "11d4373d5a5510efb92e29b49b0670f15dad3181",
+      "unchanged": true
+    },
+    {
+      "number": 483,
+      "created_at": "2026-10-31T11:15:27Z",
+      "rule": "rust/cleartext-logging",
+      "location": {
+        "path": "src/renderer/layout/table_layout/capacity_tolerance.rs",
+        "start_line": 37,
+        "end_line": 48,
+        "start_column": 17,
+        "end_column": 27
+      },
+      "base_blob": "527d5d576c769035037bc5a9b40c29493bbd2fed",
+      "candidate_blob": "527d5d576c769035037bc5a9b40c29493bbd2fed",
+      "unchanged": true
+    },
+    {
+      "number": 484,
+      "created_at": "2026-10-31T11:15:27Z",
+      "rule": "rust/cleartext-logging",
+      "location": {
+        "path": "src/renderer/layout/table_layout/unit_diagnostics.rs",
+        "start_line": 103,
+        "end_line": 104,
+        "start_column": 13,
+        "end_column": 44
+      },
+      "base_blob": "b7460a8d049f4efb60be4996412b530259b93e8a",
+      "candidate_blob": "b7460a8d049f4efb60be4996412b530259b93e8a",
+      "unchanged": true
+    }
+  ],
+  "prior_decision": "mydocs/pr/archives/pr_8658_review.md:118, all three kept open",
+  "reclassification_performed": false,
+  "security_configuration_changed": false
+}

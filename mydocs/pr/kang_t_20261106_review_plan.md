@@ -2,7 +2,7 @@
 
 ## 범위와 고정한 출처
 
-원 [#8566](pr_8566_review.md)·[#8595](pr_8595_review.md)·[#8632](pr_8632_review.md)를 오래된 순서로 검토한다. 각각 #8555·#8556·#8557이며 공통 대표 이슈가 없으므로 날짜 기반 통합 branch `review/integration-20261106-kang-t-picture-editing`를 사용한다. 기준 devel `45684640be5eddcf5972b063260250345b34d928`와 원 head를 개별 review에 고정했다. 원 commit을 재작성하지 않고 merge ancestry로 보존한다.
+원 [#8566](archives/pr_8566_review.md)·[#8595](archives/pr_8595_review.md)·[#8632](archives/pr_8632_review.md)를 오래된 순서로 검토한다. 각각 #8555·#8556·#8557이며 공통 대표 이슈가 없으므로 날짜 기반 통합 branch `review/integration-20261106-kang-t-picture-editing`를 사용한다. 기준 devel `45684640be5eddcf5972b063260250345b34d928`와 원 head를 개별 review에 고정했다. 원 commit을 재작성하지 않고 merge ancestry로 보존한다.
 
 ## 실행할 검증
 
@@ -41,3 +41,7 @@
 최신 후보의 전체 회귀 12,778건·Native 공식 3종·Rust lint 묶음·Studio 2,745건·타입·build·실제 CDP·원 13쪽 Native/WASM·정상 대조군 10쪽·SVG·편람 383쪽이 통과했다. 기준 devel도 별도 detached worktree에서 같은 profile/글꼴/입력으로 빌드해 비교를 완료했다. 정상 그림 배치 20쌍과 새 글꼴 사례 6쌍의 PNG가 동일하고 원 사례 52개 쪽/조건 대조에서 후퇴가 없다. 과거 후보의 결과를 새 기준 출력으로 표시하지 않으며, 입력 생성·폰트 프로그램·후보 source·실제 실행 근거는 [공통 증거](assets/kang-t-20261106/README.md)에 모은다.
 
 `insertPictureInCell`/`relocateFloatingPicture`를 함께 보존하는 최초 승인과 같은 계약의 경계 보정을 한 단위로 수행했다. 새 menu 구현·기존 private Windows 경로 검사나 오래된 커서 경고 수정을 별도 기능으로 확장하지 않았다. 원격 push·새 PR·공개 댓글·merge는 최종 로컬 결과가 구체화된 뒤 별도 승인을 확인한다.
+
+## 승인된 원격 처리 결과
+
+작업지시자 승인 뒤 PR #8725를 생성했고 제출 head `07510f602a6081d90c94397fe29613420f3e7f63`의 CI·CodeQL·Render Diff·Adapter·Proptest·최종 정책·self-review를 완료했다. merge `331521a3b1fb5de5dfa39b0707c0b295b90f9dc4`와 원 3개 PR의 자동 MERGED를 확인했다. [운영 기록](assets/kang-t-20261106/remote/completion.md)을 따라 후속 처리를 완료한다.

@@ -1,0 +1,8 @@
+{
+  "build_source": "226f0d487cc8d72305979ceb8ab46832017634d0",
+  "merged_head": "331521a3b1fb5de5dfa39b0707c0b295b90f9dc4",
+  "rust_source_digest": "e0aad5c4a581a860ac9830c4bae64074015f6fa5bd53b9511c82e81133a19af1",
+  "wasm_sha256": "46ef070e9e5b656598a42bdfe9e8ddcb81955cbff77623ccaf572238ec9f160e",
+  "pkg_public_identical": true,
+  "installed_utc": "2026-11-07T00:11:25.534566+00:00"
+}
