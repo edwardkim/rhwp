@@ -1,9 +1,9 @@
 /**
- * Issue #8160 sample16 password regression and shared password-open contract
- * and save-protection lifecycle.
- *
- * The fixture password is intentionally reconstructed from character codes so
- * test output, source grep, and reports never print it as a literal value.
+ * 관계형: #8160 및 공통 암호 열기·저장 보호 상태의 사용자 입력 계약.
+ * Native/fresh WASM 일치율: 암호 UI·상태 계약이므로 비해당. 배치 좌표를 고정하지 않는다.
+ * fixture 암호값은 문자 코드로 재구성하며 로그·보고서에 출력하지 않는다.
+ * 이전 파일의 초기화가 끝난 뒤 다음 열기를 시작하고 실제 키 입력의 전달을 확인한다.
+ * 주석 갱신: 2026-11-08T04:50:58+09:00
  */
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,10 +26,25 @@ const SAMPLE16_FIXTURES = [{
 }];
 
 async function uploadFixture(page, fixture) {
+  // fileName·쪽수는 폰트/view 초기화보다 먼저 바뀐다. 이전 loadFile의 종료를
+  // 기다리지 않고 다음 파일을 올리면 이전 취소/초기화가 새 암호 입력과 경합한다.
+  await page.waitForFunction(
+    () => !document.documentElement.classList.contains('rhwp-busy')
+      && !document.querySelector('#hwp-password-input'),
+    { timeout: fixture.loadTimeoutMs ?? 30_000 },
+  );
   const input = await page.$('#file-input');
   if (!input) throw new Error('file-input not found');
   await input.uploadFile(fixture.path);
   await page.waitForSelector('#hwp-password-input', { timeout: 30_000 });
+}
+
+async function typePassword(page, password) {
+  await page.type('#hwp-password-input', password);
+  const complete = await page.$eval('#hwp-password-input',
+    (input, length) => input instanceof HTMLInputElement && input.value.length === length,
+    password.length);
+  assert(complete, '암호 입력창이 검사에 사용할 모든 키 입력을 받는다');
 }
 
 async function dialogState(page) {
@@ -92,7 +107,7 @@ return runTest(title, async ({ page }) => {
     assert(JSON.stringify(afterCancel) === JSON.stringify(prior), '취소는 현재 문서를 교체하지 않는다');
 
     await uploadFixture(page, fixture);
-    await page.type('#hwp-password-input', 'wrong-password');
+    await typePassword(page, 'wrong-password');
     await clickDialogButton(page, '확인');
     await page.waitForFunction(
       () => document.querySelector('#hwp-password-error')?.textContent?.includes('암호가 일치하지 않거나 문서가 손상되었습니다'),
@@ -114,7 +129,7 @@ return runTest(title, async ({ page }) => {
 
     // 공개 fixture의 값은 보고·오류·저장소에 노출하지 않는다.
     const fixturePassword = String.fromCharCode(49, 50, 51, 52, 53, 54);
-    await page.type('#hwp-password-input', fixturePassword);
+    await typePassword(page, fixturePassword);
     await page.keyboard.press('Enter');
     await page.waitForFunction(
       ({expectedPages, expectedName}) => {
@@ -128,6 +143,11 @@ return runTest(title, async ({ page }) => {
       {expectedPages: fixture.pageCount ?? null, expectedName: path.basename(fixture.path)},
     );
     await waitForCanvas(page, fixture.loadTimeoutMs ?? 30_000);
+    await page.waitForFunction(
+      (name) => !document.documentElement.classList.contains('rhwp-busy')
+        && document.querySelector('#sb-message')?.textContent?.startsWith(name),
+      { timeout: fixture.loadTimeoutMs ?? 30_000 }, path.basename(fixture.path),
+    );
 
     const finalState = await page.evaluate((password) => {
       const documentInfo = window.__wasm?.getDocumentInfo();
