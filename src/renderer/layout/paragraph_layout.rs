@@ -668,7 +668,13 @@ pub(super) fn bullet_marker_text(
         // 그림도 기존 비 ASCII 글머리표의 1em 칸과 원본 거리를 점유한다.
         '●'
     } else {
-        map_pua_bullet_char(bullet.bullet_char)
+        // 확인된 암묵적 프로그램의 원 주소는 측정·paint까지 보존한다.
+        // 표시 투영은 각 렌더러의 기존 공통 경로가 수행한다.
+        if crate::renderer::implicit_symbol::advance_em(bullet.bullet_char).is_some() {
+            bullet.bullet_char
+        } else {
+            map_pua_bullet_char(bullet.bullet_char)
+        }
     } {
         // [#7418] 글머리표 자리의 soft hyphen(U+00AD)은 한/글이 반각 하이픈으로 그린다
         // (`footnote-01-hwp-2020.pdf` 1쪽: 마커 8673 → 본문 10079, 14pt 에서 마커+공백

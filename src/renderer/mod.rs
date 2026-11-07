@@ -57,6 +57,7 @@ pub mod hyperlinks;
 pub(crate) mod image_geometry;
 pub(crate) mod image_header;
 pub mod image_resolver;
+mod implicit_symbol;
 pub mod inline_flow;
 pub(crate) mod kerning;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]

@@ -52,6 +52,7 @@ pub(super) fn marker_text_style(
 
 fn marker_lang(text: &str) -> usize {
     text.chars()
+        .map(super::map_pua_bullet_char)
         .find(|&ch| !crate::renderer::composer::is_lang_neutral(ch))
         .map(crate::renderer::style_resolver::detect_lang_category)
         // 독립 ASCII 구두점에는 따라갈 본문 언어가 없다. 마커 자체의 Latin 슬롯을 쓴다.

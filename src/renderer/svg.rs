@@ -3581,6 +3581,7 @@ impl Renderer for SvgRenderer {
             )
         };
 
+        let symbol_sources = super::implicit_symbol::sources(&metric_source, text);
         // 클러스터 단위 렌더링: 옛한글 자모 조합 시퀀스를 하나의 <text>로 묶음
         let metric_text = super::composer::display_projection_metric_text(
             &metric_source,
@@ -3679,6 +3680,15 @@ impl Renderer for SvgRenderer {
                             y - ink.above_baseline + dy, ink.radius_x, ink.radius_y, shadow_color));
                             continue;
                         }
+                    }
+                    if let Some((cx, cy, rx, ry)) =
+                        super::implicit_symbol::ink(symbol_sources.as_deref(), *char_idx, style)
+                    {
+                        self.output.push_str(&format!(
+                            "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{rx:.4}\" ry=\"{ry:.4}\" fill=\"{shadow_color}\"/>\n",
+                            x + cluster_x(*char_idx, cluster_str) + cx + dx, y + cy + dy,
+                        ));
+                        continue;
                     }
                     if is_middle_dot(cluster_str) {
                         let adv = cluster_advance(*char_idx, cluster_str);
@@ -3784,6 +3794,41 @@ impl Renderer for SvgRenderer {
                         self.draw_enclosed_pua(glyph, char_x, y, style, font_size);
                         continue;
                     }
+                }
+                if let Some((cx, cy, rx, ry)) =
+                    super::implicit_symbol::ink(symbol_sources.as_deref(), *char_idx, style)
+                {
+                    let char_x = x + cluster_x(*char_idx, cluster_str);
+                    if style.emboss || style.engrave {
+                        let offset = (font_size / 20.0).max(1.0);
+                        let (upper, lower) = if style.emboss {
+                            ("#ffffff", "#808080")
+                        } else {
+                            ("#808080", "#ffffff")
+                        };
+                        for (delta, fill) in [(-offset, upper), (offset, lower)] {
+                            self.output.push_str(&format!(
+                                "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{rx:.4}\" ry=\"{ry:.4}\" fill=\"{fill}\"/>\n",
+                                char_x + cx + delta, y + cy + delta,
+                            ));
+                        }
+                    }
+                    let fill = if outline_attrs.is_some() {
+                        "none"
+                    } else {
+                        &color
+                    };
+                    let attrs = attrs_for_cluster(cluster_str, fill);
+                    let outline = outline_attrs.as_deref().unwrap_or("");
+                    self.output.push_str(&format!(
+                        "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{rx:.4}\" ry=\"{ry:.4}\" {attrs}{outline}/>\n",
+                        char_x + cx, y + cy,
+                    ));
+                    self.output.push_str(&format!(
+                        "<text x=\"{char_x:.4}\" y=\"{y:.4}\" fill-opacity=\"0\">{}</text>\n",
+                        escape_xml(cluster_str),
+                    ));
+                    continue;
                 }
                 if let Some((cx, cy, rx, ry)) =
                     super::legacy_hft_bullet_geometry(cluster_str, style)

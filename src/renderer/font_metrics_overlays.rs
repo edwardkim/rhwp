@@ -10,6 +10,9 @@
 /// 문서의 CJK face나 표시 Unicode·의 전각 폭으로 이 기호를 재지 않는다.
 /// 확인하지 않은 기호는 기존 표시 폴백을 유지하며 글꼴 파일에 의존하지 않는다.
 pub(crate) fn implicit_symbol_advance_em(character: char) -> Option<f64> {
+    if let Some(advance) = super::implicit_symbol::advance_em(character) {
+        return Some(advance);
+    }
     match character {
         '\u{F09E}' | '\u{F0A0}' => Some(312.0 / 1000.0),
         // 독립 한컴2020 Print의 원본 책괄호는 Haansoft Batang

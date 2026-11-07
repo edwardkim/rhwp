@@ -346,6 +346,7 @@ impl SkiaTextReplay<'_> {
                 let metric_source = text;
                 let text = expand_pua_render_text_in_style(text, style);
                 let text = text.as_str();
+                let symbol_sources = crate::renderer::implicit_symbol::sources(metric_source, text);
                 let metric_text = crate::renderer::composer::display_projection_metric_text(
                     metric_source,
                     text,
@@ -546,6 +547,24 @@ impl SkiaTextReplay<'_> {
                         if cluster.starts_with(|ch: char| {
                             ch < '\u{0020}' && !matches!(ch, '\t' | '\n' | '\r')
                         }) {
+                            continue;
+                        }
+                        if let Some((cx, cy, rx, ry)) = crate::renderer::implicit_symbol::ink(
+                            symbol_sources.as_deref(),
+                            *char_idx,
+                            style,
+                        ) {
+                            let cx = f64::from(char_x) + cx;
+                            let cy = y + f64::from(dy) + cy;
+                            canvas.draw_oval(
+                                skia_safe::Rect::from_xywh(
+                                    (cx - rx) as f32,
+                                    (cy - ry) as f32,
+                                    (2.0 * rx) as f32,
+                                    (2.0 * ry) as f32,
+                                ),
+                                &text_paint,
+                            );
                             continue;
                         }
                         if let Some((cx, cy, rx, ry)) =

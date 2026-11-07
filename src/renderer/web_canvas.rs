@@ -118,6 +118,8 @@ mod faux_bold_outline;
 #[cfg(target_arch = "wasm32")]
 mod hft_outline;
 #[cfg(target_arch = "wasm32")]
+mod implicit_symbol;
+#[cfg(target_arch = "wasm32")]
 mod middle_dot;
 #[cfg(target_arch = "wasm32")]
 mod pua_glyph;
@@ -2754,6 +2756,7 @@ impl Renderer for WebCanvasRenderer {
         let old_hangul_font = font_setup.old_hangul_descriptor();
         self.ctx.set_font(font);
 
+        let symbol_sources = super::implicit_symbol::sources(&metric_source, text);
         // 클러스터 분할
         let clusters = contextual_text::coalesce(split_into_clusters(text));
 
@@ -2804,6 +2807,7 @@ impl Renderer for WebCanvasRenderer {
             if has_effect {
                 self.draw_text_with_effects(
                     &clusters,
+                    symbol_sources.as_deref(),
                     &char_positions,
                     visual_positions.as_ref(),
                     x,
@@ -2844,6 +2848,17 @@ impl Renderer for WebCanvasRenderer {
                     let cluster_str = painted.as_ref();
                     // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
                     if super::text_glyph_visibility::is_nonprinting_cluster(cluster_str) {
+                        continue;
+                    }
+                    if implicit_symbol::paint(
+                        &self.ctx,
+                        symbol_sources.as_deref(),
+                        *char_idx,
+                        style,
+                        x + cluster_x(*char_idx, cluster_str),
+                        y,
+                        false,
+                    ) {
                         continue;
                     }
                     if let Some((cx, cy, rx, ry)) =
@@ -3697,6 +3712,7 @@ impl WebCanvasRenderer {
     fn draw_text_with_effects(
         &self,
         clusters: &[(usize, String)],
+        symbol_sources: Option<&[char]>,
         char_positions: &[f64],
         visual_positions: Option<&super::text_direction::VisualTextPositions<'_>>,
         x: f64,
@@ -3772,6 +3788,18 @@ impl WebCanvasRenderer {
                         .unwrap_or(char_positions[*char_idx])
                     + dx;
                 let char_y = y + dy;
+
+                if implicit_symbol::paint(
+                    ctx,
+                    symbol_sources,
+                    *char_idx,
+                    style,
+                    char_x,
+                    char_y,
+                    stroke,
+                ) {
+                    continue;
+                }
 
                 if cs == "․"
                     && middle_dot::paint_onepoint(ctx, style, font_size, char_x, char_y, stroke)
