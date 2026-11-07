@@ -515,11 +515,15 @@ pub(super) fn prepare_computed(
     // 원본 저장 줄은 다음 줄 원점까지 후행 간격을 전량 소유한다.
     // 절반만 소비하고 저장 끝으로 기준축을 역산하면 이후 모든 줄이 위로 이동한다.
     // 저장 좌표가 없는 합성 줄에서만 기존 빈 문단 간격 분배를 적용한다.
-    let trailing_fraction = if saved_column_top || closed_stored_line || full_trailing_spacing {
-        1.0
-    } else {
-        0.5
-    };
+    // 다음 문단도 저장 줄이 없어 재조판되면 그 원점은 나머지 간격을 복원하지 않는다
+    // (`tac_host_trailing_spacing_at_boundary` 와 같은 계약). 반만 쓰면 뒤 본문이 위로 붙는다.
+    let successor_reflows = next_para.is_some_and(crate::renderer::para_has_no_stored_line_segs);
+    let trailing_fraction =
+        if saved_column_top || closed_stored_line || full_trailing_spacing || successor_reflows {
+            1.0
+        } else {
+            0.5
+        };
     // 현재 줄의 옛 누적 vpos와 다음 원본 줄의 새 로컬 축을 구분한다.
     // 실제 표 상자도 같은 줄 높이를 소비했을 때만 닫힌 전진 끝을 수용한다.
     // 이 계획의 end를 fit/축 연결과 paint가 그대로 공유한다.
