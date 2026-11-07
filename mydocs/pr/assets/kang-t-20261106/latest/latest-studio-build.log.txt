@@ -1,0 +1,42 @@
+
+> rhwp-studio@0.9.0 build
+> tsc && vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 655 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/registerSW.js                               0.13 kB
+dist/manifest.webmanifest                        0.76 kB
+dist/assets/form-action-worker-BEckcfC_.js      10.79 kB
+dist/index.html                                 87.08 kB │ gzip:     11.53 kB
+dist/assets/import-worker--hHSGMsx.js          146.39 kB
+dist/assets/canvaskit-SCAxUyCS.wasm          7,317.34 kB │ gzip:  2,989.78 kB
+dist/assets/rhwp_bg-BnONZ9Rz.wasm           28,384.47 kB │ gzip: 10,811.97 kB
+dist/assets/plugin-Bye_jCll.css                  6.18 kB │ gzip:      1.53 kB
+dist/assets/index-Bi3mWWBZ.css                 118.74 kB │ gzip:     20.48 kB
+dist/assets/node.browser-HQ5SKBOf.js             0.26 kB │ gzip:      0.22 kB
+dist/assets/registry-BHu3UiaL.js                 1.66 kB │ gzip:      0.51 kB
+dist/assets/http-UCKm9Y6X.js                     1.73 kB │ gzip:      0.91 kB
+dist/assets/node.browser-D421bS8I.js             1.81 kB │ gzip:      0.70 kB
+dist/assets/error-BTdmRKoB.js                    2.02 kB │ gzip:      0.84 kB
+dist/assets/openai-BCH6y_Vi.js                   3.93 kB │ gzip:      1.79 kB
+dist/assets/gemini-DPpIV0Y4.js                   5.31 kB │ gzip:      2.43 kB
+dist/assets/studio-plugin-DTxgAKj_.js           55.39 kB │ gzip:     16.53 kB
+dist/assets/plugin-C556umUe.js                 115.63 kB │ gzip:     33.16 kB
+dist/assets/canvaskit-renderer-Dkb1fKxv.js     338.34 kB │ gzip:    101.78 kB
+dist/assets/claude-XRBWuM8Q.js                 345.76 kB │ gzip:     76.71 kB
+dist/assets/index-twg2u6Vn.js                2,315.70 kB │ gzip:    493.60 kB
+
+✓ built in 1.51s
+Browserslist: browsers data (caniuse-lite) is 6 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+PWA v2.0.0
+mode      generateSW
+precache  75 entries (31368.44 KiB)
+files generated
+  dist/sw.js
+  dist/workbox-dcde9eb3.js

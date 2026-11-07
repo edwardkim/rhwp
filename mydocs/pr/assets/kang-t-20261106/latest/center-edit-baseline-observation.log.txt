@@ -1,0 +1,8 @@
+CENTER_PATH para=4 control=0 cell=5 cell_para=0 lines=[(1200, 1020)]
+CENTER_PATH para=4 control=0 cell=8 cell_para=0 lines=[(1200, 600)]
+CENTER_PATH para=4 control=0 cell=11 cell_para=0 lines=[(1200, 600)]
+output/pr-review/kang-t-20261106/base-latest-center-edit-roundtrip/edited.hwp	[[335, 0], [0, 0], [111, 110], [0, 0]]
+CENTER_PATH para=4 control=0 cell=5 cell_para=0 lines=[(1200, 600)]
+CENTER_PATH para=4 control=0 cell=8 cell_para=0 lines=[(1200, 600)]
+CENTER_PATH para=4 control=0 cell=11 cell_para=0 lines=[(1200, 600)]
+output/pr-review/kang-t-20261106/candidate-center-edit-roundtrip/edited.hwp	[[335, 0], [0, 0], [111, 111], [0, 0]]

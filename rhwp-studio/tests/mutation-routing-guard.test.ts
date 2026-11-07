@@ -56,7 +56,7 @@ function bridgePublicMethods(): string[] {
 // 문서 변경을 시사하는 동사 접두어. MUTATING_METHODS 의 모든 이름을 커버해야
 // 하며(아래 자기정합 단언이 강제), 그래야 새 브리지 뮤테이터가 drift 에 걸린다.
 // find* 는 쿼리(findNextEditableControl 등)가 많아 findOrCreate 로 좁힌다.
-const MUTATING_VERB = /^(insert|delete|create|apply|add|remove|move|resize|merge|split|update|toggle|replace|paste|assign|group|ungroup|change|clear|evaluate|transpose|promote|ensure|findOrCreate|reflow|setPage|setSection|setColumn|setCell|setTable|setPicture|setShape|setEquation|setNote|setChar|setPara|setField|setForm|setNumbering|setHeaderFooter|setActiveField|renameBookmark)/;
+const MUTATING_VERB = /^(insert|delete|create|apply|add|remove|move|resize|merge|split|update|toggle|replace|paste|assign|group|ungroup|change|clear|evaluate|transpose|promote|ensure|findOrCreate|reflow|setPage|setSection|setColumn|setCell|setTable|setPicture|setShape|setEquation|setNote|setChar|setPara|setField|setForm|setNumbering|setHeaderFooter|setActiveField|renameBookmark|relocate)/;
 
 test('MUTATING_VERB 는 MUTATING_METHODS 전 항목을 커버한다(drift 사각 방지)', () => {
   // 목록에 있으나 동사 패턴에 안 걸리는 이름이 있으면, 그 계열의 신규 브리지
@@ -270,7 +270,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   'src/engine/input-handler-connector.ts': 1,
   'src/engine/input-handler-keyboard.ts': 21,
   'src/engine/input-handler-mouse.ts': 3,
-  'src/engine/input-handler-picture.ts': 11,
+  'src/engine/input-handler-picture.ts': 12, // +1: 다른 쪽으로 끌어 놓은 그림의 relocateFloatingPicture 는 relocatePicture snapshot 안에서 호출(undo 기록됨)
   'src/engine/input-handler-table.ts': 10, // +1 [#7189]: 중첩 표 확정이 resizeTableCellsByPath 로 갈라진다 (같은 executeOperation snapshot 안, 평면 호출과 배타) / -2: 한컴 3모드 셀 크기 조절의 직접 WASM 호출을 executeOperation snapshot 경로로 이관 (undo 기록됨) / +2 [#7442]: applyKeyboardResize·resizeTableProportional 도 중첩 ctx 에서 resizeTableCellsByPath 로 갈라진다 (같은 snapshot 안, 평면 호출과 배타)
   'src/engine/input-handler-hyperlink-delete.ts': 3, // #6963: removeHyperlink + 본문/셀 deleteText는 모두 deleteHyperlink snapshot 안에서 실행. 실제 WASM runner가 원자 복구·undo/redo를 검증한다.
   'src/engine/input-handler-text.ts': 13, // 개체 뒤 조합은 논리 삽입·텍스트 삭제 후 완료 명령으로 기록한다.

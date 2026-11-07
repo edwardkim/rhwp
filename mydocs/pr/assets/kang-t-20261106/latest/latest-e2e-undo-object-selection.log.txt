@@ -1,0 +1,24 @@
+=== E2E: undo/redo 후 개체 선택 stale ref 해제 (Task #2303) ===
+
+  [browser] headless Chrome 실행
+  [wasm-artifact] matched 46ef070e9e5b656598a42bdfe9e8ddcb81955cbff77623ccaf572238ec9f160e
+[1] 그림 선택 undo/redo...
+  PASS: 초기 배치: 수식 ci=2, 그림 ci=3
+  PASS: 수식 삭제 후: 그림 ci=2 시프트
+  PASS: 그림 개체 선택됨
+  PASS: undo 후: 수식 복원(ci=2)·그림 ci=3 복귀
+  PASS: undo 후 개체 선택이 해제된다 (stale ref 제거 — #2303 핵심 계약)
+  PASS: undo 후 선택 ref 가 null 이다
+  PASS: 개체 속성 다이얼로그 미표시(no-op)
+  PASS: undo 후 개체 속성에서 커맨드 실행 실패 없음 (수집: 0건)
+  PASS: redo 후: 수식 재삭제·그림 ci=2
+  PASS: redo 후에도 개체 선택이 해제된다
+  PASS: redo 후 개체 속성에서 커맨드 실행 실패 없음
+  Screenshot: e2e/screenshots/undo-objsel-01-picture.png
+[2] 표 선택 undo...
+  PASS: 표 개체 선택됨
+  PASS: undo 후 표 개체 선택이 해제된다
+  PASS: undo 후 개체 속성에서 커맨드 실행 실패 없음(표)
+  Screenshot: e2e/screenshots/undo-objsel-02-table.png
+
+📋 HTML 보고서: ../output/e2e/undo-object-selection-report.html

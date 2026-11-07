@@ -1,0 +1,170 @@
+import { createRequire } from 'node:module';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import assert from 'node:assert/strict';
+const root='/home/edward/mygithub/rhwp';
+const wt='/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-kang-t-picture-editing';
+const label=process.argv[2] || 'candidate-before-corrections';
+const out=`${root}/output/pr-review/kang-t-20261106`;
+const fixture=process.argv[3] || 'drag-before-table';
+const targetY=Number(process.env.DROP_Y || 250);
+const dest=`${out}/cdp-${label}-${fixture}${process.env.RUN_TAG ? '-'+process.env.RUN_TAG : ''}`; mkdirSync(dest,{recursive:true});
+process.env.VITE_URL=process.env.VITE_URL || 'http://127.0.0.1:7793';
+process.env.RHWP_WASM_BUILD_MANIFEST=`${out}/${label}-producer/wasm-build.json`;
+const require=createRequire(`${wt}/rhwp-studio/package.json`);
+const puppeteer=require('puppeteer-core');
+const {loadApp}=await import(`${wt}/rhwp-studio/e2e/helpers.mjs`);
+const browser=await puppeteer.connect({browserURL:'http://127.0.0.1:19222',defaultViewport:null});
+const context=await browser.createBrowserContext();
+const page=await context.newPage(); await page.setViewport({width:1440,height:1400,deviceScaleFactor:1});
+const result={label, browser:await browser.version(), ownTarget:page.target()._targetId, assertions:[], warnings:[]};
+const log=()=>writeFileSync(`${dest}/result.json`,JSON.stringify(result,null,2)+'\n');
+page.on('console',m=>{if(m.type()==='warn'||m.type()==='error')result.warnings.push(m.text());});
+const settle=()=>page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+const images=()=>page.evaluate(()=>{
+ const w=window.__wasm; const a=[];
+ for(let p=0;p<w.pageCount;p++)for(const c of w.getPageControlLayout(p).controls)if(c.type==='image')a.push({page:p,...c});
+ return a;
+});
+try{
+ await loadApp(page,'?renderer=canvas2d');
+ const bytes=Array.from(readFileSync(`${out}/${fixture}.hwp`));
+ result.load=await page.evaluate(async bytes=>{
+  const info=window.__wasm.loadDocument(new Uint8Array(bytes),'drag-before-table.hwp');
+  const {loadWebFonts}=await import('/src/core/font-loader.ts');
+  await loadWebFonts(info.fontsUsed??[]); await document.fonts.ready;
+  await window.__canvasView.loadDocument(); return info;
+ },bytes);
+ await page.evaluate(()=>{window.__inputHandler.viewportManager.setZoom(.25);document.querySelector('#scroll-container').scrollTop=0;});
+ await settle();
+ result.before=await images(); log();
+ assert.equal(result.before.length,1,'one initial picture');
+ assert.ok(result.before[0].page>=0,'source picture has a page');
+ const source=result.before[0];
+ await page.evaluate(source=>{
+  const ih=window.__inputHandler;
+  ih.cursor.enterPictureObjectSelectionDirect(source.secIdx,source.paraIdx,source.controlIdx,'image',undefined,undefined,undefined,undefined,source.cellPath,undefined);
+  ih.renderPictureObjectSelection();
+  ih.eventBus.emit('picture-object-selection-changed',true);
+ },source);
+ await settle();await new Promise(r=>setTimeout(r,400));
+ result.setup=await page.evaluate(source=>{
+  const ih=window.__inputHandler,w=window.__wasm,sc=ih.container.querySelector('#scroll-content');
+  ih.cursor.enterPictureObjectSelectionDirect(source.secIdx,source.paraIdx,source.controlIdx,'image',undefined,undefined,undefined,undefined,source.cellPath,undefined);
+  ih.renderPictureObjectSelection();
+  const r=sc.getBoundingClientRect(),z=ih.viewportManager.getZoom(),vs=ih.virtualScroll;
+  const coords=(pi,x,y)=>({x:r.left+vs.getPageLeftResolved(pi,sc.clientWidth)+x*z,y:r.top+vs.getPageOffset(pi)+y*z});
+  const to={page:1,x:500,y:source.targetY}; const hit=w.hitTest(to.page,to.x,to.y);
+  return {from:coords(source.page,source.x+source.w/2,source.y+source.h/2),to:coords(to.page,to.x,to.y),hit,selected:ih.cursor.getSelectedPictureRef()};
+ },{...source,targetY});
+ assert.ok(result.setup.hit.cellPath?.length,'drop point is a table cell');
+ await page.evaluate(()=>{
+  const w=window.__wasm;window.__dragTrace=[];window.__forceStart=false;
+  for(const key of ['getCellPicturePropertiesByPath','setCellPicturePropertiesByPath','relocateFloatingPicture']){
+   const original=w[key].bind(w);
+   w[key]=(...args)=>{
+    if(key==='relocateFloatingPicture' && window.__forceStart)args[6]=0;
+    const value=original(...args);
+    window.__dragTrace.push({method:key,args,result:value});
+    return value;
+   };
+  }
+  const doc=w.doc;
+  const original=doc.setCellPicturePropertiesByPath.bind(doc);
+  doc.setCellPicturePropertiesByPath=(...args)=>{
+   window.__dragTrace.push({method:'raw-cell-set-before',args});
+   try{const r=original(...args);window.__dragTrace.push({method:'raw-cell-set-after',result:r});return r;}
+   catch(e){window.__dragTrace.push({method:'raw-cell-set-error',error:String(e)});throw e;}
+  };
+ });
+ await page.screenshot({path:`${dest}/before.png`});
+ const {from,to}=result.setup;
+ await page.mouse.move(from.x,from.y); await page.mouse.down();
+ await settle();
+ for(let step=1;step<=18;step++){
+  await page.mouse.move(from.x+(to.x-from.x)*step/18,from.y+(to.y-from.y)*step/18);
+  await settle();
+ }
+ result.dragState=await page.evaluate(()=>window.__inputHandler.pictureMoveState);
+ result.dropGeometry=await page.evaluate(source=>{
+  const ih=window.__inputHandler,s=ih.pictureMoveState,sc=ih.container.querySelector('#scroll-content'),z=ih.viewportManager.getZoom();
+  const lay=window.__wasm.getPageControlLayout(s.pageIndex).controls.find(c=>c.type==='image'&&c.secIdx===source.secIdx&&c.paraIdx===source.paraIdx&&c.controlIdx===source.controlIdx);
+  return {zoom:z,containerTop:sc.getBoundingClientRect().top,lay,
+   currentLayoutTarget:lay?{x:lay.x+(ih.virtualScroll.getPageLeftResolved(s.pageIndex,sc.clientWidth)-ih.virtualScroll.getPageLeftResolved(s.dropPage,sc.clientWidth))/z,y:lay.y+(ih.virtualScroll.getPageOffset(s.pageIndex)-ih.virtualScroll.getPageOffset(s.dropPage))/z}:null,
+   originalGrabTarget:{x:s.dropX-(s.startPageX-source.x),y:s.dropY-(s.startPageY-source.y)}};
+ },source);
+ if(process.env.FORCE_START)await page.evaluate(()=>window.__forceStart=true);
+ await page.mouse.up(); await settle();
+ await new Promise(r=>setTimeout(r,400));
+ result.after=await images();
+ result.selected=await page.evaluate(()=>window.__inputHandler.cursor.getSelectedPictureRef());
+ result.trace=await page.evaluate(()=>window.__dragTrace);
+ await page.screenshot({path:`${dest}/after.png`});log();
+ assert.equal(result.after.length,1,'drag preserves exactly one picture');
+ assert.equal(result.after[0].page,1,'drag moves picture to second page');
+ assert.ok(result.after[0].cellPath?.length,'picture is owned by destination cell');
+ const key=p=>(p??[]).map(e=>[e.controlIndex??e.controlIdx,e.cellIndex??e.cellIdx,e.cellParaIndex??e.cellParaIdx]);
+ assert.deepEqual(key(result.selected?.cellPath),key(result.after[0].cellPath),'selection uses the renumbered destination table path');
+ const image=result.after[0],drop=result.dragState;
+ assert.ok(drop && Number.isFinite(drop.dropX) && Number.isFinite(drop.dropY),'actual drop coordinates were recorded');
+ result.pointerInsideAfterReflow=drop.dropX>=image.x-1 && drop.dropX<=image.x+image.w+1 && drop.dropY>=image.y-1 && drop.dropY<=image.y+image.h+1;
+ result.cellGeometry=await page.evaluate(page=>{
+  const tree=JSON.parse(window.__wasm.doc.getPageRenderTree(page));const out=[];
+  const walk=(n,cell=null)=>{if(n.type==='Cell')cell=n;if(n.type==='Image')out.push({image:n.bbox,cell:cell?.bbox??null});for(const c of n.children??[])walk(c,cell);};walk(tree);return out;
+ },image.page);
+ assert.equal(result.cellGeometry.length,1,'render tree contains one drawn picture');
+ const drawn=result.cellGeometry[0],cell=drawn.cell;
+ assert.ok(cell && drawn.image.x>=cell.x-.5 && drawn.image.y>=cell.y-.5 && drawn.image.x+drawn.image.w<=cell.x+cell.w+.5 && drawn.image.y+drawn.image.h<=cell.y+cell.h+.5,'drawn picture remains inside its destination cell through reflow');
+ const props=await page.evaluate(r=>window.__wasm.getCellPicturePropertiesByPath(r.sec,r.ppi,r.cellPath,r.ci),result.selected);
+ assert.ok(props.vertOffset>=0,'cell-owned flow picture retains the existing nonnegative cell offset contract');
+ assert.equal(key(result.after[0].cellPath).at(-1)[1],key(result.setup.hit.cellPath).at(-1)[1],'drop keeps the hit cell identity through source removal and reflow');
+ result.cellConstraint={restrictInPage:props.restrictInPage,vertOffset:props.vertOffset,pointerInsideAfterReflow:result.pointerInsideAfterReflow};
+ result.assertions.push('actual mouse drag and current selection');
+ await page.keyboard.down('Control');await page.keyboard.press('z');await page.keyboard.up('Control');await settle();
+ await new Promise(r=>setTimeout(r,300));result.undo=await images();log();
+ assert.equal(result.undo.length,1);assert.equal(result.undo[0].page,source.page,'Ctrl+Z restores source page');
+ result.assertions.push('keyboard undo');
+ await page.keyboard.down('Control');await page.keyboard.press('y');await page.keyboard.up('Control');await settle();
+ await new Promise(r=>setTimeout(r,300));result.redo=await images();log();
+ assert.equal(result.redo.length,1);assert.equal(result.redo[0].page,1,'Ctrl+Y restores destination page');
+ result.assertions.push('keyboard redo');
+ const saved=await page.evaluate(()=>Array.from(window.__wasm.exportHwp()));
+ writeFileSync(`${dest}/after-drag.hwp`,Buffer.from(saved));
+ result.savedSha256=createHash('sha256').update(Buffer.from(saved)).digest('hex');
+ await page.evaluate(async saved=>{window.__wasm.loadDocument(new Uint8Array(saved),'after-drag.hwp');await window.__canvasView.loadDocument();},saved);
+ await settle();result.reopened=await images();log();
+ assert.equal(result.reopened.length,1);assert.equal(result.reopened[0].page,1);
+ result.assertions.push('save and reopen');
+ const digest=async()=>createHash('sha256').update(Buffer.from(await page.evaluate(()=>Array.from(window.__wasm.exportHwp())))).digest('hex');
+ async function mouseMovePicture(toPage, toX, toY) {
+  const source=(await images())[0];
+  await page.evaluate(source=>{const ih=window.__inputHandler;ih.cursor.enterPictureObjectSelectionDirect(source.secIdx,source.paraIdx,source.controlIdx,'image',undefined,undefined,undefined,undefined,source.cellPath,undefined);ih.renderPictureObjectSelection();ih.eventBus.emit('picture-object-selection-changed',true);},source);
+  await settle();await new Promise(r=>setTimeout(r,400));
+  const points=await page.evaluate(({source,toPage,toX,toY})=>{
+   const ih=window.__inputHandler,sc=ih.container.querySelector('#scroll-content'),r=sc.getBoundingClientRect(),z=ih.viewportManager.getZoom(),vs=ih.virtualScroll;
+   const coords=(pi,x,y)=>({x:r.left+vs.getPageLeftResolved(pi,sc.clientWidth)+x*z,y:r.top+vs.getPageOffset(pi)+y*z});
+   return {from:coords(source.page,source.x+source.w/2,source.y+source.h/2),to:coords(toPage,toX,toY),hit:window.__wasm.hitTest(toPage,toX,toY)};
+  },{source,toPage,toX,toY});
+  await page.mouse.move(points.from.x,points.from.y);await page.mouse.down();await page.mouse.move(points.to.x,points.to.y,{steps:18});const dragState=await page.evaluate(()=>window.__inputHandler.pictureMoveState);await page.mouse.up();await settle();await new Promise(r=>setTimeout(r,350));
+  return {source,points,dragState,after:await images(),selected:await page.evaluate(()=>window.__inputHandler.cursor.getSelectedPictureRef())};
+ }
+ const capture=async()=>{const image=(await images())[0];const props=await page.evaluate(image=>window.__wasm.getCellPicturePropertiesByPath(image.secIdx,image.paraIdx,image.cellPath,image.controlIdx),image);return {image,props};};
+ const prior=(await images())[0], beforeSame=await digest();result.samePageBefore=await capture();
+ result.samePage=await mouseMovePicture(prior.page,prior.x+prior.w/2+12,prior.y+prior.h/2+12);log();
+ assert.equal(result.samePage.after.length,1);assert.equal(result.samePage.after[0].page,prior.page);assert.deepEqual(key(result.samePage.after[0].cellPath),key(prior.cellPath));
+ result.samePageAfter=await capture();const afterSame=await digest();assert.notEqual(afterSame,beforeSame,'same-page drag changes the document');
+ await page.keyboard.down('Control');await page.keyboard.press('z');await page.keyboard.up('Control');await settle();result.samePageUndo=await capture();log();assert.deepEqual(result.samePageUndo,result.samePageBefore,'same-page undo restores picture properties, layout and owner');
+ await page.keyboard.down('Control');await page.keyboard.press('y');await page.keyboard.up('Control');await settle();result.samePageRedo=await capture();log();assert.deepEqual(result.samePageRedo,result.samePageAfter,'same-page redo restores picture properties, layout and owner');
+ result.assertions.push('same-page actual drag and undo/redo');
+ result.toBody=await mouseMovePicture(0,350,110);log();
+ assert.equal(result.toBody.after.length,1);assert.equal(result.toBody.after[0].page,0,'cell-to-body drop is drawn on the first page');assert.equal(result.toBody.after[0].cellPath?.length??0,0,'picture moves out of the cell');assert.equal(result.toBody.selected.cellPath?.length??0,0,'selection has body ownership');
+ const bodyImage=result.toBody.after[0],bodyDrop=result.toBody.dragState;
+ assert.ok(bodyDrop.dropX>=bodyImage.x-1 && bodyDrop.dropX<=bodyImage.x+bodyImage.w+1 && bodyDrop.dropY>=bodyImage.y-1 && bodyDrop.dropY<=bodyImage.y+bodyImage.h+1,'cell-to-body picture follows the actual pointer grab after cell constraints');
+ await page.keyboard.down('Control');await page.keyboard.press('z');await page.keyboard.up('Control');await settle();assert.deepEqual(key((await images())[0].cellPath),key(prior.cellPath),'undo cell-to-body restores cell ownership');
+ await page.keyboard.down('Control');await page.keyboard.press('y');await page.keyboard.up('Control');await settle();assert.equal((await images())[0].cellPath?.length??0,0);
+ result.assertions.push('actual cell-to-body drag and undo/redo');
+ await page.screenshot({path:`${dest}/after-cell-to-body.png`});
+ result.success=true;log();
+}catch(error){result.success=false;result.error=String(error.stack||error);await page.screenshot({path:`${dest}/failure.png`}).catch(()=>{});log();console.error(error);process.exitCode=1;}
+finally{await context.close();browser.disconnect();}
+console.log(JSON.stringify({success:result.success,assertions:result.assertions,error:result.error}));

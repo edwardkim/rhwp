@@ -1,0 +1,8 @@
+{
+  "classification": "owner/history proof only; pointer correctness incomplete",
+  "original_result_success": true,
+  "cell_to_body_pointer_target_y": 110,
+  "observed_picture_y": 961.3,
+  "followup_ui_commit": "63236b9cc5",
+  "requires_actual_pointer_reverification": true
+}

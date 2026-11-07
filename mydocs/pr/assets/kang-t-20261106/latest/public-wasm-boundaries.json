@@ -1,0 +1,57 @@
+{
+  "label": "candidate",
+  "before": "06758c1b8fe98c4e7880ec257d67fee4c34ca2d836f19634f5ae729c5274cc40",
+  "after": "06758c1b8fe98c4e7880ec257d67fee4c34ca2d836f19634f5ae729c5274cc40",
+  "error": "렌더링 오류: 경로[0]: 셀문단 999 범위 초과 (총 1개)",
+  "atomic": true,
+  "offsets": [
+    {
+      "input": [
+        1200,
+        null
+      ],
+      "expected": [
+        1200,
+        0
+      ],
+      "actual": [
+        1200,
+        0
+      ]
+    },
+    {
+      "input": [
+        null,
+        -300
+      ],
+      "expected": [
+        0,
+        -300
+      ],
+      "actual": [
+        0,
+        -300
+      ]
+    },
+    {
+      "input": [
+        1200,
+        -300
+      ],
+      "expected": [
+        1200,
+        -300
+      ],
+      "actual": [
+        1200,
+        -300
+      ]
+    }
+  ],
+  "cyclicCaption": {
+    "before": "f815e41ec2bd38aedc5da88d44c66c1f98d65071fed805180edc6b0f758c19b7",
+    "after": "f815e41ec2bd38aedc5da88d44c66c1f98d65071fed805180edc6b0f758c19b7",
+    "error": "렌더링 오류: 경로[0]: controls[0] 가 표/글상자가 아닙니다",
+    "atomic": true
+  }
+}

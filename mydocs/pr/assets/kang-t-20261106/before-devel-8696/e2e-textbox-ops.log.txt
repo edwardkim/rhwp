@@ -1,0 +1,80 @@
+=== E2E: 글상자 안 picture 마우스 드래그 조작 lifecycle (#1273) ===
+
+  [browser] headless Chrome 실행
+  [wasm-artifact] matched 3da651d3cb678375e9d883df4c81d0f642658776223a2ec6f0076a6d0b4c184c
+  PASS: 검증 실패: undefined
+결과: {
+  "warnings": [
+    "[CursorState] updateRect 실패 → rect=null pos=(%d,%d,%d) cell=(%s,%s,%s,%s): 0 25 0 undefined undefined undefined undefined 렌더링 오류: 커서 위치를 찾을 수 없습니다: sec=0, para=25, offset=0"
+  ],
+  "cellPath": [
+    {
+      "controlIndex": 0,
+      "cellIndex": 0,
+      "cellParaIndex": 0
+    }
+  ],
+  "resize": {
+    "handleDir": "se",
+    "stateCellPath": [
+      {
+        "controlIndex": 0,
+        "cellIndex": 0,
+        "cellParaIndex": 0
+      }
+    ],
+    "dragging": true,
+    "w0": 15040,
+    "w1": 18038,
+    "wUndo": 15040
+  },
+  "floating": {
+    "handleDir": "nw",
+    "stateCellPath": [
+      {
+        "controlIndex": 0,
+        "cellIndex": 0,
+        "cellParaIndex": 0
+      }
+    ],
+    "treatAsChar": false,
+    "vBefore": 0,
+    "vAfter": 2250,
+    "hBefore": 0,
+    "hAfter": 2250,
+    "pageAbsV": 59925,
+    "bbYBefore": 799,
+    "bbYMid": 829,
+    "bbYAfter": 829
+  },
+  "rotate": {
+    "handleDir": "rotate",
+    "stateCellPath": [
+      {
+        "controlIndex": 0,
+        "cellIndex": 0,
+        "cellParaIndex": 0
+      }
+    ],
+    "dragging": true,
+    "a0": 0,
+    "a1": 32
+  }
+}
+  FAIL: 조작 중 오류 경고 발생: ["[CursorState] updateRect 실패 → rect=null pos=(%d,%d,%d) cell=(%s,%s,%s,%s): 0 25 0 undefined undefined undefined undefined 렌더링 오류: 커서 위치를 찾을 수 없습니다: sec=0, para=25, offset=0"]
+  PASS: 리사이즈 핸들을 찾지 못함 (선택/렌더/스크롤 실패)
+  PASS: pictureResizeState.ref.cellPath 누락 — Stage1 회귀: [{"controlIndex":0,"cellIndex":0,"cellParaIndex":0}]
+  PASS: 리사이즈 미반영: 15040 → 18038
+  PASS: 리사이즈 undo 원복 실패: 15040 → 18038 → 15040
+  PASS: 회전 핸들을 찾지 못함
+  PASS: pictureRotateState.ref.cellPath 누락 — Stage1 회귀: [{"controlIndex":0,"cellIndex":0,"cellParaIndex":0}]
+  PASS: 회전 각도 미반영: 0 → 32
+  PASS: floating 리사이즈 nw 핸들 실패
+  PASS: floating 전환 실패 (treatAsChar≠false)
+  PASS: floating 리사이즈 stateCellPath 누락: [{"controlIndex":0,"cellIndex":0,"cellParaIndex":0}]
+  PASS: floating vertOffset 페이지절대값 점프(Stage4 회귀): 0 → 2250 (page-abs≈59925)
+  PASS: floating picture 가 글상자 밖으로 이탈(세로 점프): bbY 799 → 829
+  PASS: 라이브 드래그 중 이미지가 예비박스에서 이탈(어긋남): bbY 799 → mid 829
+✅ #1273 글상자 picture: 리사이즈·회전·floating리사이즈 lifecycle + cellPath 보존 + undo 통과
+
+📋 HTML 보고서: ../output/e2e/textbox-picture-ops-1273-report.html

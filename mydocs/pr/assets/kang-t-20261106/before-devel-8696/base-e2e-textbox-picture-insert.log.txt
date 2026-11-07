@@ -1,0 +1,11 @@
+=== E2E: 글상자 위 이미지 드롭 → 본문 sibling 삽입 (#1171 v2) ===
+
+  [browser] headless Chrome 실행
+  [wasm-artifact] matched 2b8259b27596cf4c38d63404a61106c8ae1f9886e9a29c66adf283a689c7bf7b
+결과: {"before":0,"after":0,"err":null,"shapeStillPresent":true,"newImgCtrlIdx":null,"newImgTreatAsChar":null}
+  FAIL: 본문 para25 sibling image 가 1 증가해야 함 (before=0, after=0) — 글상자 cellPath 라우팅으로 삽입 실패 시 증가하지 않음
+  PASS: 글상자(Shape)가 그대로 남아있어야 함 (이미지와 독립)
+  FAIL: 삽입 image 는 floating(treat_as_char=false)이어야 함 — 한컴 정합 (관측: null)
+✅ #1171 v2: 글상자 위 이미지 드롭 → 본문 floating sibling 삽입 (한컴 정합) 통과
+
+📋 HTML 보고서: ../output/e2e/textbox-picture-insert-1171-report.html

@@ -1,0 +1,9 @@
+=== E2E: 어울림 그림 이동 뒤 화면이 다시 그려진다 (#6202) ===
+
+  [browser] headless Chrome 실행
+  [wasm-artifact] matched 3da651d3cb678375e9d883df4c81d0f642658776223a2ec6f0076a6d0b4c184c
+[#6202] 그림 y 489.5 → 557.7 · 글자 띠 {"x":293,"y":785,"width":660,"height":110} · 39384B / 37673B · 동일=false
+  PASS: 드래그가 문서에 반영돼야 한다 (그림 y 489.5 → 557.7)
+  PASS: 그림이 내려온 자리의 글자 띠가 화면에서 다시 흘러야 한다 — #6202 회귀 (띠 스크린샷이 바이트까지 동일 = 본문이 안 되감김)
+
+📋 HTML 보고서: ../output/e2e/issue-6202-picture-move-reflow-report.html

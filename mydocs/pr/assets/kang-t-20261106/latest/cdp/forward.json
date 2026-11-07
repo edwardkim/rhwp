@@ -1,0 +1,1225 @@
+{
+  "label": "candidate",
+  "browser": "Chrome/155.0.8059.40",
+  "ownTarget": "A0CFEFBBC5548DE45FA42430DDE3B2F7",
+  "assertions": [
+    "actual mouse drag and current selection",
+    "keyboard undo",
+    "keyboard redo",
+    "save and reopen",
+    "same-page actual drag and undo/redo",
+    "actual cell-to-body drag and undo/redo"
+  ],
+  "warnings": [
+    "[CursorState] updateRect 실패 → rect=null pos=(%d,%d,%d) cell=(%s,%s,%s,%s): 0 4 0 undefined undefined undefined undefined 렌더링 오류: 커서 위치를 찾을 수 없습니다: sec=0, para=4, offset=0",
+    "[CursorState] updateRect 실패 → rect=null pos=(%d,%d,%d) cell=(%s,%s,%s,%s): 0 4 0 undefined undefined undefined undefined 렌더링 오류: 커서 위치를 찾을 수 없습니다: sec=0, para=4, offset=0",
+    "[CursorState] updateRect 실패 → rect=null pos=(%d,%d,%d) cell=(%s,%s,%s,%s): 0 4 0 undefined undefined undefined undefined 렌더링 오류: 커서 위치를 찾을 수 없습니다: sec=0, para=4, offset=0",
+    "[CursorState] updateRect 실패 → rect=null pos=(%d,%d,%d) cell=(%s,%s,%s,%s): 0 4 0 undefined undefined undefined undefined 렌더링 오류: 커서 위치를 찾을 수 없습니다: sec=0, para=4, offset=0",
+    "[CursorState] updateRect 실패 → rect=null pos=(%d,%d,%d) cell=(%s,%s,%s,%s): 0 4 0 undefined undefined undefined undefined 렌더링 오류: 커서 위치를 찾을 수 없습니다: sec=0, para=4, offset=0"
+  ],
+  "load": {
+    "version": "5.1.1.0",
+    "sectionCount": 1,
+    "pageCount": 4,
+    "encrypted": false,
+    "hwp3Variant": false,
+    "fallbackFont": "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+    "fontsUsed": [
+      "#중명조",
+      "HY견명조",
+      "HY그래픽",
+      "HY신명조",
+      "HY중고딕",
+      "Haansoft Batang",
+      "Haansoft Dotum",
+      "Segoe UI Symbol",
+      "굴림",
+      "나눔바른고딕",
+      "돋움",
+      "맑은 고딕",
+      "바탕",
+      "한양신명조",
+      "한양중고딕",
+      "한컴바탕",
+      "함초롬바탕"
+    ],
+    "fontSubstitutions": [
+      [
+        "나눔바른고딕",
+        "한컴바탕"
+      ],
+      [
+        "함초롬바탕",
+        "Segoe UI Symbol"
+      ],
+      [
+        "함초롬바탕",
+        "한컴바탕"
+      ]
+    ]
+  },
+  "before": [
+    {
+      "page": 0,
+      "type": "image",
+      "x": 400,
+      "y": 160,
+      "w": 66.7,
+      "h": 66.7,
+      "secIdx": 0,
+      "paraIdx": 2,
+      "controlIdx": 0,
+      "wrap": "square",
+      "plane": 2,
+      "zOrder": 1,
+      "stableIndex": [
+        0,
+        2,
+        0
+      ]
+    }
+  ],
+  "setup": {
+    "from": {
+      "x": 738.90625,
+      "y": 194.3375
+    },
+    "to": {
+      "x": 755.56875,
+      "y": 495.125
+    },
+    "hit": {
+      "sectionIndex": 0,
+      "paragraphIndex": 0,
+      "charOffset": 13,
+      "parentParaIndex": 4,
+      "controlIndex": 0,
+      "cellIndex": 119,
+      "cellParaIndex": 0,
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 119,
+          "cellParaIndex": 0
+        }
+      ],
+      "cursorRect": {
+        "pageIndex": 1,
+        "x": 393,
+        "y": 236.5,
+        "height": 16
+      }
+    },
+    "selected": {
+      "sec": 0,
+      "ppi": 2,
+      "ci": 0,
+      "type": "image"
+    }
+  },
+  "dragState": {
+    "ref": {
+      "sec": 0,
+      "ppi": 2,
+      "ci": 0,
+      "type": "image"
+    },
+    "origHorzOffset": 30000,
+    "origVertOffset": 12000,
+    "startPageX": 429.725,
+    "startPageY": 192,
+    "grabOffsetX": 29.725000000000023,
+    "grabOffsetY": 32,
+    "lastPageX": 497.725,
+    "lastPageY": 1396,
+    "totalDeltaH": 5100,
+    "totalDeltaV": 90300,
+    "pageIndex": 0,
+    "dropPage": 1,
+    "dropX": 497.725,
+    "dropY": 249.5
+  },
+  "dropGeometry": {
+    "zoom": 0.25,
+    "containerTop": 140,
+    "lay": {
+      "type": "image",
+      "x": 468,
+      "y": 1364,
+      "w": 66.7,
+      "h": 66.7,
+      "secIdx": 0,
+      "paraIdx": 2,
+      "controlIdx": 0,
+      "wrap": "square",
+      "plane": 2,
+      "zOrder": 1,
+      "stableIndex": [
+        0,
+        2,
+        0
+      ]
+    },
+    "currentLayoutTarget": {
+      "x": 468,
+      "y": 217.5
+    },
+    "originalGrabTarget": {
+      "x": 468,
+      "y": 217.5
+    }
+  },
+  "after": [
+    {
+      "page": 1,
+      "type": "image",
+      "x": 468,
+      "y": 257.6,
+      "w": 66.7,
+      "h": 66.7,
+      "secIdx": 0,
+      "paraIdx": 4,
+      "controlIdx": 0,
+      "wrap": "square",
+      "cellIdx": 119,
+      "cellParaIdx": 0,
+      "outerTableControlIdx": 0,
+      "parentParaIdx": 4,
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 119,
+          "cellParaIndex": 0
+        }
+      ],
+      "plane": 2,
+      "zOrder": 0,
+      "stableIndex": [
+        0,
+        4,
+        0,
+        119,
+        0,
+        0
+      ]
+    }
+  ],
+  "selected": {
+    "sec": 0,
+    "ppi": 4,
+    "ci": 0,
+    "type": "image",
+    "cellPath": [
+      {
+        "cellIndex": 119,
+        "cellParaIndex": 0,
+        "controlIndex": 0
+      }
+    ]
+  },
+  "trace": [
+    {
+      "method": "relocateFloatingPicture",
+      "args": [
+        0,
+        2,
+        "[]",
+        0,
+        0,
+        4,
+        13,
+        "[{\"controlIndex\":0,\"cellIndex\":119,\"cellParaIndex\":0}]",
+        0,
+        0
+      ],
+      "result": {
+        "cellPath": [
+          {
+            "cellIndex": 119,
+            "cellParaIndex": 0,
+            "controlIndex": 0
+          }
+        ],
+        "controlIdx": 0,
+        "ok": true,
+        "paraIdx": 4,
+        "sec": 0
+      }
+    },
+    {
+      "method": "getCellPicturePropertiesByPath",
+      "args": [
+        0,
+        4,
+        [
+          {
+            "cellIndex": 119,
+            "cellParaIndex": 0,
+            "controlIndex": 0
+          }
+        ],
+        0
+      ],
+      "result": {
+        "width": 5000,
+        "height": 5000,
+        "treatAsChar": false,
+        "vertRelTo": "Para",
+        "vertAlign": "Top",
+        "horzRelTo": "Column",
+        "horzAlign": "Left",
+        "vertOffset": 0,
+        "horzOffset": 0,
+        "textWrap": "Square",
+        "restrictInPage": true,
+        "allowOverlap": false,
+        "sizeProtect": false,
+        "brightness": 0,
+        "contrast": 0,
+        "effect": "RealPic",
+        "transparency": 0,
+        "description": "Kang-T drag probe",
+        "rotationAngle": 0,
+        "horzFlip": false,
+        "vertFlip": false,
+        "originalWidth": 5000,
+        "originalHeight": 5000,
+        "cropLeft": 0,
+        "cropTop": 0,
+        "cropRight": 0,
+        "cropBottom": 0,
+        "paddingLeft": 0,
+        "paddingTop": 0,
+        "paddingRight": 0,
+        "paddingBottom": 0,
+        "outerMarginLeft": 0,
+        "outerMarginTop": 0,
+        "outerMarginRight": 0,
+        "outerMarginBottom": 0,
+        "borderColor": 0,
+        "borderWidth": 0,
+        "hasCaption": false,
+        "captionDirection": "Bottom",
+        "captionVertAlign": "Top",
+        "captionWidth": 0,
+        "captionSpacing": 0,
+        "captionMaxWidth": 0,
+        "captionIncludeMargin": false
+      }
+    },
+    {
+      "method": "raw-cell-set-before",
+      "args": [
+        0,
+        4,
+        "[{\"cellIndex\":119,\"cellParaIndex\":0,\"controlIndex\":0}]",
+        0,
+        "{\"horzOffset\":18825,\"vertOffset\":-3008}"
+      ]
+    },
+    {
+      "method": "raw-cell-set-after",
+      "result": "{\"ok\":true}"
+    },
+    {
+      "method": "setCellPicturePropertiesByPath",
+      "args": [
+        0,
+        4,
+        [
+          {
+            "cellIndex": 119,
+            "cellParaIndex": 0,
+            "controlIndex": 0
+          }
+        ],
+        0,
+        {
+          "horzOffset": 18825,
+          "vertOffset": -3008
+        }
+      ],
+      "result": {
+        "ok": true
+      }
+    },
+    {
+      "method": "getCellPicturePropertiesByPath",
+      "args": [
+        0,
+        4,
+        [
+          {
+            "cellIndex": 119,
+            "cellParaIndex": 0,
+            "controlIndex": 0
+          }
+        ],
+        0
+      ],
+      "result": {
+        "width": 5000,
+        "height": 5000,
+        "treatAsChar": false,
+        "vertRelTo": "Para",
+        "vertAlign": "Top",
+        "horzRelTo": "Column",
+        "horzAlign": "Left",
+        "vertOffset": 0,
+        "horzOffset": 18825,
+        "textWrap": "Square",
+        "restrictInPage": true,
+        "allowOverlap": false,
+        "sizeProtect": false,
+        "brightness": 0,
+        "contrast": 0,
+        "effect": "RealPic",
+        "transparency": 0,
+        "description": "Kang-T drag probe",
+        "rotationAngle": 0,
+        "horzFlip": false,
+        "vertFlip": false,
+        "originalWidth": 5000,
+        "originalHeight": 5000,
+        "cropLeft": 0,
+        "cropTop": 0,
+        "cropRight": 0,
+        "cropBottom": 0,
+        "paddingLeft": 0,
+        "paddingTop": 0,
+        "paddingRight": 0,
+        "paddingBottom": 0,
+        "outerMarginLeft": 0,
+        "outerMarginTop": 0,
+        "outerMarginRight": 0,
+        "outerMarginBottom": 0,
+        "borderColor": 0,
+        "borderWidth": 0,
+        "hasCaption": false,
+        "captionDirection": "Bottom",
+        "captionVertAlign": "Top",
+        "captionWidth": 0,
+        "captionSpacing": 0,
+        "captionMaxWidth": 0,
+        "captionIncludeMargin": false
+      }
+    },
+    {
+      "method": "getCellPicturePropertiesByPath",
+      "args": [
+        0,
+        4,
+        [
+          {
+            "cellIndex": 119,
+            "cellParaIndex": 0,
+            "controlIndex": 0
+          }
+        ],
+        0
+      ],
+      "result": {
+        "width": 5000,
+        "height": 5000,
+        "treatAsChar": false,
+        "vertRelTo": "Para",
+        "vertAlign": "Top",
+        "horzRelTo": "Column",
+        "horzAlign": "Left",
+        "vertOffset": 0,
+        "horzOffset": 18825,
+        "textWrap": "Square",
+        "restrictInPage": true,
+        "allowOverlap": false,
+        "sizeProtect": false,
+        "brightness": 0,
+        "contrast": 0,
+        "effect": "RealPic",
+        "transparency": 0,
+        "description": "Kang-T drag probe",
+        "rotationAngle": 0,
+        "horzFlip": false,
+        "vertFlip": false,
+        "originalWidth": 5000,
+        "originalHeight": 5000,
+        "cropLeft": 0,
+        "cropTop": 0,
+        "cropRight": 0,
+        "cropBottom": 0,
+        "paddingLeft": 0,
+        "paddingTop": 0,
+        "paddingRight": 0,
+        "paddingBottom": 0,
+        "outerMarginLeft": 0,
+        "outerMarginTop": 0,
+        "outerMarginRight": 0,
+        "outerMarginBottom": 0,
+        "borderColor": 0,
+        "borderWidth": 0,
+        "hasCaption": false,
+        "captionDirection": "Bottom",
+        "captionVertAlign": "Top",
+        "captionWidth": 0,
+        "captionSpacing": 0,
+        "captionMaxWidth": 0,
+        "captionIncludeMargin": false
+      }
+    },
+    {
+      "method": "getCellPicturePropertiesByPath",
+      "args": [
+        0,
+        4,
+        [
+          {
+            "cellIndex": 119,
+            "cellParaIndex": 0,
+            "controlIndex": 0
+          }
+        ],
+        0
+      ],
+      "result": {
+        "width": 5000,
+        "height": 5000,
+        "treatAsChar": false,
+        "vertRelTo": "Para",
+        "vertAlign": "Top",
+        "horzRelTo": "Column",
+        "horzAlign": "Left",
+        "vertOffset": 0,
+        "horzOffset": 18825,
+        "textWrap": "Square",
+        "restrictInPage": true,
+        "allowOverlap": false,
+        "sizeProtect": false,
+        "brightness": 0,
+        "contrast": 0,
+        "effect": "RealPic",
+        "transparency": 0,
+        "description": "Kang-T drag probe",
+        "rotationAngle": 0,
+        "horzFlip": false,
+        "vertFlip": false,
+        "originalWidth": 5000,
+        "originalHeight": 5000,
+        "cropLeft": 0,
+        "cropTop": 0,
+        "cropRight": 0,
+        "cropBottom": 0,
+        "paddingLeft": 0,
+        "paddingTop": 0,
+        "paddingRight": 0,
+        "paddingBottom": 0,
+        "outerMarginLeft": 0,
+        "outerMarginTop": 0,
+        "outerMarginRight": 0,
+        "outerMarginBottom": 0,
+        "borderColor": 0,
+        "borderWidth": 0,
+        "hasCaption": false,
+        "captionDirection": "Bottom",
+        "captionVertAlign": "Top",
+        "captionWidth": 0,
+        "captionSpacing": 0,
+        "captionMaxWidth": 0,
+        "captionIncludeMargin": false
+      }
+    }
+  ],
+  "pointerInsideAfterReflow": false,
+  "cellGeometry": [
+    {
+      "image": {
+        "x": 468,
+        "y": 257.6,
+        "w": 66.7,
+        "h": 66.7
+      },
+      "cell": {
+        "x": 210.2,
+        "y": 255.7,
+        "w": 502.2,
+        "h": 70.4
+      }
+    }
+  ],
+  "cellConstraint": {
+    "restrictInPage": true,
+    "vertOffset": 0,
+    "pointerInsideAfterReflow": false
+  },
+  "undo": [
+    {
+      "page": 0,
+      "type": "image",
+      "x": 400,
+      "y": 160,
+      "w": 66.7,
+      "h": 66.7,
+      "secIdx": 0,
+      "paraIdx": 2,
+      "controlIdx": 0,
+      "wrap": "square",
+      "plane": 2,
+      "zOrder": 1,
+      "stableIndex": [
+        0,
+        2,
+        0
+      ]
+    }
+  ],
+  "redo": [
+    {
+      "page": 1,
+      "type": "image",
+      "x": 468,
+      "y": 257.6,
+      "w": 66.7,
+      "h": 66.7,
+      "secIdx": 0,
+      "paraIdx": 4,
+      "controlIdx": 0,
+      "wrap": "square",
+      "cellIdx": 119,
+      "cellParaIdx": 0,
+      "outerTableControlIdx": 0,
+      "parentParaIdx": 4,
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 119,
+          "cellParaIndex": 0
+        }
+      ],
+      "plane": 2,
+      "zOrder": 0,
+      "stableIndex": [
+        0,
+        4,
+        0,
+        119,
+        0,
+        0
+      ]
+    }
+  ],
+  "savedSha256": "26ac7bbdb1eb9d180d281ff80f55a535c0ccaee2528bb3526130d0474aeabcc9",
+  "reopened": [
+    {
+      "page": 1,
+      "type": "image",
+      "x": 468,
+      "y": 233.9,
+      "w": 66.7,
+      "h": 66.7,
+      "secIdx": 0,
+      "paraIdx": 4,
+      "controlIdx": 0,
+      "wrap": "square",
+      "cellIdx": 119,
+      "cellParaIdx": 0,
+      "outerTableControlIdx": 0,
+      "parentParaIdx": 4,
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 119,
+          "cellParaIndex": 0
+        }
+      ],
+      "plane": 2,
+      "zOrder": 0,
+      "stableIndex": [
+        0,
+        4,
+        0,
+        119,
+        0,
+        0
+      ]
+    }
+  ],
+  "samePageBefore": {
+    "image": {
+      "page": 1,
+      "type": "image",
+      "x": 468,
+      "y": 233.9,
+      "w": 66.7,
+      "h": 66.7,
+      "secIdx": 0,
+      "paraIdx": 4,
+      "controlIdx": 0,
+      "wrap": "square",
+      "cellIdx": 119,
+      "cellParaIdx": 0,
+      "outerTableControlIdx": 0,
+      "parentParaIdx": 4,
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 119,
+          "cellParaIndex": 0
+        }
+      ],
+      "plane": 2,
+      "zOrder": 0,
+      "stableIndex": [
+        0,
+        4,
+        0,
+        119,
+        0,
+        0
+      ]
+    },
+    "props": {
+      "width": 5000,
+      "height": 5000,
+      "treatAsChar": false,
+      "vertRelTo": "Para",
+      "vertAlign": "Top",
+      "horzRelTo": "Column",
+      "horzAlign": "Left",
+      "vertOffset": 0,
+      "horzOffset": 18825,
+      "textWrap": "Square",
+      "restrictInPage": true,
+      "allowOverlap": false,
+      "sizeProtect": false,
+      "brightness": 0,
+      "contrast": 0,
+      "effect": "RealPic",
+      "transparency": 0,
+      "description": "Kang-T drag probe",
+      "rotationAngle": 0,
+      "horzFlip": false,
+      "vertFlip": false,
+      "originalWidth": 5000,
+      "originalHeight": 5000,
+      "cropLeft": 0,
+      "cropTop": 0,
+      "cropRight": 0,
+      "cropBottom": 0,
+      "paddingLeft": 0,
+      "paddingTop": 0,
+      "paddingRight": 0,
+      "paddingBottom": 0,
+      "outerMarginLeft": 0,
+      "outerMarginTop": 0,
+      "outerMarginRight": 0,
+      "outerMarginBottom": 0,
+      "borderColor": 0,
+      "borderWidth": 0,
+      "hasCaption": false,
+      "captionDirection": "Bottom",
+      "captionVertAlign": "Top",
+      "captionWidth": 0,
+      "captionSpacing": 0,
+      "captionMaxWidth": 0,
+      "captionIncludeMargin": false
+    }
+  },
+  "samePage": {
+    "source": {
+      "page": 1,
+      "type": "image",
+      "x": 468,
+      "y": 233.9,
+      "w": 66.7,
+      "h": 66.7,
+      "secIdx": 0,
+      "paraIdx": 4,
+      "controlIdx": 0,
+      "wrap": "square",
+      "cellIdx": 119,
+      "cellParaIdx": 0,
+      "outerTableControlIdx": 0,
+      "parentParaIdx": 4,
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 119,
+          "cellParaIndex": 0
+        }
+      ],
+      "plane": 2,
+      "zOrder": 0,
+      "stableIndex": [
+        0,
+        4,
+        0,
+        119,
+        0,
+        0
+      ]
+    },
+    "points": {
+      "from": {
+        "x": 748.40625,
+        "y": 499.4375
+      },
+      "to": {
+        "x": 751.40625,
+        "y": 502.4375
+      },
+      "hit": {
+        "sectionIndex": 0,
+        "paragraphIndex": 0,
+        "charOffset": 13,
+        "parentParaIndex": 4,
+        "controlIndex": 0,
+        "cellIndex": 119,
+        "cellParaIndex": 0,
+        "cellPath": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 119,
+            "cellParaIndex": 0
+          }
+        ],
+        "cursorRect": {
+          "pageIndex": 1,
+          "x": 393,
+          "y": 233.9,
+          "height": 16
+        }
+      }
+    },
+    "dragState": {
+      "ref": {
+        "sec": 0,
+        "ppi": 4,
+        "ci": 0,
+        "type": "image",
+        "cellPath": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 119,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      "origHorzOffset": 18825,
+      "origVertOffset": 0,
+      "startPageX": 499.725,
+      "startPageY": 265.5,
+      "grabOffsetX": 31.725000000000023,
+      "grabOffsetY": 31.599999999999994,
+      "lastPageX": 511.725,
+      "lastPageY": 277.5,
+      "totalDeltaH": 900,
+      "totalDeltaV": 900,
+      "pageIndex": 1,
+      "dropPage": 1,
+      "dropX": 511.725,
+      "dropY": 277.5
+    },
+    "after": [
+      {
+        "page": 1,
+        "type": "image",
+        "x": 480,
+        "y": 245.9,
+        "w": 66.7,
+        "h": 66.7,
+        "secIdx": 0,
+        "paraIdx": 4,
+        "controlIdx": 0,
+        "wrap": "square",
+        "cellIdx": 119,
+        "cellParaIdx": 0,
+        "outerTableControlIdx": 0,
+        "parentParaIdx": 4,
+        "cellPath": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 119,
+            "cellParaIndex": 0
+          }
+        ],
+        "plane": 2,
+        "zOrder": 0,
+        "stableIndex": [
+          0,
+          4,
+          0,
+          119,
+          0,
+          0
+        ]
+      }
+    ],
+    "selected": {
+      "sec": 0,
+      "ppi": 4,
+      "ci": 0,
+      "type": "image",
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 119,
+          "cellParaIndex": 0
+        }
+      ]
+    }
+  },
+  "samePageAfter": {
+    "image": {
+      "page": 1,
+      "type": "image",
+      "x": 480,
+      "y": 245.9,
+      "w": 66.7,
+      "h": 66.7,
+      "secIdx": 0,
+      "paraIdx": 4,
+      "controlIdx": 0,
+      "wrap": "square",
+      "cellIdx": 119,
+      "cellParaIdx": 0,
+      "outerTableControlIdx": 0,
+      "parentParaIdx": 4,
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 119,
+          "cellParaIndex": 0
+        }
+      ],
+      "plane": 2,
+      "zOrder": 0,
+      "stableIndex": [
+        0,
+        4,
+        0,
+        119,
+        0,
+        0
+      ]
+    },
+    "props": {
+      "width": 5000,
+      "height": 5000,
+      "treatAsChar": false,
+      "vertRelTo": "Para",
+      "vertAlign": "Top",
+      "horzRelTo": "Column",
+      "horzAlign": "Left",
+      "vertOffset": 900,
+      "horzOffset": 19725,
+      "textWrap": "Square",
+      "restrictInPage": true,
+      "allowOverlap": false,
+      "sizeProtect": false,
+      "brightness": 0,
+      "contrast": 0,
+      "effect": "RealPic",
+      "transparency": 0,
+      "description": "Kang-T drag probe",
+      "rotationAngle": 0,
+      "horzFlip": false,
+      "vertFlip": false,
+      "originalWidth": 5000,
+      "originalHeight": 5000,
+      "cropLeft": 0,
+      "cropTop": 0,
+      "cropRight": 0,
+      "cropBottom": 0,
+      "paddingLeft": 0,
+      "paddingTop": 0,
+      "paddingRight": 0,
+      "paddingBottom": 0,
+      "outerMarginLeft": 0,
+      "outerMarginTop": 0,
+      "outerMarginRight": 0,
+      "outerMarginBottom": 0,
+      "borderColor": 0,
+      "borderWidth": 0,
+      "hasCaption": false,
+      "captionDirection": "Bottom",
+      "captionVertAlign": "Top",
+      "captionWidth": 0,
+      "captionSpacing": 0,
+      "captionMaxWidth": 0,
+      "captionIncludeMargin": false
+    }
+  },
+  "samePageUndo": {
+    "image": {
+      "page": 1,
+      "type": "image",
+      "x": 468,
+      "y": 233.9,
+      "w": 66.7,
+      "h": 66.7,
+      "secIdx": 0,
+      "paraIdx": 4,
+      "controlIdx": 0,
+      "wrap": "square",
+      "cellIdx": 119,
+      "cellParaIdx": 0,
+      "outerTableControlIdx": 0,
+      "parentParaIdx": 4,
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 119,
+          "cellParaIndex": 0
+        }
+      ],
+      "plane": 2,
+      "zOrder": 0,
+      "stableIndex": [
+        0,
+        4,
+        0,
+        119,
+        0,
+        0
+      ]
+    },
+    "props": {
+      "width": 5000,
+      "height": 5000,
+      "treatAsChar": false,
+      "vertRelTo": "Para",
+      "vertAlign": "Top",
+      "horzRelTo": "Column",
+      "horzAlign": "Left",
+      "vertOffset": 0,
+      "horzOffset": 18825,
+      "textWrap": "Square",
+      "restrictInPage": true,
+      "allowOverlap": false,
+      "sizeProtect": false,
+      "brightness": 0,
+      "contrast": 0,
+      "effect": "RealPic",
+      "transparency": 0,
+      "description": "Kang-T drag probe",
+      "rotationAngle": 0,
+      "horzFlip": false,
+      "vertFlip": false,
+      "originalWidth": 5000,
+      "originalHeight": 5000,
+      "cropLeft": 0,
+      "cropTop": 0,
+      "cropRight": 0,
+      "cropBottom": 0,
+      "paddingLeft": 0,
+      "paddingTop": 0,
+      "paddingRight": 0,
+      "paddingBottom": 0,
+      "outerMarginLeft": 0,
+      "outerMarginTop": 0,
+      "outerMarginRight": 0,
+      "outerMarginBottom": 0,
+      "borderColor": 0,
+      "borderWidth": 0,
+      "hasCaption": false,
+      "captionDirection": "Bottom",
+      "captionVertAlign": "Top",
+      "captionWidth": 0,
+      "captionSpacing": 0,
+      "captionMaxWidth": 0,
+      "captionIncludeMargin": false
+    }
+  },
+  "samePageRedo": {
+    "image": {
+      "page": 1,
+      "type": "image",
+      "x": 480,
+      "y": 245.9,
+      "w": 66.7,
+      "h": 66.7,
+      "secIdx": 0,
+      "paraIdx": 4,
+      "controlIdx": 0,
+      "wrap": "square",
+      "cellIdx": 119,
+      "cellParaIdx": 0,
+      "outerTableControlIdx": 0,
+      "parentParaIdx": 4,
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 119,
+          "cellParaIndex": 0
+        }
+      ],
+      "plane": 2,
+      "zOrder": 0,
+      "stableIndex": [
+        0,
+        4,
+        0,
+        119,
+        0,
+        0
+      ]
+    },
+    "props": {
+      "width": 5000,
+      "height": 5000,
+      "treatAsChar": false,
+      "vertRelTo": "Para",
+      "vertAlign": "Top",
+      "horzRelTo": "Column",
+      "horzAlign": "Left",
+      "vertOffset": 900,
+      "horzOffset": 19725,
+      "textWrap": "Square",
+      "restrictInPage": true,
+      "allowOverlap": false,
+      "sizeProtect": false,
+      "brightness": 0,
+      "contrast": 0,
+      "effect": "RealPic",
+      "transparency": 0,
+      "description": "Kang-T drag probe",
+      "rotationAngle": 0,
+      "horzFlip": false,
+      "vertFlip": false,
+      "originalWidth": 5000,
+      "originalHeight": 5000,
+      "cropLeft": 0,
+      "cropTop": 0,
+      "cropRight": 0,
+      "cropBottom": 0,
+      "paddingLeft": 0,
+      "paddingTop": 0,
+      "paddingRight": 0,
+      "paddingBottom": 0,
+      "outerMarginLeft": 0,
+      "outerMarginTop": 0,
+      "outerMarginRight": 0,
+      "outerMarginBottom": 0,
+      "borderColor": 0,
+      "borderWidth": 0,
+      "hasCaption": false,
+      "captionDirection": "Bottom",
+      "captionVertAlign": "Top",
+      "captionWidth": 0,
+      "captionSpacing": 0,
+      "captionMaxWidth": 0,
+      "captionIncludeMargin": false
+    }
+  },
+  "toBody": {
+    "source": {
+      "page": 1,
+      "type": "image",
+      "x": 480,
+      "y": 245.9,
+      "w": 66.7,
+      "h": 66.7,
+      "secIdx": 0,
+      "paraIdx": 4,
+      "controlIdx": 0,
+      "wrap": "square",
+      "cellIdx": 119,
+      "cellParaIdx": 0,
+      "outerTableControlIdx": 0,
+      "parentParaIdx": 4,
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 119,
+          "cellParaIndex": 0
+        }
+      ],
+      "plane": 2,
+      "zOrder": 0,
+      "stableIndex": [
+        0,
+        4,
+        0,
+        119,
+        0,
+        0
+      ]
+    },
+    "points": {
+      "from": {
+        "x": 751.40625,
+        "y": 502.4375
+      },
+      "to": {
+        "x": 710.56875,
+        "y": 173.5
+      },
+      "hit": {
+        "sectionIndex": 0,
+        "paragraphIndex": 0,
+        "charOffset": 25,
+        "cursorRect": {
+          "pageIndex": 0,
+          "x": 316.8,
+          "y": 106.7,
+          "height": 17.3
+        }
+      }
+    },
+    "dragState": {
+      "ref": {
+        "sec": 0,
+        "ppi": 4,
+        "ci": 0,
+        "type": "image",
+        "cellPath": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 119,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      "origHorzOffset": 19725,
+      "origVertOffset": 900,
+      "startPageX": 511.725,
+      "startPageY": 277.5,
+      "grabOffsetX": 31.725000000000023,
+      "grabOffsetY": 31.599999999999994,
+      "lastPageX": 347.725,
+      "lastPageY": -1038.5,
+      "totalDeltaH": -12300,
+      "totalDeltaV": -98700,
+      "pageIndex": 1,
+      "dropPage": 0,
+      "dropX": 347.725,
+      "dropY": 108
+    },
+    "after": [
+      {
+        "page": 0,
+        "type": "image",
+        "x": 316,
+        "y": 76.4,
+        "w": 66.7,
+        "h": 66.7,
+        "secIdx": 0,
+        "paraIdx": 0,
+        "controlIdx": 2,
+        "wrap": "square",
+        "plane": 2,
+        "zOrder": 0,
+        "stableIndex": [
+          0,
+          0,
+          2
+        ]
+      }
+    ],
+    "selected": {
+      "sec": 0,
+      "ppi": 0,
+      "ci": 2,
+      "type": "image"
+    }
+  },
+  "success": true
+}

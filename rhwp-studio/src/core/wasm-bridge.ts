@@ -2479,6 +2479,36 @@ export class WasmBridge {
     ));
   }
 
+  /** 띄운 그림을 다른 문단·셀 문단으로 옮겨 붙인다 (다른 쪽으로 끌어 놓기). 셀 경로 `[]` 는 본문. */
+  relocateFloatingPicture(srcSec: number, srcPara: number, srcCellPathJson: string, srcControl: number,
+                          dstSec: number, dstPara: number, dstCharOffset: number, dstCellPathJson: string,
+                          horzOffset: number, vertOffset: number): { ok: boolean; sec: number; paraIdx: number; controlIdx: number; cellPath: CellPathLike } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).relocateFloatingPicture(
+      srcSec, srcPara, srcCellPathJson, srcControl, dstSec, dstPara, dstCharOffset, dstCellPathJson,
+      horzOffset, vertOffset));
+  }
+
+  /**
+   * 표 셀 안 문단에 그림을 넣는다 — 서명·도장처럼 셀과 함께 움직여야 하는 그림.
+   * insertPicture 의 셀 분기(표 밖 본문 문단에 띄움)와 달리 cellPath 가 가리키는
+   * 셀 문단의 컨트롤이 된다(가로 기준 단, 세로 기준 문단). offset 은 그 기준의 HU(음수 허용).
+   * 반환 controlIdx 는 셀 문단 안 번호 — 속성은 setCellPicturePropertiesByPath 로 바꾼다.
+   */
+  insertPictureInCell(sec: number, paraIdx: number, charOffset: number,
+                      cellPathJson: string,
+                      imageData: Uint8Array, width: number, height: number,
+                      naturalWidthPx: number, naturalHeightPx: number,
+                      extension: string, description: string = '',
+                      offsetXHu?: number, offsetYHu?: number): { ok: boolean; paraIdx: number; controlIdx: number; logicalOffset?: number } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).insertPictureInCell(
+      sec, paraIdx, charOffset, cellPathJson, imageData,
+      width, height, naturalWidthPx, naturalHeightPx, extension, description,
+      offsetXHu, offsetYHu,
+    ));
+  }
+
   /**
    * [Task #2230] 기존 Picture 컨트롤에 이미지를 지정한다 — 그림 미지정
    * placeholder(missing image 컨트롤)의 편집 뷰 그림 삽입.

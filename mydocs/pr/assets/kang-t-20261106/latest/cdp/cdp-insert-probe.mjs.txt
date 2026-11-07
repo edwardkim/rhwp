@@ -1,0 +1,55 @@
+import { createRequire } from 'node:module';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import assert from 'node:assert/strict';
+const root='/home/edward/mygithub/rhwp';
+const wt='/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-kang-t-picture-editing';
+const label=process.argv[2] || 'candidate-before-corrections';
+const out=`${root}/output/pr-review/kang-t-20261106`;
+const fixture=process.argv[3] || 'drag-before-table';
+const targetY=Number(process.env.DROP_Y || 250);
+const dest=`${out}/cdp-insert-${label}`; mkdirSync(dest,{recursive:true});
+process.env.VITE_URL=process.env.VITE_URL || 'http://127.0.0.1:7793';
+process.env.RHWP_WASM_BUILD_MANIFEST=`${out}/${label}-producer/wasm-build.json`;
+const require=createRequire(`${wt}/rhwp-studio/package.json`);
+const puppeteer=require('puppeteer-core');
+const {loadApp}=await import(`${wt}/rhwp-studio/e2e/helpers.mjs`);
+const browser=await puppeteer.connect({browserURL:'http://127.0.0.1:19222',defaultViewport:null});
+const context=await browser.createBrowserContext();
+const page=await context.newPage(); await page.setViewport({width:1440,height:1400,deviceScaleFactor:1});
+const result={label, browser:await browser.version(), ownTarget:page.target()._targetId, assertions:[], warnings:[]};
+const log=()=>writeFileSync(`${dest}/result.json`,JSON.stringify(result,null,2)+'\n');
+page.on('console',m=>{if(m.type()==='warn'||m.type()==='error')result.warnings.push(m.text());});
+const settle=()=>page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+const images=()=>page.evaluate(()=>{
+ const w=window.__wasm; const a=[];
+ for(let p=0;p<w.pageCount;p++)for(const c of w.getPageControlLayout(p).controls)if(c.type==='image')a.push({page:p,...c});
+ return a;
+});
+try{
+ await loadApp(page,'?renderer=canvas2d');
+ const bytes=Array.from(readFileSync(`${root}/samples/21868765_별표2_보건소_분장사무.hwp`));
+ await page.evaluate(async bytes=>{const info=window.__wasm.loadDocument(new Uint8Array(bytes),'cell-insert-source.hwp');const {loadWebFonts}=await import('/src/core/font-loader.ts');await loadWebFonts(info.fontsUsed??[]);await document.fonts.ready;await window.__canvasView.loadDocument();window.__inputHandler.viewportManager.setZoom(.5);},bytes);
+ await settle();result.before=await images();assert.equal(result.before.length,0);
+ // Prewarm the layout cache before the actual mutation route.
+ await page.evaluate(()=>window.__wasm.getPageControlLayout(0));
+ result.insertion=await page.evaluate(png=>{
+  const ih=window.__inputHandler;let inserted;
+  ih.executeOperation({kind:'snapshot',operationType:'insertPictureInCell',operation:wasm=>{
+   inserted=wasm.insertPictureInCell(0,4,0,JSON.stringify([{controlIndex:0,cellIndex:11,cellParaIndex:0}]),new Uint8Array(png),2800,2800,192,192,'png','cell insertion CDP',22000,0);
+   return ih.cursor.getPosition();
+  }});return inserted;
+ },Array.from(readFileSync(`${out}/drag-probe.png`)));
+ await settle();result.after=await images();log();assert.equal(result.after.length,1);assert.equal(result.after[0].cellPath[0].cellIndex,11);
+ result.properties=await page.evaluate(r=>window.__wasm.getCellPicturePropertiesByPath(r.sec,r.paraIdx,[{controlIndex:0,cellIndex:11,cellParaIndex:0}],r.controlIdx),result.insertion);
+ assert.equal(result.properties.vertRelTo,'Para');assert.equal(result.properties.horzRelTo,'Column');assert.equal(result.properties.treatAsChar,false);assert.equal(result.properties.restrictInPage,true);
+ result.assertions.push('actual public API through snapshot and warmed mutation/layout cache');
+ await page.keyboard.down('Control');await page.keyboard.press('z');await page.keyboard.up('Control');await settle();result.undo=await images();assert.equal(result.undo.length,0);
+ await page.keyboard.down('Control');await page.keyboard.press('y');await page.keyboard.up('Control');await settle();result.redo=await images();assert.equal(result.redo.length,1);assert.equal(result.redo[0].cellPath[0].cellIndex,11);
+ result.assertions.push('keyboard undo/redo preserves cell ownership');
+ const saved=await page.evaluate(()=>Array.from(window.__wasm.exportHwp()));writeFileSync(`${dest}/inserted.hwp`,Buffer.from(saved));result.savedSha256=createHash('sha256').update(Buffer.from(saved)).digest('hex');
+ await page.evaluate(async saved=>{window.__wasm.loadDocument(new Uint8Array(saved),'inserted.hwp');await window.__canvasView.loadDocument();},saved);await settle();result.reopened=await images();assert.equal(result.reopened.length,1);assert.equal(result.reopened[0].cellPath[0].cellIndex,11);
+ result.assertions.push('save/reopen keeps the picture inside the cell');await page.screenshot({path:`${dest}/inserted.png`});result.success=true;log();
+}catch(error){result.success=false;result.error=String(error.stack||error);log();console.error(error);process.exitCode=1;}
+finally{await context.close();browser.disconnect();}
+console.log(JSON.stringify({success:result.success,assertions:result.assertions,error:result.error}));
