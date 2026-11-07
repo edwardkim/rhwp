@@ -1,0 +1,12 @@
+{
+  "head": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+  "pkg": "resync-base-pkg",
+  "sha256": {
+    "rhwp.js": "0099b8a6e00f750e1dbddb3a89bf42874f24effcf8bf4dc5eb328d69e691606b",
+    "rhwp_bg.wasm": "13b94450fefad6dfb85f42c022c0d0a5b5fcbb8019761769b748e9e8646e41b9"
+  },
+  "wrapper": "scripts/wasm-pack-locked.sh",
+  "release": true,
+  "wasmOpt": true,
+  "exit": 0
+}

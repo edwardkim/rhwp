@@ -1,0 +1,36 @@
+{
+  "codeHead": "ab1491d40b43c7d54941337b852f7e7f0a5eff5e",
+  "repairs": [
+    {
+      "path": "/Volumes/T7/DeveloperArtifacts/rhwp/target/pr8286-linux-independent/aarch64-unknown-linux-gnu/release-test/deps/issue_4969_shaping_shadow_context-11a290134122f770",
+      "beforeMode": "0o644",
+      "afterMode": "0o755",
+      "sha256": "dc3041be97593db1e633c22735377817003e4287be8621929d3ddb7453ab7bf6"
+    },
+    {
+      "path": "/Volumes/T7/DeveloperArtifacts/rhwp/target/pr8286-linux-independent/aarch64-unknown-linux-gnu/release-test/deps/issue_4969_shaping_paragraph_transaction-534d46f10db2917e",
+      "beforeMode": "0o644",
+      "afterMode": "0o755",
+      "sha256": "54427424ac57138c8848b63060a9c3eb3b6297e021eadc3a78f1f944b4583edd"
+    },
+    {
+      "path": "/Volumes/T7/DeveloperArtifacts/rhwp/target/pr8286-linux-independent/aarch64-unknown-linux-gnu/release-test/deps/issue_2833_hml_adapter_row_sizes-973a92af984ace13",
+      "beforeMode": "0o644",
+      "afterMode": "0o755",
+      "sha256": "e82cef816130ba553c5dbf5860d9881b5c72e4ded53f4a8ddb43d57a50df0fef"
+    },
+    {
+      "path": "/Volumes/T7/DeveloperArtifacts/rhwp/target/pr8286-linux-independent/aarch64-unknown-linux-gnu/release-test/deps/issue_4969_shaping_composition_handoff-4a04e0da505a0bfb",
+      "beforeMode": "0o644",
+      "afterMode": "0o755",
+      "sha256": "a4f36368c0fcd8396bf909aead70bf9da2b903703b3a33cf68c4d14f73c46795"
+    },
+    {
+      "path": "/Volumes/T7/DeveloperArtifacts/rhwp/target/pr8286-linux-independent/aarch64-unknown-linux-gnu/release-test/deps/issue_4969_shaping_page_sidecar-9f9fc2b647364210",
+      "beforeMode": "0o644",
+      "afterMode": "0o755",
+      "sha256": "453f100ccdf960be995ead07e14366e96cf7479965cf1d6e0aa71e2a8be4ce59"
+    }
+  ],
+  "sourceChanged": false
+}

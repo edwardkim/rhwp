@@ -4,20 +4,21 @@ status: active
 last_verified: 2026-11-07
 ---
 
-# PR #8286 리뷰 — #8226과 부분 문단·저장 재개방 통합 보정
+# PR #8286 리뷰 — 병합된 #8226 이후 부분 문단·저장 재개방 보정
 
 ## 최종 판정
 
-**머지 보류 — 기존 검증 코드의 로컬 게이트는 완료했으나, #8711 병합 이후 최신 devel 통합·재검증이 필요하다.**
-완료된 집중·Native Skia·lint·시각 검증은 아래에 구분한다. 원격 push, PR 생성, 승인, 병합은 수행하지 않았다. 기존 결과의 검증 기준은 아래 고정 SHA이며, 최신 devel 결과로 대신하지 않는다.
+**메인터너 보정 후 수용 가능 — 최신 devel을 반영한 #8286 통합 후보의 로컬 필수 검증 완료.**
+최신 code head의 전체 nextest·Native Skia·lint·시각·편람 검증을 완료했다. 원격 push, PR 생성, 승인, 병합은 수행하지 않았다. 기존 결과의 검증 기준은 아래 고정 SHA이며, 최신 devel 결과로 대신하지 않는다.
 
 ## 접수와 통합 경로
 
 - 원 PR: [#8286](https://github.com/edwardkim/rhwp/pull/8286), [#8226](https://github.com/edwardkim/rhwp/pull/8226), 작성자 `@semanticist21`.
 - #8286 원 head: `bf5bfb34a3b54b91e8c320d622320fe3962a67ff`.
 - #8226 원 head: `b97b418a90d833af4ffbf2949f0e517ec15c61e0`; contributor head 수정 권한이 없는 경로다.
-- 고정 devel: `a7feb849e11642b1438b7e9ee460ff4c8a7c946e`.
-- 검증 code head: `170dd2412206b48cfbf925c5f5a67dcf93437e81`.
+- 고정 devel: `b8dd67c5001dfb0410e9e192528676396cdd6a4e`.
+- 현재 검증 code head: `ab1491d40b43c7d54941337b852f7e7f0a5eff5e`.
+- 이전 완료 코드: `170dd2412206b48cfbf925c5f5a67dcf93437e81`, 이전 base: `a7feb849e11642b1438b7e9ee460ff4c8a7c946e`.
 - 로컬 브랜치: `review/integration-20261107-roundtrip-layout`.
 - 작업지시자가 두 PR의 통합과 추가 보정·전체 검증을 요청했으므로 체리픽 통합 경로를 사용한다.
   원 기여자 브랜치와 PR 본문은 수정하지 않았다.
@@ -77,7 +78,55 @@ amend·squash·force-push하지 않았다. 폐기한 중간 구현은 revert 커
 배치의 차를 대조한다. 저장이 원본 IR을 바꾸지 않는지도 검사한다. 절대 페이지 좌표나 고정
 영역으로 내용을 선택하지 않았다. 원본 fixture와 독립 PDF는 검토 code commit에 포함되어 있다.
 
-## 완료한 로컬 검증
+## 최신 devel 통합 후 검증
+
+#8711/#8226의 이미 병합된 변경을 보존해 `ab1491d40b43c7d54941337b852f7e7f0a5eff5e`에 통합했다.
+제품 소스 충돌은 없었다. 충돌한 #8226 검토 문서와 테스트 근거 주석은 최신 devel의 내용을 보존했다.
+현재 devel 대비 제품 diff는 #8286 보정 범위이며, #8226 serializer 변경을 중복 적용하지 않는다.
+
+- Native Skia lib 3,857 PASS / 12 ignored, workspace 보조 lib 182 PASS, 그림 누락 2 PASS, 직접 PDF 22 PASS.
+- fmt·Native/WASM/workspace Clippy·workspace build·doc·manifest·unit-tier 정책 모두 PASS.
+- 관련 문서 32종 88쪽씩, Native/fresh WASM **176쪽**에서 최저 92.18% / 92.54%.
+  최신 devel과 같은 입력·PDF SHA·글꼴 조건의 **점수 하락 0쪽, 최대 하락 0.00%p**이며,
+  **176개 PNG 모두 바이트가 같다**. 새 devel의 #8555·#8556·#8557 문서 13쪽씩을 포함한다.
+  [전쪽 대조 원장](../assets/pr8286_8226_integration/resync/devel-matrix-comparison.json).
+- 원본·이전 저장본 5종과 독립 반례 5종은 양쪽 backend 모두 전쪽 90% 이상이다.
+  원본·이전 저장본 PNG 10개도 이전 검증 코드의 출력과 바이트가 같다.
+- 최신 저장 API가 생성한 HWP/HWPX 바이트는 사용자 승인 파일과 정확히 같다.
+  [바이트 대조](../assets/pr8286_8226_integration/resync/resync-save-equivalence.json),
+  [독립 PDF 재검증](../assets/pr8286_8226_integration/resync/resync-saves-verification.json):
+  Native 95.51%, fresh WASM 99.56%, 모두 1쪽.
+- 같은 최종 HWP를 최신 devel에서 열면 Native 50.91%, WASM 50.24%다.
+  최종 HWPX는 devel에서 Native 줄 범위 panic / WASM unreachable로 실패한다.
+  실패를 0점 TSV로 대체하지 않았다. 후보는 같은 두 입력을 모두 통과한다.
+- 전체 nextest **12,789 PASS / 0 FAIL / 45 skipped**, 55개 바이너리, 557.763초.
+  [최종 기록](../assets/pr8286_8226_integration/resync/full-nextest.json)에 명령·head·로그 SHA를 보존했다.
+  캐시 ELF 5개의 실행 비트 누락을 복구한 뒤 전체를 처음부터 통과했으며 소스·검사·기대값 변경은 없다.
+- 최신 code head의 Linux Native 편람 **383쪽 PASS**, 최저 **99.96%**, 공식 기준 대비 회귀 **0쪽**.
+  [검증 원장](../assets/pr8286_8226_integration/resync/handbook.json),
+  [공식 게이트](../assets/pr8286_8226_integration/resync/handbook-gate.json),
+  [전쪽 TSV](../assets/pr8286_8226_integration/resync/handbook-native.tsv)에 실제 실행을 고정했다.
+  편람 입력·독립 PDF도 실행 바이트와 검증 code commit의 Git blob이 일치한다.
+  최저 점수 130쪽의 [독립 PDF](../assets/pr8286_8226_integration/resync/handbook-p130-reference.png)와
+  [최신 Native](../assets/pr8286_8226_integration/resync/handbook-p130-native.png)를 직접 대조해
+  본문·그림 틀·간격 보존을 확인했다. 글꼴 획·래스터 차이는 남는다.
+
+[최종 저장본 Native review](../assets/pr8286_8226_integration/resync/final-save-native-review.png)와
+[overlay](../assets/pr8286_8226_integration/resync/final-save-native-overlay.png),
+[WASM review](../assets/pr8286_8226_integration/resync/final-save-wasm-review.png)와
+[overlay](../assets/pr8286_8226_integration/resync/final-save-wasm-overlay.png)를 정본 Visual Sweep으로 생성했다.
+표 경계·앞뒤 문단·셀 안 흐름·머리말·글상자 원점과 #8555 p1 / #8556 p1 / #8557 p3의
+그림 위치·본문 순서를 독립 Print와 직접 대조했다.
+[최종 저장본 수정 전후](../assets/pr8286_8226_integration/resync/final-save-before-after.png),
+[#8555 p1](../assets/pr8286_8226_integration/resync/preservation-8555-p001.png),
+[#8556 p1](../assets/pr8286_8226_integration/resync/preservation-8556-p001.png),
+[#8557 p3](../assets/pr8286_8226_integration/resync/preservation-8557-p003.png)에 실제 래스터를 같은 배율로 보존했다.
+글꼴 굵기·래스터 차이는 남는다.
+
+## 이전 코드에서 완료한 로컬 검증
+
+아래 결과는 `170dd241` / base `a7feb849`의 기록이다. 최신 head의 새 실행과 구분한다.
+
 
 - Linux Native 편람 **383쪽 PASS**, 최저 99.96%, 공식 기준 대비 회귀 0쪽.
   [게이트 원장](../assets/pr8286_8226_integration/final-handbook.json)과
@@ -89,8 +138,8 @@ amend·squash·force-push하지 않았다. 폐기한 중간 구현은 revert 커
 - 독립 최소 글꼴 Linux 전체 nextest: **12,777 PASS / 0 FAIL / 45 skipped**, 55개 바이너리, 579.305초.
   초기 컴파일 메모리 초과는 동시성 1로 재실행했고, 실행 비트가 빠진 캐시 ELF 5개의 권한을
   복구한 뒤 전체를 처음부터 통과했다. 제품 코드·검사·기대값 변경은 없다.
-  [전체 실행 원장](../assets/pr8286_8226_integration/final-full-nextest.json)과
-  [원본 로그](../assets/pr8286_8226_integration/full-nextest.log.txt)를 보존했다.
+  [최종 실행 기록](../assets/pr8286_8226_integration/final-full-nextest.json)에 결과·환경·원본 로그 SHA를 보존했다.
+  실행 원본 로그는 저장소 규칙에 따라 ignored `output/`에 둔다.
 - 집중 회귀 39개 PASS. 기존 #2319, #6601, #7419, #7679, #7872, #8226, #8399, #8418 관련 계약과 새 독립 반례 포함.
 - 최적화 Native `release-test` 및 wrapper를 통한 fresh release WASM/wasm-opt 빌드 완료.
 - Native Skia lib 3,857 PASS / 12 ignored, 그림 누락 2 PASS, 직접 PDF 22 PASS.
@@ -144,6 +193,29 @@ HWP/HWPX의 기준 PNG와 각 backend PNG는 각각 바이트가 같았다.
 
 ## 남은 병합 전 조건
 
-1. 이미 병합된 #8711/#8226 변경을 보존하면서 최신 devel에 통합하고 변경 범위의 필수 검증을 완료한다.
-2. 최종 devel/head·입력 해시 재확인과 기록 확정 뒤 사용자 승인 범위에 따라 통합 PR push/등록 및 해당 head CI를 확인한다.
+1. 로컬 필수 검증과 입력 해시 대조는 완료했다. 검토 문서 확인·push 승인 뒤 통합 PR을 등록하고 해당 head CI를 확인한다.
+2. 실제 병합 직전에 devel·원 PR head·통합 PR head와 최신 CI를 다시 확인한다.
 3. 실제 병합과 원 #8286 후속 정리는 별도 승인 후 수행한다. 이미 닫힌 #8226/#8711은 다시 닫지 않는다.
+
+## Merge 후 contributor PR comment 계획
+
+[GitHub merge comment 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)을 따른다.
+실제 통합 PR 병합과 후속 comment·close 승인이 이루어진 뒤에만 #8286에 한국어 존댓말로 게시한다.
+원 기여자에게 감사하고 `bf5bfb34` → `bf4b9e77`의 author·출처 보존, 별도 메인터너 보정,
+실제 merge commit 및 그 head CI를 구분해 설명한다. 이미 대체 완료된 #8226/#8711에는 다시 게시하거나 닫지 않는다.
+
+최종 HWP/HWPX는 각 1쪽이며 기준·backend별 PNG가 형식 간 바이트까지 같음을 확인했다.
+대표 HWP 1쪽의 raw gate flagged 후보는 Native/WASM 모두 0개이며, 쪽수 차이·측정 누락도 없다.
+Native pixel_match 99.25904%, visual_accuracy_proxy_percent 21.97698%, raw 95.51442%;
+WASM은 각각 99.23782%, 21.58616%, 99.55876%다. 이 보조 proxy는 글꼴·가는 획·색상 래스터
+차이에 민감하며 사람의 정확도나 배치 보존 비율이 아니다. 직접 판독은 표·앞뒤 본문·컨테이너
+원점과 간격 보존을 확인했으며, 수달 글리프와 기존 차트 OLE 저장 한계는 그대로 명시한다.
+
+대표 이미지는 `mydocs/pr/assets/pr8286_8226_integration/resync/`의
+`final-save-native-review.png`, `final-save-native-overlay.png`, `final-save-wasm-review.png`,
+`final-save-wasm-overlay.png`, `final-save-before-after.png`다. 병합 뒤 실제 SHA로 다음 형식의 URL을 채운다.
+
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr8286_8226_integration/resync/final-save-native-review.png`
+
+해당 asset이 merge commit을 통해 devel에 존재함을 확인한 뒤 review와 standalone overlay를
+Markdown 이미지로 넣어 `--body-file`로 게시한다. 게시 후 API로 실제 Markdown과 이미지 응답·해시를 재확인한다.

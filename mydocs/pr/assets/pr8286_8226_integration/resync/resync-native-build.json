@@ -1,0 +1,17 @@
+{
+  "head": "ab1491d40b43c7d54941337b852f7e7f0a5eff5e",
+  "binarySha256": "7cb479105670219ae666000297d3584de43ed5ac86fbba26722800a9881d1a52",
+  "buildCommand": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--features",
+    "native-skia",
+    "--bin",
+    "rhwp"
+  ],
+  "target": "/Volumes/T7/DeveloperArtifacts/rhwp/target/pr8286-independent",
+  "exit": 0
+}

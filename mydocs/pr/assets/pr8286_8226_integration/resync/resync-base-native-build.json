@@ -1,0 +1,9 @@
+{
+  "head": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+  "binarySha256": "92492bd9ee55f2713c69dd1908b73a09da5fbe55361f40c006aa99b2540f54d4",
+  "profile": "release-test",
+  "features": [
+    "native-skia"
+  ],
+  "exit": 0
+}

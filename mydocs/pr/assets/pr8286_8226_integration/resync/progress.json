@@ -1,0 +1,92 @@
+{
+  "candidateHead": "ab1491d40b43c7d54941337b852f7e7f0a5eff5e",
+  "baseHead": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+  "groups": {
+    "resync-native": {
+      "documents": 5,
+      "pages": 5,
+      "minimumRaw": 93.83
+    },
+    "resync-wasm": {
+      "documents": 5,
+      "pages": 5,
+      "minimumRaw": 95.83
+    },
+    "resync-probes-native": {
+      "documents": 5,
+      "pages": 5,
+      "minimumRaw": 93.5
+    },
+    "resync-probes-wasm": {
+      "documents": 5,
+      "pages": 5,
+      "minimumRaw": 95.75
+    },
+    "resync-matrix-native": {
+      "documents": 32,
+      "pages": 88,
+      "minimumRaw": 92.18
+    },
+    "resync-matrix-wasm": {
+      "documents": 32,
+      "pages": 88,
+      "minimumRaw": 92.54
+    },
+    "resync-saves-native": {
+      "documents": 2,
+      "pages": 2,
+      "minimumRaw": 95.51
+    },
+    "resync-saves-wasm": {
+      "documents": 2,
+      "pages": 2,
+      "minimumRaw": 99.56
+    }
+  },
+  "allRequiredGatesComplete": true,
+  "latestBaseComparison": {
+    "pages": 176,
+    "maximumDrop": 0.0,
+    "pngBytesEqual": 176
+  },
+  "fullNextest": {
+    "passed": 12789,
+    "failed": 0,
+    "skipped": 45
+  },
+  "nativeSkia": "all three gates passed",
+  "remaining": [],
+  "localReady": true,
+  "handbook": {
+    "sourceHead": "ab1491d40b43c7d54941337b852f7e7f0a5eff5e",
+    "status": "passed",
+    "pages": 383,
+    "minimumRawMatch": 99.96,
+    "minimumPages": [
+      130
+    ],
+    "baselineRegressions": 0,
+    "baselineSha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "elapsedSeconds": 193.256,
+    "binarySha256": "891b0264934c4eb84e3305559cf61e604f1668b4700d3b534024645a88284180",
+    "inputs": [
+      {
+        "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+        "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+        "gitBlobMatchesExecution": true
+      },
+      {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+        "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+        "gitBlobMatchesExecution": true
+      }
+    ],
+    "directInspection": {
+      "page": 130,
+      "result": "본문·그림 틀·간격 보존. 글꼴 획·래스터 차이는 남음."
+    },
+    "logSha256": "bba2e4a4eec94749c9d663f9832b373cffc01f8fb1138e723dbefe4821f2126e"
+  },
+  "remoteCI": "not run: branch has not been pushed",
+  "mergeReady": false
+}
