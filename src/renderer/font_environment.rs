@@ -30,8 +30,13 @@ pub struct FontEnvironment {
     true_type_faces: Vec<String>,
     /// 자동 공급 선택은 표시 프로그램만 보완한다. 검증된 원본 HFT의
     /// 조판 폭까지 대체 프로그램의 폭으로 바꾸는 명시적 요청과 구분한다.
-    #[serde(default, skip_serializing_if = "is_false")]
-    preserve_source_metrics: bool,
+    /// 생략은 기존 메트릭 선언이며, 명시 false만 자연 윤곽의 선택으로 기록한다.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_source_metric_policy"
+    )]
+    preserve_source_metrics: Option<bool>,
     /// 사용자가 자연 프로그램 전진을 명시적으로 선택한 원본만 예외로 둔다.
     /// 다른 원본의 자동 공급·저장 메트릭은 같은 세션에서도 유지한다.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -160,6 +165,14 @@ fn may_select_hft_program(font: &crate::model::style::Font, language: usize) -> 
                 .is_some()))
 }
 
+// 생략은 기존 메트릭 계약을 유지한다. 명시 false는 자연 프로그램 선택이며,
+// null·문자열·숫자는 기존 bool JSON 계약과 같이 거부한다.
+fn deserialize_source_metric_policy<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<bool>, D::Error> {
+    bool::deserialize(deserializer).map(Some)
+}
+
 impl FontEnvironment {
     pub(crate) fn with_observed_substitutions(
         base: Option<&Self>,
@@ -174,7 +187,7 @@ impl FontEnvironment {
             selected_programs: BTreeMap::new(),
             selection_rules: BTreeMap::new(),
             true_type_faces: Vec::new(),
-            preserve_source_metrics: false,
+            preserve_source_metrics: None,
             replace_source_metrics_for: Vec::new(),
             document_substitutions: Vec::new(),
             glyph_fallbacks: BTreeMap::new(),
@@ -518,7 +531,7 @@ impl FontEnvironment {
             selected_programs,
             selection_rules,
             true_type_faces: true_type_faces.into_iter().collect(),
-            preserve_source_metrics: true,
+            preserve_source_metrics: Some(true),
             replace_source_metrics_for: Vec::new(),
             glyph_fallbacks: BTreeMap::new(),
             document_glyph_fallbacks: Vec::new(),
@@ -840,11 +853,20 @@ impl FontEnvironment {
     }
 
     pub(crate) fn preserves_source_metrics(&self) -> bool {
-        self.preserve_source_metrics
+        self.preserve_source_metrics.unwrap_or(false)
+    }
+
+    /// 생략된 기존 설정은 자연 프로그램 전진을 선택한 요청이 아니다.
+    pub(crate) fn selects_natural_program_for(&self, source: &str) -> bool {
+        self.preserve_source_metrics == Some(false)
+            || self
+                .replace_source_metrics_for
+                .iter()
+                .any(|selected| selected == source)
     }
 
     pub(crate) fn preserves_source_metrics_for(&self, source: &str) -> bool {
-        self.preserve_source_metrics
+        self.preserves_source_metrics()
             && !self
                 .replace_source_metrics_for
                 .iter()

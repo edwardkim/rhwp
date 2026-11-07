@@ -323,8 +323,15 @@ pub(crate) fn resolve_styles_with_environment(
                     });
                     // 원본 메트릭을 유지하는 표시용 대체는 기존 paint 폭 맞춤도 유지한다.
                     // 원 프로그램의 자연 윤곽은 그 메트릭까지 선택한 세션만 보존한다.
-                    style.font_families_preserve_glyph_ink[lang] =
-                        (explicit_true_type || explicit_replacement) && !preserve_source_metrics;
+                    style.font_families_preserve_glyph_ink[lang] = (explicit_true_type
+                        || explicit_replacement)
+                        && !preserve_source_metrics
+                        && environment.is_some_and(|env| {
+                            original
+                                .requested_face
+                                .as_deref()
+                                .is_some_and(|source| env.selects_natural_program_for(source))
+                        });
                     // 프로그램·메트릭을 직접 선택한 자연 잉크에 이전 슬롯의
                     // HFT 종이 프레임을 상속하지 않는다. 원본 메트릭을 유지하는
                     // 자동 표시용 공급은 기존 인쇄 프레임을 그대로 소비한다.

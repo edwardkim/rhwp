@@ -1,6 +1,6 @@
 //! 관계형: 사용자 선택 원본의 자연 전진과 다른 원본의 저장 메트릭 소유를 구분한다.
 //! Native/fresh WASM 일치율: 비해당. 공개 API로 생성한 합성 문서의 프로그램 선택 계약이다.
-//! 주석 갱신: 2026-11-07 23:49:45 KST. 사설 글꼴 설치·실물 px 좌표에 의존하지 않는다.
+//! 주석 갱신: 2026-11-08 00:47 KST. 사설 글꼴 설치·실물 px 좌표에 의존하지 않는다.
 use rhwp::{
     model::style::Font,
     renderer::{
@@ -104,6 +104,62 @@ fn source_metric_overrides_reject_unmapped_and_duplicate_sources() {
         value["replaceSourceMetricsFor"] = invalid;
         assert!(FontEnvironment::from_json(&value.to_string()).is_err());
     }
+}
+
+#[test]
+fn omitted_natural_program_selection_keeps_legacy_leader() {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "-----. ").unwrap();
+    let mut document = core.document().clone();
+    for fonts in &mut document.doc_info.font_faces {
+        for font in fonts {
+            font.name = "한양신명조".into();
+        }
+    }
+    core.set_document(document);
+    let legacy = json!({"id":"legacy-reference", "substitutions":{"한양신명조":"HYSinMyeongJo-Medium"},
+        "trueTypeFaces":["HYSinMyeongJo-Medium"]});
+    let mut legacy_positions = None;
+    for choice in [None, Some(false), Some(true)] {
+        let mut value = legacy.clone();
+        if let Some(preserve) = choice {
+            value["preserveSourceMetrics"] = json!(preserve);
+            if preserve {
+                value["replaceSourceMetricsFor"] = json!(["한양신명조"]);
+            }
+        }
+        let environment = FontEnvironment::from_json(&value.to_string()).unwrap();
+        let serialized = serde_json::to_value(&environment).unwrap();
+        assert_eq!(
+            serialized.get("preserveSourceMetrics"),
+            value.get("preserveSourceMetrics"),
+            "생략과 명시 false를 세션 직렬화 왕복에서도 구분한다"
+        );
+        core.set_font_environment(Some(
+            FontEnvironment::from_json(&serialized.to_string()).unwrap(),
+        ))
+        .unwrap();
+        let tree = core.build_page_render_tree(0).unwrap();
+        let run = find(&tree.root, "-----. ").unwrap();
+        assert_eq!(
+            run.style.preserve_glyph_ink,
+            choice.is_some(),
+            "기존 메트릭 선언은 자연 윤곽 선택을 대신하지 않는다"
+        );
+        let positions = EmbeddedTextMeasurer.compute_char_positions(&run.text, &run.style);
+        if choice.is_none() {
+            legacy_positions = Some(positions);
+        } else {
+            assert!(
+                positions[5] > legacy_positions.as_ref().unwrap()[5],
+                "명시 자연 전진은 기존 leader와 별개로 유지한다"
+            );
+        }
+    }
+    let mut invalid = legacy;
+    invalid["preserveSourceMetrics"] = Value::Null;
+    assert!(FontEnvironment::from_json(&invalid.to_string()).is_err());
 }
 
 fn selected_program_core() -> DocumentCore {

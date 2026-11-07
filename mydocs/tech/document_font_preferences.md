@@ -31,6 +31,12 @@ Studio URL의 `font-environment` 값은 다음 JSON을 URL 인코딩한 것이�
 새 WASM은 글꼴 선택 계획에 `supportsSourceMetricOverrides: true`를 반환한다.
 Studio는 이 경우 자동 공급의 `preserveSourceMetrics`를 유지하고 사용자가 선택한 원본만
 `replaceSourceMetricsFor`에 기록한다. 다른 원본의 메트릭·물리 프레임은 변경하지 않는다.
+
+기존 `substitutions`·`trueTypeFaces` 선언에서 `preserveSourceMetrics`를 생략한 경우는
+자연 윤곽·반복 하이픈 전진을 새로 선택한 요청으로 해석하지 않는다. 기존 메트릭 치환과
+leader 규칙을 유지한다. 명시적인 `preserveSourceMetrics: false` 또는 해당 원본의
+`replaceSourceMetricsFor` 선택이 있을 때 자연 프로그램 윤곽을 적용한다. 생략과 명시 false는
+환경 JSON의 직렬화·재열기에서도 구분하며, `null`은 허용하지 않는다.
 지원하지 않는 이전 WASM에는 이 새 필드를 보내지 않고 이전 명시 환경 계약을 유지한다.
 최종 수용 검증은 새 WASM에서 원본별 범위를 실제 확인한다.
 
