@@ -212,7 +212,10 @@ impl EqLayout {
         let pad = fs * SQRT_PAD;
         // 수식 face의 논리 전진폭. HYhwpEQ의 수학 radical은 1em,
         // 배포 Latin Modern Math의 U+221A는 833/1000em이다.
-        let sign_w = if self.hancom_math_face {
+        // 원본 HFT는 공통 공개 근호 윤곽을 사용한다. 현대 TTF 수식의
+        // 1em 논리 슬롯을 강제하면 실제 윤곽의 833/1000em 전진과
+        // 그룹 인자 원점이 어긋난다. 현대 표시 세대의 슬롯은 유지한다.
+        let sign_w = if self.hancom_math_face && !self.legacy_math_face {
             super::source_roman_advance::em_advance(fs, self.dpi).unwrap_or(fs)
         } else {
             fs * 0.833

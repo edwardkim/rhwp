@@ -1,0 +1,266 @@
+{
+  "parent": "b82d0843c93c70b1e296f19dd5f96a32df8aaf33",
+  "base": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "scope": "원본 구형 수식의 공통 공개 근호 표시 폭. 전체 브랜치 완료 아님.",
+  "source_sha256": "4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9",
+  "reference_pdf_sha256": "5a82290de1571c692c7246fe6b57ae136602ae52c2068f2568fffc6c91bfd571",
+  "font_profile": "동일 로컬 원본85 glyph 공급. 최소 글꼴 시각 수용 아님.",
+  "font_sha256": "50f0d82eb516bfb19c80f8c985bd1f615b3c0ebd68fb9bdb437735f6982f8a22",
+  "display_advance_audit": {
+    "role": "실제 공통 공개 근호 윤곽의 표시 전진. 새 숫자 맞춤 아님.",
+    "font_path": "assets/fonts/LatinModernMath-Regular.woff2",
+    "font_sha256": "b11060f37967c090457580275129d0d7da1d5fbfc82b04e78c91aa31977f547c",
+    "units_per_em": 1000,
+    "glyph": "radical",
+    "hmtx": [
+      833,
+      73
+    ]
+  },
+  "same_input_reprint": {
+    "source_sha256": "4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9",
+    "pdf_sha256": "35319adecd32cb99c5f359d5d740e83d151f4f4fc1ad06f1650bce46be3a9cf2",
+    "comparisons": [
+      {
+        "label": "reference",
+        "page": 10,
+        "glyphs": [
+          {
+            "char": "Q",
+            "origin_css": [
+              223.71875,
+              113.6358133951823
+            ],
+            "font": "T6",
+            "size": 13.269154866536459
+          }
+        ]
+      },
+      {
+        "label": "reference",
+        "page": 12,
+        "glyphs": [
+          {
+            "char": "E",
+            "origin_css": [
+              220.0407511393229,
+              643.6166178385416
+            ],
+            "font": "T6",
+            "size": 13.269154866536459
+          }
+        ]
+      },
+      {
+        "label": "same-input-reprint",
+        "page": 10,
+        "glyphs": [
+          {
+            "char": "Q",
+            "origin_css": [
+              223.71875,
+              113.6358133951823
+            ],
+            "font": "T7",
+            "size": 13.269154866536459
+          }
+        ]
+      },
+      {
+        "label": "same-input-reprint",
+        "page": 12,
+        "glyphs": [
+          {
+            "char": "E",
+            "origin_css": [
+              220.0407511393229,
+              643.6166178385416
+            ],
+            "font": "T7",
+            "size": 13.269154866536459
+          }
+        ]
+      }
+    ]
+  },
+  "source_hashes": {
+    "src/renderer/equation/layout/fraction_geometry.rs": "a68c483d5f07f2df3c94925e1ba435e3d2f4ff534ede7b6900c53dff8b3cf70f",
+    "tests/cases/issue_4138_original_equation_character_ownership.rs": "b93e9edcf28c33f5de6b78ddfedece220697971e47143c19edf33c23d90ca7db"
+  },
+  "frozen_native": {
+    "path": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/legacy-original-radical-slot-repair/rhwp-candidate-native",
+    "sha256": "cc49ab00a9e3a6bc53529c9e1fc06239dc07be55010d57f1ffed6d9bb3ebe3de"
+  },
+  "fresh_wasm_kind": "Mac locked wrapper --target web --out-dir pkg --no-opt 로컬 대체 빌드. Docker 최적화 아님.",
+  "build": [
+    {
+      "stage": "candidate",
+      "kind": "native",
+      "exit_code": 0,
+      "seconds": 401.48,
+      "log_sha256": "7984ffa28f3e5e11a891a2e1429aba2e6e3d6a580d3b9f224f338b3a2941ec59"
+    },
+    {
+      "stage": "candidate",
+      "kind": "wasm",
+      "exit_code": 0,
+      "seconds": 226.505,
+      "log_sha256": "80ff318db0bffafafe89d9eb7cd7d344356707fdd96ef409ff0e98f69591ba09"
+    }
+  ],
+  "formal_before": {
+    "exit_code": 101,
+    "summary": [
+      "test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.94s"
+    ]
+  },
+  "formal_after": [
+    {
+      "name": "formal-after",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.73s"
+      ]
+    },
+    {
+      "name": "focused-all",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 136 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 19.54s"
+      ]
+    }
+  ],
+  "whole_comparison": [
+    {
+      "backend": "native",
+      "pages": 197,
+      "minimum": 98.47416,
+      "below98": [],
+      "drops_over_point1_from_parent": [],
+      "changed_pages": [
+        {
+          "page": 10,
+          "before": 99.23962,
+          "after": 99.37646,
+          "parent": 99.3313,
+          "png_identical": false
+        },
+        {
+          "page": 12,
+          "before": 99.02184,
+          "after": 99.35295,
+          "parent": 99.22763,
+          "png_identical": false
+        }
+      ],
+      "unchanged_png_pages": 195
+    },
+    {
+      "backend": "wasm",
+      "pages": 197,
+      "minimum": 98.50155,
+      "below98": [],
+      "drops_over_point1_from_parent": [],
+      "changed_pages": [
+        {
+          "page": 10,
+          "before": 99.40925,
+          "after": 99.54381,
+          "parent": 99.5003,
+          "png_identical": false
+        },
+        {
+          "page": 12,
+          "before": 99.18145,
+          "after": 99.51005,
+          "parent": 99.38781,
+          "png_identical": false
+        }
+      ],
+      "unchanged_png_pages": 195
+    }
+  ],
+  "gates": [
+    {
+      "name": "fmt",
+      "exit_code": 0,
+      "seconds": 99.176,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "prepare",
+      "exit_code": 0,
+      "seconds": 12.913,
+      "log_sha256": "c7b248cd7a8da5ad0f646d544e11b94cd68c1742a9fb29a077d37d552f336c11"
+    },
+    {
+      "name": "fmt-check",
+      "exit_code": 0,
+      "seconds": 22.437,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "native-clippy",
+      "exit_code": 0,
+      "seconds": 43.092,
+      "log_sha256": "24393fd072de2cceaa0d9a0cda403a3e110262196439824bd56a11da69d02ff2"
+    },
+    {
+      "name": "wasm-clippy",
+      "exit_code": 0,
+      "seconds": 70.202,
+      "log_sha256": "dd6591c0e040e6d9e74e77f41e687c91f22dfe2a5f61ecd8f72932f896b1da7c"
+    },
+    {
+      "name": "workspace-build",
+      "exit_code": 0,
+      "seconds": 92.946,
+      "log_sha256": "3aa7122e1c7cd0254333b2453c51431c30f32711b13bc13a4cf4e772aa2eb104"
+    },
+    {
+      "name": "all-target-clippy",
+      "exit_code": 0,
+      "seconds": 93.488,
+      "log_sha256": "afdcaee710e3bccb0e59f094ca51b39a59c6d09943040a38debd684bb1a0b468"
+    },
+    {
+      "name": "native-skia-clippy",
+      "exit_code": 0,
+      "seconds": 82.444,
+      "log_sha256": "efc3cb8bc9c93737ed86e7fc8d28a5363c67fdf0285b8b0e84168683b1019251"
+    },
+    {
+      "name": "manifest",
+      "exit_code": 0,
+      "seconds": 3.017,
+      "log_sha256": "296d142f7e5ec14bc4f72e35c78fa6cb1d204ad3986016c336ced16ececa2e70"
+    },
+    {
+      "name": "unit-tiers",
+      "exit_code": 0,
+      "seconds": 52.277,
+      "log_sha256": "2c6dbaab2093a94c2fa3ec11190f384180b922a10025e3466a44f53c6611685c"
+    }
+  ],
+  "direct_review": "양쪽12쪽 review/overlay 직접 판독. E 원점 회복, 일부 수식 숫자·본문 glyph 미세 간격은 잔여. 100% 주장 없음.",
+  "full_branch_validation_complete": false,
+  "submitted_assets": {
+    "after-native-p012-overlay.png": "7e004ce3c0d7950b7484fc49fdff456b7ea74861b7acd045e33f42b4315cec73",
+    "after-native-p012-review.png": "a7d3c41bd6b5ac96146cce797205f7073f407bfd3b072007673b9d92bff3190c",
+    "after-native-silhouette.tsv": "a44da144e8ade25fda5f7bf9991e27c5a76662b9eb549e20572dc1fc8a94df0a",
+    "after-wasm-p012-overlay.png": "d74be33da25307f3d9f3131df6f696b129ada966c8c979fac79356a3ae68871f",
+    "after-wasm-p012-review.png": "1105410799121ff446ae8ab060e445eeafa634f4c3b861c98eecd433e896527f",
+    "after-wasm-silhouette.tsv": "6bf0b101aff5734e7f2d3aeb759a6b0c45349c834eca2cf4272761cfa69f3ca4",
+    "before-native-p012-overlay.png": "764d8d0ada6fe99b5f2901a8a6b2fa67517a107d29ccedc24d5fc2d0bd44481a",
+    "before-native-p012-review.png": "d0a024c08756237fd5aa2be94a3cff8de0db1edb5e0409986934cd37c52e474b",
+    "before-native-silhouette.tsv": "2bf1b530e4daaf76cabfa2bf4de91f1993d1002a95d1135c87e4960a2acbc131",
+    "before-wasm-p012-overlay.png": "054c4b42e9b3f952b10533e71c0e3be532f23e790c44f60911105550c42bf2c4",
+    "before-wasm-p012-review.png": "af26033fe730051449c1509a81efe2d3574e4ae6cb009126c82e6d578121d69b",
+    "before-wasm-silhouette.tsv": "c2a2e98ac442375a597ed7604df5326f12576b347329de44e2bbb1316f152baa"
+  },
+  "final_header_only_change": "측정 방식·정식 증거 경로·주석 시각 정리. 마지막 정식 실행 이후 assertion/runtime 변경 없음.",
+  "final_manifest_logs": {
+    "prepare-final": "57fa6b0917916ed0542aef07e882a6b82ff68a2d582e9125918c6e8be0ad843d",
+    "manifest-final": "296d142f7e5ec14bc4f72e35c78fa6cb1d204ad3986016c336ced16ececa2e70"
+  }
+}

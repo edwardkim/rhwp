@@ -244,3 +244,21 @@ Native 최저95.77112% /fresh WASM95.77492%,98% 미달129·130쪽의 복합 수�
 중괄호가 실제 공간을 예약함을 입증했으므로, 이를 삭제하지 않고 근호 표시 폭·호스트 원점을
 추가 대조한다. 다른 대상 문서98%·최종 전체 nextest·편람·actual 소비 검증 완료가 아니다.
 [전쪽 TSV·review/overlay·검사·출처](../pr/assets/issue4138/original-character-ownership-20261107/README.md).
+
+## 2026-11-07 원본 근호의 실제 표시 폭과 인자 원점 복구
+
+부모 b82d0843c의 원본 HFT 근호에 현대 TTF의 1em 슬롯을 적용하던 공통 분기를 수정했다.
+공통 공개 근호 glyph의 hmtx는833/1000em이며, 원본 표시에는 그 폭을 소비한다. 독립 자연
+저장은 중괄호의 공간 예약을 입증하므로 그 예약을 없애지 않았다. 같은 원본 재인쇄에서도
+10쪽Q·12쪽E 원점은 기존 독립 Print와 같았다. 재인쇄본으로 기준 PDF를 교체하지 않았다.
+
+새 독립192DPI ±2px 원점 고정형을 포함한6개는 실제 부모5 PASS/1 FAIL→6 PASS다.
+집중 묶음136 PASS에는 이6개와 진단1개가 포함된다. Native/fresh WASM 전197쪽을 재산출해
+최저98.47416/98.50155%,98% 미달·누락0을 유지했다. 12쪽은99.02184→99.35295%,
+99.18145→99.51005%로 복구됐다. 부모 b82d 대비 변경 PNG는각2쪽(10·12),195쪽은
+바이트 동일하며, 앞 단계 부모971086의 동일85 glyph 공급과 비교해0.1%p 초과 하락0이다.
+
+fmt·Native/WASM/전체target/Skia Clippy·workspace build·manifest·unit tier를 통과했다.
+주석 근거를 최종 정리한 뒤 suite prepare·manifest도 다시 통과했다. 글꼴 공급 프로필·
+최종 전체 nextest/편람/actual 미완료는 구분한다. 다른 대상 문서98% 보정은 계속 진행 중이다.
+[전후 TSV·review/overlay·독립 원점과 검사](../pr/assets/issue4138/original-radical-slot-20261107/README.md).

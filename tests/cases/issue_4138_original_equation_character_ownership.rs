@@ -1,9 +1,11 @@
-//! 검사 유형: 문자/원본 숫자/현대 문법 4개는 관계형, 첫 기저 괄호 원점 1개는 고정형(192DPI ±2px).
-//! 주석 갱신: 2026-11-07 08:09 KST.
+//! 검사 유형: 문자/원본 숫자/현대 문법 4개는 관계형, 기저 괄호/근호 인자 원점 2개는 고정형(192DPI ±2px).
+//! 주석 갱신: 2026-11-07 09:02:52 KST.
 //! Native/fresh WASM 전 197쪽 최저: 98.47416% / 98.50155%.
 //! 129쪽: 98.47416% / 98.50155%. 130쪽: 98.73703% / 98.71245%.
-//! 부모 대비 12쪽의 약 0.206%p 하락은 별도 보정 중이며, 그 좌표는 고정하지 않는다.
-//! 원점 기준은 독립 Hancom2024 Print PDF129쪽이며, 후보 PNG로 기대 좌표를 만들지 않았다.
+//! 근호 슬롯 보정 뒤 12쪽은 99.35295% / 99.51005%로 회복했다. 독립 PDF의 E 원점을 고정한다.
+//! 2026-11-07 측정: 192DPI·compat2024·PDFium·2px 색상 경계 보정 전 내용 실루엣 raw.
+//! 근거: mydocs/pr/assets/issue4138/original-radical-slot-20261107/README.md.
+//! 원점 기준은 독립 Hancom2024 Print PDF12·129쪽이며, 후보 PNG로 기대 좌표를 만들지 않았다.
 //! 일반 괄호는 문자, LEFT/RIGHT는 구조다. 소수점 때문에 원본 숫자 전체를 다른 face로 보내지 않는다.
 
 use rhwp::{
@@ -172,6 +174,7 @@ fn source_decimal_exponent_keeps_its_original_font_program_and_child_size() {
 fn source_record(
     node: &LayerNode,
     frames: &[[f64; 6]],
+    prefix: &str,
 ) -> Option<(Value, [f64; 2], Vec<[f64; 6]>)> {
     use rhwp::paint::GroupKind;
     match &node.kind {
@@ -186,14 +189,16 @@ fn source_record(
                     next.push(m)
                 }
             }
-            children.iter().find_map(|n| source_record(n, &next))
+            children
+                .iter()
+                .find_map(|n| source_record(n, &next, prefix))
         }
         LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
-            source_record(child, frames)
+            source_record(child, frames, prefix)
         }
         LayerNodeKind::Leaf { ops } => ops.iter().find_map(|op| {
             if let PaintOp::Equation { bbox, equation } = op {
-                if equation.script.starts_with("P=460") {
+                if equation.script.starts_with(prefix) {
                     return Some((
                         serde_json::to_value(&equation.layout_box).unwrap(),
                         [bbox.x, bbox.y],
@@ -205,7 +210,13 @@ fn source_record(
         }),
     }
 }
-fn parenthesis_origins(v: &Value, mut x: f64, mut y: f64, out: &mut Vec<(char, f64, f64)>) {
+fn selected_glyph_origins(
+    v: &Value,
+    mut x: f64,
+    mut y: f64,
+    wanted: &str,
+    out: &mut Vec<(char, f64, f64)>,
+) {
     if let Some(k) = v.get("kind") {
         x += v["x"].as_f64().unwrap();
         y += v["y"].as_f64().unwrap();
@@ -216,7 +227,7 @@ fn parenthesis_origins(v: &Value, mut x: f64, mut y: f64, out: &mut Vec<(char, f
                 .chars()
                 .zip(run["positions"].as_array().unwrap())
             {
-                if matches!(c, '(' | ')') {
+                if wanted.contains(c) {
                     out.push((
                         c,
                         x + offset.as_f64().unwrap(),
@@ -226,18 +237,18 @@ fn parenthesis_origins(v: &Value, mut x: f64, mut y: f64, out: &mut Vec<(char, f
                 }
             }
         } else {
-            parenthesis_origins(k, x, y, out)
+            selected_glyph_origins(k, x, y, wanted, out)
         }
     } else {
         match v {
             Value::Array(a) => {
                 for w in a {
-                    parenthesis_origins(w, x, y, out)
+                    selected_glyph_origins(w, x, y, wanted, out)
                 }
             }
             Value::Object(o) => {
                 for w in o.values() {
-                    parenthesis_origins(w, x, y, out)
+                    selected_glyph_origins(w, x, y, wanted, out)
                 }
             }
             _ => {}
@@ -255,9 +266,9 @@ fn original_first_script_base_delimiters_match_independent_print_pixels() {
     let tree = core
         .build_page_layer_tree_with_profile(128, RenderProfile::Print)
         .unwrap();
-    let (layout, origin, frames) = source_record(&tree.root, &[]).unwrap();
+    let (layout, origin, frames) = source_record(&tree.root, &[], "P=460").unwrap();
     let mut points = vec![];
-    parenthesis_origins(&layout, origin[0], origin[1], &mut points);
+    selected_glyph_origins(&layout, origin[0], origin[1], "()", &mut points);
     assert_eq!(points.len(), 4);
     // 독립 PDF129쪽 Type3 원점(pt)을96DPI CSS 좌표로 변환한 기준이다.
     let expected = [('(', 181.66154, 945.68652), (')', 226.59719, 945.68652)];
@@ -271,4 +282,41 @@ fn original_first_script_base_delimiters_match_independent_print_pixels() {
         assert!(((x - px) * 2.0).abs() <= 2.0, "괄호 x: {x} / {px}");
         assert!(((y - py) * 2.0).abs() <= 2.0, "괄호 y: {y} / {py}");
     }
+}
+
+/// 고정형: 기존12쪽은 Native99.02184% / fresh WASM99.18145%인 완료 쪽이다.
+/// 같은 입력 재인쇄에서도 일치한 독립 Type3 E 원점을192DPI ±2px로 검사한다.
+#[test]
+fn original_radical_operand_origin_matches_independent_print_pixels() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let path = root.join("mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/saved-split-1x2.hwp");
+    let mut core = DocumentCore::from_bytes(&std::fs::read(path).unwrap()).unwrap();
+    core.set_hangul2024_compat(true);
+    let tree = core
+        .build_page_layer_tree_with_profile(11, RenderProfile::Print)
+        .unwrap();
+    let (layout, origin, frames) = source_record(&tree.root, &[], "sqrt {E}").unwrap();
+    let mut points = vec![];
+    selected_glyph_origins(&layout, origin[0], origin[1], "E", &mut points);
+    assert_eq!(
+        points.len(),
+        1,
+        "근호 인자의 실제 원본 E glyph를 한 번 선택한다"
+    );
+    let (_, mut x, mut y) = points[0];
+    for [a, b, c, d, e, f] in &frames {
+        let nx = a * x + c * y + e;
+        y = b * x + d * y + f;
+        x = nx;
+    }
+    // 독립 한컴 Print PDF12쪽의 원점(165.030563pt,482.712463pt)을96DPI로 변환했다.
+    let (expected_x, expected_y) = (220.0407511393229, 643.6166178385416);
+    assert!(
+        ((x - expected_x) * 2.0).abs() <= 2.0,
+        "원본 근호 E x: {x} / {expected_x}"
+    );
+    assert!(
+        ((y - expected_y) * 2.0).abs() <= 2.0,
+        "원본 근호 E y: {y} / {expected_y}"
+    );
 }

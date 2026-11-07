@@ -45,3 +45,7 @@
 - 130쪽 이전: [review](before-native-p130-review.png) · [overlay](before-native-p130-overlay.png)
 - 130쪽 후보 Native: [review](after-native-p130-review.png) · [overlay](after-native-p130-overlay.png)
 - 130쪽 후보 fresh WASM: [review](after-wasm-p130-review.png) · [overlay](after-wasm-p130-overlay.png)
+
+## 후속 보정
+
+위 수치는 이 단계의 이력으로 보존한다. 12쪽 하락은 다음 [근호 슬롯 보정](../original-radical-slot-20261107/README.md)에서 원인을 수정하고 전197쪽을 다시 검증했다. 이 단계의 과거 결과를 새 코드의 실행 결과로 재인용하지 않는다.
