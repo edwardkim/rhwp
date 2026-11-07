@@ -1,0 +1,36 @@
+{
+  "scope": "Same candidate binary: unchanged compatibility constructor versus new load command; not independent Hancom fidelity or WASM pixels",
+  "minimal_fonts": true,
+  "cases": [
+    {
+      "format": "HWP3",
+      "pages": 24,
+      "svg_identical": true,
+      "hwp_bytes_identical": true,
+      "hwpx_bytes_identical": true
+    },
+    {
+      "format": "HWP5",
+      "pages": 64,
+      "svg_identical": true,
+      "hwp_bytes_identical": true,
+      "hwpx_bytes_identical": true
+    },
+    {
+      "format": "HWPX",
+      "pages": 24,
+      "svg_identical": true,
+      "hwp_bytes_identical": true,
+      "hwpx_bytes_identical": true
+    },
+    {
+      "format": "PDF",
+      "pages": 1,
+      "svg_identical": true,
+      "hwp_bytes_identical": true,
+      "hwpx_bytes_identical": true
+    }
+  ],
+  "total_pages": 113,
+  "rlib_sha256": "0738db1fe2070edfc2fe65a0352bef88c2af040e0a031c6b90093426d1c057b2"
+}

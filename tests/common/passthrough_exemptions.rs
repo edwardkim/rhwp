@@ -539,6 +539,13 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     // ── 문서 전체 교체·생성 ────────────────────────────────────────────────
     (
         "commands/document.rs",
+        "load_bytes",
+        Exempt::WholeDocument,
+        "[#8745] 인증·파싱 성공 뒤 Core 전체를 교체한다. 새 문서의 raw_stream·raw_provenance도 \
+         함께 설정하며 실패 시 기존 문서와 패스스루 상태를 유지한다.",
+    ),
+    (
+        "commands/document.rs",
         "create_blank_document_native",
         Exempt::WholeDocument,
         "내장 템플릿을 파싱해 `self.document` 를 통째로 교체. 패스스루도 함께 새로 설정된다.",

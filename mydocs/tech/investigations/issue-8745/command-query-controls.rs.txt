@@ -1,0 +1,47 @@
+pub struct Document { pub page_count: usize }
+impl Document {
+ pub fn from_bytes_with_password(bytes: &[u8], password: &[u8]) -> Result<Self, ()> {
+  if password.len() == 0 { return Err(()); }
+  Ok(Self { page_count: bytes.len() })
+ }
+}
+pub struct Loader { document: Option<Document> }
+impl Loader {
+ pub fn new() -> Self { Self { document: None } }
+ pub fn open_with_password(&mut self, bytes: &[u8], password: &[u8]) -> Result<(), ()> {
+  if password.len() == 0 { return Err(()); }
+  self.document = Some(Document { page_count: bytes.len() });
+  Ok(())
+ }
+ pub fn into_document(self) -> Option<Document> { self.document }
+}
+pub fn original(data: &[u8], password: &[u8]) {
+ let doc = Document::from_bytes_with_password(data, password).unwrap();
+ eprintln!("original pages: {}", doc.page_count);
+}
+pub fn corrected(data: &[u8], password: &[u8]) {
+ let mut loader = Loader::new();
+ loader.open_with_password(data, password).unwrap();
+ let doc = loader.into_document().unwrap();
+ eprintln!("corrected pages: {}", doc.page_count);
+}
+pub fn real_secret_leak(password: &str) {
+ eprintln!("secret: {}", password);
+}
+
+impl Document {
+ pub fn load_bytes(&mut self, bytes: &[u8], password: Option<&[u8]>) -> Result<(), ()> {
+  if password.is_some_and(|v| v.is_empty()) { return Err(()); }
+  *self = Self { page_count: bytes.len() };
+  Ok(())
+ }
+}
+pub fn atomic_replacement(data: &[u8], password: &[u8]) {
+ let mut doc = Document { page_count: 0 };
+ doc.load_bytes(data, Some(password)).unwrap();
+ eprintln!("replacement pages: {}", doc.page_count);
+}
+pub fn authenticate(password: &str) -> bool { !password.is_empty() }
+pub fn hardcoded_operational_credential() -> bool {
+ authenticate("synthetic-hardcoded-operation-credential")
+}

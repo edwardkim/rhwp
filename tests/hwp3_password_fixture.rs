@@ -191,7 +191,9 @@ fn actual_hwp3_password_fixture_requires_the_password_and_preserves_structure() 
         "HWP3 머리말 PUA: {hwp3_header_text:?}"
     );
 
-    let hwp_document = HwpDocument::from_bytes_with_password(&bytes, FIXTURE_PASSWORD)
+    let mut hwp_document = HwpDocument::from(rhwp::DocumentCore::new_empty());
+    hwp_document
+        .load_bytes(&bytes, Some(FIXTURE_PASSWORD))
         .expect("공개 HwpDocument API도 fixture를 열어야 함");
     assert_eq!(hwp_document.page_count(), 24);
 
@@ -343,8 +345,8 @@ fn actual_hwp3_password_fixture_preserves_toc_inline_shape_vertical_contract() {
                     .text
                     .chars()
                     .all(|ch| ch.is_ascii_digit() || ch.is_whitespace() || ch == '\u{FFFC}'),
-            "차례 항목 {paragraph_index}의 본문은 marker·공백·쪽 번호여야 함: {:?}",
-            paragraph.text
+            // #8745: 조건은 유지하고 실패 진단의 복호화 본문 출력만 제거한다.
+            "차례 항목 {paragraph_index}의 본문은 marker·공백·쪽 번호여야 함"
         );
         assert!(matches!(
             paragraph.controls.as_slice(),
@@ -496,7 +498,9 @@ fn actual_hwp3_password_fixture_keeps_regular_page_background_opaque() {
     )
     .expect("원본 배경 BMP")
     .to_rgba8();
-    let document = HwpDocument::from_bytes_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
+    let mut document = HwpDocument::from(rhwp::DocumentCore::new_empty());
+    document
+        .load_bytes(&fixture_bytes(), Some(FIXTURE_PASSWORD))
         .expect("실제 HWP3 fixture를 열어야 함");
     let svg = document
         .render_page_svg(0)
@@ -553,7 +557,9 @@ fn actual_hwp3_password_fixture_normalizes_hanging_indent_first_line_margin() {
 
 #[test]
 fn actual_hwp3_password_fixture_keeps_hyperlink_internal_vpos_reset_on_next_page() {
-    let document = HwpDocument::from_bytes_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
+    let mut document = HwpDocument::from(rhwp::DocumentCore::new_empty());
+    document
+        .load_bytes(&fixture_bytes(), Some(FIXTURE_PASSWORD))
         .expect("실제 HWP3 fixture를 열어야 함");
 
     // 문단 258은 hyperlink marker 하나를 포함하지만, 저장 LINE_SEG는 두 번째 줄을

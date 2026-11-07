@@ -248,7 +248,9 @@ fn issue_3546_chart_part_is_password_protected() {
         DocumentCore::from_bytes(&encrypted).is_err(),
         "{label}: 비밀번호 없이 암호 HWPX를 열면 안 된다"
     );
-    let decrypted = DocumentCore::from_bytes_with_password(&encrypted, &password)
+    let mut decrypted = DocumentCore::new_empty();
+    decrypted
+        .load_bytes(&encrypted, Some(&password))
         .unwrap_or_else(|e| panic!("decrypt {label}: {e:?}"));
     let restored = decrypted
         .export_hwpx_native()

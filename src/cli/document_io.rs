@@ -76,24 +76,24 @@ pub(crate) fn classify_hwp_error(msg: &str) -> LoadError {
 
 /// HwpDocument 로드. 전역 비밀번호가 설정돼 있으면 비밀번호 경로로 연다.
 pub(crate) fn load_document(data: &[u8]) -> Result<rhwp::wasm_api::HwpDocument, LoadError> {
-    let result = match cli_password() {
-        Some(pw) => rhwp::wasm_api::HwpDocument::from_bytes_with_password(data, pw.as_bytes()),
-        None => rhwp::wasm_api::HwpDocument::from_bytes(data),
-    };
-    result.map_err(|e| classify_hwp_error(&e.to_string()))
+    let mut document = rhwp::wasm_api::HwpDocument::from(rhwp::DocumentCore::new_empty());
+    let password = cli_password();
+    document
+        .load_bytes(data, password.as_deref().map(str::as_bytes))
+        .map_err(|e| classify_hwp_error(&e.to_string()))?;
+    Ok(document)
 }
 
 /// DocumentCore 로드 (export-pdf/export-hml 등). 동일 분기.
 pub(crate) fn load_document_core(
     data: &[u8],
 ) -> Result<rhwp::document_core::DocumentCore, LoadError> {
-    let result = match cli_password() {
-        Some(pw) => {
-            rhwp::document_core::DocumentCore::from_bytes_with_password(data, pw.as_bytes())
-        }
-        None => rhwp::document_core::DocumentCore::from_bytes(data),
-    };
-    result.map_err(|e| classify_hwp_error(&e.to_string()))
+    let mut document = rhwp::document_core::DocumentCore::new_empty();
+    let password = cli_password();
+    document
+        .load_bytes(data, password.as_deref().map(str::as_bytes))
+        .map_err(|e| classify_hwp_error(&e.to_string()))?;
+    Ok(document)
 }
 
 /// `batch` 는 stdin 전체를 파일 경로 목록으로 소비한다. 전역 인증 옵션 중 stdin

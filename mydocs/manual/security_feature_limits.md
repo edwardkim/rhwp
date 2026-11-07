@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/manual/security_feature_limits.md
-last_verified: 2026-11-01
+last_verified: 2026-11-07
 ---
 
 # 보안 제한과 기능 사용 범위
@@ -191,6 +191,38 @@ CLI·공통 자원 정책은 [v2-S01](../working/task_m100_8174_v2_stage1.md), �
 보호 형식은 [CLI 암호·DRM 지원 표](cli_commands.md),
 검사 명령은 [에이전트 보안 매뉴얼](agent_codex/60_보안.md)을 참조한다.
 문서 유래 문자열을 도구 실행 지시로 승격하지 않는 처리는 소비 에이전트의 책임도 포함한다.
+
+### Rust의 암호 열기와 진단 출력 경계
+
+#8745 작업 브랜치는 암호를 소비하는 명령과 문서 조회를 분리한다. 기존 문서를 교체할 때는
+`DocumentCore::load_bytes`를 사용한다. 인증·파싱이 성공한 뒤 새 문서로 교체하고, 실패하면
+기존 문서와 편집 상태를 유지한다. 성공 시에는 새 문서의 초기 편집 상태를 사용한다.
+
+```rust
+use rhwp::{DocumentCore, HwpError};
+
+fn replace_document(
+    core: &mut DocumentCore,
+    bytes: &[u8],
+    credential: Option<&[u8]>,
+) -> Result<(), HwpError> {
+    core.load_bytes(bytes, credential)?;
+    // 완료 정보는 성공한 문서의 기존 조회 API에서 얻는다.
+    let _page_count = core.page_count();
+    Ok(())
+}
+```
+
+기존 Rust `from_bytes_with_password`와 WASM `openWithPassword`의 호출 계약은 유지한다.
+서비스의 `OpenOptions`는 일반·pretty `Debug`에서 암호 값을 `[redacted]`로 가린다.
+HWP5의 지연 이미지 로더는 나중의 복호화를 위해 암호를 메모리에 보관하며 해당 로더의
+`Debug`는 개수·암호화 여부만 출력한다. 이는 옵션·로더 자체를 출력할 때의 보호이며,
+호출자가 `password` 필드를 직접 출력하거나 문서 본문을
+진단 로그에 기록해도 안전하다는 뜻은 아니다. 메모리의 모든 복제본을 지우는 보장도 아니다.
+
+CodeQL의 공개 테스트 암호·표준 벡터 경고와 실제 운영 비밀의 노출은 구분한다. HWP3의 DES와
+HWPX의 SHA-256 전처리는 기존 파일 형식 계약에 속한다. 경고를 없애기 위해 테스트를 제외하거나
+검증 벡터를 바꾸지 않는다. 개별 근거와 구현·분석 상태는 [#8745 조사 기록](../tech/investigations/issue-8745/README.md)에 둔다.
 
 ## 0.9.0 배포 준비에 남기는 조건
 

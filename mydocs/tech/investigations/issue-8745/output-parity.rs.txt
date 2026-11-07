@@ -1,0 +1,21 @@
+use rhwp::DocumentCore;
+fn main() {
+    for (label, path, credential) in [
+        ("HWP3", "samples/HWP3-password-123456.hwp", b"123456".as_slice()),
+        ("HWP5", "samples/hwp3-sample16-hwp5-2024-password-123456.hwp", b"123456".as_slice()),
+        ("HWPX", "samples/HWP5-password-123456.hwpx", b"123456".as_slice()),
+        ("PDF", "pdf/issue8415/authentication/password-r6.pdf", b"synthetic-open".as_slice()),
+    ] {
+        let bytes = std::fs::read(path).unwrap();
+        let old = DocumentCore::from_bytes_with_password(&bytes, credential).unwrap();
+        let mut new = DocumentCore::new_empty();
+        new.load_bytes(&bytes, Some(credential)).unwrap();
+        assert_eq!(old.page_count(), new.page_count(), "{label}: page ownership changed");
+        for page in 0..old.page_count() {
+            assert_eq!(old.render_page_svg_native(page).unwrap(), new.render_page_svg_native(page).unwrap(), "{label}: output changed on page {page}");
+        }
+        assert_eq!(old.export_hwp_native().unwrap(), new.export_hwp_native().unwrap(), "{label}: HWP export changed");
+        assert_eq!(old.export_hwpx_native().unwrap(), new.export_hwpx_native().unwrap(), "{label}: HWPX export changed");
+        println!("{label}\t{}\tall SVG pages identical\tHWP and HWPX bytes identical", old.page_count());
+    }
+}

@@ -514,10 +514,10 @@ fn automatic_parser_and_core_share_pdf_origin_and_page_mapping() {
         [(0, 0), (1, 1)]
     );
     assert!(!metadata.parser_allocation_bounds_proven);
-    for core in [
-        DocumentCore::from_bytes(&source).unwrap(),
-        DocumentCore::from_bytes_with_password(&source, b"unused").unwrap(),
-    ] {
+    for password in [None, Some(b"unused".as_slice())] {
+        // #8745: 암호 유무와 관계없이 같은 인증 command/조회 경계를 검증한다.
+        let mut core = DocumentCore::new_empty();
+        core.load_bytes(&source, password).unwrap();
         assert_eq!(texts(core.document()), ["FIRST", "SECOND"]);
         assert_eq!(core.document().provenance.format, SourceFormat::Pdf);
         assert!(core.hml_metadata().is_none());
@@ -660,7 +660,8 @@ fn password_pdf_authentication_keeps_plaintext_and_images_in_both_save_formats()
         .unwrap();
         assert_eq!(wrong.code, "PDF_PASSWORD_INVALID", "R{revision}");
         for password in [b"synthetic-open".as_slice(), b"synthetic-owner".as_slice()] {
-            let core = DocumentCore::from_bytes_with_password(&input, password).unwrap();
+            let mut core = DocumentCore::new_empty();
+            core.load_bytes(&input, Some(password)).unwrap();
             assert_eq!(
                 texts(core.document()),
                 expected_text,
@@ -706,11 +707,9 @@ fn password_pdf_unicode_empty_permissions_and_resource_rejection_are_request_loc
         ("password-padded-fields", "synthetic-owner".to_owned()),
         ("password-empty", String::new()),
     ] {
-        let core = DocumentCore::from_bytes_with_password(
-            &password_control_8415(name),
-            password.as_bytes(),
-        )
-        .unwrap();
+        let mut core = DocumentCore::new_empty();
+        core.load_bytes(&password_control_8415(name), Some(password.as_bytes()))
+            .unwrap();
         assert_eq!(texts(core.document()), expected, "{name}");
     }
     let input = password_control_8415("password-r6");

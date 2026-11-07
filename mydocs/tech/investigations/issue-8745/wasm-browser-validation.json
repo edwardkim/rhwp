@@ -1,0 +1,297 @@
+{
+  "recorded": "2026-11-07T22:00:41.883847+09:00",
+  "build": {
+    "success": true,
+    "source_sha": "f922a759aa99ef84210df0451545bff87268c5dc",
+    "working_tree_source_sha256": {
+      "src/cli/commands/conversion.rs": "fd7ae12d8ce29143eb8b76eb69d385028337f0dbff7c0d96b3fb7dd0fd310867",
+      "src/cli/document_io.rs": "588e6a0a9a3a6ce6719a82201367edb56d553564f4896615d52d3c3a67f4d2eb",
+      "src/document_core/commands/document.rs": "65ab39be17bbbfc0f98829dbf56a8dc30d5b31a59cfb47ab92185a374d61b752",
+      "src/mcp_serve.rs": "2d62d3d328b941444688ba8284736f1bc458eb510bbd8c49e5770f3991f8781c",
+      "src/native_host/mod.rs": "7b2384855b65aed110c603da7e077444498eb23a2f8418cd1209e9ae2fbcd13e",
+      "src/service/open.rs": "4bdfdaa7c3a56facb7c28040ef448a1cb442b595e5edbbe343965f2aae61d776",
+      "src/wasm_api.rs": "28e8d218eec6e1d56835846f00756baa4aa24557ec3f6a6083e6027ef80ace5d",
+      "tests/common/passthrough_exemptions.rs": "e713c7d1fbfcdc9dd40f3c69ca4feacfd4fbca802881650e220530ecb08cdd16",
+      "tests/cases/issue_8745_password_boundary.rs": "e025fb158c0d794cd99c3c0544ff95b6c7925cef99a744db6e79f97ee350517d"
+    },
+    "profile": "release, codegen-units=16, wasm-pack including wasm-opt",
+    "artifacts": {
+      "rhwp_bg.wasm": {
+        "sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c",
+        "bytes": 28328828
+      },
+      "rhwp.js": {
+        "sha256": "0099b8a6e00f750e1dbddb3a89bf42874f24effcf8bf4dc5eb328d69e691606b",
+        "bytes": 564033
+      }
+    },
+    "build": {
+      "check": "optimized-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "output/codeql-password-investigation/pkg"
+      ],
+      "start": "2026-11-07T21:42:47.149449+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T21:58:14.914038+09:00"
+    }
+  },
+  "browser_version": "Google Chrome for Testing 155.0.8059.79",
+  "checks": [
+    {
+      "check": "hwp-password-open.test.mjs",
+      "command": [
+        "node",
+        "e2e/hwp-password-open.test.mjs",
+        "--mode=headless"
+      ],
+      "start": "2026-11-07T21:58:22.690303+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T21:58:57.384144+09:00"
+    },
+    {
+      "check": "pdf-password-issue8415.test.mjs",
+      "command": [
+        "node",
+        "e2e/pdf-password-issue8415.test.mjs",
+        "--mode=headless"
+      ],
+      "start": "2026-11-07T21:58:57.384444+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T21:59:01.784509+09:00"
+    },
+    {
+      "check": "content-loss-save-issue4430.test.mjs",
+      "command": [
+        "node",
+        "e2e/content-loss-save-issue4430.test.mjs",
+        "--mode=headless"
+      ],
+      "start": "2026-11-07T21:59:01.784982+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T21:59:50.064197+09:00"
+    }
+  ],
+  "logs": {
+    "hwp-password-open.test.mjs": {
+      "sha256": "3d7ff346334529e9ddb8d00ac0ce466a5a33a7742caa6505aa285bb874b76637",
+      "reported_pass_assertions": 60
+    },
+    "pdf-password-issue8415.test.mjs": {
+      "sha256": "b5911cdbe23ea02e1ef9fe4f656c063e96a12632c36623e26489a0696175448d",
+      "reported_pass_assertions": 0
+    },
+    "content-loss-save-issue4430.test.mjs": {
+      "sha256": "b1934aec38b96f3abbea4c71a5fd42ec21b691a5de39cc679369f074968af817",
+      "reported_pass_assertions": 371
+    }
+  },
+  "startup_wasm_consumption": [
+    {
+      "source_sha": "f922a759aa99ef84210df0451545bff87268c5dc",
+      "profile": "release, codegen-units=16, wasm-pack including wasm-opt",
+      "expected_sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c",
+      "page": "http://127.0.0.1:7785/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7785/@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c"
+        }
+      ]
+    },
+    {
+      "source_sha": "f922a759aa99ef84210df0451545bff87268c5dc",
+      "profile": "release, codegen-units=16, wasm-pack including wasm-opt",
+      "expected_sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c",
+      "page": "http://127.0.0.1:7785/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7785/@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c"
+        }
+      ]
+    },
+    {
+      "source_sha": "f922a759aa99ef84210df0451545bff87268c5dc",
+      "profile": "release, codegen-units=16, wasm-pack including wasm-opt",
+      "expected_sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c",
+      "page": "http://127.0.0.1:7785/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7785/@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c"
+        }
+      ]
+    },
+    {
+      "source_sha": "f922a759aa99ef84210df0451545bff87268c5dc",
+      "profile": "release, codegen-units=16, wasm-pack including wasm-opt",
+      "expected_sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c",
+      "page": "http://127.0.0.1:7785/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7785/@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c"
+        }
+      ]
+    },
+    {
+      "source_sha": "f922a759aa99ef84210df0451545bff87268c5dc",
+      "profile": "release, codegen-units=16, wasm-pack including wasm-opt",
+      "expected_sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c",
+      "page": "http://127.0.0.1:7785/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7785/@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c"
+        }
+      ]
+    },
+    {
+      "source_sha": "f922a759aa99ef84210df0451545bff87268c5dc",
+      "profile": "release, codegen-units=16, wasm-pack including wasm-opt",
+      "expected_sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c",
+      "page": "http://127.0.0.1:7785/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7785/@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c"
+        }
+      ]
+    },
+    {
+      "source_sha": "f922a759aa99ef84210df0451545bff87268c5dc",
+      "profile": "release, codegen-units=16, wasm-pack including wasm-opt",
+      "expected_sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c",
+      "page": "http://127.0.0.1:7785/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7785/@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c"
+        }
+      ]
+    },
+    {
+      "source_sha": "f922a759aa99ef84210df0451545bff87268c5dc",
+      "profile": "release, codegen-units=16, wasm-pack including wasm-opt",
+      "expected_sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c",
+      "page": "http://127.0.0.1:7785/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7785/@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c"
+        }
+      ]
+    },
+    {
+      "source_sha": "f922a759aa99ef84210df0451545bff87268c5dc",
+      "profile": "release, codegen-units=16, wasm-pack including wasm-opt",
+      "expected_sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c",
+      "page": "http://127.0.0.1:7785/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7785/@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c"
+        }
+      ]
+    },
+    {
+      "source_sha": "f922a759aa99ef84210df0451545bff87268c5dc",
+      "profile": "release, codegen-units=16, wasm-pack including wasm-opt",
+      "expected_sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c",
+      "page": "http://127.0.0.1:7785/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7785/@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c"
+        }
+      ]
+    },
+    {
+      "source_sha": "f922a759aa99ef84210df0451545bff87268c5dc",
+      "profile": "release, codegen-units=16, wasm-pack including wasm-opt",
+      "expected_sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c",
+      "page": "http://127.0.0.1:7785/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7785/@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c"
+        }
+      ]
+    },
+    {
+      "source_sha": "f922a759aa99ef84210df0451545bff87268c5dc",
+      "profile": "release, codegen-units=16, wasm-pack including wasm-opt",
+      "expected_sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c",
+      "page": "http://127.0.0.1:7785/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7785/@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c"
+        }
+      ]
+    },
+    {
+      "source_sha": "f922a759aa99ef84210df0451545bff87268c5dc",
+      "profile": "release, codegen-units=16, wasm-pack including wasm-opt",
+      "expected_sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c",
+      "page": "http://127.0.0.1:7785/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7785/@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "c01a7cc9afadcd9fec29e65cbd3dcbbd5520e3e6230a49f0f88c714fda7a737c"
+        }
+      ]
+    }
+  ],
+  "all_startup_responses_match": true,
+  "server_wasm_request_urls": [
+    "2026-11-07T12:58:25.441Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+    "2026-11-07T12:58:44.647Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+    "2026-11-07T12:58:59.222Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+    "2026-11-07T12:59:00.056Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+    "2026-11-07T12:59:00.348Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+    "2026-11-07T12:59:00.644Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+    "2026-11-07T12:59:01.397Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+    "2026-11-07T12:59:03.654Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+    "2026-11-07T12:59:06.086Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+    "2026-11-07T12:59:17.619Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+    "2026-11-07T12:59:29.281Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+    "2026-11-07T12:59:32.266Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+    "2026-11-07T12:59:35.149Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+    "2026-11-07T12:59:37.538Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+    "2026-11-07T12:59:40.728Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+    "2026-11-07T12:59:43.549Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm",
+    "2026-11-07T12:59:47.374Z /@fs/home/edward/mygithub/rhwp/output/codeql-password-investigation/pkg/rhwp_bg.wasm"
+  ],
+  "worker_provenance_limit": "PDF Worker exercised with isolated same immutable package URL; startup CDP body hashes do not independently hash every Worker response."
+}
