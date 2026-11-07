@@ -8192,16 +8192,64 @@ pub(crate) fn is_textless_coanchored_float_host(para: &Paragraph) -> bool {
     if para_has_non_whitespace_text(para) {
         return false;
     }
-    let mut offsets = para.controls.iter().filter_map(|control| match control {
-        Control::Table(table) if is_para_topbottom_float(&table.common) => {
-            Some(signed_hwpunit(table.common.vertical_offset))
-        }
+    let mut tables = para.controls.iter().filter_map(|control| match control {
+        Control::Table(table) if is_para_topbottom_float(&table.common) => Some(table),
         _ => None,
     });
-    let first = offsets.next();
-    let second = offsets.next();
-    let third = offsets.next();
-    matches!((first, second, third), (Some(0), Some(offset), None) if offset > 0)
+    let (Some(first), Some(second), None) = (tables.next(), tables.next(), tables.next()) else {
+        return false;
+    };
+    let lead = signed_hwpunit(first.common.vertical_offset);
+    let offset = signed_hwpunit(second.common.vertical_offset);
+    if lead == 0 {
+        return offset > 0;
+    }
+    // [#8516] 첫 표도 양수 오프셋인 표지 서식(1395·2666 HU, 왼쪽·오른쪽)은 두 표가 같은 가로 기준에서
+    // **가로로 겹치지 않을 때** 각자 자기 오프셋에 나란히 놓인다(다음 문단 저장 vpos = 아래 표 바닥).
+    // 가로로 겹치는 형상(정책연구 pi=515 등)은 표끼리 쌓는 규칙의 근거가 없어 종전 경로에 남긴다.
+    let (a, b) = (
+        float_horizontal_range_hu(first),
+        float_horizontal_range_hu(second),
+    );
+    lead > 0
+        && offset > lead
+        && first.common.horz_rel_to == second.common.horz_rel_to
+        && (a.end <= b.start || b.end <= a.start)
+}
+
+/// [#8516] 같은 host 의 앞선 문단 기준 자리차지 표 가운데 이 표와 **가로로 겹치는** 표가 있는가.
+///
+/// 같은 문단에 공동 앵커된 자리차지 표는 각자 자기 세로 오프셋에 놓인다(조판의 표 밴드도 같은
+/// 문단 소유 밴드를 서로 짚지 않는다, #1510). 앞 표 아래로 내려 쌓는 것은 두 표가 가로로 겹쳐
+/// 같은 자리를 다툴 때뿐이다 — 가로 기준이 다르면 비교할 수 없으므로 겹친다고 본다.
+pub(crate) fn coanchored_float_overlaps_preceding_horizontally(
+    para: &Paragraph,
+    control_index: usize,
+) -> bool {
+    let Some(Control::Table(current)) = para.controls.get(control_index) else {
+        return true;
+    };
+    let range = float_horizontal_range_hu(current);
+    para.controls
+        .iter()
+        .take(control_index)
+        .filter_map(|control| match control {
+            Control::Table(previous) if is_para_topbottom_float(&previous.common) => Some(previous),
+            _ => None,
+        })
+        .any(|previous| {
+            let other = float_horizontal_range_hu(previous);
+            previous.common.horz_rel_to != current.common.horz_rel_to
+                || (range.start < other.end && other.start < range.end)
+        })
+}
+
+/// 표의 가로 점유 구간(HU) — 가로 기준 원점에서 바깥 여백을 포함한 [왼쪽, 오른쪽).
+fn float_horizontal_range_hu(table: &Table) -> std::ops::Range<i64> {
+    let start = i64::from(signed_hwpunit(table.common.horizontal_offset));
+    let left = start - i64::from(table.outer_margin_left);
+    let right = start + i64::from(table.common.width) + i64::from(table.outer_margin_right);
+    left..right
 }
 
 /// 문단 기준 자리차지 표 가운데 **마지막**(컨트롤 순서) 표인가 — host 줄 상자는 그 표 뒤에서 한 번

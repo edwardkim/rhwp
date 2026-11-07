@@ -13851,6 +13851,17 @@ impl LayoutEngine {
                             if zone.fixed_textbox {
                                 continue;
                             }
+                            // [#8516] 같은 host 의 앞 표와 가로로 겹치지 않는 공동 앵커 표는 그
+                            // 표의 밴드로 내려가지 않고 자기 오프셋에 나란히 놓인다(조판과 짝).
+                            if zone.owner_para == para_index
+                                && is_textless_coanchored_float_host(para)
+                                && !crate::renderer::float_placement::coanchored_float_overlaps_preceding_horizontally(
+                                    para,
+                                    control_index,
+                                )
+                            {
+                                continue;
+                            }
                             if natural_top + 0.5 >= zone.top && natural_top < zone.bottom {
                                 // 빈-host(text 없는) float 은 자기 offset 이 선행 exclusion 에
                                 // 흡수되어 표끼리 붙는다. zone 하단 아래로 그 offset 만큼 띄워
