@@ -782,6 +782,9 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
     let mut letter_spacings = storage.vec(LANG_COUNT)?;
     let mut ratios = storage.vec(LANG_COUNT)?;
     let mut font_sizes = storage.vec(LANG_COUNT)?;
+    let latin_slot_legacy = false;
+    let mut latin_declared_hft = false;
+    let latin_slot_explicit = false;
 
     for lang in 0..LANG_COUNT {
         let font_id = cs.font_ids[lang];
@@ -817,6 +820,9 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
                             )
                 })
         });
+        if lang == 1 {
+            latin_declared_hft = decision.alt_type == Some(2) && !substituted;
+        }
         // [#7092] 문서가 적은 대체 TTF 로 한/글이 실제로 그리는 face — 폭 표도 그 글꼴을 쓴다.
         let substitute_ttf = doc_info
             .font_faces
@@ -924,7 +930,39 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
         cs.italic,
     );
 
-    let ascii_punct_latin_slot = ascii_punctuation::uses_latin_slot(&font_families);
+    let ascii_punct_latin_slot = ascii_punctuation::uses_latin_slot(
+        &font_families,
+        font_families_metric_face[1].as_deref(),
+        latin_slot_legacy,
+        font_families_hft_hangul[0],
+        latin_declared_hft,
+        cs.bold,
+        cs.italic,
+    );
+    let primary = |chain: &String| {
+        storage.string(
+            chain
+                .split(',')
+                .next()
+                .unwrap_or("")
+                .trim()
+                .trim_matches(|c| c == '\'' || c == '"'),
+        )
+    };
+    let explicit_latin_slot = latin_slot_explicit
+        && latin_slot_legacy
+        && primary(&font_families[0])? != primary(&font_families[1])?;
+    let ascii_punct_latin_slot = ascii_punct_latin_slot || explicit_latin_slot;
+    let latin_primary = primary(&font_families[1])?;
+    let ascii_punct_latin_slot = ascii_punct_latin_slot
+        || (primary(&font_families[0])? != latin_primary
+            && (latin_slot_explicit
+                || crate::renderer::font_metrics_data::find_metric(
+                    &latin_primary,
+                    cs.bold,
+                    cs.italic,
+                )
+                .is_some_and(|found| found.metric.hangul.is_none())));
 
     // 한국어(0번) 값을 기본값으로 사용
     let font_family = storage.string(&font_families[0])?;
@@ -944,7 +982,7 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
         font_families_preserve_glyph_ink: vec![false; LANG_COUNT],
         font_families_hft_fullwidth_dot,
         ascii_punct_latin_slot,
-        explicit_latin_slot: false,
+        explicit_latin_slot,
         font_families_metric_face,
         font_families_original_glyph_metric_face,
         font_space_em,
