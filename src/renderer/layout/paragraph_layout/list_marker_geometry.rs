@@ -160,7 +160,7 @@ pub(super) fn list_marker_geometry_for(
     } else {
         distance_font_size * head.text_distance as f64 / 100.0
     };
-    // 기본 개요에서 bit2가 꺼졌으면 형식의 예약 칸을 쓴다. 실제 글리프 폭은
+    // bit2가 꺼진 번호·개요는 형식의 예약 칸을 쓴다. 실제 글리프 폭은
     // 정렬과 paint에 계속 사용한다. 이 영역을 줄 나눔과 최종 배치가 함께 소비한다.
     let reference_px = if !bullet && head.attr & (1 << 2) == 0 {
         head.reference_width_em

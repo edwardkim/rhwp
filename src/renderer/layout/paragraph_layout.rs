@@ -722,7 +722,7 @@ pub(crate) fn numbering_head_text(
             synthesized_default = crate::renderer::layout::utils::default_outline_numbering();
             // 내장 ^N은 각 수준의 한 자리 참조 형식을 예약한다. 실제 계수기의
             // 자릿수나 선택된 글꼴의 숫자·마침표 전진폭으로 영역을 바꾸지 않는다.
-            reference_width_em = Some(level.min(6) + 1);
+            reference_width_em = Some(f32::from(level.min(6) + 1));
             &synthesized_default
         }
         None => return None,
@@ -737,6 +737,19 @@ pub(crate) fn numbering_head_text(
     // 함께 버리면 한컴 저장본의 빈 개요 수준에서 본문이 거리만큼 당겨진다.
     let text = expand_numbering_format(format_str, &counters, numbering, &start_numbers, level_idx);
     let head = numbering.heads.get(level_idx).copied().unwrap_or_default();
+    if reference_width_em.is_none() && head.attr & (1 << 2) == 0 {
+        // 표40 bit2가 꺼진 번호는 실제 계수기의 자릿수나 비례 글꼴 폭을 예약하지 않는다.
+        // 명시된 형식도 내장 개요와 같은 한 자리 참조 칸을 생산한다. 표시 문자열과
+        // 마커 정렬은 실제 글리프 폭을 계속 사용하며, 본문·이어지는 줄만 이 칸을 공유한다.
+        let one = [1; crate::model::style::NUMBERING_LEVELS];
+        let reference = expand_numbering_format(format_str, &one, numbering, &one, level_idx);
+        reference_width_em = Some(
+            reference
+                .chars()
+                .map(|character| if character.is_ascii() { 0.5_f32 } else { 1.0 })
+                .sum(),
+        );
+    }
     Some((
         text,
         MarkerHead {
