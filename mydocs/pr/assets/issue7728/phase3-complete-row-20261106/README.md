@@ -2,7 +2,7 @@
 
 **부분 보정이다. 7쪽이 74.64159%여서 이슈 종료·PR 제출은 계속 보류한다.**
 기존 원본·검사·문턱을 유지했다. parent `5f425c8a51` 위 후보의 세 소스 파일·diff·Native
-실행 파일 hash, 실제 검증 명령·종료 코드는 [validation.json](validation.json)에 기록했다.
+실행 파일 hash, 실제 검증 명령·종료 코드는 validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7728/phase3-complete-row-20261106/validation.json`)에 기록했다.
 
 ## 원인과 공통 소비 경로
 

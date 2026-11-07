@@ -3,7 +3,7 @@
 기존 9개 실패를 집중 검사에서 복구한 부분 검증이다. 최종 전체 회귀·fresh WASM·리베이스 기능
 보존 검증은 남아 있어 PR과 이슈 종료는 보류한다. 고정 base는 `5716a226b562b7300193dd0b573ded9cd71ac890`이며,
 수정 전은 그 위의 후보 `1a4b2bf37bac8e06c980cf5b79dc8fb818f2a9c6`이다. 수정 전 후보를 devel 자체로
-표시하지 않는다. 수정 후 소스와 실행 파일은 [validation.json](validation.json)의 diff·파일 hash로 고정했다.
+표시하지 않는다. 수정 후 소스와 실행 파일은 validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7728/phase5-frame-provenance-20261106/validation.json`)의 diff·파일 hash로 고정했다.
 
 ## 확인한 원인과 공통 소비
 

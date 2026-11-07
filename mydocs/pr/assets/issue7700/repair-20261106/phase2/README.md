@@ -21,7 +21,7 @@ Mac 최소 글꼴 sandbox에서 순차 실행했다. 실제 명령·요약·로�
 - [WASM30 review](wasm-p030-review.png) · [overlay](wasm-p030-overlay.png)
 - [Native76 review](native-p076-review.png) · [overlay](native-p076-overlay.png)
 - [WASM76 review](wasm-p076-review.png) · [overlay](wasm-p076-overlay.png)
-- [source·artifact 검증](phase2-validation.json)
+- source·artifact 검증 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7700/repair-20261106/phase2/phase2-validation.json`)
 
 정본 review/overlay를 직접 판독했다. BRM 다섯 줄·안여백·내부 괘선과 다음 행을 보존하고,
 76쪽 후속 표·77쪽 부동 표의 소속과 호스트 중복 방지를 확인했다. 미세한 글리프 가장자리·

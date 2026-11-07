@@ -29,7 +29,7 @@
 
 [정식 검사](../../../../../tests/cases/issue_7700_source_owned_table_fragments.rs)는 기존6개를 유지하고51쪽 독립 하단 고정형·원본 상한·첫 줄/뒤 두 줄 소속을 추가했다. Native/fresh WASM51쪽이 각각98% 이상인 실제 출력과 직접 판독을 근거로96DPI±2px를 사용한다. 실제6 PASS/1 FAIL→7 PASS다. 기존 수식·글상자·저장 프레임·중첩 표를 포함한 집중153 PASS에는 이7개와 출력용 진단1개가 포함된다. 초기 단독 묶음 컴파일의 Cargo bin 환경변수 누락은 실제 frozen CLI를 지정해 복구하고 해당 묶음만 다시 실행했다.
 
-fmt·Native/WASM/전체 target/Skia Clippy·workspace build·manifest·unit tier가 통과했다. fresh WASM은 Mac locked wrapper `--target web --out-dir pkg --no-opt` 로컬 대체 빌드이며 Docker 최적화 결과가 아니다. root pkg/Studio public 파일 해시는 일치하지만 실제 브라우저 초기화 응답 검증은 최종 단계에 남아 있다. source/artifact·명령·요약·로그 해시는 [validation.json](validation.json)에 있으며 로그·중간 스크립트·raw tree는 ignored output에만 보존한다.
+fmt·Native/WASM/전체 target/Skia Clippy·workspace build·manifest·unit tier가 통과했다. fresh WASM은 Mac locked wrapper `--target web --out-dir pkg --no-opt` 로컬 대체 빌드이며 Docker 최적화 결과가 아니다. root pkg/Studio public 파일 해시는 일치하지만 실제 브라우저 초기화 응답 검증은 최종 단계에 남아 있다. source/artifact·명령·요약·로그 해시는 validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7700/opening-cell-frame-20261107/validation.json`)에 있으며 로그·중간 스크립트·raw tree는 ignored output에만 보존한다.
 
 ## 대표 출력과 직접 판독
 

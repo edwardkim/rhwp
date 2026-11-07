@@ -2,7 +2,7 @@
 
 **부분 보정이며 이슈 완료·PR 수용 증거가 아니다.** 원본·기존 검사·문턱은 유지한다.
 source parent는 `98a68a98f8d1b9a18a6d8ee5d092b6f66f1cf5bf`이고 실제 수정 두 파일의
-hash·diff hash·frozen Native hash는 [validation.json](validation.json)에 기록했다.
+hash·diff hash·frozen Native hash는 validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7728/phase1-anchor-20261106/validation.json`)에 기록했다.
 
 원본 HWP의 문단 46 래퍼 높이 30,001HU는 TAC 자식 29,437HU와 안팎 여백 564HU의 합이다.
 기본 글자 줄 30px를 별도 더하던 측정을 같은 원점의 합집합으로 보정해

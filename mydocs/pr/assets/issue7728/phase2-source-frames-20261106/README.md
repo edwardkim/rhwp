@@ -2,7 +2,7 @@
 
 **부분 보정이다. 6·7쪽 미달과 7쪽의 base 대비 하락이 남아 이슈 종료·PR 제출은 보류한다.**
 원본·기존 검사·90% 및 0.1%p 기준은 바꾸지 않았다. 소스 parent는 `2e85891b2d`이며
-후보 파일·diff·Native 실행 파일의 SHA와 실제 명령·종료 코드는 [validation.json](validation.json)에 있다.
+후보 파일·diff·Native 실행 파일의 SHA와 실제 명령·종료 코드는 validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7728/phase2-source-frames-20261106/validation.json`)에 있다.
 
 ## 확인하고 보정한 원인
 

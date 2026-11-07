@@ -6,7 +6,7 @@
 
 입력·기준 PDF는 [첫 저장 조각 증적](../opening-cell-frame-20261107/README.md)의 같은 SHA를 보존한다. `samples/issue5679/10857_delegation_rules.hwp`의 글자 모양32는 일곱 언어 슬롯 모두 `굴림체` TrueType을 지정한다. 실제 `gulim.TTC`(SHA `ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c`)의 GulimChe cmap에 U+2024가 없다.
 
-독립 한컴2020 Print44·86쪽은 이 문자만 Haansoft Batang으로 출력한다. PDF 글리프와 기존 로컬2020 HBATANG의 윤곽·178/1024em 전진이 같다. 44쪽 `교육․홍보`는 `교`264.63999px, `․`291.19999px, `홍`293.60000px의 독립 원점을 갖는다. [검증 기록](validation.json)에 원본·PDF·글꼴 해시와 해당 프로그램 대조를 기록했다. 현재 Mac 루트 HBATANG에는 미세한 버전 차이가 있으나 전진은 같으며 글꼴 복사·설치를 변경하지 않았다.
+독립 한컴2020 Print44·86쪽은 이 문자만 Haansoft Batang으로 출력한다. PDF 글리프와 기존 로컬2020 HBATANG의 윤곽·178/1024em 전진이 같다. 44쪽 `교육․홍보`는 `교`264.63999px, `․`291.19999px, `홍`293.60000px의 독립 원점을 갖는다. 검증 기록 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7700/one-dot-program-20261107/validation.json`)에 원본·PDF·글꼴 해시와 해당 프로그램 대조를 기록했다. 현재 Mac 루트 HBATANG에는 미세한 버전 차이가 있으나 전진은 같으며 글꼴 복사·설치를 변경하지 않았다.
 
 기존 #8419의 제출 PR #8428·통합 PR #8622와 반영 커밋 `6d81fb84ed`는 Batang의 같은 결측을 기존 `verified_missing_glyph_supplier`와 cmap 경로로 해소했다. 현재 공급자·원본을 각각 대조한 뒤 같은 공통 소비 경로에 GulimChe regular U+2024를 추가했다. 일반 Gulim과 GulimChe를 섞지 않으며 다른 문자·굵기·기울임의 공급자를 추정해 확대하지 않는다.
 

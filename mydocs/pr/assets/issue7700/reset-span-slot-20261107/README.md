@@ -27,7 +27,7 @@
 
 [회귀 검사](../../../../../tests/cases/issue_7700_source_owned_table_fragments.rs)는 기존9개를 유지하고 원본 슬롯·일반 peer의 같은 하단·앞뒤 줄의 단일 소유 관계와 독립 Print 하단±2px를 추가했다. 26쪽 양 backend98% 이상과 직접 판독 뒤 정식 등록했다. 실제9 PASS/2 FAIL→11 PASS이며 집중 묶음162 PASS에는 이11개와 기존 출력 진단1개가 포함된다. 기대값을 낮추지 않았다.
 
-fmt·Native/WASM/전체 target/Skia Clippy·workspace build·manifest·unit tier를 통과했다. Native Skia 전체 unit·전체 nextest의 최종 head 통과로 확대하지 않는다. fresh WASM은 Mac locked wrapper `--target web --out-dir pkg --no-opt` 로컬 대체 빌드이며 Docker 최적화 결과가 아니다. root pkg/Studio public hash는 같지만 실제 브라우저 초기화 응답 확인은 최종 단계에 남아 있다. 해시·명령·요약은 [validation.json](validation.json), 로그와 임시 도구는 ignored output에만 보존한다.
+fmt·Native/WASM/전체 target/Skia Clippy·workspace build·manifest·unit tier를 통과했다. Native Skia 전체 unit·전체 nextest의 최종 head 통과로 확대하지 않는다. fresh WASM은 Mac locked wrapper `--target web --out-dir pkg --no-opt` 로컬 대체 빌드이며 Docker 최적화 결과가 아니다. root pkg/Studio public hash는 같지만 실제 브라우저 초기화 응답 확인은 최종 단계에 남아 있다. 해시·명령·요약은 validation.json (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7700/reset-span-slot-20261107/validation.json`), 로그와 임시 도구는 ignored output에만 보존한다.
 
 ## 대표 그림
 
