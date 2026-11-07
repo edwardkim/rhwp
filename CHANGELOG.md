@@ -21,6 +21,7 @@ PDF를 편집 가능한 문서로 가져오는 기본 경로와 Rust·CLI 소비
 - 중첩 표·RowBreak 이어받기·셀 여백·저장 줄·TAC 개체의 흐름과 머리말/꼬리말 상속, 수식·글꼴 대체를 보정했습니다. 다수 기여자의 원 커밋과 별도 검증 근거를 보존해 통합했습니다.
 - 표 칸 그림 삽입·다른 쪽으로 이동·Undo/Redo, 연속 형광펜, 중첩 셀 문단 서식, 논리 편집·다단 재조판 API를 보강했습니다 ([#8725](https://github.com/edwardkim/rhwp/pull/8725), [#8379](https://github.com/edwardkim/rhwp/pull/8379), [#8340](https://github.com/edwardkim/rhwp/pull/8340), [#8187](https://github.com/edwardkim/rhwp/pull/8187)).
 - 글상자 세로 정렬·캡션·정의 슬롯·BinData 참조·그림/단색 배경과 저장 재열기 보존을 개선했습니다 ([#8309](https://github.com/edwardkim/rhwp/pull/8309), [#8711](https://github.com/edwardkim/rhwp/pull/8711), [#8738](https://github.com/edwardkim/rhwp/pull/8738)).
+- HWP/HWPX 저장 후 재열기에서 컨테이너 안 글줄·표 앞뒤 본문·머리말/꼬리말 정의 슬롯을 보존하도록 보강했습니다 ([#8741](https://github.com/edwardkim/rhwp/pull/8741)).
 - 큰 표 조회·수식/JPEG 그리기 비용을 줄이고, 웹 폰트의 지연/무응답 처리를 보강했습니다. 입력과 환경에 따라 성능 효과가 다릅니다.
 
 ### CLI·배포·Native 호스트

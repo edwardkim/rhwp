@@ -23,6 +23,7 @@ This release prepares PDF import into editable documents, Rust/CLI consumption c
 - Corrections to nested/RowBreak tables, stored lines, padding, inline objects, headers/footers, equations and font fallback, integrated with original contributor history and verification evidence.
 - Pictures in table cells and relocation across pages with Undo/Redo, continuous highlighting, nested paragraph formatting, logical editing and multi-column reflow ([#8725](https://github.com/edwardkim/rhwp/pull/8725), [#8379](https://github.com/edwardkim/rhwp/pull/8379), [#8340](https://github.com/edwardkim/rhwp/pull/8340), [#8187](https://github.com/edwardkim/rhwp/pull/8187)).
 - Better preservation of text-box vertical alignment, captions, definition slots, BinData references, pictures and solid fills after saving/reopening ([#8309](https://github.com/edwardkim/rhwp/pull/8309), [#8711](https://github.com/edwardkim/rhwp/pull/8711), [#8738](https://github.com/edwardkim/rhwp/pull/8738)).
+- Preserved container lines, text around inline tables, and header/footer definition slots after HWP/HWPX saving and reopening ([#8741](https://github.com/edwardkim/rhwp/pull/8741)).
 - Reduced large-table lookup and equation/JPEG rendering costs, plus handling for slow/unresponsive web fonts. Performance benefits depend on input and environment.
 
 ### CLI, packaging and Native hosts
