@@ -8,9 +8,13 @@
  * impact classifier routes both directories to the package lane with real bindings.
  */
 declare module '@wasm/rhwp.js' {
+  export function prepareStaticSvgRaster(options_json: string, fragment: string): any;
   export default function init(input?: unknown): Promise<unknown>;
 
   export class HwpDocument {
+    clearTextFontFamily(family: string): void;
+    static classifyHyperlinkDestination(uri: string): string;
+    static getPdfImportPolicyWithOptions(options: any): string;
     constructor(data: Uint8Array);
     static createEmpty(): HwpDocument;
     static openWithPassword(data: Uint8Array, password: string): HwpDocument;

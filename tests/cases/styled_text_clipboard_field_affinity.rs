@@ -636,6 +636,7 @@ fn styled_text_query_rejects_annotations_and_real_tab_extensions() {
                 begin_id_ref: 900,
                 field_id: 901,
                 begin_ctrl_id: 0,
+                memo_index: 0,
             }),
             4 => p.tab_extended = vec![[37, 0, 0, 0, 0, 0, 9]],
             _ => unreachable!(),
