@@ -114,6 +114,9 @@ pub(crate) fn supports_table_text_rows_with_storage<S: crate::storage::Storage>(
                                 | crate::model::shape::HorzRelTo::Para
                         )))
             }
+            // 머리말·꼬리말은 본문 밖 프레임이 소유한다. 이 정의가 같은
+            // 문단에 있어도 저장 줄 없는 본문의 표·글줄 재조판을 막지 않는다.
+            Control::Header(_) | Control::Footer(_) => true,
             c => super::super::composer::control_is_width_neutral_marker(c),
         }))
 }

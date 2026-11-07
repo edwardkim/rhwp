@@ -1,0 +1,8 @@
+from pathlib import Path
+import subprocess,json
+root=Path('/home/edward/mygithub/rhwp');wt=Path('/home/edward/mygithub/rhwp-worktrees/pr-8711-leading-definition-slots');out=root/'output/pr-review/pr8711';results=[]
+for backend in ['native','wasm']:
+ cmd=['python3',str(out/'run-minfont-visual.py'),str(root/'venv/bin/python'),str(wt/'scripts/visual_sweep.py'),'--hwp',str(out/'candidate-saved.hwp'),'--pdf',str(wt/'pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf'),'--key','saved','--rhwp-bin',str(out/'candidate-producer/rhwp'),'--compat','2022','--dpi','96','--font-path',str(out/'repro-fonts'),'--embed-fonts','full','--out',str(out/('candidate-full-'+backend))]
+ if backend=='wasm':cmd.extend(['--wasm-pkg',str(out/'candidate-producer/pkg')])
+ with (out/('candidate-full-'+backend+'.log')).open('w') as f:r=subprocess.run(cmd,cwd=wt,stdout=f,stderr=subprocess.STDOUT)
+ results.append(dict(backend=backend,command=cmd,returncode=r.returncode));(out/'full-repro-sweep-results.json').write_text(json.dumps(results,indent=2))

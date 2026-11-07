@@ -242,7 +242,9 @@ pub(crate) fn supports(para: &Paragraph, width_hu: i32) -> bool {
     }) && para.controls.iter().all(|c| match c {
         Control::Table(t) => t.common.treat_as_char,
         Control::Picture(p) => !p.common.treat_as_char,
-        Control::SectionDef(_)
+        Control::Header(_)
+        | Control::Footer(_)
+        | Control::SectionDef(_)
         | Control::ColumnDef(_)
         | Control::PageNumberPos(_)
         | Control::PageNumCtrl(_) => true,

@@ -1,0 +1,11 @@
+{
+  "tested_functional_head": "4e5a8d1565543daa999c776668d491fcc0beade5",
+  "metadata_only_head": "929f0f5ca537fe83b9947131d79b05e3f108c512",
+  "changed_file": "tests/cases/leading_definition_slots.rs",
+  "changed_scope": "Only module doc comments: remove unsupported platform attribution and use actual pypdfium2 rasterizer; refresh actual comment and prior commit timestamps.",
+  "same_test_body": true,
+  "test_body_sha256": "3e4a77c69b920133563b2e8d1e4dbbff93a557d872dbaf7269364c642baab6eb",
+  "product_source_changes": [],
+  "provenance_sha256": "2c1cf8aa5a7b4656d1115c5aaabbadca32479caae6fbd152e794eab03e085378",
+  "functional_gate_reuse": "Local full nextest and Native official runs belong to tested_functional_head; they cover the identical test body and product source. This is not GitHub Full CI reuse or a claim that those commands ran on metadata_only_head. New head lint and the affected focused case are executed below."
+}

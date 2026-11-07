@@ -1,0 +1,38 @@
+from pathlib import Path
+import subprocess,json,time,os,datetime,re,hashlib,difflib
+from zoneinfo import ZoneInfo
+root=Path('/home/edward/mygithub/rhwp');wt=Path('/home/edward/mygithub/rhwp-worktrees/pr-8711-leading-definition-slots');out=root/'output/pr-review/pr8711';assets=wt/'mydocs/pr/assets/pr8711';target=str(root/'target/pr-review')
+while True:
+ results=json.loads((out/'rust-validation.json').read_text())
+ if any(r['returncode']!=0 for r in results):raise SystemExit('Original Rust validation failed; no metadata edit was made.')
+ if len(results)==12:break
+ time.sleep(5)
+time.sleep(1)
+rel='tests/cases/leading_definition_slots.rs';file=wt/rel
+old=file.read_text();tested=subprocess.check_output(['git','rev-parse','HEAD'],cwd=wt,text=True).strip();assert old==subprocess.check_output(['git','show','HEAD:'+rel],cwd=wt,text=True)
+provenance=assets.parent/'pr_8226_integration_20261107/repro-provenance.json';evidence=json.loads(provenance.read_text());assert evidence['native-skia']['provenance']['pdf_rasterizer']['program']=='pypdfium2'
+previous_date=subprocess.check_output(['git','log','-1','--format=%cI','--',rel],cwd=wt,text=True).strip();now=datetime.datetime.now(ZoneInfo('Asia/Seoul')).isoformat(timespec='seconds')
+new=old.replace('협업자 Linux 측정','협업자 측정').replace('96dpi, pdftoppm','96dpi, pypdfium2')
+new=re.sub(r'//! 주석 갱신: [^;]+; 직전 파일 변경: [^\n]+',f'//! 주석 갱신: {now}; 직전 파일 변경: {previous_date}',new,count=1)
+new=new.replace('(`effcb0d60241d41601fa3cc471c6e46050a60676`).','(`'+tested+'`).',1)
+def body(s):
+ lines=s.splitlines(keepends=True);i=0
+ while i<len(lines) and (lines[i].startswith('//!') or not lines[i].strip()):i+=1
+ return ''.join(lines[i:])
+assert old!=new and body(old)==body(new)
+file.write_text(new);subprocess.run(['git','add','--',rel],cwd=wt,check=True);subprocess.run(['git','commit','-m','docs(test): align visual provenance with recorded PDFium run'],cwd=wt,check=True)
+head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=wt,text=True).strip()
+product_diff=subprocess.check_output(['git','diff','--name-only',tested,head,'--','src','crates','vendor','Cargo.toml','Cargo.lock','build.rs'],cwd=wt,text=True).splitlines();assert not product_diff
+assert subprocess.check_output(['git','diff','--name-only',tested,head],cwd=wt,text=True).splitlines()==[rel]
+proof=dict(tested_functional_head=tested,metadata_only_head=head,changed_file=rel,changed_scope='Only module doc comments: remove unsupported platform attribution and use actual pypdfium2 rasterizer; refresh actual comment and prior commit timestamps.',same_test_body=True,test_body_sha256=hashlib.sha256(body(new).encode()).hexdigest(),product_source_changes=product_diff,provenance_sha256=hashlib.sha256(provenance.read_bytes()).hexdigest(),functional_gate_reuse='Local full nextest and Native official runs belong to tested_functional_head; they cover the identical test body and product source. This is not GitHub Full CI reuse or a claim that those commands ran on metadata_only_head. New head lint and the affected focused case are executed below.')
+(assets/'metadata-correction-equivalence.json').write_text(json.dumps(proof,indent=2)+'\n');(out/'metadata-correction-equivalence.json').write_text(json.dumps(proof,indent=2)+'\n')
+original=subprocess.check_output(['git','show','a657ac0936e324f9648ab628862062b5b9fddbd8:'+rel],cwd=wt,text=True)
+(assets/'test-provenance-header.patch').write_text(''.join(difflib.unified_diff(original.splitlines(keepends=True),new.splitlines(keepends=True),fromfile='a/'+rel,tofile='b/'+rel,n=0)))
+env=os.environ.copy();env.update(CARGO_BUILD_JOBS='4',CARGO_TARGET_DIR=target,RUST_TEST_THREADS='4')
+jobs=[('prepare',['node','scripts/rust-test-suite-manifest.mjs','--prepare']),('format',['cargo','fmt','--all','--','--check']),('native-clippy',['cargo','clippy','--locked','--target-dir',target,'--','-D','warnings']),('wasm-clippy',['cargo','clippy','--locked','-p','rhwp','--lib','--target','wasm32-unknown-unknown','--target-dir',target,'--','-D','warnings']),('workspace-build',['cargo','build','--locked','--workspace','--target-dir',target]),('workspace-clippy',['cargo','clippy','--locked','--workspace','--all-targets','--target-dir',target,'--','-D','warnings']),('suite-policy',['node','scripts/rust-test-suite-manifest.mjs','--check','--base-ref','13775409e57a9550cfb31866d40bdf319ab54bac']),('unit-tier-policy',['node','scripts/rust-unit-test-tiers.mjs','--check','--base-ref','13775409e57a9550cfb31866d40bdf319ab54bac']),('focused',['node','scripts/run-rust-test.mjs','leading_definition_slots','--','--cargo-profile','release-test','--target-dir',target,'--features','native-skia','--test-threads','4','--no-fail-fast'])]
+results=[]
+for name,args in jobs:
+ command=['python3',str(out/'run-minfont.py')]+args;record=dict(name=name,source_sha=head,command=command,started=datetime.datetime.now(datetime.timezone.utc).isoformat(),status='running');(out/'metadata-rust-active.json').write_text(json.dumps(record,indent=2))
+ with (out/('metadata-'+name+'.log')).open('w') as f:r=subprocess.run(command,cwd=wt,env=env,stdout=f,stderr=subprocess.STDOUT)
+ record.update(returncode=r.returncode,status='passed'if r.returncode==0 else'failed',finished=datetime.datetime.now(datetime.timezone.utc).isoformat());results.append(record);(out/'metadata-rust-validation.json').write_text(json.dumps(results,indent=2));(out/'metadata-rust-active.json').write_text(json.dumps(record,indent=2))
+ if r.returncode:raise SystemExit(r.returncode)

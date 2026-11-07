@@ -142,14 +142,14 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
             } else {
                 let mut clone = storage.clone_paragraph(p)?;
                 if needs_secd {
-                    storage.reserve(&mut clone.controls, 1)?;
                     storage.bytes(std::mem::size_of_val(&section.section_def))?;
-                    clone.controls.insert(
+                    clone.insert_leading_definition(
                         0,
                         Control::SectionDef(Box::new(
                             storage.clone_section_def(&section.section_def)?,
                         )),
-                    );
+                        storage,
+                    )?;
                 }
                 if needs_default_column {
                     let leading_defs = clone
@@ -157,25 +157,16 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
                         .iter()
                         .take_while(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
                         .count();
-                    storage.reserve(&mut clone.controls, 1)?;
-                    clone.controls.insert(
+                    clone.insert_leading_definition(
                         leading_defs,
                         Control::ColumnDef(crate::model::page::ColumnDef {
                             column_count: 1,
                             same_width: true,
                             ..Default::default()
                         }),
-                    );
+                        storage,
+                    )?;
                 }
-                // [#4680] 정의 제어문자가 글자보다 앞에 놓이도록 자리를 비운다 —
-                // 간격이 없으면 `serialize_para_text` 가 텍스트 뒤에 몰아 쓰고, 그런 문서는
-                // 한글이 열다 멎는다. 어댑터와 같은 문단 좌표 계약을 적용한다.
-                let leading_defs = clone
-                    .controls
-                    .iter()
-                    .take_while(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
-                    .count();
-                clone.reserve_leading_extended_control_slots(leading_defs);
                 Ok(Some(clone))
             }
         })

@@ -647,6 +647,46 @@ fn test_merge_from_basic() {
                 }
             }
         }
+
+        // Leading-definition parallel records obey the same request budget.
+        for limit in [512, 65_536] {
+            let mut paragraph = Paragraph {
+                text: "x".into(),
+                char_offsets: vec![1024],
+                controls: (0..128)
+                    .map(|_| Control::Header(Default::default()))
+                    .collect(),
+                ..Default::default()
+            };
+            // Isolate the parallel-record allocation: controls already have capacity.
+            paragraph.controls.reserve(1);
+            let budget = ImportBudget::new(PdfImportLimits {
+                decoded_bytes: limit,
+                ..Default::default()
+            })
+            .unwrap();
+            let result = paragraph.insert_leading_definition(
+                0,
+                Control::ColumnDef(Default::default()),
+                &Allocation(&budget),
+            );
+            if limit == 512 {
+                assert!(
+                    result.is_err(),
+                    "parallel control records must consume request storage"
+                );
+                assert_eq!(paragraph.char_offsets, [1024]);
+                assert_eq!(paragraph.controls.len(), 128);
+                assert!(paragraph.ctrl_data_records.is_empty());
+            } else {
+                assert!(result.is_ok());
+                assert_eq!(paragraph.char_offsets, [1032]);
+                assert_eq!(paragraph.controls.len(), 129);
+                assert_eq!(paragraph.ctrl_data_records.len(), 129);
+                assert!(matches!(paragraph.controls[0], Control::ColumnDef(_)));
+                assert!(paragraph.ctrl_data_records.iter().all(Option::is_none));
+            }
+        }
     }
 
     merge_publishes_fresh_rows_without_old_suffix_or_source_positions();
