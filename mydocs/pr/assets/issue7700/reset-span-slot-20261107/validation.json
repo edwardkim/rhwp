@@ -1,0 +1,362 @@
+{
+  "parent": "16a99fdfaf6b480ddb6396d941bc3fcc04428d2c",
+  "base": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "runtime_hashes": {
+    "src/renderer/layout/table_layout/row_physical_band.rs": "dc5d0b56f7233ce0931aac41d851cf7844b7ffb2426405c6df7411a31415aace",
+    "src/renderer/layout/table_partial.rs": "4060f00068bbc42d30163b98e8a9b26ff09d347550b42cdbd11aef69509e539a"
+  },
+  "build_runtime_hashes": {
+    "src/renderer/layout/table_layout/row_physical_band.rs": "2570cf283326e95e116c660c016f4ad12d01801ada9c76624d11d66ba06ecce4",
+    "src/renderer/layout/table_partial.rs": "4060f00068bbc42d30163b98e8a9b26ff09d347550b42cdbd11aef69509e539a"
+  },
+  "format_only_equivalence": {
+    "path": "src/renderer/layout/table_layout/row_physical_band.rs",
+    "native_and_wasm_build_sha256": "2570cf283326e95e116c660c016f4ad12d01801ada9c76624d11d66ba06ecce4",
+    "formatted_sha256": "dc5d0b56f7233ce0931aac41d851cf7844b7ffb2426405c6df7411a31415aace",
+    "proof": "빌드 hash와 동일한 포맷 전 본문을 현재 rustfmt로 정규화하면 최종 runtime 본문과 바이트 동일. 동작 변경 없음.",
+    "command": [
+      "rustfmt",
+      "--edition",
+      "2021",
+      "--emit",
+      "stdout",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/delegation-reset-span-slot-final-repair/row-physical-band-before-fmt.rs"
+    ]
+  },
+  "formal_test_sha256": "ea5147a97075242a72ace5423e0df2ab9464d50466e94362483a5039244f22f7",
+  "source_sha256": "de43607f05072840097b19a294b4455905210402cc42823545125e03567df881",
+  "pdf_sha256": "90eda86b2b4dfeabc601cd9b583408c6528a9efabf4e626fd6f2e28e3bcb2b97",
+  "source_contract": {
+    "paragraph": 68,
+    "row": 57,
+    "col": 1,
+    "row_span": 3,
+    "height_hu": 6402,
+    "line_height_hu": 1000,
+    "line_spacing_hu": 300,
+    "padding_top_hu": 567,
+    "padding_bottom_hu": 567,
+    "next_line_vpos_hu": 0,
+    "slot_css_px": 32.45333333333333
+  },
+  "independent_pdf_bottom": {
+    "pdf": "/Users/tsjang/rhwp/pdf/semanticist21-20261008/issue5679-10857_delegation_rules-de43607f0507-2020.pdf",
+    "sha256": "90eda86b2b4dfeabc601cd9b583408c6528a9efabf4e626fd6f2e28e3bcb2b97",
+    "pages": 103,
+    "page": 26,
+    "method": "Independent PDF vector paths, 72pt to 96CSS px",
+    "lines": [
+      {
+        "x1": 85.75399780273438,
+        "y1": 743.18701171875,
+        "x2": 150.99899291992188,
+        "y2": 743.18701171875,
+        "css96": [
+          114.33866373697917,
+          990.916015625,
+          201.33199055989584,
+          990.916015625
+        ],
+        "width": 0.36000001430511475
+      },
+      {
+        "x1": 85.75399780273438,
+        "y1": 743.18701171875,
+        "x2": 150.99899291992188,
+        "y2": 743.18701171875,
+        "css96": [
+          114.33866373697917,
+          990.916015625,
+          201.33199055989584,
+          990.916015625
+        ],
+        "width": 1.0789999961853027
+      },
+      {
+        "x1": 149.91900634765625,
+        "y1": 743.18701171875,
+        "x2": 229.79600524902344,
+        "y2": 743.18701171875,
+        "css96": [
+          199.89200846354166,
+          990.916015625,
+          306.39467366536456,
+          990.916015625
+        ],
+        "width": 0.36000001430511475
+      },
+      {
+        "x1": 149.91900634765625,
+        "y1": 743.18701171875,
+        "x2": 229.79600524902344,
+        "y2": 743.18701171875,
+        "css96": [
+          199.89200846354166,
+          990.916015625,
+          306.39467366536456,
+          990.916015625
+        ],
+        "width": 1.0789999961853027
+      },
+      {
+        "x1": 228.7169952392578,
+        "y1": 743.18701171875,
+        "x2": 269.7349853515625,
+        "y2": 743.18701171875,
+        "css96": [
+          304.95599365234375,
+          990.916015625,
+          359.6466471354167,
+          990.916015625
+        ],
+        "width": 0.36000001430511475
+      },
+      {
+        "x1": 228.7169952392578,
+        "y1": 743.18701171875,
+        "x2": 342.4159851074219,
+        "y2": 743.18701171875,
+        "css96": [
+          304.95599365234375,
+          990.916015625,
+          456.5546468098958,
+          990.916015625
+        ],
+        "width": 1.0789999961853027
+      },
+      {
+        "x1": 268.656005859375,
+        "y1": 743.18701171875,
+        "x2": 342.4159851074219,
+        "y2": 743.18701171875,
+        "css96": [
+          358.2080078125,
+          990.916015625,
+          456.5546468098958,
+          990.916015625
+        ],
+        "width": 0.36000001430511475
+      },
+      {
+        "x1": 341.33599853515625,
+        "y1": 743.18701171875,
+        "x2": 539.22998046875,
+        "y2": 743.18701171875,
+        "css96": [
+          455.1146647135417,
+          990.916015625,
+          718.9733072916666,
+          990.916015625
+        ],
+        "width": 1.0789999961853027
+      },
+      {
+        "x1": 57.569000244140625,
+        "y1": 767.760009765625,
+        "x2": 539.22998046875,
+        "y2": 767.760009765625,
+        "css96": [
+          76.7586669921875,
+          1023.6800130208334,
+          718.9733072916666,
+          1023.6800130208334
+        ],
+        "width": 1.0789999961853027
+      },
+      {
+        "x1": 57.569000244140625,
+        "y1": 767.760009765625,
+        "x2": 539.22998046875,
+        "y2": 767.760009765625,
+        "css96": [
+          76.7586669921875,
+          1023.6800130208334,
+          718.9733072916666,
+          1023.6800130208334
+        ],
+        "width": 1.0789999961853027
+      }
+    ]
+  },
+  "native_artifact": {
+    "path": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/delegation-reset-span-slot-final-repair/rhwp-candidate-native",
+    "sha256": "0fbce6ab011304632ca53a8f08f97823b46e9d3b52526e8d53224975229f6f6f"
+  },
+  "native_build": [
+    {
+      "kind": "native",
+      "exit_code": 0,
+      "seconds": 158.859,
+      "log_sha256": "8432766d2b2e08dd57ee19bbb2a362e27f7c0e93b4e8ef69866452905fdb8698"
+    }
+  ],
+  "wasm_build": {
+    "exit_code": 0,
+    "seconds": 163.329,
+    "package_files": {
+      "rhwp.js": "370ddff0fd1a1cf6f889edb1b2a42f420fac62f7f57df4b9cff19829e60cdd5f",
+      "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+      "rhwp_bg.wasm.d.ts": "37a9316fba88d70f191e03cab3320666158d44a51caf6e0ca154a515429342c1",
+      "README.md": "ad35a0f1fbf601b33f5a969103656e220e75031ceee42bb7fc2d95ed32ed25aa",
+      "rhwp_bg.wasm": "dea64e47033d13189e3b8900fc85dd031fee742d8f9f1587ec47b476871d623a",
+      ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+      "package.json": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+      "rhwp.d.ts": "dc841b66e6dc159aa397db01c4a1d11b8e4231d0c5918538cf80de28467d2298"
+    },
+    "kind": "Mac locked wrapper --target web --out-dir pkg --no-opt 로컬 대체 빌드. Docker 최적화 아님."
+  },
+  "formal": [
+    {
+      "name": "formal-before",
+      "exit_code": 101,
+      "summary": [
+        "test result: FAILED. 9 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.63s"
+      ],
+      "log_sha256": "46dc72e45f58815d629f63980c0e8542a9fe6607bd8a1cfea0ff949540cec5b0"
+    },
+    {
+      "name": "formal-after",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.64s"
+      ],
+      "log_sha256": "8242b442da84033e8e37b32cf78074ca84db89504a778af2560cc63d70f905a7"
+    },
+    {
+      "name": "focused-font-and-table",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 162 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.83s"
+      ],
+      "log_sha256": "67fc3a6c838b6fb91374e2c9a6f6d52228d573508493c4e7dd5cf25071346865"
+    }
+  ],
+  "gates": [
+    {
+      "name": "fmt",
+      "exit_code": 0,
+      "seconds": 19.827,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "prepare",
+      "exit_code": 0,
+      "seconds": 3.825,
+      "log_sha256": "a5d0808e8ac0ee64934080d12716b09adfb232351b826f343b31edf20781d187"
+    },
+    {
+      "name": "fmt-check",
+      "exit_code": 0,
+      "seconds": 12.752,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "native-clippy",
+      "exit_code": 0,
+      "seconds": 26.487,
+      "log_sha256": "f637c53fb2e98d2c630cc4c2d4b1a09b27985b8c3841d65363f364b161e0d984"
+    },
+    {
+      "name": "wasm-clippy",
+      "exit_code": 0,
+      "seconds": 22.899,
+      "log_sha256": "985bfb3135967c58c044da9afcb62d1220fb01a02b5e9dc31a9dcb8ecfd633f9"
+    },
+    {
+      "name": "workspace-build",
+      "exit_code": 0,
+      "seconds": 30.563,
+      "log_sha256": "ee62e70de46ec7363f2ead8b76b8b10479906a9d53523a762ee2cdf6a397701f"
+    },
+    {
+      "name": "all-target-clippy",
+      "exit_code": 0,
+      "seconds": 37.842,
+      "log_sha256": "d6b71157d5c45e4ae00a55537a5b1f8282c0010f8becb39b32d8629478465160"
+    },
+    {
+      "name": "native-skia-clippy",
+      "exit_code": 0,
+      "seconds": 22.002,
+      "log_sha256": "69282b68c1cece1883ad7393a12c4ea7262d1d1d22e63205818c056673c312e0"
+    },
+    {
+      "name": "manifest",
+      "exit_code": 0,
+      "seconds": 1.653,
+      "log_sha256": "e43094ef758b4872cc1276b798e8456c9b8359064364c426be420bdbac90dad3"
+    },
+    {
+      "name": "unit-tiers",
+      "exit_code": 0,
+      "seconds": 16.436,
+      "log_sha256": "2c6dbaab2093a94c2fa3ec11190f384180b922a10025e3466a44f53c6611685c"
+    }
+  ],
+  "whole_comparison": [
+    {
+      "backend": "native",
+      "minimum": 99.21307,
+      "changes": [
+        {
+          "page": 26,
+          "before": 96.65328,
+          "after": 99.98249
+        }
+      ],
+      "drop_over_0_1pp": [],
+      "base_drop_over_0_1pp": [],
+      "png_changed": [
+        26
+      ],
+      "png_identical": 102
+    },
+    {
+      "backend": "wasm",
+      "minimum": 99.21221,
+      "changes": [
+        {
+          "page": 26,
+          "before": 96.65155,
+          "after": 99.98249
+        }
+      ],
+      "drop_over_0_1pp": [],
+      "base_drop_over_0_1pp": [],
+      "png_changed": [
+        26
+      ],
+      "png_identical": 102
+    }
+  ],
+  "direct_review": "Native/fresh WASM26쪽 review+overlay 및 다음27쪽 review를 직접 판독. 하단·같은 행·줄 소속 보존. 27쪽의 기존 미세 수직 차이는 이전 PNG와 같음.",
+  "diagnostic_corrections": [
+    "첫 후보는 슬롯을 복구했지만 빈 미수용 행에 차액을 배정해 독립 하단1FAIL.",
+    "둘째 후보는 마지막 paint 접기의2px 재차 회수로 원본 슬롯 관계1FAIL. 기대값 완화 없이 공통 소유 판정을 연결함.",
+    "셋째 빌드는 private_interfaces 경고를 수정하기 위해 소유 Cargo/자식 rustc·대기 driver만 종료. 최종 새 빌드는 경고 없이 성공."
+  ],
+  "remaining": "해당 문서 전103쪽은 양쪽98% 이상. 과학시험·CBTA·개인정보·LPG·clip 원본 및 최종 전체 회귀·편람·실제 소비 검증·PR 제출은 미완료.",
+  "full_branch_validation_complete": false,
+  "assets": {
+    "after-wasm-silhouette.tsv": "a30deb9ff0582fb05b75f0d2a380ae8830df08eb0592d3c28a0191343a1b69f8",
+    "before-native-p027-review.png": "62ab8611761d9110283a23d6be16e8faba86ad1c7816190458062a1a8e70780b",
+    "after-native-p027-overlay.png": "42ae45830e9c612b5f354a8a1720e7c6b026f131a99b87af04aa15b9d4fea7e1",
+    "before-native-p027-overlay.png": "42ae45830e9c612b5f354a8a1720e7c6b026f131a99b87af04aa15b9d4fea7e1",
+    "before-wasm-p026-review.png": "9fe9ad182cb964ce9873c2b3089b2dd383f12f3ecf3b6e4b09dafdbb6b55ec57",
+    "after-wasm-p026-overlay.png": "161bf4493f56a2c713b5557f23c59e1c150a1d9cd039344eeadfa38085cafb11",
+    "before-wasm-p027-overlay.png": "94e74c678aa64f967c2e9e7607315271ba2b46b0928e5d6512ee4942a802067f",
+    "after-wasm-p027-review.png": "ac91c66f0fe10e9e5aa50bf2adb054f55720ad0a74be258cde6142408e6362a0",
+    "after-native-p027-review.png": "62ab8611761d9110283a23d6be16e8faba86ad1c7816190458062a1a8e70780b",
+    "after-native-silhouette.tsv": "13d63ae498186249f9d133c954826aa53fb163e010f0abb978b9346d61d4a670",
+    "after-wasm-p027-overlay.png": "94e74c678aa64f967c2e9e7607315271ba2b46b0928e5d6512ee4942a802067f",
+    "before-native-p026-overlay.png": "4330f096649574133e1c3d0a45c0172e6c6652e7da7ab2811c26ae774be6e934",
+    "before-wasm-p027-review.png": "ac91c66f0fe10e9e5aa50bf2adb054f55720ad0a74be258cde6142408e6362a0",
+    "before-native-p026-review.png": "580455fab5293e025091581abb064421b11dbca2086317537a3d0b44d51f592e",
+    "before-native-silhouette.tsv": "5e355648069f7a81b2ccec18fefb82cbe3402107a12cbbdab6a62d7036126417",
+    "after-native-p026-overlay.png": "b2daf3d5228cc9b08cc4dbc7dbf968e07f6357f02d5fdf61e9f6e3ecb04319f8",
+    "after-native-p026-review.png": "e52d646b61dead5729d3827960392c0376c3ed923bc7548294609f8c675ae939",
+    "before-wasm-silhouette.tsv": "8f6e7eba82ce447d4dd4d1b98aa955eff36905e2a5206fc40bf6ac5befbc2e29",
+    "before-wasm-p026-overlay.png": "292de0ec7f8cbe8db83bf546a2684327bedac95f61070d209f453b3540b9fd73",
+    "after-wasm-p026-review.png": "6d1204de023c5f141b4794f2622996b3a56fe1dbf9b86a97cbef1cc862e80daa"
+  }
+}

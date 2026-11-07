@@ -1,8 +1,10 @@
-//! 검사 유형: 고정형 5개(독립 Print ±2px), 관계형 4개(내용 소속·보존·실제 기호 공급 전진).
-//! 주석 갱신: 2026-11-07 09:56:35 KST.
+//! 검사 유형: 고정형 6개(독립 Print ±2px), 관계형 5개(내용 소속·보존·실제 기호 공급 전진).
+//! 주석 갱신: 2026-11-07 10:35:03 KST.
 //! 2026-11-07 측정: canonical PDFium96DPI·compat2022·2px 색상 경계 보정 전 내용 실루엣 raw.
 //! 원본 samples/issue5679/10857_delegation_rules.hwp / 독립 한컴2020 Print 전103쪽.
-//! 전103쪽 최저 Native 96.65328% / fresh WASM 96.65155% (26쪽).
+//! 전103쪽 최저 Native 99.21307% / fresh WASM 99.21221% (27쪽), 98% 미달·누락0.
+//! 26쪽 Native 99.98249% / fresh WASM 99.98249%; 저장 슬롯과 마지막 독립 괘선.
+//! 27쪽 Native 99.21307% / fresh WASM 99.21221%; 이어받은 내용 소속은 관계형으로 보호.
 //! 19쪽 Native 100.00000% / fresh WASM 100.00000%.
 //! 30쪽 Native 100.00000% / fresh WASM 100.00000%.
 //! 44쪽 Native 100.00000% / fresh WASM 100.00000%.
@@ -10,11 +12,12 @@
 //! 76쪽 Native 100.00000% / fresh WASM 100.00000%.
 //! 86쪽 Native 99.70650% / fresh WASM 99.70611%.
 //! 굴림체 U+2024의 실제 결측 공급 전진은 관계형, 44쪽 앞뒤 문자 원점은 독립 PDF 고정형이다.
-//! 이번 기호 보정의 실제 이전7 PASS·2 FAIL→9 PASS; 글꼴 바이너리는 필요/포함하지 않는다.
+//! 기호 보정7 PASS·2 FAIL→9 PASS, 슬롯 보정9 PASS·2 FAIL→11 PASS; 글꼴 바이너리 불포함.
 //! 근거: mydocs/pr/assets/issue7700/one-dot-program-20261107/README.md.
 //! 첫 저장 조각: mydocs/pr/assets/issue7700/opening-cell-frame-20261107/README.md.
 //! 기존6건의 선행 근거: mydocs/pr/assets/issue7700/repair-20261106/phase2/README.md.
-//! 전체 이슈98% 완료가 아니다. 원래451.8px·8/14px 허용 핀이나 잘못된105쪽 기대값은 복원하지 않는다.
+//! 슬롯 근거: mydocs/pr/assets/issue7700/reset-span-slot-20261107/README.md.
+//! 다른 문서·PR 전체 검증 완료가 아니다. 과거 잘못된 좌표·105쪽 기대값은 복원하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -405,5 +408,77 @@ fn issue_7700_centered_missing_dot_keeps_both_neighbor_origins_at_the_independen
         b.bbox.x,
         293.59999593098956,
         "44쪽 교육․홍보의 뒤 글자 원점",
+    );
+}
+
+#[test]
+fn issue_7700_original_reset_span_keeps_its_whole_last_line_slot_in_the_physical_row() {
+    let core = core();
+    let source = core.document().sections[0].paragraphs[68]
+        .controls
+        .iter()
+        .find_map(|c| match c {
+            rhwp::model::control::Control::Table(t) => Some(t),
+            _ => None,
+        })
+        .unwrap();
+    let owner = source
+        .cells
+        .iter()
+        .find(|c| c.row == 57 && c.col == 1)
+        .unwrap();
+    assert_eq!(owner.row_span, 3);
+    assert_eq!(
+        owner.vertical_align,
+        rhwp::model::table::VerticalAlign::Center
+    );
+    let segs = &owner.paragraphs[0].line_segs;
+    assert_eq!(segs.len(), 2);
+    assert_eq!(segs[1].vertical_pos, 0);
+    assert!(segs[0].line_spacing > 0);
+    let padding = if owner.apply_inner_margin {
+        &owner.padding
+    } else {
+        &source.padding
+    };
+    let slot = f64::from(
+        segs[0].line_height
+            + segs[0].line_spacing
+            + i32::from(padding.top)
+            + i32::from(padding.bottom),
+    ) / 75.0;
+    let first = core.build_page_render_tree(25).unwrap();
+    let next = core.build_page_render_tree(26).unwrap();
+    let grid = table(&first.root, 68).unwrap();
+    let rendered = cell(grid, 57, 1);
+    assert!(
+        rendered.bbox.height + 1e-9 >= slot,
+        "원본 reset 앞 줄 슬롯은 수용과 paint 모두 소유 actual={}, source={slot}",
+        rendered.bbox.height
+    );
+    for col in [3, 7, 8, 9, 10, 11] {
+        assert!(
+            (cell(grid, 57, col).bbox.height - rendered.bbox.height).abs() < 1e-9,
+            "같은 컷의 일반 peer와 병합 슬롯은 물리 하단 공유"
+        );
+    }
+    let mut a = String::new();
+    let mut b = String::new();
+    body_text(rendered, true, &mut a);
+    body_text(cell(table(&next.root, 68).unwrap(), 57, 1), true, &mut b);
+    assert!(a.contains("통계관리"));
+    assert!(!a.contains("분석"));
+    assert!(b.contains("분석"));
+    assert!(!b.contains("통계관리"));
+}
+#[test]
+fn issue_7700_original_reset_span_closes_at_the_independent_print_bottom() {
+    let core = core();
+    let page = core.build_page_render_tree(25).unwrap();
+    let grid = table(&page.root, 68).unwrap();
+    pdf_px(
+        bottom(cell(grid, 57, 7)),
+        1023.68,
+        "26쪽 원본 reset 병합 조각과 일반 peer의 닫힘선",
     );
 }

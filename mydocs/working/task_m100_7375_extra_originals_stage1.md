@@ -293,3 +293,25 @@ fmt·Native/WASM/전체target/Skia Clippy·workspace build·manifest·unit tier�
 계속 확인한다. 실제 정식7 PASS/2 FAIL→9 PASS, 기존 정책·기호·분할 묶음160 PASS다.
 fmt·Native/WASM/전체target/Skia Clippy·workspace build·manifest·unit tier도 통과했다.
 [전쪽 TSV·전후 review/overlay·공급 프로그램과 원점 근거](../pr/assets/issue7700/one-dot-program-20261107/README.md).
+
+
+## 원본 병합 종료 슬롯과 같은 행의 물리 하단
+
+2026-11-07, 부모16a99fdfaf에서 위임전결규정26쪽의 마지막 줄간격 소유를 보정했다. 같은 문단의
+명시적 저장 재시작 앞 슬롯32.45333px에서4px를 회수해 물리 행이 짧아지던 경로다. 원본 슬롯
+소유 판정을 수용·물리 높이·마지막 paint 접기에 함께 연결하고, 블록 차액은 내용 없는 다음
+0높이 행 대신 실제 마지막 행에 싣는다. 실제 쪽 상한은 기존 예산으로 처리한다.
+
+원본/PDF·2px raw·90% 문턱은 그대로다. 최종 Native/fresh WASM 전103쪽은26쪽
+99.98249%/99.98249%, 전체 최저99.21307%/99.21221%로98% 미달·누락0이다.
+각 backend의 나머지102쪽 PNG는 이전과 바이트 동일하며 부모와 고정devel 대비0.1%p 초과 하락0이다.
+다음27쪽의 기존 미세 수직 차이는 남아 있고 이번 변경으로 새로 생긴 차이는 아니다.
+
+중간 두 후보의 실제 관계/독립 하단 실패는 구현에서 복구했고 기대값을 완화하지 않았다.
+공개 범위 경고가 난 중간 빌드는 소유 프로세스만 종료한 뒤 새로 빌드했다. 최종 runtime은
+포맷만 달라진 한 파일의 rustfmt 바이트 동일 증명도 남겼다. 정식9 PASS/2 FAIL→11 PASS,
+집중162 PASS(정식11개 포함), fmt·세 Clippy·workspace build·Skia Clippy·manifest·unit tier PASS다.
+새 두 검사는 원본 슬롯/peer 하단/앞뒤 내용 관계와 독립 PDF26쪽 하단±2px를 보호한다.
+
+[전후 전쪽 TSV·review/overlay·출처와 실제 결과](../pr/assets/issue7700/reset-span-slot-20261107/README.md).
+다른 미달 원본과 최종 전체 nextest·Skia 전체 unit·편람·실제 소비 검증·PR 제출은 아직 완료되지 않았다.

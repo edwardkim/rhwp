@@ -6770,7 +6770,13 @@ impl LayoutEngine {
                         .map(|r| row_heights.get(r).copied().unwrap_or(0.0))
                         .sum();
                     if target > cur + 0.5 {
-                        if let Some(last) = (bs..be_painted).next_back() {
+                        // 컷 범위 끝에 미수용 일반 행이 남을 수 있다. 그 0높이
+                        // 행에 부족분을 싣으면 원문 내용 없는 빈 행이 새로 그려진다.
+                        // 실제 물리 행이 있으면 그 마지막 행이 병합 슬롯을 소유한다.
+                        let last = (bs..be_painted)
+                            .rfind(|&row| row_heights[row] > 0.0)
+                            .or_else(|| (bs..be_painted).next_back());
+                        if let Some(last) = last {
                             row_heights[last] += target - cur;
                         }
                     }
@@ -7673,11 +7679,28 @@ impl LayoutEngine {
         // 조각에서 상자가 내용 아래로 내려간다. ②만 빼면 내용이 적은 선언 높이 행이 무너진다.
         if let Some(fold_row) = fold_last_row {
             let mut trail: f64 = 0.0;
+            // 수용과 물리 높이가 함께 소유한 원본 병합 슬롯은 줄 뒤 여분이
+            // 아니다. 마지막 paint 접기에서도 같은 컷의 소유 판정을 소비한다.
+            // 실제 쪽 상한 초과분(cap_fold)은 아래에서 별도로 처리한다.
+            let owns_closing_slot = is_block_split && {
+                let (first, end) = rowspan_block_range(table, fold_row);
+                table.cells.iter().any(|cell| {
+                    let first_row = usize::from(cell.row);
+                    first_row <= fold_row
+                        && fold_row < first_row + usize::from(cell.row_span)
+                        && block_cut_index(table, first, end, cell)
+                            .and_then(|index| end_cut.get(index))
+                            .is_some_and(|&end| {
+                                let units = self.cell_units(cell, table, styles);
+                                self.stored_reset_span_owns_closing_slot(table, cell, &units, end)
+                            })
+                })
+            };
             let (su, eu) = (
                 start_cut.first().copied().unwrap_or(0),
                 end_cut.first().copied().unwrap_or(0),
             );
-            if eu > 0 {
+            if eu > 0 && !owns_closing_slot {
                 for cell in table.cells.iter().filter(|c| c.row as usize == fold_row) {
                     let ranges = self.cell_line_ranges_from_cut(cell, table, styles, su, eu);
                     let Some(pi2) = ranges

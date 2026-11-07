@@ -49,3 +49,10 @@ fresh WASM은 Mac locked wrapper `--target web --out-dir pkg --no-opt` 로컬 �
 - 86쪽 fresh WASM 이전: [review](before-wasm-p086-review.png) · [overlay](before-wasm-p086-overlay.png); 보정: [review](after-wasm-p086-review.png) · [overlay](after-wasm-p086-overlay.png)
 
 가운데 정렬 앞뒤 문자·줄 소속·괘선과 다음 내용을 직접 대조했다. 일부 기존 원 기호·글리프 가장자리·미세한 행 높이 차이는 남는다. raw100%를 RGB 전체 동일 또는 다른 문서의 완료로 확대하지 않는다. 실행 로그·중간 스크립트는 ignored output에만 보존한다.
+
+
+## 후속 슬롯 보정
+
+이 기록의26쪽 미달은 [후속 공통 슬롯 보정](../reset-span-slot-20261107/README.md)에서
+양 backend99.98249%로 개선했다. 새 전103쪽은 Native최저99.21307%·fresh WASM최저99.21221%이며,
+위의 이전 기호 단계 수치는 당시 증거로 유지한다.
