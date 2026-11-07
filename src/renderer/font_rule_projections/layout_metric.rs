@@ -26,9 +26,9 @@ pub(crate) struct GeneratedFontRuleProjection {
 pub(crate) const FONT_RULE_LAYOUT_METRIC_SCHEMA_VERSION: &str =
     crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const FONT_RULE_LAYOUT_METRIC_INPUT_SHA256: &str =
-    "973c76f7c6563021deaee513cf9b2e8949268aadaeb8809278056da0e902a6ce";
+    "d6593c51af59cdfc17196396b21f8be8c8f36df8975d269b8fe79281736acb19";
 pub(crate) const FONT_RULE_LAYOUT_METRIC_PROJECTION_SHA256: &str =
-    "fdca67b63b5f10b2f89fcf991e9d4d633461c1f1052dcc397884408af0e736ba";
+    "ccd5fcfb855a659a7b9ff373c884352b900233067e7f3aaa736a8d17a478cea3";
 
 pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
@@ -1336,6 +1336,23 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
         mode: "direct",
         metric_entry_ids: &["font-metric.edec2573883b7b4dc023"],
     },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-metric.ygodic250-name",
+        source_boundary_id: "rust-metric.metric-alias",
+        relation_type: "metric-surrogate",
+        decision_plane: "layout-metric",
+        source_face: Some("한컴 윤고딕 250"),
+        target_face_or_policy: "Haan YGodic 250",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: None,
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &["font-metric.ea8ba5aeaa3b69983623"],
+    },
 ];
 
 #[rustfmt::skip]
@@ -1555,6 +1572,9 @@ pub(crate) fn find_font_rule_layout_metric(
         }
         "RHWP Public Batang" => {
             Some(&FONT_RULE_LAYOUT_METRIC_RULES[70])
+        }
+        "한컴 윤고딕 250" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[71])
         }
         _ => None,
     }

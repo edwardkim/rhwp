@@ -148,7 +148,7 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
     let v2_rules = v2["rules"].as_array().expect("current v2 rules");
 
     assert_eq!(v1_rules.len(), 830);
-    assert_eq!(v2["summary"]["activeRuleCount"], 850);
+    assert_eq!(v2["summary"]["activeRuleCount"], 851);
     assert_eq!(v2["summary"]["retiredRuleCount"], 8);
 
     let mut expected_semantics: BTreeMap<_, _> = v1_rules
@@ -276,6 +276,10 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
                 "../../assets/font-rules/changes/issue-7445-document-substitute-lookup.json"
             ),
             "rust-layout-name",
+        ),
+        (
+            include_str!("../../assets/font-rules/changes/issue-8575-ygodic250-metric-name.json"),
+            "rust-layout-metric",
         ),
     ] {
         // 공개 프로그램 공급 두 건도 기록된 add-rule만 의미 비교에 반영한다.
@@ -621,7 +625,7 @@ fn canonical_layout_name_projection_reaches_public_trace() {
 fn canonical_layout_metric_projection_reaches_public_lookup() {
     let registry = registry();
     let rules = projection_rules(&registry, "rust-layout-metric");
-    assert_eq!(rules.len(), 71);
+    assert_eq!(rules.len(), 72);
 
     for rule in rules {
         let source = source_face(rule);

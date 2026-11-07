@@ -3523,6 +3523,7 @@ fn installed_font_program_aliases(name: &str) -> &'static [&'static str] {
         "휴먼명조" => &["HumanMyeongJo"],
         "한컴 고딕" => &["Hancom Gothic", "Hancom Gothic Regular"],
         "한컴 윤고딕 240" => &["Haan YGodic 240"],
+        "한컴 윤고딕 250" => &["Haan YGodic 250"],
         _ => &[],
     }
 }
@@ -3627,6 +3628,9 @@ pub(crate) fn installed_render_font_aliases(font_family: &str) -> &'static [&'st
             "함초롬돋움",
         ],
         "HY그래픽M" => &["HYGraphic", "HYGraphic-Medium", "HCR Dotum", "함초롬돋움"],
+        // [#8575] 설치본 HANYGO250.ttf 의 영문 family. Native 글꼴 목록은 이 이름만
+        // 노출해 한국어 이름으로는 같은 face 를 찾지 못하고 대체 글꼴로 그렸다.
+        "한컴 윤고딕 250" => &["Haan YGodic 250"],
         // #4739: 구형 정부상징 부처명 face가 없을 때 현재 공식 배포 face를 찾는다.
         // 동일 alias가 아니라 availability 기반 successor이므로 exact legacy 뒤에만 둔다.
         "정부상징 부처명_16040911" | "Government_16040911" => &[
