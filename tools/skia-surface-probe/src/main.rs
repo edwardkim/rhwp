@@ -6,6 +6,7 @@
 use std::error::Error;
 use std::ffi::CStr;
 use std::io;
+use std::time::Instant;
 
 use ash::vk::{self, Handle};
 use rhwp::paint::{LayerNode, PageLayerTree, PaintOp};
@@ -25,6 +26,10 @@ struct VulkanHost {
     family: u32,
     name: String,
     software_device: bool,
+    api_version: u32,
+    driver_version: u32,
+    vendor_id: u32,
+    device_id: u32,
 }
 
 impl VulkanHost {
@@ -79,10 +84,11 @@ impl VulkanHost {
                 family,
                 name,
                 properties.device_type == vk::PhysicalDeviceType::CPU,
+                properties,
             ))
         })();
         match initialized {
-            Ok((device, physical, queue, family, name, software_device)) => Ok(Self {
+            Ok((device, physical, queue, family, name, software_device, properties)) => Ok(Self {
                 entry,
                 instance,
                 device,
@@ -91,6 +97,10 @@ impl VulkanHost {
                 family,
                 name,
                 software_device,
+                api_version: properties.api_version,
+                driver_version: properties.driver_version,
+                vendor_id: properties.vendor_id,
+                device_id: properties.device_id,
             }),
             Err(error) => {
                 // SAFETY: device initialization failed; no dependent object survives.
@@ -127,7 +137,8 @@ fn rectangle(bounds: BoundingBox, color: u32) -> PaintOp {
     )
 }
 
-fn verify(host: &VulkanHost) -> ProbeResult<()> {
+fn verify(host: &VulkanHost) -> ProbeResult<serde_json::Value> {
+    let verification_started = Instant::now();
     // The host, resolver and Vulkan handles outlive every Skia object below.
     let resolver = |of: gpu::vk::GetProcOf| -> *const std::os::raw::c_void {
         // SAFETY: Skia passes handles from this backend and valid symbol names.
@@ -158,8 +169,10 @@ fn verify(host: &VulkanHost) -> ProbeResult<()> {
     let mut context = gpu::direct_contexts::make_vulkan(&backend, None).ok_or_else(|| {
         io::Error::other("Skia Vulkan context creation failed; probe did not run")
     })?;
+    let context_initialization_time = verification_started.elapsed();
     assert_eq!(context.backend(), gpu::BackendAPI::Vulkan);
     let info = ImageInfo::new((64, 48), ColorType::RGBA8888, AlphaType::Premul, None);
+    let allocation_started = Instant::now();
     let mut surface = gpu::surfaces::render_target(
         &mut context,
         gpu::Budgeted::Yes,
@@ -171,6 +184,7 @@ fn verify(host: &VulkanHost) -> ProbeResult<()> {
         false,
     )
     .ok_or_else(|| io::Error::other("Skia Vulkan render target creation failed"))?;
+    let surface_allocation_time = allocation_started.elapsed();
     assert_eq!(
         surface.recording_context().map(|context| context.backend()),
         Some(gpu::BackendAPI::Vulkan)
@@ -207,9 +221,11 @@ fn verify(host: &VulkanHost) -> ProbeResult<()> {
         origin_y: 6.0,
         background_color: Some(0x00ff00),
     };
+    let replay_started = Instant::now();
     renderer
         .render_to_surface_strict(&mut surface, &tree, options)
         .map_err(|error| io::Error::other(error.to_string()))?;
+    let replay_time = replay_started.elapsed();
     assert_eq!(
         before,
         (
@@ -219,9 +235,17 @@ fn verify(host: &VulkanHost) -> ProbeResult<()> {
         )
     );
     // Synchronization and readback are explicitly owned by this verification host.
-    context.flush_and_submit_surface(&mut surface, gpu::SyncCpu::Yes);
+    // The wait makes the host wall duration include completion of submitted work;
+    // it is not a GPU timestamp or a measurement of only this replay's commands.
+    let flush_started = Instant::now();
+    context
+        .flush_and_submit_surface(&mut surface, gpu::SyncCpu::Yes)
+        .map_err(|error| io::Error::other(format!("verification submit failed: {error:?}")))?;
+    let flush_time = flush_started.elapsed();
     let mut bytes = vec![0; info.min_row_bytes() * info.height() as usize];
+    let readback_started = Instant::now();
     assert!(surface.read_pixels(&info, &mut bytes, info.min_row_bytes(), (0, 0)));
+    let readback_time = readback_started.elapsed();
     for (x, y, expected) in [
         (16, 15, [255, 0, 0, 255]),
         (30, 22, [0, 0, 255, 255]),
@@ -231,6 +255,7 @@ fn verify(host: &VulkanHost) -> ProbeResult<()> {
         let offset = y * info.min_row_bytes() + x * 4;
         assert_eq!(&bytes[offset..offset + 4], &expected, "pixel ({x}, {y})");
     }
+    let rejection_started = Instant::now();
     assert!(renderer
         .render_to_surface_strict(
             &mut surface,
@@ -241,29 +266,80 @@ fn verify(host: &VulkanHost) -> ProbeResult<()> {
             },
         )
         .is_err());
+    let rejection_time = rejection_started.elapsed();
     let mut after_error = vec![0; bytes.len()];
-    context.flush_and_submit_surface(&mut surface, gpu::SyncCpu::Yes);
+    let preservation_flush_started = Instant::now();
+    context
+        .flush_and_submit_surface(&mut surface, gpu::SyncCpu::Yes)
+        .map_err(|error| io::Error::other(format!("preservation submit failed: {error:?}")))?;
+    let preservation_flush_time = preservation_flush_started.elapsed();
+    let preservation_readback_started = Instant::now();
     assert!(surface.read_pixels(&info, &mut after_error, info.min_row_bytes(), (0, 0)));
+    let preservation_readback_time = preservation_readback_started.elapsed();
     assert_eq!(
         bytes, after_error,
         "invalid arguments must not clear a GPU target"
     );
+    let cache = context.resource_cache_usage();
     // Local declaration order ensures surface/context/backend drop before host.
-    Ok(())
+    Ok(serde_json::json!({
+        "timingsMicros": {
+            "clock": "host monotonic wall time, not GPU timestamps",
+            "contextInitialization": context_initialization_time.as_micros(),
+            "surfaceAllocation": surface_allocation_time.as_micros(),
+            "replayRecording": replay_time.as_micros(),
+            "flushSubmitAndWait": flush_time.as_micros(),
+            "verificationReadback": readback_time.as_micros(),
+            "invalidArgumentRejection": rejection_time.as_micros(),
+            "preservationFlushSubmitAndWait": preservation_flush_time.as_micros(),
+            "preservationReadback": preservation_readback_time.as_micros(),
+            "verificationTotal": verification_started.elapsed().as_micros(),
+        },
+        "surface": {
+            "width": info.width(),
+            "height": info.height(),
+            "rowBytes": info.min_row_bytes(),
+            "pixelFormat": "rgba8888",
+            "alpha": "premultiplied",
+            "origin": "topLeft",
+        },
+        "hostTransfers": {
+            "scope": "explicit verification read_pixels calls only",
+            "readbackCount": 2,
+            "readbackBytes": bytes.len() + after_error.len(),
+        },
+        "skiaResourceCache": {
+            "resourceCount": cache.resource_count,
+            "resourceBytes": cache.resource_bytes,
+            "limitBytes": context.resource_cache_limit(),
+            "scope": "Skia cache accounting, not total VRAM or process memory",
+        },
+    }))
 }
 
 fn main() -> ProbeResult<()> {
+    let device_started = Instant::now();
     let host = VulkanHost::new()?;
-    verify(&host)?;
+    let device_initialization_time = device_started.elapsed();
+    let measurements = verify(&host)?;
     println!(
         "{}",
         serde_json::json!({
+            "schemaVersion": 1,
             "status": "passed",
             "backend": "Vulkan",
             "device": &host.name,
             "softwareDevice": host.software_device,
+            "deviceApiVersion": host.api_version,
+            "driverVersion": host.driver_version,
+            "vendorId": host.vendor_id,
+            "deviceId": host.device_id,
             "hardwareAccelerationVerified": false,
             "borrowedGpuSurface": true,
+            "presentationVerified": false,
+            "sampleFrames": 1,
+            "deviceInitializationMicros": device_initialization_time.as_micros(),
+            "measurements": measurements,
             "scale": 1.25,
             "readback": "verification host only",
             "checks": ["known interior colors", "host state restoration", "invalid arguments preserve pixels"],

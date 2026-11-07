@@ -1,0 +1,14 @@
+{
+  "source_head": "e976fd93938781fc668da23cf4d1db35d52362fb",
+  "command": [
+    "python3",
+    "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont-gui.py",
+    "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/flutter-controller-runner/build/linux/x64/debug/bundle/rhwp_review_probe"
+  ],
+  "probe_source_sha256": "87a0527edf4a0cfb484aee9051781835e7eae506dba90312fe12d82eb4f95537",
+  "binary_sha256": "b6be7320db31feb8773934d7c5f059c47f54b1d841e9654e7882d76625c4a89e",
+  "status": "passed",
+  "started_at": "2026-11-07T03:47:32.276846+00:00",
+  "returncode": 0,
+  "finished_at": "2026-11-07T03:47:35.692978+00:00"
+}

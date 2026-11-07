@@ -8,8 +8,16 @@ pub mod clipboard;
 pub mod commands;
 pub mod editor;
 pub mod fonts;
+#[cfg(all(feature = "native-skia-d3d", target_os = "windows"))]
+pub mod gpu_d3d;
+#[cfg(all(feature = "native-skia-gl", target_os = "linux"))]
+pub mod gpu_gl;
+#[cfg(all(feature = "native-skia-metal", target_os = "macos"))]
+pub mod gpu_metal;
+pub mod presentation;
 #[cfg(feature = "native-skia")]
 pub mod region_cache;
+pub mod render_snapshot;
 pub mod runtime;
 pub mod save;
 pub mod view;
@@ -113,6 +121,9 @@ pub struct NativeDocumentSession {
     revision: u64,
     font_generation: u64,
     fonts: fonts::NativeFontState,
+    // Explicit immutable inputs, independent of the renderer's native copies.
+    // Snapshots share these bytes without reopening the caller's font paths.
+    font_data: std::sync::Arc<[Vec<u8>]>,
     saved_revision: Option<u64>,
     pending_save: Option<save::PendingSaveCheckpoint>,
     #[cfg(feature = "native-skia")]
@@ -140,6 +151,7 @@ impl NativeDocumentSession {
             revision: 0,
             font_generation: 0,
             fonts,
+            font_data: std::sync::Arc::from(Vec::<Vec<u8>>::new()),
             saved_revision: None,
             pending_save: None,
             #[cfg(feature = "native-skia")]
@@ -171,6 +183,14 @@ impl NativeDocumentSession {
         };
         let mut session = Self::from_core(core);
         session.saved_revision = Some(0);
+        Ok(session)
+    }
+
+    /// Open an explicitly chosen recovery payload as an unsaved document.
+    /// The recovery artifact is not a user save checkpoint or a source path.
+    pub fn open_recovery_bytes(bytes: &[u8]) -> Result<Self, NativeHostError> {
+        let mut session = Self::open_bytes(bytes, None)?;
+        session.saved_revision = None;
         Ok(session)
     }
 
@@ -307,7 +327,7 @@ impl NativeDocumentSession {
         Self::check_scale(scale)?;
         #[cfg(feature = "native-skia")]
         {
-            self.render_tiled_region_uncached(page, region, scale)
+            self.render_tiled_region_cached(page, region, scale)
         }
         #[cfg(not(feature = "native-skia"))]
         {

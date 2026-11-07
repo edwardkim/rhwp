@@ -1,0 +1,25 @@
+{
+  "source_head": "c2648ffdfe",
+  "status": "passed",
+  "started_at": "2026-11-07T03:58:57.766349+00:00",
+  "windows_launcher_pid": "54096",
+  "scope": "actual host Native D3D build; same shared target, no parallel Cargo",
+  "reason": "outer exec was terminated at 15 minutes; native child later ended without completion receipt, so previous build remains interrupted/unverified",
+  "log": "/mnt/c/Users/edward/AppData/Local/Temp/rhwp-pr-review-seo-rii-20261107/native-d3d-build.log",
+  "exit_receipt": "/mnt/c/Users/edward/AppData/Local/Temp/rhwp-pr-review-seo-rii-20261107/native-d3d.exit",
+  "launch_command": "$p=Start-Process -FilePath $env:ComSpec -ArgumentList @('/d','/c','C:\\Users\\edward\\AppData\\Local\\Temp\\rhwp-pr-review-seo-rii-20261107\\build-d3d-launch.cmd') -WindowStyle Hidden -PassThru; $p.Id",
+  "returncode": 0,
+  "finished_at": "2026-11-07T04:00:26.428838+00:00",
+  "artifacts": {
+    "rhwp_native_ffi.dll": {
+      "bytes": 71160320,
+      "sha256": "504e2d81ecfabb294dc31433c5c30ff67dd5572c0f690fefc3149f6f8fb17af2",
+      "frozen_path": "/mnt/c/Users/edward/AppData/Local/Temp/rhwp-pr-review-seo-rii-20261107/native-d3d/rhwp_native_ffi.dll"
+    },
+    "rhwp_native_ffi.dll.lib": {
+      "bytes": 149904,
+      "sha256": "9291811a2d73c3a5f6965755a7f6db099814841f90a3c0c7967a24ede2787cdc",
+      "frozen_path": "/mnt/c/Users/edward/AppData/Local/Temp/rhwp-pr-review-seo-rii-20261107/native-d3d/rhwp_native_ffi.dll.lib"
+    }
+  }
+}

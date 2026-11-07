@@ -1,6 +1,15 @@
 //! Native ABI panic recovery must retain worker shutdown handles.
 #[path = "../src/session.rs"]
 mod native_session;
+use native_session as session;
+#[path = "../src/gpu_d3d.rs"]
+mod gpu_d3d;
+#[path = "../src/gpu_gl.rs"]
+mod gpu_gl;
+#[path = "../src/gpu_metal.rs"]
+mod gpu_metal;
+#[path = "../src/presentation.rs"]
+mod presentation;
 
 fn take_native_response(pointer: *mut std::os::raw::c_char) -> serde_json::Value {
     assert!(!pointer.is_null());

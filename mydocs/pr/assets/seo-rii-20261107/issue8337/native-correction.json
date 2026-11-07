@@ -1,0 +1,22 @@
+{
+  "source_head": "cda7c8cb33bb7ded970d033ed1543aabb49c63a2",
+  "recorded_at": "2026-11-07T04:56:45.083689+00:00",
+  "native_missing_equation_face": {
+    "raw": 99.63,
+    "semantic_digits": "4 and 3 correct in direct zoom",
+    "AB": "preserved"
+  },
+  "original_face_control": {
+    "same_programs": true,
+    "before_after_png_identical": true,
+    "raw": 99.6
+  },
+  "font_budget": "6 programs, 3308448 bytes total; body-only excludes HYHWPEQ; no font program committed",
+  "input": "samples/issue7593/repro-equation-issue7593.hwpx",
+  "reference": "pdf/issue7593/repro-equation-issue7593-hwpx-2020.pdf",
+  "dpi": 96,
+  "remaining": [
+    "fresh WASM matching source/programs",
+    "formal producer-to-Native regression and focused/full gates"
+  ]
+}

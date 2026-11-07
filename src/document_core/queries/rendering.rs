@@ -45,6 +45,7 @@ use crate::renderer::svg_layer::SvgLayerRenderer;
 use crate::renderer::typeset::TypesetEngine;
 use crate::renderer::TextStyle;
 use std::fmt::Write as _;
+use std::sync::Arc;
 
 const MAX_EMBEDDED_FONT_BYTES: usize = 32 * 1024 * 1024;
 const MAX_EMBEDDED_FONT_BYTES_PER_PAGE: usize = 64 * 1024 * 1024;
@@ -1528,8 +1529,21 @@ impl DocumentCore {
         page_num: u32,
         profile: RenderProfile,
     ) -> Result<PageLayerTree, HwpError> {
+        self.build_page_layer_tree_shared_with_profile(page_num, profile)
+            .map(|tree| tree.as_ref().clone())
+    }
+
+    /// 같은 페이지·출력 profile의 immutable layer tree를 공유한다.
+    ///
+    /// 캐시 무효화 이후에도 반환한 tree는 해당 시점의 snapshot으로 유효하다.
+    /// 호출자가 보유한 `Arc`의 수명은 내부 캐시의 최근 변형 4개 제한과 독립적이다.
+    pub fn build_page_layer_tree_shared_with_profile(
+        &self,
+        page_num: u32,
+        profile: RenderProfile,
+    ) -> Result<Arc<PageLayerTree>, HwpError> {
         self.require_portable_metrics()?;
-        self.build_canvas_page_layer_tree_with_profile(page_num, profile)
+        self.build_canvas_page_layer_tree_shared_with_profile(page_num, profile)
     }
 
     /// Canvas2D-only replay entry. Its caller owns the browser font generation;
@@ -1539,6 +1553,15 @@ impl DocumentCore {
         page_num: u32,
         profile: RenderProfile,
     ) -> Result<PageLayerTree, HwpError> {
+        self.build_canvas_page_layer_tree_shared_with_profile(page_num, profile)
+            .map(|tree| tree.as_ref().clone())
+    }
+
+    fn build_canvas_page_layer_tree_shared_with_profile(
+        &self,
+        page_num: u32,
+        profile: RenderProfile,
+    ) -> Result<Arc<PageLayerTree>, HwpError> {
         // Canvas 화면의 보충 폭은 인쇄 조판의 정본이 아니다. SVG·Native와
         // 마찬가지로 호출자가 전체 인쇄 쪽수 조회 전에 portable로 전환해야 한다.
         if profile == RenderProfile::Print {
@@ -1571,7 +1594,7 @@ impl DocumentCore {
             .layer_output_options_fingerprint(profile, crate::paint::LayerJsonOptions::default());
         if let Some(variants) = self.page_layer_tree_cache.borrow().get(idx) {
             if let Some((_, tree)) = variants.iter().find(|(value, _)| *value == fingerprint) {
-                return Ok(tree.clone());
+                return Ok(Arc::clone(tree));
             }
         }
         let show_editor_visuals = profile.shows_editor_visuals();
@@ -1774,6 +1797,7 @@ impl DocumentCore {
                 .with_print_crop_marks(self.document.print_crop_marks());
             Ok(builder.build_with_embedded_fonts(tree, &embedded_fonts))
         })?;
+        let layer_tree = Arc::new(layer_tree);
         {
             let mut cache = self.page_layer_tree_cache.borrow_mut();
             if cache.len() <= idx {
@@ -1784,7 +1808,7 @@ impl DocumentCore {
             if variants.len() >= 4 {
                 variants.remove(0);
             }
-            variants.push((fingerprint, layer_tree.clone()));
+            variants.push((fingerprint, Arc::clone(&layer_tree)));
         }
         Ok(layer_tree)
     }

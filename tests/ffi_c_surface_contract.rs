@@ -36,7 +36,19 @@ fn read(path: &str) -> String {
 
 /// Rust `pub [unsafe] extern "C" fn NAME(args) -> ret` 를 파싱한다.
 fn rust_surface() -> Surface {
-    let src = [read(RUST_FFI), read("bindings/Native/src/session.rs")].join("\n");
+    // Presentation and GPU exports live in sibling modules too. Enumerate
+    // their source instead of silently omitting new ABI entry points.
+    let mut paths: Vec<_> = fs::read_dir("bindings/Native/src")
+        .expect("Native FFI source directory must exist")
+        .map(|entry| entry.expect("Native FFI source entry").path())
+        .filter(|path| path.extension().is_some_and(|extension| extension == "rs"))
+        .collect();
+    paths.sort();
+    let src = paths
+        .iter()
+        .map(|path| read(path.to_str().expect("Native FFI source path must be UTF-8")))
+        .collect::<Vec<_>>()
+        .join("\n");
     let mut out = Surface::new();
     let mut rest = src.as_str();
 
@@ -77,33 +89,74 @@ fn rust_surface() -> Surface {
 
 /// C 헤더의 `ret name(args);` 선언을 파싱한다.
 fn c_header_surface() -> Surface {
-    let src = read(C_HEADER);
-    let mut out = Surface::new();
+    let out = parse_c_header_surface(&read(C_HEADER));
 
-    for line in src.lines() {
-        let line = line.trim();
-        if !line.ends_with(");") || line.starts_with('#') || line.starts_with("//") {
+    assert!(
+        !out.is_empty(),
+        "{C_HEADER} 에서 rhwp_ 선언을 하나도 파싱하지 못했다 — 형식 변화 의심"
+    );
+    out
+}
+
+fn parse_c_header_surface(src: &str) -> Surface {
+    // 주석 안의 예시 선언·세미콜론을 먼저 제거한다. 줄바꿈은 남겨 전처리
+    // 지시문을 제외하고, 실제 선언은 줄 수와 무관하게 세미콜론까지 모은다.
+    let mut source = String::new();
+    let mut chars = src.chars().peekable();
+    while let Some(ch) = chars.next() {
+        if ch == '/' && chars.peek() == Some(&'*') {
+            chars.next();
+            while let Some(comment) = chars.next() {
+                if comment == '*' && chars.peek() == Some(&'/') {
+                    chars.next();
+                    break;
+                }
+                if comment == '\n' {
+                    source.push('\n');
+                }
+            }
+            source.push(' ');
+        } else if ch == '/' && chars.peek() == Some(&'/') {
+            for comment in chars.by_ref() {
+                if comment == '\n' {
+                    source.push('\n');
+                    break;
+                }
+            }
+        } else {
+            source.push(ch);
+        }
+    }
+    let source = source
+        .lines()
+        .filter(|line| !line.trim_start().starts_with('#'))
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    let mut out = Surface::new();
+    for declaration in source.split(';') {
+        let declaration = declaration.trim();
+        if !declaration.ends_with(')')
+            || declaration
+                .split_whitespace()
+                .any(|token| token == "typedef")
+        {
             continue;
         }
-        let Some(paren) = line.find('(') else {
+        let Some(paren) = declaration.find('(') else {
             continue;
         };
         // 여는 괄호 앞 토큰이 함수 이름(`char *rhwp_export_text` → `rhwp_export_text`).
-        let head = &line[..paren];
+        let head = declaration[..paren].trim_end();
         let Some(name) = head.rsplit(|c: char| c.is_whitespace() || c == '*').next() else {
             continue;
         };
         if !name.starts_with("rhwp_") {
             continue;
         }
-        let args = &line[paren + 1..line.len() - 2];
+        let args = &declaration[paren + 1..declaration.len() - 1];
         out.insert(name.to_string(), count_args(args));
     }
-
-    assert!(
-        !out.is_empty(),
-        "{C_HEADER} 에서 rhwp_ 선언을 하나도 파싱하지 못했다 — 형식 변화 의심"
-    );
     out
 }
 
@@ -179,6 +232,41 @@ fn diff(authority: &Surface, other: &Surface, label: &str) -> Vec<String> {
         }
     }
     problems
+}
+
+#[test]
+fn c_parser_collects_multiline_exports_and_excludes_callback_types() {
+    let header = r#"
+#define EXAMPLE char *rhwp_macro_only(void);
+/* char *rhwp_comment_only(void); */
+typedef const void *(*RhwpGlGetProcAddress)(void *user_data, const char *name);
+typedef int32_t (*rhwp_callback_type)(void *user_data, uint64_t context_id);
+extern "C" {
+char *rhwp_gl_presenter_create(
+    uint64_t context_id, uint64_t device_generation,
+    RhwpGlGetProcAddress loader,
+    int32_t (*is_current)(void *user_data, uint64_t context_id),
+    void *user_data, const uint8_t *config, size_t config_len
+);
+const uint8_t *
+rhwp_presentation_lease_data(
+    uint64_t lease, /* comment with ); */ size_t *byte_length
+);
+// void rhwp_line_comment_only(void);
+void rhwp_string_free(char *value); char *rhwp_session_capabilities(void);
+void unrelated_function(int first, int second);
+}
+"#;
+    let surface = parse_c_header_surface(header);
+    assert_eq!(
+        surface.len(),
+        4,
+        "only four actual rhwp_ exports are declared"
+    );
+    assert_eq!(surface.get("rhwp_gl_presenter_create"), Some(&7));
+    assert_eq!(surface.get("rhwp_presentation_lease_data"), Some(&2));
+    assert_eq!(surface.get("rhwp_string_free"), Some(&1));
+    assert_eq!(surface.get("rhwp_session_capabilities"), Some(&0));
 }
 
 #[test]

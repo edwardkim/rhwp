@@ -1,0 +1,723 @@
+{
+  "recorded_at": "2026-11-07T03:46:03.930828+00:00",
+  "integration_source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+  "status": "in_progress; not final acceptance",
+  "changes_in_review": " bindings/Flutter/analysis_options.yaml       |  6 +++++\n bindings/Flutter/windows/NativeApi.cpp       |  6 ++---\n bindings/Flutter/windows/rhwp_d3d_plugin.cpp | 20 +++++++++-------\n tests/cases/issue_536_native_region_cache.rs | 34 +++++++++++++++++++++++++---\n 4 files changed, 52 insertions(+), 14 deletions(-)\n",
+  "records": {
+    "native-build.json": {
+      "name": "native-ffi-gl-build",
+      "head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "-p",
+        "rhwp-native-ffi",
+        "--features",
+        "native-skia-gl",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "started_at": "2026-11-07T03:12:26.305221+00:00",
+      "status": "passed",
+      "jobs": 4,
+      "returncode": 0,
+      "finished_at": "2026-11-07T03:19:02.422783+00:00",
+      "artifact": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so",
+        "bytes": 79681472,
+        "sha256": "8c0bd378cc0065f3e5b69cdf9b7dea4528fe5b0b6cd42f3c283df7fa6ef6bb72"
+      }
+    },
+    "native-focused.json": {
+      "name": "native-focused",
+      "head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia-gl",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_004",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_009",
+        "--test",
+        "regression_suite_012",
+        "--test",
+        "regression_suite_016",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_020",
+        "--test",
+        "regression_suite_022",
+        "--test",
+        "regression_suite_024",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_027",
+        "-E",
+        "test(issue_536_native_region_cache::) | test(issue_536_shared_layer_tree::) | test(issue_536_native_runtime::) | test(skia_native_glyph_replay::) | test(issue_7688_native_equation_fonts::) | test(issue_536_direct_pdf_linear_gradient::) | test(issue_4969_shaping_atomic_activation::) | test(issue_536_native_render_snapshot::) | test(issue_536_native_presentation::) | test(issue_536_native_gl::) | test(issue_536_native_gpu_tiles::) | test(issue_536_native_gl_recovery::) | test(issue_536_native_ime_edit::) | test(issue_536_native_recovery_open::) | test(issue_536_raster_diagnostics_contract::) | test(skia_host_surface::) | test(render_p37_direct_pdf_export::)",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "status": "failed",
+      "started_at": "2026-11-07T03:20:39.668065+00:00",
+      "returncode": 100,
+      "finished_at": "2026-11-07T03:30:34.287135+00:00"
+    },
+    "cache-key-font-diagnosis.json": {
+      "cause": "P73 cache-key test relies on installed fonts: both page crops are white in minimal-font environment; same source passes with host fonts",
+      "original_test_commit": "cb59b901caf1e5a3c70c385f8b711424cbaaabc8",
+      "base_helper_unchanged": true,
+      "before_minimal_font": "FAIL",
+      "before_host_fonts": "PASS",
+      "correction": "explicit existing MIT synthetic font; preserve pixel inequality, uncached equivalence and all exact LRU counters",
+      "previous_file_commit": "2026-11-06T18:07:14+09:00 (0d70e975806ef52eca1506b960f80a23dd0f9aa5)"
+    },
+    "cache-key-host-fonts.json": {
+      "head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia-gl",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test",
+        "regression_suite_004",
+        "-E",
+        "test(=issue_536_native_region_cache::native_tiles_keep_page_and_exact_scale_keys_separate)",
+        "--test-threads",
+        "1"
+      ],
+      "environment": "host fonts, comparison with minimal-font failure",
+      "started_at": "2026-11-07T03:38:54.533979+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T03:38:55.315480+00:00"
+    },
+    "cache-key-after.json": {
+      "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+      "source_diff": " bindings/Flutter/analysis_options.yaml       |  6 ++++++\n bindings/Flutter/windows/NativeApi.cpp       |  6 +++---\n bindings/Flutter/windows/rhwp_d3d_plugin.cpp | 20 ++++++++++-------\n tests/cases/issue_536_native_region_cache.rs | 32 +++++++++++++++++++++++++---\n 4 files changed, 50 insertions(+), 14 deletions(-)\n",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia-gl",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test",
+        "regression_suite_004",
+        "-E",
+        "test(issue_536_native_region_cache::)",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T03:39:56.021897+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T03:40:13.915132+00:00"
+    },
+    "windows-cpp-validation.json": {
+      "status": "failed",
+      "started_at": "2026-11-07T03:27:01.398787+00:00",
+      "flutter_revision": "c197ca5199e9ee5661e865596c9c07294dfab51c",
+      "windows_sdk": "10.0.26100.0",
+      "build_directory": "C:\\Users\\edward\\AppData\\Local\\Temp\\rhwp-pr-review-seo-rii-20261107\\cpp-build",
+      "scope": "actual Windows MSVC SDK compile/link of P101 plugin and public ABI/lifetime executables",
+      "results": [
+        {
+          "name": "configure",
+          "command": [
+            "/mnt/c/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+            "-S",
+            "C:\\Users\\edward\\AppData\\Local\\Temp\\rhwp-pr-review-seo-rii-20261107\\cpp-validation",
+            "-B",
+            "C:\\Users\\edward\\AppData\\Local\\Temp\\rhwp-pr-review-seo-rii-20261107\\cpp-build",
+            "-G",
+            "Visual Studio 17 2022",
+            "-A",
+            "x64"
+          ],
+          "returncode": 0
+        },
+        {
+          "name": "build",
+          "command": [
+            "/mnt/c/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+            "--build",
+            "C:\\Users\\edward\\AppData\\Local\\Temp\\rhwp-pr-review-seo-rii-20261107\\cpp-build",
+            "--config",
+            "Release",
+            "--parallel",
+            "2"
+          ],
+          "returncode": 1
+        }
+      ],
+      "finished_at": "2026-11-07T03:27:16.745128+00:00",
+      "runner_cwd_head": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+      "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+      "provenance_correction": "Initial head field was captured in runner cwd, not CMake source cwd; actual build source was the integration worktree.",
+      "source_sha256": {
+        "bindings/Flutter/windows/rhwp_d3d_plugin.cpp": "1a392718b6a277012436e2850cbd982268f8756ce9d099053f0c0ef86ff8173c",
+        "bindings/Flutter/windows/NativeApi.cpp": "6390e49b986a77958ecba93dc9933afd38a06b1134ed2999dc157f2a360ea2b1"
+      }
+    },
+    "windows-cpp-after.json": {
+      "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+      "working_tree_changes": [
+        "bindings/Flutter/windows/rhwp_d3d_plugin.cpp",
+        "bindings/Flutter/windows/NativeApi.cpp"
+      ],
+      "source_sha256": {
+        "bindings/Flutter/windows/rhwp_d3d_plugin.cpp": "eb5001beff6415fc3411cdc81c7c7e7b11e730fc8137bde2de030b77186d2492",
+        "bindings/Flutter/windows/NativeApi.cpp": "30e26b2c7930eb29a2eb8d9bcd0c6c8024d15127cbd5bbe17cc5c8922280e396"
+      },
+      "command": [
+        "/mnt/c/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+        "--build",
+        "C:\\Users\\edward\\AppData\\Local\\Temp\\rhwp-pr-review-seo-rii-20261107\\cpp-build",
+        "--config",
+        "Release",
+        "--parallel",
+        "2"
+      ],
+      "started_at": "2026-11-07T03:31:07.728619+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished_at": "2026-11-07T03:31:18.276788+00:00"
+    },
+    "windows-sdk-contracts.json": {
+      "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+      "executed_at": "2026-11-07T03:38:38.881971+00:00",
+      "platform": "actual Windows PE through WSL interop",
+      "results": [
+        {
+          "test": "public_texture_contract.exe",
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "sha256": "d867c449f33105498c863a3940c2d188b346e291c8d5f619c087f10ff61f5765"
+        },
+        {
+          "test": "frame_lifetime_contract.exe",
+          "returncode": 0,
+          "stdout": "Windows bridge portable: 8 cases, 51 checks passed\n",
+          "stderr": "",
+          "sha256": "c3a057f9f19b56796264370af80fe6242f83462a9d6c167160e7c9018926b0cb"
+        }
+      ]
+    },
+    "native-host-results.json": [
+      {
+        "name": "native-session",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/session_contract.py",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so",
+          "--native-skia",
+          "enabled"
+        ],
+        "head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "native_sha256": "8c0bd378cc0065f3e5b69cdf9b7dea4528fe5b0b6cd42f3c283df7fa6ef6bb72",
+        "started_at": "2026-11-07T03:22:49.996188+00:00",
+        "status": "passed",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:22:50.151267+00:00"
+      },
+      {
+        "name": "native-worker",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_worker_contract.py",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so"
+        ],
+        "head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "native_sha256": "8c0bd378cc0065f3e5b69cdf9b7dea4528fe5b0b6cd42f3c283df7fa6ef6bb72",
+        "started_at": "2026-11-07T03:22:50.154155+00:00",
+        "status": "passed",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:22:50.399403+00:00"
+      },
+      {
+        "name": "native-presentation",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_presentation_contract.py",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so"
+        ],
+        "head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "native_sha256": "8c0bd378cc0065f3e5b69cdf9b7dea4528fe5b0b6cd42f3c283df7fa6ef6bb72",
+        "started_at": "2026-11-07T03:22:50.402023+00:00",
+        "status": "passed",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:22:50.545264+00:00"
+      },
+      {
+        "name": "native-ime",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_ime_edit_contract.py",
+          "--library",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so"
+        ],
+        "head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "native_sha256": "8c0bd378cc0065f3e5b69cdf9b7dea4528fe5b0b6cd42f3c283df7fa6ef6bb72",
+        "started_at": "2026-11-07T03:22:50.547798+00:00",
+        "status": "passed",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:22:50.649661+00:00"
+      },
+      {
+        "name": "file-store",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_file_store_contract.py"
+        ],
+        "head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "native_sha256": "8c0bd378cc0065f3e5b69cdf9b7dea4528fe5b0b6cd42f3c283df7fa6ef6bb72",
+        "started_at": "2026-11-07T03:22:50.652158+00:00",
+        "status": "passed",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:22:50.908264+00:00"
+      },
+      {
+        "name": "worker-file-store",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_worker_file_store_contract.py",
+          "--library",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so"
+        ],
+        "head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "native_sha256": "8c0bd378cc0065f3e5b69cdf9b7dea4528fe5b0b6cd42f3c283df7fa6ef6bb72",
+        "started_at": "2026-11-07T03:22:50.910938+00:00",
+        "status": "passed",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:22:51.479009+00:00"
+      },
+      {
+        "name": "native-accessibility",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_accessibility_contract.py"
+        ],
+        "head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "native_sha256": "8c0bd378cc0065f3e5b69cdf9b7dea4528fe5b0b6cd42f3c283df7fa6ef6bb72",
+        "started_at": "2026-11-07T03:22:51.481575+00:00",
+        "status": "passed",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:22:51.579415+00:00"
+      },
+      {
+        "name": "native-tiles-adapter",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_viewport_tiles_contract.py"
+        ],
+        "head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "native_sha256": "8c0bd378cc0065f3e5b69cdf9b7dea4528fe5b0b6cd42f3c283df7fa6ef6bb72",
+        "started_at": "2026-11-07T03:22:51.582102+00:00",
+        "status": "passed",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:22:51.708304+00:00"
+      },
+      {
+        "name": "qt-actual-cpu",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_window_smoke.py",
+          "--library",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so",
+          "--screenshot",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/qt-actual-cpu.png"
+        ],
+        "head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "native_sha256": "8c0bd378cc0065f3e5b69cdf9b7dea4528fe5b0b6cd42f3c283df7fa6ef6bb72",
+        "started_at": "2026-11-07T03:22:51.712161+00:00",
+        "status": "passed",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:22:56.295499+00:00"
+      }
+    ],
+    "native-more-results.json": [
+      {
+        "name": "gl-tiles",
+        "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont-gui.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_gl_tile_contract.py",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so",
+          "--require-gl"
+        ],
+        "started_at": "2026-11-07T03:41:35.793433+00:00",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:41:36.881141+00:00"
+      },
+      {
+        "name": "gl-recovery",
+        "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont-gui.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_gl_recovery_contract.py",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so",
+          "--require-gl"
+        ],
+        "started_at": "2026-11-07T03:41:36.881493+00:00",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:41:42.411328+00:00"
+      },
+      {
+        "name": "accessibility-actual",
+        "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_accessibility_smoke.py",
+          "--library",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so"
+        ],
+        "started_at": "2026-11-07T03:41:42.411647+00:00",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:41:42.540111+00:00"
+      },
+      {
+        "name": "file-store-actual",
+        "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_file_store_smoke.py",
+          "--library",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so"
+        ],
+        "started_at": "2026-11-07T03:41:42.540471+00:00",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:41:42.710226+00:00"
+      },
+      {
+        "name": "direct-pdf-actual",
+        "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/pdf_direct_contract.py",
+          "--library",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so",
+          "--native-skia",
+          "enabled"
+        ],
+        "started_at": "2026-11-07T03:41:42.710770+00:00",
+        "returncode": 2,
+        "finished_at": "2026-11-07T03:41:42.806557+00:00"
+      },
+      {
+        "name": "host-package",
+        "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/package_native_host_contract.py"
+        ],
+        "started_at": "2026-11-07T03:41:42.807016+00:00",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:41:43.965351+00:00"
+      },
+      {
+        "name": "clipboard",
+        "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_clipboard_contract.py"
+        ],
+        "started_at": "2026-11-07T03:41:43.965713+00:00",
+        "returncode": 2,
+        "finished_at": "2026-11-07T03:41:44.041007+00:00"
+      },
+      {
+        "name": "commands",
+        "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_commands_contract.py"
+        ],
+        "started_at": "2026-11-07T03:41:44.041408+00:00",
+        "returncode": 2,
+        "finished_at": "2026-11-07T03:41:44.115410+00:00"
+      },
+      {
+        "name": "view-contract",
+        "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_view_contract.py"
+        ],
+        "started_at": "2026-11-07T03:41:44.115805+00:00",
+        "returncode": 2,
+        "finished_at": "2026-11-07T03:41:44.198063+00:00"
+      }
+    ],
+    "native-more-corrected-results.json": [
+      {
+        "name": "direct-pdf-actual",
+        "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/pdf_direct_contract.py",
+          "--library",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so",
+          "--native-skia",
+          "enabled",
+          "--sample",
+          "tests/fixtures/gradient/radial-corner-print-contract.hwpx"
+        ],
+        "started_at": "2026-11-07T03:42:16.844395+00:00",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:42:17.065574+00:00"
+      },
+      {
+        "name": "clipboard",
+        "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_clipboard_contract.py",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so"
+        ],
+        "started_at": "2026-11-07T03:42:17.066028+00:00",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:42:17.202719+00:00"
+      },
+      {
+        "name": "commands",
+        "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_commands_contract.py",
+          "--library",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so"
+        ],
+        "started_at": "2026-11-07T03:42:17.203209+00:00",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:42:17.318304+00:00"
+      },
+      {
+        "name": "view-contract",
+        "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "command": [
+          "python3",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+          "/home/edward/mygithub/rhwp/venv/bin/python",
+          "bindings/Native/tests/native_view_contract.py",
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so"
+        ],
+        "started_at": "2026-11-07T03:42:17.318880+00:00",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:42:17.407298+00:00"
+      }
+    ],
+    "linux-plugin-sdk-after-env.json": {
+      "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont-gui.py",
+        "python3",
+        "bindings/Flutter/linux/tests/check_linux_plugin.py",
+        "--output",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/linux-plugin",
+        "--flutter-engine",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/flutter-sdk/flutter/bin/cache/artifacts/engine/linux-x64",
+        "--dev-root",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/linux-dev-prefix",
+        "--gl-state",
+        "--gles-state"
+      ],
+      "system_include_paths": [
+        "/usr/include/glib-2.0",
+        "/usr/lib/x86_64-linux-gnu/glib-2.0/include",
+        "/usr/include/pango-1.0",
+        "/usr/include/harfbuzz",
+        "/usr/include/freetype2",
+        "/usr/include/libpng16",
+        "/usr/include/libmount",
+        "/usr/include/blkid",
+        "/usr/include/fribidi",
+        "/usr/include/cairo",
+        "/usr/include/pixman-1",
+        "/usr/include/gdk-pixbuf-2.0",
+        "/usr/include/x86_64-linux-gnu",
+        "/usr/include/webp"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T03:41:53.899172+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T03:42:01.867449+00:00"
+    },
+    "flutter-preparation.json": [
+      {
+        "name": "flutter-pub-get",
+        "command": [
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/flutter-sdk/flutter/bin/flutter",
+          "pub",
+          "get"
+        ],
+        "head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "started_at": "2026-11-07T03:17:33.664762+00:00",
+        "status": "passed",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:17:42.070065+00:00"
+      },
+      {
+        "name": "flutter-analyze",
+        "command": [
+          "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/flutter-sdk/flutter/bin/flutter",
+          "analyze"
+        ],
+        "head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+        "started_at": "2026-11-07T03:17:42.073420+00:00",
+        "status": "passed",
+        "returncode": 0,
+        "finished_at": "2026-11-07T03:17:54.958299+00:00"
+      }
+    ],
+    "flutter-tests.json": {
+      "name": "flutter-full-actual-native",
+      "head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont-flutter.py",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/flutter-sdk/flutter/bin/flutter",
+        "test",
+        "--concurrency=1",
+        "--dart-define=RHWP_OWNER_LIBRARY=/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_flutter_owner.so",
+        "--dart-define=RHWP_NATIVE_LIBRARY=/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so"
+      ],
+      "native_sha256": "8c0bd378cc0065f3e5b69cdf9b7dea4528fe5b0b6cd42f3c283df7fa6ef6bb72",
+      "owner_sha256": "0d1513663f611b79c2269dba272c071bb3558c8e8d93a694f8513071fb2ab675",
+      "started_at": "2026-11-07T03:24:27.834616+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished_at": "2026-11-07T03:24:45.859107+00:00"
+    },
+    "flutter-sdk.json": {
+      "version": {
+        "frameworkVersion": "3.47.9",
+        "channel": "stable",
+        "repositoryUrl": "https://github.com/flutter/flutter.git",
+        "frameworkRevision": "c197ca5199e9ee5661e865596c9c07294dfab51c",
+        "frameworkCommitDate": "2026-10-29 10:10:20 -0400",
+        "engineRevision": "89c39edfdfae2949f6806e4a315c0c08522238b7",
+        "engineCommitDate": "2026-10-27 19:51:20.000Z",
+        "engineContentHash": "9e025265bef30b838c0c1b68cad19decf97048f2",
+        "engineBuildDate": "2026-10-27 13:22:45.983",
+        "dartSdkVersion": "3.13.7",
+        "devToolsVersion": "2.60.0",
+        "flutterVersion": "3.47.9",
+        "flutterRoot": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/flutter-sdk/flutter"
+      },
+      "manifest_url": "https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json",
+      "download_url": "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.47.9-stable.tar.xz",
+      "expected_sha256": "25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a",
+      "status": "ready",
+      "started_at": "2026-11-07T03:14:09.269174+00:00",
+      "archive_bytes": 1582752184,
+      "verified_sha256": "25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a",
+      "flutter": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/flutter-sdk/flutter/bin/flutter",
+      "finished_at": "2026-11-07T03:15:56.111726+00:00"
+    },
+    "flutter-version.json": {
+      "frameworkVersion": "3.47.9",
+      "channel": "stable",
+      "repositoryUrl": "https://github.com/flutter/flutter.git",
+      "frameworkRevision": "c197ca5199e9ee5661e865596c9c07294dfab51c",
+      "frameworkCommitDate": "2026-10-29 10:10:20 -0400",
+      "engineRevision": "89c39edfdfae2949f6806e4a315c0c08522238b7",
+      "engineCommitDate": "2026-10-27 19:51:20.000Z",
+      "engineContentHash": "9e025265bef30b838c0c1b68cad19decf97048f2",
+      "engineBuildDate": "2026-10-27 13:22:45.983",
+      "dartSdkVersion": "3.13.7",
+      "devToolsVersion": "2.60.0",
+      "flutterVersion": "3.47.9",
+      "flutterRoot": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/flutter-sdk/flutter"
+    }
+  },
+  "minimal_font_scope": {
+    "fontconfig_inventory": "/home/edward/mygithub/rhwp-worktrees/review-integration-536-seo-rii-native-hosts/ttfs/opensource/NotoSansKR-Regular.ttf\n/home/edward/mygithub/rhwp-worktrees/review-integration-536-seo-rii-native-hosts/ttfs/opensource/NotoSansSymbols2-Regular.ttf\n/home/edward/mygithub/rhwp-worktrees/review-integration-536-seo-rii-native-hosts/ttfs/opensource/NotoSansKR-ExtraLight.ttf\n/home/edward/mygithub/rhwp-worktrees/review-integration-536-seo-rii-native-hosts/ttfs/opensource/RHWPPublicBatang-Regular.ttf\n/home/edward/mygithub/rhwp-worktrees/review-integration-536-seo-rii-native-hosts/ttfs/opensource/RHWPOldHangul-Regular.otf\n",
+    "isolated": "bwrap hides host/user fonts and /mnt/c; explicit licensed fixture supplied only for cache key pixel inequality",
+    "canonical_procedure": "mydocs/manual/pr_review/local_validation.md#회귀-테스트의-최소-글꼴-환경"
+  },
+  "limitations": [
+    "No macOS SDK/Metal execution",
+    "Windows Native D3D backend build still running",
+    "Flutter Linux final texture/controller execution still pending",
+    "Full local gates, fresh WASM and visual sweeps pending",
+    "No remote push, comment, new PR or merge authorization"
+  ]
+}

@@ -1,5 +1,5 @@
 //! 관계형·고정형: re-03-latin-only-hancom의 PDF API와 합성 PaintOp의 이미지 픽셀·화살촉 vector/거부 계약.
-//! 주석 갱신: 2026-10-30T23:23:28+09:00; 직전 파일 커밋: 2026-10-26T20:05:35+09:00 (19f332edc9258467cb991f4196c53119f357aeb8).
+//! 주석 갱신: 2026-11-06T12:48:21+09:00; 직전 파일 커밋: 2026-11-06T12:42:57+09:00 (0f7251999437118ce95b8b5571e31571a7ad24a2).
 //! 실물 페이지의 조판 좌표를 고정하는 검사가 아니므로 이 assertion의 raw 시각 측정값은 비해당이다.
 //! 합성 알고리즘 계약과 별도의 Native/fresh WASM 실물 검증을 구분한다.
 //! 근거: mydocs/pr/assets/seo_rii_20261030/README.md.
@@ -1201,6 +1201,762 @@ mod connector_arrow_regressions {
             let error = layer_trees_to_pdf(&[path(curved)]).unwrap_err();
             assert!(error.contains("unsupported arrow tangent"), "{error}");
             assert!(error.contains("use the svg backend"));
+        }
+    }
+}
+
+// P80: static admission is a bounded diagnostic API, independent of canvas/font
+// preparation. Synthetic invalid fields establish the public reason/location
+// contract without a system-font or real-document layout dependency.
+mod direct_pdf_preflight_contract {
+    use rhwp::paint::{
+        CacheHint, ClipKind, GroupKind, LayerNode, PageLayerTree, PaintOp, RenderProfile,
+    };
+    use rhwp::renderer::pdf::{
+        layer_trees_to_pdf, preflight_direct_pdf, DirectPdfExportOptions, DirectPdfPreflightLimit,
+        DirectPdfPreflightLimits, DirectPdfPreflightLocation, DirectPdfPreflightReason as Reason,
+    };
+    use rhwp::renderer::render_tree::{BoundingBox, ImageNode, RectangleNode};
+    use rhwp::renderer::{GradientFillInfo, PatternFillInfo, ShadowStyle, ShapeStyle};
+
+    fn bounds() -> BoundingBox {
+        BoundingBox::new(0.0, 0.0, 96.0, 64.0)
+    }
+
+    fn rectangle(opacity: f64) -> PaintOp {
+        PaintOp::rectangle(
+            BoundingBox::new(8.0, 8.0, 80.0, 32.0),
+            RectangleNode::new(
+                0.0,
+                ShapeStyle {
+                    opacity,
+                    ..Default::default()
+                },
+                None,
+            ),
+        )
+    }
+
+    fn page(root: LayerNode) -> PageLayerTree {
+        PageLayerTree::with_profile(96.0, 64.0, root, RenderProfile::Print)
+    }
+
+    fn leaf(ops: Vec<PaintOp>) -> LayerNode {
+        LayerNode::leaf(bounds(), None, ops)
+    }
+
+    #[test]
+    fn preflight_collects_independent_failures_on_one_op_and_preserves_export_first_error() {
+        let mut op = rectangle(2.0);
+        let PaintOp::Rectangle { rect, .. } = &mut op else {
+            unreachable!()
+        };
+        rect.transform.rotation = f64::NAN;
+        rect.corner_radius = -1.0;
+        rect.gradient = Some(Box::new(GradientFillInfo {
+            gradient_type: 3,
+            angle: 0,
+            center_x: 50,
+            center_y: 50,
+            colors: vec![0xff],
+            positions: vec![-0.1, 1.0],
+        }));
+        rect.style.pattern = Some(PatternFillInfo {
+            pattern_type: 1,
+            tile_size: 8.0,
+            pattern_color: 0,
+            background_color: 0xffffff,
+        });
+        rect.style.shadow = Some(ShadowStyle {
+            shadow_type: 1,
+            color: 0,
+            offset_x: 1.0,
+            offset_y: 1.0,
+            alpha: 128,
+        });
+        rect.style.stroke_width = -1.0;
+        let pages = [page(leaf(vec![op]))];
+        let report = preflight_direct_pdf(
+            &pages,
+            &DirectPdfExportOptions::default(),
+            DirectPdfPreflightLimits::default(),
+        );
+        let reasons: Vec<_> = report.issues.iter().map(|issue| issue.reason).collect();
+        assert_eq!(
+            reasons,
+            [
+                Reason::InvalidRotation,
+                Reason::InvalidCornerRadius,
+                Reason::UnsupportedGradientType,
+                Reason::GradientColorCountOutOfRange,
+                Reason::InvalidGradientStops,
+                Reason::UnsupportedPatternFill,
+                Reason::UnsupportedShapeShadow,
+                Reason::InvalidOpacity,
+                Reason::InvalidStrokeWidth,
+            ]
+        );
+        assert!(!report.truncated);
+        assert!(!report.is_admitted());
+        assert!(report.issues.iter().all(|issue| issue.location
+            == DirectPdfPreflightLocation {
+                page_index: Some(0),
+                node_index: Some(0),
+                op_index: Some(0),
+                operation: Some("rectangle"),
+            }));
+        assert_eq!(
+            layer_trees_to_pdf(&pages).unwrap_err(),
+            report.issues[0].message
+        );
+        assert_eq!(
+            report.issues[0].message,
+            "direct PDF page 1 has invalid rectangle rotation"
+        );
+    }
+
+    #[test]
+    fn preflight_orders_layers_clips_ops_and_pages_without_merging_distinct_locations() {
+        let clip = LayerNode::clip_rect(
+            BoundingBox::new(f64::NAN, 0.0, 96.0, 64.0),
+            None,
+            BoundingBox::new(0.0, 0.0, -1.0, 16.0),
+            leaf(vec![rectangle(2.0)]),
+            ClipKind::Generic,
+        );
+        let root = LayerNode::group(
+            bounds(),
+            None,
+            vec![clip, leaf(vec![rectangle(2.0)])],
+            CacheHint::None,
+            GroupKind::Generic,
+        );
+        let mut first = page(root);
+        first.page_width = 0.0;
+        first.page_height = 20_000.0;
+        let pages = [first, page(leaf(vec![rectangle(2.0)]))];
+        let options = DirectPdfExportOptions::default();
+        let report = preflight_direct_pdf(&pages, &options, DirectPdfPreflightLimits::default());
+        assert_eq!(
+            report,
+            preflight_direct_pdf(&pages, &options, DirectPdfPreflightLimits::default())
+        );
+        let actual: Vec<_> = report
+            .issues
+            .iter()
+            .map(|issue| {
+                (
+                    issue.reason,
+                    issue.location.page_index,
+                    issue.location.node_index,
+                    issue.location.op_index,
+                )
+            })
+            .collect();
+        assert_eq!(
+            actual,
+            [
+                (Reason::InvalidLayerBounds, Some(0), Some(1), None),
+                (Reason::InvalidClipBounds, Some(0), Some(1), None),
+                (Reason::InvalidOpacity, Some(0), Some(2), Some(0)),
+                (Reason::InvalidOpacity, Some(0), Some(3), Some(1)),
+                (Reason::InvalidPageWidth, Some(0), None, None),
+                (Reason::PageHeightTooLarge, Some(0), None, None),
+                (Reason::InvalidOpacity, Some(1), Some(0), Some(0)),
+            ]
+        );
+        assert_eq!(
+            layer_trees_to_pdf(&pages).unwrap_err(),
+            report.issues[0].message
+        );
+    }
+
+    #[test]
+    fn preflight_marks_only_omitted_issues_as_truncated_and_clamps_limits() {
+        let pages = [page(leaf(vec![
+            rectangle(2.0),
+            rectangle(2.0),
+            rectangle(2.0),
+        ]))];
+        let options = DirectPdfExportOptions::default();
+        let limits = DirectPdfPreflightLimits {
+            max_issues: 2,
+            max_work_items: 100,
+        };
+        let report = preflight_direct_pdf(&pages, &options, limits);
+        assert_eq!(report.issues.len(), 2);
+        assert_eq!(report.limit_reached, Some(DirectPdfPreflightLimit::Issues));
+        assert!(report.truncated);
+        assert!(!report.is_admitted());
+        let exact = preflight_direct_pdf(
+            &[page(leaf(vec![rectangle(2.0), rectangle(2.0)]))],
+            &options,
+            limits,
+        );
+        assert_eq!(exact.issues.len(), 2);
+        assert!(!exact.truncated);
+        assert_eq!(exact.limit_reached, None);
+        let clamped = preflight_direct_pdf(
+            &pages,
+            &options,
+            DirectPdfPreflightLimits {
+                max_issues: 0,
+                max_work_items: usize::MAX,
+            },
+        );
+        assert_eq!(clamped.limits.max_issues, 1);
+        assert_eq!(clamped.limits.max_work_items, 1_000_000);
+        assert_eq!(clamped.issues.len(), 1);
+        assert!(clamped.truncated);
+        let high = preflight_direct_pdf(
+            &[],
+            &options,
+            DirectPdfPreflightLimits {
+                max_issues: usize::MAX,
+                max_work_items: 0,
+            },
+        );
+        assert_eq!(high.limits.max_issues, 4096);
+        assert_eq!(high.limits.max_work_items, 1);
+    }
+
+    #[test]
+    fn preflight_work_limit_never_admits_an_uninspected_valid_or_invalid_tail() {
+        let options = DirectPdfExportOptions::default();
+        let limits = DirectPdfPreflightLimits {
+            max_issues: 16,
+            max_work_items: 3,
+        };
+        for tail_opacity in [1.0, 2.0] {
+            let pages = [page(leaf(vec![rectangle(1.0), rectangle(tail_opacity)]))];
+            let report = preflight_direct_pdf(&pages, &options, limits);
+            assert!(report.issues.is_empty());
+            assert_eq!(report.work_items_checked, 3); // page + layer + first op
+            assert_eq!(
+                report.limit_reached,
+                Some(DirectPdfPreflightLimit::WorkItems)
+            );
+            assert!(!report.is_admitted());
+            let complete = preflight_direct_pdf(
+                &pages,
+                &options,
+                DirectPdfPreflightLimits {
+                    max_work_items: 4,
+                    ..limits
+                },
+            );
+            assert!(!complete.truncated);
+            assert_eq!(complete.is_admitted(), tail_opacity == 1.0);
+        }
+    }
+
+    #[test]
+    fn preflight_collects_document_and_option_errors_without_a_page_location() {
+        let mut options = DirectPdfExportOptions::default();
+        options.raster_dpi = f32::NAN;
+        let report = preflight_direct_pdf(&[], &options, DirectPdfPreflightLimits::default());
+        assert_eq!(
+            report
+                .issues
+                .iter()
+                .map(|issue| issue.reason)
+                .collect::<Vec<_>>(),
+            [Reason::EmptyDocument, Reason::InvalidRasterDpi]
+        );
+        assert!(report
+            .issues
+            .iter()
+            .all(|issue| issue.location == DirectPdfPreflightLocation::default()));
+        assert!(!report.is_admitted());
+    }
+
+    #[test]
+    fn preflight_and_export_reject_page_extents_that_underflow_skia_scalars() {
+        let options = DirectPdfExportOptions::default();
+        for tiny in [1e-50, 1e-300, f64::MIN_POSITIVE] {
+            assert!(tiny * 0.75 > 0.0);
+            assert_eq!((tiny * 0.75) as f32, 0.0);
+            for width in [true, false] {
+                let mut tree = page(leaf(Vec::new()));
+                if width {
+                    tree.page_width = tiny;
+                } else {
+                    tree.page_height = tiny;
+                }
+                let pages = [tree];
+                let report =
+                    preflight_direct_pdf(&pages, &options, DirectPdfPreflightLimits::default());
+                assert!(!report.is_admitted());
+                assert!(!report.truncated);
+                assert_eq!(report.issues.len(), 1);
+                assert_eq!(
+                    report.issues[0].reason,
+                    if width {
+                        Reason::InvalidPageWidth
+                    } else {
+                        Reason::InvalidPageHeight
+                    }
+                );
+                assert_eq!(
+                    report.issues[0].location,
+                    DirectPdfPreflightLocation {
+                        page_index: Some(0),
+                        ..Default::default()
+                    }
+                );
+                // Exercise the real public export path: this must return Err,
+                // rather than pass a zero width/height to Skia's begin_page.
+                assert_eq!(
+                    layer_trees_to_pdf(&pages).unwrap_err(),
+                    report.issues[0].message
+                );
+            }
+        }
+        // Positivity is checked after conversion, without inventing a minimum
+        // physical page size. Small representable extents remain supported.
+        let mut small = page(leaf(Vec::new()));
+        small.page_width = 0.0001;
+        small.page_height = 0.0002;
+        assert!(preflight_direct_pdf(
+            std::slice::from_ref(&small),
+            &options,
+            DirectPdfPreflightLimits::default(),
+        )
+        .is_admitted());
+        assert!(layer_trees_to_pdf(&[small]).unwrap().starts_with(b"%PDF-"));
+    }
+
+    #[test]
+    fn preflight_static_success_does_not_mask_a_strict_image_decode_failure() {
+        // A recognized PNG signature has no decodable image. Static inspection
+        // must not allocate a decoded image or claim successful resource replay.
+        let image = ImageNode::new(1, Some(b"\x89PNG\r\n\x1a\n".to_vec()));
+        let pages = [page(leaf(vec![PaintOp::image(bounds(), image, None)]))];
+        let report = preflight_direct_pdf(
+            &pages,
+            &DirectPdfExportOptions::default(),
+            DirectPdfPreflightLimits::default(),
+        );
+        assert!(report.is_admitted());
+        let error = layer_trees_to_pdf(&pages)
+            .expect_err("export still decodes the resource and fails closed");
+        assert!(error.contains("cannot decode image payload"), "{error}");
+    }
+}
+
+// P81: the established physical-circle contract is admitted only for bounded
+// type-2 gradients. PDF shading dictionaries prove vector recording, while
+// analytic color relationships and clipping exercise the common Native paint.
+mod direct_pdf_radial_gradient_contract {
+    use rhwp::paint::{ClipKind, LayerNode, LayerNodeKind, PageLayerTree, PaintOp, RenderProfile};
+    use rhwp::renderer::layer_renderer::RasterRenderOptions;
+    use rhwp::renderer::pdf::{
+        layer_trees_to_pdf, preflight_direct_pdf, DirectPdfExportOptions, DirectPdfPreflightLimits,
+        DirectPdfPreflightReason as Reason,
+    };
+    use rhwp::renderer::raster_pixels::RasterPixels;
+    use rhwp::renderer::render_tree::{
+        BoundingBox, EllipseNode, PageBackgroundNode, PathNode, RectangleNode,
+    };
+    use rhwp::renderer::skia::SkiaLayerRenderer;
+    use rhwp::renderer::{GradientFillInfo, PathCommand, ShapeStyle};
+
+    fn bounds() -> BoundingBox {
+        BoundingBox::new(8.0, 8.0, 80.0, 48.0)
+    }
+
+    fn gradient() -> GradientFillInfo {
+        GradientFillInfo {
+            gradient_type: 2,
+            angle: 0,
+            center_x: 50,
+            center_y: 50,
+            colors: vec![0x0000_00ff, 0x00ff_0000],
+            positions: vec![0.0, 1.0],
+        }
+    }
+
+    fn tree(
+        kind: &str,
+        gradient: GradientFillInfo,
+        bounds: BoundingBox,
+        opacity: f64,
+    ) -> PageLayerTree {
+        let gradient = Some(Box::new(gradient));
+        let style = ShapeStyle {
+            opacity,
+            ..Default::default()
+        };
+        let op = match kind {
+            "background" => PaintOp::page_background(
+                bounds,
+                PageBackgroundNode {
+                    background_color: None,
+                    border_color: None,
+                    border_width: 0.0,
+                    gradient,
+                    image: None,
+                },
+            ),
+            "rectangle" => PaintOp::rectangle(bounds, RectangleNode::new(0.0, style, gradient)),
+            "ellipse" => PaintOp::ellipse(bounds, EllipseNode::new(style, gradient)),
+            "path" => PaintOp::path(
+                bounds,
+                PathNode::new(
+                    vec![
+                        PathCommand::MoveTo(bounds.x, bounds.y),
+                        PathCommand::LineTo(bounds.x + bounds.width, bounds.y),
+                        PathCommand::LineTo(bounds.x + bounds.width, bounds.y + bounds.height),
+                        PathCommand::LineTo(bounds.x, bounds.y + bounds.height),
+                        PathCommand::ClosePath,
+                    ],
+                    style,
+                    gradient,
+                ),
+            ),
+            _ => unreachable!("known shape fixture"),
+        };
+        PageLayerTree::with_profile(
+            96.0,
+            64.0,
+            LayerNode::leaf(BoundingBox::new(0.0, 0.0, 96.0, 64.0), None, vec![op]),
+            RenderProfile::Print,
+        )
+    }
+
+    fn report(tree: &PageLayerTree) -> rhwp::renderer::pdf::DirectPdfPreflightReport {
+        preflight_direct_pdf(
+            std::slice::from_ref(tree),
+            &DirectPdfExportOptions::default(),
+            DirectPdfPreflightLimits::default(),
+        )
+    }
+
+    fn assert_radial_vector_pdf(tree: &PageLayerTree) -> Vec<u8> {
+        assert!(report(tree).is_admitted());
+        let pdf =
+            layer_trees_to_pdf(std::slice::from_ref(tree)).expect("bounded radial vector export");
+        let dictionaries = String::from_utf8_lossy(&pdf);
+        assert!(
+            dictionaries.contains("/ShadingType 3"),
+            "PDF radial shading must be recorded"
+        );
+        assert!(
+            !dictionaries.contains("/ShadingType 2"),
+            "type 2 source is a physical circle"
+        );
+        assert!(
+            !dictionaries.contains("/Subtype /Image"),
+            "radial fill must stay vector"
+        );
+        // Standard PDF radial shading contains start/end circles. Skia may
+        // normalize their coordinates into a pattern matrix, so inspect the
+        // circle relationship rather than pin its matrix packing.
+        let mut circles = 0;
+        let mut cursor = dictionaries.as_ref();
+        while let Some((_, rest)) = cursor.split_once("/Coords [") {
+            let (coords, rest) = rest.split_once(']').expect("closed shading coordinates");
+            let values: Vec<f64> = coords
+                .split_whitespace()
+                .map(|value| value.parse().expect("numeric shading coordinate"))
+                .collect();
+            if values.len() == 6 {
+                assert!(values.iter().all(|value| value.is_finite()));
+                assert_eq!(values[0], values[3]);
+                assert_eq!(values[1], values[4]);
+                assert_eq!(values[2], 0.0);
+                assert!(values[5] > 0.0);
+                circles += 1;
+            }
+            cursor = rest;
+        }
+        assert!(circles > 0, "a radial shader has two concentric circles");
+        pdf
+    }
+
+    fn pixel(pixels: &RasterPixels, x: usize, y: usize) -> [u8; 4] {
+        let offset = y * pixels.stride + x * 4;
+        pixels.bytes[offset..offset + 4].try_into().unwrap()
+    }
+
+    fn vector_streams(pdf: &[u8]) -> String {
+        use flate2::read::ZlibDecoder;
+        use std::io::Read;
+        let mut output = String::new();
+        let mut cursor = 0;
+        while let Some(relative) = pdf[cursor..]
+            .windows(7)
+            .position(|bytes| bytes == b"stream\n")
+        {
+            let marker = cursor + relative;
+            if pdf[..marker].ends_with(b"end") {
+                cursor = marker + 7;
+                continue;
+            }
+            let start = pdf[..marker]
+                .windows(2)
+                .rposition(|bytes| bytes == b"<<")
+                .expect("stream dictionary");
+            let dictionary = String::from_utf8_lossy(&pdf[start..marker]);
+            let length: usize = dictionary
+                .split_once("/Length ")
+                .expect("stream length")
+                .1
+                .trim_start()
+                .split(|c: char| !c.is_ascii_digit())
+                .next()
+                .unwrap()
+                .parse()
+                .unwrap();
+            let start = marker + 7;
+            let end = start + length;
+            let bytes = if dictionary.contains("/FlateDecode") {
+                let mut bytes = Vec::new();
+                ZlibDecoder::new(&pdf[start..end])
+                    .read_to_end(&mut bytes)
+                    .unwrap();
+                bytes
+            } else {
+                pdf[start..end].to_vec()
+            };
+            output.push_str(&String::from_utf8_lossy(&bytes));
+            output.push('\n');
+            cursor = end;
+        }
+        output
+    }
+
+    #[test]
+    fn direct_pdf_admits_radial_background_rectangle_ellipse_and_path_at_source_centers() {
+        for kind in ["background", "rectangle", "ellipse", "path"] {
+            for (center_x, center_y) in [(0, 0), (50, 50), (100, 100), (0, 100), (100, 0)] {
+                let mut source = gradient();
+                source.center_x = center_x;
+                source.center_y = center_y;
+                assert_radial_vector_pdf(&tree(kind, source, bounds(), 1.0));
+            }
+        }
+        for bounds in [
+            BoundingBox::new(8.0, 8.0, 48.0, 48.0),
+            BoundingBox::new(8.0, 8.0, 24.0, 48.0),
+        ] {
+            assert_radial_vector_pdf(&tree("rectangle", gradient(), bounds, 1.0));
+        }
+    }
+
+    #[test]
+    fn direct_pdf_radial_preserves_even_spacing_hard_stops_and_color_bound() {
+        let mut evenly = gradient();
+        evenly.positions.clear();
+        assert_radial_vector_pdf(&tree("rectangle", evenly, bounds(), 1.0));
+        let mut hard = gradient();
+        hard.colors = vec![0xff, 0xff, 0xff0000, 0xff0000];
+        hard.positions = vec![0.0, 0.5, 0.5, 1.0];
+        assert_radial_vector_pdf(&tree("rectangle", hard, bounds(), 1.0));
+        let mut maximum = gradient();
+        maximum.colors = (0..4096)
+            .map(|index| if index % 2 == 0 { 0xff } else { 0xff0000 })
+            .collect();
+        maximum.positions.clear();
+        assert_radial_vector_pdf(&tree("rectangle", maximum, bounds(), 1.0));
+    }
+
+    #[test]
+    fn direct_pdf_radial_rejects_invalid_centers_stops_and_f32_circles() {
+        for (x, y) in [
+            (-1, 50),
+            (101, 50),
+            (50, -1),
+            (50, 101),
+            (i16::MIN, i16::MAX),
+        ] {
+            let mut source = gradient();
+            source.center_x = x;
+            source.center_y = y;
+            let candidate = tree("rectangle", source, bounds(), 1.0);
+            assert!(report(&candidate)
+                .issues
+                .iter()
+                .any(|issue| issue.reason == Reason::InvalidRadialGradientCenter));
+            assert!(layer_trees_to_pdf(&[candidate])
+                .unwrap_err()
+                .contains("radial gradient center outside"));
+        }
+        for bounds in [
+            BoundingBox::new(8.0, 8.0, 0.0, 48.0),
+            BoundingBox::new(0.0, 0.0, 0.5, 0.5),
+            BoundingBox::new(0.0, 0.0, 1e20, 1e20),
+            // Nonempty f32 rectangle; its circle radius disappears against
+            // the rounded center on the positive x side.
+            BoundingBox::new(2_f64.powi(30), 0.0, 96.0, 1.0),
+            BoundingBox::new(f64::from(f32::MAX), 0.0, f64::from(f32::MAX), 48.0),
+        ] {
+            let candidate = tree("rectangle", gradient(), bounds, 1.0);
+            assert!(!report(&candidate).is_admitted());
+            let error = layer_trees_to_pdf(&[candidate]).unwrap_err();
+            assert!(
+                error.contains("invalid gradient replay bounds")
+                    || error.contains("invalid radial gradient circle"),
+                "{error}"
+            );
+        }
+        for positions in [
+            vec![0.0],
+            vec![1.0, 0.0],
+            vec![0.0, f64::NAN],
+            vec![-0.1, 1.0],
+            vec![0.0, 1.1],
+        ] {
+            let mut source = gradient();
+            source.positions = positions;
+            let candidate = tree("rectangle", source, bounds(), 1.0);
+            assert!(report(&candidate)
+                .issues
+                .iter()
+                .any(|issue| issue.reason == Reason::InvalidGradientStops));
+            assert!(layer_trees_to_pdf(&[candidate]).is_err());
+        }
+        let mut collapsed = gradient();
+        collapsed.colors = vec![0xff, 0x00ff00, 0xff0000];
+        collapsed.positions = vec![0.0, 1e-50, 1.0];
+        let candidate = tree("rectangle", collapsed, bounds(), 1.0);
+        assert!(report(&candidate)
+            .issues
+            .iter()
+            .any(|issue| issue.reason == Reason::InvalidExpandedGradientStops));
+        assert!(layer_trees_to_pdf(&[candidate])
+            .unwrap_err()
+            .contains("collapsed radial gradient stop positions"));
+        for count in [0, 1, 4097] {
+            let mut source = gradient();
+            source.colors.resize(count, 0xff);
+            source.positions.clear();
+            let candidate = tree("rectangle", source, bounds(), 1.0);
+            assert!(report(&candidate)
+                .issues
+                .iter()
+                .any(|issue| issue.reason == Reason::GradientColorCountOutOfRange));
+            assert!(layer_trees_to_pdf(&[candidate]).is_err());
+        }
+    }
+
+    #[test]
+    fn native_radial_uses_the_farthest_corner_radius_and_physical_circle_isolines() {
+        let candidate = tree("rectangle", gradient(), bounds(), 1.0);
+        assert_radial_vector_pdf(&candidate);
+        let pixels = SkiaLayerRenderer::new()
+            .render_pixels_with_options(&candidate, RasterRenderOptions::default())
+            .unwrap();
+        // The established corner-distance rule has center (48,32) and radius
+        // sqrt(40²+24²). It is neither max(width,height)/2 nor an ellipse.
+        let radius = 40_f64.hypot(24.0);
+        for (x, y) in [(48, 32), (71, 32), (48, 47)] {
+            let distance = (x as f64 + 0.5 - 48.0).hypot(y as f64 + 0.5 - 32.0);
+            let blue = (255.0 * distance / radius).round() as u8;
+            let actual = pixel(&pixels, x, y);
+            assert_eq!(actual[3], 255);
+            assert!(
+                actual[2].abs_diff(blue) <= 4,
+                "{x}/{y}: {actual:?}, blue={blue}"
+            );
+            assert!(actual[0].abs_diff(255 - blue) <= 4);
+        }
+        for channel in 0..4 {
+            assert!(pixel(&pixels, 63, 32)[channel].abs_diff(pixel(&pixels, 48, 47)[channel]) <= 1);
+        }
+    }
+
+    #[test]
+    fn direct_pdf_radial_records_clip_and_opacity_and_native_preserves_both() {
+        let renderer = SkiaLayerRenderer::new();
+        for opacity in [0.25, 0.5, 1.0] {
+            let mut candidate = tree("rectangle", gradient(), bounds(), opacity);
+            candidate.root = LayerNode::clip_rect(
+                BoundingBox::new(0.0, 0.0, 96.0, 64.0),
+                None,
+                BoundingBox::new(32.0, 16.0, 32.0, 32.0),
+                candidate.root,
+                ClipKind::Generic,
+            );
+            let pdf = assert_radial_vector_pdf(&candidate);
+            let content = vector_streams(&pdf);
+            assert!(
+                content
+                    .split_whitespace()
+                    .any(|token| token == "W" || token == "W*"),
+                "vector clip must survive recording"
+            );
+            if opacity < 1.0 {
+                let dictionaries = String::from_utf8_lossy(&pdf);
+                let has_alpha = dictionaries
+                    .split("/ca ")
+                    .skip(1)
+                    .filter_map(|rest| rest.split_whitespace().next()?.parse::<f64>().ok())
+                    .any(|alpha| alpha > 0.0 && alpha < 1.0);
+                assert!(
+                    has_alpha || dictionaries.contains("/SMask"),
+                    "PDF must retain fractional alpha"
+                );
+            }
+            let pixels = renderer
+                .render_pixels_with_options(&candidate, RasterRenderOptions::default())
+                .unwrap();
+            assert_eq!(pixel(&pixels, 16, 24), [0, 0, 0, 0]);
+            let inside = pixel(&pixels, 48, 32);
+            assert!(inside[3].abs_diff((255.0 * opacity).round() as u8) <= 1);
+            assert!(inside[0] > inside[2]);
+        }
+        for opacity in [-0.1, 1.1, f64::NAN] {
+            let candidate = tree("rectangle", gradient(), bounds(), opacity);
+            assert!(report(&candidate)
+                .issues
+                .iter()
+                .any(|issue| issue.reason == Reason::InvalidOpacity));
+            assert!(layer_trees_to_pdf(&[candidate]).is_err());
+        }
+        let mut invalid_clip = tree("rectangle", gradient(), bounds(), 1.0);
+        invalid_clip.root = LayerNode::clip_rect(
+            BoundingBox::new(0.0, 0.0, 96.0, 64.0),
+            None,
+            BoundingBox::new(0.0, 0.0, -1.0, 16.0),
+            invalid_clip.root,
+            ClipKind::Generic,
+        );
+        assert!(report(&invalid_clip)
+            .issues
+            .iter()
+            .any(|issue| issue.reason == Reason::InvalidClipBounds));
+        assert!(layer_trees_to_pdf(&[invalid_clip]).is_err());
+        let mut missing_clip = tree("rectangle", gradient(), bounds(), 1.0);
+        missing_clip.root = LayerNode {
+            bounds: missing_clip.root.bounds,
+            source_node_id: None,
+            layer: None,
+            kind: LayerNodeKind::ClipPath {
+                paths: Vec::new(),
+                child: Box::new(missing_clip.root),
+            },
+        };
+        assert!(report(&missing_clip)
+            .issues
+            .iter()
+            .any(|issue| issue.reason == Reason::InvalidTextClipPath));
+        assert!(layer_trees_to_pdf(&[missing_clip]).is_err());
+    }
+
+    #[test]
+    fn direct_pdf_keeps_radial_approximations_and_sksl_types_closed() {
+        for kind in [0, 3, 4, 99] {
+            let mut source = gradient();
+            source.gradient_type = kind;
+            let candidate = tree("rectangle", source, bounds(), 1.0);
+            assert!(report(&candidate)
+                .issues
+                .iter()
+                .any(|issue| issue.reason == Reason::UnsupportedGradientType));
+            assert!(layer_trees_to_pdf(&[candidate])
+                .unwrap_err()
+                .contains("non-linear gradient fill"));
         }
     }
 }

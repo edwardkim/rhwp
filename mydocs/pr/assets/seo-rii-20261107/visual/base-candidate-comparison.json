@@ -1,0 +1,155 @@
+{
+  "base": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+  "candidate_product": "cda7c8cb33bb7ded970d033ed1543aabb49c63a2",
+  "each_backend_pages": 24,
+  "total_png_pairs": 48,
+  "over_2_pp": 0,
+  "all_png_byte_identical": true,
+  "precision_note": "TSV values parsed with Decimal; exact PNG byte identity additionally proves zero change without display-rounding ambiguity",
+  "items": [
+    {
+      "backend": "native",
+      "key": "radial",
+      "pages": 6,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "native",
+      "key": "eq-01",
+      "pages": 1,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "native",
+      "key": "shape-group",
+      "pages": 1,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-crop",
+      "pages": 1,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "native",
+      "key": "leading-definition",
+      "pages": 1,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "native",
+      "key": "recent-8555",
+      "pages": 4,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "native",
+      "key": "recent-8556",
+      "pages": 5,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "native",
+      "key": "recent-8557",
+      "pages": 4,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "native",
+      "key": "issue8337-full-fonts",
+      "pages": 1,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "wasm",
+      "key": "radial",
+      "pages": 6,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "wasm",
+      "key": "eq-01",
+      "pages": 1,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "wasm",
+      "key": "shape-group",
+      "pages": 1,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-crop",
+      "pages": 1,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "wasm",
+      "key": "leading-definition",
+      "pages": 1,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "wasm",
+      "key": "recent-8555",
+      "pages": 4,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "wasm",
+      "key": "recent-8556",
+      "pages": 5,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "wasm",
+      "key": "recent-8557",
+      "pages": 4,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    },
+    {
+      "backend": "wasm",
+      "key": "issue8337-full-fonts",
+      "pages": 1,
+      "maximum_drop_pp": "0.00",
+      "over_2_pp": 0,
+      "all_png_byte_identical": true
+    }
+  ]
+}

@@ -1,0 +1,302 @@
+[
+  {
+    "name": "opaque-stale",
+    "returncode": 0,
+    "response": {
+      "ok": true,
+      "softwareAdapter": false,
+      "verificationReadbacks": 1,
+      "native": {
+        "frame": {
+          "alpha": "premultiplied",
+          "backend": "d3d12Ganesh",
+          "colorSpace": "srgb",
+          "consumerGpuComplete": false,
+          "origin": "topLeft",
+          "pageCount": 1,
+          "pixelFormat": "bgra8UnormPremultiplied",
+          "producerFenceValue": 1,
+          "producerGpuComplete": true,
+          "resourceCommon": true,
+          "stamp": {
+            "deviceGeneration": 1,
+            "deviceScale": 1.0,
+            "documentId": 1,
+            "fontGeneration": 0,
+            "revision": 0,
+            "viewGeneration": 1
+          },
+          "submission": 1,
+          "target": {
+            "deviceGeneration": 1,
+            "height": 4,
+            "width": 4
+          },
+          "wholeFrameReadbacks": 0
+        },
+        "ok": true
+      },
+      "staleRejected": {
+        "code": "staleFrame",
+        "error": "stale presentation render stamp",
+        "ok": false,
+        "retryable": true,
+        "unpublishedTargetSafeToDiscard": true
+      },
+      "bgraSamples": [
+        [
+          153,
+          102,
+          51,
+          255
+        ],
+        [
+          153,
+          102,
+          51,
+          255
+        ],
+        [
+          153,
+          102,
+          51,
+          255
+        ],
+        [
+          153,
+          102,
+          51,
+          255
+        ],
+        [
+          153,
+          102,
+          51,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          153,
+          102,
+          51,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          153,
+          102,
+          51,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ]
+      ]
+    },
+    "command": [
+      "/mnt/c/Users/edward/AppData/Local/Programs/Python/Python312/python.exe",
+      "\\\\wsl.localhost\\Ubuntu-24.04\\home\\edward\\mygithub\\rhwp\\output\\pr-review\\seo-rii-20261107\\windows-rust\\d3d-opaque-stale.py"
+    ],
+    "executed_at": "2026-11-07T04:07:51.007398+00:00",
+    "probe_sha256": "e408055aa978d3d21c00fabfde63658fab40fa634ecfba6af213a79e5110cf8c"
+  },
+  {
+    "name": "alpha-stale",
+    "returncode": 0,
+    "response": {
+      "ok": true,
+      "softwareAdapter": false,
+      "verificationReadbacks": 1,
+      "native": {
+        "frame": {
+          "alpha": "premultiplied",
+          "backend": "d3d12Ganesh",
+          "colorSpace": "srgb",
+          "consumerGpuComplete": false,
+          "origin": "topLeft",
+          "pageCount": 1,
+          "pixelFormat": "bgra8UnormPremultiplied",
+          "producerFenceValue": 1,
+          "producerGpuComplete": true,
+          "resourceCommon": true,
+          "stamp": {
+            "deviceGeneration": 1,
+            "deviceScale": 1.0,
+            "documentId": 1,
+            "fontGeneration": 0,
+            "revision": 0,
+            "viewGeneration": 1
+          },
+          "submission": 1,
+          "target": {
+            "deviceGeneration": 1,
+            "height": 4,
+            "width": 4
+          },
+          "wholeFrameReadbacks": 0
+        },
+        "ok": true
+      },
+      "staleRejected": {
+        "code": "staleFrame",
+        "error": "stale presentation render stamp",
+        "ok": false,
+        "retryable": true,
+        "unpublishedTargetSafeToDiscard": true
+      },
+      "bgraSamples": [
+        [
+          77,
+          51,
+          26,
+          128
+        ],
+        [
+          77,
+          51,
+          26,
+          128
+        ],
+        [
+          77,
+          51,
+          26,
+          128
+        ],
+        [
+          77,
+          51,
+          26,
+          128
+        ],
+        [
+          77,
+          51,
+          26,
+          128
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          77,
+          51,
+          26,
+          128
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          77,
+          51,
+          26,
+          128
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ]
+      ]
+    },
+    "command": [
+      "/mnt/c/Users/edward/AppData/Local/Programs/Python/Python312/python.exe",
+      "\\\\wsl.localhost\\Ubuntu-24.04\\home\\edward\\mygithub\\rhwp\\output\\pr-review\\seo-rii-20261107\\windows-rust\\d3d-alpha-stale.py"
+    ],
+    "executed_at": "2026-11-07T04:07:51.680247+00:00",
+    "probe_sha256": "e408055aa978d3d21c00fabfde63658fab40fa634ecfba6af213a79e5110cf8c"
+  }
+]

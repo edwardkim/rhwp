@@ -27,6 +27,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--library", required=True)
 parser.add_argument("--input")
 parser.add_argument("--output")
+parser.add_argument("--renderer", choices=("cpu", "auto", "gl"))
+parser.add_argument("--recovery-dir")
+parser.add_argument("--recovery-interval", type=float)
 args = parser.parse_args()
 assert Path(args.library).read_bytes() == b"fixture native library"
 print(json.dumps(vars(args)))
@@ -210,6 +213,26 @@ class PackageNativeHostContracts(unittest.TestCase):
                 self.assertEqual(response["output"], "new.hwpx")
         override = self.launch(moved, "headless", "--output", "new.hwpx", "--lib", "other.so")
         self.assertNotEqual(override.returncode, 0)
+
+    def test_window_launcher_forwards_renderer_without_enabling_it_for_headless(self):
+        self.build()
+        result = self.launch(None, "window", "--renderer", "gl")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)["renderer"], "gl")
+        result = self.launch(None, "headless", "--output", "new.hwpx", "--renderer", "auto")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("--renderer requires window mode", result.stderr)
+
+    def test_window_launcher_forwards_opt_in_recovery_configuration(self):
+        self.build()
+        result = self.launch(None, "window", "--recovery-dir", "recovery", "--recovery-interval", "2.5")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        response = json.loads(result.stdout)
+        self.assertEqual(response["recovery_dir"], "recovery")
+        self.assertEqual(response["recovery_interval"], 2.5)
+        result = self.launch(None, "headless", "--output", "new.hwpx", "--recovery-dir", "recovery")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("recovery options require window mode", result.stderr)
 
     def test_launcher_rejects_digest_path_escape_and_wrong_platform(self):
         manifest = self.build()

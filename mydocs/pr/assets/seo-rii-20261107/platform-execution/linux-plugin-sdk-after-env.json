@@ -1,0 +1,37 @@
+{
+  "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+  "command": [
+    "python3",
+    "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont-gui.py",
+    "python3",
+    "bindings/Flutter/linux/tests/check_linux_plugin.py",
+    "--output",
+    "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/linux-plugin",
+    "--flutter-engine",
+    "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/flutter-sdk/flutter/bin/cache/artifacts/engine/linux-x64",
+    "--dev-root",
+    "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/linux-dev-prefix",
+    "--gl-state",
+    "--gles-state"
+  ],
+  "system_include_paths": [
+    "/usr/include/glib-2.0",
+    "/usr/lib/x86_64-linux-gnu/glib-2.0/include",
+    "/usr/include/pango-1.0",
+    "/usr/include/harfbuzz",
+    "/usr/include/freetype2",
+    "/usr/include/libpng16",
+    "/usr/include/libmount",
+    "/usr/include/blkid",
+    "/usr/include/fribidi",
+    "/usr/include/cairo",
+    "/usr/include/pixman-1",
+    "/usr/include/gdk-pixbuf-2.0",
+    "/usr/include/x86_64-linux-gnu",
+    "/usr/include/webp"
+  ],
+  "status": "passed",
+  "started_at": "2026-11-07T03:41:53.899172+00:00",
+  "returncode": 0,
+  "finished_at": "2026-11-07T03:42:01.867449+00:00"
+}

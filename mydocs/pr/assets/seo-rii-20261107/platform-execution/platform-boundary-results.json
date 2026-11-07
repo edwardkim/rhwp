@@ -1,0 +1,79 @@
+[
+  {
+    "name": "metal-lifetime",
+    "command": [
+      "g++",
+      "-std=c++17",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pthread",
+      "bindings/Flutter/macos/tests/frame_lifetime_test.cc",
+      "-o",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/metal-lifetime"
+    ],
+    "source_head": "e976fd9393",
+    "returncode": 0
+  },
+  {
+    "name": "metal-lifetime-run",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/metal-lifetime"
+    ],
+    "source_head": "e976fd9393",
+    "returncode": 0
+  },
+  {
+    "name": "metal-disabled",
+    "command": [
+      "python3",
+      "bindings/Flutter/macos/tests/native_metal_disabled.py",
+      "--library",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so"
+    ],
+    "source_head": "e976fd9393",
+    "returncode": 0
+  },
+  {
+    "name": "d3d-disabled",
+    "command": [
+      "python3",
+      "bindings/Flutter/windows/tests/native_d3d_disabled.py",
+      "--library",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so"
+    ],
+    "source_head": "e976fd9393",
+    "returncode": 0
+  },
+  {
+    "name": "owner-mock-build",
+    "command": [
+      "cc",
+      "-std=c11",
+      "-O2",
+      "-fPIC",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-shared",
+      "bindings/Flutter/test/support/mock_native.c",
+      "-o",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_mock_native.so"
+    ],
+    "source_head": "e976fd9393",
+    "returncode": 0
+  },
+  {
+    "name": "owner-contract",
+    "command": [
+      "python3",
+      "bindings/Flutter/test/native_owner_contract.py",
+      "--dispatcher",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_flutter_owner.so",
+      "--mock",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_mock_native.so"
+    ],
+    "source_head": "e976fd9393",
+    "returncode": 0
+  }
+]
