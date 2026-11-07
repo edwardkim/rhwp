@@ -2177,8 +2177,9 @@ impl TypesetEngine {
         // 일반 행의 `선언 높이 - 이번 상자`로 되풀어 블록 시작 행에 넘기면,
         // 이미 소비한 앞 행을 빈 띠로 다시 연다. 남은 내용과 병합 공간은
         // 각각 원본 유닛 컷·걸침 칸 원장이 이어받는다.
-        let block_cut_owns_source_frame =
-            split_block_start.is_some() && stored_complete_extent.is_some();
+        let block_cut_owns_source_frame = split_block_start
+            .is_some_and(|first| first + 1 < end_row)
+            && stored_complete_extent.is_some();
         let next_start_row_height_override = source_opening_row_frame
             .as_ref().map(|(_, _, remaining)| *remaining)
             .or(empty_opening_next_height)

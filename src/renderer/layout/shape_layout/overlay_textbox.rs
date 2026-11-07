@@ -2,7 +2,8 @@
 
 use crate::model::shape::{ShapeObject, TextWrap};
 use crate::renderer::composer::{
-    paragraph_flow_end, recalculate_section_vpos, reflow_line_segs, ParagraphBox,
+    compose_paragraph_in_context, paragraph_flow_end, recalculate_section_vpos, reflow_line_segs,
+    ParagraphBox,
 };
 use crate::renderer::style_resolver::ResolvedStyleSet;
 use crate::renderer::{hwpunit_to_px, px_to_hwpunit};
@@ -43,6 +44,47 @@ pub(super) fn prepare(
     let vertical_margin = i32::from(text_box.margin_top) + i32::from(text_box.margin_bottom);
     let inner_width = width - hwpunit_to_px(horizontal_margin, dpi);
     if !inner_width.is_finite() || inner_width <= 0.0 || !height.is_finite() {
+        return None;
+    }
+    // 온전한 저장 글줄이 현재 글자 높이·안 여백과 함께 들어가면 높이
+    // 확장의 이유가 없다. 가로 재조판의 추정 폭으로 새 줄을 만든 뒤 그
+    // 높이를 원본 넘침이라고 판정하면 PDF의 위치 지정 낱말까지 분해된다.
+    let origin = super::textbox_vpos_origin_hu(common, false).filter(|origin| {
+        text_box
+            .paragraphs
+            .iter()
+            .find_map(|para| para.line_segs.first())
+            .is_some_and(|line| line.vertical_pos >= *origin)
+    });
+    let stored_content_fits = text_box.paragraphs.iter().all(|para| {
+        if para.line_segs.is_empty()
+            || para.stored_text_partition_is_dirty()
+            || para.cell_format_vpos_dirty
+        {
+            return false;
+        }
+        let composed = compose_paragraph_in_context(para, styles);
+        composed.lines.len() == para.line_segs.len()
+            && composed
+                .lines
+                .iter()
+                .zip(&para.line_segs)
+                .all(|(line, source)| {
+                    let font_height = line
+                        .runs
+                        .iter()
+                        .filter_map(|run| styles.char_styles.get(run.char_style_id as usize))
+                        .map(|style| px_to_hwpunit(style.font_size, dpi))
+                        .max()
+                        .unwrap_or(0);
+                    source.line_height > 0
+                        && super::normalize_textbox_vpos_hu(source.vertical_pos, origin)
+                            .saturating_add(source.line_height.max(font_height))
+                            .saturating_add(vertical_margin)
+                            <= px_to_hwpunit(height, dpi)
+                })
+    });
+    if stored_content_fits {
         return None;
     }
     let mut paragraphs = text_box.paragraphs.clone();

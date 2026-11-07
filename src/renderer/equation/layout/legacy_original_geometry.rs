@@ -70,6 +70,12 @@ impl EqLayout {
     }
 
     pub(super) fn original_group_frame(&self, mut body: LayoutBox, empty: bool) -> LayoutBox {
+        // 지원하는 구형 복합 분수는 legacy::row_children/fraction이 이미
+        // 피연산자의 논리 여백을 소유한다. 같은 중괄호에 원본 CHAR 평면의
+        // 그룹 여백까지 더하면 분자·분모와 분수선이 중복 확장된다.
+        if self.legacy_equation {
+            return body;
+        }
         let Some(unit) = self.original_group_unit() else {
             return body;
         };
