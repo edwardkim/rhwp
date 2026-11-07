@@ -1,0 +1,26 @@
+{
+  "product_commit": "d0826a8a4b116da16396f0894b59ec8bc9a181c9",
+  "source_receipt": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r30-batch-source-receipt.json",
+  "page": 5,
+  "role": "실제 고사성어 원본의 수정 후 Native 5쪽 선행 검증. 전쪽 최종 검증과 구분.",
+  "input": "samples/basic/sungeo.hwp",
+  "pdf": "pdf/basic/sungeo-hwp-2020.pdf",
+  "raw": 100.0,
+  "actual_png_sha256": "79ae18817bb8f578f134add8bc4e110b2098c644f16576bc3091435d5acc2911",
+  "pdf_png_sha256": "3fa1cbe0c22d5d04339e7e833b5e90d4e62bff3233d2a812b2616c404f0ce79f",
+  "before_after": {
+    "old_base_native_p005": "99.95",
+    "r29_native_p005": "98.93",
+    "r30_native_p005": "100.00",
+    "fresh_wasm_after": null
+  },
+  "focused_regression": {
+    "executed": 57,
+    "passed": 57,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 9.077,
+    "environment": "시스템 글꼴을 숨긴 최소 공개 글꼴 5종"
+  },
+  "scope": "리베이스 이전 R30 제품의 실제 원본 5쪽 Native 선행 검증. 전 94쪽 및 수정 후 fresh WASM은 아직 최종 측정하지 않았음."
+}
