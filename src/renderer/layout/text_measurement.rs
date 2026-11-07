@@ -2210,10 +2210,13 @@ fn char_width_decision_with_hft_tracking<'a>(
         }
         // 표시용 family로 내려가기 전에 원본 결측 기호의 검증된 공급 계약을
         // 해소한다. 표시 치환이 원본의 독립 Print 전진을 전각 추정으로 바꾸지 않는다.
+        // HFT 원본은 대체 메트릭이 가리키는 TTF 프로그램을 쓰지 않으므로 그 cmap 결측이
+        // 공급 근거가 아니다(#8619: `#세고딕` 기호 슬롯은 독립 Print 가 HFT 전각 점을 그린다).
         if embedded.width_px.is_none()
             && latin.is_none()
             && !style.hft_hangul_face
             && !style.hft_fullwidth_dot
+            && !style.source_font_is_hft
         {
             if let Some(metric) = embedded.metric.and_then(|primary| {
                 font_metrics_data::verified_missing_glyph_supplier(primary.metric, c)

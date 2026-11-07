@@ -5445,8 +5445,9 @@ let body_height=match nested_body_heights
         // 편집 세션은 실측을 신뢰한다.
         // 저장 글줄이 없는 셀은 현재 내용으로 재조판한다. 표/셀 선언의 수치 일치는
         // 내용 높이를 줄일 근거가 아니며 선언이 조금 달라도 같은 규칙을 적용한다.
-        let reflowed_cell_rows = !self.is_native_hwp5
-            && crate::renderer::composer::table_cells_have_no_stored_lines(table);
+        // 저장 형식과 무관하다: 저장 줄 없는 HWP5 TAC 표도 한/글 Print 는 재조판한
+        // 내용 높이로 행을 키운다(docs#458 머리 행 61.0px, 선언 축소 시 48.1px 로 줄 유실).
+        let reflowed_cell_rows = crate::renderer::composer::table_cells_have_no_stored_lines(table);
         let table_height = if stored_rows.is_some() {
             raw_table_height
         } else if table.common.treat_as_char
