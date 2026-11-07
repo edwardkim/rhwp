@@ -1,5 +1,5 @@
 // 관계형·고정형: 등록·미등록 경로가 같은 profile별 stroke를 소비한다. Print 장치 1px·Screen SVG 폭.
-// 주석 갱신: 2026-11-08T08:53:24.813454+09:00. 직전 파일 변경: cbe1f41507cf783f433acbbf62cefb8a9b0fe669 2026-11-08T08:25:14+09:00.
+// 주석 갱신: 2026-11-08T08:55:00.690538+09:00. 직전 파일 변경: 62dd9174efa7518e2a422be2d097ad9ae936fad6 2026-11-08T08:53:25+09:00.
 // 합성 빈 문서(휴먼명조 굵게 '국민권익' + 보통 '가나', 24pt)의 실제 WASM·FontFace·Canvas paint
 // 계약이다. 한컴 문서의 시각 출력을 검증하지 않으므로 다른 원본의 raw 일치율을 이 검사의 측정값으로
 // 적지 않는다. 같은 변경의 30396 권고문 25쪽 Native/fresh WASM TSV와 대표 PNG는
@@ -94,10 +94,15 @@ test('합성 굵기는 등록한 실제 face의 윤곽 fill+stroke로 그리고 
           doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', profile);
           const bold = calls.filter(call => call.text && /[국민권익]/.test(call.text));
           const plain = calls.filter(call => call.text && /[가나]/.test(call.text));
+          const inkLeft = ink(canvas, 0, Math.floor(canvas.width / 2));
+          doc.applyCharFormat(0, 0, 0, 4, JSON.stringify({bold: false}));
+          const normalCanvas = document.createElement('canvas');
+          doc.renderPageToCanvasFilteredWithProfile(0, normalCanvas, 1, 'all', profile);
           rows.push({profile, registered, bold, plain,
             pathFill: calls.filter(call => call.name === 'fill').length,
             pathStroke: calls.filter(call => call.name === 'stroke').map(call => call.lineWidth),
-            png: canvas.toDataURL(), inkLeft: ink(canvas, 0, Math.floor(canvas.width / 2))});
+            png: canvas.toDataURL(), inkLeft,
+            normalInk: ink(normalCanvas, 0, Math.floor(normalCanvas.width / 2))});
         } finally { doc.free(); }
       }
     }
@@ -125,7 +130,7 @@ test('합성 굵기는 등록한 실제 face의 윤곽 fill+stroke로 그리고 
   for (const profile of ['print', 'screen']) {
     const before = result.rows.find(row => row.profile === profile && !row.registered);
     const after = result.rows.find(row => row.profile === profile && row.registered);
-    // 미등록: 기존 fillText + strokeText(SVG와 같은 0.02em).
+    // 미등록은 실제 FontFace의 글자 API를 유지하며 장치 폭은 같은 profile 규칙을 따른다.
     assert.ok(before.bold.some(call => call.name === 'strokeText'), JSON.stringify(before.bold));
     // 등록: 같은 글자를 글자 API로 그리지 않고 윤곽 path fill+stroke로 그린다.
     assert.equal(after.bold.length, 0, `굵은 글자가 아직 글자 API로 그려짐: ${JSON.stringify(after.bold)}`);
@@ -138,10 +143,13 @@ test('합성 굵기는 등록한 실제 face의 윤곽 fill+stroke로 그리고 
     if (profile === 'print') {
       // 인쇄 래스터는 선과 같은 PDFium 최소 한 장치 픽셀 규칙(raster_stroke)을 따른다.
       assert.deepEqual(widths, ['1.000'], JSON.stringify(after.pathStroke));
-      assert.ok(after.inkLeft > before.inkLeft, `윤곽 paint가 기존보다 가늘다: ${after.inkLeft} <= ${before.inkLeft}`);
     } else {
       // 화면 프로필은 SVG·PDF와 같은 0.02em을 그대로 쓴다.
       assert.deepEqual(widths, [result.fauxStroke.toFixed(3)], JSON.stringify(after.pathStroke));
+    }
+    for (const row of [before, after]) {
+      assert.ok(row.inkLeft > row.normalInk,
+        `${profile}, 등록=${row.registered}: 같은 원문의 보통 굵기보다 합성 굵기가 진해야 한다`);
     }
   }
   for (const [name, calls] of Object.entries(result.fallback)) {
