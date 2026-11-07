@@ -1,6 +1,7 @@
 ---
-kind: report
-status: completed
+kind: snapshot
+status: historical
+canonical: mydocs/pr/assets/issue7375/final-20261108/validation.md
 last_verified: 2026-11-08
 ---
 
