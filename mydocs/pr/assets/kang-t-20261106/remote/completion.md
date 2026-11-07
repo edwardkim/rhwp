@@ -23,3 +23,9 @@
 ## 기본 작업공간의 검증 산출물
 
 기본 devel의 Rust source digest가 검증 producer와 같음을 확인하고 이미 검증한 optimized WASM을 pkg/public에 원자적으로 적용했다. [실제 적용 영수증](root-wasm-installed.json)에 build source·merge SHA·WASM 해시를 구분했으며 재빌드나 제품 코드 변경은 없다.
+
+## 후속 처리 완료
+
+이슈 3건과 원 PR 3건의 실제 [댓글 permalink·본문 검증](posted-followup-comments.json), 브라우저 [이미지 7개 표시 확인](comment-display-verification.json)을 완료했다. 원 3개 PR은 MERGED, 관련 이슈는 CLOSED다. fork branch를 삭제하지 않았다.
+
+이번 소유 worktree 2개·local/upstream 통합 branch·local PR fetch ref 3개를 제거했다. 실제 빌드·파일 사용이 없는 것을 확인하고 루트 output 전체와 공유 target/pr-review/debug 디렉터리를 제거했다. 백업·압축·이관은 만들지 않았다. [삭제 용량·전후 여유 공간·경로·부재 검증](cleanup.json)과 [최종 영수증](final-receipt.json)을 보존했다. 외부 pr-8296 작업공간·기본 작업공간과 다른 target profile은 유지했다.

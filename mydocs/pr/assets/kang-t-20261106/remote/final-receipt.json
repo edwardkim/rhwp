@@ -1,0 +1,84 @@
+{
+  "integration_pr": 8725,
+  "head": "07510f602a6081d90c94397fe29613420f3e7f63",
+  "merge_sha": "331521a3b1fb5de5dfa39b0707c0b295b90f9dc4",
+  "record_sha": "fb1235d00c4ff6f35702bc1147034f1d14a42cbb",
+  "source_prs": {
+    "8566": "MERGED",
+    "8595": "MERGED",
+    "8632": "MERGED"
+  },
+  "issues": {
+    "8555": "CLOSED",
+    "8556": "CLOSED",
+    "8557": "CLOSED"
+  },
+  "comments": [
+    {
+      "kind": "issue",
+      "number": 8555,
+      "id": 6699388788,
+      "url": "https://github.com/edwardkim/rhwp/issues/8555#issuecomment-6699388788",
+      "created": true,
+      "body_sha256": "0b2facca33fce8e0abede4ef809325f80273d2cb492ecf2831ccd5ab2d05df34",
+      "body_matches_utf8": true,
+      "expected_images": 0
+    },
+    {
+      "kind": "issue",
+      "number": 8556,
+      "id": 6699389241,
+      "url": "https://github.com/edwardkim/rhwp/issues/8556#issuecomment-6699389241",
+      "created": true,
+      "body_sha256": "9037f542498c1a6edb17e625d4eb559375e6cba5b504a58da8599a7df5b25e19",
+      "body_matches_utf8": true,
+      "expected_images": 0
+    },
+    {
+      "kind": "issue",
+      "number": 8557,
+      "id": 6699389628,
+      "url": "https://github.com/edwardkim/rhwp/issues/8557#issuecomment-6699389628",
+      "created": true,
+      "body_sha256": "2b6e5d0bac311eba26f13ad26f3fdb3f7f924b269f99007e88b059abba8e948f",
+      "body_matches_utf8": true,
+      "expected_images": 0
+    },
+    {
+      "kind": "pr",
+      "number": 8566,
+      "id": 6699390109,
+      "url": "https://github.com/edwardkim/rhwp/pull/8566#issuecomment-6699390109",
+      "created": true,
+      "body_sha256": "f0fcd50e74f473b17b0023156b14eac1c48130e46f37b54c1db83fd7d72fbb79",
+      "body_matches_utf8": true,
+      "expected_images": 2
+    },
+    {
+      "kind": "pr",
+      "number": 8595,
+      "id": 6699390625,
+      "url": "https://github.com/edwardkim/rhwp/pull/8595#issuecomment-6699390625",
+      "created": true,
+      "body_sha256": "0b4fa4c12c14ce7384192bed478dba01c78a95d4e1daf3cc882c2fd66faa0cae",
+      "body_matches_utf8": true,
+      "expected_images": 3
+    },
+    {
+      "kind": "pr",
+      "number": 8632,
+      "id": 6699391092,
+      "url": "https://github.com/edwardkim/rhwp/pull/8632#issuecomment-6699391092",
+      "created": true,
+      "body_sha256": "29a410576cb77c1a1ca733a89a2192169b0fda909aaf918404e304b393185ced",
+      "body_matches_utf8": true,
+      "expected_images": 2
+    }
+  ],
+  "github_comment_images_verified": 7,
+  "cleaned": true,
+  "cleanup_log": "cleanup.json",
+  "root_wasm_synchronized": true,
+  "ci_reruns_or_cancellations": 0,
+  "security_metadata_mutations": 0
+}

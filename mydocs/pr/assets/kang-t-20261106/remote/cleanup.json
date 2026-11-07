@@ -1,0 +1,39 @@
+{
+  "completed_kst": "2026-11-07T09:18:46.670565+09:00",
+  "deleted_paths": {
+    "/home/edward/mygithub/rhwp/output": 2144970617,
+    "/home/edward/mygithub/rhwp/target/pr-review/debug": 15335997166
+  },
+  "free_before_bytes": 199104643072,
+  "free_after_bytes": 216651280384,
+  "free_delta_bytes": 17546637312,
+  "output_directory_absent": true,
+  "debug_directory_absent": true,
+  "active_file_or_build_users_before_deletion": [],
+  "owned_worktrees_removed": [
+    "/home/edward/mygithub/rhwp-worktrees/review-base-8696-kang-t",
+    "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-kang-t-picture-editing"
+  ],
+  "owned_local_branch_removed": "review/integration-20261106-kang-t-picture-editing",
+  "owned_upstream_branch_removed": "review/integration-20261106-kang-t-picture-editing",
+  "local_pr_fetch_refs_removed": [
+    8566,
+    8595,
+    8632
+  ],
+  "preserved_worktrees": [
+    "/home/edward/mygithub/rhwp",
+    "/home/edward/mygithub/rhwp-worktrees/pr-8296-seal-pua"
+  ],
+  "preserved_target_profiles": [
+    "package",
+    "release-test",
+    "wasm32-unknown-unknown",
+    "doc",
+    "tmp",
+    "release",
+    "x86_64-unknown-linux-gnu"
+  ],
+  "contributor_fork_deletion_attempted": false,
+  "temporary_backup_or_archive_created": false
+}
