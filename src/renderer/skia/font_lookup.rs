@@ -81,6 +81,17 @@ pub(super) struct TypefaceCandidate {
     family_order: usize,
 }
 
+impl TypefaceCandidate {
+    /// 독립적인 원본 face는 그 요청의 첫 family다. 내부 정렬 키를 호출자가 복제하지 않는다.
+    pub(super) fn primary(typeface: Typeface, source: &'static str) -> Self {
+        Self {
+            typeface,
+            source,
+            family_order: 0,
+        }
+    }
+}
+
 /// A supplied face has one Skia primary name, but its SFNT naming table may
 /// declare localized or typographic family names for that same program.
 /// Match family records only: a full face or PostScript name is not a family.
@@ -683,10 +694,7 @@ mod tests {
                 .match_family_style(".LastResort", FontStyle::normal())
                 .expect("macOS의 내장 LastResort 프로그램");
             assert_ne!(placeholder.unichar_to_glyph('나' as i32), 0);
-            let chain = [TypefaceCandidate {
-                typeface: placeholder,
-                source: "system",
-            }];
+            let chain = [TypefaceCandidate::primary(placeholder, "system")];
             assert!(
                 select_typeface_for_character(&chain, '나').is_none(),
                 "블록 대용 글리프를 실제 한글 coverage로 사용하지 않음"

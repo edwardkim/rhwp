@@ -171,10 +171,7 @@ pub(super) fn draw_hancom_glyphs(
             });
     let primary = original
         .into_iter()
-        .map(|typeface| TypefaceCandidate {
-            typeface,
-            source: "hancomEquation",
-        })
+        .map(|typeface| TypefaceCandidate::primary(typeface, "hancomEquation"))
         .collect::<Vec<_>>();
     let mut fallbacks = [None, None];
     let mut semantic_text = None;
