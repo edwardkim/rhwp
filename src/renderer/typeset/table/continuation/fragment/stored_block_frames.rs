@@ -21,8 +21,76 @@ impl TypesetEngine {
         budget: &FragmentBudget,
         scan: &BlockTableRowScan,
     ) -> Option<StoredBlockAcceptance> {
-        self.accept_stored_block_row_frame(cursor, input, budget, scan)
+        self.accept_stored_block_opening_cell_frame(input, budget, scan)
+            .or_else(|| self.accept_stored_block_row_frame(cursor, input, budget, scan))
             .or_else(|| self.accept_stored_block_page_frame(st, input, budget, scan))
+    }
+
+    fn accept_stored_block_opening_cell_frame(
+        &self,
+        input: FragmentInput<'_>,
+        budget: &FragmentBudget,
+        scan: &BlockTableRowScan,
+    ) -> Option<StoredBlockAcceptance> {
+        let first = scan.split_block_start?;
+        let (_, end, _) = input.source.measured_table.row_block_for(first);
+        let occupied = scan.split_block_physical_height?;
+        if scan.end_row != end
+            || scan.end_row_height_override.is_some()
+            || !input.start.start_cut.is_empty()
+            || input.row_cursor_is_nested
+        {
+            return None;
+        }
+        let mut source = input
+            .prepared
+            .layout_engine
+            .stored_block_opening_cell_rows(
+                input.source.row_geometry_table,
+                (first, end),
+                &scan.split_end_cut,
+                input.source.styles,
+            )?;
+        let declared: f64 = source.iter().sum();
+        let before = scan.consumed - occupied;
+        let room = budget
+            .reflow_blank_avail_for_rows
+            .unwrap_or(budget.avail_for_rows)
+            .min(budget.avail_for_rows)
+            - before;
+        // 저장 셀은 첫 조각이 소유하는 빈 띠를 선언한다. 실제 쪽 예산이
+        // 그 상자보다 좁으면 마지막 행의 빈 띠만 닫고, 내용 컷과 앞선
+        // 온전한 행은 그대로 둔다. 작은 초과로 전체 선언을 버리지 않는다.
+        let height = declared.min(room);
+        let before_last: f64 = source[..source.len() - 1].iter().sum();
+        let last = height - before_last;
+        let content = input
+            .prepared
+            .layout_engine
+            .row_block_cut_row_content_height(
+                input.source.row_geometry_table,
+                first,
+                end,
+                end - 1,
+                &[],
+                &scan.split_end_cut,
+                input.source.styles,
+            );
+        if std::env::var_os("RHWP_TABLE_DRIFT").is_some() {
+            eprintln!("TABLE_OPENING_CELL_FRAME: pi={} rows={}..{} source={:?} declared={} accepted={} occupied={} room={}", input.source.para_index, first, end, source, declared, height, occupied, room);
+        }
+        if height < occupied || last < content {
+            return None;
+        }
+        *source.last_mut()? = last;
+        let mut rows = input.source.measured_table.row_heights.clone();
+        rows[first..end].copy_from_slice(&source);
+        Some(StoredBlockAcceptance {
+            frame: None,
+            range: (first, end),
+            rows,
+            extra: height - occupied,
+        })
     }
 
     /// 전체 원본 행의 잔고와 현재 저장 쪽 프레임은 별도 근거다.

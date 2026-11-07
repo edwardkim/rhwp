@@ -262,3 +262,19 @@ fmt·Native/WASM/전체target/Skia Clippy·workspace build·manifest·unit tier�
 주석 근거를 최종 정리한 뒤 suite prepare·manifest도 다시 통과했다. 글꼴 공급 프로필·
 최종 전체 nextest/편람/actual 미완료는 구분한다. 다른 대상 문서98% 보정은 계속 진행 중이다.
 [전후 TSV·review/overlay·독립 원점과 검사](../pr/assets/issue4138/original-radical-slot-20261107/README.md).
+
+## 2026-11-07 완료한 병합 라벨 아래 일반 셀의 첫 물리 조각
+
+부모0a7adeef5에서 위임전결규정51쪽의 저장 첫 조각을 보정했다. 완료한 병합 라벨의
+8566HU 전체 행합과 미완료 일반 칸3280HU·다음 저장 재시작을 함께 인증한다. 첫 블록의
+94.82667px가 남은 쪽 예산94.58667px보다0.24px 크다는 이유로 빈 띠 전체를 버리던
+수용 경로를, 같은 예산 안에서 마지막 행 빈 띠만 닫도록 수정했다. 내용 컷을 늘리거나
+다음 쪽의 두 줄을 앞 쪽으로 옮기지 않았다. 저장 선언을 무조건 출력 높이로 간주하던
+초기 임시 진단도 독립 PDF의 실제 하단·원본 상한 검사로 정정해 별도 실패→통과를 입증했다.
+
+Native51쪽94.75432→99.51311%, fresh WASM94.75587→99.51281%다. 각 전103쪽을
+재출력했고 나머지102쪽은 각 backend에서 PNG 바이트가 같다. 9·26·44·86쪽의98% 미달은
+남아 있어 이슈 전체 완료가 아니다. 직접 부모 frozen 라이브러리 정식7개는6 PASS/1 FAIL→
+7 PASS, 공통 수식·글상자·저장 프레임·중첩 표 묶음153 PASS(정식7개·진단1개 포함)다.
+fmt·Native/WASM/전체target/Skia Clippy·workspace build·manifest·unit tier를 통과했다.
+[전후 TSV·review/overlay·검사·수용 예산과 출처](../pr/assets/issue7700/opening-cell-frame-20261107/README.md).

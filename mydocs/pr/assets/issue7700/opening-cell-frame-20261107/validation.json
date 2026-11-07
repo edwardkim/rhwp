@@ -1,0 +1,288 @@
+{
+  "parent": "0a7adeef5c617dc6677117e19dba7ac16ca87fd3",
+  "base": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "scope": "완료한 병합 라벨 아래 일반 셀의 저장 첫 프레임·실제 쪽 예산·내용 컷 공유. 전체 문서98% 또는 PR 완료 아님.",
+  "source_sha256": "de43607f05072840097b19a294b4455905210402cc42823545125e03567df881",
+  "pdf_sha256": "90eda86b2b4dfeabc601cd9b583408c6528a9efabf4e626fd6f2e28e3bcb2b97",
+  "before_capture_reuse": {
+    "equation_controls": 0,
+    "before_capture_head": "b82d0843c93c70b1e296f19dd5f96a32df8aaf33",
+    "formal_parent": "0a7adeef5c617dc6677117e19dba7ac16ca87fd3",
+    "only_runtime_difference": "src/renderer/equation/layout/fraction_geometry.rs; 원본 수식0개인 이 문서에서 표·본문 코드 불변. 전103쪽 이전 PNG는 실제 b82d 생산자로 표시한다."
+  },
+  "runtime_hashes": {
+    "src/renderer/layout/table_layout/stored_block_frames.rs": "5695995137d52cb035d979544801c1e0319efff23b977b557c43b5c6f9e6ac89",
+    "src/renderer/typeset/table/continuation/fragment/stored_block_frames.rs": "2ecd6e01819d5d24dbfd3bceda30a5e74df5a5e2be274150dd8b1111cfa5627d"
+  },
+  "formal_test_sha256": "6208596d9ac3712b4fb766e634f4c616df46be382b5b4906ff367dab28170158",
+  "native_artifact": {
+    "path": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/delegation-opening-cell-frame-budget-repair/rhwp-candidate-native",
+    "sha256": "c301c4c3292f4791938ecf564389ad4d2088830f8316055a1b31a432de84ef15"
+  },
+  "fresh_wasm_kind": "Mac locked wrapper --target web --out-dir pkg --no-opt 로컬 대체 빌드. Docker 최적화 아님.",
+  "package_files": {
+    "rhwp.js": "370ddff0fd1a1cf6f889edb1b2a42f420fac62f7f57df4b9cff19829e60cdd5f",
+    "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+    "rhwp_bg.wasm.d.ts": "df45364cf1038ac70ebcd2fc29cbdfb3b7ad1da4344faea263f288e7cccdf8b7",
+    "README.md": "ad35a0f1fbf601b33f5a969103656e220e75031ceee42bb7fc2d95ed32ed25aa",
+    "rhwp_bg.wasm": "b211fbc12452d8e5844ed411af6590fd9734e1b2c95967af96016d849c11d6e5",
+    ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+    "package.json": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+    "rhwp.d.ts": "0d06dceecd79737dc56d2c80edc3ae0e0416f4c7fdb3645f169888076ed5f915"
+  },
+  "native_build": [
+    {
+      "kind": "native",
+      "exit_code": 0,
+      "seconds": 162.535,
+      "log_sha256": "0e082ab62b8864bb76457110264770decfd1c0637165ea260770a5efd6525326"
+    }
+  ],
+  "wasm_build": {
+    "exit_code": 0,
+    "seconds": 155.622,
+    "log_sha256": "ee1acf108ec80310b0ef6667c8a6c01c43e5b2b9af981c9314bb877745e463ec"
+  },
+  "source_frame": {
+    "cell_first_height_hu": 3280,
+    "last_whole_row_hu": 4734,
+    "previous_row_hu": 3832,
+    "completed_label_span_hu": 8566,
+    "declared_block_height_px": 94.82666666666667,
+    "available_block_px": 94.5866666666667,
+    "previous_content_only_px": 79.54666666666667,
+    "independent_pdf_p51_closing_line_css": 1025.11865,
+    "first_cut_lines": 1,
+    "next_cut_lines": 2
+  },
+  "diagnostic_correction": "초기 임시 검사에서 raw3280HU 선언을 물리 쪽 예산과 무관한 절대 높이로 간주했다. 선언의0.24px 초과가 실제 추적으로 확인돼 마지막 빈 띠만 예산에 맞춰 닫았다. 정식 검사는 원본 선언 상한·내용 소속과 독립 Print ±2px 하단을 검사하며 별도 실제6PASS1FAIL→7PASS를 재실행했다.",
+  "formal": [
+    {
+      "name": "formal-before",
+      "exit_code": 101,
+      "summary": [
+        "test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s"
+      ],
+      "log_sha256": "30c2e7f997fad9c3b18d26a32980ea65dfb7dcb4444b4df6284b9cdabace356e"
+    },
+    {
+      "name": "formal-after",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s"
+      ],
+      "log_sha256": "2f920f12a1afb06354231ebf15130443fafe5dde3608714b6c5f346d8461c25f"
+    },
+    {
+      "name": "focused-table",
+      "exit_code": 0,
+      "summary": [
+        "test result: ok. 153 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.22s"
+      ],
+      "log_sha256": "4a4283d86f01d45507b69387d0b5a9e605983d61ec393b8ebab4cfc763eb46cb"
+    }
+  ],
+  "whole_comparison": [
+    {
+      "backend": "native",
+      "changed_pages": [
+        {
+          "page": 51,
+          "before": 94.75432,
+          "after": 99.51311
+        }
+      ],
+      "unchanged_png_pages": 102,
+      "minimum": 96.64273
+    },
+    {
+      "backend": "wasm",
+      "changed_pages": [
+        {
+          "page": 51,
+          "before": 94.75587,
+          "after": 99.51281
+        }
+      ],
+      "unchanged_png_pages": 102,
+      "minimum": 96.64099
+    }
+  ],
+  "gates": [
+    {
+      "name": "fmt",
+      "exit_code": 0,
+      "seconds": 26.773,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "prepare",
+      "exit_code": 0,
+      "seconds": 2.444,
+      "log_sha256": "89682f77598e8704d3666afd023d8d0fcdae494d959cb3cc6bf58e478e08a79d"
+    },
+    {
+      "name": "fmt-check",
+      "exit_code": 0,
+      "seconds": 12.631,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "native-clippy",
+      "exit_code": 0,
+      "seconds": 27.175,
+      "log_sha256": "c4104e1ca66f172d0b9757b029ecb4f97058f7d85c2eac112b221e5fdb5a8205"
+    },
+    {
+      "name": "wasm-clippy",
+      "exit_code": 0,
+      "seconds": 29.194,
+      "log_sha256": "bb65c441d35c0b93ccca14bf5bdd3fd41a6d3a9375d445b976c28db01016f480"
+    },
+    {
+      "name": "workspace-build",
+      "exit_code": 0,
+      "seconds": 45.208,
+      "log_sha256": "4393897352169fde3b6f7dc673faede503b9a633c7cf3ce24e9a9cb2954ca748"
+    },
+    {
+      "name": "all-target-clippy",
+      "exit_code": 0,
+      "seconds": 49.668,
+      "log_sha256": "dffffd4de41e3585cf2b09cc6ba928eb038ff7dbc64ac94c265ff3909ef6911b"
+    },
+    {
+      "name": "native-skia-clippy",
+      "exit_code": 0,
+      "seconds": 31.007,
+      "log_sha256": "1cc73b83c6fdf3c275f8586f445569f350fa9cced90ff750b8d3bf8f7ec82839"
+    },
+    {
+      "name": "manifest",
+      "exit_code": 0,
+      "seconds": 1.719,
+      "log_sha256": "9af55bdcbd9d11cd54fadfc2a3b45ed83125ad5fb91632774847a4c444bde312"
+    },
+    {
+      "name": "unit-tiers",
+      "exit_code": 0,
+      "seconds": 15.141,
+      "log_sha256": "2c6dbaab2093a94c2fa3ec11190f384180b922a10025e3466a44f53c6611685c"
+    }
+  ],
+  "remaining": [
+    {
+      "backend": "native",
+      "minimum": 96.64273,
+      "below98": [
+        {
+          "page": 9,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.91001,
+          "silhouette_raw_unmatched_pixels": 1556,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 74450,
+          "tolerant_content_match_percent": 97.91001
+        },
+        {
+          "page": 26,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 96.64273,
+          "silhouette_raw_unmatched_pixels": 2525,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 75210,
+          "tolerant_content_match_percent": 96.64273
+        },
+        {
+          "page": 44,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.75656,
+          "silhouette_raw_unmatched_pixels": 1628,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 72567,
+          "tolerant_content_match_percent": 97.75656
+        },
+        {
+          "page": 86,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 96.6876,
+          "silhouette_raw_unmatched_pixels": 2516,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 75957,
+          "tolerant_content_match_percent": 96.6876
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "minimum": 96.64099,
+      "below98": [
+        {
+          "page": 9,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.90146,
+          "silhouette_raw_unmatched_pixels": 1561,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 74385,
+          "tolerant_content_match_percent": 97.90146
+        },
+        {
+          "page": 26,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 96.64099,
+          "silhouette_raw_unmatched_pixels": 2525,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 75171,
+          "tolerant_content_match_percent": 96.64099
+        },
+        {
+          "page": 44,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.75547,
+          "silhouette_raw_unmatched_pixels": 1628,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 72532,
+          "tolerant_content_match_percent": 97.75547
+        },
+        {
+          "page": 86,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 96.68846,
+          "silhouette_raw_unmatched_pixels": 2512,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 75856,
+          "tolerant_content_match_percent": 96.68846
+        }
+      ]
+    }
+  ],
+  "visual_profile": "일반 로컬 글꼴 공급, PDFium96DPI compat2022·2px raw. 최소 글꼴 sandbox의 의미 검사와 시각 출력을 구분.",
+  "full_branch_validation_complete": false,
+  "assets": {
+    "before-wasm-p051-overlay.png": "7102c4f1121643a98427c5b84f9e881ef81d8db84d913f617b305d7405f5a20c",
+    "after-wasm-silhouette.tsv": "3f13d217d720b72d67234f827e5dc803dc79e0d45ab30289e221b31fe6396856",
+    "before-native-p051-review.png": "e7d7dfe5d4ad8b79c10ae98b950e2c26fc7dbad453ea2f0b5bba4316ae6e5d98",
+    "after-native-p051-overlay.png": "167527ce3dd0cda0acd65765f629a4c0c2b2ee6f2f0415ab3e550ffb968ea120",
+    "after-native-p051-review.png": "deb05a94c12e71e767e79070a9095220294728918c29399c687f777b7fa13497",
+    "after-native-silhouette.tsv": "502f90ea0c84db596e4bdb319f4aca846c86b33b0e6f90a7267eec443605faae",
+    "before-native-p051-overlay.png": "032dd0bf5fd6e7f3f0c85b5a0c1a253dfba36eae3db1f2564a2b69bc4c34d88b",
+    "after-wasm-p051-review.png": "8e89ca11a50bbff74207f1df2ee9408e0acb5bbca0fba37510c13691ce27d232",
+    "before-native-silhouette.tsv": "fe638a3e265e00544d0c3898194ac426e83a94d3647d0e6212407ae7fec7e7ca",
+    "before-wasm-p051-review.png": "00e3091fd066d2d33f75e87efb2074c9a08b2f8c06b18510eeb4f52277c916cf",
+    "after-wasm-p051-overlay.png": "5477e1b3ad3bd11a4594185ba615b7b2b648bb1a90ae5596f4da93b4eb893d1c",
+    "before-wasm-silhouette.tsv": "1bc4e2fd90e6896b70475891737f0d258d7cd5f5a52870ab02c2fe6c2582a5a3"
+  },
+  "final_header_only_change": "정식 증거 경로 명확화. 마지막 정식 실행 이후 assertion/runtime 변경 없음.",
+  "final_manifest_logs": {
+    "prepare-final": "b80acbf0f0d3f59dc5651bec461e8c9e27261e2515c780909e5bd109077cc078",
+    "manifest-final": "a2caefc91301912409b495dc99a33a1aee66fe22024135a35572b2c74b8ddcbd"
+  }
+}
