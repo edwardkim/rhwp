@@ -123,7 +123,17 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
     // 소비한다 — 종전에는 텍스트 경로(typeset_paragraph)만 소비해, 후속 표
     // 문단의 블록 표 fit 이 존 위에 겹쳐 배치됐다 (19439117: 870px 서식 표
     // 존 [31..902] 위에 866px 표가 y≈36 에 통배치 → 1쪽, 한글 2쪽).
-    let host_col_w = st.prepare_table_paragraph_column();
+    // 글자처럼 취급한 표 줄도 글줄이다. 앞 표 위 틈에 다 들어가지 않으면 그 표 아래로 간다.
+    let tac_line_probe = para
+        .controls
+        .iter()
+        .any(|control| matches!(control, Control::Table(table) if table.common.treat_as_char))
+        .then(|| para.line_segs.first())
+        .flatten()
+        .map_or(0.0, |line| {
+            crate::renderer::hwpunit_to_px(line.line_height.max(0), engine.dpi)
+        });
+    let host_col_w = st.prepare_table_paragraph_column(tac_line_probe);
     if st.place_mixed_host_line(para_idx, para, styles, measured_tables, engine.dpi) {
         return Ok(());
     }
