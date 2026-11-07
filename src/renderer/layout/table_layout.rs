@@ -1963,6 +1963,10 @@ pub(super) struct CellUnit {
     /// #7140). 되감김은 증언이 아니다. [#7114] 저장 되쓰기가 옮겨 없앤 되감김 자리를
     /// 채울 때 이 판정을 그대로 보존해야 재열기가 편집 직후와 같은 유닛 높이를 쓴다.
     host_trailing_spacing_charged: bool,
+    /// [#8715] 글 문단이 품은 중첩 표의 첫 행 조각이 앞에 소유한 호스트 글줄 끝→표 위끝
+    /// 오프셋 공간. 호스트 글줄이 앞 조각에 남고 표가 새 조각을 시작하면 한/글은 넘어온
+    /// 표를 조각 위끝에 붙인다(오프셋을 버린다). 그때 컷 높이와 조각 높이에서 뺀다.
+    carried_float_lead: f64,
 }
 
 impl CellUnit {
@@ -13012,6 +13016,149 @@ impl LayoutEngine {
         })
     }
 
+    /// [#8715] 조각이 `start` 유닛에서 시작하고 그 유닛이 글 문단 중첩 표의 첫 행 조각인데
+    /// 같은 문단의 호스트 글줄이 앞 조각에 남았으면, 넘어온 표는 조각 위끝에 붙으므로
+    /// 그 유닛이 소유한 오프셋 공간을 돌려준다.
+    fn carried_float_lead_at(units: &[CellUnit], start: usize) -> f64 {
+        match (
+            start.checked_sub(1).and_then(|prev| units.get(prev)),
+            units.get(start),
+        ) {
+            (Some(prev), Some(unit))
+                if unit.carried_float_lead > 0.0 && prev.para_idx == unit.para_idx =>
+            {
+                unit.carried_float_lead
+            }
+            _ => 0.0,
+        }
+    }
+
+    /// [#8715] 글 문단이 품은 `CELL` 분할 중첩 표를 행·칸별 컷 조각으로 나눈다.
+    ///
+    /// 빈 호스트 문단의 행 유닛(`cell_units_uncached` 의 per-중첩행 갈래)과 같은
+    /// 계약이다. 행마다 내용이 가장 긴 칸의 유닛 경계를 높이 축으로 삼고, 각 경계에서
+    /// 칸마다 그 높이에 드는 유닛 수를 `RowCut` 으로 기록한다. 한/글은 행 안에서 쪽을
+    /// 나눌 때 칸마다 자기 글줄 경계에서 끊으므로(같은 행의 두 칸이 서로 다른 줄
+    /// 구조를 가져도) 행 전체를 한 높이로 자르는 scalar 조각으로는 표현할 수 없다.
+    ///
+    /// 반환: `(행, 칸별 시작·끝 컷, 이 조각이 바깥 흐름에 예약할 높이)`.
+    fn text_host_nested_row_fragments(
+        &self,
+        nt: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> Option<Vec<(usize, NestedTableUnitCut, f64)>> {
+        if nt.common.treat_as_char
+            || nt.row_count < 2
+            || !matches!(nt.layout_page_break(), TablePageBreak::RowBreak)
+            || nt.cells.iter().any(|cell| cell.row_span != 1)
+            || self.profile.get().session_edited()
+            || !(self.profile.get().hwp5_stored_pagination_layout()
+                || self.profile.get().hwpx_stored_layout())
+        {
+            return None;
+        }
+        let ncol = nt.col_count as usize;
+        let nrow = nt.row_count as usize;
+        let rhs = self.resolve_row_heights(nt, ncol, nrow, None, styles, true);
+        let ncs = hwpunit_to_px(nt.cell_spacing as i32, self.dpi);
+        // 반복되는 제목 행은 이어받는 쪽마다 통째로 다시 그리는 행이라 그 안에서 나누지 않는다.
+        let header_rows = if nt.repeat_header {
+            nt.leading_header_rows()
+        } else {
+            Vec::new()
+        };
+        let mut out = Vec::new();
+        for (ri, rh) in rhs.iter().enumerate() {
+            let mut row_cells: Vec<&crate::model::table::Cell> = nt
+                .cells
+                .iter()
+                .filter(|cell| cell.row as usize == ri)
+                .collect();
+            if row_cells.is_empty() {
+                return None;
+            }
+            row_cells.sort_by_key(|cell| cell.col);
+            let row_units: Vec<std::sync::Arc<Vec<CellUnit>>> = row_cells
+                .iter()
+                .map(|cell| self.cell_units(cell, nt, styles))
+                .collect();
+            let full_cut: RowCut = row_units.iter().map(|units| units.len()).collect();
+            let row_gap = if ri + 1 < nrow { ncs } else { 0.0 };
+            let driver = row_units
+                .iter()
+                .enumerate()
+                .max_by(|(_, a), (_, b)| {
+                    let ah: f64 = a.iter().map(|unit| unit.height).sum();
+                    let bh: f64 = b.iter().map(|unit| unit.height).sum();
+                    ah.total_cmp(&bh)
+                })
+                .map(|(index, _)| index)?;
+            let driver_units = &row_units[driver];
+            if driver_units.len() <= 1 || header_rows.contains(&ri) {
+                out.push((
+                    ri,
+                    NestedTableUnitCut {
+                        start_cut: vec![0; row_units.len()],
+                        end_cut: full_cut,
+                        terminal: true,
+                    },
+                    *rh + row_gap,
+                ));
+                continue;
+            }
+            let driver_total: f64 = driver_units.iter().map(|unit| unit.height).sum();
+            let row_extra = (*rh - driver_total).max(0.0);
+            let cuts_at = |height: f64| -> RowCut {
+                row_units
+                    .iter()
+                    .map(|cell_units| {
+                        let mut consumed = 0.0;
+                        let mut count = 0usize;
+                        while count < cell_units.len()
+                            && consumed + cell_units[count].height <= height + 0.1
+                        {
+                            consumed += cell_units[count].height;
+                            count += 1;
+                        }
+                        count
+                    })
+                    .collect()
+            };
+            let mut driver_before = 0.0;
+            for (fragment_index, driver_unit) in driver_units.iter().enumerate() {
+                let driver_after = driver_before + driver_unit.height;
+                let last = fragment_index + 1 == driver_units.len();
+                let end_cut = if last {
+                    full_cut.clone()
+                } else {
+                    cuts_at(driver_after)
+                };
+                let terminal = row_units
+                    .iter()
+                    .zip(end_cut.iter())
+                    .all(|(cell_units, end)| *end >= cell_units.len());
+                let mut height = driver_unit.height;
+                if fragment_index == 0 {
+                    height += row_extra * 0.5;
+                }
+                if last {
+                    height += row_extra - row_extra * 0.5 + row_gap;
+                }
+                out.push((
+                    ri,
+                    NestedTableUnitCut {
+                        start_cut: cuts_at(driver_before),
+                        end_cut,
+                        terminal,
+                    },
+                    height,
+                ));
+                driver_before = driver_after;
+            }
+        }
+        Some(out)
+    }
+
     fn nested_table_mixed_fragment_heights(
         &self,
         table: &crate::model::table::Table,
@@ -15329,6 +15476,7 @@ impl LayoutEngine {
                     nested_host_closing_line_height: 0.0,
                     non_inline_control_range: None,
                     host_trailing_spacing_charged: false,
+                    carried_float_lead: 0.0,
                 })
                 .collect();
         }
@@ -15375,6 +15523,7 @@ impl LayoutEngine {
                 nested_host_closing_line_height: 0.0,
                 non_inline_control_range: Some((0, cell.paragraphs[0].controls.len() - 1)),
                 host_trailing_spacing_charged: false,
+                carried_float_lead: 0.0,
             }];
         }
         let (pad_left, pad_right, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
@@ -15874,6 +16023,7 @@ impl LayoutEngine {
                         nested_host_closing_line_height: 0.0,
                         non_inline_control_range: None,
                         host_trailing_spacing_charged: false,
+                        carried_float_lead: 0.0,
                     });
                     non_inline_h -= h;
                 }
@@ -15916,6 +16066,7 @@ impl LayoutEngine {
                     nested_host_closing_line_height: 0.0,
                     non_inline_control_range: tb_range,
                     host_trailing_spacing_charged: false,
+                    carried_float_lead: 0.0,
                 });
             };
         let append_non_inline_units = |units: &mut Vec<CellUnit>,
@@ -17247,6 +17398,7 @@ impl LayoutEngine {
                                         nested_host_closing_line_height: 0.0,
                                         non_inline_control_range: None,
                                         host_trailing_spacing_charged: false,
+                                        carried_float_lead: 0.0,
                                     });
                                     unit_cum += uh;
                                     driver_before = driver_after;
@@ -17447,6 +17599,7 @@ impl LayoutEngine {
                             nested_host_closing_line_height: 0.0,
                             non_inline_control_range: None,
                             host_trailing_spacing_charged,
+                            carried_float_lead: 0.0,
                         });
                         unit_cum += uh;
                     }
@@ -17712,6 +17865,7 @@ impl LayoutEngine {
                                 nested_host_closing_line_height: 0.0,
                                 non_inline_control_range: None,
                                 host_trailing_spacing_charged: false,
+                                carried_float_lead: 0.0,
                             });
                             unit_cum += uh;
                         }
@@ -17841,6 +17995,7 @@ impl LayoutEngine {
                             nested_host_closing_line_height: 0.0,
                             non_inline_control_range: None,
                             host_trailing_spacing_charged: false,
+                            carried_float_lead: 0.0,
                         });
                         unit_cum += lh;
                     }
@@ -17916,7 +18071,79 @@ impl LayoutEngine {
                             })
                             .flatten()
                             .collect();
-                        if fragment_heights.is_empty() {
+                        let row_fragments = if fragment_heights.is_empty() {
+                            match source_controls
+                                .iter()
+                                .filter_map(|ctrl| match ctrl {
+                                    Control::Table(t) => Some(t.as_ref()),
+                                    _ => None,
+                                })
+                                .collect::<Vec<_>>()
+                                .as_slice()
+                            {
+                                [nt] => self.text_host_nested_row_fragments(nt, styles),
+                                _ => None,
+                            }
+                        } else {
+                            None
+                        };
+                        if let Some(mut rows) = row_fragments {
+                            // 행 조각 합과 이 문단의 표 예약(`target_h`)의 차이는 호스트
+                            // 글줄 끝에서 표 위끝까지의 오프셋과 아래 바깥여백이다. 앞 몫은
+                            // 첫 행 조각이 소유한다(빈 호스트 행 유닛의 om_top 과 같은 자리).
+                            let rows_total: f64 = rows.iter().map(|(_, _, h)| *h).sum();
+                            let lead = (target_h - rows_total).max(0.0);
+                            if let Some(first) = rows.first_mut() {
+                                first.2 += lead;
+                            }
+                            // 바깥여백을 뺀 나머지가 호스트 글줄 끝→표 위끝 오프셋이다.
+                            let carried_lead = source_controls
+                                .iter()
+                                .find_map(|ctrl| match ctrl {
+                                    Control::Table(t) => Some(
+                                        lead - hwpunit_to_px(
+                                            i32::from(t.outer_margin_top)
+                                                + i32::from(t.outer_margin_bottom),
+                                            self.dpi,
+                                        ),
+                                    ),
+                                    _ => None,
+                                })
+                                .unwrap_or(0.0)
+                                .max(0.0);
+                            for (index, (row, fragment, height)) in rows.into_iter().enumerate() {
+                                units.push(CellUnit {
+                                    height,
+                                    following_line_advance: 0.0,
+                                    reflowed_line_slot: false,
+                                    hard_break_before: false,
+                                    stored_frame_break_before: false,
+                                    page_frame_reset_before: false,
+                                    vpos_gap_before: false,
+                                    para_idx: pi,
+                                    vis_start: line_count,
+                                    vis_end: line_count,
+                                    nested_row: Some(row),
+                                    nested_row_flow_edges: None,
+                                    nested_table_fragment: Some(fragment),
+                                    mixed_nested_fragment: false,
+                                    mixed_nested_trailing: false,
+                                    mixed_nested_content_height: 0.0,
+                                    mixed_nested_recursive: false,
+                                    mixed_nested_starts_after_table: false,
+                                    mixed_nested_source_para_idx: None,
+                                    recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
+                                    top_and_bottom_flow: false,
+                                    empty_spacer: false,
+                                    owns_stored_closing_line: false,
+                                    nested_host_closing_line_height: 0.0,
+                                    non_inline_control_range: None,
+                                    host_trailing_spacing_charged: false,
+                                    carried_float_lead: if index == 0 { carried_lead } else { 0.0 },
+                                });
+                                unit_cum += height;
+                            }
+                        } else if fragment_heights.is_empty() {
                             const NESTED_FRAGMENT_UNIT_PX: f64 = 16.0;
                             let mut remaining = target_h;
                             while remaining > 0.5 {
@@ -18025,6 +18252,7 @@ impl LayoutEngine {
                                 nested_host_closing_line_height: 0.0,
                                 non_inline_control_range: None,
                                 host_trailing_spacing_charged: false,
+                                carried_float_lead: 0.0,
                             });
                             unit_cum += fragment.height;
                         }
@@ -18293,6 +18521,7 @@ impl LayoutEngine {
                     nested_host_closing_line_height: 0.0,
                     non_inline_control_range: None,
                     host_trailing_spacing_charged: false,
+                    carried_float_lead: 0.0,
                 });
                 unit_cum += para_h;
             } else {
@@ -18467,6 +18696,7 @@ impl LayoutEngine {
                         nested_host_closing_line_height: 0.0,
                         non_inline_control_range: None,
                         host_trailing_spacing_charged: false,
+                        carried_float_lead: 0.0,
                     });
                     unit_cum += lh;
                 }
@@ -27143,6 +27373,11 @@ impl LayoutEngine {
         let header = self.nested_continuation_header_height(cell, &units, first_index, styles);
         visible_height += header;
         flow_height += header;
+        if first_index == lo {
+            let carried_lead = Self::carried_float_lead_at(&units, first_index);
+            visible_height -= carried_lead;
+            flow_height -= carried_lead;
+        }
         let cut = Self::nested_row_projection_cut(&units[first_index..=last_index])?;
         let terminal = last_unit
             .nested_table_fragment
@@ -28485,9 +28720,11 @@ impl LayoutEngine {
             // 방금 앉힌 atom 을 다음 쪽으로 밀어낸다.
             let nested_atom_tail =
                 self.continued_cut_nested_atom_tail(cell, &units, su, eu, styles);
+            let carried_lead = Self::carried_float_lead_at(&units, flow_range.start);
             let content: f64 = (units[flow_range].iter().map(|u| u.height).sum::<f64>()
                 - trailing_trim
-                - nested_atom_tail)
+                - nested_atom_tail
+                - carried_lead)
                 .max(0.0)
                 + mixed_nested_extra
                 + if eu > su {
@@ -29336,6 +29573,7 @@ mod row_cut_tests {
             nested_host_closing_line_height: 0.0,
             non_inline_control_range: None,
             host_trailing_spacing_charged: false,
+            carried_float_lead: 0.0,
         }
     }
 
@@ -29382,6 +29620,7 @@ mod row_cut_tests {
             nested_host_closing_line_height: 0.0,
             non_inline_control_range: None,
             host_trailing_spacing_charged: false,
+            carried_float_lead: 0.0,
         }
     }
 
