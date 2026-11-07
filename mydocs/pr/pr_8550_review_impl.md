@@ -8,7 +8,15 @@
 
 | 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `48b1c5c8fed6c8a6dcb7ff0a3a1c28648558d8eb` | `60147c003fdf9a3e7a212235887ba56f9480ab1e` | fix: 글자 없는 host 의 나란한 양수 오프셋 자리차지 표를 자기 오프셋에 배치 (#8516) |
+| `48b1c5c8fed6c8a6dcb7ff0a3a1c28648558d8eb` | `dc1f41e08dc0cbe34598da52f0893dc152ff734a` | fix: 글자 없는 host 의 나란한 양수 오프셋 자리차지 표를 자기 오프셋에 배치 (#8516) |
+
+## R42 리베이스 후 적용 상태
+
+새 base `1e16a19aede5ccb2657d35974940eb596286cdf1`, 리베이스 직후 head
+`896708a4a02c4138064ab3d426a487bbce52fc02` 기준으로 위 실제 적용 SHA를 갱신했다.
+중복 patch 행의 원 기여 commit 참조는 유지한다. [고유 56개 적용표](assets/planet6897_20261106/contributor-commit-map-r42.tsv)와
+[리베이스·충돌 처리 보고서](assets/planet6897_20261106/rebase-r42-analysis.md)를 따른다.
+원 PR head와 입력은 보존됐으며, 이력 갱신을 최종 검증 통과나 승인으로 표시하지 않는다.
 
 ## 완료 조건
 

@@ -8,8 +8,16 @@
 
 | 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `84aa570a64e3cc5265fab5dd08b2e7fefa5d35d5` | `a2a5a18c30890dae7df5af43348d88efbb170359` | fix(renderer): Native 경로 글꼴을 매핑으로 공유해 64MiB 넘는 파일도 싣기 (#8597) |
-| `0cbe6a9ae5ee4ef8d994d21c170682f95f4bf236` | `520b3e439b3a93e43eae56aab0041a635c82c3a7` | fix(font): 환경 이름 계약을 어기는 원본 글꼴 이름은 관측 대체 요청에서 뺀다 (#8597) |
+| `84aa570a64e3cc5265fab5dd08b2e7fefa5d35d5` | `5ef7a772e0ba78c3e5931d0eeb9f48d1e541f7fa` | fix(renderer): Native 경로 글꼴을 매핑으로 공유해 64MiB 넘는 파일도 싣기 (#8597) |
+| `0cbe6a9ae5ee4ef8d994d21c170682f95f4bf236` | `8684fdc5d7a4756c5cec31a3dbb986c26cdfb24c` | fix(font): 환경 이름 계약을 어기는 원본 글꼴 이름은 관측 대체 요청에서 뺀다 (#8597) |
+
+## R42 리베이스 후 적용 상태
+
+새 base `1e16a19aede5ccb2657d35974940eb596286cdf1`, 리베이스 직후 head
+`896708a4a02c4138064ab3d426a487bbce52fc02` 기준으로 위 실제 적용 SHA를 갱신했다.
+중복 patch 행의 원 기여 commit 참조는 유지한다. [고유 56개 적용표](assets/planet6897_20261106/contributor-commit-map-r42.tsv)와
+[리베이스·충돌 처리 보고서](assets/planet6897_20261106/rebase-r42-analysis.md)를 따른다.
+원 PR head와 입력은 보존됐으며, 이력 갱신을 최종 검증 통과나 승인으로 표시하지 않는다.
 
 ## 완료 조건
 

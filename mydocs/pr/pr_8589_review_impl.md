@@ -8,8 +8,16 @@
 
 | 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `0a63dba9bb1d43172add7bb1905cd86ce79a6fd4` | `c2308cd6783507961dc45a6526916ab551a8ea4a` | fix(layout): 어울림 표가 뒤 문단을 띠로 흡수하면 흐름상 다음 문단으로 host 뒤 사다리 일치를 판정 (#8567) |
-| `a68704a019cf56f4dca8db0ee5ff8ae5103febb8` | `106ff957b446b110567de7be06dfac5291075c0b` | test: #8567 측정 근거와 검증 증거 등록 |
+| `0a63dba9bb1d43172add7bb1905cd86ce79a6fd4` | `ca513ffe6ee754353142209d32b166f26431fc23` | fix(layout): 어울림 표가 뒤 문단을 띠로 흡수하면 흐름상 다음 문단으로 host 뒤 사다리 일치를 판정 (#8567) |
+| `a68704a019cf56f4dca8db0ee5ff8ae5103febb8` | `2e8c3d9fe7328b099802a974211ae13bcdc5a1be` | test: #8567 측정 근거와 검증 증거 등록 |
+
+## R42 리베이스 후 적용 상태
+
+새 base `1e16a19aede5ccb2657d35974940eb596286cdf1`, 리베이스 직후 head
+`896708a4a02c4138064ab3d426a487bbce52fc02` 기준으로 위 실제 적용 SHA를 갱신했다.
+중복 patch 행의 원 기여 commit 참조는 유지한다. [고유 56개 적용표](assets/planet6897_20261106/contributor-commit-map-r42.tsv)와
+[리베이스·충돌 처리 보고서](assets/planet6897_20261106/rebase-r42-analysis.md)를 따른다.
+원 PR head와 입력은 보존됐으며, 이력 갱신을 최종 검증 통과나 승인으로 표시하지 않는다.
 
 ## 완료 조건
 

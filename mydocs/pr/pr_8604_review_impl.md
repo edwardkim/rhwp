@@ -8,9 +8,17 @@
 
 | 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `032dcb80e3de44b3ed4a7ca09549a197b6a18067` | `0430969a1e00388fabb21efdf6ec0c5f120b8260` | fix(typeset): #8596 앞 TAC 표 host 줄 안에 저장된 자리차지 표 프레임은 다음 쪽에서 시작한다 |
-| `e74368c345437ca63591ea064c4b972ade999ee7` | `f19c42854af9e6f75e7dd81bf03bebb419369c97` | docs(#8596): 필수 편람 Native 383쪽 TSV — devel 7fdd5441ff 와 바이트 동일 |
-| `013459bff4ff5313af53ece5646e79c48647a3aa` | `cad4a9728b8d264f1b155dbce3f9a43ac288aa02` | docs(#8596): 최신 devel rebase head 재측정 — base·head 전쪽 TSV, 대표 PNG, 편람 gate |
+| `032dcb80e3de44b3ed4a7ca09549a197b6a18067` | `2d0320a7a5a5bbcf5468e8100d37db187682588b` | fix(typeset): #8596 앞 TAC 표 host 줄 안에 저장된 자리차지 표 프레임은 다음 쪽에서 시작한다 |
+| `e74368c345437ca63591ea064c4b972ade999ee7` | `db364293b67e530082eecf90e2e7cf1ee32da096` | docs(#8596): 필수 편람 Native 383쪽 TSV — devel 7fdd5441ff 와 바이트 동일 |
+| `013459bff4ff5313af53ece5646e79c48647a3aa` | `018675337754757d7da875e0e7d4ae7a9ba3439a` | docs(#8596): 최신 devel rebase head 재측정 — base·head 전쪽 TSV, 대표 PNG, 편람 gate |
+
+## R42 리베이스 후 적용 상태
+
+새 base `1e16a19aede5ccb2657d35974940eb596286cdf1`, 리베이스 직후 head
+`896708a4a02c4138064ab3d426a487bbce52fc02` 기준으로 위 실제 적용 SHA를 갱신했다.
+중복 patch 행의 원 기여 commit 참조는 유지한다. [고유 56개 적용표](assets/planet6897_20261106/contributor-commit-map-r42.tsv)와
+[리베이스·충돌 처리 보고서](assets/planet6897_20261106/rebase-r42-analysis.md)를 따른다.
+원 PR head와 입력은 보존됐으며, 이력 갱신을 최종 검증 통과나 승인으로 표시하지 않는다.
 
 ## 완료 조건
 

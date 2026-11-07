@@ -15,12 +15,20 @@ report-628은 전 195쪽 중 양쪽 모두 7쪽이 미달이다. 제목의 간�
 
 | 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `aceb89c6d3f47c8790c22929e2615b75c3ef3465` | `6adc5712cdc7974267b9dabc4f83b5cb8a2d170f` | fix(typeset): 다 들어가지 않는 각주는 들어가는 앞 조각만 비용으로 잡고 넘어온 각주를 이어받는 쪽 예산에서 뺀다 (#8468) |
-| `8ece4b20852a56cf2523faebb87ea24d7339a5ac` | `b083768dcc917c8a152e08c89d8620b7db0be189` | test: #8468 앞부분만 들어간 각주의 표 줄 — 뒤 본문 줄이 각주 글 줄 위를 채운다 |
-| `595099ca975b231117f86bd2e9794ba05c1ce0e8` | `48716c318bd65a5302b564c1ee5e862cddcf94b4` | test: #8468 T20 측정 주석을 실제 값으로 채우고 fmt 적용 |
-| `d9b846cafab496a3d72f9953a743be17e23a7071` | `2b097d1ce7a378e239499c1f641dd2790a660b4f` | fix(typeset): 블록 표가 든 각주의 조각 높이를 paint 조각 측정으로 잰다 (#8468) |
-| `2211d9e95698007c53788aadd15e9cd3d17df6ab` | `d6201e63aa737ad7358495d0d94ecacba302e830` | test: #8468 후속 측정 근거와 Native·fresh WASM TSV·대표 PNG 증적 |
-| `7d40345bc014f3cb4eca4235783afcfb670899f9` | `8f87271d1c39139a79c8f4e1a5a42a8c90de8788` | ci: #8642 CI 재실행 (runner 디스크 부족으로 실패한 adapter inter-diff·prop roundtrip) |
+| `aceb89c6d3f47c8790c22929e2615b75c3ef3465` | `e83f5493914141826128266214c1580ec52ccc03` | fix(typeset): 다 들어가지 않는 각주는 들어가는 앞 조각만 비용으로 잡고 넘어온 각주를 이어받는 쪽 예산에서 뺀다 (#8468) |
+| `8ece4b20852a56cf2523faebb87ea24d7339a5ac` | `b0ef0bb804e562502c4c178652cfb9c48c04c828` | test: #8468 앞부분만 들어간 각주의 표 줄 — 뒤 본문 줄이 각주 글 줄 위를 채운다 |
+| `595099ca975b231117f86bd2e9794ba05c1ce0e8` | `28ec77360896f09f1d1b38786c1e9d7a5b6e21be` | test: #8468 T20 측정 주석을 실제 값으로 채우고 fmt 적용 |
+| `d9b846cafab496a3d72f9953a743be17e23a7071` | `ca4607125d6fde847430d0622df08e7f6016c0c6` | fix(typeset): 블록 표가 든 각주의 조각 높이를 paint 조각 측정으로 잰다 (#8468) |
+| `2211d9e95698007c53788aadd15e9cd3d17df6ab` | `fa1ca5051fe4aade02026c360f58517a09e7ea18` | test: #8468 후속 측정 근거와 Native·fresh WASM TSV·대표 PNG 증적 |
+| `7d40345bc014f3cb4eca4235783afcfb670899f9` | `218c3690d8aef6676b41c0936e934c1474f68490` | ci: #8642 CI 재실행 (runner 디스크 부족으로 실패한 adapter inter-diff·prop roundtrip) |
+
+## R42 리베이스 후 적용 상태
+
+새 base `1e16a19aede5ccb2657d35974940eb596286cdf1`, 리베이스 직후 head
+`896708a4a02c4138064ab3d426a487bbce52fc02` 기준으로 위 실제 적용 SHA를 갱신했다.
+중복 patch 행의 원 기여 commit 참조는 유지한다. [고유 56개 적용표](assets/planet6897_20261106/contributor-commit-map-r42.tsv)와
+[리베이스·충돌 처리 보고서](assets/planet6897_20261106/rebase-r42-analysis.md)를 따른다.
+원 PR head와 입력은 보존됐으며, 이력 갱신을 최종 검증 통과나 승인으로 표시하지 않는다.
 
 ## 완료 조건
 

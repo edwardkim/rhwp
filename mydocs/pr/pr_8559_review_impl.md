@@ -8,8 +8,16 @@
 
 | 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `2be042208ee670b545a4c55dc9f0b667e9dcf7fb` | `20e4a8937140dd479b627e84a0923fe64bb66ac5` | fix(layout): 쪽·용지 기준 자리차지 표 띠에 밀린 빈 host 줄은 줄높이와 줄간격을 모두 전진 (#8554) |
-| `efa20ac2eafe1137b370d270f459eac54109b5ca` | `5e0d83466a2b2f3ef9d246dca9001a8e87c6d213` | docs: #8554 i39 Native 한자 누락 원인 문구를 #8590 확인 결과로 정정 |
+| `2be042208ee670b545a4c55dc9f0b667e9dcf7fb` | `b2cc752de12a473d0ff6c7f94fc36af506226f24` | fix(layout): 쪽·용지 기준 자리차지 표 띠에 밀린 빈 host 줄은 줄높이와 줄간격을 모두 전진 (#8554) |
+| `efa20ac2eafe1137b370d270f459eac54109b5ca` | `3874b65165813118bc26078bad7ecda97860a2ce` | docs: #8554 i39 Native 한자 누락 원인 문구를 #8590 확인 결과로 정정 |
+
+## R42 리베이스 후 적용 상태
+
+새 base `1e16a19aede5ccb2657d35974940eb596286cdf1`, 리베이스 직후 head
+`896708a4a02c4138064ab3d426a487bbce52fc02` 기준으로 위 실제 적용 SHA를 갱신했다.
+중복 patch 행의 원 기여 commit 참조는 유지한다. [고유 56개 적용표](assets/planet6897_20261106/contributor-commit-map-r42.tsv)와
+[리베이스·충돌 처리 보고서](assets/planet6897_20261106/rebase-r42-analysis.md)를 따른다.
+원 PR head와 입력은 보존됐으며, 이력 갱신을 최종 검증 통과나 승인으로 표시하지 않는다.
 
 ## 완료 조건
 

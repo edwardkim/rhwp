@@ -8,7 +8,15 @@
 
 | 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `068250c0e8bc9b07b8a25911ab8002d5504f63eb` | `03822ee55c965061504d32ae6b921045ca365ba4` | fix(layout): 한 줄의 TAC 표 여러 개는 선언 폭만큼 전진한다 (#8647) |
+| `068250c0e8bc9b07b8a25911ab8002d5504f63eb` | `7f41d79db4f0c2d162aeb7e19fd67000b4201941` | fix(layout): 한 줄의 TAC 표 여러 개는 선언 폭만큼 전진한다 (#8647) |
+
+## R42 리베이스 후 적용 상태
+
+새 base `1e16a19aede5ccb2657d35974940eb596286cdf1`, 리베이스 직후 head
+`896708a4a02c4138064ab3d426a487bbce52fc02` 기준으로 위 실제 적용 SHA를 갱신했다.
+중복 patch 행의 원 기여 commit 참조는 유지한다. [고유 56개 적용표](assets/planet6897_20261106/contributor-commit-map-r42.tsv)와
+[리베이스·충돌 처리 보고서](assets/planet6897_20261106/rebase-r42-analysis.md)를 따른다.
+원 PR head와 입력은 보존됐으며, 이력 갱신을 최종 검증 통과나 승인으로 표시하지 않는다.
 
 ## 완료 조건
 

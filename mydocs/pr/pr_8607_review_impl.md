@@ -8,9 +8,17 @@
 
 | 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `d8ded0cc7171d54e3b76be63ed7125b97aae9d67` | `d79a93b3ad46f5761d68c78a58adfccecfbb1dcc` | fix(typeset): #8606 빈 host 의 자기 오프셋 자리차지 본표는 머리 표에 밀린 표가 아니다 |
-| `8ee296b76e33e79a8b225385e252b12f35c81a65` | `d4fa682c3eeefd1ee13a6e0fe65b1591ed40f5d7` | docs(#8606): 필수 편람 Native 383쪽 TSV — devel 7fdd5441ff 와 바이트 동일 |
-| `b7b93df883ef0eed535d1e80b5c45ea6d60ce3a9` | `af1ba6b07066f17e9046e88e122cc7ea510f50fc` | ci: Canvas visual diff 의 Chrome 시작 시간 초과 재실행 (#8607) |
+| `d8ded0cc7171d54e3b76be63ed7125b97aae9d67` | `77987a41b56d58825e39749a5dbb2bd9f14c017f` | fix(typeset): #8606 빈 host 의 자기 오프셋 자리차지 본표는 머리 표에 밀린 표가 아니다 |
+| `8ee296b76e33e79a8b225385e252b12f35c81a65` | `8a40e56e6a6504e0cbce5471b2099db97a74eb3a` | docs(#8606): 필수 편람 Native 383쪽 TSV — devel 7fdd5441ff 와 바이트 동일 |
+| `b7b93df883ef0eed535d1e80b5c45ea6d60ce3a9` | `61dc7c2e0d7bafc1383904d872c2725a5071a353` | ci: Canvas visual diff 의 Chrome 시작 시간 초과 재실행 (#8607) |
+
+## R42 리베이스 후 적용 상태
+
+새 base `1e16a19aede5ccb2657d35974940eb596286cdf1`, 리베이스 직후 head
+`896708a4a02c4138064ab3d426a487bbce52fc02` 기준으로 위 실제 적용 SHA를 갱신했다.
+중복 patch 행의 원 기여 commit 참조는 유지한다. [고유 56개 적용표](assets/planet6897_20261106/contributor-commit-map-r42.tsv)와
+[리베이스·충돌 처리 보고서](assets/planet6897_20261106/rebase-r42-analysis.md)를 따른다.
+원 PR head와 입력은 보존됐으며, 이력 갱신을 최종 검증 통과나 승인으로 표시하지 않는다.
 
 ## 완료 조건
 

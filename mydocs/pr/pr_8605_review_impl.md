@@ -8,9 +8,17 @@
 
 | 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `4f8570309e925468552036f4c20d099011d55a35` | `a1a789015312ee650c31ca57f0ce767ac6b4ae86` | fix(render): WASM Canvas 합성 굵기를 실제 face 윤곽의 fill+stroke로 그린다 (#8430) |
-| `3d0b4420dbee220253189fc149c48125cc0e2dc4` | `3d1d24861e2b555f128d2eb91d5263fa0a86b962` | docs(#8430): 30396 권고문 Native/fresh WASM 전쪽 TSV·확대 판독·글꼴 예외 증적 |
-| `5d37286267136c9978d7ac2f804913730ab6becf` | `5328c886467c4e799043c237f9f3b976c17c6829` | docs(#8430): 최신 devel rebase head 재측정과 글꼴 예외 source SHA 갱신 |
+| `4f8570309e925468552036f4c20d099011d55a35` | `65120f6a9c231707369f46a93ca248390980181f` | fix(render): WASM Canvas 합성 굵기를 실제 face 윤곽의 fill+stroke로 그린다 (#8430) |
+| `3d0b4420dbee220253189fc149c48125cc0e2dc4` | `18da52e820da49317d6b188522fca23c7c507e1f` | docs(#8430): 30396 권고문 Native/fresh WASM 전쪽 TSV·확대 판독·글꼴 예외 증적 |
+| `5d37286267136c9978d7ac2f804913730ab6becf` | `96fffe4e4397079546d8284c7bec14e005952e76` | docs(#8430): 최신 devel rebase head 재측정과 글꼴 예외 source SHA 갱신 |
+
+## R42 리베이스 후 적용 상태
+
+새 base `1e16a19aede5ccb2657d35974940eb596286cdf1`, 리베이스 직후 head
+`896708a4a02c4138064ab3d426a487bbce52fc02` 기준으로 위 실제 적용 SHA를 갱신했다.
+중복 patch 행의 원 기여 commit 참조는 유지한다. [고유 56개 적용표](assets/planet6897_20261106/contributor-commit-map-r42.tsv)와
+[리베이스·충돌 처리 보고서](assets/planet6897_20261106/rebase-r42-analysis.md)를 따른다.
+원 PR head와 입력은 보존됐으며, 이력 갱신을 최종 검증 통과나 승인으로 표시하지 않는다.
 
 ## 완료 조건
 
