@@ -30,3 +30,20 @@ author와 source SHA를 보존했고 메인터너 보정은 별도 커밋이다.
 
 로컬 필수 검증과 검토 기록 확정을 완료했다. 사용자 문서 확인·push 승인 뒤 통합 PR을 등록한다. 최신 PR head CI,
 실제 병합 및 #8286 후속 comment·close는 그 다음 승인 단계이며 완료된 사실로 기록하지 않는다.
+
+## 최신 devel 반영 후 추가 확인
+
+2026-11-07 이후 병합 준비 재개 시 실제 devel `1e16a19aede5ccb2657d35974940eb596286cdf1`을
+merge 커밋 `c95abf73d78fd2da2c83a59531fa02872f638e5d`에 반영했다. 기존 PR head `afc38f95dc`와 새 devel의 변경 파일은
+겹치지 않았고, 제품 코드 충돌이나 추가 수정 없이 결합했다. 검증 tree는
+`60f720a2b6a2a78ce59fce8ddc66e77a915240fb`다.
+
+- 최신 base 기준 manifest·diff 검사 PASS.
+- release-test 선택 회귀 22 PASS / 0 FAIL: 부분 문단·컨테이너, 선행 정의 슬롯,
+  단색 배경 저장, 공유 레이어 캐시, 표 크기 속성 보존.
+- 기존 전체 12,789개 및 Native/WASM·편람 시각 검증은 아래에 명시된 이전 코드 기준이다.
+  이번 최소 결합 확인에서 전체 검증을 반복하지 않았으며 최신 결합본의 실행 결과로 바꾸어 쓰지 않는다.
+- 새 원격 head의 CI는 push 뒤 확인한다. 실제 병합·원 PR 종료는 아직 수행하지 않았다.
+
+[추가 검증 원장](../assets/pr8286_8226_integration/latest-base-validation.json)에
+입력 head/base, merge tree, 선택 검사와 원본 로그 SHA를 보존했다.
