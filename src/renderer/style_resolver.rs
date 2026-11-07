@@ -1428,8 +1428,30 @@ pub(crate) fn lookup_font_name_in_environment(
             // 같은 주 프로그램의 신원 인증은 준비된 glyph fallback 체인을 바꾸지 않는다.
             let same_primary_family = decision.normalized_face.as_deref() == Some(target);
             if !same_primary_family {
+                // 표시용 별칭은 문서의 substFont·검증된 결측 공급자를 교체하는
+                // 요청이 아니다. 원본 전진 보존 세션에서는 주 face만 바꾸고
+                // 뒤 공급 체인을 유지한다. 자연 프로그램을 직접 선택한 세션은
+                // 기존대로 새 주 프로그램에서 시작한다.
+                let source_fallbacks = decision
+                    .requested_face
+                    .as_deref()
+                    .is_some_and(|source| environment.preserves_source_metrics_for(source))
+                    .then(|| {
+                        decision
+                            .css_family_chain
+                            .iter()
+                            .skip(1)
+                            .cloned()
+                            .collect::<Vec<_>>()
+                    })
+                    .unwrap_or_default();
                 decision.normalized_face = Some(target.to_string());
                 decision.css_family_chain = vec![target.to_string()];
+                for face in source_fallbacks {
+                    if !decision.css_family_chain.contains(&face) {
+                        decision.css_family_chain.push(face);
+                    }
+                }
             }
             // 공급자가 선택한 face 이름을 family로 합치면 같은 계열의 다른
             // 굵기·너비가 선택될 수 있다. 원본 주소의 실제 조회 이름을 보존하고,

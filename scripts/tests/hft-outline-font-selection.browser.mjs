@@ -1,6 +1,6 @@
 // 관계형: 실제 WASM·FontFace·Canvas의 공급 프로그램 선택을 검사한다. 실물 raw 측정과 구분한다.
-// 주석 갱신: 2026-11-08T06:46:04+09:00. 직전 변경 df72efbd1211d3d6717c3ba3517f12aac0b84046
-// (Git 커밋 시각 2026-11-08T01:16:58+09:00).
+// 주석 갱신: 2026-11-08T08:10:55.558137+09:00. 직전 변경 631ba67cee528e4bd65c23042d9071b29622dfba
+// (Git 커밋 시각 2026-11-08T07:11:47+09:00).
 // 저장소 소유 CFF·OFL TTF를 직접 공급하며 시스템 글꼴 설치나 상용 프로그램 배포에 의존하지 않는다.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -111,11 +111,15 @@ test('HFT·TTF 선언의 합성 굵기가 실제 CFF를 쓰고 공급된 TTF는 
           }
           doc.insertText(0, 0, 1, '0');
           doc.applyCharFormat(0, 0, 1, 2, JSON.stringify({bold: true}));
-          const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
-          const texts = [], fillText = ctx.fillText.bind(ctx);
-          ctx.fillText = (text, ...args) => { texts.push(text); return fillText(text, ...args); };
-          doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', 'print');
-          missingGlyphControl = {texts};
+          const profiles = [];
+          for (const profile of ['screen', 'print']) {
+            const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+            const texts = [], fillText = ctx.fillText.bind(ctx);
+            ctx.fillText = (text, ...args) => { texts.push(text); return fillText(text, ...args); };
+            doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', profile);
+            profiles.push({profile, texts});
+          }
+          missingGlyphControl = {profiles};
         }
         results.push({sourceType, bold: runs.length === 1 && runs[0].paintStyle.bold, fauxBold: fauxStroke > 0, registered, rows, trueTypeAliasWins, missingGlyphControl});
       } finally { doc.free(); }
@@ -130,10 +134,12 @@ test('HFT·TTF 선언의 합성 굵기가 실제 CFF를 쓰고 공급된 TTF는 
       assert.equal(result.trueTypeAliasWins, true, '실제 TTF 원 프로그램이 있으면 CFF 등록으로 덮어쓰지 않는다');
     }
     if (result.missingGlyphControl) {
-      assert.equal(result.missingGlyphControl.texts.includes('0'), true,
-        '분리 CFF의 누락 글리프는 동반 face를 아는 Canvas에 맡겨야 한다');
-      assert.equal(result.missingGlyphControl.texts.includes('가'), false,
-        '실제로 CFF가 소유하는 글자는 계속 원 윤곽으로 그려야 한다');
+      for (const control of result.missingGlyphControl.profiles) {
+        assert.equal(control.texts.includes('0'), true,
+          `${control.profile}: 분리 CFF의 누락 글리프는 동반 face를 아는 Canvas에 맡겨야 한다`);
+        if (control.profile === 'print') assert.equal(control.texts.includes('가'), false,
+          'CFF가 소유한 인쇄 글리프의 기존 윤곽 경로는 유지한다');
+      }
     }
     for (const row of result.rows) {
       assert.equal(row.texts.includes('가'), row.profile === 'screen',

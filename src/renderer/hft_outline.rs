@@ -353,9 +353,9 @@ impl HftOutlineFonts {
             .as_ref()
             .is_some_and(|face| face.family.starts_with("__rhwp_ttf__"));
         // Print는 등록된 원 HFT CFF도 같은 fill+stroke 경로에서 소비한다.
-        // Screen·실제 기울임·옛한글 전용 face의 선택은 바꾸지 않는다.
-        if allow_hft_outline
-            && !source_ttf_selected
+        // 윤곽 재생 허용과 primary의 결측 소유 판단은 별개다.
+        // 실제 기울임·옛한글 전용 face의 선택은 바꾸지 않는다.
+        if !source_ttf_selected
             && !style.italic
             && !super::contains_old_hangul_jamo(&character.to_string())
             && self
@@ -365,7 +365,10 @@ impl HftOutlineFonts {
             // 분리 CFF가 빠뜨린 글자는 같은 CSS family의 TTF 동반 face가
             // 소유할 수 있다. 불완전한 coverage로 선택한 뒤 family의 윤곽을
             // 대신 그리지 않고 실제 FontFace 사다리를 아는 Canvas에 맡긴다.
-            return self.glyph(&style.font_family, character);
+            let primary = self.glyph(&style.font_family, character);
+            if allow_hft_outline || primary.is_none() {
+                return primary;
+            }
         }
         let selected = selected?;
         // 실제 기울임 face는 보관하지 않는다. 같은 family·굵기의 정체 윤곽으로 대신하지 않는다.
