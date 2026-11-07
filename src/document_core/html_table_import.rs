@@ -858,9 +858,15 @@ impl DocumentCore {
             .filter(|fill_type| !matches!(fill_type.as_str(), "gradient" | "image"))
         {
             bf.fill = if fill_type_str == "solid" {
-                let bg = json_color(json, "fillColor").unwrap_or(0xFFFFFF);
-                let pat_c = json_color(json, "patternColor").unwrap_or(0);
-                let pat_t = json_i32(json, "patternType").unwrap_or(0);
+                // 부분 편집은 기존 색상/무늬를 보존한다. 새 단색의 무늬 없음은 -1이며,
+                // HWP에서 읽은 가로 무늬 0을 무늬 없음으로 바꾸면 안 된다 (#8733).
+                let existing = bf.fill.solid;
+                let bg = json_color(json, "fillColor")
+                    .unwrap_or_else(|| existing.map_or(0xFFFFFF, |fill| fill.background_color));
+                let pat_c = json_color(json, "patternColor")
+                    .unwrap_or_else(|| existing.map_or(0, |fill| fill.pattern_color));
+                let pat_t = json_i32(json, "patternType")
+                    .unwrap_or_else(|| existing.map_or(-1, |fill| fill.pattern_type));
                 Fill {
                     fill_type: FillType::Solid,
                     solid: Some(SolidFill {

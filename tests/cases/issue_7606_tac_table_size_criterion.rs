@@ -71,6 +71,10 @@ const ABSOLUTE: (SizeCriterion, SizeCriterion) = (SizeCriterion::Absolute, SizeC
 #[test]
 fn tac_table_empty_props_keep_common_attr_on_hwp5_save() {
     let untouched = edit_and_roundtrip(tac_table_doc(), &[]);
+    assert!(
+        !untouched.common.affect_line_spacing,
+        "new inline tables must not enable object-based line spacing (#8733)",
+    );
     assert_eq!(
         size_criteria(&untouched),
         ABSOLUTE,
@@ -79,6 +83,10 @@ fn tac_table_empty_props_keep_common_attr_on_hwp5_save() {
     );
 
     let edited = edit_and_roundtrip(tac_table_doc(), &["{}"]);
+    assert_eq!(
+        edited.common.affect_line_spacing, untouched.common.affect_line_spacing,
+        "empty table properties must preserve the line-spacing flag (#8733)",
+    );
     assert_eq!(
         edited.common.attr, untouched.common.attr,
         "빈 setTableProperties 가 저장된 개체 공통 속성을 바꿨다 ({:#010x} → {:#010x})",
@@ -89,6 +97,10 @@ fn tac_table_empty_props_keep_common_attr_on_hwp5_save() {
 #[test]
 fn tac_table_position_edit_keeps_absolute_size_criteria_on_hwp5_save() {
     let t = edit_and_roundtrip(tac_table_doc(), &[FLOATING_POSITION]);
+    assert!(
+        !t.common.affect_line_spacing,
+        "changing table position must not enable object-based line spacing (#8733)",
+    );
     assert_eq!(
         size_criteria(&t),
         ABSOLUTE,
