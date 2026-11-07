@@ -5471,7 +5471,7 @@ pub(crate) fn stored_picture_next_page_placement(
     actual_host_flow_y: f64,
     available_height: f64,
     dpi: f64,
-) -> Option<ParagraphFloatPlacement> {
+) -> Option<(ParagraphFloatPlacement, usize)> {
     let [Control::Picture(picture)] = para.controls.as_slice() else {
         return None;
     };
@@ -5488,7 +5488,6 @@ pub(crate) fn stored_picture_next_page_placement(
         || common.text_wrap != TextWrap::TopAndBottom
         || common.vert_rel_to != VertRelTo::Para
         || common.vert_align != VertAlign::Top
-        || picture.caption.is_some()
         || !dpi.is_finite()
         || dpi <= 0.0
         || !available_height.is_finite()
@@ -5499,9 +5498,23 @@ pub(crate) fn stored_picture_next_page_placement(
     let host_y = hwpunit_to_px(host.vertical_pos.checked_sub(frame_vpos)?, dpi);
     let offset = hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
     let (_, height) = picture_flow_frame_size_hu(picture);
+    // [#8732] 아래 캡션은 그림과 함께 다음 쪽으로 간다. 다음 쪽 본문의 저장 재시작은
+    // 그림 틀 + 캡션 간격 + 캡션 문단의 저장 줄 끝에서 시작한다(1480000-201500223
+    // 51쪽: 20765 + 850 + 1100 = 22715). 다른 방향 캡션은 이 등식의 근거가 없다.
+    let caption_extent = match picture.caption.as_ref() {
+        None => 0,
+        Some(caption) if caption.direction == crate::model::shape::CaptionDirection::Bottom => {
+            let last = caption.paragraphs.last()?.line_segs.last()?;
+            i32::from(caption.spacing)
+                .checked_add(last.vertical_pos)?
+                .checked_add(last.line_height)?
+        }
+        Some(_) => return None,
+    };
     let frame_height = height
         .checked_add(i32::from(common.margin.top))?
-        .checked_add(i32::from(common.margin.bottom))?;
+        .checked_add(i32::from(common.margin.bottom))?
+        .checked_add(caption_extent)?;
     let bottom = hwpunit_to_px(frame_height, dpi);
     if host_y < 0.0
         || offset < 0.0
@@ -5513,7 +5526,7 @@ pub(crate) fn stored_picture_next_page_placement(
         return None;
     }
     let mut previous_end = host.vertical_pos;
-    for next in following {
+    for (reset_index, next) in following.iter().enumerate() {
         if !next.controls.is_empty() {
             return None;
         }
@@ -5526,22 +5539,25 @@ pub(crate) fn stored_picture_next_page_placement(
             return None;
         }
         if first.vertical_pos < previous_end {
-            if first.vertical_pos != frame_height
-                || !next.text.chars().any(|c| c > '\u{001f}' && c != '\u{fffc}')
-            {
+            // 다음 쪽 첫 저장 줄이 그림(·캡션) 아래끝과 정확히 같다는 것이 이월의 근거다.
+            // 그 줄이 빈 문단이어도 저장 사다리의 같은 등식이 쪽 소유를 증명한다.
+            if first.vertical_pos != frame_height {
                 return None;
             }
-            return Some(ParagraphFloatPlacement {
-                flow: ParagraphFloatFlow::StoredPicture {
-                    next_flow_y: bottom,
+            return Some((
+                ParagraphFloatPlacement {
+                    flow: ParagraphFloatFlow::StoredPicture {
+                        next_flow_y: bottom,
+                    },
+                    anchor_y: -offset,
+                    stored_host_origin: None,
+                    stored_successor_line_origin: None,
+                    table_left: None,
+                    table_top: 0.0,
+                    occupied_bottom: bottom,
                 },
-                anchor_y: -offset,
-                stored_host_origin: None,
-                stored_successor_line_origin: None,
-                table_left: None,
-                table_top: 0.0,
-                occupied_bottom: bottom,
-            });
+                reset_index,
+            ));
         }
         previous_end = next.line_segs.last()?.vertical_pos;
     }
