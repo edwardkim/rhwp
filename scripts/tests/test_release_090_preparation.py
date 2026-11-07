@@ -11,6 +11,17 @@ RECORDS = ('CHANGELOG.md', 'CHANGELOG_EN.md', 'mydocs/release/release_notes_v0.9
 
 
 class Release090PreparationTests(unittest.TestCase):
+    def test_crate_source_policy_has_one_entry_per_package_and_dependency(self):
+        packages = json.loads((ROOT / 'packaging/crates-io/source-policy.json').read_text())['packages']
+        for key in ('source', 'published_name'):
+            values = [p[key] for p in packages]
+            self.assertEqual(len(values), len(set(values)), key)
+        for package in packages:
+            dependencies = package['local_dependencies']
+            self.assertEqual(len(dependencies), len(set(dependencies)), package['published_name'])
+        jpeg = next(p for p in packages if p['published_name'] == 'rhwp-jpeg-encoder')
+        self.assertIn('Cargo.toml.orig', jpeg['include'])
+
     def test_release_credits_match_resolved_ledger_without_duplicates(self):
         ledger = json.loads((ROOT / 'mydocs/tech/investigations/release-v0.9.0/contributor-ledger.json').read_text())
         self.assertEqual(ledger['unresolvedNumbers'], [])
