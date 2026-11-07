@@ -8825,9 +8825,17 @@ pub(crate) fn stored_empty_anchor_band_host_line_advance_hu(
     }) {
         return None;
     }
+    // 개체에 줄 폭 전체가 막힌 host 줄(`segment_width = 0`)은 오프셋이 음수여도 띠 아래에
+    // 따로 놓이지 않는다. 이때 사다리의 `lh + ls` 는 띠를 포함한 전진량이다.
+    if para.line_segs.first().is_some_and(|seg| {
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && seg.segment_width == 0
+    }) {
+        return None;
+    }
     // 다음 본문 줄의 저장 시작점이 표 밴드 아래 호스트 진행량을 증명해야 한다.
-    // 빈 후속 문단은 자체 줄 상자를 소유하지만, 종료/편집용 사다리만으로
-    // 앞 개체 아래 별도 호스트 줄을 추가 예약할 근거는 되지 않는다.
+    // 개체 없는 빈 후속 문단도 자기 줄 상자로 흐름을 잇는 저장 줄이라 같은 증거가 된다.
+    // 개체를 가진 빈 후속 문단(앵커 스택)의 사다리는 개체-개체 간격이라 제외한다.
     // 후속 본문에 표가 있어도 같은 글줄 증거와 마지막 개체의 단일 종료를 따른다.
     stored_anchor_band_host_line_from_ladder(
         para,
@@ -8911,7 +8919,9 @@ fn next_plain_text_vpos(next_para: Option<&Paragraph>) -> Option<i32> {
 
 fn next_text_paragraph_vpos(next_para: Option<&Paragraph>) -> Option<i32> {
     let next = next_para?;
-    if !para_has_non_whitespace_text(next) {
+    // 빈 앵커 스택의 뒤 문단은 개체-개체 간격이라 증거가 아니다. 개체 없는 빈 문단은
+    // 글자가 없어도 자기 줄 상자로 흐름을 잇는 저장 줄이므로 증거가 된다.
+    if !para_has_non_whitespace_text(next) && !next.controls.is_empty() {
         return None;
     }
     next_stored_paragraph_vpos(Some(next))
@@ -9856,6 +9866,47 @@ mod tests {
             },
             ..Default::default()
         }
+    }
+
+    #[test]
+    fn issue_8731_anchor_ladder_accepts_only_object_free_empty_next() {
+        let table = Table {
+            common: base_common(),
+            ..Default::default()
+        };
+        let host = Paragraph {
+            controls: vec![Control::Table(Box::new(table))],
+            line_segs: vec![LineSeg {
+                vertical_pos: 0,
+                line_height: 1000,
+                line_spacing: 600,
+                segment_width: 40000,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let empty_next = Paragraph {
+            line_segs: vec![LineSeg {
+                vertical_pos: 1600,
+                line_height: 1000,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let mut anchor_next = empty_next.clone();
+        anchor_next.controls = host.controls.clone();
+        let advance = |para: &Paragraph, next: &Paragraph| {
+            stored_empty_anchor_band_host_line_advance_hu(true, para, 0, Some(next))
+        };
+
+        assert_eq!(advance(&host, &empty_next), Some(1600));
+        // 앵커 스택의 사다리는 개체-개체 간격이라 띠 아래 host 줄의 증거가 아니다.
+        assert_eq!(advance(&host, &anchor_next), None);
+
+        // 줄 폭 전체가 막힌 host 줄은 띠 아래에 놓이지 않는다.
+        let mut blocked = host.clone();
+        blocked.line_segs[0].segment_width = 0;
+        assert_eq!(advance(&blocked, &empty_next), None);
     }
 
     #[test]
