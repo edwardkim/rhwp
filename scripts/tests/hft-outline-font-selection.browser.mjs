@@ -15,12 +15,13 @@ const require = createRequire(join(root, 'rhwp-studio/package.json'));
 
 // 관계형: 같은 실제 CFF의 보통 윤곽을 합성 굵기의 fill·stroke도 소비해야 한다.
 // 저장소 소유 합성 글꼴의 계약 검사이며 실물 페이지의 위치 핀이나 시각 gate를 대신하지 않는다.
-test('실제 HFT CFF의 합성 굵기도 등록된 원 윤곽을 소비한다', async t => {
+test('HFT·TTF 선언의 합성 굵기가 실제 CFF를 쓰고 공급된 TTF는 보존한다', async t => {
   const pkg = resolve(process.env.RHWP_SWEEP_TEST_WASM_PKG || join(root, 'pkg'));
   const files = new Map([
     ['/rhwp.js', ['application/javascript', readFileSync(join(pkg, 'rhwp.js'))]],
     ['/rhwp_bg.wasm', ['application/wasm', readFileSync(join(pkg, 'rhwp_bg.wasm'))]],
     ['/source.otf', ['application/octet-stream', readFileSync(join(root, 'tests/fixtures/fonts/RHWPHftOutlineJamo.otf'))]],
+    ['/source.ttf', ['application/octet-stream', readFileSync(join(root, 'ttfs/opensource/NotoSansKR-Regular.ttf'))]],
   ]);
   const server = createSweepServer(files, new Map());
   await new Promise((accept, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', accept); });
@@ -36,7 +37,7 @@ test('실제 HFT CFF의 합성 굵기도 등록된 원 윤곽을 소비한다', 
   });
   const page = await browser.newPage();
   await page.goto(`http://127.0.0.1:${server.address().port}`);
-  const result = await page.evaluate(async () => {
+  const results = await page.evaluate(async () => {
     const wasm = await import('/rhwp.js'); await wasm.default();
     const bytes = new Uint8Array(await (await fetch('/source.otf')).arrayBuffer());
     // 합성 굵기 계약이 명시된 source family에 소유 fixture를 실제 FontFace로 연결한다.
@@ -44,51 +45,76 @@ test('실제 HFT CFF의 합성 굵기도 등록된 원 윤곽을 소비한다', 
     const family = '한양신명조';
     const face = new FontFace(family, bytes); await face.load(); document.fonts.add(face);
     const languages = ['Hangul', 'Latin', 'Hanja', 'Japanese', 'Other', 'Symbol', 'User'];
-    const source = new TextEncoder().encode(`<?xml version="1.0" encoding="UTF-8"?>
-      <HWPML Version="2.91"><HEAD SecCnt="1"><MAPPINGTABLE><FACENAMELIST>
-      ${languages.map(lang => `<FONTFACE Count="1" Lang="${lang}"><FONT Id="0" Name="${family}" Type="hft"/></FONTFACE>`).join('')}
-      </FACENAMELIST><CHARSHAPELIST Count="1"><CHARSHAPE Id="0" Height="2400">
-      </CHARSHAPE></CHARSHAPELIST></MAPPINGTABLE></HEAD><BODY><SECTION Id="0"><P ParaShape="0">
-      <TEXT CharShape="0"><CHAR>가</CHAR></TEXT></P></SECTION></BODY></HWPML>`);
-    const doc = new wasm.HwpDocument(source);
-    try {
-      // 현재 HML reader의 미지원 BOLD 태그에 의존하지 않고 실제 공개 편집 경로로 설정한다.
-      doc.applyCharFormat(0, 0, 0, 1, JSON.stringify({bold: true}));
-      const svg = doc.renderPageSvgWithProfile(0, 'print');
-      const layer = JSON.parse(doc.getPageLayerTreeWithProfile(0, 'print', true, true));
-      const runs = [];
-      const walk = value => {
-        if (!value || typeof value !== 'object') return;
-        if (value.type === 'textRun' && value.text === '가') runs.push(value);
-        if (Array.isArray(value)) value.forEach(walk); else Object.values(value).forEach(walk);
-      };
-      walk(layer);
-      const registered = doc.registerHftOutlineFont(family, bytes, 0);
-      const rows = [];
-      for (const profile of ['screen', 'print', 'high-quality']) {
-        const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
-        const texts = [], fillText = ctx.fillText.bind(ctx), moveTo = ctx.moveTo.bind(ctx);
-        let contours = 0;
-        ctx.fillText = (text, ...args) => { texts.push(text); return fillText(text, ...args); };
-        ctx.moveTo = (...args) => { contours++; return moveTo(...args); };
-        doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', profile);
-        const rgba = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        let ink = 0;
-        for (let i = 0; i < rgba.length; i += 4) if (rgba[i + 3] > 200 && Math.min(rgba[i], rgba[i + 1], rgba[i + 2]) < 32) ink++;
-        rows.push({profile, texts, contours, ink});
-      }
-      const fauxStroke = Number(/<text\b[^>]*stroke-width="([\d.]+)"[^>]*>가<\/text>/.exec(svg)?.[1]);
-      return {bold: runs.length === 1 && runs[0].paintStyle.bold, fauxBold: fauxStroke > 0, registered, rows};
-    } finally { doc.free(); }
+    const results = [];
+    for (const sourceType of ['hft', 'ttf']) {
+      const source = new TextEncoder().encode(`<?xml version="1.0" encoding="UTF-8"?>
+        <HWPML Version="2.91"><HEAD SecCnt="1"><MAPPINGTABLE><FACENAMELIST>
+        ${languages.map(lang => `<FONTFACE Count="1" Lang="${lang}"><FONT Id="0" Name="${family}" Type="${lang === 'Hangul' ? sourceType : 'hft'}"/></FONTFACE>`).join('')}
+        </FACENAMELIST><CHARSHAPELIST Count="1"><CHARSHAPE Id="0" Height="2400">
+        </CHARSHAPE></CHARSHAPELIST></MAPPINGTABLE></HEAD><BODY><SECTION Id="0"><P ParaShape="0">
+        <TEXT CharShape="0"><CHAR>가</CHAR></TEXT></P></SECTION></BODY></HWPML>`);
+      const doc = new wasm.HwpDocument(source);
+      try {
+        // 현재 HML reader의 미지원 BOLD 태그에 의존하지 않고 실제 공개 편집 경로로 설정한다.
+        doc.applyCharFormat(0, 0, 0, 1, JSON.stringify({bold: true}));
+        const svg = doc.renderPageSvgWithProfile(0, 'print');
+        const layer = JSON.parse(doc.getPageLayerTreeWithProfile(0, 'print', true, true));
+        const runs = [];
+        const walk = value => {
+          if (!value || typeof value !== 'object') return;
+          if (value.type === 'textRun' && value.text === '가') runs.push(value);
+          if (Array.isArray(value)) value.forEach(walk); else Object.values(value).forEach(walk);
+        };
+        walk(layer);
+        const registered = doc.registerHftOutlineFont(family, bytes, 0);
+        const rows = [];
+        for (const profile of ['screen', 'print', 'high-quality']) {
+          const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+          const texts = [], fillText = ctx.fillText.bind(ctx), moveTo = ctx.moveTo.bind(ctx);
+          let contours = 0;
+          ctx.fillText = (text, ...args) => { texts.push(text); return fillText(text, ...args); };
+          ctx.moveTo = (...args) => { contours++; return moveTo(...args); };
+          doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', profile);
+          const rgba = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+          let ink = 0;
+          for (let i = 0; i < rgba.length; i += 4) if (rgba[i + 3] > 200 && Math.min(rgba[i], rgba[i + 1], rgba[i + 2]) < 32) ink++;
+          rows.push({profile, texts, contours, ink});
+        }
+        const fauxStroke = Number(/<text\b[^>]*stroke-width="([\d.]+)"[^>]*>가<\/text>/.exec(svg)?.[1]);
+        let trueTypeAliasWins = null;
+        if (sourceType === 'ttf') {
+          const alias = `__rhwp_ttf__${family}`;
+          const ttf = new Uint8Array(await (await fetch('/source.ttf')).arrayBuffer());
+          const font = new FontFace(alias, ttf); await font.load(); document.fonts.add(font);
+          doc.registerTextFontGlyphCoverage(alias, ttf, 0);
+          const paint = () => {
+            const canvas = document.createElement('canvas');
+            doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', 'print');
+            return canvas.toDataURL();
+          };
+          doc.clearTextFontFamily(family);
+          const before = paint();
+          doc.registerHftOutlineFont(family, bytes, 0);
+          trueTypeAliasWins = before === paint();
+        }
+        results.push({sourceType, bold: runs.length === 1 && runs[0].paintStyle.bold, fauxBold: fauxStroke > 0, registered, rows, trueTypeAliasWins});
+      } finally { doc.free(); }
+    }
+    return results;
   });
-  assert.equal(result.bold, true, '합성 입력이 실제 굵은 글자 모양으로 해석되어야 한다');
-  assert.equal(result.fauxBold, true, '보통 bold face 요청이 아닌 실제 합성 굵기 경계에 진입한다');
-  assert.equal(result.registered, true);
-  for (const row of result.rows) {
-    assert.equal(row.texts.includes('가'), row.profile === 'screen',
-      `Print는 원 CFF를 쓰고 Screen의 기존 글자 painter는 유지한다: ${JSON.stringify(row)}`);
-    assert.ok(row.ink > 0, '실제 Canvas 잉크를 소비한다');
-    if (row.profile !== 'screen') assert.ok(row.contours > 0, '원 CFF의 실제 path를 소비한다');
+  for (const result of results) {
+    assert.equal(result.bold, true, '합성 입력이 실제 굵은 글자 모양으로 해석되어야 한다');
+    assert.equal(result.fauxBold, true, '보통 bold face 요청이 아닌 실제 합성 굵기 경계에 진입한다');
+    assert.equal(result.registered, true);
+    if (result.sourceType === 'ttf') {
+      assert.equal(result.trueTypeAliasWins, true, '실제 TTF 원 프로그램이 있으면 CFF 등록으로 덮어쓰지 않는다');
+    }
+    for (const row of result.rows) {
+      assert.equal(row.texts.includes('가'), row.profile === 'screen',
+        `${result.sourceType}: 실제 TTF가 없으면 Print는 등록된 CFF를 쓰고 Screen은 보존한다: ${JSON.stringify(row)}`);
+      assert.ok(row.ink > 0, '실제 Canvas 잉크를 소비한다');
+      if (row.profile !== 'screen') assert.ok(row.contours > 0, '원 CFF의 실제 path를 소비한다');
+    }
   }
 });
 
