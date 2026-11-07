@@ -93,6 +93,9 @@ pub struct AvailableFontProgram {
     /// 실제 바이트에서 확인한 OpenType CFF 프로그램이다.
     #[serde(default)]
     pub open_type_cff: bool,
+    /// TTC의 선택 face를 단독 TTF와 구분한다.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub collection_face: bool,
 }
 
 /// 실제 프로그램 공급과 존재 확인은 서로 다른 증거다. 이름만 확인된
@@ -247,11 +250,9 @@ impl FontEnvironment {
                 let Ok(font_id) = u16::try_from(index) else {
                     continue;
                 };
-                let mut primary_names = if may_select_hft_program(font, language) {
-                    program_names(&font.name)
-                } else {
-                    Vec::new()
-                };
+                // 문서의 TTF/HFT 표시는 설치 프로그램의 형식이 아니다.
+                // 호환 대체 이름보다 원래 선언과 실제 설치 별칭을 먼저 조회한다.
+                let mut primary_names = program_names(&font.name);
                 for name in program_names(primary) {
                     if !primary_names.contains(&name) {
                         primary_names.push(name);
@@ -306,7 +307,21 @@ impl FontEnvironment {
         let embedded = Self::embedded_program_names(doc_info);
         let mut slot_candidates = Vec::new();
         for (language_slot, font_id, request) in Self::document_requests_with_slots(doc_info) {
-            let primary = request.primary.iter().find_map(|name| resolve(name));
+            let original_names = program_names(&request.source);
+            // 원 프로그램의 설치 별칭 안에서만 TTF → CFF OpenType 순서를 적용한다.
+            // 대체 family의 TTF가 원 family의 OTF를 앞서면 안 된다.
+            let primary = original_names
+                .iter()
+                .filter_map(|name| resolve(name))
+                .filter(|program| program.true_type || program.open_type_cff)
+                .min_by_key(|program| {
+                    if program.true_type {
+                        u8::from(program.collection_face)
+                    } else {
+                        3
+                    }
+                })
+                .or_else(|| request.primary.iter().find_map(|name| resolve(name)));
             let candidate = if let Some(program) = primary {
                 // 원본 선언은 HFT지만 실제로 준비된 동일 주 프로그램은 TTF일 수 있다.
                 // 존재 확인으로 끝내지 않고 프로그램 신원을 공통 스타일 해소에 전달한다.
@@ -315,11 +330,10 @@ impl FontEnvironment {
                     .font_faces
                     .get(language_slot)
                     .and_then(|faces| faces.get(font_id as usize));
-                let is_source_program = program.query == request.source
-                    || request.source.strip_prefix('#') == Some(program.query.as_str());
+                let is_source_program = original_names.contains(&program.query);
                 ((program.true_type || program.open_type_cff)
                     && is_source_program
-                    && source.is_some_and(|font| may_select_hft_program(font, language_slot)))
+                    && source.is_some_and(|font| !font.is_embedded))
                 .then_some((program, None))
             } else {
                 request
@@ -569,16 +583,13 @@ impl FontEnvironment {
         font_paths: &[std::path::PathBuf],
     ) -> Result<Option<Self>, HwpError> {
         use sha2::{Digest, Sha256};
-        let needs_primary_program_identity =
-            doc_info
-                .font_faces
-                .iter()
-                .enumerate()
-                .any(|(language, fonts)| {
-                    fonts
-                        .iter()
-                        .any(|font| !font.is_embedded && may_select_hft_program(font, language))
-                });
+        // 문서의 TTF/HFT 지정과 관계없이 실제 설치 프로그램 형식을 확인한다.
+        // TTF로 기록된 원본 face가 OTF/TTC로 설치된 경우도 같은 조회 경로다.
+        let needs_primary_program_identity = doc_info
+            .font_faces
+            .iter()
+            .flatten()
+            .any(|font| !font.is_embedded);
         if !needs_primary_program_identity
             && !Self::document_requests(doc_info).iter().any(|request| {
                 !request.substitute.is_empty() || !request.public_fallback.is_empty()
@@ -602,7 +613,7 @@ impl FontEnvironment {
                     })
                     .and_then(|id| database.face(id))
                     .or_else(|| database.faces().find(|face| face.post_script_name == query))?;
-                // 같은 family와 스타일의 설치본 중 CFF OpenType을 먼저 사용한다.
+                // 같은 family와 스타일의 설치본은 TTF → CFF OpenType 순서다.
                 // PostScript 이름을 직접 지정한 조회는 다른 face로 바꾸지 않는다.
                 let face = if face.post_script_name == query
                     && !face.families.iter().any(|(name, _)| name == query)
@@ -611,18 +622,30 @@ impl FontEnvironment {
                 } else {
                     database
                         .faces()
-                        .find(|candidate| {
+                        .filter(|candidate| {
                             candidate.style == face.style
                                 && candidate.weight == face.weight
                                 && candidate.stretch == face.stretch
                                 && candidate.families.iter().any(|(name, _)| {
                                     face.families.iter().any(|(original, _)| original == name)
                                 })
-                                && database
-                                    .with_face_data(candidate.id, |bytes, _| {
-                                        bytes.get(..4) == Some(b"OTTO")
+                        })
+                        .min_by_key(|candidate| {
+                            database
+                                .with_face_data(candidate.id, |bytes, index| {
+                                    ttf_parser::Face::parse(bytes, index).map_or(2, |face| {
+                                        if face.tables().glyf.is_some() {
+                                            u8::from(bytes.get(..4) == Some(b"ttcf"))
+                                        } else if face.tables().cff.is_some()
+                                            || face.tables().cff2.is_some()
+                                        {
+                                            2
+                                        } else {
+                                            3
+                                        }
                                     })
-                                    .unwrap_or(false)
+                                })
+                                .unwrap_or(2)
                         })
                         .unwrap_or(face)
                 };
@@ -647,6 +670,7 @@ impl FontEnvironment {
                         family,
                         true_type,
                         open_type_cff,
+                        collection_face: bytes.get(..4) == Some(b"ttcf"),
                         program_id: digest
                             .finalize()
                             .iter()

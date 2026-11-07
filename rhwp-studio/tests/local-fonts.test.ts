@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { normalizeFontFaceData } from '../src/core/sfnt-face.ts';
 
 import {
   clearStoredLocalFonts,
@@ -55,10 +57,10 @@ test('같은 PostScript 이름의 프로그램 중 CFF와 TrueType 바이트를 
     value: async () => values.map(signature => ({ ...record, blob: async () => new Blob([sfnt(signature)]) })) });
   try {
     let selected = await loadPreferredLocalFontBytes(record);
-    assert.equal(new DataView(selected!).getUint32(0), 0x4f54544f);
-    values = [0x00010000];
-    selected = await loadPreferredLocalFontBytes(record);
     assert.equal(new DataView(selected!).getUint32(0), 0x00010000);
+    values = [0x4f54544f];
+    selected = await loadPreferredLocalFontBytes(record);
+    assert.equal(new DataView(selected!).getUint32(0), 0x4f54544f);
   } finally {
     if (previous) Object.defineProperty(globalThis, 'queryLocalFonts', previous);
     else Reflect.deleteProperty(globalThis, 'queryLocalFonts');
@@ -1137,5 +1139,32 @@ test('Local Font Access가 문서 face를 누락하면 미해소 후보만 probe
     await clearStoredLocalFonts();
     resetLocalFontsForTests();
     restoreGlobals(originals);
+  }
+});
+
+// 관계형: TTC의 선택 face 신원·컨테이너 우선순위. px 고정 검사가 아니다.
+// 주석 갱신: 2026-11-07T17:45:00+09:00.
+test('TTF가 없으면 TTC의 이름이 일치하는 두 번째 face를 OTF보다 먼저 고른다', async () => {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'queryLocalFonts');
+  const raw = readFileSync(new URL('../../tests/fixtures/fonts/RHWPExactFaceSmoke.ttc', import.meta.url));
+  const collection = raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength);
+  const expected = normalizeFontFaceData(collection, 1)!;
+  const record = { family: 'RHWP Exact Face One', fullName: 'RHWP Exact Face One Regular',
+    postscriptName: 'RHWPExactFaceOne-Regular', style: 'Regular', displayName: 'One',
+    aliases: ['RHWP Exact Face One'], detectionSource: 'local-font-access' as const };
+  const otf = new ArrayBuffer(4); new DataView(otf).setUint32(0, 0x4f54544f);
+  let values = [otf, collection];
+  Object.defineProperty(globalThis, 'queryLocalFonts', { configurable: true,
+    value: async () => values.map(bytes => ({ ...record, blob: async () => new Blob([bytes]) })) });
+  try {
+    assert.deepEqual(new Uint8Array((await loadPreferredLocalFontBytes(record))!), new Uint8Array(expected));
+    values = [otf, collection, expected];
+    assert.deepEqual(new Uint8Array((await loadPreferredLocalFontBytes(record))!), new Uint8Array(expected));
+    const missing = { ...record, postscriptName: 'Missing-Face' };
+    values = [collection];
+    assert.equal(await loadPreferredLocalFontBytes(missing), null, '다른 face나 첫 face를 대입하지 않는다');
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'queryLocalFonts', previous);
+    else Reflect.deleteProperty(globalThis, 'queryLocalFonts');
   }
 });

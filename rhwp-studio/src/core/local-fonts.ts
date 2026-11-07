@@ -6,6 +6,7 @@
  * 사용자 승인 흐름에서만 호출하도록 API를 분리한다.
  */
 import { HostFontSource, type HostFontProvider, type HostFontReference, type HostFontData } from './host-font-provider.ts';
+import { normalizeFontFaceData } from './sfnt-face.ts';
 import { REGISTERED_FONTS } from './font-loader.ts';
 import { setRawCanvasFont } from './canvas-font-raw.ts';
 
@@ -144,6 +145,8 @@ let storageLoaded = false;
 let lastStorageError: string | null = null;
 /** 동시에 들어온 CanvasKit SFNT 바이트 조회만 합치는 in-flight cache. */
 const localFontBytesByPostscriptName = new Map<string, Promise<ArrayBuffer | null>>();
+const automaticallyCheckedProgramNames = new Set<string>();
+let grantedCatalogRefresh: Promise<void> | null = null;
 
 /** Local Font Access API 지원 여부 */
 export function isLocalFontAccessSupported(): boolean {
@@ -392,6 +395,10 @@ async function readSfntFontNames(fontData: FontData): Promise<SfntFontNames> {
     const blob = await fontData.blob();
     if (blob.size < 12) return emptySfntFontNames();
     const header = new DataView(await blob.slice(0, 12).arrayBuffer());
+    if (header.getUint32(0) === 0x74746366) {
+      const selected = matchingCollectionFace(await blob.arrayBuffer(), fontData);
+      return selected ? readSfntFontNames({ ...fontData, blob: async () => new Blob([selected]) }) : emptySfntFontNames();
+    }
     const tableCount = header.getUint16(4, false);
     const directoryLength = 12 + tableCount * 16;
     if (blob.size < directoryLength) return emptySfntFontNames();
@@ -896,6 +903,7 @@ export async function clearStoredLocalFonts(): Promise<void> {
   cacheLocalFontSnapshot(null);
   storageLoaded = true;
   localFontBytesByPostscriptName.clear();
+  automaticallyCheckedProgramNames.clear();
   await removeStoredSnapshot();
 }
 
@@ -955,6 +963,37 @@ export async function detectLocalFonts(options: DetectLocalFontsOptions = {}): P
   await writeStoredSnapshot(snapshot);
   console.log(`[LocalFonts] ${cachedFontRecords.length}개 로컬 글꼴 감지됨 (${snapshot.source})`);
   return getLocalFonts({ includeRegistered: options.includeRegistered });
+}
+
+/** 존재만 저장된 문서 원본은 이미 승인된 권한으로 실제 프로그램을 확인한다. */
+export async function prepareDocumentLocalFontPrograms(fontNames: readonly string[]): Promise<void> {
+  if (!isLocalFontAccessSupported()) return;
+  const missing = normalizeFontNames(fontNames).filter(name => {
+    if (automaticallyCheckedProgramNames.has(normalizeFontAlias(name))) return false;
+    const records = cachedFontLookup.aliases.get(normalizeFontAlias(name)) ?? [];
+    return !records.some(record => record.postscriptName)
+      && (!cachedSnapshot || records.some(record => record.detectionSource === 'font-presence-probe'));
+  });
+  if (!missing.length) return;
+  try {
+    // 자동 문서 열기는 새 권한 prompt를 띄우지 않는다. 저장된 존재 probe를 실제
+    // face와 혼동하지 않으며, 기존 권한이 허용한 경우에만 카탈로그를 보완한다.
+    const permission = await globalThis.navigator?.permissions?.query({ name: 'local-fonts' as PermissionName });
+    if (permission?.state !== 'granted') return;
+    if (!grantedCatalogRefresh) {
+      grantedCatalogRefresh = detectLocalFonts({ force: true, candidateFamilies: missing })
+        .then(() => undefined);
+    }
+    const pending = grantedCatalogRefresh;
+    try {
+      await pending;
+      for (const name of missing) automaticallyCheckedProgramNames.add(normalizeFontAlias(name));
+    } finally {
+      if (grantedCatalogRefresh === pending) grantedCatalogRefresh = null;
+    }
+  } catch {
+    // 권한 철회·지원하지 않는 Permissions API는 기존 대체 경로로 처리한다.
+  }
 }
 
 /** 캐시된 로컬 글꼴 face 레코드를 반환한다. */
@@ -1113,23 +1152,67 @@ export async function loadLocalFontBytes(fontName: string): Promise<ArrayBuffer 
   return (await loadLocalFontBytesFor([fontName])).get(localFontFaceKey(record)) ?? null;
 }
 
-/** 동일 PostScript 이름으로 열거된 프로그램도 실제 바이트로 CFF를 우선한다. */
+const localProgramOrder = new WeakMap<ArrayBuffer, number>();
+
+/** 선택된 collection face도 원래 컨테이너의 조회 우선순위를 보존한다. */
+export function localFontProgramOrder(bytes: ArrayBuffer): number {
+  return localProgramOrder.get(bytes) ??
+    (bytes.byteLength >= 4 && [0x00010000, 0x74727565].includes(new DataView(bytes).getUint32(0)) ? 0 : 2);
+}
+
+/** TTC의 name ID 6으로 요청한 face를 고른다. 파일의 첫 face를 추정하지 않는다. */
+function matchingCollectionFace(bytes: ArrayBuffer, record: Pick<LocalFontRecord, 'postscriptName'>): ArrayBuffer | null {
+  const view = new DataView(bytes);
+  if (!byteRangeAvailable(view, 0, 12) || view.getUint32(0) !== 0x74746366
+      || ![0x00010000, 0x00020000].includes(view.getUint32(4))) return null;
+  const count = view.getUint32(8);
+  if (!count || count > 4096 || !byteRangeAvailable(view, 12, count * 4)) return null;
+  for (let face = 0; face < count; face++) {
+    const offset = view.getUint32(12 + face * 4);
+    if (!byteRangeAvailable(view, offset, 12)) continue;
+    const tables = view.getUint16(offset + 4);
+    if (!tables || tables > 4096 || !byteRangeAvailable(view, offset + 12, tables * 16)) continue;
+    for (let index = 0; index < tables; index++) {
+      const entry = offset + 12 + index * 16;
+      if (view.getUint32(entry) !== 0x6e616d65) continue;
+      const start = view.getUint32(entry + 8), size = view.getUint32(entry + 12);
+      if (!byteRangeAvailable(view, start, size)) continue;
+      const names = parseSfntNameTable(bytes.slice(start, start + size));
+      if (!names.postscriptNames.some(name => normalizeFontAlias(name) === normalizeFontAlias(record.postscriptName))) continue;
+      const selected = normalizeFontFaceData(bytes, face);
+      if (selected) localProgramOrder.set(selected, view.getUint32(offset) === 0x4f54544f ? 2 : 1);
+      return selected;
+    }
+  }
+  return null;
+}
+
+/** 같은 원본 face는 TTF → TTC의 일치 face → OTF 순서로 고른다. */
 export async function loadPreferredLocalFontBytes(record: LocalFontRecord): Promise<ArrayBuffer | null> {
   const query = (globalThis as LocalFontGlobal).queryLocalFonts;
   if (!query || !record.postscriptName || record.detectionSource !== 'local-font-access') return null;
   try {
     const candidates = await query({ postscriptNames: [record.postscriptName] });
+    let collection: ArrayBuffer | null = null;
+    let openType: ArrayBuffer | null = null;
     let fallback: ArrayBuffer | null = null;
     for (const candidate of candidates) {
       if (!candidate.blob || !localFontRecordMatchesFontData(record, candidate)) continue;
       const bytes = await (await candidate.blob()).arrayBuffer();
       if (bytes.byteLength < 4) continue;
       const signature = new DataView(bytes).getUint32(0);
-      if (signature === 0x4f54544f) return bytes;
+      if (signature === 0x00010000 || signature === 0x74727565) return bytes;
+      if (signature === 0x74746366) {
+        const selected = matchingCollectionFace(bytes, record);
+        if (selected && localFontProgramOrder(selected) === 1 && !collection) collection = selected;
+        else if (selected && !openType) openType = selected;
+        continue;
+      }
+      if (signature === 0x4f54544f && !openType) openType = bytes;
       // 형식 미확인 바이트도 기존처럼 FontFace 로드를 시도하되 공급 형식은 인증하지 않는다.
       if (!fallback && signature !== 0x74746366) fallback = bytes;
     }
-    return fallback;
+    return collection ?? openType ?? fallback;
   } catch {
     return null;
   }
@@ -1166,6 +1249,8 @@ export function resetLocalFontsForTests(): void {
   storageLoaded = false;
   lastStorageError = null;
   localFontBytesByPostscriptName.clear();
+  automaticallyCheckedProgramNames.clear();
+  grantedCatalogRefresh = null;
 }
 
 
@@ -1268,6 +1353,6 @@ export function resolveRendererLocalFontCandidates(name: string, style: LocalFon
 /** Consume the selected face directly, rather than resolving its name a second time. */
 export async function loadRendererLocalFont(record: LocalFontRecord): Promise<HostFontData | null> {
   if (record.hostReference) return hostFontSource.read(record.hostReference);
-  const bytes = await loadLocalFontBytes(record.postscriptName || record.fullName);
+  const bytes = await loadPreferredLocalFontBytes(record);
   return bytes ? { bytes, faceIndex: 0 } : null;
 }

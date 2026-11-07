@@ -10,7 +10,7 @@
  *   3. 최종 fallback → generic serif/sans-serif
  */
 
-import { getDetectedOSFonts, REGISTERED_FONTS } from './font-loader.ts';
+import { getDetectedOSFonts, hasLoadedLocalFontFamily, REGISTERED_FONTS } from './font-loader.ts';
 import { getLocalFontState, resolveLocalFont } from './local-fonts.ts';
 import { TEXT_SYMBOL_FONT_FAMILIES } from './text-symbol-font.ts';
 
@@ -197,6 +197,10 @@ function installedFaceName(
 ): string | null {
   if (!fontName) return null;
   if (confirmedLocalFonts === undefined) {
+    // 같은 family의 한글·영문 프로그램은 단일 OS face로 확정할 수 없다.
+    // 이미 로드한 실제 프로그램의 CSS family까지 모호한 이름으로 버리면
+    // 원본 OTF를 공급하고도 호환 대체(예: 옥수수 → 돋움)로 그리게 된다.
+    if (hasLoadedLocalFontFamily(fontName)) return fontName;
     const record = resolveLocalFont(fontName);
     if (record) return localRecordCssFamily(fontName, record);
   } else {
