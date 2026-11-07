@@ -139,7 +139,7 @@ fn a_ruby_keeps_its_style_after_a_style_is_inserted() {
     }
 }
 
-/// HWP5 메모는 구역 끝 원본 목록에 저장되고 그 문단은 모델에 없다. 끼울 때 그 원본의 문단 머리
+/// HWP5 메모는 필드의 문단 모델과 구역 끝 원본 목록을 함께 보존한다. 끼울 때 원본 문단 머리
 /// (HWP5 표 58의 스타일 BYTE, 오프셋 10)도 함께 고쳐야 저장본에서도 같은 스타일을 가리킨다.
 #[test]
 fn hwp_memo_list_paragraphs_keep_their_style_after_a_style_is_inserted() {

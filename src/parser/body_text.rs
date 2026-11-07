@@ -143,99 +143,40 @@ pub(super) fn parse_section_with_previous(
 
     if let Some(start) = tail_start {
         let tail = &records[start..];
-        let (memo_lists, master_records) = split_tail_lists(tail);
-        let has_memos = !memo_lists.is_empty();
-        for (number, paragraphs) in memo_lists {
-            let mut body = Some(paragraphs);
-            for owner in previous.iter_mut().chain(std::iter::once(&mut section)) {
-                if assign_memo_paragraphs(&mut owner.paragraphs, number, &mut body) {
-                    break;
-                }
-            }
-        }
-        section
-            .section_def
-            .master_pages
-            .extend(master_page_scope::parse_extended_master_pages(
-                &master_records,
-            ));
-        section.trailing_lists = Some(crate::model::section_tail::SectionTail {
-            records: if has_memos {
-                master_records
-            } else {
-                tail.iter()
-                    .map(|r| RawRecord {
-                        tag_id: r.tag_id,
-                        level: r.level,
-                        data: r.data.clone(),
-                    })
-                    .collect()
-            },
-            memo_seal: has_memos.then_some([0; 32]),
-            projection_seal: None,
-        });
-    }
-
-    Ok(section)
-}
-
-/// The level-1 lists after the last body paragraph: memo bodies keyed by their
-/// number, and the raw records of master-page lists.
-fn split_tail_lists(records: &[Record]) -> (Vec<(u32, Vec<Paragraph>)>, Vec<RawRecord>) {
-    let mut memos = Vec::new();
-    let mut masters = Vec::new();
-    let mut index = 0;
-    while index < records.len() {
-        let head = &records[index];
-        if head.level != 1 {
-            index += 1;
-            continue;
-        }
-        if head.tag_id == tags::HWPTAG_MEMO_LIST {
-            let number = if head.data.len() >= 4 {
-                u32::from_le_bytes([head.data[0], head.data[1], head.data[2], head.data[3]])
-            } else {
-                index += 1;
-                continue;
-            };
-            index += 1;
-            if index < records.len()
-                && records[index].level == 1
-                && records[index].tag_id == tags::HWPTAG_LIST_HEADER
-            {
-                index += 1;
-                let start = index;
-                while index < records.len()
-                    && !(records[index].level == 1
-                        && (records[index].tag_id == tags::HWPTAG_MEMO_LIST
-                            || records[index].tag_id == tags::HWPTAG_LIST_HEADER))
-                {
-                    index += 1;
-                }
-                memos.push((number, parse_paragraph_list(&records[start..index])));
-            }
-        } else if head.tag_id == tags::HWPTAG_LIST_HEADER {
-            let start = index;
-            index += 1;
-            while index < records.len()
-                && !(records[index].level == 1
-                    && (records[index].tag_id == tags::HWPTAG_MEMO_LIST
-                        || records[index].tag_id == tags::HWPTAG_LIST_HEADER))
-            {
-                index += 1;
-            }
-            for record in &records[start..index] {
-                masters.push(RawRecord {
+        let saved = crate::model::section_tail::SectionTail {
+            records: tail
+                .iter()
+                .map(|record| RawRecord {
                     tag_id: record.tag_id,
                     level: record.level,
                     data: record.data.clone(),
-                });
+                })
+                .collect(),
+            ..Default::default()
+        };
+        let mut offset = 0;
+        for (memo, group) in saved.record_groups() {
+            let end = offset + group.len();
+            if memo {
+                let number = u32::from_le_bytes(group[0].data[..4].try_into().unwrap());
+                let mut body = Some(parse_paragraph_list(&tail[offset + 2..end]));
+                for owner in previous.iter_mut().chain(std::iter::once(&mut section)) {
+                    if assign_memo_paragraphs(&mut owner.paragraphs, number, &mut body) {
+                        break;
+                    }
+                }
+            } else {
+                section
+                    .section_def
+                    .master_pages
+                    .extend(master_page_scope::parse_extended_master_pages(group));
             }
-        } else {
-            index += 1;
+            offset = end;
         }
+        section.trailing_lists = Some(saved);
     }
-    (memos, masters)
+
+    Ok(section)
 }
 
 /// Attach one memo body to the first matching memo field that has none.

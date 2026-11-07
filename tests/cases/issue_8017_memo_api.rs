@@ -279,6 +279,22 @@ fn set_memo_text_reaches_the_saved_file() {
 }
 
 #[test]
+fn inserting_a_style_after_a_memo_edit_keeps_the_new_body() {
+    use rhwp::wasm_api::HwpDocument;
+
+    let mut core = core_with("anchor");
+    core.insert_memo_at(0, 0, 0, 6, "tester", "original")
+        .unwrap();
+    let mut doc = HwpDocument::new(&core.export_hwp_native().unwrap()).unwrap();
+    let list: Value = serde_json::from_str(&doc.get_memo_list()).unwrap();
+    let id = list[0]["id"].as_u64().unwrap() as u32;
+    doc.set_memo_text(id, "edited").unwrap();
+    assert_eq!(doc.create_style(r#"{"name":"Memo style","index":1}"#), 1);
+    let saved = DocumentCore::from_bytes(&doc.export_hwp().unwrap()).unwrap();
+    assert_eq!(memo_list(&saved)[0]["text"], "edited");
+}
+
+#[test]
 fn deleting_the_whole_anchor_removes_the_memo_and_a_part_keeps_it() {
     let mut core = core_with("hello world");
     core.insert_memo_at(0, 0, 0, 5, "t", "body").unwrap();

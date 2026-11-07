@@ -417,6 +417,7 @@ fn parse_hwp_inner_with_limits(
         }
     }?;
     document.seal_section_tail_provenance();
+    document.seal_loaded_memo_tails();
     Ok(document)
 }
 

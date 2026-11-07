@@ -106,9 +106,8 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
         .as_ref()
         .and_then(|tail| tail.memo_seal)
     {
-        Some(seal) => {
-            !memo_lists.is_empty() && seal == crate::model::section_tail::memo_digest(memo_lists)
-        }
+        // 변경 추적으로 숨겨진 메모만 있는 원본도 빈 visible 목록과 일치한다.
+        Some(seal) => seal == crate::model::section_tail::memo_digest(memo_lists),
         None => memo_lists.is_empty(),
     };
     if memo_raw_matches && section.raw_provenance_permits_reuse() {
@@ -200,30 +199,41 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
         };
         try_serialize_paragraph_with_msb(para_ref, 0, is_last, &mut records, storage)?;
     }
-    if has_memo_tail {
-        try_serialize_memo_tail(memo_lists, &mut records, storage)?;
-    }
+    let raw_start = records.len();
     if let Some(tail) = &section.trailing_lists {
-        // 본문 재작성과 별개로 저장 소유를 유지한다. 모델 목록을 중복 생성하지 않는다.
-        for raw in &tail.records {
-            storage.push(
-                &mut records,
-                Record {
-                    tag_id: raw.tag_id,
-                    level: raw.level,
-                    size: raw.data.len() as u32,
-                    data: storage.copy_slice(&raw.data)?,
-                },
-            )?;
+        for (_, group) in tail
+            .record_groups()
+            .filter(|(memo, _)| !memo || memo_raw_matches)
+        {
+            for raw in group {
+                storage.push(
+                    &mut records,
+                    Record {
+                        tag_id: raw.tag_id,
+                        level: raw.level,
+                        size: raw.data.len() as u32,
+                        data: storage.copy_slice(&raw.data)?,
+                    },
+                )?;
+            }
         }
     } else {
         try_serialize_master_page_tail(section, &mut records, storage)?;
+    }
+    let raw_end = if section.trailing_lists.is_some() {
+        records.len()
+    } else {
+        raw_start
+    };
+    if has_memo_tail && !memo_raw_matches {
+        try_serialize_memo_tail(memo_lists, &mut records, storage)?;
     }
     // 변경추적 병합 문단 여부(UINT16)는 5.0.3.2부터 존재한다. 재귀로 생성한
     // 머리말·꼬리말·셀 문단도 같은 출력 버전을 따른다. 보존된 24바이트 이상의
     // 헤더는 건드리지 않으며, 원본 스트림 재사용은 위에서 이미 반환했다.
     if version.is_some_and(|v| v >= 0x0500_0302) {
-        for record in &mut records {
+        let (before_end, after_raw) = records.split_at_mut(raw_end);
+        for record in before_end[..raw_start].iter_mut().chain(after_raw) {
             if record.tag_id == tags::HWPTAG_PARA_HEADER && record.data.len() == 22 {
                 storage.reserve(&mut record.data, 2)?;
                 record.data.extend_from_slice(&0u16.to_le_bytes());

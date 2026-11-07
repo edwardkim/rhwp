@@ -16,6 +16,35 @@ pub struct SectionTail {
     pub(crate) projection_seal: Option<[u8; 32]>,
 }
 
+impl SectionTail {
+    /// 한 메모는 같은 레벨의 MEMO_LIST와 LIST_HEADER, 이어지는 문단으로 구성된다.
+    /// 다른 목록과 미해석 레코드도 원본 순서로 돌려준다.
+    pub(crate) fn record_groups(&self) -> impl Iterator<Item = (bool, &[RawRecord])> {
+        use crate::parser::tags::{HWPTAG_LIST_HEADER, HWPTAG_MEMO_LIST};
+
+        let mut remaining = self.records.as_slice();
+        std::iter::from_fn(move || {
+            let head = remaining.first()?;
+            let memo = head.level == 1
+                && head.tag_id == HWPTAG_MEMO_LIST
+                && head.data.len() >= 4
+                && remaining
+                    .get(1)
+                    .is_some_and(|r| r.level == 1 && r.tag_id == HWPTAG_LIST_HEADER);
+            let headers = if memo { 2 } else { 1 };
+            let length = remaining[headers..]
+                .iter()
+                .position(|r| {
+                    r.level == 1 && matches!(r.tag_id, HWPTAG_MEMO_LIST | HWPTAG_LIST_HEADER)
+                })
+                .map_or(remaining.len(), |offset| headers + offset);
+            let (group, rest) = remaining.split_at(length);
+            remaining = rest;
+            Some((memo, group))
+        })
+    }
+}
+
 pub(crate) fn projection_digest(doc: &Document) -> [u8; 32] {
     let masters: Vec<_> = doc
         .sections
