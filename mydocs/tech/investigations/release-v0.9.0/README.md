@@ -1,3 +1,10 @@
+---
+kind: investigation
+status: active
+canonical: mydocs/tech/investigations/release-v0.9.0/README.md
+last_verified: 2026-11-08
+---
+
 # 0.9.0 기여자 감사
 
 기능 기준은 `v0.8.7` (`1a76570e833917d15817415a53c09ad61ab3203f`) 이후
