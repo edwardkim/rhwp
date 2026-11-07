@@ -324,3 +324,10 @@ fmt·Native/WASM/전체target/Skia Clippy·workspace build·manifest·unit tier�
 신규 source cfg 검사 배치와 integration target 초과는 정책을 높이지 않고 기존 자동 suite include 방식으로 보정했다. 관계형 4개가 일반/최소 글꼴 환경에서 각각 통과했다. 새 Native/WASM 전 204쪽 PNG가 배치 변경 전후 바이트 동일하며 부모 대비 0.1%p 초과 하락은 없다. fmt·각 Clippy·workspace build·manifest·unit tier 및 Native Skia 라이브러리 4,039 PASS/12 ignored·PNG 2 PASS·PDF 22 PASS를 확인했다.
 
 [전쪽 TSV·전후 review/overlay·원본 및 프로그램 근거](../pr/assets/issue7727/cropped-print-window-20261107/README.md). CBTA의 96·118·162·166·176·182쪽은 여전히 98% 미만이다. 전체 nextest·편람 gate·실제 소비·PR 준비 완료로 확대하지 않고 보정을 계속한다.
+
+
+## 저장 재시작 문단의 앞 간격과 독립 기준선
+
+2026-11-07, 부모 `49778f49d8`에서 인증된 이어받기 프레임의 첫 가시 문단에도 선차감한 원본 앞 간격을 compose로 전달했다. 원본 문단0만 인정해300HU가0px로 사라지던 차이를 보정했으며 문서/쪽별 가산은 없다. 개인정보 전 66쪽 Native/fresh WASM 최저는 99.21550% / 99.21467%, 32쪽은 양쪽 100%다. 나머지 65쪽 PNG는 각각 부모와 바이트 동일하고 0.1%p 초과 하락·누락은 0이다.
+
+관계형 1개와 독립 Print 세 기준선 ±2px 고정형 1개를 정식 등록했다. 실제 2 FAIL→2 PASS, 기존 15 PASS를 합한 집중 17 PASS와 fmt·Native/WASM/all-target Clippy·manifest·unit tier를 확인했다. [전쪽 TSV·전후 review/overlay·선행 원인과 검증](../pr/assets/issue5846/continuation-before-space-20261107/README.md). 최종 전체 회귀·편람·실제 소비·다른 미달 문서와 PR 준비는 별도로 남는다.

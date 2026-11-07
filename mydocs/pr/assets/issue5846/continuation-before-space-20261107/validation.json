@@ -1,0 +1,290 @@
+{
+  "base": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "parent": "49778f49d81a2b9f33fa64f4099df0a21bedab12",
+  "recorded_at": "2026-11-07T12:09:04.381947+09:00",
+  "runtime_source_sha256": "be614623ab2c56b4b45b1e049d8369246ef1635ab72381d4c04997cdb8da3006",
+  "test_source_sha256": "64e2ac54dac3e71e0856141fd719ae126d105407d5d68259bdd41c4d0bf17da2",
+  "post_build_changes": {
+    "files": [
+      "tests/cases/issue_5846_continuation_stored_before.rs"
+    ],
+    "reason": "양 backend98% 자격 확인 뒤 고정형 기준선 검사를 등록했다. 모든 runtime·빌드·스크립트 source hash는 동일하고 최종 테스트는 정식 경로에서 다시 실행했다."
+  },
+  "native_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+  "fresh_wasm": {
+    "command": [
+      "/usr/bin/sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "seconds": 153.446,
+    "package_files": {
+      "rhwp.js": "370ddff0fd1a1cf6f889edb1b2a42f420fac62f7f57df4b9cff19829e60cdd5f",
+      "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+      "rhwp_bg.wasm.d.ts": "6be5b94818e1303ac8a0760a6a6a8cc75ec7db461e89287188e641dfe46daeae",
+      "README.md": "ad35a0f1fbf601b33f5a969103656e220e75031ceee42bb7fc2d95ed32ed25aa",
+      "rhwp_bg.wasm": "d5467915b820e74d0b0202659004f4b5f2569194552f7a963fef8060c6d3c4e4",
+      ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+      "package.json": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+      "rhwp.d.ts": "785d2ac25427761253e4abcbd1442b76eaa2bfd1f7c4d204e1bc32b9518a1eb6"
+    },
+    "kind": "Mac locked wrapper --no-opt 로컬 대체 빌드. Docker 아님.",
+    "root_pkg_studio_public_hashes_equal": true,
+    "actual_browser_initialization_checked": false
+  },
+  "whole_comparison": {
+    "complete": true,
+    "backends": [
+      {
+        "backend": "native",
+        "pages": 66,
+        "minimum": 99.2155,
+        "below98": [],
+        "changed_pages": [
+          {
+            "page": 32,
+            "before": 96.87702,
+            "after": 100.0,
+            "delta_pp": 3.12298
+          }
+        ],
+        "drops_over_0_1_pp": []
+      },
+      {
+        "backend": "wasm",
+        "pages": 66,
+        "minimum": 99.21467,
+        "below98": [],
+        "changed_pages": [
+          {
+            "page": 32,
+            "before": 96.8704,
+            "after": 100.0,
+            "delta_pp": 3.1296
+          }
+        ],
+        "drops_over_0_1_pp": []
+      }
+    ]
+  },
+  "regressions": {
+    "new_relationship": 1,
+    "new_fixed_pdf_baseline": 1,
+    "actual_before_fail": 2,
+    "actual_after_pass": 2,
+    "unchanged_related_pass": 15,
+    "focused_total_pass": 17,
+    "old_first_stage_single_relationship_pass": 1,
+    "double_count_old_registration": false
+  },
+  "registered_gates": [
+    {
+      "name": "formal-registered",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_5846_continuation_stored_before",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "exit_code": 0,
+      "seconds": 27.036137582967058
+    },
+    {
+      "name": "fmt-check-registered",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 13.975895582931116
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 24.694322708062828
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 22.501536750001833
+    },
+    {
+      "name": "all-target-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 36.646194958128035
+    },
+    {
+      "name": "manifest-registered",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+      ],
+      "exit_code": 0,
+      "seconds": 1.2670810830313712
+    },
+    {
+      "name": "unit-tiers-registered",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+      ],
+      "exit_code": 0,
+      "seconds": 17.288975750096142
+    }
+  ],
+  "prechecks": [
+    {
+      "name": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 12.784088875167072
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+      ],
+      "exit_code": 0,
+      "seconds": 0.7355655841529369
+    },
+    {
+      "name": "unit-tiers",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+      ],
+      "exit_code": 0,
+      "seconds": 16.404994250042364
+    }
+  ],
+  "limits": [
+    "최종 전체 nextest·전 코퍼스·Skia 전체unit·편람 gate·실제 소비는 이 source에서 별도로 남는다.",
+    "CBTA6쪽 등 다른 원본의98% 미달은 미해결이다.",
+    "로컬 글꼴 시각 조건과 최소 글꼴 의미 검사를 구분한다."
+  ],
+  "inputs": {
+    "samples/task2097/75544_pii_bunseok.hwpx": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+    "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+    "mydocs/pr/assets/issue7445/resolution-20261005/pii5846-reference-font-environment.json": "21e5c5a0b081bf3101749e5b80c1b053fa3eeff4fcb1ba3f8aa33fd3e2a4d544"
+  },
+  "native_build_steps": [
+    {
+      "stage": "candidate",
+      "kind": "native",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/minimal-font-macos/minimal-fonts.sb",
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--bin",
+        "rhwp"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "target": "/Users/tsjang/rhwp/target/pr-review",
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/post-rebase-ece9/rebase-8696-20261106-224117/pii-continuation-before-space-repair/candidate-native-build.log",
+      "started_at": "2026-11-07T02:50:23.274569+00:00",
+      "pid": 69882,
+      "exit_code": 0,
+      "seconds": 214.929,
+      "log_sha256": "ad5d3ef0358cf6a446fe4f3d2aca2867dcfeb98a0cb2e1ae2d6938264f435636"
+    }
+  ],
+  "before_producer": {
+    "source_commit": "49778f49d81a2b9f33fa64f4099df0a21bedab12",
+    "native_sha256": "e8c5b0845293143227376d19c1dc41368ef8df716a0fefc9a845aa069670a71e",
+    "package_files": {
+      "rhwp.js": "370ddff0fd1a1cf6f889edb1b2a42f420fac62f7f57df4b9cff19829e60cdd5f",
+      "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+      "rhwp_bg.wasm.d.ts": "6be5b94818e1303ac8a0760a6a6a8cc75ec7db461e89287188e641dfe46daeae",
+      "README.md": "ad35a0f1fbf601b33f5a969103656e220e75031ceee42bb7fc2d95ed32ed25aa",
+      "rhwp_bg.wasm": "fbf719fae74bf2a636553c8a733d587bf98093328f34612b4a99790fd49284ea",
+      ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+      "package.json": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+      "rhwp.d.ts": "785d2ac25427761253e4abcbd1442b76eaa2bfd1f7c4d204e1bc32b9518a1eb6"
+    },
+    "note": "이전 frozen CLI/pkg의 실제 bytes로 전66쪽을 새로 출력했다. 검증 당시 dirty 작업 트리의 후보 runtime으로 대체하지 않았다."
+  }
+}

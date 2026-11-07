@@ -3083,7 +3083,12 @@ impl LayoutEngine {
                             && nested_tables_px > 0.0
                             && target_top - current_top >= nested_tables_px - 24.0;
                         table_host_has_stored_origin = has_table_ctrl && !post_table_host_line;
-                        if cp_idx == 0
+                        // 인증된 이어받기 프레임의 첫 원본 문단도 선차감한 앞 간격을
+                        // 소유한다. 셀 전체의 문단 0과 현재 프레임의 첫 문단을 혼동하면
+                        // 저장 스냅이 뺀 간격을 column-top trim에서 다시 잃는다.
+                        let owns_resumed_stored_entry =
+                            resumed_stored_frame_origin.is_some() && !has_preceding_text;
+                        if (cp_idx == 0 || owns_resumed_stored_entry)
                             && start_line == 0
                             && !has_table_ctrl
                             && target_top >= current_top
