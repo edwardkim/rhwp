@@ -48,7 +48,7 @@ impl WebCanvasRenderer {
         let Some(commands) = self
             .hft_outline_fonts
             .as_ref()
-            .and_then(|fonts| fonts.faux_bold_glyph(style, character))
+            .and_then(|fonts| fonts.faux_bold_glyph(style, character, self.hft_outline_enabled))
         else {
             return false;
         };

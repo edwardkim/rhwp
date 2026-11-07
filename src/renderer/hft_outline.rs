@@ -337,7 +337,19 @@ impl HftOutlineFonts {
         &self,
         style: &TextStyle,
         character: char,
+        allow_hft_outline: bool,
     ) -> Option<Arc<[PathCommand]>> {
+        // Print는 등록된 원 HFT CFF도 같은 fill+stroke 경로에서 소비한다.
+        // Screen·실제 기울임·옛한글 전용 face의 선택은 바꾸지 않는다.
+        if allow_hft_outline
+            && style.source_font_is_hft
+            && !style.italic
+            && !super::contains_old_hangul_jamo(&character.to_string())
+        {
+            if let Some(commands) = self.glyph(&style.font_family, character) {
+                return Some(commands);
+            }
+        }
         let families = super::canvas_text_font::family_chain(style);
         let selected = self.pua_coverage.text_faces.select(
             &families,
