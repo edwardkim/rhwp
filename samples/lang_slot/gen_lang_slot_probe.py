@@ -16,6 +16,7 @@ PATTERN 은 문단 글(`{c}`=앞뒤 글자, `{x}`=시험 글자), FACES 는 일�
 import os
 import sys
 import zipfile
+from xml.sax.saxutils import escape
 
 CHARS = [
     0x2981, 0x2980, 0x2983, 0x29BE, 0x29FA,          # Misc Math Symbols-B
@@ -28,6 +29,8 @@ CHARS = [
     0x00D7, 0x0391, 0x0410, 0x3200, 0x3300, 0xFF01, 0x3008,
 ]
 FACES = ['맑은 고딕', 'Arial', '바탕', 'Times New Roman', '돋움', '궁서', 'HY헤드라인M']
+# FTYPE 는 일곱 슬롯 글꼴의 종류(TTF/HFT). 한/글 내장 HFT 프로그램을 시험할 때 HFT 로 준다.
+FTYPE = os.environ.get('FTYPE', 'TTF')
 LANGS = ['HANGUL', 'LATIN', 'HANJA', 'JAPANESE', 'OTHER', 'SYMBOL', 'USER']
 
 if os.environ.get('FACES'):
@@ -43,7 +46,7 @@ sec = src.read('Contents/section0.xml').decode('utf8')
 start = hdr.index('<hh:fontfaces')
 end = hdr.index('</hh:fontfaces>') + len('</hh:fontfaces>')
 faces = ''.join(
-    f'<hh:fontface lang="{lang}" fontCnt="1"><hh:font id="0" face="{face}" type="TTF" isEmbedded="0"/></hh:fontface>'
+    f'<hh:fontface lang="{lang}" fontCnt="1"><hh:font id="0" face="{face}" type="{FTYPE}" isEmbedded="0"/></hh:fontface>'
     for lang, face in zip(LANGS, FACES))
 hdr = hdr[:start] + f'<hh:fontfaces itemCnt="7">{faces}</hh:fontfaces>' + hdr[end:]
 head = sec[:sec.find('<hp:bookmark')]
@@ -51,7 +54,7 @@ body = [head + '</hp:run><hp:run charPrIDRef="0"><hp:t>lang-slot probe</hp:t></h
 for i, cp in enumerate(CHARS):
     text = ' '.join(PATTERN.format(c=c, x=chr(cp)) for c in CONTEXTS)
     body.append(f'<hp:p id="{900 + i}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">'
-                f'<hp:run charPrIDRef="0"><hp:t>{cp:04X} {text}</hp:t></hp:run></hp:p>\n')
+                f'<hp:run charPrIDRef="0"><hp:t>{cp:04X} {escape(text)}</hp:t></hp:run></hp:p>\n')
 xml = ''.join(body) + '</hs:sec>'
 
 

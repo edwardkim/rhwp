@@ -5438,11 +5438,18 @@ impl LayoutEngine {
             if value == 0 {
                 continue;
             }
-            let value_str = value.to_string();
-            let mut positions = self.auto_number_placeholder_positions(para, an_type);
-            positions.sort_unstable();
-            positions.dedup();
-            replacements.extend(positions.into_iter().map(|pos| (pos, value_str.clone())));
+            // [#8697] 컨트롤의 번호 모양(표 134)과 장식 문자를 본문 쪽번호 필드와 같은
+            // 규칙으로 쓴다. 종전에는 늘 아라비아 숫자여서 로마 숫자 쪽번호가 「5」로 나왔다.
+            for position in Self::resolve_auto_number_placeholder_addresses(para, an_type) {
+                let text = match para.controls.get(position.control_index) {
+                    Some(Control::AutoNumber(number)) => {
+                        crate::renderer::note_marker::page_number_display(number, value)
+                    }
+                    _ => None,
+                }
+                .unwrap_or_else(|| value.to_string());
+                replacements.push((position.source, text));
+            }
         }
         if replacements.is_empty() {
             return;
@@ -5450,14 +5457,6 @@ impl LayoutEngine {
         replacements.sort_unstable_by_key(|(pos, _)| *pos);
         replacements.dedup_by_key(|(pos, _)| *pos);
         Self::replace_composed_chars_with_display(comp, &replacements);
-    }
-
-    fn auto_number_placeholder_positions(
-        &self,
-        para: &Paragraph,
-        an_type: crate::model::control::AutoNumberType,
-    ) -> Vec<usize> {
-        Self::resolve_auto_number_placeholder_positions(para, an_type)
     }
 
     pub(crate) fn resolve_auto_number_placeholder_positions(
