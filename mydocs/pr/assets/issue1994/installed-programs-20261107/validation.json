@@ -1,0 +1,335 @@
+{
+  "initializationResponses": [
+    {
+      "url": "http://localhost:7700/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+      "status": 200,
+      "bytes": 34095215,
+      "sha256": "438b6ed62db8766014c7509a04fb4dcbf52abce51d24c6e2f08eef839506229e"
+    }
+  ],
+  "environmentId": "user-font-selection-c0977ffa0be8a9f4a236d2ce53138e11e9e42022f1d760090d29cec50ef26a28",
+  "pageCount": 4,
+  "backend": "canvas2d",
+  "loadedCorn": [
+    {
+      "family": "옥수수",
+      "status": "loaded"
+    },
+    {
+      "family": "옥수수",
+      "status": "loaded"
+    }
+  ],
+  "dash": [
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 5,
+        "nestedPath": [
+          0,
+          3,
+          0
+        ],
+        "runIndex": 57,
+        "charOffset": 4,
+        "character": "-",
+        "codePoint": 45,
+        "charShapeId": 226
+      },
+      "metric": {
+        "requestedFace": "Haansoft Batang",
+        "aliasResolvedFace": "Haansoft Batang",
+        "matchKind": "nameFirst",
+        "metricEntry": 6,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 791,
+        "transforms": [
+          {
+            "kind": "boldFallback",
+            "input": "bold",
+            "output": "regularMetricAdvance",
+            "reason": "fauxBoldDoesNotChangeLayoutAdvance"
+          },
+          {
+            "kind": "ratio",
+            "input": "10.546666666666667",
+            "output": "0.9",
+            "reason": "documentCharacterWidthRatio"
+          },
+          {
+            "kind": "letterSpacing",
+            "input": "5.066666666666666",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          },
+          {
+            "kind": "extraCharacterSpacing",
+            "input": "-5.799936831875604",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          }
+        ],
+        "finalAdvanceHwpunit": 557
+      }
+    },
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 5,
+        "nestedPath": [
+          0,
+          3,
+          0
+        ],
+        "runIndex": 57,
+        "charOffset": 5,
+        "character": "-",
+        "codePoint": 45,
+        "charShapeId": 226
+      },
+      "metric": {
+        "requestedFace": "Haansoft Batang",
+        "aliasResolvedFace": "Haansoft Batang",
+        "matchKind": "nameFirst",
+        "metricEntry": 6,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 791,
+        "transforms": [
+          {
+            "kind": "boldFallback",
+            "input": "bold",
+            "output": "regularMetricAdvance",
+            "reason": "fauxBoldDoesNotChangeLayoutAdvance"
+          },
+          {
+            "kind": "ratio",
+            "input": "10.546666666666667",
+            "output": "0.9",
+            "reason": "documentCharacterWidthRatio"
+          },
+          {
+            "kind": "letterSpacing",
+            "input": "5.066666666666666",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          },
+          {
+            "kind": "extraCharacterSpacing",
+            "input": "-5.799936831875604",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          }
+        ],
+        "finalAdvanceHwpunit": 557
+      }
+    },
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 5,
+        "nestedPath": [
+          0,
+          3,
+          0
+        ],
+        "runIndex": 57,
+        "charOffset": 6,
+        "character": "-",
+        "codePoint": 45,
+        "charShapeId": 226
+      },
+      "metric": {
+        "requestedFace": "Haansoft Batang",
+        "aliasResolvedFace": "Haansoft Batang",
+        "matchKind": "nameFirst",
+        "metricEntry": 6,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 791,
+        "transforms": [
+          {
+            "kind": "boldFallback",
+            "input": "bold",
+            "output": "regularMetricAdvance",
+            "reason": "fauxBoldDoesNotChangeLayoutAdvance"
+          },
+          {
+            "kind": "ratio",
+            "input": "10.546666666666667",
+            "output": "0.9",
+            "reason": "documentCharacterWidthRatio"
+          },
+          {
+            "kind": "letterSpacing",
+            "input": "5.066666666666666",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          },
+          {
+            "kind": "extraCharacterSpacing",
+            "input": "-5.799936831875604",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          }
+        ],
+        "finalAdvanceHwpunit": 557
+      }
+    },
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 5,
+        "nestedPath": [
+          0,
+          3,
+          0
+        ],
+        "runIndex": 57,
+        "charOffset": 7,
+        "character": "-",
+        "codePoint": 45,
+        "charShapeId": 226
+      },
+      "metric": {
+        "requestedFace": "Haansoft Batang",
+        "aliasResolvedFace": "Haansoft Batang",
+        "matchKind": "nameFirst",
+        "metricEntry": 6,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 791,
+        "transforms": [
+          {
+            "kind": "boldFallback",
+            "input": "bold",
+            "output": "regularMetricAdvance",
+            "reason": "fauxBoldDoesNotChangeLayoutAdvance"
+          },
+          {
+            "kind": "ratio",
+            "input": "10.546666666666667",
+            "output": "0.9",
+            "reason": "documentCharacterWidthRatio"
+          },
+          {
+            "kind": "letterSpacing",
+            "input": "5.066666666666666",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          },
+          {
+            "kind": "extraCharacterSpacing",
+            "input": "-5.799936831875604",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          }
+        ],
+        "finalAdvanceHwpunit": 557
+      }
+    },
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 5,
+        "nestedPath": [
+          0,
+          3,
+          0
+        ],
+        "runIndex": 57,
+        "charOffset": 8,
+        "character": "-",
+        "codePoint": 45,
+        "charShapeId": 226
+      },
+      "metric": {
+        "requestedFace": "Haansoft Batang",
+        "aliasResolvedFace": "Haansoft Batang",
+        "matchKind": "nameFirst",
+        "metricEntry": 6,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 791,
+        "transforms": [
+          {
+            "kind": "boldFallback",
+            "input": "bold",
+            "output": "regularMetricAdvance",
+            "reason": "fauxBoldDoesNotChangeLayoutAdvance"
+          },
+          {
+            "kind": "ratio",
+            "input": "10.546666666666667",
+            "output": "0.9",
+            "reason": "documentCharacterWidthRatio"
+          },
+          {
+            "kind": "letterSpacing",
+            "input": "5.066666666666666",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          },
+          {
+            "kind": "extraCharacterSpacing",
+            "input": "-5.799936831875604",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          }
+        ],
+        "finalAdvanceHwpunit": 557
+      }
+    }
+  ],
+  "font_order_minimal_font_tests": [
+    {
+      "stage": "corrected",
+      "test": "installed_font_program_order::original_otf_is_selected_before_compatibility_ttf",
+      "exit_code": 0,
+      "seconds": 0.012,
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/pr-final-20261107/screen-dash-and-font-v3/focused-harness/corrected-original_otf_is_selected_before_compatibility_ttf.log",
+      "failures": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 20 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "stage": "corrected",
+      "test": "installed_font_program_order::original_program_aliases_use_ttf_then_ttc_then_otf",
+      "exit_code": 0,
+      "seconds": 0.013,
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/pr-final-20261107/screen-dash-and-font-v3/focused-harness/corrected-original_program_aliases_use_ttf_then_ttc_then_otf.log",
+      "failures": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 20 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "stage": "corrected",
+      "test": "installed_font_program_order::native_discovery_checks_installed_otf_even_for_a_ttf_declared_source",
+      "exit_code": 0,
+      "seconds": 0.051,
+      "log": "/Users/tsjang/rhwp/output/open-issues-oldest-20261105/pr-final-20261107/screen-dash-and-font-v3/focused-harness/corrected-native_discovery_checks_installed_otf_even_for_a_ttf_declared_source.log",
+      "failures": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 20 filtered out; finished in 0.04s"
+      ]
+    }
+  ],
+  "native_focused": {
+    "count": 49,
+    "pass": 49,
+    "log": "output/open-issues-oldest-20261105/pr-final-20261107/screen-dash-and-font-v3/focused-nextest.log"
+  },
+  "frontend": {
+    "tests": 2760,
+    "pass": 2758,
+    "skip": 2,
+    "fail": 0,
+    "state": "output/open-issues-oldest-20261105/pr-final-20261107/screen-dash-and-font-v3/with-preferences-and-font-sort/frontend-state.json"
+  },
+  "scope": "사용자의 기존 브라우저 결과는 미관찰이다. 승인된 Local Font Access 검증 Chrome에서 일반 파일 열기와 사용자 지정 문서별 표시 설정을 적용했다."
+}

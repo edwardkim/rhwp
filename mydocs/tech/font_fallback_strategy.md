@@ -491,6 +491,23 @@ async function loadFontsWithOsFallback(docFonts: string[]): Promise<void> {
 
 ---
 
+### 6.3 문서별 사용자 글꼴 선택 (2026-11-07)
+
+기준 인쇄가 원본과 다른 글꼴을 사용했고 사용자가 같은 표시를 선택한 경우, 일반 전역
+대체표를 바꾸지 않고 원본 바이트의 BLAKE3 digest에 묶인 설정을 사용할 수 있다.
+Studio URL의 `font-environment` 값은 다음 JSON을 URL 인코딩한 것이다.
+
+```json
+{"documentDigest":"blake3:<원본 64자리 hex>","substitutions":{"원본 글꼴":"선택한 표시 글꼴"}}
+```
+
+같은 원본을 열 때 이 선택을 로컬 저장소 `rhwp-document-font-preferences`에서 읽는다.
+다른 원본에는 적용되지 않으며 HWP/HWPX의 글꼴 선언이나 파일 바이트를 수정하지 않는다.
+선택한 대상의 실제 프로그램이 준비된 경우에만 layout와 Canvas2D paint가 같은 환경을
+소비한다. 대상의 이름 probe만 성공한 경우를 실제 프로그램 공급 성공으로 세지 않는다.
+이 경로는 브라우저 Canvas2D의 사용자 표시 설정이며 Native CLI나 CanvasKit의 성공을
+대신하지 않는다. 설정이 없는 일반 문서는 기존 원본 우선 선택을 유지한다.
+
 ## 7. 웹폰트 번들링 전략
 
 ### 7.1 파일 크기 분석
