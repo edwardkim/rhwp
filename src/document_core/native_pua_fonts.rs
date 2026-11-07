@@ -76,8 +76,23 @@ impl DocumentCore {
     ) -> Result<bool, HwpError> {
         let mut fonts = (*self.native_pua_fonts).clone();
         fonts.clear_otf();
+        // HWP5 글꼴 이름은 GDI family로 찾는다. PostScript 이름만 같은 프로그램은
+        // 한/글이 고르는 글꼴이 아니라서 그 전진을 쓰지 않는다(#8661). HWPX의
+        // 명시 type은 정확한 PostScript 원본도 소유한다.
+        let family_records_only = self.document.provenance.format
+            == crate::model::provenance::SourceFormat::Hwp5
+            && !self.document.provenance.hwpx_lineage;
         for request in self.native_otf_font_requests() {
+            let primary = request.family.split(',').next().unwrap_or(&request.family);
             for (bytes, index) in provider(&request) {
+                if family_records_only
+                    && request.source_ttf
+                    && !crate::renderer::native_pua_fonts::program_declares_family(
+                        &bytes, index, primary,
+                    )
+                {
+                    continue;
+                }
                 // 범위를 넘거나 읽을 수 없는 face는 원본 HFT 경로를 유지한다.
                 let _ = fonts.register_otf_for_source(
                     &request.family,

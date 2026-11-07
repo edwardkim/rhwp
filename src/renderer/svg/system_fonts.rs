@@ -4,11 +4,48 @@ use std::path::PathBuf;
 use std::sync::OnceLock;
 use usvg::fontdb::{Database, Family, Query, Source, Style, Weight};
 
+/// 문서의 글꼴 이름은 Windows GDI family(name ID 1)다. fontdb는 ID 16이 있으면
+/// ID 1을 버려서 `서울한강체 M`(ID 1)이 `서울한강체`(ID 16)에 가려진다. 대표 family는
+/// 그대로 두고 뒤에 덧붙이며, 전체 이름(ID 4)·PostScript 이름은 family가 아니라 넣지 않는다.
+pub(crate) fn restore_legacy_family_names(fontdb: &mut Database) {
+    let ids: Vec<_> = fontdb.faces().map(|face| face.id).collect();
+    for id in ids {
+        let missing = fontdb.with_face_data(id, |data, index| {
+            ttf_parser::Face::parse(data, index)
+                .map(|face| {
+                    face.names()
+                        .into_iter()
+                        .filter(|name| name.name_id == ttf_parser::name_id::FAMILY)
+                        .filter_map(|name| name.to_string())
+                        .collect::<Vec<_>>()
+                })
+                .unwrap_or_default()
+        });
+        let Some(names) = missing else { continue };
+        let Some(face) = fontdb.face(id) else {
+            continue;
+        };
+        let mut restored = face.clone();
+        for name in names {
+            if !restored.families.iter().any(|(family, _)| *family == name) {
+                restored
+                    .families
+                    .push((name, usvg::fontdb::Language::English_UnitedStates));
+            }
+        }
+        if restored.families.len() != face.families.len() {
+            fontdb.remove_face(id);
+            fontdb.push_face_info(restored);
+        }
+    }
+}
+
 fn system_fonts() -> &'static Database {
     static FONTS: OnceLock<Database> = OnceLock::new();
     FONTS.get_or_init(|| {
         let mut fonts = Database::new();
         fonts.load_system_fonts();
+        restore_legacy_family_names(&mut fonts);
         fonts
     })
 }
@@ -48,6 +85,7 @@ pub(super) fn italic_family_file(
             let _ = supplied.load_font_file(path);
         }
     }
+    restore_legacy_family_names(&mut supplied);
     family_file_from_database_with_style(&supplied, names, bold, chars, Style::Italic).or_else(
         || family_file_from_database_with_style(system_fonts(), names, bold, chars, Style::Italic),
     )

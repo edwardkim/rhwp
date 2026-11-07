@@ -144,6 +144,8 @@ pub fn bundled_font_dirs() -> Vec<PathBuf> {
     vec![PathBuf::from(BUNDLED_OPENSOURCE_DIR)]
 }
 
+/// fontdb가 버린 name ID 1 family를 같은 face의 family로 되살린다.
+///
 /// `fontdb` 에 조달 순서대로 폰트를 적재한다.
 ///
 /// 시스템 폰트는 `load_system_fonts()` 가 담당하므로 여기서는 호출자 지정 →
@@ -174,6 +176,7 @@ pub fn load_into_fontdb(fontdb: &mut usvg::fontdb::Database, extra: &[PathBuf]) 
     if bundled.exists() {
         fontdb.load_fonts_dir(bundled);
     }
+    super::svg::restore_legacy_family_names(fontdb);
 }
 
 #[cfg(test)]

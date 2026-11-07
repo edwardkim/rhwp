@@ -322,6 +322,7 @@ pub fn prepare(doc_info: &DocInfo, paths: &[PathBuf]) -> Result<NativeWebfontSup
             let _ = database.load_font_file(path);
         }
     }
+    super::svg::restore_legacy_family_names(&mut database);
     let present = |name: &str| {
         let target = normalized(name);
         if database.faces().any(|face| {

@@ -43,6 +43,24 @@ pub(crate) fn is_cff_program(bytes: &[u8], face_index: u32) -> bool {
         .is_ok_and(|face| face.tables().cff.is_some() || face.tables().cff2.is_some())
 }
 
+/// 글꼴 프로그램의 family 레코드(name ID 1·16·21)가 `family`를 선언하는지 확인한다.
+/// 전체 이름과 PostScript 이름은 family가 아니다.
+pub(crate) fn program_declares_family(bytes: &[u8], face_index: u32, family: &str) -> bool {
+    let family = family.trim();
+    ttf_parser::Face::parse(bytes, face_index).is_ok_and(|face| {
+        face.names().into_iter().any(|name| {
+            matches!(
+                name.name_id,
+                ttf_parser::name_id::FAMILY
+                    | ttf_parser::name_id::TYPOGRAPHIC_FAMILY
+                    | ttf_parser::name_id::WWS_FAMILY
+            ) && name
+                .to_string()
+                .is_some_and(|declared| declared.trim().eq_ignore_ascii_case(family))
+        })
+    })
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct NativePuaMetrics {
     digest: [u8; 32],

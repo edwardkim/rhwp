@@ -592,6 +592,7 @@ impl FontEnvironment {
                 database.load_fonts_dir(directory);
             }
         }
+        super::svg::restore_legacy_family_names(&mut database);
         Self::from_document_lookup(
             doc_info,
             |query| {
