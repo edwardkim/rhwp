@@ -143,6 +143,16 @@ impl TypesetState {
         self.close_square_band();
     }
 
+    /// 밴드를 닫고, 그 바닥이 다음 문단의 시작을 내렸으면 배치도 같은 시작을 쓴다.
+    pub(super) fn end_following_wrap_before(&mut self, para_idx: usize) {
+        let before = self.data.current_height;
+        self.end_following_wrap();
+        let after = self.data.current_height;
+        if after > before + 0.5 {
+            self.data.page_band_flow_starts.insert(para_idx, after);
+        }
+    }
+
     /// 꼬리 항목 → 높이 전진 → 사다리 dirty 순서를 보존한다. 쪽 전환은 호출자 책임이다.
     pub(super) fn commit_wrap_tail(
         &mut self,

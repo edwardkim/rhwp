@@ -131,7 +131,7 @@ pub(in crate::renderer::typeset) fn place(
                 // 이 문단은 첫 줄만 Square 띠에 있고 나머지는 표 아래 전폭으로
                 // 복귀한다. 일반 fit 전에 띠 바닥을 흐름 하한으로 반영하지 않으면
                 // 아래 줄이 표와 겹치는 높이를 아직 사용할 수 있다고 오판한다.
-                st.end_following_wrap();
+                st.end_following_wrap_before(para_idx);
                 // fall through → 일반 paragraph 배치
             }
         } else if let Some(pen) = unstored_lane_text(para, is_empty_para)
@@ -149,7 +149,7 @@ pub(in crate::renderer::typeset) fn place(
             );
         } else {
             // 매칭 실패 → wrap zone 종료, 정상 처리 진행
-            st.end_following_wrap();
+            st.end_following_wrap_before(para_idx);
             // [Task #741 Stage 4] 매칭 실패 paragraph 의 vpos=0 hint (page break 의도)
             // 발견 시 advance_column_or_new_page. wrap_around active 종료 후 추가 가드.
             // hwp3-sample10-hwp5.hwp paragraph 26 ("● 제목차례 ●") case —
