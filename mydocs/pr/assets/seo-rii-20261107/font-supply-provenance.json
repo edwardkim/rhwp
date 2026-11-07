@@ -1,0 +1,90 @@
+{
+  "reason": "Full HCR/Haansoft program set exceeds existing 64 MiB Native font catalog quota. Use local validation-only subsets, retaining glyph IDs/hinting/advances and names, to supply every required face within the unchanged quota.",
+  "unicode_inventory_size": 357,
+  "total_bytes": 3308448,
+  "fonts": [
+    {
+      "name": "HANBatang.ttf",
+      "subset": true,
+      "source_bytes": 28412796,
+      "bytes": 483184,
+      "source_sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+      "sha256": "918e3dcf2fe9026264428645cf1aeaa132b23c0cc73bccd94f53aafd5633b4d8",
+      "verified_used_cmap_and_hmtx": 356,
+      "retained_gids": true,
+      "hinting_retained": true,
+      "head_bounds_recalculation": false,
+      "local_only": true,
+      "redistributed": false
+    },
+    {
+      "name": "HANBatangB.ttf",
+      "subset": true,
+      "source_bytes": 30691556,
+      "bytes": 466624,
+      "source_sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+      "sha256": "9d01331f4f0b9c73c693cb87f206dc8ca71e7e79e1a9b016f6132d7439f38002",
+      "verified_used_cmap_and_hmtx": 356,
+      "retained_gids": true,
+      "hinting_retained": true,
+      "head_bounds_recalculation": false,
+      "local_only": true,
+      "redistributed": false
+    },
+    {
+      "name": "HANDotum.ttf",
+      "subset": true,
+      "source_bytes": 22249768,
+      "bytes": 643260,
+      "source_sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+      "sha256": "cab94d659f0abfbcb0c39e53d8eebe5ac06051eabdec303a54b67c9dd8713e7e",
+      "verified_used_cmap_and_hmtx": 355,
+      "retained_gids": true,
+      "hinting_retained": true,
+      "head_bounds_recalculation": false,
+      "local_only": true,
+      "redistributed": false
+    },
+    {
+      "name": "HANDotumB.ttf",
+      "subset": true,
+      "source_bytes": 31085224,
+      "bytes": 658028,
+      "source_sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+      "sha256": "9116042d45359dc0333482f8340e2b40757c8b6af17397e4f39fa778c304ba4c",
+      "verified_used_cmap_and_hmtx": 355,
+      "retained_gids": true,
+      "hinting_retained": true,
+      "head_bounds_recalculation": false,
+      "local_only": true,
+      "redistributed": false
+    },
+    {
+      "name": "HBATANG.TTF",
+      "subset": true,
+      "source_bytes": 32361044,
+      "bytes": 901740,
+      "source_sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+      "sha256": "1d7bedbccb7dfac6e7f7ae87b2780307cb00692b302e28996ec8d4a33745cb2b",
+      "verified_used_cmap_and_hmtx": 355,
+      "retained_gids": true,
+      "hinting_retained": true,
+      "head_bounds_recalculation": false,
+      "local_only": true,
+      "redistributed": false
+    },
+    {
+      "name": "HYHWPEQ.TTF",
+      "subset": false,
+      "bytes": 155612,
+      "source_sha256": "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807",
+      "sha256": "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807",
+      "local_only": true
+    }
+  ],
+  "tool_notes": [
+    "fontTools drops the nonstandard HJCT table; this is a validation-only face for Skia/browser consumers, not a full replacement font distribution",
+    "original family/style, glyph IDs, hinting and used cmap/hmtx remain; no native font quota increase",
+    "subset programs remain ignored output and are removed at final cleanup"
+  ]
+}

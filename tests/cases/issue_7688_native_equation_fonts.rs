@@ -1,5 +1,15 @@
-//! #7688: inspect real document equation paint, with independent font outlines.
-//! Visual prerequisite: task_m100_7688_stage3.md; no pixel golden or coordinates.
+//! 관계형: 실제 수식 producer의 원문 문자와 Native 윤곽·원점·글꼴 공급 관계를 검사한다.
+//! 주석 갱신: 2026-11-07T14:25:23+09:00; 직전 파일 커밋: 2026-11-06T18:06:27+09:00
+//! (`a4e839d1c504d9adc122c1ef381ac4a49c11bfcb`).
+//! 2026-11-07 측정: 96 DPI, PDFium, 색상 경계 보정 전 2px silhouette_raw_match_percent.
+//! eq-01.hwp / eq-01-hwp-2020.pdf 전 1쪽: Native 95.46% / fresh WASM Canvas 95.51%.
+//! issue7593/repro-equation-issue7593.hwpx / 동명 hwpx-2020.pdf 전 1쪽:
+//! 원 수식 face 공급 Native 99.60% / fresh WASM 99.48%; 수식 face 부재 Native 99.63%.
+//! 두 원본 모두 해당 쪽이 전쪽 최저다. 원문 4·3과 AB의 직접 확대 판독을 완료했다.
+//! 근거: mydocs/pr/assets/seo-rii-20261107/positioned-equation-fallback-finding.md,
+//! 같은 경로의 visual/{eq-01-native,eq-01-wasm}.tsv 및 issue8337/after-*.tsv.
+//! 나머지 positioned-run 함수는 공개 fixture 글꼴의 합성 surface 계약이다.
+//! 합성 원점·기준선은 동일 입력의 독립 Skia font paint와 비교하며 실물 페이지 px 핀이 아니다.
 #![cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]
 
 use std::collections::BTreeSet;
@@ -145,7 +155,12 @@ fn explicit_font_substitution_rejects_missing_supply_and_empty_requests() {
         .is_err());
 }
 
-fn check_positioned_hancom_fallback(family: &'static str, text: &str, expect_primary: bool) {
+fn check_positioned_hancom_run(
+    family: &'static str,
+    text: &str,
+    expect_primary: bool,
+    source_run: Option<rhwp::renderer::equation::hancom_glyphs::GlyphRun>,
+) {
     use rhwp::renderer::equation::hancom_glyphs::GlyphRun;
     use rhwp::renderer::equation::layout::{LayoutBox, LayoutKind};
     use rhwp::renderer::render_tree::{BoundingBox, EquationNode};
@@ -164,7 +179,7 @@ fn check_positioned_hancom_fallback(family: &'static str, text: &str, expect_pri
         .unwrap();
     assert_ne!(original.unichar_to_glyph('A' as i32), 0);
     assert_eq!(original.unichar_to_glyph('평' as i32), 0);
-    let run = GlyphRun {
+    let run = source_run.unwrap_or_else(|| GlyphRun {
         font_family: family,
         glyphs: text.into(),
         positions: vec![3.0, 70.0, 121.0],
@@ -172,7 +187,7 @@ fn check_positioned_hancom_fallback(family: &'static str, text: &str, expect_pri
         // Natural fallback advances deliberately differ from the source positions.
         width: 191.0,
         baseline_shift: 7.0,
-    };
+    });
     let layout = LayoutBox {
         font_size: 32.0,
         x: 11.0,
@@ -203,6 +218,8 @@ fn check_positioned_hancom_fallback(family: &'static str, text: &str, expect_pri
         .unwrap()
         .with_font_family_alias("Haansoft Batang", &fallback.family_name())
         .unwrap()
+        .with_font_family_alias("HyhwpEQ", &original.family_name())
+        .unwrap()
         .with_font_family_alias("Latin Modern Math", &fallback.family_name())
         .unwrap();
     let reference = |use_primary: bool| {
@@ -212,7 +229,7 @@ fn check_positioned_hancom_fallback(family: &'static str, text: &str, expect_pri
         let mut paint = Paint::default();
         paint.set_anti_alias(true);
         paint.set_color(Color::BLACK);
-        for ((ch, offset), shear) in run.glyphs.chars().zip(&run.positions).zip(&run.shears) {
+        for ((ch, offset), shear) in text.chars().zip(&run.positions).zip(&run.shears) {
             let face = if use_primary && original.unichar_to_glyph(ch as i32) != 0 {
                 &original
             } else {
@@ -226,7 +243,7 @@ fn check_positioned_hancom_fallback(family: &'static str, text: &str, expect_pri
             font.set_skew_x(-(*shear as f32));
             canvas.draw_str(
                 ch.to_string(),
-                ((24.0 + offset) as f32, 58.0),
+                ((24.0 + offset) as f32, (51.0 + run.baseline_shift) as f32),
                 &font,
                 &paint,
             );
@@ -266,7 +283,7 @@ fn check_positioned_hancom_fallback(family: &'static str, text: &str, expect_pri
         );
         assert!(
             actual == reference(expect_primary),
-            "fallback moved source positions, baseline or shear ({profile:?})"
+            "fallback changed source character, positions, baseline or shear ({profile:?})"
         );
         if expect_primary {
             assert!(
@@ -279,15 +296,83 @@ fn check_positioned_hancom_fallback(family: &'static str, text: &str, expect_pri
 
 #[test]
 fn missing_hancom_family_uses_character_fallback_at_source_positions() {
-    check_positioned_hancom_fallback("RHWP Missing Hancom Equation Fixture", "A평A", false);
+    check_positioned_hancom_run("RHWP Missing Hancom Equation Fixture", "A평A", false, None);
 }
 
 #[test]
 fn partial_hancom_face_falls_back_only_for_the_missing_character() {
-    check_positioned_hancom_fallback("RHWP Original Equation", "A평A", true);
+    check_positioned_hancom_run("RHWP Original Equation", "A평A", true, None);
 }
 
 #[test]
 fn complete_hancom_face_retains_original_outlines_and_placement() {
-    check_positioned_hancom_fallback("RHWP Original Equation", "AAA", true);
+    check_positioned_hancom_run("RHWP Original Equation", "AAA", true, None);
+}
+
+fn real_digit_runs(
+    node: &LayerNode,
+    runs: &mut Vec<(String, rhwp::renderer::equation::hancom_glyphs::GlyphRun)>,
+) {
+    use rhwp::renderer::equation::layout::{LayoutBox, LayoutKind};
+    fn number_run(layout: &LayoutBox) -> &rhwp::renderer::equation::hancom_glyphs::GlyphRun {
+        match &layout.kind {
+            LayoutKind::HancomGlyphs(run) => run,
+            LayoutKind::Row(children) if children.len() == 1 => number_run(&children[0]),
+            LayoutKind::FontStyle { body, .. } => number_run(body),
+            other => panic!("real number must retain a positioned glyph run: {other:?}"),
+        }
+    }
+    match &node.kind {
+        LayerNodeKind::Group { children, .. } => {
+            for child in children {
+                real_digit_runs(child, runs);
+            }
+        }
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            real_digit_runs(child, runs)
+        }
+        LayerNodeKind::Leaf { ops } => {
+            for op in ops {
+                if let PaintOp::Equation { equation, .. } = op {
+                    let source = equation.script.trim();
+                    if source == "4" || source == "3" {
+                        runs.push((source.to_owned(), number_run(&equation.layout_box).clone()));
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn real_producer_private_digits_fall_back_to_the_source_number() {
+    // Public #8337 attachment and this fixture have the same SHA-256; the
+    // independent Print shows 4 in [4점] and 3 in the third answer choice.
+    let core = DocumentCore::from_bytes(include_bytes!(
+        "../../samples/issue7593/repro-equation-issue7593.hwpx"
+    ))
+    .unwrap();
+    for profile in [RenderProfile::Screen, RenderProfile::Print] {
+        let tree = core.build_page_layer_tree_with_profile(0, profile).unwrap();
+        let mut runs = Vec::new();
+        real_digit_runs(&tree.root, &mut runs);
+        assert_eq!(
+            runs.iter()
+                .map(|(text, _)| text.as_str())
+                .collect::<Vec<_>>(),
+            ["4", "3"]
+        );
+        for (source, run) in runs {
+            assert_eq!(run.font_family, "HyhwpEQ");
+            assert_ne!(
+                run.glyphs, source,
+                "test must exercise the actual private code boundary"
+            );
+            assert_eq!(run.glyphs.chars().count(), source.chars().count());
+            // The supplied primary program deliberately lacks private codes.
+            // Compare to the public fallback's source-number outlines at the
+            // producer's positions/shears, not its natural text advances.
+            check_positioned_hancom_run(run.font_family, &source, false, Some(run));
+        }
+    }
 }

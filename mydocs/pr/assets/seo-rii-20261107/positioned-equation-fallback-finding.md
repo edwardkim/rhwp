@@ -28,3 +28,11 @@
 ## 작업지시자 승인
 
 2026-11-07 작업지시자가 “메인테이너 보정·검증 승인”을 명시했다. 위 제한 보정·정상 대조·실제 재검증을 진행한다. 원격 댓글·push·PR·merge 승인은 포함하지 않는다.
+
+## 승인한 보정의 Native 실행 결과
+
+공통 producer의 기존 `glyph` 매핑을 재사용하는 의미 코드 복원을 Native fallback에 연결했다. source `cda7c8cb33`의 실제 `native-skia` CLI에서 같은 최소 글꼴·본문 subset 조건으로 원 사례를 다시 출력했다. 원 수식 face가 없을 때 4·3이 올바르게 표시되고 AB도 보존된다. [수정 전·후·독립 Print 확대](issue8337/digits-before-after-print.png), [실행 요약](issue8337/native-correction.json)을 따른다. 원 face를 공급하면 수정 전후 PNG가 바이트 단위로 같다. 원 위치·기준선·shear를 재측정하지 않는다.
+
+검증용 파생 프로그램은 모든 대상 문서의 실제 glyph inventory로 제한해 기존 64 MiB 예산 안에 넣었다. 6개 프로그램 합계는 3,308,448바이트이며 숫자 음성 대조에서는 HyhwpEQ만 제외했다. 원본과 파생 글꼴의 hash·보존 메트릭·tool 제한은 로컬 원장에 기록했고 프로그램 자체는 커밋하지 않는다.
+
+이 결과는 Native 경계의 확인이다. fresh WASM·공식 회귀와 공통 필수 검증 완료 전 최종 수용 판정은 보류한다.
