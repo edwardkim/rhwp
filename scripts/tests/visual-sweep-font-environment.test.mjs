@@ -234,3 +234,34 @@ test('공개 fallback도 실제 공급 후보에 포함하며 내장 프로그�
   assert.deepEqual(selectSweepProgramFaces(plan, [publicFace]), [{query: 'RHWP Public Batang', face: publicFace}]);
   assert.deepEqual(selectSweepProgramFaces({...plan, embeddedFamilies: ['RHWP Public Batang']}, [publicFace]), []);
 });
+
+// 관계형: 고정 base의 이전 API에만 새 컨테이너 metadata를 제외하며 프로그램 신원은 보존한다.
+// 주석 갱신: 2026-11-07 20:43 KST.
+test('이전 base API의 collectionFace 필드 거부는 같은 프로그램으로만 호환한다', async () => {
+  const program = {query: 'Original', family: 'Original', programId: 'same-ttc-face', trueType: true, collectionFace: true};
+  const calls = [];
+  const doc = {
+    getDocumentFontSelectionPlan: () => JSON.stringify({environmentId: null, requests: [{primary: ['Original'], substitute: []}]}),
+    buildFontEnvironmentFromAvailablePrograms: raw => {
+      const programs = JSON.parse(raw); calls.push(programs);
+      if (programs.some(program => 'collectionFace' in program)) throw Error('unknown field `collectionFace`');
+      return JSON.stringify({id: 'base', substitutions: {Original: 'Original'}});
+    },
+    setFontEnvironment: () => {},
+  };
+  const result = await applySweepFontEnvironment(doc, null, async () => ({programs: [program]}));
+  assert.deepEqual(calls[0], [program]);
+  assert.deepEqual(calls[1], [{query: 'Original', family: 'Original', programId: 'same-ttc-face', trueType: true}]);
+  assert.equal(result.collectionFaceProtocol, 'legacy-without-container-metadata');
+  doc.buildFontEnvironmentFromAvailablePrograms = raw => {
+    if (JSON.parse(raw).some(program => 'collectionFace' in program)) {
+      throw Error('invalid font program snapshot: data did not match any variant of untagged enum AvailableFontProgramInput');
+    }
+    return 'null';
+  };
+  assert.equal((await applySweepFontEnvironment(doc, null, async () => ({programs: [program]})))
+    .collectionFaceProtocol, 'legacy-without-container-metadata');
+  doc.buildFontEnvironmentFromAvailablePrograms = () => { throw Error('selected program hash does not match'); };
+  await assert.rejects(applySweepFontEnvironment(doc, null, async () => ({programs: [program]})), /hash does not match/,
+    '실제 프로그램 오류를 호환 처리로 숨기지 않는다');
+});
