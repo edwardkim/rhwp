@@ -1,0 +1,13 @@
+from pathlib import Path
+import subprocess,json
+root=Path('/home/edward/mygithub/rhwp');wt=Path('/home/edward/mygithub/rhwp-worktrees/pr-8711-leading-definition-slots');out=root/'output/pr-review/pr8711'
+entries=json.loads((wt/'mydocs/pr/assets/kang-t-20261106/input-provenance.json').read_text());results=[]
+for backend in ['native','wasm']:
+ for side in ['base','candidate']:
+  for entry in entries:
+   label=entry['issue'];folder='print-'+side+'-controls-'+backend
+   cmd=['python3',str(out/'run-minfont-visual.py'),str(root/'venv/bin/python'),str(wt/'scripts/visual_sweep.py'),'--silhouette-only','--hwp',str(wt/entry['hwp']['formal_path']),'--pdf',str(wt/entry['pdf']['formal_path']),'--key',label,'--rhwp-bin',str(out/(side+'-producer/rhwp')),'--compat','2022','--dpi','96','--font-environment',str(out/'print-reference-font-environment.json'),'--font-path',str(out/'control-fonts'),'--embed-fonts','full','--out',str(out/folder)]
+   if backend=='wasm':cmd.extend(['--wasm-pkg',str(out/(side+'-producer/pkg'))])
+   with (out/(folder+'-'+label+'.log')).open('w') as f:r=subprocess.run(cmd,cwd=wt,stdout=f,stderr=subprocess.STDOUT)
+   results.append(dict(side=side,backend=backend,issue=label,returncode=r.returncode,command=cmd));(out/'print-control-visual-results.json').write_text(json.dumps(results,indent=2))
+   if r.returncode:raise SystemExit(r.returncode)

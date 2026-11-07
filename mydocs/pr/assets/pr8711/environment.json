@@ -1,0 +1,12 @@
+{
+  "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "machine": "x86_64",
+  "NEXTEST_PROFILE": null,
+  "tools": {
+    "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+    "cargo": "cargo 1.93.1 (083ac5135 2025-12-15)",
+    "nextest": "cargo-nextest 0.9.137 (75ddba7e9 2026-05-26)\nrelease: 0.9.137\ncommit-hash: 75ddba7e911b44c5c0700dac0415d824403de9bd\ncommit-date: 2026-05-26\nhost: x86_64-unknown-linux-gnu",
+    "node": "v24.15.0",
+    "chrome": "Google Chrome for Testing 155.0.8059.79"
+  }
+}

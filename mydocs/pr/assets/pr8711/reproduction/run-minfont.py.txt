@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+from pathlib import Path
+import os, subprocess, sys
+root=Path('/home/edward/mygithub/rhwp')
+wt=Path('/home/edward/mygithub/rhwp-worktrees/pr-8711-leading-definition-slots')
+out=root/'output/pr-review/pr8711/minimal-font'; out.mkdir(exist_ok=True)
+(out/'cache').mkdir(exist_ok=True)
+conf=out/'fonts.conf'; conf.write_text(f'<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd"><fontconfig><dir>{wt}/ttfs/opensource</dir><cachedir>{out}/cache</cachedir></fontconfig>')
+args=['bwrap','--ro-bind','/usr','/usr','--symlink','usr/bin','/bin','--symlink','usr/lib','/lib','--symlink','usr/lib64','/lib64','--ro-bind','/etc','/etc','--proc','/proc','--dev','/dev','--ro-bind','/sys','/sys','--bind','/tmp','/tmp','--dir','/home/edward','--bind',str(root),str(root),'--bind',str(wt),str(wt),'--bind','/home/edward/.cargo','/home/edward/.cargo','--ro-bind','/home/edward/.rustup','/home/edward/.rustup','--ro-bind','/home/edward/.nvm','/home/edward/.nvm','--tmpfs','/usr/share/fonts','--tmpfs','/usr/local/share/fonts','--setenv','HOME','/home/edward','--setenv','FONTCONFIG_FILE',str(conf),'--unsetenv','RHWP_FONT_PATH','--chdir',str(wt)]
+raise SystemExit(subprocess.run(args+sys.argv[1:]).returncode)

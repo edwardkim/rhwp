@@ -1,0 +1,279 @@
+{
+  "status": "local_required_gates_passed_remote_approval_pending",
+  "source_head": "57f897a3bd844aadd883d7afb31def4904acb8ca",
+  "base": "13775409e57a9550cfb31866d40bdf319ab54bac",
+  "integration_head": "a657ac0936e324f9648ab628862062b5b9fddbd8",
+  "inputs": {
+    "mydocs/pr/assets/leading-definition-slots/input/report-implicit-column.hwpx": {
+      "bytes": 7969,
+      "sha256": "28768b01550ba2596c5e2bd182454a39a6700c8789fbe95e198d83c3898c4a40",
+      "git_blob": "1c9e3f7edf95c999bcefd58866e504c33fede392"
+    },
+    "pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf": {
+      "bytes": 13991,
+      "sha256": "8e7af1fcc369dbc45405bd0073850d085122a9d3f9f637678f119b324831d0d7",
+      "git_blob": "cfc021da583fab860f8b76fcd0a34f3b0f15c8e9"
+    }
+  },
+  "producers": {
+    "base": {
+      "source_sha": "13775409e57a9550cfb31866d40bdf319ab54bac",
+      "source_dir": "/home/edward/mygithub/rhwp",
+      "source_digest": "e0aad5c4a581a860ac9830c4bae64074015f6fa5bd53b9511c82e81133a19af1",
+      "mode": "native",
+      "profile": "release-test",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--bin",
+        "rhwp",
+        "--message-format=json",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "started": "2026-11-07T00:30:23.821406+00:00",
+      "success": true,
+      "status": "passed",
+      "environment": {
+        "CARGO_BUILD_JOBS": "4",
+        "CARGO_TARGET_DIR": "/home/edward/mygithub/rhwp/target/pr-review",
+        "CARGO_PROFILE_RELEASE_CODEGEN_UNITS": null,
+        "BINARYEN_CORES": null,
+        "RUSTFLAGS": null
+      },
+      "optimized": true,
+      "exit_code": 0,
+      "finished": "2026-11-07T00:35:51.748436+00:00",
+      "artifacts": {
+        "rhwp": {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8711/base-producer/rhwp",
+          "bytes": 87859960,
+          "sha256": "a0f2f099d38f6727874d152ac717a5f7ace84ac6b6706afc90a6cf63ca632c2b"
+        },
+        "librhwp.rlib": {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8711/base-producer/librhwp.rlib",
+          "bytes": 158495718,
+          "sha256": "f5787907b867fc5c3a750adf883925bda6060beb8e425fcf167dadad6ad0d436"
+        }
+      },
+      "wasm_build": {
+        "source_sha": "226f0d487cc8d72305979ceb8ab46832017634d0",
+        "source_dir": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-kang-t-picture-editing",
+        "source_digest": "e0aad5c4a581a860ac9830c4bae64074015f6fa5bd53b9511c82e81133a19af1",
+        "mode": "wasm",
+        "profile": "release",
+        "command": [
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg"
+        ],
+        "started": "2026-11-06T15:07:21.133513+00:00",
+        "success": true,
+        "status": "passed",
+        "environment": {
+          "CARGO_BUILD_JOBS": "4",
+          "CARGO_TARGET_DIR": "/home/edward/mygithub/rhwp/target/pr-review",
+          "CARGO_PROFILE_RELEASE_CODEGEN_UNITS": "16",
+          "BINARYEN_CORES": "16",
+          "RUSTFLAGS": null
+        },
+        "optimized": true,
+        "reuse_compiled_source_digest": "e0aad5c4a581a860ac9830c4bae64074015f6fa5bd53b9511c82e81133a19af1",
+        "exit_code": 0,
+        "finished": "2026-11-06T15:19:12.203425+00:00",
+        "artifacts": {
+          "rhwp.js": {
+            "path": "/home/edward/mygithub/rhwp/pkg/rhwp.js",
+            "bytes": 564033,
+            "sha256": "0099b8a6e00f750e1dbddb3a89bf42874f24effcf8bf4dc5eb328d69e691606b",
+            "public_sha256": "0099b8a6e00f750e1dbddb3a89bf42874f24effcf8bf4dc5eb328d69e691606b"
+          },
+          "rhwp_bg.wasm": {
+            "path": "/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+            "bytes": 28384470,
+            "sha256": "46ef070e9e5b656598a42bdfe9e8ddcb81955cbff77623ccaf572238ec9f160e",
+            "public_sha256": "46ef070e9e5b656598a42bdfe9e8ddcb81955cbff77623ccaf572238ec9f160e"
+          },
+          "rhwp.d.ts": {
+            "path": "/home/edward/mygithub/rhwp/pkg/rhwp.d.ts",
+            "bytes": 226447,
+            "sha256": "316f00766c6544dda79b1eaf6fad8926972d08978f621848ae7111b69ea0201c",
+            "public_sha256": "316f00766c6544dda79b1eaf6fad8926972d08978f621848ae7111b69ea0201c"
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "path": "/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm.d.ts",
+            "bytes": 78514,
+            "sha256": "1ef9796bb7089d2e78eab939e3f5d6e09148376902cb61eb8952fa224cbf406d",
+            "public_sha256": "1ef9796bb7089d2e78eab939e3f5d6e09148376902cb61eb8952fa224cbf406d"
+          },
+          "package.json": {
+            "path": "/home/edward/mygithub/rhwp/pkg/package.json",
+            "bytes": 429,
+            "sha256": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19"
+          }
+        },
+        "source_equivalent_merged_head": "331521a3b1fb5de5dfa39b0707c0b295b90f9dc4",
+        "source_equivalence": "Rust source digest equals the validated Native/WASM producer; later Studio-only pointer fix and evidence/declaration-order changes do not change Rust.",
+        "installed_utc": "2026-11-07T00:11:25.534566+00:00",
+        "review_baseline_sha": "13775409e57a9550cfb31866d40bdf319ab54bac",
+        "reuse_note": "Existing optimized package, identical validated Rust source fingerprint. Original build source retained."
+      }
+    },
+    "candidate": {
+      "source_sha": "a657ac0936e324f9648ab628862062b5b9fddbd8",
+      "source_dir": "/home/edward/mygithub/rhwp-worktrees/pr-8711-leading-definition-slots",
+      "source_digest": "9d3a8a9d7b218f011c94ef5280e52a1fcbbbeb385aa357dc94ac0d517a758ccd",
+      "mode": "native",
+      "profile": "release-test",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--bin",
+        "rhwp",
+        "--message-format=json",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "started": "2026-11-07T00:36:35.026806+00:00",
+      "success": true,
+      "status": "passed",
+      "environment": {
+        "CARGO_BUILD_JOBS": "4",
+        "CARGO_TARGET_DIR": "/home/edward/mygithub/rhwp/target/pr-review",
+        "CARGO_PROFILE_RELEASE_CODEGEN_UNITS": null,
+        "BINARYEN_CORES": null,
+        "RUSTFLAGS": null
+      },
+      "optimized": true,
+      "exit_code": 0,
+      "finished": "2026-11-07T00:43:37.968328+00:00",
+      "artifacts": {
+        "rhwp": {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8711/candidate-producer/rhwp",
+          "bytes": 87983480,
+          "sha256": "4d25eeff6071835ac28d69c4395bf38e4d9021551a2a91ad80cfd8d3df4b0e90"
+        },
+        "librhwp.rlib": {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8711/candidate-producer/librhwp.rlib",
+          "bytes": 158585664,
+          "sha256": "44c016c9b88f5c7478659f677e75a3a4337f57e4981d9f617351954305c9f32e"
+        }
+      },
+      "wasm_build": {
+        "source_sha": "a657ac0936e324f9648ab628862062b5b9fddbd8",
+        "source_dir": "/home/edward/mygithub/rhwp-worktrees/pr-8711-leading-definition-slots",
+        "source_digest": "9d3a8a9d7b218f011c94ef5280e52a1fcbbbeb385aa357dc94ac0d517a758ccd",
+        "mode": "wasm",
+        "profile": "release",
+        "command": [
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg"
+        ],
+        "started": "2026-11-07T00:43:40.324918+00:00",
+        "success": true,
+        "status": "passed",
+        "environment": {
+          "CARGO_BUILD_JOBS": "4",
+          "CARGO_TARGET_DIR": "/home/edward/mygithub/rhwp/target/pr-review",
+          "CARGO_PROFILE_RELEASE_CODEGEN_UNITS": "16",
+          "BINARYEN_CORES": "4",
+          "RUSTFLAGS": null
+        },
+        "optimized": true,
+        "reuse_compiled_source_digest": "9d3a8a9d7b218f011c94ef5280e52a1fcbbbeb385aa357dc94ac0d517a758ccd",
+        "exit_code": 0,
+        "finished": "2026-11-07T00:56:36.739621+00:00",
+        "artifacts": {
+          "rhwp.js": {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8711/candidate-producer/pkg/rhwp.js",
+            "bytes": 564033,
+            "sha256": "0099b8a6e00f750e1dbddb3a89bf42874f24effcf8bf4dc5eb328d69e691606b",
+            "public_sha256": "0099b8a6e00f750e1dbddb3a89bf42874f24effcf8bf4dc5eb328d69e691606b"
+          },
+          "rhwp_bg.wasm": {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8711/candidate-producer/pkg/rhwp_bg.wasm",
+            "bytes": 28350189,
+            "sha256": "f5bf3679c57cc2aac28e78a587c9b7ab31afe705cad363f644c462ce5d5b65bd",
+            "public_sha256": "f5bf3679c57cc2aac28e78a587c9b7ab31afe705cad363f644c462ce5d5b65bd"
+          },
+          "rhwp.d.ts": {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8711/candidate-producer/pkg/rhwp.d.ts",
+            "bytes": 226447,
+            "sha256": "96e5f371908c7c39419f80a856e97097aa5e901270b016435316830c0a506110",
+            "public_sha256": "316f00766c6544dda79b1eaf6fad8926972d08978f621848ae7111b69ea0201c"
+          },
+          "rhwp_bg.wasm.d.ts": {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8711/candidate-producer/pkg/rhwp_bg.wasm.d.ts",
+            "bytes": 78514,
+            "sha256": "619652d7edefc3ebcf91fe1a706d8a3173debaa3482e3d86a4e82a512e9f05fb",
+            "public_sha256": "1ef9796bb7089d2e78eab939e3f5d6e09148376902cb61eb8952fa224cbf406d"
+          },
+          "package.json": {
+            "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8711/candidate-producer/pkg/package.json",
+            "bytes": 429,
+            "sha256": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19"
+          }
+        }
+      }
+    }
+  },
+  "font_programs": [
+    {
+      "name": "HANBatang.ttf",
+      "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+      "redistributed": false
+    },
+    {
+      "name": "HANBatangB.ttf",
+      "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+      "redistributed": false
+    },
+    {
+      "name": "HANDotum.ttf",
+      "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+      "redistributed": false
+    },
+    {
+      "name": "HANDotumB.ttf",
+      "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+      "redistributed": false
+    }
+  ],
+  "independent_pdf": {
+    "generator": "Mac Hancom 12.30 Print (2022 compatibility)",
+    "pages": 1,
+    "dpi": 96
+  },
+  "strict_ir_verify": {
+    "base_exit": 3,
+    "candidate_exit": 3,
+    "same_difference": "section[0] paragraph[0] linesegs: count: expected=1 actual=0",
+    "assessment": "Both retain existing intentional invalid saved-cache removal; not marked PASS; visual/content and page-count checks are separate."
+  },
+  "test_provenance_commit": "929f0f5ca537fe83b9947131d79b05e3f108c512",
+  "repro_font_program": {
+    "name": "HANBatang.ttf",
+    "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+    "redistributed": false
+  },
+  "first_test_provenance_commit": "4e5a8d1565543daa999c776668d491fcc0beade5",
+  "validation": "rust-validation-summary.json",
+  "final_metadata_equivalence": "metadata-correction-equivalence.json"
+}

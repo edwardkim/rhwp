@@ -1,0 +1,21 @@
+from pathlib import Path
+import subprocess,json,time,os,datetime
+root=Path('/home/edward/mygithub/rhwp');wt=Path('/home/edward/mygithub/rhwp-worktrees/pr-8711-leading-definition-slots');out=root/'output/pr-review/pr8711';target=str(root/'target/pr-review')
+while json.loads((out/'candidate-producer/wasm-build.json').read_text())['status']=='running':time.sleep(5)
+assert json.loads((out/'candidate-producer/wasm-build.json').read_text())['success']
+env=os.environ.copy();env.update(CARGO_BUILD_JOBS='4',CARGO_TARGET_DIR=target,RUST_TEST_THREADS='4')
+cases=['leading_definition_slots','issue_8555_vertical_alignment_baseline','issue_8556_insert_picture_in_cell','issue_8557_relocate_floating_picture']
+js="import {resolveCasePlan} from './scripts/run-rust-test.mjs'; console.log(JSON.stringify("+json.dumps(cases)+".map(name=>resolveCasePlan(name))));"
+plans=json.loads(subprocess.check_output(['node','--input-type=module','-e',js],cwd=wt,text=True));(out/'focused-suite-plans.json').write_text(json.dumps(plans,indent=2))
+focused=['cargo','nextest','run','--locked','--cargo-profile','release-test','--features','native-skia','--target-dir',target,'--lib']
+for t in sorted(set(p['target'] for p in plans)):focused.extend(['--test',t])
+focused.extend(['-E',' | '.join('test('+name+'::)' for name in cases)+' | test(model::paragraph::tests::)','--test-threads','4','--no-fail-fast'])
+jobs=[('focused',focused),('format',['cargo','fmt','--all','--','--check']),('native-clippy',['cargo','clippy','--locked','--target-dir',target,'--','-D','warnings']),('wasm-clippy',['cargo','clippy','--locked','-p','rhwp','--lib','--target','wasm32-unknown-unknown','--target-dir',target,'--','-D','warnings']),('workspace-build',['cargo','build','--locked','--workspace','--target-dir',target]),('workspace-clippy',['cargo','clippy','--locked','--workspace','--all-targets','--target-dir',target,'--','-D','warnings']),('suite-policy',['node','scripts/rust-test-suite-manifest.mjs','--check','--base-ref','13775409e57a9550cfb31866d40bdf319ab54bac']),('unit-tier-policy',['node','scripts/rust-unit-test-tiers.mjs','--check','--base-ref','13775409e57a9550cfb31866d40bdf319ab54bac']),('full-nextest',['cargo','nextest','run','--locked','--cargo-profile','release-test','--target-dir',target,'--tests','--test-threads','4','--no-fail-fast']),('native-lib',['cargo','test','--locked','--profile','release-test','--target-dir',target,'--features','native-skia','--lib','--','--test-threads','4']),('native-placeholder',['node','scripts/run-rust-test.mjs','issue_2225_missing_picture_placeholder','--','--cargo-profile','release-test','--target-dir',target,'--features','native-skia']),('native-direct-pdf',['node','scripts/run-rust-test.mjs','render_p37_direct_pdf_export','--','--cargo-profile','release-test','--target-dir',target,'--features','native-skia'])]
+results=[]
+for name,args in jobs:
+ command=['python3',str(out/'run-minfont.py')]+args
+ record=dict(name=name,command=command,source_sha=subprocess.check_output(['git','rev-parse','HEAD'],cwd=wt,text=True).strip(),started=datetime.datetime.now(datetime.timezone.utc).isoformat(),status='running')
+ (out/'rust-active.json').write_text(json.dumps(record,indent=2))
+ with (out/(name+'.log')).open('w') as f:r=subprocess.run(command,cwd=wt,env=env,stdout=f,stderr=subprocess.STDOUT)
+ record.update(returncode=r.returncode,status='passed' if r.returncode==0 else 'failed',finished=datetime.datetime.now(datetime.timezone.utc).isoformat());results.append(record);(out/'rust-validation.json').write_text(json.dumps(results,indent=2));(out/(name+'.json')).write_text(json.dumps(record,indent=2));(out/'rust-active.json').write_text(json.dumps(record,indent=2))
+ if r.returncode!=0:raise SystemExit(r.returncode)
