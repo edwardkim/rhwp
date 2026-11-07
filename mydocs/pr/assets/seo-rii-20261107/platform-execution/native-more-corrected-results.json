@@ -1,0 +1,64 @@
+[
+  {
+    "name": "direct-pdf-actual",
+    "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+    "command": [
+      "python3",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+      "/home/edward/mygithub/rhwp/venv/bin/python",
+      "bindings/Native/tests/pdf_direct_contract.py",
+      "--library",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so",
+      "--native-skia",
+      "enabled",
+      "--sample",
+      "tests/fixtures/gradient/radial-corner-print-contract.hwpx"
+    ],
+    "started_at": "2026-11-07T03:42:16.844395+00:00",
+    "returncode": 0,
+    "finished_at": "2026-11-07T03:42:17.065574+00:00"
+  },
+  {
+    "name": "clipboard",
+    "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+    "command": [
+      "python3",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+      "/home/edward/mygithub/rhwp/venv/bin/python",
+      "bindings/Native/tests/native_clipboard_contract.py",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so"
+    ],
+    "started_at": "2026-11-07T03:42:17.066028+00:00",
+    "returncode": 0,
+    "finished_at": "2026-11-07T03:42:17.202719+00:00"
+  },
+  {
+    "name": "commands",
+    "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+    "command": [
+      "python3",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+      "/home/edward/mygithub/rhwp/venv/bin/python",
+      "bindings/Native/tests/native_commands_contract.py",
+      "--library",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so"
+    ],
+    "started_at": "2026-11-07T03:42:17.203209+00:00",
+    "returncode": 0,
+    "finished_at": "2026-11-07T03:42:17.318304+00:00"
+  },
+  {
+    "name": "view-contract",
+    "source_head": "65a3a2c6b5d66638713446af3ed3e59e5cea87a6",
+    "command": [
+      "python3",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+      "/home/edward/mygithub/rhwp/venv/bin/python",
+      "bindings/Native/tests/native_view_contract.py",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/librhwp_native_ffi.so"
+    ],
+    "started_at": "2026-11-07T03:42:17.318880+00:00",
+    "returncode": 0,
+    "finished_at": "2026-11-07T03:42:17.407298+00:00"
+  }
+]

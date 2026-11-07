@@ -1,0 +1,53 @@
+[
+  {
+    "name": "session",
+    "command": [
+      "/mnt/c/Users/edward/AppData/Local/Programs/Python/Python312/python.exe",
+      "\\\\wsl.localhost\\Ubuntu-24.04\\home\\edward\\mygithub\\rhwp-worktrees\\review-integration-536-seo-rii-native-hosts\\bindings\\Native\\tests\\session_contract.py",
+      "C:\\Users\\edward\\AppData\\Local\\Temp\\rhwp-pr-review-seo-rii-20261107\\native-d3d\\rhwp_native_ffi.dll",
+      "--native-skia",
+      "enabled"
+    ],
+    "returncode": 0,
+    "source_head": "c2648ffdfe",
+    "platform": "actual Windows CPython3.12 + MSVC Native D3D DLL",
+    "executed_at": "2026-11-07T04:01:01.959511+00:00"
+  },
+  {
+    "name": "worker",
+    "command": [
+      "/mnt/c/Users/edward/AppData/Local/Programs/Python/Python312/python.exe",
+      "\\\\wsl.localhost\\Ubuntu-24.04\\home\\edward\\mygithub\\rhwp-worktrees\\review-integration-536-seo-rii-native-hosts\\bindings\\Native\\tests\\native_worker_contract.py",
+      "C:\\Users\\edward\\AppData\\Local\\Temp\\rhwp-pr-review-seo-rii-20261107\\native-d3d\\rhwp_native_ffi.dll"
+    ],
+    "returncode": 0,
+    "source_head": "c2648ffdfe",
+    "platform": "actual Windows CPython3.12 + MSVC Native D3D DLL",
+    "executed_at": "2026-11-07T04:01:02.780002+00:00"
+  },
+  {
+    "name": "presentation",
+    "command": [
+      "/mnt/c/Users/edward/AppData/Local/Programs/Python/Python312/python.exe",
+      "\\\\wsl.localhost\\Ubuntu-24.04\\home\\edward\\mygithub\\rhwp-worktrees\\review-integration-536-seo-rii-native-hosts\\bindings\\Native\\tests\\native_presentation_contract.py",
+      "C:\\Users\\edward\\AppData\\Local\\Temp\\rhwp-pr-review-seo-rii-20261107\\native-d3d\\rhwp_native_ffi.dll"
+    ],
+    "returncode": 0,
+    "source_head": "c2648ffdfe",
+    "platform": "actual Windows CPython3.12 + MSVC Native D3D DLL",
+    "executed_at": "2026-11-07T04:01:03.248755+00:00"
+  },
+  {
+    "name": "ime",
+    "command": [
+      "/mnt/c/Users/edward/AppData/Local/Programs/Python/Python312/python.exe",
+      "\\\\wsl.localhost\\Ubuntu-24.04\\home\\edward\\mygithub\\rhwp-worktrees\\review-integration-536-seo-rii-native-hosts\\bindings\\Native\\tests\\native_ime_edit_contract.py",
+      "--library",
+      "C:\\Users\\edward\\AppData\\Local\\Temp\\rhwp-pr-review-seo-rii-20261107\\native-d3d\\rhwp_native_ffi.dll"
+    ],
+    "returncode": 0,
+    "source_head": "c2648ffdfe",
+    "platform": "actual Windows CPython3.12 + MSVC Native D3D DLL",
+    "executed_at": "2026-11-07T04:01:03.609117+00:00"
+  }
+]
