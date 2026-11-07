@@ -2507,11 +2507,14 @@ fn char_width_decision_with_hft_tracking<'a>(
     // authentic DB glyph advances or explicit HWP rules. Collection and layout
     // share this eligibility decision; synthetic PUA boxes remain shapes.
     let dash_leader = is_dash_leader_run(chars, i);
-    // 호출자가 자연 잉크·전진 프로그램을 선택했고 그 프로그램의 실제 문자 폭이
-    // 있으면 반복 하이픈도 그 폭으로 측정한다. 임의의 좁은 폭을 적용하면 뒤의
-    // 셀 맞춤이 실행되지 않아 한글 자간과 하이픈 구간의 배분이 서로 어긋난다.
+    let source_ttf = latin.map_or(style.source_font_is_ttf, |slot| slot.source_font_is_ttf);
+    let trusted_source_ttf =
+        source_ttf && latin.map_or(style.font_metric_trusted, |slot| slot.font_metric_trusted);
+    // 원본 TTF의 검증된 폭 또는 명시적으로 선택한 자연 전진은 화면과 인쇄에서
+    // 동일하게 소비한다. 반복 하이픈이라는 이유로 다시 좁히면 저장 자간과 셀 맞춤의
+    // 배분이 달라진다. 원본 폭이 확인되지 않은 HFT·결측 글꼴의 leader 추정은 유지한다.
     let clamp_dash_leader = dash_leader
-        && !(style.preserve_glyph_ink
+        && !((trusted_source_ttf || style.preserve_glyph_ink)
             && character_match == "hit"
             && width_source == "embeddedMetric");
     // Native paint와 동일한 OTF의 글리프를 우선 사용한다. 다만 독립 Print와
@@ -2528,7 +2531,6 @@ fn char_width_decision_with_hft_tracking<'a>(
     let otf_metrics = latin.map_or(style.native_otf_metrics.as_ref(), |slot| {
         slot.native_otf_metrics.as_ref()
     });
-    let source_ttf = latin.map_or(style.source_font_is_ttf, |slot| slot.source_font_is_ttf);
     let otf_advance = if !source_ttf
             && cluster_len[i] <= 1
             && !dash_leader
