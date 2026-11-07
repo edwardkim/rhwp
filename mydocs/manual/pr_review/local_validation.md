@@ -468,14 +468,49 @@ git status --short --branch
 
 ## 4.2 merge simulation
 
+새 PR 제출 후보는 최신 base와의 병합뿐 아니라 **본인 계정의 기존 열린 PR 전체와의 병합도
+생성 전에 시뮬레이션한다.** Draft·리뷰어 지정 여부와 관계없이 각 PR의 최신 head를 fetch해
+고정하고 후보와 개별 비교한다. 함께 통합할 PR은 예정 순서의 누적 결과도 확인한다.
+대상 조회·갱신·제출 보류 조건은
+[제출 전 병합 시뮬레이션](../codex/docs_and_git_workflow.md#4-제출-후보와-본인-열린-pr의-병합-시뮬레이션)을 따른다.
+
+현재 작업 트리와 원 PR branch를 건드리지 않는 기본 경로는 다음과 같다. `head SHA`가
+가리키는 정확한 commit을 사용하며, 기존 PR을 실제로 merge하거나 push하는 명령이 아니다.
+
+~~~bash
+# 후보와 최신 base, 각 기존 PR의 fetch·SHA 확인 후 실행한다.
+rhwp_merge_log_dir="output/pr-review/<review-id>/logs"
+mkdir -p "$rhwp_merge_log_dir"
+git merge-tree --write-tree \
+  "${rhwp_review_base_sha:?최신 base SHA를 먼저 고정하세요}" \
+  "${rhwp_review_candidate_sha:?제출 후보 SHA를 먼저 고정하세요}" \
+  > "$rhwp_merge_log_dir/candidate-base-merge-tree.log" 2>&1
+
+# 본인의 기존 열린 PR마다 반복한다. 각 실행의 종료 코드를 확인하고 기록한다.
+git merge-tree --write-tree \
+  "$rhwp_review_candidate_sha" \
+  "${rhwp_existing_pr_head_sha:?기존 PR 최신 head SHA를 먼저 고정하세요}" \
+  > "$rhwp_merge_log_dir/pr-${rhwp_existing_pr_number:?기존 PR 번호를 먼저 지정하세요}-merge-tree.log" 2>&1
+~~~
+
+종료 코드 0은 충돌 없음, 1은 병합 충돌이며 그 밖의 실패도 제출을 막는다. 첫 검사부터
+결과를 판정하고 실패한 상태에서 다음 명령으로 덮어쓰지 않는다. 로그에 기록된 tree SHA만
+보고 성공으로 처리하지 않는다. PR별 SHA·명령·종료 코드·충돌 파일·로그를 기존 검토 기록에
+남기고, 생성 직전 목록이나 SHA가 바뀌면 영향을 받는 검사를 다시 실행한다.
+
+실제 merge 상태와 결과 tree를 더 조사해야 할 때만 작업 전용 임시 worktree에서 다음 경로를
+사용한다. 현재 구현·검증 작업 트리에서 직접 실행하지 않는다.
+
 ~~~bash
 git switch -c prN-merge-test upstream/devel
 git merge local/prN --no-commit --no-ff
 git status
 ~~~
 
-devel 위에 PR head를 합친 결과 tree와 conflict를 확인한다. conflict 해결 방침은 작업지시자 결정이
-필요하다. 여러 PR의 누적 검토는 [다수 PR과 update branch](multi_pr_update_branch.md)를 따른다.
+devel 위에 PR head를 합친 결과 tree와 conflict를 확인한다. 승인된 보정 범위에서는 양쪽 기능을
+보존해 충돌을 해소하고 영향 검증과 시뮬레이션을 다시 수행한다. 원격 변경과 범위 밖의 추가
+조치는 기존 승인 절차를 따른다. 여러 PR의 누적 검토는
+[다수 PR과 update branch](multi_pr_update_branch.md)를 따른다.
 
 ## 4.3 변경 범위별 기본 검증
 

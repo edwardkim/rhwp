@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-11-04
+last_verified: 2026-11-07
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -20,6 +20,11 @@ PR review를 시작하는 에이전트는 이 문서와 [조건별 가이드 선
 먼저 수행한다. **이미 리뷰어가 지정된 PR은 예외**로 구분하고, 나머지 기존 PR의 lint를 포함한
 모든 CI 실패·오류를 신규 PR보다 우선 보정한다. 충돌·base 문제는 최신 `upstream/devel`로 rebase해 커밋·필수 검증·최신
 head CI를 완료한 뒤 신규 PR을 진행한다. 메인터너 보정 요청과 원격 승인 조건도 위 정본을 따른다.
+
+**새 PR 생성 전에는 제출 후보와 본인 열린 PR 전체의 병합 시뮬레이션을 완료한다.** Draft와
+리뷰어 지정 PR도 검사하며, 충돌·실행 실패·미확인이 있으면 제출을 보류한다. 기존 PR 자동
+갱신의 예외와 구분하고, 목록·고정 SHA·결과 기록은 위 정본의
+[제출 전 병합 시뮬레이션](codex/docs_and_git_workflow.md#4-제출-후보와-본인-열린-pr의-병합-시뮬레이션)을 따른다.
 
 리베이스로 새 devel의 PR을 반영하면 **현재 작업의 개선과 반영 PR의 기능 유지·개선**을 함께
 검증한다. 충돌이 없었거나 CI가 통과했다는 사실만으로 기능 보존을 판정하지 않는다.
