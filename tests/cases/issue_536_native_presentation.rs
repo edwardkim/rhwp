@@ -1,6 +1,11 @@
-//! 관계형 계약: worker snapshot 전송·quota와 cross-thread CPU frame lease 수명.
-//! 갱신: 2026-11-07 (KST). 합성 문서 입력의 소유권·한도를 검사한다.
+//! 관계형: worker snapshot 전송·quota와 cross-thread CPU frame lease 수명을 검사한다.
+//! 주석 갱신: 2026-11-07T16:41:01+09:00; 직전 파일 커밋: 2026-11-07T06:28:43+09:00 (1d5cc242bad823fe68890aaa2dce9415a07d9687).
+//! 입력은 파일 내부 합성 문서·PageLayerTree 또는 저장소의 허가된 글꼴 fixture다.
+//! API·소유·자원/합성 paint 계약이며 실물 문서 페이지의 조판 위치를 고정하지 않는다.
+//! 이 assertion의 독립 한컴 PDF 대비 Native/fresh WASM raw 측정값은 비해당이다.
+//! 별도 실물 시각·플랫폼 실행 근거: mydocs/pr/assets/seo-rii-20261107/validation-scope.md.
 //! 실물 페이지 좌표·한컴 시각 일치율·GPU 완료를 고정하는 검사가 아니다.
+
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::sync::Arc;

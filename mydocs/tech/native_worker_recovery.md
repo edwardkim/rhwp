@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/native_worker_recovery.md
+last_verified: 2026-11-07
+---
+
 # Native worker 자동 복구와 복구 파일 열기
 
 P95는 P85의 prepare → publish → token cleanup 흐름을 재사용한다.

@@ -83,3 +83,13 @@ P84–P98의 문서 교체·저장 손실 승인·외부 변경 충돌·snapshot
 ## 2026-11-07 플랫폼 검증 범위 결정
 
 작업지시자는 Windows 11 호스트 자원의 사용을 지시했고 실제 MSVC·Windows SDK 검증을 진행했다. #8726은 추가 답변 “Metal 실험 기반에 한정해 예외 수용”에 따라 default-disabled 실험 기반으로만 제한 수용한다. macOS SDK·실물 Metal 검증 미실행과 연속 표시 차단을 숨기지 않으며, portable/비활성 ABI·공통 필수 검증은 계속한다. [결정 원장](assets/seo-rii-20261107/metal-maintainer-decision.json)을 따른다. 이는 원격 처리 승인이 아니다.
+
+## 최종 로컬 검증 완료
+
+제품 보정 `cda7c8cb33`·회귀 source `263b1e753c`에서 [최종 17개 묶음](assets/seo-rii-20261107/local-gates.json)을 통과했다. 전체 nextest 12,825건, Native 집중 194건, Native 공식 3종 4,077건, Studio 2,745건이다. 신규 실제 producer 숫자 검사의 수정 전 실패·수정 후 통과와 실제 Windows SDK/D3D·Linux Qt/Flutter·독립 Vulkan 실행을 완료했다. 플랫폼의 미검증 범위는 [실행·재사용 범위](assets/seo-rii-20261107/validation-scope.md)에 명시했다.
+
+Native/fresh WASM 각 전 24쪽이 raw 90% 이상이고 base/후보 PNG 48쌍이 같다. 편람 Native 383쪽은 최저 99.96%·기준 대비 회귀 0쪽이다. 실제 Direct PDF 6쪽은 raw 100%다. [전쪽 TSV·대표 이미지](assets/seo-rii-20261107/visual/README.md)와 독립 확대 판독을 보존했다.
+
+검증 종료 후 11개 테스트의 첫머리 module documentation만 보완했다. 실제 Git source와 [본문 hash](assets/seo-rii-20261107/test-header-metadata-receipt.json)를 대조해 프로그램·assertion·fixture의 동일성을 확인했고, fmt·현재 자동 수집 48/48·변경 Markdown 58개 링크와 metadata를 통과했다. 이 주석 보완을 새 기능 실행으로 표시하지 않는다.
+
+Ready 원 PR별 판정은 메인터너 보정 후 수용 가능으로 정리했다. [원격 처리안](assets/seo-rii-20261107/remote-action-plan.md)의 기존 대조군 차이에 한정한 예외·Draft #8646 간접 수용 효과·원격 범위는 아직 승인 전이다. 별도 사용자 Draft #8738에는 실패 check가 없어 변경하지 않았다. 원격 조치는 별도 승인 뒤 진행한다.

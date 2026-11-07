@@ -35,6 +35,26 @@
     "physical_gpu_qualified": false
   },
   "macos": "explicit experimental-foundation-only exception; Apple SDK/Metal hardware remain unverified",
-  "pr8671": "real source-number fallback defect remains; awaiting maintainer correction decision",
-  "common_full_checks": "running; not yet complete"
+  "pr8671": "semantic correction and real producer negative/positive, Native absent/provided controls, fresh WASM full-page visual and all mandatory local gates passed",
+  "common_full_checks": "all17 final serial gates passed at263b; full12825, focused194, Native official4077, Studio2745",
+  "final_native_correction": {
+    "source": "cda7c8cb33bb7ded970d033ed1543aabb49c63a2",
+    "handbook_pages": 383,
+    "handbook_minimum": 99.96,
+    "handbook_regressions": 0,
+    "native_wasm_baseline_pairs": 48,
+    "png_byte_identical_pairs": 48,
+    "direct_pdf_radial_pages": 6,
+    "direct_pdf_radial_minimum": 100.0
+  },
+  "vulkan": {
+    "source": "263b1e753c006d1631d25794588b6638fa1172ae",
+    "compile_run_fmt_clippy": "passed",
+    "device": "llvmpipe LLVM20.1.2",
+    "softwareDevice": true,
+    "hardwareAccelerationVerified": false,
+    "presentationVerified": false,
+    "verificationReadbacks": 2,
+    "reference": "vulkan-final-response.json"
+  }
 }

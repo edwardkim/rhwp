@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/flutter_windows_texture.md
+last_verified: 2026-11-07
+---
+
 # Windows immutable D3D Flutter bridge (P101, draft WIP)
 
 The opt-in backend implements a D3D12/Ganesh producer and Windows Flutter GPU

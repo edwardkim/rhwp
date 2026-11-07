@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/flutter_linux_texture.md
+last_verified: 2026-11-07
+---
+
 # Linux Flutter GL texture adapter (P99)
 
 `bindings/Flutter/linux` implements the public Linux `FlTextureGL` plugin callback.

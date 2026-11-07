@@ -1,4 +1,9 @@
-//! 관계형 계약: 같은 profile의 immutable snapshot 재사용과 문서 교체 후 세대 분리.
+//! 관계형: 같은 profile의 immutable snapshot 공유와 문서·revision 교체 후 세대 분리를 검사한다.
+//! 주석 갱신: 2026-11-07T16:41:01+09:00; 직전 파일 커밋: 2026-11-06T12:43:16+09:00 (ca1f63c157401fbc8a95f53a4c2582bf2c1e87a6).
+//! 입력은 파일 내부 합성 문서·PageLayerTree 또는 저장소의 허가된 글꼴 fixture다.
+//! API·소유·자원/합성 paint 계약이며 실물 문서 페이지의 조판 위치를 고정하지 않는다.
+//! 이 assertion의 독립 한컴 PDF 대비 Native/fresh WASM raw 측정값은 비해당이다.
+//! 별도 실물 시각·플랫폼 실행 근거: mydocs/pr/assets/seo-rii-20261107/validation-scope.md.
 //! 실물 페이지의 조판 좌표나 한컴 시각 일치율을 고정하는 검사가 아니다.
 
 use std::sync::Arc;

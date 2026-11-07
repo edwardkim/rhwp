@@ -1,0 +1,1263 @@
+{
+  "recorded_at": "2026-11-07T06:22:19.289682+00:00",
+  "product_source": "cda7c8cb33bb7ded970d033ed1543aabb49c63a2",
+  "test_source": "263b1e753c006d1631d25794588b6638fa1172ae",
+  "method": "Canonical visual_sweep make_compares/make_overlay_page/make_review_panels; reuse frozen final Native/Canvas PNG and independent PDF raster; no re-render or build",
+  "scope": "representative review and standalone overlay; all pages measured separately in original TSV",
+  "entries": [
+    {
+      "key": "radial",
+      "backend": "native",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/radial/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/radial/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/radial/native/overlay_001.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 1660,
+        "diff_ratio": 0.00186335,
+        "pixel_match_percent": 99.81366,
+        "ink_union_pixels": 32694,
+        "ink_diff_pixels": 1660,
+        "ink_diff_ratio": 0.05077384,
+        "ink_match_percent": 94.92262,
+        "visual_accuracy_proxy_percent": 94.92262,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 32694,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 0.25,
+        "max_channel_delta": 249,
+        "diff_bbox": [
+          80,
+          95,
+          321,
+          336
+        ]
+      },
+      "source_sha256": "73fcd4e4bff8aa2a631cbbd3e94a84cfd33b818e3455cdb95c6b1a2e2dbeddc9",
+      "reference_sha256": "14b559fdf8fbeaf3da065b98e674620a4fa4b9c8df608b04ad2e46c0201265d0",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-native-p001-review.png",
+          "sha256": "7f50da9d9cb9fab8109fe465dcdaa75faa1650267ce038cfdd6b4172ccfdce6e"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-native-p001-overlay.png",
+          "sha256": "140ec46a0d7a73fa9cc8d3ea89bfaa23a4a5bfbbc527e0e15639e3e40d4e3114"
+        }
+      }
+    },
+    {
+      "key": "radial",
+      "backend": "native",
+      "page": 3,
+      "metrics": {
+        "page": 3,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/radial/rhwp_png/rhwp_003.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/radial/pdf_png/pdf-003.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/radial/native/overlay_003.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 1195,
+        "diff_ratio": 0.00134139,
+        "pixel_match_percent": 99.86586,
+        "ink_union_pixels": 31182,
+        "ink_diff_pixels": 1195,
+        "ink_diff_ratio": 0.03832339,
+        "ink_match_percent": 96.16766,
+        "visual_accuracy_proxy_percent": 96.16766,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 31182,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 0.228,
+        "max_channel_delta": 249,
+        "diff_bbox": [
+          80,
+          95,
+          241,
+          415
+        ]
+      },
+      "source_sha256": "ba3502202ae795b805330f7f46033705673abc2ba2f648d3e503d675b2340349",
+      "reference_sha256": "b5b1eb1d44add325a16265dcbc61ff6456b9231321cd86741b764afb971e6094",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-native-p003-review.png",
+          "sha256": "c42195d2dc777f61de47f540b6a7eacb047d18a74540d789fcd65e4226d14e47"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-native-p003-overlay.png",
+          "sha256": "99ec386bfb482d870e342df4da6090456c8540912689e2011377fbae24d4fa13"
+        }
+      }
+    },
+    {
+      "key": "radial",
+      "backend": "native",
+      "page": 6,
+      "metrics": {
+        "page": 6,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/radial/rhwp_png/rhwp_006.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/radial/pdf_png/pdf-006.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/radial/native/overlay_006.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 1668,
+        "diff_ratio": 0.00187233,
+        "pixel_match_percent": 99.81277,
+        "ink_union_pixels": 28817,
+        "ink_diff_pixels": 1668,
+        "ink_diff_ratio": 0.0578825,
+        "ink_match_percent": 94.21175,
+        "visual_accuracy_proxy_percent": 94.21175,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 28817,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 0.267,
+        "max_channel_delta": 250,
+        "diff_bbox": [
+          80,
+          95,
+          401,
+          256
+        ]
+      },
+      "source_sha256": "8ca6e97dbe5053f88f9d5227977c73ec5caffec5c6954141fef083bde7818ac2",
+      "reference_sha256": "83189b4ddd94ae963ea3362235138988a938ba7e6f32463808d851beea6797bf",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-native-p006-review.png",
+          "sha256": "7219bbbe7bfe7dedf00558c48228a5e9911cf18c35bd21042bbd9f8f1b305717"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-native-p006-overlay.png",
+          "sha256": "f8fcff213452ec7c5f4543ae96b82f908212c89248346c8d422d887bbd961a52"
+        }
+      }
+    },
+    {
+      "key": "eq-01",
+      "backend": "native",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/eq-01/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/eq-01/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/eq-01/native/overlay_001.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 45716,
+        "diff_ratio": 0.05131624,
+        "pixel_match_percent": 94.86838,
+        "ink_union_pixels": 56010,
+        "ink_diff_pixels": 45716,
+        "ink_diff_ratio": 0.81621139,
+        "ink_match_percent": 18.37886,
+        "visual_accuracy_proxy_percent": 18.37886,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 95.46152,
+        "silhouette_raw_unmatched_pixels": 2542,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 56010,
+        "tolerant_content_match_percent": 95.46152,
+        "mean_abs_channel_delta": 5.853,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          95,
+          133,
+          717,
+          702
+        ]
+      },
+      "source_sha256": "29b055c1804d8affdab05b680d2a674c66397e813fec0fc6d3bd8adf9e6cd185",
+      "reference_sha256": "ddbf1763480cc42cdc18d0b4cbf3876dd4fad290c5aa744f71034914816f566e",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/eq-01-native-p001-review.png",
+          "sha256": "127304e1bc06d2f62909073b8cf67b2224143b09e46d5f867d1f62b6c7a3e80a"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/eq-01-native-p001-overlay.png",
+          "sha256": "2ce70d97e438cfa33c92e1bbab3f986ee43346212e16facee8b01087c7a63aa9"
+        }
+      }
+    },
+    {
+      "key": "shape-group",
+      "backend": "native",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/shape-group/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/shape-group/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/shape-group/native/overlay_001.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 1264,
+        "diff_ratio": 0.00141884,
+        "pixel_match_percent": 99.85812,
+        "ink_union_pixels": 128354,
+        "ink_diff_pixels": 1264,
+        "ink_diff_ratio": 0.00984776,
+        "ink_match_percent": 99.01522,
+        "visual_accuracy_proxy_percent": 99.01522,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 128354,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 0.18,
+        "max_channel_delta": 111,
+        "diff_bbox": [
+          69,
+          187,
+          436,
+          663
+        ]
+      },
+      "source_sha256": "a5b5189679e59960e2bb408cb346f95f3f0db8a616f437eab0e045a0dca3b545",
+      "reference_sha256": "6ba452d80d1484664aff83a1c4b10ace3a684dfa9c785ad7c0b1c75208efc94b",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/shape-group-native-p001-review.png",
+          "sha256": "ac390b60a51588522c1a7e692f2cd61e973fefde47055370d6111141e83f3938"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/shape-group-native-p001-overlay.png",
+          "sha256": "90118cff0cf3a750274a971bc5098553a23d492603cc46ff7b9ebcdf4eb810ee"
+        }
+      }
+    },
+    {
+      "key": "picture-crop",
+      "backend": "native",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/picture-crop/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/picture-crop/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/picture-crop/native/overlay_001.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 16942,
+        "diff_ratio": 0.01901741,
+        "pixel_match_percent": 98.09826,
+        "ink_union_pixels": 41019,
+        "ink_diff_pixels": 16942,
+        "ink_diff_ratio": 0.41302811,
+        "ink_match_percent": 58.69719,
+        "visual_accuracy_proxy_percent": 58.69719,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.99756,
+        "silhouette_raw_unmatched_pixels": 1,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 41019,
+        "tolerant_content_match_percent": 99.99756,
+        "mean_abs_channel_delta": 1.863,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          78,
+          226,
+          714,
+          390
+        ]
+      },
+      "source_sha256": "7a1c3d251314450bb0196d067114ce39d796f23e843065ebba223237bda15366",
+      "reference_sha256": "6a05b0e20217106f67f0e9b4b2cf6c8d349b716169eb5ab11e5e35c1ee4fb2e0",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-native-p001-review.png",
+          "sha256": "06531183b1c8667376876f8f1357431373f17cefc89e804bd4f5d93e2a22744d"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-native-p001-overlay.png",
+          "sha256": "b0d4c12ee52b4b017b5339cf76736367542c6a93d9134071c03e633e15dce6b2"
+        }
+      }
+    },
+    {
+      "key": "leading-definition",
+      "backend": "native",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/leading-definition/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/leading-definition/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/leading-definition/native/overlay_001.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 891662,
+        "diff_pixels": 2998,
+        "diff_ratio": 0.00336226,
+        "pixel_match_percent": 99.66377,
+        "ink_union_pixels": 4225,
+        "ink_diff_pixels": 2998,
+        "ink_diff_ratio": 0.7095858,
+        "ink_match_percent": 29.04142,
+        "visual_accuracy_proxy_percent": 29.04142,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 4225,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 0.388,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          114,
+          76,
+          666,
+          170
+        ]
+      },
+      "source_sha256": "09257f5dd5563563c118ef918b4bfffcf484d612da97a157bbc5c61430abbae4",
+      "reference_sha256": "c2d51e5ead8a4cfbb2af0ae0d39b0046048480121ea44713ee8bb8d7ec31165d",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/leading-definition-native-p001-review.png",
+          "sha256": "4244999dd762aba5a72cb5f376059e5d07e2cdd437a480dfbdeca1eedf6f41eb"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/leading-definition-native-p001-overlay.png",
+          "sha256": "9590734a234500873f6f2005a0abd21a7ed333b52b1f171358a61b357343f3e7"
+        }
+      }
+    },
+    {
+      "key": "recent-8555",
+      "backend": "native",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/recent-8555/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/recent-8555/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/recent-8555/native/overlay_001.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 891662,
+        "diff_pixels": 62885,
+        "diff_ratio": 0.0705256,
+        "pixel_match_percent": 92.94744,
+        "ink_union_pixels": 77047,
+        "ink_diff_pixels": 62885,
+        "ink_diff_ratio": 0.81619012,
+        "ink_match_percent": 18.38099,
+        "visual_accuracy_proxy_percent": 18.38099,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 98.62941,
+        "silhouette_raw_unmatched_pixels": 1056,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 77047,
+        "tolerant_content_match_percent": 98.62941,
+        "mean_abs_channel_delta": 9.051,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          76,
+          106,
+          712,
+          1024
+        ]
+      },
+      "source_sha256": "4f28daaa4379cdc560d77a9d6207a25165957e0564af768a02aedb2bce105f71",
+      "reference_sha256": "66e9ff4b25ff0c9ca3511ef13ac466c0e9e75eadc04804f029aa31e87c2075d0",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8555-native-p001-review.png",
+          "sha256": "050fcc128e36a2fb209182bbc4c52f3b9f61554884334090953befb948efd25b"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8555-native-p001-overlay.png",
+          "sha256": "0ea53c12dfd07c3a8e1fe93f440d340f933b972719775a1e360dbcca357c8933"
+        }
+      }
+    },
+    {
+      "key": "recent-8556",
+      "backend": "native",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/recent-8556/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/recent-8556/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/recent-8556/native/overlay_001.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 891662,
+        "diff_pixels": 59236,
+        "diff_ratio": 0.06643324,
+        "pixel_match_percent": 93.35668,
+        "ink_union_pixels": 73471,
+        "ink_diff_pixels": 59236,
+        "ink_diff_ratio": 0.80625009,
+        "ink_match_percent": 19.37499,
+        "visual_accuracy_proxy_percent": 19.37499,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 98.88936,
+        "silhouette_raw_unmatched_pixels": 816,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 73471,
+        "tolerant_content_match_percent": 98.88936,
+        "mean_abs_channel_delta": 8.395,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          76,
+          106,
+          712,
+          1023
+        ]
+      },
+      "source_sha256": "0f13429c7bde9b5b1f96f12ac2f0568bfc7786b3050a45f66909da891c2f7fbb",
+      "reference_sha256": "05b3bb1811c9879016b302a4304c75c09ef4ad549f4f2eebf691aa1bf2cbdc0a",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8556-native-p001-review.png",
+          "sha256": "57d3188a28848da0ef316f92e7009d6152d49f9452b4e34eae37ae9a2e37c9d7"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8556-native-p001-overlay.png",
+          "sha256": "e6581d7ec28a842d79d4c2cc3f2939e7c0d4a43be31411323b9a92be4cec22c9"
+        }
+      }
+    },
+    {
+      "key": "recent-8557",
+      "backend": "native",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/recent-8557/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/recent-8557/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/recent-8557/native/overlay_001.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 891662,
+        "diff_pixels": 62402,
+        "diff_ratio": 0.06998392,
+        "pixel_match_percent": 93.00161,
+        "ink_union_pixels": 76525,
+        "ink_diff_pixels": 62402,
+        "ink_diff_ratio": 0.81544593,
+        "ink_match_percent": 18.45541,
+        "visual_accuracy_proxy_percent": 18.45541,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 98.73375,
+        "silhouette_raw_unmatched_pixels": 969,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 76525,
+        "tolerant_content_match_percent": 98.73375,
+        "mean_abs_channel_delta": 8.98,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          76,
+          106,
+          712,
+          1024
+        ]
+      },
+      "source_sha256": "3b557115eb91c4f9101af5b080bd997dfc7b1d528c4c39b8fea4f0541868d530",
+      "reference_sha256": "8a078045b2b215d0e4da3e6f36b4d231135a5ee84c3c38e0c6a2251d5e1b44f5",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8557-native-p001-review.png",
+          "sha256": "52d44b8d8a0591a58aec58c1e3c46e04a4ceae37dce1abf04df4e3b635cdf6c7"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8557-native-p001-overlay.png",
+          "sha256": "533fa7469a0e854221f308c4fef79125ffea20b7a71015675ba51270ab15ad2a"
+        }
+      }
+    },
+    {
+      "key": "issue8337-full-fonts",
+      "backend": "native",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/issue8337-full-fonts/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-native-sweep/issue8337-full-fonts/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/issue8337-full-fonts/native/overlay_001.png",
+        "width": 971,
+        "height": 1375,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 1335125,
+        "diff_pixels": 9820,
+        "diff_ratio": 0.00735512,
+        "pixel_match_percent": 99.26449,
+        "ink_union_pixels": 14963,
+        "ink_diff_pixels": 9820,
+        "ink_diff_ratio": 0.6562855,
+        "ink_match_percent": 34.37145,
+        "visual_accuracy_proxy_percent": 34.37145,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.59901,
+        "silhouette_raw_unmatched_pixels": 60,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 14963,
+        "tolerant_content_match_percent": 99.59901,
+        "mean_abs_channel_delta": 0.706,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          75,
+          132,
+          485,
+          1300
+        ]
+      },
+      "source_sha256": "e9d2b9c9da797fb84346620ba3fe8305df34222308085df9dafc007da7257dc1",
+      "reference_sha256": "0f274472607a359001ea3787e906c60a5061b97e762de0a5db77e6e683a1992c",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-native-p001-review.png",
+          "sha256": "e80028f48563f2c64b2fe1c85185a09684edc3bc19c137c6c7246c12ab1c255a"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-native-p001-overlay.png",
+          "sha256": "9feb469b2a6f9c24dbc6b57dcf08d127058111217f99ca7f6f4ac516b7d8f554"
+        }
+      }
+    },
+    {
+      "key": "radial",
+      "backend": "wasm",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/radial/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/radial/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/radial/wasm/overlay_001.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 1673,
+        "diff_ratio": 0.00187794,
+        "pixel_match_percent": 99.81221,
+        "ink_union_pixels": 32694,
+        "ink_diff_pixels": 1673,
+        "ink_diff_ratio": 0.05117147,
+        "ink_match_percent": 94.88285,
+        "visual_accuracy_proxy_percent": 94.88285,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 32694,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 0.252,
+        "max_channel_delta": 249,
+        "diff_bbox": [
+          80,
+          95,
+          321,
+          336
+        ]
+      },
+      "source_sha256": "dd9b03cfe99de00bc5549fecefe205865ccf4f3a7ce59937f7487948e0dfe713",
+      "reference_sha256": "14b559fdf8fbeaf3da065b98e674620a4fa4b9c8df608b04ad2e46c0201265d0",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-wasm-p001-review.png",
+          "sha256": "5030bb8b6b940e96a84c5969ba1ff18eb17fbd7b3ace160a2cdf8c010a7d4561"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-wasm-p001-overlay.png",
+          "sha256": "601803d889861489aee2bf851a0b7a36bba588436f78cc50a21620eae02aadbd"
+        }
+      }
+    },
+    {
+      "key": "radial",
+      "backend": "wasm",
+      "page": 3,
+      "metrics": {
+        "page": 3,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/radial/rhwp_png/rhwp_003.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/radial/pdf_png/pdf-003.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/radial/wasm/overlay_003.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 1206,
+        "diff_ratio": 0.00135374,
+        "pixel_match_percent": 99.86463,
+        "ink_union_pixels": 31182,
+        "ink_diff_pixels": 1206,
+        "ink_diff_ratio": 0.03867616,
+        "ink_match_percent": 96.13238,
+        "visual_accuracy_proxy_percent": 96.13238,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 31182,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 0.23,
+        "max_channel_delta": 249,
+        "diff_bbox": [
+          80,
+          95,
+          241,
+          415
+        ]
+      },
+      "source_sha256": "a05402afca7f8534b526d217d5a7af924d8bbd877f726d1e396ac60dc6f9b0c8",
+      "reference_sha256": "b5b1eb1d44add325a16265dcbc61ff6456b9231321cd86741b764afb971e6094",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-wasm-p003-review.png",
+          "sha256": "1f8bac61dd978bf9fbeed22435f6a8e59f421b19e046c2444ce7ee29ad36ebce"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-wasm-p003-overlay.png",
+          "sha256": "be0fb1e572f20234ced1ce890f8223901f7c73aadf06a71cf002d3e1688579d5"
+        }
+      }
+    },
+    {
+      "key": "radial",
+      "backend": "wasm",
+      "page": 6,
+      "metrics": {
+        "page": 6,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/radial/rhwp_png/rhwp_006.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/radial/pdf_png/pdf-006.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/radial/wasm/overlay_006.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 1684,
+        "diff_ratio": 0.00189029,
+        "pixel_match_percent": 99.81097,
+        "ink_union_pixels": 28817,
+        "ink_diff_pixels": 1684,
+        "ink_diff_ratio": 0.05843773,
+        "ink_match_percent": 94.15623,
+        "visual_accuracy_proxy_percent": 94.15623,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 28817,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 0.268,
+        "max_channel_delta": 250,
+        "diff_bbox": [
+          80,
+          95,
+          401,
+          256
+        ]
+      },
+      "source_sha256": "e59fa9b41423ad1dd8c3e85902103b7ca445b5ce8cd58b3610e0147120208f17",
+      "reference_sha256": "83189b4ddd94ae963ea3362235138988a938ba7e6f32463808d851beea6797bf",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-wasm-p006-review.png",
+          "sha256": "08232bad3466e7b73e868f74209d4049300d181cfbbfca7e42cffccf8b330f76"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-wasm-p006-overlay.png",
+          "sha256": "1546bc5a5279feb54d12afd0780a3600b1620f5be1d6dcb71f047bf161fc0705"
+        }
+      }
+    },
+    {
+      "key": "eq-01",
+      "backend": "wasm",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/eq-01/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/eq-01/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/eq-01/wasm/overlay_001.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 45266,
+        "diff_ratio": 0.05081112,
+        "pixel_match_percent": 94.91889,
+        "ink_union_pixels": 56749,
+        "ink_diff_pixels": 45266,
+        "ink_diff_ratio": 0.79765282,
+        "ink_match_percent": 20.23472,
+        "visual_accuracy_proxy_percent": 20.23472,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 95.51358,
+        "silhouette_raw_unmatched_pixels": 2546,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 56749,
+        "tolerant_content_match_percent": 95.51358,
+        "mean_abs_channel_delta": 6.034,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          95,
+          133,
+          717,
+          702
+        ]
+      },
+      "source_sha256": "8777c6a9f96a1b7e7988eacb4b976d5c58a129c70d2b61697b7fb66ff9b30aa9",
+      "reference_sha256": "ddbf1763480cc42cdc18d0b4cbf3876dd4fad290c5aa744f71034914816f566e",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/eq-01-wasm-p001-review.png",
+          "sha256": "a2d6fccb44f4e2a9dfd3266750f8a664dc84e0f9bf4c47e2bea678675d5bc075"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/eq-01-wasm-p001-overlay.png",
+          "sha256": "fcc643c9010694cb81204c06eab1fb6b301bae864e7ff9010f27e3ad58c8f291"
+        }
+      }
+    },
+    {
+      "key": "shape-group",
+      "backend": "wasm",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/shape-group/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/shape-group/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/shape-group/wasm/overlay_001.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 1267,
+        "diff_ratio": 0.00142221,
+        "pixel_match_percent": 99.85778,
+        "ink_union_pixels": 128351,
+        "ink_diff_pixels": 1267,
+        "ink_diff_ratio": 0.00987137,
+        "ink_match_percent": 99.01286,
+        "visual_accuracy_proxy_percent": 99.01286,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 128351,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 0.181,
+        "max_channel_delta": 111,
+        "diff_bbox": [
+          69,
+          187,
+          436,
+          663
+        ]
+      },
+      "source_sha256": "37f781939c31d10960559b368fd7f7106f763105892e56f2d4f008d952c7aa61",
+      "reference_sha256": "6ba452d80d1484664aff83a1c4b10ace3a684dfa9c785ad7c0b1c75208efc94b",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/shape-group-wasm-p001-review.png",
+          "sha256": "2e4d6104fb6a82a8ae3d06c4f2a28ff75f82fe1d389097044649456f9d56be53"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/shape-group-wasm-p001-overlay.png",
+          "sha256": "360cd8fedf27476f09449e86f33aa0bddab4a6df31bf7dd0766448d8884932b9"
+        }
+      }
+    },
+    {
+      "key": "picture-crop",
+      "backend": "wasm",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/picture-crop/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/picture-crop/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/picture-crop/wasm/overlay_001.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 16301,
+        "diff_ratio": 0.01829788,
+        "pixel_match_percent": 98.17021,
+        "ink_union_pixels": 41023,
+        "ink_diff_pixels": 16301,
+        "ink_diff_ratio": 0.39736246,
+        "ink_match_percent": 60.26375,
+        "visual_accuracy_proxy_percent": 60.26375,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 94.65178,
+        "silhouette_raw_unmatched_pixels": 2194,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 41023,
+        "tolerant_content_match_percent": 94.65178,
+        "mean_abs_channel_delta": 1.846,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          78,
+          226,
+          714,
+          390
+        ]
+      },
+      "source_sha256": "b38a97ab129d4def843adda01b08d2f67b9ed3c0e98dc82b3b60433d73593ea8",
+      "reference_sha256": "6a05b0e20217106f67f0e9b4b2cf6c8d349b716169eb5ab11e5e35c1ee4fb2e0",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-wasm-p001-review.png",
+          "sha256": "8f7b4f041f57bdc8a9f5f6d130e9bd7bdd7dd17373c6c21b4d336f9bd977a938"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-wasm-p001-overlay.png",
+          "sha256": "5165fd38f13290a56cd407c7eeceebe22e9c0d774598595fd0eba26cddf961d2"
+        }
+      }
+    },
+    {
+      "key": "leading-definition",
+      "backend": "wasm",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/leading-definition/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/leading-definition/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/leading-definition/wasm/overlay_001.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 891662,
+        "diff_pixels": 3387,
+        "diff_ratio": 0.00379852,
+        "pixel_match_percent": 99.62015,
+        "ink_union_pixels": 4322,
+        "ink_diff_pixels": 3387,
+        "ink_diff_ratio": 0.78366497,
+        "ink_match_percent": 21.6335,
+        "visual_accuracy_proxy_percent": 21.6335,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 4322,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 0.427,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          114,
+          76,
+          666,
+          170
+        ]
+      },
+      "source_sha256": "a17ea1bbe53fa902734835d855bf3e8a8432eed64eb736d34e34ef1c2945474a",
+      "reference_sha256": "c2d51e5ead8a4cfbb2af0ae0d39b0046048480121ea44713ee8bb8d7ec31165d",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/leading-definition-wasm-p001-review.png",
+          "sha256": "fc7fd6b97562704cdb83327642ab4f1732e74a664df0b8b490e60f140ee36a3b"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/leading-definition-wasm-p001-overlay.png",
+          "sha256": "d2bbbca0e4fbf595b5a09ef4292c1867c2a73455a01fd8f608cbc77570d4d9da"
+        }
+      }
+    },
+    {
+      "key": "recent-8555",
+      "backend": "wasm",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/recent-8555/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/recent-8555/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/recent-8555/wasm/overlay_001.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 891662,
+        "diff_pixels": 62148,
+        "diff_ratio": 0.06969906,
+        "pixel_match_percent": 93.03009,
+        "ink_union_pixels": 78121,
+        "ink_diff_pixels": 62148,
+        "ink_diff_ratio": 0.79553513,
+        "ink_match_percent": 20.44649,
+        "visual_accuracy_proxy_percent": 20.44649,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 98.53048,
+        "silhouette_raw_unmatched_pixels": 1148,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 78121,
+        "tolerant_content_match_percent": 98.53048,
+        "mean_abs_channel_delta": 9.472,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          77,
+          106,
+          712,
+          1024
+        ]
+      },
+      "source_sha256": "d0cc918cad45bde126261430a615a2dfebf7ebb43722320da9750d5aa10060f4",
+      "reference_sha256": "66e9ff4b25ff0c9ca3511ef13ac466c0e9e75eadc04804f029aa31e87c2075d0",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8555-wasm-p001-review.png",
+          "sha256": "399c422ba721852383164cec4889f0197d377cbc6438cdcf64592b597d28d1bf"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8555-wasm-p001-overlay.png",
+          "sha256": "5814de1707149de42fd13b44ffbdfa5520c59940de7d326ec2b8d8b9fd17d722"
+        }
+      }
+    },
+    {
+      "key": "recent-8556",
+      "backend": "wasm",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/recent-8556/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/recent-8556/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/recent-8556/wasm/overlay_001.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 891662,
+        "diff_pixels": 58560,
+        "diff_ratio": 0.06567511,
+        "pixel_match_percent": 93.43249,
+        "ink_union_pixels": 74443,
+        "ink_diff_pixels": 58560,
+        "ink_diff_ratio": 0.78664213,
+        "ink_match_percent": 21.33579,
+        "visual_accuracy_proxy_percent": 21.33579,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 98.77221,
+        "silhouette_raw_unmatched_pixels": 914,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 74443,
+        "tolerant_content_match_percent": 98.77221,
+        "mean_abs_channel_delta": 8.791,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          77,
+          106,
+          712,
+          1023
+        ]
+      },
+      "source_sha256": "9fdecd6e9691b0363cab9185fd4b7d7579b63242e53a7c228a25ee4d13bc43c7",
+      "reference_sha256": "05b3bb1811c9879016b302a4304c75c09ef4ad549f4f2eebf691aa1bf2cbdc0a",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8556-wasm-p001-review.png",
+          "sha256": "3422097beafc803e7e3a3b38052e7dba3374407e23d47d701e6820a8d8be0c1b"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8556-wasm-p001-overlay.png",
+          "sha256": "fc7e871d6c44a8c4c467363f8721f7e7f64fd363c93228148e25d1d627598f21"
+        }
+      }
+    },
+    {
+      "key": "recent-8557",
+      "backend": "wasm",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/recent-8557/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/recent-8557/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/recent-8557/wasm/overlay_001.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 891662,
+        "diff_pixels": 61648,
+        "diff_ratio": 0.06913831,
+        "pixel_match_percent": 93.08617,
+        "ink_union_pixels": 77589,
+        "ink_diff_pixels": 61648,
+        "ink_diff_ratio": 0.79454562,
+        "ink_match_percent": 20.54544,
+        "visual_accuracy_proxy_percent": 20.54544,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 98.59774,
+        "silhouette_raw_unmatched_pixels": 1088,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 77589,
+        "tolerant_content_match_percent": 98.59774,
+        "mean_abs_channel_delta": 9.394,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          77,
+          106,
+          712,
+          1024
+        ]
+      },
+      "source_sha256": "64167f33005d7953930d6ec16aa88412f163e223d6d59b7cbfdf9df78a27aace",
+      "reference_sha256": "8a078045b2b215d0e4da3e6f36b4d231135a5ee84c3c38e0c6a2251d5e1b44f5",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8557-wasm-p001-review.png",
+          "sha256": "931e6e1f0e0bf32515ae2ae4f245c54ca0b5ef69bde272965238286154447ea2"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8557-wasm-p001-overlay.png",
+          "sha256": "fcb9a6fac15310dcf02562c3b5f11f609d7881f590e644f091dcd10c851aa9b0"
+        }
+      }
+    },
+    {
+      "key": "issue8337-full-fonts",
+      "backend": "wasm",
+      "page": 1,
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/issue8337-full-fonts/rhwp_png/rhwp_001.png",
+        "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-wasm-sweep/issue8337-full-fonts/pdf_png/pdf-001.png",
+        "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/final-review-assets/issue8337-full-fonts/wasm/overlay_001.png",
+        "width": 971,
+        "height": 1375,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 1335125,
+        "diff_pixels": 10366,
+        "diff_ratio": 0.00776407,
+        "pixel_match_percent": 99.22359,
+        "ink_union_pixels": 15209,
+        "ink_diff_pixels": 10366,
+        "ink_diff_ratio": 0.68157012,
+        "ink_match_percent": 31.84299,
+        "visual_accuracy_proxy_percent": 31.84299,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.48057,
+        "silhouette_raw_unmatched_pixels": 79,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 15209,
+        "tolerant_content_match_percent": 99.48057,
+        "mean_abs_channel_delta": 0.804,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          75,
+          132,
+          485,
+          1300
+        ]
+      },
+      "source_sha256": "28ca9acc950876b1d423e486fd6165338f9a6b9efb5b68d5da5fa347a48e1bc1",
+      "reference_sha256": "0f274472607a359001ea3787e906c60a5061b97e762de0a5db77e6e683a1992c",
+      "assets": {
+        "review": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-wasm-p001-review.png",
+          "sha256": "1b3e3aa741638e02afb22534f7471f4ec724cf664f2d6466ef384651d7601a32"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-wasm-p001-overlay.png",
+          "sha256": "f5471f4f95e1128c83a05165f16ef6952a54958a1fcc5ace383a9becd3f3c4fe"
+        }
+      }
+    }
+  ]
+}

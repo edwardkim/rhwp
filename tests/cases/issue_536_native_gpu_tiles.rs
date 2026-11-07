@@ -1,6 +1,11 @@
-//! 관계형 계약: GPU tile/중간 target의 공개 admission 한도와 이전 JSON config 호환.
-//! 갱신: 2026-11-07 (KST). 실제 재사용·픽셀 관계는 Qt/ctypes probe에서 검사한다.
+//! 관계형: target 크기별 GPU admission과 기존 JSON config의 기본값 호환을 검사한다.
+//! 주석 갱신: 2026-11-07T16:41:01+09:00; 직전 파일 커밋: 2026-11-07T06:01:20+09:00 (2c732a24a4d0d1974e2d48a759b323d2772b8d9b).
+//! 입력은 파일 내부 합성 문서·PageLayerTree 또는 저장소의 허가된 글꼴 fixture다.
+//! API·소유·자원/합성 paint 계약이며 실물 문서 페이지의 조판 위치를 고정하지 않는다.
+//! 이 assertion의 독립 한컴 PDF 대비 Native/fresh WASM raw 측정값은 비해당이다.
+//! 별도 실물 시각·플랫폼 실행 근거: mydocs/pr/assets/seo-rii-20261107/validation-scope.md.
 //! 실물 문서 좌표·한컴 일치율·driver VRAM의 정확한 상한을 고정하지 않는다.
+
 #![cfg(all(feature = "native-skia-gl", target_os = "linux"))]
 
 use rhwp::native_host::gpu_gl::{

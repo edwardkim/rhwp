@@ -2,39 +2,49 @@
 
 ## 최종 판정
 
-**머지 보류 — 접수·의존성·충돌 조사는 완료했고 필수 검증을 진행하기 전이다.** 이 기록은 거절이나 GitHub review를 뜻하지 않는다. 현 source head와 통합 검증 head, 실제 실행 결과를 구분해 검증 후 갱신한다. 공개 댓글·push·merge는 아직 승인받거나 수행하지 않았다.
+**메인터너 보정 후 수용 가능 — 필수 로컬 검증 완료.** 원 기여 head를 그대로 승인한 판정이 아니다. 검증한 통합 후보의 보정과 한계를 포함한 수용안이며, 기존 대조군 차이 예외·Draft 간접 수용 효과·원격 처리의 작업지시자 승인과 새 통합 head의 GitHub CI 성공 전에는 merge를 보류한다. 공개 댓글·push·새 PR·merge는 아직 수행하지 않았다.
 
-## 접수와 범위
+## 접수와 검토 source
 
 | 항목 | 관측값 |
 | --- | --- |
-| 원 PR | [#8671](https://github.com/edwardkim/rhwp/pull/8671), seo-rii, Open/Ready |
-| source repository / branch | `seo-rii/rhwp` / `feat/issue-536-p79-equation-glyph-fallback` |
-| source head | `a4e839d1c504d9adc122c1ef381ac4a49c11bfcb` |
-| reviewer | edwardkim; 2026-11-07T03:00:34.131852+00:00 API 재확인 |
-| 검토 base | `b8dd67c5001dfb0410e9e192528676396cdd6a4e` |
-| 단계별 비교 시작 | `5847f6f25627faf09e4c72f19c2311ec89798d21`; 누적 devel diff와 이번 단계 diff를 구분 |
-| merge simulation | clean; tree `7ecb18ddbd459c51c745a9091f3b9826aa8fc732` |
-| source CI | {"SKIPPED": 6, "SUCCESS": 31, "CANCELLED": 2, "FAILURE": 2}; 접수 시점 스냅샷 |
+| 원 PR / contributor | [#8671](https://github.com/edwardkim/rhwp/pull/8671) / seo-rii |
+| 원 repository / branch | `seo-rii/rhwp` / `feat/issue-536-p79-equation-glyph-fallback` |
+| 고정 원 head | `a4e839d1c504d9adc122c1ef381ac4a49c11bfcb` |
+| 단계 비교 시작 | `5847f6f25627faf09e4c72f19c2311ec89798d21` |
+| reviewer | edwardkim; 원장에 배정·API 재확인 시각 기록 |
+| 기준 devel | `b8dd67c5001dfb0410e9e192528676396cdd6a4e` |
+| 검증한 기능·회귀 source | `263b1e753c006d1631d25794588b6638fa1172ae` |
+| 최종 제품 보정 | `cda7c8cb33bb7ded970d033ed1543aabb49c63a2` |
 
-원 기여의 이 단계 source commit·경로와 원 head의 CI는 [접수 원장](assets/seo-rii-20261107/intake.json)에 보존한다. 모든 source head가 최종 #8728의 조상이다. 원 PR을 따로 덮어쓰거나 ancestor commit을 반복 체리픽하지 않는다. Draft #8646의 선행 P73 두 commit도 이 원 head 안에 포함돼 있으며, 그 PR 자체의 상태 변경·merge는 별도 판단 대상이다.
+원 commit·순서·직전 단계 경로·접수 CI는 [접수 원장](assets/seo-rii-20261107/intake.json)에 보존했다. 모든 원 head는 마지막 Ready tip `629f204f82e95c4f2f1a12d318698d1a01fe1cf7`의 조상이며 최신 devel과 clean merge로 통합했다. 과거 원 head CI와 새 통합 head CI를 혼용하지 않는다. #8666·#8671의 실제 과거 CI 시간 초과는 [별도 진단](assets/seo-rii-20261107/ci-failure-diagnosis.json)에 기록했다.
 
-## 검토·검증 계획
+## 누적 소스의 개별 소비 경로 검토
 
-[공통 수행 계획](seo_rii_20261107_review_impl.md)의 해당 단계와 공통/개별 소비 경로를 따른다. 기존 이슈 [#536](https://github.com/edwardkim/rhwp/issues/536)·[#8701](https://github.com/edwardkim/rhwp/issues/8701), 선행 P69–P72 통합과 현재 base를 대조한다. 조판 원칙 적용 여부·실제 입력 commit·독립 Print·Native/fresh WASM·확대 판독은 소스의 실제 소비 경로로 판정하며 아직 통과로 기록하지 않는다. GPU/host/SDK 컴파일·실행의 플랫폼별 근거도 서로 대용하지 않는다.
+실제 공개 #8337 입력의 사설 숫자 코드 4·3을 의미 문자로 복원했다. Native face 부재 대조·원 face 공급 전후 동일 PNG·fresh WASM 전쪽과 독립 Print 확대 판독을 완료했다. 기존 5개 검사는 보정 전에도 통과했지만 신규 실제 producer 검사는 missing-ink에서 실패했고, 복구한 보정 코드에서는 해당 검사를 포함한 집중 회귀 194건이 통과했다. 최신 devel의 같은 글꼴 부재 조건은 AB·CD·4·3 누락/raw 93.84%였고 최종 보정은 복원/raw 99.63%다.
 
-수용 전 조건은 해당 단계의 필수 계약·실제 실행·시각 검증과 최신 head CI, 작업지시자의 원격 처리 승인이다. CI 성공·원 기여자의 자기 검토만으로 메인테이너 검증 완료를 주장하지 않는다.
+실제 원인·보정·최신 devel 대조는 [숫자 의미 보정](assets/seo-rii-20261107/positioned-equation-fallback-finding.md)을 따른다. 기존 #7594 해결 이력과 후속 #8337의 원 글꼴 부재 범위를 구분했다.
 
-## Merge 후 contributor PR comment 계획
+## 필수 검증과 보정
 
-아직 미실행인 시각 결과·이미지 URL은 만들지 않는다. 해당 PR의 실제 검증 범위·결과와 최종 통합 head가 확정되면 [Visual Sweep comment 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따른 대응 review/overlay·지표·잔여 한계를 이 절에 보완한다. devel 반영·merge SHA·API 및 실제 표시 확인 뒤 승인 범위에서 게시한다.
+- 최소 공개 글꼴 환경 전체 nextest **12,825 passed / 45 skipped**; 최종 Native 집중 **194 passed**.
+- Native 공식 3종 **4,077 passed** = lib 4,040 + placeholder 2 + Direct PDF 35; lib의 기존 ignore 12건은 별도다. 집중 검사와 이 수치를 합산해 고유 검사 수로 표시하지 않는다.
+- fmt·native/WASM32/workspace/Native FFI GL Clippy·workspace build·doctest·standalone Vulkan run/fmt/Clippy·Studio test를 포함한 최종 17개 묶음이 모두 통과했다. Studio는 **2,745 passed / 2 skipped**, TypeScript/Vite build도 별도 통과했다.
+- 실제 Windows SDK·Native D3D와 Linux Qt·Flutter 결과는 [플랫폼 원장](assets/seo-rii-20261107/platform-execution/summary.json), [source·재사용 범위](assets/seo-rii-20261107/validation-scope.md)로 구분했다. 소프트웨어 GL/Vulkan을 물리 GPU 검증으로 표시하지 않는다.
+- 최종 테스트 파일 주석 보완은 첫머리 module documentation뿐이다. 함수·assertion·fixture·제품 코드는 같으며 [11개 파일의 body hash](assets/seo-rii-20261107/test-header-metadata-receipt.json)로 검증 source와의 동일성을 확인했다. 변경 뒤 fmt·자동 수집 48/48·문서 검사를 통과했다.
 
-## 실제 원 사례에서 발견한 미해결 경계
+정확한 command·시각·source·결과는 [최종 gate](assets/seo-rii-20261107/local-gates.json)를 따른다. Windows 공개 registrar·변수 가림, 공개 fixture font 공급과 실제 숫자 fallback의 메인터너 보정은 원 기여 SHA와 분리해 기록했다.
 
-#8337의 원 파일과 같은 기존 공개 입력에서 AB는 복원됐지만, 원 수식 글꼴이 없으면 전용 표시 코드 U+E037·U+E036이 원 숫자 4·3으로 대체되지 않는다. 본문 글꼴을 동일하게 공급한 대조의 raw가 99%대여도 직접 판독상 의미가 달라 **머지 보류**다. [실행 증거·제한 보정 계획](assets/seo-rii-20261107/positioned-equation-fallback-finding.md)을 따르며 2026-11-07 승인된 메인테이너 보정을 진행한다.
+## 조판 원칙·입력·시각 검증
 
-2026-11-07 작업지시자가 위 원인에 대한 메인테이너 보정과 필수 검증을 승인했다. 현재 판정은 보정·재검증 완료 전까지 보류이며 원 source SHA를 보존한다.
+공통 producer의 기존 glyph 매핑을 재사용해 사설 표시 코드의 의미를 복원한다. 생산·측정 결과의 positions·baseline_shift·shears는 그대로 소비하며 Native paint에서만 누락 face를 대체한다. 문서 ID·임시 좌표·clamp 보정은 없다. 생산→측정→배치 경로와 정상 글꼴·반례는 개별 finding 문서에 연결했다.
 
-## 승인한 보정의 실제 Native 대조
+[실제 입력/기준 PDF 18개의 commit 일치](assets/seo-rii-20261107/validation-input-commit-receipt.json), [빌드·artifact 출처](assets/seo-rii-20261107/build-provenance.json), [전쪽 표·Native/fresh WASM TSV·대표 review/overlay](assets/seo-rii-20261107/visual/README.md)를 확인했다. 각 경로 전 24쪽 모두 raw 90% 이상이고 독립 PDF와 쪽수 일치·누락 0이다. 같은 devel/후보 PNG 48쌍은 바이트 단위로 같으며, 최종 Native 편람 383쪽은 최저 raw 99.96%·기준 대비 회귀 0쪽이다.
 
-`cda7c8cb33`에서 producer의 사설 코드 매핑을 재사용해 원 숫자 의미를 복원했다. 같은 최소 글꼴·본문 subset 조건의 원 사례 전 1쪽 raw는 99.63%이며, 수정 전 다른 문자였던 4·3을 직접 확대 판독했다. 원 수식 face 공급 대조는 수정 전후 PNG가 완전히 같다. [실행·이미지·TSV](assets/seo-rii-20261107/positioned-equation-fallback-finding.md#승인한-보정의-native-실행-결과)를 따른다. fresh WASM·정식 producer 회귀·공통 필수 검증 완료 전에는 최종 수용으로 바꾸지 않는다.
+직접 판독에서 기존 eq-01 본문 굵기·수식 간격/분수 모양과 picture-crop의 가는 테두리 차이를 확인했다. devel과 같은 이 대조군 범위의 예외를 수용안에 명시했으며, 90% 통과로 임의 면제하지 않는다. 이 결정은 아직 작업지시자 승인 전이다. 원 숫자 의미 오류나 새 회귀를 예외에 넣지 않는다.
+
+## 원격 수용과 후속
+
+[수행 계획](seo_rii_20261107_review_impl.md)과 [구체적 원격 처리안](assets/seo-rii-20261107/remote-action-plan.md)에 따라 upstream 통합 branch·Open PR의 새 head CI·self-review·원 기여를 보존하는 merge를 제안한다. Draft #8646은 별도 처리 대상에서 제외했지만 Ready history의 P73 두 commit을 merge하면 간접 MERGED로 표시될 수 있으므로 이 효과도 승인안에 포함했다.
+
+원격 승인·실제 CI·merge SHA를 확인한 뒤 최종 운영 기록과 devel 동기화를 먼저 끝내고, 이 PR의 검증 범위·제한·감사 댓글을 게시한다. 문서 비교를 쓰는 댓글에는 해당 입력·쪽의 실제 review·overlay와 merge SHA 고정 raw URL을 첫 댓글부터 넣고 다운로드 hash·실제 표시를 확인한다. #536·#8701 전체 로드맵은 OPEN을 유지한다. 종료 정리는 canonical post_merge 절차를 따른다.

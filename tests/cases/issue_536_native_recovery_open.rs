@@ -1,4 +1,11 @@
+//! 관계형: recovery 가져오기·worker 문서 교체와 미저장 checkpoint의 보존을 검사한다.
+//! 주석 갱신: 2026-11-07T16:41:01+09:00; 직전 파일 커밋: 2026-11-07T07:40:46+09:00 (21fac65baabdb550e597e96ea676d913de054304).
+//! 입력은 파일 내부 합성 문서·PageLayerTree 또는 저장소의 허가된 글꼴 fixture다.
+//! API·소유·자원/합성 paint 계약이며 실물 문서 페이지의 조판 위치를 고정하지 않는다.
+//! 이 assertion의 독립 한컴 PDF 대비 Native/fresh WASM raw 측정값은 비해당이다.
+//! 별도 실물 시각·플랫폼 실행 근거: mydocs/pr/assets/seo-rii-20261107/validation-scope.md.
 //! Explicit recovery imports retain an unsaved checkpoint, including worker replacement.
+
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::thread;

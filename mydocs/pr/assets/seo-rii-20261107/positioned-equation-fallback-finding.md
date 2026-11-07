@@ -14,7 +14,7 @@
 
 [원 픽셀 확대 비교](issue8337/digits-font-control.png). 점수가 더 높아도 의미가 틀린 문자를 통과 처리하지 않는다. SVG 공통 producer에서도 4와 3의 표시 코드가 각각 `HyhwpEQ`의 U+E037·U+E036임을 확인했다. `hancom_glyphs.rs`의 Number 매핑과 일치한다. Native fallback은 표시용 사설 코드를 일반 대체 글꼴에서 그대로 조회하고 있어 원래 숫자의 의미를 보존하지 못한다. 기존 P79 합성 검사는 직접 ASCII/CJK를 담은 `GlyphRun`을 만들어 원 producer의 숫자 코드 경계를 덮지 않는다.
 
-따라서 #8671은 **메인테이너 보정 승인 대기 / 머지 보류**다. 정상 글꼴 공급의 올바른 원 glyph와 위치·전진폭·기준선·shear는 보존해야 한다. #8337을 완료했다고 닫지 않는다.
+초기 판정은 **메인테이너 보정 승인 대기 / 머지 보류**였다. 정상 글꼴 공급의 올바른 원 glyph와 위치·전진폭·기준선·shear는 보존해야 한다. #8337을 완료했다고 닫지 않는다.
 
 ## 제안하는 제한 보정
 
@@ -36,3 +36,21 @@
 검증용 파생 프로그램은 모든 대상 문서의 실제 glyph inventory로 제한해 기존 64 MiB 예산 안에 넣었다. 6개 프로그램 합계는 3,308,448바이트이며 숫자 음성 대조에서는 HyhwpEQ만 제외했다. 원본과 파생 글꼴의 hash·보존 메트릭·tool 제한은 로컬 원장에 기록했고 프로그램 자체는 커밋하지 않는다.
 
 이 결과는 Native 경계의 확인이다. fresh WASM·공식 회귀와 공통 필수 검증 완료 전 최종 수용 판정은 보류한다.
+
+## 생산·측정·배치의 소비 경로
+
+`EqLayout::for_equation` → `hancom_glyphs::measure`가 원문 Number/Variable 역할과 해당 face의 표시 코드·positions·shears·전진폭·baseline_shift를 결정한다. `layout_for_paint`와 `PaintOp::Equation`의 같은 LayoutBox를 `skia::equation_conv::render_box`가 소비하며 `parent + lb.x/y`, `lb.baseline + run.baseline_shift`를 최종 paint 원점으로 전달한다. 이 기존 생산·측정·프레임 경로는 수정하지 않았다. `draw_hancom_glyphs`에서만 원 face coverage가 없을 때 기존 producer 매핑의 역관계로 의미 문자·내재 이탤릭을 얻는다. 최종 `canvas.draw_str`는 원 `x + offset`·baseline·shear를 그대로 사용한다. fallback font의 자연 전진을 다시 누적하거나 clamp하지 않는다. helper는 Native cfg이며 Canvas/SVG의 공유 producer 결과는 바꾸지 않는다.
+
+같은 원본을 쓰는 기존 `issue_7593_print_placement`, `issue_7642_dyad_saved_reservation`, `issue_7642_dyad_outline_paint`, `issue_7445_negative_indent_ownership`과 page-count baseline을 점검했다. 해당 기존 검사는 문단·셀 소유, 문자 순서·기준선·탭 격자·예약 프레임 및 윤곽 관계를 보호하며 잘못된 실물 절대 px 핀을 교체할 항목이 없었다. 이를 유지하고 기존 Native equation font 모듈에 실제 4·3 producer 경계를 추가했다. 합성 font/surface 비교는 원 사례의 한컴 Print 전쪽·확대 판독과 구분한다.
+
+## 실제 회귀의 수정 전·후 실행
+
+검사 source `263b1e753c`의 실제 producer 검사를 그대로 두고 제품 두 파일만 보정 전 `c2648ffdfe`로 바꿔 실행했다. 기존 5개 검사는 통과하고 신규 실제 숫자 검사는 missing-ink assertion에서 실패했다. 최종 보정으로 두 파일을 복구한 뒤 같은 신규 검사를 포함한 Native 집중 회귀 194건이 모두 통과했다. [음성·양성 실행 기록](issue8337/producer-regression-results.json)을 따른다.
+
+fresh WASM 전 1쪽 raw 99.48%와 원 숫자·AB의 확대 판독도 완료했다. 원 수식 face 공급 Native 전 1쪽은 99.60%, face 부재 대조는 99.63%다. 원 face 공급 조건의 base/후보 PNG는 같다. 이후 [최종 공통 필수 검증 17개 묶음](local-gates.json)도 모두 통과했다. 원격 수용과 기존 대조군 차이의 예외는 작업지시자 승인 대기다.
+
+## 최신 devel의 원 이슈 재현 대조
+
+같은 본문 글꼴 subset과 원 수식 face 부재 조건으로 최신 devel `b8dd67c500`의 보관된 Native 바이너리도 실행했다. 실제 1쪽에서 AB·CD·4·3이 빠지고 raw 93.84%였다. 최종 보정 `cda7c8cb33`에서는 모두 표시되며 raw 99.63%다. 같은 독립 PDF raster의 hash도 확인했다. [실행·수치](issue8337/latest-base-missing-face-comparison.json), [devel review](issue8337/missing-face-base-review.png)·[overlay](issue8337/missing-face-base-overlay.png), [보정 review](issue8337/missing-face-candidate-review.png)·[overlay](issue8337/missing-face-candidate-overlay.png)를 따른다.
+
+이 비교는 원 이슈의 글꼴 부재 경계다. 원 face를 공급한 48개 base/후보 PNG의 동일성 결과와 조건을 섞지 않는다. 원 기여 P79에서 남은 잘못된 숫자와 최신 devel에서 아직 빠지는 문자도 구분한다.
