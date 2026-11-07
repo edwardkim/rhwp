@@ -1240,7 +1240,13 @@ static KOPUB_DOTUM_LATIN_0: [u16; 95] = [
 /// KoPub Dotum Light의 전진은 독립 Print와 TTF에서 확인했다(#7765).
 /// 글꼴의 모든 문자를 인증하지 않으며 검증된 범위만 별도로 확인한다.
 pub(crate) fn verified_source_projection_face(face: &str, bold: bool, italic: bool) -> bool {
-    !bold && !italic && matches!(face.trim(), "KoPub돋움체 Light" | "KoPub Dotum Light")
+    let face = face.trim();
+    !bold
+        && !italic
+        && (matches!(face, "KoPub돋움체 Light" | "KoPubDotum Light" | "KoPub Dotum Light")
+            // 같은 Light 프로그램의 설치 조회 이름도 동일한 검증 범위를 쓴다.
+            // Medium/Bold·World와 계열 이름만 같은 프로그램은 인증하지 않는다.
+            || super::super::installed_font_program_aliases("KoPub돋움체 Light").contains(&face))
 }
 
 pub(crate) fn verified_source_projection_text(

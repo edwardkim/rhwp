@@ -5,6 +5,9 @@
 //! 중요한25~29쪽은 양쪽98% 이상이다. px 기대값은 PDF 괘선 좌표를
 //! 96CSSpx로 환산한 값이며, 글자 모양은 별도 review/overlay로 판독한다.
 //! 기준 PDF: pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf
+//! 별칭 인증 검사는 관계형이다. 같은 프로그램의 설치 조회 이름으로 바뀌어도
+//! 기존 Print 프레임과 내용 소유가 같아야 하며 새 px 기대값을 만들지 않는다.
+//! 주석 갱신: 2026-11-08 00:35 KST.
 #![cfg(not(target_arch = "wasm32"))]
 
 use serde_json::Value;
@@ -99,6 +102,56 @@ fn near(actual: f64, expected: f64, description: &str) {
         (actual - expected).abs() <= 2.0,
         "{description}: 독립 Print {expected:.5}, 실제 {actual:.5}, 허용 ±2CSSpx"
     );
+}
+
+#[test]
+fn installed_program_alias_preserves_current_source_frames() {
+    use rhwp::{renderer::font_environment::FontEnvironment, DocumentCore};
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let bytes = fs::read(root.join("samples/86712_regulatory_analysis.hwp")).unwrap();
+    let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+    let before: Vec<Value> = [27, 28]
+        .into_iter()
+        .map(|page| {
+            serde_json::from_str(&core.build_page_render_tree(page).unwrap().root.to_json())
+                .unwrap()
+        })
+        .collect();
+    // 같은 KoPub Light SFNT의 name 6과 name 16이다. 설치 글꼴 없이도
+    // 공개 API의 인증 → 스타일 해소 → 현재 줄 구성 → 최종 프레임을 검사한다.
+    let selected = core
+        .build_font_environment_from_available_programs(
+            r#"[{"query":"KoPubDotumLight","family":"KoPubDotum","programId":"same-light-program","trueType":true}]"#,
+        )
+        .unwrap();
+    core.set_font_environment(Some(FontEnvironment::from_json(&selected).unwrap()))
+        .unwrap();
+    for (page, prior) in [27, 28].into_iter().zip(before) {
+        let after: Value =
+            serde_json::from_str(&core.build_page_render_tree(page).unwrap().root.to_json())
+                .unwrap();
+        for (paragraph, rows, cols) in [(172, 28, 4), (182, 5, 2)] {
+            match (
+                table(&prior, paragraph, rows, cols),
+                table(&after, paragraph, rows, cols),
+            ) {
+                (Some(a), Some(b)) => {
+                    assert_eq!(
+                        bounds(a),
+                        bounds(b),
+                        "같은 프로그램 별칭은 표 프레임을 바꾸지 않는다"
+                    );
+                    assert_eq!(
+                        text(a),
+                        text(b),
+                        "같은 프로그램 별칭은 내용 소유를 바꾸지 않는다"
+                    );
+                }
+                (None, None) => {}
+                _ => panic!("같은 프로그램 별칭이 표의 페이지 소유를 바꿨다"),
+            }
+        }
+    }
 }
 
 #[test]

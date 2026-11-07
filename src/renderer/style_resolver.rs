@@ -545,7 +545,10 @@ fn refresh_source_program_projection_slots_with_storage<S: storage::Storage>(
             if font.alt_type != 1
                 || font.is_embedded
                 || font.native_program.is_some()
-                || primary != font.name.trim()
+                // 같은 SFNT의 name 6 조회 이름으로 바뀐 것은 다른 원본을
+                // 선택한 것이 아니다. 굵기별 설치 별칭의 동일성만 허용한다.
+                || (primary != font.name.trim()
+                    && !super::installed_font_program_aliases(font.name.trim()).contains(&primary))
                 || !font.subst_font.as_ref().is_some_and(|substitute| {
                     substitute.font_type == 1
                         && !substitute.face.trim().is_empty()
