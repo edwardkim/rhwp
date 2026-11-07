@@ -1,4 +1,4 @@
-//! 한컴 Print에서 확인한 신명 HFT 프로그램의 고유 ASCII 전진폭.
+//! 한컴 Print에서 확인한 신명 HFT 프로그램의 고유 전진폭.
 //!
 //! Type3 /Widths와 ToUnicode를 읽은 값이며 글리프 윤곽선이나 글꼴 파일은 아니다.
 //! 근거: pdf/issue7642-hft-char-style-diagnostic/char-style-ascii-2020.pdf,
@@ -50,11 +50,22 @@ static ASCII_2: [u16; 95] = [
     769, 599, 362, 397, 352, 429, 500, 382, 509, 556, 485, 543, 482, 352, 588, 560, 277, 314, 557,
     274, 858, 564, 516, 534, 548, 405, 486, 351, 562, 581, 840, 590, 574, 474, 418, 280, 421, 500,
 ];
-static RANGES_2: [LatinRange; 1] = [LatinRange {
-    start: 0x0020,
-    end: 0x007e,
-    widths: &ASCII_2,
-}];
+// 독립 Print: issue8596_policy_committee_agenda-2020.pdf 11쪽 T6의
+// ToUnicode 04 → U+221A, CharProc HFT285의 d1 전진은 1000/1000 em이다.
+// 표시 family의 별칭과 무관하게 원 HFT의 확인된 폭을 사용한다.
+static SQUARE_ROOT_2: [u16; 1] = [1000];
+static RANGES_2: [LatinRange; 2] = [
+    LatinRange {
+        start: 0x0020,
+        end: 0x007e,
+        widths: &ASCII_2,
+    },
+    LatinRange {
+        start: 0x221a,
+        end: 0x221a,
+        widths: &SQUARE_ROOT_2,
+    },
+];
 
 // 명시적 대체 글꼴이 없는 한양중고딕의 Type3 프로그램 폭이다.
 // HWP5 법령의 명시적 HY중고딕 TrueType 대체 프로그램과 구분한다.
