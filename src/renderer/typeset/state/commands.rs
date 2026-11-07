@@ -191,6 +191,14 @@ impl TypesetState {
         }
         data.deferred_next_page_stored_frames.push(picture);
     }
+    /// [#8732] 다음 쪽 맨 위로 미룬 저장 그림 바로 아래에서 시작하는 본문 문단을 그 쪽에 둔다.
+    /// 빈 문단의 저장 되감김은 일반 흐름이 쪽 시작으로 보지 않으므로 소유 쪽을 명시한다.
+    pub(in crate::renderer::typeset) fn own_body_on_next_page(&mut self, index: usize) {
+        let next_page = self.data.pages.len() + 1;
+        self.data
+            .deferred_source_frame_body_pages
+            .insert(index, next_page);
+    }
     /// 첫 쪽의 인증된 시작 밴드를 측정 커서에 설정한다.
     pub(in crate::renderer::typeset) fn initialize_stored_column_band(&mut self, band: f64) {
         self.data.stored_initial_column_band = band;
