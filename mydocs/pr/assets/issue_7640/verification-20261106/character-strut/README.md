@@ -33,7 +33,7 @@
   컴파일을 포함한 명령 시간은 1,215.586초다.
 - Native/WASM Clippy·workspace build·기본 all-target Clippy·fmt·manifest·unit tier도 같은
   source를 고정한 순차 driver에서 모두 exit 0으로 완료했다. 각 실제 명령·결과는
-  [최종 검증 기록](validation.json)에 연결했다.
+  최종 검증 기록 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue_7640/verification-20261106/character-strut/validation.json`)에 연결했다.
 
 ## 전체 페이지와 devel 대조
 

@@ -37,7 +37,7 @@ Native 7쪽·WASM 10쪽의 PNG만 바뀌고 나머지 각각 197·194쪽은 부�
 
 fmt·Native/WASM/all-target/Skia Clippy·workspace build·manifest·unit tier가 통과했다. Native Skia 라이브러리 4,039 PASS/12 ignored, PNG 2 PASS, 직접 PDF 22 PASS다. threads 8·Cargo 순차를 사용했다. 최종 전체 nextest 통과를 뜻하지 않는다. Mac fresh WASM은 locked wrapper `--no-opt` 로컬 대체 빌드이며 Docker 최적화 결과가 아니다. root pkg/Studio public의 JS/WASM hash는 같지만 실제 Studio 초기화 응답·지원 CanvasKit의 최종 확인은 남아 있다.
 
-빌드 후 최종 source guard도 모두 동일했다. [명령·해시·결과](validation.json)를 보존하며 로그·임시 도구는 ignored output에만 둔다.
+빌드 후 최종 source guard도 모두 동일했다. 명령·해시·결과 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7727/cropped-print-window-20261107/validation.json`)를 보존하며 로그·임시 도구는 ignored output에만 둔다.
 
 ## 대표 48쪽
 

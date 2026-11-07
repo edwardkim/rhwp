@@ -21,7 +21,7 @@ RunEmitVars → 인라인 EquationNode의 논리 상자 원점 → 공통 render
 
 ## 독립 기준과 전쪽 대조
 
-입력·PDF 전체 SHA, producer와 asset SHA는 [검증 원장](validation.json)에 기록한다.
+입력·PDF 전체 SHA, producer와 asset SHA는 검증 원장 (로컬 진단: `output/open-issues-oldest-20261105/pr-final-20261107/rebase-5077b216-20261108/temporary-asset-json/mydocs/pr/assets/issue7642/stored-inline-center-20261107/validation.json`)에 기록한다.
 PDF는 기존 `pdf/issue7642-exam-print/exam-07-exam_science-hwp-print-2020.pdf`를 재사용했다.
 96 DPI·2022 호환·PDFium·2px raw 조건이다. 글꼴을 공급한 전쪽 검증이며 최소 글꼴 검증의
 완료로 확대하지 않는다. Mac fresh WASM은 locked wrapper의 `--target web --out-dir pkg --no-opt`
