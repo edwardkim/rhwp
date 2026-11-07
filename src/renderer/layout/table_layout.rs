@@ -7165,6 +7165,13 @@ impl LayoutEngine {
                 || (matches!(vert_rel_to, crate::model::shape::VertRelTo::Para)
                     && matches!(table_text_wrap, TextWrap::TopAndBottom)
                     && self.table_push_floor.get().is_some())
+                // [#8735] 공백만 있는 host: 문단 상단이 바깥 상자의 원점이다. 저장 사다리
+                // 「첫 줄 vpos = 문단 상단 + 바깥 위 + 높이 + 바깥 아래」가 이를 적는다
+                // (6500000-201700118 58쪽: 35080 + 1417 + 5264 + 566 = 42327).
+                || (matches!(vert_rel_to, crate::model::shape::VertRelTo::Para)
+                    && matches!(table_text_wrap, TextWrap::TopAndBottom)
+                    && depth == 0
+                    && self.para_float_host_is_whitespace.get())
                 || (matches!(vert_rel_to, crate::model::shape::VertRelTo::Para)
                     && matches!(
                         table_text_wrap,
@@ -7257,9 +7264,18 @@ impl LayoutEngine {
                         .filter(|floor| *floor < y_start)
                         .unwrap_or(y_start)
                 };
+                // [#8735] 공백 host 표의 바깥 상자는 push 바닥(앞 표의 바깥 아래 여백 끝)에서
+                // 시작하고, 보이는 위끝은 그 아래 바깥 위 여백이다. 같은 host 에 쌓인 표들의
+                // 저장 사다리가 이를 적는다(156564488 1쪽: 3560 + 3363 + 9458 = 16381).
+                let outer_box_floor_top = if self.para_float_host_is_whitespace.get() && depth == 0
+                {
+                    hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
+                } else {
+                    0.0
+                };
                 let pushed =
                     if matches!(table_text_wrap, crate::model::shape::TextWrap::TopAndBottom) {
-                        raw_y.max(push_floor)
+                        raw_y.max(push_floor + outer_box_floor_top)
                     } else {
                         raw_y
                     };

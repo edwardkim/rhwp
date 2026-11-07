@@ -3924,6 +3924,17 @@ pub struct LayoutEngine {
     /// 하단 고정 틀(#1658/#1858)은 빈 host 라 클램프가 흐름을 넘어도 겹칠 텍스트가
     /// 없지만, 글이 있는 host 는 클램프가 곧 겹침이다.
     para_float_host_has_text: std::cell::Cell<bool>,
+    /// [#8735] 지금 배치하는 문단 기준 자리차지 표의 host 가 공백 글자만 가진 문단이다.
+    /// 이 표의 바깥 상자 원점은 문단 상단이고, 보이는 표 위끝은 그 아래 바깥 위 여백이다.
+    para_float_host_is_whitespace: std::cell::Cell<bool>,
+    /// [#8735] 공백 host 표 뒤에 이어지는 그 host 의 밀린 줄. 저장 사다리는 이 줄을
+    /// 「표 아래끝 + 바깥 아래 여백」에 두므로 문단 앞 간격을 다시 더하지 않는다.
+    whitespace_float_host_line_owner: std::cell::Cell<Option<usize>>,
+    /// [#8735] 공백 host 에 함께 앵커한 자리차지 표들의 바깥 상자
+    /// (host 문단, 문단 상단, 왼쪽, 오른쪽, 바깥 아래 끝). 가로로 겹치는 앞 표만 다음 표를 민다.
+    whitespace_host_frames: std::cell::RefCell<Vec<(usize, f64, f64, f64, f64)>>,
+    /// [#8735] 지금 배치하는 공백 host 표의 (문단 상단, 왼쪽, 오른쪽, 표 앞 흐름 y).
+    whitespace_host_pending_frame: std::cell::Cell<Option<(f64, f64, f64, f64)>>,
     /// [#7063] 이 아이템의 (**저장-vpos 스냅 이전 흐름 커서**, **직전 아이템 내용
     /// 바닥**). 글자 없는 자리차지 표 host 는 스냅이 `spacing_before` 를 사전 차감한
     /// 자리에 그대로 앉는데(#7203 — 조판할 글줄이 없어 재가산 경로를 안 탄다), 저장
@@ -4137,6 +4148,10 @@ impl LayoutEngine {
             page_top_axis_restart_spacing: std::cell::Cell::new(None),
             confirmed_paragraph_spacing: std::cell::Cell::new(None),
             para_float_host_has_text: std::cell::Cell::new(false),
+            para_float_host_is_whitespace: std::cell::Cell::new(false),
+            whitespace_float_host_line_owner: std::cell::Cell::new(None),
+            whitespace_host_frames: std::cell::RefCell::new(Vec::new()),
+            whitespace_host_pending_frame: std::cell::Cell::new(None),
             item_flow_snap_context: std::cell::Cell::new(None),
             hwpx_page_preview: std::cell::RefCell::new(None),
             declared_trust_allowed: std::cell::Cell::new(true),
@@ -12770,6 +12785,7 @@ impl LayoutEngine {
                     y_offset,
                 );
                 self.table_push_floor.set(None);
+                self.para_float_host_is_whitespace.set(false);
                 return out;
             }
             PageItem::PartialTable {
@@ -15208,6 +15224,62 @@ impl LayoutEngine {
                 .unwrap_or(false);
             self.para_float_host_has_text
                 .set(is_current_visible_para_float);
+            // [#8735] 공백만 있는 host 의 문단 기준 자리차지 표. 빈 host(글자 없음)도 글 host
+            // (공백 아닌 글자)도 아니어서 아래 「표 위 간격」의 마지막 갈래가 문단 앞 간격을
+            // 흐름에 더했고, 그 흐름이 표의 push-down 바닥(`y_start`)이 되어 표가 앞 간격만큼
+            // 내려갔다. 문단 기준 자리차지 개체의 원점은 문단 상단이며 앞 간격은 표가 민
+            // 글줄에 붙는다(#7203·#7330; 1741000-202200045 7쪽: 한/글 표 위끝 208.4, 종전
+            // 226.4). 분류 자체(빈/글 host)는 바꾸지 않는다 — 공백 host 를 글 host 경로로
+            // 보내면 캡션·오프셋 처리까지 바뀌어 다른 문서가 후퇴한다.
+            let is_current_whitespace_para_float = para.controls.get(control_index).is_some_and(
+                |c| matches!(c, Control::Table(t) if is_para_topbottom_float(&t.common)),
+            ) && para_has_visible_text(para)
+                && !para_has_non_whitespace_text(para);
+            self.para_float_host_is_whitespace
+                .set(is_current_whitespace_para_float);
+            // [#8735] 같은 공백 host 의 표들은 문단 상단을 공통 원점으로 쓰고, 가로로 겹치는
+            // 앞 표의 바깥 아래 끝만 push 바닥이 된다. 저장 사다리는 겹치는 표만 쌓는다 —
+            // 156564488 1쪽(가로 겹침 셋): 16381 = 3560 + 3363 + 9458, 1190000-200700032 1쪽
+            // (나란한 둘): 5527 = 141 + 5245 + 141(앞 표만).
+            self.whitespace_host_pending_frame.set(None);
+            if is_current_whitespace_para_float {
+                if let Some(Control::Table(t)) = para.controls.get(control_index) {
+                    let width_px = hwpunit_to_px(signed_hwpunit(t.common.width), self.dpi);
+                    let placement_ctx =
+                        super::float_placement::FloatPlacementContext::new(**col_area)
+                            .with_body_area(layout.body_area)
+                            .with_paper_width(layout.page_width);
+                    let (left, right) = super::float_placement::horizontal_range(
+                        &t.common,
+                        width_px,
+                        placement_ctx,
+                        self.dpi,
+                    );
+                    let mut frames = self.whitespace_host_frames.borrow_mut();
+                    frames.retain(|frame| frame.0 == para_index);
+                    // host 자기 줄이 표보다 먼저 배치된 경우에도 그 줄은 표가 미는 줄이지 표의
+                    // 바닥이 아니다(1130000-200400010 1쪽: 줄 4090 = 375 + 283 + 3149 + 283).
+                    let para_top = frames.first().map(|frame| frame.1).unwrap_or_else(|| {
+                        para_start_y
+                            .get(&para_index)
+                            .copied()
+                            .filter(|top| *top <= y_offset)
+                            .unwrap_or(y_offset)
+                    });
+                    let flow_before = y_offset;
+                    y_offset = frames
+                        .iter()
+                        .filter(|frame| right > frame.2 + 0.5 && left < frame.3 - 0.5)
+                        .map(|frame| frame.4)
+                        .fold(para_top, f64::max);
+                    self.whitespace_host_pending_frame.set(Some((
+                        para_top,
+                        left,
+                        right,
+                        flow_before,
+                    )));
+                }
+            }
             let is_first_empty_para_float_control = is_current_empty_para_float
                 && para.controls.iter().position(|c| {
                     matches!(
@@ -15420,6 +15492,7 @@ impl LayoutEngine {
                     }
                 } else if !is_current_empty_para_float
                     && !is_current_visible_para_float
+                    && !is_current_whitespace_para_float
                     && !host_before_consumed
                     // [#8836] 쪽·용지 기준 자리차지 표도 흐름 커서로 놓이지 않는다. 여기서 더한
                     // 앞 간격은 host 글줄만 밀고, 그 글줄의 배치가 앞 간격을 다시 소비한다 —
@@ -15584,7 +15657,27 @@ impl LayoutEngine {
             } else {
                 false
             };
-            if !tac_seg_applied && !is_outside_body && !is_current_visible_para_float {
+            // [#8735] 공백 host 의 표 뒤에는 host 자기 줄(PartialParagraph)이 이어진다. 저장
+            // 사다리는 그 줄을 「표 아래끝 + 바깥 아래 여백」에 둔다(6500000-201700118 58쪽:
+            // 42327 = 35080 + 1417 + 5264 + 566). 표를 줄처럼 보고 뒤 간격·줄간격을 더하지 않는다.
+            if is_current_whitespace_para_float && !tac_seg_applied && !is_outside_body {
+                if let Some(Control::Table(t)) = para.controls.get(control_index) {
+                    y_offset += hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi);
+                }
+                self.whitespace_float_host_line_owner.set(Some(para_index));
+                if let Some((para_top, left, right, flow_before)) =
+                    self.whitespace_host_pending_frame.take()
+                {
+                    let mut frames = self.whitespace_host_frames.borrow_mut();
+                    frames.retain(|frame| frame.0 == para_index);
+                    frames.push((para_index, para_top, left, right, y_offset));
+                    // host 줄은 모든 표 아래로 밀린다. 이미 그린 앞 흐름도 되돌리지 않는다.
+                    y_offset = frames
+                        .iter()
+                        .map(|frame| frame.4)
+                        .fold(y_offset.max(flow_before), f64::max);
+                }
+            } else if !tac_seg_applied && !is_outside_body && !is_current_visible_para_float {
                 let comp = composed.get(para_index);
                 let para_style_id = comp
                     .map(|c| c.para_style_id as usize)
@@ -15999,14 +16092,34 @@ impl LayoutEngine {
                 // 확정되므로, 여기서 줄간격을 다시 더하면 이중 적용된다(test_521: 이메일
                 // 박스 TAC 표 앞 그림 2개 → 한컴 간격은 호스트 줄간격 제외, gap≈20px).
                 // → 폴백은 표 앞 컨트롤이 전부 비가시일 때로 한정한다.
+                // 용지·쪽 기준 글 앞/뒤(InFrontOfText·BehindText) 비-TAC 개체는 host 줄과 무관한
+                // 겹침 장식이라 다음 문단 위치를 확정하지 않는다 — 표 줄의 줄간격(음수 포함)을
+                // 버릴 근거가 아니다(36369627 1쪽: 용지 기준 글앞 직선 뒤 TAC 표 줄 ls −252,
+                // 저장 다음 문단 16018 = 16270 − 252). 문단 기준 글앞 도형은 host 줄에 묶여
+                // 종전 계약을 따른다(aaaaaa 13쪽 pi=206: 저장 46326 = 13680 + 32546 + 100,
+                // ls −1100 미적용).
                 let only_invisible_before_tac = para.controls
                     [..control_index.min(para.controls.len())]
                     .iter()
                     .all(|c| {
-                        !matches!(
-                            c,
-                            Control::Table(_) | Control::Picture(_) | Control::Shape(_)
-                        )
+                        let overlay = |common: &crate::model::shape::CommonObjAttr| {
+                            !common.treat_as_char
+                                && matches!(
+                                    common.text_wrap,
+                                    TextWrap::InFrontOfText | TextWrap::BehindText
+                                )
+                                && matches!(
+                                    common.vert_rel_to,
+                                    crate::model::shape::VertRelTo::Paper
+                                        | crate::model::shape::VertRelTo::Page
+                                )
+                        };
+                        match c {
+                            Control::Shape(shape) => overlay(shape.common()),
+                            Control::Picture(picture) => overlay(&picture.common),
+                            Control::Table(_) => false,
+                            _ => true,
+                        }
                     });
                 // [#4622 · #4599 ⑦] control_index 를 seg 인덱스로 쓰는 폴백은 표 앞에 자기
                 // 줄이 있는 문단에서 어긋난다 — 36392662 p1 pi7: seg0(공백 줄,
