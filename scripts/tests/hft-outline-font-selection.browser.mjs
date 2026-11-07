@@ -1,6 +1,6 @@
 // 관계형: 실제 WASM·FontFace·Canvas의 font-only 계약. 실물 문서 정확도 증거로 사용하지 않는다.
-// 주석 갱신: 2026-11-07 14:17 +0900. 직전 변경 84764fa21c96cd5f8a0e158658e4162a4fb3ce9e
-// (2026-10-16T11:32:36+09:00). 저장소 소유 합성 CFF와 공개 편집 API만 사용한다.
+// 주석 갱신: 2026-11-07T14:39:41+09:00. 직전 변경 0fc490410dcd9b4754966874876829c5f98985e3
+// (2026-11-07T14:22:41+09:00). 저장소 소유 합성 CFF와 공개 편집 API만 사용한다.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {readFileSync, rmSync} from 'node:fs';
@@ -39,11 +39,14 @@ test('실제 HFT CFF의 합성 굵기도 등록된 원 윤곽을 소비한다', 
   const result = await page.evaluate(async () => {
     const wasm = await import('/rhwp.js'); await wasm.default();
     const bytes = new Uint8Array(await (await fetch('/source.otf')).arrayBuffer());
-    const face = new FontFace('RHWP HFT Outline Fixture', bytes); await face.load(); document.fonts.add(face);
+    // 합성 굵기 계약이 명시된 source family에 소유 fixture를 실제 FontFace로 연결한다.
+    // 상용 글꼴 프로그램을 사용하거나 그 글리프의 시각 일치를 주장하는 검사가 아니다.
+    const family = '한양신명조';
+    const face = new FontFace(family, bytes); await face.load(); document.fonts.add(face);
     const languages = ['Hangul', 'Latin', 'Hanja', 'Japanese', 'Other', 'Symbol', 'User'];
     const source = new TextEncoder().encode(`<?xml version="1.0" encoding="UTF-8"?>
       <HWPML Version="2.91"><HEAD SecCnt="1"><MAPPINGTABLE><FACENAMELIST>
-      ${languages.map(lang => `<FONTFACE Count="1" Lang="${lang}"><FONT Id="0" Name="RHWP HFT Outline Fixture" Type="hft"/></FONTFACE>`).join('')}
+      ${languages.map(lang => `<FONTFACE Count="1" Lang="${lang}"><FONT Id="0" Name="${family}" Type="hft"/></FONTFACE>`).join('')}
       </FACENAMELIST><CHARSHAPELIST Count="1"><CHARSHAPE Id="0" Height="2400">
       </CHARSHAPE></CHARSHAPELIST></MAPPINGTABLE></HEAD><BODY><SECTION Id="0"><P ParaShape="0">
       <TEXT CharShape="0"><CHAR>가</CHAR></TEXT></P></SECTION></BODY></HWPML>`);
@@ -51,6 +54,7 @@ test('실제 HFT CFF의 합성 굵기도 등록된 원 윤곽을 소비한다', 
     try {
       // 현재 HML reader의 미지원 BOLD 태그에 의존하지 않고 실제 공개 편집 경로로 설정한다.
       doc.applyCharFormat(0, 0, 0, 1, JSON.stringify({bold: true}));
+      const svg = doc.renderPageSvgWithProfile(0, 'print');
       const layer = JSON.parse(doc.getPageLayerTreeWithProfile(0, 'print', true, true));
       const runs = [];
       const walk = value => {
@@ -59,23 +63,33 @@ test('실제 HFT CFF의 합성 굵기도 등록된 원 윤곽을 소비한다', 
         if (Array.isArray(value)) value.forEach(walk); else Object.values(value).forEach(walk);
       };
       walk(layer);
-      const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
-      const texts = [], fillText = ctx.fillText.bind(ctx), moveTo = ctx.moveTo.bind(ctx);
-      let contours = 0;
-      ctx.fillText = (text, ...args) => { texts.push(text); return fillText(text, ...args); };
-      ctx.moveTo = (...args) => { contours++; return moveTo(...args); };
-      const registered = doc.registerHftOutlineFont('RHWP HFT Outline Fixture', bytes, 0);
-      doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', 'print');
-      const rgba = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-      let ink = 0;
-      for (let i = 0; i < rgba.length; i += 4) if (rgba[i + 3] > 200 && Math.min(rgba[i], rgba[i + 1], rgba[i + 2]) < 32) ink++;
-      return {bold: runs.length === 1 && runs[0].paintStyle.bold, registered, texts, contours, ink};
+      const registered = doc.registerHftOutlineFont(family, bytes, 0);
+      const rows = [];
+      for (const profile of ['screen', 'print', 'high-quality']) {
+        const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+        const texts = [], fillText = ctx.fillText.bind(ctx), moveTo = ctx.moveTo.bind(ctx);
+        let contours = 0;
+        ctx.fillText = (text, ...args) => { texts.push(text); return fillText(text, ...args); };
+        ctx.moveTo = (...args) => { contours++; return moveTo(...args); };
+        doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', profile);
+        const rgba = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let ink = 0;
+        for (let i = 0; i < rgba.length; i += 4) if (rgba[i + 3] > 200 && Math.min(rgba[i], rgba[i + 1], rgba[i + 2]) < 32) ink++;
+        rows.push({profile, texts, contours, ink});
+      }
+      const fauxStroke = Number(/<text\b[^>]*stroke-width="([\d.]+)"[^>]*>가<\/text>/.exec(svg)?.[1]);
+      return {bold: runs.length === 1 && runs[0].paintStyle.bold, fauxBold: fauxStroke > 0, registered, rows};
     } finally { doc.free(); }
   });
   assert.equal(result.bold, true, '합성 입력이 실제 굵은 글자 모양으로 해석되어야 한다');
+  assert.equal(result.fauxBold, true, '보통 bold face 요청이 아닌 실제 합성 굵기 경계에 진입한다');
   assert.equal(result.registered, true);
-  assert.equal(result.texts.includes('가'), false, '확인한 원 CFF 윤곽을 브라우저의 대체 glyph로 덮지 않는다');
-  assert.ok(result.contours > 0 && result.ink > 0, '실제 path와 Canvas 잉크를 모두 소비한다');
+  for (const row of result.rows) {
+    assert.equal(row.texts.includes('가'), row.profile === 'screen',
+      `Print는 원 CFF를 쓰고 Screen의 기존 글자 painter는 유지한다: ${JSON.stringify(row)}`);
+    assert.ok(row.ink > 0, '실제 Canvas 잉크를 소비한다');
+    if (row.profile !== 'screen') assert.ok(row.contours > 0, '원 CFF의 실제 path를 소비한다');
+  }
 });
 
 test('실제 HFT 윤곽 replay가 옛한글 우선 face와 화면 경로를 보존한다', async t => {
@@ -118,7 +132,7 @@ test('실제 HFT 윤곽 replay가 옛한글 우선 face와 화면 경로를 보�
       <TEXT CharShape="0"><CHAR>${text}</CHAR></TEXT></P></SECTION></BODY></HWPML>`);
     const rows = [];
     for (const profile of ['screen', 'print', 'high-quality']) {
-      for (const bold of [false, true]) for (const text of ['가', '\ua960']) {
+      for (const bold of [false, true]) for (const text of (bold ? ['\ua960'] : ['가', '\ua960'])) {
         const doc = new wasm.HwpDocument(source(text));
         try {
           if (bold) doc.applyCharFormat(0, 0, 0, 1, JSON.stringify({bold: true}));
