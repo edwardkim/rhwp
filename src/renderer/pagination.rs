@@ -1122,21 +1122,16 @@ crate::storage::clone_fields!(WrapAroundPara, {para_index, table_para_index, has
 pub struct WrapAnchorRef {
     /// anchor 문단 인덱스 (그림/표 보유)
     pub anchor_para_index: usize,
-    /// anchor wrap zone column_start (HWPUNIT)
+    /// anchor wrap zone column_start (HWPUNIT). 그림 바깥 여백을 포함한 저장 글 시작이다.
     pub anchor_cs: i32,
     /// anchor wrap zone segment_width (HWPUNIT)
     pub anchor_sw: i32,
-    /// [Task #722] anchor image 의 outer margin_right (HWPUNIT).
-    /// 한컴 viewer 는 inter-image-text gap 으로 image margin_right 를 추가 적용.
-    /// paragraph_layout 의 wrap_anchor 처리에서 cs px 에 +margin_right_px,
-    /// sw px 에서 -margin_right_px 보정 (text 시작 위치와 가용 폭 정합).
-    pub anchor_image_margin_right: i32,
     /// 줄 단위 배제 밴드 — Some((top, bottom)) 이면 문단 시작 기준 상대 y(px)가
     /// 이 구간과 교차하는 줄에만 anchor cs/sw 를 적용한다(출석부 형상). None 이면
     /// 기존처럼 문단 전체에 적용.
     pub band_y_range: Option<(f64, f64)>,
 }
-crate::storage::clone_fields!(WrapAnchorRef, {anchor_para_index, anchor_cs, anchor_sw, anchor_image_margin_right, band_y_range});
+crate::storage::clone_fields!(WrapAnchorRef, {anchor_para_index, anchor_cs, anchor_sw, band_y_range});
 
 /// A spanning cell carries accepted content independently of page-end blank space.
 #[derive(Debug, Clone, PartialEq)]
@@ -1890,7 +1885,6 @@ impl PaginationResult {
                                             as usize,
                                         anchor_cs: v.anchor_cs,
                                         anchor_sw: v.anchor_sw,
-                                        anchor_image_margin_right: v.anchor_image_margin_right,
                                         band_y_range: v.band_y_range,
                                     },
                                 )
