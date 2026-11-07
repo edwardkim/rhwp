@@ -307,6 +307,9 @@ impl VariantRejectReason {
 pub struct TextVariantSelectionOptions {
     pub backend: VariantSelectionBackend,
     pub prefer_strict_outline: bool,
+    /// Explicit Canvas2D producer-contract admission. The renderer must still
+    /// prepare every part before suppressing the TextRun fallback.
+    pub allow_canvas2d_glyph_outline: bool,
     pub allow_position_adjusted: bool,
     pub max_position_adjusted_residual_px: f64,
     pub max_canvas_glyph_id: u32,
@@ -330,6 +333,7 @@ impl TextVariantSelectionOptions {
         Self {
             backend: VariantSelectionBackend::CanvasKit,
             prefer_strict_outline: false,
+            allow_canvas2d_glyph_outline: false,
             allow_position_adjusted: true,
             max_position_adjusted_residual_px: 0.25,
             max_canvas_glyph_id: u16::MAX as u32,
@@ -343,6 +347,19 @@ impl TextVariantSelectionOptions {
     pub fn canvaskit_strict_outline() -> Self {
         Self {
             prefer_strict_outline: true,
+            ..Self::canvaskit()
+        }
+    }
+
+    pub fn canvas2d_strict_outline() -> Self {
+        Self {
+            backend: VariantSelectionBackend::Canvas2D,
+            prefer_strict_outline: true,
+            allow_canvas2d_glyph_outline: true,
+            allow_colrv0_color_layers: true,
+            allow_colrv1_stage1_color_graph: true,
+            allow_bitmap_glyph: true,
+            allow_svg_glyph: true,
             ..Self::canvaskit()
         }
     }
@@ -543,7 +560,8 @@ impl TextVariantCandidate {
                 let q3_variable_outline = self.glyph_outlines.iter().any(|(_, outline)| {
                     outline.diagnostics.reason.as_deref() == Some("q3VariableOutlineProjectionV1")
                 });
-                if matches!(options.backend, VariantSelectionBackend::Canvas2D)
+                if (matches!(options.backend, VariantSelectionBackend::Canvas2D)
+                    && !options.allow_canvas2d_glyph_outline)
                     || (q3_variable_outline
                         && !matches!(
                             options.backend,
