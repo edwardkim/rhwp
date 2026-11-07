@@ -34,6 +34,7 @@ last_verified: 2026-10-28
 | CLI `--json`·MCP 도구 신규 추가 절차와 수용 기준 | [에이전트 표면 플레이북](agent_surface_playbook.md) | [CLI 명령어 매뉴얼](cli_commands.md), [MCP 통합 가이드](mcp_integration_guide.md) |
 | 실사례 여정 기반 버그 헌팅 | [버그 헌팅 playbook](bug_hunting_playbook.md) | [Claude bug-hunter 에이전트](../../.claude/agents/bug-hunter.md), [Codex bug-hunter Skill](../../.agents/skills/bug-hunter/SKILL.md), [정답지 비교 하네스](../../tools/fidelity_compare/README.md) |
 | 로컬 OWPML XML 스키마 자산 | [OWPML XML 스키마 reference](owpml_schema_reference.md) | [한컴 공식 OWPML 모델 참조 가이드](../tech/hwpx_hancom_reference.md) |
+| PDF 가져오기 개발자 온보딩·암호·Worker | [PDF 시작 안내](pdf_developer_onboarding.md) | [English](pdf_developer_onboarding_EN.md), [자원 정책](pdf_resource_policies.md), [코덱](pdf_image_codecs.md) |
 | PDF/SVG 기준 비교의 정책 | [시각 검증 문서 지도](verification/README.md) | [시각 검증 거버넌스](verification/visual_verification_governance.md), [PDF/SVG visual sweep 가이드](verification/visual_sweep_guide.md) |
 | RenderBackend 계약·픽스처 | [RenderBackend 계약 카탈로그](render_backend_contract_catalog.md) | [픽스처 목록](../tech/render_backend_fixture_catalog.md), [설계 배경](../tech/render_backend.md) |
 | Canvas·SVG·Native PNG 최종 출력 차이와 소비 경로 검증 | [출력 백엔드 소비 경로 검증](verification/renderer_backend_verification.md) | [시각 검증 거버넌스](verification/visual_verification_governance.md), [폰트 사고 대응](font_incident_response.md) |

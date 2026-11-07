@@ -1,0 +1,52 @@
+"""Release surfaces must not silently lose credits or disagree on product version."""
+import json
+from pathlib import Path
+import re
+import tomllib
+import unittest
+
+ROOT = Path(__file__).resolve().parents[2]
+RECORDS = ('CHANGELOG.md', 'CHANGELOG_EN.md', 'mydocs/release/release_notes_v0.9.0.md',
+           'mydocs/release/release_notes_v0.9.0_EN.md')
+
+
+class Release090PreparationTests(unittest.TestCase):
+    def test_release_credits_match_resolved_ledger_without_duplicates(self):
+        ledger = json.loads((ROOT / 'mydocs/tech/investigations/release-v0.9.0/contributor-ledger.json').read_text())
+        self.assertEqual(ledger['unresolvedNumbers'], [])
+        self.assertEqual(ledger['unresolvedGitIdentities'], [])
+        handles = [p['handle'] for p in ledger['contributors']]
+        self.assertEqual(len(handles), len(set(h.casefold() for h in handles)))
+        self.assertEqual(len(handles), ledger['counts']['people'])
+        for name in RECORDS:
+            with self.subTest(name=name):
+                text = (ROOT / name).read_text()
+                start = '<!-- release-contributors:v0.9.0:start -->'
+                end = '<!-- release-contributors:v0.9.0:end -->'
+                self.assertEqual(text.count(start), 1)
+                self.assertEqual(text.count(end), 1)
+                block = text.split(start)[1].split(end)[0]
+                self.assertEqual(re.findall(r'^- @([^\s]+)$', block, re.M), handles)
+
+    def test_product_manifests_and_lock_roots_match(self):
+        cargo = tomllib.loads((ROOT / 'Cargo.toml').read_text())
+        self.assertEqual(cargo['package']['version'], '0.9.0')
+        lock = tomllib.loads((ROOT / 'Cargo.lock').read_text())
+        self.assertEqual([p['version'] for p in lock['package'] if p['name'] == 'rhwp'], ['0.9.0'])
+        for directory in ('rhwp-studio', 'rhwp-vscode', 'npm/editor', 'rhwp-chrome', 'rhwp-firefox'):
+            for filename in ('package.json', 'package-lock.json'):
+                path = ROOT / directory / filename
+                if not path.exists() and filename == 'package-lock.json':
+                    continue  # editor has no install-time dependencies or lockfile
+                with self.subTest(path=str(path)):
+                    value = json.loads(path.read_text())
+                    self.assertEqual(value['version'], '0.9.0')
+                    if filename == 'package-lock.json':
+                        self.assertEqual(value['packages']['']['version'], '0.9.0')
+        for filename in ('rhwp-chrome/manifest.json', 'rhwp-firefox/manifest.json', 'rhwp-safari/src/manifest.json'):
+            with self.subTest(filename=filename):
+                self.assertEqual(json.loads((ROOT / filename).read_text())['version'], '0.9.0')
+
+
+if __name__ == '__main__':
+    unittest.main()

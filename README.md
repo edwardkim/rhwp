@@ -41,6 +41,14 @@ rhwp는 Rust + WebAssembly 기반의 오픈소스 HWP/HWPX 뷰어/에디터입�
   <img src="assets/screenshots/render-example-1.png" alt="rhwp 렌더링 예시 — KTX 노선도" width="700" />
 </p>
 
+## 0.9.0 배포 준비와 PDF 개발자 안내
+
+PDF를 편집 가능한 HWP/HWPX로 가져오는 기능을 CLI·Rust·WASM·Studio에서 제공합니다.
+JBIG2·JPEG 2000·ICC, 암호 인증, 자원 프로필과 취소 가능한 쪽별 진행률이 포함됩니다.
+[PDF 시작 안내](mydocs/manual/pdf_developer_onboarding.md)에서 빌드부터 첫 변환·Worker 통합까지
+따라 할 수 있습니다. [0.9.0 릴리즈 노트](mydocs/release/release_notes_v0.9.0.md)에 변경과 기여자를
+정리했습니다. 현재는 배포 준비 상태이며 crates.io 초회 게시는 별도 일정입니다.
+
 ## 로드맵
 
 혼자 뼈대를 세우고, 함께 살을 붙이고, 모두의 것으로 완성한다.

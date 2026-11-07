@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pdf_resource_policies.md
-last_verified: 2026-11-01
+last_verified: 2026-11-08
 ---
 
 # PDF 가져오기 자원 정책
@@ -11,10 +11,10 @@ last_verified: 2026-11-01
 검증하고, 작업자가 PDF를 읽어 IR 생성·Core 조판·직렬화를 수행한다. 부모는 작업자의 성공과
 응답 크기를 확인한 뒤 출력 파일을 원자적으로 교체한다. 초과·실패·시간 초과에서는 기존 출력이
 유지된다. Native는 [#8174 v2-S01](../working/task_m100_8174_v2_stage1.md), WASM·공통 Worker는
-[v2-S03](../working/task_m100_8174_v2_stage3.md)의 로컬 구현 범위이며,
+[v2-S03](../working/task_m100_8174_v2_stage3.md)에서 도입되어 devel에 통합됐으며,
 기본 코덱·ICC 등 F01–F08 전체의 완료 상태는 [보안 현황](security_feature_limits.md)을 따른다.
 아래의 표준 한도 확대는 [#8413–#8416 작업](../working/task_m100_8413_implementation.md)의
-로컬 변경이며, 이 변경의 `devel`·registry 배포 완료를 뜻하지 않는다.
+통합 결과이며 0.9.0 준비 소스에 적용된다. registry·스토어 게시 완료와는 구분한다.
 
 ## 프로필과 명시적 조정
 
@@ -62,7 +62,7 @@ rhwp import-pdf input.pdf result.hwpx --resource-limits limits.json --json
 우선 표준 프로필을 선택하고 이전에 입력한 낮은 개별 한도를 지운다. Studio는 「표준」과
 「기본 한도 사용」을 선택하고, CLI는 `--resource-profile standard`로 실행하면서 불필요한
 `--resource-limits` 파일을 제외한다. JSON은 선택한 프로필보다 높이는 수단이 아니다.
-아래 값은 이 브랜치에서 확대한 정책이며 이전 WASM/CLI에는 적용되지 않는다. Studio도
+아래 값은 0.9.0 준비 소스의 정책이며 이전 WASM/CLI에는 적용되지 않는다. Studio도
 새 WASM을 적용해야 한다. 표준에서도 다른 한도가 소진되면 원본 쪽 선택과 실제 사용량을
 확인한다. `*_UNSUPPORTED`는 자원 부족과 다른 기능 오류이므로 한도를 올려 해결하지 않는다.
 
@@ -180,7 +180,7 @@ try {
   const result = await session.importPdf(pdfBytes, options, {
     signal: abort.signal,
     timeoutMs: 30000,
-    onProgress: phase => console.log(phase),
+    onProgress: (phase, page) => console.log(phase, page),
   });
   const saved = await session.exportDocument('hwpx', { outputBytes: 8 * 1024 * 1024 });
 } finally {
@@ -191,7 +191,9 @@ try {
 호출자 options는 첫 await 전에 고정한다. 후보 Worker가 그 options의 실제 정책을 조회한 뒤
 입력 view의 private 사본을 `reserveInput`으로 예약한 다음 복사·전송한다. WASM 입력 사본도
 생성 전에 같은 요청으로 예약한다. 이전 요청의 프로필·한도를 cache해 새 요청에 재사용하지 않는다.
-`initializing`·`importing`·`ready`는 단계 통지이며 진행률 백분율이 아니다. 성공 응답까지 받아야
+`initializing`·`importing`·`ready`는 단계 통지다. `importing`의 두 번째 인자는
+`{ sourcePage, sourcePageCount, completedPages, totalPages }`이며 원본 쪽은 1-based다.
+선택 쪽 완료율은 `completedPages / totalPages`로 표시하며 이후 Core 구성·저장이 남을 수 있다. 성공 응답까지 받아야
 현재 문서를 교체한다. 기존 문서는 후보의 일반 오류·예산 초과·취소·deadline·메모리 실패 동안
 유지된다. `PDF_WORKER_MEMORY`·WASM trap은 후보를 폐기하고 다음 가져오기에서 새로 만든다.
 
@@ -213,12 +215,12 @@ backing을 할당하기 전에 한도를 확인한다. SVG 출력 backing도 성
 Worker의 기본 deadline은 초기화·정책 조회를 포함한 30초이며 `timeoutMs`로 정한다.
 CLI의 Linux CPU/주소 공간 제한을 브라우저에 적용했다고 표시하지 않는다.
 `getPdfImportRuntimeCapabilities()`는 동기 실행·복사 전 검사·host Worker 종료 요구와
-`processMemoryLimitEnforced=false`를 구분한다. 로컬 S04 Studio는 같은 정책·중단 경계를
+`processMemoryLimitEnforced=false`를 구분한다. Studio는 같은 정책·중단 경계를
 실제 열기 UI에 연결한다. Worker 세션은 inspect/render/export 수명이며 전체 편집기를 대신하지 않는다.
 
 ## Studio의 실제 열기
 
-로컬 S04는 파일·드롭·URL·host 입력의 공통 열기 경로에서 PDF를 전용 Worker로 가져온다.
+Studio는 파일·드롭·URL·host 입력의 공통 열기 경로에서 PDF를 전용 Worker로 가져온다.
 「표준」·「자원 절약」과 개별 한도는 같은 Rust 정책을 조회하며 입력 크기는 전체 파일 읽기 전에
 확인한다. 확장자 이외의 형식 확인은 1 KiB header만 먼저 읽는다. 지원 확장자의 파일 선택 규칙은 유지한다.
 실제 UI 절차는 [Studio 가이드](studio_document_features.md#pdf를-편집-문서로-열기)를 따른다.

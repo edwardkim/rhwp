@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/manual/security_feature_limits.md
-last_verified: 2026-11-07
+last_verified: 2026-11-08
 ---
 
 # 보안 제한과 기능 사용 범위
@@ -11,12 +11,10 @@ last_verified: 2026-11-07
 구분한다. [PDF 코덱 opt-in #8183](https://github.com/edwardkim/rhwp/issues/8183)은
 [PR #8190](https://github.com/edwardkim/rhwp/pull/8190), 병합 commit
 `e7a0dec55c6c6c6365e4ff50babe7583e1cf1c70`으로 `devel`에 반영됐다.
-아래는 이 병합과 #8174 v2-S01·S02·S03·S04의 **로컬 source**를 구분해 2026-10-25 현행화한 상태이며,
-0.9.0의 [crates.io 준비 #8174](../plans/crates_io_preparation_20261023.md)에서도 참조한다.
-로컬 게시 후보 버전은 0.9.0이다. 실제 registry 게시·제품 릴리즈와 전체 통합 검증은 별도이며,
-아래 목록만으로 이를 완료한 것으로 해석하지 않는다.
-#8415의 PDF 열기 암호 지원은 현재 작업 브랜치의 로컬 구현·검증 상태다.
-기존 배포본의 지원 여부와 공통 계획의 원본 127쪽 검증 완료를 의미하지 않는다.
+아래는 #8174·#8403·#8413–#8416과 #8745가 devel에 통합된 **0.9.0 준비 소스**의 상태다.
+실제 registry·스토어 게시 완료를 의미하지 않는다. #8415의 PDF 열기 암호 인증은 이 소스에
+포함되며, 모든 암호화 방식·PDF paint 조합을 지원한다는 뜻은 아니다.
+[PDF 개발자 시작 안내](pdf_developer_onboarding.md)에 설치·암호·자원 한도·Worker 예제를 정리했다.
 공식 소비 계약과 환경별 지원표는 [crates.io 가이드](crates_io_guide.md)를 따른다.
 
 ## 현재 기본값
@@ -35,11 +33,11 @@ last_verified: 2026-11-07
   codec·font·cache의 전체 내부 할당 상한을 입증했다는 주장은 구분한다.
 - backend에는 예산을 받지 않는 legacy API도 남아 있다. 아래 PDF 자원 제한은 rhwp가
   사용하는 요청 예산 경로의 계약이며, backend 공개 API 전체의 제한으로 확대하지 않는다.
-- 로컬 #8174 v2-S01은 CLI `import-pdf`의 `standard`·`constrained` 프로필과 개별 한도, 별도 작업자의
+- #8174에서 통합한 CLI `import-pdf`의 `standard`·`constrained` 프로필과 개별 한도, 별도 작업자의
   실행 감독을 연결한다. 기존 Rust 직접 호출에는 프로세스 감독이 자동 적용되지 않으며
   S03은 같은 프로필·한도를 WASM API·공통 Worker에 연결하고 복사 전 입력 검사를 적용한다.
   S04는 Studio 실제 열기의 정책·Worker·후보 재열기와 실패 시 기존 문서 보존을 연결한다. [PDF 자원 정책](pdf_resource_policies.md)에서 사용법과
-  OS별 적용 경계를 구분한다. 로컬 절편 완료와 `devel` 병합·F01–F08 전체·모든 제품의 완료는 구분한다.
+  OS별 적용 경계를 구분한다. 소스 지원과 각 버전의 실제 배포·환경별 검증 완료는 구분한다.
 
 근거: [본체 manifest](../../Cargo.toml), [PDF frontend](../../src/parser/pdf/mod.rs),
 [backend manifest](../../vendor/rhwp-pdf-import-backend/Cargo.toml),
@@ -63,7 +61,7 @@ last_verified: 2026-11-07
 
 ## 기능별 완료 범위와 남은 경계
 
-| 항목 | #8174 v2의 로컬 처리 | 남은 경계·사용 안내 |
+| 항목 | 0.9.0 준비 소스의 처리 | 남은 경계·사용 안내 |
 | --- | --- | --- |
 | F01·F02 — JBIG2·JPEG 2000 | 기본 포함으로 전환했다. 기존 코덱 예산을 유지하고 PDF Indexed+내장 mask·CMYK+alpha의 실제 조합을 확대했다. | 모든 JP2 channel 정의·bit depth·subsampling 조합을 보장하지 않는다. 명시적인 개발용 제외 빌드와 실제 산출물 지원 조회를 구분한다. |
 | F03 — ICC CMM | 기본 `pdf-icc`로 순수 Rust qcms의 Gray·RGB·CMYK 변환을 이미지·JPEG·Indexed palette·path에 적용하고 alpha를 보존한다. profile·compiled transform을 요청 안에서 cache하며 데이터 크기별 예약·작업을 계상한다. | 잘못되거나 CMM이 지원하지 않는 profile은 대체 색 변환을 사용한다. 예산 초과는 성공으로 숨기지 않는다. 고정 내부 할당을 포함한 전체 heap 증명은 아니다. |
@@ -159,7 +157,7 @@ CLI·공통 자원 정책은 [v2-S01](../working/task_m100_8174_v2_stage1.md), �
   따르며 다른 OS·부모·동시 요청의 보호 완료로 확대하지 않는다.
   `info`·`export-svg`·`convert` 등 PDF를 공통 로더로 여는 다른 CLI 명령은 현재 프로세스에서
   실행하므로 `import-pdf` 작업자의 감독 범위에 포함하지 않는다.
-- **동기 호출의 중단:** 직접 `HwpDocument.importPdf()`는 동기 호출이다. 로컬 S04 Studio는
+- **동기 호출의 중단:** 직접 `HwpDocument.importPdf()`는 동기 호출이다. Studio는
   공통 Worker의 취소·deadline·종료 후 재생성을 실제 열기에 연결한다. 성공한 편집 문서의
   main thread 재열기는 동기식이어서 같은 스레드의 timer로 선점하지 못한다. T05에서 입력/응답
   사본의 사전 예약, 실제 남은 credit으로 편집 HWPX 재열기, 예약/읽기 경계의 협력 시간 검사와

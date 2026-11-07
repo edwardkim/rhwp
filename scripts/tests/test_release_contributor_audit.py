@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import json
+import subprocess
 import unittest
+from unittest.mock import patch
 
 from scripts.release_contributor_audit import (
     archive_pr_number,
@@ -12,10 +15,29 @@ from scripts.release_contributor_audit import (
     graphql_number_query,
     infer_github_handle,
     resolve_github_metadata,
+    run_gh,
 )
 
 
 class ReleaseContributorAuditTest(unittest.TestCase):
+    def test_partial_graphql_missing_reference_keeps_resolved_siblings(self) -> None:
+        payload = json.dumps({
+            "data": {"repository": {"item_858": None, "item_42": {"__typename": "PullRequest"}}},
+            "errors": [{"type": "NOT_FOUND", "path": ["repository", "item_858"]}],
+        }).encode()
+        with patch("subprocess.run", return_value=subprocess.CompletedProcess([], 1, payload, b"not found")):
+            self.assertEqual(run_gh(["api", "graphql"]), payload)
+
+    def test_graphql_other_errors_and_missing_repository_still_fail(self) -> None:
+        for payload in (
+            {"data": {"repository": None}, "errors": [{"type": "NOT_FOUND", "path": ["repository"]}]},
+            {"data": {"repository": {"item_858": None}}, "errors": [{"type": "FORBIDDEN", "path": ["repository", "item_858"]}]},
+            {"data": {"repository": {"item_858": None}}, "errors": [{"type": "NOT_FOUND", "path": ["repository", "item_858"]}, {"type": "RATE_LIMITED"}]},
+        ):
+            with self.subTest(payload=payload), patch("subprocess.run", return_value=subprocess.CompletedProcess([], 1, json.dumps(payload).encode(), b"error")):
+                with self.assertRaises(subprocess.CalledProcessError):
+                    run_gh(["api", "graphql"])
+
     def test_extracts_unique_references_and_coauthors(self) -> None:
         message = """Merge pull request #42
 

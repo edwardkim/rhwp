@@ -32,6 +32,10 @@ VSCode에서 HWP/HWPX 문서를 바로 열어볼 수 있는 확장 프로그램�
 | `.hwp` | 한컴오피스 한글 문서 (바이너리) |
 | `.hwpx` | 한컴오피스 한글 문서 (OOXML 기반) |
 
+0.9.0 엔진의 PDF 가져오기는 CLI·WASM·Studio에서 사용할 수 있습니다. 이 확장의 기본 파일
+연결은 위 두 형식입니다. `rhwp import-pdf input.pdf output.hwpx`로 변환한 결과를 열 수 있으며,
+[PDF 개발자 안내](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pdf_developer_onboarding.md)를 참고하세요.
+
 ## 사용법
 
 1. 확장을 설치합니다.

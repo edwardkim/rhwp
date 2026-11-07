@@ -122,6 +122,10 @@ PDF 가져오기·JBIG2·JPEG 2000·ICC 색 변환을 기본 포함하며, 손�
 파서·제품 요청·host 각각의 한도와 책임을 구분해야 합니다.
 현행 제한과 일반 미지원의 차이는
 [보안 제한 현황](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/security_feature_limits.md)에 있습니다.
+[PDF 개발자 시작 안내](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pdf_developer_onboarding.md)와
+[English quick start](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pdf_developer_onboarding_EN.md)에
+CLI·Rust·WASM·Worker 예제, 암호 입력·배치 선택·한도 오류 대응을 정리했습니다.
+
 Rust에서 직접 PDF를 가져올 때도 같은 요청 정책을 전달할 수 있습니다.
 
 ```rust
