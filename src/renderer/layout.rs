@@ -152,7 +152,7 @@ struct ColumnItemCtx<'a> {
 }
 
 impl ColumnItemCtx<'_> {
-    /// A block TAC table and its visible text tail share one paragraph ending.
+    /// 블록 TAC 표와 실제 방출된 독립 꼬리 줄은 하나의 문단 끝을 공유한다.
     /// Use the emitted items, including other columns, rather than control order.
     fn tac_text_tail_spacing_after(&self, para_index: usize) -> Option<f64> {
         let para = self.paragraphs.get(para_index)?;
@@ -188,11 +188,11 @@ impl ColumnItemCtx<'_> {
                     return false;
                 };
                 *owner == para_index && *start_line > table_line
-                    && comp.lines.get(*start_line..*end_line).is_some_and(|lines| {
+                    && (comp.lines.get(*start_line..*end_line).is_some_and(|lines| {
                         lines.iter().any(|line| line.runs.iter().any(|run| {
                             run.text.chars().any(|c| !c.is_whitespace() && c > '\u{001F}' && c != '\u{FFFC}')
                         }))
-                    })
+                    }) || stored_tac_frame::independent_stored_tail(para, *start_line, *end_line))
             })
         }).then_some(spacing)
     }
@@ -12479,29 +12479,11 @@ impl LayoutEngine {
                             };
                             // 가시 글자가 없어도 표와 다른 저장 줄은 자기 높이·간격을 소유한다.
                             // 실제 TAC 소유 줄의 끝 뒤에서 시작하는 원본 꼬리는 표 밴드의 사본이 아니다.
-                            let independent_stored_tail = para
-                                .line_segs
-                                .get(*start_line..*end_line)
-                                .filter(|segs| !segs.is_empty())
-                                .is_some_and(|segs| {
-                                    segs.iter().all(|seg| {
-                                        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                                            && seg.line_height > 0
-                                    }) && para.controls.iter().enumerate().all(|(ci, control)| {
-                                        if !matches!(control, Control::Table(table) if table.common.treat_as_char) {
-                                            return true;
-                                        }
-                                        control_line_seg_index(para, ci)
-                                            .filter(|line| *line < *start_line)
-                                            .and_then(|line| para.line_segs.get(line))
-                                            .is_some_and(|host| {
-                                                i64::from(segs[0].vertical_pos)
-                                                    >= i64::from(host.vertical_pos)
-                                                        + i64::from(host.line_height)
-                                                        + i64::from(host.line_spacing)
-                                            })
-                                    })
-                                });
+                            let independent_stored_tail = stored_tac_frame::independent_stored_tail(
+                                para,
+                                *start_line,
+                                *end_line,
+                            );
                             // 저장 줄이 없는 host도 프레임이 표와 꼬리 기준 문자를
                             // 서로 다른 물리 줄에 배정했으면 그 줄의 전진을 보존한다.
                             // 같은 가시 char_start를 가진다는 이유로 표 줄과 합치지 않는다.
@@ -15551,7 +15533,10 @@ impl LayoutEngine {
                     .map(|c| c.para_style_id as usize)
                     .unwrap_or(para.para_shape_id as usize);
                 if let Some(para_style) = styles.para_styles.get(para_style_id) {
-                    if para_style.spacing_after > 0.0 && (is_tac || !host_after_consumed) {
+                    if para_style.spacing_after > 0.0
+                        && (is_tac || !host_after_consumed)
+                        && ctx.tac_text_tail_spacing_after(para_index).is_none()
+                    {
                         y_offset += para_style.spacing_after;
                     }
                 }

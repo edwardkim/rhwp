@@ -1,3 +1,8 @@
+//! 관계형·고정형: TAC 표·글줄·문단 테두리의 소유와 독립 Print의 기존 좌표 계약.
+//! 주석 갱신: 2026-11-08T06:49:27+09:00; 직전 파일 변경: `552f5228d2dbfd6046c838f14241704f1bcb8a05` (Git 시각 2026-10-13T01:25:14+09:00).
+//! 새 공백 꼬리 검사는 기존 공개 저장본에서 메모리로 만든 합성 계약이며 한컴 저장본의
+//! 조판 일치율이나 절대 페이지 좌표를 기대값으로 고정하지 않는다. 간격의 소유·변화량을 검사한다.
+//! 공개 fixture의 기존 고정 검증 근거와 합성 입력의 생성·적용 범위는 아래 주석을 따른다.
 //! 내용에 따라 커진 TAC 표 다음 줄은 실제 표 흐름을 이어받는다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -170,6 +175,59 @@ fn render(
     let mut nodes = Vec::new();
     collect(&tree.root, &mut nodes);
     nodes
+}
+
+#[test]
+fn paragraph_after_spacing_follows_its_independent_whitespace_tail() {
+    for profile in ["native", "pure"] {
+        let mut positions = Vec::new();
+        for spacing_hu in [0, 600, 1200] {
+            // 기존 합성 계약을 사용한다. Footer의 길이는 보존하고 잉크만 없애
+            // 글자의 가시성과 독립 줄의 물리 소유를 구분한다.
+            let mut core = DocumentCore::from_bytes(&fixture_bytes(profile, 2, 0, false))
+                .expect("합성 저장 흐름 계약");
+            let mut doc = core.document().clone();
+            let host = &mut doc.sections[0].paragraphs[1];
+            assert!(host.text.contains("Footer"));
+            host.text = host.text.replace("Footer", "      ");
+            let mut shape = doc.doc_info.para_shapes[host.para_shape_id as usize].clone();
+            shape.spacing_after = spacing_hu * 2;
+            host.para_shape_id = doc.doc_info.para_shapes.len() as u16;
+            doc.doc_info.para_shapes.push(shape);
+            let mut following = rhwp::model::paragraph::Paragraph::new_empty();
+            following.insert_text_at(0, "Following");
+            following.char_shapes = vec![rhwp::model::paragraph::CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }];
+            following.line_segs.clear();
+            doc.sections[0].paragraphs.push(following);
+            core.set_document(doc);
+            let tree = core.build_page_render_tree(0).expect("실제 항목 배치");
+            let mut nodes = Vec::new();
+            collect(&tree.root, &mut nodes);
+            let tail = nodes
+                .iter()
+                .filter(|node| {
+                    matches!(&node.node_type, RenderNodeType::TextLine(line)
+                    if line.para_index == Some(1) && line.line_index == Some(2))
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(tail.len(), 1, "공백 꼬리도 독립된 물리 줄로 방출한다");
+            positions.push((tail[0].bbox.y, text(&nodes, "Following").y));
+        }
+        for (index, &(tail, following)) in positions.iter().enumerate() {
+            assert!(
+                (tail - positions[0].0).abs() < 0.5,
+                "문단 아래 간격은 자기 공백 꼬리를 움직이지 않는다: {profile} {positions:?}"
+            );
+            let after = rhwp::renderer::hwpunit_to_px(index as i32 * 600, 96.0);
+            assert!(
+                (following - positions[0].1 - after).abs() < 0.5,
+                "아래 간격은 공백 꼬리 뒤에 한 번만 소비한다: {profile} {positions:?}"
+            );
+        }
+    }
 }
 
 #[test]

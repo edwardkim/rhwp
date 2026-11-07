@@ -57,3 +57,37 @@ pub(super) fn companion_table_top(
 ) -> f64 {
     (line_top + owner_om_top + (owner_h - table_h) * 0.85).max(line_top)
 }
+
+/// 방출된 뒤 조각이 표와 다른 실제 저장 줄을 소유하는지 확인한다.
+/// 공백·제어뿐인 줄도 높이와 문단 끝 간격을 소유하며 표 밴드의 사본과 구분한다.
+pub(super) fn independent_stored_tail(
+    para: &crate::model::paragraph::Paragraph,
+    start: usize,
+    end: usize,
+) -> bool {
+    use crate::model::{control::Control, paragraph::LineSeg};
+    let Some(lines) = para
+        .line_segs
+        .get(start..end)
+        .filter(|lines| !lines.is_empty())
+    else {
+        return false;
+    };
+    lines
+        .iter()
+        .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0 && line.line_height > 0)
+        && para.controls.iter().enumerate().all(|(index, control)| {
+            if !matches!(control, Control::Table(table) if table.common.treat_as_char) {
+                return true;
+            }
+            super::control_line_seg_index(para, index)
+                .filter(|line| *line < start)
+                .and_then(|line| para.line_segs.get(line))
+                .is_some_and(|host| {
+                    i64::from(lines[0].vertical_pos)
+                        >= i64::from(host.vertical_pos)
+                            + i64::from(host.line_height)
+                            + i64::from(host.line_spacing)
+                })
+        })
+}
