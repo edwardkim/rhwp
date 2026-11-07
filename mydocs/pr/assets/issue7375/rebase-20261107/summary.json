@@ -1,0 +1,2750 @@
+{
+  "before_head": "55e70d0cbee777b77f2e89e409ae46c747ee540a",
+  "base": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+  "candidate_head": "2b2e8cfd4065cf4c6cc7d55fe8c3aab7659275f2",
+  "scope": "이 리베이스의 frozen 2b2e8cfd producer 비교이며 이후 과학 문서 미커밋 보정의 전체 검증으로 재사용하지 않는다.",
+  "conditions": 118,
+  "page_instances": 4568,
+  "comparison_conditions": 76,
+  "drops_over_0_1pp": 0,
+  "records": [
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "incoming-8555",
+      "expected_pages": 4,
+      "minimum": 98.7448,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/incoming-8555-silhouette.tsv",
+      "tsv_sha256": "bbfe6c579fd2f0d23d77e71462c54e7c3d7515fba3b3201c19db6a0f107a3ab6",
+      "below98": []
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "incoming-8556",
+      "expected_pages": 5,
+      "minimum": 98.93199,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/incoming-8556-silhouette.tsv",
+      "tsv_sha256": "83a171fc394e186a1d6ed48121efeff240836830d017ba6d6e3406ba7851239a",
+      "below98": []
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "incoming-8557",
+      "expected_pages": 4,
+      "minimum": 98.84129,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/incoming-8557-silhouette.tsv",
+      "tsv_sha256": "6ab7b1d519688cbc6cddbf0802612e3120e886e4d7cd861aa4f49d3c27295753",
+      "below98": []
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "leading-original",
+      "expected_pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/leading-original-silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "below98": []
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "incoming-8555",
+      "expected_pages": 4,
+      "minimum": 98.74711,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/incoming-8555-silhouette.tsv",
+      "tsv_sha256": "6b3dc17c723c7a9f629e6cbe7ffc0de4da9ed6830cc5652fe86d777b39c50cea",
+      "below98": []
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "incoming-8556",
+      "expected_pages": 5,
+      "minimum": 98.9299,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/incoming-8556-silhouette.tsv",
+      "tsv_sha256": "83a171fc394e186a1d6ed48121efeff240836830d017ba6d6e3406ba7851239a",
+      "below98": []
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "incoming-8557",
+      "expected_pages": 4,
+      "minimum": 98.84344,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/incoming-8557-silhouette.tsv",
+      "tsv_sha256": "290cc23efafa4309c81fc465476dcbe86e580ca6a72a95a9f5e910fda6b42768",
+      "below98": []
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "leading-original",
+      "expected_pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/leading-original-silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "incoming-8555",
+      "expected_pages": 4,
+      "minimum": 98.7448,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/incoming-8555-silhouette.tsv",
+      "tsv_sha256": "bbfe6c579fd2f0d23d77e71462c54e7c3d7515fba3b3201c19db6a0f107a3ab6",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "incoming-8556",
+      "expected_pages": 5,
+      "minimum": 98.93199,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/incoming-8556-silhouette.tsv",
+      "tsv_sha256": "83a171fc394e186a1d6ed48121efeff240836830d017ba6d6e3406ba7851239a",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "incoming-8557",
+      "expected_pages": 4,
+      "minimum": 98.84129,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/incoming-8557-silhouette.tsv",
+      "tsv_sha256": "6ab7b1d519688cbc6cddbf0802612e3120e886e4d7cd861aa4f49d3c27295753",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "leading-original",
+      "expected_pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/leading-original-silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "incoming-8555",
+      "expected_pages": 4,
+      "minimum": 98.74711,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/incoming-8555-silhouette.tsv",
+      "tsv_sha256": "6b3dc17c723c7a9f629e6cbe7ffc0de4da9ed6830cc5652fe86d777b39c50cea",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "incoming-8556",
+      "expected_pages": 5,
+      "minimum": 98.9299,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/incoming-8556-silhouette.tsv",
+      "tsv_sha256": "83a171fc394e186a1d6ed48121efeff240836830d017ba6d6e3406ba7851239a",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "incoming-8557",
+      "expected_pages": 4,
+      "minimum": 98.84344,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/incoming-8557-silhouette.tsv",
+      "tsv_sha256": "290cc23efafa4309c81fc465476dcbe86e580ca6a72a95a9f5e910fda6b42768",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "leading-original",
+      "expected_pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/leading-original-silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "below98": []
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "delegation7700",
+      "expected_pages": 103,
+      "minimum": 53.57607,
+      "exit_code": 1,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/delegation7700-silhouette.tsv",
+      "tsv_sha256": "338d7ab9c4341b5bbf527621238eadbb5fb177763992596cf59b3fd4cdb5aa9e",
+      "below98": [
+        [
+          9,
+          97.91001
+        ],
+        [
+          19,
+          72.89079
+        ],
+        [
+          25,
+          97.006
+        ],
+        [
+          26,
+          65.74957
+        ],
+        [
+          27,
+          62.91973
+        ],
+        [
+          30,
+          54.59682
+        ],
+        [
+          31,
+          67.8331
+        ],
+        [
+          32,
+          53.57607
+        ],
+        [
+          33,
+          63.99319
+        ],
+        [
+          44,
+          97.75656
+        ],
+        [
+          51,
+          94.75432
+        ],
+        [
+          76,
+          65.78811
+        ],
+        [
+          86,
+          96.6876
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "prime-width",
+      "expected_pages": 3,
+      "minimum": 96.16576,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/prime-width-silhouette.tsv",
+      "tsv_sha256": "839885262c7d8a617893b22535f20cb874f9e9f2b31a9ee754de229c607e8a27",
+      "below98": [
+        [
+          3,
+          96.16576
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "rowbreak8539",
+      "expected_pages": 3,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/rowbreak8539-silhouette.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "below98": []
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "science",
+      "expected_pages": 4,
+      "minimum": 97.11476,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/science-silhouette.tsv",
+      "tsv_sha256": "3edeab509c4301ba67fa4eb6f6bf1f5a5dc77c6bea87c0ef7b5acf2fc436d6fe",
+      "below98": [
+        [
+          4,
+          97.11476
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "nov-resaved",
+      "expected_pages": 21,
+      "minimum": 33.69843,
+      "exit_code": 1,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/nov-resaved-silhouette.tsv",
+      "tsv_sha256": "2eb787068fbab9d833b6f261838cb5d5b77332913764a0c4e049a1d52c1600b4",
+      "below98": [
+        [
+          8,
+          88.68659
+        ],
+        [
+          10,
+          95.90752
+        ],
+        [
+          11,
+          53.37365
+        ],
+        [
+          12,
+          47.57923
+        ],
+        [
+          17,
+          94.69437
+        ],
+        [
+          18,
+          42.47983
+        ],
+        [
+          19,
+          33.69843
+        ],
+        [
+          20,
+          34.68696
+        ],
+        [
+          21,
+          63.77121
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "nov-original",
+      "expected_pages": 21,
+      "minimum": 98.74208,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/nov-original-silhouette.tsv",
+      "tsv_sha256": "fc7fdc4acb5016454c8f6b4b6f5c02294bc0e68d161397db0cf6d45ed2868a9a",
+      "below98": []
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "rectangles",
+      "expected_pages": 50,
+      "minimum": 98.31507,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/rectangles-silhouette.tsv",
+      "tsv_sha256": "363390f0ef544bbde7e8465ddda8cf8fa85adeafc29e38c93a38ccdcec4ec15d",
+      "below98": []
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "staggered7",
+      "expected_pages": 7,
+      "minimum": 99.61307,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/staggered7-silhouette.tsv",
+      "tsv_sha256": "a4e8d6ac48df539cffceab83ada8feeec4e1cb375acf9f22f5e4d1c7aeb5f512",
+      "below98": []
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "cbta7727",
+      "expected_pages": 204,
+      "minimum": 92.33573,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/cbta7727-silhouette.tsv",
+      "tsv_sha256": "be07e6d41835973972e40e0f799b49bfe1e2de1acb70e0121f6fa5de735cc5ec",
+      "below98": [
+        [
+          31,
+          97.80726
+        ],
+        [
+          48,
+          92.33573
+        ],
+        [
+          51,
+          97.54584
+        ],
+        [
+          59,
+          96.82952
+        ],
+        [
+          96,
+          97.06062
+        ],
+        [
+          118,
+          96.81844
+        ],
+        [
+          162,
+          96.34913
+        ],
+        [
+          166,
+          96.76253
+        ],
+        [
+          176,
+          97.45133
+        ],
+        [
+          182,
+          96.23471
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "electrical7728",
+      "expected_pages": 18,
+      "minimum": 16.84183,
+      "exit_code": 1,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/electrical7728-silhouette.tsv",
+      "tsv_sha256": "441c8b52dadc2788916e78c45ec061985c8d61904de382956438ddfefc091ca6",
+      "below98": [
+        [
+          4,
+          96.2371
+        ],
+        [
+          5,
+          54.39305
+        ],
+        [
+          6,
+          49.85681
+        ],
+        [
+          7,
+          49.35093
+        ],
+        [
+          9,
+          57.11636
+        ],
+        [
+          10,
+          16.84183
+        ],
+        [
+          12,
+          96.5452
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "giant4138",
+      "expected_pages": 197,
+      "minimum": 89.85554,
+      "exit_code": 1,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/giant4138-silhouette.tsv",
+      "tsv_sha256": "65875d2bffd7b7aece0b9fff779470cf09891da3bc0f2f780eb313a52aff12cf",
+      "below98": [
+        [
+          21,
+          95.85474
+        ],
+        [
+          30,
+          91.17674
+        ],
+        [
+          44,
+          97.84052
+        ],
+        [
+          90,
+          89.85554
+        ],
+        [
+          120,
+          95.84016
+        ],
+        [
+          129,
+          94.80749
+        ],
+        [
+          130,
+          95.92124
+        ],
+        [
+          177,
+          93.17983
+        ],
+        [
+          189,
+          94.40936
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "pii5846",
+      "expected_pages": 66,
+      "minimum": 96.87702,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/pii5846-silhouette.tsv",
+      "tsv_sha256": "4b9833dc0d8bdc209ed87c3f667c0591aef6d0edd374383f7455d135c80009ab",
+      "below98": [
+        [
+          32,
+          96.87702
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "lpg71352",
+      "expected_pages": 48,
+      "minimum": 96.84314,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/lpg71352-silhouette.tsv",
+      "tsv_sha256": "16f590c95cc9c86c68aea587e6c7de82693080d93a0aa4749fc7725abd3df991",
+      "below98": [
+        [
+          2,
+          96.84314
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "clip5587",
+      "expected_pages": 4,
+      "minimum": 88.23109,
+      "exit_code": 1,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/clip5587-silhouette.tsv",
+      "tsv_sha256": "5cba6ea616f05d76f39770358a91ab37d36f69d77721b78da81f068dc0996ba9",
+      "below98": [
+        [
+          1,
+          94.84051
+        ],
+        [
+          3,
+          88.23109
+        ],
+        [
+          4,
+          97.01124
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "textbox-control",
+      "expected_pages": 1,
+      "minimum": 91.10022,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/textbox-control-silhouette.tsv",
+      "tsv_sha256": "ee17049e6ba21fbde235c09f1e96e7514fe52ffc9e2f9a44565f184007d877d1",
+      "below98": [
+        [
+          1,
+          91.10022
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "textbox-repro",
+      "expected_pages": 1,
+      "minimum": 91.21255,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/textbox-repro-silhouette.tsv",
+      "tsv_sha256": "047ed272a4c3248f8271d87a5b6a6236fc2ce50dcf4fb647614f7f2698694c46",
+      "below98": [
+        [
+          1,
+          91.21255
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "key": "textbox-used",
+      "expected_pages": 1,
+      "minimum": 91.21255,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/native/textbox-used-silhouette.tsv",
+      "tsv_sha256": "047ed272a4c3248f8271d87a5b6a6236fc2ce50dcf4fb647614f7f2698694c46",
+      "below98": [
+        [
+          1,
+          91.21255
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "delegation7700",
+      "expected_pages": 103,
+      "minimum": 53.56876,
+      "exit_code": 1,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/delegation7700-silhouette.tsv",
+      "tsv_sha256": "151cc39b7c47ee699508705b17d32a3df25428065de1fe7190e9455bc9357d97",
+      "below98": [
+        [
+          9,
+          97.90146
+        ],
+        [
+          19,
+          72.8778
+        ],
+        [
+          25,
+          96.99652
+        ],
+        [
+          26,
+          65.74189
+        ],
+        [
+          27,
+          62.88737
+        ],
+        [
+          30,
+          54.58009
+        ],
+        [
+          31,
+          67.81938
+        ],
+        [
+          32,
+          53.56876
+        ],
+        [
+          33,
+          63.98813
+        ],
+        [
+          44,
+          97.75547
+        ],
+        [
+          51,
+          94.75587
+        ],
+        [
+          76,
+          66.21496
+        ],
+        [
+          86,
+          96.68846
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "prime-width",
+      "expected_pages": 3,
+      "minimum": 96.26274,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/prime-width-silhouette.tsv",
+      "tsv_sha256": "d36ebcfc4dea82219b38654511872cbd4bdefa9d4ef7972412433ef1f3a7ca46",
+      "below98": [
+        [
+          3,
+          96.26274
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "rowbreak8539",
+      "expected_pages": 3,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/rowbreak8539-silhouette.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "below98": []
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "science",
+      "expected_pages": 4,
+      "minimum": 96.91927,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/science-silhouette.tsv",
+      "tsv_sha256": "cbd6d531d1954742ff00366ca3f80baf124db37fb1a31879426464935f9213e3",
+      "below98": [
+        [
+          4,
+          96.91927
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "nov-resaved",
+      "expected_pages": 21,
+      "minimum": 33.49969,
+      "exit_code": 1,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/nov-resaved-silhouette.tsv",
+      "tsv_sha256": "42572aea6b191fd0f0e31624125f44f5359d8ef9ab02483edb41bb910ee70821",
+      "below98": [
+        [
+          8,
+          88.73095
+        ],
+        [
+          10,
+          95.93618
+        ],
+        [
+          11,
+          53.8624
+        ],
+        [
+          12,
+          47.84848
+        ],
+        [
+          17,
+          94.82563
+        ],
+        [
+          18,
+          42.37567
+        ],
+        [
+          19,
+          33.49969
+        ],
+        [
+          20,
+          34.60043
+        ],
+        [
+          21,
+          63.61457
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "nov-original",
+      "expected_pages": 21,
+      "minimum": 98.77719,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/nov-original-silhouette.tsv",
+      "tsv_sha256": "a43b24684f6bcaaab2815670bbdcb47e2a8f96427daffcabbe09dc4533761a31",
+      "below98": []
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "rectangles",
+      "expected_pages": 50,
+      "minimum": 98.32714,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/rectangles-silhouette.tsv",
+      "tsv_sha256": "9629baea6ce93e0841d22028a5920c97b43dbf08fe8fe0d5d94c5722b216eb66",
+      "below98": []
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "staggered7",
+      "expected_pages": 7,
+      "minimum": 99.61347,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/staggered7-silhouette.tsv",
+      "tsv_sha256": "a9cc0698ad8f56d6804a8e141d8f21a42ae33080bfe3362bcf83e62cfe1cdf93",
+      "below98": []
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "cbta7727",
+      "expected_pages": 204,
+      "minimum": 92.30842,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/cbta7727-silhouette.tsv",
+      "tsv_sha256": "628f60a519dac3bbf08b01a6851bca397f41cb0e8f5c8f5cae70b3d403281370",
+      "below98": [
+        [
+          31,
+          97.80753
+        ],
+        [
+          48,
+          92.30842
+        ],
+        [
+          51,
+          97.54507
+        ],
+        [
+          59,
+          96.63383
+        ],
+        [
+          96,
+          97.09909
+        ],
+        [
+          118,
+          96.8144
+        ],
+        [
+          162,
+          96.34599
+        ],
+        [
+          166,
+          96.75637
+        ],
+        [
+          176,
+          97.45629
+        ],
+        [
+          182,
+          96.23239
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "electrical7728",
+      "expected_pages": 18,
+      "minimum": 16.65153,
+      "exit_code": 1,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/electrical7728-silhouette.tsv",
+      "tsv_sha256": "45f4ee42e052ab2f11bb7b1991e6255f6331bb6efdd09940bd7af9fd3f0b4632",
+      "below98": [
+        [
+          4,
+          96.3278
+        ],
+        [
+          5,
+          54.19363
+        ],
+        [
+          6,
+          49.77876
+        ],
+        [
+          7,
+          49.23495
+        ],
+        [
+          9,
+          57.58113
+        ],
+        [
+          10,
+          16.65153
+        ],
+        [
+          12,
+          96.53672
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "giant4138",
+      "expected_pages": 197,
+      "minimum": 90.20277,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/giant4138-silhouette.tsv",
+      "tsv_sha256": "26ccf112f69dc48afd52faf889a045601308b6f9686acf178574d01af91b2031",
+      "below98": [
+        [
+          21,
+          95.83624
+        ],
+        [
+          30,
+          91.29951
+        ],
+        [
+          44,
+          97.89153
+        ],
+        [
+          90,
+          90.20277
+        ],
+        [
+          120,
+          95.90529
+        ],
+        [
+          129,
+          95.01678
+        ],
+        [
+          130,
+          95.95032
+        ],
+        [
+          177,
+          93.52212
+        ],
+        [
+          189,
+          94.55266
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "pii5846",
+      "expected_pages": 66,
+      "minimum": 96.8704,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/pii5846-silhouette.tsv",
+      "tsv_sha256": "87f2336900a0f37402de17ca8e0b1ab7bcbecf08ebb2fe292cf4085ed9d78b47",
+      "below98": [
+        [
+          32,
+          96.8704
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "lpg71352",
+      "expected_pages": 48,
+      "minimum": 96.82867,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/lpg71352-silhouette.tsv",
+      "tsv_sha256": "3f04c6554855eb0a000b39f9d9805dab855e2f2544161ff7a2236e820d4c61c9",
+      "below98": [
+        [
+          2,
+          96.82867
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "clip5587",
+      "expected_pages": 4,
+      "minimum": 88.27702,
+      "exit_code": 1,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/clip5587-silhouette.tsv",
+      "tsv_sha256": "1cd4bdf1885f9497d33dd76239fac23e744386a7d2e93b297b8b9f2e182f5932",
+      "below98": [
+        [
+          1,
+          94.44102
+        ],
+        [
+          3,
+          88.27702
+        ],
+        [
+          4,
+          96.98833
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "textbox-control",
+      "expected_pages": 1,
+      "minimum": 91.14414,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/textbox-control-silhouette.tsv",
+      "tsv_sha256": "060b0aa1600841a1a9d5e5f7f1bd56656f7b0b603ed49616808e688b53b64591",
+      "below98": [
+        [
+          1,
+          91.14414
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "textbox-repro",
+      "expected_pages": 1,
+      "minimum": 91.10704,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/textbox-repro-silhouette.tsv",
+      "tsv_sha256": "da40479ff24a0387ad829b7dd8253c75defbc70bb1b160a3c8d6bc778e3be062",
+      "below98": [
+        [
+          1,
+          91.10704
+        ]
+      ]
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "key": "textbox-used",
+      "expected_pages": 1,
+      "minimum": 91.10704,
+      "exit_code": 0,
+      "producer_binary_sha256": "454274ca404550927879ce961909fe1c8d2b3906f187900e253daed2d3fb8cdf",
+      "tsv_path": "base/wasm/textbox-used-silhouette.tsv",
+      "tsv_sha256": "da40479ff24a0387ad829b7dd8253c75defbc70bb1b160a3c8d6bc778e3be062",
+      "below98": [
+        [
+          1,
+          91.10704
+        ]
+      ]
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "delegation7700",
+      "expected_pages": 103,
+      "minimum": 99.21307,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/delegation7700-silhouette.tsv",
+      "tsv_sha256": "13d63ae498186249f9d133c954826aa53fb163e010f0abb978b9346d61d4a670",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "prime-width",
+      "expected_pages": 3,
+      "minimum": 99.95925,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/prime-width-silhouette.tsv",
+      "tsv_sha256": "4df1442ab7fb96d5a87c082a5bd464b150564fd9ade88176f44bcbfb5d88e3df",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "rowbreak8539",
+      "expected_pages": 3,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/rowbreak8539-silhouette.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "science",
+      "expected_pages": 4,
+      "minimum": 97.11295,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/science-silhouette.tsv",
+      "tsv_sha256": "3edeab509c4301ba67fa4eb6f6bf1f5a5dc77c6bea87c0ef7b5acf2fc436d6fe",
+      "below98": [
+        [
+          4,
+          97.11295
+        ]
+      ]
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "nov-resaved",
+      "expected_pages": 21,
+      "minimum": 99.03784,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/nov-resaved-silhouette.tsv",
+      "tsv_sha256": "51604357d787e42752b1ded35fd41ddb4bb10ba2dc944982f7647141ec9aedee",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "nov-original",
+      "expected_pages": 21,
+      "minimum": 98.78573,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/nov-original-silhouette.tsv",
+      "tsv_sha256": "ce28e8efdaea71f7e2b8b5ae7085c7fdf4bfab7b090993147d59605f1a23c990",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "rectangles",
+      "expected_pages": 50,
+      "minimum": 98.31507,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/rectangles-silhouette.tsv",
+      "tsv_sha256": "c294053119a24434a8f0956421b70250ad03b7ec3afca36ae6af021d962590b0",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "staggered7",
+      "expected_pages": 7,
+      "minimum": 99.61307,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/staggered7-silhouette.tsv",
+      "tsv_sha256": "a4e8d6ac48df539cffceab83ada8feeec4e1cb375acf9f22f5e4d1c7aeb5f512",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "cbta7727",
+      "expected_pages": 204,
+      "minimum": 96.23471,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/cbta7727-silhouette.tsv",
+      "tsv_sha256": "5096e67fdb59c51b71e12f9b8659ab9a71239279f665f03f8fba7ba65abec491",
+      "below98": [
+        [
+          96,
+          97.06062
+        ],
+        [
+          118,
+          96.81844
+        ],
+        [
+          162,
+          96.34913
+        ],
+        [
+          166,
+          96.76253
+        ],
+        [
+          176,
+          97.45133
+        ],
+        [
+          182,
+          96.23471
+        ]
+      ]
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "electrical7728",
+      "expected_pages": 18,
+      "minimum": 98.83905,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/electrical7728-silhouette.tsv",
+      "tsv_sha256": "428a7f0bf674114ad332922ae47fc8dbed1d9bd3b8056628a01c288e90ac0036",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "giant4138",
+      "expected_pages": 197,
+      "minimum": 98.47416,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/giant4138-silhouette.tsv",
+      "tsv_sha256": "a44da144e8ade25fda5f7bf9991e27c5a76662b9eb549e20572dc1fc8a94df0a",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "pii5846",
+      "expected_pages": 66,
+      "minimum": 99.2155,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/pii5846-silhouette.tsv",
+      "tsv_sha256": "468911a4727479ebb9dcc78f2d96cb682885eec72a5143e92d7109a0a529141e",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "lpg71352",
+      "expected_pages": 48,
+      "minimum": 96.84314,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/lpg71352-silhouette.tsv",
+      "tsv_sha256": "16f590c95cc9c86c68aea587e6c7de82693080d93a0aa4749fc7725abd3df991",
+      "below98": [
+        [
+          2,
+          96.84314
+        ]
+      ]
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "clip5587",
+      "expected_pages": 4,
+      "minimum": 91.80504,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/clip5587-silhouette.tsv",
+      "tsv_sha256": "3b349600569e8f533f750831bec28e2eb3e33ca63f9e5a6db84797beee90334e",
+      "below98": [
+        [
+          1,
+          94.84134
+        ],
+        [
+          3,
+          91.80504
+        ],
+        [
+          4,
+          97.01124
+        ]
+      ]
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "textbox-control",
+      "expected_pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/textbox-control-silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "textbox-repro",
+      "expected_pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/textbox-repro-silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "native",
+      "key": "textbox-used",
+      "expected_pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/native/textbox-used-silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "delegation7700",
+      "expected_pages": 103,
+      "minimum": 99.21221,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/delegation7700-silhouette.tsv",
+      "tsv_sha256": "a30deb9ff0582fb05b75f0d2a380ae8830df08eb0592d3c28a0191343a1b69f8",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "prime-width",
+      "expected_pages": 3,
+      "minimum": 99.99209,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/prime-width-silhouette.tsv",
+      "tsv_sha256": "49d8e930c6a75ed4a4b8cbf9909313748f38f34f7802df8b35e96316dfb3a548",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "rowbreak8539",
+      "expected_pages": 3,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/rowbreak8539-silhouette.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "science",
+      "expected_pages": 4,
+      "minimum": 96.91722,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/science-silhouette.tsv",
+      "tsv_sha256": "cbd6d531d1954742ff00366ca3f80baf124db37fb1a31879426464935f9213e3",
+      "below98": [
+        [
+          4,
+          96.91722
+        ]
+      ]
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "nov-resaved",
+      "expected_pages": 21,
+      "minimum": 99.02441,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/nov-resaved-silhouette.tsv",
+      "tsv_sha256": "4616c1d8fef3c741716b1bb22325898392ccc0cc3bba4623fc1add62245b96af",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "nov-original",
+      "expected_pages": 21,
+      "minimum": 98.77719,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/nov-original-silhouette.tsv",
+      "tsv_sha256": "bd35851e47122a547614c39a8431d7be263ff53d98b15903dfb8635ad2ed1719",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "rectangles",
+      "expected_pages": 50,
+      "minimum": 98.32714,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/rectangles-silhouette.tsv",
+      "tsv_sha256": "2096f01a45629255dee11aaab119724be5bfb969cd9f2a005f45c8cfa5e5ba81",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "staggered7",
+      "expected_pages": 7,
+      "minimum": 99.61347,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/staggered7-silhouette.tsv",
+      "tsv_sha256": "a9cc0698ad8f56d6804a8e141d8f21a42ae33080bfe3362bcf83e62cfe1cdf93",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "cbta7727",
+      "expected_pages": 204,
+      "minimum": 96.23239,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/cbta7727-silhouette.tsv",
+      "tsv_sha256": "6566d32b6e96f0563807b663d49ad44fa91b977f715a60f5f746cd6a36317a0f",
+      "below98": [
+        [
+          96,
+          97.09909
+        ],
+        [
+          118,
+          96.8144
+        ],
+        [
+          162,
+          96.34599
+        ],
+        [
+          166,
+          96.75637
+        ],
+        [
+          176,
+          97.45629
+        ],
+        [
+          182,
+          96.23239
+        ]
+      ]
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "electrical7728",
+      "expected_pages": 18,
+      "minimum": 98.83565,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/electrical7728-silhouette.tsv",
+      "tsv_sha256": "df853ac4e82cd1da17e63c6b18d61a1ec6c25a8209c58b21789046616b5a7a8f",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "giant4138",
+      "expected_pages": 197,
+      "minimum": 98.50155,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/giant4138-silhouette.tsv",
+      "tsv_sha256": "6bf0b101aff5734e7f2d3aeb759a6b0c45349c834eca2cf4272761cfa69f3ca4",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "pii5846",
+      "expected_pages": 66,
+      "minimum": 99.21467,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/pii5846-silhouette.tsv",
+      "tsv_sha256": "7e92e3f5043843b9057a7903670ef21b09ea4ce167d538f89151edc8e2c13c9e",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "lpg71352",
+      "expected_pages": 48,
+      "minimum": 96.82867,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/lpg71352-silhouette.tsv",
+      "tsv_sha256": "3f04c6554855eb0a000b39f9d9805dab855e2f2544161ff7a2236e820d4c61c9",
+      "below98": [
+        [
+          2,
+          96.82867
+        ]
+      ]
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "clip5587",
+      "expected_pages": 4,
+      "minimum": 92.02788,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/clip5587-silhouette.tsv",
+      "tsv_sha256": "01633fe13ff80ed7235f091eef9d7274779207b1470b8e4f05769c57226cf77a",
+      "below98": [
+        [
+          1,
+          94.44191
+        ],
+        [
+          3,
+          92.02788
+        ],
+        [
+          4,
+          96.98833
+        ]
+      ]
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "textbox-control",
+      "expected_pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/textbox-control-silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "textbox-repro",
+      "expected_pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/textbox-repro-silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "below98": []
+    },
+    {
+      "stage": "candidate",
+      "backend": "wasm",
+      "key": "textbox-used",
+      "expected_pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "c2a9f0c5d5592ef70b035d169f62e03e09c449763c550982749023ae7beede02",
+      "tsv_path": "candidate/wasm/textbox-used-silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "delegation7700",
+      "expected_pages": 103,
+      "minimum": 99.21307,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/delegation7700-silhouette.tsv",
+      "tsv_sha256": "13d63ae498186249f9d133c954826aa53fb163e010f0abb978b9346d61d4a670",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "prime-width",
+      "expected_pages": 3,
+      "minimum": 99.95925,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/prime-width-silhouette.tsv",
+      "tsv_sha256": "4df1442ab7fb96d5a87c082a5bd464b150564fd9ade88176f44bcbfb5d88e3df",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "rowbreak8539",
+      "expected_pages": 3,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/rowbreak8539-silhouette.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "science",
+      "expected_pages": 4,
+      "minimum": 97.11295,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/science-silhouette.tsv",
+      "tsv_sha256": "3edeab509c4301ba67fa4eb6f6bf1f5a5dc77c6bea87c0ef7b5acf2fc436d6fe",
+      "below98": [
+        [
+          4,
+          97.11295
+        ]
+      ]
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "nov-resaved",
+      "expected_pages": 21,
+      "minimum": 99.03784,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/nov-resaved-silhouette.tsv",
+      "tsv_sha256": "51604357d787e42752b1ded35fd41ddb4bb10ba2dc944982f7647141ec9aedee",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "nov-original",
+      "expected_pages": 21,
+      "minimum": 98.78573,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/nov-original-silhouette.tsv",
+      "tsv_sha256": "ce28e8efdaea71f7e2b8b5ae7085c7fdf4bfab7b090993147d59605f1a23c990",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "rectangles",
+      "expected_pages": 50,
+      "minimum": 98.31507,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/rectangles-silhouette.tsv",
+      "tsv_sha256": "c294053119a24434a8f0956421b70250ad03b7ec3afca36ae6af021d962590b0",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "staggered7",
+      "expected_pages": 7,
+      "minimum": 99.61307,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/staggered7-silhouette.tsv",
+      "tsv_sha256": "a4e8d6ac48df539cffceab83ada8feeec4e1cb375acf9f22f5e4d1c7aeb5f512",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "cbta7727",
+      "expected_pages": 204,
+      "minimum": 96.23471,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/cbta7727-silhouette.tsv",
+      "tsv_sha256": "5096e67fdb59c51b71e12f9b8659ab9a71239279f665f03f8fba7ba65abec491",
+      "below98": [
+        [
+          96,
+          97.06062
+        ],
+        [
+          118,
+          96.81844
+        ],
+        [
+          162,
+          96.34913
+        ],
+        [
+          166,
+          96.76253
+        ],
+        [
+          176,
+          97.45133
+        ],
+        [
+          182,
+          96.23471
+        ]
+      ]
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "electrical7728",
+      "expected_pages": 18,
+      "minimum": 98.83905,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/electrical7728-silhouette.tsv",
+      "tsv_sha256": "428a7f0bf674114ad332922ae47fc8dbed1d9bd3b8056628a01c288e90ac0036",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "giant4138",
+      "expected_pages": 197,
+      "minimum": 98.47416,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/giant4138-silhouette.tsv",
+      "tsv_sha256": "a44da144e8ade25fda5f7bf9991e27c5a76662b9eb549e20572dc1fc8a94df0a",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "pii5846",
+      "expected_pages": 66,
+      "minimum": 99.2155,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/pii5846-silhouette.tsv",
+      "tsv_sha256": "468911a4727479ebb9dcc78f2d96cb682885eec72a5143e92d7109a0a529141e",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "lpg71352",
+      "expected_pages": 48,
+      "minimum": 96.84314,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/lpg71352-silhouette.tsv",
+      "tsv_sha256": "16f590c95cc9c86c68aea587e6c7de82693080d93a0aa4749fc7725abd3df991",
+      "below98": [
+        [
+          2,
+          96.84314
+        ]
+      ]
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "clip5587",
+      "expected_pages": 4,
+      "minimum": 91.80504,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/clip5587-silhouette.tsv",
+      "tsv_sha256": "3b349600569e8f533f750831bec28e2eb3e33ca63f9e5a6db84797beee90334e",
+      "below98": [
+        [
+          1,
+          94.84134
+        ],
+        [
+          3,
+          91.80504
+        ],
+        [
+          4,
+          97.01124
+        ]
+      ]
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "textbox-control",
+      "expected_pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/textbox-control-silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "textbox-repro",
+      "expected_pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/textbox-repro-silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "native",
+      "key": "textbox-used",
+      "expected_pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/native/textbox-used-silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "delegation7700",
+      "expected_pages": 103,
+      "minimum": 99.21221,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/delegation7700-silhouette.tsv",
+      "tsv_sha256": "a30deb9ff0582fb05b75f0d2a380ae8830df08eb0592d3c28a0191343a1b69f8",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "prime-width",
+      "expected_pages": 3,
+      "minimum": 99.99209,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/prime-width-silhouette.tsv",
+      "tsv_sha256": "49d8e930c6a75ed4a4b8cbf9909313748f38f34f7802df8b35e96316dfb3a548",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "rowbreak8539",
+      "expected_pages": 3,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/rowbreak8539-silhouette.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "science",
+      "expected_pages": 4,
+      "minimum": 96.91722,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/science-silhouette.tsv",
+      "tsv_sha256": "cbd6d531d1954742ff00366ca3f80baf124db37fb1a31879426464935f9213e3",
+      "below98": [
+        [
+          4,
+          96.91722
+        ]
+      ]
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "nov-resaved",
+      "expected_pages": 21,
+      "minimum": 99.02441,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/nov-resaved-silhouette.tsv",
+      "tsv_sha256": "4616c1d8fef3c741716b1bb22325898392ccc0cc3bba4623fc1add62245b96af",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "nov-original",
+      "expected_pages": 21,
+      "minimum": 98.77719,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/nov-original-silhouette.tsv",
+      "tsv_sha256": "bd35851e47122a547614c39a8431d7be263ff53d98b15903dfb8635ad2ed1719",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "rectangles",
+      "expected_pages": 50,
+      "minimum": 98.32714,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/rectangles-silhouette.tsv",
+      "tsv_sha256": "2096f01a45629255dee11aaab119724be5bfb969cd9f2a005f45c8cfa5e5ba81",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "staggered7",
+      "expected_pages": 7,
+      "minimum": 99.61347,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/staggered7-silhouette.tsv",
+      "tsv_sha256": "a9cc0698ad8f56d6804a8e141d8f21a42ae33080bfe3362bcf83e62cfe1cdf93",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "cbta7727",
+      "expected_pages": 204,
+      "minimum": 96.23239,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/cbta7727-silhouette.tsv",
+      "tsv_sha256": "6566d32b6e96f0563807b663d49ad44fa91b977f715a60f5f746cd6a36317a0f",
+      "below98": [
+        [
+          96,
+          97.09909
+        ],
+        [
+          118,
+          96.8144
+        ],
+        [
+          162,
+          96.34599
+        ],
+        [
+          166,
+          96.75637
+        ],
+        [
+          176,
+          97.45629
+        ],
+        [
+          182,
+          96.23239
+        ]
+      ]
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "electrical7728",
+      "expected_pages": 18,
+      "minimum": 98.83565,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/electrical7728-silhouette.tsv",
+      "tsv_sha256": "df853ac4e82cd1da17e63c6b18d61a1ec6c25a8209c58b21789046616b5a7a8f",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "giant4138",
+      "expected_pages": 197,
+      "minimum": 98.50155,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/giant4138-silhouette.tsv",
+      "tsv_sha256": "6bf0b101aff5734e7f2d3aeb759a6b0c45349c834eca2cf4272761cfa69f3ca4",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "pii5846",
+      "expected_pages": 66,
+      "minimum": 99.21467,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/pii5846-silhouette.tsv",
+      "tsv_sha256": "7e92e3f5043843b9057a7903670ef21b09ea4ce167d538f89151edc8e2c13c9e",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "lpg71352",
+      "expected_pages": 48,
+      "minimum": 96.82867,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/lpg71352-silhouette.tsv",
+      "tsv_sha256": "3f04c6554855eb0a000b39f9d9805dab855e2f2544161ff7a2236e820d4c61c9",
+      "below98": [
+        [
+          2,
+          96.82867
+        ]
+      ]
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "clip5587",
+      "expected_pages": 4,
+      "minimum": 92.02788,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/clip5587-silhouette.tsv",
+      "tsv_sha256": "01633fe13ff80ed7235f091eef9d7274779207b1470b8e4f05769c57226cf77a",
+      "below98": [
+        [
+          1,
+          94.44191
+        ],
+        [
+          3,
+          92.02788
+        ],
+        [
+          4,
+          96.98833
+        ]
+      ]
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "textbox-control",
+      "expected_pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/textbox-control-silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "textbox-repro",
+      "expected_pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/textbox-repro-silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "below98": []
+    },
+    {
+      "stage": "pre",
+      "backend": "wasm",
+      "key": "textbox-used",
+      "expected_pages": 1,
+      "minimum": 100.0,
+      "exit_code": 0,
+      "producer_binary_sha256": "0a962e38169e096136fdd867682f36cbdcae9c2a512645df3a0cc5254f8937a5",
+      "tsv_path": "pre/wasm/textbox-used-silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "below98": []
+    }
+  ],
+  "comparisons": [
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "incoming-8555",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 4
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "incoming-8556",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 5
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "incoming-8557",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 4
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "leading-original",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 1
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "incoming-8555",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 4
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "incoming-8556",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 5
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "incoming-8557",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 4
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "leading-original",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 1
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "delegation7700",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 37
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "prime-width",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 0
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "rowbreak8539",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 3
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "science",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 3
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "nov-resaved",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 0
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "nov-original",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 0
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "rectangles",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 49
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "staggered7",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 7
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "cbta7727",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 196
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "electrical7728",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 11
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "giant4138",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 184
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "pii5846",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 65
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "lpg71352",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 44
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "clip5587",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 2
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "textbox-control",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 0
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "textbox-repro",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 0
+    },
+    {
+      "reference": "base",
+      "backend": "native",
+      "key": "textbox-used",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 0
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "delegation7700",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 38
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "prime-width",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 0
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "rowbreak8539",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 3
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "science",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 3
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "nov-resaved",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 0
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "nov-original",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 0
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "rectangles",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 48
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "staggered7",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 7
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "cbta7727",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 193
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "electrical7728",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 11
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "giant4138",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 184
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "pii5846",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 65
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "lpg71352",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 46
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "clip5587",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 2
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "textbox-control",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 0
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "textbox-repro",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 0
+    },
+    {
+      "reference": "base",
+      "backend": "wasm",
+      "key": "textbox-used",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 0
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "delegation7700",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 103
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "prime-width",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 3
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "rowbreak8539",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 3
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "science",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 4
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "nov-resaved",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 21
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "nov-original",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 21
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "rectangles",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 50
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "staggered7",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 7
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "cbta7727",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 204
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "electrical7728",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 18
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "giant4138",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 197
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "pii5846",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 66
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "lpg71352",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 48
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "clip5587",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 4
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "textbox-control",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 1
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "textbox-repro",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 1
+    },
+    {
+      "reference": "pre",
+      "backend": "native",
+      "key": "textbox-used",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 1
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "delegation7700",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 103
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "prime-width",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 3
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "rowbreak8539",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 3
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "science",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 4
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "nov-resaved",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 21
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "nov-original",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 21
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "rectangles",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 50
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "staggered7",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 7
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "cbta7727",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 204
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "electrical7728",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 18
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "giant4138",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 197
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "pii5846",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 66
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "lpg71352",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 48
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "clip5587",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 4
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "textbox-control",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 1
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "textbox-repro",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 1
+    },
+    {
+      "reference": "pre",
+      "backend": "wasm",
+      "key": "textbox-used",
+      "drops_over_0_1pp": [],
+      "byte_identical_pngs": 1
+    }
+  ],
+  "incoming_images": [
+    {
+      "key": "leading-saved",
+      "backend": "native",
+      "page": 1,
+      "source_manifest_sha256": "fb922d7879ce5013e93de736543b0a84c8d856ac48296b6fd5fed618568adb87",
+      "raw_png_sha256": "0f3f18ac25f912df42c083163a480a614d00c2d553cc3d7ccb7d5cb17becdc36",
+      "pdf_png_sha256": "7c9d4ed48796b9bfa2fa28f3c76b973515e01a32a9aebfcee06461e374812950",
+      "raw": 100.0,
+      "review": "incoming-pr-review/leading-saved-native-p001-review.png",
+      "review_sha256": "5addeba1aed25237251b017052e207396006519bc0929eca5bac28d1c3be31fc",
+      "overlay": "incoming-pr-review/leading-saved-native-p001-overlay.png",
+      "overlay_sha256": "633e09d32519b1cde8231064d5285990f32d1f604adf5049caf2404d24085470"
+    },
+    {
+      "key": "leading-saved",
+      "backend": "wasm",
+      "page": 1,
+      "source_manifest_sha256": "1d172e29f276b0ec9a9b9c31193750790e18b535e543f09b58a9e9f6a732b545",
+      "raw_png_sha256": "29091c028de9fe981db5941425e0c48a1b0af67d0b8fcbb5d8e33311b2305359",
+      "pdf_png_sha256": "7c9d4ed48796b9bfa2fa28f3c76b973515e01a32a9aebfcee06461e374812950",
+      "raw": 100.0,
+      "review": "incoming-pr-review/leading-saved-wasm-p001-review.png",
+      "review_sha256": "e9465e628c21f45743efacad3873072b2e5f1c3ce9e65cc4f0929342802991b6",
+      "overlay": "incoming-pr-review/leading-saved-wasm-p001-overlay.png",
+      "overlay_sha256": "916e06d0ec7beffad780af726cc3f74608c4fa74a7468fe13f8eabb8ecc2e088"
+    },
+    {
+      "key": "cell-edit",
+      "backend": "native",
+      "page": 1,
+      "source_manifest_sha256": "99fe6f7211a69a0d20a49db5c3fa788a552f579e2abcab4e3f888a77a9ad4d34",
+      "raw_png_sha256": "14b61d51f8819545c824589bf6ef3f4431c820592cd5486cdb552be6c5c15e56",
+      "pdf_png_sha256": "f65ea3aefaf5344c086043048bc0b0a8283e742d8e67a4f1dd1cb19a1ff7647d",
+      "raw": 98.7448,
+      "review": "incoming-pr-review/cell-edit-native-p001-review.png",
+      "review_sha256": "e1bdc85d58614890e1720881abff84d0b1e99fb7f163ce2989a108d1e527536b",
+      "overlay": "incoming-pr-review/cell-edit-native-p001-overlay.png",
+      "overlay_sha256": "d205ada77dc6901263c2731f437b1c7648af85a3a50d0e35da4a8cb6d3e0a102"
+    },
+    {
+      "key": "cell-edit",
+      "backend": "wasm",
+      "page": 1,
+      "source_manifest_sha256": "aadcd6c70ae8deff9201e3722d421fe32503075f630fcc31611a9a41c032a3a6",
+      "raw_png_sha256": "9132e2d24baa0f142ff8e66bc44d3da564a760088775a97c7e223ff8583cd7ad",
+      "pdf_png_sha256": "f65ea3aefaf5344c086043048bc0b0a8283e742d8e67a4f1dd1cb19a1ff7647d",
+      "raw": 98.74711,
+      "review": "incoming-pr-review/cell-edit-wasm-p001-review.png",
+      "review_sha256": "6a3624299fe2f81db75448d114f42fdd638f894f0fc1b2d5c9d80ac0dbb83107",
+      "overlay": "incoming-pr-review/cell-edit-wasm-p001-overlay.png",
+      "overlay_sha256": "6b315f0efe55d2cd6e2f4b8a3e0b4628b3c2499042807d8e4881af409400e6d2"
+    },
+    {
+      "key": "cell-picture",
+      "backend": "native",
+      "page": 2,
+      "source_manifest_sha256": "9526e8a1eff64ab487a1b3e8af6670556bf0479f2e5586d494e4c7745f6b75dc",
+      "raw_png_sha256": "0482e0f5110f48b550e09a90b6128455de737c20821a3ee5cc48d77396109973",
+      "pdf_png_sha256": "f751016f7a2111f2fd8621b17bf2a154eba4c100c38a9c1ca8fcab8974cad7e9",
+      "raw": 99.62766,
+      "review": "incoming-pr-review/cell-picture-native-p002-review.png",
+      "review_sha256": "6af4ede159d7331eab6db54bab5fa28f96a5ea4ed1d8b90aad71f9d13871cdf5",
+      "overlay": "incoming-pr-review/cell-picture-native-p002-overlay.png",
+      "overlay_sha256": "30e64fa7978015fba71fe74c69be8b917ddc21b29792fbaae48466c642563a50"
+    },
+    {
+      "key": "cell-picture",
+      "backend": "wasm",
+      "page": 2,
+      "source_manifest_sha256": "adc9f53e8c59bd10d301d27503583463ef6c416b9c49c8d6f184746887a7b299",
+      "raw_png_sha256": "f3b139bf29563ec264ffc688634b426d17d4aa3af2001ce46b364850cff937b3",
+      "pdf_png_sha256": "f751016f7a2111f2fd8621b17bf2a154eba4c100c38a9c1ca8fcab8974cad7e9",
+      "raw": 99.62789,
+      "review": "incoming-pr-review/cell-picture-wasm-p002-review.png",
+      "review_sha256": "0ccb6be94f4e2205473cfd569898ce3c8141298f20565fd0fc29ab71807a6fe5",
+      "overlay": "incoming-pr-review/cell-picture-wasm-p002-overlay.png",
+      "overlay_sha256": "7edda726fbc49f39fc23a71c2a823ad68820257ba0ab9f8dffee9e77701e3788"
+    },
+    {
+      "key": "relocation",
+      "backend": "native",
+      "page": 3,
+      "source_manifest_sha256": "b1d27b04540192b4029054e384d215698346add67a216e583417edb3f29df4b2",
+      "raw_png_sha256": "0cb8de1c60b00dcd0fa153a43761dfff851e6bf15b52ba6c6e522f8f36ec0249",
+      "pdf_png_sha256": "aa25cafafb299930af8383d9963da25c31ace233ae49c015c051f03256312a8a",
+      "raw": 99.35795,
+      "review": "incoming-pr-review/relocation-native-p003-review.png",
+      "review_sha256": "b246dc2ef446084ed61e991b444b22cb76812587e60f6b250b077db43949e672",
+      "overlay": "incoming-pr-review/relocation-native-p003-overlay.png",
+      "overlay_sha256": "0cd95714e6834f3c47665d8cb3d620cd8e7ebed54ab019c48d303ebc4463373e"
+    },
+    {
+      "key": "relocation",
+      "backend": "wasm",
+      "page": 3,
+      "source_manifest_sha256": "c9aafee1c514faebd3cae791bb8e21099ba4383bde66e6aa44e88dd80794b23d",
+      "raw_png_sha256": "e7a4a8a62d5920bd3de0f34982b7247e53e1818deac48f27c45691376e489392",
+      "pdf_png_sha256": "aa25cafafb299930af8383d9963da25c31ace233ae49c015c051f03256312a8a",
+      "raw": 99.35884,
+      "review": "incoming-pr-review/relocation-wasm-p003-review.png",
+      "review_sha256": "66b4e34ae6c35ce1ca854b078d3f011809d88b9d76edfcb6c184d5a88ced5a75",
+      "overlay": "incoming-pr-review/relocation-wasm-p003-overlay.png",
+      "overlay_sha256": "134e4a819b1a7167988886773c1dc1fd2ae1105ebd04b4410c9067221c420da1"
+    }
+  ]
+}
