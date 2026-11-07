@@ -26,10 +26,19 @@
 source family에 연결하고 실제 공개 편집 API로 굵기를 설정한다. SVG의 해당 글자 stroke로
 합성 굵기 경계에 진입했는지 확인하며, 페이지 테두리의 stroke를 근거로 삼지 않는다.
 
-추가 보호 대조군인 sample16 HWPX는 같은 독립 2024 Print와 Native/fresh WASM 모두64쪽이
-일치한다. 전쪽 최저는 Native100.00%/WASM99.99%이고, 기존 기준64행의 표시값 하락은0행이다.
-지적한40·51쪽은 양쪽100.00%다. 이는 원 PR의 다른 문서 주장에 대한 증거와 구분한다.
+추가 보호 대조군인 sample16 HWPX는 같은 독립 2024 Print와 Native/fresh WASM 모두 64쪽이
+일치한다. 전쪽 최저는 Native 99.99% / WASM 99.99%이고, 기존 기준 64행의 표시값 하락은 0행이다.
+지적한 40·51쪽은 양쪽 100.00%다. 이는 원 PR의 다른 문서 주장에 대한 증거와 구분한다.
 [전체 TSV·같은 쪽 review/overlay·재현 조건](assets/planet6897_20261106/protected-r34/sample16-hwpx/README.md).
 
-제품 source는99f1340628이며 이후 검사 assertion과 문서를 보완한 commit은 실제 제품 실행과
-구분한다. 전27 PR 최종 판정은 남은 전체 WASM·Rust·lint 완료 후 갱신한다.
+제품 source는 99f1340628이며 이후 검사 assertion과 문서를 보완한 commit은 실제 제품 실행과
+구분한다. 전체 27개 PR 최종 판정은 남은 전체 WASM·Rust·lint 완료 후 갱신한다.
+
+
+## R35 TTF 선언과 실제 CFF 프로그램의 불일치
+
+2022 HWP의 남은 51쪽 하락도 같은 공개 API와 독립 PDF로 재현했다. 기호 슬롯이 TTF로
+선언됐지만 실제 해당 family에는 CFF만 공급되어 HFT 선언 조건을 통과하지 못했다.
+원 TTF 별칭의 실제 글리프 소유를 우선 보존하고, 해당 TTF가 없을 때 등록된 CFF를
+소비하도록 보정했다. [원 PR·통합 커밋·PDF 윤곽·수정 전 실패와 반대 대조군](assets/planet6897_20261106/cff-program-selection-analysis.md).
+최적화 fresh WASM의 실제 문제 쪽과 전쪽 검증은 완료 뒤 기록한다.

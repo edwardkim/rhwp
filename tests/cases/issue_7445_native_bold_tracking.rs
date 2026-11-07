@@ -1,9 +1,13 @@
-//! 관계형·고정형: 원본 프로그램의 굵은 글자 전진 간격과 자연 글리프 폭을 분리한다.
-//! 주석 갱신: 2026-11-05 11:40 (+0900). 직전 파일 변경 6097253468 (2026-10-24 15:11:35 +0900).
-//! 독립 issue265 Print12쪽 T2/Widths의 한글은1000/1000em, TJ는약0.05em 추가 전진.
-//! 원문 소유·내용 관계와 저장본의 완료 Print 3·8·12쪽 ±2CSSpx 좌표를 보호한다.
-//! 글리프 늘림 검사는 metric_font_family 로 굵기 간격을 판정하고, 그리는 프로그램은
-//! 설치 글꼴 대신 저장소 OFL `ttfs/opensource/NotoSansKR-Regular.ttf` 로 공급한다(#8613).
+//! 관계형·고정형: 원문 소유·순서·자연 글리프와 독립 Print의 완료 페이지 좌표를 보호한다.
+//! 주석 갱신: 2026-11-07T15:21:40+09:00.
+//! 직전 변경: 1ab72b32062a5d694d1ad4e981434eaed365e731 (2026-11-05T13:04:12+09:00).
+//! 2026-11-07 측정: 원본 issue_265.hwp의 한컴 2020 Print, compat 2022, 96 DPI, 보정 전 2px raw.
+//! 원본 전 16쪽 최저 Native 99.59% / fresh WASM 99.51%; 원본 Print 대비 실제 저장 보존 대조는
+//! HWP 전 16쪽 99.58% / 99.50%, HWPX 전 16쪽 99.59% / 99.51%다. 저장본의 재인쇄는 아니다.
+//! 세 입력의 3·8·12쪽: Native 100.00% / 100.00% / 99.97%, WASM 99.95% / 99.95% / 99.93%.
+//! 원문·그림·표·후속 본문 관계와 독립 완료 Print 3·8·12쪽의 기존 ±2 CSSpx는 함께 유지한다.
+//! 근거: mydocs/pr/assets/planet6897_20261106/pr8623/source-title-r34/README.md.
+//! 잉크 비교는 시스템 글꼴 대신 저장소 OFL ttfs/opensource/NotoSansKR-Regular.ttf를 직접 공급한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::{
@@ -320,22 +324,33 @@ fn assert_title(core: &DocumentCore, completed_saved_print: bool) {
         .iter()
         .filter(|node| text(node).char_start == Some(12))
         .collect();
+    let opening: Vec<_> = nodes
+        .iter()
+        .filter(|node| text(node).char_start == Some(11))
+        .collect();
     assert_eq!(korean.len(), 1);
+    assert_eq!(opening.len(), 1, "여는 괄호의 독립 원문 소유");
     assert_eq!(english.len(), 1);
-    let (korean, english) = (korean[0], english[0]);
-    assert_eq!(text(korean).text, "작업 할당 방식(");
+    let (korean, opening, english) = (korean[0], opening[0], english[0]);
+    assert_eq!(text(korean).text, "작업 할당 방식");
+    assert_eq!(text(opening).text, "(");
     assert_eq!(text(english).text, "Scheduling Algorithms)");
-    assert!(text(korean).style.bold && text(english).style.bold);
+    assert!(text(korean).style.bold && text(opening).style.bold && text(english).style.bold);
     assert_eq!(
         text(korean).style.font_family,
         text(english).style.font_family
     );
     assert_eq!(text(korean).style.letter_spacing, 0.0);
     assert_eq!(text(english).style.letter_spacing, 0.0);
-    assert!(korean.bbox.x < english.bbox.x);
-    assert!((korean.bbox.x + korean.bbox.width - english.bbox.x).abs() < 0.1);
+    assert!(korean.bbox.x < opening.bbox.x && opening.bbox.x < english.bbox.x);
+    assert!((korean.bbox.x + korean.bbox.width - opening.bbox.x).abs() < 0.1);
+    assert!((opening.bbox.x + opening.bbox.width - english.bbox.x).abs() < 0.1);
     assert!(
         (korean.bbox.y + text(korean).baseline - english.bbox.y - text(english).baseline).abs()
+            < 0.1
+    );
+    assert!(
+        (opening.bbox.y + text(opening).baseline - english.bbox.y - text(english).baseline).abs()
             < 0.1
     );
     // 독립 Print72pt→96CSSpx. 원문 문단·scalar로 식별하며 좌표 영역으로 고르지 않는다.
@@ -525,8 +540,8 @@ fn native_bold_tracking_does_not_stretch_the_actual_glyph() {
     let source = text(
         nodes
             .into_iter()
-            .find(|node| text(node).text == "작업 할당 방식(")
-            .unwrap(),
+            .find(|node| text(node).char_start == Some(3))
+            .expect("문단 121의 첫 한글 원문 소유"),
     );
     let render = |natural: bool| {
         let mut run = source.clone();
