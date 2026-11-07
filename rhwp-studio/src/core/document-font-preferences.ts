@@ -43,6 +43,7 @@ export function applyDocumentFontPreferences(
   preferences: Record<string, string>,
   programs: readonly DeclaredFontProgram[],
   id: string,
+  supportsSourceMetricOverrides = true,
 ): string {
   const selected = Object.entries(preferences).flatMap(([source, target]) => {
     const program = programs.find(program => program.query === target);
@@ -55,13 +56,21 @@ export function applyDocumentFontPreferences(
     selectionRules: { ...original.selectionRules }, trueTypeFaces: [...(original.trueTypeFaces ?? [])],
     documentSubstitutions: (original.documentSubstitutions ?? [])
       .filter((entry: { source: string }) => !selected.some(item => item.source === entry.source)),
-    preserveSourceMetrics: false,
+    preserveSourceMetrics: original.preserveSourceMetrics ?? true,
+    replaceSourceMetricsFor: [...new Set([...(original.replaceSourceMetricsFor ?? []),
+      ...selected.map(({ source }) => source)])],
   };
   for (const { source, program } of selected) {
     result.substitutions[source] = program.family;
     result.selectedPrograms[source] = program;
     delete result.selectionRules[source];
     if (program.trueType && !result.trueTypeFaces.includes(program.family)) result.trueTypeFaces.push(program.family);
+  }
+  // 이전 WASM의 엄격한 JSON 계약에는 새 필드를 보내지 않는다. 새 런타임에서는
+  // 선택한 원본만 변경하고, 이전 런타임은 기존 명시 환경 계약을 유지한다.
+  if (!supportsSourceMetricOverrides) {
+    result.preserveSourceMetrics = false;
+    delete (result as { replaceSourceMetricsFor?: string[] }).replaceSourceMetricsFor;
   }
   return JSON.stringify(result);
 }

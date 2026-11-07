@@ -1083,7 +1083,8 @@ export class WasmBridge {
       const automatic = api.buildFontEnvironmentFromAvailablePrograms(JSON.stringify(programs));
       const preferenceId = 'user-font-selection-' + bytesToHex(blake3(new TextEncoder().encode(
         JSON.stringify({ preferences, fingerprint }))));
-      const environment = applyDocumentFontPreferences(automatic, preferences, preferredPrograms.programs, preferenceId);
+      const environment = applyDocumentFontPreferences(automatic, preferences, preferredPrograms.programs,
+        preferenceId, plan.supportsSourceMetricOverrides === true);
       const parsed = environment === 'null' ? null : JSON.parse(environment) as { id: string };
       const changed = parsed ? api.setFontEnvironment(environment)
         : owned !== null ? api.setFontEnvironment(undefined) : false;

@@ -32,6 +32,10 @@ pub struct FontEnvironment {
     /// 조판 폭까지 대체 프로그램의 폭으로 바꾸는 명시적 요청과 구분한다.
     #[serde(default, skip_serializing_if = "is_false")]
     preserve_source_metrics: bool,
+    /// 사용자가 자연 프로그램 전진을 명시적으로 선택한 원본만 예외로 둔다.
+    /// 다른 원본의 자동 공급·저장 메트릭은 같은 세션에서도 유지한다.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    replace_source_metrics_for: Vec<String>,
     /// 호출자가 공급을 확인한 글리프 폴백. 키는 치환 후의 최종 face이며,
     /// 기본 face가 없는 글자만 이 순서로 측정·출력한다. IR에는 저장하지 않는다.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
@@ -171,6 +175,7 @@ impl FontEnvironment {
             selection_rules: BTreeMap::new(),
             true_type_faces: Vec::new(),
             preserve_source_metrics: false,
+            replace_source_metrics_for: Vec::new(),
             document_substitutions: Vec::new(),
             glyph_fallbacks: BTreeMap::new(),
             document_glyph_fallbacks: Vec::new(),
@@ -513,6 +518,7 @@ impl FontEnvironment {
             selection_rules,
             true_type_faces: true_type_faces.into_iter().collect(),
             preserve_source_metrics: true,
+            replace_source_metrics_for: Vec::new(),
             glyph_fallbacks: BTreeMap::new(),
             document_glyph_fallbacks: Vec::new(),
             document_substitutions,
@@ -701,6 +707,17 @@ impl FontEnvironment {
 
     pub(crate) fn validate(&self) -> Result<(), HwpError> {
         if !Self::valid_name(&self.id)
+            || self.replace_source_metrics_for.len() > 256
+            || self
+                .replace_source_metrics_for
+                .iter()
+                .any(|source| !Self::valid_name(source) || !self.has_source_selection(source))
+            || self
+                .replace_source_metrics_for
+                .iter()
+                .collect::<std::collections::BTreeSet<_>>()
+                .len()
+                != self.replace_source_metrics_for.len()
             || self.true_type_faces.len() > 256
             || self
                 .true_type_faces
@@ -823,6 +840,14 @@ impl FontEnvironment {
 
     pub(crate) fn preserves_source_metrics(&self) -> bool {
         self.preserve_source_metrics
+    }
+
+    pub(crate) fn preserves_source_metrics_for(&self, source: &str) -> bool {
+        self.preserve_source_metrics
+            && !self
+                .replace_source_metrics_for
+                .iter()
+                .any(|selected| selected == source)
     }
 
     pub(crate) fn replacement(&self, face: &str) -> Option<&str> {

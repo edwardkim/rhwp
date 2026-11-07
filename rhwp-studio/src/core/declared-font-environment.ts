@@ -7,6 +7,7 @@ import { sourceProgramFamilies } from './canvas-intrinsic-font.mjs';
 
 export interface DocumentFontSelectionPlan {
   environmentId: string | null;
+  supportsSourceMetricOverrides?: boolean;
   embeddedFamilies?: string[];
   requests: Array<{ source: string; primary: string[]; substitute: string[]; publicFallback?: string[] }>;
 }

@@ -168,11 +168,13 @@ pub(crate) fn resolve_styles_with_environment(
         // 원본 전진 보존 시 표시용 치환을 원본 TTF 프로그램으로 승격하지 않는다.
         // 원본의 별칭과 명시적으로 선택한 TrueType 프로그램은 자연 전진을 소유한다.
         let display_only_fonts: std::collections::HashSet<_> = environment
-            .filter(|env| env.preserves_source_metrics())
             .map(|env| {
                 font_requests
                     .iter()
                     .filter_map(|(lang, id, request)| {
+                        if !env.preserves_source_metrics_for(&request.source) {
+                            return None;
+                        }
                         let target = env.replacement_for(&request.source, *lang, *id)?;
                         let original = request
                             .primary
@@ -259,6 +261,12 @@ pub(crate) fn resolve_styles_with_environment(
                     // TrueType 폭을 사용한다. 선언만으로 임의 face의 표를 신뢰하지 않는다.
                     let target = primary_font_name(&style.font_families[lang]);
                     let original = lookup_font_name_decision(&lookup, lang, shape.font_ids[lang]);
+                    let preserve_source_metrics = environment.is_some_and(|env| {
+                        original.requested_face.as_deref().map_or_else(
+                            || env.preserves_source_metrics(),
+                            |source| env.preserves_source_metrics_for(source),
+                        )
+                    });
                     // 같은 이름의 실제 주 TrueType 프로그램은 표시용 대체가 아니다.
                     // 검증된 폭과 실제 선택을 확인한 경우 그 프로그램이 전진을 소유한다.
                     // 원 HFT 프로그램 출처가 있거나 치환 경계를 건넌 대체 face는 보존한다.
@@ -276,7 +284,7 @@ pub(crate) fn resolve_styles_with_environment(
                             || matches!(target, "휴먼명조" | "HumanMyeongJo"));
                     // 자동 표시용 선택은 저장된 원본 HFT 메트릭의 변경이 아니다.
                     let keep_source_metrics = !primary_true_type_program
-                        && environment.is_some_and(|env| env.preserves_source_metrics())
+                        && preserve_source_metrics
                         && (original.alt_type == Some(2)
                             || style.font_families_source_hft[lang])
                         && original.embedded != Some(true)
@@ -310,9 +318,8 @@ pub(crate) fn resolve_styles_with_environment(
                     });
                     // 원본 메트릭을 유지하는 표시용 대체는 기존 paint 폭 맞춤도 유지한다.
                     // 원 프로그램의 자연 윤곽은 그 메트릭까지 선택한 세션만 보존한다.
-                    style.font_families_preserve_glyph_ink[lang] = (explicit_true_type
-                        || explicit_replacement)
-                        && environment.is_some_and(|env| !env.preserves_source_metrics());
+                    style.font_families_preserve_glyph_ink[lang] =
+                        (explicit_true_type || explicit_replacement) && !preserve_source_metrics;
                     // 프로그램·메트릭을 직접 선택한 자연 잉크에 이전 슬롯의
                     // HFT 종이 프레임을 상속하지 않는다. 원본 메트릭을 유지하는
                     // 자동 표시용 공급은 기존 인쇄 프레임을 그대로 소비한다.
@@ -333,9 +340,7 @@ pub(crate) fn resolve_styles_with_environment(
                         // 같은 주 프로그램의 가용성 인증은 저장 HFT의 물리 Print
                         // 종이 프레임을 바꾸는 요청이 아니다. 전진 프로그램과
                         // source가 소유한 paint 프레임을 별개로 보존한다.
-                        if !primary_true_type_program
-                            || !environment.is_some_and(|env| env.preserves_source_metrics())
-                        {
+                        if !primary_true_type_program || !preserve_source_metrics {
                             style.font_families_hft_print_frame[lang] = false;
                         }
                         style.font_families_original_glyph_metric_face[lang] = None;

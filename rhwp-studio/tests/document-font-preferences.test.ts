@@ -1,5 +1,5 @@
 // 관계형: 사용자가 지정한 문서와 실제 공급 프로그램만 글꼴 대체를 소유한다.
-// 주석 갱신: 2026-11-07 19:00:32 KST. 관계형이며 설치된 사설 글꼴에 의존하지 않는다.
+// 주석 갱신: 2026-11-07 20:35 KST. 관계형이며 설치된 사설 글꼴에 의존하지 않는다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { documentFontPreferences, applyDocumentFontPreferences } from '../src/core/document-font-preferences.ts';
@@ -39,5 +39,9 @@ test('사용자 지정도 실제 프로그램 없이 성공 처리하지 않고 
   assert.equal(result.substitutions['나눔고딕'], 'Haansoft Batang');
   assert.deepEqual(result.selectedPrograms['옥수수'], corn);
   assert.deepEqual(result.selectedPrograms['나눔고딕'], target);
-  assert.equal(result.preserveSourceMetrics, false);
+  assert.equal(result.preserveSourceMetrics, true, '자동 공급 환경의 다른 원본 메트릭은 유지한다');
+  assert.deepEqual(result.replaceSourceMetricsFor, ['나눔고딕'], '사용자가 선택한 원본만 자연 프로그램 전진을 사용한다');
+  const legacy = JSON.parse(applyDocumentFontPreferences(automatic, preferences, [target], 'user', false));
+  assert.equal(legacy.preserveSourceMetrics, false);
+  assert.equal('replaceSourceMetricsFor' in legacy, false, '이전 WASM에는 지원하지 않는 새 JSON 필드를 보내지 않는다');
 });
