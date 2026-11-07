@@ -479,9 +479,20 @@ mutation이므로 메인테이너 승인 뒤에만 실행한다. inventory에 �
 | Release Binary | `gh workflow run release-binary.yml --ref devel -f tag=test` | verify-only, Release·외부 publish skipped, 5-platform·package artifact 필수 |
 | Publish All Packages | `gh workflow run npm-publish.yml --ref devel -f publish=false -f publish_extensions=true` | verify-only, 네 외부 채널 skipped, `completed` verdict artifact 필수 |
 | Render Diff | `gh workflow run render-diff.yml --ref devel` | direct, artifact 필수 |
+| Full Renderer Sweep | `gh workflow run full-renderer-sweep.yml --ref devel -f corpus=representative` | direct, 실제 sweep와 artifact 필수 |
+| Fuzz smoke | `gh workflow run fuzz-smoke.yml --ref devel -f max_total_time=60` | direct, parser 6개 matrix job 모두 success |
+| Skill router gate | `gh workflow run skill-router-gate.yml --ref devel` | direct |
+| Layout anomaly advisory | `gh workflow run layout-anomaly-advisory.yml --ref devel` | 실제 scan의 `completed` verdict 필수; 발견한 조판 이상은 advisory 유지 |
+| Verify release WASM composite | 위 Publish All Packages의 같은 commit 호출 | verify-only, `release-wasm-validation` 및 package·publish verdict artifact 필수 |
+| CI Impact Policy Controller | 위 수동 CI의 Release operations contracts 호출 | contracts-only, write 권한 없이 정책·controller·실패 증거 계약 실행 |
 | Release operations contracts | 위 `gh workflow run ci.yml --ref devel -f release_grade=false`의 reusable job | contracts-only, issue label·duration refresh·trusted reuse의 실제 스크립트/API 실패 계약 |
 
-`build-nextest-archives.yml`과 `run-nextest-archives.yml`은 독립 dispatch 대신 같은 exact SHA의 CI caller run을 증적으로 쓴다. 각각 네 archive build/worker job과 CI preflight·Build & Test의 success를 모두 요구한다. metadata workflow 세 개와 `release-operations-contracts.yml`도 등록된 CI의 manual caller run을 사용하며, `CI preflight`, `Build & Test`, `release-operations-contracts / Release operations contracts`의 success를 모두 요구한다. 새 adapter를 main에 먼저 등록하지 않아도 같은 commit의 local reusable 호출로 검증할 수 있다. PR/push에서는 이 job을 실행하지 않는다. 원래 label/metrics 쓰기 이벤트를 실행하지 않으며, 공유 caller/adapter run에서도 각 변경 파일의 hash·mode·필수 job을 개별 유지한다. contracts-only는 실제 repository metadata 쓰기 성공의 증거와 구분한다. 독립 dispatch 표면은 10개다.
+`build-nextest-archives.yml`과 `run-nextest-archives.yml`은 독립 dispatch 대신 같은 exact SHA의 CI caller run을 증적으로 쓴다. 각각 다섯 archive build/worker job과 CI preflight·Build & Test의 success를 모두 요구한다. metadata workflow 네 개와 `release-operations-contracts.yml`도 등록된 CI의 manual caller run을 사용하며, `CI preflight`, `Build & Test`, `release-operations-contracts / Release operations contracts`의 success를 모두 요구한다. 새 adapter를 main에 먼저 등록하지 않아도 같은 commit의 local reusable 호출로 검증할 수 있다. PR/push에서는 이 job을 실행하지 않는다. 원래 label/metrics/status 쓰기 이벤트를 실행하지 않으며, 공유 caller/adapter run에서도 각 변경 파일의 hash·mode·필수 job을 개별 유지한다. contracts-only는 실제 repository metadata 쓰기 성공의 증거와 구분한다. 실행 횟수는 고정 숫자가 아니라 해당 inventory의 고유 `evidencePath`로 산출한다.
+
+Layout anomaly advisory의 job 성공만으로 승격하지 않는다. 빌드·실제 scan 종료·유효한 보고서와
+한 건 이상의 처리 결과를 확인하며, 입력 누락·파싱 오류·시간 초과·skip은 `incomplete`로 남긴다.
+실제 처리 중 발견한 `ANOMALY`는 기존 advisory 판정을 유지한다. 이 완료 증거를 required 품질
+check나 branch protection으로 승격하는 것은 아니다.
 
 Native host package는 기본값 false인 수동 입력을 켰을 때만 CI caller에서 실행한다. 새 workflow의
 기본 브랜치 등록 전에도 이 caller로 실행 증거를 만들며, PR/push와 일반 수동 CI에서는 package job을

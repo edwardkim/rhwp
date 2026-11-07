@@ -104,7 +104,7 @@ Sixel과 Kitty 모두 **렌더링 호스트에 글꼴이 필요**하다. SSH이�
 ## PDF 가져오기 (기본 포함)
 
 `rhwp capabilities`의 `pdfImportSupport`에서 현재 바이너리의 `enabled`·`jbig2`·`jpeg2000`·
-`icc`·`boundedXrefRecovery`를 확인합니다. #8174 v2-S02 로컬 source는 JBIG2·JPEG 2000·
+`icc`·`boundedXrefRecovery`를 확인합니다. 0.9.0 준비 소스는 JBIG2·JPEG 2000·
 ICC를 기본 포함하고 예산 있는 xref 복구를 제공합니다. 실제 배포 산출물은 지원 조회로 확인합니다.
 설치·개발용 제외 빌드·실패 진단은 [PDF 이미지 코덱 가이드](pdf_image_codecs.md)를 따릅니다.
 성공한 가져오기의 `diagnostics.pdfImportSupport`도 같은 정보를 제공합니다.
@@ -181,7 +181,7 @@ rhwp import-pdf input.pdf result.hwpx --resource-limits limits.json --json
     구역별 단 수·여백·이어 붙인 문단 수를 함께 남긴다.
   - WASM `HwpDocument.importPdf(bytes, { layout: "editable" })`와 MCP `hwp_import_pdf`의 `layout`도
     같은 값을 받는다.
-- 암호 옵션은 이 명령에서 거부한다. 출력 암호가 필요하면 생성된 파일에 `convert` 또는
+- 출력 암호 설정 옵션은 이 명령에서 거부한다. 입력 열기 암호는 위와 같이 지원한다. 출력 암호가 필요하면 생성된 파일에 `convert` 또는
   `export-hwpx`의 암호 옵션을 사용한다.
 - `--no-default-features --features wasm-api`로 PDF만 제외한 CLI 빌드에도 도움말·capabilities는 보이며 `available=false`, 실행은
   `PDF_IMPORT_DISABLED`(exit 1)다. `capabilities.formats.read`에는 feature-on일 때만 PDF를 넣는다.

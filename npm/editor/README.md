@@ -107,6 +107,16 @@ studio.destroy();
 cd rhwp-studio && npm run gate:bridge
 ```
 
+## PDF 가져오기 (0.9.0)
+
+0.9.0 Studio를 `viewerUrl`에 호스팅한 뒤 `loadFile(pdfBytes, 'input.pdf',
+{ suppressDialogs: false })`로 엽니다. PDF 설정·필요한 암호·쪽별 진행률과 취소는 Studio에서
+처리합니다. 사용자 응답을 기다리므로 필요하면 `createEditor`의 `requestTimeoutMs`를 늘립니다.
+이 값과 PDF Worker 시간 제한은 별개이며 `suppressDialogs`가 PDF 선택창을 없애지는 않습니다.
+이 패키지는 iframe wrapper이므로 패키지 업데이트와 호스팅 Studio 업데이트를 함께 진행합니다.
+[CLI·Rust·WASM·Worker 시작 예제](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pdf_developer_onboarding.md)
+와 [English guide](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pdf_developer_onboarding_EN.md)를 참고하세요.
+
 ## HWP 파일 로드
 
 ```javascript

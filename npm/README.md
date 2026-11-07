@@ -16,6 +16,13 @@ HWP/HWPX 파일을 파싱하고 SVG로 렌더링하는 저수준 API를 제공�
 | **@rhwp/core** (이 패키지) | WASM 파서/렌더러 — 직접 API 호출 |
 | **@rhwp/editor** | 완전한 에디터 UI — iframe 임베드 |
 
+## v0.9.0 (배포 준비)
+
+PDF 가져오기·JBIG2·JPEG 2000·ICC 색 변환이 기본 포함됩니다. 암호 PDF 인증,
+선택 쪽·편집 배치·자원 프로필과 쪽별 Worker 진행률을 제공합니다.
+[PDF 개발자 시작 안내](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pdf_developer_onboarding.md) ·
+[English quick start](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pdf_developer_onboarding_EN.md).
+
 ## v0.8.7
 
 - 연속 TAC 표와 중첩 표의 저장 줄·페이지 분할·셀 패딩 및 문단 배치를 보정했습니다.
@@ -136,25 +143,38 @@ const resp = await fetch('/sample.hwp');
 const doc = new HwpDocument(new Uint8Array(await resp.arrayBuffer()));
 ```
 
-### PDF 가져오기 (소스 opt-in 빌드)
+### PDF 가져오기 (0.9.0 기본 포함)
 
-PDF는 기본 배포에서 활성화하지 않습니다. 소스를 `--features pdf-import`로 빌드한
-제품 WASM에서만 사용할 수 있으며, 비활성 빌드는 `PDF_IMPORT_DISABLED`로 거부합니다.
+일반 빌드는 PDF·JBIG2·JPEG 2000·ICC와 예산 있는 xref 복구를 포함합니다.
+초기화 뒤 `JSON.parse(HwpDocument.getPdfImportSupport())`로 실제 지원을 확인합니다.
+출시 전에는 같은 checkout의 `pkg/`를 사용하며 0.9.0 게시를 완료했다는 뜻은 아닙니다.
 
 ```javascript
-const doc = HwpDocument.importPdf(pdfBytes, { sourcePages: [0, 6, 7] });
-const diagnostics = JSON.parse(doc.getPdfImportDiagnostics());
-const hwpx = doc.exportHwpx();
-doc.free();
+const doc = HwpDocument.importPdf(pdfBytes, {
+  sourcePages: [0], layout: 'fidelity', resourceProfile: 'standard',
+});
+try {
+  const diagnostics = JSON.parse(doc.getPdfImportDiagnostics());
+  const hwpx = doc.exportHwpx();
+} finally {
+  doc.free();
+}
 ```
 
-`options`는 JSON 문자열이 아닌 객체이며 `sourcePages`는 0-based 엄격 증가 배열입니다.
-선택을 생략하거나 기존 생성자에 PDF 바이트를 전달하면 전체 쪽을 가져옵니다. 잘못된 옵션은
-`PDF_IMPORT_OPTIONS`, 잘못된 쪽 선택은 `PDF_PAGE_SELECTION`을 포함한 JS 오류입니다.
-진단은 가져오기 시점의 원본 쪽/출력 구역 대응·경고·임시 문단 정책이며 다른 입력은 `null`입니다.
-전체 입력은 현재 16 MiB/128쪽 한도이고, 전체 parser 할당 경계는 아직 입증하지 않았습니다
-(`parserAllocationBoundsProven=false`). 동기 API의 시간 제한·취소는 별도 Worker 소유자가
-종료·재생성으로 처리해야 합니다. 저장소의 `rhwp-shared/pdf/`에 해당 세션 구현이 있습니다.
+`options`는 객체이며 `sourcePages`는 0-based 엄격 증가 배열입니다. 생략하면 전체 쪽입니다.
+`layout: 'editable'`은 본문 문단을 재편집하기 쉬운 구역 흐름으로 가져옵니다. 열기 암호는
+`password`로 전달합니다. 결과 HWP/HWPX가 입력 PDF 암호를 자동 승계하지는 않습니다.
+표준 입력은 64 MiB·선택 1,024쪽이며 다른 버퍼·명령·그림 예산도 함께 적용됩니다.
+`resourceLimits`는 프로필 이내로 낮추는 policy 객체이며 CLI의 `execution`은 받지 않습니다.
+오입력은 `PDF_PASSWORD_INVALID`, 암호 누락은 `PDF_PASSWORD_REQUIRED`, 자원 초과는
+`PDF_RESOURCE_LIMIT`입니다. 미지원 표현은 `PDF_*_UNSUPPORTED`로 구분합니다.
+
+이 API는 동기 호출입니다. 대형 입력은 Worker에서 처리하고 호스트가 종료·재생성해야 취소할 수
+있습니다. 저장소 `rhwp-shared/pdf/`의 공용 Worker는 **이 npm 패키지에 포함되지 않습니다**.
+[Worker·Studio 통합 예제](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pdf_developer_onboarding.md)
+에서 배치 경로와 진행률을 확인하세요. 전체 parser 할당 상한은 미입증입니다
+(`parserAllocationBoundsProven=false`). 스캔 문자는 OCR하지 않으며 글꼴·정밀 paint·표 추론은
+[지원 경계](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/security_feature_limits.md)를 따릅니다.
 
 ### SVG 렌더링
 
@@ -342,3 +362,5 @@ rhwp가 SVG에 적용하는 자동 폴백 체인:
 ## License
 
 MIT
+
+서드파티 고지는 `notices/THIRD_PARTY_LICENSES.md`와 `notices/` 아래 원문 파일에서 확인합니다.

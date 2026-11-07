@@ -53,7 +53,8 @@
         "README.md",
         "RHWP_PATCHES.md",
         "UPSTREAM.json",
-        "LICENSE-*"
+        "LICENSE-*",
+        "Cargo.toml.orig"
       ],
       "extra_repository_files": {},
       "local_dependencies": []
@@ -82,22 +83,6 @@
         "src/**",
         "README.md",
         "README.ijg",
-        "RHWP_PATCHES.md",
-        "UPSTREAM.json",
-        "LICENSE-*"
-      ],
-      "extra_repository_files": {},
-      "local_dependencies": []
-    },
-    {
-      "source": "vendor/rhwp-jpeg-encoder",
-      "published_name": "rhwp-jpeg-encoder",
-      "version": "0.7.1-rhwp.1",
-      "include": [
-        "Cargo.toml",
-        "Cargo.toml.orig",
-        "src/**",
-        "README.md",
         "RHWP_PATCHES.md",
         "UPSTREAM.json",
         "LICENSE-*"
@@ -257,6 +242,7 @@
         "assets/fonts/LatinModernMath-VariableOutline-subset.otf",
         "assets/fonts/MANIFEST-RHWP-LMM-VariableOutline.txt",
         "assets/fonts/licenses/**",
+        "assets/font-rules/font_rule_registry_v2.json",
         "data/font-metrics/nimbus-roman/**",
         "mydocs/manual/agent_knowledge_map.md",
         "mydocs/manual/agent_troubleshooting_guide.md",
@@ -279,7 +265,6 @@
         "rhwp-password-crypto",
         "rhwp-svg2pdf",
         "rhwp-pdf-import-backend",
-        "rhwp-jpeg-encoder",
         "rhwp-zune-jpeg"
       ]
     }

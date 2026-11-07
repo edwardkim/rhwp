@@ -307,6 +307,152 @@
         "edwardkim"
       ],
       "evidencePath": ".github/workflows/ci.yml"
+    },
+    ".github/actions/verify-release-wasm/action.yml": {
+      "executionMode": "verify-only",
+      "sensitiveSurfaces": [
+        "permissions",
+        "secrets",
+        "artifact",
+        "deployment"
+      ],
+      "requiredJobs": [
+        "Validate release source",
+        "Build WASM",
+        "Build VSIX once",
+        "Publish channel aggregate"
+      ],
+      "requiredSkippedJobs": [
+        "Publish @rhwp/core",
+        "Publish @rhwp/editor",
+        "Publish VS Code Marketplace extension",
+        "Publish Open VSX extension"
+      ],
+      "requiredArtifacts": [
+        "wasm-pkg",
+        "vscode-vsix",
+        "release-publish-evidence",
+        "release-wasm-validation"
+      ],
+      "requiredVerdictArtifact": {
+        "name": "release-publish-evidence",
+        "requiredPath": "release-publish-evidence.json",
+        "acceptedVerdicts": [
+          "completed"
+        ]
+      },
+      "allowedEvents": [
+        "workflow_dispatch"
+      ],
+      "allowedActors": [
+        "edwardkim"
+      ],
+      "evidencePath": ".github/workflows/npm-publish.yml"
+    },
+    ".github/workflows/ci-impact-policy.yml": {
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [],
+      "allowedEvents": [
+        "workflow_dispatch"
+      ],
+      "allowedActors": [
+        "edwardkim"
+      ],
+      "executionMode": "contracts-only",
+      "evidencePath": ".github/workflows/ci.yml",
+      "sensitiveSurfaces": [
+        "permissions",
+        "artifact"
+      ],
+      "requiredJobs": [
+        "CI preflight",
+        "Build & Test",
+        "release-operations-contracts / Release operations contracts"
+      ]
+    },
+    ".github/workflows/full-renderer-sweep.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": [
+        "cache",
+        "artifact"
+      ],
+      "requiredJobs": [
+        "Full Renderer Sweep"
+      ],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [
+        "full-renderer-sweep-artifacts"
+      ],
+      "allowedEvents": [
+        "workflow_dispatch"
+      ],
+      "allowedActors": [
+        "edwardkim"
+      ]
+    },
+    ".github/workflows/fuzz-smoke.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": [
+        "cache",
+        "artifact",
+        "matrix"
+      ],
+      "requiredJobs": [
+        "fuzz parse_hwp",
+        "fuzz parse_hwp3",
+        "fuzz parse_hwpx",
+        "fuzz parse_hml",
+        "fuzz parse_wmf",
+        "fuzz parse_ooxml_chart"
+      ],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [],
+      "allowedEvents": [
+        "workflow_dispatch"
+      ],
+      "allowedActors": [
+        "edwardkim"
+      ]
+    },
+    ".github/workflows/skill-router-gate.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": [],
+      "requiredJobs": [
+        "Skill router gate"
+      ],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [],
+      "allowedEvents": [
+        "workflow_dispatch"
+      ],
+      "allowedActors": [
+        "edwardkim"
+      ]
+    },
+    ".github/workflows/layout-anomaly-advisory.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": [
+        "cache",
+        "artifact"
+      ],
+      "requiredJobs": [
+        "layout-anomaly-advisory"
+      ],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [],
+      "allowedEvents": [
+        "workflow_dispatch"
+      ],
+      "allowedActors": [
+        "edwardkim"
+      ],
+      "requiredVerdictArtifact": {
+        "name": "layout-anomaly-advisory-verdict",
+        "requiredPath": "verdict.json",
+        "acceptedVerdicts": [
+          "completed"
+        ]
+      }
     }
   }
 }

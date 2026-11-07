@@ -30,6 +30,11 @@ jobs:
         run: |
           python3 -m unittest \
             scripts.tests.test_release_operations_promotion \
+            scripts.tests.test_release_090_promotion \
+            scripts.tests.test_release_090_preparation \
+            scripts.tests.test_release_contributor_audit \
+            scripts.tests.test_ci_impact_policy_workflow \
+            scripts.tests.test_ci_impact_workflow \
             scripts.tests.test_postmerge_duration_workflow \
             scripts.tests.test_trusted_postmerge_ci_reuse_workflow
       - name: Execute label, duration, and trusted reuse contracts
@@ -41,3 +46,6 @@ jobs:
             scripts/tests/trusted-postmerge-duration-evidence.test.mjs \
             scripts/tests/verify-trusted-postmerge-ci-reuse.test.mjs \
             scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs
+      - name: Execute CI impact policy without repository writes
+        run: |
+          node --test scripts/tests/ci-impact-*.test.cjs scripts/tests/ci-workflow-evidence.test.cjs

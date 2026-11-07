@@ -1,0 +1,389 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-08",
+  "functionalBase": "5077b216cbc51d2046da07350de562f6f521a7c1",
+  "preReportCandidate": "402ba6b22c203fe6527a60d7d750149396d51d6b",
+  "productInputsEqualToBase": [
+    "Cargo.toml",
+    "Cargo.lock",
+    "build.rs",
+    "src",
+    "crates",
+    "vendor",
+    "rhwp-studio/src",
+    "rhwp-shared",
+    "rhwp-vscode/src",
+    "rhwp-vscode/webpack.config.js",
+    "rhwp-chrome/build.mjs",
+    "rhwp-firefox/build.mjs",
+    "assets/font-rules",
+    "data/font-metrics"
+  ],
+  "wasmBuild": {
+    "source_sha": "5064570b3fea01b86b5548860b02590ecc0b216b",
+    "source_dirty": false,
+    "profile": "release",
+    "build_configuration": {
+      "profile": "release",
+      "build_mode": "standard",
+      "cdylib_only": "0",
+      "crate_types": "rlib+cdylib",
+      "lto_policy": "manifest",
+      "cache_variant": "release-rlib-cdylib-lto-manifest"
+    },
+    "success": true,
+    "artifacts": {
+      "rhwp.js": {
+        "sha256": "0099b8a6e00f750e1dbddb3a89bf42874f24effcf8bf4dc5eb328d69e691606b",
+        "bytes": 564033
+      },
+      "rhwp_bg.wasm": {
+        "sha256": "b6e1bfc3d8d5a369dbf9f593bc807006114b9b2d09aaf06d4c422c6567696948",
+        "bytes": 26678316
+      }
+    },
+    "phase_seconds_approx": {
+      "preparation": 0.399,
+      "cargo": 0.322,
+      "bindgen_setup_and_run": 7.551,
+      "wasm_opt_and_finalize": 384.423,
+      "after_package": 0.037
+    },
+    "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+    "wasm_pack": "wasm-pack 0.15.0"
+  },
+  "wasmBrowser": {
+    "assertions": 271,
+    "workers": 17,
+    "browser": "Chrome/152.0.7946.0",
+    "receivedWasmSha256": "b6e1bfc3d8d5a369dbf9f593bc807006114b9b2d09aaf06d4c422c6567696948",
+    "disabledFeatureVariantTested": false,
+    "consumptionRecords": 2
+  },
+  "nativeArchive": {
+    "archive": "rhwp-v0.9.0-linux-x86_64.tar.gz",
+    "version": "rhwp v0.9.0",
+    "exportPngAvailable": true,
+    "pngWidth": 794,
+    "pngHeight": 1123
+  },
+  "nativeCli": {
+    "binarySha256": "25d48297d960043b0acacf0e50f483580647486509a31428e87f2f6073d5bb2b",
+    "checks": [
+      {
+        "name": "version",
+        "exit": 0,
+        "expectedExit": 0,
+        "passed": true
+      },
+      {
+        "name": "capabilities",
+        "exit": 0,
+        "expectedExit": 0,
+        "passed": true
+      },
+      {
+        "name": "import-fidelity",
+        "exit": 0,
+        "expectedExit": 0,
+        "passed": true
+      },
+      {
+        "name": "import-editable",
+        "exit": 0,
+        "expectedExit": 0,
+        "passed": true
+      },
+      {
+        "name": "import-selected",
+        "exit": 0,
+        "expectedExit": 0,
+        "passed": true
+      },
+      {
+        "name": "selected-range",
+        "exit": 0,
+        "expectedExit": 0,
+        "passed": true
+      },
+      {
+        "name": "reopen-hwpx",
+        "exit": 0,
+        "expectedExit": 0,
+        "passed": true
+      },
+      {
+        "name": "password-r2",
+        "exit": 0,
+        "expectedExit": 0,
+        "passed": true
+      },
+      {
+        "name": "password-r3",
+        "exit": 0,
+        "expectedExit": 0,
+        "passed": true
+      },
+      {
+        "name": "password-r4",
+        "exit": 0,
+        "expectedExit": 0,
+        "passed": true
+      },
+      {
+        "name": "password-r5",
+        "exit": 0,
+        "expectedExit": 0,
+        "passed": true
+      },
+      {
+        "name": "password-r6",
+        "exit": 0,
+        "expectedExit": 0,
+        "passed": true
+      },
+      {
+        "name": "wrong-password-preserves-output",
+        "exit": 1,
+        "expectedExit": 1,
+        "passed": true
+      },
+      {
+        "name": "preview-png",
+        "exit": 0,
+        "expectedExit": 0,
+        "passed": true
+      },
+      {
+        "name": "preview-pdf",
+        "exit": 0,
+        "expectedExit": 0,
+        "passed": true
+      }
+    ]
+  },
+  "rustGuide": {
+    "compiledAndExecuted": true,
+    "linkage": "existing native-skia-enabled release library",
+    "separateMinimalFeatureCargoBuild": false
+  },
+  "npmArchiveConsumer": {
+    "version": "0.9.0",
+    "pdfImport": true,
+    "hwpxBytes": 7045,
+    "reopenText": true
+  },
+  "tests": {
+    "releaseContracts": 72,
+    "promotionContracts": 105,
+    "ciImpactNode": 187,
+    "sourcePackagingAndRelease": 24,
+    "studio": {
+      "passed": 2754,
+      "skipped": 2
+    },
+    "editor": 36
+  },
+  "renderChecks": {
+    "canvas": {
+      "passed": 3,
+      "maxDiffPercent": 0.01862
+    },
+    "directPdfCompatibility": {
+      "passed": 3,
+      "maxDiffRatio": 0.01882513,
+      "limit": 0.02
+    },
+    "browserPdfReport": {
+      "pages": 4,
+      "warnings": 4,
+      "errors": 0,
+      "gate": false,
+      "note": "Default report compares 96 DPI browser images with 72 DPI raster; not an independent Hancom fidelity judgment."
+    },
+    "maxPagesPerFixture": 1
+  },
+  "chromeExtension": {
+    "status": "pass",
+    "candidateSha256": "f6a1ea07b0b9b9d02f461177093af527a66434161bd2c7b10e3d31853e467a06",
+    "candidateUnchanged": true,
+    "suites": [
+      {
+        "name": "extension-smoke",
+        "status": "pass",
+        "exitCode": 0,
+        "durationMs": 2528
+      },
+      {
+        "name": "download-interceptor",
+        "status": "pass",
+        "exitCode": 0,
+        "durationMs": 15254
+      },
+      {
+        "name": "extension-lifecycle",
+        "status": "pass",
+        "exitCode": 0,
+        "durationMs": 34472
+      }
+    ],
+    "correctedHarnessCommit": "b2b0b9f8ad3564fc2412a24ce9d7db3eaa63960c"
+  },
+  "firefoxExtension": {
+    "viewerTabs": 1,
+    "completedDownloads": 3,
+    "savedNames": [
+      "신청서(SW) (개인)_1(1).hwp",
+      "신청서(SW) (개인)_1(2).hwp"
+    ],
+    "editPreserved": true
+  },
+  "sourceArchive": {
+    "builtSourceSha": "5064570b3fea01b86b5548860b02590ecc0b216b",
+    "finalArchiveSourceSha": "402ba6b22c203fe6527a60d7d750149396d51d6b",
+    "checkedFiles": 4811,
+    "changedFiles": [
+      "packaging/crates-io/runtime-files.json",
+      "packaging/crates-io/source-policy.json",
+      "rhwp-firefox/e2e/download-save.test.mjs"
+    ],
+    "compiledProductInputsIdentical": true,
+    "note": "Only source-candidate metadata and Firefox E2E changed after archive build began; no compile or bundle input changed.",
+    "lockedWasmBuild": true,
+    "firefoxBuild": true,
+    "sourceSymlinks": {
+      "allTargetsIncluded": true,
+      "links": [
+        {
+          "path": "rhwp-source/rhwp-firefox/sw/document-filename.js",
+          "target": "../../rhwp-shared/sw/document-filename.js"
+        },
+        {
+          "path": "rhwp-source/rhwp-firefox/sw/document-url-resolver.js",
+          "target": "../../rhwp-shared/sw/document-url-resolver.js"
+        },
+        {
+          "path": "rhwp-source/rhwp-firefox/sw/download-interceptor-common.js",
+          "target": "../../rhwp-shared/sw/download-interceptor-common.js"
+        },
+        {
+          "path": "rhwp-source/rhwp-firefox/sw/download-observer-state.js",
+          "target": "../../rhwp-shared/sw/download-observer-state.js"
+        },
+        {
+          "path": "rhwp-source/rhwp-firefox/sw/thumbnail-decompression.js",
+          "target": "../../rhwp-shared/sw/thumbnail-decompression.js"
+        },
+        {
+          "path": "rhwp-source/rhwp-studio/public/fonts",
+          "target": "../../assets/fonts"
+        }
+      ]
+    }
+  },
+  "packages": {
+    "wasmSha256": "b6e1bfc3d8d5a369dbf9f593bc807006114b9b2d09aaf06d4c422c6567696948",
+    "artifacts": [
+      {
+        "name": "rhwp-core-0.9.0.tgz",
+        "bytes": 11342159,
+        "sha256": "a1074e0bd91402d1b96992f458a746bf1c41d2c66a2b85fcbccf4b92564bafaf",
+        "wasmSha256": "b6e1bfc3d8d5a369dbf9f593bc807006114b9b2d09aaf06d4c422c6567696948"
+      },
+      {
+        "name": "rhwp-chrome-0.9.0.zip",
+        "bytes": 51236952,
+        "sha256": "6153c644f7bafe30d11bd6a64e9db20fb7971301740f4f5caf867f8ff1ca108a",
+        "wasmSha256": "b6e1bfc3d8d5a369dbf9f593bc807006114b9b2d09aaf06d4c422c6567696948"
+      },
+      {
+        "name": "rhwp-firefox-0.9.0.zip",
+        "bytes": 51232822,
+        "sha256": "e2e11d34789642c2dac8eb8e84164be23b50746e796d5854b882a1c1c7600618",
+        "wasmSha256": "b6e1bfc3d8d5a369dbf9f593bc807006114b9b2d09aaf06d4c422c6567696948"
+      },
+      {
+        "name": "rhwp-vscode-0.9.0.vsix",
+        "bytes": 26175669,
+        "sha256": "5a342022dba7263b07afcfda0b515548d791e3186918c42048e7902ed3ddddae",
+        "wasmSha256": "b6e1bfc3d8d5a369dbf9f593bc807006114b9b2d09aaf06d4c422c6567696948"
+      },
+      {
+        "name": "rhwp-editor-0.9.0.tgz",
+        "bytes": 26472,
+        "sha256": "de1bb784fd4cceada497a4fb18d77e6b79523d6ea855d55a98265a391bc1dc65"
+      },
+      {
+        "name": "rhwp-edge-0.9.0.zip",
+        "bytes": 51236952,
+        "sha256": "6153c644f7bafe30d11bd6a64e9db20fb7971301740f4f5caf867f8ff1ca108a"
+      },
+      {
+        "name": "rhwp-v0.9.0-linux-x86_64.tar.gz",
+        "bytes": 32031574,
+        "sha256": "743548e50d68e6e8882965ad8d8c731711bd96216c3e72a4a1a9a51380e24885"
+      },
+      {
+        "name": "rhwp-source-0.9.0-amo.zip",
+        "bytes": 52466963,
+        "sha256": "97375afa71ae0c0ee34d5a1dbc9766141f806feb8297c95c6ed829b66de8db7a"
+      }
+    ],
+    "edgeIdenticalToChrome": true,
+    "editorLicenseIncluded": true,
+    "cliQuickStartIncluded": true
+  },
+  "cratesSource": {
+    "count": 14,
+    "sourceCheck": "pass",
+    "manifestBlockers": [],
+    "cargoVerified": false,
+    "publishReady": false,
+    "runtimeRegistryOmissionBefore": "runtime source omitted: assets/font-rules/font_rule_registry_v2.json",
+    "origin": "#8565 / 5551091085"
+  },
+  "residuals": {
+    "npmAudit": {
+      "info": 0,
+      "low": 4,
+      "moderate": 7,
+      "high": 2,
+      "critical": 0,
+      "total": 13
+    },
+    "npmProductionAudit": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "documentMetadata": {
+      "baseSha": "5077b216cbc51d2046da07350de562f6f521a7c1",
+      "currentErrors": 16,
+      "unchangedBaseErrors": 16,
+      "newErrors": 0,
+      "errors": [
+        "mydocs/tech/benchmark_vs_alternatives.md: 필수 메타데이터 누락: kind",
+        "mydocs/tech/benchmark_vs_alternatives.md: 필수 메타데이터 누락: status",
+        "mydocs/tech/benchmark_vs_alternatives.md: 필수 메타데이터 누락: canonical",
+        "mydocs/tech/benchmark_vs_alternatives.md: 필수 메타데이터 누락: last_verified",
+        "mydocs/tech/investigations/issue-4964/README.md: 필수 메타데이터 누락: kind",
+        "mydocs/tech/investigations/issue-4964/README.md: 필수 메타데이터 누락: status",
+        "mydocs/tech/investigations/issue-4964/README.md: 필수 메타데이터 누락: canonical",
+        "mydocs/tech/investigations/issue-4964/README.md: 필수 메타데이터 누락: last_verified",
+        "mydocs/tech/investigations/issue-5511/README.md: 필수 메타데이터 누락: kind",
+        "mydocs/tech/investigations/issue-5511/README.md: 필수 메타데이터 누락: status",
+        "mydocs/tech/investigations/issue-5511/README.md: 필수 메타데이터 누락: canonical",
+        "mydocs/tech/investigations/issue-5511/README.md: 필수 메타데이터 누락: last_verified",
+        "mydocs/tech/investigations/issue-5511/task_m100_5511_cli_surface_inventory.md: 필수 메타데이터 누락: kind",
+        "mydocs/tech/investigations/issue-5511/task_m100_5511_cli_surface_inventory.md: 필수 메타데이터 누락: status",
+        "mydocs/tech/investigations/issue-5511/task_m100_5511_cli_surface_inventory.md: 필수 메타데이터 누락: canonical",
+        "mydocs/tech/investigations/issue-5511/task_m100_5511_cli_surface_inventory.md: 필수 메타데이터 누락: last_verified"
+      ]
+    },
+    "codeqlIssue8745": "OPEN; protected-branch full analysis remains a remote release gate"
+  },
+  "remoteActionsPerformed": []
+}

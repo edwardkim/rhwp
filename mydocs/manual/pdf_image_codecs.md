@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pdf_image_codecs.md
-last_verified: 2026-10-31
+last_verified: 2026-11-08
 ---
 
 # PDF 이미지 코덱과 색 변환
@@ -11,14 +11,14 @@ PDF 가져오기·JBIG2·JPEG 2000·ICC 색 변환은 기본 빌드에 포함됩
 코덱별 feature를 추가하지 않아도 됩니다. 파일 확장자는 같아도 쪽마다 그림의 압축 방식과
 색 공간이 다를 수 있습니다.
 
-이 안내는 #8174 v2-S02·S03의 로컬 source에 적용합니다. `devel` 반영이나 crates.io 게시 완료를 뜻하지 않습니다.
+이 안내는 #8174·#8403·#8413–#8416이 통합된 0.9.0 준비 소스에 적용합니다. registry·스토어 게시 완료를 뜻하지 않습니다.
 공식 배포 바이너리·Studio의 지원은 그 산출물에 실제 포함한 feature로 결정됩니다.
 
 ## 필요한 코덱 확인
 
 ### 이미지 패턴과 문자 외곽선
 
-#8403 작업 브랜치는 이미지로 구성된 coloured tiling pattern을 가져옵니다. 패턴의
+#8403에서 통합한 구현은 이미지로 구성된 coloured tiling pattern을 가져옵니다. 패턴의
 배치·반복·clip과 이미지의 투명도를 함께 적용합니다. 지원하지 않는 패턴은 검정 단색으로
 대체하지 않고 `PDF_PATTERN_UNSUPPORTED`로 알립니다.
 
@@ -29,7 +29,7 @@ RHWP 확장 메타데이터로 보관하므로 rhwp에서 다시 열고 편집�
 노출하는 것은 아니므로, 다른 편집기에 제출할 때는 해당 제품의 실제 출력을 확인해야 합니다.
 단일 획 두께로 표현할 수 없는 비균일 변환·점선·글리프 clip이 결합된 획과 패턴으로 채운 문자는 현재
 `PDF_TEXT_UNSUPPORTED` 대상입니다.
-배포본의 지원 여부는 #8403의 통합·빌드 상태를 확인해야 합니다.
+배포본의 지원 여부는 해당 버전의 실제 빌드와 지원 조회를 확인합니다.
 
 ### 빌드 기능 확인 명령
 
@@ -134,7 +134,7 @@ CARGO_TARGET_DIR="${rhwp_review_target_dir:?공용 target의 절대 경로를 �
 초기화한 실제 WASM의 `HwpDocument.getPdfImportSupport()`를 JSON으로 읽으면 문서를 열기 전에
 지원 코덱·ICC·복구 기능을 알 수 있습니다. `supportsPdfImport()`는 PDF 입력 자체의 활성 여부만 반환합니다.
 오래된 JS glue와 새로운 WASM을 섞지 않습니다. 직접 `HwpDocument.importPdf()`는 동기 호출입니다.
-로컬 S04 Studio는 같은 변환기를 전용 Worker에서 실행하고 성공한 후보를 편집 문서로 재열어
+Studio는 같은 변환기를 전용 Worker에서 실행하고 성공한 후보를 편집 문서로 재열어
 교체합니다. 프로필·진행·취소·재시도는 [Studio 사용자 가이드](studio_document_features.md)를 따릅니다.
 동기 재열기 자체를 중간에 선점하지는 못합니다. 별도 Worker를 쓰는 호스트도 공통 `rhwp-shared/pdf/import-session.js`의
 입력 복사 전 정책 조회, 취소·시간 초과 후 Worker 종료·재생성 계약을 사용할 수 있습니다.
@@ -157,9 +157,9 @@ CARGO_TARGET_DIR="${rhwp_review_target_dir:?공용 target의 절대 경로를 �
 입력 크기에 비례하는 저장소와 작업, xref 복구 scan을 같은 요청 예산으로 계상합니다. `resourcePolicy.backend.codecWorkUnits`와
 `resourceUsage.codecWorkUnits`는 논리 작업량이며 밀리초·CPU 명령 수가 아닙니다.
 한도는 서로 독립적입니다. 픽셀 한도 이내라도 임시 평면·wavelet·PNG 버퍼의 단일/누적 예약으로
-거부될 수 있습니다. 기존 비 JPEG 경로의 8×픽셀 사전 예약과 단일 32 MiB 한도를 함께 적용하면
-약 419만 픽셀을 넘는 그림은 먼저 거부될 수 있습니다. A4 200 DPI 스캔은 검증했지만
-더 높은 해상도의 수용을 보장하지 않습니다. 원본 해상도를 자동으로 줄여 수용하지 않습니다.
+거부될 수 있습니다. 표준 프로필은 단일 codec 예약 256 MiB·그림 64,000,000픽셀을 허용하지만
+중간 평면과 누적 작업 예산 때문에 더 먼저 거절될 수 있습니다. 제한 프로필은 더 낮으며
+모든 해상도의 수용을 보장하지 않습니다. 원본 해상도를 자동으로 줄여 수용하지 않습니다.
 
 코덱 한도 검증은 전체 parser·font·cache의 할당 상한이나 process RSS·실행 시간의 보장이
 아닙니다. `parserAllocationBoundsProven=false`는 유지합니다. CLI의
@@ -173,7 +173,9 @@ alpha를 보존합니다. 유효하지 않거나 지원하지 않는 profile은 
 xref와 root를 재구성할 수 있을 때만 성공하며 모호한 stream 경계·암호화 PDF를 우회하지 않습니다.
 JPX의 PDF Indexed+내장 mask·CMYK+alpha도 지원 범위를 넓혔지만 모든 JP2 channel 정의와
 subsampling 조합을 보장하지 않습니다. Indexed Lab 팔레트의 preblended alpha는 원 성분
-범위를 보존하지 못해 명시적으로 거부하며 straight alpha와 구분합니다. OCR·암호 PDF는 계속 미지원입니다.
+범위를 보존하지 못해 명시적으로 거부하며 straight alpha와 구분합니다. OCR은 미지원입니다. Standard Security R2–R6 암호 PDF는 열기 암호 인증 후 가져오며,
+빈 열기 암호는 자동 인증합니다. 공개키·미지원 crypt filter는 `PDF_ENCRYPTION_UNSUPPORTED`입니다.
+[개발자 시작 안내](pdf_developer_onboarding.md)의 암호·Worker 예제를 참고하세요.
 [보안과 기능 제한](security_feature_limits.md)을 함께 확인합니다.
 
 ## 저장본의 다른 앱 출력 확인

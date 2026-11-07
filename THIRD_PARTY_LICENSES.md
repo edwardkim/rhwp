@@ -10,7 +10,7 @@ Copyright © 2024 Unicode, Inc.이며 [Unicode License v3](assets/licenses/Unico
 Print JPEG 인코더의 원래 라이선스·저작권 고지는 `vendor/rhwp-jpeg-encoder/LICENSE-*`에 있다.
 Print JPEG 디코더의 선택 변환은 공개 Intel MediaSDK 정수 IDCT(MIT)를 Rust로 번역하고,
 IJG 보간 규칙을 재표현한다. Intel 저작권·MIT 고지는
-`src/renderer/image_resolver/print_jpeg_idct.rs`, IJG 원문과 배포 조건은
+`src/renderer/image_resolver/print_jpeg_idct.rs`와 `licenses/intel-mediasdk/LICENSE`, IJG 원문과 배포 조건은
 `vendor/rhwp-zune-jpeg/README.ijg`, 해당 구현은 `vendor/rhwp-zune-jpeg/src/ijg_upsampler.rs`와
 최종 JPEG 재생의 `vendor/rhwp-zune-jpeg/src/ijg_replay.rs`,
 변경 설명은 `vendor/rhwp-zune-jpeg/RHWP_PATCHES.md`에 있다.
@@ -52,7 +52,6 @@ This software is based in part on the work of the Independent JPEG Group.
 | hmac | 0.13.0 | MIT OR Apache-2.0 | RustCrypto/MACs | HWPX 무결성 |
 | image | 0.25.10 | MIT OR Apache-2.0 | image-rs/image | BMP/JPEG/PNG 디코딩 |
 | rhwp-zune-jpeg | 0.5.15-rhwp.1 | (MIT OR Apache-2.0 OR Zlib) AND IJG | etemesi254/zune-image, IJG | 요청별 할당 예산·인스턴스별 Print 변환; 기본 PDF import decoder는 원래 변환 유지 |
-| rhwp-jpeg-encoder | 0.7.1-rhwp.1 | (MIT OR Apache-2.0) AND IJG | vstroebel/jpeg-encoder | Print의 공통 스칼라 JPEG 인코딩; 원본·변경 내역은 `vendor/rhwp-jpeg-encoder/` |
 | js-sys | 0.3.102 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM JS interop |
 | office_oxide | 0.1.9 | MIT OR Apache-2.0 | yfedoseev/office_oxide | `pdf-import` optional 호환성 제약; PDF 전이 의존성 |
 | paste | 1.0.15 | MIT OR Apache-2.0 | dtolnay/paste | 매크로 보조 |
@@ -67,7 +66,7 @@ This software is based in part on the work of the Independent JPEG Group.
 | serde_json | 1.0.151 | MIT OR Apache-2.0 | serde-rs/json | JSON 직렬화 |
 | sha1 | 0.11.0 | MIT OR Apache-2.0 | RustCrypto/hashes | HWPX 암호 키 파생 |
 | sha2 | 0.11.0 | MIT OR Apache-2.0 | RustCrypto/hashes | 서명·CAS 해시 |
-| skia-safe | 0.99.0 | MIT | rust-skia/rust-skia | native-skia PNG/PDF backend (optional) |
+| skia-safe | 0.156.0 | MIT | rust-skia/rust-skia | native-skia PNG/PDF backend (optional) |
 | snafu | 0.9.2 | MIT OR Apache-2.0 | shepmaster/snafu | 에러 처리 |
 | strum | 0.28.0 | MIT | Peternator7/strum | enum derive |
 | subsecond | 0.7.10 | MIT OR Apache-2.0 | DioxusLabs/dioxus | 개발 핫패치 (optional) |
@@ -149,7 +148,7 @@ rhwp가 Office 입력 형식 지원을 추가했다는 뜻은 아니다.
 원래 MIT/Apache 라이선스·NOTICE·상표 정책도 해당 directory에 유지한다.
 내부 Rust dependency는 `rlib`만 생성한다. 원본 C API·writer 소스는 보존하지만 이 내부
 package를 독립 cdylib/staticlib 제품으로 배포하는 계약은 제공하지 않는다.
-`publish = false`이며 외부 게시·배포와 게시된 rhwp library 소비자 지원은 아직 완료하지 않았다.
+manifest는 crates.io 게시 후보로 준비되어 있지만, 실제 게시 일정과 공개 registry 소비 검증은 제품 릴리즈와 별도로 확정한다.
 
 아래 고지는 해당 버전 crate 배포본의 `NOTICE`와 `LICENSE-MIT` 원문이다.
 두 crate의 재배포에는 dual license 중 MIT 선택지를 적용한다. 이 고지와 각 전이 의존성의

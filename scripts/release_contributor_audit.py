@@ -53,11 +53,34 @@ def run_git(repo: Path, args: list[str]) -> bytes:
 
 
 def run_gh(args: list[str]) -> bytes:
-    return subprocess.run(
+    result = subprocess.run(
         ["gh", *args],
-        check=True,
         stdout=subprocess.PIPE,
-    ).stdout
+        stderr=subprocess.PIPE,
+    )
+    if result.returncode and args[:2] == ["api", "graphql"]:
+        # GitHub returns useful sibling nodes alongside NOT_FOUND errors for
+        # deleted issue/PR references. Keep those nodes; the ledger still
+        # requires an explicit disposition for each missing reference.
+        try:
+            payload = json.loads(result.stdout)
+            repository = payload["data"]["repository"]
+            errors = payload["errors"]
+            missing_only = isinstance(repository, dict) and bool(errors) and all(
+                error.get("type") == "NOT_FOUND"
+                and isinstance(error.get("path"), list)
+                and len(error["path"]) == 2
+                and error["path"][0] == "repository"
+                and error["path"][1] in repository
+                and repository[error["path"][1]] is None
+                for error in errors
+            )
+        except (ValueError, KeyError, TypeError, AttributeError):
+            missing_only = False
+        if missing_only:
+            return result.stdout
+    result.check_returncode()
+    return result.stdout
 
 
 def resolve_git_sha(repo: Path, revision: str) -> str:

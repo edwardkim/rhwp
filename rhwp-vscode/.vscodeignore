@@ -2,6 +2,8 @@ src/**
 node_modules/**
 .vscode/**
 media/icon.svg
+media/rhwp.js
+media/rhwp_bg.wasm
 tsconfig.json
 tsconfig.webview.json
 webpack.config.js

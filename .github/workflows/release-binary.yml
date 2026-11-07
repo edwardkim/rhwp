@@ -116,6 +116,14 @@ jobs:
         run: |
           target/${{ matrix.target }}/release/${{ matrix.binary_name }} --version
 
+      - name: Install Python for release verification
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+
+      - name: Prepare third-party notices
+        run: python scripts/prepare_release_notices.py dist/rhwp/notices
+
       - name: Package archive (Linux/macOS)
         if: matrix.archive == 'tar.gz'
         shell: bash
@@ -126,6 +134,7 @@ jobs:
           cp LICENSE dist/rhwp/
           cp README.md dist/rhwp/
           cp README_EN.md dist/rhwp/
+          cp packaging/PDF_QUICKSTART.md packaging/PDF_QUICKSTART_EN.md dist/rhwp/
           cd dist && tar -czf "../${ARCHIVE_NAME}" rhwp/
           cd ..
           ls -la "${ARCHIVE_NAME}"
@@ -141,17 +150,13 @@ jobs:
           Copy-Item LICENSE dist/rhwp/
           Copy-Item README.md dist/rhwp/
           Copy-Item README_EN.md dist/rhwp/
+          Copy-Item packaging/PDF_QUICKSTART.md, packaging/PDF_QUICKSTART_EN.md dist/rhwp/
           Compress-Archive -Path dist/rhwp -DestinationPath $archiveName -Force
           Get-ChildItem $archiveName
           "ARCHIVE_NAME=$archiveName" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       # Verify the packaged binary on every platform, including the Intel binary
       # on macOS ARM. --version alone cannot detect a missing optional backend.
-      - name: Install Python for release verification
-        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with:
-          python-version: '3.12'
-
       - name: Verify packaged PNG export
         shell: bash
         run: |

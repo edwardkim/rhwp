@@ -476,6 +476,12 @@ class WorkflowPromotionEvidenceTests(unittest.TestCase):
 
 class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
     expected_workflows = {
+        ".github/actions/verify-release-wasm/action.yml",
+        ".github/workflows/ci-impact-policy.yml",
+        ".github/workflows/full-renderer-sweep.yml",
+        ".github/workflows/fuzz-smoke.yml",
+        ".github/workflows/layout-anomaly-advisory.yml",
+        ".github/workflows/skill-router-gate.yml",
         ".github/workflows/adapter-diff.yml",
         ".github/workflows/ci.yml",
         ".github/workflows/codeql.yml",

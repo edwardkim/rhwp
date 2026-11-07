@@ -254,20 +254,18 @@ Chrome Web Store와 Microsoft Edge Add-ons는 `rhwp-chrome` 빌드 산출물을 
 Firefox AMO는 `rhwp-firefox` 빌드 산출물을 사용한다.
 
 ```bash
-cd rhwp-chrome
-npm run build
-cd dist
-zip -r ../rhwp-chrome-{version}.zip .
-cp ../rhwp-chrome-{version}.zip ../rhwp-edge-{version}.zip
+# 저장소 루트에서 실행한다. 미게시 준비 산출물은 output/에만 둔다.
+release_version=0.9.0
+release_out="$PWD/output/release-v${release_version}/packages"
+mkdir -p "$release_out"
+npm --prefix rhwp-chrome run build
+(cd rhwp-chrome/dist && zip -qr "${release_out}/rhwp-chrome-${release_version}.zip" .)
+cp "${release_out}/rhwp-chrome-${release_version}.zip" "${release_out}/rhwp-edge-${release_version}.zip"
+npm --prefix rhwp-firefox run build
+(cd rhwp-firefox/dist && zip -qr "${release_out}/rhwp-firefox-${release_version}.zip" .)
 
-cd ../rhwp-firefox
-npm run build
-cd dist
-zip -r ../rhwp-firefox-{version}.zip .
-
-cd ../..
-git archive --format=zip --prefix=rhwp-source/ --output=rhwp-firefox/rhwp-source-{version}-amo.zip HEAD Cargo.toml Cargo.lock build.rs rust-toolchain.toml rustfmt.toml Dockerfile docker-compose.yml .env.docker.example LICENSE README.md README_EN.md CHANGELOG.md CHANGELOG_EN.md THIRD_PARTY_LICENSES.md llms.txt src crates vendor rhwp-studio rhwp-firefox rhwp-shared assets/fonts assets/logo/logo-32.png saved/blank2010.hwp ttfs/opensource/NotoSansKR-Regular.ttf ttfs/opensource/NotoSansKR-OFL.txt scripts npm/README.md npm/editor npm/hwpctrl-ocx bindings/Native tools/rhwp-subsecond tools/batch-convert tools/llm_verifier/verdict_protocol tools/llm_verifier/claim_bind tools/llm_verifier/criteria_decomp mydocs/manual/agent_knowledge_map.md mydocs/manual/agent_troubleshooting_guide.md mydocs/manual/recipes mydocs/manual/gym_optional_tool.md mydocs/tech/agent_roadmap/atlas_r1_r200.md mydocs/tech/agent_runtime/version_policy.md
-zip -d rhwp-firefox/rhwp-source-{version}-amo.zip \
+git archive --format=zip --prefix=rhwp-source/ --output="${release_out}/rhwp-source-${release_version}-amo.zip" HEAD Cargo.toml Cargo.lock build.rs rust-toolchain.toml rustfmt.toml Dockerfile docker-compose.yml .env.docker.example LICENSE README.md README_EN.md CHANGELOG.md CHANGELOG_EN.md THIRD_PARTY_LICENSES.md llms.txt src crates vendor rhwp-studio rhwp-firefox rhwp-shared licenses assets/licenses assets/fonts assets/font-rules data/font-metrics packaging/crates-io assets/logo/logo-32.png saved/blank2010.hwp ttfs/opensource/NotoSansKR-Regular.ttf ttfs/opensource/NotoSansKR-OFL.txt scripts npm/README.md npm/editor npm/hwpctrl-ocx bindings/Native tools/rhwp-subsecond tools/batch-convert tools/llm_verifier/verdict_protocol tools/llm_verifier/claim_bind tools/llm_verifier/criteria_decomp mydocs/manual/agent_knowledge_map.md mydocs/manual/agent_troubleshooting_guide.md mydocs/manual/recipes mydocs/manual/gym_optional_tool.md mydocs/tech/agent_roadmap/atlas_r1_r200.md mydocs/tech/agent_runtime/version_policy.md
+zip -d "${release_out}/rhwp-source-${release_version}-amo.zip" \
   "rhwp-source/rhwp-studio/public/samples/*" \
   "rhwp-source/tools/llm_verifier/*/fixtures/*" \
   "rhwp-source/scripts/tests/*"
