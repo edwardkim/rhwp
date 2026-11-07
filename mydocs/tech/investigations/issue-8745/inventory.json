@@ -1,0 +1,39 @@
+{
+  "observed_at": "2026-11-07T18:57:02.660093+09:00",
+  "local_head": "e4ffabea38062e716f6c333cc950fa31b42b4dd7",
+  "historical_analysis_id": 2117586342,
+  "rule_counts": {
+    "rust/hard-coded-cryptographic-value": 16,
+    "rust/cleartext-logging": 107,
+    "rust/weak-sensitive-data-hashing": 1,
+    "rust/weak-cryptographic-algorithm": 1
+  },
+  "source_groups": [
+    {
+      "path": "src/native_host/mod.rs",
+      "line": 181,
+      "message": "...::from_bytes_with_password(...)",
+      "flow_count": 424
+    },
+    {
+      "path": "src/cli/commands/conversion.rs",
+      "line": 517,
+      "message": "doc.export_hwpx_native_with_password(...)",
+      "flow_count": 1
+    }
+  ],
+  "scope_note": "These are actual results from PR #8739 tested merge, not a new analysis of current devel. Alert state lists are ref-specific historical snapshots.",
+  "alerts-devel.json": {
+    "count": 144,
+    "states": {
+      "dismissed": 131,
+      "fixed": 13
+    }
+  },
+  "alerts-pr8739.json": {
+    "count": 135,
+    "states": {
+      "dismissed": 135
+    }
+  }
+}

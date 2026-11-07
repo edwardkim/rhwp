@@ -1,0 +1,6 @@
+{
+  "scope": "Exact OpenOptions declaration and impl extracted from src/service/open.rs, not full product binary; synthetic value only",
+  "source_sha256": "6d088a168fd190a5dc67f61445ae3f8f82091ba4d4cdf49d6ae959ca446c300e",
+  "fragment_sha256": "eacb90ef0e77fa3c6266de5f4d3f2d63f7b42ea87864395de985261d77a6d860",
+  "stdout": "compact_contains_synthetic_password=true\npretty_contains_synthetic_password=true\n"
+}
