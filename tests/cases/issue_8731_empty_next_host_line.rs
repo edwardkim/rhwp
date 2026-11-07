@@ -4,13 +4,13 @@
 //! [Issue #8731] 자리차지 개체를 매단 빈 앵커 문단 뒤가 **개체 없는 빈 문단**이면 띠 아래
 //! host 줄이 흐름에서 빠져 뒤 본문 전체가 그 줄만큼 위로 붙는다. 저장 사다리
 //! (`다음 vpos - host vpos = lh + ls`)는 뒤 문단의 글자 유무와 관계없이 같은 증거다.
-//! 개체를 가진 빈 뒤 문단(앵커 스택)은 개체-개체 간격이라 계속 제외하고, 그 계약은
-//! `float_placement` 단위 검사가 잠근다.
+//! 개체를 가진 빈 뒤 문단(앵커 스택)은 개체-개체 간격이라 계속 제외한다.
 //!
 //! 가드하는 축:
 //!   ① 실제 보도자료 2건: 첫 본문 줄 = 띠 아래끝 + 바깥 여백 + host 줄 + 빈 문단 줄
 //!   ② 줄 폭이 남은 host 는 음수 오프셋에서도 띠 아래 줄을 더하지만, 폭 0 host 는 더하지 않는다
-//!   ③ 리셋 앞 TAC 줄은 줄 높이까지만 쪽에 들어가면 남는다(마지막 줄간격을 세지 않는다)
+//!   ③ 뒤 문단이 개체를 가지면(앵커 스택) 같은 사다리여도 띠 아래 줄을 더하지 않는다
+//!   ④ 리셋 앞 TAC 줄은 줄 높이까지만 쪽에 들어가면 남는다(마지막 줄간격을 세지 않는다)
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -45,6 +45,18 @@ fn table_bottom(node: &RenderNode, para: usize) -> Option<f64> {
         .filter_map(|child| table_bottom(child, para))
         .chain(own)
         .reduce(f64::max)
+}
+
+fn table_top(node: &RenderNode, para: usize) -> Option<f64> {
+    let own = match &node.node_type {
+        RenderNodeType::Table(table) if table.para_index == Some(para) => Some(node.bbox.y),
+        _ => None,
+    };
+    node.children
+        .iter()
+        .filter_map(|child| table_top(child, para))
+        .chain(own)
+        .reduce(f64::min)
 }
 
 fn line_top(node: &RenderNode, para: usize) -> Option<f64> {
@@ -132,6 +144,42 @@ fn gap_below_band_with_host_width(segment_width: u32) -> f64 {
     let page = core.build_page_render_tree(0).expect("page");
     let band = table_bottom(&page.root, HOST).expect("띠");
     line_top(&page.root, HOST + 1).expect("뒤 빈 문단 줄") - (band + margin)
+}
+
+/// 뒤 문단에 원본 표를 복제해 앵커 스택을 만든 합성 변형. 반환값은 뒤 앵커 표의 윗변(px).
+fn anchor_stack_next_top(host_width: u32) -> f64 {
+    let mut core = open("samples/issue7621/control-float.hwp");
+    let mut doc = core.document().clone();
+    let paras = &mut doc.sections[0].paragraphs;
+    let next_table = paras[HOST].controls[0].clone();
+    paras[HOST + 1].controls = vec![next_table];
+    let host = &mut paras[HOST];
+    host.line_segs[0].segment_width = host_width as i32;
+    let Control::Table(table) = &mut host.controls[0] else {
+        panic!("전제: 표 문단");
+    };
+    table.common.vertical_offset = (-189i32) as u32;
+    let seg = host.line_segs[0].clone();
+    assert_eq!(
+        paras[HOST + 1].line_segs[0].vertical_pos - seg.vertical_pos,
+        seg.line_height + seg.line_spacing,
+        "전제 — 저장 사다리가 host 줄 하나 높이와 같다"
+    );
+    core.set_document(doc);
+    let page = core.build_page_render_tree(0).expect("page");
+    table_top(&page.root, HOST + 1).expect("뒤 앵커 표")
+}
+
+#[test]
+fn issue_8731_anchor_stack_next_adds_no_line_below_band() {
+    // 폭 0 host 는 띠 아래 줄이 없는 기준이다. 뒤가 앵커 스택이면 폭이 남은 host 도 사다리를
+    // 띠 아래 줄의 증거로 쓰지 않아 뒤 표가 같은 자리에 와야 한다.
+    let blocked = anchor_stack_next_top(0);
+    let open_host = anchor_stack_next_top(1000);
+    assert!(
+        (open_host - blocked).abs() <= TOL_PX,
+        "앵커 스택의 사다리는 띠 아래 줄의 증거가 아니다: 뒤 표 {blocked:.1} → {open_host:.1}px"
+    );
 }
 
 #[test]
