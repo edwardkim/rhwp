@@ -443,6 +443,7 @@ impl crate::model::document::Document {
             }
         }
         self.seal_section_tail_provenance();
+        self.seal_loaded_memo_tails();
         for section in &mut self.sections {
             section.seal_raw_provenance();
         }
@@ -459,6 +460,29 @@ impl crate::model::document::Document {
         for section in &mut self.sections {
             if let Some(tail) = &mut section.trailing_lists {
                 tail.projection_seal = tail_digest;
+            }
+        }
+    }
+
+    /// 원본 문서의 로드·정규화 시점에만 메모 본문과 원본 레코드를 연결한다.
+    /// 이후 바탕쪽 또는 스타일 참조를 다시 봉인해도 미저장 메모 편집을 승인하지 않는다.
+    pub(crate) fn seal_loaded_memo_tails(&mut self) {
+        let mut digest = None;
+        for i in 0..self.sections.len() {
+            let has_memo = self.sections[i]
+                .trailing_lists
+                .as_ref()
+                .is_some_and(|tail| tail.record_groups().any(|(memo, _)| memo));
+            if has_memo {
+                let seal = *digest.get_or_insert_with(|| {
+                    let lists = crate::model::section_tail::collect(
+                        &self.sections,
+                        &crate::storage::Unbounded,
+                    )
+                    .unwrap();
+                    crate::model::section_tail::memo_digest(&lists)
+                });
+                self.sections[i].trailing_lists.as_mut().unwrap().memo_seal = Some(seal);
             }
         }
     }

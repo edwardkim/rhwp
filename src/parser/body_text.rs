@@ -85,6 +85,13 @@ impl std::error::Error for BodyTextError {}
 ///
 /// data: 압축 해제된(배포용은 복호화+해제된) 레코드 바이트 스트림
 pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
+    parse_section_with_previous(data, &mut [])
+}
+
+pub(super) fn parse_section_with_previous(
+    data: &[u8],
+    previous: &mut [Section],
+) -> Result<Section, BodyTextError> {
     let records = Record::read_all(data).map_err(|e| BodyTextError::RecordError(e.to_string()))?;
     drawing_text_structure::validate(&records)?;
 
@@ -135,26 +142,138 @@ pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
     link_orphan_field_ends(&mut section.paragraphs);
 
     if let Some(start) = tail_start {
-        let tail: Vec<RawRecord> = records[start..]
-            .iter()
-            .map(|r| RawRecord {
-                tag_id: r.tag_id,
-                level: r.level,
-                data: r.data.clone(),
-            })
-            .collect();
-        // 화면의 기존 의미 투영은 유지하고, 저장 소유는 플래그와 독립적으로 보존한다.
-        section
-            .section_def
-            .master_pages
-            .extend(master_page_scope::parse_extended_master_pages(&tail));
-        section.trailing_lists = Some(crate::model::section_tail::SectionTail {
-            records: tail,
-            projection_seal: None,
-        });
+        let tail = &records[start..];
+        let saved = crate::model::section_tail::SectionTail {
+            records: tail
+                .iter()
+                .map(|record| RawRecord {
+                    tag_id: record.tag_id,
+                    level: record.level,
+                    data: record.data.clone(),
+                })
+                .collect(),
+            ..Default::default()
+        };
+        let mut offset = 0;
+        for (memo, group) in saved.record_groups() {
+            let end = offset + group.len();
+            if memo {
+                let number = u32::from_le_bytes(group[0].data[..4].try_into().unwrap());
+                let mut body = Some(parse_paragraph_list(&tail[offset + 2..end]));
+                for owner in previous.iter_mut().chain(std::iter::once(&mut section)) {
+                    if assign_memo_paragraphs(&mut owner.paragraphs, number, &mut body) {
+                        break;
+                    }
+                }
+            } else {
+                section
+                    .section_def
+                    .master_pages
+                    .extend(master_page_scope::parse_extended_master_pages(group));
+            }
+            offset = end;
+        }
+        section.trailing_lists = Some(saved);
     }
 
     Ok(section)
+}
+
+/// Attach one memo body to the first matching memo field that has none.
+fn assign_memo_paragraphs(
+    paragraphs: &mut [Paragraph],
+    number: u32,
+    body: &mut Option<Vec<Paragraph>>,
+) -> bool {
+    for para in paragraphs {
+        for ctrl in &mut para.controls {
+            match ctrl {
+                Control::Field(field)
+                    if field_is_memo(field) && memo_field_number(field) == number =>
+                {
+                    if field.memo_paragraphs.is_empty() {
+                        if let Some(body) = body.take() {
+                            field.memo_paragraphs = body;
+                            return true;
+                        }
+                    }
+                }
+                Control::Table(table) => {
+                    for cell in &mut table.cells {
+                        if assign_memo_paragraphs(&mut cell.paragraphs, number, body) {
+                            return true;
+                        }
+                    }
+                }
+                Control::Shape(shape) => {
+                    if assign_memo_in_shape(shape, number, body) {
+                        return true;
+                    }
+                }
+                Control::Header(header) => {
+                    if assign_memo_paragraphs(&mut header.paragraphs, number, body) {
+                        return true;
+                    }
+                }
+                Control::Footer(footer) => {
+                    if assign_memo_paragraphs(&mut footer.paragraphs, number, body) {
+                        return true;
+                    }
+                }
+                Control::Footnote(note) => {
+                    if assign_memo_paragraphs(&mut note.paragraphs, number, body) {
+                        return true;
+                    }
+                }
+                Control::Endnote(note) => {
+                    if assign_memo_paragraphs(&mut note.paragraphs, number, body) {
+                        return true;
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+    false
+}
+
+pub(crate) fn field_is_memo(field: &crate::model::control::Field) -> bool {
+    field.field_type == crate::model::control::FieldType::Memo || field.command.starts_with("MEMO/")
+}
+
+pub(crate) fn memo_field_number(field: &crate::model::control::Field) -> u32 {
+    if field.memo_index != 0 {
+        return field.memo_index;
+    }
+    field
+        .command
+        .split('/')
+        .nth(2)
+        .and_then(|token| token.parse().ok())
+        .unwrap_or(0)
+}
+
+fn assign_memo_in_shape(
+    shape: &mut crate::model::shape::ShapeObject,
+    number: u32,
+    body: &mut Option<Vec<Paragraph>>,
+) -> bool {
+    use crate::model::shape::ShapeObject;
+    if let Some(drawing) = shape.drawing_mut() {
+        if let Some(text_box) = &mut drawing.text_box {
+            if assign_memo_paragraphs(&mut text_box.paragraphs, number, body) {
+                return true;
+            }
+        }
+    }
+    if let ShapeObject::Group(group) = shape {
+        for child in &mut group.children {
+            if assign_memo_in_shape(child, number, body) {
+                return true;
+            }
+        }
+    }
+    false
 }
 
 /// 다단락 필드의 종료 마커에 짝 `fieldBegin` 의 id 를 채운다.
@@ -166,8 +285,8 @@ pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
 /// 매달린 참조(`beginIDRef="0"`)를 그대로 내보내면 **한글이 파일을 열지 못한다**
 /// (01752 실측). 짝을 못 찾은 종료 마커는 8유닛 슬롯만 지키고 id 는 0 으로 남긴다.
 fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
-    // (필드 인스턴스 id, HWP5 ctrl_id)
-    let mut open_fields: Vec<(u32, u32)> = Vec::new();
+    // (필드 인스턴스 id, HWP5 ctrl_id, 메모 번호)
+    let mut open_fields: Vec<(u32, u32, u32)> = Vec::new();
     link_orphan_field_ends_with(paragraphs, &mut open_fields);
 }
 
@@ -176,16 +295,27 @@ fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
 /// **짝을 이미 채운 종료 마커에서도 스택을 pop 한다.** HWP5 종료 마커에는 짝 id 가 없어
 /// 순서만이 짝이므로, 이미 이은 마커를 건너뛰면 그 짝이 스택에 남아 뒤에 오는 마커가
 /// **엉뚱한 필드를 닫는다**. 채우기만 조건부로 한다.
-fn link_orphan_field_ends_with(paragraphs: &mut [Paragraph], open_fields: &mut Vec<(u32, u32)>) {
+fn link_orphan_field_ends_with(
+    paragraphs: &mut [Paragraph],
+    open_fields: &mut Vec<(u32, u32, u32)>,
+) {
     for para in paragraphs.iter_mut() {
         // 이 문단의 종료 마커는 **앞서 열린** 필드를 닫는다.
         for ofe in para.orphan_field_ends.iter_mut() {
-            let Some((id, ctrl_id)) = open_fields.pop() else {
+            let Some((id, ctrl_id, memo_index)) = open_fields.pop() else {
                 continue;
             };
             if ofe.begin_id_ref == 0 {
                 ofe.begin_id_ref = id;
+            }
+            // Non-memo multi-paragraph fields need this to write their closing
+            // marker at all; HWPX already carries beginIDRef, so it must be set
+            // even when the id was present.
+            if ofe.begin_ctrl_id == 0 {
                 ofe.begin_ctrl_id = ctrl_id;
+            }
+            if memo_index != 0 && ofe.memo_index == 0 {
+                ofe.memo_index = memo_index;
             }
         }
 
@@ -196,7 +326,19 @@ fn link_orphan_field_ends_with(paragraphs: &mut [Paragraph], open_fields: &mut V
             };
             let closed_here = para.field_ranges.iter().any(|fr| fr.control_idx == i);
             if !closed_here && field.field_id != 0 {
-                open_fields.push((field.field_id, field.ctrl_id));
+                // 메모의 진짜 여는 글자는 `%%me`이고, 저장할 때는 한컴의
+                // 메모 전용 종료 표식(번호 포함)을 써야 한다.
+                let memo_index = if field_is_memo(field) {
+                    memo_field_number(field)
+                } else {
+                    0
+                };
+                let ctrl_id = if memo_index != 0 {
+                    tags::FIELD_MEMO
+                } else {
+                    field.ctrl_id
+                };
+                open_fields.push((field.field_id, ctrl_id, memo_index));
             }
         }
     }
@@ -217,7 +359,7 @@ fn link_orphan_field_ends_with(paragraphs: &mut [Paragraph], open_fields: &mut V
 /// 진짜로 짝이 없는 종료 마커는 여전히 `begin_id_ref == 0` 으로 남아 `#5252` 가드가
 /// 그대로 버린다 — 07276·02899 의 본문 폐기 방지는 유지된다.
 pub fn link_orphan_field_ends_across_sections(sections: &mut [crate::model::document::Section]) {
-    let mut open_fields: Vec<(u32, u32)> = Vec::new();
+    let mut open_fields: Vec<(u32, u32, u32)> = Vec::new();
     for section in sections.iter_mut() {
         link_orphan_field_ends_with(&mut section.paragraphs, &mut open_fields);
     }
@@ -596,6 +738,7 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
                         begin_id_ref: 0,
                         field_id: 0,
                         begin_ctrl_id: 0,
+                        memo_index: 0,
                     });
                 }
             } else if is_extended_only_ctrl_char(ch) {

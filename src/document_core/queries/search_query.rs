@@ -617,6 +617,13 @@ impl DocumentCore {
                         }
                     };
                     replace_char_range(&mut equation.script, hit.char_offset, hit.length, new_text);
+                } else if new_text.is_empty() {
+                    crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                        nested_para,
+                        hit.char_offset,
+                        hit.length,
+                    );
+                    affected_cell_paragraphs.push((hit.sec, cell.parent_para, cell.path.clone()));
                 } else {
                     // [#7866] 새 글자는 지운 글자의 모양을 자리대로 잇는다(한/글 찾아 바꾸기).
                     nested_para.replace_text_inheriting_char_shapes(
@@ -668,8 +675,16 @@ impl DocumentCore {
                     .paragraphs
                     .get_mut(hit.para)
                     .ok_or_else(|| HwpError::RenderError("문단 범위 초과".into()))?;
-                // [#7866] 새 글자는 지운 글자의 모양을 자리대로 잇는다(한/글 찾아 바꾸기).
-                para.replace_text_inheriting_char_shapes(hit.char_offset, hit.length, new_text);
+                if new_text.is_empty() {
+                    crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                        para,
+                        hit.char_offset,
+                        hit.length,
+                    );
+                } else {
+                    // [#7866] 새 글자는 지운 글자의 모양을 자리대로 잇는다(한/글 찾아 바꾸기).
+                    para.replace_text_inheriting_char_shapes(hit.char_offset, hit.length, new_text);
+                }
                 affected_body_paragraphs.push((hit.sec, hit.para));
                 count += 1;
                 affected_sections.push(hit.sec);

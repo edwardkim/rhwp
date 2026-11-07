@@ -417,6 +417,7 @@ fn parse_hwp_inner_with_limits(
         }
     }?;
     document.seal_section_tail_provenance();
+    document.seal_loaded_memo_tails();
     Ok(document)
 }
 
@@ -809,10 +810,11 @@ fn decode_viewtext_paragraph_stream(
 
 fn parse_visible_section(
     data: &[u8],
+    previous: &mut [crate::model::document::Section],
     doc_info: &crate::model::document::DocInfo,
 ) -> Result<crate::model::document::Section, body_text::BodyTextError> {
     let projected = tracked_viewtext::project(data, doc_info)?;
-    body_text::parse_body_text_section(projected.as_deref().unwrap_or(data))
+    body_text::parse_section_with_previous(projected.as_deref().unwrap_or(data), previous)
 }
 
 /// CfbReader로 섹션들 파싱
@@ -883,7 +885,7 @@ fn parse_sections_strict(
             .consume(section_data.len())
             .map_err(ParseError::CfbError)?;
 
-        match parse_visible_section(&section_data, doc_info) {
+        match parse_visible_section(&section_data, &mut sections, doc_info) {
             Ok(mut section) => {
                 // 원본 BodyText 스트림 보존 (라운드트립용)
                 section.raw_stream = Some(section_data);
@@ -1022,7 +1024,7 @@ fn parse_hwp_with_lenient(
             .consume(section_data.len())
             .map_err(ParseError::CfbError)?;
 
-        match parse_visible_section(&section_data, &doc_info) {
+        match parse_visible_section(&section_data, &mut sections, &doc_info) {
             Ok(mut section) => {
                 section.raw_stream = Some(section_data);
                 sections.push(section);

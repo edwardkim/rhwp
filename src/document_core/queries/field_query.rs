@@ -2680,7 +2680,7 @@ fn invalid_raw_slots() -> HwpError {
 /// 갭은 8유닛 슬롯(컨트롤과 FIELD_END)으로만 채워지고, 누름틀 BEGIN은 시작 갭에, END는 끝
 /// 갭에 있어야 한다. 숨은 슬롯이 있거나 갭마다 거기까지의 슬롯 수가 이 배치와 맞지 않으면
 /// 위치를 추정하지 않고 오류를 낸다.
-fn raw_slot_gaps(para: &Paragraph) -> Result<Vec<(u32, u32)>, HwpError> {
+pub(crate) fn raw_slot_gaps(para: &Paragraph) -> Result<Vec<(u32, u32)>, HwpError> {
     if !para.title_marks.is_empty()
         || !para.orphan_field_ends.is_empty()
         || para.text.contains('\u{fffc}')

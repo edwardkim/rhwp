@@ -72,6 +72,64 @@ fn edit(bytes: &[u8], section: usize, text: &str) -> Vec<u8> {
 }
 
 #[test]
+fn master_only_tail_projects_each_source_list_once() {
+    let source = sample("samples/exam_math_8.hwp");
+    let expected = tail(&source, 0)
+        .iter()
+        .filter(|r| r.0 == 72 && r.1 == 1)
+        .count();
+    assert_eq!(expected, 1);
+    for bytes in [&source, &edit(&source, 0, "A")] {
+        let doc = rhwp::parser::parse_hwp(bytes).unwrap();
+        assert_eq!(
+            doc.sections[0]
+                .section_def
+                .master_pages
+                .iter()
+                .filter(|p| p.is_extension)
+                .count(),
+            expected
+        );
+    }
+}
+
+#[test]
+fn memo_in_first_section_owns_body_in_final_section() {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "first anchor. next section")
+        .unwrap();
+    core.split_section_native(0, 0, 13).unwrap();
+    core.insert_memo_at(0, 0, 6, 12, "Reviewer", "first note")
+        .unwrap();
+    let mut bytes = core.export_hwp_native().unwrap();
+    for expected in ["first note", "edited note"] {
+        assert!(!section_records(&bytes, 0).iter().any(|r| r.0 == 93));
+        assert_eq!(tail(&bytes, 1).iter().filter(|r| r.0 == 93).count(), 1);
+        let mut reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        let list: serde_json::Value = serde_json::from_str(&reopened.get_memo_list_json()).unwrap();
+        assert_eq!(list[0]["text"], expected);
+        assert_eq!(list[0]["sectionIndex"], 0);
+        assert_eq!(list[0]["startCharIdx"], 6);
+        assert_eq!(list[0]["endCharIdx"], 12);
+        let id = list[0]["id"].as_u64().unwrap() as u32;
+        if expected == "first note" {
+            reopened.set_memo_text(id, "edited note").unwrap();
+        } else {
+            reopened.remove_memo(id).unwrap();
+        }
+        bytes = reopened.export_hwp_native().unwrap();
+    }
+    assert!(!section_records(&bytes, 1).iter().any(|r| r.0 == 93));
+    assert_eq!(
+        DocumentCore::from_bytes(&bytes)
+            .unwrap()
+            .get_memo_list_json(),
+        "[]"
+    );
+}
+
+#[test]
 fn direct_hwp_parser_preserves_tail_without_core_load_fixups() {
     for name in [
         "samples/exam_math_8.hwp",
@@ -261,12 +319,17 @@ fn removed_memo_anchor_cannot_replay_orphan_tail() {
         });
     }
     assert!(removed, "원본의 실제 본문 MEMO anchor를 제거한다");
+    // #8017부터 HWP5 메모 목록은 원본 tail이 아니라 메모 필드(`memo_paragraphs`)가 소유한다.
+    // anchor를 지우면 본문 목록도 함께 사라지므로 저장은 성공하고, 사라진 목록을 다시 쓰지 않는다.
+    let saved = serialize_hwp(&model).expect("모델이 소유한 메모 목록은 anchor와 함께 저장된다");
+    let last = CfbReader::open(&saved).unwrap().section_count() as usize - 1;
     assert!(
-        matches!(
-            serialize_hwp(&model),
-            Err(SerializeError::UnsupportedInput(_))
-        ),
-        "소유 anchor가 사라진 목록을 원본 그대로 저장하면 안 된다"
+        tail(&saved, last).iter().all(|r| r.0 != 93),
+        "소유 anchor가 사라진 메모 목록(MEMO_LIST)을 원본 그대로 다시 쓰면 안 된다"
+    );
+    assert!(
+        (0..=last).all(|s| memo_begin_markers(&saved, s).is_empty()),
+        "지운 메모의 시작 표식도 남지 않는다"
     );
 }
 
