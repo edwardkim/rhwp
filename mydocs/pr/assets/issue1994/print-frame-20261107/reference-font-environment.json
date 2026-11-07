@@ -1,0 +1,18 @@
+{
+  "id": "issue1994-print-confirmed-haansoft-with-sandoll",
+  "substitutions": {
+    "한겨레결체": "Haansoft Batang",
+    "나눔고딕": "Haansoft Batang",
+    "산돌이야기B": "Haansoft Batang",
+    "산돌이야기XB": "Haansoft Batang"
+  },
+  "trueTypeFaces": [
+    "Haansoft Batang"
+  ],
+  "glyphFallbacks": {
+    "Haansoft Batang": [
+      "Wingdings"
+    ]
+  },
+  "preserveSourceMetrics": false
+}
