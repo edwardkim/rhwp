@@ -1,5 +1,5 @@
 //! 관계형: 합성 TextRun·공개 fixture 글꼴의 glyph coverage·replay와 typed 실패를 검사한다.
-//! 주석 갱신: 2026-11-07T16:41:01+09:00; 직전 파일 커밋: 2026-11-06T18:08:11+09:00 (a0b8824f5fb54b33af6ecc694e7c962f8d4f182a).
+//! 주석 갱신: 2026-11-07T19:17:16+09:00; e4ffabea 리베이스에서 양쪽 회귀 범위를 함께 보존했다.
 //! 입력은 파일 내부 합성 문서·PageLayerTree 또는 저장소의 허가된 글꼴 fixture다.
 //! API·소유·자원/합성 paint 계약이며 실물 문서 페이지의 조판 위치를 고정하지 않는다.
 //! 이 assertion의 독립 한컴 PDF 대비 Native/fresh WASM raw 측정값은 비해당이다.
