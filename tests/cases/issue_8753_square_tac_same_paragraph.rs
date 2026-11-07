@@ -10,7 +10,8 @@
 //! `silhouette_raw_match_percent`, 문서 face 만 공급한 글꼴 디렉터리):
 //! - Native(head 184d207aa3, native-skia release): 6쪽 / 6쪽, p1 100.00 · p2 99.97 · p3 97.67 ·
 //!   p4 95.96 · p5 99.18 · p6 100.00, 최저 95.96 (base 5077b216cb 는 7쪽으로 쪽수 불일치)
-//! - fresh WASM(head 184d207aa3): WASM_RESULT
+//! - fresh WASM(head 184d207aa3, wasm sha256 b25997ac…): 6쪽 / 6쪽, p1 100.00 · p2 100.00 · p3 98.53 ·
+//!   p4 98.40 · p5 99.15 · p6 100.00, 최저 98.40
 //! - 증거: `mydocs/pr/assets/issue_8753/`
 #![cfg(not(target_arch = "wasm32"))]
 
