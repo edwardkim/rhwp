@@ -65,13 +65,106 @@ static ASCII_3: [u16; 95] = [
     619, 585, 253, 283, 253, 448, 500, 256, 534, 527, 483, 531, 532, 255, 529, 529, 195, 196, 473,
     195, 809, 529, 539, 535, 531, 310, 480, 255, 531, 479, 697, 470, 466, 485, 310, 237, 306, 500,
 ];
-static RANGES_3: [LatinRange; 1] = [LatinRange {
-    start: 0x0020,
-    end: 0x007e,
-    widths: &ASCII_3,
-}];
+// [#8697] 같은 프로그램의 ASCII 밖 Type3 /Widths. 탐침
+// samples/issue8697/hft-hanyang_junggothic-probe.hwpx(일곱 슬롯 모두 HFT 한양중고딕)의 독립
+// 한컴 2020 Print(pdf/issue8697/, 11.0.0.9136, Print method 0)에서 읽었다. 한/글이 이
+// 프로그램으로 그린 글자만 싣는다. 같은 탐침에서 바탕·돋움 TrueType 으로 대체된 글자
+// (U+3001 등)는 이 표의 근거가 아니므로 넣지 않는다.
+static RANGES_3: [LatinRange; 19] = [
+    LatinRange {
+        start: 0x0020,
+        end: 0x007e,
+        widths: &ASCII_3,
+    },
+    single(0x00b7, &[381]),
+    single(0x2015, &[1000]),
+    LatinRange {
+        start: 0x2018,
+        end: 0x2019,
+        widths: &[225, 225],
+    },
+    LatinRange {
+        start: 0x201c,
+        end: 0x201d,
+        widths: &[375, 375],
+    },
+    LatinRange {
+        start: 0x2026,
+        end: 0x2027,
+        widths: &[1000, 500],
+    },
+    single(0x203b, &[1000]),
+    single(0x2192, &[1000]),
+    single(0x25a1, &[1000]),
+    single(0x25cb, &[1000]),
+    single(0x3000, &[1000]),
+    LatinRange {
+        start: 0x3004,
+        end: 0x3005,
+        widths: &[1000, 1000],
+    },
+    LatinRange {
+        start: 0x3007,
+        end: 0x3011,
+        widths: &[1000; 11],
+    },
+    LatinRange {
+        start: 0x3014,
+        end: 0x3015,
+        widths: &[1000, 1000],
+    },
+    LatinRange {
+        start: 0x301a,
+        end: 0x301c,
+        widths: &[1000, 1000, 1000],
+    },
+    single(0x302b, &[1000]),
+    single(0x338f, &[1000]),
+    single(0x339c, &[1000]),
+    single(0x33a1, &[1000]),
+];
 
-pub(super) static METRICS: [FontMetric; 6] = [
+// [#8697] 명시적 대체 글꼴이 없는 신명 중고딕 HFT 의 Type3 /Widths. 탐침
+// samples/issue8697/hft-sinmyeong_junggothic-probe.hwpx(일곱 슬롯 모두 HFT 신명 중고딕)의
+// 독립 한컴 2020 Print(pdf/issue8697/, 11.0.0.9136, Print method 0)에서 읽었다. 이
+// 프로그램으로 그린 글자만 싣는다. CJK 기호(U+3005 제외)·화살표 등은 한컴바탕으로 대체된다.
+static ASCII_4: [u16; 95] = [
+    400, 500, 400, 680, 680, 1000, 1000, 400, 500, 500, 500, 1000, 400, 500, 400, 500, 680, 680,
+    680, 680, 680, 680, 680, 680, 680, 680, 500, 500, 500, 1000, 500, 680, 1000, 816, 772, 775,
+    785, 714, 678, 889, 831, 319, 653, 786, 653, 1066, 895, 888, 714, 854, 775, 769, 719, 889, 779,
+    1149, 847, 731, 697, 500, 500, 500, 500, 500, 400, 644, 694, 584, 696, 643, 457, 699, 703, 323,
+    322, 598, 323, 1050, 700, 697, 693, 694, 458, 583, 382, 705, 634, 929, 651, 635, 527, 500, 500,
+    500, 1000,
+];
+static RANGES_4: [LatinRange; 5] = [
+    LatinRange {
+        start: 0x0020,
+        end: 0x007e,
+        widths: &ASCII_4,
+    },
+    single(0x00b7, &[381]),
+    LatinRange {
+        start: 0x2018,
+        end: 0x2019,
+        widths: &[200, 200],
+    },
+    LatinRange {
+        start: 0x201c,
+        end: 0x201d,
+        widths: &[300, 300],
+    },
+    single(0x3005, &[1000]),
+];
+
+const fn single(code: u32, widths: &'static [u16]) -> LatinRange {
+    LatinRange {
+        start: code,
+        end: code,
+        widths,
+    }
+}
+
+pub(super) static METRICS: [FontMetric; 7] = [
     FontMetric {
         name: "신명 디나루 (HFT)",
         bold: false,
@@ -104,6 +197,14 @@ pub(super) static METRICS: [FontMetric; 6] = [
         latin_ranges: &RANGES_3,
         hangul: None,
     },
+    FontMetric {
+        name: "신명 중고딕 (HFT)",
+        bold: false,
+        italic: false,
+        em_size: 1000,
+        latin_ranges: &RANGES_4,
+        hangul: None,
+    },
     konghan::METRIC,
     system::METRIC,
 ];
@@ -115,6 +216,7 @@ pub(crate) fn metric_face_name(requested: &str) -> Option<&'static str> {
         "한양중고딕" | "HanyangJungGothic" => Some("한양중고딕 (HFT)"),
         "신명 디나루" => Some("신명 디나루 (HFT)"),
         "신명 신그래픽" => Some("신명 신그래픽 (HFT)"),
+        "신명 중고딕" => Some("신명 중고딕 (HFT)"),
         "중간공한" | "Konghan Normal" => Some("중간공한 (HFT)"),
         "시스템" => Some("시스템 (HFT)"),
         _ => None,
