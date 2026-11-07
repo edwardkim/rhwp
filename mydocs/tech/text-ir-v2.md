@@ -591,7 +591,7 @@ Chromium `wasm-bindgen-test`로 검증한다. 두 입력 경로의 차이를 raw
 브라우저 회귀 실행은 `node scripts/run-web-canvas-outline-tests.mjs`를 사용한다. 이 runner는
 같은 test source를 별도 harness에서 컴파일하며 root의 host-only 테스트 의존성을 제외한다.
 해석된 모든 의존성의 name/version/source가 root `Cargo.lock`과 같은지 확인하고 `--locked
---offline`으로 실행한다. 저장소의 Rust toolchain과 같은 버전의 `wasm-bindgen-test-runner`,
+--offline`으로 실행한다. 저장소의 Rust toolchain, `Cargo.lock`의 wasm-bindgen과 같은 버전의 runner,
 실제 Chromium에 맞는 WebDriver가 필요하다. runner 경로는
 `CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER`, driver는 `CHROMEDRIVER`, Chromium의
 binary·인수는 `WASM_BINDGEN_TEST_WEBDRIVER_JSON`이 가리키는 capability JSON에 지정한다.

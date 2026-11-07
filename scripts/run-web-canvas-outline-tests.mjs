@@ -60,6 +60,7 @@ image = { version = "=${version('image')}", default-features = false, features =
 wasm-bindgen = "=${version('wasm-bindgen')}"
 wasm-bindgen-test = "=${version('wasm-bindgen-test')}"
 web-sys = "=${version('web-sys')}"
+serde_json = "=${version('serde_json')}"
 `;
 
 mkdirSync(harness, { recursive: true });

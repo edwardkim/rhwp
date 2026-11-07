@@ -1,5 +1,6 @@
 //! Actual Chromium Canvas2D pixels for the explicit strict-outline preview.
 //! Synthetic source-bound trees isolate replay without a JSON import authority.
+//! The public document API also renders an existing embedded-font HWPX fixture.
 
 #![cfg(target_arch = "wasm32")]
 
@@ -677,13 +678,16 @@ fn web_canvas_outline_decodes_bitmap_and_preserves_placement_and_transforms() {
     assert_eq!(image.get_pixel(12, 12).0, [255, 255, 255, 255]);
     let outline = outline_mut(&mut tree);
     outline.placement.run_to_page.e = 5.0;
+    // Bitmap placement is already page-space; an outline matrix must not
+    // translate it twice. Only the bitmap payload's explicit transform applies.
     outline.bitmap_glyph.as_mut().unwrap().transform_to_run = Some(LayerAffineTransform {
         e: 5.0,
         ..identity()
     });
     let image = assert_selected(&tree);
-    assert_eq!(image.get_pixel(30, 20).0, [255, 255, 255, 255]);
-    assert_eq!(image.get_pixel(40, 20).0, [0, 0, 255, 255]);
+    assert_eq!(image.get_pixel(27, 20).0, [255, 255, 255, 255]);
+    assert_eq!(image.get_pixel(32, 20).0, [0, 0, 255, 255]);
+    assert_eq!(image.get_pixel(52, 20).0, [255, 255, 255, 255]);
     assert_fallback(&bitmap_tree(b"invalid bitmap bytes"));
     let mut missing = bitmap_tree(&encoded);
     missing.resources = ResourceArena::default();
@@ -699,13 +703,15 @@ fn web_canvas_outline_replays_svg_font_em_box_and_fails_closed_on_bad_resources(
     assert_eq!(image.get_pixel(12, 12).0, [255, 255, 255, 255]);
     let outline = outline_mut(&mut tree);
     outline.placement.run_to_page.e = 5.0;
+    // font_em_box is page-space, matching the current producer/Native contract.
     outline.svg_glyph.as_mut().unwrap().transform_to_run = Some(LayerAffineTransform {
         e: 5.0,
         ..identity()
     });
     let image = assert_selected(&tree);
-    assert_eq!(image.get_pixel(30, 20).0, [255, 255, 255, 255]);
-    assert_eq!(image.get_pixel(40, 20).0, [0, 0, 255, 255]);
+    assert_eq!(image.get_pixel(27, 20).0, [255, 255, 255, 255]);
+    assert_eq!(image.get_pixel(32, 20).0, [0, 0, 255, 255]);
+    assert_eq!(image.get_pixel(52, 20).0, [255, 255, 255, 255]);
     assert_fallback(&svg_tree("<svg><path d=\"Mbroken\"/></svg>"));
     let mut missing = svg_tree(fragment);
     missing.resources = ResourceArena::default();
@@ -846,4 +852,128 @@ fn web_canvas_outline_diagnostics_are_bounded_and_reset_on_the_next_tree() {
     renderer.render_layer_tree(&tree);
     assert!(renderer.get_text_variant_selection_diagnostics().is_empty());
     assert_eq!(renderer.text_variant_selection_diagnostics_dropped(), 0);
+}
+
+#[wasm_bindgen_test]
+fn public_document_canvas2d_outline_preview_renders_real_producer_and_preserves_default_api() {
+    use rhwp::wasm_api::HwpDocument;
+
+    // This checked-in one-page HWPX embeds the font's bitmap-only E100 glyph.
+    // Its nominal GlyphRun is deliberately unavailable after display projection;
+    // the bitmap GlyphOutline must therefore be selected by the actual producer.
+    let document = HwpDocument::new(include_bytes!(
+        "../../samples/render-p35-font-native-bitmap.hwpx"
+    ))
+    .expect("parse embedded-font HWPX");
+    assert_eq!(document.page_count(), 1);
+    let layer: serde_json::Value = serde_json::from_str(
+        &document
+            .get_page_layer_tree_with_profile(0, "screen", None, None)
+            .expect("screen producer export"),
+    )
+    .unwrap();
+    let expected_size = |scale: f64| {
+        (
+            (layer["pageWidth"].as_f64().unwrap() * scale).ceil() as u32,
+            (layer["pageHeight"].as_f64().unwrap() * scale).ceil() as u32,
+        )
+    };
+    let capture = |canvas: &HtmlCanvasElement, context: &CanvasRenderingContext2d| {
+        image::RgbaImage::from_raw(
+            canvas.width(),
+            canvas.height(),
+            context
+                .get_image_data(
+                    0.0,
+                    0.0,
+                    f64::from(canvas.width()),
+                    f64::from(canvas.height()),
+                )
+                .unwrap()
+                .data()
+                .0,
+        )
+        .unwrap()
+    };
+    let (default_canvas, default_context) = canvas();
+    document
+        .render_page_to_canvas_filtered_with_profile(0, &default_canvas, 1.0, "all", "screen")
+        .expect("existing default Canvas2D render");
+    let default_before = capture(&default_canvas, &default_context);
+    assert_eq!(default_before.dimensions(), expected_size(1.0));
+
+    let (preview_canvas, preview_context) = canvas();
+    let result = document
+        .render_page_to_canvas_strict_outline_with_profile(0, &preview_canvas, 1.0, "screen")
+        .expect("explicit document-owned preview");
+    let report: serde_json::Value = serde_json::from_str(&result).unwrap();
+    assert_eq!(report["backend"], "canvas2d");
+    assert_eq!(report["strictGlyphOutlineReplay"], true);
+    assert_eq!(report["reportsDropped"], 0);
+    let groups = report["reports"].as_array().unwrap();
+    assert!(
+        !groups.is_empty(),
+        "real font producer emits selection diagnostics"
+    );
+    assert!(groups.iter().all(|group| group["backend"] == "canvas2d"));
+    assert!(
+        groups.iter().any(|group| {
+            group["selectedVariantKind"] == "glyphOutline" && group["fallbackRequired"] == false
+        }),
+        "actual document producer must select the embedded bitmap outline: {report}"
+    );
+    let preview = capture(&preview_canvas, &preview_context);
+    assert_eq!(preview.dimensions(), expected_size(1.0));
+    assert!(
+        preview
+            .pixels()
+            .any(|pixel| { pixel[3] > 0 && pixel.0 != [255, 255, 255, 255] }),
+        "document preview paints visible content"
+    );
+
+    // The public API intentionally normalizes nonpositive/nonfinite scales to
+    // 1.0, matching the existing Canvas API. Success must mean the same image,
+    // dimensions and diagnostics, rather than a stale or zero-sized canvas.
+    for scale in [0.0, -1.0, f64::NAN, f64::INFINITY] {
+        let normalized = document
+            .render_page_to_canvas_strict_outline_with_profile(0, &preview_canvas, scale, "screen")
+            .expect("legacy invalid-scale normalization");
+        let normalized: serde_json::Value = serde_json::from_str(&normalized).unwrap();
+        assert_eq!(normalized, report);
+        assert_same_pixels(&capture(&preview_canvas, &preview_context), &preview);
+    }
+
+    // Invalid page/profile requests must fail before resizing or clearing the
+    // previously rendered canvas and cannot return misleading selection success.
+    assert!(document
+        .render_page_to_canvas_strict_outline_with_profile(
+            0,
+            &preview_canvas,
+            1.0,
+            "unknown-profile"
+        )
+        .is_err());
+    assert_same_pixels(&capture(&preview_canvas, &preview_context), &preview);
+    assert!(document
+        .render_page_to_canvas_strict_outline_with_profile(
+            document.page_count(),
+            &preview_canvas,
+            1.0,
+            "screen"
+        )
+        .is_err());
+    assert_same_pixels(&capture(&preview_canvas, &preview_context), &preview);
+
+    document
+        .render_page_to_canvas_strict_outline_with_profile(0, &preview_canvas, 0.5, "screen")
+        .expect("fractional scale preview");
+    assert_eq!(
+        (preview_canvas.width(), preview_canvas.height()),
+        expected_size(0.5)
+    );
+    document
+        .render_page_to_canvas_filtered_with_profile(0, &default_canvas, 1.0, "all", "screen")
+        .expect("existing default API after preview");
+    assert_same_pixels(&capture(&default_canvas, &default_context), &default_before);
+    assert_eq!(document.page_count(), 1);
 }
