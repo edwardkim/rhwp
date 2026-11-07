@@ -2514,6 +2514,17 @@ fn char_width_decision_with_hft_tracking<'a>(
     // share this eligibility decision; synthetic PUA boxes remain shapes.
     let dash_leader = is_dash_leader_run(chars, i);
     let source_ttf = latin.map_or(style.source_font_is_ttf, |slot| slot.source_font_is_ttf);
+    // 원본 폭 표가 없는 HFT 전각 글자의 굵기 전진은 표시용 OTF의
+    // intrinsic 전진과 별개다. 공급 뒤 width_source가 nativeOtf로 바뀌어도
+    // 공급 전의 꾸밈 소유를 보존한다. 자연 전진을 직접 선택한 세션과
+    // 원본 family 주소가 없는 합성 스타일은 이 소유를 추정하지 않는다.
+    let inferred_hft_fullwidth = !style.preserve_glyph_ink
+        && !source_ttf
+        && latin.map_or(style.source_font_is_hft, |slot| slot.source_font_is_hft)
+        && latin.map_or(!style.font_family.trim().is_empty(), |slot| {
+            !slot.font_family.trim().is_empty()
+        })
+        && width_source == "heuristicFullwidth";
     // 명시적으로 선택한 자연 전진은 화면과 인쇄에서 동일하게 소비한다.
     // 선언된 TTF 유형과 폭 표의 hit만으로 기존 leader를 자연 전진으로 승격하지
     // 않는다. 특히 유형 미상 원본을 HWPX로 저장해 TTF로 표기해도 폭은 같아야 한다.
@@ -2610,7 +2621,11 @@ fn char_width_decision_with_hft_tracking<'a>(
                         });
                     let verified_program = verified_source
                         && otf_metrics.is_some_and(|font| font.has_verified_hft_bold_tracking(c));
-                    if style.source_hwp3_hft_bold || source_hft_metric || verified_program {
+                    if style.source_hwp3_hft_bold
+                        || source_hft_metric
+                        || verified_program
+                        || inferred_hft_fullwidth
+                    {
                         font_size * 0.05
                     } else {
                         let original_face = latin
