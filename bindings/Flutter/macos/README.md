@@ -60,7 +60,9 @@ top level과 `limits`에 같은 true가 있을 때만 종료 확인 계약을 �
 협상한 모든 `submit`·`status`·`close`·`retireAck` 요청에는 `textureId`와
 `deviceGeneration`을 함께 보낸다. Flutter texture ID는 객체 주소여서 재사용될 수
 있으므로 이전 세대의 늦은 요청이 새 texture를 닫거나 그 상태로 응답하지 않는다.
-서로 다른 ID·세대와 누락된 세대는 `staleHandle`로 거절한다.
+누락되거나 형식이 잘못된 세대는 `invalidArgument`, 서로 다른 ID·세대는
+`contextChanged`로 enqueue 전에 거절한다. 공통 Dart 클라이언트는 이 명확한
+사전 거절에서 아직 전달하지 않은 snapshot을 한 번 해제할 수 있다.
 
 협상 경로는 활성 texture와 아직 확인하지 않은 close record를 합쳐 최대 두 개
 보존한다. 두 close가 겹쳐도 handle·세대별 미완료 상태를 덮어쓰지 않는다.

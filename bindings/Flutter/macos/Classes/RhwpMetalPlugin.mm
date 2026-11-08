@@ -614,7 +614,7 @@ NSDictionary* CVClosedStatus(const CVCloseReceipt& receipt) {
   uint64_t requestedGeneration = 0;
   if (arguments[@"deviceGeneration"] &&
       (!Unsigned(arguments[@"deviceGeneration"], requestedGeneration) || !requestedGeneration)) {
-    result([FlutterError errorWithCode:@"arguments" message:@"deviceGeneration must be a positive integer." details:nil]);return;
+    result([FlutterError errorWithCode:@"invalidArgument" message:@"deviceGeneration must be a positive integer." details:nil]);return;
   }
   auto retained = requestedGeneration ? _closeRecords.lookup(requestedGeneration) : nullptr;
   const auto* completed = requestedGeneration ? _closeRecords.receipt(requestedGeneration) : nullptr;
@@ -632,7 +632,8 @@ NSDictionary* CVClosedStatus(const CVCloseReceipt& receipt) {
     _lastClosed ? TextureCloseIdentity{_lastClosedId,_lastClosed->generation,false} : TextureCloseIdentity{},
     knownRetainedHandle);
   if (route == TextureCloseRoute::requiresGeneration || route == TextureCloseRoute::stale) {
-    result([FlutterError errorWithCode:@"staleHandle" message:@"Texture handle and deviceGeneration must match the negotiated owner." details:nil]);return;
+    NSString* code = route == TextureCloseRoute::requiresGeneration ? @"invalidArgument" : @"contextChanged";
+    result([FlutterError errorWithCode:code message:@"Texture handle and deviceGeneration must match the negotiated owner." details:nil]);return;
   }
   if (route == TextureCloseRoute::completed) {
     if ([call.method isEqualToString:@"status"] || [call.method isEqualToString:@"close"]) {result(CVClosedStatus(*completed));return;}
