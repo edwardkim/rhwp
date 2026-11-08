@@ -2305,7 +2305,7 @@ fn justified_dash_restoration(
     slack: f64,
     word_slots: usize,
     trailing_spaces: usize,
-    allow_word_compression: bool,
+    word_space_limit: Option<u8>,
 ) -> (f64, f64, Vec<f64>) {
     let mut capacities = Vec::with_capacity(plan.line.runs.len());
     let mut counts = Vec::with_capacity(plan.line.runs.len());
@@ -2349,18 +2349,20 @@ fn justified_dash_restoration(
         .map(|(capacity, count)| capacity * *count as f64)
         .sum();
     let count: usize = counts.iter().sum();
-    if allow_word_compression && word_slots > 0 && count > 0 && total_capacity > slack {
+    let compression_percent = word_space_limit.unwrap_or(0);
+    if compression_percent > 0 && word_slots > 0 && count > 0 && total_capacity > slack {
         // 클램프 전 자연 대시를 복원할 때의 부족도 일반 음수 여백과 같은
         // 낱말 공백 한도로 수용한다. 대시만 짧게 만들면 전체 줄 끝은 같아도
         // 내부 낱말·리더의 원점이 달라진다. 글자 압축까지 필요하면 기존
         // 탄력 대시 배분으로 돌아가며 자연 대시 폭을 넘겨 늘리지 않는다.
-        let (word, character) = justification_spacing::compress(
+        let (word, character) = justification_spacing::compress_with_space_limit(
             plan,
             styles,
             trailing_spaces,
             tab_width,
             slack - total_capacity,
             0.0,
+            compression_percent,
         );
         if word < 0.0 && character.abs() <= f64::EPSILON * word.abs().max(1.0) {
             return (word, total_capacity / count as f64, capacities);
@@ -2421,6 +2423,7 @@ fn compute_line_extra_spacing_with_dash_plan(
     total_text_width: f64,
     available_width: f64,
     tab_width: f64,
+    condense_min_space: u8,
     dash_extra_by_run: &mut Option<Vec<f64>>,
     trailing_note_slots: usize,
 ) -> (f64, f64, f64) {
@@ -2662,7 +2665,8 @@ fn compute_line_extra_spacing_with_dash_plan(
                     slack,
                     rendered_space_slots,
                     trailing_spaces,
-                    alignment == Alignment::Justify && !has_tabs,
+                    (alignment == Alignment::Justify && !has_tabs)
+                        .then_some(condense_min_space.max(20)),
                 );
                 *dash_extra_by_run = Some(by_run);
                 (word_extra, 0.0, dash_extra)
@@ -7822,6 +7826,7 @@ impl LayoutEngine {
                     total_text_width,
                     available_width,
                     tab_width,
+                    condense,
                     &mut dash_extra_by_run,
                     note_line.trailing_slots,
                 )
@@ -12309,6 +12314,7 @@ mod issue_2809_split_alignment_tests {
             total_text_width,
             available_width,
             tab_width,
+            0,
             &mut dash_extra_by_run,
             trailing_note_slots,
         )

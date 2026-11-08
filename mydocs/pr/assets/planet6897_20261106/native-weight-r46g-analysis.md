@@ -760,3 +760,47 @@ WASM 집중 재측정도 완료했으며 최저99.38%다. outline18쪽 완료로
 [overlay](justified-dash-space-budget/after-native-p008-overlay.png) ·
 [fresh WASM review](justified-dash-space-budget/after-wasm-p008-review.png) ·
 [overlay](justified-dash-space-budget/after-wasm-p008-overlay.png).
+
+## 2026-11-09: 중첩 셀의 명시 공백 예산과 자연 대시 복원
+
+`issue2007_nested_cell_pagination_42065.hwp` 3쪽의 실제 소유 경로는 Section0/문단2의
+바깥 표 control1/cell1/문단3 → 안쪽 표 control0/cell15/문단0이다. 이 문단의 원본
+문단 모양25는 attr1=13248, 공백 최소값25%를 저장한다. HWP5 표44의 bit9~15 범위와
+독립 한컴2020 Print를 대조했다. 해당 줄의 원본은 한양신명조 HFT이며 Gulim 줄이 아니다.
+
+기존 일반 양쪽 정렬의 자연 대시 복원은 공백20% 한도로만 부족분을 검사했다. 이 줄의
+부족4.48 CSSpx는 기본 예산3.73333 CSSpx를 넘지만 원본25% 예산4.66667 CSSpx 안에 든다.
+이미 해석한 원문 `condense`를 줄 배분 → 자연 대시 복원 → 같은 공백 압축 계산으로
+전달했다. 일반 음수 여백의20% 기본값, 마지막 줄의 #5830 분기, 필드·선두 공백 소유는
+바꾸지 않았다. 문서 식별자나 쪽 번호로 분기하지 않는다.
+
+독립 Print의 `제3항` 숫자 원점은563.5345865885416 CSSpx다. 수정 전567.92에서
+수정 후563.44로 복원됐으며, 이 문단의 명시 예산만 지운 대조군은567.92를 유지한다.
+설치 글꼴에 의존하지 않는 진단2건은 수정 전2 FAIL → 수정 후2 PASS다. 정식 검사는
+`tests/cases/nested_declared_word_space_budget.rs`에 고정형 원점 검사와 관계형 예산
+대조 검사로 구분했다. 실제 최소 글꼴 nextest는 새 검사2건·기존 대시4건·쪽번호3건의9 PASS / 0 FAIL이다.
+선택 밖1337건을 전체 회귀 통과로 계산하지 않는다.
+
+[검증 기록](nested-declared-word-space-budget/validation.json)의 Native/fresh WASM에서
+중첩 문서17쪽과 outline 문서9쪽, 각26쪽을 새로 산출했다. 중첩3쪽은 두 경로 모두
+100.00%, 전17쪽 최저는 Native98.36%/WASM98.37%다. 나머지 Native16쪽의 점수는
+그대로이며 두 문서의 보호 표시값 하락은0쪽이다. outline9쪽은 두 경로 모두100.00%다.
+결합 대조12쪽의 PNG는 변경 대상인 중첩3쪽만 달라졌고 나머지11쪽은 byte 동일하다.
+독립 PDF와 입력·글꼴·계산 기준을 바꾸지 않았다. Native/fresh WASM3·16쪽의 review와
+같은 쪽 overlay, 변경 줄 확대를 직접 판독했다. raw100%와 RGB 픽셀 완전 일치는 구분한다.
+
+Mac fresh WASM은 locked wrapper의 `--target web --out-dir pkg --no-opt` 로컬 대체 빌드다.
+빌드 exit0, 브라우저 계약4 PASS를 확인했으며 root pkg/Studio public/고정 검증 pkg의
+JS·WASM 해시가 일치한다. 이 집중 결과를 현재 통합 브랜치 전체 검증 완료로 간주하지 않는다.
+
+sample10 WASM의 남은 차이를 분석하기 위해 원 #8397의757쪽 review에서 후보 raw 패널을
+재표본화 없이 복원했다. 같은 review의 PDF 패널이 현재 독립 기준 PNG와 byte 동일한
+오프셋34px를 확인했다. canonical 재계산은 원 후보99.39720%, 현재99.37893%로 과거
+TSV와 일치한다. 원 PDF에서 이미지가 문자를 가리는 현상은 기존 검토에도 기록돼 있다.
+원문 문자를 숨기거나 PDF·마스크·판정 기준을 바꿔 보호값을 맞추지 않으며, 원 후보와
+현재 실제 글꼴 프로그램·paint 경로 차이를 계속 확인한다. 복원 PNG와 진단 스크립트는
+ignored output에만 보존한다.
+
+같은 소스의 최소 글꼴 Native 라이브러리는 root 3852 PASS / 12 ignored, 다른 라이브러리
+182 PASS다. fmt, Native 제품·선택 suite Clippy, WASM Clippy, suite manifest 검사와
+변경 문서 링크 검사를 통과했다. 새 검사·증적은 이 단계의 한국어 로컬 커밋으로 정리한다.
