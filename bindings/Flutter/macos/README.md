@@ -70,6 +70,8 @@ ID·세대와 `acknowledged: true`, `closed: true`, `ownerFinished: true`,
 `registered: false`다. 미완료 ack는 `retirePending`이며 상태와 한도를 보존한다.
 그 뒤에는 Native owner 참조가 없는 완료 metadata를 최근 ack 순서로 두 개만
 남겨 반복 status·close·ack에 응답한다. 협상하지 않은 기존 호출 형식은 유지한다.
+완료된 owner 정보는 고정하지만, cached status·close 응답의 `limits`는 조회 시점의
+전역 credit 값으로 갱신한다. 다른 texture의 새 예약을 이전 0 값으로 숨기지 않는다.
 
 이 확인은 plugin registration 종료와 producer thread 종료만 다룬다. 공개 macOS
 registrar의 unregister는 consumer GPU fence나 `onTextureUnregistered` 호출을

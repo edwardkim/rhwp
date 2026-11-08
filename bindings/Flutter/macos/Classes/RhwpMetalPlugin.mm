@@ -455,6 +455,12 @@ NSDictionary* CVRetireAck(uint64_t textureId, uint64_t generation) {
   return @{@"textureId":@(textureId),@"deviceGeneration":@(generation),@"acknowledged":@YES,
     @"closeAcknowledgementRequired":@YES,@"closed":@YES,@"ownerFinished":@YES,@"registered":@NO};
 }
+NSDictionary* CVClosedStatus(const CVCloseReceipt& receipt) {
+  NSMutableDictionary* value = [receipt.status mutableCopy];
+  // Terminal owner facts are immutable; process-wide allocation counters are live.
+  value[@"limits"] = CVLimits(true);
+  return value;
+}
 }  // namespace
 
 @interface RhwpMetalTexture : NSObject <FlutterTexture>
@@ -629,7 +635,7 @@ NSDictionary* CVRetireAck(uint64_t textureId, uint64_t generation) {
     result([FlutterError errorWithCode:@"staleHandle" message:@"Texture handle and deviceGeneration must match the negotiated owner." details:nil]);return;
   }
   if (route == TextureCloseRoute::completed) {
-    if ([call.method isEqualToString:@"status"] || [call.method isEqualToString:@"close"]) {result(completed->status);return;}
+    if ([call.method isEqualToString:@"status"] || [call.method isEqualToString:@"close"]) {result(CVClosedStatus(*completed));return;}
     if ([call.method isEqualToString:@"retireAck"]) {result(CVRetireAck(textureId,requestedGeneration));return;}
     result([FlutterError errorWithCode:@"closed" message:@"Texture retirement was already acknowledged." details:nil]);return;
   }

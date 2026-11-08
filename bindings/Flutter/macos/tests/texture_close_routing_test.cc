@@ -65,6 +65,20 @@ int main() {
   }
   {
     Registry registry;
+    auto owner = std::make_shared<Owner>(Owner{7,101,true});
+    require(registry.insert(101,owner) && registry.close(101));
+    require(registry.acknowledge(101,true,Receipt{7,101}));
+    ImmutableFrameCredits credits(4,64*1024*1024,16*1024*1024);
+    require(credits.stats().outstanding_frames == 0);
+    auto anotherFrame = credits.reserve(16*1024*1024);
+    require(anotherFrame != nullptr);
+    require(route(registry,7,101) == TextureCloseRoute::completed);
+    require(registry.receipt(101)->generation == 101 && credits.stats().outstanding_frames == 1);
+    require(credits.stats().reserved_bytes == 16*1024*1024);
+    // Completion routing stays terminal while the process-wide budget changes.
+  }
+  {
+    Registry registry;
     ImmutableFrameCredits credits(4,64*1024*1024,16*1024*1024);
     for (int i = 0; i < 4; ++i) {
       auto credit = credits.reserve(16*1024*1024);
