@@ -2,9 +2,49 @@
 
 use super::{storage, DocInfo, ResolvedStyleSet, LANG_COUNT};
 
-/// 표시 family를 인증한 뒤에도 실제 측정이 원본의 검증된 표를 소비하는지 확인한다.
-/// family 별칭에 별도 메트릭 키가 없어도 원본 표는 유지할 수 있지만,
-/// 다른 메트릭 표가 있는 대체 프로그램에 원본의 신뢰를 넘기지 않는다.
+fn same_advances(
+    a: &crate::renderer::font_metrics_data::FontMetric,
+    b: &crate::renderer::font_metrics_data::FontMetric,
+) -> bool {
+    std::ptr::eq(a, b)
+        || (a.bold == b.bold
+            && a.italic == b.italic
+            && a.em_size == b.em_size
+            && a.latin_ranges
+                .iter()
+                .map(|range| (range.start, range.widths))
+                .eq(b
+                    .latin_ranges
+                    .iter()
+                    .map(|range| (range.start, range.widths)))
+            && match (a.hangul, b.hangul) {
+                (None, None) => true,
+                (Some(a), Some(b)) => {
+                    (
+                        a.cho_groups,
+                        a.jung_groups,
+                        a.jong_groups,
+                        a.cho_map,
+                        a.jung_map,
+                        a.jong_map,
+                        a.widths,
+                    ) == (
+                        b.cho_groups,
+                        b.jung_groups,
+                        b.jong_groups,
+                        b.cho_map,
+                        b.jung_map,
+                        b.jong_map,
+                        b.widths,
+                    )
+                }
+                _ => false,
+            })
+}
+
+/// 표시 family를 인증한 뒤에도 실제 측정이 원본의 검증된 전진을 소비하는지 확인한다.
+/// 같은 전진이 서로 다른 이름의 정적 표로 생성된 별칭도 보존한다.
+/// 단위·스타일·문자 범위·한글 조합표가 다른 표에는 신뢰를 넘기지 않는다.
 pub(super) fn keeps_source_metric_table(
     source: &str,
     current_metric_face: &str,
@@ -15,7 +55,7 @@ pub(super) fn keeps_source_metric_table(
     use crate::renderer::font_metrics_data::find_metric;
     let same = |source: &crate::renderer::font_metrics_data::MetricMatch,
                 other: &crate::renderer::font_metrics_data::MetricMatch| {
-        std::ptr::eq(source.metric, other.metric) && source.bold_fallback == other.bold_fallback
+        same_advances(source.metric, other.metric) && source.bold_fallback == other.bold_fallback
     };
     let (Some(source), Some(current)) = (
         find_metric(source, bold, italic),

@@ -1,6 +1,6 @@
 //! 관계형: 실제 프로그램의 가족 이름 조회와 원본 슬롯 요청 자격을 검사한다.
-//! 주석 갱신: 2026-11-08T14:57:17+09:00.
-//! 추가 전 파일 변경: 8e092b09fc37d91f787765b0b538281a8261320f (2026-11-06T21:02:16+09:00).
+//! 주석 갱신: 2026-11-08T16:52:19+09:00.
+//! 추가 전 파일 변경: 40c90ca187201527f5b7776f86f0fe6e493cef52 (2026-11-08T15:13:19+09:00).
 //! 이동 직전 두 원본의 변경: 2026-11-06T20:11:29+09:00 6844f6ec0854b1c8150244d65cc1a099031287ac.
 //! 기존 내부 검사 2건을 공개 FontEnvironment·DocumentCore 경로로 이동한다.
 //! 합성 글꼴 선언·기존 OFL 글꼴 fixture의 프로그램 신원을 비교하며 설치 글꼴에 의존하지 않는다.
@@ -157,19 +157,21 @@ fn alias_metric_style(
 fn verified_original_truetype_alias_keeps_its_metric_and_punctuation_advance() {
     use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
     // 원 #7092의 검증된 주 TTF 폭 계약이다. 설치 글꼴의 윤곽을 읽지 않는다.
-    let original = alias_metric_style("HY헤드라인M", 1, "HY헤드라인M", "HY헤드라인M");
-    let alias = alias_metric_style("HY헤드라인M", 1, "HY헤드라인M", "HYHeadLine M");
-    assert!(original.font_metric_trusted);
-    assert!(
-        alias.font_metric_trusted,
-        "같은 원본 쿼리와 같은 표의 영문 family 별칭"
-    );
-    let measurer = EmbeddedTextMeasurer;
-    assert_eq!(
-        measurer.compute_char_positions("가·나", &alias),
-        measurer.compute_char_positions("가·나", &original),
-        "표기 인증만으로 가운데점과 뒤 글자의 전진을 줄이지 않는다"
-    );
+    for (source, family) in [("HY헤드라인M", "HYHeadLine M"), ("HY견고딕", "HYgtrE")] {
+        let original = alias_metric_style(source, 1, source, source);
+        let alias = alias_metric_style(source, 1, source, family);
+        assert!(original.font_metric_trusted);
+        assert!(
+            alias.font_metric_trusted,
+            "같은 원본 쿼리와 같은 전진의 영문 family 별칭: {source} / {family}"
+        );
+        let measurer = EmbeddedTextMeasurer;
+        assert_eq!(
+            measurer.compute_char_positions("가·나", &alias),
+            measurer.compute_char_positions("가·나", &original),
+            "표기 인증만으로 가운데점과 뒤 글자의 전진을 줄이지 않는다: {source} / {family}"
+        );
+    }
 }
 
 #[test]
