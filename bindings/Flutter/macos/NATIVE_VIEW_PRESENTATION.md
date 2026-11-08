@@ -97,3 +97,46 @@ geometry/generation gate를 검사합니다. 400번 handoff, 늦은 uncover 거�
 실제 Apple SDK compile/link, 실제 AppKitView 표시·32회 이상 갱신·revision·resize·
 cover·close와 Native lease 정리는 별도의 target runner에서 수행해야 합니다.
 그 결과가 없으면 실기기/SDK 검증 완료로 표시하지 않습니다.
+
+`tests/qualify_native_view.py`는 실제 macOS 14 이상에서만 실행되는 build/capture
+도구입니다. 먼저 같은 Flutter framework/engine으로
+`tool/check_macos_metal_sdk.py`를 실행해 실제 Native dylib와
+`macos-sdk-receipt.json`을 준비합니다. 이후 다음처럼 실행합니다.
+
+```sh
+python3 bindings/Flutter/macos/tests/qualify_native_view.py build \
+  --flutter-sdk /absolute/flutter \
+  --native /absolute/librhwp_native_ffi.dylib \
+  --native-receipt /absolute/macos-sdk-receipt.json \
+  --output /absolute/private/macos-view-build
+python3 bindings/Flutter/macos/tests/qualify_native_view.py capture \
+  --build-receipt /absolute/private/macos-view-build/macos-view-build.json \
+  --output /absolute/private/macos-view-capture --frames 32 --timeout 600
+```
+
+capture에는 Pillow와 Screen Recording 권한이 있는 실제 WindowServer 세션이
+필요합니다. 프로세스가 foreground가 아니거나 권한·창·Metal이 준비되지 않으면
+실패로 기록합니다. TCC 설정을 바꾸거나 다른 화면 수집 방식으로 성공을 대신하지
+않습니다. Swift helper는 ScreenCaptureKit의 실제 창을 BGRA·sRGB SDR로 수집한 뒤
+명시적 sRGB CGContext/PNG로 정규화합니다. 출력 색을 임의 보정하거나 공통 AA
+허용 범위를 넓히지 않습니다.
+
+build는 clean source의 추적 파일을 private copy로 고정해 disposable borderless
+Flutter runner를 생성합니다. 외부 Native/fixture 파일을 읽기 위해 이 runner의
+Debug sandbox만 해제합니다. 제품 example과 production entitlement는 수정하지
+않습니다. 실제 실행되는 Dart kernel, 모든 framework/data 파일과 framework의
+내부 상대 symlink를 포함한 전체 `.app` manifest를 기록하고 capture 전후에
+대조합니다. 외부·절대·깨진 symlink와 바뀌거나 추가된 실행 입력은 거절합니다.
+
+동일한 snapshot의 독립 CPU replay와 고해상도 CPU source reference를 공통 pixel
+검사에 사용합니다. 32회 publication에는 실제 source revision과 viewport resize가
+포함됩니다. 각 단계의 실제 창을 두 번 수집해 고정된 publication인지 확인합니다.
+첫 publication 뒤에는 controller를 pause한 채 같은 AppKitView를 mount 상태로
+유지하고, Native cover ack와 두 Flutter paint frame 뒤의 창을 두 번 수집합니다.
+이때 viewport 전체가 지정한 opaque Flutter cover와 정확히 일치해야 합니다.
+마지막에는 producer 종료, layer detach, registration 해제와 모든 Native lease
+counter 0을 확인합니다. 이 화면 검증도 consumer GPU fence를 증명하지 않습니다.
+
+`tests/native_view_qualification_test.py`의 portable 검사는 번들·프로세스·stamp·
+한도·cover·close 영수증의 음성 대조군을 확인합니다. 실제 macOS build/capture를
+실행하지 않으며 해당 검증의 성공 영수증을 만들지 않습니다.
