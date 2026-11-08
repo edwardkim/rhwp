@@ -48,6 +48,35 @@ HFT의 추정 꾸밈을 새로 붙이지 않고 원본 자간과 자연 전진�
 실제 신원 계약을 반영한 위 R54 실행만 최종 집중 결과로 사용한다. 전쪽 Native/fresh WASM과
 실물 8쪽·정상 대조군의 출력 복구는 별도로 확인 중이며, 이 통과로 대체하지 않는다.
 
+### R54 실제 Native 제목 8쪽 복구
+
+같은 원본·독립 Print·96 DPI·compat 2022·기존 글꼴 환경에서 하락 8쪽을 다시 출력했다.
+모두 이전 R43의 두 자리 표시값을 복구했다. 이 표는 선택 8쪽이며 전195쪽 검증을 뜻하지 않는다.
+
+| PDF 쪽 | 보정 전 R51 Native | 보정 후 R54 Native | 이전 R43 표시값 |
+| --- | ---: | ---: | ---: |
+| 4 | 96.24% | 99.99% | 99.99% |
+| 6 | 99.47% | 99.91% | 99.91% |
+| 8 | 98.90% | 100.00% | 100.00% |
+| 11 | 98.71% | 99.96% | 99.96% |
+| 13 | 97.33% | 99.99% | 99.99% |
+| 21 | 99.39% | 99.91% | 99.91% |
+| 27 | 98.93% | 100.00% | 100.00% |
+| 28 | 99.78% | 99.93% | 99.93% |
+
+[보정 전 선택 TSV](primary-program-decoration-r52/before-native-selected.tsv) ·
+[보정 후 선택 TSV](primary-program-decoration-r52/after-native-selected.tsv) ·
+[이전 검증 선택 TSV](primary-program-decoration-r52/reference-native-selected.tsv) ·
+[producer·원본·Print·글꼴·정밀 수치·판독](primary-program-decoration-r52/after-native-selected-provenance.json) ·
+[4쪽 review](primary-program-decoration-r52/after-native-p004-review.png) ·
+[4쪽 overlay](primary-program-decoration-r52/after-native-p004-overlay.png).
+
+정상 대조군은 childcare 13/24/25쪽100.00/99.94/99.92%, sample10의1/2/37/52쪽
+99.96/100.00/100.00/100.00%, 기존 #8418의2쪽100.00%로 유지됐다. 앞 문단의 선택 쪽을
+전체 문서 또는 fresh WASM 통과로 확대하지 않는다. 추가 보호 기준에는 sample16 저장본3개의
+38쪽100.00→99.99%, nested8쪽99.49→99.48%가 남아 있다. 이 네 행은 이번 제목 8쪽 복구로
+상쇄하지 않고 다음 보정·최종 전쪽 검증에서 해결한다. PR 준비 완료 판정은 아직 보류한다.
+
 ## 관측한 차이
 
 같은 `pr8642/report-838-original.hwp`와 기존 독립 한컴 Print PDF의 24쪽을 비교했다.
