@@ -1,0 +1,18 @@
+{
+  "command": [
+    "/home/edward/.local/share/rhwp-tools/flutter-c197ca5199e9/bin/flutter",
+    "test",
+    "--no-pub",
+    "--concurrency=1",
+    "--dart-define=RHWP_OWNER_LIBRARY=/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261109/librhwp_flutter_owner.so",
+    "--dart-define=RHWP_NATIVE_LIBRARY=/home/edward/mygithub/rhwp/target/pr-review/release-test/librhwp_native_ffi.so",
+    "test/native_file_store_integration_test.dart",
+    "test/native_document_lifecycle_integration_test.dart",
+    "test/native_multipage_integration_test.dart",
+    "test/native_ime_integration_test.dart"
+  ],
+  "source": "be778bae9b3803050146dcc47a896940587a612e",
+  "native_rebuilt": true,
+  "exit_code": 0,
+  "seconds": 13.76
+}

@@ -1,6 +1,13 @@
-//! Actual Chromium Canvas2D pixels for the explicit strict-outline preview.
-//! Synthetic source-bound trees isolate replay without a JSON import authority.
-//! The public document API also renders an existing embedded-font HWPX fixture.
+//! 관계형·고정형: 합성 Canvas2D 색상·geometry와 실제 문서 API의 브라우저 계약.
+//! 주석 갱신: 2026-11-09T08:33:08+09:00; 직전 파일 변경: e1167418fb7082f8bfa839d97df50b78d9439dcf 2026-11-07T19:56:08+09:00.
+//! 측정: 2026-11-09, visual_sweep.py silhouette-only, Print 96 DPI, 색상 경계 보정 전 2px raw.
+//! 대조군 bitmap-channel-transfer-independent.hwpx/독립 2024 PDF 전 1쪽: Native 100.00%, fresh WASM 100.00%.
+//! 다중 페이지 radial-corner-print-contract.hwpx/독립 2020 PDF 전 6쪽: Native/fresh WASM 각각 최저 100.00%.
+//! 두 입력 합계 7쪽씩의 최저값은 각각 100.00%; compat은 앞 입력 2024, 뒤 입력 2022다.
+//! 정식 증거: mydocs/pr/assets/seo-rii-20261109/visual/의 bitmap-channel-{native,wasm}.tsv와 radial-{native,wasm}.tsv.
+//! 위 수치는 기본 출력 대조군이며 합성 PaintOp·공개 font fixture 계약의 한컴 시각 측정으로 바꾸어 해석하지 않는다.
+//! 합성 Canvas 좌표·색상은 입력 primitive의 독립 계약이다. 실제 문서 페이지의 px 위치를 고정하지 않는다.
+//! render-p35-font-native-bitmap.hwpx의 문서 API 검사는 로딩·선택·픽셀·기본 경로 보존 smoke이며 최종 한컴 일치 주장이 아니다.
 
 #![cfg(target_arch = "wasm32")]
 

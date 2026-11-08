@@ -1,0 +1,10 @@
+{
+  "source_tag": "v0.9.0",
+  "source_sha": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+  "baseline_devel": "06181802e574dbd91e62375536751dea8c270fcd",
+  "difference": "Only docs/scripts and JPEG decoder package description; product sources and root Cargo manifest/lock match.",
+  "native_archive_url": "https://github.com/edwardkim/rhwp/releases/download/v0.9.0/rhwp-v0.9.0-linux-x86_64.tar.gz",
+  "native_archive_sha256": "837910d858162537f3f04b35ae8f5ad65fb42cc8e3582b1e174ce605b6ac7952",
+  "native_binary_sha256": "028d304b1468a0ea3d0ef99e80b1bf0da3a43d22529f1daa789dc1d0511c228e",
+  "wasm_sha256": "c3b0632b84881f81f2c80be7c2f9e44a4086cb01e05a6a9107a3b3c6350abc1d"
+}

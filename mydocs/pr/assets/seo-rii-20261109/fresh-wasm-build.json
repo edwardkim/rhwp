@@ -1,0 +1,19 @@
+{
+  "command": [
+    "sh",
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--release",
+    "--out-dir",
+    "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261109/pkg"
+  ],
+  "source": "be778bae9b3803050146dcc47a896940587a612e",
+  "release_codegen_units": 16,
+  "exit_code": 0,
+  "seconds": 807.54,
+  "previous_attempt": {
+    "exit_code": 143,
+    "result": "terminated during dependency compilation; no completed WASM artifact"
+  }
+}

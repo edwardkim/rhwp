@@ -1,0 +1,5524 @@
+{
+  "platform": "linux",
+  "qualification": "linux-consumer-passed",
+  "stages": [
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 1,
+        "stage": "initial",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 320,
+        "height": 240,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 0,
+          "fontGeneration": 0,
+          "viewGeneration": 1,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 2,
+            "stamp": {
+              "documentId": 1,
+              "revision": 0,
+              "fontGeneration": 0,
+              "viewGeneration": 1,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 320,
+              "height": 240
+            },
+            "placement": {
+              "scale": 0.403171616718183,
+              "originX": 0.0,
+              "originY": 0.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 307200,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 240,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1280,
+              "width": 320
+            }
+          },
+          "reference": {
+            "snapshot": 2,
+            "stamp": {
+              "documentId": 1,
+              "revision": 0,
+              "fontGeneration": 0,
+              "viewGeneration": 1,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1280,
+              "height": 960
+            },
+            "placement": {
+              "scale": 1.612686466872732,
+              "originX": 0.0,
+              "originY": 0.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 4915200,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 960,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5120,
+              "width": 1280
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 1,
+          "renderedSerial": 1,
+          "framesSubmitted": 1,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 0,
+            "fontGeneration": 0,
+            "viewGeneration": 1,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 0,
+            "fontGeneration": 0,
+            "viewGeneration": 1,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 76124,
+        "aaEdgeDifferentPixels": 233,
+        "maxChannelDifference": 49,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 4915200,
+        "integerAlignmentErrors": {
+          "-1,-1": 141112,
+          "0,-1": 70178,
+          "1,-1": 139896,
+          "-1,0": 76312,
+          "0,0": 1640,
+          "1,0": 75458,
+          "-1,1": 140320,
+          "0,1": 69676,
+          "1,1": 139818
+        }
+      },
+      "cpuSha256": "b656c2af9510b5f86860e60b17c94506bbd62cde35024b350e2d71f92566392a",
+      "sourceReferenceSha256": "11ae2f3a52aff91e8bdf3687be0ee8f2be7baabe3a4ca9a18aecf96b60f1b56f",
+      "compositorSha256": "66aaa1386974016389fd2fbb9d9e3fd20687a5b402cf574ebf392e9120b343bc"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 2,
+        "stage": "revision",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 320,
+        "height": 240,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 3,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 7,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 3,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 320,
+              "height": 240
+            },
+            "placement": {
+              "scale": 0.403171616718183,
+              "originX": 0.0,
+              "originY": 0.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 307200,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 240,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1280,
+              "width": 320
+            }
+          },
+          "reference": {
+            "snapshot": 7,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 3,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1280,
+              "height": 960
+            },
+            "placement": {
+              "scale": 1.612686466872732,
+              "originX": 0.0,
+              "originY": 0.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 4915200,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 960,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5120,
+              "width": 1280
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 2,
+          "renderedSerial": 2,
+          "framesSubmitted": 2,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 3,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 3,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 76132,
+        "aaEdgeDifferentPixels": 157,
+        "maxChannelDifference": 47,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 4915200,
+        "integerAlignmentErrors": {
+          "-1,-1": 145743,
+          "0,-1": 75055,
+          "1,-1": 144895,
+          "-1,0": 76225,
+          "0,0": 1181,
+          "1,0": 75365,
+          "-1,1": 145739,
+          "0,1": 75055,
+          "1,1": 144911
+        }
+      },
+      "cpuSha256": "25806800aa02edfa772a1bae7b37c0f894ef5a9a0111166150fb5e37e86b16e9",
+      "sourceReferenceSha256": "ecbf848dd0e2225f886765d5b07c0ece102c291b50b72498d79bc5da25f81770",
+      "compositorSha256": "685a55a4f2f44b389996b8efcc7eab3a61e2f9eee19558b94a932fcba17e9c6a"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 3,
+        "stage": "resize",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 4,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 12,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 4,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 0.0,
+              "originY": 0.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 12,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 4,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 0.0,
+              "originY": 0.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 3,
+          "renderedSerial": 3,
+          "framesSubmitted": 3,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 4,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 4,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 89346,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 152514,
+          "0,-1": 79380,
+          "1,-1": 152594,
+          "-1,0": 78942,
+          "0,0": 1222,
+          "1,0": 78968,
+          "-1,1": 151678,
+          "0,1": 78536,
+          "1,1": 151616
+        }
+      },
+      "cpuSha256": "ff7927c49cae71d4026f46ba55be41aefba1e04714899f6ec44016ae035e46ce",
+      "sourceReferenceSha256": "5309c33923fe4cfb6cd18a85cd022de15ae475cd5db77148be491c9ad12b0cac",
+      "compositorSha256": "b8da14ea387ae2a65c9e9c9960cb9e861dd9e097ac1b8087d151080697a65562"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 4,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 5,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 17,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 5,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 4.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 17,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 5,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 16.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 4,
+          "renderedSerial": 4,
+          "framesSubmitted": 4,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 5,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 5,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 453811,
+          "0,-1": 253921,
+          "1,-1": 453891,
+          "-1,0": 206201,
+          "0,0": 1222,
+          "1,0": 206227,
+          "-1,1": 452975,
+          "0,1": 253077,
+          "1,1": 453919
+        }
+      },
+      "cpuSha256": "cc68d6d054557738b5f3edcfc4d24c9c7e3a6c74024e6b7057c07d4ebb746bcd",
+      "sourceReferenceSha256": "8a2e3d11441ef07278e209cc678f70526c593535851de20648c3a7934bb72fe2",
+      "compositorSha256": "0ffc3f8173e0e1ac25d11f3c856673df571ee3d598f8d0d84deed06a9bd9671e"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 5,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 6,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 22,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 6,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 0.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 22,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 6,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 0.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 5,
+          "renderedSerial": 5,
+          "framesSubmitted": 5,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 6,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 6,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 328564,
+          "0,-1": 255430,
+          "1,-1": 328644,
+          "-1,0": 78942,
+          "0,0": 1222,
+          "1,0": 78968,
+          "-1,1": 327728,
+          "0,1": 254586,
+          "1,1": 327666
+        }
+      },
+      "cpuSha256": "0eb3f9666a2d571f53be61d11dad11ea4d6312c7220165e43409b2e947cfaa02",
+      "sourceReferenceSha256": "a210e067438ff5095549a1b495fa7794906e831e978fbae8ecbac8c8b1b42b48",
+      "compositorSha256": "63c0904c1effdac03cbc5e75aee65b1247e525a619608ff7e6609e3d65fbaa94"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 6,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 7,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 27,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 7,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 4.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 27,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 7,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 16.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 6,
+          "renderedSerial": 6,
+          "framesSubmitted": 6,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 7,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 7,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 453811,
+          "0,-1": 253921,
+          "1,-1": 453891,
+          "-1,0": 206201,
+          "0,0": 1222,
+          "1,0": 206227,
+          "-1,1": 452975,
+          "0,1": 253077,
+          "1,1": 453919
+        }
+      },
+      "cpuSha256": "cc68d6d054557738b5f3edcfc4d24c9c7e3a6c74024e6b7057c07d4ebb746bcd",
+      "sourceReferenceSha256": "8a2e3d11441ef07278e209cc678f70526c593535851de20648c3a7934bb72fe2",
+      "compositorSha256": "0ffc3f8173e0e1ac25d11f3c856673df571ee3d598f8d0d84deed06a9bd9671e"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 7,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 8,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 32,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 8,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 0.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 32,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 8,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 0.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 7,
+          "renderedSerial": 7,
+          "framesSubmitted": 7,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 8,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 8,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 328564,
+          "0,-1": 255430,
+          "1,-1": 328644,
+          "-1,0": 78942,
+          "0,0": 1222,
+          "1,0": 78968,
+          "-1,1": 327728,
+          "0,1": 254586,
+          "1,1": 327666
+        }
+      },
+      "cpuSha256": "0eb3f9666a2d571f53be61d11dad11ea4d6312c7220165e43409b2e947cfaa02",
+      "sourceReferenceSha256": "a210e067438ff5095549a1b495fa7794906e831e978fbae8ecbac8c8b1b42b48",
+      "compositorSha256": "63c0904c1effdac03cbc5e75aee65b1247e525a619608ff7e6609e3d65fbaa94"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 8,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 9,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 37,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 9,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 4.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 37,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 9,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 16.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 8,
+          "renderedSerial": 8,
+          "framesSubmitted": 8,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 9,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 9,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 453811,
+          "0,-1": 253921,
+          "1,-1": 453891,
+          "-1,0": 206201,
+          "0,0": 1222,
+          "1,0": 206227,
+          "-1,1": 452975,
+          "0,1": 253077,
+          "1,1": 453919
+        }
+      },
+      "cpuSha256": "cc68d6d054557738b5f3edcfc4d24c9c7e3a6c74024e6b7057c07d4ebb746bcd",
+      "sourceReferenceSha256": "8a2e3d11441ef07278e209cc678f70526c593535851de20648c3a7934bb72fe2",
+      "compositorSha256": "0ffc3f8173e0e1ac25d11f3c856673df571ee3d598f8d0d84deed06a9bd9671e"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 9,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 10,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 42,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 10,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 0.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 42,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 10,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 0.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 9,
+          "renderedSerial": 9,
+          "framesSubmitted": 9,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 10,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 10,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 328564,
+          "0,-1": 255430,
+          "1,-1": 328644,
+          "-1,0": 78942,
+          "0,0": 1222,
+          "1,0": 78968,
+          "-1,1": 327728,
+          "0,1": 254586,
+          "1,1": 327666
+        }
+      },
+      "cpuSha256": "0eb3f9666a2d571f53be61d11dad11ea4d6312c7220165e43409b2e947cfaa02",
+      "sourceReferenceSha256": "a210e067438ff5095549a1b495fa7794906e831e978fbae8ecbac8c8b1b42b48",
+      "compositorSha256": "63c0904c1effdac03cbc5e75aee65b1247e525a619608ff7e6609e3d65fbaa94"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 10,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 11,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 47,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 11,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 4.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 47,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 11,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 16.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 10,
+          "renderedSerial": 10,
+          "framesSubmitted": 10,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 11,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 11,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 453811,
+          "0,-1": 253921,
+          "1,-1": 453891,
+          "-1,0": 206201,
+          "0,0": 1222,
+          "1,0": 206227,
+          "-1,1": 452975,
+          "0,1": 253077,
+          "1,1": 453919
+        }
+      },
+      "cpuSha256": "cc68d6d054557738b5f3edcfc4d24c9c7e3a6c74024e6b7057c07d4ebb746bcd",
+      "sourceReferenceSha256": "8a2e3d11441ef07278e209cc678f70526c593535851de20648c3a7934bb72fe2",
+      "compositorSha256": "0ffc3f8173e0e1ac25d11f3c856673df571ee3d598f8d0d84deed06a9bd9671e"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 11,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 12,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 52,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 12,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 0.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 52,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 12,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 0.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 11,
+          "renderedSerial": 11,
+          "framesSubmitted": 11,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 12,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 12,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 328564,
+          "0,-1": 255430,
+          "1,-1": 328644,
+          "-1,0": 78942,
+          "0,0": 1222,
+          "1,0": 78968,
+          "-1,1": 327728,
+          "0,1": 254586,
+          "1,1": 327666
+        }
+      },
+      "cpuSha256": "0eb3f9666a2d571f53be61d11dad11ea4d6312c7220165e43409b2e947cfaa02",
+      "sourceReferenceSha256": "a210e067438ff5095549a1b495fa7794906e831e978fbae8ecbac8c8b1b42b48",
+      "compositorSha256": "63c0904c1effdac03cbc5e75aee65b1247e525a619608ff7e6609e3d65fbaa94"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 12,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 13,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 57,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 13,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 4.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 57,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 13,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 16.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 12,
+          "renderedSerial": 12,
+          "framesSubmitted": 12,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 13,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 13,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 453811,
+          "0,-1": 253921,
+          "1,-1": 453891,
+          "-1,0": 206201,
+          "0,0": 1222,
+          "1,0": 206227,
+          "-1,1": 452975,
+          "0,1": 253077,
+          "1,1": 453919
+        }
+      },
+      "cpuSha256": "cc68d6d054557738b5f3edcfc4d24c9c7e3a6c74024e6b7057c07d4ebb746bcd",
+      "sourceReferenceSha256": "8a2e3d11441ef07278e209cc678f70526c593535851de20648c3a7934bb72fe2",
+      "compositorSha256": "0ffc3f8173e0e1ac25d11f3c856673df571ee3d598f8d0d84deed06a9bd9671e"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 13,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 14,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 62,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 14,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 0.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 62,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 14,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 0.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 13,
+          "renderedSerial": 13,
+          "framesSubmitted": 13,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 14,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 14,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 328564,
+          "0,-1": 255430,
+          "1,-1": 328644,
+          "-1,0": 78942,
+          "0,0": 1222,
+          "1,0": 78968,
+          "-1,1": 327728,
+          "0,1": 254586,
+          "1,1": 327666
+        }
+      },
+      "cpuSha256": "0eb3f9666a2d571f53be61d11dad11ea4d6312c7220165e43409b2e947cfaa02",
+      "sourceReferenceSha256": "a210e067438ff5095549a1b495fa7794906e831e978fbae8ecbac8c8b1b42b48",
+      "compositorSha256": "63c0904c1effdac03cbc5e75aee65b1247e525a619608ff7e6609e3d65fbaa94"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 14,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 15,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 67,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 15,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 4.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 67,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 15,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 16.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 14,
+          "renderedSerial": 14,
+          "framesSubmitted": 14,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 15,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 15,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 453811,
+          "0,-1": 253921,
+          "1,-1": 453891,
+          "-1,0": 206201,
+          "0,0": 1222,
+          "1,0": 206227,
+          "-1,1": 452975,
+          "0,1": 253077,
+          "1,1": 453919
+        }
+      },
+      "cpuSha256": "cc68d6d054557738b5f3edcfc4d24c9c7e3a6c74024e6b7057c07d4ebb746bcd",
+      "sourceReferenceSha256": "8a2e3d11441ef07278e209cc678f70526c593535851de20648c3a7934bb72fe2",
+      "compositorSha256": "0ffc3f8173e0e1ac25d11f3c856673df571ee3d598f8d0d84deed06a9bd9671e"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 15,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 16,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 72,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 16,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 0.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 72,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 16,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 0.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 15,
+          "renderedSerial": 15,
+          "framesSubmitted": 15,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 16,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 16,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 328564,
+          "0,-1": 255430,
+          "1,-1": 328644,
+          "-1,0": 78942,
+          "0,0": 1222,
+          "1,0": 78968,
+          "-1,1": 327728,
+          "0,1": 254586,
+          "1,1": 327666
+        }
+      },
+      "cpuSha256": "0eb3f9666a2d571f53be61d11dad11ea4d6312c7220165e43409b2e947cfaa02",
+      "sourceReferenceSha256": "a210e067438ff5095549a1b495fa7794906e831e978fbae8ecbac8c8b1b42b48",
+      "compositorSha256": "63c0904c1effdac03cbc5e75aee65b1247e525a619608ff7e6609e3d65fbaa94"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 16,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 17,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 77,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 17,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 4.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 77,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 17,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 16.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 16,
+          "renderedSerial": 16,
+          "framesSubmitted": 16,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 17,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 17,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 453811,
+          "0,-1": 253921,
+          "1,-1": 453891,
+          "-1,0": 206201,
+          "0,0": 1222,
+          "1,0": 206227,
+          "-1,1": 452975,
+          "0,1": 253077,
+          "1,1": 453919
+        }
+      },
+      "cpuSha256": "cc68d6d054557738b5f3edcfc4d24c9c7e3a6c74024e6b7057c07d4ebb746bcd",
+      "sourceReferenceSha256": "8a2e3d11441ef07278e209cc678f70526c593535851de20648c3a7934bb72fe2",
+      "compositorSha256": "0ffc3f8173e0e1ac25d11f3c856673df571ee3d598f8d0d84deed06a9bd9671e"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 17,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 18,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 82,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 18,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 0.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 82,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 18,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 0.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 17,
+          "renderedSerial": 17,
+          "framesSubmitted": 17,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 18,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 18,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 328564,
+          "0,-1": 255430,
+          "1,-1": 328644,
+          "-1,0": 78942,
+          "0,0": 1222,
+          "1,0": 78968,
+          "-1,1": 327728,
+          "0,1": 254586,
+          "1,1": 327666
+        }
+      },
+      "cpuSha256": "0eb3f9666a2d571f53be61d11dad11ea4d6312c7220165e43409b2e947cfaa02",
+      "sourceReferenceSha256": "a210e067438ff5095549a1b495fa7794906e831e978fbae8ecbac8c8b1b42b48",
+      "compositorSha256": "63c0904c1effdac03cbc5e75aee65b1247e525a619608ff7e6609e3d65fbaa94"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 18,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 19,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 87,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 19,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 4.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 87,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 19,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 16.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 18,
+          "renderedSerial": 18,
+          "framesSubmitted": 18,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 19,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 19,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 453811,
+          "0,-1": 253921,
+          "1,-1": 453891,
+          "-1,0": 206201,
+          "0,0": 1222,
+          "1,0": 206227,
+          "-1,1": 452975,
+          "0,1": 253077,
+          "1,1": 453919
+        }
+      },
+      "cpuSha256": "cc68d6d054557738b5f3edcfc4d24c9c7e3a6c74024e6b7057c07d4ebb746bcd",
+      "sourceReferenceSha256": "8a2e3d11441ef07278e209cc678f70526c593535851de20648c3a7934bb72fe2",
+      "compositorSha256": "0ffc3f8173e0e1ac25d11f3c856673df571ee3d598f8d0d84deed06a9bd9671e"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 19,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 20,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 92,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 20,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 0.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 92,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 20,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 0.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 19,
+          "renderedSerial": 19,
+          "framesSubmitted": 19,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 20,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 20,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 328564,
+          "0,-1": 255430,
+          "1,-1": 328644,
+          "-1,0": 78942,
+          "0,0": 1222,
+          "1,0": 78968,
+          "-1,1": 327728,
+          "0,1": 254586,
+          "1,1": 327666
+        }
+      },
+      "cpuSha256": "0eb3f9666a2d571f53be61d11dad11ea4d6312c7220165e43409b2e947cfaa02",
+      "sourceReferenceSha256": "a210e067438ff5095549a1b495fa7794906e831e978fbae8ecbac8c8b1b42b48",
+      "compositorSha256": "63c0904c1effdac03cbc5e75aee65b1247e525a619608ff7e6609e3d65fbaa94"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 20,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 21,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 97,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 21,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 4.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 97,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 21,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 16.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 20,
+          "renderedSerial": 20,
+          "framesSubmitted": 20,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 21,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 21,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 453811,
+          "0,-1": 253921,
+          "1,-1": 453891,
+          "-1,0": 206201,
+          "0,0": 1222,
+          "1,0": 206227,
+          "-1,1": 452975,
+          "0,1": 253077,
+          "1,1": 453919
+        }
+      },
+      "cpuSha256": "cc68d6d054557738b5f3edcfc4d24c9c7e3a6c74024e6b7057c07d4ebb746bcd",
+      "sourceReferenceSha256": "8a2e3d11441ef07278e209cc678f70526c593535851de20648c3a7934bb72fe2",
+      "compositorSha256": "0ffc3f8173e0e1ac25d11f3c856673df571ee3d598f8d0d84deed06a9bd9671e"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 21,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 22,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 102,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 22,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 0.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 102,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 22,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 0.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 21,
+          "renderedSerial": 21,
+          "framesSubmitted": 21,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 22,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 22,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 328564,
+          "0,-1": 255430,
+          "1,-1": 328644,
+          "-1,0": 78942,
+          "0,0": 1222,
+          "1,0": 78968,
+          "-1,1": 327728,
+          "0,1": 254586,
+          "1,1": 327666
+        }
+      },
+      "cpuSha256": "0eb3f9666a2d571f53be61d11dad11ea4d6312c7220165e43409b2e947cfaa02",
+      "sourceReferenceSha256": "a210e067438ff5095549a1b495fa7794906e831e978fbae8ecbac8c8b1b42b48",
+      "compositorSha256": "63c0904c1effdac03cbc5e75aee65b1247e525a619608ff7e6609e3d65fbaa94"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 22,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 23,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 107,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 23,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 4.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 107,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 23,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 16.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 22,
+          "renderedSerial": 22,
+          "framesSubmitted": 22,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 23,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 23,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 453811,
+          "0,-1": 253921,
+          "1,-1": 453891,
+          "-1,0": 206201,
+          "0,0": 1222,
+          "1,0": 206227,
+          "-1,1": 452975,
+          "0,1": 253077,
+          "1,1": 453919
+        }
+      },
+      "cpuSha256": "cc68d6d054557738b5f3edcfc4d24c9c7e3a6c74024e6b7057c07d4ebb746bcd",
+      "sourceReferenceSha256": "8a2e3d11441ef07278e209cc678f70526c593535851de20648c3a7934bb72fe2",
+      "compositorSha256": "0ffc3f8173e0e1ac25d11f3c856673df571ee3d598f8d0d84deed06a9bd9671e"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 23,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 24,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 112,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 24,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 0.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 112,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 24,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 0.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 23,
+          "renderedSerial": 23,
+          "framesSubmitted": 23,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 24,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 24,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 328564,
+          "0,-1": 255430,
+          "1,-1": 328644,
+          "-1,0": 78942,
+          "0,0": 1222,
+          "1,0": 78968,
+          "-1,1": 327728,
+          "0,1": 254586,
+          "1,1": 327666
+        }
+      },
+      "cpuSha256": "0eb3f9666a2d571f53be61d11dad11ea4d6312c7220165e43409b2e947cfaa02",
+      "sourceReferenceSha256": "a210e067438ff5095549a1b495fa7794906e831e978fbae8ecbac8c8b1b42b48",
+      "compositorSha256": "63c0904c1effdac03cbc5e75aee65b1247e525a619608ff7e6609e3d65fbaa94"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 24,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 25,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 117,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 25,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 4.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 117,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 25,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 16.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 24,
+          "renderedSerial": 24,
+          "framesSubmitted": 24,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 25,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 25,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 453811,
+          "0,-1": 253921,
+          "1,-1": 453891,
+          "-1,0": 206201,
+          "0,0": 1222,
+          "1,0": 206227,
+          "-1,1": 452975,
+          "0,1": 253077,
+          "1,1": 453919
+        }
+      },
+      "cpuSha256": "cc68d6d054557738b5f3edcfc4d24c9c7e3a6c74024e6b7057c07d4ebb746bcd",
+      "sourceReferenceSha256": "8a2e3d11441ef07278e209cc678f70526c593535851de20648c3a7934bb72fe2",
+      "compositorSha256": "0ffc3f8173e0e1ac25d11f3c856673df571ee3d598f8d0d84deed06a9bd9671e"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 25,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 26,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 122,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 26,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 0.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 122,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 26,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 0.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 25,
+          "renderedSerial": 25,
+          "framesSubmitted": 25,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 26,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 26,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 328564,
+          "0,-1": 255430,
+          "1,-1": 328644,
+          "-1,0": 78942,
+          "0,0": 1222,
+          "1,0": 78968,
+          "-1,1": 327728,
+          "0,1": 254586,
+          "1,1": 327666
+        }
+      },
+      "cpuSha256": "0eb3f9666a2d571f53be61d11dad11ea4d6312c7220165e43409b2e947cfaa02",
+      "sourceReferenceSha256": "a210e067438ff5095549a1b495fa7794906e831e978fbae8ecbac8c8b1b42b48",
+      "compositorSha256": "63c0904c1effdac03cbc5e75aee65b1247e525a619608ff7e6609e3d65fbaa94"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 26,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 27,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 127,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 27,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 4.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 127,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 27,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 16.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 26,
+          "renderedSerial": 26,
+          "framesSubmitted": 26,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 27,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 27,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 453811,
+          "0,-1": 253921,
+          "1,-1": 453891,
+          "-1,0": 206201,
+          "0,0": 1222,
+          "1,0": 206227,
+          "-1,1": 452975,
+          "0,1": 253077,
+          "1,1": 453919
+        }
+      },
+      "cpuSha256": "cc68d6d054557738b5f3edcfc4d24c9c7e3a6c74024e6b7057c07d4ebb746bcd",
+      "sourceReferenceSha256": "8a2e3d11441ef07278e209cc678f70526c593535851de20648c3a7934bb72fe2",
+      "compositorSha256": "0ffc3f8173e0e1ac25d11f3c856673df571ee3d598f8d0d84deed06a9bd9671e"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 27,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 28,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 132,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 28,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 0.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 132,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 28,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 0.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 27,
+          "renderedSerial": 27,
+          "framesSubmitted": 27,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 28,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 28,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 328564,
+          "0,-1": 255430,
+          "1,-1": 328644,
+          "-1,0": 78942,
+          "0,0": 1222,
+          "1,0": 78968,
+          "-1,1": 327728,
+          "0,1": 254586,
+          "1,1": 327666
+        }
+      },
+      "cpuSha256": "0eb3f9666a2d571f53be61d11dad11ea4d6312c7220165e43409b2e947cfaa02",
+      "sourceReferenceSha256": "a210e067438ff5095549a1b495fa7794906e831e978fbae8ecbac8c8b1b42b48",
+      "compositorSha256": "63c0904c1effdac03cbc5e75aee65b1247e525a619608ff7e6609e3d65fbaa94"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 28,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 29,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 137,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 29,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 4.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 137,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 29,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 16.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 28,
+          "renderedSerial": 28,
+          "framesSubmitted": 28,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 29,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 29,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 453811,
+          "0,-1": 253921,
+          "1,-1": 453891,
+          "-1,0": 206201,
+          "0,0": 1222,
+          "1,0": 206227,
+          "-1,1": 452975,
+          "0,1": 253077,
+          "1,1": 453919
+        }
+      },
+      "cpuSha256": "cc68d6d054557738b5f3edcfc4d24c9c7e3a6c74024e6b7057c07d4ebb746bcd",
+      "sourceReferenceSha256": "8a2e3d11441ef07278e209cc678f70526c593535851de20648c3a7934bb72fe2",
+      "compositorSha256": "0ffc3f8173e0e1ac25d11f3c856673df571ee3d598f8d0d84deed06a9bd9671e"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 29,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 30,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 142,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 30,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 0.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 142,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 30,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 0.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 29,
+          "renderedSerial": 29,
+          "framesSubmitted": 29,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 30,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 30,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 328564,
+          "0,-1": 255430,
+          "1,-1": 328644,
+          "-1,0": 78942,
+          "0,0": 1222,
+          "1,0": 78968,
+          "-1,1": 327728,
+          "0,1": 254586,
+          "1,1": 327666
+        }
+      },
+      "cpuSha256": "0eb3f9666a2d571f53be61d11dad11ea4d6312c7220165e43409b2e947cfaa02",
+      "sourceReferenceSha256": "a210e067438ff5095549a1b495fa7794906e831e978fbae8ecbac8c8b1b42b48",
+      "compositorSha256": "63c0904c1effdac03cbc5e75aee65b1247e525a619608ff7e6609e3d65fbaa94"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 30,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 31,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 147,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 31,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 4.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 147,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 31,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 16.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 30,
+          "renderedSerial": 30,
+          "framesSubmitted": 30,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 31,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 31,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 453811,
+          "0,-1": 253921,
+          "1,-1": 453891,
+          "-1,0": 206201,
+          "0,0": 1222,
+          "1,0": 206227,
+          "-1,1": 452975,
+          "0,1": 253077,
+          "1,1": 453919
+        }
+      },
+      "cpuSha256": "cc68d6d054557738b5f3edcfc4d24c9c7e3a6c74024e6b7057c07d4ebb746bcd",
+      "sourceReferenceSha256": "8a2e3d11441ef07278e209cc678f70526c593535851de20648c3a7934bb72fe2",
+      "compositorSha256": "0ffc3f8173e0e1ac25d11f3c856673df571ee3d598f8d0d84deed06a9bd9671e"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 31,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 32,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 152,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 32,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 0.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 152,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 32,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 0.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 31,
+          "renderedSerial": 31,
+          "framesSubmitted": 31,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 32,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 32,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 328564,
+          "0,-1": 255430,
+          "1,-1": 328644,
+          "-1,0": 78942,
+          "0,0": 1222,
+          "1,0": 78968,
+          "-1,1": 327728,
+          "0,1": 254586,
+          "1,1": 327666
+        }
+      },
+      "cpuSha256": "0eb3f9666a2d571f53be61d11dad11ea4d6312c7220165e43409b2e947cfaa02",
+      "sourceReferenceSha256": "a210e067438ff5095549a1b495fa7794906e831e978fbae8ecbac8c8b1b42b48",
+      "compositorSha256": "63c0904c1effdac03cbc5e75aee65b1247e525a619608ff7e6609e3d65fbaa94"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+        "index": 32,
+        "stage": "continuous",
+        "pid": 1013387,
+        "platform": "linux",
+        "width": 352,
+        "height": 256,
+        "physicalOffset": [
+          16,
+          16
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 33,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "limits": null,
+        "cpuReferenceScale": 4,
+        "geometryProof": {
+          "cpu": {
+            "snapshot": 157,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 33,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 352,
+              "height": 256
+            },
+            "placement": {
+              "scale": 0.44348877839000134,
+              "originX": 4.0,
+              "originY": 2.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 360448,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 256,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 1408,
+              "width": 352
+            }
+          },
+          "reference": {
+            "snapshot": 157,
+            "stamp": {
+              "documentId": 1,
+              "revision": 1,
+              "fontGeneration": 0,
+              "viewGeneration": 33,
+              "deviceGeneration": 1,
+              "deviceScale": 1.0
+            },
+            "viewport": {
+              "width": 1408,
+              "height": 1024
+            },
+            "placement": {
+              "scale": 1.7739551135600053,
+              "originX": 16.0,
+              "originY": 8.0
+            },
+            "coordinateSpace": "viewportPixels",
+            "descriptor": {
+              "alpha": "premultiplied",
+              "backend": "cpu",
+              "byteLength": 5767168,
+              "colorSpace": "srgb",
+              "deviceScale": 1.0,
+              "height": 1024,
+              "origin": "topLeft",
+              "originX": 0,
+              "originY": 0,
+              "pixelFormat": "rgba8Premultiplied",
+              "rasterScale": 1.0,
+              "stride": 5632,
+              "width": 1408
+            }
+          }
+        },
+        "nativeStatus": {
+          "deviceGeneration": 1,
+          "acceptedSerial": 32,
+          "renderedSerial": 32,
+          "framesSubmitted": 32,
+          "wholeFrameReadbacks": 0,
+          "abandonedTargets": 0,
+          "orphanedOwners": 0,
+          "liveRasterSlots": 1,
+          "pendingRetireSlots": 0,
+          "orphanedRasterSlots": 0,
+          "rasterSlotLimit": 4,
+          "snapshotReleaseFailures": 0,
+          "glVendor": "Mesa",
+          "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+          "closing": false,
+          "cleanupComplete": false,
+          "ownerThreadExit": false,
+          "registered": true,
+          "code": "",
+          "message": "",
+          "acceptedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 33,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "renderedStamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 33,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          }
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 453811,
+          "0,-1": 253921,
+          "1,-1": 453891,
+          "-1,0": 206201,
+          "0,0": 1222,
+          "1,0": 206227,
+          "-1,1": 452975,
+          "0,1": 253077,
+          "1,1": 453919
+        }
+      },
+      "cpuSha256": "cc68d6d054557738b5f3edcfc4d24c9c7e3a6c74024e6b7057c07d4ebb746bcd",
+      "sourceReferenceSha256": "8a2e3d11441ef07278e209cc678f70526c593535851de20648c3a7934bb72fe2",
+      "compositorSha256": "0ffc3f8173e0e1ac25d11f3c856673df571ee3d598f8d0d84deed06a9bd9671e"
+    }
+  ],
+  "consumerGpuCompletionVerified": false,
+  "continuousPresentationSupported": true,
+  "hardwareAccelerationVerified": false,
+  "capture": "visible-x11-root",
+  "started": 1794179181.9520228,
+  "exitCode": 0,
+  "pid": 1013387,
+  "loadedArtifacts": [
+    {
+      "index": 1,
+      "modules": {
+        "runner": {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261109/linux-desktop-build/runner/build/linux/x64/debug/bundle/rhwp_texture_qualification",
+          "device": "08:50",
+          "inode": 4374954
+        },
+        "native": {
+          "path": "/home/edward/mygithub/rhwp/target/pr-review/release-test/librhwp_native_ffi.so",
+          "device": "08:50",
+          "inode": 4374411
+        },
+        "dispatcher": {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261109/linux-desktop-build/librhwp_flutter_owner.so",
+          "device": "08:50",
+          "inode": 4374978
+        },
+        "engineRuntime": {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261109/linux-desktop-build/runner/build/linux/x64/debug/bundle/lib/libflutter_linux_gtk.so",
+          "device": "08:50",
+          "inode": 4374958
+        },
+        "plugin": {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261109/linux-desktop-build/runner/build/linux/x64/debug/bundle/lib/librhwp_native_reference_plugin.so",
+          "device": "08:50",
+          "inode": 4374959
+        }
+      }
+    },
+    {
+      "index": 32,
+      "modules": {
+        "runner": {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261109/linux-desktop-build/runner/build/linux/x64/debug/bundle/rhwp_texture_qualification",
+          "device": "08:50",
+          "inode": 4374954
+        },
+        "native": {
+          "path": "/home/edward/mygithub/rhwp/target/pr-review/release-test/librhwp_native_ffi.so",
+          "device": "08:50",
+          "inode": 4374411
+        },
+        "dispatcher": {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261109/linux-desktop-build/librhwp_flutter_owner.so",
+          "device": "08:50",
+          "inode": 4374978
+        },
+        "engineRuntime": {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261109/linux-desktop-build/runner/build/linux/x64/debug/bundle/lib/libflutter_linux_gtk.so",
+          "device": "08:50",
+          "inode": 4374958
+        },
+        "plugin": {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261109/linux-desktop-build/runner/build/linux/x64/debug/bundle/lib/librhwp_native_reference_plugin.so",
+          "device": "08:50",
+          "inode": 4374959
+        }
+      }
+    }
+  ],
+  "result": {
+    "protocol": 1,
+    "nonce": "a94f125b02724c29a4f1f07f97fa7cf1",
+    "ok": true,
+    "closed": {
+      "deviceGeneration": 1,
+      "acceptedSerial": 32,
+      "renderedSerial": 32,
+      "framesSubmitted": 32,
+      "wholeFrameReadbacks": 0,
+      "abandonedTargets": 0,
+      "orphanedOwners": 0,
+      "liveRasterSlots": 0,
+      "pendingRetireSlots": 0,
+      "orphanedRasterSlots": 0,
+      "rasterSlotLimit": 4,
+      "snapshotReleaseFailures": 0,
+      "glVendor": "Mesa",
+      "glRenderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+      "glVersion": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4",
+      "closing": true,
+      "cleanupComplete": true,
+      "ownerThreadExit": false,
+      "registered": false,
+      "code": "",
+      "message": "",
+      "acceptedStamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 33,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "renderedStamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 33,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      }
+    },
+    "stats": {
+      "frameBytes": 0,
+      "frameHandles": 0,
+      "inFlightReplays": 0,
+      "leases": 0,
+      "retainedFrames": 0,
+      "retainedSnapshots": 0,
+      "snapshotEstimatedBytes": 0,
+      "snapshotHandles": 0,
+      "sources": 0
+    },
+    "consumerGpuCompletionVerified": false,
+    "continuousPresentationSupported": true,
+    "presentationKind": "externalTexture",
+    "publications": 32
+  },
+  "finished": 1794179214.923236,
+  "build": {
+    "platform": "linux",
+    "sourceHead": "be778bae9b3803050146dcc47a896940587a612e",
+    "nativeSourceHead": "be778bae9b3803050146dcc47a896940587a612e",
+    "nativeBuildVerified": false,
+    "nativeProvenance": "supplied-library hash and caller-declared source; no Native rebuild",
+    "buildExitCode": 0,
+    "started": 1794179069.9607828,
+    "pid": 1012116,
+    "flutterRevision": "c197ca5199e9ee5661e865596c9c07294dfab51c",
+    "engineRevision": "89c39edfdfae2949f6806e4a315c0c08522238b7",
+    "flutterVersion": "3.47.9",
+    "flutterEngineHeaders": {
+      "fl_application.h": "19337483a6aeb1c3398cabbbf32b3b4f57fb6ca1a816eddc29af93ffa4d32844",
+      "fl_basic_message_channel.h": "1b065efa8f76660b0b50e00a1c502a3fe11c8bf50c767100bc018d0d4aead638",
+      "fl_binary_codec.h": "5cae4d852aa56b20d51f978c7285b2f68f1cfef5b2c57a6f71f7af08c311ad2e",
+      "fl_binary_messenger.h": "19e0545e787d271dd7ebc5f7f2cf310f388416409309870624e3a773e195024c",
+      "fl_dart_project.h": "f7c02023702814ccba05be2a112ffc4682a1e6befdbc573f1310206da787ec2b",
+      "fl_engine.h": "725215ca0d9951ca4332e643e1d76f1026b2262fb2de40b8b3a3d463789e4974",
+      "fl_event_channel.h": "8238a7ccaa1fe5eec8073e8aa2f403b9fbb4bfcea340451d4032726053f87197",
+      "fl_json_message_codec.h": "1891c034ccf7be969f3369891be01712d50aeab8b04102cdbf7afb9f1ab81757",
+      "fl_json_method_codec.h": "0672e603ebaa5368959a71e7ddb373f08e32078ebe52ba93d8f14761ff93da97",
+      "fl_message_codec.h": "6d7a12d60997113dd664fb4e83226a3177c40af3cbf2656e158e9a81f981c0cb",
+      "fl_method_call.h": "9d1604b7b374bcdb7ba1e8873eedfd173178625745fe7755d97a5e4228b71680",
+      "fl_method_channel.h": "c75a3739f944a3b5f5f5e3a4046c1d82caa92961adc3d8b75235e9ced8e62405",
+      "fl_method_codec.h": "f6bd1cfdaa50240dae83ba691130730f1b6f5a4e514da1a6945b11233ca6337c",
+      "fl_method_response.h": "dcf13930cdbde47ae09e8c080c44cd22b000ccc797434612627d1caee861672d",
+      "fl_pixel_buffer_texture.h": "f0fff9ea5cfb029aa556ebc398ade1abd0079f6c25d01e493073c763fe777501",
+      "fl_plugin_registrar.h": "d5917f7da45bffa531cc9b18893b2c4407c8caa5c5dc9e95387b987bd73555f2",
+      "fl_plugin_registry.h": "f9ed13fab268ca89bd8f2de7dae6dc680c6b954dba46aa737757f6a8b4e0d951",
+      "fl_standard_message_codec.h": "2f18764a54ecd9f4cf655bfc2acc993640ecdea81a1896f99e8b060c92f998be",
+      "fl_standard_method_codec.h": "7c61247b3cc8ccda8b6253ccb2b22311d5faed5854fbf4757c6b3234b44c60a3",
+      "fl_string_codec.h": "513fe5ac77b6c56d2df50a61072cdf5bf8fa46c7aa57e16a298bd50fabae9ffd",
+      "fl_texture.h": "059c07e4747b495410e23daf2da86eef36b484660733a0f5ba82d4ed21301d05",
+      "fl_texture_gl.h": "cdb57336a51554fde13ebb31898ec698bc846155b10f399a76a6720cff8c62b3",
+      "fl_texture_registrar.h": "d5e360cb120be2232ea12b837119e79428c3655f2b562e27fc55aeb5bf7f384b",
+      "fl_value.h": "e562d8c9da384c578c8aeba91b64b5f2cf5c2e377cdce98d23d0c836fd8f5639",
+      "fl_view.h": "4294bfda9acdebd1bbdc3e01bee06d448bf5f097c0f442ae4be9d8e9b428c520",
+      "flutter_linux.h": "5c126fb95361802d8b114a1f7f57025bb820233ac7e000fcb262b5d5f0384d24"
+    },
+    "generatedRunner": {
+      "linux/runner/my_application.cc": "f733586455c5c688a60dbce3c3b64f18ed2b5816ea1bc2f31798bc7e053cda1d"
+    },
+    "artifacts": {
+      "runner": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261109/linux-desktop-build/runner/build/linux/x64/debug/bundle/rhwp_texture_qualification",
+        "sha256": "0fe74bc9f0dde2be8b6f359322c69511a0b71571de30b117dcade6866937a141",
+        "bytes": 53008
+      },
+      "plugin": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261109/linux-desktop-build/runner/build/linux/x64/debug/bundle/lib/librhwp_native_reference_plugin.so",
+        "sha256": "4636eae8068bdd03149ca81217eaca0dc0a922e9a6cf1ef58f5fbfa7a6f65c70",
+        "bytes": 1354848
+      },
+      "engineRuntime": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261109/linux-desktop-build/runner/build/linux/x64/debug/bundle/lib/libflutter_linux_gtk.so",
+        "sha256": "03e4773db4b0099718fea41520685a195684b5158bc074b6c837178783bb35f9",
+        "bytes": 43377848
+      },
+      "dispatcher": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261109/linux-desktop-build/librhwp_flutter_owner.so",
+        "sha256": "0d1513663f611b79c2269dba272c071bb3558c8e8d93a694f8513071fb2ab675",
+        "bytes": 21992
+      },
+      "native": {
+        "path": "/home/edward/mygithub/rhwp/target/pr-review/release-test/librhwp_native_ffi.so",
+        "sha256": "a72a22dc64bda7c07259b944c117f4c9c6511716d24c53d32080b4f065eef99e",
+        "bytes": 79765304
+      },
+      "fixture": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261109/linux-desktop-build/source/bindings/Flutter/test/fixtures/desktop-consumer.hwpx",
+        "sha256": "648dade82585fa2845b80ec510b5f55c67e8b6127688dd3748b9a2068d87a3d9",
+        "bytes": 8082
+      }
+    },
+    "copiedRuntimeSources": {
+      "bindings/Flutter/.gitignore": "95196a246afc573c7ef17bb60f24ba48f2f7886c1f5e2da6d8e4972fd574c8ea",
+      "bindings/Flutter/DOCUMENT_LIFECYCLE.md": "0f252a9eb1578d6e1ddfc8597e86c139a4a3e3c9b2e1858ebe7431f42463d12c",
+      "bindings/Flutter/GPU_PRESENTATION.md": "710f5aa56679b20c1bfed10969af5d608eabfb596f6d57bdfa66bac0886670bf",
+      "bindings/Flutter/GPU_QUALIFICATION.md": "9b005967045320ec2f7f37bb537d62781143f53fff2ce14ad639338c0a609bc4",
+      "bindings/Flutter/LINUX_QUALIFICATION.md": "2074099ac92ebe0dedd427a1eb8c3f44112e362ba55a82035c348deceb6708e3",
+      "bindings/Flutter/NATIVE_ARTIFACT_REUSE.md": "bcebe9d86309b8db166a8df859b86d46d9bcdbe10e74ee22937dbfc9b1bd2fe0",
+      "bindings/Flutter/README.md": "45e6db584a5f61c9d39dab639a054299e12d55204192ab049e67ac8dce0ad9e7",
+      "bindings/Flutter/WINDOWS_CONTINUOUS_QUALIFICATION.md": "0eb89185be88a9da6c30dcca391b040946660d7ceb0b0c3447de035d8aacbd0c",
+      "bindings/Flutter/analysis_options.yaml": "4e5f7579f6c38f28a3852603d721c6743165156230a2ab3d20c307e5a566ece6",
+      "bindings/Flutter/example/lib/main.dart": "1b75b923c3e015e162922594d0f76a0af241f26df8974a7583fb5dfd1ddf6962",
+      "bindings/Flutter/example/pubspec.yaml": "1f735fcc6e66f6c25150e2bbdd558f068db5abb6d65dfde45db61547f1c9f819",
+      "bindings/Flutter/lib/rhwp_native.dart": "61f696cbfd5464203bcec2e24eb3251ef05e57a17fd66778c77713da26af2501",
+      "bindings/Flutter/lib/rhwp_native_flutter.dart": "f430f2d0b603d183c67bf2ee3427e7ba8c0f7f8e6242286798f29dd44fa3f0c4",
+      "bindings/Flutter/lib/src/native_document.dart": "c264064152db703473e19096e677b48822529044e4513a822145127049eec6f6",
+      "bindings/Flutter/lib/src/native_document_lifecycle.dart": "725ad8ca0181f8ff4841ca1d86029932148f99e0b7a168f89944eb41b7417af9",
+      "bindings/Flutter/lib/src/native_document_view.dart": "0a9cdd585d99ad5a7ed2881592ed65ef7b7e239b6d96474682b48d2b91c9de02",
+      "bindings/Flutter/lib/src/native_editor_controller.dart": "86ee2bdcb4c1e5ad9de45557f8be72c86bd2a5c2ca65f7ff9c3347918ca617d7",
+      "bindings/Flutter/lib/src/native_editor_view.dart": "659ffa2863c4f4e4d166caa26d6bfb280bb64aa0f28a3ada9432759bf3ee3e3b",
+      "bindings/Flutter/lib/src/native_ffi.dart": "e2f0699ae0336ad2d9e39a4d8fbd5531a14114e0859366542cba2c7be2ac3e1c",
+      "bindings/Flutter/lib/src/native_file_store.dart": "1041d2bcf0fdd413e742f794f810aaba7f432cc341d5b75f284455ae0fbf4a63",
+      "bindings/Flutter/lib/src/native_ime.dart": "6b82b022bf02501080111ea91f6bc60f761c13642fb51a893eea47c125d35f44",
+      "bindings/Flutter/lib/src/native_multipage_view.dart": "448330b50b2fd5c3ba632965b2c1bf8a8392b890b54f896a4d0b529ebb73ada7",
+      "bindings/Flutter/lib/src/native_presentation.dart": "d4615e56e91a174c7b7a381a5619e8452826056687e3d6deb2a68602063ced04",
+      "bindings/Flutter/lib/src/native_texture_view.dart": "b79ea7bb3b8009bba5eaebc1abd04c5ce2dc5ba20d1f95543a6c0f7479225732",
+      "bindings/Flutter/lib/src/native_viewport.dart": "9391d83c7f9740c225a5349696bae53dceaaf67a2b73e1969f362af7feb4026e",
+      "bindings/Flutter/linux/CMakeLists.txt": "52d234f535255ea4f808816f40a2c8afb0a18b5d59ef23f3b1fe7f49bb70737e",
+      "bindings/Flutter/linux/gl_state_guard.cc": "cc6414e88d616851da0aed9425f5dfc639cee4fabe32a0166fb6f1cfbb38018e",
+      "bindings/Flutter/linux/gl_state_guard.h": "a50b68328c3f06bb1dbb8489c729003da1aafa29e9c9b208eb38beb1288fee2e",
+      "bindings/Flutter/linux/include/rhwp_native_reference/rhwp_texture_plugin.h": "78813198e436393a778450c5086ceaa31f3c1f95d65ff615ecadda542fbe7918",
+      "bindings/Flutter/linux/rhwp_texture_plugin.cc": "0273e1c2579c79cbb1564eabfcc323c34ae60cd0f03c9b101735564c841a9986",
+      "bindings/Flutter/linux/tests/check_linux_plugin.py": "6e84baeab5c392cc076243ed17d114eba610819140efa4c4dba393b5b5a885f9",
+      "bindings/Flutter/linux/tests/gl_state_guard_test.cc": "213764ad01b343c2ae4db556933dd259698369d8fa82edec3025598fe7902858",
+      "bindings/Flutter/linux/tests/texture_state_test.cc": "3171aa74299d039a801bd795ec161929865f29ea7959bf56e13d703453c3e0c7",
+      "bindings/Flutter/linux/texture_state.cc": "974638ac12bfce7f15dccdcc47053f6dd4002ff512d4bade6e6d5bf0869ad049",
+      "bindings/Flutter/linux/texture_state.h": "6b9db9bb8b95f1dfe2da2fccd8caf98ac2cc55be9da4127544267a261b9c4f1a",
+      "bindings/Flutter/macos/Classes/MetalFrameLifetime.hpp": "9a9fd878ee195d9056bb5aa5e864a892484a82c690c6eac64d108d093115cea5",
+      "bindings/Flutter/macos/Classes/MetalNativeView.hpp": "8d57b87980d67ccca4fee2cf826cd2421f909383d15e5b0c11fefb1425cfef78",
+      "bindings/Flutter/macos/Classes/MetalViewLifecycle.hpp": "2df06982b7dfb834a3b688f263dbf26943bd2ebf55604d617e79cfba317692fd",
+      "bindings/Flutter/macos/Classes/RhwpMetalPlugin.h": "dfb9c9266530d506a3da850e01088683a564eb0597255f129334a9175115f264",
+      "bindings/Flutter/macos/Classes/RhwpMetalPlugin.mm": "38f776841f55d01a907c7758edf7d1de2737002294bf84574e5f08c66edac4e6",
+      "bindings/Flutter/macos/Classes/TextureCloseRouting.hpp": "fe23218e9644bd0e0100f81728b45145b6aa8d11de8b00dc4dbb4cfbcf2c8c65",
+      "bindings/Flutter/macos/NATIVE_VIEW_PRESENTATION.md": "5ebbca112e932df918431ab39591c9af1079d9c881b403791a04e6b841f1145e",
+      "bindings/Flutter/macos/README.md": "86996c7ca4457f0d5b2e6585c92d09e3dc06ef4b3d1b818b66caced2b3d276c9",
+      "bindings/Flutter/macos/SDK_QUALIFICATION.md": "275649d675904c56d3e3eb01cc68fbd42b9f7a990345299d2243cf2793a6264f",
+      "bindings/Flutter/macos/rhwp_native_reference.podspec": "7fff01fdd5b5f52f0d15571a872dbd5265774591efe909bac49c5732675108b0",
+      "bindings/Flutter/macos/tests/capture_metal_window.swift": "28c5a51a5434bbe82d68fa175d3bf409d192e30cd833b9fbb10685e66797ad22",
+      "bindings/Flutter/macos/tests/cv_closed_status_sdk_test.mm": "b04c9ba63fe4f2d06f172132d8b4a8fa05d86e70797d1c294264345ae3368291",
+      "bindings/Flutter/macos/tests/frame_lifetime_test.cc": "e33a03a4620799cd650e3dd87d6c643a395f599b40e337d59e2e9e3a524ea256",
+      "bindings/Flutter/macos/tests/metal_view_animation_sdk_test.mm": "912b9926a2c33d6ba85cb705f9555c00a783f4e0676ca391ffd638d98897fbd0",
+      "bindings/Flutter/macos/tests/metal_view_lifecycle_test.cc": "5d5aa130b9133ac665ef458e692b7bd3c29ded4554c5d9acb7df0d34e993d46c",
+      "bindings/Flutter/macos/tests/native_metal_disabled.py": "9bad0c14bf74db0fc9c3540acce9c0ed31e65b94b4d097ca5ae09dfb2bc519a1",
+      "bindings/Flutter/macos/tests/native_metal_sdk_contract.py": "e7fe3ce56226a00eac8da6b5aeab7a721b8f3339f7459c36e105886503bf9322",
+      "bindings/Flutter/macos/tests/native_metal_sdk_probe.mm": "e4d68bfcb50ff72cc60ea7062d1ab022e8c67613e76bf6e1802ea56166725e21",
+      "bindings/Flutter/macos/tests/native_view_qualification_test.py": "0af0151c8b961b12ffb57787566699287b282584cc2804e3926865845c41ede1",
+      "bindings/Flutter/macos/tests/qualify_native_view.py": "e93e122eddba1daf129a97061b5bd22c721ca045db8e4e410511ae89ff0d76f1",
+      "bindings/Flutter/macos/tests/sdk_qualification_contract.py": "c95ed65aa51db6aba3ede849d9021d5cc9137b2bed3459e14e2b7c975f66c587",
+      "bindings/Flutter/macos/tests/texture_close_routing_test.cc": "0572d4859cd99e5636385c67c39d5247ec1a45a7e4d50879308dfce2e1de7737",
+      "bindings/Flutter/pubspec.yaml": "b7d3cc8bdc1af2bc8ef4572ec6b4e3702d4e6ac3d420af5d3242d50d6510cfdd",
+      "bindings/Flutter/src/owner_dispatcher.c": "f8bdd76591d18eb639776cc19e9d13b47236a3e943d1c85059ebec1f174015c8",
+      "bindings/Flutter/src/owner_dispatcher.h": "4f8fe66e02c816ab1243f780c145f53a638f053b9e5fc725b8e521e9e331f50f",
+      "bindings/Flutter/test/cpu_presenter_test.dart": "f446194e74e81a450bbafd155b50934160b779c711c77b60b6c8fcdb302e7941",
+      "bindings/Flutter/test/desktop_oracle_test.dart": "9edb38d3f64cd5f87efad558bc9c735a4a493d4dd2b92963eb907ce11bd2157f",
+      "bindings/Flutter/test/desktop_qualification_contract.py": "168e664acc46271c291a6170f3a31f8811cb969d91d39e9c5ac41926a8aaf1ed",
+      "bindings/Flutter/test/fixtures/desktop-consumer.hwpx": "648dade82585fa2845b80ec510b5f55c67e8b6127688dd3748b9a2068d87a3d9",
+      "bindings/Flutter/test/hosted_platform_runner_contract.py": "207feb9b02008e819df3bc09b7a723fc1d6ce22e8496fa504c44177aab619490",
+      "bindings/Flutter/test/linux_qualification_contract.py": "d664ff8de07158c9d901dda5091edb3d5160e0ba0addd2ff4eb4dfc87fedbcab",
+      "bindings/Flutter/test/native_artifact_provenance_contract.py": "f469d5354d85bd72439a547e4f80fd7cf5ec5496f7d7c9f314b75404019deaf3",
+      "bindings/Flutter/test/native_document_lifecycle_integration_test.dart": "8b07b20767258e45386ea7e9e07aeb5ca11d7fa1bb8f71d853936f5c1773511f",
+      "bindings/Flutter/test/native_document_lifecycle_test.dart": "b88e622d224b07610d543a9e94e77191dd20efe5d4c6a04f72353cbc4030b220",
+      "bindings/Flutter/test/native_document_test.dart": "42eb175a92701542508a9adffb244bff1250670c077d36bb2c207364073ad6da",
+      "bindings/Flutter/test/native_document_view_test.dart": "409fd96b5a0a6455d7d15f48bce32a53c4a8d1a94ee2780b962769410ef7b203",
+      "bindings/Flutter/test/native_editor_fifo_test.dart": "b5373c6406913d8c0186ed66a12dfe4a94a1c08ac07b790d7e5ca170f7541025",
+      "bindings/Flutter/test/native_editor_view_test.dart": "6f56428f212d1d260e41f4f2bb4d888cb3bfccf05a108d1ff104d59788eef118",
+      "bindings/Flutter/test/native_file_store_integration_test.dart": "73ad1196a7a5bafd5b63d8d1f48397e2d5f232f6c6c4e33fc272cc4dc37a9242",
+      "bindings/Flutter/test/native_file_store_test.dart": "d192b10a1a971d31f22c38d7079c30e74be43cba4860f3a4a7344f13da82326d",
+      "bindings/Flutter/test/native_ime_integration_test.dart": "64e85086d767d407980c7fdda2caa5e67c7ce9b0f6ca8259dae192de5a7f8545",
+      "bindings/Flutter/test/native_ime_test.dart": "271b8e50c2960f1173463d75e2cbe9d02ed4ef9ccb571bf4a37cad30ff78ae34",
+      "bindings/Flutter/test/native_metal_view_test.dart": "123f667850d8c2e30b1551944d14d7111e00936ce92c45bc488d8ffcb07cb2a7",
+      "bindings/Flutter/test/native_multipage_integration_test.dart": "959b7032ed91c913b206cc58aa1d371a425b5999c483d3e5c8ffeb3bfb93ecda",
+      "bindings/Flutter/test/native_multipage_view_test.dart": "dfe9b5641a8d3fce160d9842d72012bbda787ab02b29ae52698f19736bab0e86",
+      "bindings/Flutter/test/native_owner_contract.py": "fa47f71445f2a1ef8c5d7423917a60486a14503eabcbd1689585a8551a56512d",
+      "bindings/Flutter/test/native_presentation_capture_test.dart": "d321c9b8bf5e8a1ea4a5c8e54020e239aef608c5614a9b22ed611cc130367d6e",
+      "bindings/Flutter/test/native_presentation_test.dart": "c3115b0906bcea626012dd87c994f1ed6586f8adda6a4eaaf8b68b0f2a6c1c54",
+      "bindings/Flutter/test/native_texture_continuous_test.dart": "68f0ac765d7920fcb9e81189e014a7a0ca0c7269b0d0915651b6e48c05d73b3d",
+      "bindings/Flutter/test/native_texture_view_test.dart": "e57ac216ad6ea3b285f6698b7d63148836b9e60dafa72341db91ae7f7f95c17b",
+      "bindings/Flutter/test/native_viewport_test.dart": "3aa2cefbb04d308a4c11f0e1e74830ee3d413659c024e8d9844c6cac4355f89e",
+      "bindings/Flutter/test/support/desktop_consumer_probe.dart": "bf5a1495c05516f0e6e88dc383172d0ea1b200fd5bb89ab927e756867e1c89cf",
+      "bindings/Flutter/test/support/fake_gpu_presentation.dart": "e00b14aad2e3532b5203d88b70126d037c6c007d930c549582f3e026c130ceb3",
+      "bindings/Flutter/test/support/fake_transport.dart": "d9d08e0d8ec475575d088c0f160df7b396c5d349ee34dffb8ca4fe7ac8a85eec",
+      "bindings/Flutter/test/support/linux_controller_view_probe.dart": "87a0527edf4a0cfb484aee9051781835e7eae506dba90312fe12d82eb4f95537",
+      "bindings/Flutter/test/support/linux_texture_probe.dart": "03411efaf6946894837eac2b7576ca57898e62c0f366de7666a16d14e3542547",
+      "bindings/Flutter/test/support/mock_native.c": "43f7c2bb27efd3ab726daced36fe782bfdae70078ea42f8e0593fb016e49fd7e",
+      "bindings/Flutter/test/windows_continuous_qualification_contract.py": "1e3ed0d8d6018b39f7f7701f0cf286bf6634dfc0ed49d9ebe2232e788126f189",
+      "bindings/Flutter/tool/build_desktop_probe.py": "38dfb9d111ade6c30d96b5e05c5f1a379e2d7117b9d7b18bf68d3700343d3cd7",
+      "bindings/Flutter/tool/build_dispatcher.py": "2306613d902a9e1b4e898ee7ad438d7bdc2cf4af8137ad72c2d8279e7456417f",
+      "bindings/Flutter/tool/build_linux_probe.py": "0cde9cb7be18c5df43d3d63c7cbaf746b4a31bb727aba16f9497ee1186369509",
+      "bindings/Flutter/tool/check_macos_metal_sdk.py": "7931028ad42c9d7018278a3487d0386918084e9fece91477fc15d14b18f1d9f2",
+      "bindings/Flutter/tool/check_windows_desktop_sdk.py": "bccb49737272cdcd09e6034bbefb8fe19422b32c3fee6a4787880792f50ea5bb",
+      "bindings/Flutter/tool/find_macos_framework.py": "8adecec804c9d749f05dbacc5b0e2abb946ac6f0dc3014e9e312d6a610052a76",
+      "bindings/Flutter/tool/native_artifact_provenance.py": "aacecafa8214423b1910910bf92e64f15a7653d20ef5c41bbdd69aa74716fd72",
+      "bindings/Flutter/tool/native_ffi_smoke.dart": "db2b212624ccc30a406988d8f9fa38344d3c1ab0ebd8c05c58dc1af325cad28f",
+      "bindings/Flutter/tool/qualify_desktop_texture.py": "1f12d1632de6e3cc8f0a72c0d05d7a73b18d9a4c532d5380f218fe5fb0eafb4f",
+      "bindings/Flutter/tool/qualify_linux_texture.py": "9fcc0f46ca46baafacafa9db215a2b9afb3abd998956ea491c3cf629b79a9f6a",
+      "bindings/Flutter/tool/qualify_windows_continuous.py": "5da05b6be52665654a756a85570ed9fa699d581070c118cf6711fb21754e540c",
+      "bindings/Flutter/windows/CMakeLists.txt": "0c0bd239211b36989b9df2fbbf886460344e793260034edf8a323e8341a8e2ab",
+      "bindings/Flutter/windows/CloseRecordRegistry.h": "39a1bbbff1b71814487253d8af20114ca989ef3d1f4eacdb41c53265599cbc6c",
+      "bindings/Flutter/windows/FrameLifetime.h": "6123bdcf45ae76d3dc491f532a80611d91356b8e66c30c25cf5b3dfc3f2ae80e",
+      "bindings/Flutter/windows/NativeApi.cpp": "30e26b2c7930eb29a2eb8d9bcd0c6c8024d15127cbd5bbe17cc5c8922280e396",
+      "bindings/Flutter/windows/NativeApi.h": "709211120f1d01564c34f2e79b5786ce655e62de0558772fd96f1e257a58d594",
+      "bindings/Flutter/windows/NativeReply.h": "113d516be88add35ed404fde44cb988c2e84f0d83b2e1ccb43e237e57732426a",
+      "bindings/Flutter/windows/Producer.cpp": "65d9c8c53f3dfbc3cb29583272c224aa91a843fdbc98e6a26367ef55a8657eb8",
+      "bindings/Flutter/windows/Producer.h": "bbff2ba7b11133c4255e7ae76a5a201467aa6e34501429010aafeb42f48d3370",
+      "bindings/Flutter/windows/SurfaceImportTickets.h": "2cbac0a9b2575074ae4b634dcbaaf8e01c44ae50ed3db0dc62c0db0d03ec7288",
+      "bindings/Flutter/windows/include/rhwp_native_reference/rhwp_d3d_plugin.h": "bd4152d386444c08b1dff66aa2a3d7a427775694196efedd739409420fb90ddd",
+      "bindings/Flutter/windows/include/rhwp_native_reference/rhwp_d3d_plugin_c_api.h": "a23ec32e49ff2323be2a83b242c04a4d7bb0a11666518f8be5b8cca53b8e2576",
+      "bindings/Flutter/windows/rhwp_d3d_plugin.cpp": "047235c0510fa91def7defa8b885b23eb3b88200834254902ee6fd0183e38a36",
+      "bindings/Flutter/windows/tests/check_windows_bridge.py": "627949d50d13e98ff00a7776f2ec824fb3f53ca45fa03ab8c5153288db650b2f",
+      "bindings/Flutter/windows/tests/close_registry_test.cpp": "c7966b9fbbcc59a7220f2f25163c9dcf9f27b85ac62532a81f469335ee2c7400",
+      "bindings/Flutter/windows/tests/frame_lifetime_test.cpp": "fd1c6356a62cc901d1bbef4747ec00e6a29c2e01e18de4f126863aa5511ada33",
+      "bindings/Flutter/windows/tests/import_lifetime_test.cpp": "f87b354d675c52d0ec299b7ce861a1229b67ddcadfad231ff5dd6bbd450e892e",
+      "bindings/Flutter/windows/tests/native_d3d_disabled.py": "587ba4002bf1a85ca4d04852362b433a416d152981fe97d56baf9f92cd9f08eb",
+      "bindings/Flutter/windows/tests/public_texture_contract.cpp": "25c8a96cfa6748da736ed4872b694cf0241e2547ffc73b21d8c46c308d14a0ce",
+      "bindings/swift/Sources/CRhwpNative/module.modulemap": "72e590fe700e11a5ea1951411e75e48bd291bb861385d5c39b5012197d1edf96",
+      "bindings/swift/Sources/CRhwpNative/rhwp_native_ffi.h": "eebc11592056ac76d4528b1c7f13508ca453a8f104d2bd1b56292b329c0ec811"
+    },
+    "finished": 1794179089.0305579
+  },
+  "original_receipt_sha256": "f0585788f02b186e524cf261be09e6ee9a2ea2311a54a8036474149f68bba510",
+  "reference_sources_verified_clean": true
+}
