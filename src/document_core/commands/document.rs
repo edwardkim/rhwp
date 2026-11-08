@@ -1461,11 +1461,31 @@ impl DocumentCore {
                     // TAC 표가 lh에 포함된 경우: 다음 줄 vpos = th + ls (HWP 동작)
                     let mut inner_vpos = running_vpos;
                     let mut previous_source_end = None;
+                    // 개체를 피해 한 줄이 여러 세그먼트로 나뉘면(LineSeg tag bit 17 첫
+                    // 세그먼트·bit 18 마지막 세그먼트) 뒤 세그먼트는 같은 저장 vpos에 나란히
+                    // 놓인 같은 줄이다. 세그먼트마다 전진하면 그 줄이 세로로 쌓여 뒤 본문이
+                    // 줄 높이만큼 밀린다(#1030). 줄의 전진은 세그먼트 중 가장 큰 값으로 한 번.
+                    let mut row: Option<(i32, i32, i32)> = None; // (저장 vpos, 새 vpos, 전진)
                     for (line_index, seg) in para.line_segs.iter_mut().enumerate() {
                         let source_vpos = source_positions[line_index];
                         if owns_float_bands {
                             inner_vpos = running_vpos
                                 .saturating_add(source_vpos.saturating_sub(source_positions[0]));
+                        }
+                        let advance = if seg.line_height > seg.text_height && seg.text_height > 0 {
+                            // lh가 th보다 큼 = TAC 컨트롤 높이 포함 → th 기준 누적
+                            seg.text_height + seg.line_spacing
+                        } else {
+                            seg.line_height + seg.line_spacing
+                        };
+                        if let Some((row_source, row_top, row_advance)) = row {
+                            if !seg.is_first_segment() && source_vpos == row_source {
+                                let row_advance = row_advance.max(advance);
+                                seg.vertical_pos = row_top;
+                                inner_vpos = row_top + row_advance;
+                                row = Some((row_source, row_top, row_advance));
+                                continue;
+                            }
                         }
                         if preserve_source_frames
                             && line_index > 0
@@ -1486,12 +1506,7 @@ impl DocumentCore {
                                 .saturating_add(seg.line_spacing),
                         );
                         seg.vertical_pos = inner_vpos;
-                        let advance = if seg.line_height > seg.text_height && seg.text_height > 0 {
-                            // lh가 th보다 큼 = TAC 컨트롤 높이 포함 → th 기준 누적
-                            seg.text_height + seg.line_spacing
-                        } else {
-                            seg.line_height + seg.line_spacing
-                        };
+                        row = Some((source_vpos, inner_vpos, advance));
                         inner_vpos = inner_vpos + advance;
                     }
                     // 비-TAC TopAndBottom Picture/Table: 개체 높이를 vpos에 반영
