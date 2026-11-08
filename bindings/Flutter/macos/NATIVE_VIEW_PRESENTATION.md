@@ -51,7 +51,8 @@ texture registry ID가 아니라 native view state의 양수 handle입니다.
   참조를 autorelease pool에서 신속하게 놓습니다. 화면 표시와 후속 재사용은
   Core Animation이 소유합니다.
 - target은 BGRA8Unorm·premultiplied·sRGB이며 `framebufferOnly = NO`로 설정해
-  기존 Native의 render-target/shader-read 계약을 충족합니다.
+  기존 Native의 render-target/shader-read 계약을 충족합니다. layer는 opaque SDR로
+  고정하고 extended dynamic range를 끕니다. `clearColor`는 opaque ARGB만 받습니다.
 - viewport는 각 변 4,096 pixel 이하, 합계 4,194,304 pixel 이하입니다.
   backing 크기는 공통 Dart controller와 동일하게 ceil합니다. 다른 크기의 이전
   drawable을 새 viewport로 clamp하거나 억지로 표시하지 않습니다.

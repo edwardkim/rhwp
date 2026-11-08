@@ -285,7 +285,8 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
     layer.maximumDrawableCount = 3;
     layer.allowsNextDrawableTimeout = YES;
     layer.presentsWithTransaction = NO;
-    layer.opaque = NO;
+    layer.opaque = YES;
+    layer.wantsExtendedDynamicRangeContent = NO;
     CGColorSpaceRef color = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     layer.colorspace = color;
     if (color) CGColorSpaceRelease(color);
@@ -422,6 +423,10 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
   if(!view){result([FlutterError errorWithCode:@"closed" message:@"Unknown native view or expired closed receipt." details:nil]);return;}
   auto owner=view->owner;
   if([call.method isEqualToString:@"submit"]){
+    uint64_t clear;
+    if(!Unsigned(arguments[@"clearColor"],clear,UINT32_MAX)||(clear>>24)!=0xff){
+      result([FlutterError errorWithCode:@"arguments" message:@"AppKit Metal presentation requires an opaque ARGB clear color." details:nil]);return;
+    }
     auto job=ParseJob(arguments,owner->generation,false);
     if(!job){result([FlutterError errorWithCode:@"arguments" message:@"Invalid full stamp, placements, or bounded geometry." details:nil]);return;}
     const bool accepted=found!=_views.end()&&owner->enqueue(job);
