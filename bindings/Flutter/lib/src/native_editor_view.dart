@@ -25,10 +25,15 @@ class NativeEditorView extends StatefulWidget {
     required this.document,
     this.page = 0,
     this.viewportBuilder,
+    this.onControllerChanged,
   });
   final NativeDocument document;
   final int page;
   final NativeEditorViewportBuilder? viewportBuilder;
+
+  /// Observe the view-owned editor to drain accepted input before host actions.
+  /// The host must not dispose it. Null means it is being detached or replaced.
+  final ValueChanged<NativeEditorController?>? onControllerChanged;
   @override
   State<NativeEditorView> createState() => _NativeEditorViewState();
 }
@@ -71,6 +76,7 @@ class _NativeEditorViewState extends State<NativeEditorView>
     _dragLatest = null;
     _dragActive = false;
     final old = _editor;
+    if (old != null) widget.onControllerChanged?.call(null);
     old?.removeListener(_changed);
     old?.dispose();
     _editor = null;
@@ -83,6 +89,8 @@ class _NativeEditorViewState extends State<NativeEditorView>
     editor.addListener(_changed);
     try {
       await editor.initialize();
+      if (!mounted || binding != _binding) return;
+      widget.onControllerChanged?.call(editor);
       final page = await widget.document.pageSize(widget.page);
       if (!mounted || binding != _binding) return;
       setState(() {
@@ -414,6 +422,14 @@ class _NativeEditorViewState extends State<NativeEditorView>
   @override
   void didUpdateWidget(NativeEditorView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.onControllerChanged != oldWidget.onControllerChanged) {
+      oldWidget.onControllerChanged?.call(null);
+      if (identical(widget.document, oldWidget.document) &&
+          widget.page == oldWidget.page &&
+          _editor?.ready == true) {
+        widget.onControllerChanged?.call(_editor);
+      }
+    }
     if (!identical(widget.document, oldWidget.document)) {
       unawaited(_changes?.cancel());
       _listen();
@@ -488,6 +504,7 @@ class _NativeEditorViewState extends State<NativeEditorView>
   @override
   void dispose() {
     _binding++;
+    widget.onControllerChanged?.call(null);
     _closeInput();
     unawaited(_changes?.cancel());
     final editor = _editor;

@@ -203,3 +203,11 @@ flutter test --no-pub test/native_file_store_test.dart test/native_file_store_in
   --dart-define=RHWP_OWNER_LIBRARY=/absolute/owner.so \
   --dart-define=RHWP_NATIVE_LIBRARY=/absolute/native.so
 ```
+
+## 참조 문서 수명 (P104)
+
+`NativeDocumentLifecycle`는 기존 `NativeFileStore` 위에서 편집 입력·파일 작업이 끝난 뒤
+저장/폐기/취소와 문서 교체·복구 열기·종료를 조정한다. 경로/승인 대기 중 문서 교체를 거절하고,
+GPU 종료 Future가 반환되어도 `retirePending`이면 view와 owner를 유지한다.
+예제의 작은 경로·결정 UI와 실제 Native 저장/복구/종료 검사는
+[문서 수명 계약](DOCUMENT_LIFECYCLE.md)을 따른다. OS 창 닫기 hook과 제품 앱은 범위에 포함하지 않는다.
