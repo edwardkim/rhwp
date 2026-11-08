@@ -18,6 +18,26 @@
 
 추가 Native/fresh WASM 전쪽 검증과 최신 head CI·개별 PR 최종 리뷰·제출·병합은 아직 완료로 표시하지 않는다. 전체 회귀·Studio의 기존 실행 결과는 원 source·범위와 함께 기록하며 새 실행으로 재명명하지 않는다.
 
+## 추가 전쪽 검증과 최종 lint
+
+2026-11-08 17:50 KST에 최종 기록 head `4b5a4bc76752981ca5851036525e97f2406aa4a8`의
+format·Native Skia Clippy·WASM32 Clippy·workspace Clippy 네 단계가 모두 exit 0으로 끝났다.
+실제 명령·로그 SHA·종료 문장은 [lint 검증 원장](rebase-r52-lint-validation.json)에 기록했다.
+전체 Rust·Studio 테스트를 다시 실행한 결과로 쓰지 않는다.
+
+대기하던 전쪽 검증은 후보와 최신 base 각각 Native/fresh WASM 93조건·2,994쪽으로 계속한다.
+기존 계획에 있던 회귀 근거 6조건·141쪽도 본 검증 뒤 같은 producer로 확인한다. 기준 PDF·raw
+계산식·관용 반경·출력 영역을 바꾸지 않는다. 작업지시자의 더 엄격한 지정에 따라 최신 base와
+이전 검증값 대비 하락 검사는 0.1%p를 사용하며, PR #8389·PR #8397의 보호 행은 소수 둘째
+자리 표시값 하락을 허용하지 않는다. 진행 중 원장은 완료 판정이나 개별 PR 승인으로 대신하지 않는다.
+
+최신 base의 Native는 공식 Release Binary 실행 `42458255828`의 Linux x86_64 산출물,
+WASM은 공식 CI 실행 `42458233846`의 산출물을 사용한다. 두 실행의 head는 새 base
+`2a9a88a0ddc59eb6757ee73e03eee42b4e3ac497`다. WASM은 CI가 제품 입력 동일성을 확인해
+이전 제품 source `1b78dc23fd8add8d2bc61958be5533cbeafdbd20`의 빌드를 재사용한 산출물이며
+새 base에서 새로 컴파일했다고 표현하지 않는다. 실제 파일 SHA와 내려받은 artifact ID는
+`output/pr-review/planet6897-integration-20261106/r52-ci-base-producers.json`에 보존한다.
+
 ## 실제 로그
 
 - `output/pr-review/planet6897-integration-20261106/logs/rebase-r52-session.log`: 새 작업 트리 준비·157개 replay·종료0.
