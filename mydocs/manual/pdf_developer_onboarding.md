@@ -7,9 +7,9 @@ last_verified: 2026-11-08
 
 # PDF 가져오기: 0.9.0 개발자 시작 안내
 
-[English](pdf_developer_onboarding_EN.md). 이 문서는 **0.9.0 준비 소스**의 계약이다. 패키지 번호가
-0.9.0이어도 registry·스토어 게시 완료를 뜻하지 않는다. 출시 전에는 같은 checkout에서 빌드하고,
-출시 후에는 CLI·JS glue·WASM·Worker·Studio를 같은 릴리즈로 고정한다.
+[English](pdf_developer_onboarding_EN.md). 이 문서는 **0.9.0**의 API·소비 계약이다.
+registry·스토어의 버전별 설치 가능 상태는 해당 채널에서 확인한다. 소스에서 빌드할 때도
+CLI·JS glue·WASM·Worker·Studio를 같은 릴리즈로 고정한다.
 
 PDF를 편집 가능한 Document IR로 가져와 HWP/HWPX로 저장한다. PDF 뷰어 임베드나 OCR API가
 아니며 PDF 원저작 앱의 문단·표 구조를 그대로 복원한다고 보장하지 않는다. HWP/HWPX에서 PDF로

@@ -7,13 +7,13 @@ last_verified: 2026-11-08
 
 # 0.9.0 기여자 감사
 
-기능 기준은 `v0.8.7` (`1a76570e833917d15817415a53c09ad61ab3203f`) 이후
-`5077b216cbc51d2046da07350de562f6f521a7c1`까지다. 최종 승격 SHA가 바뀌면 같은 절차로 갱신한다.
+릴리즈 마감 기준은 `v0.8.7` (`1a76570e833917d15817415a53c09ad61ab3203f`) 이후
+`41e08ae19e360a32179d851ca2534c1195a8dced`까지다. 이 기준 이후에는 문서·릴리즈 기록의 저자도 기존 명단과 대조하며, 제품 변경이 추가되면 같은 절차로 갱신한다.
 
-- 4,852개 커밋, 40개 Git identity, 이슈/PR 번호 후보 909개를 조사했다.
+- 4,896개 커밋, 41개 Git identity, 이슈/PR 번호 후보 921개를 조사했다.
 - Git 저자·공동 저자, 커밋/검토 파일의 PR 참조, merge SHA의 실제 도달 가능성,
   원 PR 작성자와 cherry-pick 원본을 함께 사용했다. GitHub의 `merged` 검색만으로 수용 여부를 정하지 않는다.
-- [원장](contributor-ledger.json): 사람 33명, bot 1개, PR 출처 260건. 사람 identity·번호 판정 미해결 0건.
+- [원장](contributor-ledger.json): 사람 33명, bot 1개, PR 출처 264건. 사람 identity·번호 판정 미해결 0건.
 - [별칭 근거](contributor-overrides.json): 이전 원장의 hash 연결을 재사용하고 새 identity 3건을
   원 PR #8135·#8546·#7713과 보존된 원 SHA/저자로 해결했다. #858은 PR이 아닌 Discussion이다.
 - cherry-pick 원본 881개 중 872개 조회 가능, 9개 조회 불가다. 공개 원장에 9개 SHA를 남겼으며
@@ -26,7 +26,7 @@ last_verified: 2026-11-08
 
 ```sh
 python3 scripts/release_contributor_audit.py candidates --repo . --base v0.8.7 \
-  --head 5077b216cbc51d2046da07350de562f6f521a7c1 --output output/release-v0.9.0/contributor-candidates.json
+  --head 41e08ae19e360a32179d851ca2534c1195a8dced --output output/release-v0.9.0/contributor-candidates.json
 python3 scripts/release_contributor_audit.py github \
   --candidates output/release-v0.9.0/contributor-candidates.json --repository edwardkim/rhwp \
   --merged-base-ref devel --merged-search 'merged:>=2026-10-06' \
