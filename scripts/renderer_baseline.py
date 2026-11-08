@@ -10,6 +10,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -332,9 +333,55 @@ def log_command(cmd: list[str], cwd: Path) -> None:
     print(f"$ (cd {cwd} && {printable})", flush=True)
 
 
+_cli_snapshots: dict[tuple, Path] = {}
+_cli_snapshot_dir: tempfile.TemporaryDirectory | None = None
+
+
+def resolve_native_command(cmd: list[str], cwd: Path, env: dict[str, str]) -> list[str]:
+    """Build each CLI feature configuration once per invocation and preserve it.
+
+    Cargo replaces target/debug/rhwp when features change. Keeping independent
+    copies prevents alternating default/native-skia captures from relinking it.
+    """
+    global _cli_snapshot_dir
+    if cmd[:2] != ["cargo", "run"] or "--" not in cmd:
+        return cmd
+    separator = cmd.index("--")
+    prefix = cmd[2:separator]
+    if "--bin" not in prefix or prefix[prefix.index("--bin") + 1] != "rhwp":
+        return cmd
+    key = (str(cwd.resolve()), tuple(prefix), tuple(sorted(env.items())))
+    if key not in _cli_snapshots:
+        build = ["cargo", "build", *prefix, "--message-format=json"]
+        log_command(build, cwd)
+        result = subprocess.run(build, cwd=cwd, env=env, check=True,
+                                text=True, stdout=subprocess.PIPE)
+        executables = []
+        for line in result.stdout.splitlines():
+            artifact = json.loads(line)
+            if (artifact.get("reason") == "compiler-artifact"
+                    and artifact.get("target", {}).get("name") == "rhwp"
+                    and "bin" in artifact.get("target", {}).get("kind", [])
+                    and artifact.get("executable")):
+                executables.append(Path(artifact["executable"]))
+        if len(executables) != 1 or not executables[0].is_file():
+            raise RuntimeError("Cargo did not report exactly one rhwp executable")
+        if _cli_snapshot_dir is None:
+            snapshot_root = ROOT / "output" / "renderer-baseline"
+            snapshot_root.mkdir(parents=True, exist_ok=True)
+            _cli_snapshot_dir = tempfile.TemporaryDirectory(prefix="cli-", dir=snapshot_root)
+        saved = Path(_cli_snapshot_dir.name) / str(len(_cli_snapshots)) / executables[0].name
+        saved.parent.mkdir(parents=True)
+        shutil.copy2(executables[0], saved)
+        _cli_snapshots[key] = saved
+    return [str(_cli_snapshots[key]), *cmd[separator + 1:]]
+
+
 def run_command(cmd: list[str], cwd: Path, extra_env: dict[str, str] | None = None) -> None:
-    log_command(cmd, cwd)
-    subprocess.run(cmd, cwd=cwd, env=command_env(extra_env), check=True)
+    env = command_env(extra_env)
+    resolved = resolve_native_command(cmd, cwd, env)
+    log_command(resolved, cwd)
+    subprocess.run(resolved, cwd=cwd, env=env, check=True)
 
 
 def collect_files(output_dir: Path, suffix: str) -> list[str]:
@@ -768,7 +815,7 @@ def write_reports(
         summary_by_key: dict[tuple[str, str], dict] = {}
         surface_summary_by_key: dict[tuple[str, str, str, str], dict] = {}
         for item in browser_data["results"]:
-            backend = item.get("backend", "")
+            backend = "canvas2d-font-fallback" if item.get("fontFallback") else item.get("backend", "")
             profile = item.get("profile", "")
             key = (backend, profile)
             summary = summary_by_key.setdefault(
@@ -802,7 +849,7 @@ def write_reports(
                     summary[f"{field}Total"] += float(value)
 
             image_effects = (item.get("diagnostics") or {}).get("imageEffects") or {}
-            if backend == "canvas2d":
+            if backend in {"canvas2d", "canvas2d-font-fallback"}:
                 effect_diagnostics = image_effects.get("canvas2d") or {}
             else:
                 effect_diagnostics = image_effects.get("canvaskit") or {}
@@ -948,6 +995,7 @@ def write_reports(
         "canvaskitSurface": effective_canvaskit_surface,
         "canvaskitSurfaceDiagnostics": browser_surface_diagnostics_summary,
         "canvaskitReplayDiagnostics": browser_replay_diagnostics,
+        "fontFallbackGate": browser_data.get("fontFallbackGate") if browser_data else None,
     }
     (output_root / "performance-summary.json").write_text(
         json.dumps(performance_summary, indent=2, ensure_ascii=False),
@@ -1040,8 +1088,8 @@ def write_reports(
         for item in browser_data["results"]:
             timings = item.get("timings") or {}
             image_effects = (item.get("diagnostics") or {}).get("imageEffects") or {}
-            backend = item.get("backend", "")
-            if backend == "canvas2d":
+            backend = "canvas2d-font-fallback" if item.get("fontFallback") else item.get("backend", "")
+            if backend in {"canvas2d", "canvas2d-font-fallback"}:
                 effect_diagnostics = image_effects.get("canvas2d") or {}
             else:
                 effect_diagnostics = image_effects.get("canvaskit") or {}

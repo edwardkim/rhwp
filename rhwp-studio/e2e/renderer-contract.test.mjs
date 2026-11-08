@@ -14,7 +14,7 @@ import { blake3 } from '@noble/hashes/blake3.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 
 import { comparePngBuffers } from './helpers.mjs';
-import { inspectCanvasKitRuntimeImageFailures } from './renderer-baseline-contract.mjs';
+import { inspectCanvasKitFontFallback, inspectCanvasKitRuntimeImageFailures } from './renderer-baseline-contract.mjs';
 import { makePatternImageReplayApi } from './pattern-image-replay-api.mjs';
 import { assertFootnoteMarkerBaselineReplay } from './footnote-marker-replay-contract.mjs';
 
@@ -3643,8 +3643,9 @@ assert(
   'browser baseline must settle resources and capture the requested page at intrinsic scale',
 );
 assert(
-  rendererBaselineSource.includes('getCanvasKitReplayPlan?.(')
-    && rendererBaselineSource.includes('targetProfile,')
+  rendererBaselineSource.includes('getCanvasKitReplayPlan(')
+    && rendererBaselineSource.includes('window.__wasm.withPortableMetrics(() =>')
+    && rendererBaselineSource.includes('getCanvasKitReplayPlan(targetPageIndex, mode, targetProfile)')
     && rendererBaselineSource.includes("code: 'replayPlanUnavailable'")
     && rendererBaselineSource.includes("code: 'replayPlanEmpty'")
     && rendererBaselineSource.includes("code: 'replayPlanContractMismatch'")
@@ -3867,3 +3868,38 @@ assert.ok(
 );
 
 console.log('renderer backend contract guard passed');
+
+// CI harness classification only; never permits missing-font readiness or unrelated failures.
+const fontFallbackEvidence = {
+  runtime: {
+    activeBackend: 'canvas2d', backendFallbackReason: 'canvaskitResourcePreparationFailed',
+    request: { backend: { backend: 'canvaskit' } },
+    selection: { requestedBackend: 'canvaskit', effectiveBackend: 'canvas2d',
+      selectionReason: 'canvaskitResourcePreparationFailed', fallbackReason: 'canvaskitResourcePreparationFailed',
+      initializationError: null, selectionError: 'CanvasKit font family가 준비되지 않았습니다: Missing Face' },
+  },
+  fontPlan: { complete: true, requiredFontFamilies: ['Missing Face'], unavailableFonts: ['Missing Face'] },
+};
+assert.deepEqual(inspectCanvasKitFontFallback({}, 'canvaskit-default', fontFallbackEvidence), {
+  reason: 'canvaskitResourcePreparationFailed', missingFonts: ['Missing Face'], actualBackend: 'canvas2d',
+});
+assert.equal(inspectCanvasKitFontFallback({ canvaskitReadinessGate: true }, 'canvaskit-default', fontFallbackEvidence), null);
+assert.equal(inspectCanvasKitFontFallback({}, 'canvas2d', fontFallbackEvidence), null);
+for (const mutate of [
+  evidence => { evidence.fontPlan.complete = false; },
+  evidence => { evidence.fontPlan.unavailableFonts = []; },
+  evidence => { evidence.fontPlan.requiredFontFamilies = []; },
+  evidence => { evidence.runtime.activeBackend = 'canvaskit'; },
+  evidence => { evidence.runtime.selection.initializationError = 'GPU failed'; },
+  evidence => { evidence.replayPlanError = 'portable diagnostics failed'; },
+  evidence => { evidence.canvaskitRender = { lastRenderError: 'paint failed' }; },
+  evidence => { evidence.canvaskitRender = { imageFailures: ['decode failed'] }; },
+  evidence => { evidence.runtime.selection.selectionError = 'unrelated image preparation failed'; },
+  evidence => { evidence.runtime.selection.selectionError += ', Unverified Face'; },
+  evidence => { evidence.runtime.backendFallbackReason = 'unknown'; },
+  evidence => { evidence.runtime.selection.effectiveBackend = 'canvaskit'; },
+]) {
+  const evidence = structuredClone(fontFallbackEvidence);
+  mutate(evidence);
+  assert.equal(inspectCanvasKitFontFallback({}, 'canvaskit-default', evidence), null);
+}

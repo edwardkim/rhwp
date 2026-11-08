@@ -1,0 +1,139 @@
+{
+  "base_sha": "1b78dc23fd8add8d2bc61958be5533cbeafdbd20",
+  "actual_cli_builds": 2,
+  "actual_commands": 20,
+  "version": "rhwp v0.9.0",
+  "glibc_max": "2.39",
+  "output_comparisons": [
+    {
+      "sample": "paragraph-line-basic",
+      "backend": "legacy-svg",
+      "profile": null,
+      "same_bytes": true,
+      "candidate_sha256": "87ceac80c4ac7b021ebf3d12771e642ca1bb6f044d4d0b782bd35594d268e809"
+    },
+    {
+      "sample": "paragraph-line-basic",
+      "backend": "layer-svg",
+      "profile": "screen",
+      "same_bytes": true,
+      "candidate_sha256": "87ceac80c4ac7b021ebf3d12771e642ca1bb6f044d4d0b782bd35594d268e809"
+    },
+    {
+      "sample": "paragraph-line-basic",
+      "backend": "layer-svg",
+      "profile": "print",
+      "same_bytes": true,
+      "candidate_sha256": "787a5c812c84639b99e92bb976d25de74718a3a78a675fdf102d538c3a958f49"
+    },
+    {
+      "sample": "paragraph-line-basic",
+      "backend": "layer-svg",
+      "profile": "high-quality",
+      "same_bytes": true,
+      "candidate_sha256": "87ceac80c4ac7b021ebf3d12771e642ca1bb6f044d4d0b782bd35594d268e809"
+    },
+    {
+      "sample": "paragraph-line-basic",
+      "backend": "layer-svg",
+      "profile": "fast-preview",
+      "same_bytes": true,
+      "candidate_sha256": "87ceac80c4ac7b021ebf3d12771e642ca1bb6f044d4d0b782bd35594d268e809"
+    },
+    {
+      "sample": "paragraph-line-basic",
+      "backend": "native-skia",
+      "profile": "screen",
+      "same_bytes": true,
+      "candidate_sha256": "3fa994b0149d76d10b4800c8d6596991b64ac4e6da1502051d89362bfbff55a8"
+    },
+    {
+      "sample": "paragraph-line-basic",
+      "backend": "native-skia",
+      "profile": "print",
+      "same_bytes": true,
+      "candidate_sha256": "96b2146df37105981d215d550d8e87eabc434f7c84eb2661ae290895c5071be5"
+    },
+    {
+      "sample": "paragraph-line-basic",
+      "backend": "native-skia",
+      "profile": "high-quality",
+      "same_bytes": true,
+      "candidate_sha256": "3fa994b0149d76d10b4800c8d6596991b64ac4e6da1502051d89362bfbff55a8"
+    },
+    {
+      "sample": "paragraph-line-basic",
+      "backend": "native-skia",
+      "profile": "fast-preview",
+      "same_bytes": true,
+      "candidate_sha256": "3fa994b0149d76d10b4800c8d6596991b64ac4e6da1502051d89362bfbff55a8"
+    },
+    {
+      "sample": "paragraph-basic",
+      "backend": "legacy-svg",
+      "profile": null,
+      "same_bytes": true,
+      "candidate_sha256": "915876a668164f3f3fbfed91bdeeea1bf2b7842568522452d9ecf2684ac452b9"
+    },
+    {
+      "sample": "paragraph-basic",
+      "backend": "layer-svg",
+      "profile": "screen",
+      "same_bytes": true,
+      "candidate_sha256": "915876a668164f3f3fbfed91bdeeea1bf2b7842568522452d9ecf2684ac452b9"
+    },
+    {
+      "sample": "paragraph-basic",
+      "backend": "layer-svg",
+      "profile": "print",
+      "same_bytes": true,
+      "candidate_sha256": "ab2192bddd4f6d5d095663eee825f7c75e110d1f6c1b3bcc0e91dd4d47141fdb"
+    },
+    {
+      "sample": "paragraph-basic",
+      "backend": "layer-svg",
+      "profile": "high-quality",
+      "same_bytes": true,
+      "candidate_sha256": "915876a668164f3f3fbfed91bdeeea1bf2b7842568522452d9ecf2684ac452b9"
+    },
+    {
+      "sample": "paragraph-basic",
+      "backend": "layer-svg",
+      "profile": "fast-preview",
+      "same_bytes": true,
+      "candidate_sha256": "915876a668164f3f3fbfed91bdeeea1bf2b7842568522452d9ecf2684ac452b9"
+    },
+    {
+      "sample": "paragraph-basic",
+      "backend": "native-skia",
+      "profile": "screen",
+      "same_bytes": true,
+      "candidate_sha256": "88ea08d3d52f43468d3cf89db34a85f61bdec45adb3ad13471ed16e603b66b5c"
+    },
+    {
+      "sample": "paragraph-basic",
+      "backend": "native-skia",
+      "profile": "print",
+      "same_bytes": true,
+      "candidate_sha256": "f0241836a37a4764dd4608170f11e77e513be3ebefadf36b898d2820a3ac5ddd"
+    },
+    {
+      "sample": "paragraph-basic",
+      "backend": "native-skia",
+      "profile": "high-quality",
+      "same_bytes": true,
+      "candidate_sha256": "88ea08d3d52f43468d3cf89db34a85f61bdec45adb3ad13471ed16e603b66b5c"
+    },
+    {
+      "sample": "paragraph-basic",
+      "backend": "native-skia",
+      "profile": "fast-preview",
+      "same_bytes": true,
+      "candidate_sha256": "88ea08d3d52f43468d3cf89db34a85f61bdec45adb3ad13471ed16e603b66b5c"
+    }
+  ],
+  "profiles": {
+    "base": "release-test",
+    "candidate": "dev"
+  }
+}

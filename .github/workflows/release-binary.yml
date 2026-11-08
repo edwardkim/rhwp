@@ -27,7 +27,8 @@ jobs:
       matrix:
         include:
           - target: x86_64-unknown-linux-gnu
-            runner: ubuntu-latest
+            # Keep the GNU binary compatible with Ubuntu 24.04 (glibc 2.39).
+            runner: ubuntu-24.04
             archive: tar.gz
             archive_suffix: linux-x86_64
             binary_name: rhwp

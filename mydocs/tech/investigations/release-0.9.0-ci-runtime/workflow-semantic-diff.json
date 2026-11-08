@@ -1,0 +1,12 @@
+[
+  {
+    "path": "full-renderer-sweep.yml/jobs/full-renderer-sweep/timeout-minutes",
+    "before": 60,
+    "after": 90
+  },
+  {
+    "path": "release-binary.yml/jobs/build/strategy/matrix/include/0/runner",
+    "before": "ubuntu-latest",
+    "after": "ubuntu-24.04"
+  }
+]

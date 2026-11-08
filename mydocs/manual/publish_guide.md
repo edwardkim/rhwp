@@ -122,7 +122,7 @@ Gym은 AI 에이전트가 rhwp CLI/API를 조합해 과제를 수행하는 기�
 
 | 운영체제·architecture | Rust target | runner | archive suffix |
 | --- | --- | --- | --- |
-| Linux x86_64 | `x86_64-unknown-linux-gnu` | `ubuntu-latest` | `linux-x86_64` |
+| Linux x86_64 | `x86_64-unknown-linux-gnu` | `ubuntu-24.04` | `linux-x86_64` |
 | Linux AArch64 | `aarch64-unknown-linux-gnu` | `ubuntu-24.04-arm` | `linux-aarch64` |
 | macOS x86_64 | `x86_64-apple-darwin` | `macos-15` | `macos-x86_64` |
 | macOS AArch64 | `aarch64-apple-darwin` | `macos-15` | `macos-aarch64` |

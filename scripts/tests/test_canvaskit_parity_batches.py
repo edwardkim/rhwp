@@ -2,10 +2,16 @@ from __future__ import annotations
 
 import importlib.util
 import io
+import json
+import subprocess
+import tempfile
 import sys
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
+
+from scripts import renderer_baseline as BASELINE
 
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "canvaskit_parity_batches.py"
@@ -65,6 +71,69 @@ class BatchMapTests(unittest.TestCase):
     def test_parse_batches_rejects_unknown(self) -> None:
         with self.assertRaises(SystemExit):
             BATCHES.parse_batches("1")
+
+
+class RendererCliReuseTests(unittest.TestCase):
+    def setUp(self):
+        work_dir = Path(__file__).resolve().parents[2] / 'output' / 'renderer-baseline-contract'
+        work_dir.mkdir(parents=True, exist_ok=True)
+        self.original_root = BASELINE.ROOT
+        self.tmp = tempfile.TemporaryDirectory(dir=work_dir)
+        self.root = Path(self.tmp.name)
+        BASELINE.ROOT = self.root
+        BASELINE._cli_snapshots.clear()
+        BASELINE._cli_snapshot_dir = None
+        self.output = self.root / 'target/debug/rhwp'
+        self.output.parent.mkdir(parents=True)
+        self.builds = []
+    def tearDown(self):
+        if BASELINE._cli_snapshot_dir:
+            BASELINE._cli_snapshot_dir.cleanup()
+        BASELINE._cli_snapshots.clear()
+        BASELINE._cli_snapshot_dir = None
+        BASELINE.ROOT = self.original_root
+        self.tmp.cleanup()
+    def build(self, command, **kwargs):
+        self.builds.append(command)
+        self.output.write_text('native' if '--features' in command else 'default')
+        self.output.chmod(0o755)
+        record={'reason':'compiler-artifact','target':{'name':'rhwp','kind':['bin']},'executable':str(self.output)}
+        return subprocess.CompletedProcess(command,0,json.dumps(record)+'\n')
+    def cmd(self, native=False):
+        return ['cargo','run',*(['--features','native-skia'] if native else []),'--bin','rhwp','--','export-png','with space.hwp','--page','0']
+    def test_alternating_features_preserve_both_binaries_and_all_arguments(self):
+        with patch.object(BASELINE.subprocess,'run',side_effect=self.build):
+            results=[BASELINE.resolve_native_command(self.cmd(native),self.root,{}) for native in [False,True,False,True]]
+        self.assertEqual(len(self.builds),2)
+        self.assertEqual([Path(r[0]).read_text() for r in results],['default','native','default','native'])
+        for r in results:
+            self.assertEqual(r[1:],['export-png','with space.hwp','--page','0'])
+            self.assertTrue(Path(r[0]).stat().st_mode & 0o100)
+        self.assertNotIn('--release',self.builds[0])
+        self.assertNotIn('--features',self.builds[0])
+        self.assertIn('native-skia',self.builds[1])
+    def test_failed_build_does_not_use_old_target_binary(self):
+        self.output.write_text('stale')
+        with patch.object(BASELINE.subprocess,'run',side_effect=subprocess.CalledProcessError(9,['cargo','build'])):
+            with self.assertRaises(subprocess.CalledProcessError):
+                BASELINE.resolve_native_command(self.cmd(),self.root,{})
+        self.assertEqual(BASELINE._cli_snapshots,{})
+    def test_missing_executable_is_fatal(self):
+        with patch.object(BASELINE.subprocess,'run',return_value=subprocess.CompletedProcess([],0,'{}\n')):
+            with self.assertRaises(RuntimeError):
+                BASELINE.resolve_native_command(self.cmd(),self.root,{})
+        self.assertEqual(BASELINE._cli_snapshots,{})
+    def test_other_commands_and_environments_remain_separate(self):
+        command=['node','capture.mjs','--profiles=print']
+        with patch.object(BASELINE.subprocess,'run',side_effect=self.build):
+            self.assertEqual(BASELINE.resolve_native_command(command,self.root,{}),command)
+            BASELINE.resolve_native_command(self.cmd(),self.root,{'RUSTFLAGS':'-C opt-level=1'})
+            BASELINE.resolve_native_command(self.cmd(),self.root,{'RUSTFLAGS':'-C opt-level=2'})
+        self.assertEqual(len(self.builds),2)
+    def test_runtime_failure_propagates(self):
+        with patch.object(BASELINE,'resolve_native_command',return_value=['/saved/rhwp','export-svg']), patch.object(BASELINE.subprocess,'run',side_effect=subprocess.CalledProcessError(2,['/saved/rhwp'])):
+            with self.assertRaises(subprocess.CalledProcessError):
+                BASELINE.run_command(self.cmd(),self.root)
 
 
 if __name__ == "__main__":

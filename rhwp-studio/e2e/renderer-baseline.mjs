@@ -13,7 +13,7 @@ import {
   loadApp,
   loadHwpFile,
 } from './helpers.mjs';
-import { inspectCanvasKitRuntimeImageFailures } from './renderer-baseline-contract.mjs';
+import { inspectCanvasKitFontFallback, inspectCanvasKitRuntimeImageFailures } from './renderer-baseline-contract.mjs';
 
 const DEFAULT_BROWSER_PARITY_THRESHOLDS = {
   ignoreChannelDelta: 8,
@@ -471,7 +471,7 @@ async function resetRendererDiagnostics(page) {
 
 async function readRendererDiagnostics(page, pageIndex, backendKey, profile) {
   const layerProfile = toLayerRenderProfile(profile);
-  return await page.evaluate(({ targetBackend, targetPageIndex, targetProfile }) => {
+  return await page.evaluate(async ({ targetBackend, targetPageIndex, targetProfile }) => {
     const pageRenderer = window.__canvasView?.pageRenderer;
     const canvas2d = pageRenderer?.canvas2dRenderer?.getImageEffectDiagnostics?.() ?? null;
     const canvaskit = pageRenderer?.canvaskitRenderer?.getImageEffectDiagnostics?.() ?? null;
@@ -480,22 +480,33 @@ async function readRendererDiagnostics(page, pageIndex, backendKey, profile) {
       ?.getCanvasKitRenderDiagnostics?.(targetPageIndex) ?? null;
     const selection = window.__canvasView?.getRendererSessionDiagnostics?.() ?? null;
     const trackedCanvas = window.__canvasView?.canvasPool?.getCanvas?.(targetPageIndex) ?? null;
+    let fontPlan = null;
     let replayPlan = null;
     let replayPlanError = null;
     if (targetBackend.startsWith('canvaskit')) {
       try {
         const mode = targetBackend === 'canvaskit-compat' ? 'compat' : 'default';
-        const rawPlan = window.__wasm?.getCanvasKitReplayPlan?.(
-          targetPageIndex,
-          mode,
-          targetProfile,
-        );
+        const rawPlan = window.__wasm.withPortableMetrics(() =>
+          window.__wasm.getCanvasKitReplayPlan(targetPageIndex, mode, targetProfile));
         replayPlan = typeof rawPlan === 'string' ? JSON.parse(rawPlan) : rawPlan ?? null;
       } catch (error) {
         replayPlanError = error instanceof Error ? error.message : String(error);
       }
     }
+    if (selection?.selectionReason === 'canvaskitResourcePreparationFailed') {
+      const { resolveCanvasKitFontPlan } = await import('/src/core/font-loader.ts');
+      const { loadExtensionViewerSettings } = await import('/src/core/extension-settings.ts');
+      const settings = await loadExtensionViewerSettings();
+      const mode = targetBackend === 'canvaskit-compat' ? 'compat' : 'default';
+      const preflight = window.__wasm.getCanvasKitDocumentPreflight(mode, targetProfile);
+      fontPlan = {
+        complete: preflight.complete,
+        requiredFontFamilies: preflight.requiredFontFamilies,
+        unavailableFonts: resolveCanvasKitFontPlan(preflight.requiredFontFamilies, settings).unavailableFonts,
+      };
+    }
     return {
+      fontPlan,
       runtime: {
         activeBackend: window.__renderBackend ?? null,
         request: window.__rendererRuntimeRequest ?? null,
@@ -518,7 +529,8 @@ async function readRendererDiagnostics(page, pageIndex, backendKey, profile) {
 async function readLayerFeatureProbe(page, pageIndex, profile) {
   const layerProfile = toLayerRenderProfile(profile);
   return await page.evaluate(([targetPageIndex, targetProfile]) => {
-    const tree = window.__wasm?.getPageLayerTreeObject?.(targetPageIndex, targetProfile);
+    const tree = window.__wasm.withPortableMetrics(() =>
+      window.__wasm.getPageLayerTreeObject(targetPageIndex, targetProfile));
     if (!tree?.root) return null;
     // Count replayed visuals, not input ops: rejected or no-op positioned text
     // must not satisfy tabLeaders / charOverlaps feature expectations.
@@ -832,6 +844,7 @@ try {
         const diagnostics = await readRendererDiagnostics(page, sample.page, backend.key, profile);
         diagnostics.capture = selectedPageState;
         const artifactBytes = fs.readFileSync(outputPath);
+        const fontFallback = inspectCanvasKitFontFallback(sample, backend.key, diagnostics);
         const runtimeMode = diagnostics.canvaskitRender?.mode
           ?? diagnostics.runtime?.request?.canvaskitMode?.mode
           ?? null;
@@ -851,11 +864,11 @@ try {
           page: sample.page,
           profile: actualProfile,
           backend: actualBackend,
-          surface: backend.key.startsWith('canvaskit')
+          surface: actualBackend?.startsWith('canvaskit')
             ? diagnostics.canvaskitRender?.surfaceBackend ?? null
             : actualBackend === 'canvas2d' ? 'canvas2d' : null,
         };
-        if (actualBackend !== backend.key) {
+        if (actualBackend !== backend.key && !fontFallback) {
           hardGateViolations.push({
             sampleId: sample.id,
             backend: backend.key,
@@ -873,7 +886,7 @@ try {
             detail: JSON.stringify({ actualProfile, runtime: diagnostics.runtime }),
           });
         }
-        if (backend.key.startsWith('canvaskit')) {
+        if (backend.key.startsWith('canvaskit') && !fontFallback) {
           const replayPlan = diagnostics.replayPlan;
           const replaySummary = replayPlan?.summary;
           const runtime = diagnostics.canvaskitRender;
@@ -973,6 +986,7 @@ try {
           page: sample.page,
           backend: backend.key,
           actualBackend,
+          fontFallback,
           profile,
           actualProfile,
           canvaskitSurface: backend.key.startsWith('canvaskit') ? options.canvaskitSurface : null,
@@ -1015,6 +1029,7 @@ try {
 
 const reportPath = path.join(options.output, 'browser-baseline-report.json');
 const browserBackendComparisons = [];
+const fontFallbackComparisons = [];
 for (const sample of samples) {
   for (const profile of profiles) {
     const baseline = results.find((entry) => (
@@ -1044,6 +1059,35 @@ for (const sample of samples) {
           baselinePath: baseline?.path ?? null,
           targetPath: target?.path ?? null,
         });
+        continue;
+      }
+
+      if (target.fontFallback) {
+        const check = {
+          sampleId: sample.id, page: sample.page, profile, requestedBackend: targetBackend,
+          actualBackend: target.actualBackend, evidence: target.fontFallback,
+          baselinePath: baseline.path, targetPath: target.path, passed: false,
+        };
+        try {
+          for (const field of ['schemaVersion', 'sampleId', 'documentDigest', 'page', 'profile', 'backend', 'surface']) {
+            if (baseline.comparisonIdentity?.[field] !== target.comparisonIdentity?.[field]) {
+              throw new Error(`fallback identity mismatch: ${field}`);
+            }
+          }
+          // Exact pixels and non-empty content: no relaxed CanvasKit parity tolerance.
+          const diff = await comparePngBuffers(fs.readFileSync(baseline.path), fs.readFileSync(target.path), {
+            ignoreChannelDelta: 0, maxDiffRatio: 0,
+            minimumInkPixels: Math.max(1, browserParityThresholdsForSample(sample).minimumInkPixels ?? 0),
+          });
+          check.diff = { exactDiffPixels: diff.exactDiffPixels, expectedInkPixels: diff.expectedInkPixels,
+            actualInkPixels: diff.actualInkPixels, minimumInkBudgetPassed: diff.minimumInkBudgetPassed };
+          check.passed = diff.exactDiffPixels === 0 && diff.minimumInkBudgetPassed === true;
+        } catch (error) {
+          check.error = error instanceof Error ? error.message : String(error);
+        }
+        fontFallbackComparisons.push(check);
+        if (!check.passed) hardGateViolations.push({ sampleId: sample.id, backend: targetBackend,
+          profile, code: 'fontFallbackOutputMismatch', detail: JSON.stringify(check) });
         continue;
       }
 
@@ -1275,7 +1319,7 @@ const browserBackendParity = {
 
 const replaySummaryByBackendProfile = new Map();
 for (const result of results) {
-  if (!result.backend.startsWith('canvaskit')) continue;
+  if (!result.backend.startsWith('canvaskit') || result.fontFallback) continue;
   const key = `${result.backend}\u0000${result.profile}`;
   if (!replaySummaryByBackendProfile.has(key)) {
     replaySummaryByBackendProfile.set(key, {
@@ -1587,6 +1631,10 @@ fs.writeFileSync(
       canvaskitSurface: options.canvaskitSurface,
       results,
       browserBackendParity,
+      fontFallbackGate: { total: fontFallbackComparisons.length,
+        passed: fontFallbackComparisons.filter(item => item.passed).length,
+        failed: fontFallbackComparisons.filter(item => !item.passed).length,
+        checks: fontFallbackComparisons },
       canvaskitReplayDiagnostics,
       canvaskitReadinessGate,
     },
