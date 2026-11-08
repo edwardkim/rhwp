@@ -11,3 +11,9 @@ TTC의 0/1/2번 face는 각각 Regular/Italic/Oblique다. 별도 TTF는 TTC 추�
 같은 family 대조군이다. 원래 glyph 순서·윤곽선과 수평 메트릭은 같으며 cmap에서 ASCII `A`
 대응만 제거했다. 같은 family의 부분 지원 글꼴이 뒤의 완전한 원본을 가리지 않는지 검사한다.
 외부 글꼴을 포함하지 않으며 동일한 MIT 라이선스를 따른다.
+
+`RHWPHostFixture-Preferred.ttf`는 같은 Regular 원본의 단위 em과 버전·식별 이름만 바꾼
+동일 MIT 합성 윤곽이다. 글리프·hmtx는 원본 그대로이며 2000 units/em에서 작은 윤곽이 된다.
+Fontconfig가 선택한 파일과 단순 스타일 목록의 첫 파일이 다를 때 실제 Native 선택을
+검증하기 위한 두 번째 버전이며, 사설 글꼴이나 한컴의 윤곽을 가져오지 않았다.
+`generate_host_font_fixture.py`의 `preferred_face()`로 같은 바이트를 재생성한다.

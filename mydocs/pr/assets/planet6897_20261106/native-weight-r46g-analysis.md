@@ -1,6 +1,44 @@
 # Native 굵기 기능 보존 분석
 
 
+## R55 후속: 실제 전쪽 결과와 Native 프로그램 선택 경계
+
+제품 source `96805fee45853296fc4d6f3689f98e7bd125014f`의 Native 실행 파일
+`4d27641f7133d13f40d62231801e72c274a2613e79c921bdf967baa66829690a`로
+sample16 3종 각각64쪽을 다시 출력했다. HWP2022는64쪽 모두100.00%, HWP2024·HWPX는
+각 최저99.99%다. PR #8389·PR #8397의 표시값192행보다 낮아진 쪽은0쪽이다.
+정식 원문은 [Native TSV·생산자와 범위](program-ink-r55/validation.json)에 연결한다.
+기존 집중66건은 모두 PASS지만, 새 legacy 검사는 suite 준비 전이라 그 실행에는 수집되지 않았다.
+생성기를 실행해 정식 수집에 편입했으며, 실제 실행 확인은 다음 집중 검사에 포함한다.
+이를66건 안에 이미 통과한 것으로 계산하지 않는다.
+
+nested의 이전 R43 producer를 지금 다시 실행해 같은 기존 환경과 승인된 Gulim만 적용한 환경
+모두에서8쪽99.49%를 재현했다. 현재 R54는같은 기존 환경에서99.48%다. 이전 재측정 설정은
+새 자동 목록으로 바꾸면서 승인된 휴먼명조 대체 외에 휴먼고딕까지TTF로 바꿨다.
+기존 PR의 다른 원본 프로그램 선택을 보존한 설정을 별도로 만들었고, 변경 픽셀은60,410개에서
+536개로 줄었으나 제목의 `< >`에 새 미대응13개가 남았다. 설정 수정만으로 완료하지 않는다.
+
+실제 Native의 같은 `<`에서 전진8.693333·자연 폭12는 같지만 잉크 폭은 이전8에서 현재7로
+바뀌었다. 원 PR이 선택한 `MalgunGothic-Regular`와 다른 같은 family의 TTF 버전이 새 목록
+열거로 선행하는 경계를 확인했다. 같은 형식의 선택은 OS의 원래 결과를 보존하고, 형식 우선순위
+TTF→TTC→OTF는 형식이 달라질 때만 적용한다. 같은 family의 결측 글리프 공급 후보는 계속 남긴다.
+
+시스템 face 재개방도 원 프로그램과 같은 glyph ID·무힌팅 윤곽·자연 전진이 실제로 일치하는
+정적 단색 TTF에 한해 원래 face의 raster 설정을 유지한다. CFF·TTC·가변·색상 프로그램과
+불일치 glyph는 기존 재개방을 유지한다. 문서 ID·목표 좌표·특정 글자·점수에 따른 분기는 없다.
+이 후속 제품 변경의 컴파일·실행 및 실물 재측정은 아직 수행 전이다.
+
+Native 실제 프로그램 선택의 새 합성 검사는 독립 FontMgr가 선택한 MIT fixture를 명시 공급한
+출력과 시스템 출력을 비교해 수정 전 의도한 단언FAIL을 확인했다. 검사는 기존 CI가 호출하는
+`native_fractional_glyph_origin`에 정식 진입점을 추가하고 공용 helper로 구현해 새 workflow 호출을
+늘리지 않는다. `RHWPHostFixture-Preferred.ttf`는 원래 MIT 합성 glyph의 단위·버전·이름만 바꾼
+자체 자료다. 기존 생성기의 `preferred_face()`로 바이트 동일 재생성을 확인했다.
+
+실행 로그와 원인 분리 원본은 ignored output의 `r55-nested-original-producer-replay.json`,
+`logs/r55-nested-fit-r43.log`, `logs/r55-nested-fit-r54.log`,
+`logs/r55-system-preference-before-and-ink-after.log`에 남긴다.
+
+
 ## R55: sample16 원 해결의 윤곽 계약 복원과 nested 분리 조사
 
 원 해결 [PR #8188](https://github.com/edwardkim/rhwp/pull/8188)의 실제 보정

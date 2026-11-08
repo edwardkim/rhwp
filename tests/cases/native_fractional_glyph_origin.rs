@@ -1,4 +1,6 @@
 //! 검사 유형: 관계형·고정형.
+//! 주석 갱신: 2026-11-08T20:19:47.944403+09:00. 직전 변경: 2026-11-08T06:19:56+09:00, 7f76cee60e38fceb63feacaff706cf984b19c427.
+//! 추가 프로그램 선택 검사는 MIT 합성 TTF 두 개만 사용하는 관계형 계약이며 실문서 raw는 비해당이다.
 //! 2026-10-28 측정 raw(96dpi, PDFium): calendar_year.hwp 1쪽 Native 98.82866% / fresh WASM 98.50891%; 전1쪽 최저 98.82866% / 98.50891%.
 //! sungeo.hwp 34쪽 Native 99.97528% / fresh WASM 99.98763%; 전94쪽 최저 99.85164% / 99.92219%.
 //! 합성 글리프 검사는 독립 원본 문서가 없는 raster 격자 검사다.
@@ -347,4 +349,15 @@ mod subpixel_stroke_hairline {
             &faint[..faint.len().min(6)]
         );
     }
+}
+
+// 기존 Native CI 진입점으로 실제 glyph 프로그램 선택 계약도 실행한다.
+#[cfg(target_os = "linux")]
+#[path = "../common/native_system_program_preference.rs"]
+mod system_program_preference;
+
+#[test]
+#[cfg(target_os = "linux")]
+fn same_format_system_program_keeps_os_preference() {
+    system_program_preference::check_system_program_preference();
 }
