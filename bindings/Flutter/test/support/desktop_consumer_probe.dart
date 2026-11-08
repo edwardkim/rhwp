@@ -73,7 +73,7 @@ class DesktopConsumerOracle {
     required int width,
     required int height,
   }) {
-    _require(width * height <= 1024 * 1024, 'oracle pixel bound');
+    _require(width * height <= 4 * 1024 * 1024, 'oracle pixel bound');
     final frame = call({
       'op': 'renderCpuBatch',
       'stamp': stamp.toJson(),
@@ -262,6 +262,31 @@ class _ProbeState extends State<_Probe> {
     );
     await File('${_output.path}/cpu-$index.rgba')
         .writeAsBytes(pixels, flush: true);
+    if (Platform.isLinux) {
+      // The same immutable snapshot and complete stamp are replayed directly.
+      // Only target/placement geometry is scaled; configure/capture is not run.
+      const factor = 4;
+      final view = _viewport!;
+      final reference = _oracle!.pixels(
+        snapshot: metadata.snapshot!,
+        stamp: stamp,
+        viewport: NativePageViewport.placed(
+          view.page,
+          view.viewport * factor,
+          zoom: view.zoom * factor,
+          origin: view.origin * factor.toDouble(),
+        ),
+        dpr: dpr,
+        width: _physicalSize.width.toInt() * factor,
+        height: _physicalSize.height.toInt() * factor,
+      );
+      _require(
+        await metadata.inner.snapshotCheck(metadata.snapshot!, stamp),
+        'source changed during independent CPU reference replay',
+      );
+      await File('${_output.path}/cpu-reference-$index.rgba')
+          .writeAsBytes(reference, flush: true);
+    }
     final box = _textureKey.currentContext!.findRenderObject()! as RenderBox;
     final origin = box.localToGlobal(Offset.zero) * dpr;
     _require(
@@ -282,6 +307,7 @@ class _ProbeState extends State<_Probe> {
       'deviceScale': dpr,
       'stamp': stamp.toJson(),
       'limits': status['limits'],
+      if (Platform.isLinux) 'cpuReferenceScale': 4,
       if (Platform.isLinux) 'nativeStatus': status,
     });
     final ack = File('${_output.path}/ack-$index.json');
