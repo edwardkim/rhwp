@@ -9,11 +9,15 @@ use super::contextual_text;
 #[cfg(target_arch = "wasm32")]
 mod cubic_reduction;
 #[cfg(target_arch = "wasm32")]
+mod glyph_outline;
+#[cfg(target_arch = "wasm32")]
 mod image_coverage;
 #[cfg(target_arch = "wasm32")]
 mod image_reduction;
 #[cfg(target_arch = "wasm32")]
 mod metafile_print;
+#[cfg(target_arch = "wasm32")]
+mod outline_selection;
 mod print_image_sampling;
 #[cfg(target_arch = "wasm32")]
 mod print_jpeg;
@@ -456,6 +460,9 @@ pub struct WebCanvasRenderer {
     print_area_sampling: bool,
     print_stroke_adjustment: bool,
     print_device_clip: bool,
+    strict_glyph_outline_replay: bool,
+    outline_replay: outline_selection::OutlineReplay,
+    outline_replay_failed: bool,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -493,6 +500,9 @@ impl WebCanvasRenderer {
             print_area_sampling: false,
             print_stroke_adjustment: false,
             print_device_clip: false,
+            strict_glyph_outline_replay: false,
+            outline_replay: outline_selection::OutlineReplay::default(),
+            outline_replay_failed: false,
         })
     }
 
@@ -503,6 +513,21 @@ impl WebCanvasRenderer {
     /// 줌 스케일 설정 (1.0 = 100%, 2.0 = 200%)
     pub fn set_scale(&mut self, scale: f64) {
         self.scale = scale;
+    }
+
+    /// Enables proven outline alternatives for an explicit development preview.
+    pub fn set_strict_glyph_outline_replay(&mut self, enabled: bool) {
+        self.strict_glyph_outline_replay = enabled;
+    }
+
+    pub fn get_text_variant_selection_diagnostics(
+        &self,
+    ) -> &[super::layer_renderer::TextVariantSelectionReport] {
+        &self.outline_replay.reports
+    }
+
+    pub fn text_variant_selection_diagnostics_dropped(&self) -> usize {
+        self.outline_replay.reports_dropped
     }
 
     /// 다층 레이어 필터 설정 (Task #516, Stage 5.2)
@@ -568,6 +593,12 @@ impl WebCanvasRenderer {
 
     /// 레이어 트리를 Canvas에 렌더링
     pub fn render_layer_tree(&mut self, tree: &PageLayerTree) {
+        self.outline_replay_failed = false;
+        self.outline_replay = if self.strict_glyph_outline_replay {
+            outline_selection::prepare_tree(tree, self.scale)
+        } else {
+            outline_selection::OutlineReplay::default()
+        };
         self.print_stroke_adjustment = tree.profile == crate::paint::RenderProfile::Print;
         self.print_device_clip = tree.uses_raster_clip_coverage();
         self.high_quality_images = matches!(
@@ -613,6 +644,7 @@ impl WebCanvasRenderer {
             self.partial_context_saved = false;
         }
         self.transparent_page_background = false;
+        self.outline_replay.release_prepared();
     }
 
     /// 개별 노드 렌더링
@@ -954,7 +986,12 @@ impl WebCanvasRenderer {
                 self.ctx.set_font("10px sans-serif");
                 let _ = self.ctx.fill_text(label, bbox.x, bbox.y + 10.0);
             }
-            PaintOp::GlyphRun { .. } | PaintOp::GlyphOutline { .. } => {}
+            PaintOp::GlyphOutline { .. } => {
+                if let Some(prepared) = self.outline_replay.prepared(op) {
+                    self.outline_replay_failed |= prepared.draw(&self.ctx).is_err();
+                }
+            }
+            PaintOp::GlyphRun { .. } => {}
         }
     }
 
@@ -1759,6 +1796,9 @@ impl WebCanvasRenderer {
             }
             LayerNodeKind::Leaf { ops } => {
                 for op in ops {
+                    if self.outline_replay.suppresses_fallback(op) {
+                        continue;
+                    }
                     // Task #1197: 다층 레이어 필터 — RenderNode.layer 또는 이미지 wrap 기반
                     // replay plane 에 따라 skip.
                     if !self.should_render_op(op, active_layer) {
@@ -2616,6 +2656,11 @@ impl LayerRenderer for WebCanvasRenderer {
             HwpError::RenderError(format!("invalid PageLayerTree text contract: {error}"))
         })?;
         self.render_layer_tree(tree);
+        if self.outline_replay_failed {
+            return Err(HwpError::RenderError(
+                "Canvas2D outline replay failed".into(),
+            ));
+        }
         if self.metric_descriptor_mismatch.get() {
             return Err(HwpError::RenderError(
                 "Canvas metric descriptor changed; prepare font metrics again".into(),

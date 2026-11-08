@@ -14,6 +14,9 @@ use wasm_bindgen::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use web_sys::HtmlCanvasElement;
 
+#[cfg(target_arch = "wasm32")]
+mod canvas2d_outline_preview;
+
 use crate::document_core::helpers::parse_removed_para_meta;
 use crate::document_core::{
     DeferredPaginationJobState, DeferredPaginationStepResult, DocumentCore, DEFAULT_FALLBACK_FONT,
@@ -1305,6 +1308,21 @@ impl HwpDocument {
     ) -> Result<(), JsValue> {
         render_patch_boundary::render_page_to_canvas_filtered_with_profile(
             self, page_num, canvas, scale, layer_kind, profile,
+        )
+    }
+
+    /// Explicit Canvas2D outline preview with actual selection diagnostics.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = renderPageToCanvasStrictOutlineWithProfile)]
+    pub fn render_page_to_canvas_strict_outline_with_profile(
+        &self,
+        page_num: u32,
+        canvas: &HtmlCanvasElement,
+        scale: f64,
+        profile: &str,
+    ) -> Result<String, JsValue> {
+        render_patch_boundary::render_page_to_canvas_strict_outline_with_profile(
+            self, page_num, canvas, scale, profile,
         )
     }
 
