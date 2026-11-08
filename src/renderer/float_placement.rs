@@ -8659,6 +8659,44 @@ fn float_horizontal_range_hu(table: &Table) -> std::ops::Range<i64> {
     left..right
 }
 
+/// [#8735] 공백만 있는 host 의 저장 첫 줄이 표를 품지 않으면 그 줄은 글 있는 host 의 줄처럼
+/// 표 띠 **아래**로 밀린 줄 상자다 — 조판 흐름의 판정.
+///
+/// `#5871` 은 공백 host 를 「저장 줄이 표를 품을 때」(lh ≥ 표 바깥 상자)만 글자 없는 host 로
+/// 본다. 품지 않는 쪽은 두 술어(글자 없음 / 비공백 글자 있음) 사이에 남아, 조판이 표 예약에
+/// 문단 앞 간격·바깥 위 여백·host 줄간격을 얹고 그 줄을 다시 따로 세었다. 한/글 저장 사다리는
+/// 그 줄을 띠 끝에 둔다 — 36325626 결재문서 1쪽: 앞 문단 끝 6392 + 바깥 위 138 + 표 7029 +
+/// 바깥 아래 138 = 13697(저장 줄 vpos), 문단 앞 간격 852 는 어디에도 없다. 곧 글 있는 host 의
+/// 흐름(표 상자만 예약, 밀린 첫 줄은 띠 위에 남는 앞 간격만 소비 — `#7330`)이 그대로 맞는다.
+/// 배치는 같은 형상을 `para_float_host_is_whitespace` 경로가 저장 사다리대로 놓는다.
+pub(crate) fn whitespace_host_line_below_float(para: &Paragraph) -> bool {
+    if para_has_non_whitespace_text(para)
+        || para.text.is_empty()
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+    {
+        return false;
+    }
+    let mut floats = para.controls.iter().filter_map(|control| match control {
+        Control::Table(table) if is_para_topbottom_float(&table.common) => Some(table),
+        _ => None,
+    });
+    let (Some(table), None) = (floats.next(), floats.next()) else {
+        return false;
+    };
+    let Some(first) = para.line_segs.first() else {
+        return false;
+    };
+    let band = i64::from(table.common.height.min(i32::MAX as u32))
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.outer_margin_bottom);
+    first.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && first.line_height > 0
+        && i64::from(first.line_height) < band
+        && matches!(table.common.vert_align, VertAlign::Top)
+        && signed_hwpunit(table.common.vertical_offset) == 0
+}
+
 /// 문단 기준 자리차지 표 가운데 **마지막**(컨트롤 순서) 표인가 — host 줄 상자는 그 표 뒤에서 한 번
 /// 계상한다.
 pub(crate) fn is_last_para_topbottom_float(para: &Paragraph, control_index: usize) -> bool {
