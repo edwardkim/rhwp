@@ -58,6 +58,13 @@ texture registry ID가 아니라 native view state의 양수 handle입니다.
 - target은 BGRA8Unorm·premultiplied·sRGB이며 `framebufferOnly = NO`로 설정해
   기존 Native의 render-target/shader-read 계약을 충족합니다. layer는 opaque SDR로
   고정하고 extended dynamic range를 끕니다. `clearColor`는 opaque ARGB만 받습니다.
+- 소유한 Metal layer는 `actionForKey:`의 전체 조회를 재정의하고 최종 no-action인
+  `nil`을 반환합니다. delegate의 `nil` fallback이나 `NSNull` sentinel 반환과 구분합니다.
+  이 native view의 생성·hidden 변경·resize/geometry·detach는 duration 0인
+  `NSAnimationContext`와 `CATransaction.setDisableActions:YES` 범위 안에서 수행합니다.
+  platform-channel 호출은 Flutter compositor의 별도 transaction 안에서 실행된다고
+  가정하지 않습니다. 주변 animation context는 복원하며 ancestor나 다른 view는 바꾸지
+  않습니다. 준비된 프레임이 가림 해제 중 배경색과 fade되는 것을 허용하지 않습니다.
 - viewport는 각 변 4,096 pixel 이하, 합계 4,194,304 pixel 이하입니다.
   backing 크기는 공통 Dart controller와 동일하게 ceil합니다. 다른 크기의 이전
   drawable을 새 viewport로 clamp하거나 억지로 표시하지 않습니다.
@@ -116,6 +123,15 @@ geometry/generation gate를 검사합니다. 400번 handoff, 늦은 uncover 거�
 실제 Apple SDK compile/link, 실제 AppKitView 표시·32회 이상 갱신·revision·resize·
 cover·close와 Native lease 정리는 별도의 target runner에서 수행해야 합니다.
 그 결과가 없으면 실기기/SDK 검증 완료로 표시하지 않습니다.
+
+`tests/metal_view_animation_sdk_test.mm`은 실제 AppKit/Core Animation에서 소유 layer의
+action 차단과 view의 즉시 가림/geometry/detach, ambient animation context 복원을
+검사합니다. 명시적인 CA fallback action과 animated transaction에서도 새 animation이
+생기면 실패합니다. SDK 도구가 이 테스트를 compile/run하고
+`metalViewAnimationPolicyVerified`를 기록합니다. 테스트의
+`RHWP_METAL_ANIMATION_PLUGIN_SOURCE` include macro를 이전 source의 plugin 경로로
+지정하면 같은 테스트로 수정 전 action lookup 실패를 대조할 수 있습니다. 이 검사는
+GPU render나 실제 WindowServer 화면 검증을 대신하지 않습니다.
 
 `tests/qualify_native_view.py`는 실제 macOS 14 이상에서만 실행되는 build/capture
 도구입니다. 먼저 같은 Flutter framework/engine으로

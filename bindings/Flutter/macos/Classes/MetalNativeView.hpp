@@ -1,11 +1,32 @@
 // Included once by RhwpMetalPlugin.mm so both backends use the same Native
 // loader, bounded request parser, snapshot leases and full-stamp generation gate.
 #import <QuartzCore/CAMetalLayer.h>
+#import <QuartzCore/CATransaction.h>
+#import <AppKit/NSAnimationContext.h>
 #include "MetalViewLifecycle.hpp"
 #include <chrono>
 
 namespace {
 using rhwp::metal::DrawableLifecycle;
+// Platform-channel visibility changes do not run inside Flutter's compositor
+// transaction. Keep this owned view's AppKit and Core Animation mutations
+// immediate even when an ambient caller enables implicit animation.
+class ScopedMetalViewAnimations {
+ public:
+  ScopedMetalViewAnimations() {
+    [NSAnimationContext beginGrouping];
+    [NSAnimationContext currentContext].duration = 0;
+    [NSAnimationContext currentContext].allowsImplicitAnimation = NO;
+    [CATransaction begin];
+    [CATransaction setDisableActions:YES];
+  }
+  ~ScopedMetalViewAnimations() {
+    [CATransaction commit];
+    [NSAnimationContext endGrouping];
+  }
+  ScopedMetalViewAnimations(const ScopedMetalViewAnimations&) = delete;
+  ScopedMetalViewAnimations& operator=(const ScopedMetalViewAnimations&) = delete;
+};
 struct MetalViewState {
   explicit MetalViewState(std::shared_ptr<State> owner) : owner(std::move(owner)) {}
   std::shared_ptr<State> owner;
@@ -253,6 +274,13 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
 @implementation RhwpOwnedMetalLayer {
   std::shared_ptr<int> _ownerSlot;
 }
+- (id<CAAction>)actionForKey:(NSString*)event {
+  (void)event;
+  // Override the complete lookup, rather than a delegate fallback. Returning
+  // nil here is the final no-action result; NSNull is only a lookup sentinel
+  // for delegates/dictionaries and is not itself a CAAction implementation.
+  return nil;
+}
 - (instancetype)initWithOwnerSlot:(std::shared_ptr<int>)slot {
   if ((self = [super init])) _ownerSlot = std::move(slot);
   return self;
@@ -277,6 +305,7 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
 - (instancetype)initWithState:(std::shared_ptr<MetalViewState>)state {
   if ((self = [super initWithFrame:NSZeroRect])) {
     _metalState = std::move(state);
+    ScopedMetalViewAnimations immediate;
     self.wantsLayer = YES;
     self.hidden = YES;
     auto owner = _metalState->owner;
@@ -288,6 +317,7 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
     layer.maximumDrawableCount = 3;
     layer.allowsNextDrawableTimeout = YES;
     layer.presentsWithTransaction = NO;
+    layer.opacity = 1;
     layer.opaque = YES;
     layer.wantsExtendedDynamicRangeContent = NO;
     CGColorSpaceRef color = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
@@ -301,11 +331,17 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
 - (BOOL)isFlipped { return YES; }
 - (NSView*)hitTest:(NSPoint)point { (void)point; return nil; }
 - (BOOL)acceptsFirstResponder { return NO; }
-- (void)setFrameSize:(NSSize)size { [super setFrameSize:size]; [self updateMetalGeometry]; }
+- (void)setHidden:(BOOL)hidden { ScopedMetalViewAnimations immediate; [super setHidden:hidden]; }
+- (void)setFrameSize:(NSSize)size {
+  ScopedMetalViewAnimations immediate;
+  [super setFrameSize:size];
+  [self updateMetalGeometry];
+}
 - (void)viewDidMoveToWindow { [super viewDidMoveToWindow]; [self updateMetalGeometry]; }
 - (void)viewDidChangeBackingProperties { [super viewDidChangeBackingProperties]; [self updateMetalGeometry]; }
 - (void)updateMetalGeometry {
   if (!_metalState) return;
+  ScopedMetalViewAnimations immediate;
   auto owner = _metalState->owner;
   CAMetalLayer* layer = nil;
   id<MTLDevice> device = nil;
@@ -327,6 +363,7 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
   owner->changed.notify_one();
 }
 - (void)detachMetalLayer {
+  ScopedMetalViewAnimations immediate;
   self.hidden = YES;
   self.layer = nil;
   self.wantsLayer = NO;

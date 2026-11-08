@@ -44,6 +44,7 @@ def command_plan(repository, output, sdk, clang, framework, architecture, toolch
     plugin = output / "RhwpMetalPlugin.dylib"
     bridge = output / "rhwp_metal_sdk_probe.dylib"
     cv_status = output / "rhwp_cv_closed_status_test"
+    animation_policy = output / "rhwp_metal_view_animation_test"
     common = [str(clang), "-std=c++17", "-fobjc-arc", "-fblocks", "-Wall", "-Wextra", "-Werror",
               "-isysroot", str(sdk), "-arch", architecture, "-mmacosx-version-min=12.0", "-dynamiclib"]
     flutter_links = ["-F", str(framework.parent), "-Wl,-rpath," + str(framework.parent),
@@ -59,7 +60,10 @@ def command_plan(repository, output, sdk, clang, framework, architecture, toolch
          str(repository / "bindings/Flutter/macos/tests/native_metal_sdk_probe.mm"), "-o", str(bridge)],
         [*[value for value in common if value != "-dynamiclib"], *flutter_links,
          str(repository / "bindings/Flutter/macos/tests/cv_closed_status_sdk_test.mm"), "-o", str(cv_status)],
+        [*[value for value in common if value != "-dynamiclib"], *flutter_links,
+         str(repository / "bindings/Flutter/macos/tests/metal_view_animation_sdk_test.mm"), "-o", str(animation_policy)],
         [str(cv_status)],
+        [str(animation_policy)],
         *([] if native_override else [["rustup", "run", toolchain, "cargo", "build", "--locked", "--manifest-path",
          str(repository / "bindings/Native/Cargo.toml"), "--features", "native-skia-metal",
          "--lib", "--target", rust_target, "--target-dir", str(output / "native-target")]]),
@@ -70,7 +74,8 @@ def command_plan(repository, output, sdk, clang, framework, architecture, toolch
          "--native-source-head", "NATIVE_SOURCE_HEAD",
          "--output", str(output / "metal-producer.json")],
     ]
-    return commands, {"native": native, "plugin": plugin, "bridge": bridge, "cvCloseStatus": cv_status}
+    return commands, {"native": native, "plugin": plugin, "bridge": bridge,
+                      "cvCloseStatus": cv_status, "metalViewAnimationPolicy": animation_policy}
 
 
 def source_hashes(repository):
@@ -243,7 +248,7 @@ def main():
         if proof.get("status") != "passed" or proof.get("source_head") != source_head:
             raise ValueError("actual Metal producer did not produce a matching successful receipt")
         state.update(build="passed", targetSdkCompileLinkVerified=True, metalProducerReadbackVerified=True,
-                     cvTerminalStatusVerified=True,
+                     cvTerminalStatusVerified=True, metalViewAnimationPolicyVerified=True,
                      artifacts={key: {"path": str(path), "sha256": digest(path), "bytes": path.stat().st_size}
                                 for key, path in artifacts.items()})
     except BaseException as error:
