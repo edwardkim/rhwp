@@ -59,6 +59,7 @@ class RetirementRegistry {
   size_t size() const { return records_.size(); }
   size_t receipt_count() const { return receipts_.size(); }
   const std::map<uint64_t, Record>& records() const { return records_; }
+  const std::map<uint64_t, Receipt>& receipts() const { return receipts_; }
  private:
   std::map<uint64_t, Record> records_;
   std::map<uint64_t, Receipt> receipts_;
