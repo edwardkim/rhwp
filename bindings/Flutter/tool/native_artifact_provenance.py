@@ -35,16 +35,50 @@ def _signature(info):
             info.st_mtime_ns, info.st_ctime_ns, info.st_nlink)
 
 
-def _entry_description(relative, info):
-    # Relative archive names only; never print the host path or file contents.
+def _entry_label(relative):
     label = json.dumps(relative, ensure_ascii=True)
     if len(label) > 160:
         label = label[:156] + '..."'
+    return label
+
+
+def _entry_description(relative, info):
+    # Relative archive names only; never print the host path or file contents.
     kind = ("reparse" if getattr(info, "st_file_attributes", 0) & 0x400 else
             "symlink" if stat.S_ISLNK(info.st_mode) else
             "directory" if stat.S_ISDIR(info.st_mode) else
             "regular" if stat.S_ISREG(info.st_mode) else "other")
-    return "entry=" + label + ", type=" + kind + ", nlink=" + str(info.st_nlink)[:20]
+    return "entry=" + _entry_label(relative) + ", type=" + kind + ", nlink=" + str(info.st_nlink)[:20]
+
+
+def _file_identity(info):
+    value = _signature(info)
+    if hasattr(info, "st_file_attributes"):
+        # CPython 3.12 win32_xstat reports creation time as ctime, whereas
+        # _Py_fstat_noraise reports ChangeTime there. Compare the explicitly
+        # supported CreationTime on both sides, without rounding timestamps.
+        birth = getattr(info, "st_birthtime_ns", None)
+        if type(birth) is not int:
+            raise ValueError("Windows stat birthtime_ns metadata is unavailable")
+        value = value[:5] + (birth,) + value[6:]
+    return value
+
+
+def _read_error(message, relative, scan, path=None, fd=None, fd_before=None):
+    names = ("mode", "dev", "ino", "size", "mtime_ns", "ctime_ns", "nlink")
+    def numbers(info):
+        if info is None:
+            return None
+        values = dict(zip(names, info)) if isinstance(info, tuple) else {
+            name: getattr(info, "st_" + name, None)
+            for name in (*names, "birthtime_ns", "file_attributes")}
+        return {key: value if type(value) is int and value.bit_length() <= 128 else None
+                for key, value in values.items()}
+    context = {"scan": numbers(scan), "path": numbers(path), "fd": numbers(fd)}
+    if fd_before is not None:
+        context["fdBefore"] = numbers(fd_before)
+    return ValueError(message + " (entry=" + _entry_label(relative) + "; " +
+                      json.dumps(context, separators=(",", ":")) + ")")
 
 
 def _scan(directory):
@@ -98,15 +132,27 @@ def _unique(root, entries, name):
 def _read(root, entries, path, maximum, *, hashed=False):
     relative = path.relative_to(root).as_posix()
     path.resolve(strict=True).relative_to(root)
-    if _signature(path.lstat()) != entries[relative]:
-        raise ValueError("artifact changed before reading")
+    path_info = path.lstat()
+    try:
+        path_signature = _signature(path_info)
+        path_identity = _file_identity(path_info)
+    except ValueError as error:
+        raise _read_error(str(error), relative, entries[relative], path_info) from None
+    if path_signature != entries[relative]:
+        raise _read_error("artifact changed before reading", relative, entries[relative], path_info)
     flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
     descriptor = os.open(path, flags)
     with os.fdopen(descriptor, "rb") as source:
         info = os.fstat(source.fileno())
+        try:
+            fd_signature = _signature(info)
+            fd_identity = _file_identity(info)
+        except ValueError as error:
+            raise _read_error(str(error), relative, entries[relative], path_info, info) from None
         if (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or
-                _signature(info) != entries[relative] or not 0 < info.st_size <= maximum):
-            raise ValueError("artifact is changed, empty, or exceeds its read bound")
+                fd_identity != path_identity or not 0 < info.st_size <= maximum):
+            raise _read_error("artifact is changed, empty, or exceeds its read bound", relative,
+                              entries[relative], path_info, info)
         if hashed:
             result = hashlib.sha256()
             count = 0
@@ -120,11 +166,24 @@ def _read(root, entries, path, maximum, *, hashed=False):
             result = source.read(maximum + 1)
             if len(result) > maximum:
                 raise ValueError("receipt exceeds its read bound")
-        if _signature(os.fstat(source.fileno())) != entries[relative]:
-            raise ValueError("artifact changed while reading")
+        after = os.fstat(source.fileno())
+        try:
+            unchanged = _signature(after) == fd_signature and _file_identity(after) == fd_identity
+        except ValueError as error:
+            raise _read_error(str(error), relative, entries[relative], path_info, after, fd_signature) from None
+        # Keep the raw fd ChangeTime check in its own authority. The Windows
+        # cross-path normalization above does not discard metadata mutations.
+        if not unchanged:
+            raise _read_error("artifact changed while reading", relative, entries[relative],
+                              path_info, after, fd_signature)
     path.resolve(strict=True).relative_to(root)
-    if _signature(path.lstat()) != entries[relative]:
-        raise ValueError("artifact path changed while reading")
+    after_path = path.lstat()
+    try:
+        unchanged = _signature(after_path) == path_signature and _file_identity(after_path) == path_identity
+    except ValueError as error:
+        raise _read_error(str(error), relative, entries[relative], after_path, after) from None
+    if not unchanged:
+        raise _read_error("artifact path changed while reading", relative, entries[relative], after_path, after)
     return result
 
 

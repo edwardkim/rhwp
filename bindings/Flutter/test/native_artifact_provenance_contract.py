@@ -311,6 +311,95 @@ class NativeArtifactContracts(unittest.TestCase):
         self.assertNotIn("\n", description)
         self.assertIn("type=reparse, nlink=1", description)
 
+    def read_windows_stat_model(self, *, fd_changes=None, after_fd_changes=None,
+                                after_path_changes=None):
+        # CPython 3.12.10 win32_xstat maps ctime to CreationTime. Its fstat
+        # preserves FILE_BASIC_INFO.ChangeTime; both expose birthtime_ns.
+        actual = self.native.lstat()
+        fields = {name: getattr(actual, name) for name in
+                  ("st_mode", "st_dev", "st_ino", "st_size", "st_mtime_ns", "st_ctime_ns", "st_nlink")}
+        fields.update(st_file_attributes=0, st_birthtime_ns=1700000000000000000)
+        path_fields = dict(fields, st_ctime_ns=fields["st_birthtime_ns"])
+        fd_fields = {**fields, "st_ctime_ns": fields["st_birthtime_ns"] + 5000000000,
+                     **(fd_changes or {})}
+        path_info = SimpleNamespace(**path_fields)
+        entries = {self.native.relative_to(self.archive).as_posix(): provenance._signature(path_info)}
+        real_lstat, real_fstat = Path.lstat, os.fstat
+        path_calls, fd_calls = 0, 0
+        def path_stat(path, *args, **kwargs):
+            nonlocal path_calls
+            if path != self.native:
+                return real_lstat(path, *args, **kwargs)
+            path_calls += 1
+            updates = (after_path_changes or {}) if path_calls > 1 else {}
+            return SimpleNamespace(**{**path_fields, **updates})
+        def fd_stat(fd):
+            nonlocal fd_calls
+            result = real_fstat(fd)
+            if (result.st_dev, result.st_ino) != (actual.st_dev, actual.st_ino):
+                return result
+            fd_calls += 1
+            updates = (after_fd_changes or {}) if fd_calls > 1 else {}
+            return SimpleNamespace(**{**fd_fields, **updates})
+        with mock.patch.object(Path, "lstat", path_stat), mock.patch.object(os, "fstat", fd_stat):
+            return provenance._read(self.archive, entries, self.native,
+                                    provenance.MAX_NATIVE_BYTES, hashed=True)
+
+    def test_windows_path_creation_time_and_fd_change_time_identify_the_same_file(self):
+        self.assertEqual(self.read_windows_stat_model(), self.fingerprint)
+
+    def test_windows_identity_keeps_device_file_id_mode_size_mtime_birth_and_link_checks(self):
+        actual = self.native.lstat()
+        for field, value in (("st_dev", actual.st_dev + 1), ("st_ino", actual.st_ino + 1),
+                             ("st_mode", stat.S_IFDIR | 0o755), ("st_size", actual.st_size + 1),
+                             ("st_mtime_ns", actual.st_mtime_ns + 1),
+                             ("st_birthtime_ns", 1700000000000000001),
+                             ("st_nlink", 0), ("st_nlink", 2), ("st_file_attributes", 0x400)):
+            with self.subTest(field=field, value=value), self.assertRaises(ValueError) as caught:
+                self.read_windows_stat_model(fd_changes={field: value})
+            message = str(caught.exception)
+            self.assertIn('entry="native-target/rhwp_native_ffi.dll"', message)
+            self.assertIn('"scan":', message)
+            self.assertIn('"path":', message)
+            self.assertIn('"fd":', message)
+            self.assertNotIn(str(self.root), message)
+            self.assertLess(len(message), 2048)
+
+    def test_windows_raw_fd_change_time_and_raw_path_metadata_stay_immutable(self):
+        with self.assertRaisesRegex(ValueError, "changed while reading"):
+            self.read_windows_stat_model(after_fd_changes={"st_ctime_ns": 1700000005000000001})
+        with self.assertRaisesRegex(ValueError, "changed while reading"):
+            self.read_windows_stat_model(after_fd_changes={"st_birthtime_ns": 1700000000000000001})
+        with self.assertRaisesRegex(ValueError, "path changed while reading"):
+            self.read_windows_stat_model(after_path_changes={"st_ctime_ns": 1700000000000000001})
+        with self.assertRaisesRegex(ValueError, "path changed while reading"):
+            self.read_windows_stat_model(after_path_changes={"st_birthtime_ns": 1700000000000000001})
+
+    def test_windows_unsupported_creation_time_metadata_is_not_a_fallback(self):
+        for value in (None, True, 1.5):
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, "birthtime_ns metadata is unavailable"):
+                self.read_windows_stat_model(fd_changes={"st_birthtime_ns": value})
+
+    def test_posix_change_time_remains_part_of_file_identity(self):
+        info = self.native.lstat()
+        fields = {name: getattr(info, name) for name in
+                  ("st_mode", "st_dev", "st_ino", "st_size", "st_mtime_ns", "st_ctime_ns", "st_nlink")}
+        before = SimpleNamespace(**fields)
+        changed = SimpleNamespace(**{**fields, "st_ctime_ns": fields["st_ctime_ns"] + 1})
+        self.assertNotEqual(provenance._file_identity(before), provenance._file_identity(changed))
+
+    def test_read_diagnostic_is_bounded_numeric_context_with_an_escaped_relative_entry(self):
+        info = SimpleNamespace(st_mode=stat.S_IFREG, st_dev=2**64 - 1, st_ino=2**128 - 1,
+                               st_size=32, st_mtime_ns=123, st_ctime_ns=456, st_nlink=1,
+                               st_birthtime_ns=123, st_file_attributes=0)
+        message = str(provenance._read_error("identity mismatch", "long/" + "\x1b\n\N{HANGUL SYLLABLE GA}" * 3000,
+                                             provenance._signature(info), info, info))
+        self.assertLess(len(message), 2048)
+        self.assertNotIn("\x1b", message)
+        self.assertNotIn("\n", message)
+        self.assertIn('"ctime_ns":456', message)
+        self.assertIn('"birthtime_ns":123', message)
+
     def test_json_duplicate_keys_and_nonfinite_values_are_rejected(self):
         for content in ('{"source_head":"' + self.old + '","source_head":"' + self.old + '"}',
                         '{"value":NaN}', '[]'):

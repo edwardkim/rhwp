@@ -20,7 +20,15 @@
 Windows의 `DirEntry.stat()` 빠른 metadata는 identity/link 계수를 0으로 보고할 수 있으므로
 scan과 읽기는 `Path.lstat()`의 권위 있는 결과를 사용하고 열린 descriptor의 `fstat()`와 대조한다.
 권위 있는 link count도 0이면 거절하며, 실제 hardlink·symlink·reparse 경계를 완화하지 않는다.
-거절 entry는 제한된 상대 이름·형식·link count만 기록하고 host 절대 경로나 파일 내용은 출력하지 않는다.
+CPython 3.12.10의 [경로 조회](https://github.com/python/cpython/blob/v3.12.10/Modules/posixmodule.c#L2008-L2018)는
+ctime을 생성 시각으로 바꾸지만 [fd 조회](https://github.com/python/cpython/blob/v3.12.10/Python/fileutils.c#L1026-L1047)는
+ChangeTime을 유지한다. Windows 양쪽 identity는 정확한 `birthtime_ns`로 이 의미 차이를 정규화한다.
+mode·device/file ID·size·mtime·단일 link 검사는 유지하고, path의 원래 metadata 전후와 fd의 원래
+ChangeTime 전후도 각각 비교한다. 생성 시각 metadata가 없으면 명시적으로 실패하며 시각을 반올림하거나
+mtime/ctime 검사를 끄지 않는다. POSIX identity는 기존 ctime 검사를 그대로 유지한다.
+[공식 문서](https://docs.python.org/3.12/library/os.html#os.stat_result.st_birthtime_ns)의
+Windows 생성 시각 구분을 따른다. 읽기 오류에는 제한된 상대 이름과 scan/path/fd의 숫자 metadata만
+기록하고 host 절대 경로나 파일 내용은 출력하지 않는다.
 
 `expected_source`는 실제 Native 빌드의 소문자 40자리 Git SHA다. 현재 HEAD는 전체가 clean이어야
 하며, 두 commit의 **전체 Git mode·object ID·path manifest**를 대조한다. 제외는 아래 세 범위뿐이다.
