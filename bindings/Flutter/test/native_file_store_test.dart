@@ -525,4 +525,60 @@ void main() {
       expect(() => document.prepareSave('hwpx'), throwsStateError);
     },
   );
+  test(
+    'save source identity survives queued replacement before info completes',
+    () async {
+      final (document, store, transport) = await fixture();
+      await store.save(destination: path('source-identity.hwpx'));
+      final original = await File(path('source-identity.hwpx')).readAsBytes();
+      transport.serialized = Uint8List.fromList(
+        utf8.encode('replacement document'),
+      );
+      transport.autoComplete = false;
+      final blocked = document.refreshInfo();
+      final blockedId = transport.serial;
+      final replacement = document.newDocument();
+      final saving = store.save(approveOverwrite: (_) async => true);
+      final rejected = expectLater(saving, throwsA(isA<NativeCallException>()));
+      transport.autoComplete = true;
+      transport.completions.add({
+        'ok': true,
+        'kind': 'info',
+        'requestId': blockedId,
+        'info': transport.info,
+      });
+      await blocked;
+      await replacement;
+      await rejected;
+      expect(await File(path('source-identity.hwpx')).readAsBytes(), original);
+      expect(transport.prepares, 1);
+      expect(transport.acks, 1);
+    },
+  );
+
+  test('recovery source identity survives queued replacement before info completes', () async {
+    final (document, store, transport) = await fixture();
+    transport.autoComplete = false;
+    final blocked = document.refreshInfo();
+    final blockedId = transport.serial;
+    final replacement = document.newDocument();
+    final recovering = store.writeRecovery(path('recovery-identity'));
+    final rejected = expectLater(
+      recovering,
+      throwsA(isA<NativeCallException>()),
+    );
+    transport.autoComplete = true;
+    transport.completions.add({
+      'ok': true,
+      'kind': 'info',
+      'requestId': blockedId,
+      'info': transport.info,
+    });
+    await blocked;
+    await replacement;
+    await rejected;
+    expect(transport.prepares, 0);
+    expect(transport.acks, 0);
+    expect(await Directory(path('recovery-identity')).exists(), isFalse);
+  });
 }

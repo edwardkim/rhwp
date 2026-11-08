@@ -138,6 +138,7 @@ class NativeFileStore {
     NativeLossApproval? approveLoss,
     NativeOverwriteApproval? approveOverwrite,
   }) => _serial(() async {
+    final acceptedDocument = _acceptedDocument();
     final target = destination ?? sourcePath;
     if (target == null) throw StateError('A new document needs a destination.');
     final path = File(target).absolute.path;
@@ -148,7 +149,8 @@ class NativeFileStore {
         ? 'hwp'
         : null;
     if (format == null) throw ArgumentError('Save as .hwp or .hwpx.');
-    final info = await document.refreshInfo();
+    await document.refreshInfo();
+    _sameDocument(acceptedDocument);
     NativeFileStamp? expected;
     if (path == sourcePath) {
       expected = _sourceStamp;
@@ -160,7 +162,7 @@ class NativeFileStore {
         return NativeSaveResult(info: document.info!, cancelled: true);
       }
     }
-    _sameDocument(info.documentId);
+    _sameDocument(acceptedDocument);
     final prepared = await document.prepareSave(format);
     var published = false;
     Object? failure;
@@ -200,7 +202,9 @@ class NativeFileStore {
   /// One recovery artifact per dirty revision. The caller owns its timer and
   /// chooses a dedicated directory; no automatic deletion or source overwrite.
   Future<String?> writeRecovery(String directory) => _serial(() async {
+    final acceptedDocument = _acceptedDocument();
     final info = await document.refreshInfo();
+    _sameDocument(acceptedDocument);
     final key = (info.documentId, info.revision);
     if (!info.isDirty || _lastRecovery == key) return null;
     final prepared = await document.prepareSave('hwpx');
@@ -287,6 +291,17 @@ class NativeFileStore {
       }
     }
   });
+
+  int _acceptedDocument() {
+    final info = document.info;
+    if (document.isDisposed || info == null) {
+      throw const NativeCallException(
+        'staleDocument',
+        'Create or open a document before file persistence.',
+      );
+    }
+    return info.documentId;
+  }
 
   void _sameDocument(int documentId) {
     if (document.isDisposed || document.info?.documentId != documentId) {
