@@ -658,3 +658,42 @@ manifest와 로그 hash를 연결했다. 다른 보호 문서와 신규 수식 �
 후보의17~19쪽 미달은 기존 기준의 미달이 아니다. 두 기준4aa8/0618의 차이가 배포 문서뿐임을
 확인했고 실제 고정 Native producer의 source는4aa8로 유지했다. 첫 출력 차이는17쪽 문단의
 수식 후속 줄에서 시작한다. 원인 보정 전 점수·독립 PDF·판정 기준을 바꾸지 않는다.
+
+
+## 2026-11-09: 부분 수식 재조판의 현재 점유·후속 줄 소유 복구
+
+원 해결 #7640 → 실제 통합 #8754 → 독립 한컴2020 Print·고정 devel을 대조했다.
+첫 차이의 렌더 문단811은 원본 최상위 문단 번호가 아니라 미주 확장 ID였다. 실제 소유는
+section0/문단318/미주0/내부 문단10이며, 네 수식과 저장 세 줄을 직접 대응했다.
+
+부분 재조판 앞줄을 현재 글자 높이만으로 수용해 수식의 점유 높이·기준선을 잃고, paint에서
+이미 같은 줄로 확정한 수식 목록을 문단 처음처럼 다시 채웠다. 생성한 후속 첫 줄의 indentation
+플래그도 문단 첫 줄로 게시했다. 저장 앞줄의 현재 인라인 점유, 이미 확정한 줄 소유, 후속 줄의
+실제 들여쓰기 세 계약을 공통 경로에서 보정했다. 문서/쪽별 수치·임의 여백 예외는 추가하지 않았다.
+
+Native 원본/재저장본 각21쪽 최저는98.78583%/99.03786%, fresh WASM은98.77947%/99.02612%다.
+재저장본17쪽 Native86.88111→99.15980%,18쪽42.42→99.04%,19쪽62.83→99.48%로 복원됐다.
+원본12쪽96.51→99.88%도 복원됐다. 두 입력 모두 전쪽90% 미달·쪽 누락·중복은0이다.
+17쪽의 새 수식 앵커 고정은 양쪽raw98% 이상과 독립 Print 시작점·기준선 판독 후에만 추가했다.
+관계형 소유·점유 검사와 독립 Print ±2 CSSpx 고정형 검사는 실제 assertion을 구분해 주석에 적었다.
+
+새 두 검사는 수정 전 의도한 원점 결함으로2 FAIL, 수정 후 standalone2 PASS다.
+정식 자동 수집 모듈은 기존7건과 새2건 모두9 PASS/0 FAIL이다(309건은 선택 밖).
+같은 컴파일된 suite를 개인 글꼴 파일/Registry 접근을 막고 실행해도9 PASS이며 전체 CoreText 격리
+검증으로 확대하지 않는다. 실제 fresh WASM Canvas 묶음은17 PASS/0 FAIL이다.
+Mac WASM은 locked wrapper의 no-opt 로컬 대체 빌드이며 루트pkg/Studio public/frozen의 hash가 같다.
+
+추가 영향 대조에서 sample16 세 저장본의17·35·38쪽과 nested3·8·17쪽, 총12쪽은
+수식 보정 전후 표시값이 같다. 최초 네 조건은 이관하지 않은 Linux 글꼴 환경 경로 때문에
+측정 전에 중단돼 제품 실패로 세지 않았고, 기존 Mac 환경 manifest·공급 경로로 정정해 실제 완료했다.
+재저장본2쪽의 base99.68→99.66%와 sample16·nested·outline·sample10의 기존 보호값 미달은
+이 단계로 해결됐다고 주장하지 않는다. 전체 통합 회귀·전쪽·게이트·PR 준비는 계속 남아 있다.
+
+[단계 입력·producer·Native/WASM 전쪽 TSV·검사 증거](partial-equation-frame-repair/validation.json) ·
+[Native 수정 후 review](partial-equation-frame-repair/after-native-p017-review.png) ·
+[overlay](partial-equation-frame-repair/after-native-p017-overlay.png) ·
+[WASM 수정 후 review](partial-equation-frame-repair/after-wasm-p017-review.png) ·
+[overlay](partial-equation-frame-repair/after-wasm-p017-overlay.png).
+
+이 단계의 Native Skia lib Clippy(`-D warnings`)·fmt·현재 base의 suite manifest48/48·변경 문서 링크 검사도 통과했다.
+전체 nextest·나머지 lint/범위 게이트와 최종 보호 TSV는 이 결과로 대신하지 않는다.

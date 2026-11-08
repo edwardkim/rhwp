@@ -1350,6 +1350,8 @@ struct TacPictureLineVars {
 #[derive(Clone, Copy)]
 struct EquationTacLineVars {
     line_idx: usize,
+    /// 호출자가 원시 슬롯/현재 프레임으로 이 줄의 제어문을 이미 확정했다.
+    owned_control_row: bool,
     /// 이 문단에서 배치하는 마지막 줄 인덱스 상한 (원본: end)
     line_end: usize,
     alignment: crate::model::style::Alignment,
@@ -5429,6 +5431,7 @@ impl LayoutEngine {
         }
         let EquationTacLineVars {
             line_idx,
+            owned_control_row,
             line_end: end,
             alignment,
             available_width,
@@ -5456,7 +5459,9 @@ impl LayoutEngine {
             .map(|l| l.char_start)
             .unwrap_or(usize::MAX);
         let tac_on_line = |k: usize, pos: usize| -> bool {
-            if let Some(ref flow) = equation_tac_line_flow {
+            if owned_control_row {
+                true
+            } else if let Some(ref flow) = equation_tac_line_flow {
                 flow.row_for_tac(k).is_some()
             } else {
                 pos >= line_start_char && pos < line_end_char
@@ -7328,7 +7333,12 @@ impl LayoutEngine {
                         - inline_offset
                         - num_offset,
                 );
-            let equation_tac_line_flow =
+            // 현재 줄로 이미 거른 제어문 목록에는 앞줄 정보가 없다. 여기서 다시
+            // 수식 전용 문단을 채우면 매 줄을 첫 줄로 보고 내어쓰기와 소속을 잃는다.
+            // 프레임/원시 슬롯 소유자는 일반 글줄이 확정한 원점과 폭을 그대로 쓴다.
+            let equation_tac_line_flow = if stored_tac_assignment.is_some() {
+                None
+            } else {
                 crate::renderer::equation_tac_flow::compute_equation_only_tac_line_flow(
                     para,
                     composed,
@@ -7344,7 +7354,8 @@ impl LayoutEngine {
                     } else {
                         equation_continuation_available_width
                     },
-                );
+                )
+            };
             let equation_tac_extra_rows = equation_tac_line_flow
                 .as_ref()
                 .map(|flow| flow.extra_rows)
@@ -8398,6 +8409,7 @@ impl LayoutEngine {
                 &equation_tac_line_flow,
                 EquationTacLineVars {
                     line_idx,
+                    owned_control_row: stored_tac_assignment.is_some(),
                     line_end: end,
                     alignment,
                     available_width,

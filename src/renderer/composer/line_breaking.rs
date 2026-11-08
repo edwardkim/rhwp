@@ -5080,7 +5080,9 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
 
                 // 반환용 LineSeg 사본만 표시하면 공통 프레임을 다시 읽는 소비자가
                 // 들여쓰기를 잃는다. 확정하는 실제 행에도 같은 기록을 보존한다.
-                let indented = if frame.row_count() == first_row {
+                // 부분 채움의 첫 행도 문단 첫 행은 아니다. 앞줄을 이미 수용했거나
+                // 원문 중간에서 시작하면 같은 후속 줄의 내어쓰기를 게시한다.
+                let indented = if start_char == 0 && frame.row_count() == first_row {
                     indentation_pattern.0
                 } else {
                     indentation_pattern.1
@@ -5206,6 +5208,58 @@ pub(crate) fn stored_row_metrics(
         line_spacing_value,
         dpi,
     ))
+}
+
+/// 부분 재조판 앞줄도 현재 인라인 개체가 점유하는 높이와 기준선을 함께 소비한다.
+/// 저장 좌표를 복사하지 않고 새 줄 채움과 같은 개체·줄 간격 참여 규칙을 적용한다.
+fn stored_inline_row_metrics(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    row: &[LineSeg],
+    controls: &[FlowInlineControl],
+) -> Option<FrameRowMetrics> {
+    let mut metrics = stored_row_metrics(para, styles, dpi, row)?;
+    let start = row.first()?.text_start;
+    let last = row.last()?.text_start;
+    let end = para
+        .line_segs
+        .iter()
+        .map(|segment| segment.text_start)
+        .filter(|offset| *offset > last)
+        .min()
+        .unwrap_or(u32::MAX);
+    let mut inline_height = 0;
+    let mut inline_baseline = None;
+    let mut spacing_height = 0;
+    for control in controls
+        .iter()
+        .filter(|control| control.utf16_position >= start && control.utf16_position < end)
+    {
+        spacing_height = spacing_height.max(control.spacing_height_hwp.unwrap_or(0));
+        if control.height_hwp > inline_height {
+            inline_height = control.height_hwp;
+            inline_baseline = control.baseline_distance_hwp;
+        } else if control.height_hwp == inline_height {
+            inline_baseline = inline_baseline.max(control.baseline_distance_hwp);
+        }
+    }
+    if spacing_height > 0 {
+        let style = styles.para_styles.get(para.para_shape_id as usize);
+        metrics.line_spacing = compute_line_spacing_hwp(
+            style.map_or(LineSpacingType::Percent, |style| style.line_spacing_type),
+            style.map_or(160.0, |style| style.line_spacing),
+            metrics.line_height.max(spacing_height),
+            dpi,
+        );
+    }
+    if inline_height > metrics.line_height {
+        apply_inline_control_frame_height(&mut metrics, inline_height);
+        if let Some(baseline) = inline_baseline {
+            metrics.baseline_distance = baseline;
+        }
+    }
+    Some(metrics)
 }
 
 /// Resolve a paragraph's stored rows through the caller's frame.
@@ -5364,6 +5418,7 @@ pub(crate) fn resolve_stored_line_segs_in_frame_with_storage<S: crate::storage::
             // 저장 줄 출처를 통과해야 하며, 실패하면 이 부분 경로는 결과를 남기지 않는다.
             if let Some(start_row) = remeasured_equation_start_row(para) {
                 let checkpoint = frame.try_append_checkpoint(storage)?;
+                let prefix_controls = flow_inline_controls_with_storage(para, styles, storage)?;
                 if !para.stored_text_partition_is_dirty()
                     && !stored_rows_require_external_geometry(
                         para,
@@ -5374,7 +5429,9 @@ pub(crate) fn resolve_stored_line_segs_in_frame_with_storage<S: crate::storage::
                     && (start_row == 0
                         || frame.try_admit_stored_rows_with_storage(
                             &para.line_segs[..start_row],
-                            |row| stored_row_metrics(para, styles, dpi, row),
+                            |row| {
+                                stored_inline_row_metrics(para, styles, dpi, row, &prefix_controls)
+                            },
                             storage,
                         )?)
                 {
