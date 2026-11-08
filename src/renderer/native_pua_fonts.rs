@@ -51,11 +51,13 @@ pub struct NativePuaMetrics {
 }
 
 /// 실제 paint 후보 순서에 따른 CFF 전진과 앞선 TTF의 선택 경계다.
+type NativeOtfAdvance = (f64, bool, bool, [u8; 32]);
+
 #[derive(Debug)]
 pub struct NativeOtfMetrics {
     programs: Vec<NativeOtfProgram>,
     original_truetype: bool,
-    advances: std::sync::Mutex<BTreeMap<char, Option<(f64, bool, bool)>>>,
+    advances: std::sync::Mutex<BTreeMap<char, Option<NativeOtfAdvance>>>,
     ttf_advances: std::sync::Mutex<BTreeMap<char, Option<f64>>>,
     coverage: std::sync::Mutex<BTreeMap<char, bool>>,
 }
@@ -131,17 +133,23 @@ impl NativeOtfMetrics {
 
     pub fn needs_faux_bold(&self, character: char) -> bool {
         self.glyph_metric(character)
-            .is_some_and(|(_, faux, _)| faux)
+            .is_some_and(|(_, faux, _, _)| faux)
     }
     pub fn advance_em(&self, character: char) -> Option<f64> {
-        self.glyph_metric(character).map(|(advance, _, _)| advance)
+        self.glyph_metric(character)
+            .map(|(advance, _, _, _)| advance)
     }
     /// 실제 글리프 공급 프로그램이 독립 Print로 확인된 HFT 계약을 소유하는가.
     pub fn has_verified_hft_bold_tracking(&self, character: char) -> bool {
         self.glyph_metric(character)
-            .is_some_and(|(_, _, verified)| verified)
+            .is_some_and(|(_, _, verified, _)| verified)
     }
-    fn glyph_metric(&self, character: char) -> Option<(f64, bool, bool)> {
+    /// 요청한 주 프로그램이 실제로 이 글리프의 CFF 전진을 공급했는지 확인한다.
+    pub(crate) fn glyph_program_matches(&self, character: char, digest: &[u8; 32]) -> bool {
+        self.glyph_metric(character)
+            .is_some_and(|(_, _, _, actual)| &actual == digest)
+    }
+    fn glyph_metric(&self, character: char) -> Option<NativeOtfAdvance> {
         let mut cache = self.advances.lock().ok()?;
         if let Some(advance) = cache.get(&character) {
             return *advance;
@@ -162,6 +170,7 @@ impl NativeOtfMetrics {
                         f64::from(width) / f64::from(face.units_per_em()),
                         program.faux_bold,
                         program.verified_hft_bold_tracking,
+                        program.digest,
                     )
                 });
             }

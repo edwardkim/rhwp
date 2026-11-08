@@ -928,6 +928,32 @@ impl FontEnvironment {
             .then_some(selected.query.as_str())
     }
 
+    /// 현재 슬롯에서 유효한 선택의 실제 프로그램 해시다. 임의 표기 ID는 인증하지 않는다.
+    pub(crate) fn selected_program_digest_for(
+        &self,
+        source: &str,
+        language_slot: usize,
+        font_id: u16,
+    ) -> Option<[u8; 32]> {
+        self.selected_program_query_for(source, language_slot, font_id)?;
+        let id = self
+            .document_substitution(source, language_slot, font_id)
+            .map(|selection| selection.program_id.as_str())
+            .or_else(|| {
+                self.selected_programs
+                    .get(source)
+                    .map(|program| program.program_id.as_str())
+            })?;
+        if id.len() != 64 {
+            return None;
+        }
+        let mut digest = [0; 32];
+        for (index, byte) in digest.iter_mut().enumerate() {
+            *byte = u8::from_str_radix(id.get(index * 2..index * 2 + 2)?, 16).ok()?;
+        }
+        Some(digest)
+    }
+
     pub(crate) fn canonical_selection_rule_for(
         &self,
         source: &str,

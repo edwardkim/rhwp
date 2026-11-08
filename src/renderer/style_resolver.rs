@@ -205,6 +205,25 @@ pub(crate) fn resolve_styles_with_environment(
                     .collect()
             })
             .unwrap_or_default();
+        let selected_primary_programs: std::collections::HashMap<_, _> = environment
+            .map(|env| {
+                font_requests
+                    .iter()
+                    .filter_map(|(lang, id, request)| {
+                        let query = env.selected_program_query_for(&request.source, *lang, *id)?;
+                        request
+                            .primary
+                            .iter()
+                            .any(|name| name == query)
+                            .then_some(())?;
+                        Some((
+                            (*lang, *id),
+                            env.selected_program_digest_for(&request.source, *lang, *id)?,
+                        ))
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
         let mut display_only_slots = std::collections::HashSet::new();
         for (style_id, (style, shape)) in styles
             .char_styles
@@ -214,6 +233,9 @@ pub(crate) fn resolve_styles_with_environment(
         {
             let mut latin_program_changed = false;
             for lang in 0..LANG_COUNT {
+                style.font_families_primary_program[lang] = selected_primary_programs
+                    .get(&(lang, shape.font_ids[lang]))
+                    .copied();
                 if style.source_ttf_for_lang(lang)
                     && display_only_fonts.contains(&(lang, shape.font_ids[lang]))
                 {
@@ -998,6 +1020,7 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
         font_families_hft_hangul,
         font_families_source_hft,
         font_families_source_ttf,
+        font_families_primary_program: vec![None; LANG_COUNT],
         font_families_verified_hft_bold_tracking,
         font_families_hft_print_frame,
         font_families_preserve_glyph_ink: vec![false; LANG_COUNT],

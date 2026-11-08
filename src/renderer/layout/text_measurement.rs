@@ -988,6 +988,11 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
             fixed_glyph_advances: false,
             source_font_is_hft: cs.source_hft_for_lang(lang_index),
             source_font_is_ttf: cs.source_ttf_for_lang(lang_index),
+            selected_primary_font_program: cs
+                .font_families_primary_program
+                .get(lang_index)
+                .copied()
+                .flatten(),
             source_verified_hft_bold_tracking: cs.verified_hft_bold_tracking_for_lang(lang_index),
             source_hwp3_hft_bold: (styles.hwp3_variant || styles.source_hwp3_native)
                 && cs.source_hft_for_lang(lang_index),
@@ -1108,6 +1113,11 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
                         font_metric_trusted: cs.font_metric_trusted_for_lang(1),
                         source_font_is_hft: cs.source_hft_for_lang(1),
                         source_font_is_ttf: cs.source_ttf_for_lang(1),
+                        selected_primary_font_program: cs
+                            .font_families_primary_program
+                            .get(1)
+                            .copied()
+                            .flatten(),
                         source_verified_hft_bold_tracking: cs
                             .verified_hft_bold_tracking_for_lang(1),
                         letter_spacing: cs.letter_spacing_for_lang(1),
@@ -2625,10 +2635,21 @@ fn char_width_decision_with_hft_tracking<'a>(
                         });
                     let verified_program = verified_source
                         && otf_metrics.is_some_and(|font| font.has_verified_hft_bold_tracking(c));
+                    // 선언 유형만 HFT인 실제 주 프로그램에는 fallback의 추정 꾸밈을
+                    // 더하지 않는다. 원본 쿼리·프로그램 해시와 이 글리프의 실제 공급자가
+                    // 모두 같아야 하며, 결측 글리프의 뒤 프로그램은 이 자격을 빌리지 않는다.
                     if style.source_hwp3_hft_bold
                         || source_hft_metric
                         || verified_program
-                        || inferred_hft_fullwidth
+                        || (inferred_hft_fullwidth
+                            && !latin
+                                .map_or(style.selected_primary_font_program, |slot| {
+                                    slot.selected_primary_font_program
+                                })
+                                .is_some_and(|digest| {
+                                    otf_metrics
+                                        .is_some_and(|font| font.glyph_program_matches(c, &digest))
+                                }))
                     {
                         font_size * 0.05
                     } else {
