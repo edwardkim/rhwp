@@ -1704,6 +1704,7 @@ impl TypesetEngine {
         } else if is_para_topbottom_float(&table.common)
             && (para_has_non_whitespace_text(para)
                 || coanchored_visible_float
+                || crate::renderer::float_placement::whitespace_host_line_below_float(para)
                 || hwpx_noninline_tac_measured_fit)
         {
             ft.effective_height

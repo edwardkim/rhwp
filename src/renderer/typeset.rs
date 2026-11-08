@@ -5109,7 +5109,9 @@ impl TypesetEngine {
         // 첫 띠 아래)로 조판한다 — 술어·근거는 `is_textless_coanchored_float_host`.
         let is_textless_coanchored_host = is_textless_coanchored_float_host(para);
         let is_visible_para_float = is_para_topbottom_float(&table.common)
-            && (para_has_non_whitespace_text(para) || is_textless_coanchored_host);
+            && (para_has_non_whitespace_text(para)
+                || is_textless_coanchored_host
+                || crate::renderer::float_placement::whitespace_host_line_below_float(para));
         // 단 오른쪽 밖으로 통째로 벗어난 자리차지 개체는 본문 세로 공간을 차지하지
         // 않는다(재현 문서 D: horz=단 227.6mm, A4 폭 210mm — 화면 밖). 이 계약은
         let signed_vertical_offset = vertical_offset as i32;
