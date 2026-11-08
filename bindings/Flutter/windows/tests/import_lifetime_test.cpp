@@ -61,12 +61,14 @@ void engine_reads_dimensions_after_opening_callback() {
   CHECK(*consumer_pixels == 7);
   {
     auto next_callback = Imports::begin_callback(owner); CHECK(next_callback);
-    CHECK(weak_frame.expired() && pool.stats().outstanding == 0);
+    CHECK(!weak_frame.expired() && pool.stats().outstanding == 1);
+    CHECK(Imports::stats().tickets == 0);  // CPU descriptor retired, cached HANDLE still pinned.
   }
-  CHECK(pool.stats().handed_off == 1 && *consumer_pixels == 7);
+  CHECK(pool.stats().handed_off == 0 && *consumer_pixels == 7);
   notification(cookie);  // Late duplicate never dereferences the old descriptor.
-  CHECK(pool.stats().outstanding == 0);
+  CHECK(pool.stats().outstanding == 1);
   Imports::unregistered(owner);
+  CHECK(weak_frame.expired() && pool.stats().handed_off == 1 && pool.stats().outstanding == 0);
 }
 void continuous_128_fresh_frames_remain_producer_bounded() {
   constexpr uint64_t owner = 101;
@@ -255,6 +257,101 @@ void premature_unregistration_stays_pinned() {
   { auto callback = Imports::begin_callback(owner); CHECK(!callback); }
   Imports::unregistered(owner); CHECK(weak.expired() && pool.stats().outstanding == 0);
 }
+struct RecycledAllocation {
+  static std::set<uintptr_t> live;
+  uintptr_t handle = 1;
+  int value;
+  explicit RecycledAllocation(int value) : value(value) {
+    while (live.count(handle)) ++handle;
+    live.insert(handle);
+  }
+  ~RecycledAllocation() { live.erase(handle); }
+};
+std::set<uintptr_t> RecycledAllocation::live;
+struct RecycledFrame {
+  std::shared_ptr<ImmutableFrames::Reservation> credit;
+  std::shared_ptr<RecycledAllocation> pixels;
+};
+std::shared_ptr<RecycledFrame> recycled_frame(ImmutableFrames& pool, int value) {
+  auto frame = std::make_shared<RecycledFrame>();
+  frame->credit = pool.reserve(128 * 1024, PublicationMode::ImmutableOwnershipTransfer); CHECK(frame->credit);
+  frame->pixels = std::make_shared<RecycledAllocation>(value);
+  CHECK(frame->credit->begin_gpu(frame->pixels));
+  CHECK(frame->credit->producer_complete() && frame->credit->publish_immutable());
+  return frame;
+}
+struct PinnedEngine {
+  // Pinned external_texture_d3d.cc:54-68 keeps the cached HANDLE when a null
+  // callback destroys its EGL surface; :84 imports only a different HANDLE.
+  void* cached = nullptr;
+  std::shared_ptr<RecycledAllocation> surface;
+  int imports = 0;
+  bool populate(const Descriptor* descriptor, std::shared_ptr<RecycledAllocation> allocation = {}) {
+    if (!descriptor || !descriptor->handle) { surface.reset(); return false; }
+    if (descriptor->handle != cached) { surface = std::move(allocation); cached = descriptor->handle; ++imports; }
+    descriptor->release_callback(descriptor->release_context);
+    return bool(surface);
+  }
+};
+void empty_callbacks_do_not_recycle_the_engines_cached_handle() {
+  constexpr uint64_t owner = 109;
+  Imports::register_owner(owner);
+  ImmutableFrames pool;
+  PinnedEngine engine;
+  std::shared_ptr<RecycledFrame> current;
+  const auto opened_before = Imports::stats().opened;
+  for (int index = 0; index < 128; ++index) {
+    if (current) {
+      current.reset();  // State::accept clears current before fresh allocation.
+      for (int empty = 0; empty < 3; ++empty) {
+        { auto callback = Imports::begin_callback(owner); CHECK(callback); }
+        CHECK(!engine.populate(nullptr));
+        CHECK(pool.stats().outstanding == 1 && pool.stats().producer_owned == 1);
+        CHECK(Imports::stats().tickets == 0 && RecycledAllocation::live.size() == 1);
+      }
+    }
+    current = recycled_frame(pool, index);
+    CHECK(reinterpret_cast<void*>(current->pixels->handle) != engine.cached);
+    CHECK(pool.stats().outstanding <= 2 && pool.stats().bytes <= 2 * 128 * 1024);
+    const Descriptor* descriptor;
+    {
+      auto callback = Imports::begin_callback(owner); CHECK(callback);
+      auto value = description(index); value.handle = reinterpret_cast<void*>(current->pixels->handle);
+      descriptor = Imports::offer(owner, value, current, current->credit); CHECK(descriptor);
+    }
+    CHECK(engine.populate(descriptor, current->pixels));
+    CHECK(engine.surface->value == index && engine.imports == index + 1);
+    CHECK(pool.stats().outstanding == 1 && Imports::stats().tickets == 1);
+  }
+  CHECK(Imports::stats().opened - opened_before == 128 && pool.stats().handed_off == 127);
+  current.reset();
+  Imports::unregistered(owner); engine.populate(nullptr);
+  CHECK(pool.stats().outstanding == 0 && pool.stats().handed_off == 128);
+  CHECK(RecycledAllocation::live.empty() && Imports::stats().tickets == 0);
+}
+void invalid_replacements_do_not_release_the_last_exported_frame() {
+  constexpr uint64_t owner = 110;
+  Imports::register_owner(owner);
+  ImmutableFrames pool;
+  auto frame = publish(pool, 7); std::weak_ptr<Frame> weak = frame;
+  const Descriptor* descriptor;
+  {
+    auto callback = Imports::begin_callback(owner); CHECK(callback);
+    descriptor = offer(owner, frame, 7); CHECK(descriptor);
+  }
+  descriptor->release_callback(descriptor->release_context); frame.reset();
+  {
+    auto callback = Imports::begin_callback(owner); CHECK(callback);
+    auto replacement = publish(pool, 9);
+    auto invalid = description(9); invalid.handle = nullptr;
+    CHECK(!Imports::offer(owner, invalid, replacement, replacement->credit));
+    CHECK(!offer(owner, replacement, 7));  // Different allocation aliases cached HANDLE.
+    CHECK(!weak.expired() && Imports::stats().tickets == 0);
+  }
+  CHECK(pool.stats().outstanding == 1 && !weak.expired() && pool.stats().handed_off == 0);
+  Imports::unregistered(owner);
+  CHECK(weak.expired() && pool.stats().outstanding == 0 && pool.stats().handed_off == 1);
+}
 }  // namespace
 int main() {
   try {
@@ -263,8 +360,9 @@ int main() {
     published_but_never_offered_is_safe_to_discard(); legacy_and_transfer_share_one_admission_limit();
     descriptor_registry_is_bounded_independently_of_frame_count(); close_races_with_opening_but_not_descriptor_cpu_retirement();
     thread_change_and_reentry_do_not_prove_cpu_quiescence(); premature_unregistration_stays_pinned();
+    empty_callbacks_do_not_recycle_the_engines_cached_handle(); invalid_replacements_do_not_release_the_last_exported_frame();
     CHECK(Imports::stats().tickets == 0);
-    std::cout << "Windows immutable ownership transfer: 10 cases, " << checks << " checks passed\n";
+    std::cout << "Windows immutable ownership transfer: 12 cases, " << checks << " checks passed\n";
     return 0;
   } catch (const std::exception& error) { std::cerr << error.what() << '\n'; return 1; }
 }

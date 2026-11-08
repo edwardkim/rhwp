@@ -16,7 +16,7 @@ void opened(void*) { /* Handle opened is not a consumer GPU fence. */ }
 }
 int main() {
   descriptor.struct_size = sizeof(descriptor);
-  descriptor.handle = nullptr;
+  descriptor.handle = reinterpret_cast<void*>(uintptr_t(1));
   descriptor.width = descriptor.visible_width = 1;
   descriptor.height = descriptor.visible_height = 1;
   descriptor.format = kFlutterDesktopPixelFormatBGRA8888;

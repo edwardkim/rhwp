@@ -116,6 +116,13 @@ This mode uses a separate ownership guarantee from consumer GPU completion:
   storage and a strong frame pin until the next non-reentrant callback on the
   same raster OS thread, or confirmed unregister completion. Close alone cannot
   supply this CPU-quiescence evidence.
+- CPU descriptor retirement does not release the last exported allocation. The
+  pinned engine destroys its EGL surface on a null callback but keeps its cached
+  HANDLE value. Each owner therefore pins its last exported frame and its existing
+  credit through empty callbacks until a distinct valid replacement is offered
+  or unregister is confirmed. This prevents a fresh allocation from recycling the
+  cached HANDLE and bypassing the engine's import branch. These pins stay within
+  the same four-frame/64-MiB accounting; they add no target pool or GPU fence.
 - Opening may arrive on another thread. Never-reused opaque cookie values index
   a process-wide registry of at most eight descriptor records; a late duplicate
   performs a lookup and cannot dereference released userdata. Missing opening

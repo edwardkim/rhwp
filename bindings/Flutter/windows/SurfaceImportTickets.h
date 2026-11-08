@@ -13,6 +13,10 @@ namespace rhwp::d3d {
 // engine reads descriptor dimensions *after* calling release_callback. Keep its
 // immutable descriptor and frame pin until a later callback on the same raster
 // OS thread, or confirmed registration removal, proves those CPU reads ended.
+// The engine retains its last HANDLE value even after a null callback destroys
+// its EGL surface. Separately keep the last exported creator allocation/credit
+// alive until a distinct replacement is offered, or confirmed unregister. CPU
+// descriptor retirement alone must not permit that cached HANDLE to be recycled.
 // Opaque never-reused integer cookies permit arbitrary late/duplicate opening
 // notifications without dereferencing a freed userdata allocation.
 template <typename Descriptor>
@@ -69,17 +73,22 @@ class SurfaceImportTickets {
   static const Descriptor* offer(uint64_t owner, const Descriptor& description,
       std::shared_ptr<void> frame, std::shared_ptr<ImmutableFrames::Reservation> credit,
       Notification notify = nullptr, void* notify_context = nullptr) {
-    if (!frame || !credit) return nullptr;
+    if (!frame || !credit || !description.handle) return nullptr;
     auto ticket = std::make_shared<Ticket>();
     ticket->owner = owner; ticket->descriptor = description;
     ticket->frame = std::move(frame); ticket->credit = std::move(credit);
     ticket->notify = notify; ticket->notify_context = notify_context;
+    std::shared_ptr<void> retired_frame;
+    std::shared_ptr<ImmutableFrames::Reservation> retired_credit;
     auto& data = storage();
     std::lock_guard<std::mutex> lock(data.mutex);
     auto found = data.owners.find(owner);
     if (found == data.owners.end() || found->second.closed || !found->second.inside ||
         found->second.thread != std::this_thread::get_id() || data.tickets.size() >= kMaxTickets ||
         !data.next_cookie) return nullptr;
+    auto& state = found->second;
+    if (state.last_frame && state.last_handle == description.handle && state.last_frame != ticket->frame)
+      return nullptr;  // A different allocation cannot inherit the engine's cached HANDLE.
     const uintptr_t cookie = data.next_cookie;
     data.next_cookie = cookie == std::numeric_limits<uintptr_t>::max() ? 0 : cookie + 1;
     ticket->descriptor.release_context = reinterpret_cast<void*>(cookie);
@@ -89,6 +98,13 @@ class SurfaceImportTickets {
       data.tickets.erase(cookie);
       return nullptr;
     }
+    retired_frame = std::move(state.last_frame);
+    retired_credit = std::move(state.last_credit);
+    state.last_frame = ticket->frame;
+    state.last_credit = ticket->credit;
+    state.last_handle = description.handle;
+    // The old creator references drop after unlocking. Both pins consume their
+    // existing process-wide frame credits; this does not add a resource pool.
     return &ticket->descriptor;
   }
 
@@ -97,6 +113,8 @@ class SurfaceImportTickets {
   // cannot establish completion of the engine's subsequent descriptor reads.
   static void unregistered(uint64_t owner) {
     std::vector<std::shared_ptr<Ticket>> discarded;
+    std::shared_ptr<void> retired_frame;
+    std::shared_ptr<ImmutableFrames::Reservation> retired_credit;
     auto& data = storage();
     {
       std::lock_guard<std::mutex> lock(data.mutex);
@@ -104,6 +122,8 @@ class SurfaceImportTickets {
       if (found == data.owners.end()) return;
       if (found->second.inside) { found->second.closed = true; return; }
       retire_cpu_locked(data, owner, discarded);
+      retired_frame = std::move(found->second.last_frame);
+      retired_credit = std::move(found->second.last_credit);
       data.owners.erase(found);
     }
   }
@@ -132,6 +152,9 @@ class SurfaceImportTickets {
   };
   struct Owner {
     std::thread::id thread;
+    std::shared_ptr<void> last_frame;
+    std::shared_ptr<ImmutableFrames::Reservation> last_credit;
+    void* last_handle = nullptr;
     bool inside = false, closed = false;
   };
   struct Storage {
