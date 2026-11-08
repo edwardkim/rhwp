@@ -1,6 +1,6 @@
 # #8778 시각 검증 증거
 
-- 검증 head: `32097bb171` (native-skia release, fresh WASM `pkg/rhwp_bg.wasm` sha256 `7f8480d4…`)
+- 검증 head: `745deec173` (#8785 위, native-skia release sha256 `8cf17a81…`, fresh WASM `rhwp_bg.wasm` sha256 `bedd3c96…`)
 - 명령: `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96` (TSV), 같은 명령에 `--pages` (review·overlay PNG). WASM 은 `--wasm-pkg pkg`.
 - 판정값: `silhouette_raw_match_percent`(TSV 4열). 글꼴: 문서 face 만 둔 디렉터리를 `RHWP_FONT_PATH` 로 공급.
 
