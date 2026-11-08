@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rhwp_native_reference/rhwp_native_flutter.dart';
 
 import 'support/fake_transport.dart';
+import 'support/fake_gpu_presentation.dart';
 import 'native_document_view_test.dart' show pumpUntil;
 import 'native_editor_view_test.dart' show ViewTransport;
 
@@ -356,6 +357,93 @@ void main() {
     gate.complete();
     expect(await next, isTrue);
   });
+
+  for (final platform in const [
+    NativeTexturePlatform.linux,
+    NativeTexturePlatform.macos,
+    NativeTexturePlatform.windows,
+  ]) {
+    testWidgets(
+      'lifecycle close preserves completed automatic ${platform.name} retirement',
+      (tester) async {
+        final plugin = FakeTexturePlugin(platform)..install();
+        final owner = await NativeDocument.connect(GpuTransport());
+        final opening = owner.newDocument();
+        await pumpUntil(tester, () => owner.info != null);
+        await opening;
+        final texture = NativeTextureController(
+          document: owner,
+          presentation: FakePresentation(),
+          platform: platform,
+          pollInterval: const Duration(milliseconds: 10),
+        );
+        final ownerLifecycle = NativeDocumentLifecycle(
+          document: owner,
+          files: NativeFileStore(owner),
+          settleInput: () async {},
+          confirmUnsaved: (_) async => NativeUnsavedDecision.discard,
+          chooseSavePath: () async => null,
+          retireViewport: () async {
+            await texture.close();
+            return texture.phase == NativeTexturePhase.closed &&
+                !texture.retirementPending;
+          },
+        );
+        try {
+          await tester.pumpWidget(
+            MaterialApp(
+              home: SizedBox(
+                width: 300,
+                height: 240,
+                child: NativeTextureView(
+                  controller: texture,
+                  viewport: NativePageViewport.fit(
+                    const NativePageSize(600, 800),
+                    const Size(300, 240),
+                  ),
+                  cpuFallback: (_) => const Text('CPU reference'),
+                ),
+              ),
+            ),
+          );
+          await pumpUntil(tester, () => texture.canDisplay);
+          plugin.statusError = 'backpressure';
+          await pumpUntil(
+            tester,
+            () =>
+                texture.needsCpuFallback &&
+                plugin.closed &&
+                !texture.shouldPaintTexture,
+          );
+          expect(texture.retirementPending, isFalse);
+          expect(plugin.calls.where((call) => call == 'close'), hasLength(1));
+          expect(owner.isDisposed, isFalse);
+
+          final closing = expectLater(
+            ownerLifecycle.close(),
+            completion(isTrue),
+          );
+          await pumpUntil(
+            tester,
+            () => owner.isDisposed || ownerLifecycle.error != null,
+          );
+          await closing;
+          expect(ownerLifecycle.isClosed, isTrue);
+          expect(texture.phase, NativeTexturePhase.closed);
+          expect(texture.retirementPending, isFalse);
+          expect(texture.retirementDiagnostic, isNull);
+          expect(plugin.calls.where((call) => call == 'close'), hasLength(1));
+        } finally {
+          await tester.pumpWidget(const SizedBox());
+          texture.dispose();
+          ownerLifecycle.dispose();
+          await owner.dispose();
+          plugin.uninstall();
+          await tester.pump();
+        }
+      },
+    );
+  }
 
   testWidgets('view reports its own initialized editor and detach', (
     tester,
