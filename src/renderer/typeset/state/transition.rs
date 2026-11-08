@@ -144,6 +144,7 @@ impl TypesetState {
                 vpos_ladder_dirty: false,
                 vpos_compacted_stored_delta: 0.0,
                 vpos_snapped_flow_start: None,
+                vpos_snapped_flow_page: None,
                 rejected_stored_forward_origin: None,
                 vpos_rejected_gap_hu: 0,
                 vpos_prev_layout_para: None,

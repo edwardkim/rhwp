@@ -5527,9 +5527,6 @@ pub(crate) fn stored_picture_next_page_placement(
     }
     let mut previous_end = host.vertical_pos;
     for (reset_index, next) in following.iter().enumerate() {
-        if !next.controls.is_empty() {
-            return None;
-        }
         let first = next.line_segs.first()?;
         if next
             .line_segs
@@ -5541,7 +5538,12 @@ pub(crate) fn stored_picture_next_page_placement(
         if first.vertical_pos < previous_end {
             // 다음 쪽 첫 저장 줄이 그림(·캡션) 아래끝과 정확히 같다는 것이 이월의 근거다.
             // 그 줄이 빈 문단이어도 저장 사다리의 같은 등식이 쪽 소유를 증명한다.
-            if first.vertical_pos != frame_height {
+            // [#8795] 그 문단의 자기 개체는 다음 쪽에서 자기 줄을 기준으로 놓이며 줄의
+            // 저장 원점을 바꾸지 않는다(1351000-201500141 pi972: 31878 = 그림 높이).
+            // 강제 쪽·단 나눔은 자기 이유로 되감기므로 이 등식의 근거가 아니다.
+            if first.vertical_pos != frame_height
+                || next.column_type != crate::model::paragraph::ColumnBreakType::None
+            {
                 return None;
             }
             return Some((
@@ -5558,6 +5560,10 @@ pub(crate) fn stored_picture_next_page_placement(
                 },
                 reset_index,
             ));
+        }
+        // 앞 쪽에 남는 문단의 개체는 그림이 비운 자리와 겹칠 수 있어 근거로 쓰지 않는다.
+        if !next.controls.is_empty() {
+            return None;
         }
         previous_end = next.line_segs.last()?.vertical_pos;
     }

@@ -404,6 +404,9 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 저장 vpos 스냅(VPOS_CORR)을 마친 문단 시작 커서 `(문단, y)`.
     /// 측정 누적의 sb·trailing_ls drift 가 걷힌 실제 앞 커서다.
     pub(in crate::renderer::typeset) vpos_snapped_flow_start: Option<(usize, f64)>,
+    /// [#8795] 위 스냅을 마친 쪽·단 `(pages.len(), 단)`. 문단이 스냅 뒤 다른 쪽으로
+    /// 넘어간 경우 앞 쪽 앵커 원점으로 쓰지 않는다.
+    pub(in crate::renderer::typeset) vpos_snapped_flow_page: Option<(usize, u16)>,
     /// 공통 vpos 질의가 현재 문단에서 거절한 저장 원점 `(문단, source HU)`.
     pub(in crate::renderer::typeset) rejected_stored_forward_origin: Option<(usize, i32)>,
     /// 이 단에서 표 위 틈 판정으로 버린 저장 사다리 전방 이동의 합(HU). 저장 프레임에서
