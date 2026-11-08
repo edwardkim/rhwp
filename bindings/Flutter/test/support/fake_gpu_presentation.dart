@@ -104,6 +104,7 @@ class FakeTexturePlugin {
   final calls = <String>[];
   final submissions = <Map<String, Object?>>[];
   final covers = <Map<String, Object?>>[];
+  final retireAcks = <Map<String, Object?>>[];
   final owned = <int>{}, releasedByPlugin = <int>{};
   int nextTexture = 1, serial = 0;
   bool publish = true, closed = false, ready = true;
@@ -113,6 +114,10 @@ class FakeTexturePlugin {
   int visibilitySerial = 0;
   Completer<void>? createGate, submitGate, statusGate;
   Completer<void>? coverGate, uncoverGate, uncoverAckGate;
+  Completer<void>? retireAckGate;
+  Completer<void>? closeReplyGate;
+  String? retireAckError;
+  Map<String, Object?> retireAckOverrides = {};
   Map<String, Object?>? acceptedStamp;
   List<int> acceptedIds = [];
   void install() {
@@ -133,6 +138,8 @@ class FakeTexturePlugin {
     'closing': closed,
     'ownerFinished': closed,
     'cleanupComplete': closed,
+    if (platform == NativeTexturePlatform.macosMetalView)
+      'nativeViewLayerDetached': closed,
     'code': statusError ?? '',
     'errorCode': statusError ?? '',
     'error': statusError == null ? '' : 'strict replay failed',
@@ -228,7 +235,23 @@ class FakeTexturePlugin {
         covered = true;
         releasedByPlugin.addAll(owned);
         owned.clear();
+        await closeReplyGate?.future;
         return status();
+      case 'retireAck':
+        retireAcks.add(arguments);
+        await retireAckGate?.future;
+        if (retireAckError != null) {
+          throw PlatformException(code: retireAckError!);
+        }
+        return {
+          'textureId': arguments['textureId'],
+          'acknowledged': closed,
+          'closed': closed,
+          'ownerFinished': closed,
+          'registered': !closed,
+          'nativeViewLayerDetached': closed,
+          ...retireAckOverrides,
+        };
     }
     throw MissingPluginException();
   }

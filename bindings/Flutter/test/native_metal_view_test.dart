@@ -17,12 +17,12 @@ class MetalPlugin extends FakeTexturePlugin {
   MetalPlugin() : super(NativeTexturePlatform.macosMetalView) {
     ready = false;
   }
-  bool holdClose = false, ownerComplete = false;
+  bool holdClose = false, ownerComplete = false, layerComplete = true;
   @override
   Map<String, Object?> status() => {
     ...super.status(),
     'covered': covered,
-    'nativeViewLayerDetached': closed,
+    'nativeViewLayerDetached': closed && layerComplete,
     if (closed && holdClose) ...{
       'ownerFinished': ownerComplete,
       'registered': !ownerComplete,
@@ -107,6 +107,8 @@ class Fixture {
       plugin.coverGate,
       plugin.uncoverGate,
       plugin.uncoverAckGate,
+      plugin.retireAckGate,
+      plugin.closeReplyGate,
     ]) {
       if (gate != null && !gate.isCompleted) gate.complete();
     }
@@ -643,6 +645,197 @@ void main() {
         expect(f.metadata.released, isEmpty);
       } finally {
         f.plugin.ownerComplete = true;
+        await f.close(tester);
+      }
+    },
+  );
+
+  testWidgets(
+    'Metal view retirement waits for its explicit matching acknowledgement',
+    (tester) async {
+      final f = await fixture(tester);
+      try {
+        await tester.pumpWidget(viewport(f.controller));
+        await until(tester, () => f.controller.canDisplay);
+        final gate = Completer<void>();
+        f.plugin.retireAckGate = gate;
+        var complete = false;
+        final closing = f.controller.close().then((_) {
+          complete = true;
+        });
+        await until(tester, () => f.plugin.retireAcks.isNotEmpty);
+        expect(f.plugin.retireAcks.single, {
+          'textureId': f.controller.textureId,
+        });
+        expect(complete, isFalse);
+        expect(f.controller.retirementPending, isTrue);
+        expect(f.controller.phase, NativeTexturePhase.closing);
+        gate.complete();
+        await until(tester, () => complete);
+        await closing;
+        expect(f.controller.retirementPending, isFalse);
+        expect(f.controller.phase, NativeTexturePhase.closed);
+        await f.controller.close();
+        expect(f.plugin.retireAcks, hasLength(1));
+        expect(f.metadata.released, isEmpty);
+      } finally {
+        await f.close(tester);
+      }
+    },
+  );
+
+  testWidgets(
+    'owner completion alone does not acknowledge an attached native layer',
+    (tester) async {
+      final f = await fixture(
+        tester,
+        plugin: MetalPlugin()..layerComplete = false,
+      );
+      try {
+        await tester.pumpWidget(viewport(f.controller));
+        await until(tester, () => f.controller.canDisplay);
+        var complete = false;
+        final closing = f.controller.close().then((_) {
+          complete = true;
+        });
+        await tester.pump(const Duration(milliseconds: 50));
+        expect(f.plugin.status()['ownerFinished'], isTrue);
+        expect(f.plugin.retireAcks, isEmpty);
+        expect(complete, isFalse);
+        f.plugin.layerComplete = true;
+        await until(tester, () => complete);
+        await closing;
+        expect(f.plugin.retireAcks, hasLength(1));
+        expect(f.controller.retirementPending, isFalse);
+      } finally {
+        f.plugin.layerComplete = true;
+        await f.close(tester);
+      }
+    },
+  );
+
+  final invalidAcknowledgements = <Map<String, Object?>>[
+    {'textureId': 999},
+    {'acknowledged': false},
+    {'closed': false},
+    {'ownerFinished': false},
+    {'registered': true},
+    {'nativeViewLayerDetached': false},
+  ];
+  for (var index = 0; index < invalidAcknowledgements.length; ++index) {
+    testWidgets(
+      'invalid Metal retirement acknowledgement $index preserves pending state',
+      (tester) async {
+        final f = await fixture(
+          tester,
+          timeout: const Duration(milliseconds: 100),
+        );
+        try {
+          await tester.pumpWidget(viewport(f.controller));
+          await until(tester, () => f.controller.canDisplay);
+          f.plugin.retireAckOverrides = invalidAcknowledgements[index];
+          final closing = f.controller.close();
+          await tester.pump(const Duration(milliseconds: 140));
+          await closing;
+          expect(f.controller.retirementPending, isTrue);
+          expect(f.controller.phase, NativeTexturePhase.retirePending);
+          expect(f.plugin.retireAcks, hasLength(1));
+          await tester.pump(const Duration(milliseconds: 200));
+          expect(f.plugin.retireAcks, hasLength(1));
+          expect(f.metadata.released, isEmpty);
+        } finally {
+          await f.close(tester);
+        }
+      },
+    );
+  }
+
+  for (final code in ['retirePending', 'closed']) {
+    testWidgets(
+      'Metal retireAck $code failure is bounded without an automatic retry',
+      (tester) async {
+        final f = await fixture(
+          tester,
+          timeout: const Duration(milliseconds: 100),
+        );
+        try {
+          await tester.pumpWidget(viewport(f.controller));
+          await until(tester, () => f.controller.canDisplay);
+          f.plugin.retireAckError = code;
+          final closing = f.controller.close();
+          await tester.pump(const Duration(milliseconds: 140));
+          await closing;
+          expect(f.controller.retirementPending, isTrue);
+          expect(f.controller.retirementDiagnostic, isA<PlatformException>());
+          expect(f.plugin.retireAcks, hasLength(1));
+          await tester.pump(const Duration(milliseconds: 200));
+          expect(f.plugin.retireAcks, hasLength(1));
+          expect(f.metadata.released, isEmpty);
+        } finally {
+          await f.close(tester);
+        }
+      },
+    );
+  }
+
+  testWidgets(
+    'a late original retireAck resolves bounded pending retirement without resending',
+    (tester) async {
+      final f = await fixture(
+        tester,
+        timeout: const Duration(milliseconds: 100),
+      );
+      try {
+        await tester.pumpWidget(viewport(f.controller));
+        await until(tester, () => f.controller.canDisplay);
+        final gate = Completer<void>();
+        f.plugin.retireAckGate = gate;
+        final closing = f.controller.close();
+        await until(tester, () => f.plugin.retireAcks.isNotEmpty);
+        await tester.pump(const Duration(milliseconds: 150));
+        await closing;
+        expect(f.controller.retirementPending, isTrue);
+        expect(f.plugin.retireAcks, hasLength(1));
+        gate.complete();
+        await until(
+          tester,
+          () => f.controller.phase == NativeTexturePhase.closed,
+        );
+        expect(f.controller.retirementPending, isFalse);
+        expect(f.plugin.retireAcks, hasLength(1));
+        expect(f.metadata.released, isEmpty);
+      } finally {
+        await f.close(tester);
+      }
+    },
+  );
+
+  testWidgets(
+    'late owner completion sends one bounded retirement acknowledgement after close wait',
+    (tester) async {
+      final f = await fixture(
+        tester,
+        timeout: const Duration(milliseconds: 100),
+      );
+      try {
+        await tester.pumpWidget(viewport(f.controller));
+        await until(tester, () => f.controller.canDisplay);
+        final gate = Completer<void>();
+        f.plugin.closeReplyGate = gate;
+        final closing = f.controller.close();
+        await tester.pump(const Duration(milliseconds: 150));
+        await closing;
+        expect(f.controller.retirementPending, isTrue);
+        expect(f.plugin.retireAcks, isEmpty);
+        gate.complete();
+        await until(
+          tester,
+          () => f.controller.phase == NativeTexturePhase.closed,
+        );
+        expect(f.controller.retirementPending, isFalse);
+        expect(f.plugin.retireAcks, hasLength(1));
+        expect(f.metadata.released, isEmpty);
+      } finally {
         await f.close(tester);
       }
     },

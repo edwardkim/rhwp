@@ -258,11 +258,13 @@ class NativeTextureController extends ChangeNotifier {
   Object? _configurationKey;
   Future<void>? _closeFuture;
   Future<void>? _platformCloseFuture;
+  Future<void>? _nativeRetireAckFuture;
   bool _platformCloseActive = false,
       _platformCloseSent = false,
       _createAttempted = false,
       _platformUnregistered = false,
       _nativeCloseComplete = false,
+      _nativeRetireReady = false,
       _retirementPending = false;
   int _attachedViews = 0;
   Object? _retirementDiagnostic;
@@ -1078,19 +1080,35 @@ class NativeTextureController extends ChangeNotifier {
     }
   }
 
-  bool _observeCloseStatus(Map<String, Object?> status) {
+  bool _observeCloseStatus(
+    Map<String, Object?> status, {
+    bool fromRetireAck = false,
+  }) {
     final unregistered =
         status['registered'] == false ||
         status['unregistered'] == true ||
         status['textureUnregisteredNotification'] == true;
     final registrationChanged = unregistered && !_platformUnregistered;
     if (unregistered) _platformUnregistered = true;
+    if (_nativeView &&
+        status['registered'] == false &&
+        status['ownerFinished'] == true &&
+        status['nativeViewLayerDetached'] == true) {
+      _nativeRetireReady = true;
+    }
     final complete = switch (platform) {
       NativeTexturePlatform.linux =>
         status['cleanupComplete'] == true && status['registered'] == false,
-      NativeTexturePlatform.macos ||
-      NativeTexturePlatform.macosMetalView ||
-      NativeTexturePlatform.windows =>
+      NativeTexturePlatform.macosMetalView =>
+        fromRetireAck &&
+            _nativeRetireReady &&
+            status['textureId'] == textureId &&
+            status['acknowledged'] == true &&
+            status['closed'] == true &&
+            status['ownerFinished'] == true &&
+            status['registered'] == false &&
+            status['nativeViewLayerDetached'] == true,
+      NativeTexturePlatform.macos || NativeTexturePlatform.windows =>
         status['ownerFinished'] == true && unregistered,
     };
     if (complete) {
@@ -1104,7 +1122,49 @@ class NativeTextureController extends ChangeNotifier {
     } else if (registrationChanged) {
       _signal();
     }
+    if (_nativeView &&
+        _nativeRetireReady &&
+        !_platformCloseActive &&
+        !_nativeCloseComplete &&
+        _nativeRetireAckFuture == null) {
+      _ackRetirementWhenAvailable();
+    }
     return complete;
+  }
+
+  void _ackRetirementWhenAvailable() {
+    if (_rpc < 3 && _globalRpc < 8 && _nativeRetireAckFuture == null) {
+      unawaited(_ackNativeRetirement().catchError((Object _) {}));
+    }
+  }
+
+  Future<void> _ackNativeRetirement() {
+    final existing = _nativeRetireAckFuture;
+    if (existing != null) return existing;
+    final done = Completer<void>();
+    _nativeRetireAckFuture =
+        done.future; // One acknowledgement, including late replies.
+    unawaited(() async {
+      try {
+        await _invoke(
+          'retireAck',
+          {'textureId': textureId},
+          received: (reply) {
+            if (!_observeCloseStatus(reply, fromRetireAck: true)) {
+              throw const NativeCallException(
+                'retirePending',
+                'Native close acknowledgement was not confirmed.',
+              );
+            }
+          },
+        );
+        done.complete();
+      } catch (error, stack) {
+        _retirementUnconfirmed(error);
+        done.completeError(error, stack);
+      }
+    }());
+    return done.future;
   }
 
   void _retirementUnconfirmed(Object error) {
@@ -1133,6 +1193,11 @@ class NativeTextureController extends ChangeNotifier {
         // ownership observer may start the one native close once the ID is known.
         if (!_platformCloseSent) _platformCloseFuture = null;
       }
+      // A bounded close wait may expire just after observing owner completion.
+      // Send its one explicit ack; its original late observer remains live.
+      if (_nativeView && _nativeRetireReady && !_nativeCloseComplete) {
+        _ackRetirementWhenAvailable();
+      }
       done.complete();
     }
 
@@ -1158,6 +1223,11 @@ class NativeTextureController extends ChangeNotifier {
       if (_rpc >= 3 || _globalRpc >= 8) return;
       invoking = true;
       try {
+        if (_nativeView && _nativeRetireReady) {
+          await _ackNativeRetirement();
+          if (_nativeCloseComplete) finish();
+          return;
+        }
         final method = _platformCloseSent ? 'status' : 'close';
         _platformCloseSent = true;
         await _invoke(method, {'textureId': id}, received: received);
