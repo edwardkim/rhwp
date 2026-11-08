@@ -538,6 +538,21 @@ class HeldCaptureTests(unittest.TestCase):
             self.assertEqual(trace["state"], "failed")
             self.assertEqual([sample["comparison"] for sample in trace["samples"]], harness.comparisons)
 
+    def test_cluster_processing_cannot_return_success_after_the_overall_deadline(self):
+        from builtins import min as original_min
+        with self.capture_harness([self.oracle()] * 2, deadline=.5) as harness:
+            def advance_during_cluster(*values):
+                if len(harness.comparisons) == 2:
+                    harness.clock.now = .6
+                return original_min(*values)
+            with mock.patch.object(qualifier, "min", side_effect=advance_during_cluster, create=True):
+                with self.assertRaisesRegex(TimeoutError, "overall deadline"):
+                    harness.capture()
+            self.assertEqual(len(harness.calls), 2)
+            trace = self.assert_observations_preserved(harness, [self.oracle()] * 2)
+            self.assertEqual(trace["state"], "failed")
+            self.assertFalse(trace["exactSelectedPair"])
+
     def test_capture_timeout_records_failure_and_preserves_prior_comparison(self):
         expired = qualifier.subprocess.TimeoutExpired("portable-capture-not-executed", .5)
         with self.capture_harness([self.oracle(254), expired]) as harness:

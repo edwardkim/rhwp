@@ -250,6 +250,8 @@ def capture_pair(files, *, output, label, pid, width, height, offset, dpr, deadl
                         low[i], high[i] = min(low[i], value), max(high[i], value)
                         if high[i] - low[i] > (0 if i % 4 == 3 else 1):
                             raise ValueError("actual Mac held samples exceeded their one-unit RGB cluster")
+                if time.monotonic() >= deadline:
+                    raise TimeoutError("actual Mac capture stability exceeded its overall deadline")
                 if len(captures) >= 2:
                     if captures[-1] == captures[-2]:
                         trace.update(state="passed", exactSelectedPair=True,
