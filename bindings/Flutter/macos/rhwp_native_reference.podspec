@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.source_files     = 'Classes/**/*'
   s.public_header_files = 'Classes/RhwpMetalPlugin.h'
   s.dependency 'FlutterMacOS'
-  s.frameworks       = 'Metal', 'CoreVideo', 'CoreGraphics', 'IOSurface'
+  s.frameworks       = 'Metal', 'CoreVideo', 'CoreGraphics', 'IOSurface', 'QuartzCore'
   s.platform         = :osx, '12.0'
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES',

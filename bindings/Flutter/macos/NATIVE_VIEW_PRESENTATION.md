@@ -1,0 +1,96 @@
+# AppKitView·CAMetalLayer 참조 backend
+
+`NativeTexturePlatform.macosMetalView`는 stock Flutter의 `AppKitView`로 실제
+`NSView`를 배치하는 명시적인 실험 경로입니다. 기존 `texture_macos`의 불변
+CVPixelBuffer backend와 Metal feature default는 유지합니다.
+
+macOS platform view는 [공식 Flutter hybrid composition 경로](https://docs.flutter.dev/platform-integration/macos/platform-views)입니다.
+현재 Flutter의 macOS gesture 지원에는 제한이 있으므로 이 view는 `hitTest:`에서
+nil을 반환하고 first responder를 얻지 않습니다. 문서 입력·선택·IME의 소유자는
+기존 Flutter 입력 view입니다. Flutter cover와 native view의 실제 가림·좌표·DPR은
+각 target SDK에서 실제 compositor capture로 확인해야 합니다.
+
+## 생성과 소유권
+
+channel은 `rhwp_native/metal_view_macos`, factory type은
+`rhwp_native/metal_view`입니다. channel의 `textureId`는 이 경로에서는 Flutter
+texture registry ID가 아니라 native view state의 양수 handle입니다.
+
+1. `create {libraryPath}`가 `textureId`, `deviceGeneration`,
+   `presentationKind: nativeView`, `viewType`을 반환합니다.
+2. Dart는 `AppKitView`를 만들고 `creationParams: {handle: textureId}`를 넘깁니다.
+   하나의 handle은 NSView 하나에만 bind됩니다. duplicate/expired binding은
+   다른 정상 view를 닫거나 다시 사용하지 않습니다.
+3. 기존의 `submit {textureId, stamp, width, height, clearColor, placements}`와
+   `status {textureId}`, `close {textureId}`를 사용합니다. view가 attach되기 전
+   수락한 최신 요청은 pending으로 보존하며 실제 layer/geometry가 준비될 때까지
+   UI thread를 막지 않습니다.
+4. 선택적인 `setCovered {textureId, covered: bool}`은 native NSView도 가립니다.
+   `covered: false`는 현재 전체 Native stamp가 유효한 게시 프레임이 있을 때만
+   허용합니다. 가림은 GPU 완료나 frame credit 환급 신호가 아닙니다.
+
+기존 Native loader, JSON/geometry parser, snapshot lease와 generation gate를
+같은 translation unit에서 재사용합니다. 새 경로는 CV 불변 frame credit을 예약하지
+않습니다. 별도의 Core Animation drawable 소유권을 사용하기 때문입니다.
+
+## 연속 표시와 한도
+
+[`CAMetalLayer`](https://developer.apple.com/documentation/quartzcore/cametallayer)는
+자체 drawable pool에서 화면에 표시 중이지 않고 strong reference도 남아 있지 않은
+대상만 다시 제공합니다. backend는 이 공식 소유권을 사용합니다.
+
+- `maximumDrawableCount = 3`, `allowsNextDrawableTimeout = YES`로 설정합니다.
+  자체 drawable pool을 만들거나 임의 consumer-retire API를 노출하지 않습니다.
+- worker 하나가 drawable 하나만 빌립니다. `nextDrawable`은 worker에서만 호출하며,
+  nil/resize mismatch이면 최신 요청만 제한적으로 재시도합니다.
+- Native presenter가 사용하는 device와 queue를 고정합니다. Native의 전체 stamp·
+  target·색/alpha/origin 및 producer 완료를 확인한 뒤, 같은 queue의 command buffer로
+  drawable을 present합니다. 이 command buffer 완료를 확인한 후 로컬 drawable
+  참조를 autorelease pool에서 신속하게 놓습니다. 화면 표시와 후속 재사용은
+  Core Animation이 소유합니다.
+- target은 BGRA8Unorm·premultiplied·sRGB이며 `framebufferOnly = NO`로 설정해
+  기존 Native의 render-target/shader-read 계약을 충족합니다.
+- viewport는 각 변 4,096 pixel 이하, 합계 4,194,304 pixel 이하입니다.
+  backing 크기는 공통 Dart controller와 동일하게 ceil합니다. 다른 크기의 이전
+  drawable을 새 viewport로 clamp하거나 억지로 표시하지 않습니다.
+- process-wide Native producer/layer slot은 기존 CV 경로와 합쳐 최대 두 개입니다.
+  layer도 slot을 보유하므로 channel close만으로 아직 살아 있는 layer의 한도를
+  초기화하지 않습니다. view당 drawable pixel 저장의 계획 상한은 48 MiB입니다.
+  Core Animation·driver·Flutter 전체 process 메모리를 이 값으로 약속하지 않습니다.
+- Native job은 표시 중인 job·worker job·최신 pending job을 유지합니다. 교체 경계에서
+  old/new pending 또는 old/new displayed가 잠시 공존할 수 있으므로 최대 네 개의
+  job ownership이 존재합니다. job당 placement/snapshot ID는 최대 여덟 개이며,
+  Native와 Dart의 별도 snapshot quota는 더 일찍 요청을 거절할 수 있습니다.
+
+따라서 이 backend의 `continuousPresentationSupported`는 true이지만
+`consumerGpuCompletionVerified`는 false입니다. Core Animation의 안전한 drawable
+반환을 이용하는 구현이며 임의의 FlutterTexture consumer fence를 얻은 것은 아닙니다.
+`wholeFrameReadbacks`는 정상 경로에서 0이고, qualifier의 화면/CPU 비교는 별도입니다.
+
+## 교체·종료·실패
+
+새 요청은 기존 generation gate를 갱신하고 pending을 최신 요청 하나로 합칩니다.
+worker가 오래된 요청을 완료해도 전체 source와 gate를 다시 확인해 표시를 거절합니다.
+metadata `hasFrame`도 전체 Native stamp와 현재 gate를 검사합니다.
+
+close는 먼저 새 요청을 막고 pending과 displayed lease를 해제합니다. native view를
+가리고 Metal layer를 분리하며, 진행 중인 Native GPU 작업과 같은 queue의
+presentation command가 끝난 뒤 Native presenter를 그 생성 thread에서 해제합니다.
+`ownerFinished`와 `registered: false`는 이 Native bridge의 종료를 뜻합니다.
+Flutter platform view 객체의 늦은 dispose나 화면 consumer GPU의 완료와 구분합니다.
+
+Native/command completion이 확인되지 않으면 drawable, queue, layer, job과 producer
+thread/slot을 process lifetime으로 보존하고 명시적 오류를 보고합니다. close나
+재생성으로 이 한도를 환급하지 않습니다. 불명확한 GPU 작업에 대해 대상 재사용이나
+Native owner 종료를 추정하지 않습니다.
+
+## 검증 상태
+
+`tests/metal_view_lifecycle_test.cc`는 실제 backend가 사용하는 portable lifecycle과
+geometry/generation gate를 검사합니다. 400번 handoff, 중복/옛 ticket 거절,
+작업 중 close, 불명확한 완료의 quarantine, DPR/resize ceil과 최신 세대 보존을
+확인합니다. 이 검사는 Apple SDK compile 또는 실제 macOS 화면 수집의 대체가 아닙니다.
+
+실제 Apple SDK compile/link, 실제 AppKitView 표시·32회 이상 갱신·revision·resize·
+cover·close와 Native lease 정리는 별도의 target runner에서 수행해야 합니다.
+그 결과가 없으면 실기기/SDK 검증 완료로 표시하지 않습니다.

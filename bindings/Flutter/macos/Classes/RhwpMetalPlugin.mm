@@ -353,7 +353,7 @@ bool Number(id value, double& output) {
   output = [value doubleValue];
   return std::isfinite(output);
 }
-std::shared_ptr<Job> ParseJob(NSDictionary* arguments, uint64_t generation) {
+std::shared_ptr<Job> ParseJob(NSDictionary* arguments, uint64_t generation, bool reserveImmutable = true) {
   id stampValue = arguments[@"stamp"], placementsValue = arguments[@"placements"];
   if (![stampValue isKindOfClass:[NSDictionary class]] || ![placementsValue isKindOfClass:[NSArray class]]) return {};
   NSDictionary* stamp = stampValue;
@@ -401,7 +401,7 @@ std::shared_ptr<Job> ParseJob(NSDictionary* arguments, uint64_t generation) {
   data = [NSJSONSerialization dataWithJSONObject:@{@"stamp":request[@"stamp"],@"snapshots":snapshots} options:0 error:nullptr];
   if (!data || data.length > 64 * 1024) return {};
   job->frameCheck.assign(static_cast<const char*>(data.bytes), data.length);
-  job->credit = Credits().reserve(reserved);
+  if (reserveImmutable) job->credit = Credits().reserve(reserved);
   return job;
 }
 NSDictionary* StampValue(const Stamp& stamp) {
@@ -416,6 +416,8 @@ NSDictionary* CreditStatus() {
     @"consumerRetirement":@NO,@"continuousPresentationSupported":@NO,@"cpuFallbackRequiredWhenSaturated":@YES};
 }
 }  // namespace
+
+#include "MetalNativeView.hpp"
 
 @interface RhwpMetalTexture : NSObject <FlutterTexture>
 - (instancetype)initWithState:(std::shared_ptr<State>)state;
@@ -467,6 +469,7 @@ NSDictionary* CreditStatus() {
   uint64_t _lastClosedId;
 }
 + (void)registerWithRegistrar:(id<FlutterPluginRegistrar>)registrar {
+  [RhwpMetalViewPlugin registerWithRegistrar:registrar];
   RhwpMetalPlugin* plugin = [[RhwpMetalPlugin alloc] init];
   plugin->_registry = registrar.textures;
   plugin->_textures = [NSMutableDictionary dictionary];
