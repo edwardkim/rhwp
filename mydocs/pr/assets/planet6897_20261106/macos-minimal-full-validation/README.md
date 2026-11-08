@@ -1,5 +1,18 @@
 # Mac 최소 글꼴 환경의 전체 회귀·Native 검사
 
+## 2026-11-09 후속 전체 회귀
+
+제품 code head `0322cfe65b99c24685e5a30f67ae49c7e7f11272`의 전체 nextest는
+**13,079 PASS / 0 FAIL / 45 skip**, 실행 427.072초로 완료했다. 개인 글꼴을 변경하지 않는
+같은 프로세스 격리 프로필을 적용했고, 현재 CoreText의 528 faces가 아래의 OS 전용 목록과
+같은지도 다시 확인했다. [실행 head·명령·로그 hash·격리 재확인](after-nested-0322-full-nextest.json)에
+연결한다. 같은 제품 코드의 Native Skia 필수 3종도 최소 글꼴 환경에서 완료했다.
+root lib **3,852 PASS / 12 ignored**, 다른 library **182 PASS**, Native PNG **2 PASS**,
+PDF **35 PASS**이며 모두 실패가 없다. 전체 시각 검증이나 나머지 lint·실제 소비 경로·PR 준비
+완료를 뜻하지 않는다.
+
+## 이전 def44 제품 코드의 검증 이력
+
 제품 code head `def44c54c6370c0cd463bb859f6b810e2ee4f0bb`의 실제 실행 결과다.
 개인 글꼴을 삭제·비활성화하지 않고 프로세스 한정 sandbox를 적용했다.
 
