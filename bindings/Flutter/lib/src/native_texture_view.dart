@@ -917,7 +917,8 @@ class NativeTextureController extends ChangeNotifier {
     ++_generation;
     _wanted = false;
     _phase = NativeTexturePhase.closing;
-    _retirementPending = textureId != null || _createAttempted;
+    _retirementPending =
+        !_nativeCloseComplete && (textureId != null || _createAttempted);
     _timer.cancel();
     _frameTimeout?.cancel();
     _signal();
