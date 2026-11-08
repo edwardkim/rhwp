@@ -30,8 +30,9 @@ TTF→TTC→OTF는 형식이 달라질 때만 적용한다. 같은 family의 결
 
 Native 실제 프로그램 선택의 새 합성 검사는 독립 FontMgr가 선택한 MIT fixture를 명시 공급한
 출력과 시스템 출력을 비교해 수정 전 의도한 단언FAIL을 확인했다. 검사는 기존 CI가 호출하는
-`native_fractional_glyph_origin`에 정식 진입점을 추가하고 공용 helper로 구현해 새 workflow 호출을
-늘리지 않는다. `RHWPHostFixture-Preferred.ttf`는 원래 MIT 합성 glyph의 단위·버전·이름만 바꾼
+`native_fractional_glyph_origin`의 내부 모듈로 구현해 새 workflow 호출을 늘리지 않는다.
+외부 helper의 path 속성은 별도 integration target을 추가해 수집 예산을 초과하므로,
+기존 CI 진입점 내부로 옮겨 자동 수집과 실행 경로를 함께 보존했다. `RHWPHostFixture-Preferred.ttf`는 원래 MIT 합성 glyph의 단위·버전·이름만 바꾼
 자체 자료다. 기존 생성기의 `preferred_face()`로 바이트 동일 재생성을 확인했다.
 
 실행 로그와 원인 분리 원본은 ignored output의 `r55-nested-original-producer-replay.json`,
