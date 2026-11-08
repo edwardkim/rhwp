@@ -1,32 +1,42 @@
-//! [#8715] 관계형 회귀 — 저장 조판에서 행 안을 나눈 중첩 표의 첫 조각 상자는 그 표의 저장 개체
-//! 높이(`sz.height`)를 차지하고 바깥 칸은 그 상자를 끝까지 담으며, 이어받는 조각은 내용 높이만 차지한다.
+//! [#8715] 관계형 회귀 — 저장 조판에서 행 안을 나눈 중첩 표의 첫 조각 상자는, 그 표가 글 앞/뒤
+//! (`InFrontOfText`/`BehindText`)로 놓여 흐름 밖에 있을 때만 저장 개체 높이(`sz.height`)를 차지한다.
+//! 글 흐름(위아래 등) 자식 표의 첫 조각과 모든 이어받는 조각은 내용 높이에서 닫힌다.
 //!
-//! 주석 갱신: 2026-11-08 02:05 KST
+//! 주석 갱신: 2026-11-09 00:50 KST (직전 파일 변경 e52235e4e3, 2026-11-08 09:52:58 +0900)
 //!
 //! - 입력 1: `samples/task2097/75544_pii_bunseok.hwpx`(66쪽). 59쪽에서 시작하는 1×1 바깥 표
 //!   (저장 높이 56321 HU = 750.9px) 칸 안에 글 앞으로 놓인 2×1 중첩 표(저장 높이
 //!   51122 HU = 681.6px)가 있고, 두 표 모두 59쪽에서 행 안이 나뉘어 60쪽으로 이어진다.
-//! - 독립 기준 1: `pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf`. 59쪽 중첩 표 괘선
+//!   독립 기준 `pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf` 59쪽 중첩 표 괘선
 //!   358.5→1039.3px(680.8px), 바깥 표 291.4→1041.3px(750px) — 두 상자가 저장 높이와 같다.
-//!   60쪽 이어받는 조각은 내용 끝(중첩 819.7px)에서 닫힌다.
+//!   60쪽 이어받는 조각은 내용 끝에서 닫힌다.
 //! - 입력 2: `samples/issue8715/nested_row_cell_cuts.hwp`(3쪽). 13×2 중첩 표 저장 높이
 //!   56010 HU = 746.8px, 바깥 1×1 표 58888 HU = 785.2px. 독립 기준
 //!   `pdf/issue8715_nested_row_cell_cuts-2020.pdf` 1쪽 중첩 280.3→1026.4px(746.1px),
-//!   바깥 247.7→1032.0px(784.3px); 2쪽 이어받는 조각은 저장 높이와 무관한 내용 높이다.
-//! - 수정 전 rhwp(#8744 head fdf67e5ec0): 75544 59쪽 중첩 상자 358.8→1023.9px(665px),
-//!   바깥 상자 291.4→1017.7px(726px)로 저장 높이보다 짧고 중첩 표가 바깥 칸 밖으로 나갔다.
+//!   바깥 247.7→1032.0px(784.3px). 저장 높이와 내용 높이가 같아 이 규칙에는 중립이고,
+//!   2쪽 이어받는 조각이 저장 높이로 늘지 않는지를 검사한다.
+//! - 입력 3(반례): `samples/rowbreak-problem-pages.hwpx`(18쪽). 7쪽 5×2 표의 제26조 행 오른쪽 칸에
+//!   위아래로 놓인 1×1 자식 표(저장 높이 12482 HU = 166.4px)가 행 안에서 나뉜다. 독립 기준
+//!   `pdf/rowbreak-problem-pages-2024.pdf` 7쪽은 그 행을 1005.6px 에서 닫고(rhwp 1007.5px)
+//!   왼쪽 칸 `제26조`를 그 행의 가운데에 둔다. 저장 높이를 모든 자식 표에 적용한 이전 head
+//!   e52235e4e3 는 행을 1023.1px 까지 늘려 7쪽 Native 가 96.31 → 82.71 로 떨어졌다.
 //!
-//! 측정: 2026-11-08, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`의
-//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 실루엣), head `62b25c3305`.
-//! - 75544(66쪽 = PDF 66쪽): 59쪽 Native 99.98 / fresh WASM 100.00(수정 전 Native 95.01),
-//!   60쪽 100.00 / 100.00. 전쪽 최저 Native 97.25, fresh WASM 97.27.
-//! - nested_row_cell_cuts(3쪽 = PDF 3쪽): 1쪽 94.76 / 91.09, 2쪽 99.35 / 99.46, 3쪽 98.36 / 98.37
-//!   (수정 전과 같음). 전쪽 최저 Native 94.76, fresh WASM 91.09.
+//! 측정: 2026-11-09, `scripts/visual_sweep.py --silhouette-only --dpi 96`(75544·nested
+//! `--compat 2022`, rowbreak `--compat 2024`)의 `silhouette_raw_match_percent`(색상 경계 보정 전
+//! 2px 실루엣), code head `7d940aca08`, 비교 base #8744 head `34384199de`.
+//! - 75544(66쪽 = PDF 66쪽): 59쪽 Native 99.96 / fresh WASM 99.97(base Native 95.28),
+//!   60쪽 100.00 / 100.00. 전쪽 최저 Native 98.13, fresh WASM 99.45. base 와 다른 쪽은 59쪽뿐이다.
+//! - nested_row_cell_cuts(3쪽 = PDF 3쪽): 1쪽 93.59 / 93.06, 2쪽 99.14 / 99.38, 3쪽 98.41 / 98.42
+//!   (base 와 같음). 전쪽 최저 Native 93.59, fresh WASM 93.06.
+//! - rowbreak-problem-pages.hwpx(18쪽 = PDF 18쪽): 7쪽 Native 96.31 / fresh WASM 99.60(base 와 같음).
+//!   전쪽 최저 Native 92.15, fresh WASM 93.00. 같은 원본의 HWP(`--compat 2024`, 18쪽)는 전쪽
+//!   최저 Native 95.81, fresh WASM 97.62 로 base 와 같다.
 //! - 증거: `mydocs/pr/assets/issue_8715/split_table_first_fragment/`(native·wasm·native_base TSV,
-//!   75544 59·60쪽 review·overlay PNG).
+//!   75544 59·60쪽과 rowbreak HWPX 7쪽 review·overlay PNG).
 //!
-//! 검사는 첫 조각 상자 높이와 저장 개체 높이의 일치(원본 속성에서 계산한 크기 관계, 중첩 ±1px·바깥 ±2px),
-//! 중첩 표의 바깥 칸 포함(관계형), 이어받는 조각이 저장 높이로 늘지 않음(관계형)이다.
+//! 검사는 글 앞 중첩 표 첫 조각 상자 높이와 저장 개체 높이의 일치(원본 속성에서 계산한 크기 관계,
+//! 중첩 ±1px·바깥 ±2px), 중첩 표의 바깥 칸 포함(관계형), 이어받는 조각과 글 흐름 자식 표 첫 조각이
+//! 저장 높이로 늘지 않음(원본 속성에서 계산한 크기 관계, 10px 이상 짧음)이다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -179,6 +189,98 @@ fn continuation_fragment_keeps_content_height() {
     assert!(
         bottom(&nested_box) < bottom(&cell_box) - pad - 3.0,
         "2쪽 이어받는 조각은 칸 끝까지 늘지 않는다: 중첩 {:.1}, 칸 {:.1}",
+        bottom(&nested_box),
+        bottom(&cell_box)
+    );
+}
+
+/// 쪽의 (rows×cols) 표 칸 안에 놓인 (1×1) 중첩 표 중 가장 아래 것의 (바깥 칸 상자, 중첩 표 상자).
+fn lowest_nested_1x1(
+    node: &RenderNode,
+    rows: u16,
+    cols: u16,
+) -> Option<(BoundingBox, BoundingBox)> {
+    let mut found: Option<(BoundingBox, BoundingBox)> = None;
+    let mut visit = |cell: &BoundingBox, nested: &BoundingBox| {
+        if found.as_ref().is_none_or(|(_, b)| nested.y > b.y) {
+            found = Some((cell.clone(), nested.clone()));
+        }
+    };
+    fn walk(
+        node: &RenderNode,
+        rows: u16,
+        cols: u16,
+        visit: &mut dyn FnMut(&BoundingBox, &BoundingBox),
+    ) {
+        if let RenderNodeType::Table(table) = &node.node_type {
+            if table.row_count == rows && table.col_count == cols {
+                for cell in &node.children {
+                    for child in &cell.children {
+                        if let RenderNodeType::Table(t) = &child.node_type {
+                            if t.row_count == 1 && t.col_count == 1 {
+                                visit(&cell.bbox, &child.bbox);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for child in &node.children {
+            walk(child, rows, cols, visit);
+        }
+    }
+    walk(node, rows, cols, &mut visit);
+    found
+}
+
+/// 반례: 글 흐름(위아래) 자식 표는 저장 높이가 내용보다 커도 첫 조각이 내용 높이에서 닫힌다.
+/// 한컴 PDF(`pdf/rowbreak-problem-pages-2024.pdf`) 7쪽 제26조 행은 저장 높이로 늘지 않고,
+/// 왼쪽 칸 `제26조`는 그 행의 가운데에 있다. 저장 높이를 적용하면 행이 약 21px 늘어난다.
+#[test]
+fn flow_child_first_fragment_keeps_content_height() {
+    let core = load("samples/rowbreak-problem-pages.hwpx");
+    let outer = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .flat_map(|para| para.controls.iter())
+        .find_map(|control| match control {
+            Control::Table(t) if t.row_count == 5 && t.col_count == 2 => Some(t.as_ref()),
+            _ => None,
+        })
+        .expect("5×2 바깥 표");
+    let (_, child) = outer
+        .cells
+        .iter()
+        .filter_map(|cell| {
+            cell.paragraphs.iter().find_map(|para| {
+                para.controls.iter().find_map(|control| match control {
+                    Control::Table(t) if t.row_count == 1 && t.col_count == 1 => {
+                        Some((cell, t.as_ref()))
+                    }
+                    _ => None,
+                })
+            })
+        })
+        .max_by_key(|(cell, _)| cell.row)
+        .expect("칸 안 1×1 중첩 표");
+    // 전제: 자식 표는 글 흐름(위아래)에 놓이고, 저장 높이가 7쪽 첫 조각보다 크다.
+    assert!(!child.common.treat_as_char);
+    assert!(matches!(
+        child.common.text_wrap,
+        rhwp::model::shape::TextWrap::TopAndBottom
+    ));
+    let child_frame = px(child.common.height);
+
+    let tree = core.build_page_render_tree(6).expect("7쪽 렌더 트리");
+    let (cell_box, nested_box) = lowest_nested_1x1(&tree.root, 5, 2).expect("7쪽 중첩 표");
+    assert!(
+        nested_box.height + 10.0 < child_frame,
+        "7쪽 위아래 자식 첫 조각 {:.1}px 는 저장 높이 {child_frame:.1}px 로 늘지 않는다",
+        nested_box.height
+    );
+    assert!(
+        bottom(&nested_box) <= bottom(&cell_box) + 0.5,
+        "7쪽 중첩 표({:.1})는 바깥 칸({:.1}) 안",
         bottom(&nested_box),
         bottom(&cell_box)
     );
