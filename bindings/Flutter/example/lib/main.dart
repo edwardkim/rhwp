@@ -54,7 +54,9 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
       document = await NativeDocument.connect(transport);
       await document.newDocument();
       if (const bool.fromEnvironment('RHWP_GPU')) {
-        final platform = NativeTexturePlatform.current();
+        final platform = NativeTexturePlatform.current(
+          preferContinuous: const bool.fromEnvironment('RHWP_GPU_CONTINUOUS'),
+        );
         if (platform != null) {
           final presentation = await NativePresentation.connect(
             nativeLibrary: transport.nativeLibraryPath,

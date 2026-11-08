@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show PlatformViewHitTestBehavior;
 import 'package:flutter/services.dart';
 
 import 'native_document.dart';
@@ -13,16 +14,18 @@ import 'native_viewport.dart';
 enum NativeTexturePlatform {
   linux('rhwp_native/texture_linux'),
   macos('rhwp_native/texture_macos'),
+  macosMetalView('rhwp_native/metal_view_macos'),
   windows('rhwp_native/texture_windows');
 
   const NativeTexturePlatform(this.channelName);
   final String channelName;
-  static NativeTexturePlatform? current() => switch (defaultTargetPlatform) {
-    TargetPlatform.linux => linux,
-    TargetPlatform.macOS => macos,
-    TargetPlatform.windows => windows,
-    _ => null,
-  };
+  static NativeTexturePlatform? current({bool preferContinuous = false}) =>
+      switch (defaultTargetPlatform) {
+        TargetPlatform.linux => linux,
+        TargetPlatform.macOS => preferContinuous ? macosMetalView : macos,
+        TargetPlatform.windows => windows,
+        _ => null,
+      };
 }
 
 enum NativeTexturePhase {
@@ -245,6 +248,7 @@ class NativeTextureController extends ChangeNotifier {
   static int _globalRpc = 0;
   bool _working = false,
       _polling = false,
+      _paused = false,
       _wanted = false,
       _stopped = false,
       _closing = false,
@@ -263,12 +267,21 @@ class NativeTextureController extends ChangeNotifier {
   int _attachedViews = 0;
   Object? _retirementDiagnostic;
   Timer? _frameTimeout, _admissionTimeout, _retryTimer;
+  int _visibilitySerial = 0, _nativeVisibleGeneration = -1;
+  bool _coverPending = false,
+      _coverWorking = false,
+      _nativeCoverConfirmed = false;
+  Completer<void>? _coverWaiter;
+  Future<void>? _pauseFuture;
+  Timer? _coverWaitDeadline;
   final _releases = <Future<void>>{};
   static int get retainedOwnedSnapshots => _OwnedSnapshot.retained.length;
 
   bool get canDisplay =>
       _phase == NativeTexturePhase.visible && _localCurrent(_frame);
   bool get needsCpuFallback => _phase == NativeTexturePhase.fallback;
+  bool get isPaused => _paused;
+  bool get _nativeView => platform == NativeTexturePlatform.macosMetalView;
 
   /// Tracks owner/registration close only, not immutable consumer GPU credits.
   bool get retirementPending => _retirementPending;
@@ -295,6 +308,7 @@ class NativeTextureController extends ChangeNotifier {
     final stamp = snapshot?.stamp, info = document.info;
     return !_closing &&
         !_stopped &&
+        !_paused &&
         !document.isDisposed &&
         stamp != null &&
         info != null &&
@@ -334,13 +348,13 @@ class NativeTextureController extends ChangeNotifier {
     ++_generation;
     _view = document.beginPresentation();
     _raster = document.rasterInvalidationGeneration;
-    _wanted = true;
+    _wanted = !_paused;
     _phase = NativeTexturePhase.pending;
     _frameTimeout?.cancel();
     _retryTimer?.cancel();
     _retryTimer = null;
     _admissionTimeout?.cancel();
-    if (allowImmutableOwnershipTransfer) {
+    if (allowImmutableOwnershipTransfer && !_paused) {
       final generation = _generation;
       _admissionTimeout = Timer(operationTimeout, () {
         if (_current(generation)) {
@@ -351,8 +365,161 @@ class NativeTextureController extends ChangeNotifier {
         }
       });
     }
+    _requestNativeCover();
     _signal(); // Cover cached platform pixels in this same UI turn.
-    unawaited(_pump());
+    if (!_paused) unawaited(_pump());
+  }
+
+  /// Stops presentation admission and waits for the native view to be hidden.
+  /// Native registration, current frame leases and late RPC observers remain.
+  Future<void> pause() {
+    if (_closing || _stopped) {
+      return Future.error(
+        const NativeCallException('closed', 'Presentation is closing.'),
+      );
+    }
+    if (_paused) return _pauseFuture ?? Future.value();
+    _paused = true;
+    if (_plan != null) {
+      invalidate();
+    } else {
+      ++_generation;
+      _phase = NativeTexturePhase.pending;
+      _requestNativeCover();
+      _signal();
+    }
+    return _pauseFuture = _waitForNativeCover();
+  }
+
+  /// Republishes the newest source and geometry after a presentation pause.
+  void resume() {
+    if (!_paused || _closing || _stopped) return;
+    _paused = false;
+    _pauseFuture = null;
+    invalidate();
+  }
+
+  void _requestNativeCover() {
+    if (!_nativeView || _platformUnregistered) return;
+    ++_visibilitySerial;
+    _nativeVisibleGeneration = -1;
+    _nativeCoverConfirmed = false;
+    _coverPending = true;
+    unawaited(_flushNativeCover());
+  }
+
+  bool _visibilityReceipt(
+    Map<String, Object?> reply,
+    int id,
+    int serial,
+    bool covered,
+  ) =>
+      reply['textureId'] == id &&
+      reply['visibilitySerial'] == serial &&
+      reply['accepted'] == true &&
+      reply['covered'] == covered;
+
+  void _finishCoverWaiter([Object? error]) {
+    final waiter = _coverWaiter;
+    if (waiter == null) return;
+    if (error == null &&
+        (!_nativeCoverConfirmed || _coverPending || _coverWorking)) {
+      return;
+    }
+    _coverWaiter = null;
+    _coverWaitDeadline?.cancel();
+    _coverWaitDeadline = null;
+    if (error == null) {
+      waiter.complete();
+    } else {
+      waiter.completeError(error);
+    }
+  }
+
+  Future<void> _waitForNativeCover() {
+    if (!_nativeView ||
+        (_nativeCoverConfirmed && !_coverPending && !_coverWorking) ||
+        (textureId == null && !_createAttempted)) {
+      return Future.value();
+    }
+    final existing = _coverWaiter;
+    if (existing != null) return existing.future;
+    final waiter = Completer<void>();
+    _coverWaiter = waiter;
+    _coverWaitDeadline = Timer(operationTimeout, () {
+      final error = TimeoutException('Native view cover was not confirmed.');
+      _finishCoverWaiter(error);
+      if (!_closing && !_stopped) _fail(error, fallback: true);
+    });
+    unawaited(_flushNativeCover());
+    return waiter.future;
+  }
+
+  Future<void> _flushNativeCover() async {
+    if (_coverWorking ||
+        !_coverPending ||
+        textureId == null ||
+        _platformUnregistered ||
+        _rpc >= 3 ||
+        _globalRpc >= 8) {
+      return;
+    }
+    _coverWorking = true;
+    try {
+      while (_coverPending && !_platformUnregistered && textureId != null) {
+        if (_rpc >= 3 || _globalRpc >= 8) break;
+        final id = textureId!, serial = _visibilitySerial;
+        _coverPending = false;
+        final reply = await _invoke('setCovered', {
+          'textureId': id,
+          'covered': true,
+          'visibilitySerial': serial,
+        });
+        if (serial != _visibilitySerial) continue;
+        if (!_visibilityReceipt(reply, id, serial, true)) {
+          throw const NativeCallException(
+            'invalidVisibilityReply',
+            'Native view cover was not acknowledged.',
+          );
+        }
+        _nativeCoverConfirmed = true;
+      }
+    } catch (error) {
+      _finishCoverWaiter(error);
+      if (!_closing && !_stopped) _fail(error, fallback: _canFallback(error));
+    } finally {
+      _coverWorking = false;
+      _finishCoverWaiter();
+    }
+  }
+
+  Future<bool> _uncoverNative(_OwnedSnapshot frame, int generation) async {
+    if (!_current(generation) || !_localCurrent(frame)) return false;
+    if (_nativeVisibleGeneration == generation) return true;
+    if (!_nativeCoverConfirmed || _coverPending || _coverWorking) return false;
+    final id = textureId!, serial = ++_visibilitySerial;
+    final reply = await _invoke('setCovered', {
+      'textureId': id,
+      'covered': false,
+      'visibilitySerial': serial,
+      'stamp': frame.stamp!.toJson(),
+    });
+    if (!_current(generation) ||
+        !_localCurrent(frame) ||
+        serial != _visibilitySerial) {
+      _requestNativeCover();
+      return false;
+    }
+    if (!_visibilityReceipt(reply, id, serial, false) ||
+        !frame.stamp!.matches(reply['renderedStamp'])) {
+      throw const NativeCallException(
+        'stalePresentation',
+        'Native view did not confirm the current full stamp.',
+      );
+    }
+    _nativeCoverConfirmed = false;
+    _nativeVisibleGeneration = generation;
+    return true;
   }
 
   void _signal() {
@@ -362,6 +529,7 @@ class NativeTextureController extends ChangeNotifier {
   bool _current(int generation) =>
       !_closing &&
       !_stopped &&
+      !_paused &&
       generation == _generation &&
       !document.isDisposed &&
       _view == document.presentationGeneration &&
@@ -515,7 +683,14 @@ class NativeTextureController extends ChangeNotifier {
   }
 
   Future<void> _pump() async {
-    if (_working || !_wanted || _closing || _stopped || _plan == null) return;
+    if (_working ||
+        !_wanted ||
+        _closing ||
+        _stopped ||
+        _paused ||
+        _plan == null) {
+      return;
+    }
     _working = true;
     final generation = _generation, plan = _plan!, view = _view;
     _wanted = false;
@@ -554,6 +729,7 @@ class NativeTextureController extends ChangeNotifier {
             if (id is int && id > 0 && device is int && device > 0) {
               textureId = id;
               _device = device;
+              if (_nativeView) unawaited(_flushNativeCover());
               if (_closing || _stopped) {
                 unawaited(_closePlatform());
               } else {
@@ -579,6 +755,15 @@ class NativeTextureController extends ChangeNotifier {
           throw const NativeCallException(
             'unsupportedPresentation',
             'The Windows plugin did not negotiate immutable ownership transfer.',
+          );
+        }
+        if (_nativeView &&
+            (created['presentationKind'] != 'nativeView' ||
+                created['viewType'] != 'rhwp_native/metal_view' ||
+                created['ready'] != false)) {
+          throw const NativeCallException(
+            'unsupportedPresentation',
+            'The macOS plugin did not negotiate a native Metal view.',
           );
         }
       }
@@ -696,7 +881,7 @@ class NativeTextureController extends ChangeNotifier {
           fallback: true,
         );
       }
-      if (_wanted && !_closing && !_stopped) unawaited(_pump());
+      if (_wanted && !_closing && !_stopped && !_paused) unawaited(_pump());
     }
   }
 
@@ -809,12 +994,20 @@ class NativeTextureController extends ChangeNotifier {
     _admissionTimeout?.cancel();
     _retryTimer?.cancel();
     _retryTimer = null;
+    _finishCoverWaiter(error);
+    _requestNativeCover();
     _signal();
     unawaited(_closePlatform());
   }
 
   void _tick() {
-    if (_working || _polling || _closing || _stopped || _retryTimer != null) {
+    if (_nativeView) unawaited(_flushNativeCover());
+    if (_working ||
+        _polling ||
+        _closing ||
+        _stopped ||
+        _paused ||
+        _retryTimer != null) {
       return;
     }
     if (_wanted) {
@@ -828,6 +1021,7 @@ class NativeTextureController extends ChangeNotifier {
     if (_polling ||
         _closing ||
         _stopped ||
+        _paused ||
         _frame == null ||
         textureId == null) {
       return;
@@ -853,6 +1047,7 @@ class NativeTextureController extends ChangeNotifier {
       if (!rendered) {
         if (_phase == NativeTexturePhase.visible) {
           _phase = NativeTexturePhase.pending;
+          _requestNativeCover();
           _publicationDeadline(generation);
           _signal();
         }
@@ -866,6 +1061,8 @@ class NativeTextureController extends ChangeNotifier {
           'The full source stamp is no longer current.',
         );
       }
+      if (!_current(generation) || !_localCurrent(frame)) return;
+      if (_nativeView && (!await _uncoverNative(frame, generation))) return;
       if (_current(generation) && _localCurrent(frame)) {
         final changed = _phase != NativeTexturePhase.visible;
         _phase = NativeTexturePhase.visible;
@@ -891,7 +1088,9 @@ class NativeTextureController extends ChangeNotifier {
     final complete = switch (platform) {
       NativeTexturePlatform.linux =>
         status['cleanupComplete'] == true && status['registered'] == false,
-      NativeTexturePlatform.macos || NativeTexturePlatform.windows =>
+      NativeTexturePlatform.macos ||
+      NativeTexturePlatform.macosMetalView ||
+      NativeTexturePlatform.windows =>
         status['ownerFinished'] == true && unregistered,
     };
     if (complete) {
@@ -1000,6 +1199,10 @@ class NativeTextureController extends ChangeNotifier {
     _admissionTimeout?.cancel();
     _retryTimer?.cancel();
     _retryTimer = null;
+    _finishCoverWaiter(
+      const NativeCallException('closed', 'Presentation is closing.'),
+    );
+    _requestNativeCover();
     _signal();
     unawaited(_infoChanges.cancel());
     unawaited(_invalidations.cancel());
@@ -1107,10 +1310,18 @@ class _NativeTextureViewState extends State<NativeTextureView> {
       children: [
         if (controller.shouldPaintTexture)
           IgnorePointer(
-            child: Texture(
-              textureId: controller.textureId!,
-              filterQuality: FilterQuality.low,
-            ),
+            child: controller.platform == NativeTexturePlatform.macosMetalView
+                ? AppKitView(
+                    key: ValueKey(controller.textureId),
+                    viewType: 'rhwp_native/metal_view',
+                    creationParams: {'handle': controller.textureId!},
+                    creationParamsCodec: const StandardMessageCodec(),
+                    hitTestBehavior: PlatformViewHitTestBehavior.transparent,
+                  )
+                : Texture(
+                    textureId: controller.textureId!,
+                    filterQuality: FilterQuality.low,
+                  ),
           ),
         if (!visible)
           Positioned.fill(
