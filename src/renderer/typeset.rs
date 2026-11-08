@@ -4835,9 +4835,9 @@ impl TypesetEngine {
             || stored_vpos_rewind_break
         {
             let mut prefix_carried_separately = false;
-            if tac_table_line_idx.is_some_and(|owner| {
-                crate::renderer::composer::ordinary_tac_prefix_rows(para, owner)
-            }) && before_text > 0.0
+            if tac_table_line_idx
+                .is_some_and(|owner| crate::renderer::composer::owned_tac_prefix_rows(para, owner))
+                && before_text > 0.0
                 && st.current_height + fmt.line_content_height(0..tac_table_line_idx.unwrap(), 0.0)
                     <= available
                 && !st.pre_emitted_host_paras.contains(&para_idx)
@@ -5168,11 +5168,10 @@ impl TypesetEngine {
         // stream position. Whitespace-only hosts can own real prefix rows;
         // PUA carriers retain their specialized filler placement owner.
         let tac_table_line_idx = self.tac_table_line_index(para, table, fmt);
-        let has_owned_tac_prefix = !para.text.is_empty()
-            && para.text.chars().all(char::is_whitespace)
-            && para.char_offsets.len() == para.text.chars().count()
+        // [#8782] 글자 없는 host 의 저장 필드 시작 줄도 표 앞 줄이다.
+        let has_owned_tac_prefix = para.char_offsets.len() == para.text.chars().count()
             && tac_table_line_idx.is_some_and(|line| {
-                crate::renderer::composer::ordinary_tac_prefix_rows(para, line)
+                crate::renderer::composer::owned_tac_prefix_rows(para, line)
                     && crate::renderer::layout::control_line_seg_index(para, ctrl_idx) == Some(line)
             });
         let split_host_prefix = st
