@@ -1,6 +1,6 @@
 #include "rhwp_native_ffi.h"
 #include "SurfaceImportTickets.h"
-#include "include/rhwp_native_reference/rhwp_d3d_plugin_c_api.h"
+#include <rhwp_native_reference/rhwp_d3d_plugin.h>
 #include <flutter_texture_registrar.h>
 #include <type_traits>
 
@@ -9,6 +9,8 @@ using Create = char* (*)(const IDXGIAdapter1*, const ID3D12Device*, const ID3D12
 using Render = char* (*)(uint64_t, const ID3D12Resource*, const uint8_t*, size_t);
 static_assert(std::is_same_v<Create, decltype(&rhwp_d3d_presenter_create)>);
 static_assert(std::is_same_v<Render, decltype(&rhwp_d3d_presenter_render)>);
+using Registration = void (*)(FlutterDesktopPluginRegistrarRef);
+static_assert(std::is_same_v<Registration, decltype(&RhwpD3dPluginRegisterWithRegistrar)>);
 namespace {
 FlutterDesktopGpuSurfaceDescriptor descriptor{};
 const FlutterDesktopGpuSurfaceDescriptor* populate(size_t, size_t, void*) { return &descriptor; }

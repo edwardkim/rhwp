@@ -26,7 +26,7 @@ def main():
     if args.flutter_public:
         header_test = output / "public-texture-contract"
         native = source.parents[1] / "swift/Sources/CRhwpNative"
-        subprocess.run(command + ["-I" + str(native), "-I" + str(args.flutter_public.resolve()),
+        subprocess.run(command + ["-I" + str(source / "include"), "-I" + str(native), "-I" + str(args.flutter_public.resolve()),
             str(source / "tests/public_texture_contract.cpp"), "-o", str(header_test)], check=True, timeout=60)
         subprocess.run([str(header_test)], check=True, timeout=10)
         print("actual Flutter common-header descriptor + typed native C header contract passed")

@@ -1,4 +1,4 @@
-#include "include/rhwp_native_reference/rhwp_d3d_plugin_c_api.h"
+#include "rhwp_native_reference/rhwp_d3d_plugin.h"
 #include "Producer.h"
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
