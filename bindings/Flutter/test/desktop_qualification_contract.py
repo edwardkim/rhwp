@@ -7,6 +7,7 @@ These tests prove receipt/capture rejection behavior, never Windows execution.
 import importlib.util
 from pathlib import Path
 import sys
+import shutil
 import tempfile
 import unittest
 
@@ -14,6 +15,14 @@ TOOL = Path(__file__).resolve().parents[1] / "tool" / "qualify_desktop_texture.p
 spec = importlib.util.spec_from_file_location("qualification", TOOL)
 qualification = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(qualification)
+
+
+# Build helper imports the same collector utilities by their module filename.
+sys.path.insert(0, str(TOOL.parent))
+build_spec = importlib.util.spec_from_file_location("desktop_build", TOOL.parent / "build_desktop_probe.py")
+build = importlib.util.module_from_spec(build_spec)
+build_spec.loader.exec_module(build)
+
 
 
 def stage():
@@ -166,6 +175,110 @@ class CollectorContracts(unittest.TestCase):
     def test_linux_cannot_be_reported_as_actual_windows(self):
         with self.assertRaisesRegex(RuntimeError, "actual Windows"):
             qualification.WindowsCompositor(42)
+
+
+class BuildAndRuntimeIdentityContracts(unittest.TestCase):
+    def artifacts(self, root):
+        names = {"runner": "probe.exe", "plugin": "rhwp_native_reference_plugin.dll",
+                 "engineRuntime": "flutter_windows.dll", "native": "rhwp_native_ffi.dll",
+                 "dispatcher": "rhwp_flutter_owner.dll", "fixture": "input.hwpx"}
+        paths = {}
+        for key, name in names.items():
+            path = root / name
+            path.write_bytes(("portable-identity-control-" + key).encode())
+            paths[key] = path
+        receipt = {"artifacts": {key: {"path": str(path), "sha256": qualification.digest(path)}
+                                 for key, path in paths.items()}}
+        supplied = {key: paths[key] for key in ("runner", "native", "dispatcher", "fixture")}
+        return paths, supplied, receipt
+
+    def test_matching_adjacent_plugin_and_engine_are_verified(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            paths, supplied, receipt = self.artifacts(Path(temporary))
+            actual = qualification.verify_runtime_artifacts(supplied, receipt)
+            self.assertEqual(actual["plugin"], paths["plugin"])
+            self.assertEqual(actual["engineRuntime"], paths["engineRuntime"])
+
+    def test_changed_loaded_plugin_or_engine_is_rejected(self):
+        for key in ("plugin", "engineRuntime"):
+            with self.subTest(key=key), tempfile.TemporaryDirectory() as temporary:
+                paths, supplied, receipt = self.artifacts(Path(temporary))
+                paths[key].write_bytes(b"different runtime DLL")
+                with self.assertRaisesRegex(ValueError, key):
+                    qualification.verify_runtime_artifacts(supplied, receipt)
+
+    def test_relocated_runner_checks_its_actual_adjacent_dlls(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            original = root / "original"
+            original.mkdir()
+            paths, supplied, receipt = self.artifacts(original)
+            relocated = root / "relocated"
+            relocated.mkdir()
+            runner = relocated / paths["runner"].name
+            shutil.copyfile(paths["runner"], runner)
+            supplied["runner"] = runner
+            # A valid recorded original plugin cannot stand in for the DLLs
+            # loaded beside a relocated executable.
+            with self.assertRaises(FileNotFoundError):
+                qualification.verify_runtime_artifacts(supplied, receipt)
+            for key in ("plugin", "engineRuntime"):
+                shutil.copyfile(paths[key], relocated / paths[key].name)
+            qualification.verify_runtime_artifacts(supplied, receipt)
+            (relocated / paths["plugin"].name).write_bytes(b"stale adjacent plugin")
+            with self.assertRaisesRegex(ValueError, "plugin"):
+                qualification.verify_runtime_artifacts(supplied, receipt)
+
+    def test_wine_windows_python_is_rejected_before_any_gui_capture(self):
+        class Wine:
+            wine_get_version = object()
+        with self.assertRaisesRegex(RuntimeError, "Wine"):
+            qualification.require_actual_windows(platform="win32", load_library=lambda *a, **k: Wine())
+
+    def test_real_nt_loader_without_wine_marker_is_admitted_by_platform_guard(self):
+        qualification.require_actual_windows(platform="win32", load_library=lambda *a, **k: object())
+
+    def test_unverifiable_nt_environment_fails_closed(self):
+        def missing(*args, **kwargs):
+            raise OSError("ntdll missing")
+        with self.assertRaisesRegex(RuntimeError, "could not be verified"):
+            qualification.require_actual_windows(platform="win32", load_library=missing)
+        with self.assertRaisesRegex(RuntimeError, "actual Windows"):
+            qualification.require_actual_windows(platform="linux", load_library=missing)
+
+    def test_all_copied_package_build_inputs_are_rechecked(self):
+        paths = ["bindings/Flutter/lib/src/native_texture_view.dart",
+                 "bindings/Flutter/src/owner_dispatcher.c",
+                 "bindings/Flutter/windows/rhwp_d3d_plugin.cpp",
+                 "bindings/Flutter/windows/FrameLifetime.h",
+                 "bindings/Flutter/windows/CMakeLists.txt",
+                 "bindings/swift/Sources/CRhwpNative/rhwp_native_ffi.h"]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for relative in paths:
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(relative.encode())
+            expected = {relative: qualification.digest(root / relative) for relative in paths}
+            self.assertEqual(build.verify_copied_sources(root, expected), expected)
+            # Generated runner inputs legitimately differ from package source.
+            generated = root / "runner/windows/flutter/generated_plugins.cmake"
+            generated.parent.mkdir(parents=True)
+            generated.write_text("generated runner data")
+            build.verify_copied_sources(root, expected)
+            for relative in paths:
+                with self.subTest(relative=relative):
+                    path = root / relative
+                    previous = path.read_bytes()
+                    path.write_bytes(b"mutated package input")
+                    with self.assertRaisesRegex(ValueError, "copied tracked input"):
+                        build.verify_copied_sources(root, expected)
+                    path.write_bytes(previous)
+
+    def test_missing_copied_package_input_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            with self.assertRaises(FileNotFoundError):
+                build.verify_copied_sources(Path(temporary), {"bindings/Flutter/windows/NativeApi.h": "0" * 64})
 
 
 if __name__ == "__main__":

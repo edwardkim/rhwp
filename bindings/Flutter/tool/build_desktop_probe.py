@@ -15,7 +15,7 @@ import subprocess
 import sys
 import time
 
-from qualify_desktop_texture import digest, read_json, write_json
+from qualify_desktop_texture import digest, read_json, write_json, require_actual_windows
 
 
 def checked_sha(value, name):
@@ -35,6 +35,18 @@ def artifact(path):
     return {"path": str(path), "sha256": digest(path), "bytes": path.stat().st_size}
 
 
+def verify_copied_sources(copied, expected):
+    """Check every copied tracked input, including native plugin and headers.
+
+    Generated runner files are separate and are not passed as package inputs.
+    """
+    actual = {relative: digest(copied / relative) for relative in expected}
+    if actual != expected:
+        changed = [relative for relative, value in actual.items() if value != expected[relative]]
+        raise ValueError("build changed copied tracked input: " + ", ".join(changed))
+    return actual
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--flutter-sdk", type=Path, required=True)
@@ -42,8 +54,10 @@ def main():
     parser.add_argument("--native-receipt", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    if sys.platform != "win32":
-        parser.error("build on actual Windows in a Visual Studio developer shell")
+    try:
+        require_actual_windows()
+    except RuntimeError as error:
+        parser.error(str(error))
     repository = Path(__file__).resolve().parents[3]
     status = subprocess.check_output(
         ["git", "status", "--porcelain", "--", "bindings/Flutter", "bindings/swift/Sources/CRhwpNative"],
@@ -122,21 +136,17 @@ def main():
         run([*flutter, "build", "windows", "--debug"], runner)
         executable = runner / "build/windows/x64/runner/Debug/rhwp_texture_qualification.exe"
         plugin = executable.parent / "rhwp_native_reference_plugin.dll"
+        engine_runtime = executable.parent / "flutter_windows.dll"
         dispatcher = output / "rhwp_flutter_owner.dll"
         run([sys.executable, str(copied / "bindings/Flutter/tool/build_dispatcher.py"),
              "--output", str(dispatcher)], output)
         fixture = copied / "bindings/Flutter/test/fixtures/desktop-consumer.hwpx"
-        artifacts = {"runner": executable, "plugin": plugin, "dispatcher": dispatcher,
-                     "native": native, "fixture": fixture}
+        artifacts = {"runner": executable, "plugin": plugin, "engineRuntime": engine_runtime,
+                     "dispatcher": dispatcher, "native": native, "fixture": fixture}
         receipt["artifacts"] = {key: artifact(value) for key, value in artifacts.items()}
         if sources(repository) != original_sources:
             raise ValueError("source checkout changed while building")
-        receipt["copiedRuntimeSources"] = sources(copied) if (copied / ".git").exists() else {
-            relative: digest(copied / relative) for relative in original_sources
-            if relative.startswith("bindings/Flutter/lib/") or relative.startswith("bindings/Flutter/src/")
-            or relative.endswith("desktop_consumer_probe.dart")}
-        if any(value != original_sources[relative] for relative, value in receipt["copiedRuntimeSources"].items()):
-            raise ValueError("Flutter migration changed runtime probe/package source")
+        receipt["copiedRuntimeSources"] = verify_copied_sources(copied, original_sources)
         receipt["buildExitCode"] = 0
     except BaseException as error:
         receipt.update(buildExitCode=1, error=f"{type(error).__name__}: {error}")
