@@ -697,3 +697,31 @@ Mac WASM은 locked wrapper의 no-opt 로컬 대체 빌드이며 루트pkg/Studio
 
 이 단계의 Native Skia lib Clippy(`-D warnings`)·fmt·현재 base의 suite manifest48/48·변경 문서 링크 검사도 통과했다.
 전체 nextest·나머지 lint/범위 게이트와 최종 보호 TSV는 이 결과로 대신하지 않는다.
+
+
+## 2026-11-09: HWP3 암시적 쪽번호의 기본 프로그램 소유 복원
+
+HWP3 사양10.14절의 쪽번호 제어는 글꼴을 저장하지 않는다. sample10의 사용자 스타일
+`쪽번호`를 canonical `쪽 번호`로 해석하는 진단은 독립 Print와 다른 한양신명조를 골랐으므로
+채택하지 않았다. 실제 Native renderer trace에서 암시적 `바탕`은 Windows Batang TTC를
+선택했고, 독립 Print의 Haansoft Batang과 숫자·줄표 폭이 달랐다. Native HWP3의 명시 스타일이
+없는 기본값만 명확히 해 공통 측정·paint 소유를 맞췄다. 문서/쪽별 좌표 보정은 없다.
+
+sample10 Native/fresh WASM 각각763쪽, 누락·중복·90% 미달0이다. Native 최저99.41%,
+보호값 하락0/상승11쪽이며629쪽은 두 경로 모두99.96→100.00%다. WASM 최저99.38%,
+보호값 하락8/상승5쪽이므로 전체 복원 완료가 아니다. 수정 전 frozen WASM으로 남은8쪽과629쪽을
+다시 출력해7쪽의 기존 표시값 동일·658쪽99.93→99.94%를 확인했다. 전후 픽셀 차이는 자동
+번호 영역에만 있으며 gate에서 그 영역을 제외하지 않았다. 본문의 남은 차이는 계속 보정한다.
+
+명시한 쪽번호 스타일의 HWPX2쪽은 Native/WASM 모두100.00%이고 Native 전후 PNG가 같다.
+현재93조건의89개 원본에서 형식·canonical 쪽번호 스타일을 감사해 sample10 외 Native HWP3
+두 원본에는 명시 스타일이 있음을 확인했다. 이 감사만으로 다른 문서 전쪽 검증을 대체하지 않는다.
+새 관계형/고정형3개는 실제 수정 전1 PASS/2 FAIL→수정 후3 PASS이고, 같은 컴파일 검사도
+Mac의 개인 글꼴·CoreText 서비스 접근을 차단한 환경에서3 PASS다. 629쪽의 양쪽100%와 독립
+Print 원점 확대 판독 이후에만 ±2 CSSpx 검사와 정식 suite 등록을 진행했다.
+
+[전쪽 TSV·producer·정식 실행 결과](hwp3-default-page-number/validation.json) ·
+[Native review](hwp3-default-page-number/after-p629-review.png) ·
+[overlay](hwp3-default-page-number/after-p629-overlay.png) ·
+[fresh WASM review](hwp3-default-page-number/after-wasm-p629-review.png) ·
+[overlay](hwp3-default-page-number/after-wasm-p629-overlay.png).

@@ -6577,15 +6577,24 @@ impl LayoutEngine {
             // 쪽번호도 본문과 같은 글자모양을 소비한다. 굵게·장평·자간과
             // 선언 글꼴 메트릭을 빼면 폭 측정과 실제 glyph가 원본 계약을 잃는다.
             // 숫자·장식은 기존과 같이 영문 슬롯(1)의 스타일로 잰 뒤 그대로 칠한다.
+            // HWP3의 8바이트 쪽번호 제어에는 글꼴 지정이 없다. 독립 한컴 Print의
+            // 기본 생성 번호는 Haansoft Batang을 쓴다. 모호한 `바탕` 이름으로 두면
+            // Windows Batang 설치 여부에 따라 다른 줄표 폭·윤곽을 선택한다.
+            // 명시한 쪽번호 스타일은 그대로 우선하며 측정과 paint의 기본 소유자만 맞춘다.
+            let default_font_family = if styles.source_hwp3_native {
+                "Haansoft Batang"
+            } else {
+                "바탕"
+            };
             let mut page_num_style = page_number_style_id
                 .map(|id| resolved_to_text_style(styles, id as u32, 1))
                 .unwrap_or_else(|| TextStyle {
-                    font_family: "바탕".to_string(),
+                    font_family: default_font_family.to_string(),
                     font_size: PAGE_NUMBER_PT * self.dpi / 72.0,
                     ..Default::default()
                 });
             if page_num_style.font_family.is_empty() {
-                page_num_style.font_family = "바탕".to_string();
+                page_num_style.font_family = default_font_family.to_string();
             }
             if page_num_style.font_size <= 0.0 {
                 page_num_style.font_size = PAGE_NUMBER_PT * self.dpi / 72.0;
