@@ -102,8 +102,29 @@ test('fresh WASM은 단일 공급과 분할 OTF 배열을 모두 받아 누락 g
       const outlineFirst = doc.registerHftOutlineFont('RHWP HFT Outline Fixture', first, 0);
       doc.clearTextFontFamily('RHWP HFT Outline Fixture');
       const outlineAfterClear = doc.registerHftOutlineFont('RHWP HFT Outline Fixture', first, 0);
+      doc.setFontEnvironment(JSON.stringify({id: 'split-hft-actual-owner',
+        substitutions: {'RHWP HFT Outline Fixture': 'Selected Split'}}));
+      for (const bytes of [second, first]) {
+        const face = new FontFace('Selected Split', bytes); await face.load(); document.fonts.add(face);
+      }
+      const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+      const calls = [], paths = [];
+      const fillText = ctx.fillText.bind(ctx), fill = ctx.fill.bind(ctx);
+      ctx.fillText = (text, ...args) => { calls.push(text); return fillText(text, ...args); };
+      ctx.fill = (...args) => { paths.push(true); return fill(...args); };
+      const paint = () => {
+        calls.length = 0; paths.length = 0;
+        doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', 'print');
+        return {calls: [...calls], paths: paths.length};
+      };
+      const selectedFirst = doc.registerHftOutlineFont('Selected Split', first, 0);
+      const singlePaint = paint();
+      const candidatesChanged = doc.registerHftOutlineFontCandidates('Selected Split', [first, second]);
+      const splitPaint = paint();
+      doc.clearTextFontFamily('Selected Split');
+      const clearedPaint = paint();
       return {requests: requests.length, singleChanged, multiChanged, changedTree: single !== multi,
-        outlineFirst, outlineAfterClear};
+        outlineFirst, outlineAfterClear, selectedFirst, candidatesChanged, singlePaint, splitPaint, clearedPaint};
     } finally { doc.free(); }
   });
   assert.ok(result.requests > 0, JSON.stringify(result));
@@ -112,4 +133,10 @@ test('fresh WASM은 단일 공급과 분할 OTF 배열을 모두 받아 누락 g
   assert.equal(result.changedTree, true, '두 번째 프로그램의 글리프 전진이 실제 조판에 적용돼야 한다');
   assert.equal(result.outlineFirst, true, JSON.stringify(result));
   assert.equal(result.outlineAfterClear, true, '이전 세대의 윤곽 공급을 지운 뒤 다시 등록한다');
+  assert.equal(result.selectedFirst, true, '실제 표시 family도 원 HFT 소유를 유지한다');
+  assert.equal(result.candidatesChanged, true);
+  assert.deepEqual(result.singlePaint.calls, ['나'], '첫 조각에 없는 글자만 Canvas가 그린다');
+  assert.deepEqual(result.splitPaint.calls, [], '분할 프로그램 두 글자 모두 실제 윤곽을 그린다');
+  assert.equal(result.splitPaint.paths, result.singlePaint.paths + 1);
+  assert.deepEqual(result.clearedPaint.calls, ['가', '나'], '세대 교체는 두 조각의 윤곽을 모두 폐기한다');
 });

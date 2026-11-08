@@ -195,7 +195,7 @@ type SourceGlyphKey = ([u8; 32], u32, u16);
 #[derive(Clone, Default)]
 pub(crate) struct HftOutlineFonts {
     pub(crate) pua_coverage: super::pua_glyph::FontCoverage,
-    faces: HashMap<String, Arc<SourceFace>>,
+    faces: HashMap<String, Vec<Arc<SourceFace>>>,
     #[cfg(target_arch = "wasm32")]
     print_faces: HashMap<(String, u16), Arc<SourceFace>>,
     cache: Arc<Mutex<ContourCache<SourceGlyphKey>>>,
@@ -210,82 +210,113 @@ impl HftOutlineFonts {
             .retain(|(name, _), _| name != &first_family(family).to_lowercase());
     }
 
-    pub(crate) fn register(
+    /// 실제 FontFace의 우선순위를 원자적으로 교체한다. 첫 cmap 소유 face만 소비한다.
+    pub(crate) fn register_candidates(
         &mut self,
         family: &str,
-        bytes: &[u8],
-        face_index: u32,
+        candidates: &[(&[u8], u32)],
     ) -> Result<bool, &'static str> {
         if family.is_empty() || family.len() > 256 || family.chars().any(char::is_control) {
             return Err("invalid outline font family");
         }
-        if bytes.is_empty() || bytes.len() > MAX_SOURCE_BYTES {
-            return Err("outline font byte limit exceeded");
+        if candidates.is_empty() || candidates.len() > 64 {
+            return Err("outline font candidate limit exceeded");
         }
         let family = first_family(family).to_lowercase();
         if family.is_empty() {
             return Err("invalid outline font family");
         }
-        // FontFace는 WOFF 등도 받는다. SFNT로 읽지 못하면 이전 바인딩을 지우고
-        // 호스트의 원래 글꼴 painter에 맡긴다.
-        let Ok(face) = Face::parse(bytes, face_index) else {
-            return Ok(self.faces.remove(&family).is_some());
-        };
-        if face.tables().cff.is_none()
-            || face.is_variable()
-            || face.is_bold()
-            || face.is_italic()
-            || face.tables().colr.is_some()
-            || face.tables().svg.is_some()
-        {
-            return Ok(self.faces.remove(&family).is_some());
+        let mut prepared = Vec::new();
+        let mut programs = HashSet::new();
+        let mut total = 0usize;
+        for &(bytes, face_index) in candidates {
+            if bytes.is_empty() || bytes.len() > MAX_SOURCE_BYTES {
+                return Err("outline font byte limit exceeded");
+            }
+            // 혼합 TTF/WOFF·가변·스타일 face는 실제 사다리를 아는 기존 painter에 맡긴다.
+            let supported = Face::parse(bytes, face_index).is_ok_and(|face| {
+                face.tables().cff.is_some()
+                    && !face.is_variable()
+                    && !face.is_bold()
+                    && !face.is_italic()
+                    && face.tables().colr.is_none()
+                    && face.tables().svg.is_none()
+            });
+            if !supported {
+                return Ok(self.faces.remove(&family).is_some());
+            }
+            let digest: [u8; 32] = Sha256::digest(bytes).into();
+            if programs.insert(digest) {
+                total = total.saturating_add(bytes.len());
+            }
+            if total > MAX_TOTAL_BYTES {
+                return Err("outline font session byte limit exceeded");
+            }
+            prepared.push((digest, bytes, face_index));
         }
-        let digest: [u8; 32] = Sha256::digest(bytes).into();
-        if self
-            .faces
-            .get(&family)
-            .is_some_and(|old| old.digest == digest && old.face_index == face_index)
-        {
+        if self.faces.get(&family).is_some_and(|old| {
+            old.len() == prepared.len()
+                && old
+                    .iter()
+                    .zip(&prepared)
+                    .all(|(source, (digest, _, index))| {
+                        source.digest == *digest && source.face_index == *index
+                    })
+        }) {
             return Ok(false);
         }
         if !self.faces.contains_key(&family) && self.faces.len() >= MAX_FAMILIES {
             return Err("outline font family limit exceeded");
         }
-        let mut programs = HashSet::new();
-        let mut total = bytes.len();
-        programs.insert(digest);
-        for (name, source) in &self.faces {
-            if name != &family && programs.insert(source.digest) {
-                total += source.bytes.len();
+        for (name, sources) in &self.faces {
+            if name == &family {
+                continue;
+            }
+            for source in sources {
+                if programs.insert(source.digest) {
+                    total = total.saturating_add(source.bytes.len());
+                }
             }
         }
         if total > MAX_TOTAL_BYTES {
             return Err("outline font session byte limit exceeded");
         }
-        let source = self
-            .faces
-            .values()
-            .find(|source| source.digest == digest && source.face_index == face_index)
-            .cloned()
-            .unwrap_or_else(|| {
-                Arc::new(SourceFace {
-                    digest,
-                    bytes: Arc::from(bytes),
-                    face_index,
-                })
-            });
-        self.faces.insert(family, source);
+        let mut sources: Vec<Arc<SourceFace>> = Vec::new();
+        for (digest, bytes, face_index) in prepared {
+            let source = self
+                .faces
+                .values()
+                .flatten()
+                .chain(sources.iter())
+                .find(|source| source.digest == digest && source.face_index == face_index)
+                .cloned()
+                .unwrap_or_else(|| {
+                    Arc::new(SourceFace {
+                        digest,
+                        bytes: Arc::from(bytes),
+                        face_index,
+                    })
+                });
+            sources.push(source);
+        }
+        self.faces.insert(family, sources);
         Ok(true)
     }
 
     pub(crate) fn glyph(&self, family: &str, character: char) -> Option<Arc<[PathCommand]>> {
-        let source = self.faces.get(&first_family(family).to_lowercase())?;
-        let face = Face::parse(&source.bytes, source.face_index).ok()?;
-        let glyph = face.glyph_index(character)?;
-        let key = (source.digest, source.face_index, glyph.0);
-        self.cache.lock().ok()?.get_or_build(key, || {
-            contour(face.tables().cff.as_ref()?, glyph, face.units_per_em())
-        })
+        let sources = self.faces.get(&first_family(family).to_lowercase())?;
+        for source in sources {
+            let face = Face::parse(&source.bytes, source.face_index).ok()?;
+            let Some(glyph) = face.glyph_index(character) else {
+                continue;
+            };
+            let key = (source.digest, source.face_index, glyph.0);
+            // 소유 face의 윤곽을 지원하지 않으면 다음 face로 바꾸지 않고 기존 painter에 맡긴다.
+            return self.cache.lock().ok()?.get_or_build(key, || {
+                contour(face.tables().cff.as_ref()?, glyph, face.units_per_em())
+            });
+        }
+        None
     }
 
     /// 실제 공급 목록이 선택한 정적 TTF 대체 face의 unhinted 윤곽이다.

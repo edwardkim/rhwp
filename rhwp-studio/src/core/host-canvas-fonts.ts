@@ -18,6 +18,7 @@ interface CanvasFontSourceOwner extends OrdinaryTextFontSource {
   clearTextFontFamily?: (family: string) => unknown;
   registerTextFontGlyphCoverage?: (family: string, bytes: Uint8Array, faceIndex: number) => unknown;
   registerHftOutlineFont?: (family: string, bytes: Uint8Array, faceIndex: number) => unknown;
+  registerHftOutlineFontCandidates?: (family: string, programs: Uint8Array[]) => unknown;
 }
 let nextSession = 0;
 let currentSession: HostCanvasFontSession | null = null;
@@ -160,16 +161,17 @@ export class HostCanvasFontSession {
       const prepared = this.faces.get(key);
       if (prepared && epoch === this.epoch) register(prepared);
     }
-    // 윤곽 저장소는 family당 한 face를 소유한다. 모든 후보를 준비한 뒤
-    // Canvas가 먼저 검색하는 CFF 하나만 등록하고 나머지 glyph는 Canvas에 맡긴다.
+    // 실제 Canvas와 같은 후보 순서를 공급한다. 혼합 형식은 기존 painter에 맡긴다.
     for (const family of clearedSplitFamilies) {
       const candidates = resolveRendererLocalFontCandidates(family, {weight: 400, slant: 'normal'});
       if (candidates.length < 2) continue;
       const loaded = candidates.map(record => this.faces.get(localFontFaceKey(record)));
       if (loaded.some(face => !face)) continue;
-      const first = loaded.find(face => face && face.bytes.byteLength >= 4
-        && new DataView(face.bytes).getUint32(0) === 0x4f54544f);
-      if (first) sourceOwner?.registerHftOutlineFont?.(family, new Uint8Array(first.bytes), 0);
+      if (loaded.every(face => face && face.bytes.byteLength >= 4
+        && new DataView(face.bytes).getUint32(0) === 0x4f54544f)) {
+        sourceOwner?.registerHftOutlineFontCandidates?.(family,
+          loaded.map(face => new Uint8Array(face!.bytes)));
+      }
     }
   }
 

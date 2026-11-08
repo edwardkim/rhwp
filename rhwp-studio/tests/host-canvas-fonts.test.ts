@@ -50,13 +50,18 @@ test('분할 OTF는 준비된 순서대로 Canvas family 사다리에 포함한�
     const records = resolveRendererLocalFontCandidates('Split', {weight: 400, slant: 'normal'});
     assert.deepEqual(records.map(record => record.postscriptName), ['Split-Latin', 'Split-Hangul']);
     const outlines: string[] = [], coverage: string[] = [], clears: string[] = [];
+    const chains: Array<{family: string; programs: Uint8Array[]}> = [];
     await f.session.prepare(records, {registerHftOutlineFont(family) { outlines.push(family); },
+      registerHftOutlineFontCandidates(family, programs) { chains.push({family, programs}); },
       registerTextFontGlyphCoverage(family) { coverage.push(family); },
       clearTextFontFamily(family) { clears.push(family); }});
     assert.equal(clears.filter(family => family === 'Split').length, 1,
       '분할 family의 이전 세대 coverage를 한 번 비운다');
-    assert.equal(outlines.filter(family => family.toLowerCase() === 'split').length, 1,
-      '뒤의 분할 face가 첫 face의 윤곽 공급을 덮어쓰지 않는다');
+    assert.equal(outlines.filter(family => family.toLowerCase() === 'split').length, 0,
+      '한 조각만 family 전체의 소유 프로그램으로 등록하지 않는다');
+    const chain = chains.find(chain => chain.family.toLowerCase() === 'split');
+    assert.equal(chain?.programs.length, 2, '실제 적재한 두 후보를 같은 순서로 공급한다');
+    assert.deepEqual(chain?.programs.map(program => [...program]), [[...font], [...font]]);
     assert.equal(coverage.filter(family => family === 'Split').length, 0,
       '마지막 조각의 cmap을 family 전체의 coverage로 기록하지 않는다');
     const css = withHostCanvasFonts(f.session, () => scopedHostCanvasFont('20px "Split", serif'));

@@ -1,5 +1,5 @@
 //! 검사 유형: 관계형. 합성 글꼴 프로그램의 선택·대체 계약을 검증한다.
-//! 주석 갱신: 2026-11-08T23:28:54+09:00; 직전 변경: 2026-11-01T19:39:20+09:00, e64921811f349385d06aa6bc29928b1f4e200e1a.
+//! 주석 갱신: 2026-11-09T08:06:54+09:00; 직전 변경: 2026-11-09T02:00:35+09:00, afe43067b85b82fd79ad9dc1af55a722c9add829.
 //! 실제 입력 `samples/hwp3-sample10.hwp`, 한컴 2020 Print, 96 DPI, 2px 이웃 raw.
 //! 2026-10-30 측정: 1쪽 Native/fresh WASM 각 99.96%; 전 763쪽 최저 각 99.41% / 99.40%.
 //! 근거: `mydocs/pr/assets/issue_8371/sample10-native.tsv`, `sample10-wasm.tsv`, `sample10-validation.md`.
@@ -12,6 +12,122 @@ use rhwp::model::style::Font;
 
 const FAMILY: &str = "RHWP HFT Outline Fixture";
 const CFF: &[u8] = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
+
+#[test]
+fn source_hft_outline_follows_the_selected_environment_family_only() {
+    // 관계형: 저장된 HFT 이름과 실제 공급 family가 달라도 같은 선택을 소비한다.
+    // 비 HFT 원본·선택하지 않은 family로 윤곽 정책을 확장하지 않는다.
+    use rhwp::renderer::font_environment::FontEnvironment;
+    let mut core = DocumentCore::new_empty();
+    let mut document = core.document().clone();
+    document.doc_info.font_faces = vec![vec![
+        Font {
+            name: "원본 HFT".into(),
+            alt_type: 2,
+            ..Default::default()
+        },
+        Font {
+            name: "원본 TTF".into(),
+            ..Default::default()
+        },
+    ]];
+    core.set_document(document);
+    let before = rhwp::serializer::serialize_document(core.document()).unwrap();
+    core.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"outline-selection","substitutions":{"원본 HFT":"Selected CFF","원본 TTF":"Other CFF"}}"#,
+    ).unwrap())).unwrap();
+    assert!(!core
+        .register_hft_outline_font_native("Other CFF", CFF, 0)
+        .unwrap());
+    assert!(!core
+        .register_hft_outline_font_native("Unselected CFF", CFF, 0)
+        .unwrap());
+    assert!(
+        core.register_hft_outline_font_native("Selected CFF", CFF, 0)
+            .unwrap(),
+        "실제 HFT 선택 family가 paint 윤곽을 공급해야 한다"
+    );
+    assert_eq!(
+        rhwp::serializer::serialize_document(core.document()).unwrap(),
+        before,
+        "선택된 paint 프로그램은 저장 IR을 바꾸지 않는다"
+    );
+}
+
+#[test]
+fn hft_outline_registration_preserves_unicode_family_case_folding() {
+    // 관계형: 같은 family의 유니코드 대소문자 정규화는 기존 등록 계약을 보존한다.
+    use rhwp::renderer::font_environment::FontEnvironment;
+    let mut core = DocumentCore::new_empty();
+    let mut document = core.document().clone();
+    document.doc_info.font_faces = vec![vec![Font {
+        name: "원본 HFT".into(),
+        alt_type: 2,
+        ..Default::default()
+    }]];
+    core.set_document(document);
+    core.set_font_environment(Some(
+        FontEnvironment::from_json(
+            r#"{"id":"unicode-hft-family","substitutions":{"원본 HFT":"Σ Display"}}"#,
+        )
+        .unwrap(),
+    ))
+    .unwrap();
+    assert!(core
+        .register_hft_outline_font_native("σ display", CFF, 0)
+        .unwrap());
+    assert!(!core
+        .register_hft_outline_font_native("Σ Display", CFF, 0)
+        .unwrap());
+}
+
+#[test]
+fn split_hft_outline_candidates_replace_atomically_and_retain_order() {
+    // 관계형: 공개 합성 CFF 두 조각을 실제 후보 순서로 교체한다.
+    let mut core = DocumentCore::new_empty();
+    let mut document = core.document().clone();
+    document.doc_info.font_faces = vec![vec![Font {
+        name: FAMILY.into(),
+        alt_type: 2,
+        ..Default::default()
+    }]];
+    core.set_document(document);
+    let second = synthetic_cff_for('나');
+    let first_order = [(CFF, 0), (second.as_slice(), 0)];
+    assert!(core
+        .register_hft_outline_font_candidates_native(FAMILY, &first_order)
+        .unwrap());
+    assert!(!core
+        .register_hft_outline_font_candidates_native(FAMILY, &first_order)
+        .unwrap());
+    assert!(core
+        .register_hft_outline_font_candidates_native(FAMILY, &[])
+        .is_err());
+    assert!(core
+        .register_hft_outline_font_candidates_native(FAMILY, &[(CFF, 0); 65])
+        .is_err());
+    assert!(core
+        .register_hft_outline_font_candidates_native(FAMILY, &[(CFF, 0), (&[], 0)])
+        .is_err());
+    assert!(
+        !core
+            .register_hft_outline_font_candidates_native(FAMILY, &first_order)
+            .unwrap(),
+        "한도 오류로 기존 후보를 일부만 교체하지 않는다"
+    );
+    assert!(core
+        .register_hft_outline_font_candidates_native(FAMILY, &[(second.as_slice(), 0), (CFF, 0)])
+        .unwrap());
+    let ttf = include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf");
+    assert!(
+        core.register_hft_outline_font_candidates_native(FAMILY, &[(CFF, 0), (ttf, 0)])
+            .unwrap(),
+        "혼합 형식은 기존 Canvas 소유 판단으로 되돌린다"
+    );
+    assert!(core
+        .register_hft_outline_font_native(FAMILY, CFF, 0)
+        .unwrap());
+}
 
 #[test]
 fn romanized_myeongjo_names_keep_serif_fallback() {

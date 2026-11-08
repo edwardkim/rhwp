@@ -850,6 +850,36 @@ impl HwpDocument {
             .map_err(JsValue::from)
     }
 
+    /// FontFace에 적재된 SFNT 조각들을 같은 family의 실제 조회 순서로 등록한다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = registerHftOutlineFontCandidates)]
+    pub fn register_hft_outline_font_candidates(
+        &mut self,
+        family: &str,
+        programs: js_sys::Array,
+    ) -> Result<bool, JsValue> {
+        use wasm_bindgen::JsCast;
+        if programs.length() == 0 || programs.length() > 64 {
+            return Err(JsValue::from_str("outline font candidate limit exceeded"));
+        }
+        let mut total = 0usize;
+        let mut bytes = Vec::new();
+        for program in programs.iter() {
+            let array = program
+                .dyn_into::<js_sys::Uint8Array>()
+                .map_err(|_| JsValue::from_str("outline font candidate must be Uint8Array"))?;
+            total = total.saturating_add(array.length() as usize);
+            if array.length() == 0 || array.length() > 32 * 1024 * 1024 || total > 64 * 1024 * 1024
+            {
+                return Err(JsValue::from_str("outline font byte limit exceeded"));
+            }
+            bytes.push(array.to_vec());
+        }
+        let candidates: Vec<_> = bytes.iter().map(|bytes| (bytes.as_slice(), 0)).collect();
+        self.register_hft_outline_font_candidates_native(family, &candidates)
+            .map_err(JsValue::from)
+    }
+
     /// 호스트가 실제 FontFace에 적재한 프로그램의 호환 글리프 지원을 등록한다.
     #[wasm_bindgen(js_name = clearTextFontFamily)]
     pub fn clear_text_font_family_wasm(&mut self, family: &str) {

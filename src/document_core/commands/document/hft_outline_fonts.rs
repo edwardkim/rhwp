@@ -33,19 +33,41 @@ impl DocumentCore {
         bytes: &[u8],
         face_index: u32,
     ) -> Result<bool, HwpError> {
+        self.register_hft_outline_font_candidates_native(family, &[(bytes, face_index)])
+    }
+
+    /// 같은 표시 family의 분할 프로그램을 실제 후보 순서로 등록한다.
+    pub fn register_hft_outline_font_candidates_native(
+        &mut self,
+        family: &str,
+        candidates: &[(&[u8], u32)],
+    ) -> Result<bool, HwpError> {
         let family = family.trim();
-        let is_source_hft = self
-            .document
-            .doc_info
-            .font_faces
-            .iter()
-            .flatten()
-            .any(|face| face.alt_type == 2 && face.name.to_lowercase() == family.to_lowercase());
+        let environment = self.resolved_font_environment();
+        let is_source_hft =
+            self.document
+                .doc_info
+                .font_faces
+                .iter()
+                .enumerate()
+                .any(|(language, faces)| {
+                    faces.iter().enumerate().any(|(index, face)| {
+                        if face.alt_type != 2 {
+                            return false;
+                        }
+                        // 저장된 이름을 바꾸지 않고 조판이 선택한 같은 슬롯의 표시 family를 쓴다.
+                        let selected = u16::try_from(index).ok().and_then(|font_id| {
+                            environment
+                                .and_then(|env| env.replacement_for(&face.name, language, font_id))
+                        });
+                        selected.unwrap_or(&face.name).to_lowercase() == family.to_lowercase()
+                    })
+                });
         if !is_source_hft {
             return Ok(false);
         }
         self.hft_outline_fonts
-            .register(family, bytes, face_index)
+            .register_candidates(family, candidates)
             .map_err(|message| HwpError::RenderError(message.into()))
     }
 }
