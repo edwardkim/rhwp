@@ -262,7 +262,8 @@ def build(args):
     native = args.native.resolve(strict=True)
     native_receipt = read_json(args.native_receipt, limit=16 * 1024 * 1024)
     native_head = checked_sha(native_receipt.get("source_head"), "Native source head")
-    if native_receipt.get("build") != "passed" or native_receipt.get("artifacts", {}).get("native", {}).get("sha256") != digest(native):
+    native_hash = digest(native)
+    if native_receipt.get("platform") != "macos" or native_receipt.get("build") != "passed" or native_receipt.get("artifacts", {}).get("native", {}).get("sha256") != native_hash:
         raise ValueError("Native library does not match its actual successful Apple SDK receipt")
     sdk = args.flutter_sdk.resolve(strict=True)
     flutter = str(sdk / "bin/flutter")
@@ -332,6 +333,8 @@ class MainFlutterWindow: NSWindow {
         actual_sources["LICENSE"] = digest(repository / "LICENSE")
         if actual_sources != expected:
             raise ValueError("source checkout changed during the actual Mac build")
+        if state["artifacts"]["native"]["sha256"] != native_hash:
+            raise ValueError("Native SDK artifact changed during the actual Mac build")
         verify_copied_sources(copied, expected)
         state.update(buildExitCode=0, bundleRoot=str(app), disposableRunnerSandboxDisabled=True,
                      productionSandboxChanged=False, captureSource="WindowServer ScreenCaptureKit")
@@ -356,11 +359,17 @@ def capture(args):
         raise ValueError("successful actual Mac build receipt is required")
     for key in ("sourceHead", "nativeSourceHead", "flutterRevision", "engineRevision"):
         checked_sha(receipt.get(key), key)
+    if not isinstance(receipt.get("artifacts"), dict) or set(receipt["artifacts"]) != {"runner", "native", "dispatcher", "fixture", "capture"}:
+        raise ValueError("Mac build receipt must contain exactly the owned runtime artifacts")
     files = {key: Path(value["path"]).resolve(strict=True) for key, value in receipt["artifacts"].items()}
     for key, path in files.items():
         if digest(path) != receipt["artifacts"][key]["sha256"]:
             raise ValueError("built runtime artifact changed: " + key)
     bundle = files["runner"].parents[2]
+    if bundle.suffix != ".app" or bundle != Path(receipt["bundleRoot"]).resolve(strict=True):
+        raise ValueError("Mac executable escaped its recorded app bundle")
+    if files["fixture"].stat().st_size > 16 * 1024**2:
+        raise ValueError("fixture exceeds its Native document byte bound")
     verify_bundle(bundle, receipt["runtimeBundle"])
     output = args.output.resolve()
     try:
