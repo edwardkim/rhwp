@@ -5743,13 +5743,43 @@ pub(crate) fn stored_table_next_page_placement(
         line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0 && line.line_height > 0
     };
     // 필드는 호스트 글줄에 속한 표시 정보이며 별도 흐름 상자가 아니다.
-    // 표 하나 외에 높이를 소비하는 개체가 있으면 이 계획으로 대체하지 않는다.
-    if para
+    // 표 외에 높이를 소비하는 개체가 있으면 이 계획으로 대체하지 않는다.
+    let tables: Vec<&Table> = para
         .controls
         .iter()
-        .filter(|control| matches!(control, Control::Table(_)))
-        .count()
-        != 1
+        .filter_map(|control| match control {
+            Control::Table(table) => Some(table.as_ref()),
+            _ => None,
+        })
+        .collect();
+    // [#8770] 공백 host 에 나란히 앵커한 문단 기준 표 묶음은 함께 다음 쪽으로 간다.
+    // 각 표가 자기 자리에서 쪽에 들어가지 않아야 하고, 뒤 본문의 저장 재시작이 묶음의
+    // 바깥 상자 최댓값과 정확히 같아야 한다(4680000-202100038 1쪽 pi22: 어울림·자리차지
+    // 4×2 표 둘, 2쪽 첫 줄 8466 = 141 + 8184 + 141). 넘어간 표는 세로 오프셋을 버리고
+    // 바깥 위 여백 아래에 놓인다(한/글 Print 2쪽 두 표 위끝 모두 본문 위 + 1.9px).
+    let group = tables.len() > 1;
+    let group_member = |member: &Table| {
+        member.layout_page_break() == TablePageBreak::None
+            && !member.common.treat_as_char
+            && member.common.vert_rel_to == VertRelTo::Para
+            && matches!(
+                member.common.text_wrap,
+                TextWrap::TopAndBottom | TextWrap::Square
+            )
+            && member.common.flow_with_text
+            && member.common.vert_align == VertAlign::Top
+            && matches!(
+                member.common.horz_rel_to,
+                HorzRelTo::Column | HorzRelTo::Para
+            )
+            && member.caption.is_none()
+            && member.common.height > 0
+    };
+    if tables.is_empty()
+        || (group
+            && (visible_host
+                || !tables.iter().any(|member| std::ptr::eq(*member, table))
+                || !tables.iter().all(|member| group_member(member))))
         || !para.controls.iter().all(|control| {
             matches!(
                 control,
@@ -5767,7 +5797,7 @@ pub(crate) fn stored_table_next_page_placement(
         })
         || table.layout_page_break() != TablePageBreak::None
         || table.common.treat_as_char
-        || !is_para_topbottom_float(&table.common)
+        || (!group && !is_para_topbottom_float(&table.common))
         || !table.common.flow_with_text
         || table.common.vert_align != VertAlign::Top
         || !matches!(
@@ -5825,15 +5855,35 @@ pub(crate) fn stored_table_next_page_placement(
     let bottom = frame_height_hu as f64 * dpi / 7200.0;
     let host_y = hwpunit_to_px(host.vertical_pos.checked_sub(frame_vpos)?, dpi);
     let offset = hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
+    // 묶음의 각 표는 선언 높이로 바깥 상자를 잰다(지금 표는 위에서 측정 높이와 대조했다).
+    let member_frame_hu = |member: &Table| {
+        i64::from(member.common.height)
+            + i64::from(member.outer_margin_top)
+            + i64::from(member.outer_margin_bottom)
+    };
+    let member_overflows = |member: &Table| {
+        let frame = member_frame_hu(member) as f64 * dpi / 7200.0;
+        frame <= available_height
+            && host_y + hwpunit_to_px(signed_hwpunit(member.common.vertical_offset), dpi) + frame
+                > available_height
+    };
+    let frame_height_hu = if group {
+        tables.iter().map(|member| member_frame_hu(member)).max()?
+    } else {
+        frame_height_hu
+    };
+    let group_bottom = frame_height_hu as f64 * dpi / 7200.0;
     if host_y <= 0.0
-        || offset < 0.0
+        || (!group && offset < 0.0)
         || bottom > available_height
+        || (group && !tables.iter().all(|member| member_overflows(member)))
         || (!visible_host && (actual_host_flow_y - host_y).abs() > dpi / 7200.0)
         || (visible_host && actual_host_flow_y + offset + bottom <= available_height)
         || host_y + offset + bottom <= available_height
     {
         return None;
     }
+    let bottom = group_bottom;
     let mut previous = para.line_segs.last()?;
     let mut previous_para = para;
     for (next_index, next) in following.iter().enumerate() {
@@ -5857,7 +5907,7 @@ pub(crate) fn stored_table_next_page_placement(
                         })
                 });
                 if i64::from(line.vertical_pos) != frame_height_hu
-                    || !(para_has_non_whitespace_text(next) || terminal_blank_tail)
+                    || !(para_has_non_whitespace_text(next) || terminal_blank_tail || group)
                 {
                     return None;
                 }
